@@ -22,6 +22,7 @@ See http://xml.apache.org/forrest/linking.html for more info
 		<api label="API" href="http://ha-jdbc.sourceforge.net/api"/>
 		<download label="Download" href="http://sourceforge.net/project/showfiles.php?group_id=111957"/>
 		<changes label="Change Log" href="changes.html"/>
+		<todo label="To Do" href="todo.html"/>
 		<license label="License" href="http://www.gnu.org/licenses/lgpl.html"/>
 	</home>
 
