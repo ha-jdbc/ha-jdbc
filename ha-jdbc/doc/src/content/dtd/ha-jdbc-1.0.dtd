@@ -69,7 +69,7 @@
 <!ENTITY % jndi-info "name">
 <!ELEMENT name (#PCDATA)>
 
-<!ELEMENT database (driver, url, %authentication-info;)>
+<!ELEMENT database (driver?, url, %authentication-info;)>
 <!ATTLIST database id CDATA #REQUIRED>
 <!ELEMENT url (#PCDATA)>
 <!ELEMENT driver (#PCDATA)>

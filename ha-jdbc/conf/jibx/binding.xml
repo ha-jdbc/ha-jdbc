@@ -18,7 +18,7 @@
 	</mapping>
 	<mapping name="database" class="net.sf.hajdbc.DriverDatabase">
 		<value name="id" field="id" style="attribute"></value>
-		<value name="driver" field="driver"></value>
+		<value name="driver" field="driver" usage="optional"></value>
 		<value name="url" field="url"></value>
 		<value name="user" field="user" usage="optional"></value>
 		<value name="password" field="password" usage="optional"></value>
