@@ -198,4 +198,9 @@ public final class DriverProxy implements java.sql.Driver
 		
 		return (DriverPropertyInfo[]) databaseCluster.executeGet(operation);
 	}
+	
+	public DatabaseCluster getDatabaseCluster(String url)
+	{
+		return (DatabaseCluster) this.databaseClusterMap.get(url);
+	}
 }
