@@ -201,6 +201,45 @@
 								<code><![CDATA[</Configure>]]></code><br/>
 							</p>
 						</li>
+						<li><p><link href="http://jakarta.apache.org/tomcat">Tomcat</link> (using <link href="http://jakarta.apache.org/commons/dbcp">DBCP</link>)</p>
+							<p>
+								<code><![CDATA[<Resource name="jdbc/database" auth="Container" type="javax.sql.DataSource"/>]]></code><br/>
+								<code><![CDATA[<ResourceParams name="jdbc/database">]]></code><br/>
+								<code>&nbsp;&nbsp;<![CDATA[<parameter>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<name>factory</name>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<value>org.apache.commons.dbcp.BasicDataSourceFactory</value>]]></code><br/>
+								<code>&nbsp;&nbsp;<![CDATA[</parameter>]]></code><br/>
+								<code>&nbsp;&nbsp;<![CDATA[<parameter>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<name>maxActive</name>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<value>100</value>]]></code><br/>
+								<code>&nbsp;&nbsp;<![CDATA[</parameter>]]></code><br/>
+								<code>&nbsp;&nbsp;<![CDATA[<parameter>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<name>maxIdle</name>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<value>30</value>]]></code><br/>
+								<code>&nbsp;&nbsp;<![CDATA[</parameter>]]></code><br/>
+								<code>&nbsp;&nbsp;<![CDATA[<parameter>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<name>maxWait</name>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<value>10000</value>]]></code><br/>
+								<code>&nbsp;&nbsp;<![CDATA[</parameter>]]></code><br/>
+								<code>&nbsp;&nbsp;<![CDATA[<parameter>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<name>username</name>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<value>postgres</value>]]></code><br/>
+								<code>&nbsp;&nbsp;<![CDATA[</parameter>]]></code><br/>
+								<code>&nbsp;&nbsp;<![CDATA[<parameter>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<name>password</name>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<value>password</value>]]></code><br/>
+								<code>&nbsp;&nbsp;<![CDATA[</parameter>]]></code><br/>
+								<code>&nbsp;&nbsp;<![CDATA[<parameter>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<name>driverClassName</name>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<value>net.sf.ha.jdbc.DriverProxy</value>]]></code><br/>
+								<code>&nbsp;&nbsp;<![CDATA[</parameter>]]></code><br/>
+								<code>&nbsp;&nbsp;<![CDATA[<parameter>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<name>url</name>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<value>jdbc:ha-jdbc:cluster1</value>]]></code><br/>
+								<code>&nbsp;&nbsp;<![CDATA[</parameter>]]></code><br/>
+								<code><![CDATA[</ResourceParams>]]></code><br/>
+							</p>
+						</li>
 						<li><p>More server configuration examples coming soon...</p></li>
 					</ul>
 				</section>
