@@ -16,11 +16,16 @@ import java.util.Set;
  */
 public abstract class SQLProxy
 {
-	protected Map objectMap;
+	private Map objectMap;
 	
 	protected SQLProxy(Map objectMap)
 	{
 		this.objectMap = Collections.synchronizedMap(objectMap);
+	}
+	
+	public Object getObject(Database database)
+	{
+		return this.objectMap.get(database);
 	}
 	
 	public final Object executeRead(Operation operation) throws SQLException

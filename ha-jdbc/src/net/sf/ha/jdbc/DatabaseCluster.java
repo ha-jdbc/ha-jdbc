@@ -63,7 +63,7 @@ public class DatabaseCluster extends SQLProxy implements DatabaseEventListener
 		Connection connection = null;
 		PreparedStatement statement = null;
 		
-		Object object = this.objectMap.get(database);
+		Object object = this.getObject(database);
 		
 		try
 		{
