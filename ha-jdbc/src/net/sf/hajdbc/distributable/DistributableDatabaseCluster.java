@@ -32,6 +32,8 @@ import org.jgroups.Address;
 import org.jgroups.blocks.NotificationBus;
 
 /**
+ * Decorates an existing database cluster by providing distributable functionality.
+ * Broadcasts database activations and deactivations to other cluster instances on the network.
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
@@ -42,6 +44,12 @@ public class DistributableDatabaseCluster extends DatabaseClusterDecorator imple
 	
 	private NotificationBus notificationBus;
 	
+	/**
+	 * Constructs a new DistributableDatabaseCluster.
+	 * @param databaseCluster a database cluster to decorate
+	 * @param descriptor a descriptor of this database cluster
+	 * @throws Exception if database cluster could not be decorated
+	 */
 	public DistributableDatabaseCluster(DatabaseCluster databaseCluster, DistributableDatabaseClusterDescriptor descriptor) throws Exception
 	{
 		super(databaseCluster);
@@ -51,6 +59,9 @@ public class DistributableDatabaseCluster extends DatabaseClusterDecorator imple
 		this.notificationBus.start();
 	}
 
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#deactivate(net.sf.hajdbc.Database)
+	 */
 	public boolean deactivate(Database database)
 	{
 		boolean deactivated = this.databaseCluster.deactivate(database);
@@ -63,6 +74,9 @@ public class DistributableDatabaseCluster extends DatabaseClusterDecorator imple
 		return deactivated;
 	}
 
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#activate(net.sf.hajdbc.Database)
+	 */
 	public boolean activate(Database database)
 	{
 		boolean activated = this.databaseCluster.activate(database);

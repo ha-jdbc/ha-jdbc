@@ -24,6 +24,7 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterDecoratorDescriptor;
 
 /**
+ * Describes a distributable database cluster. 
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
