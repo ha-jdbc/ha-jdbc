@@ -47,7 +47,7 @@ public class DatabaseClusterManagerFactory
 	
 	private static DatabaseClusterManager databaseClusterManager = null;
 	
-	public static synchronized DatabaseClusterManager getClusterManager() throws SQLException
+	public static synchronized DatabaseClusterManager getDatabaseClusterManager() throws SQLException
 	{
 		if (databaseClusterManager == null)
 		{

@@ -49,14 +49,14 @@ public abstract class SQLProxy
 		return this.sqlObjectMap.get(database);
 	}
 	
-	public final Object firstValue(Map returnValueMap)
+	public final Object firstValue(Map valueMap)
 	{
-		return returnValueMap.values().iterator().next();
+		return valueMap.values().iterator().next();
 	}
 	
 	public final Object executeRead(Operation operation) throws java.sql.SQLException
 	{
-		Database database = this.getDatabaseCluster().getDescriptor().nextDatabase();
+		Database database = this.getDatabaseCluster().nextDatabase();
 		Object sqlObject = this.sqlObjectMap.get(database);
 		
 		try
@@ -74,7 +74,7 @@ public abstract class SQLProxy
 	
 	public final Object executeGet(Operation operation) throws java.sql.SQLException
 	{
-		Database database = this.getDatabaseCluster().getDescriptor().firstDatabase();
+		Database database = this.getDatabaseCluster().firstDatabase();
 		Object sqlObject = this.sqlObjectMap.get(database);
 		
 		return operation.execute(database, sqlObject);
@@ -82,7 +82,7 @@ public abstract class SQLProxy
 	
 	public final Map executeWrite(Operation operation) throws java.sql.SQLException
 	{
-		List databaseList = this.getDatabaseCluster().getDescriptor().getActiveDatabaseList();
+		List databaseList = this.getDatabaseCluster().getActiveDatabaseList();
 		Thread[] threads = new Thread[databaseList.size()];
 		
 		Map returnValueMap = new HashMap(threads.length);
@@ -122,7 +122,7 @@ public abstract class SQLProxy
 		{
 			if (exceptionMap.isEmpty())
 			{
-				throw new SQLException("No active databases in cluster " + this.getDatabaseCluster().getDescriptor());
+				throw new SQLException("No active databases in cluster " + this.getDatabaseCluster().getName());
 			}
 			
 			throw new SQLException((Throwable) exceptionMap.get(databaseList.get(0)));
@@ -149,7 +149,7 @@ public abstract class SQLProxy
 
 	public final Map executeSet(Operation operation) throws java.sql.SQLException
 	{
-		List databaseList = this.getDatabaseCluster().getDescriptor().getActiveDatabaseList();
+		List databaseList = this.getDatabaseCluster().getActiveDatabaseList();
 		Map returnValueMap = new HashMap(databaseList.size());
 
 		for (int i = 0; i < databaseList.size(); ++i)
@@ -181,7 +181,7 @@ public abstract class SQLProxy
 		
 		if (databaseCluster.deactivate(database))
 		{
-			log.error("Database " + database.getId() + " from cluster " + databaseCluster.getDescriptor().getName() + " was deactivated.", cause);
+			log.error("Database " + database.getId() + " from cluster " + databaseCluster.getName() + " was deactivated.", cause);
 		}
 	}
 	

@@ -20,13 +20,8 @@
  */
 package net.sf.hajdbc;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author  Paul Ferraro
@@ -37,7 +32,6 @@ public class DatabaseClusterDescriptor
 {
 	private String name;
 	private String validateSQL = "SELECT 1";
-	private Set activeDatabaseSet = new LinkedHashSet();
 	private Map databaseMap = new HashMap();
 	
 	/**
@@ -56,7 +50,6 @@ public class DatabaseClusterDescriptor
 	{
 		Database database = (Database) object;
 		this.databaseMap.put(database.getId(), database);
-		this.activeDatabaseSet.add(database);
 	}
 	
 	/**
@@ -68,97 +61,10 @@ public class DatabaseClusterDescriptor
 	}
 	
 	/**
-	 * @param name
-	 */
-	public void setName(String name)
-	{
-		this.name = name;
-	}
-	
-	/**
 	 * @return the SQL used to validate that a database is active
 	 */
 	public String getValidateSQL()
 	{
 		return this.validateSQL;
-	}
-	
-	/**
-	 * @param validateSQL
-	 */
-	public void setValidateSQL(String validateSQL)
-	{
-		this.validateSQL = validateSQL;
-	}
-	
-	/**
-	 * Returns the first database in the cluster
-	 * @return the first database in the cluster
-	 * @throws SQLException
-	 */
-	public Database firstDatabase() throws SQLException
-	{
-		synchronized (this.activeDatabaseSet)
-		{
-			if (this.activeDatabaseSet.size() == 0)
-			{
-				throw new SQLException("No active databases in cluster");
-			}
-			
-			return (Database) this.activeDatabaseSet.iterator().next();
-		}
-	}
-	
-	/**
-	 * Returns the next database in the cluster
-	 * @return the next database in the cluster
-	 * @throws SQLException
-	 */
-	public Database nextDatabase() throws SQLException
-	{
-		synchronized (this.activeDatabaseSet)
-		{
-			Database database = this.firstDatabase();
-			
-			if (this.activeDatabaseSet.size() > 1)
-			{
-				this.activeDatabaseSet.remove(database);
-				
-				this.activeDatabaseSet.add(database);
-			}
-			
-			return database;
-		}
-	}
-
-	/**
-	 * A list of active databases in this cluster
-	 * @return a list of Database objects
-	 * @throws SQLException
-	 */
-	public List getActiveDatabaseList() throws SQLException
-	{
-		synchronized (this.activeDatabaseSet)
-		{
-			if (this.activeDatabaseSet.size() == 0)
-			{
-				throw new SQLException("No active databases in cluster");
-			}
-			
-			return new ArrayList(this.activeDatabaseSet);
-		}
-	}
-	
-	/**
-	 * Removes the specified database from the set active databases
-	 * @param database the database to remove
-	 * @return true if the database was removed successfully, false if it has already been removed
-	 */
-	public boolean removeDatabase(Database database)
-	{
-		synchronized (this.activeDatabaseSet)
-		{
-			return this.activeDatabaseSet.remove(database);
-		}
 	}
 }

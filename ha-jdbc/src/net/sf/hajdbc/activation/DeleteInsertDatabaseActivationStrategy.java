@@ -64,7 +64,7 @@ public class DeleteInsertDatabaseActivationStrategy implements DatabaseActivatio
 		
 		try
 		{
-			Database activeDatabase = databaseCluster.getDescriptor().firstDatabase();
+			Database activeDatabase = databaseCluster.nextDatabase();
 			
 			inactiveConnection = database.connect(databaseCluster.getSQLObject(database));
 			inactiveConnection.setAutoCommit(false);

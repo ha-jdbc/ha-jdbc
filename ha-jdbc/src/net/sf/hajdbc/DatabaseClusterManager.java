@@ -32,6 +32,4 @@ public interface DatabaseClusterManager
 	public DatabaseClusterDescriptor getDescriptor(String name);
 	
 	public Set getClusterSet(Class databaseClass);
-	
-	public boolean deactivate(String clusterName, Database database);
 }

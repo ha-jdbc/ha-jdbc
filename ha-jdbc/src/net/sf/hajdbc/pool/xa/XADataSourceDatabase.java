@@ -38,9 +38,9 @@ public class XADataSourceDatabase extends ConnectionPoolDataSourceDatabase
 	/**
 	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
 	 */
-	public Connection connect(Object sqlObject) throws SQLException
+	public Connection connect(Object databaseConnector) throws SQLException
 	{
-		XADataSource dataSource = (XADataSource) sqlObject;
+		XADataSource dataSource = (XADataSource) databaseConnector;
 		XAConnection connection = (this.user != null) ? dataSource.getXAConnection(this.user, this.password) : dataSource.getXAConnection();
 		
 		return this.getConnection(connection);

@@ -56,7 +56,7 @@ public class DistributableDatabaseClusterManager extends LocalDatabaseClusterMan
 	
 	public boolean deactivate(DatabaseCluster databaseCluster, Database database)
 	{
-		String clusterName = databaseCluster.getDescriptor().getName();
+		String clusterName = databaseCluster.getName();
 		
 		boolean deativated = super.deactivate(clusterName, database);
 		

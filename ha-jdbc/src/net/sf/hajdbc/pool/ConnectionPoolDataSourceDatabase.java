@@ -38,9 +38,9 @@ public class ConnectionPoolDataSourceDatabase extends DataSourceDatabase
 	/**
 	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
 	 */
-	public Connection connect(Object sqlObject) throws SQLException
+	public Connection connect(Object databaseConnector) throws SQLException
 	{
-		ConnectionPoolDataSource dataSource = (ConnectionPoolDataSource) sqlObject;
+		ConnectionPoolDataSource dataSource = (ConnectionPoolDataSource) databaseConnector;
 		PooledConnection connection = (this.user != null) ? dataSource.getPooledConnection(this.user, this.password) : dataSource.getPooledConnection();
 		
 		return this.getConnection(connection);
