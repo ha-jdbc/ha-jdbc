@@ -24,9 +24,11 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -237,4 +239,6 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	public abstract DatabaseClusterDescriptor getDescriptor();
 	
 	public abstract Database getDatabase(String databaseId) throws java.sql.SQLException;
+	
+	public abstract Set getNewDatabaseSet(Collection databases);
 }

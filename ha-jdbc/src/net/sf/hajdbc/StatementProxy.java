@@ -25,7 +25,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
-import java.util.Map;
 
 /**
  * @author  Paul Ferraro
@@ -35,15 +34,15 @@ import java.util.Map;
 public class StatementProxy extends SQLProxy implements Statement
 {
 	protected ConnectionProxy connection;
-
+	
 	/**
 	 * Constructs a new StatementProxy.
 	 * @param connection
 	 * @param statementMap
 	 */
-	public StatementProxy(ConnectionProxy connection, Map statementMap)
+	public StatementProxy(ConnectionProxy connection, ConnectionOperation operation) throws java.sql.SQLException
 	{
-		super(statementMap);
+		super(connection.executeWrite(operation));
 		
 		this.connection = connection;
 	}

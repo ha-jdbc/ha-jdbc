@@ -112,7 +112,7 @@ public final class Driver implements java.sql.Driver
 			}
 		};
 		
-		return new ConnectionProxy(connectionFactory, connectionFactory.executeWrite(operation));
+		return new ConnectionProxy(connectionFactory, operation);
 	}
 	
 	/**

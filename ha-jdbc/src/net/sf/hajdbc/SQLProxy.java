@@ -22,8 +22,10 @@ package net.sf.hajdbc;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,7 +39,18 @@ public abstract class SQLProxy
 {
 	private static Log log = LogFactory.getLog(SQLProxy.class);
 	
+	private SQLProxy parentSQLObject;
+	private Operation parentOperation;
 	private Map sqlObjectMap;
+	private List operationList = new LinkedList();
+	
+	protected SQLProxy(SQLProxy sqlObject, Operation operation) throws java.sql.SQLException
+	{
+		this(sqlObject.executeWrite(operation));
+		
+		this.parentOperation = operation;
+		this.parentSQLObject = sqlObject;
+	}
 	
 	protected SQLProxy(Map sqlObjectMap)
 	{
@@ -46,7 +59,40 @@ public abstract class SQLProxy
 	
 	public Object getSQLObject(Database database)
 	{
-		return this.sqlObjectMap.get(database);
+		synchronized (this.sqlObjectMap)
+		{
+			Object sqlObject = this.sqlObjectMap.get(database);
+			
+			if ((sqlObject == null) && (this.parentSQLObject != null))
+			{
+				try
+				{
+					sqlObject = this.parentOperation.execute(database, this.parentSQLObject);
+					
+					Iterator operations = this.operationList.iterator();
+					
+					while (operations.hasNext())
+					{
+						Operation operation = (Operation) operations.next();
+						
+						operation.execute(database, sqlObject);
+					}
+					
+					this.sqlObjectMap.put(database, sqlObject);
+				}
+				catch (java.sql.SQLException e)
+				{
+					log.warn("");
+				}
+			}
+			
+			return sqlObject;
+		}
+	}
+	
+	protected void record(Operation operation)
+	{
+		this.operationList.add(operation);
 	}
 	
 	public final Object firstValue(Map valueMap)
@@ -58,6 +104,13 @@ public abstract class SQLProxy
 	{
 		Database database = this.getDatabaseCluster().nextDatabase();
 		Object sqlObject = this.getSQLObject(database);
+		
+		if (sqlObject == null)
+		{
+			this.deactivate(database);
+			
+			return this.executeRead(operation);
+		}
 		
 		try
 		{
@@ -77,6 +130,13 @@ public abstract class SQLProxy
 		Database database = this.getDatabaseCluster().firstDatabase();
 		Object sqlObject = this.getSQLObject(database);
 		
+		if (sqlObject == null)
+		{
+			this.deactivate(database);
+			
+			return this.executeGet(operation);
+		}
+		
 		return operation.execute(database, sqlObject);
 	}
 	
@@ -93,6 +153,13 @@ public abstract class SQLProxy
 			Database database = (Database) databaseList.get(i);
 			Object sqlObject = this.getSQLObject(database);
 			
+			if (sqlObject == null)
+			{
+				this.deactivate(database);
+				
+				continue;
+			}
+			
 			Executor executor = new Executor(operation, database, sqlObject, returnValueMap, exceptionMap);
 			
 			threads[i] = new Thread(executor);
@@ -104,7 +171,7 @@ public abstract class SQLProxy
 		{
 			Thread thread = threads[i];
 			
-			if (thread.isAlive())
+			if ((thread != null) && thread.isAlive())
 			{
 				try
 				{
@@ -117,6 +184,20 @@ public abstract class SQLProxy
 			}
 		}
 
+		Set databaseSet = this.getDatabaseCluster().getNewDatabaseSet(databaseList);
+		
+		if (!databaseSet.isEmpty())
+		{
+			Iterator databases = databaseSet.iterator();
+			
+			while (databases.hasNext())
+			{
+				Database database = (Database) databases.next();
+				
+				this.deactivate(database);
+			}
+		}
+		
 		// If no databases returned successfully, return an exception back to the caller
 		if (returnValueMap.isEmpty())
 		{
@@ -157,9 +238,30 @@ public abstract class SQLProxy
 			Database database = (Database) databaseList.get(i);
 			Object sqlObject = this.getSQLObject(database);
 			
+			if (sqlObject == null)
+			{
+				this.deactivate(database);
+				
+				continue;
+			}
+			
 			Object returnValue = operation.execute(database, sqlObject);
 			
 			returnValueMap.put(database, returnValue);
+		}
+
+		Set databaseSet = this.getDatabaseCluster().getNewDatabaseSet(databaseList);
+		
+		if (!databaseSet.isEmpty())
+		{
+			Iterator databases = databaseSet.iterator();
+			
+			while (databases.hasNext())
+			{
+				Database database = (Database) databases.next();
+				
+				this.deactivate(database);
+			}
 		}
 		
 		return returnValueMap;
@@ -173,6 +275,11 @@ public abstract class SQLProxy
 		}
 		
 		this.deactivate(database, exception);
+	}
+
+	private void deactivate(Database database)
+	{
+		this.deactivate(database, new SQLException("Database was not active at the time " + this.getClass().getName() + " was created"));
 	}
 	
 	protected final void deactivate(Database database, Throwable cause)

@@ -41,7 +41,6 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
-import java.util.Map;
 
 /**
  * @author  Paul Ferraro
@@ -55,9 +54,9 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	 * @param connection
 	 * @param statementMap
 	 */
-	public PreparedStatementProxy(ConnectionProxy connection, Map statementMap)
+	public PreparedStatementProxy(ConnectionProxy connection, ConnectionOperation operation) throws java.sql.SQLException
 	{
-		super(connection, statementMap);
+		super(connection, operation);
 	}
 	
 	/**

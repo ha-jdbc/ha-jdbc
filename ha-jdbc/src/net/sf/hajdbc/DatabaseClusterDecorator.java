@@ -20,7 +20,9 @@
  */
 package net.sf.hajdbc;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author  Paul Ferraro
@@ -95,5 +97,10 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 	public final Database getDatabase(String databaseId) throws java.sql.SQLException
 	{
 		return this.databaseCluster.getDatabase(databaseId);
+	}
+	
+	public final Set getNewDatabaseSet(Collection databases)
+	{
+		return this.databaseCluster.getNewDatabaseSet(databases);
 	}
 }

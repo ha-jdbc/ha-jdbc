@@ -52,9 +52,9 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	 * @param connection
 	 * @param statementMap
 	 */
-	public CallableStatementProxy(ConnectionProxy connection, Map statementMap)
+	public CallableStatementProxy(ConnectionProxy connection, ConnectionOperation operation) throws java.sql.SQLException
 	{
-		super(connection, statementMap);
+		super(connection, operation);
 	}
 	
 	/**

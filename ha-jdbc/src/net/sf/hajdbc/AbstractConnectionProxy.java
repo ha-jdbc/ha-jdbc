@@ -20,7 +20,6 @@
  */
 package net.sf.hajdbc;
 
-import java.util.Map;
 
 /**
  * @author  Paul Ferraro
@@ -36,9 +35,9 @@ public abstract class AbstractConnectionProxy extends SQLProxy
 	 * @param databaseCluster
 	 * @param connectionMap
 	 */
-	protected AbstractConnectionProxy(ConnectionFactoryProxy connectionFactory, Map connectionMap)
+	protected AbstractConnectionProxy(ConnectionFactoryProxy connectionFactory, Operation operation) throws java.sql.SQLException
 	{
-		super(connectionMap);
+		super(connectionFactory.executeWrite(operation));
 		
 		this.connectionFactory = connectionFactory;
 	}
@@ -50,23 +49,4 @@ public abstract class AbstractConnectionProxy extends SQLProxy
 	{
 		return this.connectionFactory.getDatabaseCluster();
 	}
-	
-	/**
-	 * @see net.sf.hajdbc.SQLProxy#getSQLObject(net.sf.hajdbc.Database)
-	 */
-/*	
-	public Object getSQLObject(Database database)
-	{
-		Object connection = super.getSQLObject(database);
-		
-		if (connection == null)
-		{
-			connection = this.getConnection(database);
-		}
-		
-		return connection;
-	}
-*/
-	
-	protected abstract Object getConnection(Database database) throws java.sql.SQLException;
 }

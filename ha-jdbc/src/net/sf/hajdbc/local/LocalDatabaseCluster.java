@@ -23,7 +23,9 @@ package net.sf.hajdbc.local;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -215,19 +217,6 @@ public class LocalDatabaseCluster extends DatabaseCluster
 			return new ArrayList(this.activeDatabaseSet);
 		}
 	}
-
-	public String[] getActiveDatabases() throws SQLException
-	{
-		List databaseList = this.getActiveDatabaseList();
-		String[] databases = new String[databaseList.size()];
-		
-		for (int i = 0; i < databaseList.size(); ++i)
-		{
-			databases[i] = ((Database) databaseList.get(i)).getId();
-		}
-		
-		return databases;
-	}
 	
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getDatabase(java.lang.String)
@@ -272,5 +261,19 @@ public class LocalDatabaseCluster extends DatabaseCluster
 		{
 			return this.activeDatabaseSet.contains(database);
 		}
+	}
+	
+	public Set getNewDatabaseSet(Collection databases)
+	{
+		Set databaseSet = null;
+		
+		synchronized (this.activeDatabaseSet)
+		{
+			databaseSet = new HashSet(this.activeDatabaseSet);
+		}
+		
+		databaseSet.removeAll(databases);
+		
+		return databaseSet;
 	}
 }

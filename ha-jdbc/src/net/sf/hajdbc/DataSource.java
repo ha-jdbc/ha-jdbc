@@ -111,7 +111,7 @@ public class DataSource extends AbstractDataSource implements javax.sql.DataSour
 			}
 		};
 		
-		return new ConnectionProxy(this.connectionFactory, this.connectionFactory.executeWrite(operation));
+		return new ConnectionProxy(this.connectionFactory, operation);
 	}
 
 	/**
@@ -127,7 +127,7 @@ public class DataSource extends AbstractDataSource implements javax.sql.DataSour
 			}
 		};
 		
-		return new ConnectionProxy(this.connectionFactory, this.connectionFactory.executeWrite(operation));
+		return new ConnectionProxy(this.connectionFactory, operation);
 	}
 
 	/**
