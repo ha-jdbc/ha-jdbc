@@ -64,12 +64,12 @@
 		</jar>
     </target>
 
-	<target name="dist" depends="jar">
+	<target name="dist" depends="jar, site">
 		<tar tarfile="${dist.file}" compression="gzip">
 			<tarfileset dir="${basedir}" includes="${dist.version.name}.jar"></tarfileset>
 			<tarfileset dir="${basedir}" includes="*.txt"></tarfileset>
 			<tarfileset dir="${basedir}" includes="lib/**" excludes="lib/compile/**"></tarfileset>
-			<tarfileset dir="${basedir}" includes="conf/**" excludes="conf/jibx/**"></tarfileset>
+			<tarfileset dir="${basedir}/doc/build" includes="site/**"></tarfileset>
 		</tar>
 	</target>
 	
@@ -80,6 +80,10 @@
 			<tarfileset dir="${basedir}" includes="src/**"></tarfileset>
 			<tarfileset dir="${basedir}" includes="lib/**"></tarfileset>
 			<tarfileset dir="${basedir}" includes="conf/**"></tarfileset>
+			<tarfileset dir="${basedir}" includes="doc/**">
+				<exclude name="doc/build/**"></exclude>
+				<exclude name="doc/src/content/api/**"></exclude>
+			</tarfileset>
 		</tar>
 	</target>
 	
