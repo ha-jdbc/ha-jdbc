@@ -20,9 +20,13 @@
  */
 package net.sf.hajdbc.balancer;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
-import java.util.TreeMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import net.sf.hajdbc.Database;
 
@@ -32,7 +36,35 @@ import net.sf.hajdbc.Database;
  */
 public class LoadBalancer extends AbstractBalancer
 {
-	TreeMap databaseMap = new TreeMap(new LoadBalancerComparator());
+	private static Comparator comparator = new Comparator()
+	{
+		public int compare(Object object1, Object object2)
+		{
+			Map.Entry databaseMapEntry1 = (Map.Entry) object1;
+			Map.Entry databaseMapEntry2 = (Map.Entry) object2;
+			
+			Database database1 = (Database) databaseMapEntry1.getKey();
+			Database database2 = (Database) databaseMapEntry2.getKey();
+
+			Integer load1 = (Integer) databaseMapEntry1.getValue();
+			Integer load2 = (Integer) databaseMapEntry2.getValue();
+			
+			int weight1 = database1.getWeight().intValue();
+			int weight2 = database2.getWeight().intValue();
+			
+			if (weight1 == weight2)
+			{
+				return load1.compareTo(load2);
+			}
+			
+			float weightedLoad1 = (weight1 != 0) ? (load1.floatValue() / weight1) : Float.POSITIVE_INFINITY;
+			float weightedLoad2 = (weight2 != 0) ? (load2.floatValue() / weight2) : Float.POSITIVE_INFINITY;
+			
+			return Float.compare(weightedLoad1, weightedLoad2);
+		}
+	};
+	
+	private Map databaseMap = new HashMap();
 	
 	/**
 	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
@@ -58,19 +90,22 @@ public class LoadBalancer extends AbstractBalancer
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Balancer#first()
-	 */
-	public synchronized Database first()
-	{
-		return (Database) this.databaseMap.firstKey();
-	}
-	
-	/**
 	 * @see net.sf.hajdbc.Balancer#next()
 	 */
 	public synchronized Database next()
 	{
-		return this.first();
+		if (this.databaseMap.size() <= 1)
+		{
+			return this.first();
+		}
+		
+		List databaseList = new ArrayList(this.databaseMap.entrySet());
+		
+		Collections.sort(databaseList, comparator);
+		
+		Map.Entry mapEntry = (Map.Entry) databaseList.get(0);
+		
+		return (Database) mapEntry.getKey();
 	}
 	
 	/**
@@ -94,33 +129,5 @@ public class LoadBalancer extends AbstractBalancer
 		Integer load = (Integer) this.databaseMap.remove(database);
 
 		this.databaseMap.put(database, new Integer(load.intValue() + increment));
-	}
-	
-	private class LoadBalancerComparator implements Comparator
-	{
-		/**
-		 * @see java.util.Comparator#compare(Object, Object)
-		 */
-		public int compare(Object object1, Object object2)
-		{
-			Database database1 = (Database) object1;
-			Database database2 = (Database) object2;
-
-			Integer load1 = (Integer) LoadBalancer.this.databaseMap.get(database1);
-			Integer load2 = (Integer) LoadBalancer.this.databaseMap.get(database2);
-			
-			int weight1 = database1.getWeight().intValue();
-			int weight2 = database2.getWeight().intValue();
-			
-			if (weight1 == weight2)
-			{
-				return load1.compareTo(load2);
-			}
-			
-			float weightedLoad1 = (weight1 != 0) ? (load1.floatValue() / weight1) : Float.POSITIVE_INFINITY;
-			float weightedLoad2 = (weight2 != 0) ? (load2.floatValue() / weight2) : Float.POSITIVE_INFINITY;
-			
-			return Float.compare(weightedLoad1, weightedLoad2);
-		}
 	}
 }
