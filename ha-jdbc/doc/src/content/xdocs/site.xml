@@ -25,6 +25,7 @@ See http://xml.apache.org/forrest/linking.html for more info
 
 	<mail label="HA-Mail" tab="ha-mail">
 		<documentation label="Documentation" href="mail.html"/>
+		<api label="JavaDoc" href="api/index.html"/>
 		<project label="Project Page" href="http://www.sourceforge.net/projects/ha-jdbc"/>
 		<download label="Downloads" href="http://sourceforge.net/project/showfiles.php?group_id=111957"/>
 		<list label="Mailing List" href="http://sourceforge.net/mail/?group_id=111957"/>
