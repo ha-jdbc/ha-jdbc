@@ -33,7 +33,7 @@ public abstract class AbstractDataSourceProxy implements Referenceable
 	{
         Reference ref = new Reference(this.getClass().getName(), this.getObjectFactoryClass().getName(), null);
         
-        ref.add(new StringRefAddr(AbstractDataSourceFactory.CLUSTER_NAME, this.databaseCluster.getName()));
+        ref.add(new StringRefAddr(AbstractDataSourceFactory.CLUSTER_NAME, this.databaseCluster.getDescriptor().getName()));
         
         return ref;
 	}

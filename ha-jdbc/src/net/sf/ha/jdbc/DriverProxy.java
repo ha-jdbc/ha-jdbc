@@ -95,7 +95,7 @@ public final class DriverProxy implements java.sql.Driver
 				}
 			}
 			
-			DatabaseCluster databaseCluster = new DatabaseCluster(clusterName, Collections.synchronizedMap(driverMap), descriptor.getValidateSQL());
+			DatabaseCluster databaseCluster = new DatabaseCluster(descriptor, Collections.synchronizedMap(driverMap));
 			
 			databaseClusterMap.put(clusterName, databaseCluster);
 		}

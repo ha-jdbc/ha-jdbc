@@ -63,7 +63,7 @@ public abstract class AbstractDataSourceFactory implements ObjectFactory
 			dataSourceMap.put(database, object);
 		}
 		
-		dataSource.setDatabaseCluster(new DatabaseCluster(clusterName, Collections.synchronizedMap(dataSourceMap), descriptor.getValidateSQL()));
+		dataSource.setDatabaseCluster(new DatabaseCluster(descriptor, Collections.synchronizedMap(dataSourceMap)));
 		
 		return dataSource;
 	}

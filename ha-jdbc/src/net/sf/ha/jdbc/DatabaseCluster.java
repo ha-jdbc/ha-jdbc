@@ -13,8 +13,7 @@ import java.util.Map;
  */
 public class DatabaseCluster extends SQLProxy implements DatabaseEventListener
 {
-	private String name;
-	private String validateSQL;
+	private DatabaseClusterDescriptor descriptor;
 	
 	/**
 	 * Constructs a new DatabaseCluster.
@@ -22,28 +21,11 @@ public class DatabaseCluster extends SQLProxy implements DatabaseEventListener
 	 * @param databaseMap
 	 * @param validateSQL
 	 */
-	protected DatabaseCluster(String name, Map databaseMap, String validateSQL)
+	protected DatabaseCluster(DatabaseClusterDescriptor descriptor, Map databaseMap)
 	{
 		super(databaseMap);
 		
-		this.name = name;
-		this.validateSQL = validateSQL;
-	}
-	
-	/**
-	 * @return
-	 */
-	public String getName()
-	{
-		return this.name;
-	}
-
-	/**
-	 * @return
-	 */
-	public String getValidateSQL()
-	{
-		return this.validateSQL;
+		this.descriptor = descriptor;
 	}
 	
 	/**
@@ -52,6 +34,11 @@ public class DatabaseCluster extends SQLProxy implements DatabaseEventListener
 	protected DatabaseCluster getDatabaseCluster()
 	{
 		return this;
+	}
+	
+	public DatabaseClusterDescriptor getDescriptor()
+	{
+		return this.descriptor;
 	}
 	
 	/**
@@ -69,7 +56,7 @@ public class DatabaseCluster extends SQLProxy implements DatabaseEventListener
 		{
 			connection = database.connect(object);
 			
-			statement = connection.prepareStatement(this.validateSQL);
+			statement = connection.prepareStatement(this.descriptor.getValidateSQL());
 			
 			statement.executeQuery();
 			
