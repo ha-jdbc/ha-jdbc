@@ -8,8 +8,11 @@
 	<property name="lib.dir" location="${basedir}/lib"></property>
 	<property name="lib.compile.dir" location="${lib.dir}/compile"></property>
 	<property name="conf.dir" location="${basedir}/conf"></property>
-	<property name="jibx.conf.dir" location="${conf.dir}/jibx"></property>
+	<property name="conf.jibx.dir" location="${conf.dir}/jibx"></property>
 	<property name="jar.file" location="${basedir}/${ant.project.name}.jar"></property>
+	<property name="dist.dir" location="${basedir}/dist"></property>
+	<property name="dist.src.file" location="${basedir}/${ant.project.name}-src.tar.gz"></property>
+	<property name="dist.bin.file" location="${basedir}/${ant.project.name}-bin.tar.gz"></property>
 
 	<path id="classpath">
 		<dirset dir="${build.dir}"></dirset>
@@ -33,6 +36,8 @@
 	<target name="clean">
 		<delete dir="build" quiet="true"></delete>
 		<delete file="${jar.file}" quiet="true"></delete>
+		<delete file="${dist.bin.file}" quiet="true"></delete>
+		<delete file="${dist.src.file}" quiet="true"></delete>
 	</target>
 	
 	<target name="init">
@@ -45,7 +50,7 @@
 
     <target name="bind" depends="compile">
 		<bind verbose="true" load="true">
-			<bindingfileset dir="${jibx.conf.dir}" includes="*.xml"/>
+			<bindingfileset dir="${conf.jibx.dir}" includes="*.xml"/>
 			<classpath refid="classpath"></classpath>
 		</bind> 
     </target>
@@ -56,6 +61,20 @@
 		</jar>
     </target>
 
+	<target name="dist" depends="jar">
+		<tar tarfile="${dist.bin.file}" compression="gzip">
+			<tarfileset dir="${basedir}" includes="*.jar"></tarfileset>
+			<tarfileset dir="${basedir}" includes="lib/**" excludes="lib/compile/**"></tarfileset>
+			<tarfileset dir="${basedir}" includes="conf/**" excludes="conf/jibx/**"></tarfileset>
+		</tar>
+		<tar tarfile="${dist.src.file}" compression="gzip">
+			<tarfileset dir="${basedir}" includes="build.xml"></tarfileset>
+			<tarfileset dir="${basedir}" includes="src/**"></tarfileset>
+			<tarfileset dir="${basedir}" includes="lib/**"></tarfileset>
+			<tarfileset dir="${basedir}" includes="conf/**"></tarfileset>
+		</tar>
+	</target>
+	
 	<target name="javadoc">
 		<delete dir="${doc.api.dir}" quiet="true"></delete>
 		<javadoc destdir="${doc.api.dir}" classpathref="classpath">
