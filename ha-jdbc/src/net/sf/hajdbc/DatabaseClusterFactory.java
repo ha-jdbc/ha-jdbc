@@ -117,7 +117,7 @@ public final class DatabaseClusterFactory
 					databaseCluster = decoratorDescriptor.decorate(databaseCluster);
 				}
 				
-				server.registerMBean(databaseCluster, ObjectName.getInstance("net.sf.hajdbc", "id", ObjectName.quote(databaseCluster.getName())));
+				server.registerMBean(databaseCluster, ObjectName.getInstance("net.sf.hajdbc", "cluster", ObjectName.quote(databaseCluster.getName())));
 				
 				this.databaseClusterMap.put(descriptor.getName(), databaseCluster);
 			}
