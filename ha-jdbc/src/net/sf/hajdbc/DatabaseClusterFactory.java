@@ -129,7 +129,11 @@ public final class DatabaseClusterFactory
 		}
 		catch (Exception e)
 		{
-			throw new SQLException("Failed to configure HA-JDBC using " + resourceURL, e);
+			SQLException exception = new SQLException("Failed to configure HA-JDBC using " + resourceURL, e);
+			
+			log.warn(exception.getMessage(), e);
+			
+			throw exception;
 		}
 		finally
 		{
