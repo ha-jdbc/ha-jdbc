@@ -58,6 +58,26 @@
       <password>password</password>
     </datasource>
   </cluster>
+  <cluster name="java:comp/env/jdbc/PoolCluster">
+    <pool-datasource name="java:comp/env/jdbc/Database1">
+      <user>postgres</user>
+      <password>password</password>
+    </pool-datasource>
+    <pool-datasource name="java:comp/env/jdbc/Database2">
+      <user>postgres</user>
+      <password>password</password>
+    </pool-datasource>
+  </cluster>
+  <cluster name="java:comp/env/jdbc/XACluster">
+    <xa-datasource name="java:comp/env/jdbc/Database1">
+      <user>postgres</user>
+      <password>password</password>
+    </xa-datasource>
+    <xa-datasource name="java:comp/env/jdbc/Database2">
+      <user>postgres</user>
+      <password>password</password>
+    </xa-datasource>
+  </cluster>
 </ha-jdbc>
 ]]></source>
 				<p>
@@ -85,63 +105,6 @@
 			</section>
 			<section>
 				<title>Application Configuration</title>
-				<section>
-					<title>DriverManager-based access</title>
-					<ol>
-						<li>
-							<p>
-								Just like your database's JDBC driver, the HA-JDBC driver must first be loaded.
-								This can be accomplished in one of two ways:
-							</p>
-							<ul>
-								<li>
-									<p>Add <code>net.sf.hajdbc.Driver</code> to your <code>jdbc.drivers</code> system property.</p>
-								</li>
-								<li>
-									<p>
-										Explicity load the <code>net.sf.hajdbc.Driver</code> class using <code>Class.forName(...)</code>.
-									</p>
-									<p>
-										Per the JDBC specification, loading the HA-JDBC driver class automatically registers the driver with the <code>DriverManager</code>.
-										The HA-JDBC driver will automatically load all underlying JDBC drivers defined within a given cluster.
-										This means that you do not need to perform an additional <code>Class.forName(...)</code> to load your database's driver.
-									</p>
-								</li>
-							</ul>
-						</li>
-						<li>
-							<p>The URL to use in subsequent calls to <code>DriverManager.connect(...)</code> should use the name of your cluster.  Database clusters should be named using the following convention:</p>
-							<p><code>jdbc:ha-jdbc:</code><em>cluster-name</em></p>
-							<p>e.g.</p>
-							<source><![CDATA[
-Connection connection = DriverManager.connect("jdbc:ha-jdbc:cluster", "postgres", "password");
-]]></source>
-						</li>
-					</ol>
-				</section>
-				<section>
-					<title>DataSource-based access</title>
-					<ol>
-						<li>
-							<p>If your server is configured to use a DataSource implementation provided by your JDBC driver, then add an HA-JDBC DataSource using the appropriate class name to your server configuration along side your existing JDBC DataSources:</p>
-							<ul>
-								<li><code>net.sf.hajdbc.DataSourceProxy</code></li>
-								<li><code>net.sf.hajdbc.pool.ConnectionPoolDataSourceProxy</code></li>
-								<li><code>net.sf.hajdbc.pool.xa.XADataSourceProxy</code></li>
-							</ul>
-							<p>Use the JNDI name configured in your cluster configuration file to access the HA-JDBC DataSource.</p>
-							<p>e.g.</p>
-							<source><![CDATA[
-Context context = new InitialContext();
-DataSource dataSource = (DataSource) context.lookup("java:comp/env/jdbc/Cluster");
-Connection connection = dataSource.getConnection("postgres", "password");
-]]></source>
-						</li>
-						<li>
-							<p>If your server is configured to use a DataSource implementation <em>NOT</em> provided by your JDBC driver, then replace the Driver class name, URL, and username/password values in the existing DataSource definition with the HA-JDBC values as described in the "DriverManager-based access" section.</p>
-						</li>
-					</ol>
-				</section>
 				<section>
 					<title>Server configuration examples</title>
 					<ul>
@@ -299,6 +262,51 @@ Connection connection = dataSource.getConnection("postgres", "password");
 </cluster>
 ]]></source>
 			</section>
+		</section>
+		<section>
+			<title>Using HA-JDBC</title>
+			<section>
+				<title>DriverManager-based Access</title>
+				<p>
+					Just like your database's JDBC driver, the HA-JDBC driver must first be loaded.
+					This can be accomplished in one of two ways:
+				</p>
+				<ul>
+					<li>
+						<p>Add <code>net.sf.hajdbc.Driver</code> to your <code>jdbc.drivers</code> system property.</p>
+						<p>The JVM will automatically load and register each driver upon startup.</p>
+					</li>
+					<li>
+						<p>
+							Explicity load the <code>net.sf.hajdbc.Driver</code> class using <code>Class.forName(...)</code>.
+						</p>
+						<p>
+							Per the JDBC specification, loading the HA-JDBC driver class automatically registers the driver with the <code>DriverManager</code>.
+							The HA-JDBC driver will automatically load all underlying JDBC drivers defined within a given cluster.
+							This means that you do not need to perform an additional <code>Class.forName(...)</code> to load your database's driver.
+						</p>
+					</li>
+				</ul>
+				<p>
+					The URL to use in subsequent calls to <code>DriverManager.connect(...)</code> should use the name of your cluster.
+					Database clusters will be named using the following convention:
+				</p>
+				<p><code>jdbc:ha-jdbc:</code><em>cluster-name</em></p>
+				<p>e.g.</p>
+				<source><![CDATA[
+Connection connection = DriverManager.connect("jdbc:ha-jdbc:cluster", "postgres", "password");
+]]></source>
+			</section>
+			<section>
+				<title>DataSource-based Access</title>
+				<p>Use the JNDI name configured in your cluster configuration file to access the HA-JDBC DataSource.</p>
+				<p>e.g.</p>
+				<source><![CDATA[
+Context context = new InitialContext();
+DataSource dataSource = (DataSource) context.lookup("java:comp/env/jdbc/Cluster");
+Connection connection = dataSource.getConnection("postgres", "password");
+]]></source>
+			</section>
 			<section>
 				<title>Advanced JDBC Features</title>
 				<section>
@@ -321,15 +329,43 @@ rs.close();
 				</section>
 			</section>
 			<section>
-				<title>Integration with O/R Mapping Frameworks</title>
+				<title>Failed Database Nodes</title>
+				<p>A database node may fail for any number of reasons:</p>
+				<ul>
+					<li>Hardware failure</li>
+					<li>Operating System crash</li>
+					<li>Database application crash</li>
+					<li>Out of disk space</li>
+					<li>No more free connections</li>
+					<li>etc.</li>
+				</ul>
 				<p>
-					Coming soon...
+					Failed database nodes are detected after an SQLException is thrown when executing a given database operation.
+					A database is determined to have failed if it fails to respond to a trivial query (e.g. SELECT 1).
+					The query used to validate that a database is responding can be configured via the XML file.
 				</p>
+				<p>e.g.</p>
+				<source><![CDATA[
+<ha-jdbc>
+	<cluster name="jdbc:ha-jdbc:cluster">
+		<!-- Sample validation query for Oracle -->
+		<validate-sql>SELECT 1 FROM DUAL</validate-sql>
+		<database url="..." driver="..."></database>
+		<database url="..." driver="..."></database>
+	</cluster>
+</ha-jdbc>
+]]></source>
+				<p>If it is determined that a given database has failed:</p>
+				<ol>
+					<li>An ERROR message is logged.</li>
+					<li>The database is removed from the internal registry of active databases.  No more requests will be sent to this database.</li>
+					<li>If the cluster was configured to be "distributable", other servers are notified of the failure.</li>
+				</ol>
 			</section>
 			<section>
-				<title>Entity EJBs with HA-JDBC</title>
+				<title>Restoring a Database Node</title>
 				<p>
-					Coming soon...
+					
 				</p>
 			</section>
 		</section>
