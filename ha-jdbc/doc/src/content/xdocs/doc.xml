@@ -186,6 +186,43 @@
 				</section>
 			</section>
 			<section>
+				<title>Cluster Balancer</title>
+				<table>
+					<caption>HA-JDBC support four types of read request balancers:</caption>
+					<tr>
+						<th>Simple</th>
+						<td>
+							Requests are always sent to the node with the highest weight.
+						</td>
+					</tr>
+					<tr>
+						<th>Random</th>
+						<td>
+							Requests are sent to a random node.
+							Node weights affect the probability that a given node will be chosen.
+							The probability that a node will be chosen = <em>weight</em>/<em>total-weight</em>.
+							A node with a weight of 0 will never be chosen unless it is the last node in the cluster.
+						</td>
+					</tr>
+					<tr>
+						<th>Round-Robin</th>
+						<td>
+							Requests are sent to each node in succession.
+							A node of weight X will receive X requests before the balancer moves on to the next node.
+							A node with a weight of 0 will never service a request unless it is the last node in the cluster.
+						</td>
+					</tr>
+					<tr>
+						<th>Load</th>
+						<td>
+							Requests are sent to the node with the smallest load.
+							The load of a node = <em>number-of-requests</em>/<em>weight</em>.
+						</td>
+					</tr>
+				</table>
+				<note>In general, a node with a weight of 0 will never service a request unless it is the last node in the cluster.</note>
+			</section>
+			<section>
 				<title>Distributed environment</title>
 				<p>
 					When running HA-JDBC in a distributed environment, i.e. JDBC clients in seperate JVMs are accessing the same set of databases, special configuration is required.
@@ -195,7 +232,7 @@
 				<p>e.g.</p>
 				<source><![CDATA[
 <ha-jdbc>
-  <distributable protocol="UDP:PING:MERGE2:FD_SOCK:VERIFY_SUSPECT:pbcast.NAKACK:UNICAST:pbcast.STABLE:FRAG:pbcast.GMS"/>
+  <distributable/>
   <cluster id="...">
     <!-- ... -->
   </cluster>
