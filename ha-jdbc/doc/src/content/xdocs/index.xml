@@ -104,7 +104,7 @@
 				<section>
 				<title>DriverManager-based access</title>
 					<ol>
-						<li>As with your existing JDBC drivers, the HA-JDBC driver must first be loaded.  This can be done by either:<br/>
+						<li>As with your existing JDBC drivers, the HA-JDBC driver must first be loaded.  This can be accomplished in one of two ways:<br/>
 							<br/>
 							<ul>
 								<li>Add <code>net.sf.ha.jdbc.DriverProxy</code> to your <code>jdbc.drivers</code> system property.</li>
@@ -154,13 +154,25 @@
 				</section>
 			</section>
 			<section>
-				<title>Connection Pooling</title>
+				<title>Unique identifier generation</title>
 				<p>
 					Coming soon...
 				</p>
 			</section>
 			<section>
 				<title>Transactions</title>
+				<p>
+					Coming soon...
+				</p>
+			</section>
+			<section>
+				<title>Connection Pooling</title>
+				<p>
+					Coming soon...
+				</p>
+			</section>
+			<section>
+				<title>Distributed environment</title>
 				<p>
 					Coming soon...
 				</p>
@@ -175,28 +187,44 @@
 		<section>
 			<title>Architecture</title>
 			<p>
-				The concept is a simple one:
+				JDBC operations are divided into 4 categories:
 			</p>
-			<ul>
-				<li>Delegate read requests (e.g. select) to one database in the cluster.</li>
-				<li>Delegate write requests (e.g. insert, update, delete) to all databases in the cluster.</li>
-			</ul>
+			<dl>
+				<dt>Read operations (e.g. SELECT statements)</dt>
+				<dd>Deep read operations on the underlying database driver that will require read access to the database itself.</dd>
+				<dt>Write operations (e.g. INSERT, UPDATE, DELETE statements)</dt>
+				<dd>Deep write operations on the underlying database driver that will require write access to the database itself.</dd>
+				<dt>Get operations (e.g. getXXX())</dt>
+				<dd>Shallow read operations on the underlying database driver that will NOT require any access to the database itself.</dd>
+				<dt>Set operations (e.g. setXXX())</dt>
+				<dd>Shallow write operations on the underlying database driver that will NOT require any access to the database itself.</dd>
+			</dl>
 			<p>
-				Read requests are delegated to nodes in round-robin fashion.
-				If an exception is caught, the database is tested for validity:
+				Operation are executed differently according to the type operation:
 			</p>
-			<ul>
-				<li>If the validation check succeeds (i.e. the database is still up), the exception is returned to the caller.</li>
-				<li>If the validation check fails (i.e. the database is down), the database is globally deactivated, and the request is passed on to another node in the cluster</li>
-			</ul>
+			<dl>
+				<dt>Read Operations</dt>
+				<dd>Delegated to a single node in the cluster in round-robin fashion.</dd>
+				<dt>Write Operations</dt>
+				<dd>Delegated in parallel to each node in the cluster.</dd>
+				<dt>Get Operations</dt>
+				<dd>Delegated to the first node in the cluster.</dd>
+				<dt>Set Operations</dt>
+				<dd>Serially delegated to each node in the cluster.</dd>
+			</dl>
 			<p>
-				Write requests are executed on all nodes in the cluster in parallel and returns only after all nodes have completed.
-				If an exception is caught, the database that threw it is tested for validity:
+				Exceptions caught while performing an operation are handled differently according to the type of operation:
 			</p>
-			<ul>
-				<li>If the validation check succeeds, the exception is returned to the caller.</li>
-				<li>If the validation check fails, the database is globally deactivated, and results of the succeeding databases are returned to the caller</li>
-			</ul>
+			<dl>
+				<dt>Read Operations</dt>
+				<dd>Perform validation check on failed database.  If successful, return the caught exception to the caller.  If unsuccessful, the database is deactivated and the request is forwarded to the next node in the cluster.</dd>
+				<dt>Write Operations</dt>
+				<dd>Perform validation check on failed database.  If successful, return the caught exception to the caller.  If unsuccessful, the database is deactivated and the results of the succeeding database nodes are returned to the caller.</dd>
+				<dt>Get Operations</dt>
+				<dd>The exception is immediately return to the caller.</dd>
+				<dt>Set Operations</dt>
+				<dd>The exception is immediately return to the caller.</dd>
+			</dl>
 		</section>
 	</body>
 </document>
