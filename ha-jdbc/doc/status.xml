@@ -10,6 +10,26 @@
 			defined for 'add', 'fix', 'remove', 'update' and 'hack'. If you add
 			src/documentation/resources/images/<foo>.jpg images, these will
 			automatically be used for entries of type <foo>. -->
+		<release version="1.0-beta-1" date="October 1, 2004">
+			<action type="fix" context="admin" dev="PF">
+				Fixed bug in connection.rollback()
+			</action>
+			<action type="fix" context="admin" dev="PF">
+				Fixed logic in PreparedStatement/CallableStatement.setXXXStream() and ResultSet.updateXXXStream() methods
+			</action>
+			<action type="update" context="admin" dev="PF">
+				Optimized asynchronous execution of write operations.
+			</action>
+			<action type="update" context="admin" dev="PF">
+				Improved consistancy of cluster when autocommit is true.
+			</action>
+			<action type="update" context="admin" dev="PF">
+				Upgraded JGroups to v2.2.7
+			</action>
+			<action type="update" context="admin" dev="PF">
+				Prevent multiple logging of database deactivation
+			</action>
+		</release>
 		<release version="1.0-alpha-3" date="August 30, 2004">
 			<action type="update" context="admin" dev="PF">
 				Configuration DTD is now PUBLIC
