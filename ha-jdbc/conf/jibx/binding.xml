@@ -2,14 +2,18 @@
 <!DOCTYPE binding SYSTEM "binding.dtd">
 <binding direction="input">
 	<mapping name="ha-jdbc" class="net.sf.hajdbc.DatabaseClusterFactory$Configuration">
-		<structure name="distributable" field="databaseClusterListenerDescriptor"  type="net.sf.hajdbc.distributable.DistributableDatabaseClusterListener">
-			<value name="protocol" set-method="setProtocol" style="attribute" usage="required"></value>
+		<structure name="distributable" field="decoratorDescriptor" type="net.sf.hajdbc.distributable.DistributableDatabaseClusterDescriptor" usage="optional">
+			<value name="protocol" field="protocol" style="attribute" usage="required"></value>
 		</structure>
 		<collection field="descriptorList" type="java.util.LinkedList"></collection>
 	</mapping>
 	<mapping name="cluster" class="net.sf.hajdbc.DatabaseClusterDescriptor" value-style="attribute">
 		<value name="name" field="name"></value>
-		<value name="validate-sql" field="validateSQL"></value>
+		<value name="validate-sql" field="validateSQL" usage="optional" default="SELECT 1"></value>
+		<value name="create-foreign-key-sql" field="createForeignKeySQL" usage="optional" default="ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4})"></value>
+		<value name="drop-foreign-key-sql" field="dropForeignKeySQL" usage="optional" default="ALTER TABLE {1} DROP CONSTRAINT {0}"></value>
+		<value name="create-index-sql" field="createIndexSQL" usage="optional" default="CREATE INDEX {0} ON {1} ({2})"></value>
+		<value name="drop-index-sql" field="dropIndexSQL" usage="optional" default="DROP INDEX {0}"></value>
 		<collection add-method="addDatabase"></collection>
 	</mapping>
 	<mapping name="database" class="net.sf.hajdbc.DriverDatabase">
