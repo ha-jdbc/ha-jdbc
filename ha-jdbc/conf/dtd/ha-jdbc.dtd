@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT ha-jdbc (cluster+)>
+<!ELEMENT cluster ((driver+)|(datasource+)|(pooled-datasource+)|(xa-datasource+))>
+<!ATTLIST cluster
+	name CDATA #REQUIRED
+	validate-sql CDATA #REQUIRED
+>
+<!ELEMENT database (user,password)?>
+<!ATTLIST database
+	url CDATA #REQUIRED
+	driver CDATA #REQUIRED
+>
+<!ELEMENT datasource (user,password)?>
+<!ATTLIST datasource name CDATA #REQUIRED>
+<!ELEMENT pooled-datasource (user,password)?>
+<!ATTLIST pooled-datasource name CDATA #REQUIRED>
+<!ELEMENT xa-datasource (user,password)?>
+<!ATTLIST xa-datasource name CDATA #REQUIRED>
+<!ELEMENT user (#PCDATA)>
+<!ELEMENT password (#PCDATA)>
