@@ -129,7 +129,7 @@
 				Modularize synchronization strategy configuration properties.
 			</action>
 			<action context="code" dev="PF">
-				Junit regression test suite. (in progress)
+				JUnit unit test suite. (in progress)
 			</action>
 			<action context="code" dev="PF">
 				Sample application using HSQL.
