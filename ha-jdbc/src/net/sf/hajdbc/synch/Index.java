@@ -20,10 +20,17 @@
  */
 package net.sf.hajdbc.synch;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author  Paul Ferraro
@@ -36,18 +43,7 @@ public class Index
 	private String table;
 	private List columnList = new LinkedList();
 	
-	public Index(String name, String table)
-	{
-		this.name = name;
-		this.table = table;
-	}
-	
-	public void addColumn(String column)
-	{
-		this.columnList.add(column);
-	}
-	
-	public String formatSQL(String pattern)
+	private String formatSQL(String pattern)
 	{
 		StringBuffer buffer = new StringBuffer();
 		Iterator columns = this.columnList.iterator();
@@ -76,5 +72,57 @@ public class Index
 	public int hashCode()
 	{
 		return this.name.hashCode();
+	}
+	
+	public static Collection getIndexes(Connection connection, String table) throws SQLException
+	{
+		Map indexMap = new HashMap();
+		ResultSet resultSet = connection.getMetaData().getIndexInfo(null, null, table, false, true);
+		
+		while (resultSet.next())
+		{
+			if (resultSet.getBoolean("NON_UNIQUE"))
+			{
+				String name = resultSet.getString("INDEX_NAME");
+				String column = resultSet.getString("COLUMN_NAME");
+				
+				Index index = (Index) indexMap.get(name);
+				
+				if (index == null)
+				{
+					index = new Index();
+					
+					index.name = name;
+					index.table = table;
+					
+					indexMap.put(name, index);
+				}
+				
+				index.columnList.add(column);
+			}
+		}
+		
+		resultSet.close();
+		
+		return indexMap.values();
+	}
+	
+	public static void executeSQL(Connection connection, Collection indexCollection, String sqlPattern) throws java.sql.SQLException
+	{
+		Statement statement = connection.createStatement();
+		
+		Iterator indexes = indexCollection.iterator();
+		
+		while (indexes.hasNext())
+		{
+			Index index = (Index) indexes.next();
+			
+			String sql = index.formatSQL(sqlPattern);
+			
+			statement.addBatch(sql);
+		}
+
+		statement.executeBatch();
+		statement.close();
 	}
 }

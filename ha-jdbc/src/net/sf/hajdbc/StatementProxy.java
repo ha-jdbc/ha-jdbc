@@ -659,7 +659,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	/**
 	 * @see net.sf.hajdbc.SQLProxy#getDatabaseCluster()
 	 */
-	protected DatabaseCluster getDatabaseCluster()
+	public DatabaseCluster getDatabaseCluster()
 	{
 		return this.connection.getDatabaseCluster();
 	}

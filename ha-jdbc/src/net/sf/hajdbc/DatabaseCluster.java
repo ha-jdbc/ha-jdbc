@@ -20,6 +20,12 @@
  */
 package net.sf.hajdbc;
 
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -73,10 +79,50 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 			}
 			
 			DatabaseSynchronizationStrategy strategy = (DatabaseSynchronizationStrategy) strategyClass.newInstance();
+
+			Connection connection = database.connect(this.getConnectionFactory());
+			List tableList = new LinkedList();
 			
-			strategy.synchronize(this, database);
+			DatabaseMetaData databaseMetaData = connection.getMetaData();
+			ResultSet resultSet = databaseMetaData.getTables(null, null, "%", new String[] { "TABLE" });
+			
+			while (resultSet.next())
+			{
+				String table = resultSet.getString("TABLE_NAME");
+				tableList.add(table);
+			}
+			
+			resultSet.close();
+
+			Operation operation = new Operation()
+			{
+				public Object execute(Database database, Object sqlObject) throws java.sql.SQLException
+				{
+					return database.connect(DatabaseCluster.this.getConnectionFactory());
+				}
+			};
+
+			ConnectionProxy connectionProxy = new ConnectionProxy(this.getConnectionFactory(), this.getConnectionFactory().executeWrite(operation));
+			
+			connectionProxy.setAutoCommit(false);
+			connectionProxy.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+			
+			Iterator tables = tableList.iterator();
+			
+			while (tables.hasNext())
+			{
+				String table = (String) tables.next();
+				Statement statement = connectionProxy.createStatement();
+				
+				statement.execute("SELECT count(*) FROM " + table);
+			}
+			
+			strategy.synchronize(connection, connectionProxy, tableList);
 			
 			this.activate(database);
+			
+			connectionProxy.rollback();
+			connectionProxy.close();
 		}
 		catch (ClassNotFoundException e)
 		{

@@ -31,6 +31,8 @@ public interface DatabaseClusterDescriptor
 	
 	public String getName();
 
+	public String getValidateSQL();
+	
 	public String getCreateForeignKeySQL();
 
 	public String getCreateIndexSQL();

@@ -20,6 +20,9 @@
  */
 package net.sf.hajdbc;
 
+import java.sql.Connection;
+import java.util.List;
+
 /**
  * @author  Paul Ferraro
  * @version $Revision$
@@ -27,5 +30,5 @@ package net.sf.hajdbc;
  */
 public interface DatabaseSynchronizationStrategy
 {
-	public void synchronize(DatabaseCluster databaseCluster, Database database) throws java.sql.SQLException;
+	public void synchronize(Connection connection, ConnectionProxy connectionProxy, List tableList) throws java.sql.SQLException;
 }

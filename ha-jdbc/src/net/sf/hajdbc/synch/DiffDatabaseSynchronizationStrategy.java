@@ -22,20 +22,20 @@ package net.sf.hajdbc.synch;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import net.sf.hajdbc.Database;
-import net.sf.hajdbc.DatabaseSynchronizationStrategy;
-import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.ConnectionProxy;
 import net.sf.hajdbc.DatabaseClusterDescriptor;
+import net.sf.hajdbc.DatabaseSynchronizationStrategy;
 import net.sf.hajdbc.SQLException;
 
 import org.apache.commons.logging.Log;
@@ -49,338 +49,240 @@ import org.apache.commons.logging.LogFactory;
 public class DiffDatabaseSynchronizationStrategy implements DatabaseSynchronizationStrategy
 {
 	private static Log log = LogFactory.getLog(DiffDatabaseSynchronizationStrategy.class);
-	
+
 	/**
-	 * @see net.sf.hajdbc.DatabaseActivationStrategy#activate(net.sf.hajdbc.DatabaseCluster, net.sf.hajdbc.Database)
+	 * @see net.sf.hajdbc.DatabaseSynchronizationStrategy#synchronize(java.sql.Connection, net.sf.hajdbc.ConnectionProxy, java.util.List)
 	 */
-	public void synchronize(DatabaseCluster databaseCluster, Database database) throws java.sql.SQLException
+	public void synchronize(Connection connection, ConnectionProxy connectionProxy, List tableList) throws java.sql.SQLException
 	{
-		DatabaseClusterDescriptor descriptor = databaseCluster.getDescriptor();
-		Connection activeConnection = null;
-		Connection inactiveConnection = null;
+		DatabaseClusterDescriptor descriptor = connectionProxy.getDatabaseCluster().getDescriptor();
 		
-		List tableList = new LinkedList();
-		List foreignKeyList = new LinkedList();
+		String createForeignKeySQL = descriptor.getCreateForeignKeySQL();
+		String dropForeignKeySQL = descriptor.getDropForeignKeySQL();
+		DatabaseMetaData databaseMetaData = connection.getMetaData();
+		
 		List primaryKeyList = new ArrayList();
 		Set primaryKeyColumnSet = new LinkedHashSet();
 		
-		try
+		connection.setAutoCommit(false);
+
+		PreparedStatement pingStatement = connectionProxy.prepareStatement(descriptor.getValidateSQL());
+		
+		Iterator tables = tableList.iterator();
+		
+		while (tables.hasNext())
 		{
-			Database activeDatabase = databaseCluster.nextDatabase();
+			String table = (String) tables.next();
 			
-			inactiveConnection = database.connect(databaseCluster.getConnectionFactory().getSQLObject(database));
-			inactiveConnection.setAutoCommit(false);
+			Collection foreignKeyCollection = ForeignKey.getForeignKeys(connection, table);
 			
-			DatabaseMetaData databaseMetaData = inactiveConnection.getMetaData();
-			ResultSet resultSet = databaseMetaData.getTables(null, null, "%", new String[] { "TABLE" });
+			ForeignKey.executeSQL(connection, foreignKeyCollection, dropForeignKeySQL);
 			
-			while (resultSet.next())
+			connection.commit();
+			
+			primaryKeyList.clear();
+			primaryKeyColumnSet.clear();
+			
+			ResultSet primaryKeyResultSet = databaseMetaData.getPrimaryKeys(null, null, table);
+			
+			while (primaryKeyResultSet.next())
 			{
-				String table = resultSet.getString("TABLE_NAME");
-				tableList.add(table);
+				primaryKeyList.add(primaryKeyResultSet.getString("COLUMN_NAME"));
 			}
 			
-			resultSet.close();
-
-			Iterator tables = tableList.iterator();
+			primaryKeyResultSet.close();
 			
-			while (tables.hasNext())
+			Iterator primaryKeys = primaryKeyList.iterator();
+			StringBuffer buffer = new StringBuffer("SELECT * FROM ").append(table).append(" ORDER BY ");
+			
+			while (primaryKeys.hasNext())
 			{
-				String table = (String) tables.next();
+				String primaryKey = (String) primaryKeys.next();
 				
-				resultSet = databaseMetaData.getImportedKeys(null, null, table);
+				buffer.append(primaryKey);
 				
-				while (resultSet.next())
+				if (primaryKeys.hasNext())
 				{
-					String name = resultSet.getString("FK_NAME");
-					String column = resultSet.getString("FKCOLUMN_NAME");
-					String foreignTable = resultSet.getString("PKTABLE_NAME");
-					String foreignColumn = resultSet.getString("PKCOLUMN_NAME");
-					
-					ForeignKey foreignKey = new ForeignKey(name, table, column, foreignTable, foreignColumn);
-					String sql = foreignKey.formatSQL(descriptor.getDropForeignKeySQL());
-					
-					log.info("Dropping foreign key: " + sql);
-
-					Statement statement = inactiveConnection.createStatement();
-					statement.execute(sql);
-					statement.close();
-					
-					foreignKeyList.add(foreignKey);
+					buffer.append(", ");
 				}
-				
-				resultSet.close();
 			}
+			
+			String sql = buffer.toString();
+			
+			Statement inactiveStatement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+			Statement activeStatement = connectionProxy.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			
+			log.info("Updating: " + sql);
+			
+			Thread statementExecutor = new Thread(new StatementExecutor(inactiveStatement, sql));
+			statementExecutor.start();
 
-			inactiveConnection.commit();
+			ResultSet activeResultSet = activeStatement.executeQuery(sql);
 			
-			activeConnection = activeDatabase.connect(databaseCluster.getConnectionFactory().getSQLObject(activeDatabase));
-			activeConnection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-			activeConnection.setAutoCommit(false);
-			
-			tables = tableList.iterator();
-			
-			while (tables.hasNext())
+			try
 			{
-				String table = (String) tables.next();
-				
-				primaryKeyList.clear();
-				primaryKeyColumnSet.clear();
-				
-				resultSet = databaseMetaData.getPrimaryKeys(null, null, table);
-				
-				while (resultSet.next())
-				{
-					primaryKeyList.add(resultSet.getString("COLUMN_NAME"));
-				}
-				
-				resultSet.close();
-				
-				Iterator primaryKeys = primaryKeyList.iterator();
-				StringBuffer buffer = new StringBuffer("SELECT * FROM ").append(table).append(" ORDER BY ");
-				
-				while (primaryKeys.hasNext())
-				{
-					String primaryKey = (String) primaryKeys.next();
-					
-					buffer.append(primaryKey);
-					
-					if (primaryKeys.hasNext())
-					{
-						buffer.append(", ");
-					}
-				}
-				
-				String sql = buffer.toString();
-				
-				Statement inactiveStatement = inactiveConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-				Statement activeStatement = activeConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-				
-				log.info("Updating: " + sql);
-				
-				Thread inactiveExecutor = new Thread(new StatementExecutor(inactiveStatement, sql));
-				inactiveExecutor.start();
-				
-				Thread activeExecutor = new Thread(new StatementExecutor(activeStatement, sql));
-				activeExecutor.start();
-				
-				try
-				{
-					inactiveExecutor.join();
-				}
-				catch (InterruptedException e)
-				{
-					throw new SQLException("Execution of " + sql + " on inactive database was interrupted.", e);
-				}
+				statementExecutor.join();
+			}
+			catch (InterruptedException e)
+			{
+				throw new SQLException("Execution of " + sql + " on inactive database was interrupted.", e);
+			}
+			
+			ResultSet inactiveResultSet = inactiveStatement.getResultSet();
 
-				try
-				{
-					activeExecutor.join();
-				}
-				catch (InterruptedException e)
-				{
-					throw new SQLException("Execution of " + sql + " on active database was interrupted.", e);
-				}
-				
-				ResultSet inactiveResultSet = inactiveStatement.getResultSet();
+			if (inactiveResultSet == null)
+			{
+				throw inactiveStatement.getWarnings();
+			}
+			
+			primaryKeys = primaryKeyList.iterator();
+			
+			while (primaryKeys.hasNext())
+			{
+				String primaryKey = (String) primaryKeys.next();
+				primaryKeyColumnSet.add(new Integer(activeResultSet.findColumn(primaryKey)));
+			}
+			
+			boolean hasMoreActiveResults = activeResultSet.next();
+			boolean hasMoreInactiveResults = inactiveResultSet.next();
 
-				if (inactiveResultSet == null)
-				{
-					throw inactiveStatement.getWarnings();
-				}
-				
-				ResultSet activeResultSet = activeStatement.getResultSet();
-				
-				if (activeResultSet == null)
-				{
-					throw activeStatement.getWarnings();
-				}
-				
-				primaryKeys = primaryKeyList.iterator();
-				
-				while (primaryKeys.hasNext())
-				{
-					String primaryKey = (String) primaryKeys.next();
-					primaryKeyColumnSet.add(new Integer(activeResultSet.findColumn(primaryKey)));
-				}
-				
-				boolean hasActiveResults = activeResultSet.next();
-				boolean hasInactiveResults = inactiveResultSet.next();
+			ResultSetMetaData resultSetMetaData = activeResultSet.getMetaData();
 
-				ResultSetMetaData resultSetMetaData = activeResultSet.getMetaData();
-				int columns = resultSetMetaData.getColumnCount();
+			int columns = resultSetMetaData.getColumnCount();
+			
+			int insertCount = 0;
+			int updateCount = 0;
+			int deleteCount = 0;
+			
+			while (hasMoreActiveResults || hasMoreInactiveResults)
+			{
+				int compare = 0;
 				
-				int insertCount = 0;
-				int updateCount = 0;
-				int deleteCount = 0;
-				
-				while (hasActiveResults || hasInactiveResults)
+				if (!hasMoreActiveResults)
 				{
-					int compare = 0;
+					compare = 1;
+				}
+				else if (!hasMoreInactiveResults)
+				{
+					compare = -1;
+				}
+				else
+				{
+					Iterator primaryKeyColumns = primaryKeyColumnSet.iterator();
 					
-					if (!hasActiveResults)
+					while (primaryKeyColumns.hasNext())
 					{
-						compare = 1;
-					}
-					else if (!hasInactiveResults)
-					{
-						compare = -1;
-					}
-					else
-					{
-						Iterator primaryKeyColumns = primaryKeyColumnSet.iterator();
+						Integer primaryKeyColumn = (Integer) primaryKeyColumns.next();
+						int column = primaryKeyColumn.intValue();
 						
-						while (primaryKeyColumns.hasNext())
+						Comparable activeObject = (Comparable) activeResultSet.getObject(column);
+						Object inactiveObject = inactiveResultSet.getObject(column);
+						
+						compare = activeObject.compareTo(inactiveObject);
+						
+						if (compare != 0)
 						{
-							Integer primaryKeyColumn = (Integer) primaryKeyColumns.next();
-							int column = primaryKeyColumn.intValue();
-							
-							Comparable activeObject = (Comparable) activeResultSet.getObject(column);
-							Object inactiveObject = inactiveResultSet.getObject(column);
-							
-							compare = activeObject.compareTo(inactiveObject);
-							
-							if (compare != 0)
-							{
-								break;
-							}
+							break;
+						}
+					}
+				}
+				
+				if (compare > 0)
+				{
+					inactiveResultSet.deleteRow();
+					
+					deleteCount += 1;
+				}
+				else if (compare < 0)
+				{
+					inactiveResultSet.moveToInsertRow();
+
+					for (int i = 1; i <= columns; ++i)
+					{
+						Object object = activeResultSet.getObject(i);
+						
+						if (activeResultSet.wasNull())
+						{
+							inactiveResultSet.updateNull(i);
+						}
+						else
+						{
+							inactiveResultSet.updateObject(i, object);
 						}
 					}
 					
-					if (compare > 0)
+					inactiveResultSet.insertRow();
+					inactiveResultSet.moveToCurrentRow();
+					
+					insertCount += 1;
+				}
+				else // if (compare == 0)
+				{
+					boolean updated = false;
+					
+					for (int i = 1; i <= columns; ++i)
 					{
-						inactiveResultSet.deleteRow();
-						
-						deleteCount += 1;
-					}
-					else if (compare < 0)
-					{
-						inactiveResultSet.moveToInsertRow();
-
-						for (int i = 1; i <= columns; ++i)
+						if (!primaryKeyColumnSet.contains(new Integer(i)))
 						{
-							Object object = activeResultSet.getObject(i);
+							Object activeObject = activeResultSet.getObject(i);
+							Object inactiveObject = inactiveResultSet.getObject(i);
 							
 							if (activeResultSet.wasNull())
 							{
-								inactiveResultSet.updateNull(i);
+								if (!inactiveResultSet.wasNull())
+								{
+									inactiveResultSet.updateNull(i);
+									
+									updated = true;
+								}
 							}
 							else
 							{
-								inactiveResultSet.updateObject(i, object);
-							}
-						}
-						
-						inactiveResultSet.insertRow();
-						inactiveResultSet.moveToCurrentRow();
-						
-						insertCount += 1;
-					}
-					else // if (compare == 0)
-					{
-						boolean updated = false;
-						
-						for (int i = 1; i <= columns; ++i)
-						{
-							if (!primaryKeyColumnSet.contains(new Integer(i)))
-							{
-								Object activeObject = activeResultSet.getObject(i);
-								Object inactiveObject = inactiveResultSet.getObject(i);
-								
-								if (activeResultSet.wasNull())
+								if (inactiveResultSet.wasNull() || !activeObject.equals(inactiveObject))
 								{
-									if (!inactiveResultSet.wasNull())
-									{
-										inactiveResultSet.updateNull(i);
-										
-										updated = true;
-									}
-								}
-								else
-								{
-									if (inactiveResultSet.wasNull() || !activeObject.equals(inactiveObject))
-									{
-										inactiveResultSet.updateObject(i, activeObject);
-										
-										updated = true;
-									}
+									inactiveResultSet.updateObject(i, activeObject);
+									
+									updated = true;
 								}
 							}
 						}
+					}
+					
+					if (updated)
+					{
+						inactiveResultSet.updateRow();
 						
-						if (updated)
-						{
-							inactiveResultSet.updateRow();
-							
-							updateCount += 1;
-						}
-					}
-					
-					if (hasActiveResults && (compare <= 0))
-					{
-						hasActiveResults = activeResultSet.next();
-					}
-					
-					if (hasInactiveResults && (compare >= 0))
-					{
-						hasInactiveResults = inactiveResultSet.next();
+						updateCount += 1;
 					}
 				}
 				
-				log.info("Inserted " + insertCount + " rows into " + table);
-				log.info("Deleted " + deleteCount + " rows from " + table);
-				log.info("Updated " + updateCount + " rows in " + table);
+				if (hasMoreActiveResults && (compare <= 0))
+				{
+					hasMoreActiveResults = activeResultSet.next();
+				}
 				
-				inactiveStatement.close();
-				activeStatement.close();
-				
-				inactiveConnection.commit();
+				if (hasMoreInactiveResults && (compare >= 0))
+				{
+					hasMoreInactiveResults = inactiveResultSet.next();
+				}
 			}
-
-			log.info("Database synchronization completed successfully");
+			
+			log.info("Inserted " + insertCount + " rows into " + table);
+			log.info("Deleted " + deleteCount + " rows from " + table);
+			log.info("Updated " + updateCount + " rows in " + table);
+			
+			inactiveStatement.close();
+			activeStatement.close();
+			
+			connection.commit();
+			
+			ForeignKey.executeSQL(connection, foreignKeyCollection, createForeignKeySQL);
+			
+			connection.commit();
+			
+			pingStatement.execute();
 		}
-		finally
-		{
-			if ((inactiveConnection != null) && !inactiveConnection.isClosed())
-			{
-				try
-				{
-					inactiveConnection.rollback();
-					
-					Iterator foreignKeys = foreignKeyList.iterator();
-					
-					while (foreignKeys.hasNext())
-					{
-						ForeignKey foreignKey = (ForeignKey) foreignKeys.next();
-						String sql = foreignKey.formatSQL(descriptor.getCreateForeignKeySQL());
-						
-						log.info("Recreating foreign key: " + sql);
-						
-						Statement statement = inactiveConnection.createStatement();
-						statement.execute(sql);
-						statement.close();
-					}
-
-					inactiveConnection.commit();
-					inactiveConnection.close();
-				}
-				catch (java.sql.SQLException e)
-				{
-					log.warn("Failed to close connection of inactive database", e);
-				}
-			}
-
-			if ((activeConnection != null) && !activeConnection.isClosed())
-			{
-				try
-				{
-					activeConnection.close();
-				}
-				catch (java.sql.SQLException e)
-				{
-					log.warn("Failed to close connection of active database", e);
-				}
-			}
-		}
+		
+		pingStatement.close();
 	}
 }

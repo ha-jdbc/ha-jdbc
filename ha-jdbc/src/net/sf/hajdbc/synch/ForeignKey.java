@@ -20,7 +20,15 @@
  */
 package net.sf.hajdbc.synch;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author  Paul Ferraro
@@ -34,17 +42,8 @@ public class ForeignKey
 	private String column;
 	private String foreignTable;
 	private String foreignColumn;
-
-	public ForeignKey(String name, String table, String column, String foreignTable, String foreignColumn)
-	{
-		this.name = name;
-		this.table = table;
-		this.column = column;
-		this.foreignTable = foreignTable;
-		this.foreignColumn = foreignColumn;
-	}
 	
-	public String formatSQL(String pattern)
+	private String formatSQL(String pattern)
 	{
 		return MessageFormat.format(pattern, new Object[] { this.name, this.table, this.column, this.foreignTable, this.foreignColumn });
 	}
@@ -59,5 +58,47 @@ public class ForeignKey
 	public int hashCode()
 	{
 		return this.name.hashCode();
+	}
+	
+	public static Collection getForeignKeys(Connection connection, String table) throws SQLException
+	{
+		List foreignKeyList = new LinkedList();
+		ResultSet resultSet = connection.getMetaData().getImportedKeys(null, null, table);
+		
+		while (resultSet.next())
+		{
+			ForeignKey foreignKey = new ForeignKey();
+			
+			foreignKey.table = table;
+			foreignKey.name = resultSet.getString("FK_NAME");
+			foreignKey.column = resultSet.getString("FKCOLUMN_NAME");
+			foreignKey.foreignTable = resultSet.getString("PKTABLE_NAME");
+			foreignKey.foreignColumn = resultSet.getString("PKCOLUMN_NAME");
+
+			foreignKeyList.add(foreignKey);
+		}
+		
+		resultSet.close();
+		
+		return foreignKeyList;
+	}
+
+	public static void executeSQL(Connection connection, Collection foreignKeyCollection, String sqlPattern) throws java.sql.SQLException
+	{
+		Statement statement = connection.createStatement();
+		
+		Iterator foreignKeys = foreignKeyCollection.iterator();
+		
+		while (foreignKeys.hasNext())
+		{
+			ForeignKey foreignKey = (ForeignKey) foreignKeys.next();
+			
+			String sql = foreignKey.formatSQL(sqlPattern);
+			
+			statement.addBatch(sql);
+		}
+
+		statement.executeBatch();
+		statement.close();
 	}
 }

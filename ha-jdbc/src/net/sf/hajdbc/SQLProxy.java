@@ -185,7 +185,7 @@ public abstract class SQLProxy
 		}
 	}
 	
-	protected abstract DatabaseCluster getDatabaseCluster();
+	public abstract DatabaseCluster getDatabaseCluster();
 
 	private class Executor implements Runnable
 	{

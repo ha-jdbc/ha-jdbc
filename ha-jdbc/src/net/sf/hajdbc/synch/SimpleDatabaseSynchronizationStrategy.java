@@ -20,9 +20,11 @@
  */
 package net.sf.hajdbc.synch;
 
-import net.sf.hajdbc.Database;
+import java.sql.Connection;
+import java.util.List;
+
+import net.sf.hajdbc.ConnectionProxy;
 import net.sf.hajdbc.DatabaseSynchronizationStrategy;
-import net.sf.hajdbc.DatabaseCluster;
 
 /**
  * @author  Paul Ferraro
@@ -32,9 +34,9 @@ import net.sf.hajdbc.DatabaseCluster;
 public class SimpleDatabaseSynchronizationStrategy implements DatabaseSynchronizationStrategy
 {
 	/**
-	 * @see net.sf.hajdbc.DatabaseActivationStrategy#activate(net.sf.hajdbc.DatabaseCluster, net.sf.hajdbc.Database)
+	 * @see net.sf.hajdbc.DatabaseSynchronizationStrategy#synchronize(java.sql.Connection, net.sf.hajdbc.ConnectionProxy, java.util.List)
 	 */
-	public void synchronize(DatabaseCluster databaseCluster, Database database)
+	public void synchronize(Connection connection, ConnectionProxy connectionProxy, List tableList)
 	{
 		// Do nothing
 	}
