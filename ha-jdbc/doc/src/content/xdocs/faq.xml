@@ -3,9 +3,117 @@
 <faqs>
 	<title>Frequently Asked Questions</title>
 	<faqsection>
+		<title>About HA-JDBC</title>
+		<faq>
+			<question>How does HA-JDBC compare to the <a href="http://c-jdbc.objectweb.org">C-JDBC</a> project?</question>
+			<answer>
+				<table>
+					<caption>Feature comparison</caption>
+					<tr>
+						<th></th>
+						<th>C-JDBC</th>
+						<th>HA-JDBC</th>
+					</tr>
+					<tr>
+						<th>Architecture</th>
+						<td>
+							JDBC clients do not access the database directly.
+							Clients use C-JDBC driver to send requests to a central external controller process.
+							Controller manages central registry of active databases to which it forwards requests to databases in cluster.
+							Database request requires two network hops.
+						</td>
+						<td>
+							JDBC clients access database directly.
+							Clustering functionality is implemented directly into JDBC driver.
+							Database registry is stored in distributed cache within each client JVM.
+							Database request requires one network hop.
+						</td>
+					</tr>
+					<tr>
+						<th>Database synchronization</th>
+						<td>Achieved by "replaying" request log.</td>
+						<td>Databases are synchronized </td>
+					</tr>
+					<tr>
+						<th>Data partitioning (aka striping) support</th>
+						<td>Yes</td>
+						<td>No</td>
+					</tr>
+					<tr>
+						<th>JTA compatible</th>
+						<td>No</td>
+						<td>Yes</td>
+					</tr>
+					<tr>
+						<th>Does connection pooling</th>
+						<td>Yes</td>
+						<td>
+							No - many mature open source solutions already exist:
+							<ul>
+								<li>Commons DBCP</li>
+								<li>XAPool</li>
+								<li>C3P0</li>
+								<li>Proxool</li>
+							</ul>
+						</td>
+					</tr>
+					<tr>
+						<th>Result set caching ability</th>
+						<td>Yes</td>
+						<td>
+							No - many mature open source solutions already exist:
+							<ul>
+								<li></li>
+							</ul>
+						</td>
+					</tr>
+					<tr>
+						<th>Heterogeneous database cluster support</th>
+						<td>Yes - Database queries can be translated from one SQL dialect to another.</td>
+						<td>
+							No - Database clusters must be homogeneous.
+						</td>
+					</tr>
+					<tr>
+						<th>Prepared statement support</th>
+						<td>No</td>
+						<td>Yes</td>
+					</tr>
+					<tr>
+						<th>Updatable result set support</th>
+						<td>No</td>
+						<td>Yes</td>
+					</tr>
+					<tr>
+						<th>Large object support</th>
+						<td>No - simulated using byte arrays</td>
+						<td>Yes</td>
+					</tr>
+					<tr>
+						<th>Byte/Character stream support</th>
+						<td>No</td>
+						<td>Yes</td>
+					</tr>
+				</table>
+			</answer>
+		</faq>
+		<faq>
+			<question>Does HA-JDBC do result set caching?</question>
+			<answer>
+				No
+			</answer>
+		</faq>
+		<faq>
+			<question>Does HA-JDBC provide connection pooling?</question>
+			<answer>
+				No
+			</answer>
+		</faq>
+	</faqsection>
+	<faqsection>
 		<title>Configuring HA-JDBC</title>
 		<faq>
-			<question>What does "distributable" feature do? and when would I need it?</question>
+			<question>What does the "distributable" feature do? and when would I need it?</question>
 			<answer>
 				By indicated the "distributable" option, you are declaring that your database cluster(s) will be accessed by multiple JVMs (e.g. cluster of application servers).
 				HA-JDBC uses reliable multicast communication provided by JGroups to broadcast database activations and deactivations to each JVM.
@@ -20,15 +128,6 @@
 			<answer>
 				The JGroups protocol stack should be setup according to the reliability afforded by the features on your network.
 				Refer to the JGroups protocol documentation (http://www.jgroups.org/javagroupsnew/docs/user/node134.html) for more specifics.
-			</answer>
-		</faq>
-	</faqsection>
-	<faqsection>
-		<title>About HA-JDBC</title>
-		<faq>
-			<question>How does HA-JDBC compare with the C-JDBC project hosted at ObjectWeb?</question>
-			<answer>
-				
 			</answer>
 		</faq>
 	</faqsection>
