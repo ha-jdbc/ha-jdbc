@@ -12,10 +12,10 @@ import org.jgroups.blocks.NotificationBus;
  * @version $Revision$
  * @since   1.0
  */
-public class DistributedDatabaseClusterManager extends LocalDatabaseClusterManager implements NotificationBus.Consumer
+public class DistributableDatabaseClusterManager extends LocalDatabaseClusterManager implements NotificationBus.Consumer
 {
 	private static final String BUS_NAME = "DatabaseClusterManager";
-	private static Log log = LogFactory.getLog(DistributedDatabaseClusterManager.class);
+	private static Log log = LogFactory.getLog(DistributableDatabaseClusterManager.class);
 	
 	private NotificationBus notificationBus;
 	

@@ -7,7 +7,7 @@
 	<mapping name="local" class="net.sf.ha.jdbc.LocalDatabaseClusterManager">
 		<collection add-method="addDescriptor"></collection>
 	</mapping>
-	<mapping name="distributable" class="net.sf.ha.jdbc.DistributedDatabaseClusterManager">
+	<mapping name="distributable" class="net.sf.ha.jdbc.DistributableDatabaseClusterManager">
 		<value name="protocol" set-method="setProtocol" usage="required" style="attribute"></value>
 		<collection add-method="addDescriptor"></collection>
 	</mapping>
