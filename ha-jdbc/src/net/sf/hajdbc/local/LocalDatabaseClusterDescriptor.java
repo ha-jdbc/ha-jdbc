@@ -38,8 +38,6 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 	private String validateSQL;
 	private String createForeignKeySQL;
 	private String dropForeignKeySQL;
-	private String createIndexSQL;
-	private String dropIndexSQL;
 	private String truncateTableSQL;
 	private String defaultSynchronizationStrategy;
 	private Map databaseMap = new HashMap();
@@ -89,25 +87,9 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 	/**
 	 * @return
 	 */
-	public String getCreateIndexSQL()
-	{
-		return this.createIndexSQL;
-	}
-	
-	/**
-	 * @return
-	 */
 	public String getDropForeignKeySQL()
 	{
 		return this.dropForeignKeySQL;
-	}
-	
-	/**
-	 * @return
-	 */
-	public String getDropIndexSQL()
-	{
-		return this.dropIndexSQL;
 	}
 	
 	public String getTruncateTableSQL()

@@ -10,11 +10,9 @@
 	<mapping name="cluster" class="net.sf.hajdbc.local.LocalDatabaseClusterDescriptor">
 		<value name="name" field="name" style="attribute"></value>
 		<value name="validate-sql" field="validateSQL" usage="optional" default="SELECT 1"></value>
-		<value name="truncate-table-sql" field="truncateTableSQL" usage="optional" default="DELETE FROM {0}"></value>
 		<value name="create-foreign-key-sql" field="createForeignKeySQL" usage="optional" default="ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4})"></value>
 		<value name="drop-foreign-key-sql" field="dropForeignKeySQL" usage="optional" default="ALTER TABLE {1} DROP CONSTRAINT {0}"></value>
-		<value name="create-index-sql" field="createIndexSQL" usage="optional" default="CREATE INDEX {0} ON {1} ({2})"></value>
-		<value name="drop-index-sql" field="dropIndexSQL" usage="optional" default="DROP INDEX {0}"></value>
+		<value name="truncate-table-sql" field="truncateTableSQL" usage="optional" default="DELETE FROM {0}"></value>
 		<value name="default-sync-strategy" field="defaultSynchronizationStrategy" usage="optional" default="net.sf.hajdbc.sync.FullSynchronizationStrategy"></value>
 		<collection add-method="addDatabase"></collection>
 	</mapping>

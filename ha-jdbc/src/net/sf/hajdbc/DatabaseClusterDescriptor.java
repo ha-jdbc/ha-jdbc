@@ -35,11 +35,7 @@ public interface DatabaseClusterDescriptor
 	
 	public String getCreateForeignKeySQL();
 
-	public String getCreateIndexSQL();
-	
 	public String getDropForeignKeySQL();
-	
-	public String getDropIndexSQL();
 	
 	public String getTruncateTableSQL();
 	
