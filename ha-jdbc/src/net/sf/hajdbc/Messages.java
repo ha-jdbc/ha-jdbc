@@ -32,6 +32,8 @@ import java.util.ResourceBundle;
  */
 public class Messages
 {
+	public static final String CLUSTER_STATE_LOAD_FAILED = "cluster-state-load-failed";
+	public static final String CLUSTER_STATE_STORE_FAILED = "cluster-state-store-failed";
 	public static final String CONFIG_FAILED = "config-failed";
 	public static final String CONFIG_NOT_FOUND = "config-not-found";
 	public static final String CONNECTION_CLOSE_FAILED = "connection-close-failed";
