@@ -12,12 +12,31 @@ import java.util.Properties;
  */
 public class DriverDatabase implements Database
 {
-	private String url;
-	private Properties properties;
+	private static final String USER = "user";
+	private static final String PASSWORD = "password";
 	
-	public DriverDatabase(String url)
+	private String url;
+	private String user;
+	private String password;
+
+	public String getUser()
 	{
-		this.url = url;
+		return this.user;
+	}
+	
+	public void setUser(String user)
+	{
+		this.user = user;
+	}
+	
+	public String getPassword()
+	{
+		return this.password;
+	}
+	
+	public void setPassword(String password)
+	{
+		this.password = password;
 	}
 	
 	public String getUrl()
@@ -25,14 +44,32 @@ public class DriverDatabase implements Database
 		return this.url;
 	}
 	
+	public void setUrl(String url)
+	{
+		this.url = url;
+	}
+	
 	public Properties getProperties()
 	{
-		return this.properties;
+		Properties properties = new Properties();
+		
+		if (this.user != null)
+		{
+			properties.setProperty(USER, this.user);
+		}
+		
+		if (this.password != null)
+		{
+			properties.setProperty(PASSWORD, this.password);
+		}
+		
+		return properties;
 	}
 	
 	public void setProperties(Properties properties)
 	{
-		this.properties = properties;
+		this.user = properties.getProperty(USER);
+		this.password = properties.getProperty(PASSWORD);
 	}
 	
 	public int hashCode()
@@ -59,6 +96,6 @@ public class DriverDatabase implements Database
 	{
 		Driver driver = (Driver) object;
 		
-		return driver.connect(this.url, this.properties);
+		return driver.connect(this.url, this.getProperties());
 	}
 }
