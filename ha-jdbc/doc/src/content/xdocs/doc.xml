@@ -438,7 +438,7 @@ public class FasterFullSynchronizationStrategy extends FullSynchronizationStrate
 			<section id="JMX">
 				<title>Database Cluster Administration</title>
 				<p>
-					HA-JDBC database clusters are administered via a JMX management interface: <a href="api/net.sf.hajdbc.DatabaseClusterMBean">DatabaseClusterMBean</a>
+					HA-JDBC database clusters are administered via a JMX management interface: <a href="api/net/sf/hajdbc/DatabaseClusterMBean.html">DatabaseClusterMBean</a>
 				</p>
 				<p>
 					The MBean exposes the following methods:
