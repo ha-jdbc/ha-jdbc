@@ -35,7 +35,7 @@ public class RoundRobinBalancer extends AbstractBalancer
 	private Map databaseMap = new LinkedHashMap();
 	
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabaseSet()
+	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
 	 */
 	protected Collection getDatabases()
 	{
@@ -43,7 +43,7 @@ public class RoundRobinBalancer extends AbstractBalancer
 	}
 
 	/**
-	 * @see net.sf.hajdbc.LoadBalancer#add(net.sf.hajdbc.Database)
+	 * @see net.sf.hajdbc.Balancer#add(net.sf.hajdbc.Database)
 	 */
 	public synchronized boolean add(Database database)
 	{
@@ -58,7 +58,7 @@ public class RoundRobinBalancer extends AbstractBalancer
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.LoadBalancer#next()
+	 * @see net.sf.hajdbc.Balancer#next()
 	 */
 	public synchronized Database next()
 	{

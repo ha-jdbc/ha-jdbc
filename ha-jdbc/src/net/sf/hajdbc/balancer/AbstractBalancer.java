@@ -34,7 +34,7 @@ public abstract class AbstractBalancer implements Balancer
 	protected abstract Collection getDatabases();
 	
 	/**
-	 * @see net.sf.hajdbc.Balancer#done(net.sf.hajdbc.Database)
+	 * @see net.sf.hajdbc.Balancer#callback(net.sf.hajdbc.Database)
 	 */
 	public void callback(Database database)
 	{
@@ -58,7 +58,7 @@ public abstract class AbstractBalancer implements Balancer
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Balancer#toList()
+	 * @see net.sf.hajdbc.Balancer#toArray()
 	 */
 	public synchronized Database[] toArray()
 	{

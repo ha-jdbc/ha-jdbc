@@ -64,7 +64,7 @@ public class LoadBalancer extends AbstractBalancer
 	private TreeMap databaseMap = new TreeMap(comparator);
 	
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractLoadBalancer#getDatabaseSet()
+	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
 	 */
 	protected Collection getDatabases()
 	{

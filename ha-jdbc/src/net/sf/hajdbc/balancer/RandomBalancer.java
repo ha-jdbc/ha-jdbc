@@ -39,7 +39,7 @@ public class RandomBalancer extends AbstractBalancer
 	private ArrayList databaseList = new ArrayList();
 	
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractLoadBalancer#createSet()
+	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
 	 */
 	protected Collection getDatabases()
 	{
@@ -90,7 +90,7 @@ public class RandomBalancer extends AbstractBalancer
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.LoadBalancer#next()
+	 * @see net.sf.hajdbc.Balancer#next()
 	 */
 	public synchronized Database next()
 	{

@@ -41,6 +41,11 @@ public final class BalancerEnum
 		balancerMap.put("load", LoadBalancer.class);
 	}
 
+	/**
+	 * Returns an implementation class of Balancer
+	 * @param id an enumerated value
+	 * @return a Class that is assignable to Balancer
+	 */
 	public static Class getBalancerClass(String id)
 	{
 		Class balancerClass = (Class) balancerMap.get(id);

@@ -26,17 +26,48 @@ package net.sf.hajdbc;
  */
 public interface Balancer
 {
+	/**
+	 * Removes the specified database from this balancer.
+	 * @param database a database descriptor
+	 * @return true, if the database was removed successfully, false if it did not exist.
+	 */
 	public boolean remove(Database database);
 
+	/**
+	 * Adds the specified database to this balancer.
+	 * @param database a database descriptor
+	 * @return true, if the database was added successfully, false if already existed.
+	 */
 	public boolean add(Database database);
 
+	/**
+	 * Returns the first database from this balancer
+	 * @return the first database from this balancer
+	 */
 	public Database first();
 
+	/**
+	 * Returns the next database from this balancer
+	 * @return the next database from this balancer
+	 */
 	public Database next();
 
+	/**
+	 * Returns the databases known to this balancer
+	 * @return an array of database descriptors
+	 */
 	public Database[] toArray();
 
+	/**
+	 * Check whether the specified database is known to this balancer
+	 * @param database a database descriptor
+	 * @return true, if the database is known to this balancer, false otherwise
+	 */
 	public boolean contains(Database database);
 	
+	/**
+	 * Callback method
+	 * @param database a database descriptor
+	 */
 	public void callback(Database database);
 }
