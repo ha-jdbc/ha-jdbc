@@ -41,9 +41,14 @@ public class XADataSourceDatabase extends ConnectionPoolDataSourceDatabase
 	public Connection connect(Object connectionFactory) throws SQLException
 	{
 		XADataSource dataSource = (XADataSource) connectionFactory;
-		XAConnection connection = (this.user != null) ? dataSource.getXAConnection(this.user, this.password) : dataSource.getXAConnection();
+		XAConnection connection = this.getXAConnection(dataSource);
 		
 		return this.getConnection(connection);
+	}
+	
+	public XAConnection getXAConnection(XADataSource dataSource) throws SQLException
+	{
+		return (this.user != null) ? dataSource.getXAConnection(this.user, this.password) : dataSource.getXAConnection();
 	}
 	
 	/**
