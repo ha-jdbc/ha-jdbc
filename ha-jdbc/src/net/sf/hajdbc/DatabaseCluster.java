@@ -86,21 +86,6 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 
 				this.activate(database, strategy);
 			}
-			catch (java.sql.SQLException e)
-			{
-				log.error("Synchronization failed", e);
-				if (e.getNextException() != null)
-				{
-					log.error("Caused by: ", e.getNextException());
-				}
-				throw new SQLException(e);
-			}
-			catch (Throwable e)
-			{
-				log.error("Synchronization failed", e);
-				throw new SQLException(e);
-			}
-/*			
 			catch (ClassNotFoundException e)
 			{
 				throw new SQLException(e);
@@ -113,7 +98,6 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 			{
 				throw new SQLException(e);
 			}
-*/
 		}
 	}
 	
@@ -174,7 +158,6 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 			this.activate(inactiveDatabase);
 			
 			// Release table locks
-			// Lock all tables on all active databases
 			for (int i = 0; i < activeConnections.length; ++i)
 			{
 				activeConnections[i].rollback();
@@ -182,31 +165,26 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 		}
 		finally
 		{
-			if (inactiveConnection != null)
-			{
-				try
-				{
-					inactiveConnection.close();
-				}
-				catch (java.sql.SQLException e)
-				{
-					log.warn("Failed to close connection of database: " + inactiveDatabase);
-				}
-			}
+			this.close(inactiveConnection, inactiveDatabase);
 			
 			for (int i = 0; i < activeConnections.length; ++i)
 			{
-				if (activeConnections[i] != null)
-				{
-					try
-					{
-						activeConnections[i].close();
-					}
-					catch (java.sql.SQLException e)
-					{
-						log.warn("Failed to close connection to database: " + databaseList.get(i));
-					}
-				}
+				this.close(activeConnections[i], (Database) databaseList.get(i));
+			}
+		}
+	}
+	
+	private void close(Connection connection, Database database)
+	{
+		if (connection != null)
+		{
+			try
+			{
+				connection.close();
+			}
+			catch (java.sql.SQLException e)
+			{
+				log.warn("Failed to close connection of database: " + database);
 			}
 		}
 	}
