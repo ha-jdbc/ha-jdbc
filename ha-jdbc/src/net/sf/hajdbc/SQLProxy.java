@@ -159,7 +159,7 @@ public abstract class SQLProxy
 		
 		if (databaseCluster.isActive(database))
 		{
-			this.initCause(exception);
+//			this.initCause(exception);
 			
 			throw exception;
 		}
@@ -169,7 +169,7 @@ public abstract class SQLProxy
 			log.error("Database " + database.getId() + " from cluster " + this.getDatabaseCluster().getDescriptor().getName() + " was deactivated.", exception);
 		}
 	}
-
+/*
 	private void initCause(SQLException e)
 	{
 		SQLException exception = e.getNextException();
@@ -181,7 +181,7 @@ public abstract class SQLProxy
 			initCause(exception);
 		}
 	}
-	
+*/	
 	protected abstract DatabaseCluster getDatabaseCluster();
 
 	private class Executor implements Runnable
