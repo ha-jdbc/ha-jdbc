@@ -66,7 +66,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -84,7 +84,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -118,7 +118,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -136,7 +136,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -154,7 +154,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -172,7 +172,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -190,7 +190,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -208,7 +208,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -226,7 +226,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -244,7 +244,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -262,7 +262,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -280,7 +280,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -298,7 +298,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -317,7 +317,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -335,7 +335,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -353,7 +353,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -371,7 +371,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -389,7 +389,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -407,7 +407,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -425,7 +425,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -443,7 +443,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -461,7 +461,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -479,7 +479,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -497,7 +497,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -515,7 +515,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -533,7 +533,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -567,7 +567,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -617,7 +617,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -635,7 +635,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -653,7 +653,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -671,7 +671,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -689,6 +689,6 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 }
