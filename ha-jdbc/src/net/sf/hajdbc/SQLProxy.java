@@ -83,32 +83,37 @@ public abstract class SQLProxy
 	public final Map executeWrite(Operation operation) throws SQLException
 	{
 		List databaseList = this.getDatabaseCluster().getDescriptor().getActiveDatabaseList();
-		Thread[] executorThreads = new Thread[databaseList.size()];
+		Thread[] threads = new Thread[databaseList.size()];
 		
-		Map returnValueMap = new HashMap(executorThreads.length);
+		Map returnValueMap = new HashMap(threads.length);
 		SQLException exception = new SQLException();
 
-		for (int i = 0; i < executorThreads.length; ++i)
+		for (int i = 0; i < threads.length; ++i)
 		{
 			Database database = (Database) databaseList.get(i);
 			Object sqlObject = this.sqlObjectMap.get(database);
 			
 			Executor executor = new Executor(operation, database, sqlObject, returnValueMap, exception);
 			
-			executorThreads[i] = new Thread(executor);
-			executorThreads[i].start();
+			threads[i] = new Thread(executor);
+			threads[i].start();
 		}
 		
 		// Wait until all threads have completed
-		for (int i = 0; i < executorThreads.length; ++i)
+		for (int i = 0; i < threads.length; ++i)
 		{
-			try
+			Thread thread = threads[i];
+			
+			if (thread.isAlive())
 			{
-				executorThreads[i].join();
-			}
-			catch (InterruptedException e)
-			{
-				// Ignore
+				try
+				{
+					thread.join();
+				}
+				catch (InterruptedException e)
+				{
+					// Ignore
+				}
 			}
 		}
 
