@@ -5,7 +5,7 @@ package net.sf.ha.jdbc;
  * @version $Revision$
  * @since   1.0
  */
-public interface DistributedClusterManagerMBean
+public interface DistributedDatabaseClusterManagerMBean
 {
 	
 }

@@ -12,13 +12,13 @@ import org.jgroups.blocks.NotificationBus;
  * @version $Revision$
  * @since   1.0
  */
-public class DistributedClusterManager extends DatabaseClusterManager implements DistributedClusterManagerMBean, NotificationBus.Consumer
+public class DistributedDatabaseClusterManager extends DatabaseClusterManager implements DistributedDatabaseClusterManagerMBean, NotificationBus.Consumer
 {
-	private static Log log = LogFactory.getLog(DistributedClusterManager.class);
+	private static Log log = LogFactory.getLog(DistributedDatabaseClusterManager.class);
 	
 	private NotificationBus notificationBus;
 	
-	public DistributedClusterManager()
+	public DistributedDatabaseClusterManager()
 	{
 		try
 		{
