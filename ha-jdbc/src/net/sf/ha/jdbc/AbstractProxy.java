@@ -52,33 +52,35 @@ public abstract class AbstractProxy
 	
 	public final Map executeWrite(Operation operation) throws SQLException
 	{
-		Map returnValueMap = null;
-		Set databaseSet = null;
+		Map objectMap = null;
 		
+		// Avoid prolonged synchronization by making a copy
 		synchronized (this.objectMap)
 		{
-			if (this.objectMap.size() == 0)
-			{
-				throw new SQLException("No available connection");
-			}
+			objectMap = new HashMap(this.objectMap);
+		}
+		
+		if (objectMap.size() == 0)
+		{
+			throw new SQLException("No available connection");
+		}
+		
+		Map returnValueMap = new HashMap(objectMap.size());
+		Set databaseSet = new HashSet(objectMap.keySet());
+		
+		Iterator objectMapEntries = objectMap.entrySet().iterator();
+		
+		while (objectMapEntries.hasNext())
+		{
+			Map.Entry objectMapEntry = (Map.Entry) objectMapEntries.next();
+			Database database = (Database) objectMapEntry.getKey();
+			Object object = objectMapEntry.getValue();
 			
-			returnValueMap = new HashMap(this.objectMap.size());
-			databaseSet = new HashSet(this.objectMap.keySet());
+			Executor executor = new Executor(operation, database, object, returnValueMap, databaseSet);
 			
-			Iterator objectMapEntries = this.objectMap.entrySet().iterator();
+			databaseSet.add(database);
 			
-			while (objectMapEntries.hasNext())
-			{
-				Map.Entry objectMapEntry = (Map.Entry) objectMapEntries.next();
-				Database database = (Database) objectMapEntry.getKey();
-				Object object = objectMapEntry.getValue();
-				
-				Executor executor = new Executor(operation, database, object, returnValueMap, databaseSet);
-				
-				databaseSet.add(database);
-				
-				new Thread(executor).start();
-			}
+			new Thread(executor).start();
 		}
 		
 		// Wait until all threads have completed
@@ -92,7 +94,7 @@ public abstract class AbstractProxy
 				}
 				catch (InterruptedException e)
 				{
-					// Ignore
+					throw new SQLException("Interruption during execution.");
 				}
 			}
 		}
