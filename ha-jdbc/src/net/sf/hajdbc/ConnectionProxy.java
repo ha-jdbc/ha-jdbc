@@ -405,7 +405,7 @@ public class ConnectionProxy extends AbstractConnectionProxy implements java.sql
 			}
 		};
 		
-		return this.isReadOnly() ? (Statement) this.executeRead(operation) : new StatementProxy(this, this.executeSet(operation));
+		return this.isReadOnly() ? (Statement) this.executeGet(operation) : new StatementProxy(this, this.executeSet(operation));
 	}
 
 	/**
@@ -421,7 +421,7 @@ public class ConnectionProxy extends AbstractConnectionProxy implements java.sql
 			}
 		};
 		
-		return this.isReadOnly() ? (Statement) this.executeRead(operation) : new StatementProxy(this, this.executeSet(operation));
+		return this.isReadOnly() ? (Statement) this.executeGet(operation) : new StatementProxy(this, this.executeSet(operation));
 	}
 
 	/**
@@ -437,7 +437,7 @@ public class ConnectionProxy extends AbstractConnectionProxy implements java.sql
 			}
 		};
 		
-		return this.isReadOnly() ? (Statement) this.executeRead(operation) : new StatementProxy(this, this.executeSet(operation));
+		return this.isReadOnly() ? (Statement) this.executeGet(operation) : new StatementProxy(this, this.executeSet(operation));
 	}
 
 	/**
