@@ -39,6 +39,24 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
+ * Database-independent synchronization strategy that only updates differences between two databases.
+ * This strategy is best used when there are <em>few</em> differences between the active database and the inactive database (i.e. barely out of sync).
+ * The following algorithm is used:
+ * <ol>
+ *  <li>Drop the foreign keys on the inactive database (to avoid integrity constraint violations)</li>
+ *  <li>For each database table:</li>
+ *  <ol>
+ *   <li>Find the primary key(s) of the table</li>
+ *   <li>Query all rows in the inactive database table, sorting by the primary key(s)</li>
+ *   <li>Query all rows on the active database table</li>
+ *   <li>For each row in table:</li>
+ *   <ol>
+ *    <li>If primary key of the rows are the same, determine whether or not row needs to be updated</li>
+ *    <li>Otherwise, determine whether row should be deleted, or a new row is to be inserted</li>
+ *   </ol>
+ *  </ol>
+ *  <li>Re-create the foreign keys on the inactive database</li>
+ * </ol>
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
@@ -48,7 +66,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 	private static Log log = LogFactory.getLog(DifferentialSynchronizationStrategy.class);
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseSynchronizationStrategy#synchronize(net.sf.hajdbc.DatabaseClusterDescriptor, java.sql.Connection, java.sql.Connection, java.util.List)
+	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, java.util.List, net.sf.hajdbc.DatabaseClusterDescriptor)
 	 */
 	public void synchronize(Connection inactiveConnection, Connection activeConnection, List tableList, DatabaseClusterDescriptor descriptor) throws java.sql.SQLException
 	{
