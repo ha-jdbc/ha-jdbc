@@ -25,10 +25,10 @@
 					<ul>
 						<li>Asynchronous replication solutions perform adequately but impose a replication latency and do not provide transactional concurrency.</li>
 						<li>Synchronous replication solutions may provide transactional concurrency but often impose a high performance cost.</li>
-						<li>The asymmetric master-slave design does not provide failover of the master database.</li>
+						<li>The asymmetric master-slave design does not provide fail-over of the master database.</li>
 					</ul>
 					<li>
-						The <link href="http://c-jdbc.objectweb.org">C-JDBC</link> project, hosted at <link href="http://www.objectweb.org">ObjectWeb</link>, does an impressive job at coming close to a full enterprise database clustering solution.
+						The <link href="http://c-jdbc.objectweb.org">C-JDBC</link> project, hosted at <link href="http://www.objectweb.org">ObjectWeb</link>, makes an impressive attempt at providing a full database clustering solution.
 						C-JDBC provides many sophisticated features, but due to the nature of its design, limits the functionality of the underlying JDBC drivers.
 						Present issues aside, it does many things well and is definitely worth checking out.
 					</li>
@@ -42,7 +42,7 @@
 					<li>Support for full JDBC 3.0 (Java 1.4) feature set.</li>
 					<li>Transparent integration.</li>
 					<li>Allows use of vendor implementations of SQL types (e.g. <code>Blob</code>, <code>Clob</code>, <code>Ref</code>, etc).</li>
-					<li>Improves performance of concurrent read-access by distributing load accross individual cluster nodes.</li>
+					<li>Improves performance of concurrent read-access by distributing load across individual cluster nodes.</li>
 					<li>Ensures data concurrency by deactivating failed cluster nodes.</li>
 					<li>Support for clustered client environments (i.e. Distributable cluster registry) (coming soon)</li>
 					<li>Library of connected and disconnected cluster-aware <code>javax.sql.RowSet</code> implementations (coming soon)</li>
@@ -58,7 +58,7 @@
 					<li>Hot re-activation of deactivated cluster nodes.</li>
 					<li>Auto re-synchronization of deactivated cluster nodes.</li>
 					<li><code>ResultSet</code> caching.</li>
-					<li>Heterogenous clusters (i.e. different database vendors within in the same cluster).</li>
+					<li>Heterogeneous clusters (i.e. different database vendors within in the same cluster).</li>
 					<li>Support for write operations (i.e. <code>setXXX(...)</code>) in third-party <code>javax.sql.RowSet</code> implementations.</li>
 				</ul>
 			</section>
@@ -118,12 +118,8 @@
 							<br/>
 						</li>
 						<li>Use the following URL in subsequent calls to <code>DriverManager.connect(...)</code><br/>
-							<p>
-								<code>jdbc:ha-jdbc:</code><em>cluster-name</em>
-							</p>
-							<p>
-								e.g.
-							</p>
+							<p><code>jdbc:ha-jdbc:</code><em>cluster-name</em></p>
+							<p>e.g.</p>
 							<p>
 								<code>Connection connection = DriverManager.connect("jdbc:ha-jdbc:cluster1", "postgres", "password");</code>
 							</p>
@@ -133,7 +129,7 @@
 				<section>
 					<title>DataSource-based access</title>
 					<ol>
-						<li>Simply add an HA-JDBC <code>DataSource</code> using the following class names to your server configuration along side your existing JDBC <code>DataSource</code>s:<br/>
+						<li>If your server is configured to use a DataSource implementation provided by your JDBC driver, then add an HA-JDBC DataSource using the appropriate class name to your server configuration along side your existing JDBC DataSources:<br/>
 							<br/>
 							<ul>
 								<li><code>net.sf.ha.jdbc.DataSourceProxy</code></li>
@@ -142,7 +138,9 @@
 							</ul>
 							<br/>
 						</li>
-						<li>Use the JNDI name configured in your cluster configuration file to access the HA-JDBC DataSource<br/>
+						<li>If your server is configured to use a DataSource implementation <em>NOT</em> provided by your JDBC driver, then replace the Driver class name, URL, and username/password values in the existing DataSource definition with the HA-JDBC values as described in the "DriverManager-based access" section.<br/><br/></li>
+						<li>Use the JNDI name configured in your cluster configuration file to access the HA-JDBC DataSource.<br/>
+							<p>e.g.</p>
 							<p>
 								<code>Context context = new InitialContext();</code><br/>
 								<code>DataSource dataSource = (DataSource) context.lookup("java:comp/env/jdbc/Database1");</code><br/>
@@ -192,7 +190,7 @@
 				<li>If the validation check fails (i.e. the database is down), the database is globally deactivated, and the request is passed on to another node in the cluster</li>
 			</ul>
 			<p>
-				Write requests are performed asynchronously.  The call returns when all databases have completed the request.
+				Write requests are executed on all nodes in the cluster in parallel and returns only after all nodes have completed.
 				If an exception is caught, the database that threw it is tested for validity:
 			</p>
 			<ul>

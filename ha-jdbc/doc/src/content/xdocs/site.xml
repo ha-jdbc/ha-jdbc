@@ -16,7 +16,7 @@ See http://xml.apache.org/forrest/linking.html for more info
 
 	<home label="Home" tab="ha-jdbc">
 		<about label="About" href="index.html"/>
-		<download label="Download" href="http://sourceforge.net/project/showfiles.php?group_id=111957"/>
+		<project label="Project Page" href="http://www.sourceforge.net/projects/ha-jdbc"/>
 		<!--changes label="Changes" href="changes.html" description="History of Changes" />
 		<todo label="Todo" href="todo.html"  description="Todo List" /-->
 	</home>
