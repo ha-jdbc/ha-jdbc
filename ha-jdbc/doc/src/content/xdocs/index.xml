@@ -39,8 +39,9 @@
 				<li><a href="http://www.daffodildb.com/replicator.html">Daffodil Replicator</a></li>
 				<li><a href="http://dev.mysql.com/doc/mysql/en/Replication.html">MySQL</a> - Contains built-in replication capability</li>
 				<li><a href="http://www.mysql.com/products/cluster/">MySQL Cluster</a> - Fault tolerant database architecture using NDB Cluster storage engine</li>
-				<li><a href="http://gborg.postgresql.org/project/slony1/projdisplay.php">Slony-1</a> - A replication system for PostgreSQL</li>
-				<li><a href="http://gborg.postgresql.org/project/erserver/projdisplay.php">eRServer</a> - Another replication engine for PostgreSQL</li>
+				<li><a href="http://gborg.postgresql.org/project/slony1/">Slony-1</a> - A single-master/multi-slave replication system for PostgreSQL with cascading and slave promotion</li>
+				<li><a href="http://gborg.postgresql.org/project/erserver/">eRServer</a> - Trigger-based single-master/multi-slave asynchronous replication system for PostgreSQL</li>
+				<li><a href="http://pgfoundry.org/projects/pgcluster/">PGCluster</a> - Multi-master synchronous replication system for PostgreSQL</li>
 				<li><a href="http://www.meta.com.au/index.php?option=content&amp;task=view&amp;id=23&amp;Itemid=33">FBReplicator</a> - Replicator server for Firebird</li>
 			</ul>
 		</section>
