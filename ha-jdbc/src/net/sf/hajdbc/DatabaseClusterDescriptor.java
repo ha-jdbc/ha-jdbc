@@ -31,11 +31,11 @@ import java.util.Map;
 public class DatabaseClusterDescriptor
 {
 	private String name;
-	private String validateSQL = "SELECT 1";
-	private String createForeignKeySQL = "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4})";
-	private String dropForeignKeySQL = "ALTER TABLE {1} DROP CONSTRAINT {0}";
-	private String createIndexSQL = "CREATE INDEX {0} ON {1} ({2})";
-	private String dropIndexSQL = "DROP INDEX {0}";
+	private String validateSQL;
+	private String createForeignKeySQL;
+	private String dropForeignKeySQL;
+	private String createIndexSQL;
+	private String dropIndexSQL;
 	private Map databaseMap = new HashMap();
 	
 	/**

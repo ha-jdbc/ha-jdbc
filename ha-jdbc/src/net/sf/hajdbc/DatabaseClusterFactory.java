@@ -1,7 +1,22 @@
 /*
- * Copyright (c) 2004, Identity Theft 911, LLC.  All rights reserved.
- *
- * $Id$
+ * HA-JDBC: High-Availability JDBC
+ * Copyright (C) 2004 Paul Ferraro
+ * 
+ * This library is free software; you can redistribute it and/or modify it 
+ * under the terms of the GNU Lesser General Public License as published by the 
+ * Free Software Foundation; either version 2.1 of the License, or (at your 
+ * option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+ * for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, 
+ * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * 
+ * Contact: ferraro@users.sourceforge.net
  */
 package net.sf.hajdbc;
 
@@ -16,12 +31,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
 import org.apache.commons.logging.Log;
@@ -29,7 +40,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
 import org.jibx.runtime.IUnmarshallingContext;
-import org.jibx.runtime.JiBXException;
 
 /**
  * @author  Paul Ferraro
@@ -99,36 +109,22 @@ public final class DatabaseClusterFactory
 			{
 				DatabaseClusterDescriptor descriptor = (DatabaseClusterDescriptor) descriptors.next();
 				
-				DatabaseCluster databaseCluster = new DatabaseCluster(descriptor);
+				DatabaseClusterMBean databaseCluster = new DatabaseCluster(descriptor);
+				DatabaseClusterDecoratorDescriptor decoratorDescriptor = configuration.getDecoratorDescriptor();
 				
-				server.registerMBean(databaseCluster, ObjectName.getInstance("net.sf.hajdbc", "id", databaseCluster.getName()));
+				if (decoratorDescriptor != null)
+				{
+					databaseCluster = decoratorDescriptor.decorate(databaseCluster);
+				}
+				
+				server.registerMBean(databaseCluster, ObjectName.getInstance("net.sf.hajdbc", "id", ObjectName.quote(databaseCluster.getName())));
 				
 				this.databaseClusterMap.put(descriptor.getName(), databaseCluster);
 			}
 		}
-		catch (IOException e)
+		catch (Exception e)
 		{
-			throw new SQLException("Failed to read " + resourceURL, e);
-		}
-		catch (JiBXException e)
-		{
-			throw new SQLException("Failed to parse " + resourceURL, e);
-		}
-		catch (InstanceAlreadyExistsException e)
-		{
-			throw new SQLException("Failed to parse " + resourceURL, e);
-		}
-		catch (MBeanRegistrationException e)
-		{
-			throw new SQLException("Failed to parse " + resourceURL, e);
-		}
-		catch (NotCompliantMBeanException e)
-		{
-			throw new SQLException("Failed to parse " + resourceURL, e);
-		}
-		catch (MalformedObjectNameException e)
-		{
-			throw new SQLException("Failed to parse " + resourceURL, e);
+			throw new SQLException("Failed to read or parse " + resourceURL, e);
 		}
 		finally
 		{
@@ -177,12 +173,12 @@ public final class DatabaseClusterFactory
 	
 	private static class Configuration
 	{
-		private Object listenerDescriptor = null;
+		private DatabaseClusterDecoratorDescriptor decoratorDescriptor = null;
 		private List descriptorList = new LinkedList();
 		
-		public Object getListenerDescriptor()
+		public DatabaseClusterDecoratorDescriptor getDecoratorDescriptor()
 		{
-			return this.listenerDescriptor;
+			return this.decoratorDescriptor;
 		}
 		
 		public List getDescriptorList()

@@ -88,7 +88,7 @@ public final class DriverProxy implements java.sql.Driver
 	 */
 	public boolean acceptsURL(String url) throws SQLException
 	{
-		return (DatabaseClusterFactory.getInstance().getDatabaseCluster(url) != null);
+		return url.startsWith("jdbc:ha-jdbc:") && (DatabaseClusterFactory.getInstance().getDatabaseCluster(url) != null);
 	}
 	
 	/**

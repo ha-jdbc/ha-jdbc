@@ -20,12 +20,7 @@
  */
 package net.sf.hajdbc.distributable;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.sql.SQLException;
-
+import net.sf.hajdbc.DatabaseClusterDecoratorDescriptor;
 import net.sf.hajdbc.DatabaseClusterMBean;
 
 /**
@@ -33,34 +28,20 @@ import net.sf.hajdbc.DatabaseClusterMBean;
  * @version $Revision$
  * @since   1.0
  */
-public abstract class DatabaseCommand implements Externalizable
+public class DistributableDatabaseClusterDescriptor implements DatabaseClusterDecoratorDescriptor
 {
-	protected String databaseId;
+	private String protocol;
 	
 	/**
-	 * Constructs a new DatabaseCommand.
-	 * @param databaseId
+	 * @see net.sf.hajdbc.DatabaseClusterDecoratorDescriptor#decorate(net.sf.hajdbc.DatabaseClusterMBean)
 	 */
-	public DatabaseCommand(String databaseId)
+	public DatabaseClusterMBean decorate(DatabaseClusterMBean databaseCluster) throws Exception
 	{
-		this.databaseId = databaseId;
+		return new DistributableDatabaseCluster(databaseCluster, this);
 	}
 	
-	/**
-	 * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
-	 */
-	public void writeExternal(ObjectOutput output) throws IOException
+	public String getProtocol()
 	{
-		output.writeUTF(this.databaseId);
+		return this.protocol;
 	}
-
-	/**
-	 * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
-	 */
-	public void readExternal(ObjectInput input) throws IOException
-	{
-		this.databaseId = input.readUTF();
-	}
-	
-	public abstract void execute(DatabaseClusterMBean databaseCluster) throws SQLException;
 }

@@ -18,49 +18,35 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.distributable;
-
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.sql.SQLException;
-
-import net.sf.hajdbc.DatabaseClusterMBean;
+package net.sf.hajdbc;
 
 /**
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public abstract class DatabaseCommand implements Externalizable
+public abstract class DatabaseClusterDecorator implements DatabaseClusterMBean
 {
-	protected String databaseId;
-	
-	/**
-	 * Constructs a new DatabaseCommand.
-	 * @param databaseId
-	 */
-	public DatabaseCommand(String databaseId)
+	protected DatabaseClusterMBean databaseCluster;
+
+	protected DatabaseClusterDecorator(DatabaseClusterMBean databaseCluster)
 	{
-		this.databaseId = databaseId;
+		this.databaseCluster = databaseCluster;
 	}
 	
 	/**
-	 * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#getName()
 	 */
-	public void writeExternal(ObjectOutput output) throws IOException
+	public String getName()
 	{
-		output.writeUTF(this.databaseId);
+		return this.databaseCluster.getName();
 	}
 
 	/**
-	 * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#isActive(java.lang.String)
 	 */
-	public void readExternal(ObjectInput input) throws IOException
+	public boolean isActive(String databaseId)
 	{
-		this.databaseId = input.readUTF();
+		return this.databaseCluster.isActive(databaseId);
 	}
-	
-	public abstract void execute(DatabaseClusterMBean databaseCluster) throws SQLException;
 }

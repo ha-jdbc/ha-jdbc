@@ -1,13 +1,29 @@
 /*
- * Copyright (c) 2004, Identity Theft 911, LLC.  All rights reserved.
- *
- * $Id$
+ * HA-JDBC: High-Availability JDBC
+ * Copyright (C) 2004 Paul Ferraro
+ * 
+ * This library is free software; you can redistribute it and/or modify it 
+ * under the terms of the GNU Lesser General Public License as published by the 
+ * Free Software Foundation; either version 2.1 of the License, or (at your 
+ * option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+ * for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, 
+ * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * 
+ * Contact: ferraro@users.sourceforge.net
  */
 package net.sf.hajdbc.distributable;
 
 import java.io.Serializable;
 import java.sql.SQLException;
 
+import net.sf.hajdbc.DatabaseClusterDecorator;
 import net.sf.hajdbc.DatabaseClusterMBean;
 
 import org.apache.commons.logging.Log;
@@ -20,35 +36,19 @@ import org.jgroups.blocks.NotificationBus;
  * @version $Revision$
  * @since   1.0
  */
-public class DistributableDatabaseCluster implements DatabaseClusterMBean, NotificationBus.Consumer
+public class DistributableDatabaseCluster extends DatabaseClusterDecorator implements NotificationBus.Consumer
 {
 	private static Log log = LogFactory.getLog(DistributableDatabaseCluster.class);
 	
-	private DatabaseClusterMBean databaseCluster;
 	private NotificationBus notificationBus;
 	
-	public DistributableDatabaseCluster(DatabaseClusterMBean databaseCluster, String protocol) throws Exception
+	public DistributableDatabaseCluster(DatabaseClusterMBean databaseCluster, DistributableDatabaseClusterDescriptor descriptor) throws Exception
 	{
-		this.databaseCluster = databaseCluster;
-		this.notificationBus = new NotificationBus(databaseCluster.getName(), protocol);
+		super(databaseCluster);
+		
+		this.notificationBus = new NotificationBus(databaseCluster.getName(), descriptor.getProtocol());
 		this.notificationBus.setConsumer(this);
 		this.notificationBus.start();
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseClusterMBean#getName()
-	 */
-	public String getName()
-	{
-		return this.databaseCluster.getName();
-	}
-
-	/**
-	 * @see net.sf.hajdbc.DatabaseClusterMBean#isActive(java.lang.String)
-	 */
-	public boolean isActive(String databaseId)
-	{
-		return this.databaseCluster.isActive(databaseId);
 	}
 
 	/**

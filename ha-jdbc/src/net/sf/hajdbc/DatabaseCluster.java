@@ -76,7 +76,7 @@ public class DatabaseCluster extends SQLProxy implements DatabaseClusterMBean
 		{
 			Database database = (Database) databases.next();
 			
-			databaseConnectorMap.put(database.getId(), database.getDatabaseConnector());
+			databaseConnectorMap.put(database, database.getDatabaseConnector());
 		}
 		
 		return Collections.synchronizedMap(databaseConnectorMap);
