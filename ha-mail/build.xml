@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <project name="ha-mail" default="jar" basedir=".">
 
+	<property file="${basedir}/build.properties"></property>
+	
 	<property name="src.dir" location="${basedir}/src"></property>
 	<property name="lib.dir" location="${basedir}/lib"></property>
 	<property name="lib.compile.dir" location="${lib.dir}/compile"></property>
