@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<project name="ha-jdbc" default="jar" basedir=".">
+	
+	<property name="build.dir" location="${basedir}/build"></property>
+	<property name="src.dir" location="${basedir}/src"></property>
+	<property name="lib.dir" location="${basedir}/lib"></property>
+	<property name="lib.compile.dir" location="${lib.dir}/compile"></property>
+	<property name="conf.dir" location="${basedir}/conf"></property>
+	<property name="jibx.conf.dir" location="${conf.dir}/jibx"></property>
+	<property name="jar.file" location="${basedir}/${ant.project.name}.jar"></property>
+
+	<path id="classpath">
+		<dirset dir="${build.dir}"></dirset>
+		<fileset dir="${lib.dir}" includes="*.jar"></fileset>
+		<fileset dir="${lib.compile.dir}" includes="*.jar"></fileset>
+	</path>
+
+	<taskdef name="bind" classname="org.jibx.binding.ant.CompileTask">
+		<classpath>
+			<fileset dir="${lib.dir}">
+				<include name="jibx-run-*.jar"/>
+				<include name="xpp3-*.jar"/>
+			</fileset>
+			<fileset dir="${lib.compile.dir}">
+				<include name="jibx-bind-*.jar"/>
+				<include name="bcel-*.jar"/>
+			</fileset>
+		</classpath>
+	</taskdef>
+	
+	<target name="clean">
+		<delete dir="build" quiet="true"></delete>
+		<delete file="${jar.file}" quiet="true"></delete>
+	</target>
+	
+	<target name="init">
+		<mkdir dir="${build.dir}"></mkdir>
+	</target>
+	
+    <target name="compile" depends="init">
+        <javac srcdir="${src.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="classpath"></javac>
+    </target>
+
+    <target name="bind" depends="compile">
+		<bind verbose="true" load="true">
+			<bindingfileset dir="${jibx.conf.dir}" includes="*.xml"/>
+			<classpath refid="classpath"></classpath>
+		</bind> 
+    </target>
+
+    <target name="jar" depends="bind">
+        <jar jarfile="${jar.file}">
+			<fileset dir="${build.dir}"></fileset>
+		</jar>
+    </target>
+
+</project>
+
