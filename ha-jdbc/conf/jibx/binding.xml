@@ -1,9 +1,32 @@
 <?xml version="1.0"?>
 <!DOCTYPE binding SYSTEM "binding.dtd">
-<binding>
-	<mapping name="" class="">
-		<collection>
-			
-		</collection>
+<binding direction="input">
+	<mapping name="ha-jdbc" class="net.sf.ha.jdbc.DatabaseClusterManager">
+		<collection add-method="addDescriptor"></collection>
+	</mapping>
+	<mapping name="cluster" class="net.sf.ha.jdbc.DatabaseClusterDescriptor" value-style="attribute">
+		<value name="name" field="name"></value>
+		<value name="validate-sql" field="validateSQL"></value>
+		<collection field="databaseSet" type="java.util.HashSet"></collection>
+	</mapping>
+	<mapping name="driver" class="net.sf.ha.jdbc.DriverDatabase" value-style="element">
+		<value name="url" field="url" usage="optional"></value>
+		<value name="user" field="user" usage="optional"></value>
+		<value name="password" field="password" usage="optional"></value>
+	</mapping>
+	<mapping name="datasource" class="net.sf.ha.jdbc.DataSourceDatabase" value-style="element" >
+		<value name="name" field="name" usage="optional"></value>
+		<value name="user" field="user" usage="optional"></value>
+		<value name="password" field="password" usage="optional"></value>
+	</mapping>
+	<mapping name="pooled-datasource" class="net.sf.ha.jdbc.pool.ConnectionPoolDataSourceDatabase">
+		<value name="name" field="name" usage="optional"></value>
+		<value name="user" field="user" usage="optional"></value>
+		<value name="password" field="password" usage="optional"></value>
+	</mapping>
+	<mapping name="xa-datasource" class="net.sf.ha.jdbc.pool.xa.XADataSourceDatabase">
+		<value name="name" field="name" usage="optional"></value>
+		<value name="user" field="user" usage="optional"></value>
+		<value name="password" field="password" usage="optional"></value>
 	</mapping>
 </binding>

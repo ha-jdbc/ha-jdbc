@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!DOCTYPE ha-jdbc SYSTEM "ha-jdbc.dtd">
+<ha-jdbc>
+	<cluster name="resolution" validate-sql="SELECT 1">
+		<driver>
+			<url>jdbc:postgresql://localhost:5432/resolution</url>
+			<user>postgres</user>
+			<password>postgres</password>
+		</driver>
+		<driver>
+			<url>jdbc:postgresql://remote:5432/resolution</url>
+			<user>postgres</user>
+			<password>postgres</password>
+		</driver>
+	</cluster>
+	<cluster name="subsription" validate-sql="SELECT 1">
+		<datasource>
+			<name>java:comp/env/jdbc/subsription</name>
+			<user>postgres</user>
+			<password>postgres</password>
+		</datasource>
+		<datasource>
+			<name>java:comp/env/jdbc/subsription</name>
+			<user>postgres</user>
+			<password>postgres</password>
+		</datasource>
+	</cluster>
+</ha-jdbc>
