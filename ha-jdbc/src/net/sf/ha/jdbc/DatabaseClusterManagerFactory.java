@@ -3,7 +3,6 @@ package net.sf.ha.jdbc;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.URL;
 import java.sql.SQLException;
 
@@ -28,16 +27,17 @@ public class DatabaseClusterManagerFactory
 	{
 		if (databaseClusterManager == null)
 		{
-			URL url = DatabaseClusterManagerFactory.class.getResource("ha-jdbc.xml");
+			URL url = Thread.currentThread().getContextClassLoader().getResource("ha-jdbc.xml");
 			InputStream inputStream = null;
 			
 			try
 			{
 				inputStream = url.openStream();
+				
 				IBindingFactory factory = BindingDirectory.getFactory(DatabaseClusterManager.class);
 				IUnmarshallingContext context = factory.createUnmarshallingContext();
-				Reader reader = new InputStreamReader(inputStream);
-				databaseClusterManager = (DatabaseClusterManager) context.unmarshalDocument(reader);
+				
+				databaseClusterManager = (DatabaseClusterManager) context.unmarshalDocument(new InputStreamReader(inputStream));
 			}
 			catch (IOException e)
 			{
