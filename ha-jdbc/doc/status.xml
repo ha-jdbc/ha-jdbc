@@ -118,6 +118,11 @@
 				Modularize synchronization strategy configuration properties.
 			</action>
 		</actions>
+		<actions priority="Release 1.0">
+			<action context="code" dev="PF">
+				Build in i18n support for log messages.
+			</action>
+		</actions>
 		<actions priority="Release 1.1">
 			<action context="code" dev="PF">
 				Support weighted cluster nodes.
