@@ -223,7 +223,7 @@ public class MailTransport extends ConnectionAdapter implements MailSender
 	 */
 	public void send(Message message, Address[] addresses, TransportListener listener)
 	{
-		new TransportSender(this.senderThreadGroup, message, addresses, listener).start();
+		new TransportSender(this.senderThreadGroup, message, addresses, this.nextTransport(), listener).start();
 	}
 	
 	/**
@@ -400,21 +400,21 @@ public class MailTransport extends ConnectionAdapter implements MailSender
 	{
 		private Message message;
 		private Address[] addresses;
+		private Transport transport;
 		private TransportListener listener;
 		
-		public TransportSender(ThreadGroup threadGroup, Message message, Address[] addresses, TransportListener listener)
+		public TransportSender(ThreadGroup threadGroup, Message message, Address[] addresses, Transport transport, TransportListener listener)
 		{
 			super(threadGroup, (Runnable) null);
 			
 			this.message = message;
 			this.addresses = addresses;
+			this.transport = transport;
 			this.listener = listener;
 		}
 		
 		public void run()
 		{
-			Transport transport = MailTransport.this.nextTransport();
-			
 			boolean retry = true;
 			
 			while (retry && !this.isInterrupted())
@@ -425,10 +425,10 @@ public class MailTransport extends ConnectionAdapter implements MailSender
 				{
 					if (this.listener != null)
 					{
-						transport.addTransportListener(this.listener);
+						this.transport.addTransportListener(this.listener);
 					}
 					
-					transport.sendMessage(this.message, this.addresses);
+					this.transport.sendMessage(this.message, this.addresses);
 				}
 				catch (SendFailedException e)
 				{
@@ -440,15 +440,15 @@ public class MailTransport extends ConnectionAdapter implements MailSender
 					
 					if (this.listener != null)
 					{
-						transport.removeTransportListener(this.listener);
+						this.transport.removeTransportListener(this.listener);
 					}
 					
 					// Transport connection is dead
 					// Reconnect this transport
-					MailTransport.this.connect(transport);
+					MailTransport.this.connect(this.transport);
 
 					// Send again with a new transport
-					transport = MailTransport.this.nextTransport();
+					this.transport = MailTransport.this.nextTransport();
 					
 					retry = true;
 				}
@@ -464,11 +464,11 @@ public class MailTransport extends ConnectionAdapter implements MailSender
 			
 			if (this.listener != null)
 			{
-				transport.removeTransportListener(this.listener);
+				this.transport.removeTransportListener(this.listener);
 			}
 			
 			// Make transport available again
-			MailTransport.this.addTransport(transport);
+			MailTransport.this.addTransport(this.transport);
 		}
 	}
 }
