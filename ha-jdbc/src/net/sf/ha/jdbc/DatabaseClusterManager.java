@@ -1,6 +1,5 @@
 package net.sf.ha.jdbc;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -13,11 +12,10 @@ import java.util.Set;
  */
 public class DatabaseClusterManager
 {
-	private Set listenerSet = Collections.synchronizedSet(new HashSet());
 	// Maps cluster name -> DatabaseClusterDescriptor
-	private Map descriptorMap = Collections.synchronizedMap(new HashMap());
+	private Map descriptorMap = new HashMap();
 	// Maps cluster type -> Set of cluster names
-	private Map classMap = Collections.synchronizedMap(new HashMap());
+	private Map classMap = new HashMap();
 	
 	public void addDescriptor(Object databaseClusterDescriptor)
 	{
@@ -48,13 +46,8 @@ public class DatabaseClusterManager
 		return (Set) this.classMap.get(databaseClass);
 	}
 	
-	public void addDatabaseEventListener(DatabaseEventListener listener)
+	public void deactivate(String clusterName, Database database)
 	{
-		this.listenerSet.add(listener);
-	}
-	
-	public void removeDatabaseEventListener(DatabaseEventListener listener)
-	{
-		this.listenerSet.remove(listener);
+		this.getDescriptor(clusterName).removeDatabase(database);
 	}
 }
