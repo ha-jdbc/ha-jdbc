@@ -11,5 +11,12 @@ import javax.mail.event.TransportListener;
  */
 public interface MailSenderStrategy
 {
+	/**
+	 * Send the specified message using the specified sender notifying the specified listener of the outcome.
+	 * @param sender object responsible for actually sending the message.
+	 * @param message JavaMail message to send
+	 * @param listener object to be notified of sending outcome
+	 * @throws MessagingException if message cannot be sent
+	 */
 	public void send(MailSender sender, Message message, TransportListener listener) throws MessagingException;
 }

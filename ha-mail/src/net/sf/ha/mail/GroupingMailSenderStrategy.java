@@ -9,6 +9,8 @@ import javax.mail.MessagingException;
 import javax.mail.event.TransportListener;
 
 /**
+ * Abstract sender implementation that sends the message to groups of recipients rather than all at once.
+ * 
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
@@ -37,5 +39,10 @@ public abstract class GroupingMailSenderStrategy extends SimpleMailSenderStrateg
 		}
 	}
 	
+	/**
+	 * Organizes the specified addresses into groups.
+	 * @param addresses all recipients of the message to be sent
+	 * @return a collection of javax.mail.Address[]
+	 */
 	public abstract Collection groupAddresses(Address[] addresses);
 }

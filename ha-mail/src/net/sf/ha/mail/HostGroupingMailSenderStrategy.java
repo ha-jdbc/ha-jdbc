@@ -12,6 +12,8 @@ import javax.mail.Address;
 import javax.mail.internet.InternetAddress;
 
 /**
+ * Grouping sender implementation that groups addresses by host.
+ * 
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
