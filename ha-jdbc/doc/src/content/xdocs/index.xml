@@ -72,7 +72,7 @@
 				<p>Sample configuration file:</p>
 				<p>
 					<code><![CDATA[<?xml version="1.0"?>]]></code><br/>
-					<code><![CDATA[<!DOCTYPE ha-jdbc SYSTEM "ha-jdbc.dtd">]]></code><br/>
+					<code><![CDATA[<!DOCTYPE ha-jdbc PUBLIC "-//HA-JDBC//DTD HA-JDBC 1.0//EN" "ha-jdbc-1.0.dtd">]]></code><br/>
 					<code><![CDATA[<ha-jdbc>]]></code><br/>
 					<code>&nbsp;&nbsp;<![CDATA[<local><!-- These clusters will only be referenced from one JVM -->]]></code><br/>
 					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<cluster name="jdbc:ha-jdbc:cluster" validate-sql="SELECT 1">]]></code><br/>
@@ -121,8 +121,8 @@
 						<li>As with your existing JDBC drivers, the HA-JDBC driver must first be loaded.  This can be accomplished in one of two ways:<br/>
 							<br/>
 							<ul>
-								<li>Add <code>net.sf.ha.jdbc.DriverProxy</code> to your <code>jdbc.drivers</code> system property.</li>
-								<li>Explicity load the <code>net.sf.ha.jdbc.DriverProxy</code> class using <code>Class.forName(...)</code>.<br/>
+								<li>Add <code>net.sf.hajdbc.DriverProxy</code> to your <code>jdbc.drivers</code> system property.</li>
+								<li>Explicity load the <code>net.sf.hajdbc.DriverProxy</code> class using <code>Class.forName(...)</code>.<br/>
 									<p>
 										Per the JDBC specification, loading the HA-JDBC driver class automatically registers the driver with the <code>DriverManager</code>.
 										The HA-JDBC driver will automatically load all underlying JDBC drivers defined within a given cluster.
@@ -146,9 +146,9 @@
 						<li>If your server is configured to use a DataSource implementation provided by your JDBC driver, then add an HA-JDBC DataSource using the appropriate class name to your server configuration along side your existing JDBC DataSources:<br/>
 							<br/>
 							<ul>
-								<li><code>net.sf.ha.jdbc.DataSourceProxy</code></li>
-								<li><code>net.sf.ha.jdbc.pool.ConnectionPoolDataSourceProxy</code></li>
-								<li><code>net.sf.ha.jdbc.pool.xa.XADataSourceProxy</code></li>
+								<li><code>net.sf.hajdbc.DataSourceProxy</code></li>
+								<li><code>net.sf.hajdbc.pool.ConnectionPoolDataSourceProxy</code></li>
+								<li><code>net.sf.hajdbc.pool.xa.XADataSourceProxy</code></li>
 							</ul>
 							<br/>
 						</li>
@@ -177,7 +177,7 @@
 								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<Arg>jdbc/database</Arg>]]></code><br/>
 								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<Arg>]]></code><br/>
 								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<New class="org.enhydra.jdbc.standard.StandardXADataSource">]]></code><br/>
-								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<Set name="DriverName">net.sf.ha.jdbc.DriverProxy</Set>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<Set name="DriverName">net.sf.hajdbc.DriverProxy</Set>]]></code><br/>
 								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<Set name="Url">jdbc:ha-jdbc:cluster1</Set>]]></code><br/>
 								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<Set name="User">postgres</Set>]]></code><br/>
 								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<Set name="Password">password</Set>]]></code><br/>
@@ -230,7 +230,7 @@
 								<code>&nbsp;&nbsp;<![CDATA[</parameter>]]></code><br/>
 								<code>&nbsp;&nbsp;<![CDATA[<parameter>]]></code><br/>
 								<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<name>driverClassName</name>]]></code><br/>
-								<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<value>net.sf.ha.jdbc.DriverProxy</value>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<value>net.sf.hajdbc.DriverProxy</value>]]></code><br/>
 								<code>&nbsp;&nbsp;<![CDATA[</parameter>]]></code><br/>
 								<code>&nbsp;&nbsp;<![CDATA[<parameter>]]></code><br/>
 								<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<name>url</name>]]></code><br/>
@@ -363,6 +363,9 @@
 		</section>
 		<section>
 			<title>Architecture</title>
+			<p>
+				HA-JDBC is a JDBC driver implementation that acts as a proxy an underlying JDBC driver.
+			</p>
 			<p>
 				JDBC operations are divided into 4 categories:
 			</p>
