@@ -15,13 +15,20 @@
 					<p>JDBC 3.0 compliant driver (Type IV recommended)</p>
 				</li>
 				<li>
-					<p>JMX provider (1.1 or greater)</p>
+					<p>JMX provider (1.2 or greater) e.g.</p>
 					<ul>
 						<li><a href="http://java.sun.com/products/JavaManagement/index.jsp">Sun Reference Implemenation</a></li>
 						<li><a href="http://mx4j.sourceforge.net">MX4J</a></li>
 						<li><a href="http://xmojo.sourceforge.net">XMOJO</a></li>
-						<li>Many application server vendors already include a JMX implementation.</li>
+						<li><a href="http://www.jboss.org/developers/projects/jboss/jbossmx">JBossMX</a></li>
+						<li><a href="http://www.huihoo.org/jfox/jfoxmx/index.html">JFoxMX</a></li>
 					</ul>
+				</li>
+				<li>
+					<p>Exclusive write access to each database in the cluster.</p>
+				</li>
+				<li>
+					<p>Each database in the cluster must initially be in sync.</p>
 				</li>
 			</ul>
 		</section>
@@ -33,12 +40,13 @@
 					Configuration for HA-JDBC managed database clusters is contained in a single XML file.
 					The format of the configuration file should match the DTD: <a href="http://ha-jdbc.sourceforge.net/dtd/ha-jdbc-1.0.dtd"><code>http://ha-jdbc.sourceforge.net/dtd/ha-jdbc-1.0.dtd</code></a>
 				</p>
-				<p>Sample configuration file:</p>
+				<p>Sample configuration file containing each type of deployment setup:</p>
 				<source><![CDATA[
 <?xml version="1.0"?>
-<!DOCTYPE ha-jdbc PUBLIC "-//HA-JDBC//DTD HA-JDBC 1.0//EN" "http://ha-jdbc.sourceforge.net/dtd/ha-jdbc-1.0.dtd">
+<!DOCTYPE ha-jdbc PUBLIC "-//HA-JDBC//DTD HA-JDBC 1.0//EN"
+  "http://ha-jdbc.sourceforge.net/dtd/ha-jdbc-1.0.dtd">
 <ha-jdbc>
-  <cluster name="jdbc:ha-jdbc:cluster">
+  <cluster name="cluster">
     <database url="jdbc:postgresql://server1:5432/database" driver="org.postgresql.Driver">
       <user>postgres</user>
       <password>password</password>
@@ -48,35 +56,17 @@
       <password>password</password>
     </database>
   </cluster>
-  <cluster name="java:comp/env/jdbc/Cluster">
-    <datasource name="java:comp/env/jdbc/Database1">
-      <user>postgres</user>
-      <password>password</password>
-    </datasource>
-    <datasource name="java:comp/env/jdbc/Database2">
-      <user>postgres</user>
-      <password>password</password>
-    </datasource>
+  <cluster name="Cluster">
+    <datasource name="java:comp/env/jdbc/Database1"></datasource>
+    <datasource name="java:comp/env/jdbc/Database2"></datasource>
   </cluster>
-  <cluster name="java:comp/env/jdbc/PoolCluster">
-    <pool-datasource name="java:comp/env/jdbc/Database1">
-      <user>postgres</user>
-      <password>password</password>
-    </pool-datasource>
-    <pool-datasource name="java:comp/env/jdbc/Database2">
-      <user>postgres</user>
-      <password>password</password>
-    </pool-datasource>
+  <cluster name="PoolCluster">
+    <pool-datasource name="java:comp/env/jdbc/pool/Database1"></pool-datasource>
+    <pool-datasource name="java:comp/env/jdbc/pool/Database2"></pool-datasource>
   </cluster>
-  <cluster name="java:comp/env/jdbc/XACluster">
-    <xa-datasource name="java:comp/env/jdbc/Database1">
-      <user>postgres</user>
-      <password>password</password>
-    </xa-datasource>
-    <xa-datasource name="java:comp/env/jdbc/Database2">
-      <user>postgres</user>
-      <password>password</password>
-    </xa-datasource>
+  <cluster name="XACluster">
+    <xa-datasource name="java:comp/env/jdbc/xa/Database1"></xa-datasource>
+    <xa-datasource name="java:comp/env/jdbc/xa/Database2"></xa-datasource>
   </cluster>
 </ha-jdbc>
 ]]></source>
@@ -117,12 +107,14 @@
       <New class="org.mortbay.jetty.plus.DefaultDataSourceService">
         <Set name="Name">DataSourceService</Set>
         <Call name="addConnectionPoolDataSource">
-          <Arg>jdbc/database</Arg>
+          <Arg>jdbc/Cluster</Arg>
           <Arg>
             <New class="org.enhydra.jdbc.standard.StandardConnectionPoolDataSource">
               <Set name="DriverName">net.sf.hajdbc.Driver</Set>
-              <Set name="Url">jdbc:ha-jdbc:cluster1</Set>
-              <Set name="TransactionIsolation"><Get class="java.sql.Connection" name="TRANSACTION_READ_COMMITTED"/></Set>
+              <Set name="Url">jdbc:ha-jdbc:cluster</Set>
+              <Set name="TransactionIsolation">
+                <Get class="java.sql.Connection" name="TRANSACTION_READ_COMMITTED"/>
+              </Set>
             </New>
           </Arg>
           <Set name="User">postgres</Set>
@@ -141,8 +133,8 @@
 						<li>
 							<p><a href="http://jakarta.apache.org/tomcat">Tomcat</a> (using <a href="http://jakarta.apache.org/commons/dbcp">DBCP</a>)</p>
 							<source><![CDATA[
-<Resource name="jdbc/database" auth="Container" type="javax.sql.DataSource"/>
-<ResourceParams name="jdbc/database">
+<Resource name="jdbc/Cluster" auth="Container" type="javax.sql.DataSource"/>
+<ResourceParams name="jdbc/Cluster">
   <parameter>
     <name>factory</name>
     <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
@@ -230,7 +222,7 @@
 				</p>
 				<p>e.g.</p>
 				<source><![CDATA[
-<cluster name="java:comp/env/jdbc/Cluster">
+<cluster name="Cluster">
   <xa-datasource name="java:comp/env/jdbc/xa/DataSource1">
     <user>postgres</user>
     <password>password</password>
@@ -250,7 +242,7 @@
 				</p>
 				<p>e.g.</p>
 				<source><![CDATA[
-<cluster name="java:comp/env/jdbc/Cluster">
+<cluster name="Cluster">
   <pool-datasource name="java:comp/env/jdbc/pool/DataSource1">
     <user>postgres</user>
     <password>password</password>
@@ -299,7 +291,7 @@ Connection connection = DriverManager.connect("jdbc:ha-jdbc:cluster", "postgres"
 			</section>
 			<section>
 				<title>DataSource-based Access</title>
-				<p>Use the JNDI name configured in your cluster configuration file to access the HA-JDBC DataSource.</p>
+				<p>Use the JNDI name configured in your server configuration to access the HA-JDBC DataSource.</p>
 				<p>e.g.</p>
 				<source><![CDATA[
 Context context = new InitialContext();
@@ -309,6 +301,12 @@ Connection connection = dataSource.getConnection("postgres", "password");
 			</section>
 			<section>
 				<title>Advanced JDBC Features</title>
+				<section>
+					<title>Large Objects</title>
+					<p>
+						In progress...
+					</p>
+				</section>
 				<section>
 					<title>JSR 114 RowSets</title>
 					<p>
@@ -342,98 +340,112 @@ rs.close();
 				<p>
 					Failed database nodes are detected after an SQLException is thrown when executing a given database operation.
 					A database is determined to have failed if it fails to respond to a trivial query (e.g. SELECT 1).
-					The query used to validate that a database is responding can be configured via the XML file.
+					The query used to validate that a database is responding can be configured via the HA-JDBC configuration file.
 				</p>
 				<p>e.g.</p>
 				<source><![CDATA[
 <ha-jdbc>
-	<cluster name="jdbc:ha-jdbc:cluster">
-		<!-- Sample validation query for Oracle -->
-		<validate-sql>SELECT 1 FROM DUAL</validate-sql>
+	<cluster name="cluster">
+		<!-- Sample validation query for HSQLDB -->
+		<validate-sql>CALL NOW()</validate-sql>
 		<database url="..." driver="..."></database>
 		<database url="..." driver="..."></database>
 	</cluster>
 </ha-jdbc>
 ]]></source>
-				<p>If it is determined that a given database has failed:</p>
+				<p>If HA-JDBC determines that a given database has failed:</p>
 				<ol>
 					<li>An ERROR message is logged.</li>
 					<li>The database is removed from the internal registry of active databases.  No more requests will be sent to this database.</li>
 					<li>If the cluster was configured to be "distributable", other servers are notified of the failure.</li>
 				</ol>
+				<p>
+					Databases may also be manually deactivated via the <a href="#JMX">JMX management interface</a>.
+				</p>
 			</section>
 			<section>
 				<title>Restoring a Database Node</title>
 				<p>
-					
+					Before a database node can be reintroduced into a cluster, it first must be synchronized.
+				</p>
+				<p>
+					HA-JDBC provides several out-of-the-box database independent strategies for synchronizing a failed database:
+				</p>
+				<ul>
+					<li><a href="api/net/sf/hajdbc/sync/FullSynchronizationStrategy.html"><code>Full</code></a> - Each tables is truncated and data is reinserted.  This strategy is fastest if the database is way out of sync.</li>
+					<li><a href="api/net/sf/hajdbc/sync/DifferentialSynchronizationStrategy.html"><code>Differential</code></a> - Comparison is done on each table and only changes are updated.  This strategy is fastest if the database is only slightly out of sync.</li>
+					<li><a href="api/net/sf/hajdbc/sync/PassiveSynchronizationStrategy.html"><code>Passive</code></a> - Does nothing.  Should only be used when database are already in sync.</li>
+				</ul>
+				<p>
+					Although these mechanisms should be sufficient for most small databases, they are probably not feasible for large databases.
+					Synchronizing a large database will require vendor specific functionality.
+					Custom synchronization strategies may be written by implementing the <a href="api/net/sf/hajdbc/SynchronizationStrategy.html"><code>SynchronizationStrategy</code></a> interface or by extending the functionality of one of the existing strategies.
+					For example, I may want to improve the efficiency of the <code>FullSynchronizationStrategy</code> by dropping and re-creating indexes on my database tables.
+				</p>
+				<p>e.g.</p>
+				<source><![CDATA[
+public class FasterFullSynchronizationStrategy extends FullSynchronizationStrategy
+{
+    public void synchronize(Connection inactiveConnection,
+                            Connection activeConnection,
+                            List tableList,
+                            DatabaseClusterDescriptor descriptor)
+    {
+        // For each table, drop all indexes
+
+        super.synchronize(inactiveConnection, activeConnection, tableList, descriptor);
+
+        // For each table, recreate all indexes
+    }
+}
+]]></source>
+				<p>
+					The default synchronization strategy is configured in the HA-JDBC configuration file.
+				</p>
+				<p>e.g.</p>
+				<source><![CDATA[
+<ha-jdbc>
+	<cluster name="cluster">
+		<default-sync-strategy>net.sf.hajdbc.sync.FullSynchronizationStrategy</default-sync-strategy>
+		<database url="..." driver="..."></database>
+		<database url="..." driver="..."></database>
+	</cluster>
+</ha-jdbc>
+]]></source>
+				<p>
+					Database activation is triggered manually via the <a href="#JMX">JMX management interface</a>.
 				</p>
 			</section>
-		</section>
-		<section>
-			<title>Architecture</title>
-			<p>
-				JDBC operations are divided into 4 categories:
-			</p>
-			<dl>
-				<dt>Read operations (e.g. SELECT statements)</dt>
-				<dd>Deep read operations on the underlying database driver that will require read access to the database itself.</dd>
-				<dt>Write operations (e.g. INSERT, UPDATE, DELETE statements)</dt>
-				<dd>Deep write operations on the underlying database driver that will require write access to the database itself.</dd>
-				<dt>Get operations (e.g. getXXX())</dt>
-				<dd>Shallow read operations on the underlying database driver that will NOT require any access to the database itself.</dd>
-				<dt>Set operations (e.g. setXXX())</dt>
-				<dd>Shallow write operations on the underlying database driver that will NOT require any access to the database itself.</dd>
-			</dl>
-			<p>
-				Operation are executed differently according to the type operation:
-			</p>
-			<table>
-				<tr>
-					<th>Read Operations</th>
-					<td>Delegated to a single node in the cluster in round-robin fashion.</td>
-				</tr>
-				<tr>
-					<th>Write Operations</th>
-					<td>Delegated in parallel to each node in the cluster.</td>
-				</tr>
-				<tr>
-					<th>Get Operations</th>
-					<td>Delegated to the first node in the cluster.</td>
-				</tr>
-				<tr>
-					<th>Set Operations</th>
-					<td>Serially delegated to each node in the cluster.</td>
-				</tr>
-			</table>
-			<p>
-				Exceptions caught while performing an operation are handled differently according to the type of operation:
-			</p>
-			<table>
-				<tr>
-					<th>Read Operations</th>
-					<td>
-						Perform validation check on failed database.<br/>
-						If successful, return the caught exception to the caller.<br/>
-						If unsuccessful, the database is deactivated and the request is forwarded to the next node in the cluster.<br/>
-					</td>
-				</tr>
-				<tr>
-					<th>Write Operations</th>
-					<td>
-						Perform validation check on failed database.<br/>
-						If successful, return the caught exception to the caller.<br/>
-						If unsuccessful, the database is deactivated and the results of the succeeding database nodes are returned to the caller.<br/>
-					</td>
-				</tr>
-				<tr>
-					<th>Get Operations</th>
-					<td>The exception is immediately returned to the caller.</td>
-				</tr>
-				<tr>
-					<th>Set Operations</th>
-					<td>The exception is immediately returned to the caller.</td>
-				</tr>
-			</table>
+			<section id="JMX">
+				<title>Database Cluster Administration</title>
+				<p>A 3rd party JMX clients provides easy graphical interfaces for managing HA-JDBC clusters:</p>
+				<ul>
+					<li><a href="http://mc4j.sourceforge.net/">MC4J</a></li>
+					<li><a href="http://ejtools.sourceforge.net/applications/jmx.browser/">EJTools JMX Browser</a></li>
+					<li><a href="http://panoptesmgmt.sourceforge.net/">Panoptes</a></li>
+					<li><a href="http://jmxview.sourceforge.net/">JMXView</a></li>
+					<li><a href="http://www.xtremej.com/">XtremeJ Management Suite</a> (Standard Edition single user license is free)</li>
+				</ul>
+				<p>HA-JDBC database cluster may also be administered programatically:</p>
+				<p>e.g.</p>
+				<source><![CDATA[
+MBeanServer server = (MBeanServer) MBeanServerFactory.findMBeanServer(null).get(0);
+ObjectName name = ObjectName.getInstance("net.sf.hajdbc", "cluster", ObjectName.quote("jdbc:ha-jdbc:cluster"));
+String database = "jdbc:postgresql://server2:5432/database";
+
+// There are 2 ways to invoke methods on an mbean:
+
+// 1. Generic invoke
+server.invoke(name, "deactivate", new Object[] { database }, new String[] { "java.lang.String" });
+server.invoke(name, "activate", new Object[] { database }, new String[] { "java.lang.String" });
+
+// 2. Dynamic proxy
+Object object = MBeanServerInvocationHandler.newProxyInstance(server, name, DatabaseClusterMBean.class, false);
+DatabaseClusterMBean cluster = (DatabaseClusterMBean) object;
+cluster.deactivate(database);
+cluster.activate(database);
+]]></source>
+			</section>
 		</section>
 	</body>
 </document>

@@ -33,6 +33,12 @@
 				Created database synchronization strategies used during activation.
 			</action>
 			<action type="update" context="admin" dev="PF">
+				Allow simple names for DriverManager-based database cluster.
+			</action>
+			<action type="update" context="admin" dev="PF">
+				Enhanced large object support.
+			</action>
+			<action type="update" context="admin" dev="PF">
 				Upgraded Forrest documentation to v0.6.
 			</action>
 		</release>

@@ -14,6 +14,7 @@
 		<section>
 			<title>Features</title>
 			<ul>
+				<li>Supports any database vender accessible via JDBC.</li>
 				<li>High-availability - Database cluster can loose a node without failing transaction.</li>
 				<li>Improves performance of concurrent read-access by distributing load across individual nodes.</li>
 				<li>Support for full JDBC 3.0 (Java 1.4) feature set.</li>
@@ -35,9 +36,11 @@
 			<title>Related Software</title>
 			<ul>
 				<li><a href="http://c-jdbc.objectweb.org">C-JDBC: Clustered JDBC</a></li>
-				<li><a href="http://dev.mysql.com/doc/mysql/en/NDBCluster.html">MySQL Cluster</a></li>
+				<li><a href="http://dev.mysql.com/doc/mysql/en/Replication.html">MySQL</a> - Contains built-in replication capability</li>
+				<li><a href="http://www.mysql.com/products/cluster/">MySQL Cluster</a> - Fault tolerant database architecture using NDB Cluster storage engine</li>
 				<li><a href="http://gborg.postgresql.org/project/slony1/projdisplay.php">Slony-1</a> - A replication system for PostgreSQL</li>
 				<li><a href="http://gborg.postgresql.org/project/erserver/projdisplay.php">eRServer</a> - Another replication engine for PostgreSQL</li>
+				<li><a href="http://www.meta.com.au/index.php?option=content&amp;task=view&amp;id=23&amp;Itemid=33">FBReplicator</a> - Replicator server for Firebird</li>
 			</ul>
 		</section>
 	</body>
