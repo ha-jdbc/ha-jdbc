@@ -31,6 +31,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
@@ -40,6 +42,9 @@ import net.sf.hajdbc.SQLException;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.SynchronizationStrategyDescriptor;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * @author  Paul Ferraro
  * @version $Revision$
@@ -47,6 +52,11 @@ import net.sf.hajdbc.SynchronizationStrategyDescriptor;
  */
 public class LocalDatabaseCluster extends DatabaseCluster
 {
+	private static final String CLUSTER_STATE_DELIMITER = ",";
+	
+	private static Preferences preferences = Preferences.userNodeForPackage(LocalDatabaseCluster.class);
+	private static Log log = LogFactory.getLog(LocalDatabaseCluster.class);
+	
 	private String id;
 	private String validateSQL;
 	private Map databaseMap;
@@ -109,17 +119,22 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	 */
 	public void init()
 	{
-		Iterator databases = this.databaseMap.values().iterator();
-		
-		while (databases.hasNext())
+		if (!this.restoreClusterState())
 		{
-			Database database = (Database) databases.next();
+			Iterator databases = this.databaseMap.values().iterator();
 			
-			if (this.isAlive(database))
+			while (databases.hasNext())
 			{
-				this.activate(database);
+				Database database = (Database) databases.next();
+				
+				if (this.isAlive(database))
+				{
+					this.balancer.add(database);
+				}
 			}
 		}
+		
+		this.persistClusterState();
 	}
 	
 	/**
@@ -174,7 +189,14 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	 */
 	public boolean deactivate(Database database)
 	{
-		return this.balancer.remove(database);
+		boolean removed = this.balancer.remove(database);
+		
+		if (removed)
+		{
+			this.persistClusterState();
+		}
+		
+		return removed;
 	}
 
 	/**
@@ -190,7 +212,14 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	 */
 	public boolean activate(Database database)
 	{
-		return this.balancer.add(database);
+		boolean added = this.balancer.add(database);
+		
+		if (added)
+		{
+			this.persistClusterState();
+		}
+		
+		return added;
 	}
 	
 	/**
@@ -206,6 +235,69 @@ public class LocalDatabaseCluster extends DatabaseCluster
 		}
 		
 		return databases;
+	}
+
+	private boolean restoreClusterState()
+	{
+		try
+		{
+			preferences.sync();
+			
+			String state = preferences.get(this.id, null);
+			
+			if (state == null) return false;
+			
+			String[] databases = state.split(CLUSTER_STATE_DELIMITER);
+			
+			for (int i = 0; i < databases.length; ++i)
+			{
+				try
+				{
+					Database database = this.getDatabase(databases[i]);
+					
+					this.balancer.add(database);
+				}
+				catch (java.sql.SQLException e)
+				{
+					// Ignore - database is no longer in this cluster
+				}
+			}
+			
+			return true;
+		}
+		catch (BackingStoreException e)
+		{
+			log.warn(Messages.getMessage(Messages.CLUSTER_STATE_LOAD_FAILED, this), e);
+			
+			return false;
+		}
+	}
+	
+	private void persistClusterState()
+	{
+		StringBuffer buffer = new StringBuffer();
+		Database[] databases = this.balancer.toArray();
+		
+		for (int i = 0; i < databases.length; ++i)
+		{
+			if (i > 0)
+			{
+				buffer.append(CLUSTER_STATE_DELIMITER);
+			}
+			
+			buffer.append(databases[i].getId());
+		}
+		
+		preferences.put(this.id, buffer.toString());
+		
+		try
+		{
+			preferences.flush();
+		}
+		catch (BackingStoreException e)
+		{
+			log.warn(Messages.getMessage(Messages.CLUSTER_STATE_STORE_FAILED, this), e);
+		}
 	}
 	
 	/**
