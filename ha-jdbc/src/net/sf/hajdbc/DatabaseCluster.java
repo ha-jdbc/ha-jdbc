@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import javax.management.MalformedObjectNameException;
@@ -162,7 +163,7 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 		
 		try
 		{
-			inactiveConnection = inactiveDatabase.connect(this.getConnectionFactory().getSQLObject(inactiveDatabase));
+			inactiveConnection = inactiveDatabase.connect(this.getConnectionFactory().getObject(inactiveDatabase));
 			
 			List tableList = new LinkedList();
 			
@@ -182,7 +183,7 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 			{
 				Database activeDatabase = databases[i];
 				
-				activeConnections[i] = activeDatabase.connect(DatabaseCluster.this.getConnectionFactory().getSQLObject(activeDatabase));
+				activeConnections[i] = activeDatabase.connect(DatabaseCluster.this.getConnectionFactory().getObject(activeDatabase));
 			}
 			
 			// Lock all tables on all active databases
@@ -274,20 +275,6 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	public abstract boolean deactivate(Database database);
 	
 	/**
-	 * Returns the first database in this cluster ignoring load balancing strategy.
-	 * @return a database descriptor
-	 * @throws java.sql.SQLException if the cluster is empty
-	 */
-	public abstract Database firstDatabase() throws java.sql.SQLException;
-	
-	/**
-	 * Returns the next available database in this cluster determined via the load balancing strategy.
-	 * @return a database descriptor
-	 * @throws java.sql.SQLException if the cluster is empty
-	 */
-	public abstract Database nextDatabase() throws java.sql.SQLException;
-
-	/**
 	 * Returns all the databases in this cluster.
 	 * @return an array of Database descriptors
 	 * @throws java.sql.SQLException if the cluster is empty
@@ -345,27 +332,22 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	 */
 	public Object executeReadFromDatabase(SQLProxy proxy, Operation operation) throws java.sql.SQLException
 	{
-		Balancer balancer = this.getBalancer();
-		
 		while (true)
 		{
-			Database database = balancer.next();
+			Database database = this.nextDatabase();
 			
-			Object sqlObject = proxy.getSQLObject(database);
+			Object object = proxy.getObject(database);
 			
-			if (sqlObject == null) continue;
-			
-			try
+			if (object != null)
 			{
-				return operation.execute(database, sqlObject);
-			}
-			catch (java.sql.SQLException e)
-			{
-				this.handleException(database, e);
-			}
-			finally
-			{
-				balancer.callback(database);
+				try
+				{
+					return this.getBalancer().execute(operation, database, object);
+				}
+				catch (Throwable e)
+				{
+					this.handleFailure(database, e);
+				}
 			}
 		}
 	}
@@ -379,15 +361,17 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	 */
 	public final Object executeReadFromDriver(SQLProxy proxy, Operation operation) throws java.sql.SQLException
 	{
-		while (true)
+		Database database = null;
+		Object object = null;
+		
+		while (object == null)
 		{
-			Database database = this.getBalancer().first();
-			Object sqlObject = proxy.getSQLObject(database);
+			database = this.firstDatabase();
 			
-			if (sqlObject == null) continue;
-			
-			return operation.execute(database, sqlObject);
+			object = proxy.getObject(database);
 		}
+		
+		return operation.execute(database, object);
 	}
 	
 	/**
@@ -399,29 +383,22 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	 */
 	public final Map executeWriteToDatabase(SQLProxy proxy, Operation operation) throws java.sql.SQLException
 	{
-		Database[] databases = this.getBalancer().toArray();
-		
-		if (databases.length == 0)
-		{
-			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this));
-		}
-		
+		Database[] databases = this.getDatabases();
 		Thread[] threads = new Thread[databases.length];
 		
 		Map returnValueMap = new HashMap(databases.length);
 		Map exceptionMap = new HashMap(databases.length);
-		
+
 		for (int i = 0; i < databases.length; ++i)
 		{
 			Database database = databases[i];
-			Object sqlObject = proxy.getSQLObject(database);
+			Object object = proxy.getObject(database);
 			
-			if (sqlObject == null) continue;
-			
-			OperationExecutor executor = new OperationExecutor(operation, database, sqlObject, returnValueMap, exceptionMap);
-			
-			threads[i] = new Thread(executor);
-			threads[i].start();
+			if (object != null)
+			{
+				threads[i] = new Thread(new OperationExecutor(this, operation, database, object, returnValueMap, exceptionMap));
+				threads[i].start();
+			}
 		}
 		
 		// Wait until all threads have completed
@@ -441,8 +418,8 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 				}
 			}
 		}
-
-		this.deactivateNewDatabases(Arrays.asList(databases));
+		
+		this.deactivateNewDatabases(databases);
 		
 		// If no databases returned successfully, return an exception back to the caller
 		if (returnValueMap.isEmpty())
@@ -495,55 +472,89 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 		for (int i = 0; i < databases.length; ++i)
 		{
 			Database database = databases[i];
-			Object sqlObject = proxy.getSQLObject(database);
+			Object object = proxy.getObject(database);
 			
-			if (sqlObject == null) continue;
-			
-			Object returnValue = operation.execute(database, sqlObject);
-			
-			returnValueMap.put(database, returnValue);
+			if (object != null)
+			{
+				Object returnValue = operation.execute(database, object);
+				
+				returnValueMap.put(database, returnValue);
+			}
 		}
-
-		this.deactivateNewDatabases(Arrays.asList(databases));
+		
+		this.deactivateNewDatabases(databases);
 		
 		proxy.record(operation);
 		
 		return returnValueMap;
 	}
 	
-	protected final void handleException(Database database, Throwable exception) throws SQLException
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#firstDatabase()
+	 */
+	public Database firstDatabase() throws SQLException
+	{
+		try
+		{
+			return this.getBalancer().first();
+		}
+		catch (NoSuchElementException e)
+		{
+			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this));
+		}
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#nextDatabase()
+	 */
+	public Database nextDatabase() throws SQLException
+	{
+		try
+		{
+			return this.getBalancer().next();
+		}
+		catch (NoSuchElementException e)
+		{
+			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this));
+		}
+	}
+	
+	public final void handleFailure(Database database, Throwable cause) throws SQLException
 	{
 		if (this.isAlive(database))
 		{
-			throw new SQLException(exception);
+			throw new SQLException(cause);
 		}
 		
-		this.deactivate(database, exception);
+		this.deactivate(database, cause);
 	}
 	
-	protected final void deactivate(Database database, Throwable cause)
+	private void deactivate(Database database, Throwable cause)
 	{
 		if (this.deactivate(database))
 		{
 			log.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, new Object[] { database, this }), cause);
 		}
 	}
-	
-	private void deactivateNewDatabases(List databaseList)
+
+	private void deactivateNewDatabases(Database[] databases)
 	{
 		Set databaseSet = new HashSet(Arrays.asList(this.getBalancer().toArray()));
 		
-		databaseSet.removeAll(databaseList);
+		for (int i = 0; i < databases.length; ++i)
+		{
+			databaseSet.remove(databases[i]);
+		}
 		
 		if (!databaseSet.isEmpty())
 		{
-			Iterator databases = databaseSet.iterator();
+			Iterator newDatabases = databaseSet.iterator();
 			
-			while (databases.hasNext())
+			while (newDatabases.hasNext())
 			{
-				Database database = (Database) databases.next();
+				Database newDatabase = (Database) newDatabases.next();
 				
-				this.deactivate(database);
+				this.deactivate(newDatabase);
 			}
 		}
 	}
