@@ -5,12 +5,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
-
-import javax.management.JMException;
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
-import javax.management.MBeanServerInvocationHandler;
-import javax.management.ObjectName;
+import java.sql.SQLException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -27,62 +22,51 @@ import org.jibx.runtime.JiBXException;
 public class DatabaseClusterManagerFactory
 {
 	private static Log log = LogFactory.getLog(DatabaseClusterManagerFactory.class);
-	private static final boolean DISTRIBUTED = false;
-	private static MBeanServer server;
+	private static DatabaseClusterManager databaseClusterManager = null;
 	
-	public static synchronized DatabaseClusterManager getClusterManager()
+	public static synchronized DatabaseClusterManager getClusterManager() throws SQLException
 	{
-		URL url = DatabaseClusterManagerFactory.class.getResource("ha-jdbc.xml");
-		InputStream inputStream = null;
-		
-		try
+		if (databaseClusterManager == null)
 		{
-			inputStream = url.openStream();
-			IBindingFactory factory = BindingDirectory.getFactory(DatabaseClusterManager.class);
-			IUnmarshallingContext context = factory.createUnmarshallingContext();
-			Reader reader = new InputStreamReader(inputStream);
-			DatabaseClusterManager manager = (DatabaseClusterManager) context.unmarshalDocument(reader);
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-		catch (JiBXException e)
-		{
-			e.printStackTrace();
-		}
-		finally
-		{
-			if (inputStream != null)
-			{
-				try
-				{
-					inputStream.close();
-				}
-				catch (IOException e)
-				{
-					log.warn("Failed to close " + url, e);
-				}
-			}
-		}
-		
-		if (DISTRIBUTED)
-		{
-			if (server == null)
-			{
-				server = MBeanServerFactory.newMBeanServer();
-			}
+			URL url = DatabaseClusterManagerFactory.class.getResource("ha-jdbc.xml");
+			InputStream inputStream = null;
 			
 			try
 			{
-				return (DatabaseClusterManager) MBeanServerInvocationHandler.newProxyInstance(server, ObjectName.getInstance(""), DistributedClusterManagerMBean.class, false);
+				inputStream = url.openStream();
+				IBindingFactory factory = BindingDirectory.getFactory(DatabaseClusterManager.class);
+				IUnmarshallingContext context = factory.createUnmarshallingContext();
+				Reader reader = new InputStreamReader(inputStream);
+				databaseClusterManager = (DatabaseClusterManager) context.unmarshalDocument(reader);
 			}
-			catch (JMException e)
+			catch (IOException e)
 			{
-				throw new RuntimeException(e);
+				SQLException exception = new SQLException("Failed to read " + url);
+				exception.initCause(e);
+				throw exception;
+			}
+			catch (JiBXException e)
+			{
+				SQLException exception = new SQLException("Failed to parse " + url);
+				exception.initCause(e);
+				throw exception;
+			}
+			finally
+			{
+				if (inputStream != null)
+				{
+					try
+					{
+						inputStream.close();
+					}
+					catch (IOException e)
+					{
+						log.warn("Failed to close " + url, e);
+					}
+				}
 			}
 		}
 		
-		return SimpleClusterManager.getInstance();
+		return databaseClusterManager;
 	}
 }
