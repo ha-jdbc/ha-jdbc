@@ -48,7 +48,7 @@ which will be used to configure the chosen Forrest skin.
   <disable-xml-link>true</disable-xml-link>
 
   <!-- Disable navigation icons on all external links? -->
-  <disable-external-link-image>false</disable-external-link-image>
+  <disable-external-link-image>true</disable-external-link-image>
 
   <!-- Disable w3c compliance links? 
     Use e.g. align="center" to move the compliance links logos to 
@@ -69,22 +69,18 @@ which will be used to configure the chosen Forrest skin.
   <project-description>High-Availability JDBC</project-description>
   <project-url>http://sourceforge.net/projects/ha-jdbc</project-url>
   <project-logo>images/project.png</project-logo>
-  <!-- Alternative static image:
-  <project-logo>images/project-logo.gif</project-logo> -->
 
   <!-- optional group logo
        default skin: renders it at the top-left corner -->
-  <!--group-name>HA-JDBC</group-name-->
-  <!--group-description>High-Availability JDBC</group-description-->
-  <!--group-url>http://sourceforge.net/projects/ha-jdbc</group-url-->
-  <!--group-logo>images/project.png</group-logo-->
-  <!-- Alternative static image:
-  <group-logo>images/group-logo.gif</group-logo> -->
+  <!--group-name>SourceForge</group-name>
+  <group-description></group-description>
+  <group-url>http://sourceforge.net/</group-url>
+  <group-logo>http://sourceforge.net/sflogo.php?group_id=111957&amp;type=5</group-logo-->
 
   <!-- optional host logo (e.g. sourceforge logo)
        default skin: renders it at the bottom-left corner -->
-  <!--host-url>http://sourceforge.net</host-url-->
-  <!--host-logo>http://sourceforge.net/sflogo.php?group_id=111957&amp;type=1</host-logo-->
+  <host-url>http://sourceforge.net</host-url>
+  <host-logo>http://sourceforge.net/sflogo.php?group_id=111957&amp;type=1</host-logo>
 
   <!-- relative url of a favicon file, normally favicon.ico -->
   <favicon-url></favicon-url>
@@ -333,11 +329,6 @@ which will be used to configure the chosen Forrest skin.
     (if the skin supports it). 
   -->
   <credits>
-    <credit box-location="alt">
-      <name>SourceForge.net</name>
-      <url>http://sourceforge.net</url>
-      <image>http://sourceforge.net/sflogo.php?group_id=111957&amp;type=1</image>
-    </credit>
     <credit box-location="alt">
       <name>Support This Project</name>
       <url>http://sourceforge.net/donate/index.php?group_id=111957</url>
