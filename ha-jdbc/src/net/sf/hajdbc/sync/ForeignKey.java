@@ -30,6 +30,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.sf.hajdbc.DatabaseClusterDescriptor;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * @author  Paul Ferraro
  * @version $Revision$
@@ -37,6 +42,8 @@ import java.util.List;
  */
 public class ForeignKey
 {
+	private static Log log = LogFactory.getLog(ForeignKey.class);
+	
 	private String name;
 	private String table;
 	private String column;
@@ -60,30 +67,38 @@ public class ForeignKey
 		return this.name.hashCode();
 	}
 	
-	public static Collection getForeignKeys(Connection connection, String table) throws SQLException
+	public static Collection collectForeignKeys(Connection connection, List tableList) throws SQLException
 	{
 		List foreignKeyList = new LinkedList();
-		ResultSet resultSet = connection.getMetaData().getImportedKeys(null, null, table);
 		
-		while (resultSet.next())
+		Iterator tables = tableList.iterator();
+		
+		while (tables.hasNext())
 		{
-			ForeignKey foreignKey = new ForeignKey();
+			String table = (String) tables.next();
 			
-			foreignKey.table = table;
-			foreignKey.name = resultSet.getString("FK_NAME");
-			foreignKey.column = resultSet.getString("FKCOLUMN_NAME");
-			foreignKey.foreignTable = resultSet.getString("PKTABLE_NAME");
-			foreignKey.foreignColumn = resultSet.getString("PKCOLUMN_NAME");
-
-			foreignKeyList.add(foreignKey);
+			ResultSet resultSet = connection.getMetaData().getImportedKeys(null, null, table);
+			
+			while (resultSet.next())
+			{
+				ForeignKey foreignKey = new ForeignKey();
+				
+				foreignKey.table = table;
+				foreignKey.name = resultSet.getString("FK_NAME");
+				foreignKey.column = resultSet.getString("FKCOLUMN_NAME");
+				foreignKey.foreignTable = resultSet.getString("PKTABLE_NAME");
+				foreignKey.foreignColumn = resultSet.getString("PKCOLUMN_NAME");
+	
+				foreignKeyList.add(foreignKey);
+			}
+			
+			resultSet.close();
 		}
-		
-		resultSet.close();
 		
 		return foreignKeyList;
 	}
 
-	public static void executeSQL(Connection connection, Collection foreignKeyCollection, String sqlPattern) throws java.sql.SQLException
+	private static void executeSQL(Connection connection, Collection foreignKeyCollection, String sqlPattern) throws java.sql.SQLException
 	{
 		Statement statement = connection.createStatement();
 		
@@ -95,10 +110,21 @@ public class ForeignKey
 			
 			String sql = foreignKey.formatSQL(sqlPattern);
 			
-			statement.addBatch(sql);
+			log.info(sql);
+			
+			statement.execute(sql);
 		}
 
-		statement.executeBatch();
 		statement.close();
+	}
+	
+	public static void drop(Connection connection, Collection foreignKeyCollection, DatabaseClusterDescriptor descriptor) throws java.sql.SQLException
+	{
+		executeSQL(connection, foreignKeyCollection, descriptor.getDropForeignKeySQL());
+	}
+	
+	public static void create(Connection connection, Collection foreignKeyCollection, DatabaseClusterDescriptor descriptor) throws java.sql.SQLException
+	{
+		executeSQL(connection, foreignKeyCollection, descriptor.getCreateForeignKeySQL());
 	}
 }

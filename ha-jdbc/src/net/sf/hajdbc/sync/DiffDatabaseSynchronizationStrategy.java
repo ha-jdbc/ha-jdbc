@@ -22,18 +22,15 @@ package net.sf.hajdbc.sync;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.sf.hajdbc.ConnectionProxy;
 import net.sf.hajdbc.DatabaseClusterDescriptor;
 import net.sf.hajdbc.DatabaseSynchronizationStrategy;
 import net.sf.hajdbc.SQLException;
@@ -51,38 +48,32 @@ public class DiffDatabaseSynchronizationStrategy implements DatabaseSynchronizat
 	private static Log log = LogFactory.getLog(DiffDatabaseSynchronizationStrategy.class);
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseSynchronizationStrategy#synchronize(java.sql.Connection, net.sf.hajdbc.ConnectionProxy, java.util.List)
+	 * @see net.sf.hajdbc.DatabaseSynchronizationStrategy#synchronize(net.sf.hajdbc.DatabaseClusterDescriptor, java.sql.Connection, java.sql.Connection, java.util.List)
 	 */
-	public void synchronize(Connection connection, ConnectionProxy connectionProxy, List tableList) throws java.sql.SQLException
+	public void synchronize(DatabaseClusterDescriptor descriptor, Connection activeConnection, Connection inactiveConnection, List tableList) throws java.sql.SQLException
 	{
-		DatabaseClusterDescriptor descriptor = connectionProxy.getDatabaseCluster().getDescriptor();
+		inactiveConnection.setAutoCommit(true);
 		
-		String createForeignKeySQL = descriptor.getCreateForeignKeySQL();
-		String dropForeignKeySQL = descriptor.getDropForeignKeySQL();
-		DatabaseMetaData databaseMetaData = connection.getMetaData();
+		// Drop foreign keys
+		ForeignKey.drop(inactiveConnection, ForeignKey.collectForeignKeys(inactiveConnection, tableList), descriptor);
+		
+		inactiveConnection.setAutoCommit(false);
+		
+		DatabaseMetaData databaseMetaData = inactiveConnection.getMetaData();
 		
 		List primaryKeyList = new ArrayList();
 		Set primaryKeyColumnSet = new LinkedHashSet();
 		
-		connection.setAutoCommit(false);
-
-		PreparedStatement pingStatement = connectionProxy.prepareStatement(descriptor.getValidateSQL());
-		
 		Iterator tables = tableList.iterator();
 		
 		while (tables.hasNext())
-		{
+		{	
 			String table = (String) tables.next();
-			
-			Collection foreignKeyCollection = ForeignKey.getForeignKeys(connection, table);
-			
-			ForeignKey.executeSQL(connection, foreignKeyCollection, dropForeignKeySQL);
-			
-			connection.commit();
 			
 			primaryKeyList.clear();
 			primaryKeyColumnSet.clear();
 			
+			// Fetch primary keys of this table
 			ResultSet primaryKeyResultSet = databaseMetaData.getPrimaryKeys(null, null, table);
 			
 			while (primaryKeyResultSet.next())
@@ -92,8 +83,10 @@ public class DiffDatabaseSynchronizationStrategy implements DatabaseSynchronizat
 			
 			primaryKeyResultSet.close();
 			
-			Iterator primaryKeys = primaryKeyList.iterator();
+			// Retrieve table rows in primary key order
 			StringBuffer buffer = new StringBuffer("SELECT * FROM ").append(table).append(" ORDER BY ");
+			
+			Iterator primaryKeys = primaryKeyList.iterator();
 			
 			while (primaryKeys.hasNext())
 			{
@@ -109,8 +102,8 @@ public class DiffDatabaseSynchronizationStrategy implements DatabaseSynchronizat
 			
 			String sql = buffer.toString();
 			
-			Statement inactiveStatement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-			Statement activeStatement = connectionProxy.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			Statement inactiveStatement = inactiveConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+			Statement activeStatement = activeConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			
 			log.info("Updating: " + sql);
 			
@@ -130,11 +123,14 @@ public class DiffDatabaseSynchronizationStrategy implements DatabaseSynchronizat
 			
 			ResultSet inactiveResultSet = inactiveStatement.getResultSet();
 
+			// If query failed, result set will be null
 			if (inactiveResultSet == null)
 			{
+				// Fetch exception
 				throw inactiveStatement.getWarnings();
 			}
 			
+			// Create set of primary key columns
 			primaryKeys = primaryKeyList.iterator();
 			
 			while (primaryKeys.hasNext())
@@ -274,15 +270,12 @@ public class DiffDatabaseSynchronizationStrategy implements DatabaseSynchronizat
 			inactiveStatement.close();
 			activeStatement.close();
 			
-			connection.commit();
-			
-			ForeignKey.executeSQL(connection, foreignKeyCollection, createForeignKeySQL);
-			
-			connection.commit();
-			
-			pingStatement.execute();
+			inactiveConnection.commit();
 		}
-		
-		pingStatement.close();
+
+		inactiveConnection.setAutoCommit(true);
+
+		// Recreate foreign keys
+		ForeignKey.create(inactiveConnection, ForeignKey.collectForeignKeys(activeConnection, tableList), descriptor);
 	}
 }

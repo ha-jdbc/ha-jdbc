@@ -25,11 +25,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import net.sf.hajdbc.ConnectionProxy;
 import net.sf.hajdbc.DatabaseClusterDescriptor;
 import net.sf.hajdbc.DatabaseSynchronizationStrategy;
 import net.sf.hajdbc.SQLException;
@@ -44,25 +42,24 @@ import org.apache.commons.logging.LogFactory;
  */
 public class CleanDatabaseSynchronizationStrategy implements DatabaseSynchronizationStrategy
 {
-	private static final int MAX_BATCH_SIZE = 50;
+	private static final int MAX_BATCH_SIZE = 100;
 	
 	private static Log log = LogFactory.getLog(CleanDatabaseSynchronizationStrategy.class);
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseSynchronizationStrategy#synchronize(java.sql.Connection, net.sf.hajdbc.ConnectionProxy, java.util.List)
+	 * @see net.sf.hajdbc.DatabaseSynchronizationStrategy#synchronize(net.sf.hajdbc.DatabaseClusterDescriptor, java.sql.Connection, java.sql.Connection, java.util.List)
 	 */
-	public void synchronize(Connection connection, ConnectionProxy connectionProxy, List tableList) throws java.sql.SQLException
+	public void synchronize(DatabaseClusterDescriptor descriptor, Connection activeConnection, Connection inactiveConnection, List tableList) throws java.sql.SQLException
 	{
-		DatabaseClusterDescriptor descriptor = connectionProxy.getDatabaseCluster().getDescriptor();
+		inactiveConnection.setAutoCommit(true);
 		
-		String createForeignKeySQL = descriptor.getCreateForeignKeySQL();
-		String createIndexSQL = descriptor.getCreateIndexSQL();
-		String dropForeignKeySQL = descriptor.getDropForeignKeySQL();
-		String dropIndexSQL = descriptor.getDropIndexSQL();
+		// Drop foreign keys
+		ForeignKey.drop(inactiveConnection, ForeignKey.collectForeignKeys(inactiveConnection, tableList), descriptor);
 		
-		connection.setAutoCommit(false);
-
-		PreparedStatement pingStatement = connectionProxy.prepareStatement(descriptor.getValidateSQL());
+		// Drop non-unique indexes
+		Index.drop(inactiveConnection, Index.collectIndexes(inactiveConnection, tableList), descriptor);
+		
+		inactiveConnection.setAutoCommit(false);
 		
 		Iterator tables = tableList.iterator();
 		
@@ -70,24 +67,13 @@ public class CleanDatabaseSynchronizationStrategy implements DatabaseSynchroniza
 		{
 			String table = (String) tables.next();
 			
-			Collection foreignKeyCollection = ForeignKey.getForeignKeys(connection, table);
-			Collection indexCollection = Index.getIndexes(connection, table);
-			
-			ForeignKey.executeSQL(connection, foreignKeyCollection, dropForeignKeySQL);
-			
-			connection.commit();
-			
-			Index.executeSQL(connection, indexCollection, dropIndexSQL);
-			
-			connection.commit();
-			
 			String deleteSQL = "DELETE FROM " + table;
 			String selectSQL = "SELECT * FROM " + table;
 
 			log.info("Deleting: " + deleteSQL);
 			
-			Statement deleteStatement = connection.createStatement();
-			Statement selectStatement = connectionProxy.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			Statement deleteStatement = inactiveConnection.createStatement();
+			Statement selectStatement = activeConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			
 			Thread deleteExecutor = new Thread(new StatementExecutor(deleteStatement, deleteSQL));
 			deleteExecutor.start();
@@ -114,12 +100,12 @@ public class CleanDatabaseSynchronizationStrategy implements DatabaseSynchroniza
 			
 			deleteStatement.close();
 			
-			StringBuffer insertSQL = new StringBuffer("INSERT INTO ").append(table).append(" VALUES (");
+			StringBuffer insertSQL = new StringBuffer("INSERT INTO ").append(table).append(" (");
 
 			ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
 			
 			int columns = resultSetMetaData.getColumnCount();
-/*
+
 			for (int i = 1; i <= columns; ++i)
 			{
 				if (i > 1)
@@ -131,7 +117,7 @@ public class CleanDatabaseSynchronizationStrategy implements DatabaseSynchroniza
 			}
 			
 			insertSQL.append(") VALUES (");
-*/			
+			
 			for (int i = 1; i <= columns; ++i)
 			{
 				if (i > 1)
@@ -146,7 +132,7 @@ public class CleanDatabaseSynchronizationStrategy implements DatabaseSynchroniza
 			
 			log.info("Inserting: " + insertSQL);
 			
-			PreparedStatement insertStatement = connection.prepareStatement(insertSQL.toString());
+			PreparedStatement insertStatement = inactiveConnection.prepareStatement(insertSQL.toString());
 			int statementCount = 0;
 			
 			while (resultSet.next())
@@ -186,20 +172,15 @@ public class CleanDatabaseSynchronizationStrategy implements DatabaseSynchroniza
 			insertStatement.close();
 			selectStatement.close();
 			
-			connection.commit();
-			
-			Index.executeSQL(connection, indexCollection, createIndexSQL);
-			
-			connection.commit();
-			
-			ForeignKey.executeSQL(connection, foreignKeyCollection, createForeignKeySQL);
-			
-			connection.commit();
-			
-			// Ping databases so they don't timeout
-			pingStatement.execute();
+			inactiveConnection.commit();
 		}
+
+		inactiveConnection.setAutoCommit(true);
+
+		// Recreate indexes
+		Index.create(inactiveConnection, Index.collectIndexes(activeConnection, tableList), descriptor);
 		
-		pingStatement.close();
+		// Recreate foreign keys
+		ForeignKey.create(inactiveConnection, ForeignKey.collectForeignKeys(activeConnection, tableList), descriptor);
 	}
 }
