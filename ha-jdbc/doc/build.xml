@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!DOCTYPE project [
+	<!ENTITY forrest-targets SYSTEM "file:./forrest-targets.ent">
+]>
+<project name="ha-jdbc-doc" default="site" basedir=".">
+
+	&forrest-targets;
+	
+</project>

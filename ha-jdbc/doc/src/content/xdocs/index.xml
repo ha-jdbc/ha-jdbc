@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V1.2//EN" "http://xml.apache.org/forrest/dtd/document-v12.dtd">
+<document> 
+	<header> 
+		<title>HA-JDBC: High-Availability JDBC</title>
+	</header> 
+	<body>
+		<section>
+			<title>Introduction</title>
+			<p>
+				HA-JDBC is a JDBC driver implementation that delegates requests to a set of 
+			</p>
+		</section>
+		<section>
+			<title>Installation</title>
+			<p>
+			</p>
+		</section>
+		<section>
+			<title>Architecture</title>
+			<p>
+			</p>
+		</section>
+	</body>
+</document>
