@@ -159,6 +159,8 @@ public abstract class SQLProxy
 		
 		if (databaseCluster.isActive(database))
 		{
+			this.initCause(exception);
+			
 			throw exception;
 		}
 		
@@ -168,6 +170,18 @@ public abstract class SQLProxy
 		}
 	}
 
+	private void initCause(SQLException e)
+	{
+		SQLException exception = e.getNextException();
+		
+		if (exception != null)
+		{
+			e.initCause(exception);
+			
+			initCause(exception);
+		}
+	}
+	
 	protected abstract DatabaseCluster getDatabaseCluster();
 
 	private class Executor implements Runnable
