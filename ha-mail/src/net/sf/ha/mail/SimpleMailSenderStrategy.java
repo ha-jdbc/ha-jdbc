@@ -19,9 +19,9 @@ public class SimpleMailSenderStrategy implements MailSenderStrategy
 	 */
 	public void send(MailSender sender, Message message, TransportListener listener) throws MessagingException
 	{
-		Address[] addresses = this.getRecipients(message);
-		
 		this.validate(message);
+		
+		Address[] addresses = this.getRecipients(message);
 		
 		this.send(sender, message, addresses, listener);
 	}
@@ -40,11 +40,16 @@ public class SimpleMailSenderStrategy implements MailSenderStrategy
 	
 	protected void validate(Message message) throws MessagingException
 	{
+		if (message.getSubject() == null)
+		{
+			message.setSubject("");
+		}
+		
 		try
 		{
 			if (message.getContent() == null)
 			{
-				throw new MessagingException("Message contains no content.");
+				message.setText("");
 			}
 		}
 		catch (IOException e)
