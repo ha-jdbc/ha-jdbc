@@ -461,8 +461,8 @@ public class FasterFullSynchronizationStrategy extends FullSynchronizationStrate
 					<li>getSynchronizationStrategies() - Returns a collection of synchronization strategies for this cluster.</li>
 					<li>isAlive(String id) - Tests whether the specified database is responding.</li>
 					<li>deactivate(String id) - Deactivates the specified database from this cluster.</li>
-					<li>activate(String id) - Re-activates the specified database <em>without</em> synchronizing it first.</li>
 					<li>activate(String id, String strategyId) - Re-activates the specified database from this cluster using the specified synchronization strategy.</li>
+					<li>activate(String id) - Re-activates the specified database <em>without</em> synchronization.</li>
 				</ul>
 				<p>3rd-party JMX clients provide easy graphical interfaces for managing HA-JDBC clusters:</p>
 				<ul>
