@@ -103,22 +103,6 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#addDatabase(net.sf.hajdbc.Database)
-	 */
-	public final boolean addDatabase(Database database)
-	{
-		return this.databaseCluster.addDatabase(database);
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#removeDatabase(net.sf.hajdbc.Database)
-	 */
-	public final boolean removeDatabase(Database database)
-	{
-		return this.databaseCluster.removeDatabase(database);
-	}
-	
-	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getDatabase(java.lang.String)
 	 */
 	public final Database getDatabase(String databaseId) throws java.sql.SQLException

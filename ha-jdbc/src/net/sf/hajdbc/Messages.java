@@ -34,8 +34,11 @@ public class Messages
 {
 	public static final String DATABASE_INACTIVE = "database-inactive";
 	public static final String NO_ACTIVE_DATABASES = "no-active-databases";
-	public static final String INVALID_DATABASE = "database-not-in-cluster";
-	
+	public static final String INVALID_DATABASE = "invalid-database";
+
+	public static final String DATABASE_DEACTIVATED = "database-deactivated";
+	public static final String DATABASE_ACTIVATED = "database-deactivated";
+
 	public static final String DATABASE_VALIDATE_FAILED = "database-validate-failed";
 	public static final String DATABASE_DEACTIVATE_FAILED = "database-deactivate-failed";
 	public static final String INVALID_SYNC_STRATEGY = "invalid-sync-strategy";
@@ -59,7 +62,6 @@ public class Messages
 	
 	public static final String SQL_OBJECT_INIT_FAILED = "sql-object-init-failed";
 	public static final String DATABASE_NOT_ACTIVE = "database-not-active";
-	public static final String DATABASE_DEACTIVATED = "database-deactivated";
 
 	public static final String INSERT_COUNT = "insert-count";
 	public static final String UPDATE_COUNT = "update-count";

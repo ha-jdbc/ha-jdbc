@@ -150,7 +150,10 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	 */
 	public boolean deactivate(Database database)
 	{
-		return this.removeDatabase(database);
+		synchronized (this.activeDatabaseSet)
+		{
+			return this.activeDatabaseSet.remove(database);
+		}
 	}
 
 	/**
@@ -174,7 +177,10 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	 */
 	public boolean activate(Database database)
 	{
-		return this.addDatabase(database);
+		synchronized (this.activeDatabaseSet)
+		{
+			return this.activeDatabaseSet.add(database);
+		}
 	}
 	
 	/**
@@ -288,28 +294,6 @@ public class LocalDatabaseCluster extends DatabaseCluster
 		}
 		
 		return database;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#addDatabase(net.sf.hajdbc.Database)
-	 */
-	public boolean addDatabase(Database database)
-	{
-		synchronized (this.activeDatabaseSet)
-		{
-			return this.activeDatabaseSet.add(database);
-		}
-	}
-
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#removeDatabase(net.sf.hajdbc.Database)
-	 */
-	public boolean removeDatabase(Database database)
-	{
-		synchronized (this.activeDatabaseSet)
-		{
-			return this.activeDatabaseSet.remove(database);
-		}
 	}
 	
 	/**

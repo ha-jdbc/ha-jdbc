@@ -83,13 +83,18 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	 */
 	public final void deactivate(String databaseId) throws java.sql.SQLException
 	{
+		Object[] args = new Object[] { databaseId, this };
+		
 		try
 		{
-			this.deactivate(this.getDatabase(databaseId));
+			if (this.deactivate(this.getDatabase(databaseId)))
+			{
+				log.info(Messages.getMessage(Messages.DATABASE_DEACTIVATED, args));
+			}
 		}
 		catch (java.sql.SQLException e)
 		{
-			log.warn(Messages.getMessage(Messages.DATABASE_DEACTIVATE_FAILED, databaseId), e);
+			log.warn(Messages.getMessage(Messages.DATABASE_DEACTIVATE_FAILED, args), e);
 			
 			throw e;
 		}
@@ -100,13 +105,18 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	 */
 	public final void activate(String databaseId) throws java.sql.SQLException
 	{
+		Object[] args = new Object[] { databaseId, this };
+		
 		try
 		{
-			this.activate(this.getDatabase(databaseId));
+			if (this.activate(this.getDatabase(databaseId)))
+			{
+				log.info(Messages.getMessage(Messages.DATABASE_ACTIVATED, args));
+			}
 		}
 		catch (java.sql.SQLException e)
 		{
-			log.warn(Messages.getMessage(Messages.DATABASE_ACTIVATE_FAILED, databaseId), e);
+			log.warn(Messages.getMessage(Messages.DATABASE_ACTIVATE_FAILED, args), e);
 			
 			throw e;
 		}
@@ -252,32 +262,18 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	public abstract boolean isActive(Database database);
 
 	/**
-	 * Activates the specified database.
+	 * Activates the specified database
 	 * @param database a database descriptor
-	 * @return result of {@link #addDatabase(Database)}
+	 * @return true, if the database was activated, false it was already active
 	 */
 	public abstract boolean activate(Database database);
 	
 	/**
 	 * Deactivates the specified database
 	 * @param database a database descriptor
-	 * @return result of {@link #removeDatabase(Database)}
+	 * @return true, if the database was deactivated, false it was already inactive
 	 */
 	public abstract boolean deactivate(Database database);
-
-	/**
-	 * Adds the specified database to this cluster.
-	 * @param database a database descriptor
-	 * @return true, if database was added, false if it already existed in this cluster
-	 */
-	public abstract boolean addDatabase(Database database);
-	
-	/**
-	 * Removes the specified database from this cluster
-	 * @param database a database descriptor
-	 * @return true, if database was removed, false if it did not exist in this cluster
-	 */
-	public abstract boolean removeDatabase(Database database);
 	
 	/**
 	 * Returns the first database in this cluster ignoring load balancing strategy.
