@@ -20,6 +20,7 @@ import org.jibx.runtime.JiBXException;
  */
 public class DatabaseClusterManagerFactory
 {
+	private static final String CONFIG_RESOURCE = "ha-jdbc.xml";
 	private static Log log = LogFactory.getLog(DatabaseClusterManagerFactory.class);
 	private static DatabaseClusterManager databaseClusterManager = null;
 	
@@ -27,7 +28,7 @@ public class DatabaseClusterManagerFactory
 	{
 		if (databaseClusterManager == null)
 		{
-			URL url = Thread.currentThread().getContextClassLoader().getResource("ha-jdbc.xml");
+			URL url = Thread.currentThread().getContextClassLoader().getResource(CONFIG_RESOURCE);
 			InputStream inputStream = null;
 			
 			try
