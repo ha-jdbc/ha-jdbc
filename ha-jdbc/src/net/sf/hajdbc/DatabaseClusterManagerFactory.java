@@ -25,7 +25,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.SQLException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -108,15 +107,11 @@ public class DatabaseClusterManagerFactory
 		}
 		catch (IOException e)
 		{
-			SQLException exception = new SQLException("Failed to read " + resourceURL);
-			exception.initCause(e);
-			throw exception;
+			throw new SQLException("Failed to read " + resourceURL, e);
 		}
 		catch (JiBXException e)
 		{
-			SQLException exception = new SQLException("Failed to parse " + resourceURL);
-			exception.initCause(e);
-			throw exception;
+			throw new SQLException("Failed to parse " + resourceURL, e);
 		}
 		finally
 		{
