@@ -137,4 +137,9 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 	{
 		return this.databaseCluster.getConnectionFactoryMap();
 	}
+	
+	protected Balancer getBalancer()
+	{
+		return this.databaseCluster.getBalancer();
+	}
 }

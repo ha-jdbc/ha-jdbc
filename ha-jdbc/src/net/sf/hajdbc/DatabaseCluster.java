@@ -24,10 +24,14 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -329,4 +333,218 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	 * @throws java.sql.SQLException if initialization fails
 	 */
 	public abstract void init() throws java.sql.SQLException;
+	
+	protected abstract Balancer getBalancer();
+	
+	/**
+	 * Read-style execution that executes the specified operation on a single database in the cluster.
+	 * It is assumed that these types of operation will require access to the database.
+	 * @param operation a database operation
+	 * @return the operation execution result
+	 * @throws java.sql.SQLException if operation execution fails
+	 */
+	public Object executeReadFromDatabase(SQLProxy proxy, Operation operation) throws java.sql.SQLException
+	{
+		Balancer balancer = this.getBalancer();
+		
+		while (true)
+		{
+			Database database = balancer.next();
+			
+			Object sqlObject = proxy.getSQLObject(database);
+			
+			if (sqlObject == null) continue;
+			
+			try
+			{
+				return operation.execute(database, sqlObject);
+			}
+			catch (java.sql.SQLException e)
+			{
+				this.handleException(database, e);
+			}
+			finally
+			{
+				balancer.callback(database);
+			}
+		}
+	}
+	
+	/**
+	 * Get-style execution that executes the specified operation on a single database in the cluster.
+	 * It is assumed that these types of operation will <em>not</em> require access to the database.
+	 * @param operation a database operation
+	 * @return the operation execution result
+	 * @throws java.sql.SQLException if operation execution fails
+	 */
+	public final Object executeReadFromDriver(SQLProxy proxy, Operation operation) throws java.sql.SQLException
+	{
+		while (true)
+		{
+			Database database = this.getBalancer().first();
+			Object sqlObject = proxy.getSQLObject(database);
+			
+			if (sqlObject == null) continue;
+			
+			return operation.execute(database, sqlObject);
+		}
+	}
+	
+	/**
+	 * Write-style execution that executes the specified operation on every database in the cluster in parallel.
+	 * It is assumed that these types of operation will require access to the database.
+	 * @param operation a database operation
+	 * @return a Map<Database, Object> of operation execution results from each database
+	 * @throws java.sql.SQLException if operation execution fails
+	 */
+	public final Map executeWriteToDatabase(SQLProxy proxy, Operation operation) throws java.sql.SQLException
+	{
+		Database[] databases = this.getBalancer().toArray();
+		
+		if (databases.length == 0)
+		{
+			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this));
+		}
+		
+		Thread[] threads = new Thread[databases.length];
+		
+		Map returnValueMap = new HashMap(databases.length);
+		Map exceptionMap = new HashMap(databases.length);
+		
+		for (int i = 0; i < databases.length; ++i)
+		{
+			Database database = databases[i];
+			Object sqlObject = proxy.getSQLObject(database);
+			
+			if (sqlObject == null) continue;
+			
+			OperationExecutor executor = new OperationExecutor(operation, database, sqlObject, returnValueMap, exceptionMap);
+			
+			threads[i] = new Thread(executor);
+			threads[i].start();
+		}
+		
+		// Wait until all threads have completed
+		for (int i = 0; i < threads.length; ++i)
+		{
+			Thread thread = threads[i];
+			
+			if ((thread != null) && thread.isAlive())
+			{
+				try
+				{
+					thread.join();
+				}
+				catch (InterruptedException e)
+				{
+					// Ignore
+				}
+			}
+		}
+
+		this.deactivateNewDatabases(Arrays.asList(databases));
+		
+		// If no databases returned successfully, return an exception back to the caller
+		if (returnValueMap.isEmpty())
+		{
+			if (exceptionMap.isEmpty())
+			{
+				throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this));
+			}
+			
+			throw new SQLException((Throwable) exceptionMap.get(databases[0]));
+		}
+		
+		// If any databases failed, while others succeeded, deactivate them
+		if (!exceptionMap.isEmpty())
+		{
+			Iterator exceptionMapEntries = exceptionMap.entrySet().iterator();
+			
+			while (exceptionMapEntries.hasNext())
+			{
+				Map.Entry exceptionMapEntry = (Map.Entry) exceptionMapEntries.next();
+				Database database = (Database) exceptionMapEntry.getKey();
+				Throwable exception = (Throwable) exceptionMapEntry.getValue();
+				
+				this.deactivate(database, exception);
+			}
+		}
+		
+		// Return results from successful operations
+		return returnValueMap;
+	}
+	
+	/**
+	 * Set-style execution that executes the specified operation on every database in the cluster.
+	 * It is assumed that these types of operation will <em>not</em> require access to the database.
+	 * @param operation a database operation
+	 * @return a Map<Database, Object> of operation execution results from each database
+	 * @throws java.sql.SQLException if operation execution fails
+	 */
+	public final Map executeWriteToDriver(SQLProxy proxy, Operation operation) throws java.sql.SQLException
+	{
+		Database[] databases = this.getBalancer().toArray();
+		
+		if (databases.length == 0)
+		{
+			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this));
+		}
+		
+		Map returnValueMap = new HashMap(databases.length);
+
+		for (int i = 0; i < databases.length; ++i)
+		{
+			Database database = databases[i];
+			Object sqlObject = proxy.getSQLObject(database);
+			
+			if (sqlObject == null) continue;
+			
+			Object returnValue = operation.execute(database, sqlObject);
+			
+			returnValueMap.put(database, returnValue);
+		}
+
+		this.deactivateNewDatabases(Arrays.asList(databases));
+		
+		proxy.record(operation);
+		
+		return returnValueMap;
+	}
+	
+	protected final void handleException(Database database, Throwable exception) throws SQLException
+	{
+		if (this.isAlive(database))
+		{
+			throw new SQLException(exception);
+		}
+		
+		this.deactivate(database, exception);
+	}
+	
+	protected final void deactivate(Database database, Throwable cause)
+	{
+		if (this.deactivate(database))
+		{
+			log.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, new Object[] { database, this }), cause);
+		}
+	}
+	
+	private void deactivateNewDatabases(List databaseList)
+	{
+		Set databaseSet = new HashSet(Arrays.asList(this.getBalancer().toArray()));
+		
+		databaseSet.removeAll(databaseList);
+		
+		if (!databaseSet.isEmpty())
+		{
+			Iterator databases = databaseSet.iterator();
+			
+			while (databases.hasNext())
+			{
+				Database database = (Database) databases.next();
+				
+				this.deactivate(database);
+			}
+		}
+	}
 }

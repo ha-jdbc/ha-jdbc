@@ -320,4 +320,9 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	{
 		return this.synchronizationStrategyMap.keySet();
 	}
+	
+	protected Balancer getBalancer()
+	{
+		return this.balancer;
+	}
 }
