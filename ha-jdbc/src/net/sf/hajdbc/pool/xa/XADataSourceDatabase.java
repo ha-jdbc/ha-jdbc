@@ -45,4 +45,12 @@ public class XADataSourceDatabase extends ConnectionPoolDataSourceDatabase
 		
 		return this.getConnection(connection);
 	}
+	
+	/**
+	 * @see net.sf.hajdbc.DataSourceDatabase#getDataSourceClass()
+	 */
+	protected Class getDataSourceClass()
+	{
+		return XADataSource.class;
+	}
 }

@@ -30,7 +30,9 @@ import java.sql.SQLException;
  */
 public interface Database
 {
+	public String getId();
+	
 	public Connection connect(Object databaseConnector) throws SQLException;
 	
-	public String getId();
+	public Object getDatabaseConnector() throws SQLException;
 }

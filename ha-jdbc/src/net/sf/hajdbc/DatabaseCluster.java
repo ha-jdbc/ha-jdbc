@@ -23,6 +23,8 @@ package net.sf.hajdbc;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -45,9 +47,9 @@ public class DatabaseCluster extends SQLProxy implements DatabaseClusterMBean
 	 * @param descriptor
 	 * @param databaseMap
 	 */
-	protected DatabaseCluster(DatabaseClusterDescriptor descriptor, Map databaseConnectorMap)
+	protected DatabaseCluster(DatabaseClusterDescriptor descriptor) throws java.sql.SQLException
 	{
-		super(databaseConnectorMap);
+		super(buildDatabaseConnectorMap(descriptor.getDatabaseMap()));
 		
 		this.descriptor = descriptor;
 		
@@ -62,6 +64,22 @@ public class DatabaseCluster extends SQLProxy implements DatabaseClusterMBean
 				this.activeDatabaseSet.add(database);
 			}
 		}
+	}
+	
+	private static Map buildDatabaseConnectorMap(Map databaseMap) throws java.sql.SQLException
+	{
+		Map databaseConnectorMap = new HashMap(databaseMap.size());
+		
+		Iterator databases = databaseMap.values().iterator();
+		
+		while (databases.hasNext())
+		{
+			Database database = (Database) databases.next();
+			
+			databaseConnectorMap.put(database.getId(), database.getDatabaseConnector());
+		}
+		
+		return Collections.synchronizedMap(databaseConnectorMap);
 	}
 	
 	/**

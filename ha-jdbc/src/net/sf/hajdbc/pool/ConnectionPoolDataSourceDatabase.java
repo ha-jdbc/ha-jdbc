@@ -56,4 +56,12 @@ public class ConnectionPoolDataSourceDatabase extends DataSourceDatabase
 	{
 		return connection.getConnection();
 	}
+	
+	/**
+	 * @see net.sf.hajdbc.DataSourceDatabase#getDataSourceClass()
+	 */
+	protected Class getDataSourceClass()
+	{
+		return ConnectionPoolDataSource.class;
+	}
 }

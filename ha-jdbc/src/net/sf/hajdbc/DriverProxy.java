@@ -25,12 +25,7 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -58,67 +53,6 @@ public final class DriverProxy implements java.sql.Driver
 			log.fatal("Failed to initialize " + DriverProxy.class.getName(), e);
 			throw new RuntimeException(e);
 		}
-	}
-
-	// Maps cluster name -> DatabaseCluster
-	private Map databaseClusterMap;
-	
-	public DriverProxy() throws SQLException
-	{
-		DatabaseClusterManager manager = DatabaseClusterManagerFactory.getDatabaseClusterManager();
-		Set clusterSet = manager.getClusterSet(DriverDatabase.class);
-		
-		Map databaseClusterMap = new HashMap(clusterSet.size());
-		
-		Iterator clusters = clusterSet.iterator();
-		
-		while (clusters.hasNext())
-		{
-			String clusterName = (String) clusters.next();
-
-			DatabaseClusterDescriptor descriptor = manager.getDescriptor(clusterName);
-			Map databaseMap = descriptor.getDatabaseMap();
-			Map driverMap = new HashMap(databaseMap.size());
-
-			Iterator databases = databaseMap.values().iterator();
-			
-			while (databases.hasNext())
-			{
-				DriverDatabase database = (DriverDatabase) databases.next();
-				
-				String driverClassName = database.getDriver();
-				
-				try
-				{
-					Class driverClass = Class.forName(driverClassName);
-					
-					if (!Driver.class.isAssignableFrom(driverClass))
-					{
-						throw new SQLException(driverClassName + " does not implement " + Driver.class.getName());
-					}
-					
-					String url = database.getUrl();
-					Driver driver = DriverManager.getDriver(url);
-					
-					if (driver == null)
-					{
-						throw new SQLException(driverClassName + " does not accept url: " + url);
-					}
-					
-					driverMap.put(database, driver);
-				}
-				catch (ClassNotFoundException e)
-				{
-					throw new SQLException(driverClassName + " not found in CLASSPATH");
-				}
-			}
-			
-			DatabaseCluster databaseCluster = new DatabaseCluster(descriptor, driverMap);
-			
-			databaseClusterMap.put(clusterName, databaseCluster);
-		}
-		
-		this.databaseClusterMap = Collections.synchronizedMap(databaseClusterMap);
 	}
 	
 	/**
@@ -148,9 +82,9 @@ public final class DriverProxy implements java.sql.Driver
 	/**
 	 * @see java.sql.Driver#acceptsURL(java.lang.String)
 	 */
-	public boolean acceptsURL(String url)
+	public boolean acceptsURL(String url) throws SQLException
 	{
-		return this.databaseClusterMap.keySet().contains(url);
+		return (DatabaseClusterFactory.getInstance().getDatabaseCluster(url) != null);
 	}
 	
 	/**
@@ -158,7 +92,7 @@ public final class DriverProxy implements java.sql.Driver
 	 */
 	public Connection connect(String url, final Properties properties) throws SQLException
 	{
-		DatabaseCluster databaseCluster = (DatabaseCluster) this.databaseClusterMap.get(url);
+		DatabaseCluster databaseCluster = DatabaseClusterFactory.getInstance().getDatabaseCluster(url);
 		
 		if (databaseCluster == null)
 		{
@@ -181,7 +115,7 @@ public final class DriverProxy implements java.sql.Driver
 	 */
 	public DriverPropertyInfo[] getPropertyInfo(String url, final Properties properties) throws SQLException
 	{
-		DatabaseCluster databaseCluster = (DatabaseCluster) this.databaseClusterMap.get(url);
+		DatabaseCluster databaseCluster = DatabaseClusterFactory.getInstance().getDatabaseCluster(url);
 		
 		if (databaseCluster == null)
 		{
@@ -197,10 +131,5 @@ public final class DriverProxy implements java.sql.Driver
 		};
 		
 		return (DriverPropertyInfo[]) databaseCluster.executeGet(operation);
-	}
-	
-	public DatabaseCluster getDatabaseCluster(String url)
-	{
-		return (DatabaseCluster) this.databaseClusterMap.get(url);
 	}
 }

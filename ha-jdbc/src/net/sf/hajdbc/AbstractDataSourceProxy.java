@@ -21,13 +21,7 @@
 package net.sf.hajdbc;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.Referenceable;
 import javax.naming.StringRefAddr;
@@ -54,25 +48,9 @@ public abstract class AbstractDataSourceProxy implements Referenceable
 		return this.databaseCluster.getName();
 	}
 	
-	public void setName(String name) throws SQLException, NamingException
+	public void setName(String name) throws SQLException
 	{
-		DatabaseClusterManager manager = DatabaseClusterManagerFactory.getDatabaseClusterManager();
-		DatabaseClusterDescriptor descriptor = manager.getDescriptor(name);
-		Map databaseMap = descriptor.getDatabaseMap();
-		Map dataSourceMap = new HashMap(databaseMap.size());
-		Context context = new InitialContext();
-		
-		Iterator databases = databaseMap.values().iterator();
-		
-		while (databases.hasNext())
-		{
-			DataSourceDatabase database = (DataSourceDatabase) databases.next();
-			Object dataSource = context.lookup(database.getName());
-			
-			dataSourceMap.put(database, dataSource);
-		}
-		
-		this.databaseCluster = new DatabaseCluster(descriptor, dataSourceMap);
+		this.databaseCluster = DatabaseClusterFactory.getInstance().getDatabaseCluster(name);
 	}
 	
 	/**

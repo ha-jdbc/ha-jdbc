@@ -10,8 +10,17 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,8 +42,6 @@ public final class DatabaseClusterFactory
 	private static Log log = LogFactory.getLog(DatabaseClusterManagerFactory.class);
 	
 	private static DatabaseClusterFactory instance = null;
-	
-	private Configuration configuration;
 	
 	public static synchronized DatabaseClusterFactory getInstance() throws java.sql.SQLException
 	{
@@ -66,13 +73,53 @@ public final class DatabaseClusterFactory
 			IBindingFactory factory = BindingDirectory.getFactory(Configuration.class);
 			IUnmarshallingContext context = factory.createUnmarshallingContext();
 			
-			this.configuration = (Configuration) context.unmarshalDocument(new InputStreamReader(inputStream));
+			Configuration configuration = (Configuration) context.unmarshalDocument(new InputStreamReader(inputStream));
+
+			MBeanServer server = null;
+			
+			List serverList = MBeanServerFactory.findMBeanServer(null);
+			
+			if (serverList.isEmpty())
+			{
+				server = MBeanServerFactory.createMBeanServer();
+			}
+			else
+			{
+				server = (MBeanServer) serverList.get(0);
+			}
+			
+			Iterator descriptors = configuration.getDescriptorList().iterator();
+			
+			while (descriptors.hasNext())
+			{
+				DatabaseClusterDescriptor descriptor = (DatabaseClusterDescriptor) descriptors.next();
+				
+				DatabaseCluster databaseCluster = new DatabaseCluster(descriptor);
+				
+				server.registerMBean(databaseCluster, ObjectName.getInstance("net.sf.hajdbc", "id", databaseCluster.getName()));
+			}
 		}
 		catch (IOException e)
 		{
 			throw new SQLException("Failed to read " + resourceURL, e);
 		}
 		catch (JiBXException e)
+		{
+			throw new SQLException("Failed to parse " + resourceURL, e);
+		}
+		catch (InstanceAlreadyExistsException e)
+		{
+			throw new SQLException("Failed to parse " + resourceURL, e);
+		}
+		catch (MBeanRegistrationException e)
+		{
+			throw new SQLException("Failed to parse " + resourceURL, e);
+		}
+		catch (NotCompliantMBeanException e)
+		{
+			throw new SQLException("Failed to parse " + resourceURL, e);
+		}
+		catch (MalformedObjectNameException e)
 		{
 			throw new SQLException("Failed to parse " + resourceURL, e);
 		}
@@ -92,8 +139,9 @@ public final class DatabaseClusterFactory
 		}
 	}
 	
-	public DatabaseCluster getDatabaseCluster()
+	public DatabaseCluster getDatabaseCluster(String name)
 	{
+		
 		return null;
 	}
 	
@@ -123,24 +171,26 @@ public final class DatabaseClusterFactory
 	
 	private static class Configuration
 	{
-		private DatabaseClusterListener listener = new LocalDatabaseClusterListener();
-		private Map descriptorMap = new HashMap();
+		private Object listenerDescriptor = null;
+		private List descriptorList = new LinkedList();
 		
-		public DatabaseClusterListener getListener()
+		public Object getListenerDescriptor()
 		{
-			return this.listener;
+			return this.listenerDescriptor;
 		}
 		
-		public Map getDescriptorMap()
+		public List getDescriptorList()
 		{
-			return this.descriptorMap;
+			return this.descriptorList;
 		}
-		
+/*		
 		private void addDescriptor(Object object)
 		{
-			DatabaseClusterDescriptor descriptor = (DatabaseClusterDescriptor) object;
+			this.descriptorList.add(object);
+//			DatabaseClusterDescriptor descriptor = (DatabaseClusterDescriptor) object;
 			
-			this.descriptorMap.put(descriptor.getName(), descriptor);
+//			this.descriptorMap.put(descriptor.getName(), descriptor);
 		}
+*/
 	}
 }

@@ -21,8 +21,10 @@
 package net.sf.hajdbc;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 /**
@@ -61,10 +63,39 @@ public class DataSourceDatabase extends AbstractDatabase
 	/**
 	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
 	 */
-	public Connection connect(Object databaseConnector) throws SQLException
+	public Connection connect(Object databaseConnector) throws java.sql.SQLException
 	{
 		DataSource dataSource = (DataSource) databaseConnector;
 		
 		return (this.user != null) ? dataSource.getConnection(this.user, this.password) : dataSource.getConnection();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Database#getDatabaseConnector()
+	 */
+	public Object getDatabaseConnector() throws java.sql.SQLException
+	{
+		try
+		{
+			Context context = new InitialContext();
+	
+			Object object = context.lookup(this.name);
+	
+			if (!this.getDataSourceClass().isInstance(object))
+			{
+				throw new SQLException(this.name + " does not implement " + this.getDataSourceClass().getName());
+			}
+			
+			return object;
+		}
+		catch (NamingException e)
+		{
+			throw new SQLException("Failed to perform naming lookup of " + this.name, e);
+		}
+	}
+	
+	protected Class getDataSourceClass()
+	{
+		return DataSource.class;
 	}
 }

@@ -22,6 +22,7 @@ package net.sf.hajdbc;
 
 import java.sql.Connection;
 import java.sql.Driver;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -115,5 +116,31 @@ public class DriverDatabase extends AbstractDatabase
 		Driver driver = (Driver) databaseConnector;
 		
 		return driver.connect(this.url, this.getProperties());
+	}
+	
+	public Object getDatabaseConnector() throws SQLException
+	{
+		try
+		{
+			Class driverClass = Class.forName(this.driver);
+			
+			if (!Driver.class.isAssignableFrom(driverClass))
+			{
+				throw new SQLException(this.driver + " does not implement " + Driver.class.getName());
+			}
+			
+			Driver driver = DriverManager.getDriver(this.url);
+			
+			if (driver == null)
+			{
+				throw new SQLException(this.driver + " does not accept url: " + this.url);
+			}
+			
+			return driver;
+		}
+		catch (ClassNotFoundException e)
+		{
+			throw new SQLException(this.driver + " not found in CLASSPATH");
+		}
 	}
 }
