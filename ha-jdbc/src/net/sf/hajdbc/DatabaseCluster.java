@@ -363,17 +363,16 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	 */
 	public final Object executeReadFromDriver(SQLProxy proxy, Operation operation) throws java.sql.SQLException
 	{
-		Database database = null;
-		Object object = null;
-		
-		while (object == null)
+		while (true)
 		{
-			database = this.firstDatabase();
+			Database database = this.firstDatabase();
+			Object object = proxy.getObject(database);
 			
-			object = proxy.getObject(database);
+			if (object != null)
+			{
+				return operation.execute(database, object);
+			}
 		}
-		
-		return operation.execute(database, object);
 	}
 	
 	/**
