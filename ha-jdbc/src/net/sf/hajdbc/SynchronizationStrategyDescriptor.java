@@ -23,12 +23,12 @@ package net.sf.hajdbc;
 import java.beans.Introspector;
 import java.beans.ParameterDescriptor;
 import java.beans.PropertyDescriptor;
+import java.beans.PropertyEditor;
+import java.beans.PropertyEditorManager;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.beanutils.ConvertUtils;
 
 /**
  * Describes a SynchronizationStrategy implementation.
@@ -95,9 +95,26 @@ public class SynchronizationStrategyDescriptor
 				
 				if (descriptor.getName().equals(property.getName()))
 				{
-					Object value = ConvertUtils.convert(property.getDisplayName(), descriptor.getPropertyType());
+					PropertyEditor editor = PropertyEditorManager.findEditor(descriptor.getPropertyType());
 					
-					descriptor.getWriteMethod().invoke(strategy, new Object[] { value });
+					// Yes - we shamelessly hijacked the display name for the property value
+					String textValue = property.getDisplayName();
+					
+					try
+					{
+						if (editor == null)
+						{
+							throw new IllegalArgumentException();
+						}
+
+						editor.setAsText(textValue);
+					}
+					catch (IllegalArgumentException e)
+					{
+						throw new SQLException(Messages.getMessage(Messages.INVALID_PROPERTY_VALUE, new Object[] { textValue, property.getName(), this.className }));
+					}
+					
+					descriptor.getWriteMethod().invoke(strategy, new Object[] { editor.getValue() });
 				}
 			}
 		}
