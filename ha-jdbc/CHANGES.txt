@@ -7,6 +7,7 @@ HA-JDBC Versions
 * Fixed multi-threading bug in SQLProxy
 * Changed license to LGPL - added license details to source code
 * Removed obsolete RowSetProxy
+* Refactored package names to reflect project name
 
 1.0-alpha-2
 -----------
