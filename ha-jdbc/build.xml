@@ -52,7 +52,7 @@
     </target>
 
     <target name="bind" depends="compile">
-		<bind verbose="true" load="true">
+		<bind verbose="false" load="true">
 			<bindingfileset dir="${conf.jibx.dir}" includes="*.xml"/>
 			<classpath refid="classpath"></classpath>
 		</bind> 
