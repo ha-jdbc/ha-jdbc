@@ -24,6 +24,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class DeleteInsertDatabaseActivationStrategy implements DatabaseActivationStrategy
 {
+	private static final int MAX_BATCH_SIZE = 50;
+	
 	private static Log log = LogFactory.getLog(DeleteInsertDatabaseActivationStrategy.class);
 
 	/**
@@ -41,7 +43,7 @@ public class DeleteInsertDatabaseActivationStrategy implements DatabaseActivatio
 			Database activeDatabase = databaseCluster.getDescriptor().firstDatabase();
 			
 			inactiveConnection = database.connect(databaseCluster.getSQLObject(database));
-			inactiveConnection.setAutoCommit(true);
+			inactiveConnection.setAutoCommit(false);
 			
 			DatabaseMetaData databaseMetaData = inactiveConnection.getMetaData();
 			List tableList = new LinkedList();
@@ -85,6 +87,8 @@ public class DeleteInsertDatabaseActivationStrategy implements DatabaseActivatio
 				
 				resultSet.close();
 			}
+			
+			inactiveConnection.commit();
 			
 			activeConnection = activeDatabase.connect(databaseCluster.getSQLObject(activeDatabase));
 			activeConnection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
@@ -139,6 +143,7 @@ public class DeleteInsertDatabaseActivationStrategy implements DatabaseActivatio
 				
 				log.info("Inserting: " + insertSQL);
 				PreparedStatement insertStatement = inactiveConnection.prepareStatement(insertSQL.toString());
+				int statementCount = 0;
 				
 				while (resultSet.next())
 				{
@@ -159,30 +164,30 @@ public class DeleteInsertDatabaseActivationStrategy implements DatabaseActivatio
 					}
 					
 					insertStatement.addBatch();
+					statementCount += 1;
+					
+					if (statementCount >= MAX_BATCH_SIZE)
+					{
+						insertStatement.executeBatch();
+						statementCount = 0;
+					}
 				}
-				
-				insertStatement.executeBatch();
+
+				if (statementCount > 0)
+				{
+					insertStatement.executeBatch();
+				}
 				
 				insertStatement.close();
 				selectStatement.close();
+				
+				inactiveConnection.commit();
 			}
 
 			log.info("Database synchronization completed successfully");
 		}
 		finally
 		{
-			if ((activeConnection != null) && !activeConnection.isClosed())
-			{
-				try
-				{
-					activeConnection.close();
-				}
-				catch (SQLException sqle)
-				{
-					log.warn("Failed to close connection of active database", sqle);
-				}
-			}
-			
 			if ((inactiveConnection != null) && !inactiveConnection.isClosed())
 			{
 				try
@@ -200,7 +205,8 @@ public class DeleteInsertDatabaseActivationStrategy implements DatabaseActivatio
 						statement.execute(foreignKey.createSQL());
 						statement.close();
 					}
-					
+
+					inactiveConnection.commit();
 					inactiveConnection.close();
 				}
 				catch (SQLException e)
@@ -208,6 +214,19 @@ public class DeleteInsertDatabaseActivationStrategy implements DatabaseActivatio
 					log.warn("Failed to close connection of inactive database", e);
 				}
 			}
+			
+			if ((activeConnection != null) && !activeConnection.isClosed())
+			{
+				try
+				{
+					activeConnection.rollback();
+					activeConnection.close();
+				}
+				catch (SQLException sqle)
+				{
+					log.warn("Failed to close connection of active database", sqle);
+				}
+			}			
 		}
 	}
 }

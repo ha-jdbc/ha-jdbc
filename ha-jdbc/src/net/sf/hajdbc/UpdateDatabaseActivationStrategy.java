@@ -40,7 +40,7 @@ public class UpdateDatabaseActivationStrategy implements DatabaseActivationStrat
 			Database activeDatabase = databaseCluster.getDescriptor().firstDatabase();
 			
 			inactiveConnection = database.connect(databaseCluster.getSQLObject(database));
-			inactiveConnection.setAutoCommit(true);
+			inactiveConnection.setAutoCommit(false);
 			
 			DatabaseMetaData databaseMetaData = inactiveConnection.getMetaData();
 			List tableList = new LinkedList();
@@ -83,6 +83,8 @@ public class UpdateDatabaseActivationStrategy implements DatabaseActivationStrat
 				
 				resultSet.close();
 			}
+
+			inactiveConnection.commit();
 			
 			activeConnection = activeDatabase.connect(databaseCluster.getSQLObject(activeDatabase));
 			activeConnection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
@@ -244,24 +246,14 @@ public class UpdateDatabaseActivationStrategy implements DatabaseActivationStrat
 				
 				inactiveStatement.close();
 				activeStatement.close();
+				
+				inactiveConnection.commit();
 			}
 
 			log.info("Database synchronization completed successfully");
 		}
 		finally
 		{
-			if ((activeConnection != null) && !activeConnection.isClosed())
-			{
-				try
-				{
-					activeConnection.close();
-				}
-				catch (SQLException sqle)
-				{
-					log.warn("Failed to close connection of active database", sqle);
-				}
-			}
-			
 			if ((inactiveConnection != null) && !inactiveConnection.isClosed())
 			{
 				try
@@ -279,12 +271,25 @@ public class UpdateDatabaseActivationStrategy implements DatabaseActivationStrat
 						statement.execute(sql);
 						statement.close();
 					}
-					
+
+					inactiveConnection.commit();
 					inactiveConnection.close();
 				}
 				catch (SQLException e)
 				{
 					log.warn("Failed to close connection of inactive database", e);
+				}
+			}
+
+			if ((activeConnection != null) && !activeConnection.isClosed())
+			{
+				try
+				{
+					activeConnection.close();
+				}
+				catch (SQLException sqle)
+				{
+					log.warn("Failed to close connection of active database", sqle);
 				}
 			}
 		}
