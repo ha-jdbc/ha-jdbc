@@ -195,7 +195,7 @@
 				<p>e.g.</p>
 				<source><![CDATA[
 <ha-jdbc>
-  <distributable protocol="UDP:PING:FD:STABLE:NAKACK:UNICAST:FLUSH:GMS:VIEW_ENFORCER:QUEUE"/>
+  <distributable protocol="UDP:PING:MERGE2:FD_SOCK:VERIFY_SUSPECT:pbcast.NAKACK:UNICAST:pbcast.STABLE:FRAG:pbcast.GMS"/>
   <cluster id="...">
     <!-- ... -->
   </cluster>
