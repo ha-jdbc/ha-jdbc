@@ -25,6 +25,8 @@ import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,7 +37,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public final class Driver implements java.sql.Driver
 {
-	private static String URL_PREFIX = "jdbc:ha-jdbc:";
+	private static final Pattern URL_PATTERN = Pattern.compile("^jdbc:ha-jdbc:(.*)$");
 	
 	private static final int MAJOR_VERSION = 1;
 	private static final int MINOR_VERSION = 0;
@@ -84,12 +86,26 @@ public final class Driver implements java.sql.Driver
 		return JDBC_COMPLIANT;
 	}
 	
+	private DatabaseCluster getDatabaseCluster(String url) throws SQLException
+	{
+		Matcher matcher = URL_PATTERN.matcher(url);
+		
+		if (!matcher.matches())
+		{
+			return null;
+		}
+		
+		String name = matcher.group(1);
+		
+		return DatabaseClusterFactory.getInstance().getDatabaseCluster(name);
+	}
+	
 	/**
 	 * @see java.sql.Driver#acceptsURL(java.lang.String)
 	 */
 	public boolean acceptsURL(String url) throws SQLException
 	{
-		return url.startsWith(URL_PREFIX) && (DatabaseClusterFactory.getInstance().getDatabaseCluster(url) != null);
+		return (this.getDatabaseCluster(url) != null);
 	}
 	
 	/**
@@ -97,7 +113,7 @@ public final class Driver implements java.sql.Driver
 	 */
 	public Connection connect(String url, final Properties properties) throws SQLException
 	{
-		DatabaseCluster databaseCluster = DatabaseClusterFactory.getInstance().getDatabaseCluster(url);
+		DatabaseCluster databaseCluster = this.getDatabaseCluster(url);
 		
 		if (databaseCluster == null)
 		{
@@ -122,7 +138,7 @@ public final class Driver implements java.sql.Driver
 	 */
 	public DriverPropertyInfo[] getPropertyInfo(String url, final Properties properties) throws SQLException
 	{
-		DatabaseCluster databaseCluster = DatabaseClusterFactory.getInstance().getDatabaseCluster(url);
+		DatabaseCluster databaseCluster = this.getDatabaseCluster(url);
 		
 		if (databaseCluster == null)
 		{
