@@ -7,18 +7,58 @@
 	<body>
 		<section>
 			<title>Introduction</title>
-			<p>
-				HA-JDBC is a JDBC driver implementation that delegates requests to a set of 
-			</p>
+			<section>
+				<title>What is HA-JDBC?</title>
+				<p>
+					HA-JDBC is a JDBC driver implementation that provides transparent clustering capability to a set of homogeneous JDBC-accessed databases.
+					This project was developed out of the need for an generic open source solution to eliminate the database as the single point of failure for a given application.
+				</p>
+			</section>
+			<section>
+				<title>What does HA-JDBC do?</title>
+				<ul>
+					<li></li>
+				</ul>
+			</section>
+			<section>
+				<title>What does HA-JDBC NOT do?</title>
+				<ul>
+					<li></li>
+				</ul>
+			</section>
+			<section>
+				<title>This project sounds similar to C-JDBC (ObjectWeb)...</title>
+				<p>
+					The <link href="http://c-jdbc.objectweb.org">C-JDBC project</link> (hosted at <link href="http://www.objectweb.org">ObjectWeb</link>) is another open source project that provides clustering ability to JDBC-accessed databases.
+					C-JDBC has a similar goal to this project, but differs in the following ways:
+				</p>
+				<ul>
+					<li>Narrower scope
+						<p>
+							C-JDBC's goal is to extend the concept of RAID (Redundant Array of Inexpensive Discs) to databases.
+							Using the term "RAIDb" (Redundant Array of Inexpensive Databases), it aims to support the following configurations:
+						</p>
+						<ul>
+							<li>RAIDb-0: </li>
+						</ul>
+					</li>
+					<ul>
+						<li>C-JDBC's goal is to extend the concept of RAID (Redundant Array of Inexpensive Databases) to databases</li>
+					</ul>
+				</ul>
+					 providing support for "RAIDb" 0, 1, and 2 configurations. This project will target full replicating (i.e. RAIDb-1) configurations only. - C-JDBC includes fine grain query caching and transparent connection pooling. There are already many excellent open source projects that implement these features, therefore this project will not address these areas. - C-JDBC offers support for clusters of heterogenous databases (i.e. different DB vendors). The normalization of SQL required to support this feature is perhaps the greatest philosophical difference between this project and C-JDBC. This project will only support clustering homogeneous databases. * Simpler design - Clustering support will be embedded in thin JDBC object proxies, rather than C-JDBC's approach of a separate JMX-based "Controller" entity. * Less processing overhead = better performance - Due to the controller-based architecture of C-JDBC, 2 socket connections are required for a database operation (client -> controller, controller -> database). The driver-based architecture of this project requires only 1 serial socket connection (client -> database). * Increased SQL-support - The C-JDBC's JDBC driver implementation restricts the feature support of its underlying database drivers. The driver implemented by this project is a thin, non-restrictive proxy for the underlying JDBC driver.
+			</section>
 		</section>
 		<section>
-			<title>Installation</title>
+			<title>Configuration</title>
 			<p>
+				Coming soon...
 			</p>
 		</section>
 		<section>
 			<title>Architecture</title>
 			<p>
+				Coming soon...
 			</p>
 		</section>
 	</body>
