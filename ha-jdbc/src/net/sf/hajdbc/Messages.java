@@ -37,7 +37,7 @@ public class Messages
 	public static final String INVALID_DATABASE = "invalid-database";
 
 	public static final String DATABASE_DEACTIVATED = "database-deactivated";
-	public static final String DATABASE_ACTIVATED = "database-deactivated";
+	public static final String DATABASE_ACTIVATED = "database-activated";
 
 	public static final String DATABASE_VALIDATE_FAILED = "database-validate-failed";
 	public static final String DATABASE_DEACTIVATE_FAILED = "database-deactivate-failed";
