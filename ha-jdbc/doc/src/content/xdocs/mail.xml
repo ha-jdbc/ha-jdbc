@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V1.2//EN" "http://xml.apache.org/forrest/dtd/document-v12.dtd">
+<document> 
+	<header> 
+		<title>HA-Mail: High-Availability JavaMail Transport</title>
+	</header>
+	<body>
+		<section>
+			<title>Introduction</title>
+			<section>
+				<title>What is HA-Mail?</title>
+				<p>
+					HA-Mail is a simple framework for efficient and reliable message delivery to an array of JavaMail transports.
+				</p>
+			</section>
+			<section>
+				<title>Features</title>
+				<ul>
+					<li>Designed to efficiently process high volume mail transport traffic</li>
+					<ul>
+						<li>Messages are sent asynchronously to minimize impact of network latency between client and mail server.</li>
+						<li>Maintains a pool of connected mail transports removing the cost of connecting to mail server every time.</li>
+						<li>Configurable sending strategies, e.g. email address host grouping minimizes work required to lookup domains.</li>
+						<li>Default sender strategy avoids the expensive operation of persisting messages prior to sending (e.g. to Sent Items folder).</li>
+					</ul>
+					<li>Offers high-availibility</li>
+					<ul>
+						<li>Transparently manages connections to multiple mail servers.</li>
+						<li>Message sending will retry with the next available transport until successful.</li>
+						<li>Detected closed connections are automatically re-opened and made available.</li>
+					</ul>
+				</ul>
+			</section>
+			<section>
+				<title>Sample Usage</title>
+				<p>e.g.</p>
+				<p>
+					<code>Properties properties = new Properties();</code><br/>
+					<code>properties.setProperty("mail.transport.protocol", "smtp");</code><br/>
+					<code>properties.setProperty("mail.host", "mail1.domain.com,mail2.domain.com");</code><br/>
+					<br/>
+					<code>Session session = Session.getInstance(properties);</code><br/>
+					<br/>
+					<code>MailTransport transport = new MailTransport(session, 10);</code><br/>
+					<br/>
+					<code>Address address = new InternetAddress("test@domain.com");</code>
+					<br/>
+					<code>for (int i = 1; i &le; 1000; ++i)</code><br/>
+					<code>{</code><br/>
+					<code>&nbsp;&nbsp;Message message = transport.createMessage();</code><br/>
+					<code>&nbsp;&nbsp;message.setRecipient(Message.RecipientType.TO, address);</code><br/>
+					<code>&nbsp;&nbsp;message.setSubject("Test #" + i);</code><br/>
+					<code>&nbsp;&nbsp;message.setText("This is a test.");</code><br/>
+					<br/>
+					<code>&nbsp;&nbsp;transport.send(message);</code><br/>
+					<code>}</code><br/>
+				</p>
+			</section>
+		</section>
+	</body>
+</document>

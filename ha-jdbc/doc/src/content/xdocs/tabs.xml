@@ -10,6 +10,7 @@
 	If @id's are present, site.xml entries with a matching @tab will be in that tab.
 -->
 	<tab id="ha-jdbc" label="HA-JDBC" dir="" indexfile="index.html"/>
+	<tab id="ha-mail" label="HA-Mail" dir="" indexfile="mail.html"/>
 	<!--tab id="samples" label="Samples" dir="samples" indexfile="sample.html"/-->
 	<!-- Add new tabs here, eg:
 	<tab label="How-Tos" dir="community/howto/"/>

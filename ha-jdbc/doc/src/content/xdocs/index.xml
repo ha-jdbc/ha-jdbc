@@ -8,13 +8,13 @@
 		<section>
 			<title>Introduction</title>
 			<section>
-				<title>What is HA-JDBC?</title>
+				<title>Summary</title>
 				<p>
 					HA-JDBC is a JDBC driver implementation that provides light-weight, transparent clustering capability to groups of homogeneous JDBC-accessed databases.
 				</p>
 			</section>
 			<section>
-				<title>Why is it useful?</title>
+				<title>Purpose</title>
 				<p>
 					This project began as an effort to provide a "better-than-nothing" solution to the "single point of failure" problem that plagues many low-budget database-driven software projects.
 					Simply put, the current solutions for database redundancy are less than ideal:
@@ -37,7 +37,7 @@
 				</p>
 			</section>
 			<section>
-				<title>What features does HA-JDBC provide?</title>
+				<title>Supported Features</title>
 				<ul>
 					<li>Support for full JDBC 3.0 (Java 1.4) feature set.</li>
 					<li>Transparent integration.</li>
@@ -51,7 +51,7 @@
 				</ul>
 			</section>
 			<section>
-				<title>What features does HA-JDBC <strong>NOT</strong> provide?</title>
+				<title>Unsupported Features</title>
 				<ul>
 					<li>Distributed queries.</li>
 					<li>Data partitioning</li>
