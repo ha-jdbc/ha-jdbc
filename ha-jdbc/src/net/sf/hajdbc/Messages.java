@@ -63,6 +63,7 @@ public class Messages
 	public static final String SQL_OBJECT_INIT_FAILED = "sql-object-init-failed";
 	public static final String DATABASE_NOT_ACTIVE = "database-not-active";
 
+	public static final String PRIMARY_KEY_REQUIRED = "primary-key-required";
 	public static final String INSERT_COUNT = "insert-count";
 	public static final String UPDATE_COUNT = "update-count";
 	public static final String DELETE_COUNT = "delete-count";

@@ -106,6 +106,11 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 			
 			primaryKeyResultSet.close();
 			
+			if (primaryKeyList.isEmpty())
+			{
+				throw new SQLException(Messages.getMessage(Messages.PRIMARY_KEY_REQUIRED, new Object[] { this.getClass().getName(), table }));
+			}
+			
 			// Retrieve table rows in primary key order
 			StringBuffer buffer = new StringBuffer("SELECT * FROM ").append(table).append(" ORDER BY ");
 			
