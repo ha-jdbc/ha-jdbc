@@ -9,5 +9,7 @@ import java.util.EventListener;
  */
 public interface DatabaseEventListener extends EventListener
 {
+	public String getClusterName();
+	
 	public void deactivated(DatabaseEvent event);
 }
