@@ -87,7 +87,6 @@
 			<tarfileset dir="${basedir}" includes="conf/**"></tarfileset>
 			<tarfileset dir="${basedir}" includes="doc/**">
 				<exclude name="doc/build/**"></exclude>
-				<exclude name="doc/src/content/api/**"></exclude>
 			</tarfileset>
 		</tar>
 	</target>
