@@ -40,6 +40,7 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 	private String dropForeignKeySQL;
 	private String createIndexSQL;
 	private String dropIndexSQL;
+	private String truncateTableSQL;
 	private Map databaseMap = new HashMap();
 	
 	/**
@@ -106,6 +107,11 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 	public String getDropIndexSQL()
 	{
 		return this.dropIndexSQL;
+	}
+	
+	public String getTruncateTableSQL()
+	{
+		return this.truncateTableSQL;
 	}
 	
 	public DatabaseCluster createDatabaseCluster() throws java.sql.SQLException

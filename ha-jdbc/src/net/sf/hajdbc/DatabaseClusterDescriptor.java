@@ -40,4 +40,6 @@ public interface DatabaseClusterDescriptor
 	public String getDropForeignKeySQL();
 	
 	public String getDropIndexSQL();
+	
+	public String getTruncateTableSQL();
 }
