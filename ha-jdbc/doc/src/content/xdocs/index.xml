@@ -10,29 +10,30 @@
 			<section>
 				<title>What is HA-JDBC?</title>
 				<p>
-					HA-JDBC is a JDBC driver implementation that provides transparent clustering capability to a set of homogeneous JDBC-accessed databases.
+					HA-JDBC is a JDBC driver implementation that provides light-weight, transparent clustering capability sets of homogeneous JDBC-accessed databases.
 				</p>
 			</section>
 			<section>
-				<title>How is HA-JDBC different?</title>
+				<title>Why is it useful?</title>
 				<p>
-					Current solutions for database redundancy are problematic:
+					This project began as an effort to provide a "better-than-nothing" solution to the "single point of failure" problem that plagues many low-budget database-driven software projects.
+					Simply put, the current solutions for database redundancy are less than ideal:
 				</p>
 				<ul>
 					<li>Commercial clustering solutions are <em>very</em> expensive.</li>
-					<li>Many replication solutions exist (e.g. <link href="http://www.mysql.com/products/mysql/">MySQL</link> replication, <link href="http://gborg.postgresql.org/project/erserver">PostgreSQL eRServer</link>), but are inadequate:</li>
+					<li>Several open source replication solutions exist (e.g. <link href="http://www.mysql.com/products/mysql/">MySQL</link> replication, <link href="http://gborg.postgresql.org/project/erserver">PostgreSQL eRServer</link>), but are inadequate:</li>
 					<ul>
 						<li>Asynchronous replication solutions perform adequately but impose a replication latency and do not provide transactional concurrency.</li>
 						<li>Synchronous replication solutions may provide transactional concurrency but often impose a high performance cost.</li>
 						<li>The asymmetric master-slave design does not provide failover of the master database.</li>
 					</ul>
 					<li>
-						The <link href="http://c-jdbc.objectweb.org">C-JDBC project</link>, hosted at <link href="http://www.objectweb.org">ObjectWeb</link>, does an impressive job at coming close to a full enterprise database clustering solution.
-						C-JDBC provides many sophisticated features, but in doing so sacrifices performance and JDBC feature support.
+						The <link href="http://c-jdbc.objectweb.org">C-JDBC</link> project, hosted at <link href="http://www.objectweb.org">ObjectWeb</link>, does an impressive job at coming close to a full enterprise database clustering solution.
+						C-JDBC provides many sophisticated features, but due to the nature of its design, limits the functionality of the underlying JDBC drivers.
+						Present issues aside, it does many things well and is definitely worth checking out.
 					</li>
 				</ul>
 				<p>
-					This project began as an effort to provide a "better-than-nothing" solution to the "single point of failure" problem that plagues many low-budget database-driven software projects.
 				</p>
 			</section>
 			<section>
@@ -40,21 +41,25 @@
 				<ul>
 					<li>Support for full JDBC 3.0 (Java 1.4) feature set.</li>
 					<li>Transparent integration.</li>
-					<li>Allows use of proprietary implementations of SQL types (e.g. Blob, Clob, Ref, etc).</li>
+					<li>Allows use of vendor implementations of SQL types (e.g. <code>Blob</code>, <code>Clob</code>, <code>Ref</code>, etc).</li>
 					<li>Improves performance of concurrent read-access by distributing load accross individual cluster nodes.</li>
-					<li>Provides connection factory support for javax.sql.DataSource, javax.sql.ConnectionPoolDataSource, javax.sql.XADataSource, as well as the traditional java.sql.DriverManager facility.</li>
 					<li>Ensures data concurrency by deactivating failed cluster nodes.</li>
+					<li>Support for clustered client environments (i.e. Distributable cluster registry) (coming soon)</li>
+					<li>Library of connected and disconnected cluster-aware <code>javax.sql.RowSet</code> implementations (coming soon)</li>
+					<li>Configurable node failure strategies (coming soon)</li>
+					<li>Cluster health introspection (coming soon)</li>
 				</ul>
 			</section>
 			<section>
 				<title>What features does HA-JDBC <strong>NOT</strong> provide?</title>
 				<ul>
 					<li>Distributed queries.</li>
-					<li>Data partitioning (i.e. striping)</li>
+					<li>Data partitioning</li>
 					<li>Hot re-activation of deactivated cluster nodes.</li>
 					<li>Auto re-synchronization of deactivated cluster nodes.</li>
-					<li>ResultSet caching.</li>
-					<li>Heterogenous clusters (i.e. different databases in the same cluster).</li>
+					<li><code>ResultSet</code> caching.</li>
+					<li>Heterogenous clusters (i.e. different database vendors within in the same cluster).</li>
+					<li>Support for write operations (i.e. <code>setXXX(...)</code>) in third-party <code>javax.sql.RowSet</code> implementations.</li>
 				</ul>
 			</section>
 		</section>
@@ -63,14 +68,92 @@
 			<section>
 				<title>Cluster Configuration</title>
 				<p>
-					Coming soon...
+					Configuration of HA-JDBC managed database clusters is contained in a single XML file.
+					A DTD is provided in the <code>/conf</code> directory of the distribution.<br/>
+					e.g.
+				</p>
+				<p>
+					<code><![CDATA[<?xml version="1.0"?>]]></code><br/>
+					<code><![CDATA[<!DOCTYPE ha-jdbc SYSTEM "ha-jdbc.dtd">]]></code><br/>
+					<code><![CDATA[<ha-jdbc>]]></code><br/>
+					<code>&nbsp;&nbsp;<![CDATA[<cluster name="cluster1" validate-sql="SELECT 1">]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<database url="jdbc:postgresql://db1:5432/database1" driver="org.postgresql.Driver">]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<user>postgres</user>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<password>password</password>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</database>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<database url="jdbc:postgresql://db2:5432/database2" driver="org.postgresql.Driver">]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<user>postgres</user>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<password>password</password>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</database>]]></code><br/>
+					<code>&nbsp;&nbsp;<![CDATA[</cluster>]]></code><br/>
+					<code>&nbsp;&nbsp;<![CDATA[<cluster name="cluster2" validate-sql="SELECT 1">]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<datasource name="java:comp/env/jdbc/Database1">]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<user>postgres</user>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<password>password</password>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</datasource>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<datasource name="java:comp/env/jdbc/Database1">]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<user>postgres</user>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<password>password</password>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</datasource>]]></code><br/>
+					<code>&nbsp;&nbsp;<![CDATA[</cluster>]]></code><br/>
+					<code><![CDATA[</ha-jdbc>]]></code><br/>
 				</p>
 			</section>
 			<section>
 				<title>Application Configuration</title>
-				<p>
-					Coming soon...
-				</p>
+				<section>
+				<title>DriverManager-based access</title>
+					<ol>
+						<li>As with your existing JDBC drivers, the HA-JDBC driver must first be loaded.  This can be done by either:<br/>
+							<br/>
+							<ul>
+								<li>Add <code>net.sf.ha.jdbc.DriverProxy</code> to your <code>jdbc.drivers</code> system property.</li>
+								<li>Explicity load the <code>net.sf.ha.jdbc.DriverProxy</code> class using <code>Class.forName(...)</code>.<br/>
+									<p>
+										Per the JDBC specification, loading the HA-JDBC driver class automatically registers the driver with the <code>DriverManager</code>.
+										The HA-JDBC driver will automatically load all underlying JDBC drivers defined within a given cluster.
+									</p>
+								</li>
+							</ul>
+							<br/>
+						</li>
+						<li>Use the following URL in subsequent calls to <code>DriverManager.connect(...)</code><br/>
+							<p>
+								<code>jdbc:ha-jdbc:</code><em>cluster-name</em>
+							</p>
+							<p>
+								e.g.
+							</p>
+							<p>
+								<code>Connection connection = DriverManager.connect("jdbc:ha-jdbc:cluster1", "postgres", "password");</code>
+							</p>
+						</li>
+					</ol>
+				</section>
+				<section>
+					<title>DataSource-based access</title>
+					<ol>
+						<li>Simply add an HA-JDBC <code>DataSource</code> using the following class names to your server configuration along side your existing JDBC <code>DataSource</code>s:<br/>
+							<br/>
+							<ul>
+								<li><code>net.sf.ha.jdbc.DataSourceProxy</code></li>
+								<li><code>net.sf.ha.jdbc.pool.ConnectionPoolDataSourceProxy</code></li>
+								<li><code>net.sf.ha.jdbc.pool.xa.XADataSourceProxy</code></li>
+							</ul>
+							<br/>
+						</li>
+						<li>Use the JNDI name configured in your cluster configuration file to access the HA-JDBC DataSource<br/>
+							<p>
+								<code>Context context = new InitialContext();</code><br/>
+								<code>DataSource dataSource = (DataSource) context.lookup("java:comp/env/jdbc/Database1");</code><br/>
+								<code>Connection connection = dataSource.getConnection("postgres", "password");</code><br/>
+							</p>
+						</li>
+					</ol>
+					<p>
+						Server configuration examples coming soon...
+					</p>
+				</section>
 			</section>
 			<section>
 				<title>Connection Pooling</title>
@@ -105,16 +188,16 @@
 				If an exception is caught, the database is tested for validity:
 			</p>
 			<ul>
-				<li>If the validity check succeeds (i.e. the database is still up), the exception is returned to the caller.</li>
-				<li>If the validity check fails (i.e. the database is down), the database is globally deactivated, and the request is passed on to another node in the cluster</li>
+				<li>If the validation check succeeds (i.e. the database is still up), the exception is returned to the caller.</li>
+				<li>If the validation check fails (i.e. the database is down), the database is globally deactivated, and the request is passed on to another node in the cluster</li>
 			</ul>
 			<p>
 				Write requests are performed asynchronously.  The call returns when all databases have completed the request.
 				If an exception is caught, the database that threw it is tested for validity:
 			</p>
 			<ul>
-				<li>If the validity check succeeds, the exception is returned to the caller.</li>
-				<li>If the validity check fails, the database is globally deactivated, and results of the succeeding databases are returned to the caller</li>
+				<li>If the validation check succeeds, the exception is returned to the caller.</li>
+				<li>If the validation check fails, the database is globally deactivated, and results of the succeeding databases are returned to the caller</li>
 			</ul>
 		</section>
 	</body>
