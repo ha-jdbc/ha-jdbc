@@ -29,8 +29,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class MailTransport extends ConnectionAdapter implements MailSender
 {
-	public static final MailSenderStrategy DEFAULT_STRATEGY = new HostGroupingMailSenderStrategy();
-	public static final int DEFAULT_POOL_SIZE = 1;
+	private static final MailSenderStrategy DEFAULT_STRATEGY = new HostGroupingMailSenderStrategy();
+	private static final int DEFAULT_POOL_SIZE = 1;
 
 	protected static Log log = LogFactory.getLog(MailTransport.class);
 	
