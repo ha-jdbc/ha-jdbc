@@ -95,7 +95,7 @@ public class Messages
 	/**
 	 * Returns the localized message using the specified resource key and arguments.
 	 * @param key a resource key
-	 * @param arg an array of arguments
+	 * @param args an array of arguments
 	 * @return a formatted localized message
 	 */
 	public static String getMessage(String key, Object[] args)
