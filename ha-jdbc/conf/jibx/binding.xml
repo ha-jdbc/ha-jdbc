@@ -8,7 +8,7 @@
 		<collection field="descriptorList" type="java.util.LinkedList"></collection>
 	</mapping>
 	<mapping name="cluster" class="net.sf.hajdbc.local.LocalDatabaseClusterDescriptor">
-		<value name="name" field="name" style="attribute"></value>
+		<value name="id" field="id" style="attribute"></value>
 		<value name="validate-sql" field="validateSQL" usage="optional" default="SELECT 1"></value>
 		<value name="create-foreign-key-sql" field="createForeignKeySQL" usage="optional" default="ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4})"></value>
 		<value name="drop-foreign-key-sql" field="dropForeignKeySQL" usage="optional" default="ALTER TABLE {1} DROP CONSTRAINT {0}"></value>
@@ -17,24 +17,28 @@
 		<collection add-method="addDatabase"></collection>
 	</mapping>
 	<mapping name="database" class="net.sf.hajdbc.DriverDatabase">
-		<value name="url" field="url" usage="required" style="attribute"></value>
-		<value name="driver" field="driver" usage="required" style="attribute"></value>
-		<value name="user" field="user" usage="optional" style="element"></value>
-		<value name="password" field="password" usage="optional" style="element"></value>
+		<value name="id" field="id" style="attribute"></value>
+		<value name="driver" field="driver"></value>
+		<value name="url" field="url"></value>
+		<value name="user" field="user" usage="optional"></value>
+		<value name="password" field="password" usage="optional"></value>
 	</mapping>
 	<mapping name="datasource" class="net.sf.hajdbc.DataSourceDatabase">
-		<value name="name" field="name" usage="required" style="attribute"></value>
-		<value name="user" field="user" usage="optional" style="element"></value>
-		<value name="password" field="password" usage="optional" style="element"></value>
+		<value name="id" field="id" style="attribute"></value>
+		<value name="name" field="name"></value>
+		<value name="user" field="user" usage="optional"></value>
+		<value name="password" field="password" usage="optional"></value>
 	</mapping>
 	<mapping name="pool-datasource" class="net.sf.hajdbc.pool.ConnectionPoolDataSourceDatabase">
-		<value name="name" field="name" usage="required" style="attribute"></value>
-		<value name="user" field="user" usage="optional" style="element"></value>
-		<value name="password" field="password" usage="optional" style="element"></value>
+		<value name="id" field="id" style="attribute"></value>
+		<value name="name" field="name"></value>
+		<value name="user" field="user" usage="optional"></value>
+		<value name="password" field="password" usage="optional"></value>
 	</mapping>
 	<mapping name="xa-datasource" class="net.sf.hajdbc.pool.xa.XADataSourceDatabase">
-		<value name="name" field="name" usage="required" style="attribute"></value>
-		<value name="user" field="user" usage="optional" style="element"></value>
-		<value name="password" field="password" usage="optional" style="element"></value>
+		<value name="id" field="id" style="attribute"></value>
+		<value name="name" field="name"></value>
+		<value name="user" field="user" usage="optional"></value>
+		<value name="password" field="password" usage="optional"></value>
 	</mapping>
 </binding>
