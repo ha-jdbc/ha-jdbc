@@ -64,8 +64,8 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	{
 		Database database = this.getDatabase(databaseId);
 		
-		// If there are no active databases then we can't synchronize with anything
-		if (this.getActiveDatabaseList().isEmpty())
+		// If this database is already active, or there are no active databases then skip synchronization
+		if (this.isActive(database) || this.getActiveDatabaseList().isEmpty())
 		{
 			this.activate(database);
 		}
@@ -84,6 +84,21 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 
 				this.activate(database, strategy);
 			}
+			catch (java.sql.SQLException e)
+			{
+				log.error("Synchronization failed", e);
+				if (e.getNextException() != null)
+				{
+					log.error("Caused by: ", e.getNextException());
+				}
+				throw new SQLException(e);
+			}
+			catch (Throwable e)
+			{
+				log.error("Synchronization failed", e);
+				throw new SQLException(e);
+			}
+/*			
 			catch (ClassNotFoundException e)
 			{
 				throw new SQLException(e);
@@ -96,22 +111,23 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 			{
 				throw new SQLException(e);
 			}
+*/
 		}
 	}
 	
-	public final void activate(Database database, DatabaseSynchronizationStrategy strategy) throws java.sql.SQLException
+	public final void activate(Database inactiveDatabase, DatabaseSynchronizationStrategy strategy) throws java.sql.SQLException
 	{
-		Connection connection = null;
-		ConnectionProxy connectionProxy = null;
+		Connection inactiveConnection = null;
+		List databaseList = this.getActiveDatabaseList();
+		Connection[] activeConnections = new Connection[databaseList.size()];
 		
 		try
 		{
-			connection = database.connect(this.getConnectionFactory());
-			connection.setAutoCommit(false);
+			inactiveConnection = inactiveDatabase.connect(this.getConnectionFactory().getSQLObject(inactiveDatabase));
 			
 			List tableList = new LinkedList();
 			
-			DatabaseMetaData databaseMetaData = connection.getMetaData();
+			DatabaseMetaData databaseMetaData = inactiveConnection.getMetaData();
 			ResultSet resultSet = databaseMetaData.getTables(null, null, "%", new String[] { "TABLE" });
 			
 			while (resultSet.next())
@@ -121,64 +137,73 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 			}
 			
 			resultSet.close();
-	
-			Operation operation = new Operation()
+
+			// Open connections to all active databases
+			for (int i = 0; i < databaseList.size(); ++i)
 			{
-				public Object execute(Database database, Object sqlObject) throws java.sql.SQLException
-				{
-					return database.connect(DatabaseCluster.this.getConnectionFactory());
-				}
-			};
-	
-			connectionProxy = new ConnectionProxy(this.getConnectionFactory(), this.getConnectionFactory().executeWrite(operation));
-			
-			connectionProxy.setAutoCommit(false);
-			connectionProxy.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-			
-			// Lock all tables
-			Statement statement = connectionProxy.createStatement();
-			Iterator tables = tableList.iterator();
-			
-			while (tables.hasNext())
-			{
-				String table = (String) tables.next();
+				Database activeDatabase = (Database) databaseList.get(i);
 				
-				statement.addBatch("SELECT count(*) FROM " + table);
+				activeConnections[i] = activeDatabase.connect(DatabaseCluster.this.getConnectionFactory().getSQLObject(activeDatabase));
 			}
 			
-			statement.executeBatch();
-			statement.close();
+			// Lock all tables on all active databases
+			for (int i = 0; i < activeConnections.length; ++i)
+			{
+				activeConnections[i].setAutoCommit(false);
+				activeConnections[i].setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+				
+				Statement statement = activeConnections[i].createStatement();
+				Iterator tables = tableList.iterator();
+				
+				while (tables.hasNext())
+				{
+					String table = (String) tables.next();
+					
+					statement.execute("SELECT count(*) FROM " + table);
+				}
+				
+				statement.close();
+			}
 			
-			strategy.synchronize(connection, connectionProxy, tableList);
+			log.info("Starting synchronization");
+			strategy.synchronize(this.getDescriptor(), activeConnections[0], inactiveConnection, tableList);
+			log.info("Finished synchronization");
 	
-			this.activate(database);
+			this.activate(inactiveDatabase);
 			
 			// Release table locks
-			connectionProxy.rollback();
+			// Lock all tables on all active databases
+			for (int i = 0; i < activeConnections.length; ++i)
+			{
+				activeConnections[i].rollback();
+			}
 		}
 		finally
 		{
-			if ((connection != null) && !connection.isClosed())
+			if (inactiveConnection != null)
 			{
 				try
 				{
-					connection.close();
+					inactiveConnection.close();
 				}
 				catch (java.sql.SQLException e)
 				{
-					log.warn("Failed to close connection of database: " + database);
+					log.warn("Failed to close connection of database: " + inactiveDatabase);
 				}
 			}
 			
-			if ((connectionProxy != null) && !connectionProxy.isClosed())
+			for (int i = 0; i < activeConnections.length; ++i)
 			{
-				try
+				if (activeConnections[i] != null)
 				{
-					connectionProxy.close();
-				}
-				catch (java.sql.SQLException e)
-				{
-					log.warn("Failed to close connection to active databases");
+					try
+					{
+						activeConnections[i].close();
+					}
+					catch (java.sql.SQLException e)
+					{
+						log.warn("Failed to close connection to database: " + databaseList.get(i));
+					}
 				}
 			}
 		}
@@ -189,6 +214,8 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 		this.activate(this.getDatabase(databaseId));
 	}
 	
+	public abstract boolean isActive(Database database);
+
 	public abstract boolean activate(Database database);
 	
 	public abstract boolean addDatabase(Database database);
