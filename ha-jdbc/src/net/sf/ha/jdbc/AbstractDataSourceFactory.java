@@ -1,9 +1,9 @@
 package net.sf.ha.jdbc;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -52,7 +52,7 @@ public abstract class AbstractDataSourceFactory implements ObjectFactory
 		String clusterName = (String) reference.get(CLUSTER_NAME).getContent();
 		DatabaseClusterDescriptor descriptor = DatabaseClusterManagerFactory.getClusterManager().getDescriptor(clusterName);
 		Set databaseSet = descriptor.getDatabaseSet();
-		Map dataSourceMap = new HashMap(databaseSet.size());
+		Map dataSourceMap = new LinkedHashMap(databaseSet.size(), 0.75f, true);
 		Iterator databases = databaseSet.iterator();
 		
 		while (databases.hasNext())
