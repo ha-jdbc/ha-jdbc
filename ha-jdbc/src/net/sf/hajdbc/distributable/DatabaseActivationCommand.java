@@ -31,6 +31,8 @@ import net.sf.hajdbc.DatabaseCluster;
  */
 public class DatabaseActivationCommand extends DatabaseCommand
 {
+	private static final long serialVersionUID = 3618141143175673655L;
+
 	/**
 	 * Constructs a new DatabaseActivationCommand.
 	 */

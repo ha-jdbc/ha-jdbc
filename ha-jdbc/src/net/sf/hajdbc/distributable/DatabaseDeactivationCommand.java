@@ -31,6 +31,8 @@ import net.sf.hajdbc.DatabaseCluster;
  */
 public class DatabaseDeactivationCommand extends DatabaseCommand
 {
+	private static final long serialVersionUID = 3257006574802647092L;
+
 	/**
 	 * Constructs a new DatabaseDeactivationCommand.
 	 */

@@ -27,6 +27,8 @@ package net.sf.hajdbc.pool.xa;
  */
 public class XAException extends javax.transaction.xa.XAException
 {
+	private static final long serialVersionUID = 3833460721462950199L;
+
 	/**
 	 * Constructs a new XAException.
 	 * @param message

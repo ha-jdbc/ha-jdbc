@@ -28,6 +28,8 @@ package net.sf.hajdbc;
  */
 public class SQLException extends java.sql.SQLException
 {
+	private static final long serialVersionUID = 4122254034733510710L;
+
 	/**
 	 * Constructs a new SQLException.
 	 * @param message
