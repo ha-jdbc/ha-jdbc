@@ -45,9 +45,9 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 	protected List activeTransportList = new LinkedList();
 	protected ThreadGroup senderThreadGroup = new ThreadGroup("sender");
 	protected ThreadGroup connectorThreadGroup = new ThreadGroup("connector");
-	private int poolSize;
 	protected long connectRetryPeriod;
 	protected Map urlNameMap = new HashMap();
+	private int poolSize;
 	private Provider provider;
 	private SenderStrategy senderStrategy = new SimpleSenderStrategy();
 	
@@ -189,7 +189,7 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 	 */
 	public void send(Transport transport, Message message, Address[] addresses)
 	{
-		new TransportSender(transport, message, addresses).start();
+		new SenderThread(transport, message, addresses).start();
 	}
 	
 	/**
@@ -213,7 +213,7 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 			Transport transport = (Transport) this.transportList.get(i);
 			String host = hosts[i % hosts.length];
 
-			this.connect(transport, this.getURLName(host));
+			new ConnectorThread(transport, this.getURLName(host)).start();
 		}
 	
 		return true;
@@ -222,15 +222,6 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 	protected URLName getURLName(String host)
 	{
 		return (URLName) this.urlNameMap.get(host);
-	}
-	
-	/**
-	 * Asynchronously connects the specified transport.
-	 * @param transport a JavaMail transport
-	 */
-	protected void connect(Transport transport, URLName url)
-	{
-		new TransportConnector(transport, url).start();
 	}
 	
 	/**
@@ -334,35 +325,9 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 	}
 	
 	/**
-	 * @see javax.mail.Service#addConnectionListener(javax.mail.event.ConnectionListener)
-	 */
-	public void addConnectionListener(ConnectionListener listener)
-	{
-		for (int i = 0; i < this.transportList.size(); ++i)
-		{
-			Transport transport = (Transport) this.transportList.get(i);
-				
-			transport.addConnectionListener(listener);
-		}
-	}
-	
-	/**
-	 * @see javax.mail.Service#removeConnectionListener(javax.mail.event.ConnectionListener)
-	 */
-	public void removeConnectionListener(ConnectionListener listener)
-	{
-		for (int i = 0; i < this.transportList.size(); ++i)
-		{
-			Transport transport = (Transport) this.transportList.get(i);
-			
-			transport.removeConnectionListener(listener);
-		}
-	}
-	
-	/**
 	 * @see javax.mail.Service#close()
 	 */
-	public void close()
+	public void close() throws MessagingException
 	{
 		while (this.senderThreadGroup.activeCount() > 0)
 		{
@@ -391,26 +356,28 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 			}
 		}
 		
-		this.setConnected(false);
+		super.close();
 	}
 	
-	protected void finalize()
+	protected void finalize() throws Throwable
 	{
 		if (this.isConnected())
 		{
 			this.close();
 		}
+		
+		super.finalize();
 	}
 	
 	/**
 	 * Asynchronously (re)connect a transport and make it available.
 	 */
-	private class TransportConnector extends Thread
+	private class ConnectorThread extends Thread
 	{
 		private Transport transport;
 		private URLName url;
 		
-		public TransportConnector(Transport transport, URLName url)
+		public ConnectorThread(Transport transport, URLName url)
 		{
 			super(TransportProxy.this.connectorThreadGroup, (Runnable) null);
 
@@ -461,16 +428,18 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 	/**
 	 * Asynchronously send a message to a set of addresses via a transport.
 	 */
-	private class TransportSender extends Thread
+	private class SenderThread extends Thread
 	{
 		private Transport transport;
 		private Message message;
 		private Address[] addresses;
 		
-		public TransportSender(Transport transport, Message message, Address[] addresses)
+		public SenderThread(Transport transport, Message message, Address[] addresses)
 		{
 			super(TransportProxy.this.senderThreadGroup, (Runnable) null);
-			
+
+			this.setDaemon(true);
+
 			this.transport = transport;
 			this.message = message;
 			this.addresses = addresses;
@@ -498,8 +467,9 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 					
 					// Transport connection is dead
 					// Reconnect this transport
-					URLName url = TransportProxy.this.getURLName(this.transport.getURLName().getHost());
-					TransportProxy.this.connect(this.transport, url);
+					String host = this.transport.getURLName().getHost();
+					URLName url = TransportProxy.this.getURLName(host);
+					new ConnectorThread(this.transport, url).start();
 
 					// Try again with a new transport
 					this.transport = TransportProxy.this.nextAvailableTransport();
