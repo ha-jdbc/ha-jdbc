@@ -16,29 +16,22 @@ public class DatabaseCluster extends AbstractProxy implements DatabaseEventListe
 	private String name;
 	private String validateSQL;
 	
-	protected DatabaseCluster(Map databaseMap)
+	protected DatabaseCluster(String name, Map databaseMap, String validateSQL)
 	{
 		super(databaseMap);
+		
+		this.name = name;
+		this.validateSQL = validateSQL;
 	}
 	
 	public String getName()
 	{
 		return this.name;
 	}
-	
-	public void setName(String name)
-	{
-		this.name = name;
-	}
 
 	public String getValidateSQL()
 	{
 		return this.validateSQL;
-	}
-	
-	public void setValidateSQL(String validateSQL)
-	{
-		this.validateSQL = validateSQL;
 	}
 	
 	protected DatabaseCluster getDatabaseCluster()
