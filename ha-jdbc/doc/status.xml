@@ -10,6 +10,17 @@
 			defined for 'add', 'fix', 'remove', 'update' and 'hack'. If you add
 			src/documentation/resources/images/<foo>.jpg images, these will
 			automatically be used for entries of type <foo>. -->
+		<release version="1.0-beta-3" date="February 7, 2005">
+			<action type="add" dev="PF">
+				Added i18n support for all log/exception messages.
+			</action>
+			<action type="update" dev="PF">
+				Driver is no longer required when defining a driver-based cluster since underlying driver already be registered via the jdbc.drivers system property.
+			</action>
+			<action type="fix" dev="PF">
+				Fixed bug in SQLException when nested exception chain is already initialized.
+			</action>
+		</release>
 		<release version="1.0-beta-2" date="January 8, 2005">
 			<action type="add" dev="PF">
 				Added JMX interface to DatabaseCluster to allow administration of each cluster.
@@ -117,15 +128,19 @@
 			<action context="code" dev="PF">
 				Modularize synchronization strategy configuration properties.
 			</action>
-		</actions>
-		<actions priority="Release 1.0">
 			<action context="code" dev="PF">
-				Build in i18n support for log messages.
+				Junit regression test suite. (in progress)
+			</action>
+			<action context="code" dev="PF">
+				Sample application using HSQL.
 			</action>
 		</actions>
 		<actions priority="Release 1.1">
 			<action context="code" dev="PF">
 				Support weighted cluster nodes.
+			</action>
+			<action context="code" dev="PF">
+				Support for modifying HA-JDBC configuration at runtime.
 			</action>
 		</actions>
 	</todo>
