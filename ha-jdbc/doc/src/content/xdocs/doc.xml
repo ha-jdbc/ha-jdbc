@@ -46,27 +46,43 @@
 <!DOCTYPE ha-jdbc PUBLIC "-//HA-JDBC//DTD HA-JDBC 1.0//EN"
   "http://ha-jdbc.sourceforge.net/dtd/ha-jdbc-1.0.dtd">
 <ha-jdbc>
-  <cluster name="cluster">
-    <database url="jdbc:postgresql://server1:5432/database" driver="org.postgresql.Driver">
+  <cluster id="cluster">
+    <database id="server1">
+      <driver>org.postgresql.Driver</driver>
+      <url>jdbc:postgresql://server1:5432/database</url>
       <user>postgres</user>
       <password>password</password>
     </database>
-    <database url="jdbc:postgresql://server2:5432/database" driver="org.postgresql.Driver">
+    <database id="server2">
+      <driver>org.postgresql.Driver</driver>
+      <url>jdbc:postgresql://server2:5432/database</url>
       <user>postgres</user>
       <password>password</password>
     </database>
   </cluster>
-  <cluster name="Cluster">
-    <datasource name="java:comp/env/jdbc/Database1"></datasource>
-    <datasource name="java:comp/env/jdbc/Database2"></datasource>
+  <cluster id="Cluster">
+    <datasource id="database1">
+      <name>java:comp/env/jdbc/Database1</name>
+    </datasource>
+    <datasource id="database2">
+      <name>java:comp/env/jdbc/Database2</name>
+    </datasource>
   </cluster>
-  <cluster name="PoolCluster">
-    <pool-datasource name="java:comp/env/jdbc/pool/Database1"></pool-datasource>
-    <pool-datasource name="java:comp/env/jdbc/pool/Database2"></pool-datasource>
+  <cluster id="PoolCluster">
+    <pool-datasource id="database1">
+      <name>java:comp/env/jdbc/pool/Database1</name>
+    </pool-datasource>
+    <pool-datasource id="database2">
+      <name>java:comp/env/jdbc/pool/Database2</name>
+    </pool-datasource>
   </cluster>
-  <cluster name="XACluster">
-    <xa-datasource name="java:comp/env/jdbc/xa/Database1"></xa-datasource>
-    <xa-datasource name="java:comp/env/jdbc/xa/Database2"></xa-datasource>
+  <cluster id="XACluster">
+    <xa-datasource id="database1">
+      <name>java:comp/env/jdbc/xa/Database1</name>
+    </xa-datasource>
+    <xa-datasource id="database2">
+      <name>java:comp/env/jdbc/xa/Database2</name>
+    </xa-datasource>
   </cluster>
 </ha-jdbc>
 ]]></source>
@@ -182,8 +198,8 @@
 				<p>e.g.</p>
 				<source><![CDATA[
 <ha-jdbc>
-  <distributable protocol="UDP(mcast_addr=228.10.9.8;mcast_port=5678):PING:FD:GMS"/>
-  <cluster name="...">
+  <distributable protocol="UDP:PING:FD:STABLE:NAKACK:UNICAST:FLUSH:GMS:VIEW_ENFORCER:QUEUE"/>
+  <cluster id="...">
     <!-- ... -->
   </cluster>
 </ha-jdbc>
@@ -221,12 +237,14 @@
 				</p>
 				<p>e.g.</p>
 				<source><![CDATA[
-<cluster name="Cluster">
-  <xa-datasource name="java:comp/env/jdbc/xa/DataSource1">
+<cluster id="XACluster">
+  <xa-datasource id="database1">
+    <name>java:comp/env/jdbc/xa/Database1</name>
     <user>postgres</user>
     <password>password</password>
   </xa-datasource>
-  <xa-datasource name="java:comp/env/jdbc/xa/DataSource2">
+  <xa-datasource id="database2">
+    <name>java:comp/env/jdbc/xa/Database2</name>
     <user>postgres</user>
     <password>password</password>
   </xa-datasource>
@@ -241,12 +259,14 @@
 				</p>
 				<p>e.g.</p>
 				<source><![CDATA[
-<cluster name="Cluster">
-  <pool-datasource name="java:comp/env/jdbc/pool/DataSource1">
+<cluster id="PoolCluster">
+  <pool-datasource id="database1">
+    <name>java:comp/env/jdbc/pool/Database1</name>
     <user>postgres</user>
     <password>password</password>
   </pool-datasource>
-  <pool-datasource name="java:comp/env/jdbc/pool/DataSource2">
+  <pool-datasource id="database2">
+    <name>java:comp/env/jdbc/pool/Database2</name>
     <user>postgres</user>
     <password>password</password>
   </pool-datasource>
@@ -279,10 +299,9 @@
 					</li>
 				</ul>
 				<p>
-					The URL to use in subsequent calls to <code>DriverManager.connect(...)</code> should use the name of your cluster.
-					Database clusters will be named using the following convention:
+					The URL specified in subsequent calls to <code>DriverManager.connect(...)</code> follow the pattern:
 				</p>
-				<p><code>jdbc:ha-jdbc:</code><em>cluster-name</em></p>
+				<p><code>jdbc:ha-jdbc:</code><em>cluster-id</em></p>
 				<p>e.g.</p>
 				<source><![CDATA[
 Connection connection = DriverManager.connect("jdbc:ha-jdbc:cluster", "postgres", "password");
@@ -344,11 +363,11 @@ rs.close();
 				<p>e.g.</p>
 				<source><![CDATA[
 <ha-jdbc>
-  <cluster name="cluster">
+  <cluster id="cluster">
     <!-- Sample validation query for HSQLDB -->
     <validate-sql>CALL NOW()</validate-sql>
-    <database url="..." driver="..."></database>
-    <database url="..." driver="..."></database>
+    <database id="..."><!-- ... --></database>
+    <database id="..."><!-- ... --></database>
   </cluster>
 </ha-jdbc>
 ]]></source>
@@ -372,7 +391,7 @@ rs.close();
 				</p>
 				<ul>
 					<li><a href="api/net/sf/hajdbc/sync/FullSynchronizationStrategy.html"><code>Full</code></a> - Each tables is truncated and data is reinserted.  This strategy is fastest if the database is way out of sync.</li>
-					<li><a href="api/net/sf/hajdbc/sync/DifferentialSynchronizationStrategy.html"><code>Differential</code></a> - Comparison is done on each table and only changes are updated.  This strategy is fastest if the database is only slightly out of sync.</li>
+					<li><a href="api/net/sf/hajdbc/sync/DifferentialSynchronizationStrategy.html"><code>Differential</code></a> - Comparison is done on each table and only changes are updated.  This strategy is fastest if the database is more in sync than not.</li>
 					<li><a href="api/net/sf/hajdbc/sync/PassiveSynchronizationStrategy.html"><code>Passive</code></a> - Does nothing.  Should only be used when database are already in sync.</li>
 				</ul>
 				<p>
@@ -404,10 +423,10 @@ public class FasterFullSynchronizationStrategy extends FullSynchronizationStrate
 				<p>e.g.</p>
 				<source><![CDATA[
 <ha-jdbc>
-  <cluster name="cluster">
-    <default-sync-strategy>net.sf.hajdbc.sync.FullSynchronizationStrategy</default-sync-strategy>
-    <database url="..." driver="..."></database>
-    <database url="..." driver="..."></database>
+  <cluster id="cluster">
+    <default-sync-strategy>net.sf.hajdbc.sync.FasterFullSynchronizationStrategy</default-sync-strategy>
+    <database id="..."><!-- ... --></database>
+    <database id="..."><!-- ... --></database>
   </cluster>
 </ha-jdbc>
 ]]></source>
@@ -424,8 +443,9 @@ public class FasterFullSynchronizationStrategy extends FullSynchronizationStrate
 					The MBean exposes the following methods:
 				</p>
 				<ul>
-					<li>getName() - Returns the name of this cluster.</li>
-					<li>getActiveDatabaseList() - Returns a list of active databases for this cluster.</li>
+					<li>getId() - Returns the unique identifier of this cluster.</li>
+					<li>getActiveDatabases() - Returns a collection of active databases in this cluster.</li>
+					<li>getInactiveDatabases() - Returns a collection of inactive databases in this cluster.</li>
 					<li>isAlive(String id) - Test whether the specified database is responding.</li>
 					<li>deactivate(String id) - Deactivates the specified database from this cluster.</li>
 					<li>activate(String id) - Re-activates the specified database using the default synchronization strategy.</li>
@@ -443,14 +463,16 @@ public class FasterFullSynchronizationStrategy extends FullSynchronizationStrate
 				<p>e.g.</p>
 				<source><![CDATA[
 MBeanServer server = (MBeanServer) MBeanServerFactory.findMBeanServer(null).get(0);
-ObjectName name = ObjectName.getInstance("net.sf.hajdbc", "cluster", ObjectName.quote("jdbc:ha-jdbc:cluster"));
-String database = "jdbc:postgresql://server2:5432/database";
+ObjectName name = ObjectName.getInstance("net.sf.hajdbc", "cluster", ObjectName.quote("jdbc:ha-jdbc"));
+String database = "database1";
 
 // There are 2 ways to invoke methods on an mbean:
 
 // 1. Generic invoke
-server.invoke(name, "deactivate", new Object[] { database }, new String[] { "java.lang.String" });
-server.invoke(name, "activate", new Object[] { database }, new String[] { "java.lang.String" });
+Object[] parameterValues = new Object[] { database };
+String[] parameterTypes = new String[] { database.getClass().getName() };
+server.invoke(name, "deactivate", parameterValues, parameterTypes);
+server.invoke(name, "activate", parameterValues, parameterTypes);
 
 // 2. Dynamic proxy
 Object object = MBeanServerInvocationHandler.newProxyInstance(server, name, DatabaseClusterMBean.class, false);
