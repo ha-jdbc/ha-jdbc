@@ -188,7 +188,7 @@
 			<section>
 				<title>Cluster Balancer</title>
 				<table>
-					<caption>HA-JDBC support four types of read request balancers:</caption>
+					<caption>HA-JDBC support four methods of balancing read requests:</caption>
 					<tr>
 						<th>Simple</th>
 						<td>
@@ -201,7 +201,6 @@
 							Requests are sent to a random node.
 							Node weights affect the probability that a given node will be chosen.
 							The probability that a node will be chosen = <em>weight</em>/<em>total-weight</em>.
-							A node with a weight of 0 will never be chosen unless it is the last node in the cluster.
 						</td>
 					</tr>
 					<tr>
@@ -209,7 +208,6 @@
 						<td>
 							Requests are sent to each node in succession.
 							A node of weight X will receive X requests before the balancer moves on to the next node.
-							A node with a weight of 0 will never service a request unless it is the last node in the cluster.
 						</td>
 					</tr>
 					<tr>
