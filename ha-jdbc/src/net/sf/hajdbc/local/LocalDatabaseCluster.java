@@ -284,7 +284,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 		
 		if (database == null)
 		{
-			throw new SQLException(Messages.getMessage(Messages.INVALID_DATABASE, new Object[] { this, databaseId }));
+			throw new SQLException(Messages.getMessage(Messages.INVALID_DATABASE, new Object[] { databaseId, this }));
 		}
 		
 		return database;

@@ -55,6 +55,6 @@ public class DatabaseActivationCommand extends DatabaseCommand
 	 */
 	public void execute(DatabaseCluster databaseCluster) throws java.sql.SQLException
 	{
-		databaseCluster.addDatabase(databaseCluster.getDatabase(this.databaseId));
+		databaseCluster.activate(this.databaseId);
 	}
 }
