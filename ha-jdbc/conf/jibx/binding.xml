@@ -9,6 +9,7 @@
 	</mapping>
 	<mapping name="cluster" class="net.sf.hajdbc.local.LocalDatabaseClusterDescriptor">
 		<value name="id" field="id" style="attribute"></value>
+		<value name="balancer" field="balancer" style="attribute"></value>
 		<collection add-method="addDatabase" item-type="net.sf.hajdbc.DriverDatabase"></collection>
 		<collection add-method="addDatabase" item-type="net.sf.hajdbc.DataSourceDatabase"></collection>
 		<collection add-method="addDatabase" item-type="net.sf.hajdbc.pool.ConnectionPoolDataSourceDatabase"></collection>
@@ -18,6 +19,7 @@
 	</mapping>
 	<mapping name="database" class="net.sf.hajdbc.DriverDatabase">
 		<value name="id" field="id" style="attribute"></value>
+    <value name="weight" field="weight" style="attribute" default="1"></value>
 		<value name="driver" field="driver" usage="optional"></value>
 		<value name="url" field="url"></value>
 		<value name="user" field="user" usage="optional"></value>

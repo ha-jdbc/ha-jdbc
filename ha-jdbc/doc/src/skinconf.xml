@@ -334,6 +334,11 @@ which will be used to configure the chosen Forrest skin.
       <url>http://sourceforge.net/donate/index.php?group_id=111957</url>
       <image>http://images.sourceforge.net/images/project-support.jpg</image>
     </credit>
+		<credit>
+			<name>java.net member</name>
+			<url>http://www.java.net</url>
+			<image>http://today.java.net/images/javanet_button_90.gif</image>
+		</credit>
     <credit box-location="alt">
       <name>Built with Apache Forrest</name>
       <url>http://forrest.apache.org/</url>

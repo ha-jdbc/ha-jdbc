@@ -33,6 +33,7 @@
 >
 <!ELEMENT cluster ((database+ | datasource+ | pool-datasource+ | xa-datasource+), validate-sql?, sync-strategy*)>
 <!ATTLIST cluster id CDATA #REQUIRED>
+<!ATTLIST cluster balancer (simple|random|round-robin|load) #REQUIRED>
 
 <!-- Used to test whether or not a database is alive -->
 <!ELEMENT validate-sql (#PCDATA)>
@@ -46,6 +47,7 @@
 
 <!ELEMENT database (driver?, url, %authentication-info;)>
 <!ATTLIST database id CDATA #REQUIRED>
+<!ATTLIST database weight CDATA #IMPLIED>
 <!ELEMENT url (#PCDATA)>
 <!ELEMENT driver (#PCDATA)>
 
