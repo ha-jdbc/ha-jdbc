@@ -10,7 +10,7 @@
 			defined for 'add', 'fix', 'remove', 'update' and 'hack'. If you add
 			src/documentation/resources/images/<foo>.jpg images, these will
 			automatically be used for entries of type <foo>. -->
-		<release version="1.0-alpha-3" date="Not yet released">
+		<release version="1.0-alpha-3" date="August 30, 2004">
 			<action type="update" context="admin" dev="PF">
 				Configuration DTD is now PUBLIC
 			</action>
