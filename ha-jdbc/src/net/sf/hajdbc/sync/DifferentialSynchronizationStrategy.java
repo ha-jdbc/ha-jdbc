@@ -24,6 +24,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -32,8 +33,8 @@ import java.util.List;
 import java.util.Set;
 
 import net.sf.hajdbc.DatabaseClusterDescriptor;
+import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationStrategy;
-import net.sf.hajdbc.SQLException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -70,7 +71,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, java.util.List, net.sf.hajdbc.DatabaseClusterDescriptor)
 	 */
-	public void synchronize(Connection inactiveConnection, Connection activeConnection, List tableList, DatabaseClusterDescriptor descriptor) throws java.sql.SQLException
+	public void synchronize(Connection inactiveConnection, Connection activeConnection, List tableList, DatabaseClusterDescriptor descriptor) throws SQLException
 	{
 		inactiveConnection.setAutoCommit(true);
 		
@@ -125,7 +126,10 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 			Statement inactiveStatement = inactiveConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 			Statement activeStatement = activeConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			
-			log.info("Updating: " + sql);
+			if (log.isDebugEnabled())
+			{
+				log.debug(sql);
+			}
 			
 			Thread statementExecutor = new Thread(new StatementExecutor(inactiveStatement, sql));
 			statementExecutor.start();
@@ -138,7 +142,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 			}
 			catch (InterruptedException e)
 			{
-				throw new SQLException("Execution of " + sql + " on inactive database was interrupted.", e);
+				// Statement executor cannot be interrupted
 			}
 			
 			ResultSet inactiveResultSet = inactiveStatement.getResultSet();
@@ -283,9 +287,12 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				}
 			}
 			
-			log.info("Inserted " + insertCount + " rows into " + table);
-			log.info("Deleted " + deleteCount + " rows from " + table);
-			log.info("Updated " + updateCount + " rows in " + table);
+			if (log.isInfoEnabled())
+			{
+				log.info(Messages.getMessage(Messages.INSERT_COUNT, new Object[] { Integer.valueOf(insertCount), table }));
+				log.info(Messages.getMessage(Messages.UPDATE_COUNT, new Object[] { Integer.valueOf(updateCount), table }));
+				log.info(Messages.getMessage(Messages.DELETE_COUNT, new Object[] { Integer.valueOf(deleteCount), table }));
+			}
 			
 			inactiveStatement.close();
 			activeStatement.close();

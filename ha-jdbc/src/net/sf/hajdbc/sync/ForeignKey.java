@@ -110,7 +110,10 @@ public class ForeignKey
 			
 			String sql = foreignKey.formatSQL(sqlPattern);
 			
-			log.info(sql);
+			if (log.isDebugEnabled())
+			{
+				log.debug(sql);
+			}
 			
 			statement.execute(sql);
 		}

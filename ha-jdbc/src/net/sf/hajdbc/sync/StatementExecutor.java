@@ -22,6 +22,8 @@ package net.sf.hajdbc.sync;
 
 import java.sql.Statement;
 
+import net.sf.hajdbc.Messages;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -54,7 +56,7 @@ public class StatementExecutor implements Runnable
 		}
 		catch (Throwable e)
 		{
-			log.error("Failed to execute statement: " + this.sql, e);
+			log.error(Messages.getMessage(Messages.STATEMENT_FAILED, this.sql), e);
 		}
 	}
 }

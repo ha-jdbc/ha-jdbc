@@ -77,7 +77,7 @@ public abstract class SQLProxy
 					
 					if (parentObject == null)
 					{
-						throw new SQLException("Failed to initialize " + this.parent.getClass().getName() + " for database " + database);
+						throw new SQLException(Messages.getMessage(Messages.SQL_OBJECT_INIT_FAILED, new Object[] { this.parent.getClass().getName(), database }));
 					}
 					
 					sqlObject = this.parentOperation.execute(database, parentObject);
@@ -95,7 +95,9 @@ public abstract class SQLProxy
 				}
 				catch (java.sql.SQLException e)
 				{
-					this.deactivate(database, new SQLException("Failed to initialize " + this.getClass().getName() + " for database " + database, e));
+					String message = Messages.getMessage(Messages.SQL_OBJECT_INIT_FAILED, new Object[] { this.getClass().getName(), database });
+					
+					this.deactivate(database, new SQLException(message, e));
 				}
 			}
 			
@@ -198,7 +200,7 @@ public abstract class SQLProxy
 		{
 			if (exceptionMap.isEmpty())
 			{
-				throw new SQLException("No active databases in cluster " + this.getDatabaseCluster().getId());
+				throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this.getDatabaseCluster()));
 			}
 			
 			throw new SQLException((Throwable) exceptionMap.get(databaseList.get(0)));
@@ -279,7 +281,7 @@ public abstract class SQLProxy
 
 	private void deactivate(Database database)
 	{
-		this.deactivate(database, new SQLException("Database was not active at the time " + this.getClass().getName() + " was created"));
+		this.deactivate(database, new SQLException(Messages.getMessage(Messages.DATABASE_NOT_ACTIVE, this.getClass().getName())));
 	}
 	
 	protected final void deactivate(Database database, Throwable cause)
@@ -288,7 +290,7 @@ public abstract class SQLProxy
 		
 		if (databaseCluster.deactivate(database))
 		{
-			log.error("Database " + database.getId() + " from cluster " + databaseCluster.getId() + " was deactivated.", cause);
+			log.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, new Object[] { database, databaseCluster }), cause);
 		}
 	}
 	

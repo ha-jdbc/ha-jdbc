@@ -54,7 +54,7 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 		}
 		catch (java.sql.SQLException e)
 		{
-			log.warn("Failed to ping database " + databaseId, e);
+			log.warn(Messages.getMessage(Messages.DATABASE_VALIDATE_FAILED, databaseId), e);
 			
 			throw e;
 		}
@@ -71,7 +71,7 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 		}
 		catch (java.sql.SQLException e)
 		{
-			log.warn("Failed to deactivate database " + databaseId, e);
+			log.warn(Messages.getMessage(Messages.DATABASE_DEACTIVATE_FAILED, databaseId), e);
 			
 			throw e;
 		}
@@ -107,7 +107,7 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 					
 					if (!SynchronizationStrategy.class.isAssignableFrom(strategyClass))
 					{
-						throw new SQLException("Specified synchronization strategy does not implement " + SynchronizationStrategy.class.getName());
+						throw new SQLException(Messages.getMessage(Messages.INVALID_SYNC_STRATEGY, SynchronizationStrategy.class.getName()));
 					}
 					
 					SynchronizationStrategy strategy = (SynchronizationStrategy) strategyClass.newInstance();
@@ -130,7 +130,7 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 		}
 		catch (java.sql.SQLException e)
 		{
-			log.warn("Failed to activate database " + databaseId, e);
+			log.warn(Messages.getMessage(Messages.DATABASE_ACTIVATE_FAILED, databaseId), e);
 			
 			throw e;
 		}
@@ -186,9 +186,11 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 				statement.close();
 			}
 			
-			log.info("Starting synchronization");
+			log.info(Messages.getMessage(Messages.DATABASE_SYNC_START, inactiveDatabase));
+
 			strategy.synchronize(inactiveConnection, activeConnections[0], tableList, this.getDescriptor());
-			log.info("Finished synchronization");
+			
+			log.info(Messages.getMessage(Messages.DATABASE_SYNC_END, inactiveDatabase));
 	
 			this.activate(inactiveDatabase);
 			
@@ -219,9 +221,14 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 			}
 			catch (java.sql.SQLException e)
 			{
-				log.warn("Failed to close connection of database: " + database);
+				log.warn(Messages.getMessage(Messages.CONNECTION_CLOSE_FAILED, database), e);
 			}
 		}
+	}
+	
+	public String toString()
+	{
+		return this.getId();
 	}
 	
 	public abstract boolean isActive(Database database);

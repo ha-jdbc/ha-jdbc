@@ -39,6 +39,7 @@ import net.sf.hajdbc.ConnectionFactoryProxy;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterDescriptor;
+import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SQLException;
 
 /**
@@ -89,7 +90,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 			}
 			else
 			{
-				log.warn(database + " is not responding and will be deactived by default.");
+				log.warn(Messages.getMessage(Messages.DATABASE_INACTIVE, database));
 			}
 		}
 	}
@@ -182,9 +183,9 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	{
 		synchronized (this.activeDatabaseSet)
 		{
-			if (this.activeDatabaseSet.size() == 0)
+			if (this.activeDatabaseSet.isEmpty())
 			{
-				throw new SQLException("No active databases in cluster " + this.getId());
+				throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this));
 			}
 			
 			return (Database) this.activeDatabaseSet.iterator().next();
@@ -218,9 +219,9 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	{
 		synchronized (this.activeDatabaseSet)
 		{
-			if (this.activeDatabaseSet.size() == 0)
+			if (this.activeDatabaseSet.isEmpty())
 			{
-				throw new SQLException("No active databases in cluster " + this.getId());
+				throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this));
 			}
 			
 			return new ArrayList(this.activeDatabaseSet);
@@ -259,7 +260,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 		
 		if (database == null)
 		{
-			throw new SQLException("The database cluster '" + this.getId() + "' does not contain the database '" + databaseId + "'.");
+			throw new SQLException(Messages.getMessage(Messages.INVALID_DATABASE, new Object[] { this, databaseId }));
 		}
 		
 		return database;

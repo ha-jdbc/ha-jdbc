@@ -45,6 +45,8 @@ import java.util.zip.GZIPOutputStream;
  */
 public class FileSupport
 {
+	private static final String TEMP_FILE_PREFIX = "ha-jdbc";
+	private static final String TEMP_FILE_SUFFIX = "lob";
 	private static final int BUFFER_SIZE = 8192;
 	
 	private List fileList = new LinkedList();
@@ -124,7 +126,7 @@ public class FileSupport
 	{
 		try
 		{
-			File file = File.createTempFile("ha-jdbc", "lob");
+			File file = File.createTempFile(TEMP_FILE_PREFIX, TEMP_FILE_SUFFIX);
 			
 			this.fileList.add(file);
 			

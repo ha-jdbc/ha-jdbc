@@ -50,6 +50,8 @@ public final class DatabaseClusterFactory
 {
 	private static final String SYSTEM_PROPERTY = "ha-jdbc.configuration";
 	private static final String DEFAULT_RESOURCE = "ha-jdbc.xml";
+	private static final String MBEAN_DOMAIN = "net.sf.hajdbc";
+	private static final String MBEAN_KEY = "cluster";
 	
 	private static Log log = LogFactory.getLog(DatabaseClusterFactory.class);
 	
@@ -75,7 +77,7 @@ public final class DatabaseClusterFactory
 		
 		if (resourceURL == null)
 		{
-			throw new SQLException("Failed to locate database cluster configuration file: " + resourceName);
+			throw new SQLException(Messages.getMessage(Messages.CONFIG_NOT_FOUND, resourceName));
 		}
 		
 		InputStream inputStream = null;
@@ -117,7 +119,7 @@ public final class DatabaseClusterFactory
 					databaseCluster = decoratorDescriptor.decorate(databaseCluster);
 				}
 				
-				ObjectName name = ObjectName.getInstance("net.sf.hajdbc", "cluster", ObjectName.quote(databaseCluster.getId()));
+				ObjectName name = ObjectName.getInstance(MBEAN_DOMAIN, MBEAN_KEY, ObjectName.quote(databaseCluster.getId()));
 				
 				if (!server.isRegistered(name))
 				{
@@ -129,11 +131,11 @@ public final class DatabaseClusterFactory
 		}
 		catch (Exception e)
 		{
-			SQLException exception = new SQLException("Failed to configure HA-JDBC using " + resourceURL, e);
+			String message = Messages.getMessage(Messages.CONFIG_FAILED, resourceURL);
 			
-			log.warn(exception.getMessage(), e);
+			log.warn(message, e);
 			
-			throw exception;
+			throw new SQLException(message, e);
 		}
 		finally
 		{
@@ -145,7 +147,7 @@ public final class DatabaseClusterFactory
 				}
 				catch (IOException e)
 				{
-					log.warn("Failed to close " + resourceURL, e);
+					log.warn(Messages.getMessage(Messages.STREAM_CLOSE_FAILED, resourceURL), e);
 				}
 			}
 		}

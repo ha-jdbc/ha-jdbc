@@ -77,14 +77,14 @@ public class DataSourceDatabase extends AbstractDatabase
 	
 			if (!this.getDataSourceClass().isInstance(object))
 			{
-				throw new SQLException(this.name + " does not implement " + this.getDataSourceClass().getName());
+				throw new SQLException(Messages.getMessage(Messages.NOT_INSTANCE_OF, new Object[] { this.name, this.getDataSourceClass().getName() }));
 			}
 			
 			return object;
 		}
 		catch (NamingException e)
 		{
-			throw new SQLException("Failed to perform naming lookup of " + this.name, e);
+			throw new SQLException(Messages.getMessage(Messages.JNDI_LOOKUP_FAILED, this.name), e);
 		}
 	}
 	

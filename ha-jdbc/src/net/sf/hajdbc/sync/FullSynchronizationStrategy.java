@@ -24,14 +24,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.List;
 
 import net.sf.hajdbc.DatabaseClusterDescriptor;
+import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationStrategy;
-import net.sf.hajdbc.SQLException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -68,7 +69,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, java.util.List, net.sf.hajdbc.DatabaseClusterDescriptor)
 	 */
-	public void synchronize(Connection inactiveConnection, Connection activeConnection, List tableList, DatabaseClusterDescriptor descriptor) throws java.sql.SQLException
+	public void synchronize(Connection inactiveConnection, Connection activeConnection, List tableList, DatabaseClusterDescriptor descriptor) throws SQLException
 	{
 		inactiveConnection.setAutoCommit(true);
 		
@@ -86,7 +87,10 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 			String deleteSQL = MessageFormat.format(descriptor.getTruncateTableSQL(), new Object[] { table });
 			String selectSQL = "SELECT * FROM " + table;
 
-			log.info("Deleting: " + deleteSQL);
+			if (log.isDebugEnabled())
+			{
+				log.debug(deleteSQL);
+			}
 			
 			Statement deleteStatement = inactiveConnection.createStatement();
 			Statement selectStatement = activeConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -102,7 +106,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 			}
 			catch (InterruptedException e)
 			{
-				throw new SQLException("Execution of " + deleteSQL + " was interrupted.", e);
+				// Statement executor cannot be interrupted
 			}
 			
 			int deletedRows = deleteStatement.getUpdateCount();
@@ -112,7 +116,10 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 				throw deleteStatement.getWarnings();
 			}
 			
-			log.info("Deleted " + deletedRows + " rows from " + table);
+			if (log.isInfoEnabled())
+			{
+				log.info(Messages.getMessage(Messages.DELETE_COUNT, new Object[] { Integer.valueOf(deletedRows), table }));
+			}
 			
 			deleteStatement.close();
 			
@@ -146,7 +153,10 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 			
 			insertSQL.append(")");
 			
-			log.info("Inserting: " + insertSQL);
+			if (log.isDebugEnabled())
+			{
+				log.debug(insertSQL);
+			}
 			
 			PreparedStatement insertStatement = inactiveConnection.prepareStatement(insertSQL.toString());
 			int statementCount = 0;
@@ -185,7 +195,10 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 				insertStatement.executeBatch();
 			}
 
-			log.info("Inserted " + statementCount + " rows into " + table);
+			if (log.isInfoEnabled())
+			{
+				log.info(Messages.getMessage(Messages.INSERT_COUNT, new Object[] { Integer.valueOf(statementCount), table }));
+			}
 			
 			insertStatement.close();
 			selectStatement.close();

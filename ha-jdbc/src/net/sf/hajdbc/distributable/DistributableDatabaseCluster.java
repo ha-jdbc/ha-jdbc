@@ -25,6 +25,7 @@ import java.io.Serializable;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterDecorator;
+import net.sf.hajdbc.Messages;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -96,7 +97,10 @@ public class DistributableDatabaseCluster extends DatabaseClusterDecorator imple
 	{
 		DatabaseCommand command = (DatabaseCommand) object;
 		
-		log.info("Notification received: " + command.getClass().getName());
+		if (log.isInfoEnabled())
+		{
+			log.info(Messages.getMessage(Messages.DATABASE_COMMAND_RECEIVED, command.getClass().getName()));
+		}
 		
 		try
 		{
@@ -104,7 +108,7 @@ public class DistributableDatabaseCluster extends DatabaseClusterDecorator imple
 		}
 		catch (java.sql.SQLException e)
 		{
-			log.error("Failed to execute " + command + " on database cluster " + this.databaseCluster.getId(), e);
+			log.error(Messages.getMessage(Messages.DATABASE_COMMAND_FAILED, new Object[] { command, this.databaseCluster }), e);
 		}
 	}
 
@@ -121,7 +125,12 @@ public class DistributableDatabaseCluster extends DatabaseClusterDecorator imple
 	 */
 	public void memberJoined(Address address)
 	{
-		log.info(address + " joined " + this.notificationBus.getChannel().getChannelName() + " channel.");
+		if (log.isInfoEnabled())
+		{
+			String channel = this.notificationBus.getChannel().getChannelName();
+			
+			log.info(Messages.getMessage(Messages.GROUP_MEMBER_JOINED, new Object[] { address, channel }));
+		}
 	}
 
 	/**
@@ -129,7 +138,12 @@ public class DistributableDatabaseCluster extends DatabaseClusterDecorator imple
 	 */
 	public void memberLeft(Address address)
 	{
-		log.info(address + " left " + this.notificationBus.getChannel().getChannelName() + " channel.");
+		if (log.isInfoEnabled())
+		{
+			String channel = this.notificationBus.getChannel().getChannelName();
+			
+			log.info(Messages.getMessage(Messages.GROUP_MEMBER_LEFT, new Object[] { address, channel }));
+		}
 	}
 	
 	/**

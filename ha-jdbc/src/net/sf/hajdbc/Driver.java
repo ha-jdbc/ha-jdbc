@@ -47,13 +47,15 @@ public final class Driver implements java.sql.Driver
 	
 	static
 	{
+		Driver driver = new Driver();
+		
 		try
 		{
-			DriverManager.registerDriver(new Driver());
+			DriverManager.registerDriver(driver);
 		}
 		catch (SQLException e)
 		{
-			log.fatal("Failed to register " + Driver.class.getName(), e);
+			log.fatal(Messages.getMessage(Messages.DRIVER_REGISTER_FAILED, driver.getClass().getName()), e);
 		}
 	}
 	
