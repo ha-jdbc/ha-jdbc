@@ -256,16 +256,7 @@
 					<code><![CDATA[<?xml version="1.0"?>]]></code><br/>
 					<code><![CDATA[<!DOCTYPE ha-jdbc SYSTEM "ha-jdbc.dtd">]]></code><br/>
 					<code><![CDATA[<ha-jdbc>]]></code><br/>
-					<code>&nbsp;&nbsp;<![CDATA[<distributable protocol="UDP(mcast_addr=228.1.2.3;mcast_port=45566;ip_ttl=0;trace=true):]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[PING(timeout=3000;num_initial_members=6):]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[FD(trace=true;timeout=5000):]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[VERIFY_SUSPECT(trace=false;timeout=1500):]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[DISCARD(trace=true;down=0.2):]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[pbcast.STABLE(trace=true;desired_avg_gossip=5000):]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[pbcast.NAKACK(trace=true;gc_lag=5;retransmit_timeout=3000):]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[UNICAST(timeout=5000):]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[FRAG:]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[pbcast.GMS(join_timeout=5000;join_retry_timeout=2000;trace=true;shun=false;print_local_addr=false)">]]></code><br/>
+					<code>&nbsp;&nbsp;<![CDATA[<distributable protocol="UDP(mcast_addr=228.10.9.8;mcast_port=5678):PING:FD:GMS]]></code><br/>
 					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<cluster name="...">]]></code><br/>
 					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<!-- ... -->]]></code><br/>
 					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</cluster>]]></code><br/>
