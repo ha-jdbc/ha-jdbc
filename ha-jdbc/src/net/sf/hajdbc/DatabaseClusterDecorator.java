@@ -44,6 +44,14 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 		return this.databaseCluster.getName();
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#isActive(net.sf.hajdbc.Database)
+	 */
+	public boolean isActive(Database database)
+	{
+		return this.databaseCluster.isActive(database);
+	}
+	
 	public final Database firstDatabase() throws java.sql.SQLException
 	{
 		return this.databaseCluster.firstDatabase();

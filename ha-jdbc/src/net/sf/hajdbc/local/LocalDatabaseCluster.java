@@ -23,7 +23,6 @@ package net.sf.hajdbc.local;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -69,7 +68,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 			connectionFactoryMap.put(database, database.getConnectionFactory());
 		}
 		
-		this.connectionFactory = new ConnectionFactoryProxy(this, Collections.synchronizedMap(connectionFactoryMap));
+		this.connectionFactory = new ConnectionFactoryProxy(this, connectionFactoryMap);
 		
 		databases = databaseMap.values().iterator();
 		
@@ -95,9 +94,9 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	 */
 	public boolean isAlive(Database database)
 	{
-		Connection connection = null;
-		
 		Object connectionFactory = this.connectionFactory.getSQLObject(database);
+		
+		Connection connection = null;
 		
 		try
 		{
@@ -264,6 +263,14 @@ public class LocalDatabaseCluster extends DatabaseCluster
 		synchronized (this.activeDatabaseSet)
 		{
 			return this.activeDatabaseSet.remove(database);
+		}
+	}
+	
+	public boolean isActive(Database database)
+	{
+		synchronized (this.activeDatabaseSet)
+		{
+			return this.activeDatabaseSet.contains(database);
 		}
 	}
 }
