@@ -66,7 +66,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return ((Boolean) this.executeGet(operation)).booleanValue();
+		return ((Boolean) this.executeReadFromDriver(operation)).booleanValue();
 	}
 
 	/**
@@ -82,7 +82,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return ((Byte) this.executeGet(operation)).byteValue();
+		return ((Byte) this.executeReadFromDriver(operation)).byteValue();
 	}
 
 	/**
@@ -98,7 +98,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return ((Double) this.executeGet(operation)).doubleValue();
+		return ((Double) this.executeReadFromDriver(operation)).doubleValue();
 	}
 
 	/**
@@ -114,7 +114,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return ((Float) this.executeGet(operation)).floatValue();
+		return ((Float) this.executeReadFromDriver(operation)).floatValue();
 	}
 
 	/**
@@ -130,7 +130,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return ((Integer) this.executeGet(operation)).intValue();
+		return ((Integer) this.executeReadFromDriver(operation)).intValue();
 	}
 
 	/**
@@ -146,7 +146,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return ((Long) this.executeGet(operation)).longValue();
+		return ((Long) this.executeReadFromDriver(operation)).longValue();
 	}
 
 	/**
@@ -162,7 +162,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return ((Short) this.executeGet(operation)).shortValue();
+		return ((Short) this.executeReadFromDriver(operation)).shortValue();
 	}
 
 	/**
@@ -178,7 +178,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return ((Boolean) this.executeGet(operation)).booleanValue();
+		return ((Boolean) this.executeReadFromDriver(operation)).booleanValue();
 	}
 
 	/**
@@ -194,7 +194,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (byte[]) this.executeGet(operation);
+		return (byte[]) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -212,7 +212,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -230,7 +230,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -246,7 +246,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return this.executeGet(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -262,7 +262,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (String) this.executeGet(operation);
+		return (String) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -280,7 +280,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -296,7 +296,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return ((Byte) this.executeGet(operation)).byteValue();
+		return ((Byte) this.executeReadFromDriver(operation)).byteValue();
 	}
 
 	/**
@@ -312,7 +312,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return ((Double) this.executeGet(operation)).doubleValue();
+		return ((Double) this.executeReadFromDriver(operation)).doubleValue();
 	}
 
 	/**
@@ -328,7 +328,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return ((Float) this.executeGet(operation)).floatValue();
+		return ((Float) this.executeReadFromDriver(operation)).floatValue();
 	}
 
 	/**
@@ -344,7 +344,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return ((Integer) this.executeGet(operation)).intValue();
+		return ((Integer) this.executeReadFromDriver(operation)).intValue();
 	}
 
 	/**
@@ -360,7 +360,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return ((Long) this.executeGet(operation)).longValue();
+		return ((Long) this.executeReadFromDriver(operation)).longValue();
 	}
 
 	/**
@@ -376,7 +376,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return ((Short) this.executeGet(operation)).shortValue();
+		return ((Short) this.executeReadFromDriver(operation)).shortValue();
 	}
 
 	/**
@@ -392,7 +392,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return ((Boolean) this.executeGet(operation)).booleanValue();
+		return ((Boolean) this.executeReadFromDriver(operation)).booleanValue();
 	}
 
 	/**
@@ -408,7 +408,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (byte[]) this.executeGet(operation);
+		return (byte[]) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -426,7 +426,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -444,7 +444,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -462,7 +462,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -480,7 +480,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -498,7 +498,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -516,7 +516,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -534,7 +534,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -552,7 +552,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -570,7 +570,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -588,7 +588,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -606,7 +606,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -622,7 +622,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (BigDecimal) this.executeGet(operation);
+		return (BigDecimal) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -639,7 +639,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (BigDecimal) this.executeGet(operation);
+		return (BigDecimal) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -655,7 +655,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (URL) this.executeGet(operation);
+		return (URL) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -671,7 +671,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (Array) this.executeGet(operation);
+		return (Array) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -687,7 +687,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (java.sql.Blob) this.executeGet(operation);
+		return (java.sql.Blob) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -703,7 +703,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (java.sql.Clob) this.executeGet(operation);
+		return (java.sql.Clob) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -719,7 +719,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (Date) this.executeGet(operation);
+		return (Date) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -735,7 +735,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (Ref) this.executeGet(operation);
+		return (Ref) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -751,7 +751,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (Time) this.executeGet(operation);
+		return (Time) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -767,7 +767,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (Timestamp) this.executeGet(operation);
+		return (Timestamp) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -787,7 +787,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -807,7 +807,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -827,7 +827,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -843,7 +843,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return this.executeGet(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -861,7 +861,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -879,7 +879,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -897,7 +897,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -913,7 +913,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return this.executeGet(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -929,7 +929,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (String) this.executeGet(operation);
+		return (String) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -947,7 +947,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -965,7 +965,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -983,7 +983,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -999,7 +999,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (BigDecimal) this.executeGet(operation);
+		return (BigDecimal) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1017,7 +1017,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1033,7 +1033,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (URL) this.executeGet(operation);
+		return (URL) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1051,7 +1051,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1067,7 +1067,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (Array) this.executeGet(operation);
+		return (Array) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1083,7 +1083,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (java.sql.Blob) this.executeGet(operation);
+		return (java.sql.Blob) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1099,7 +1099,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (java.sql.Clob) this.executeGet(operation);
+		return (java.sql.Clob) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1115,7 +1115,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (Date) this.executeGet(operation);
+		return (Date) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1133,7 +1133,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1149,7 +1149,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (Date) this.executeGet(operation);
+		return (Date) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1165,7 +1165,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (Ref) this.executeGet(operation);
+		return (Ref) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1181,7 +1181,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (Time) this.executeGet(operation);
+		return (Time) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1199,7 +1199,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1215,7 +1215,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (Time) this.executeGet(operation);
+		return (Time) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1231,7 +1231,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (Timestamp) this.executeGet(operation);
+		return (Timestamp) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1249,7 +1249,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1265,7 +1265,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (Timestamp) this.executeGet(operation);
+		return (Timestamp) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1281,7 +1281,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return this.executeGet(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1297,7 +1297,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (Date) this.executeGet(operation);
+		return (Date) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1313,7 +1313,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (Time) this.executeGet(operation);
+		return (Time) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1329,7 +1329,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (Timestamp) this.executeGet(operation);
+		return (Timestamp) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1347,7 +1347,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1365,7 +1365,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1383,6 +1383,6 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 }

@@ -44,7 +44,7 @@ public class DataSource extends AbstractDataSource implements javax.sql.DataSour
 			}
 		};
 		
-		return ((Integer) this.connectionFactory.executeGet(operation)).intValue();
+		return ((Integer) this.connectionFactory.executeReadFromDriver(operation)).intValue();
 	}
 
 	/**
@@ -62,7 +62,7 @@ public class DataSource extends AbstractDataSource implements javax.sql.DataSour
 			}
 		};
 		
-		this.connectionFactory.executeSet(operation);
+		this.connectionFactory.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -78,7 +78,7 @@ public class DataSource extends AbstractDataSource implements javax.sql.DataSour
 			}
 		};
 		
-		return (PrintWriter) this.connectionFactory.executeGet(operation);
+		return (PrintWriter) this.connectionFactory.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -96,7 +96,7 @@ public class DataSource extends AbstractDataSource implements javax.sql.DataSour
 			}
 		};
 		
-		this.connectionFactory.executeSet(operation);
+		this.connectionFactory.executeWriteToDriver(operation);
 	}
 
 	/**

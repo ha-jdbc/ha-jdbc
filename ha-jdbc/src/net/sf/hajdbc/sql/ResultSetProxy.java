@@ -73,7 +73,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Integer) this.executeGet(operation)).intValue();
+		return ((Integer) this.executeReadFromDriver(operation)).intValue();
 	}
 
 	/**
@@ -89,7 +89,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Integer) this.executeGet(operation)).intValue();
+		return ((Integer) this.executeReadFromDriver(operation)).intValue();
 	}
 
 	/**
@@ -105,7 +105,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Integer) this.executeGet(operation)).intValue();
+		return ((Integer) this.executeReadFromDriver(operation)).intValue();
 	}
 
 	/**
@@ -121,7 +121,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Integer) this.executeGet(operation)).intValue();
+		return ((Integer) this.executeReadFromDriver(operation)).intValue();
 	}
 
 	/**
@@ -137,7 +137,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Integer) this.executeGet(operation)).intValue();
+		return ((Integer) this.executeReadFromDriver(operation)).intValue();
 	}
 
 	/**
@@ -155,7 +155,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -173,7 +173,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -191,7 +191,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -209,7 +209,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -227,7 +227,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeWriteToDatabase(operation);
 		
 		this.fileSupport.close();
 	}
@@ -247,7 +247,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeWriteToDatabase(operation);
 	}
 
 	/**
@@ -265,7 +265,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeWriteToDatabase(operation);
 	}
 
 	/**
@@ -285,11 +285,11 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 		
 		if (this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE)
 		{
-			this.executeWrite(operation);
+			this.executeWriteToDatabase(operation);
 		}
 		else
 		{
-			this.executeSet(operation);
+			this.executeWriteToDriver(operation);
 		}
 	}
 
@@ -308,7 +308,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -326,7 +326,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeWriteToDatabase(operation);
 	}
 
 	/**
@@ -344,7 +344,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeWriteToDatabase(operation);
 	}
 
 	/**
@@ -360,7 +360,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Boolean) this.firstValue((this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWrite(operation) : this.executeSet(operation))).booleanValue();
+		return ((Boolean) this.firstValue((this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWriteToDatabase(operation) : this.executeWriteToDriver(operation))).booleanValue();
 	}
 
 	/**
@@ -376,7 +376,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Boolean) this.executeGet(operation)).booleanValue();
+		return ((Boolean) this.executeReadFromDriver(operation)).booleanValue();
 	}
 
 	/**
@@ -392,7 +392,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Boolean) this.executeGet(operation)).booleanValue();
+		return ((Boolean) this.executeReadFromDriver(operation)).booleanValue();
 	}
 
 	/**
@@ -408,7 +408,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Boolean) ((this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeRead(operation) : this.executeGet(operation))).booleanValue();
+		return ((Boolean) ((this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeReadFromDatabase(operation) : this.executeReadFromDriver(operation))).booleanValue();
 	}
 
 	/**
@@ -424,7 +424,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Boolean) ((this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeRead(operation) : this.executeGet(operation))).booleanValue();
+		return ((Boolean) ((this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeReadFromDatabase(operation) : this.executeReadFromDriver(operation))).booleanValue();
 	}
 
 	/**
@@ -440,7 +440,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Boolean) this.firstValue((this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWrite(operation) : this.executeSet(operation))).booleanValue();
+		return ((Boolean) this.firstValue((this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWriteToDatabase(operation) : this.executeWriteToDriver(operation))).booleanValue();
 	}
 
 	/**
@@ -456,7 +456,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Boolean) this.firstValue((this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWrite(operation) : this.executeSet(operation))).booleanValue();
+		return ((Boolean) this.firstValue((this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWriteToDatabase(operation) : this.executeWriteToDriver(operation))).booleanValue();
 	}
 
 	/**
@@ -472,7 +472,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Boolean) this.firstValue((this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWrite(operation) : this.executeSet(operation))).booleanValue();
+		return ((Boolean) this.firstValue((this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWriteToDatabase(operation) : this.executeWriteToDriver(operation))).booleanValue();
 	}
 
 	/**
@@ -488,7 +488,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Boolean) this.executeGet(operation)).booleanValue();
+		return ((Boolean) this.executeReadFromDriver(operation)).booleanValue();
 	}
 
 	/**
@@ -504,7 +504,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Boolean) this.executeGet(operation)).booleanValue();
+		return ((Boolean) this.executeReadFromDriver(operation)).booleanValue();
 	}
 
 	/**
@@ -520,7 +520,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Boolean) this.executeGet(operation)).booleanValue();
+		return ((Boolean) this.executeReadFromDriver(operation)).booleanValue();
 	}
 
 	/**
@@ -536,7 +536,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Boolean) this.executeGet(operation)).booleanValue();
+		return ((Boolean) this.executeReadFromDriver(operation)).booleanValue();
 	}
 
 	/**
@@ -552,7 +552,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Byte) this.executeGet(operation)).byteValue();
+		return ((Byte) this.executeReadFromDriver(operation)).byteValue();
 	}
 
 	/**
@@ -568,7 +568,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Double) this.executeGet(operation)).doubleValue();
+		return ((Double) this.executeReadFromDriver(operation)).doubleValue();
 	}
 
 	/**
@@ -584,7 +584,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Float) this.executeGet(operation)).floatValue();
+		return ((Float) this.executeReadFromDriver(operation)).floatValue();
 	}
 
 	/**
@@ -600,7 +600,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Integer) this.executeGet(operation)).intValue();
+		return ((Integer) this.executeReadFromDriver(operation)).intValue();
 	}
 
 	/**
@@ -616,7 +616,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Long) this.executeGet(operation)).longValue();
+		return ((Long) this.executeReadFromDriver(operation)).longValue();
 	}
 
 	/**
@@ -632,7 +632,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Short) this.executeGet(operation)).shortValue();
+		return ((Short) this.executeReadFromDriver(operation)).shortValue();
 	}
 
 	/**
@@ -650,7 +650,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -668,7 +668,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -686,7 +686,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -702,7 +702,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Boolean) this.firstValue(this.executeSet(operation))).booleanValue();
+		return ((Boolean) this.firstValue(this.executeWriteToDriver(operation))).booleanValue();
 	}
 
 	/**
@@ -718,7 +718,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Boolean) this.executeGet(operation)).booleanValue();
+		return ((Boolean) this.executeReadFromDriver(operation)).booleanValue();
 	}
 
 	/**
@@ -734,7 +734,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Boolean) this.firstValue(this.executeSet(operation))).booleanValue();
+		return ((Boolean) this.firstValue(this.executeWriteToDriver(operation))).booleanValue();
 	}
 
 	/**
@@ -750,7 +750,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (byte[]) this.executeGet(operation);
+		return (byte[]) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -768,7 +768,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -786,7 +786,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -804,7 +804,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -822,7 +822,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -840,7 +840,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -858,7 +858,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -876,7 +876,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -894,7 +894,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -910,7 +910,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (InputStream) this.executeGet(operation);
+		return (InputStream) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -926,7 +926,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (InputStream) this.executeGet(operation);
+		return (InputStream) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -943,7 +943,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (InputStream) this.executeGet(operation);
+		return (InputStream) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -963,7 +963,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -985,7 +985,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 				}
 			};
 			
-			this.executeSet(operation);
+			this.executeWriteToDriver(operation);
 		}
 		finally
 		{
@@ -1006,7 +1006,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (Reader) this.executeGet(operation);
+		return (Reader) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1026,7 +1026,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1042,7 +1042,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return this.executeGet(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1060,7 +1060,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1078,7 +1078,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1094,7 +1094,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (String) this.executeGet(operation);
+		return (String) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1110,7 +1110,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (String) this.executeGet(operation);
+		return (String) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1128,7 +1128,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1144,7 +1144,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Byte) this.executeGet(operation)).byteValue();
+		return ((Byte) this.executeReadFromDriver(operation)).byteValue();
 	}
 
 	/**
@@ -1160,7 +1160,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Double) this.executeGet(operation)).doubleValue();
+		return ((Double) this.executeReadFromDriver(operation)).doubleValue();
 	}
 
 	/**
@@ -1176,7 +1176,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Float) this.executeGet(operation)).floatValue();
+		return ((Float) this.executeReadFromDriver(operation)).floatValue();
 	}
 
 	/**
@@ -1192,7 +1192,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Integer) this.executeGet(operation)).intValue();
+		return ((Integer) this.executeReadFromDriver(operation)).intValue();
 	}
 
 	/**
@@ -1208,7 +1208,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Integer) this.executeGet(operation)).intValue();
+		return ((Integer) this.executeReadFromDriver(operation)).intValue();
 	}
 
 	/**
@@ -1224,7 +1224,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Long) this.executeGet(operation)).longValue();
+		return ((Long) this.executeReadFromDriver(operation)).longValue();
 	}
 
 	/**
@@ -1240,7 +1240,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Short) this.executeGet(operation)).shortValue();
+		return ((Short) this.executeReadFromDriver(operation)).shortValue();
 	}
 
 	/**
@@ -1258,7 +1258,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1274,7 +1274,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Boolean) this.executeGet(operation)).booleanValue();
+		return ((Boolean) this.executeReadFromDriver(operation)).booleanValue();
 	}
 
 	/**
@@ -1290,7 +1290,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (byte[]) this.executeGet(operation);
+		return (byte[]) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1308,7 +1308,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1326,7 +1326,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1344,7 +1344,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1362,7 +1362,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1380,7 +1380,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1398,7 +1398,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1416,7 +1416,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1434,7 +1434,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1450,7 +1450,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (BigDecimal) this.executeGet(operation);
+		return (BigDecimal) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1467,7 +1467,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (BigDecimal) this.executeGet(operation);
+		return (BigDecimal) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1485,7 +1485,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1501,7 +1501,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (URL) this.executeGet(operation);
+		return (URL) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1517,7 +1517,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (Array) this.executeGet(operation);
+		return (Array) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1535,7 +1535,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1551,7 +1551,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (java.sql.Blob) this.executeGet(operation);
+		return (java.sql.Blob) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1569,7 +1569,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1585,7 +1585,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (java.sql.Clob) this.executeGet(operation);
+		return (java.sql.Clob) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1603,7 +1603,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1619,7 +1619,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (Date) this.executeGet(operation);
+		return (Date) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1637,7 +1637,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1653,7 +1653,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (Ref) this.executeGet(operation);
+		return (Ref) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1671,7 +1671,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1687,7 +1687,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (ResultSetMetaData) this.executeRead(operation);
+		return (ResultSetMetaData) this.executeReadFromDatabase(operation);
 	}
 
 	/**
@@ -1703,7 +1703,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (SQLWarning) this.executeGet(operation);
+		return (SQLWarning) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1727,7 +1727,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (Time) this.executeGet(operation);
+		return (Time) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1745,7 +1745,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1761,7 +1761,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (Timestamp) this.executeGet(operation);
+		return (Timestamp) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1779,7 +1779,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1795,7 +1795,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (InputStream) this.executeGet(operation);
+		return (InputStream) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1811,7 +1811,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (InputStream) this.executeGet(operation);
+		return (InputStream) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1828,7 +1828,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (InputStream) this.executeGet(operation);
+		return (InputStream) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1848,7 +1848,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1868,7 +1868,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1884,7 +1884,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (Reader) this.executeGet(operation);
+		return (Reader) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1904,7 +1904,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1920,7 +1920,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return this.executeGet(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1938,7 +1938,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1956,7 +1956,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -1972,7 +1972,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return this.executeGet(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -1988,7 +1988,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (String) this.executeGet(operation);
+		return (String) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -2006,7 +2006,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -2022,7 +2022,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (BigDecimal) this.executeGet(operation);
+		return (BigDecimal) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -2039,7 +2039,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (BigDecimal) this.executeGet(operation);
+		return (BigDecimal) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -2057,7 +2057,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -2073,7 +2073,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (URL) this.executeGet(operation);
+		return (URL) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -2089,7 +2089,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (Array) this.executeGet(operation);
+		return (Array) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -2107,7 +2107,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -2123,7 +2123,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (java.sql.Blob) this.executeGet(operation);
+		return (java.sql.Blob) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -2141,7 +2141,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -2157,7 +2157,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (java.sql.Clob) this.executeGet(operation);
+		return (java.sql.Clob) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -2175,7 +2175,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -2191,7 +2191,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (Date) this.executeGet(operation);
+		return (Date) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -2209,7 +2209,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -2225,7 +2225,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (Date) this.executeGet(operation);
+		return (Date) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -2241,7 +2241,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (Ref) this.executeGet(operation);
+		return (Ref) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -2259,7 +2259,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -2275,7 +2275,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (Time) this.executeGet(operation);
+		return (Time) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -2293,7 +2293,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -2309,7 +2309,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (Time) this.executeGet(operation);
+		return (Time) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -2325,7 +2325,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (Timestamp) this.executeGet(operation);
+		return (Timestamp) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -2343,7 +2343,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -2359,7 +2359,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (Timestamp) this.executeGet(operation);
+		return (Timestamp) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -2375,7 +2375,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return this.executeGet(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -2391,7 +2391,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (Date) this.executeGet(operation);
+		return (Date) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -2407,7 +2407,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (Time) this.executeGet(operation);
+		return (Time) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -2423,6 +2423,6 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (Timestamp) this.executeGet(operation);
+		return (Timestamp) this.executeReadFromDriver(operation);
 	}
 }

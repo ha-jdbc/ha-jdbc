@@ -91,7 +91,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 				{
 					XAResourceProxy proxy = (XAResourceProxy) xaResource;
 					
-					return Boolean.valueOf(resource.isSameRM((XAResource) proxy.getSQLObject(database)));
+					return Boolean.valueOf(resource.isSameRM((XAResource) proxy.getObject(database)));
 				}
 
 				return Boolean.valueOf(resource.isSameRM(xaResource));
@@ -227,7 +227,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 	{
 		try
 		{
-			return super.executeWrite(operation);
+			return super.executeWriteToDatabase(operation);
 		}
 		catch (SQLException e)
 		{
@@ -239,7 +239,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 	{
 		try
 		{
-			return super.executeSet(operation);
+			return super.executeWriteToDriver(operation);
 		}
 		catch (SQLException e)
 		{
@@ -251,7 +251,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 	{
 		try
 		{
-			return super.executeGet(operation);
+			return super.executeReadFromDriver(operation);
 		}
 		catch (SQLException e)
 		{

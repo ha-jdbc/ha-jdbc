@@ -65,7 +65,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		return ((Integer) this.executeGet(operation)).intValue();
+		return ((Integer) this.executeReadFromDriver(operation)).intValue();
 	}
 
 	/**
@@ -81,7 +81,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		return ((Integer) this.executeRead(operation)).intValue();
+		return ((Integer) this.executeReadFromDatabase(operation)).intValue();
 	}
 
 	/**
@@ -99,7 +99,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -117,7 +117,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeWriteToDatabase(operation);
 	}
 
 	/**
@@ -135,7 +135,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeWriteToDatabase(operation);
 	}
 
 	/**
@@ -153,7 +153,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeWriteToDatabase(operation);
 	}
 
 	/**
@@ -169,7 +169,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		return ((Boolean) this.executeGet(operation)).booleanValue();
+		return ((Boolean) this.executeReadFromDriver(operation)).booleanValue();
 	}
 
 	/**
@@ -185,7 +185,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		return ((Boolean) this.executeGet(operation)).booleanValue();
+		return ((Boolean) this.executeReadFromDriver(operation)).booleanValue();
 	}
 
 	/**
@@ -201,7 +201,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		return ((Boolean) this.executeRead(operation)).booleanValue();
+		return ((Boolean) this.executeReadFromDatabase(operation)).booleanValue();
 	}
 
 	/**
@@ -219,7 +219,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -237,7 +237,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeWriteToDatabase(operation);
 		
 		this.record(operation);
 	}
@@ -257,7 +257,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeWriteToDatabase(operation);
 
 		this.record(operation);
 	}
@@ -277,7 +277,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -293,7 +293,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		return (String) this.executeRead(operation);
+		return (String) this.executeReadFromDatabase(operation);
 	}
 
 	/**
@@ -311,7 +311,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeWriteToDatabase(operation);
 		
 		this.record(operation);
 	}
@@ -329,7 +329,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		return (DatabaseMetaData) this.executeRead(operation);
+		return (DatabaseMetaData) this.executeReadFromDatabase(operation);
 	}
 
 	/**
@@ -345,7 +345,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		return (SQLWarning) this.executeGet(operation);
+		return (SQLWarning) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -375,7 +375,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 		{
 			public Object execute(Database database, Connection connection) throws SQLException
 			{
-				Savepoint savepoint = (Savepoint) savepointProxy.getSQLObject(database);
+				Savepoint savepoint = (Savepoint) savepointProxy.getObject(database);
 				
 				connection.releaseSavepoint(savepoint);
 				
@@ -383,7 +383,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeWriteToDatabase(operation);
 	}
 
 	/**
@@ -397,7 +397,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 		{
 			public Object execute(Database database, Connection connection) throws SQLException
 			{
-				Savepoint savepoint = (Savepoint) savepointProxy.getSQLObject(database);
+				Savepoint savepoint = (Savepoint) savepointProxy.getObject(database);
 				
 				connection.rollback(savepoint);
 				
@@ -405,7 +405,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeWriteToDatabase(operation);
 	}
 
 	/**
@@ -421,7 +421,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		return this.isReadOnly() ? (Statement) this.executeGet(operation) : new StatementProxy(this, operation);
+		return this.isReadOnly() ? (Statement) this.executeReadFromDriver(operation) : new StatementProxy(this, operation);
 	}
 
 	/**
@@ -437,7 +437,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		return this.isReadOnly() ? (Statement) this.executeGet(operation) : new StatementProxy(this, operation);
+		return this.isReadOnly() ? (Statement) this.executeReadFromDriver(operation) : new StatementProxy(this, operation);
 	}
 
 	/**
@@ -453,7 +453,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		return this.isReadOnly() ? (Statement) this.executeGet(operation) : new StatementProxy(this, operation);
+		return this.isReadOnly() ? (Statement) this.executeReadFromDriver(operation) : new StatementProxy(this, operation);
 	}
 
 	/**
@@ -469,7 +469,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		return (Map) this.executeGet(operation);
+		return (Map) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -487,7 +487,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -503,7 +503,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		return (String) this.executeGet(operation);
+		return (String) this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -519,7 +519,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		return this.isReadOnly() ? (CallableStatement) this.executeRead(operation) : new CallableStatementProxy(this, operation);
+		return this.isReadOnly() ? (CallableStatement) this.executeReadFromDatabase(operation) : new CallableStatementProxy(this, operation);
 	}
 
 	/**
@@ -535,7 +535,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		return this.isReadOnly() ? (CallableStatement) this.executeRead(operation) : new CallableStatementProxy(this, operation);
+		return this.isReadOnly() ? (CallableStatement) this.executeReadFromDatabase(operation) : new CallableStatementProxy(this, operation);
 	}
 
 	/**
@@ -551,7 +551,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		return this.isReadOnly() ? (CallableStatement) this.executeRead(operation) : new CallableStatementProxy(this, operation);
+		return this.isReadOnly() ? (CallableStatement) this.executeReadFromDatabase(operation) : new CallableStatementProxy(this, operation);
 	}
 
 	/**
@@ -567,7 +567,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		return this.isReadOnly() ? (PreparedStatement) this.executeRead(operation) : new PreparedStatementProxy(this, operation);
+		return this.isReadOnly() ? (PreparedStatement) this.executeReadFromDatabase(operation) : new PreparedStatementProxy(this, operation);
 	}
 
 	/**
@@ -583,7 +583,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		return this.isReadOnly() ? (PreparedStatement) this.executeRead(operation) : new PreparedStatementProxy(this, operation);
+		return this.isReadOnly() ? (PreparedStatement) this.executeReadFromDatabase(operation) : new PreparedStatementProxy(this, operation);
 	}
 
 	/**
@@ -599,7 +599,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		return this.isReadOnly() ? (PreparedStatement) this.executeRead(operation) : new PreparedStatementProxy(this, operation);
+		return this.isReadOnly() ? (PreparedStatement) this.executeReadFromDatabase(operation) : new PreparedStatementProxy(this, operation);
 	}
 
 	/**
@@ -615,7 +615,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		return this.isReadOnly() ? (PreparedStatement) this.executeRead(operation) : new PreparedStatementProxy(this, operation);
+		return this.isReadOnly() ? (PreparedStatement) this.executeReadFromDatabase(operation) : new PreparedStatementProxy(this, operation);
 	}
 
 	/**
@@ -631,7 +631,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		return this.isReadOnly() ? (PreparedStatement) this.executeRead(operation) : new PreparedStatementProxy(this, operation);
+		return this.isReadOnly() ? (PreparedStatement) this.executeReadFromDatabase(operation) : new PreparedStatementProxy(this, operation);
 	}
 
 	/**
@@ -647,7 +647,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		return this.isReadOnly() ? (PreparedStatement) this.executeRead(operation) : new PreparedStatementProxy(this, operation);
+		return this.isReadOnly() ? (PreparedStatement) this.executeReadFromDatabase(operation) : new PreparedStatementProxy(this, operation);
 	}
 
 	/**

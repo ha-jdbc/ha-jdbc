@@ -79,7 +79,7 @@ public class ConnectionPoolDataSource extends AbstractDataSource implements java
 			}
 		};
 		
-		return ((Integer) this.connectionFactory.executeGet(operation)).intValue();
+		return ((Integer) this.connectionFactory.executeReadFromDriver(operation)).intValue();
 	}
 
 	/**
@@ -97,7 +97,7 @@ public class ConnectionPoolDataSource extends AbstractDataSource implements java
 			}
 		};
 		
-		this.connectionFactory.executeSet(operation);
+		this.connectionFactory.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -113,7 +113,7 @@ public class ConnectionPoolDataSource extends AbstractDataSource implements java
 			}
 		};
 		
-		return (PrintWriter) this.connectionFactory.executeGet(operation);
+		return (PrintWriter) this.connectionFactory.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -131,7 +131,7 @@ public class ConnectionPoolDataSource extends AbstractDataSource implements java
 			}
 		};
 		
-		this.connectionFactory.executeSet(operation);
+		this.connectionFactory.executeWriteToDriver(operation);
 	}
 
 	/**

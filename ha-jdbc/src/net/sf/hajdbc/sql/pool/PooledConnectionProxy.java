@@ -79,7 +79,7 @@ public class PooledConnectionProxy extends SQLProxy implements PooledConnection
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeWriteToDatabase(operation);
 	}
 
 	/**
@@ -99,7 +99,7 @@ public class PooledConnectionProxy extends SQLProxy implements PooledConnection
 		
 		try
 		{
-			this.executeSet(operation);
+			this.executeWriteToDriver(operation);
 		}
 		catch (SQLException e)
 		{
@@ -124,7 +124,7 @@ public class PooledConnectionProxy extends SQLProxy implements PooledConnection
 		
 		try
 		{
-			this.executeSet(operation);
+			this.executeWriteToDriver(operation);
 		}
 		catch (SQLException e)
 		{

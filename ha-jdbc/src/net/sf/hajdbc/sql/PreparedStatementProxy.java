@@ -71,7 +71,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		return ((Integer) this.firstValue(this.executeWrite(operation))).intValue();
+		return ((Integer) this.firstValue(this.executeWriteToDatabase(operation))).intValue();
 	}
 
 	/**
@@ -89,7 +89,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -107,7 +107,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -123,7 +123,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		return ((Boolean) this.firstValue(this.executeWrite(operation))).booleanValue();
+		return ((Boolean) this.firstValue(this.executeWriteToDatabase(operation))).booleanValue();
 	}
 
 	/**
@@ -141,7 +141,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -159,7 +159,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -177,7 +177,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -195,7 +195,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -213,7 +213,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -231,7 +231,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -249,7 +249,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -267,7 +267,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -285,7 +285,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -305,7 +305,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -325,7 +325,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);			
+		this.executeWriteToDriver(operation);			
 	}
 
 	/**
@@ -346,7 +346,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -366,7 +366,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 	
 	/**
@@ -384,7 +384,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -402,7 +402,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -420,7 +420,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -438,7 +438,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -456,7 +456,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -474,7 +474,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -492,7 +492,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -510,7 +510,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -528,7 +528,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -546,7 +546,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -564,7 +564,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -580,7 +580,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		return (ParameterMetaData) this.executeRead(operation);
+		return (ParameterMetaData) this.executeReadFromDatabase(operation);
 	}
 
 	/**
@@ -598,7 +598,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -614,7 +614,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 
-		return (this.getResultSetConcurrency() == ResultSet.CONCUR_READ_ONLY) ? (ResultSet) this.executeRead(operation) : new ResultSetProxy(this, operation);
+		return (this.getResultSetConcurrency() == ResultSet.CONCUR_READ_ONLY) ? (ResultSet) this.executeReadFromDatabase(operation) : new ResultSetProxy(this, operation);
 	}
 
 	/**
@@ -630,7 +630,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		return (ResultSetMetaData) this.executeRead(operation);
+		return (ResultSetMetaData) this.executeReadFromDatabase(operation);
 	}
 
 	/**
@@ -648,7 +648,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -666,7 +666,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -684,7 +684,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -702,7 +702,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -720,7 +720,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		this.executeSet(operation);
+		this.executeWriteToDriver(operation);
 	}
 	
 	/**

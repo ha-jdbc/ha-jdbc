@@ -56,7 +56,7 @@ public class SavepointProxy extends SQLProxy implements Savepoint
 			}
 		};
 		
-		return ((Integer) super.executeGet(operation)).intValue();
+		return ((Integer) super.executeReadFromDriver(operation)).intValue();
 	}
 
 	/**
@@ -72,6 +72,6 @@ public class SavepointProxy extends SQLProxy implements Savepoint
 			}
 		};
 		
-		return (String) super.executeGet(operation);
+		return (String) super.executeReadFromDriver(operation);
 	}
 }

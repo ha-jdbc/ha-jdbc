@@ -157,6 +157,6 @@ public final class Driver implements java.sql.Driver
 			}
 		};
 		
-		return (DriverPropertyInfo[]) connectionFactory.executeGet(operation);
+		return (DriverPropertyInfo[]) connectionFactory.executeReadFromDriver(operation);
 	}
 }
