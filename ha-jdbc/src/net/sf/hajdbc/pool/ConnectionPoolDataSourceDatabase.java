@@ -40,9 +40,14 @@ public class ConnectionPoolDataSourceDatabase extends DataSourceDatabase
 	public Connection connect(Object connectionFactory) throws java.sql.SQLException
 	{
 		ConnectionPoolDataSource dataSource = (ConnectionPoolDataSource) connectionFactory;
-		PooledConnection connection = (this.user != null) ? dataSource.getPooledConnection(this.user, this.password) : dataSource.getPooledConnection();
+		PooledConnection connection = this.getPooledConnection(dataSource);
 		
 		return this.getConnection(connection);
+	}
+	
+	public PooledConnection getPooledConnection(ConnectionPoolDataSource dataSource) throws java.sql.SQLException
+	{
+		return (this.user != null) ? dataSource.getPooledConnection(this.user, this.password) : dataSource.getPooledConnection();
 	}
 	
 	/**
