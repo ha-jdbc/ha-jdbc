@@ -158,7 +158,7 @@ public class DistributableDatabaseCluster extends DatabaseClusterDecorator imple
 	 */
 	public void init() throws java.sql.SQLException
 	{
-		String[] databases = (String[]) this.notificationBus.getCacheFromCoordinator(5000, 2);
+		String[] databases = (String[]) this.notificationBus.getCacheFromCoordinator(5000, 1);
 		
 		if (databases != null)
 		{
