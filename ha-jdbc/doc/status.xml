@@ -10,12 +10,12 @@
 			defined for 'add', 'fix', 'remove', 'update' and 'hack'. If you add
 			src/documentation/resources/images/<foo>.jpg images, these will
 			automatically be used for entries of type <foo>. -->
-		<release version="1.0-beta-6" date="">
+		<release version="1.0-beta-6" date="March 31, 2005">
 			<action type="update" dev="PF">
 				Database cluster now specifies 1 of 4 different strategies for balancing read requests: simple, random, round-robin, or load.
 			</action>
 			<action type="update" dev="PF">
-				A database can now define a weight to affect how it is prioritized by the balancer.
+				A database can define a weight to affect how it is prioritized by the balancer.
 			</action>
 			<action type="update" dev="PF">
 				In distributed environment, a database cluster will get its initial state from the JGroups group coordinator.
@@ -23,14 +23,17 @@
 			<action type="fix" dev="PF">
 				Fixed bug where auto (i.e. non-manual) database deactivation behaved locally even if environment is distributed.
 			</action>
+			<action type="fix" dev="PF">
+				Fixed bug where synchronization strategies will fail if foreign key constraints have names that require quoting (e.g. $1, $2).
+			</action>
 			<action type="update" dev="PF">
-				Lots of refactored code.
+				Lots of refactored code.  Most notably, the HA-JDBC driver has moved to net.sf.hajdbc.sql.Driver
 			</action>
 			<action type="update" dev="PF">
 				Protocol parameter is now optional for distributable clusters.
 			</action>
 			<action type="add" dev="PF">
-				Added error message translations for German, Spanish, French, Italian, and Portuguese.
+				Added error message translations for German, Spanish, French, Italian, and Portuguese (thanks to AltaVista Babel Fish).
 			</action>
 			<action type="add" dev="PF">
 				Added error message for tables without primary keys in DifferentialSynchronizationStrategy.
@@ -186,7 +189,7 @@
 				JUnit unit test suite. (in progress)
 			</action>
 			<action context="code" dev="PF">
-				Sample application using HSQL.
+				Complete documentation.
 			</action>
 		</actions>
 		<actions priority="Release 1.1">
