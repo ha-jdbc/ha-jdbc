@@ -252,7 +252,7 @@ public class UpdateDatabaseActivationStrategy implements DatabaseActivationStrat
 						hasActiveResults = activeResultSet.next();
 					}
 					
-					if (hasInactiveResults &&  (compare >= 0))
+					if (hasInactiveResults && (compare >= 0))
 					{
 						hasInactiveResults = inactiveResultSet.next();
 					}
@@ -272,6 +272,8 @@ public class UpdateDatabaseActivationStrategy implements DatabaseActivationStrat
 			{
 				try
 				{
+					inactiveConnection.rollback();
+					
 					Iterator foreignKeys = foreignKeyList.iterator();
 					
 					while (foreignKeys.hasNext())

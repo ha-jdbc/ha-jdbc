@@ -192,6 +192,8 @@ public class DeleteInsertDatabaseActivationStrategy implements DatabaseActivatio
 			{
 				try
 				{
+					inactiveConnection.rollback();
+					
 					Iterator foreignKeys = foreignKeyList.iterator();
 					
 					while (foreignKeys.hasNext())
