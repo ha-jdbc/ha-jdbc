@@ -34,7 +34,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import net.sf.hajdbc.Balancer;
-import net.sf.hajdbc.ConnectionFactoryProxy;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Messages;
@@ -53,8 +52,8 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	private String validateSQL;
 	private Map databaseMap;
 	private Balancer balancer;
-	private ConnectionFactoryProxy connectionFactory;
 	private Map synchronizationStrategyMap;
+	private Map connectionFactoryMap;
 	
 	/**
 	 * Constructs a new LocalDatabaseCluster.
@@ -69,9 +68,8 @@ public class LocalDatabaseCluster extends DatabaseCluster
 		List databaseList = descriptor.getDatabaseList();
 		int size = databaseList.size();
 		
-		Map connectionFactoryMap = new HashMap(size);
-		
 		this.databaseMap = new HashMap(size);
+		this.connectionFactoryMap = new HashMap(size);
 		
 		Iterator databases = descriptor.getDatabaseList().iterator();
 		
@@ -81,10 +79,8 @@ public class LocalDatabaseCluster extends DatabaseCluster
 			
 			this.databaseMap.put(database.getId(), database);
 
-			connectionFactoryMap.put(database, database.createConnectionFactory());
+			this.connectionFactoryMap.put(database, database.createConnectionFactory());
 		}
-		
-		this.connectionFactory = new ConnectionFactoryProxy(this, connectionFactoryMap);
 		
 		List strategyList = descriptor.getSynchronizationStrategyList();
 		
@@ -109,6 +105,9 @@ public class LocalDatabaseCluster extends DatabaseCluster
 		}
 	}
 
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#init()
+	 */
 	public void init()
 	{
 		Iterator databases = this.databaseMap.values().iterator();
@@ -125,11 +124,11 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getConnectionFactory()
+	 * @see net.sf.hajdbc.DatabaseCluster#getConnectionFactoryMap()
 	 */
-	public ConnectionFactoryProxy getConnectionFactory()
+	protected Map getConnectionFactoryMap()
 	{
-		return this.connectionFactory;
+		return this.connectionFactoryMap;
 	}
 	
 	/**
@@ -137,13 +136,11 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	 */
 	public boolean isAlive(Database database)
 	{
-		Object connectionFactory = this.connectionFactory.getSQLObject(database);
-		
 		Connection connection = null;
 		
 		try
 		{
-			connection = database.connect(connectionFactory);
+			connection = database.connect(this.connectionFactoryMap.get(database));
 			
 			Statement statement = connection.createStatement();
 			
@@ -228,7 +225,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getDatabaseList()
+	 * @see net.sf.hajdbc.DatabaseCluster#getDatabases()
 	 */
 	public Database[] getDatabases() throws SQLException
 	{
