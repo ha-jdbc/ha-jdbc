@@ -27,6 +27,7 @@ import java.sql.Statement;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -293,7 +294,12 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	 * Returns a connection factory proxy for this obtaining connections to databases in this cluster.
 	 * @return a connection factory proxy
 	 */
-	public abstract ConnectionFactoryProxy getConnectionFactory();
+	public ConnectionFactoryProxy getConnectionFactory()
+	{
+		return new ConnectionFactoryProxy(this, this.getConnectionFactoryMap());
+	}
+	
+	protected abstract Map getConnectionFactoryMap();
 	
 	/**
 	 * Determines whether or not the specified database is responding
@@ -318,5 +324,9 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	 */
 	public abstract SynchronizationStrategy getSynchronizationStrategy(String id) throws java.sql.SQLException;
 	
+	/**
+	 * Initializes this database cluster.
+	 * @throws java.sql.SQLException if initialization fails
+	 */
 	public abstract void init() throws java.sql.SQLException;
 }

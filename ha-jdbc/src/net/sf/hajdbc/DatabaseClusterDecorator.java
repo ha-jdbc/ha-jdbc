@@ -21,6 +21,7 @@
 package net.sf.hajdbc;
 
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * @author  Paul Ferraro
@@ -61,7 +62,7 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getDatabaseList()
+	 * @see net.sf.hajdbc.DatabaseCluster#getDatabases()
 	 */
 	public final Database[] getDatabases() throws java.sql.SQLException
 	{
@@ -130,5 +131,10 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 	public final SynchronizationStrategy getSynchronizationStrategy(String id) throws java.sql.SQLException
 	{
 		return this.databaseCluster.getSynchronizationStrategy(id);
+	}
+	
+	protected Map getConnectionFactoryMap()
+	{
+		return this.databaseCluster.getConnectionFactoryMap();
 	}
 }
