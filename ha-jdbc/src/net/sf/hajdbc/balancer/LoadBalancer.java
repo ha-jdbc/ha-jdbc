@@ -99,22 +99,29 @@ public class LoadBalancer extends AbstractBalancer
 	 */
 	public synchronized Database next()
 	{
-		Database database = this.first();
-		
-		Integer load = (Integer) this.databaseMap.remove(database);
-
-		this.databaseMap.put(database, new Long(load.intValue() + 1));
-		
-		return database;
+		return this.first();
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.Balancer#callback(net.sf.hajdbc.Database)
 	 */
-	public synchronized void callback(Database database)
+	public void beforeOperation(Database database)
+	{
+		this.incrementLoad(database, 1);
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.Balancer#callback(net.sf.hajdbc.Database)
+	 */
+	public void afterOperation(Database database)
+	{
+		this.incrementLoad(database, -1);
+	}
+	
+	private synchronized void incrementLoad(Database database, int increment)
 	{
 		Integer load = (Integer) this.databaseMap.remove(database);
 
-		this.databaseMap.put(database, new Long(load.intValue() - 1));
+		this.databaseMap.put(database, new Integer(load.intValue() + increment));
 	}
 }

@@ -66,8 +66,12 @@ public interface Balancer
 	public boolean contains(Database database);
 	
 	/**
-	 * Callback method
+	 * Executes the specifed operation on the specified object of the specified database.
+	 * @param operation a database operation
 	 * @param database a database descriptor
+	 * @param object a SQL object
+	 * @return the result of the operation
+	 * @throws java.sql.SQLException if the operation fails
 	 */
-	public void callback(Database database);
+	public Object execute(Operation operation, Database database, Object object) throws java.sql.SQLException;
 }

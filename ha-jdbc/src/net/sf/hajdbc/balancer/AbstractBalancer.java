@@ -24,6 +24,7 @@ import java.util.Collection;
 
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.Operation;
 
 /**
  * @author  Paul Ferraro
@@ -34,9 +35,36 @@ public abstract class AbstractBalancer implements Balancer
 	protected abstract Collection getDatabases();
 	
 	/**
-	 * @see net.sf.hajdbc.Balancer#callback(net.sf.hajdbc.Database)
+	 * @see net.sf.hajdbc.Balancer#execute(net.sf.hajdbc.Operation, net.sf.hajdbc.Database, java.lang.Object)
 	 */
-	public void callback(Database database)
+	public Object execute(Operation operation, Database database, Object object) throws java.sql.SQLException
+	{
+		this.beforeOperation(database);
+		
+		try
+		{
+			return operation.execute(database, object);
+		}
+		finally
+		{
+			this.afterOperation(database);
+		}
+	}
+	
+	/**
+	 * Called before an operation is performed on the specified database.
+	 * @param database a database descriptor
+	 */
+	protected void beforeOperation(Database database)
+	{
+		// Do nothing
+	}
+	
+	/**
+	 * Called after an operation is performed on the specified database.
+	 * @param database a database descriptor
+	 */
+	protected void afterOperation(Database database)
 	{
 		// Do nothing
 	}
