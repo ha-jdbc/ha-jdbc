@@ -13,19 +13,33 @@ import java.util.Set;
 public class DatabaseClusterManager
 {
 	private Set listenerSet = Collections.synchronizedSet(new HashSet());
-	// Maps cluster name -> Set of Databases
-	private Map databaseClusterMap;
+	// Maps cluster name -> DatabaseClusterDescriptor
+	private Map descriptorMap;
 	// Maps cluster type -> Set of cluster names
 	private Map classMap;
 	
-	protected DatabaseClusterManager()
+	public void addDescriptor(Object databaseClusterDescriptor)
 	{
-		// Initialize cluster
+		DatabaseClusterDescriptor descriptor = (DatabaseClusterDescriptor) databaseClusterDescriptor;
+		String clusterName = descriptor.getName();
+		
+		this.descriptorMap.put(clusterName, descriptor);
+		
+		Class databaseClass = descriptor.getDatabaseSet().iterator().next().getClass();
+		Set nameSet = (Set) this.classMap.get(databaseClass);
+		
+		if (nameSet == null)
+		{
+			nameSet = new HashSet();
+			this.classMap.put(databaseClass, nameSet);
+		}
+		
+		nameSet.add(clusterName);
 	}
 	
-	public Set getDatabaseSet(String name)
+	public DatabaseClusterDescriptor getDescriptor(String name)
 	{
-		return (Set) this.databaseClusterMap.get(name);
+		return (DatabaseClusterDescriptor) this.descriptorMap.get(name);
 	}
 	
 	public Set getClusterSet(Class databaseClass)
