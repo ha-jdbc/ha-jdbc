@@ -19,7 +19,7 @@
 					<ul>
 						<li><a href="http://java.sun.com/products/JavaManagement/index.jsp">Sun Reference Implemenation</a></li>
 						<li><a href="http://mx4j.sourceforge.net">MX4J</a></li>
-						<li><a href="http://xmojo.sourceforge.net">XMOJO</a></li>
+						<li><a href="http://www.xmojo.org/products/xmojo">XMOJO</a></li>
 						<li><a href="http://www.jboss.org/developers/projects/jboss/jbossmx">JBossMX</a></li>
 						<li><a href="http://www.huihoo.org/jfox/jfoxmx/index.html">JFoxMX</a></li>
 					</ul>
@@ -43,41 +43,41 @@
 <!DOCTYPE ha-jdbc PUBLIC "-//HA-JDBC//DTD HA-JDBC 1.0//EN"
   "http://ha-jdbc.sourceforge.net/dtd/ha-jdbc-1.0.dtd">
 <ha-jdbc>
-  <cluster id="cluster">
-    <database id="server1">
+  <cluster id="cluster" balancer="simple">
+    <database id="server1" weight="1">
       <driver>org.postgresql.Driver</driver>
       <url>jdbc:postgresql://server1:5432/database</url>
       <user>postgres</user>
       <password>password</password>
     </database>
-    <database id="server2">
+    <database id="server2" weight="2">
       <driver>org.postgresql.Driver</driver>
       <url>jdbc:postgresql://server2:5432/database</url>
       <user>postgres</user>
       <password>password</password>
     </database>
   </cluster>
-  <cluster id="Cluster">
-    <datasource id="database1">
+  <cluster id="Cluster" balancer="random">
+    <datasource id="database1" weight="1">
       <name>java:comp/env/jdbc/Database1</name>
     </datasource>
-    <datasource id="database2">
+    <datasource id="database2" weight="2">
       <name>java:comp/env/jdbc/Database2</name>
     </datasource>
   </cluster>
-  <cluster id="PoolCluster">
-    <pool-datasource id="database1">
+  <cluster id="PoolCluster" balancer="round-robin">
+    <pool-datasource id="database1" weight="1">
       <name>java:comp/env/jdbc/pool/Database1</name>
     </pool-datasource>
-    <pool-datasource id="database2">
+    <pool-datasource id="database2" weight="2">
       <name>java:comp/env/jdbc/pool/Database2</name>
     </pool-datasource>
   </cluster>
-  <cluster id="XACluster">
-    <xa-datasource id="database1">
+  <cluster id="XACluster" balancer="load">
+    <xa-datasource id="database1" weight="1">
       <name>java:comp/env/jdbc/xa/Database1</name>
     </xa-datasource>
-    <xa-datasource id="database2">
+    <xa-datasource id="database2" weight="2">
       <name>java:comp/env/jdbc/xa/Database2</name>
     </xa-datasource>
   </cluster>
@@ -108,9 +108,42 @@
 			</section>
 			<section>
 				<title>Application Configuration</title>
+				<p>
+					To configure HA-JDBC in your application server, simply replace your existing references to your JDBC driver and url accordingly.
+				</p>
 				<section>
 					<title>Server configuration examples</title>
 					<ul>
+						<li>
+							<p><a href="http://jetty.mortbay.org">Jetty</a> (using <a href="http://xapool.objectweb.org">c3p0</a>)</p>
+							<source><![CDATA[
+<Configure class="org.mortbay.jetty.plus.Server">
+  <Call name="addService">
+    <Arg>
+      <New class="org.mortbay.jetty.plus.DefaultDataSourceService">
+        <Set name="Name">DataSourceService</Set>
+        <Call name="addDataSource">
+          <Arg>jdbc/Cluster</Arg>
+          <Arg>
+            <New class="com.mchange.v2.c3p0.ComboPooledDataSource">
+              <Set name="DriverClass">net.sf.hajdbc.sql.Driver</Set>
+              <Set name="JdbcUrl">jdbc:ha-jdbc:cluster</Set>
+              <Set name="User">postgres</Set>
+              <Set name="Password">password</Set>
+              <Set name="MinPoolSize">5</Set>
+              <Set name="MaxPoolSize">20</Set>
+              <Set name="MaxIdleTime">360</Set>
+              <Set name="PreferredTestQuery">SELECT 1</Set>
+              <Set name="IdleConnectionTestPeriod">60</Set>
+            </New>
+          </Arg>
+        </Call>
+      </New>
+    </Arg>
+  </Call>
+</Configure>
+]]></source>
+						</li>
 						<li>
 							<p><a href="http://jetty.mortbay.org">Jetty</a> (using <a href="http://xapool.objectweb.org">XAPool</a>)</p>
 							<source><![CDATA[
@@ -123,7 +156,7 @@
           <Arg>jdbc/Cluster</Arg>
           <Arg>
             <New class="org.enhydra.jdbc.standard.StandardConnectionPoolDataSource">
-              <Set name="DriverName">net.sf.hajdbc.Driver</Set>
+              <Set name="DriverName">net.sf.hajdbc.sql.Driver</Set>
               <Set name="Url">jdbc:ha-jdbc:cluster</Set>
               <Set name="TransactionIsolation">
                 <Get class="java.sql.Connection" name="TRANSACTION_READ_COMMITTED"/>
@@ -170,7 +203,7 @@
   </parameter>
   <parameter>
     <name>driverClassName</name>
-    <value>net.sf.hajdbc.Driver</value>
+    <value>net.sf.hajdbc.sql.Driver</value>
   </parameter>
   <parameter>
     <name>url</name>
@@ -187,7 +220,14 @@
 			</section>
 			<section>
 				<title>Cluster Balancer</title>
-				<p>HA-JDBC supports four types of read request balancers:</p>
+				<p>
+					When executing a read request from the cluster, HA-JDBC uses the specified balancer strategy to determine which database to use.
+					Each database can define a weight to affect how it is prioritized by the balancer.
+					If no weight is specified for a given database, it is assumed to be 1.
+				</p>
+				<p>
+					HA-JDBC supports four types of read request balancers:
+				</p>
 				<table>
 					<tr>
 						<th>Simple</th>
@@ -207,7 +247,7 @@
 						<th>Round-Robin</th>
 						<td>
 							Requests are sent to each node in succession.
-							A node of weight X will receive X requests before the balancer moves on to the next node.
+							A node of weight <em>n</em> will receive <em>n</em> requests before the balancer moves on to the next node.
 						</td>
 					</tr>
 					<tr>
@@ -219,24 +259,33 @@
 						</td>
 					</tr>
 				</table>
-				<note>In general, a node with a weight of 0 will never service a request unless it is the last node in the cluster.</note>
+				<note>
+					In general, a node with a weight of 0 or less will never service a request unless it is the last node in the cluster.
+				</note>
 			</section>
 			<section>
 				<title>Distributed environment</title>
 				<p>
-					When running HA-JDBC in a distributed environment, i.e. JDBC clients in seperate JVMs are accessing the same set of databases, special configuration is required.
+					When running HA-JDBC in a distributed environment, i.e. JDBC clients in seperate JVMs are accessing the same set of databases, the <![CDATA[<distributable>]]> option should be used.
 					HA-JDBC leverages the <a href="http://www.jgroups.org">JGroups</a> project to handle communication between cluster managers.
-					See the JGroup User's guide for assistance customizing the protocol stack for your network.
 				</p>
 				<p>e.g.</p>
 				<source><![CDATA[
 <ha-jdbc>
   <distributable/>
-  <cluster id="...">
+  <cluster id="..." balancer="...">
     <!-- ... -->
   </cluster>
 </ha-jdbc>
 ]]></source>
+				<p>
+					The <![CDATA[<distributable>]]> element may contain an optional <![CDATA[<protocol>]]> attribute.  This lets you customize the JGroups protocol stack.
+					If left unspecified, HA-JDBC will use the following default protocol stack:
+				</p>
+				<p>UDP:PING:MERGE2:FD:VERIFY_SUSPECT:pbcast.NAKACK:UNICAST:pbcast.STABLE:FRAG:pbcast.GMS</p>
+				<p>
+					See the JGroup's <a href="http://www.jgroups.org/javagroupsnew/docs/newuser/node63.html">user guide</a> for assistance customizing the protocol stack for your network.
+				</p>
 			</section>
 			<section>
 				<title>Unique identifier generation</title>
@@ -262,31 +311,6 @@
 				</p>
 			</section>
 			<section>
-				<title>Transactions</title>
-				<p>
-					HA-JDBC supports both traditional JDBC transactions and JTA (e.g. EJB bean-managed transactions).
-					HA-JDBC integration does not require you to change your existing transaction semantics.
-					If you are leveraging your JDBC driver's <code>javax.sql.XADataSource</code> implementation for JTA integration, you will need to configure HA-JDBC accordingly.
-				</p>
-				<p>e.g.</p>
-				<source><![CDATA[
-<ha-jdbc>
-  <cluster id="XACluster">
-    <xa-datasource id="database1">
-      <name>java:comp/env/jdbc/xa/Database1</name>
-      <user>postgres</user>
-      <password>password</password>
-    </xa-datasource>
-    <xa-datasource id="database2">
-      <name>java:comp/env/jdbc/xa/Database2</name>
-      <user>postgres</user>
-      <password>password</password>
-    </xa-datasource>
-  </cluster>
-</ha-jdbc>
-]]></source>
-			</section>
-			<section>
 				<title>Connection Pooling</title>
 				<p>
 					HA-JDBC is designed to integrate with your existing connection pooling mechanism.
@@ -295,7 +319,7 @@
 				<p>e.g.</p>
 				<source><![CDATA[
 <ha-jdbc>
-  <cluster id="PoolCluster">
+  <cluster id="PoolCluster" balancer="...">
     <pool-datasource id="database1">
       <name>java:comp/env/jdbc/pool/Database1</name>
       <user>postgres</user>
@@ -306,6 +330,31 @@
       <user>postgres</user>
       <password>password</password>
     </pool-datasource>
+  </cluster>
+</ha-jdbc>
+]]></source>
+			</section>
+			<section>
+				<title>Transactions</title>
+				<p>
+					HA-JDBC supports both traditional JDBC transactions and JTA (e.g. EJB bean-managed transactions).
+					HA-JDBC integration does not require you to change your existing transaction semantics.
+					If you are leveraging your JDBC driver's <code>javax.sql.XADataSource</code> implementation for JTA integration, you will need to configure HA-JDBC accordingly.
+				</p>
+				<p>e.g.</p>
+				<source><![CDATA[
+<ha-jdbc>
+  <cluster id="XACluster" balancer="...">
+    <xa-datasource id="database1">
+      <name>java:comp/env/jdbc/xa/Database1</name>
+      <user>postgres</user>
+      <password>password</password>
+    </xa-datasource>
+    <xa-datasource id="database2">
+      <name>java:comp/env/jdbc/xa/Database2</name>
+      <user>postgres</user>
+      <password>password</password>
+    </xa-datasource>
   </cluster>
 </ha-jdbc>
 ]]></source>
@@ -321,12 +370,12 @@
 				</p>
 				<ul>
 					<li>
-						<p>Add <code>net.sf.hajdbc.Driver</code> to your <code>jdbc.drivers</code> system property.</p>
+						<p>Add <code>net.sf.hajdbc.sql.Driver</code> to your <code>jdbc.drivers</code> system property.</p>
 						<p>The JVM will automatically load and register each driver upon startup.</p>
 					</li>
 					<li>
 						<p>
-							Explicity load the <code>net.sf.hajdbc.Driver</code> class using <code>Class.forName(...)</code>.
+							Explicity load the <code>net.sf.hajdbc.sql.Driver</code> class using <code>Class.forName(...)</code>.
 						</p>
 						<p>
 							Per the JDBC specification, loading the HA-JDBC driver class automatically registers the driver with the <code>DriverManager</code>.
