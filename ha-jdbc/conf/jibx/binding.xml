@@ -1,7 +1,14 @@
 <?xml version="1.0"?>
 <!DOCTYPE binding SYSTEM "binding.dtd">
 <binding direction="input">
-	<mapping name="ha-jdbc" class="net.sf.ha.jdbc.DatabaseClusterManager">
+	<mapping name="ha-jdbc" class="net.sf.ha.jdbc.Configuration">
+		<structure field="databaseClusterManager"></structure>
+	</mapping>
+	<mapping name="local" class="net.sf.ha.jdbc.LocalDatabaseClusterManager">
+		<collection add-method="addDescriptor"></collection>
+	</mapping>
+	<mapping name="distributable" class="net.sf.ha.jdbc.DistributedDatabaseClusterManager">
+		<value name="protocol" set-method="setProtocol" usage="required" style="attribute"></value>
 		<collection add-method="addDescriptor"></collection>
 	</mapping>
 	<mapping name="cluster" class="net.sf.ha.jdbc.DatabaseClusterDescriptor" value-style="attribute">

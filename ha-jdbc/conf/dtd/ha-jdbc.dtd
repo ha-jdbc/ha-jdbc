@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!ELEMENT ha-jdbc (cluster+)>
+<!ELEMENT ha-jdbc (local|distributed)>
+<!ELEMENT local (cluster+)>
+<!ELEMENT distributable (cluster+)>
+<!ATTLIST distributable
+	protocol CDATA #REQUIRED
+>
 <!ELEMENT cluster ((database+)|(datasource+)|(pooled-datasource+)|(xa-datasource+))>
 <!ATTLIST cluster
 	name CDATA #REQUIRED
-	validate-sql CDATA #REQUIRED
+	validate-sql CDATA #IMPLIED
 >
 <!ELEMENT database (user,password)?>
 <!ATTLIST database
