@@ -1,6 +1,7 @@
 package net.sf.ha.jdbc;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -52,12 +53,7 @@ public abstract class AbstractProxy
 	
 	public final Map executeWrite(Operation operation) throws SQLException
 	{
-		Set databaseSet = null;
-		
-		synchronized (this.objectMap)
-		{
-			databaseSet = new HashSet(this.objectMap.keySet());
-		}
+		Set databaseSet = new HashSet(this.objectMap.keySet());
 		
 		if (databaseSet.size() == 0)
 		{
@@ -66,7 +62,7 @@ public abstract class AbstractProxy
 		
 		Map returnValueMap = new LinkedHashMap(databaseSet.size(), 0.75f, true);
 		
-		Iterator databases = databaseSet.iterator();
+		Iterator databases = new ArrayList(databaseSet).iterator();
 		
 		while (databases.hasNext())
 		{
