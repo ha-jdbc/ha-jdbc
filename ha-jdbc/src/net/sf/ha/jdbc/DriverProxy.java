@@ -200,6 +200,6 @@ public final class DriverProxy implements java.sql.Driver
 			}
 		};
 		
-		return (DriverPropertyInfo[]) databaseCluster.executeRead(operation);
+		return (DriverPropertyInfo[]) databaseCluster.executeGet(operation);
 	}
 }
