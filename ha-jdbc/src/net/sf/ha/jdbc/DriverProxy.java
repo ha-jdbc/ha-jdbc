@@ -5,6 +5,7 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -39,7 +40,7 @@ public final class DriverProxy implements java.sql.Driver
 	
 	public DriverProxy() throws SQLException
 	{
-		Set clusterSet = DatabaseClusterManagerFactory.getClusterManager().getClusterSet(this.getClass());
+		Set clusterSet = DatabaseClusterManagerFactory.getClusterManager().getClusterSet(Driver.class);
 		
 		this.databaseClusterMap = new HashMap(clusterSet.size());
 		
@@ -49,7 +50,8 @@ public final class DriverProxy implements java.sql.Driver
 		{
 			String clusterName = (String) clusters.next();
 
-			Set databaseSet = DatabaseClusterManagerFactory.getClusterManager().getDatabaseSet(clusterName);
+			DatabaseClusterDescriptor descriptor = DatabaseClusterManagerFactory.getClusterManager().getDescriptor(clusterName);
+			Set databaseSet = descriptor.getDatabaseSet();
 			
 			Map driverMap = new HashMap(databaseSet.size());
 			
@@ -63,7 +65,9 @@ public final class DriverProxy implements java.sql.Driver
 				driverMap.put(database, driver);
 			}
 			
-			this.databaseClusterMap.put(clusterName, driverMap);
+			DatabaseCluster databaseCluster = new DatabaseCluster(clusterName, Collections.synchronizedMap(driverMap), descriptor.getValidateSQL());
+			
+			this.databaseClusterMap.put(clusterName, databaseCluster);
 		}
 	}
 	
