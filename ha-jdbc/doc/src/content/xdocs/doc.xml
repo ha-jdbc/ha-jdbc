@@ -365,10 +365,14 @@ rs.close();
 				<source><![CDATA[
 <ha-jdbc>
   <cluster id="cluster">
+    <database id="..."><!-- ... --></database>
+    <database id="..."><!-- ... --></database>
+
     <!-- Sample validation query for HSQLDB -->
     <validate-sql>CALL NOW()</validate-sql>
-    <database id="..."><!-- ... --></database>
-    <database id="..."><!-- ... --></database>
+
+	<sync-strategy id="..." class="..."></sync-strategy>
+	<sync-strategy id="..." class="..."></sync-strategy>
   </cluster>
 </ha-jdbc>
 ]]></source>
@@ -385,7 +389,7 @@ rs.close();
 			<section>
 				<title>Restoring a Database Node</title>
 				<p>
-					Before a database node can be reintroduced into a cluster, it first must be synchronized.
+					Before a database node can be reintroduced into a cluster, may first need to be synchronized.
 				</p>
 				<p>
 					HA-JDBC provides several out-of-the-box database independent strategies for synchronizing a failed database:
@@ -393,11 +397,31 @@ rs.close();
 				<ul>
 					<li><a href="api/net/sf/hajdbc/sync/FullSynchronizationStrategy.html"><code>Full</code></a> - Each tables is truncated and data is reinserted.  This strategy is fastest if the database is way out of sync.</li>
 					<li><a href="api/net/sf/hajdbc/sync/DifferentialSynchronizationStrategy.html"><code>Differential</code></a> - Comparison is done on each table and only changes are updated.  This strategy is fastest if the database is more in sync than not.</li>
-					<li><a href="api/net/sf/hajdbc/sync/PassiveSynchronizationStrategy.html"><code>Passive</code></a> - Does nothing.  Should only be used when database are already in sync.</li>
 				</ul>
 				<p>
-					Although these mechanisms should be sufficient for most small databases, they are probably not feasible for large databases.
-					Synchronizing a large database will require vendor specific functionality.
+					Each synchronization strategy must be defined in the HA-JDBC configuration file.
+					A strategy may contain any number of JavaBean properties that can be set in the config file.
+				</p>
+				<p>e.g.</p>
+				<source><![CDATA[
+<ha-jdbc>
+  <cluster id="cluster">
+    <database id="..."><!-- ... --></database>
+    <database id="..."><!-- ... --></database>
+	
+    <sync-strategy id="full" class="net.sf.hajdbc.sync.FullSynchronizationStrategy">
+      <property name="truncateTableSQL">TRUNCATE TABLE {0}</property>
+      <property name="maxBatchSize">100</property>
+    </sync-strategy>
+
+	<sync-strategy id="diff" class="net.sf.hajdbc.sync.DifferentialSynchronizationStrategy"></sync-strategy>
+	
+  </cluster>
+</ha-jdbc>
+]]></source>
+				<p>
+					Although the build-in strategies should be sufficient for most small databases, they are probably not feasible for large databases.
+					Synchronizing a large database will typically require vendor specific functionality.
 					Custom synchronization strategies may be written by implementing the <a href="api/net/sf/hajdbc/SynchronizationStrategy.html"><code>SynchronizationStrategy</code></a> interface or by extending the functionality of one of the existing strategies.
 					For example, I may want to improve the efficiency of the <code>FullSynchronizationStrategy</code> by dropping and re-creating indexes on my database tables.
 				</p>
@@ -405,32 +429,19 @@ rs.close();
 				<source><![CDATA[
 public class FasterFullSynchronizationStrategy extends FullSynchronizationStrategy
 {
-    public void synchronize(Connection inactiveConnection,
-                            Connection activeConnection,
-                            List tableList,
-                            DatabaseClusterDescriptor descriptor)
+    public void synchronize(Connection inactiveConnection, Connection activeConnection, List tableList)
     {
         // For each table, drop all indexes
 
-        super.synchronize(inactiveConnection, activeConnection, tableList, descriptor);
+        super.synchronize(inactiveConnection, activeConnection, tableList);
 
         // For each table, recreate all indexes
     }
 }
 ]]></source>
 				<p>
-					The default synchronization strategy is configured in the HA-JDBC configuration file.
+					Any custom strategies should also be defined in the configuration file.
 				</p>
-				<p>e.g.</p>
-				<source><![CDATA[
-<ha-jdbc>
-  <cluster id="cluster">
-    <default-sync-strategy>net.sf.hajdbc.sync.DifferentialSynchronizationStrategy</default-sync-strategy>
-    <database id="..."><!-- ... --></database>
-    <database id="..."><!-- ... --></database>
-  </cluster>
-</ha-jdbc>
-]]></source>
 				<p>
 					Database activation is triggered manually via the <a href="#JMX">JMX management interface</a>.
 				</p>
@@ -447,10 +458,11 @@ public class FasterFullSynchronizationStrategy extends FullSynchronizationStrate
 					<li>getId() - Returns the unique identifier of this cluster.</li>
 					<li>getActiveDatabases() - Returns a collection of active databases in this cluster.</li>
 					<li>getInactiveDatabases() - Returns a collection of inactive databases in this cluster.</li>
+					<li>getSynchronizationStrategies() - Returns a collection of synchronization strategies for this cluster.</li>
 					<li>isAlive(String id) - Tests whether the specified database is responding.</li>
 					<li>deactivate(String id) - Deactivates the specified database from this cluster.</li>
-					<li>activate(String id) - Re-activates the specified database using the default synchronization strategy.</li>
-					<li>activate(String id, String strategyClassName) - Deactivates the specified database from this cluster using the specified synchronization strategy.</li>
+					<li>activate(String id) - Re-activates the specified database <em>without</em> synchronizing it first.</li>
+					<li>activate(String id, String strategyId) - Re-activates the specified database from this cluster using the specified synchronization strategy.</li>
 				</ul>
 				<p>3rd-party JMX clients provide easy graphical interfaces for managing HA-JDBC clusters:</p>
 				<ul>
@@ -463,23 +475,25 @@ public class FasterFullSynchronizationStrategy extends FullSynchronizationStrate
 				<p>HA-JDBC database cluster may also be administered programatically:</p>
 				<p>e.g.</p>
 				<source><![CDATA[
+String clusterId = "cluster1";
+String databaseId = "database1";
+
 MBeanServer server = (MBeanServer) MBeanServerFactory.findMBeanServer(null).get(0);
-ObjectName name = ObjectName.getInstance("net.sf.hajdbc", "cluster", ObjectName.quote("jdbc:ha-jdbc"));
-String database = "database1";
+ObjectName name = net.sf.hajdbc.DatabaseCluster.getObjectName(clusterId);
 
 // There are 2 ways to programatically invoke methods on an mbean:
 
 // 1. Generic invoke
-Object[] parameterValues = new Object[] { database };
-String[] parameterTypes = new String[] { database.getClass().getName() };
+Object[] parameterValues = new Object[] { databaseId };
+String[] parameterTypes = new String[] { databaseId.getClass().getName() };
 server.invoke(name, "deactivate", parameterValues, parameterTypes);
 server.invoke(name, "activate", parameterValues, parameterTypes);
 
 // 2. Dynamic proxy
 Object object = MBeanServerInvocationHandler.newProxyInstance(server, name, DatabaseClusterMBean.class, false);
 DatabaseClusterMBean cluster = (DatabaseClusterMBean) object;
-cluster.deactivate(database);
-cluster.activate(database);
+cluster.deactivate(databaseId);
+cluster.activate(databaseId);
 ]]></source>
 			</section>
 		</section>
