@@ -57,7 +57,7 @@ public abstract class SQLProxy
 	public final Object executeRead(Operation operation) throws java.sql.SQLException
 	{
 		Database database = this.getDatabaseCluster().nextDatabase();
-		Object sqlObject = this.sqlObjectMap.get(database);
+		Object sqlObject = this.getSQLObject(database);
 		
 		try
 		{
@@ -75,7 +75,7 @@ public abstract class SQLProxy
 	public final Object executeGet(Operation operation) throws java.sql.SQLException
 	{
 		Database database = this.getDatabaseCluster().firstDatabase();
-		Object sqlObject = this.sqlObjectMap.get(database);
+		Object sqlObject = this.getSQLObject(database);
 		
 		return operation.execute(database, sqlObject);
 	}
@@ -91,7 +91,7 @@ public abstract class SQLProxy
 		for (int i = 0; i < threads.length; ++i)
 		{
 			Database database = (Database) databaseList.get(i);
-			Object sqlObject = this.sqlObjectMap.get(database);
+			Object sqlObject = this.getSQLObject(database);
 			
 			Executor executor = new Executor(operation, database, sqlObject, returnValueMap, exceptionMap);
 			
@@ -155,7 +155,7 @@ public abstract class SQLProxy
 		for (int i = 0; i < databaseList.size(); ++i)
 		{
 			Database database = (Database) databaseList.get(i);
-			Object sqlObject = this.sqlObjectMap.get(database);
+			Object sqlObject = this.getSQLObject(database);
 			
 			Object returnValue = operation.execute(database, sqlObject);
 			
