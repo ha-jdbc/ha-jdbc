@@ -119,7 +119,10 @@ public final class DatabaseClusterFactory
 				
 				ObjectName name = ObjectName.getInstance("net.sf.hajdbc", "cluster", ObjectName.quote(databaseCluster.getId()));
 				
-				server.registerMBean(databaseCluster, name);
+				if (!server.isRegistered(name))
+				{
+					server.registerMBean(databaseCluster, name);
+				}
 				
 				this.databaseClusterMap.put(descriptor.getId(), databaseCluster);
 			}
