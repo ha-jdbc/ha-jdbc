@@ -173,7 +173,7 @@
         <title>Using figures</title>
 
         <p>And a figure to end all of this.</p>
-        <figure src="images/project-logo.gif" alt="project logo" width="220" height="65"/>
+        <figure src="images/project.png" alt="project logo" width="220" height="65"/>
       </section>
     </section>
     <section>
