@@ -38,7 +38,9 @@
 	
 	<target name="clean">
 		<delete dir="build" quiet="true"></delete>
-		<delete file="${basedir}/${dist.name}-*.*" quiet="true"></delete>
+		<delete quiet="true">
+			<fileset dir="${basedir}" includes="${dist.name}-*.*"></fileset>
+		</delete>
 	</target>
 	
 	<target name="init">
