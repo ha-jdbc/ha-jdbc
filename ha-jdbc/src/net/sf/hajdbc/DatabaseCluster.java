@@ -152,7 +152,7 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 			}
 			
 			log.info("Starting synchronization");
-			strategy.synchronize(this.getDescriptor(), activeConnections[0], inactiveConnection, tableList);
+			strategy.synchronize(inactiveConnection, activeConnections[0], tableList, this.getDescriptor());
 			log.info("Finished synchronization");
 	
 			this.activate(inactiveDatabase);

@@ -49,7 +49,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 	/**
 	 * @see net.sf.hajdbc.DatabaseSynchronizationStrategy#synchronize(net.sf.hajdbc.DatabaseClusterDescriptor, java.sql.Connection, java.sql.Connection, java.util.List)
 	 */
-	public void synchronize(DatabaseClusterDescriptor descriptor, Connection activeConnection, Connection inactiveConnection, List tableList) throws java.sql.SQLException
+	public void synchronize(Connection inactiveConnection, Connection activeConnection, List tableList, DatabaseClusterDescriptor descriptor) throws java.sql.SQLException
 	{
 		inactiveConnection.setAutoCommit(true);
 		
