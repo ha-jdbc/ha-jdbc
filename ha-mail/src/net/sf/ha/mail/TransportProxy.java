@@ -33,7 +33,8 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 	public static final String POOL_SIZE = "mail.transport.pool-size";
 	public static final String SENDER_STRATEGY = "mail.transport.sender-strategy";
 	public static final String CONNECT_RETRY_PERIOD = "mail.transport.connect-retry-period";
-	private static final String DEFAULT_SENDER_STRATEGY = SimpleMailSenderStrategy.class.getName();
+	
+	private static final String DEFAULT_SENDER_STRATEGY = SimpleSenderStrategy.class.getName();
 	private static final String DEFAULT_TRANSPORT_PROTOCOL = "smtp";
 	private static final int DEFAULT_CONNECT_RETRY_PERIOD = 60;
 	private static final int DEFAULT_POOL_SIZE = 1;
@@ -51,7 +52,7 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 	private SenderStrategy senderStrategy = new SimpleSenderStrategy();
 	
 	/**
-	 * Constructs a new Transport.
+	 * Constructs a new TransportProxy.
 	 * @param session
 	 * @param url
 	 */
