@@ -62,8 +62,10 @@
 	
 	<target name="javadoc">
 		<delete dir="${doc.api.dir}" quiet="true"></delete>
-		<javadoc destdir="${doc.api.dir}" classpathref="classpath">
-			<fileset dir="${src.dir}"></fileset>
+		<javadoc destdir="${doc.api.dir}" classpathref="classpath" windowtitle="HA-Mail API Documentation">
+			<packageset dir="${src.dir}" defaultexcludes="yes">
+				<include name="net/sf/ha/mail/**"/>
+			</packageset>
 			<link href="http://java.sun.com/j2se/1.4.2/docs/api/"></link>
 			<link href="http://java.sun.com/j2ee/1.4/docs/api/"></link>
 		</javadoc>
