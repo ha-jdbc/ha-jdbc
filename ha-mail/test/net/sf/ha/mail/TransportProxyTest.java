@@ -19,15 +19,8 @@ import javax.mail.internet.MimeMessage;
  */
 public class TransportProxyTest implements TransportListener
 {
-	private int sent = 0;
-	private int total = 0;
 	private boolean debug = false;
 	
-	public TransportProxyTest(int total)
-	{
-		this.total = total;
-	}
-
 	public static void main(String[] args)
 	{
 		try
@@ -46,8 +39,9 @@ public class TransportProxyTest implements TransportListener
 			Properties properties = new Properties();
 			properties.setProperty("mail.transport.protocol", "smtp");
 			properties.setProperty("mail.host", servers);
+			properties.setProperty("mail.transport.pool-size", Integer.toString(poolSize));
 			
-			TransportProxyTest mailTest = new TransportProxyTest(count);
+			TransportProxyTest mailTest = new TransportProxyTest();
 			Session session = Session.getInstance(properties);
 
 			if (args.length == 5)
@@ -58,17 +52,10 @@ public class TransportProxyTest implements TransportListener
 			Transport transport = session.getTransport();
 			
 			transport.addTransportListener(mailTest);
-			transport.connect();
-
-			long wait = (poolSize * 100) + 5000;
-			System.out.println("Waiting " + (wait / 1000) + " seconds for connection pool to initialize");
-
-			synchronized (mailTest)
-			{
-				mailTest.wait(wait);
-			}
 			
 			long startTime = System.currentTimeMillis();
+			
+			transport.connect();
 			
 			for (int i = 0; i < count; ++i)
 			{
@@ -80,14 +67,9 @@ public class TransportProxyTest implements TransportListener
 				transport.sendMessage(message, message.getAllRecipients());
 			}
 
-			while (!mailTest.done())
-			{
-				Thread.yield();
-			}
+			transport.close();
 			
 			long executionTime = System.currentTimeMillis() - startTime;
-
-			transport.close();
 			
 			System.out.println("Total execution time = " + new DecimalFormat("#0").format(executionTime / 60000) + ":" + new DecimalFormat("00").format((executionTime / 1000) % 60) + "." + new DecimalFormat("000").format(executionTime % 1000));
 		}
@@ -123,8 +105,6 @@ public class TransportProxyTest implements TransportListener
 	
 	private void logEvent(TransportEvent event)
 	{
-		incrementSentCount();
-		
 		if (this.debug)
 		{
 			if ((event.getInvalidAddresses() != null) && (event.getInvalidAddresses().length > 0))
@@ -142,15 +122,5 @@ public class TransportProxyTest implements TransportListener
 				System.out.println("Failed to send message to: " + InternetAddress.toString(event.getValidUnsentAddresses()) + " on " + ((javax.mail.Transport) event.getSource()).getURLName().toString());
 			}
 		}
-	}
-	
-	private synchronized void incrementSentCount()
-	{
-		this.sent += 1;
-	}
-	
-	private synchronized boolean done()
-	{
-		return (this.sent == this.total);
 	}
 }
