@@ -22,7 +22,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public final class DriverProxy implements java.sql.Driver
 {
-	private static final String URL_PREFIX = "jdbc:ha-jdbc:";
 	private static final int MAJOR_VERSION = 1;
 	private static final int MINOR_VERSION = 0;
 	private static final boolean JDBC_COMPLIANT = true;
@@ -131,26 +130,12 @@ public final class DriverProxy implements java.sql.Driver
 		return (DatabaseCluster) this.databaseClusterMap.get(clusterName);
 	}
 	
-	private String extractClusterName(String url)
-	{
-		int index = URL_PREFIX.length();
-		
-		return (url.length() > index) ? url.substring(index) : null; 
-	}
-	
-	private boolean acceptsClusterName(String clusterName)
-	{
-		return this.databaseClusterMap.keySet().contains(clusterName);
-	}
-	
 	/**
 	 * @see java.sql.Driver#acceptsURL(java.lang.String)
 	 */
 	public boolean acceptsURL(String url)
 	{
-		String clusterName = this.extractClusterName(url);
-
-		return (clusterName != null) && this.acceptsClusterName(clusterName);
+		return this.databaseClusterMap.keySet().contains(url);
 	}
 	
 	/**
@@ -158,14 +143,12 @@ public final class DriverProxy implements java.sql.Driver
 	 */
 	public Connection connect(String url, final Properties properties) throws SQLException
 	{
-		String clusterName = this.extractClusterName(url);
-
-		if ((clusterName == null) || !acceptsClusterName(clusterName))
+		DatabaseCluster databaseCluster = this.getDatabaseCluster(url);
+		
+		if (databaseCluster == null)
 		{
 			return null;
 		}
-
-		DatabaseCluster databaseCluster = this.getDatabaseCluster(clusterName);
 		
 		DriverOperation operation = new DriverOperation()
 		{
@@ -183,14 +166,12 @@ public final class DriverProxy implements java.sql.Driver
 	 */
 	public DriverPropertyInfo[] getPropertyInfo(String url, final Properties properties) throws SQLException
 	{
-		String clusterName = this.extractClusterName(url);
+		DatabaseCluster databaseCluster = this.getDatabaseCluster(url);
 		
-		if ((clusterName == null) || !acceptsClusterName(clusterName))
+		if (databaseCluster == null)
 		{
 			return null;
 		}
-		
-		DatabaseCluster databaseCluster = this.getDatabaseCluster(clusterName);
 		
 		DriverOperation operation = new DriverOperation()
 		{
