@@ -43,7 +43,7 @@ public abstract class XAConnectionOperation extends PooledConnectionOperation
 	public abstract Object execute(XAConnection connection) throws SQLException;
 
 	/**
-	 * @see net.sf.hajdbc.pool.PooledConnectionOperation#execute(javax.sql.PooledConnection)
+	 * @see net.sf.hajdbc.sql.pool.PooledConnectionOperation#execute(javax.sql.PooledConnection)
 	 */
 	public final Object execute(PooledConnection connection) throws SQLException
 	{

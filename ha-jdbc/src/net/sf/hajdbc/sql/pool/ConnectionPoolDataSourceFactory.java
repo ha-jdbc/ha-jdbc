@@ -30,7 +30,7 @@ import net.sf.hajdbc.sql.AbstractDataSourceFactory;
 public class ConnectionPoolDataSourceFactory extends AbstractDataSourceFactory
 {
 	/**
-	 * @see net.sf.hajdbc.AbstractDataSourceFactory#getObjectClass()
+	 * @see net.sf.hajdbc.sql.AbstractDataSourceFactory#getObjectClass()
 	 */
 	protected Class getObjectClass()
 	{

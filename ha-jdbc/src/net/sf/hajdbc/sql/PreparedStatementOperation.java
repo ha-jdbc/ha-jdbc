@@ -40,7 +40,7 @@ public abstract class PreparedStatementOperation extends StatementOperation
 	public abstract Object execute(PreparedStatement statement) throws SQLException;
 	
 	/**
-	 * @see net.sf.hajdbc.StatementOperation#execute(java.sql.Statement)
+	 * @see net.sf.hajdbc.sql.StatementOperation#execute(java.sql.Statement)
 	 */
 	public final Object execute(Statement statement) throws SQLException
 	{

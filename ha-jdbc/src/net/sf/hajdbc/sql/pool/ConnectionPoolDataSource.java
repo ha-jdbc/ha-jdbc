@@ -135,7 +135,7 @@ public class ConnectionPoolDataSource extends AbstractDataSource implements java
 	}
 
 	/**
-	 * @see net.sf.hajdbc.AbstractDataSource#getObjectFactoryClass()
+	 * @see net.sf.hajdbc.sql.AbstractDataSource#getObjectFactoryClass()
 	 */
 	protected Class getObjectFactoryClass()
 	{

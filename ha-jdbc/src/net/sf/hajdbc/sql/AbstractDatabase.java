@@ -32,7 +32,7 @@ public abstract class AbstractDatabase implements Database
 	protected String id;
 	protected String user;
 	protected String password;
-	protected Integer weight = new Integer(1);
+	protected Integer weight;
 
 	/**
 	 * @see net.sf.hajdbc.Database#getId()
@@ -87,7 +87,7 @@ public abstract class AbstractDatabase implements Database
 	 */
 	public Integer getWeight()
 	{
-		return weight;
+		return this.weight;
 	}
 	
 	/**

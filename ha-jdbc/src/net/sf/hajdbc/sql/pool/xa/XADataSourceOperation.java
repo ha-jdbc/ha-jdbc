@@ -43,7 +43,7 @@ public abstract class XADataSourceOperation extends ConnectionPoolDataSourceOper
 	public abstract Object execute(XADataSource dataSource) throws SQLException;
 	
 	/**
-	 * @see net.sf.hajdbc.pool.ConnectionPoolDataSourceOperation#execute(javax.sql.ConnectionPoolDataSource)
+	 * @see net.sf.hajdbc.sql.pool.ConnectionPoolDataSourceOperation#execute(javax.sql.ConnectionPoolDataSource)
 	 */
 	public final Object execute(ConnectionPoolDataSource dataSource) throws SQLException
 	{

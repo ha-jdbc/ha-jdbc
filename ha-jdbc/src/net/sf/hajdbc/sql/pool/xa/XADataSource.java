@@ -66,7 +66,7 @@ public class XADataSource extends ConnectionPoolDataSource implements javax.sql.
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.AbstractDataSource#getObjectFactoryClass()
+	 * @see net.sf.hajdbc.sql.AbstractDataSource#getObjectFactoryClass()
 	 */
 	protected Class getObjectFactoryClass()
 	{
