@@ -99,11 +99,11 @@ public class LoadBalancer extends AbstractBalancer
 			return this.first();
 		}
 		
-		List databaseList = new ArrayList(this.databaseMap.entrySet());
+		List databaseMapEntryList = new ArrayList(this.databaseMap.entrySet());
 		
-		Collections.sort(databaseList, comparator);
+		Collections.sort(databaseMapEntryList, comparator);
 		
-		Map.Entry mapEntry = (Map.Entry) databaseList.get(0);
+		Map.Entry mapEntry = (Map.Entry) databaseMapEntryList.get(0);
 		
 		return (Database) mapEntry.getKey();
 	}
