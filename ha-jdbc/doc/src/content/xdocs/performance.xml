@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V2.0//EN" "http://forrest.apache.org/dtd/document-v20.dtd">
+<document> 
+	<header> 
+		<title>Performance</title>
+	</header> 
+	<body>
+		<p>The following graphs compare the performance of a single database accessed via normal JDBC vs. a cluster of two identical databases accessed via HA-JDBC.</p>
+		<section>
+			<title>Read Operations</title>
+			<p>
+				By distributing read operations to each node in the cluster, HA-JDBC is able to achieve better performance under load than normal JDBC access.
+			</p>
+			<figure src="images/graph_select.png" alt="SELECT statement comparison"></figure>
+		</section>
+		<section>
+			<title>Write Operations</title>
+			<p>
+				By performing write operations in parallel to each node in the cluster, HA-JDBC is only slightly slower than normal JDBC access.
+				The slight performance loss is largely due increased network traffic and parallel processing overhead.
+			</p>
+			<figure src="images/graph_insert.png" alt="INSERT statement comparison"></figure>
+			<figure src="images/graph_update.png" alt="UPDATE statement comparison"></figure>
+			<figure src="images/graph_delete.png" alt="DELETE statement comparison"></figure>
+		</section>
+	</body>
+</document>

@@ -1,14 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE faqs PUBLIC "-//APACHE//DTD FAQ V1.2//EN" "http://xml.apache.org/forrest/dtd/faq-v12.dtd">
-
-<faqs title="Frequently Asked Questions">
-	<part id="docs">
-		<title>HA-JDBC</title>
+<!DOCTYPE faqs PUBLIC "-//APACHE//DTD FAQ V2.0//EN" "http://xml.apache.org/forrest/dtd/faq-v20.dtd">
+<faqs>
+	<title>Frequently Asked Questions</title>
+	<faqsection>
+		<title>Configuring HA-JDBC</title>
 		<faq>
-			<question>
-			</question>
+			<question>What does "distributable" feature do? and when would I need it?</question>
 			<answer>
+				By indicated the "distributable" option, you are declaring that your database cluster(s) will be accessed by multiple JVMs (e.g. cluster of application servers).
+				HA-JDBC uses reliable multicast communication provided by JGroups to broadcast database activations and deactivations to each JVM.
+				If your database cluster is accessed by more than one JVM and the "distributable" option is not specified, you run the risk of databases falling out of sync when a database is re-activated.
 			</answer>
 		</faq>
-	</part>
+	</faqsection>
+	<faqsection>
+		<title>Using HA-JDBC</title>
+		<faq>
+			<question>When using the "distributable" feature, I get a <code>ChannelException</code>: "unable to set up the protocol stack".</question>
+			<answer>
+				The JGroups protocol stack should be setup according to the reliability afforded by the features on your network.
+				Refer to the JGroups protocol documentation (http://www.jgroups.org/javagroupsnew/docs/user/node134.html) for more specifics.
+			</answer>
+		</faq>
+	</faqsection>
+	<faqsection>
+		<title>About HA-JDBC</title>
+		<faq>
+			<question>How does HA-JDBC compare with the C-JDBC project hosted at ObjectWeb?</question>
+			<answer>
+				
+			</answer>
+		</faq>
+	</faqsection>
 </faqs>

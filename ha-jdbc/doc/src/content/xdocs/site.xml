@@ -12,13 +12,18 @@ This file contains an outline of the site's information content.  It is used to:
 
 See http://xml.apache.org/forrest/linking.html for more info
 -->
-<site label="HA-JDBC" href="" xmlns="http://apache.org/forrest/linkmap/1.0" tab="">
+<site label="HA-JDBC" xmlns="http://apache.org/forrest/linkmap/1.0" tab="" href="">
 
-	<home label="HA-JDBC" tab="ha-jdbc">
-		<documentation label="Documentation" href="index.html"/>
-		<api label="API" description="JavaDoc API" href="api/index.html"/>
-		<changes label="Changes" href="changes.html" description="History of Changes"/>
-		<!--todo label="Todo" href="todo.html" description="To do List"/-->
+	<home label="HA-JDBC" href="">
+		<overview label="Overview" href="index.html"/>
+		<documentation label="Documentation" href="doc.html"/>
+		<performance label="Performance" href="performance.html"/>
+		<faq label="FAQ" href="faq.html"/>
+		<api label="API" href="http://ha-jdbc.sourceforge.net/api"/>
+		<changes label="Changes" href="changes.html"/>
+	</home>
+
+	<project label="Project" href="">
 		<project label="Project Page" href="http://sourceforge.net/projects/ha-jdbc"/>
 		<download label="Downloads" href="http://sourceforge.net/project/showfiles.php?group_id=111957"/>
 		<list label="User Mailing List" href="http://sourceforge.net/mail/?group_id=111957"/>
@@ -26,38 +31,12 @@ See http://xml.apache.org/forrest/linking.html for more info
 		<support label="Support Requests" href="http://sourceforge.net/tracker/?group_id=111957&amp;atid=660862"/>
 		<patches label="Patches" href="http://sourceforge.net/tracker/?group_id=111957&amp;atid=660863"/>
 		<features label="Feature Requests" href="http://sourceforge.net/tracker/?group_id=111957&amp;atid=660864"/>
-	</home>
-
-	<!--samples label="Samples" href="samples/" tab="samples">
-		<sample label="Apache document page" href="sample.html" description="A nonsense document using all possible elements in the current document">
-			<top href="#top"/>
-			<section href="#section"/>
-		</sample>
-		<sample2 label="Static content" href="sample2.html" description="More Samples" />
-		<sample-wiki label="Wiki page" href="wiki-sample.html" description="wiki-sample" />
-		<sample-ihtml label="ihtml page" href="ihtml-sample.html" description="Test iHTML page" />
-		<sample-ehtml label="ehtml page" href="ehtml-sample.html" description="Sample HTML page" />
-		<faq label="FAQ" href="faq.html" description="Frequently Asked Questions" />
-		<sdocbook label="Simplifed Docbook page" href="sdocbook.html" description="Simplified DocBook title" />
-		<subdir label="Subdir" href="subdir/">
-			<index label="Index" href="index.html" description="Page generated from a subdirectory"/>
-		</subdir>
-	</samples-->
-
+		<cvs label="CVS Access" href="http://sourceforge.net/cvs/?group_id=111957"/>
+	</project>
+	
 	<all>
 		<whole_site_html label="Whole Site HTML" href="site.html"/>
 		<whole_site_html label="Whole Site PDF" href="site.pdf"/>
 	</all>
-
-	<!--external-refs>
-		<xml.apache.org href="http://xml.apache.org/">
-			<forrest href="forrest/">
-				<validation href="validation.html"/>
-				<webapp href="your-project.html#webapp"/>
-				<document-v11 href="document-v11.html"/>
-			</forrest>
-			<cocoon href="cocoon/"/>
-		</xml.apache.org>
-	</external-refs-->
 	
 </site>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE tabs PUBLIC "-//APACHE//DTD Cocoon Documentation Tab V1.0//EN" "http://xml.apache.org/forrest/dtd/tab-cocoon-v10.dtd">
+<!DOCTYPE tabs PUBLIC "-//APACHE//DTD Cocoon Documentation Tab V1.1//EN" "http://forrest.apache.org/dtd/tab-cocoon-v11.dtd">
 
 <tabs software="HA-JDBC" title="HA-JDBC" copyright="none" xmlns:xlink="http://www.w3.org/1999/xlink">
 <!-- The rules are:

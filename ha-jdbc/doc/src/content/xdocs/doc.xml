@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V2.0//EN" "http://forrest.apache.org/dtd/document-v20.dtd">
+<document> 
+	<header> 
+		<title>Documentation</title>
+	</header> 
+	<body>
+		<section>
+			<title>Requirements</title>
+			<ul>
+				<li>Java Runtime Environment (1.4 or greater)</li>
+				<li>JMX provider (1.1 or greater)
+					<ul>
+						<li><a href="http://java.sun.com/products/JavaManagement/index.jsp">Sun Reference Implemenation</a></li>
+						<li><a href="http://mx4j.sourceforge.net">MX4J</a></li>
+						<li><a href="http://xmojo.sourceforge.net">XMOJO</a></li>
+						<li>Many application server vendors already include a JMX implementation.</li>
+					</ul>
+				</li>
+				<li>JDBC 3.0 compliant driver (Type IV recommended)</li>
+			</ul>
+		</section>
+		<section>
+			<title>Configuration</title>
+			<section>
+				<title>Cluster Configuration</title>
+				<p>
+					Configuration for HA-JDBC managed database clusters is contained in a single XML file.
+					The format of the configuration file should match the DTD provided in the distribution: <code>conf/dtd/ha-jdbc.dtd</code>
+				</p>
+				<p>Sample configuration file:</p>
+				<source><![CDATA[
+<?xml version="1.0"?>
+<!DOCTYPE ha-jdbc PUBLIC "-//HA-JDBC//DTD HA-JDBC 1.0//EN" "http://ha-jdbc.sourceforge.net/dtd/ha-jdbc-1.0.dtd">
+<ha-jdbc>
+  <cluster name="jdbc:ha-jdbc:cluster">
+    <database url="jdbc:postgresql://server1:5432/database" driver="org.postgresql.Driver">
+      <user>postgres</user>
+      <password>password</password>
+    </database>
+    <database url="jdbc:postgresql://server2:5432/database" driver="org.postgresql.Driver">
+      <user>postgres</user>
+      <password>password</password>
+    </database>
+  </cluster>
+  <cluster name="java:comp/env/jdbc/Cluster">
+    <datasource name="java:comp/env/jdbc/Database1">
+      <user>postgres</user>
+      <password>password</password>
+    </datasource>
+    <datasource name="java:comp/env/jdbc/Database2">
+      <user>postgres</user>
+      <password>password</password>
+    </datasource>
+  </cluster>
+</ha-jdbc>
+]]></source>
+				<p>
+					The algorithm for locating the configuration file resource is as follows:
+				</p>
+				<ol>
+					<li>Read the resource name from the <code>ha-jdbc.configuration</code> system property.  If not defined, the default value "<code>ha-jdbc.xml</code>" is used.</li>
+					<li>Attempt to interpret the resource name as a URL.</li>
+					<li>
+						If the resource name cannot be converted to a URL, then search for the resource in the classpath using the following algorithm:
+						<ol>
+							<li>Search for resource using the thread context class loader.</li>
+							<li>If not found, search for resource using the class loader of the current class.</li>
+							<li>If not found, search for resource using the system class loader.</li>
+						</ol>
+					</li>
+					<li>If still not found, throw an exception back to the caller.</li>
+				</ol>
+			</section>
+			<section>
+				<title>Application Configuration</title>
+				<section>
+					<title>DriverManager-based access</title>
+					<ol>
+						<li>As with your existing JDBC drivers, the HA-JDBC driver must first be loaded.  This can be accomplished in one of two ways:<br/>
+							<ul>
+								<li>Add <code>net.sf.hajdbc.DriverProxy</code> to your <code>jdbc.drivers</code> system property.</li>
+								<li>Explicity load the <code>net.sf.hajdbc.DriverProxy</code> class using <code>Class.forName(...)</code>.<br/>
+									<p>
+										Per the JDBC specification, loading the HA-JDBC driver class automatically registers the driver with the <code>DriverManager</code>.
+										The HA-JDBC driver will automatically load all underlying JDBC drivers defined within a given cluster.
+									</p>
+								</li>
+							</ul>
+						</li>
+						<li>The URL to use in subsequent calls to <code>DriverManager.connect(...)</code> should be the name of your cluster.  So that your URLs do not collide with those of other drivers, the following convention is recommended:<br/>
+							<p><code>jdbc:ha-jdbc:</code><em>cluster-name</em></p>
+							<p>e.g.</p>
+							<p>
+								<code>Connection connection = DriverManager.connect("jdbc:ha-jdbc:cluster", "postgres", "password");</code>
+							</p>
+						</li>
+					</ol>
+				</section>
+				<section>
+					<title>DataSource-based access</title>
+					<ol>
+						<li>
+							If your server is configured to use a DataSource implementation provided by your JDBC driver, then add an HA-JDBC DataSource using the appropriate class name to your server configuration along side your existing JDBC DataSources:
+							<ul>
+								<li><code>net.sf.hajdbc.DataSourceProxy</code></li>
+								<li><code>net.sf.hajdbc.pool.ConnectionPoolDataSourceProxy</code></li>
+								<li><code>net.sf.hajdbc.pool.xa.XADataSourceProxy</code></li>
+							</ul>
+						</li>
+						<li>If your server is configured to use a DataSource implementation <em>NOT</em> provided by your JDBC driver, then replace the Driver class name, URL, and username/password values in the existing DataSource definition with the HA-JDBC values as described in the "DriverManager-based access" section.<br/><br/></li>
+						<li>
+							Use the JNDI name configured in your cluster configuration file to access the HA-JDBC DataSource.
+							<p>e.g.</p>
+							<p>
+								<code>Context context = new InitialContext();</code><br/>
+								<code>DataSource dataSource = (DataSource) context.lookup("java:comp/env/jdbc/Cluster");</code><br/>
+								<code>Connection connection = dataSource.getConnection("postgres", "password");</code><br/>
+							</p>
+						</li>
+					</ol>
+				</section>
+				<section>
+					<title>Server configuration examples</title>
+					<ul>
+						<li>
+							<p><a href="http://jetty.mortbay.org">Jetty</a> (using <a href="http://xapool.objectweb.org">XAPool</a>)</p>
+							<source><![CDATA[
+<Configure class="org.mortbay.jetty.plus.Server">
+  <Call name="addService">
+    <Arg>
+      <New class="org.mortbay.jetty.plus.DefaultDataSourceService">
+        <Set name="Name">DataSourceService</Set>
+        <Call name="addConnectionPoolDataSource">
+          <Arg>jdbc/database</Arg>
+          <Arg>
+            <New class="org.enhydra.jdbc.standard.StandardConnectionPoolDataSource">
+              <Set name="DriverName">net.sf.hajdbc.DriverProxy</Set>
+              <Set name="Url">jdbc:ha-jdbc:cluster1</Set>
+              <Set name="TransactionIsolation"><Get class="java.sql.Connection" name="TRANSACTION_READ_COMMITTED"/></Set>
+            </New>
+          </Arg>
+          <Set name="User">postgres</Set>
+          <Set name="Password">password</Set>
+          <Set name="MinSize">5</Set>
+          <Set name="MaxSize">50</Set>
+          <Set name="CheckLevelObject">2</Set>
+          <Set name="JdbcTestStmt">SELECT 1</Set>
+        </Call>
+      </New>
+    </Arg>
+  </Call>
+</Configure>
+]]></source>
+						</li>
+						<li>
+							<p><a href="http://jakarta.apache.org/tomcat">Tomcat</a> (using <a href="http://jakarta.apache.org/commons/dbcp">DBCP</a>)</p>
+							<source><![CDATA[
+<Resource name="jdbc/database" auth="Container" type="javax.sql.DataSource"/>
+<ResourceParams name="jdbc/database">
+  <parameter>
+    <name>factory</name>
+    <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
+  </parameter>
+  <parameter>
+    <name>maxActive</name>
+    <value>100</value>
+  </parameter>
+  <parameter>
+    <name>maxWait</name>
+    <value>10000</value>
+  </parameter>
+  <parameter>
+    <name>username</name>
+    <value>postgres</value>
+  </parameter>
+  <parameter>
+    <name>password</name>
+    <value>postgres</value>
+  </parameter>
+  <parameter>
+    <name>driverClassName</name>
+    <value>net.sf.hajdbc.Driver</value>
+  </parameter>
+  <parameter>
+    <name>url</name>
+    <value>jdbc:ha-jdbc:cluster</value>
+  </parameter>
+</ResourceParams>
+]]></source>
+						</li>
+						<li><p>More server configuration examples coming soon...</p></li>
+					</ul>
+				</section>
+			</section>
+			<section>
+				<title>Distributed environment</title>
+				<p>
+					When running HA-JDBC in a distributed environment, i.e. JDBC clients in seperate JVMs are accessing the same set of databases, special configuration is required.
+					HA-JDBC leverages the <a href="http://www.jgroups.org">JGroups</a> project to handle communication between cluster managers.
+					See the JGroup User's guide for assistance customizing the protocol stack for your network.
+				</p>
+				<p>e.g.</p>
+				<source><![CDATA[
+<ha-jdbc>
+  <distributable protocol="UDP(mcast_addr=228.10.9.8;mcast_port=5678):PING:FD:GMS"/>
+  <cluster name="...">
+    <!-- ... -->
+  </cluster>
+</ha-jdbc>
+]]></source>
+				<p>
+				</p>
+			</section>
+			<section>
+				<title>Unique identifier generation</title>
+				<p>
+					The following traditional mechanisms for generating unique identifiers are problematic for clustered database environments:
+				</p>
+				<ul>
+					<li>Identity columns (supported by MySQL, HSQLDB, DB2, MS SQL Server, Sybase, etc.) fetched using the Java 1.4 <code>ResultSet.getGeneratedKeys()</code> method</li>
+					<li>Sequences (supported by PostgreSQL, MySQL MaxDB (fka SAP DB), Firebird (fka Interbase), Mckoi, Oracle, DB2, etc.)</li>
+					<li>Incrementing columns (e.g. <code>SELECT max(id) + 1 FROM table</code>)</li>
+				</ul>
+				<p>
+					For any of these mechanisms to work in a database cluster, each database node would need to independently generate the same identifiers.
+					To make this happen, all incoming database requests would need to be synchronized through a central cluster manager.
+					This would adversely affect the scalability of the cluster as the number of distributed clients increase.
+					For now, HA-JDBC does not accommodate the above mechanisms in favor a design that uses more efficient asynchronous request execution.
+				</p>
+				<p>
+					The following alternative unique identifier generation methods will work properly with HA-JDBC:
+				</p>
+				<ul>
+					<li>High-Low algorithm (often implemented using a Stateless Session EJB)</li>
+					<li>UUID algorithms</li>
+					<li>Others?</li>
+				</ul>
+			</section>
+			<section>
+				<title>Transactions</title>
+				<p>
+					HA-JDBC supports both traditional JDBC transactions and JTA.
+					HA-JDBC integration will not require you to change your existing transaction semantics.
+					If you are leveraging your JDBC driver's <code>javax.sql.XADataSource</code> implementation for JTA integration, you will need to configure HA-JDBC accordingly.
+				</p>
+				<p>e.g.</p>
+				<source><![CDATA[
+<cluster name="java:comp/env/jdbc/Cluster">
+  <xa-datasource name="java:comp/env/jdbc/xa/DataSource1">
+    <user>postgres</user>
+    <password>password</password>
+  </xa-datasource>
+  <xa-datasource name="java:comp/env/jdbc/xa/DataSource2">
+    <user>postgres</user>
+    <password>password</password>
+  </xa-datasource>
+</cluster>
+]]></source>
+			</section>
+			<section>
+				<title>Connection Pooling</title>
+				<p>
+					HA-JDBC is designed to integrate with your existing connection pooling mechanism.
+					If you are leveraging your JDBC driver's <code>javax.sql.ConnectionPoolDataSource</code> implementation for connection pooling, you will need to configure HA-JDBC accordingly.
+				</p>
+				<p>e.g.</p>
+				<source><![CDATA[
+<cluster name="java:comp/env/jdbc/Cluster">
+  <pool-datasource name="java:comp/env/jdbc/pool/DataSource1">
+    <user>postgres</user>
+    <password>password</password>
+  </pool-datasource>
+  <pool-datasource name="java:comp/env/jdbc/pool/DataSource2">
+    <user>postgres</user>
+    <password>password</password>
+  </pool-datasource>
+</cluster>
+]]></source>
+			</section>
+			<section>
+				<title>Advanced JDBC Features</title>
+				<section>
+					<title>JSR 114 RowSets</title>
+					<p>
+						HA-JDBC will work with any JSR 114 implementation provided that the rowsets are driven via the HA-JDBC driver.
+					</p>
+					<p>e.g.</p>
+					<source><![CDATA[
+com.sun.rowset.CachedRowSetImpl rs = new com.sun.rowset.CachedRowSetImpl();
+rs.setCommand("SELECT * FROM TITLES WHERE TYPE = ?");
+rs.setURL("jdbc:ha-jdbc:cluster");
+rs.setUsername("postgres");
+rs.setPassword("password");
+rs.setString(1, "BIOGRAPHY");
+rs.execute();
+// ...
+rs.close();
+]]></source>
+				</section>
+			</section>
+			<section>
+				<title>Integration with O/R Mapping Frameworks</title>
+				<p>
+					Coming soon...
+				</p>
+			</section>
+			<section>
+				<title>Entity EJBs with HA-JDBC</title>
+				<p>
+					Coming soon...
+				</p>
+			</section>
+		</section>
+		<section>
+			<title>Architecture</title>
+			<p>
+				JDBC operations are divided into 4 categories:
+			</p>
+			<dl>
+				<dt>Read operations (e.g. SELECT statements)</dt>
+				<dd>Deep read operations on the underlying database driver that will require read access to the database itself.</dd>
+				<dt>Write operations (e.g. INSERT, UPDATE, DELETE statements)</dt>
+				<dd>Deep write operations on the underlying database driver that will require write access to the database itself.</dd>
+				<dt>Get operations (e.g. getXXX())</dt>
+				<dd>Shallow read operations on the underlying database driver that will NOT require any access to the database itself.</dd>
+				<dt>Set operations (e.g. setXXX())</dt>
+				<dd>Shallow write operations on the underlying database driver that will NOT require any access to the database itself.</dd>
+			</dl>
+			<p>
+				Operation are executed differently according to the type operation:
+			</p>
+			<table>
+				<tr>
+					<th>Read Operations</th>
+					<td>Delegated to a single node in the cluster in round-robin fashion.</td>
+				</tr>
+				<tr>
+					<th>Write Operations</th>
+					<td>Delegated in parallel to each node in the cluster.</td>
+				</tr>
+				<tr>
+					<th>Get Operations</th>
+					<td>Delegated to the first node in the cluster.</td>
+				</tr>
+				<tr>
+					<th>Set Operations</th>
+					<td>Serially delegated to each node in the cluster.</td>
+				</tr>
+			</table>
+			<p>
+				Exceptions caught while performing an operation are handled differently according to the type of operation:
+			</p>
+			<table>
+				<tr>
+					<th>Read Operations</th>
+					<td>
+						Perform validation check on failed database.<br/>
+						If successful, return the caught exception to the caller.<br/>
+						If unsuccessful, the database is deactivated and the request is forwarded to the next node in the cluster.<br/>
+					</td>
+				</tr>
+				<tr>
+					<th>Write Operations</th>
+					<td>
+						Perform validation check on failed database.<br/>
+						If successful, return the caught exception to the caller.<br/>
+						If unsuccessful, the database is deactivated and the results of the succeeding database nodes are returned to the caller.<br/>
+					</td>
+				</tr>
+				<tr>
+					<th>Get Operations</th>
+					<td>The exception is immediately returned to the caller.</td>
+				</tr>
+				<tr>
+					<th>Set Operations</th>
+					<td>The exception is immediately returned to the caller.</td>
+				</tr>
+			</table>
+		</section>
+	</body>
+</document>

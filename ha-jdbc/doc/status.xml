@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <status>
 	<developers>
-		<person name="Paul Ferraro" email="pmf8@columbia.edu" id="PF"/>
+		<person name="Paul Ferraro" email="ferraro@users.sourceforge.net" id="PF"/>
 	</developers>
 	
 	<changes>
@@ -10,6 +10,32 @@
 			defined for 'add', 'fix', 'remove', 'update' and 'hack'. If you add
 			src/documentation/resources/images/<foo>.jpg images, these will
 			automatically be used for entries of type <foo>. -->
+		<release version="1.0-beta-2" date="">
+			<action type="add" context="admin" dev="PF">
+				Added JMX interface to DatabaseCluster to allow administration of each cluster.
+			</action>
+			<action type="update" context="admin" dev="PF">
+				Refactored cluster initialization and management.
+			</action>
+			<action type="update" context="admin" dev="PF">
+				Distributable behavior implemented using command pattern.
+			</action>
+			<action type="update" context="admin" dev="PF">
+				Restructured configuration DTD adding new synchronization-related cluster properties.
+			</action>
+			<action type="update" context="admin" dev="PF">
+				Refactored distributable behavior to support activation.
+			</action>
+			<action type="add" context="admin" dev="PF">
+				Added ability to activate a failed database.
+			</action>
+			<action type="add" context="admin" dev="PF">
+				Created database synchronization strategies used during activation.
+			</action>
+			<action type="update" context="admin" dev="PF">
+				Upgraded Forrest documentation to v0.6.
+			</action>
+		</release>
 		<release version="1.0-beta-1" date="October 1, 2004">
 			<action type="fix" context="admin" dev="PF">
 				Fixed bug in connection.rollback()
@@ -80,7 +106,7 @@
 		</release>
 	</changes>
 
-	<todo>
+	<!--todo>
 		<actions priority="high">
 			<action context="docs" dev="JB">
 				Customize this template project with your project's details.  This
@@ -96,7 +122,6 @@
 				Mail <link href="mailto:forrest-dev@xml.apache.org">forrest-dev@xml.apache.org</link> with feedback.
 			</action>
 		</actions>
-		<!-- Add todo items. @context is an arbitrary string. Eg:
 		<actions priority="high">
 			<action context="code" dev="SN">
 			</action>
@@ -105,7 +130,6 @@
 			<action context="docs" dev="open">
 			</action>
 		</actions>
-		-->
-	</todo>
+	</todo-->
 
 </status>
