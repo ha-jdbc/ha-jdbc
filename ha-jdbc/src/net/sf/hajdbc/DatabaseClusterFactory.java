@@ -163,7 +163,7 @@ public final class DatabaseClusterFactory
 			
 			if (url == null)
 			{
-				url = DatabaseClusterManagerFactory.class.getClassLoader().getResource(resourceName);
+				url = DatabaseClusterFactory.class.getClassLoader().getResource(resourceName);
 			}
 
 			if (url == null)
