@@ -16,8 +16,6 @@ import javax.mail.SendFailedException;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.URLName;
-import javax.mail.event.ConnectionEvent;
-import javax.mail.event.ConnectionListener;
 import javax.mail.event.TransportListener;
 
 import org.apache.commons.logging.Log;
@@ -28,7 +26,7 @@ import org.apache.commons.logging.LogFactory;
  * @version $Revision$
  * @since   1.0
  */
-public class TransportProxy extends Transport implements Sender, ConnectionListener
+public class TransportProxy extends Transport implements Sender
 {
 	public static final String POOL_SIZE = "mail.transport.pool-size";
 	public static final String SENDER_STRATEGY = "mail.transport.sender-strategy";
@@ -158,8 +156,6 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 			{
 				Transport transport = this.session.getTransport(this.provider);
 				
-				transport.addConnectionListener(this);
-				
 				this.transportList.add(transport);
 			}
 		}
@@ -250,10 +246,8 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 			{
 				try
 				{
-					log.info("TransportProxy.protocolConnect() - wait(" + this.connectTimeout + ") begin");
 					// Wait until the first transport is available, or until connect timeout
 					this.activeTransportList.wait(this.connectTimeout);
-					log.info("TransportProxy.protocolConnect() - wait(" + this.connectTimeout + ") end");
 				}
 				catch (InterruptedException e)
 				{
@@ -332,38 +326,6 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 	}
 
 	/**
-	 * @see javax.mail.event.ConnectionListener#opened(javax.mail.event.ConnectionEvent)
-	 */
-	public void opened(ConnectionEvent event)
-	{
-		Transport transport = (Transport) event.getSource();
-		
-		log.info("Opened " + transport.getURLName().getProtocol() + " connection to " + transport.getURLName().getHost());
-		
-		this.addTransport(transport);
-	}
-	
-	/**
-	 * @see javax.mail.event.ConnectionListener#closed(javax.mail.event.ConnectionEvent)
-	 */
-	public void closed(ConnectionEvent event)
-	{
-		Transport transport = (Transport) event.getSource();
-		
-		log.info("Closed " + transport.getURLName().getProtocol() + " connection to " + transport.getURLName().getHost());
-	}
-
-	/**
-	 * @see javax.mail.event.ConnectionListener#disconnected(javax.mail.event.ConnectionEvent)
-	 */
-	public void disconnected(ConnectionEvent event)
-	{
-		Transport transport = (Transport) event.getSource();
-		
-		log.debug("Disconnected " + transport.getURLName().getProtocol() + " connection from " + transport.getURLName().getHost());
-	}
-
-	/**
 	 * @see javax.mail.Transport#addTransportListener(javax.mail.event.TransportListener)
 	 */
 	public void addTransportListener(TransportListener listener)
@@ -401,23 +363,19 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 	 */
 	public void close() throws MessagingException
 	{
-		log.info("TransportProxy.close() - waiting for sender threads to complete");
 		while (this.senderThreadGroup.activeCount() > 0)
 		{
 			Thread.yield();
 		}
-		log.info("TransportProxy.close() - sender threads all completed");
 		
 		if (this.connectorThreadGroup.activeCount() > 0)
 		{
 			this.connectorThreadGroup.interrupt();
 			
-			log.info("TransportProxy.close() - waiting for connector threads to complete");
 			while (this.connectorThreadGroup.activeCount() > 0)
 			{
 				Thread.yield();
 			}
-			log.info("TransportProxy.close() - connector threads all completed");
 		}
 		
 		for (int i = 0; i < this.transportList.size(); ++i)
@@ -440,7 +398,6 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 		this.activeTransportList.clear();
 		
 		super.close();
-		log.info("TransportProxy.close() - End of method");
 	}
 	
 	protected void finalize() throws Throwable
@@ -488,6 +445,8 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 				try
 				{
 					this.transport.connect(this.url.getHost(), this.url.getPort(), this.url.getUsername(), this.url.getPassword());
+					
+					TransportProxy.this.addTransport(this.transport);
 				}
 				catch (MessagingException e)
 				{
