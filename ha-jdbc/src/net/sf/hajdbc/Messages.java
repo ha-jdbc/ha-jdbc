@@ -24,7 +24,7 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
 /**
- * Provides i18n access to log/error messages.
+ * Provides localized access to log/error messages.
  * 
  * @author  Paul Ferraro
  * @version $Revision$
