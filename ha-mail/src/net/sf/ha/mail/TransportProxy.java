@@ -249,8 +249,7 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 	}
 	
 	/**
-	 * Returns the next available transport to use for sending.
-	 * @return a JavaMail transport
+	 * @see net.sf.ha.mail.Sender#nextAvailableTransport()
 	 */
 	public Transport nextAvailableTransport()
 	{

@@ -20,5 +20,9 @@ public interface Sender
 	 */
 	public void send(Transport transport, Message message, Address[] addresses) throws MessagingException;
 	
+	/**
+	 * Returns the next available transport to use for sending.
+	 * @return a JavaMail Transport
+	 */
 	public Transport nextAvailableTransport();
 }
