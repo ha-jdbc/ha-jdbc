@@ -29,8 +29,6 @@ import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.Array;
-import java.sql.Blob;
-import java.sql.Clob;
 import java.sql.Date;
 import java.sql.Ref;
 import java.sql.ResultSet;
@@ -50,6 +48,8 @@ import java.util.Map;
  */
 public class ResultSetProxy extends SQLProxy implements ResultSet
 {
+	private FileSupport fileSupport = new FileSupport();
+	
 	/**
 	 * Constructs a new ResultSetProxy.
 	 * @param statement
@@ -228,6 +228,8 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 		};
 		
 		this.executeWrite(operation);
+		
+		this.fileSupport.close();
 	}
 
 	/**
@@ -949,33 +951,26 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	 */
 	public void updateAsciiStream(final int index, InputStream inputStream, final int length) throws SQLException
 	{
-		final File file = BlobProxy.createFile(inputStream);
+		final File file = this.fileSupport.createFile(inputStream);
 		
-		try
+		ResultSetOperation operation = new ResultSetOperation()
 		{
-			ResultSetOperation operation = new ResultSetOperation()
+			public Object execute(ResultSet resultSet) throws SQLException
 			{
-				public Object execute(ResultSet resultSet) throws SQLException
+				try
 				{
-					try
-					{
-						resultSet.updateAsciiStream(index, new FileInputStream(file), length);
-						
-						return null;
-					}
-					catch (IOException e)
-					{
-						throw new SQLException(e.getMessage());
-					}
+					resultSet.updateAsciiStream(index, new FileInputStream(file), length);
+					
+					return null;
 				}
-			};
-			
-			this.executeSet(operation);
-		}
-		finally
-		{
-			file.delete();
-		}
+				catch (IOException e)
+				{
+					throw new SQLException(e.getMessage());
+				}
+			}
+		};
+		
+		this.executeSet(operation);
 	}
 
 	/**
@@ -983,7 +978,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	 */
 	public void updateBinaryStream(final int index, InputStream inputStream, final int length) throws SQLException
 	{
-		final File file = BlobProxy.createFile(inputStream);
+		final File file = this.fileSupport.createFile(inputStream);
 		
 		try
 		{
@@ -1033,33 +1028,26 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	 */
 	public void updateCharacterStream(final int index, Reader reader, final int length) throws SQLException
 	{
-		final File file = ClobProxy.createFile(reader);
+		final File file = this.fileSupport.createFile(reader);
 		
-		try
+		ResultSetOperation operation = new ResultSetOperation()
 		{
-			ResultSetOperation operation = new ResultSetOperation()
+			public Object execute(ResultSet resultSet) throws SQLException
 			{
-				public Object execute(ResultSet resultSet) throws SQLException
+				try
 				{
-					try
-					{
-						resultSet.updateCharacterStream(index, new FileReader(file), length);
-						
-						return null;
-					}
-					catch (IOException e)
-					{
-						throw new SQLException(e.getMessage());
-					}
+					resultSet.updateCharacterStream(index, new FileReader(file), length);
+					
+					return null;
 				}
-			};
-			
-			this.executeSet(operation);
-		}
-		finally
-		{
-			file.delete();
-		}
+				catch (IOException e)
+				{
+					throw new SQLException(e.getMessage());
+				}
+			}
+		};
+		
+		this.executeSet(operation);
 	}
 
 	/**
@@ -1574,7 +1562,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	/**
 	 * @see java.sql.ResultSet#getBlob(int)
 	 */
-	public Blob getBlob(final int index) throws SQLException
+	public java.sql.Blob getBlob(final int index) throws SQLException
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
@@ -1584,13 +1572,13 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (Blob) this.executeGet(operation);
+		return (java.sql.Blob) this.executeGet(operation);
 	}
 
 	/**
 	 * @see java.sql.ResultSet#updateBlob(int, java.sql.Blob)
 	 */
-	public void updateBlob(final int index, final Blob value) throws SQLException
+	public void updateBlob(final int index, final java.sql.Blob value) throws SQLException
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
@@ -1608,7 +1596,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	/**
 	 * @see java.sql.ResultSet#getClob(int)
 	 */
-	public Clob getClob(final int index) throws SQLException
+	public java.sql.Clob getClob(final int index) throws SQLException
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
@@ -1618,13 +1606,13 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (Clob) this.executeGet(operation);
+		return (java.sql.Clob) this.executeGet(operation);
 	}
 
 	/**
 	 * @see java.sql.ResultSet#updateClob(int, java.sql.Clob)
 	 */
-	public void updateClob(final int index, final Clob value) throws SQLException
+	public void updateClob(final int index, final java.sql.Clob value) throws SQLException
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
@@ -1869,33 +1857,26 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	 */
 	public void updateAsciiStream(final String name, InputStream inputStream, final int length) throws SQLException
 	{
-		final File file = BlobProxy.createFile(inputStream);
+		final File file = this.fileSupport.createFile(inputStream);
 		
-		try
+		ResultSetOperation operation = new ResultSetOperation()
 		{
-			ResultSetOperation operation = new ResultSetOperation()
+			public Object execute(ResultSet resultSet) throws SQLException
 			{
-				public Object execute(ResultSet resultSet) throws SQLException
+				try
 				{
-					try
-					{
-						resultSet.updateAsciiStream(name, new FileInputStream(file), length);
-						
-						return null;
-					}
-					catch (IOException e)
-					{
-						throw new SQLException(e.getMessage());
-					}
+					resultSet.updateAsciiStream(name, new FileInputStream(file), length);
+					
+					return null;
 				}
-			};
-			
-			this.executeSet(operation);
-		}
-		finally
-		{
-			file.delete();
-		}
+				catch (IOException e)
+				{
+					throw new SQLException(e.getMessage());
+				}
+			}
+		};
+		
+		this.executeSet(operation);
 	}
 
 	/**
@@ -1903,33 +1884,26 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	 */
 	public void updateBinaryStream(final String name, InputStream inputStream, final int length) throws SQLException
 	{
-		final File file = BlobProxy.createFile(inputStream);
+		final File file = this.fileSupport.createFile(inputStream);
 		
-		try
+		ResultSetOperation operation = new ResultSetOperation()
 		{
-			ResultSetOperation operation = new ResultSetOperation()
+			public Object execute(ResultSet resultSet) throws SQLException
 			{
-				public Object execute(ResultSet resultSet) throws SQLException
+				try
 				{
-					try
-					{
-						resultSet.updateBinaryStream(name, new FileInputStream(file), length);
-						
-						return null;
-					}
-					catch (IOException e)
-					{
-						throw new SQLException(e.getMessage());
-					}
+					resultSet.updateBinaryStream(name, new FileInputStream(file), length);
+					
+					return null;
 				}
-			};
-			
-			this.executeSet(operation);
-		}
-		finally
-		{
-			file.delete();
-		}
+				catch (IOException e)
+				{
+					throw new SQLException(e.getMessage());
+				}
+			}
+		};
+		
+		this.executeSet(operation);
 	}
 
 	/**
@@ -1953,33 +1927,26 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	 */
 	public void updateCharacterStream(final String name, Reader reader, final int length) throws SQLException
 	{
-		final File file = ClobProxy.createFile(reader);
+		final File file = this.fileSupport.createFile(reader);
 		
-		try
+		ResultSetOperation operation = new ResultSetOperation()
 		{
-			ResultSetOperation operation = new ResultSetOperation()
+			public Object execute(ResultSet resultSet) throws SQLException
 			{
-				public Object execute(ResultSet resultSet) throws SQLException
+				try
 				{
-					try
-					{
-						resultSet.updateCharacterStream(name, new FileReader(file), length);
-						
-						return null;
-					}
-					catch (IOException e)
-					{
-						throw new SQLException(e.getMessage());
-					}
+					resultSet.updateCharacterStream(name, new FileReader(file), length);
+					
+					return null;
 				}
-			};
-			
-			this.executeSet(operation);
-		}
-		finally
-		{
-			file.delete();
-		}
+				catch (IOException e)
+				{
+					throw new SQLException(e.getMessage());
+				}
+			}
+		};
+		
+		this.executeSet(operation);
 	}
 
 	/**
@@ -2188,7 +2155,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	/**
 	 * @see java.sql.ResultSet#getBlob(java.lang.String)
 	 */
-	public Blob getBlob(final String name) throws SQLException
+	public java.sql.Blob getBlob(final String name) throws SQLException
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
@@ -2198,13 +2165,13 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (Blob) this.executeGet(operation);
+		return (java.sql.Blob) this.executeGet(operation);
 	}
 
 	/**
 	 * @see java.sql.ResultSet#updateBlob(java.lang.String, java.sql.Blob)
 	 */
-	public void updateBlob(final String name, final Blob value) throws SQLException
+	public void updateBlob(final String name, final java.sql.Blob value) throws SQLException
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
@@ -2222,7 +2189,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	/**
 	 * @see java.sql.ResultSet#getClob(java.lang.String)
 	 */
-	public Clob getClob(final String name) throws SQLException
+	public java.sql.Clob getClob(final String name) throws SQLException
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
@@ -2232,13 +2199,13 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return (Clob) this.executeGet(operation);
+		return (java.sql.Clob) this.executeGet(operation);
 	}
 
 	/**
 	 * @see java.sql.ResultSet#updateClob(java.lang.String, java.sql.Clob)
 	 */
-	public void updateClob(final String name, final Clob value) throws SQLException
+	public void updateClob(final String name, final java.sql.Clob value) throws SQLException
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{

@@ -29,8 +29,6 @@ import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.Array;
-import java.sql.Blob;
-import java.sql.Clob;
 import java.sql.Date;
 import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
@@ -49,6 +47,8 @@ import java.util.Calendar;
  */
 public class PreparedStatementProxy extends StatementProxy implements PreparedStatement
 {
+	protected FileSupport fileSupport = new FileSupport();
+	
 	/**
 	 * Constructs a new PreparedStatementProxy
 	 * @param connection
@@ -294,33 +294,26 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	 */
 	public void setAsciiStream(final int index, InputStream inputStream, final int length) throws SQLException
 	{
-		final File file = BlobProxy.createFile(inputStream);
+		final File file = this.fileSupport.createFile(inputStream);
 		
-		try
+		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			PreparedStatementOperation operation = new PreparedStatementOperation()
+			public Object execute(PreparedStatement statement) throws SQLException
 			{
-				public Object execute(PreparedStatement statement) throws SQLException
+				try
 				{
-					try
-					{
-						statement.setAsciiStream(index, new FileInputStream(file), length);
-					
-						return null;
-					}
-					catch (IOException e)
-					{
-						throw new SQLException(e.getMessage());
-					}
+					statement.setAsciiStream(index, new FileInputStream(file), length);
+				
+					return null;
 				}
-			};
-			
-			this.executeSet(operation);
-		}
-		finally
-		{
-			file.delete();
-		}
+				catch (IOException e)
+				{
+					throw new SQLException(e.getMessage());
+				}
+			}
+		};
+		
+		this.executeSet(operation);
 	}
 
 	/**
@@ -328,33 +321,26 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	 */
 	public void setBinaryStream(final int index, InputStream inputStream, final int length) throws SQLException
 	{
-		final File file = BlobProxy.createFile(inputStream);
+		final File file = this.fileSupport.createFile(inputStream);
 
-		try
+		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			PreparedStatementOperation operation = new PreparedStatementOperation()
+			public Object execute(PreparedStatement statement) throws SQLException
 			{
-				public Object execute(PreparedStatement statement) throws SQLException
+				try
 				{
-					try
-					{
-						statement.setBinaryStream(index, new FileInputStream(file), length);
-						
-						return null;
-					}
-					catch (IOException e)
-					{
-						throw new SQLException(e.getMessage());
-					}
+					statement.setBinaryStream(index, new FileInputStream(file), length);
+					
+					return null;
 				}
-			};
-			
-			this.executeSet(operation);			
-		}
-		finally
-		{
-			file.delete();
-		}
+				catch (IOException e)
+				{
+					throw new SQLException(e.getMessage());
+				}
+			}
+		};
+		
+		this.executeSet(operation);			
 	}
 
 	/**
@@ -363,33 +349,26 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	 */
 	public void setUnicodeStream(final int index, InputStream inputStream, final int length) throws SQLException
 	{
-		final File file = BlobProxy.createFile(inputStream);
+		final File file = this.fileSupport.createFile(inputStream);
 
-		try
+		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			PreparedStatementOperation operation = new PreparedStatementOperation()
+			public Object execute(PreparedStatement statement) throws SQLException
 			{
-				public Object execute(PreparedStatement statement) throws SQLException
+				try
 				{
-					try
-					{
-						statement.setUnicodeStream(index, new FileInputStream(file), length);
-						
-						return null;
-					}
-					catch (IOException e)
-					{
-						throw new SQLException(e.getMessage());
-					}
+					statement.setUnicodeStream(index, new FileInputStream(file), length);
+					
+					return null;
 				}
-			};
-			
-			this.executeSet(operation);
-		}
-		finally
-		{
-			file.delete();
-		}
+				catch (IOException e)
+				{
+					throw new SQLException(e.getMessage());
+				}
+			}
+		};
+		
+		this.executeSet(operation);
 	}
 
 	/**
@@ -397,33 +376,26 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	 */
 	public void setCharacterStream(final int index, Reader reader, final int length) throws SQLException
 	{
-		final File file = ClobProxy.createFile(reader);
+		final File file = this.fileSupport.createFile(reader);
 		
-		try
+		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			PreparedStatementOperation operation = new PreparedStatementOperation()
+			public Object execute(PreparedStatement statement) throws SQLException
 			{
-				public Object execute(PreparedStatement statement) throws SQLException
+				try
 				{
-					try
-					{
-						statement.setCharacterStream(index, new FileReader(file), length);
-						
-						return null;
-					}
-					catch (IOException e)
-					{
-						throw new SQLException(e.getMessage());
-					}
+					statement.setCharacterStream(index, new FileReader(file), length);
+					
+					return null;
 				}
-			};
-			
-			this.executeSet(operation);
-		}
-		finally
-		{
-			file.delete();
-		}
+				catch (IOException e)
+				{
+					throw new SQLException(e.getMessage());
+				}
+			}
+		};
+		
+		this.executeSet(operation);
 	}
 	
 	/**
@@ -573,7 +545,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	/**
 	 * @see java.sql.PreparedStatement#setBlob(int, java.sql.Blob)
 	 */
-	public void setBlob(final int index, final Blob value) throws SQLException
+	public void setBlob(final int index, final java.sql.Blob value) throws SQLException
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
@@ -591,7 +563,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	/**
 	 * @see java.sql.PreparedStatement#setClob(int, java.sql.Clob)
 	 */
-	public void setClob(final int index, final Clob value) throws SQLException
+	public void setClob(final int index, final java.sql.Clob value) throws SQLException
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
@@ -778,5 +750,15 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 		};
 		
 		this.executeSet(operation);
+	}
+	
+	/**
+	 * @see java.sql.Statement#close()
+	 */
+	public void close() throws SQLException
+	{
+		super.close();
+		
+		this.fileSupport.close();
 	}
 }

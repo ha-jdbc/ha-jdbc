@@ -29,9 +29,7 @@ import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.Array;
-import java.sql.Blob;
 import java.sql.CallableStatement;
-import java.sql.Clob;
 import java.sql.Date;
 import java.sql.Ref;
 import java.sql.SQLException;
@@ -681,7 +679,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	/**
 	 * @see java.sql.CallableStatement#getBlob(int)
 	 */
-	public Blob getBlob(final int index) throws SQLException
+	public java.sql.Blob getBlob(final int index) throws SQLException
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
@@ -691,13 +689,13 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (Blob) this.executeGet(operation);
+		return (java.sql.Blob) this.executeGet(operation);
 	}
 
 	/**
 	 * @see java.sql.CallableStatement#getClob(int)
 	 */
-	public Clob getClob(final int index) throws SQLException
+	public java.sql.Clob getClob(final int index) throws SQLException
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
@@ -707,7 +705,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (Clob) this.executeGet(operation);
+		return (java.sql.Clob) this.executeGet(operation);
 	}
 
 	/**
@@ -779,33 +777,26 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	 */
 	public void setAsciiStream(final String name, InputStream inputStream, final int length) throws SQLException
 	{
-		final File file = BlobProxy.createFile(inputStream);
+		final File file = this.fileSupport.createFile(inputStream);
 		
-		try
+		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			CallableStatementOperation operation = new CallableStatementOperation()
+			public Object execute(CallableStatement statement) throws SQLException
 			{
-				public Object execute(CallableStatement statement) throws SQLException
+				try
 				{
-					try
-					{
-						statement.setAsciiStream(name, new FileInputStream(file), length);
-						
-						return null;
-					}
-					catch (IOException e)
-					{
-						throw new SQLException(e.getMessage());
-					}
+					statement.setAsciiStream(name, new FileInputStream(file), length);
+					
+					return null;
 				}
-			};
-			
-			this.executeSet(operation);
-		}
-		finally
-		{
-			file.delete();
-		}
+				catch (IOException e)
+				{
+					throw new SQLException(e.getMessage());
+				}
+			}
+		};
+		
+		this.executeSet(operation);
 	}
 
 	/**
@@ -813,33 +804,26 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	 */
 	public void setBinaryStream(final String name, InputStream inputStream, final int length) throws SQLException
 	{
-		final File file = BlobProxy.createFile(inputStream);
+		final File file = this.fileSupport.createFile(inputStream);
 		
-		try
+		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			CallableStatementOperation operation = new CallableStatementOperation()
+			public Object execute(CallableStatement statement) throws SQLException
 			{
-				public Object execute(CallableStatement statement) throws SQLException
+				try
 				{
-					try
-					{
-						statement.setBinaryStream(name, new FileInputStream(file), length);
-						
-						return null;
-					}
-					catch (IOException e)
-					{
-						throw new SQLException(e.getMessage());
-					}
+					statement.setBinaryStream(name, new FileInputStream(file), length);
+					
+					return null;
 				}
-			};
-			
-			this.executeSet(operation);
-		}
-		finally
-		{
-			file.delete();
-		}
+				catch (IOException e)
+				{
+					throw new SQLException(e.getMessage());
+				}
+			}
+		};
+		
+		this.executeSet(operation);
 	}
 
 	/**
@@ -847,33 +831,26 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	 */
 	public void setCharacterStream(final String name, Reader reader, final int length) throws SQLException
 	{
-		final File file = ClobProxy.createFile(reader);
+		final File file = this.fileSupport.createFile(reader);
 		
-		try
+		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			CallableStatementOperation operation = new CallableStatementOperation()
+			public Object execute(CallableStatement statement) throws SQLException
 			{
-				public Object execute(CallableStatement statement) throws SQLException
+				try
 				{
-					try
-					{
-						statement.setCharacterStream(name, new FileReader(file), length);
-						
-						return null;
-					}
-					catch (IOException e)
-					{
-						throw new SQLException(e.getMessage());
-					}
+					statement.setCharacterStream(name, new FileReader(file), length);
+					
+					return null;
 				}
-			};
-			
-			this.executeSet(operation);
-		}
-		finally
-		{
-			file.delete();
-		}
+				catch (IOException e)
+				{
+					throw new SQLException(e.getMessage());
+				}
+			}
+		};
+		
+		this.executeSet(operation);
 	}
 
 	/**
@@ -1119,7 +1096,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	/**
 	 * @see java.sql.CallableStatement#getBlob(java.lang.String)
 	 */
-	public Blob getBlob(final String name) throws SQLException
+	public java.sql.Blob getBlob(final String name) throws SQLException
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
@@ -1129,13 +1106,13 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (Blob) this.executeGet(operation);
+		return (java.sql.Blob) this.executeGet(operation);
 	}
 
 	/**
 	 * @see java.sql.CallableStatement#getClob(java.lang.String)
 	 */
-	public Clob getClob(final String name) throws SQLException
+	public java.sql.Clob getClob(final String name) throws SQLException
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
@@ -1145,7 +1122,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 			}
 		};
 		
-		return (Clob) this.executeGet(operation);
+		return (java.sql.Clob) this.executeGet(operation);
 	}
 
 	/**
