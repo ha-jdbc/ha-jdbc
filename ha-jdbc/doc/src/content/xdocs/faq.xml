@@ -9,7 +9,7 @@
 			<answer>
 				By indicated the "distributable" option, you are declaring that your database cluster(s) will be accessed by multiple JVMs (e.g. cluster of application servers).
 				HA-JDBC uses reliable multicast communication provided by JGroups to broadcast database activations and deactivations to each JVM.
-				If your database cluster is accessed by more than one JVM and the "distributable" option is not specified, you run the risk of databases falling out of sync when a database is re-activated.
+				If your database cluster is accessed by more than client and the "distributable" option is not specified, you run the risk of databases falling out of sync when a database is re-activated.
 			</answer>
 		</faq>
 	</faqsection>
@@ -18,8 +18,8 @@
 		<faq>
 			<question>When using the "distributable" feature, I get a <code>ChannelException</code>: "unable to set up the protocol stack".</question>
 			<answer>
-				The JGroups protocol stack should be setup according to the reliability afforded by the features on your network.
-				Refer to the JGroups protocol documentation (http://www.jgroups.org/javagroupsnew/docs/user/node134.html) for more specifics.
+				The server on which HA-JDBC is running may need additional network features installed.
+				Refer to the JGroups <a href="http://www.jgroups.org/javagroupsnew/docs/user/index.html">documentation</a> for more specifics.
 			</answer>
 		</faq>
 	</faqsection>
@@ -41,13 +41,15 @@
 							<ol>
 								<li>HA-JDBC driver delegates JDBC methods directly to the underlying drivers.</li>
 								<li>Cluster details are stored in distributed cache on client.</li>
+								<li>Leverages database locking for </li>
 								<li>High-availability is inherent in design.</li>
 							</ol>
 						</td>
 						<td>
 							<ol>
-								<li>C-JDBC driver interprets JDBC API and delegates parsed SQL queries to remote controller process.</li>
+								<li>C-JDBC driver interprets JDBC API and delegates parsed SQL queries to remote controller process, which, in turn, delegates query execution to the underlying drivers.</li>
 								<li>Cluster details are known only to controller.</li>
+								<li>The controller's request scheduler strategy is responsible for serializing execution order</li>
 								<li>High-availability is achieved by setting up failover controller process.</li>
 							</ol>
 						</td>
@@ -146,8 +148,7 @@
 								Lacks support for:
 							</p>
 							<ul>
-								<li>Pre-compilable <code>PreparedStatement</code>s</li>
-								<li>Updatable <code>ResultSet</code>s</li>
+								<li>Database-compiled <code>PreparedStatement</code>s</li>
 								<li><code>CallableStatement</code>s with OUT parameters</li>
 								<li>True large object support - BLOB and CLOB are simulated with encoded <code>byte[]</code> and <code>String</code>, respectively</li>
 								<li>True binary/character stream support - simulated with encoded <code>byte[]</code> and <code>String</code>, respectively</li>
