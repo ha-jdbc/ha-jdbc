@@ -12,7 +12,7 @@
 			automatically be used for entries of type <foo>. -->
 		<release version="1.0-beta-3" date="February 7, 2005">
 			<action type="add" dev="PF">
-				Added i18n support for all log/exception messages.
+				All log/exception messages are now localized.
 			</action>
 			<action type="update" dev="PF">
 				Driver is no longer required when defining a driver-based cluster since underlying driver already be registered via the jdbc.drivers system property.
