@@ -36,6 +36,7 @@
 			<title>Related Software</title>
 			<ul>
 				<li><a href="http://c-jdbc.objectweb.org">C-JDBC: Clustered JDBC</a></li>
+				<li><a href="http://www.daffodildb.com/replicator.html">Daffodil Replicator</a></li>
 				<li><a href="http://dev.mysql.com/doc/mysql/en/Replication.html">MySQL</a> - Contains built-in replication capability</li>
 				<li><a href="http://www.mysql.com/products/cluster/">MySQL Cluster</a> - Fault tolerant database architecture using NDB Cluster storage engine</li>
 				<li><a href="http://gborg.postgresql.org/project/slony1/projdisplay.php">Slony-1</a> - A replication system for PostgreSQL</li>
