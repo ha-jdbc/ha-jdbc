@@ -48,7 +48,7 @@
 	</target>
 	
     <target name="compile" depends="init">
-        <javac srcdir="${src.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="classpath"></javac>
+        <javac srcdir="${src.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="classpath" source="1.4" target="1.4"></javac>
     </target>
 
     <target name="bind" depends="compile">
