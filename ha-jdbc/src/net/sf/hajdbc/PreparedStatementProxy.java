@@ -73,7 +73,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		return ((Integer) this.firstItem(this.executeWrite(operation))).intValue();
+		return ((Integer) this.firstValue(this.executeWrite(operation))).intValue();
 	}
 
 	/**
@@ -125,7 +125,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 		
-		return ((Boolean) this.firstItem(this.executeWrite(operation))).booleanValue();
+		return ((Boolean) this.firstValue(this.executeWrite(operation))).booleanValue();
 	}
 
 	/**

@@ -82,7 +82,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 			}
 		};
 		
-		return ((Boolean) this.firstItem(this.executeSet(operation))).booleanValue();
+		return ((Boolean) this.firstValue(this.executeSet(operation))).booleanValue();
 	}
 
 	/**
@@ -121,7 +121,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 			}
 		};
 
-		return (Xid[]) this.firstItem(this.executeWrite(operation));
+		return (Xid[]) this.firstValue(this.executeWrite(operation));
 	}
 
 	/**
@@ -137,7 +137,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 			}
 		};
 		
-		return ((Integer) this.firstItem(this.executeWrite(operation))).intValue();
+		return ((Integer) this.firstValue(this.executeWrite(operation))).intValue();
 	}
 
 	/**

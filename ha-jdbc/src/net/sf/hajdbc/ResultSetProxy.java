@@ -362,7 +362,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Boolean) this.firstItem((this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWrite(operation) : this.executeSet(operation))).booleanValue();
+		return ((Boolean) this.firstValue((this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWrite(operation) : this.executeSet(operation))).booleanValue();
 	}
 
 	/**
@@ -442,7 +442,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Boolean) this.firstItem((this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWrite(operation) : this.executeSet(operation))).booleanValue();
+		return ((Boolean) this.firstValue((this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWrite(operation) : this.executeSet(operation))).booleanValue();
 	}
 
 	/**
@@ -458,7 +458,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Boolean) this.firstItem((this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWrite(operation) : this.executeSet(operation))).booleanValue();
+		return ((Boolean) this.firstValue((this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWrite(operation) : this.executeSet(operation))).booleanValue();
 	}
 
 	/**
@@ -474,7 +474,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Boolean) this.firstItem((this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWrite(operation) : this.executeSet(operation))).booleanValue();
+		return ((Boolean) this.firstValue((this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWrite(operation) : this.executeSet(operation))).booleanValue();
 	}
 
 	/**
@@ -704,7 +704,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Boolean) this.firstItem(this.executeSet(operation))).booleanValue();
+		return ((Boolean) this.firstValue(this.executeSet(operation))).booleanValue();
 	}
 
 	/**
@@ -736,7 +736,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Boolean) this.firstItem(this.executeSet(operation))).booleanValue();
+		return ((Boolean) this.firstValue(this.executeSet(operation))).booleanValue();
 	}
 
 	/**

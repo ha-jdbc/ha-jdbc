@@ -277,7 +277,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		return ((Boolean) this.firstItem(this.executeSet(operation))).booleanValue();
+		return ((Boolean) this.firstValue(this.executeSet(operation))).booleanValue();
 	}
 
 	/**
@@ -293,7 +293,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		return (int[]) this.firstItem(this.executeWrite(operation));
+		return (int[]) this.firstValue(this.executeWrite(operation));
 	}
 
 	/**
@@ -399,7 +399,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		return ((Boolean) this.firstItem(this.executeSet(operation))).booleanValue();
+		return ((Boolean) this.firstValue(this.executeSet(operation))).booleanValue();
 	}
 
 	/**
@@ -433,7 +433,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		return ((Integer) this.firstItem(this.executeWrite(operation))).intValue();
+		return ((Integer) this.firstValue(this.executeWrite(operation))).intValue();
 	}
 
 	/**
@@ -485,7 +485,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		return ((Boolean) this.firstItem(this.executeWrite(operation))).booleanValue();
+		return ((Boolean) this.firstValue(this.executeWrite(operation))).booleanValue();
 	}
 
 	/**
@@ -501,7 +501,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		return ((Integer) this.firstItem(this.executeWrite(operation))).intValue();
+		return ((Integer) this.firstValue(this.executeWrite(operation))).intValue();
 	}
 
 	/**
@@ -517,7 +517,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		return ((Boolean) this.firstItem(this.executeWrite(operation))).booleanValue();
+		return ((Boolean) this.firstValue(this.executeWrite(operation))).booleanValue();
 	}
 
 	/**
@@ -533,7 +533,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		return ((Integer) this.firstItem(this.executeWrite(operation))).intValue();
+		return ((Integer) this.firstValue(this.executeWrite(operation))).intValue();
 	}
 
 	/**
@@ -549,7 +549,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		return ((Boolean) this.firstItem(this.executeWrite(operation))).booleanValue();
+		return ((Boolean) this.firstValue(this.executeWrite(operation))).booleanValue();
 	}
 
 	/**
@@ -621,7 +621,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		return ((Integer) this.firstItem(this.executeWrite(operation))).intValue();
+		return ((Integer) this.firstValue(this.executeWrite(operation))).intValue();
 	}
 
 	/**
@@ -637,7 +637,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		return ((Boolean) this.firstItem(this.executeWrite(operation))).booleanValue();
+		return ((Boolean) this.firstValue(this.executeWrite(operation))).booleanValue();
 	}
 
 	/**
