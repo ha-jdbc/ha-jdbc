@@ -27,7 +27,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -210,7 +209,7 @@ public final class DatabaseClusterFactory
 	private static class Configuration
 	{
 		private DatabaseClusterDecoratorDescriptor decoratorDescriptor = null;
-		private List descriptorList = new LinkedList();
+		private List descriptorList;
 		
 		/**
 		 * Returns a descriptor of a database cluster decorator.
