@@ -22,7 +22,7 @@ public class XADataSourceProxy extends ConnectionPoolDataSourceProxy implements 
 		return this.databaseCluster;
 	}
 	
-	public void setDatabaseManager(DatabaseCluster databaseCluster)
+	public void setDatabaseCluster(DatabaseCluster databaseCluster)
 	{
 		this.databaseCluster = databaseCluster;
 	}

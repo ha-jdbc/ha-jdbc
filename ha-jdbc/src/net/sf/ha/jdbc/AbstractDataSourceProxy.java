@@ -21,7 +21,7 @@ public abstract class AbstractDataSourceProxy implements Referenceable
 		return this.databaseCluster;
 	}
 	
-	public void setDatabaseManager(DatabaseCluster databaseCluster)
+	public void setDatabaseCluster(DatabaseCluster databaseCluster)
 	{
 		this.databaseCluster = databaseCluster;
 	}
