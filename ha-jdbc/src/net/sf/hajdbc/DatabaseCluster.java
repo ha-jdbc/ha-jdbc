@@ -152,7 +152,7 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 			for (int i = 0; i < activeConnections.length; ++i)
 			{
 				activeConnections[i].setAutoCommit(false);
-				activeConnections[i].setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+				activeConnections[i].setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 				
 				Statement statement = activeConnections[i].createStatement();
 				Iterator tables = tableList.iterator();
