@@ -336,19 +336,15 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 		while (true)
 		{
 			Database database = this.nextDatabase();
-			
 			Object object = proxy.getObject(database);
-			
-			if (object != null)
+	
+			try
 			{
-				try
-				{
-					return this.getBalancer().execute(operation, database, object);
-				}
-				catch (Throwable e)
-				{
-					this.handleFailure(database, e);
-				}
+				return this.getBalancer().execute(operation, database, object);
+			}
+			catch (Throwable e)
+			{
+				this.handleFailure(database, e);
 			}
 		}
 	}
@@ -363,16 +359,10 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	 */
 	public final Object executeReadFromDriver(SQLProxy proxy, Operation operation) throws java.sql.SQLException
 	{
-		while (true)
-		{
-			Database database = this.firstDatabase();
-			Object object = proxy.getObject(database);
-			
-			if (object != null)
-			{
-				return operation.execute(database, object);
-			}
-		}
+		Database database = this.firstDatabase();
+		Object object = proxy.getObject(database);
+		
+		return operation.execute(database, object);
 	}
 	
 	/**
@@ -396,11 +386,8 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 			Database database = databases[i];
 			Object object = proxy.getObject(database);
 			
-			if (object != null)
-			{
-				threads[i] = new Thread(new OperationExecutor(this, operation, database, object, returnValueMap, exceptionMap));
-				threads[i].start();
-			}
+			threads[i] = new Thread(new OperationExecutor(this, operation, database, object, returnValueMap, exceptionMap));
+			threads[i].start();
 		}
 		
 		// Wait until all threads have completed
@@ -477,12 +464,7 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 			Database database = databases[i];
 			Object object = proxy.getObject(database);
 			
-			if (object != null)
-			{
-				Object returnValue = operation.execute(database, object);
-				
-				returnValueMap.put(database, returnValue);
-			}
+			returnValueMap.put(database, operation.execute(database, object));
 		}
 		
 		this.deactivateNewDatabases(databases);
