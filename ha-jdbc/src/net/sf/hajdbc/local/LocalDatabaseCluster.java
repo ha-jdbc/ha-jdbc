@@ -171,7 +171,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 		{
 			if (this.activeDatabaseSet.size() == 0)
 			{
-				throw new SQLException("No active databases in cluster");
+				throw new SQLException("No active databases in cluster " + this.getName());
 			}
 			
 			return (Database) this.activeDatabaseSet.iterator().next();
@@ -211,7 +211,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 		{
 			if (this.activeDatabaseSet.size() == 0)
 			{
-				throw new SQLException("No active databases in cluster");
+				throw new SQLException("No active databases in cluster " + this.getName());
 			}
 			
 			return new ArrayList(this.activeDatabaseSet);
