@@ -21,6 +21,7 @@
 package net.sf.hajdbc.sync;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -48,6 +49,7 @@ public class ForeignKey
 	
 	private static Log log = LogFactory.getLog(ForeignKey.class);
 	
+	private String quote;
 	private String name;
 	private String table;
 	private String column;
@@ -56,7 +58,12 @@ public class ForeignKey
 	
 	private String formatSQL(String pattern)
 	{
-		return MessageFormat.format(pattern, new Object[] { this.name, this.table, this.column, this.foreignTable, this.foreignColumn });
+		return MessageFormat.format(pattern, new Object[] { this.quote(this.name), this.table, this.column, this.quote(this.foreignTable), this.foreignColumn });
+	}
+
+	private String quote(String identifier)
+	{
+		return this.quote + identifier + this.quote;
 	}
 	
 	/**
@@ -87,6 +94,8 @@ public class ForeignKey
 	public static Collection collect(Connection connection, List tableList) throws SQLException
 	{
 		List foreignKeyList = new LinkedList();
+		DatabaseMetaData metaData = connection.getMetaData();
+		String quote = metaData.getIdentifierQuoteString();
 		
 		Iterator tables = tableList.iterator();
 		
@@ -94,13 +103,14 @@ public class ForeignKey
 		{
 			String table = (String) tables.next();
 			
-			ResultSet resultSet = connection.getMetaData().getImportedKeys(null, null, table);
+			ResultSet resultSet = metaData.getImportedKeys(null, null, table);
 			
 			while (resultSet.next())
 			{
 				ForeignKey foreignKey = new ForeignKey();
 				
 				foreignKey.table = table;
+				foreignKey.quote = quote;
 				foreignKey.name = resultSet.getString("FK_NAME");
 				foreignKey.column = resultSet.getString("FKCOLUMN_NAME");
 				foreignKey.foreignTable = resultSet.getString("PKTABLE_NAME");
