@@ -3,8 +3,10 @@ package net.sf.ha.jdbc;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author  Paul Ferraro
@@ -26,8 +28,6 @@ public abstract class AbstractProxy
 		
 		synchronized (this.objectMap)
 		{
-			verifySize(this.objectMap);
-			
 			database = (Database) this.objectMap.keySet().iterator().next();
 		}
 
@@ -52,12 +52,18 @@ public abstract class AbstractProxy
 	
 	public final Map executeWrite(Operation operation) throws SQLException
 	{
-		ThreadGroup threadGroup = new ThreadGroup(null);
-		Map returnValueMap = Collections.synchronizedMap(new HashMap(this.objectMap.size()));
+		Map returnValueMap = null;
+		Set databaseSet = null;
 		
 		synchronized (this.objectMap)
 		{
-			verifySize(this.objectMap);
+			if (this.objectMap.size() == 0)
+			{
+				throw new SQLException("No available connection");
+			}
+			
+			returnValueMap = new HashMap(this.objectMap.size());
+			databaseSet = new HashSet(this.objectMap.keySet());
 			
 			Iterator objectMapEntries = this.objectMap.entrySet().iterator();
 			
@@ -66,16 +72,29 @@ public abstract class AbstractProxy
 				Map.Entry objectMapEntry = (Map.Entry) objectMapEntries.next();
 				Database database = (Database) objectMapEntry.getKey();
 				Object object = objectMapEntry.getValue();
-				Executor executor = new Executor(operation, database, object, returnValueMap);
 				
-				new Thread(threadGroup, executor).start();
+				Executor executor = new Executor(operation, database, object, returnValueMap, databaseSet);
+				
+				databaseSet.add(database);
+				
+				new Thread(executor).start();
 			}
 		}
 		
 		// Wait until all threads have completed
-		while (threadGroup.activeCount() > 0)
+		synchronized (databaseSet)
 		{
-			Thread.yield();
+			while (databaseSet.size() > 0)
+			{
+				try
+				{
+					databaseSet.wait();
+				}
+				catch (InterruptedException e)
+				{
+					// Ignore
+				}
+			}
 		}
 
 		if (returnValueMap.size() == 0)
@@ -98,14 +117,6 @@ public abstract class AbstractProxy
 		return returnValueMap;
 	}
 	
-	private void verifySize(Map map) throws SQLException
-	{
-		if (map.size() == 0)
-		{
-			throw new SQLException("No available connection");
-		}
-	}
-	
 	protected final void handleSQLException(SQLException exception, Database database) throws SQLException
 	{
 		if (this.getDatabaseCluster().isActive(database))
@@ -125,17 +136,19 @@ public abstract class AbstractProxy
 
 	private class Executor implements Runnable
 	{
-		private Map returnValueMap;
+		private Operation operation;
 		private Database database;
 		private Object object;
-		private Operation operation;
+		private Map returnValueMap;
+		private Set databaseSet;
 		
-		public Executor(Operation operation, Database database, Object object, Map returnValueMap)
+		public Executor(Operation operation, Database database, Object object, Map returnValueMap, Set databaseSet)
 		{
-			this.returnValueMap = returnValueMap;
+			this.operation = operation;
 			this.database = database;
 			this.object = object;
-			this.operation = operation;
+			this.returnValueMap = returnValueMap;
+			this.databaseSet = databaseSet;
 		}
 		
 		public void run()
@@ -144,7 +157,10 @@ public abstract class AbstractProxy
 			{
 				Object returnValue = this.operation.execute(this.database, this.object);
 				
-				this.returnValueMap.put(this.database, returnValue);
+				synchronized (this.returnValueMap)
+				{
+					this.returnValueMap.put(this.database, returnValue);
+				}
 			}
 			catch (SQLException e)
 			{
@@ -155,6 +171,14 @@ public abstract class AbstractProxy
 				catch (SQLException exception)
 				{
 					this.returnValueMap.put(this.database, e);
+				}
+			}
+			finally
+			{
+				synchronized (this.databaseSet)
+				{
+					this.databaseSet.remove(this.database);
+					this.databaseSet.notify();
 				}
 			}
 		}
