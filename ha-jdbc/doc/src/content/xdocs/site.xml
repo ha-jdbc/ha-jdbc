@@ -16,6 +16,8 @@ See http://xml.apache.org/forrest/linking.html for more info
 
 	<home label="HA-JDBC" tab="ha-jdbc">
 		<documentation label="Documentation" href="index.html"/>
+		<changes label="Changes" href="changes.html" description="History of Changes"/>
+		<!--todo label="Todo" href="todo.html" description="To do List"/-->
 		<project label="Project Page" href="http://www.sourceforge.net/projects/ha-jdbc"/>
 		<download label="Downloads" href="http://sourceforge.net/project/showfiles.php?group_id=111957"/>
 		<list label="User Mailing List" href="http://sourceforge.net/mail/?group_id=111957"/>
@@ -23,8 +25,6 @@ See http://xml.apache.org/forrest/linking.html for more info
 		<support label="Support Requests" href="http://sourceforge.net/tracker/?group_id=111957&amp;atid=660862"/>
 		<patches label="Patches" href="http://sourceforge.net/tracker/?group_id=111957&amp;atid=660863"/>
 		<features label="Feature Requests" href="http://sourceforge.net/tracker/?group_id=111957&amp;atid=660864"/>
-		<!--changes label="Changes" href="changes.html" description="History of Changes" />
-		<todo label="Todo" href="todo.html"  description="Todo List" /-->
 	</home>
 
 	<mail label="HA-Mail" tab="ha-mail">
