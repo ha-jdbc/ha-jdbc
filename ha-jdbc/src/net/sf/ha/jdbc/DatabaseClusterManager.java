@@ -1,6 +1,7 @@
 package net.sf.ha.jdbc;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -14,9 +15,9 @@ public class DatabaseClusterManager
 {
 	private Set listenerSet = Collections.synchronizedSet(new HashSet());
 	// Maps cluster name -> DatabaseClusterDescriptor
-	private Map descriptorMap;
+	private Map descriptorMap = Collections.synchronizedMap(new HashMap());
 	// Maps cluster type -> Set of cluster names
-	private Map classMap;
+	private Map classMap = Collections.synchronizedMap(new HashMap());
 	
 	public void addDescriptor(Object databaseClusterDescriptor)
 	{
