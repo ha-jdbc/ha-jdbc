@@ -80,49 +80,7 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 			
 			DatabaseSynchronizationStrategy strategy = (DatabaseSynchronizationStrategy) strategyClass.newInstance();
 
-			Connection connection = database.connect(this.getConnectionFactory());
-			List tableList = new LinkedList();
-			
-			DatabaseMetaData databaseMetaData = connection.getMetaData();
-			ResultSet resultSet = databaseMetaData.getTables(null, null, "%", new String[] { "TABLE" });
-			
-			while (resultSet.next())
-			{
-				String table = resultSet.getString("TABLE_NAME");
-				tableList.add(table);
-			}
-			
-			resultSet.close();
-
-			Operation operation = new Operation()
-			{
-				public Object execute(Database database, Object sqlObject) throws java.sql.SQLException
-				{
-					return database.connect(DatabaseCluster.this.getConnectionFactory());
-				}
-			};
-
-			ConnectionProxy connectionProxy = new ConnectionProxy(this.getConnectionFactory(), this.getConnectionFactory().executeWrite(operation));
-			
-			connectionProxy.setAutoCommit(false);
-			connectionProxy.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-			
-			Iterator tables = tableList.iterator();
-			
-			while (tables.hasNext())
-			{
-				String table = (String) tables.next();
-				Statement statement = connectionProxy.createStatement();
-				
-				statement.execute("SELECT count(*) FROM " + table);
-			}
-			
-			strategy.synchronize(connection, connectionProxy, tableList);
-			
-			this.activate(database);
-			
-			connectionProxy.rollback();
-			connectionProxy.close();
+			this.activate(database, strategy);
 		}
 		catch (ClassNotFoundException e)
 		{
@@ -136,6 +94,58 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 		{
 			throw new SQLException(e);
 		}
+	}
+	
+	public void activate(Database database, DatabaseSynchronizationStrategy strategy) throws java.sql.SQLException
+	{
+		Connection connection = database.connect(this.getConnectionFactory());
+		List tableList = new LinkedList();
+		
+		DatabaseMetaData databaseMetaData = connection.getMetaData();
+		ResultSet resultSet = databaseMetaData.getTables(null, null, "%", new String[] { "TABLE" });
+		
+		while (resultSet.next())
+		{
+			String table = resultSet.getString("TABLE_NAME");
+			tableList.add(table);
+		}
+		
+		resultSet.close();
+
+		Operation operation = new Operation()
+		{
+			public Object execute(Database database, Object sqlObject) throws java.sql.SQLException
+			{
+				return database.connect(DatabaseCluster.this.getConnectionFactory());
+			}
+		};
+
+		ConnectionProxy connectionProxy = new ConnectionProxy(this.getConnectionFactory(), this.getConnectionFactory().executeWrite(operation));
+		
+		connectionProxy.setAutoCommit(false);
+		connectionProxy.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+		
+		// Lock all tables
+		Statement statement = connectionProxy.createStatement();
+		Iterator tables = tableList.iterator();
+		
+		while (tables.hasNext())
+		{
+			String table = (String) tables.next();
+			
+			statement.addBatch("SELECT count(*) FROM " + table);
+		}
+		
+		statement.executeBatch();
+		statement.close();
+		
+		strategy.synchronize(connection, connectionProxy, tableList);
+		
+		this.activate(database);
+		
+		// Release table locks
+		connectionProxy.rollback();
+		connectionProxy.close();
 	}
 	
 	public void activate(String databaseId) throws java.sql.SQLException
