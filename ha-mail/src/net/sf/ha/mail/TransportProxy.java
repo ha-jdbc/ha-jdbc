@@ -440,8 +440,6 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 		public ConnectorThread(Transport transport, URLName url)
 		{
 			super(TransportProxy.this.connectorThreadGroup, (Runnable) null);
-
-			this.setDaemon(true);
 			
 			this.transport = transport;
 			this.url = url;
@@ -497,8 +495,6 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 		public SenderThread(Transport transport, Message message, Address[] addresses)
 		{
 			super(TransportProxy.this.senderThreadGroup, (Runnable) null);
-
-			this.setDaemon(true);
 
 			this.transport = transport;
 			this.message = message;
