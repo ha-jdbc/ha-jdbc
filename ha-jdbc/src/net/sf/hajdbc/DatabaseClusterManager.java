@@ -33,5 +33,5 @@ public interface DatabaseClusterManager
 	
 	public Set getClusterSet(Class databaseClass);
 	
-	public void deactivate(String clusterName, Database database);
+	public boolean deactivate(String clusterName, Database database);
 }
