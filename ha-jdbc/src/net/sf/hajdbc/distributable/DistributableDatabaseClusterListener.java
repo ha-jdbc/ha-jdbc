@@ -6,15 +6,18 @@
 package net.sf.hajdbc.distributable;
 
 import java.io.Serializable;
+import java.sql.SQLException;
+
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.DatabaseClusterDescriptor;
+import net.sf.hajdbc.DatabaseClusterFactory;
+import net.sf.hajdbc.DatabaseClusterListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;
 import org.jgroups.blocks.NotificationBus;
-import org.jgroups.util.Command;
-
-import net.sf.hajdbc.DatabaseClusterDescriptor;
-import net.sf.hajdbc.DatabaseClusterListener;
 
 /**
  * @author  Paul Ferraro
@@ -25,11 +28,13 @@ public class DistributableDatabaseClusterListener implements DatabaseClusterList
 {
 	private static Log log = LogFactory.getLog(DistributableDatabaseClusterListener.class);
 	
+	private String databaseClusterName;
 	private NotificationBus notificationBus;
 	
 	public DistributableDatabaseClusterListener(DatabaseClusterDescriptor descriptor, String protocol) throws Exception
 	{
-		this.notificationBus = new NotificationBus(descriptor.getName(), protocol);
+		this.databaseClusterName = descriptor.getName();
+		this.notificationBus = new NotificationBus(this.databaseClusterName, protocol);
 		this.notificationBus.setConsumer(this);
 		this.notificationBus.start();
 	}
@@ -39,9 +44,18 @@ public class DistributableDatabaseClusterListener implements DatabaseClusterList
 	 */
 	public void handleNotification(Serializable object)
 	{
-		Command command = (Command) object;
+		DatabaseCommand command = (DatabaseCommand) object;
 		
-		command.execute();
+		try
+		{
+			DatabaseCluster databaseCluster = DatabaseClusterFactory.getInstance().getDatabaseCluster(this.databaseClusterName);
+			
+			command.execute(databaseCluster);
+		}
+		catch (SQLException e)
+		{
+			log.error("Failed to execute " + command + " on database cluster " + this.databaseClusterName, e);
+		}
 	}
 
 	/**
@@ -74,5 +88,10 @@ public class DistributableDatabaseClusterListener implements DatabaseClusterList
 	protected void finalize()
 	{
 		this.notificationBus.stop();
+	}
+	
+	public void deactivated(Database database)
+	{
+		this.notificationBus.sendNotification(new DatabaseDeactivationCommand(database.getId()));
 	}
 }

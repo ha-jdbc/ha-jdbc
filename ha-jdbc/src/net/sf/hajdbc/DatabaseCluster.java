@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,6 +42,7 @@ public class DatabaseCluster extends SQLProxy implements DatabaseClusterMBean
 {
 	private Set activeDatabaseSet = new LinkedHashSet();
 	private DatabaseClusterDescriptor descriptor;
+	private List databaseClusterListenerList = new LinkedList();
 	
 	/**
 	 * Constructs a new DatabaseCluster.
@@ -89,7 +91,6 @@ public class DatabaseCluster extends SQLProxy implements DatabaseClusterMBean
 	public boolean isActive(Database database)
 	{
 		Connection connection = null;
-		Statement statement = null;
 		
 		Object databaseConnector = this.getSQLObject(database);
 		
@@ -97,9 +98,11 @@ public class DatabaseCluster extends SQLProxy implements DatabaseClusterMBean
 		{
 			connection = database.connect(databaseConnector);
 			
-			statement = connection.createStatement();
+			Statement statement = connection.createStatement();
 			
 			statement.execute(this.descriptor.getValidateSQL());
+
+			statement.close();
 			
 			return true;
 		}
@@ -109,18 +112,6 @@ public class DatabaseCluster extends SQLProxy implements DatabaseClusterMBean
 		}
 		finally
 		{
-			if (statement != null)
-			{
-				try
-				{
-					statement.close();
-				}
-				catch (java.sql.SQLException e)
-				{
-					// Ignore
-				}
-			}
-
 			if (connection != null)
 			{
 				try
@@ -211,6 +202,19 @@ public class DatabaseCluster extends SQLProxy implements DatabaseClusterMBean
 		}
 	}
 	
+	public void activate(String databaseId)
+	{
+		this.activate(this.getDatabase(databaseId));
+	}
+	
+	public boolean activate(Database database)
+	{
+		synchronized (this.activeDatabaseSet)
+		{
+			return this.activeDatabaseSet.add(database);
+		}
+	}
+	
 	/**
 	 * Returns the first database in the cluster
 	 * @return the first database in the cluster
@@ -275,5 +279,10 @@ public class DatabaseCluster extends SQLProxy implements DatabaseClusterMBean
 	protected DatabaseCluster getDatabaseCluster()
 	{
 		return this;
+	}
+	
+	public void addDatabaseClusterListener(DatabaseClusterListener listener)
+	{
+		this.databaseClusterListenerList.add(listener);
 	}
 }

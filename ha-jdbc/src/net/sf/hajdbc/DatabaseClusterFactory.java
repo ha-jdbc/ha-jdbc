@@ -10,9 +10,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
@@ -39,7 +41,7 @@ public final class DatabaseClusterFactory
 	private static final String SYSTEM_PROPERTY = "ha-jdbc.configuration";
 	private static final String DEFAULT_RESOURCE = "ha-jdbc.xml";
 	
-	private static Log log = LogFactory.getLog(DatabaseClusterManagerFactory.class);
+	private static Log log = LogFactory.getLog(DatabaseClusterFactory.class);
 	
 	private static DatabaseClusterFactory instance = null;
 	
@@ -53,6 +55,8 @@ public final class DatabaseClusterFactory
 		return instance;
 	}
 	
+	private Map databaseClusterMap;
+	
 	private DatabaseClusterFactory() throws java.sql.SQLException
 	{
 		String resourceName = System.getProperty(SYSTEM_PROPERTY, DEFAULT_RESOURCE);
@@ -65,6 +69,7 @@ public final class DatabaseClusterFactory
 		}
 		
 		InputStream inputStream = null;
+		MBeanServer server = null;
 		
 		try
 		{
@@ -75,8 +80,6 @@ public final class DatabaseClusterFactory
 			
 			Configuration configuration = (Configuration) context.unmarshalDocument(new InputStreamReader(inputStream));
 
-			MBeanServer server = null;
-			
 			List serverList = MBeanServerFactory.findMBeanServer(null);
 			
 			if (serverList.isEmpty())
@@ -88,7 +91,9 @@ public final class DatabaseClusterFactory
 				server = (MBeanServer) serverList.get(0);
 			}
 			
-			Iterator descriptors = configuration.getDescriptorList().iterator();
+			List descriptorList = configuration.getDescriptorList();
+			this.databaseClusterMap = new HashMap(descriptorList.size());
+			Iterator descriptors = descriptorList.iterator();
 			
 			while (descriptors.hasNext())
 			{
@@ -97,6 +102,8 @@ public final class DatabaseClusterFactory
 				DatabaseCluster databaseCluster = new DatabaseCluster(descriptor);
 				
 				server.registerMBean(databaseCluster, ObjectName.getInstance("net.sf.hajdbc", "id", databaseCluster.getName()));
+				
+				this.databaseClusterMap.put(descriptor.getName(), databaseCluster);
 			}
 		}
 		catch (IOException e)
@@ -141,8 +148,7 @@ public final class DatabaseClusterFactory
 	
 	public DatabaseCluster getDatabaseCluster(String name)
 	{
-		
-		return null;
+		return (DatabaseCluster) this.databaseClusterMap.get(name);
 	}
 	
 	private static URL getResourceURL(String resourceName)
@@ -183,14 +189,5 @@ public final class DatabaseClusterFactory
 		{
 			return this.descriptorList;
 		}
-/*		
-		private void addDescriptor(Object object)
-		{
-			this.descriptorList.add(object);
-//			DatabaseClusterDescriptor descriptor = (DatabaseClusterDescriptor) object;
-			
-//			this.descriptorMap.put(descriptor.getName(), descriptor);
-		}
-*/
 	}
 }

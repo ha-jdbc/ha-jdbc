@@ -3,6 +3,8 @@
  */
 package net.sf.hajdbc.distributable;
 
+import net.sf.hajdbc.DatabaseCluster;
+
 
 /**
  * @author  Paul Ferraro
@@ -21,10 +23,10 @@ public class DatabaseDeactivationCommand extends DatabaseCommand
 	}
 
 	/**
-	 * @see org.jgroups.util.Command#execute()
+	 * @see net.sf.hajdbc.distributable.DatabaseCommand#execute(net.sf.hajdbc.DatabaseCluster)
 	 */
-	public boolean execute()
+	public void execute(DatabaseCluster databaseCluster)
 	{
-		return false;
+		databaseCluster.deactivate(this.databaseId);
 	}
 }

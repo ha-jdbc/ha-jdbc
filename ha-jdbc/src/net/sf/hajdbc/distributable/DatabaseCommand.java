@@ -8,14 +8,14 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.jgroups.util.Command;
+import net.sf.hajdbc.DatabaseCluster;
 
 /**
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public abstract class DatabaseCommand implements Command, Externalizable
+public abstract class DatabaseCommand implements Externalizable
 {
 	protected String databaseId;
 	
@@ -43,4 +43,6 @@ public abstract class DatabaseCommand implements Command, Externalizable
 	{
 		this.databaseId = input.readUTF();
 	}
+	
+	public abstract void execute(DatabaseCluster databaseCluster);
 }
