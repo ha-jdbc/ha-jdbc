@@ -50,8 +50,7 @@ public final class DriverProxy implements java.sql.Driver
 		}
 		catch (SQLException e)
 		{
-			log.fatal("Failed to initialize " + DriverProxy.class.getName(), e);
-			throw new RuntimeException(e);
+			log.fatal("Failed to register " + DriverProxy.class.getName(), e);
 		}
 	}
 	
