@@ -29,8 +29,6 @@ import java.util.Map;
  */
 public class ConnectionFactoryProxy extends SQLProxy
 {
-	private DatabaseCluster databaseCluster;
-	
 	/**
 	 * Constructs a new ConnectionFactoryProxy.
 	 * @param databaseCluster a database cluster
@@ -38,16 +36,6 @@ public class ConnectionFactoryProxy extends SQLProxy
 	 */
 	public ConnectionFactoryProxy(DatabaseCluster databaseCluster, Map connectionFactoryMap)
 	{
-		super(connectionFactoryMap);
-		
-		this.databaseCluster = databaseCluster;
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.SQLProxy#getDatabaseCluster()
-	 */
-	public DatabaseCluster getDatabaseCluster()
-	{
-		return this.databaseCluster;
+		super(databaseCluster, connectionFactoryMap);
 	}
 }
