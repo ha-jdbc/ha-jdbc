@@ -57,11 +57,6 @@ public final class Driver implements java.sql.Driver
 		}
 	}
 	
-	private Driver()
-	{
-		// private
-	}
-	
 	/**
 	 * @see java.sql.Driver#getMajorVersion()
 	 */
