@@ -28,6 +28,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.beanutils.ConvertUtils;
+
 /**
  * Describes a SynchronizationStrategy implementation.
  * 
@@ -93,7 +95,7 @@ public class SynchronizationStrategyDescriptor
 				
 				if (descriptor.getName().equals(property.getName()))
 				{
-					Object value = this.coerce(property.getDisplayName(), descriptor.getPropertyType());
+					Object value = ConvertUtils.convert(property.getDisplayName(), descriptor.getPropertyType());
 					
 					descriptor.getWriteMethod().invoke(strategy, new Object[] { value });
 				}
@@ -101,30 +103,5 @@ public class SynchronizationStrategyDescriptor
 		}
 		
 		return strategy;
-	}
-	
-	/**
-	 * Coerces the specified value into type specified type.
-	 * Relies on static <code>valueOf()</code> method of type class.
-	 * @param value a string value
-	 * @param type the type to which to coerce
-	 * @return a object of the specified type
-	 * @throws Exception if coersion fails
-	 */
-	private Object coerce(String value, Class type) throws Exception
-	{
-		if (String.class.equals(type))
-		{
-			return value;
-		}
-		
-		try
-		{
-			return type.getMethod("valueOf", new Class[] { String.class }).invoke(null, new Object[] { value });
-		}
-		catch (Exception e)
-		{
-			throw new SQLException(Messages.getMessage(Messages.INVALID_PROPERTY_VALUE, new Object[] { value, type.getName() }));
-		}
 	}
 }
