@@ -40,7 +40,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		return ((Integer) this.executeRead(operation)).intValue();
+		return ((Integer) this.executeGet(operation)).intValue();
 	}
 
 	/**
@@ -56,7 +56,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		return ((Integer) this.executeRead(operation)).intValue();
+		return ((Integer) this.executeGet(operation)).intValue();
 	}
 
 	/**
@@ -72,7 +72,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		return ((Integer) this.executeRead(operation)).intValue();
+		return ((Integer) this.executeGet(operation)).intValue();
 	}
 
 	/**
@@ -88,7 +88,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		return ((Integer) this.executeRead(operation)).intValue();
+		return ((Integer) this.executeGet(operation)).intValue();
 	}
 
 	/**
@@ -104,7 +104,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		return ((Integer) this.executeRead(operation)).intValue();
+		return ((Integer) this.executeGet(operation)).intValue();
 	}
 
 	/**
@@ -120,7 +120,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		return ((Integer) this.executeRead(operation)).intValue();
+		return ((Integer) this.executeGet(operation)).intValue();
 	}
 
 	/**
@@ -136,7 +136,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		return ((Integer) this.executeRead(operation)).intValue();
+		return ((Integer) this.executeGet(operation)).intValue();
 	}
 
 	/**
@@ -152,7 +152,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		return ((Integer) this.executeRead(operation)).intValue();
+		return ((Integer) this.executeGet(operation)).intValue();
 	}
 
 	/**
@@ -168,7 +168,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		return ((Integer) this.executeRead(operation)).intValue();
+		return ((Integer) this.executeGet(operation)).intValue();
 	}
 
 	/**
@@ -204,7 +204,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -222,7 +222,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -256,7 +256,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		return ((Boolean) this.firstItem(this.executeWrite(operation))).booleanValue();
+		return ((Boolean) this.firstItem(this.executeSet(operation))).booleanValue();
 	}
 
 	/**
@@ -290,7 +290,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -308,7 +308,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -326,7 +326,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -362,7 +362,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -378,7 +378,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		return ((Boolean) this.firstItem(this.executeWrite(operation))).booleanValue();
+		return ((Boolean) this.firstItem(this.executeSet(operation))).booleanValue();
 	}
 
 	/**
@@ -396,7 +396,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -430,7 +430,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -552,7 +552,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 
-		return new ResultSetProxy(this, this.executeWrite(operation));
+		return (ResultSet) this.executeGet(operation);
 	}
 
 	/**
@@ -568,7 +568,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 
-		return new ResultSetProxy(this, this.executeWrite(operation));
+		return (this.getResultSetConcurrency() == ResultSet.CONCUR_READ_ONLY) ? (ResultSet) this.executeGet(operation) : new ResultSetProxy(this, this.executeSet(operation));
 	}
 
 	/**
@@ -584,7 +584,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 
-		return (SQLWarning) this.executeRead(operation);
+		return (SQLWarning) this.executeGet(operation);
 	}
 
 	/**
