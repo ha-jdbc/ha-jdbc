@@ -3,8 +3,10 @@ HA-JDBC Versions
 
 1.0-alpha-2
 -----------
-* Added ability specify url of configuration file as system property.
-* Extended CLASSPATH search for configuration file to include system classpath.
+* Added ability specify url of configuration file using "ha-jdbc.configuration" system property
+* Extended CLASSPATH search for non-url configuration file to include system classpath
+* Allow AbstractDataSourceProxy to correctly initialize via reflection so that a Reference can be stored using JNDI
+* DriverProxy now expects the cluster name to match the JDBC url
 * Fixed bug in clean target of ant build file
 
 1.0-alpha-1
