@@ -48,7 +48,16 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	 */
 	public final boolean isAlive(String databaseId) throws java.sql.SQLException
 	{
-		return this.isAlive(this.getDatabase(databaseId));
+		try
+		{
+			return this.isAlive(this.getDatabase(databaseId));
+		}
+		catch (java.sql.SQLException e)
+		{
+			log.warn("Failed to ping database " + databaseId, e);
+			
+			throw e;
+		}
 	}
 
 	/**
@@ -56,7 +65,16 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	 */
 	public final void deactivate(String databaseId) throws java.sql.SQLException
 	{
-		this.deactivate(this.getDatabase(databaseId));
+		try
+		{
+			this.deactivate(this.getDatabase(databaseId));
+		}
+		catch (java.sql.SQLException e)
+		{
+			log.warn("Failed to deactivate database " + databaseId, e);
+			
+			throw e;
+		}
 	}
 
 	/**
@@ -72,40 +90,49 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	 */
 	public final void activate(String databaseId, String strategyClassName) throws java.sql.SQLException
 	{
-		Database database = this.getDatabase(databaseId);
-		
-		// If this database is already active, or there are no active databases then skip synchronization
-		if (this.isActive(database) || this.getActiveDatabaseList().isEmpty())
+		try
 		{
-			this.activate(database);
-		}
-		else
-		{
-			try
+			Database database = this.getDatabase(databaseId);
+			
+			// If this database is already active, or there are no active databases then skip synchronization
+			if (this.isActive(database) || this.getActiveDatabaseList().isEmpty())
 			{
-				Class strategyClass = Class.forName(strategyClassName);
-				
-				if (!SynchronizationStrategy.class.isAssignableFrom(strategyClass))
+				this.activate(database);
+			}
+			else
+			{
+				try
 				{
-					throw new SQLException("Specified synchronization strategy does not implement " + SynchronizationStrategy.class.getName());
+					Class strategyClass = Class.forName(strategyClassName);
+					
+					if (!SynchronizationStrategy.class.isAssignableFrom(strategyClass))
+					{
+						throw new SQLException("Specified synchronization strategy does not implement " + SynchronizationStrategy.class.getName());
+					}
+					
+					SynchronizationStrategy strategy = (SynchronizationStrategy) strategyClass.newInstance();
+	
+					this.activate(database, strategy);
 				}
-				
-				SynchronizationStrategy strategy = (SynchronizationStrategy) strategyClass.newInstance();
-
-				this.activate(database, strategy);
+				catch (ClassNotFoundException e)
+				{
+					throw new SQLException(e);
+				}
+				catch (InstantiationException e)
+				{
+					throw new SQLException(e);
+				}
+				catch (IllegalAccessException e)
+				{
+					throw new SQLException(e);
+				}
 			}
-			catch (ClassNotFoundException e)
-			{
-				throw new SQLException(e);
-			}
-			catch (InstantiationException e)
-			{
-				throw new SQLException(e);
-			}
-			catch (IllegalAccessException e)
-			{
-				throw new SQLException(e);
-			}
+		}
+		catch (java.sql.SQLException e)
+		{
+			log.warn("Failed to activate database " + databaseId, e);
+			
+			throw e;
 		}
 	}
 	
