@@ -11,9 +11,10 @@ import java.util.Map;
  * @version $Revision$
  * @since   1.0
  */
-public class DatabaseCluster extends SQLProxy implements DatabaseEventListener
+public class DatabaseCluster extends SQLProxy
 {
 	private DatabaseClusterDescriptor descriptor;
+	private DatabaseClusterManager manager;
 	
 	/**
 	 * Constructs a new DatabaseCluster.
@@ -21,11 +22,12 @@ public class DatabaseCluster extends SQLProxy implements DatabaseEventListener
 	 * @param databaseMap
 	 * @param validateSQL
 	 */
-	protected DatabaseCluster(DatabaseClusterDescriptor descriptor, Map databaseMap)
+	protected DatabaseCluster(DatabaseClusterManager manager, DatabaseClusterDescriptor descriptor, Map databaseMap)
 	{
 		super(databaseMap);
 		
 		this.descriptor = descriptor;
+		this.manager = manager;
 	}
 	
 	/**
@@ -94,10 +96,8 @@ public class DatabaseCluster extends SQLProxy implements DatabaseEventListener
 		}
 	}
 	
-	/**
-	 * @see net.sf.ha.jdbc.DatabaseEventListener#deactivated(net.sf.ha.jdbc.DatabaseEvent)
-	 */
-	public void deactivated(DatabaseEvent event)
+	public void deactivate(Database database)
 	{
+		this.manager.deactivate(this.descriptor.getName(), database);
 	}
 }
