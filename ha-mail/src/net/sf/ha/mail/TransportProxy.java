@@ -185,6 +185,7 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 	}
 	
 	/**
+	 * Creates and starts a new sender thread using the next available underlying transport.
 	 * @see net.sf.ha.mail.Sender#send(javax.mail.Transport, javax.mail.Message, javax.mail.Address[])
 	 */
 	public void send(Transport transport, Message message, Address[] addresses)
@@ -193,6 +194,7 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 	}
 	
 	/**
+	 * Creates and starts a new connector thread for each underlying transport.
 	 * @see javax.mail.Service#protocolConnect(java.lang.String, int, java.lang.String, java.lang.String)
 	 */
 	protected boolean protocolConnect(String hostList, int port, String user, String password)
@@ -219,6 +221,10 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 		return true;
 	}
 
+	/**
+	 * @param host
+	 * @return
+	 */
 	protected URLName getURLName(String host)
 	{
 		return (URLName) this.urlNameMap.get(host);
@@ -325,6 +331,13 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 	}
 	
 	/**
+	 * Closes the Transport proxy.  Implementation is as follows:
+	 * <ol>
+	 *  <li>Waits until until all sender threads have completed.</li>
+	 * 	<li>Interrupts the execution of any active connector threads</li>
+	 * 	<li>Closes the underlying transports</li>
+	 *  <li>Calls <code>javax.mail.Service.close()</code></li>
+	 * </ol>
 	 * @see javax.mail.Service#close()
 	 */
 	public void close() throws MessagingException
