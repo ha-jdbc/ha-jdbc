@@ -1,0 +1,76 @@
+/*
+ * HA-JDBC: High-Availability JDBC
+ * Copyright (C) 2004 Paul Ferraro
+ * 
+ * This library is free software; you can redistribute it and/or modify it 
+ * under the terms of the GNU Lesser General Public License as published by the 
+ * Free Software Foundation; either version 2.1 of the License, or (at your 
+ * option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+ * for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, 
+ * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * 
+ * Contact: ferraro@users.sourceforge.net
+ */
+package net.sf.hajdbc.pool.xa;
+
+import java.sql.SQLException;
+
+import javax.sql.XAConnection;
+import javax.sql.XADataSource;
+
+import net.sf.hajdbc.pool.ConnectionPoolDataSourceProxy;
+
+/**
+ * @author  Paul Ferraro
+ * @version $Revision$
+ * @since   1.0
+ */
+public class XADataSourceProxy extends ConnectionPoolDataSourceProxy implements XADataSource
+{
+	/**
+	 * @see javax.sql.XADataSource#getXAConnection()
+	 */
+	public XAConnection getXAConnection() throws SQLException
+	{
+		XADataSourceOperation operation = new XADataSourceOperation()
+		{
+			public Object execute(XADataSource dataSource) throws SQLException
+			{
+				return dataSource.getXAConnection();
+			}
+		};
+		
+		return new XAConnectionProxy(this.databaseCluster, this.databaseCluster.executeWrite(operation));
+	}
+
+	/**
+	 * @see javax.sql.XADataSource#getXAConnection(java.lang.String, java.lang.String)
+	 */
+	public XAConnection getXAConnection(final String user, final String password) throws SQLException
+	{
+		XADataSourceOperation operation = new XADataSourceOperation()
+		{
+			public Object execute(XADataSource dataSource) throws SQLException
+			{
+				return dataSource.getXAConnection(user, password);
+			}
+		};
+		
+		return new XAConnectionProxy(this.databaseCluster, this.databaseCluster.executeWrite(operation));
+	}
+	
+	/**
+	 * @see net.sf.ha.jdbc.AbstractDataSourceProxy#getObjectFactoryClass()
+	 */
+	protected Class getObjectFactoryClass()
+	{
+		return XADataSourceProxy.class;
+	}
+}
