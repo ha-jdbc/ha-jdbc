@@ -162,9 +162,10 @@ public abstract class SQLProxy
 			throw exception;
 		}
 		
-		databaseCluster.deactivate(database);
-		
-		log.error("Database " + database.getId() + " of cluster " + this.getDatabaseCluster().getDescriptor().getName() + " was deactivated.", exception);
+		if (databaseCluster.deactivate(database))
+		{
+			log.error("Database " + database.getId() + " from cluster " + this.getDatabaseCluster().getDescriptor().getName() + " was deactivated.", exception);
+		}
 	}
 
 	protected abstract DatabaseCluster getDatabaseCluster();
