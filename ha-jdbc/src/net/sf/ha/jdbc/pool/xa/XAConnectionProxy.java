@@ -17,7 +17,7 @@ public class XAConnectionProxy extends PooledConnectionProxy implements XAConnec
 {
 	/**
 	 * Constructs a new XAConnectionProxy.
-	 * @param driver
+	 * @param databaseCluster
 	 * @param connectionMap
 	 */
 	public XAConnectionProxy(DatabaseCluster databaseCluster, Map connectionMap)

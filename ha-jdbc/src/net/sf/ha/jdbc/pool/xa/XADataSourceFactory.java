@@ -10,7 +10,7 @@ import net.sf.ha.jdbc.AbstractDataSourceFactory;
 public class XADataSourceFactory extends AbstractDataSourceFactory
 {
 	/**
-	 * @see net.sf.ha.jdbc.AbstractObjectFactory#getObjectClass()
+	 * @see net.sf.ha.jdbc.AbstractDataSourceFactory#getObjectClass()
 	 */
 	protected Class getObjectClass()
 	{

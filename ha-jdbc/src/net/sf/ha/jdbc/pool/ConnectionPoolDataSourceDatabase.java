@@ -16,7 +16,7 @@ import net.sf.ha.jdbc.DataSourceDatabase;
 public class ConnectionPoolDataSourceDatabase extends DataSourceDatabase
 {
 	/**
-	 * @see net.sf.ha.jdbc.ConnectionInfo#connect(java.lang.Object)
+	 * @see net.sf.ha.jdbc.Database#connect(java.lang.Object)
 	 */
 	public Connection connect(Object object) throws SQLException
 	{
@@ -26,6 +26,11 @@ public class ConnectionPoolDataSourceDatabase extends DataSourceDatabase
 		return this.getConnection(connection);
 	}
 	
+	/**
+	 * @param connection
+	 * @return
+	 * @throws SQLException
+	 */
 	protected Connection getConnection(PooledConnection connection) throws SQLException
 	{
 		return connection.getConnection();

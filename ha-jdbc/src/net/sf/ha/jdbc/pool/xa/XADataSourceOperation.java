@@ -13,10 +13,15 @@ import net.sf.ha.jdbc.pool.ConnectionPoolDataSourceOperation;
  */
 public abstract class XADataSourceOperation extends ConnectionPoolDataSourceOperation
 {
+	/**
+	 * @param dataSource
+	 * @return
+	 * @throws SQLException
+	 */
 	public abstract Object execute(XADataSource dataSource) throws SQLException;
 	
 	/**
-	 * @see net.sf.hajdbc.pool.ConnectionPoolDataSourceProxy.Operation#execute(net.sf.hajdbc.DataSourceConnectionInfo, javax.sql.ConnectionPoolDataSource)
+	 * @see net.sf.ha.jdbc.pool.ConnectionPoolDataSourceOperation#execute(javax.sql.ConnectionPoolDataSource)
 	 */
 	public final Object execute(ConnectionPoolDataSource dataSource) throws SQLException
 	{
