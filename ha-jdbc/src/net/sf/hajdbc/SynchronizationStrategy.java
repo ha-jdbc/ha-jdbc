@@ -18,26 +18,17 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.sync;
+package net.sf.hajdbc;
 
 import java.sql.Connection;
 import java.util.List;
-
-import net.sf.hajdbc.DatabaseClusterDescriptor;
-import net.sf.hajdbc.DatabaseSynchronizationStrategy;
 
 /**
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public class SimpleDatabaseSynchronizationStrategy implements DatabaseSynchronizationStrategy
+public interface SynchronizationStrategy
 {
-	/**
-	 * @see net.sf.hajdbc.DatabaseSynchronizationStrategy#synchronize(net.sf.hajdbc.DatabaseClusterDescriptor, java.sql.Connection, java.sql.Connection, java.util.List)
-	 */
-	public void synchronize(DatabaseClusterDescriptor descriptor, Connection activeConnection, Connection inactiveConnection, List tableList)
-	{
-		// Do nothing
-	}
+	public void synchronize(DatabaseClusterDescriptor descriptor, Connection activeConnection, Connection inactiveConnection, List tableList) throws java.sql.SQLException;
 }

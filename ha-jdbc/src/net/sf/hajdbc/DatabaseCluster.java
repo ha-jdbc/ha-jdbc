@@ -77,12 +77,12 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 			{
 				Class strategyClass = Class.forName(strategyClassName);
 				
-				if (!DatabaseSynchronizationStrategy.class.isAssignableFrom(strategyClass))
+				if (!SynchronizationStrategy.class.isAssignableFrom(strategyClass))
 				{
-					throw new SQLException("Specified synchronization strategy does not implement " + DatabaseSynchronizationStrategy.class.getName());
+					throw new SQLException("Specified synchronization strategy does not implement " + SynchronizationStrategy.class.getName());
 				}
 				
-				DatabaseSynchronizationStrategy strategy = (DatabaseSynchronizationStrategy) strategyClass.newInstance();
+				SynchronizationStrategy strategy = (SynchronizationStrategy) strategyClass.newInstance();
 
 				this.activate(database, strategy);
 			}
@@ -101,7 +101,7 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 		}
 	}
 	
-	public final void activate(Database inactiveDatabase, DatabaseSynchronizationStrategy strategy) throws java.sql.SQLException
+	public final void activate(Database inactiveDatabase, SynchronizationStrategy strategy) throws java.sql.SQLException
 	{
 		Connection inactiveConnection = null;
 		List databaseList = this.getActiveDatabaseList();

@@ -29,7 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import net.sf.hajdbc.DatabaseClusterDescriptor;
-import net.sf.hajdbc.DatabaseSynchronizationStrategy;
+import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.SQLException;
 
 import org.apache.commons.logging.Log;
@@ -40,11 +40,11 @@ import org.apache.commons.logging.LogFactory;
  * @version $Revision$
  * @since   1.0
  */
-public class CleanDatabaseSynchronizationStrategy implements DatabaseSynchronizationStrategy
+public class FullSynchronizationStrategy implements SynchronizationStrategy
 {
 	private static final int MAX_BATCH_SIZE = 100;
 	
-	private static Log log = LogFactory.getLog(CleanDatabaseSynchronizationStrategy.class);
+	private static Log log = LogFactory.getLog(FullSynchronizationStrategy.class);
 
 	/**
 	 * @see net.sf.hajdbc.DatabaseSynchronizationStrategy#synchronize(net.sf.hajdbc.DatabaseClusterDescriptor, java.sql.Connection, java.sql.Connection, java.util.List)

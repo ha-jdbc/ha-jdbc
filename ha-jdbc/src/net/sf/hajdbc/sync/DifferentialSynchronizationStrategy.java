@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Set;
 
 import net.sf.hajdbc.DatabaseClusterDescriptor;
-import net.sf.hajdbc.DatabaseSynchronizationStrategy;
+import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.SQLException;
 
 import org.apache.commons.logging.Log;
@@ -43,9 +43,9 @@ import org.apache.commons.logging.LogFactory;
  * @version $Revision$
  * @since   1.0
  */
-public class DiffDatabaseSynchronizationStrategy implements DatabaseSynchronizationStrategy
+public class DifferentialSynchronizationStrategy implements SynchronizationStrategy
 {
-	private static Log log = LogFactory.getLog(DiffDatabaseSynchronizationStrategy.class);
+	private static Log log = LogFactory.getLog(DifferentialSynchronizationStrategy.class);
 
 	/**
 	 * @see net.sf.hajdbc.DatabaseSynchronizationStrategy#synchronize(net.sf.hajdbc.DatabaseClusterDescriptor, java.sql.Connection, java.sql.Connection, java.util.List)
