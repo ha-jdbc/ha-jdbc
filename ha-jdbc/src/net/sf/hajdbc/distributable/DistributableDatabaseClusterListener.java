@@ -92,6 +92,6 @@ public class DistributableDatabaseClusterListener implements DatabaseClusterList
 	
 	public void deactivated(Database database)
 	{
-		this.notificationBus.sendNotification(new DatabaseDeactivationCommand(database.getId()));
+		this.notificationBus.sendNotification(new DatabaseDeactivationCommand(database));
 	}
 }
