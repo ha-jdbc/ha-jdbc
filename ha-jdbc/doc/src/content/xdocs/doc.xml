@@ -25,9 +25,6 @@
 					</ul>
 				</li>
 				<li>
-					<p>Exclusive write access to each database in the cluster.</p>
-				</li>
-				<li>
 					<p>All databases in cluster must initially be in sync.</p>
 				</li>
 			</ul>
