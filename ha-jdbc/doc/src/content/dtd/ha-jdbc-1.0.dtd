@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   HA-JDBC 1.0 DTD
+
+   This DTD module is identified by the PUBLIC and SYSTEM identifiers:
+
+   PUBLIC "-//HA-JDBC//DTD HA-JDBC 1.0//EN"
+   SYSTEM "http://ha-jdbc.sourceforge.net/dtd/ha-jdbc-1.0.dtd"
+-->
+<!ELEMENT ha-jdbc (local|distributed)>
+<!ELEMENT local (cluster+)>
+<!ELEMENT distributable (cluster+)>
+<!ATTLIST distributable
+	protocol CDATA #REQUIRED
+>
+<!ELEMENT cluster ((database+)|(datasource+)|(pooled-datasource+)|(xa-datasource+))>
+<!ATTLIST cluster
+	name CDATA #REQUIRED
+	validate-sql CDATA #IMPLIED
+>
+<!ELEMENT database (user,password)?>
+<!ATTLIST database
+	url CDATA #REQUIRED
+	driver CDATA #REQUIRED
+>
+<!ELEMENT datasource (user,password)?>
+<!ATTLIST datasource name CDATA #REQUIRED>
+<!ELEMENT pool-datasource (user,password)?>
+<!ATTLIST pool-datasource name CDATA #REQUIRED>
+<!ELEMENT xa-datasource (user,password)?>
+<!ATTLIST xa-datasource name CDATA #REQUIRED>
+<!ELEMENT user (#PCDATA)>
+<!ELEMENT password (#PCDATA)>
