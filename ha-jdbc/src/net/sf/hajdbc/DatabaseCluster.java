@@ -21,8 +21,8 @@
 package net.sf.hajdbc;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Map;
 
 /**
@@ -70,7 +70,7 @@ public class DatabaseCluster extends SQLProxy
 	public boolean isActive(Database database)
 	{
 		Connection connection = null;
-		PreparedStatement statement = null;
+		Statement statement = null;
 		
 		Object object = this.getObject(database);
 		
@@ -78,9 +78,9 @@ public class DatabaseCluster extends SQLProxy
 		{
 			connection = database.connect(object);
 			
-			statement = connection.prepareStatement(this.descriptor.getValidateSQL());
+			statement = connection.createStatement();
 			
-			statement.executeQuery();
+			statement.execute(this.descriptor.getValidateSQL());
 			
 			return true;
 		}
