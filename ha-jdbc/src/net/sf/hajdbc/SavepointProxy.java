@@ -50,7 +50,7 @@ public class SavepointProxy extends SQLProxy implements Savepoint
 		{
 			public Object execute(Savepoint savepoint) throws SQLException
 			{
-				return Integer.valueOf(savepoint.getSavepointId());
+				return new Integer(savepoint.getSavepointId());
 			}
 		};
 		

@@ -291,9 +291,9 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 			
 			if (log.isInfoEnabled())
 			{
-				log.info(Messages.getMessage(Messages.INSERT_COUNT, new Object[] { Integer.valueOf(insertCount), table }));
-				log.info(Messages.getMessage(Messages.UPDATE_COUNT, new Object[] { Integer.valueOf(updateCount), table }));
-				log.info(Messages.getMessage(Messages.DELETE_COUNT, new Object[] { Integer.valueOf(deleteCount), table }));
+				log.info(Messages.getMessage(Messages.INSERT_COUNT, new Object[] { new Integer(insertCount), table }));
+				log.info(Messages.getMessage(Messages.UPDATE_COUNT, new Object[] { new Integer(updateCount), table }));
+				log.info(Messages.getMessage(Messages.DELETE_COUNT, new Object[] { new Integer(deleteCount), table }));
 			}
 			
 			inactiveStatement.close();

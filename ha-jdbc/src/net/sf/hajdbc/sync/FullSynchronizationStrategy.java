@@ -120,7 +120,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 			
 			if (log.isInfoEnabled())
 			{
-				log.info(Messages.getMessage(Messages.DELETE_COUNT, new Object[] { Integer.valueOf(deletedRows), table }));
+				log.info(Messages.getMessage(Messages.DELETE_COUNT, new Object[] { new Integer(deletedRows), table }));
 			}
 			
 			deleteStatement.close();
@@ -199,7 +199,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 
 			if (log.isInfoEnabled())
 			{
-				log.info(Messages.getMessage(Messages.INSERT_COUNT, new Object[] { Integer.valueOf(statementCount), table }));
+				log.info(Messages.getMessage(Messages.INSERT_COUNT, new Object[] { new Integer(statementCount), table }));
 			}
 			
 			insertStatement.close();
@@ -251,7 +251,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 	 */
 	public Integer getMaxBatchSize()
 	{
-		return Integer.valueOf(this.maxBatchSize);
+		return new Integer(this.maxBatchSize);
 	}
 	
 	/**
