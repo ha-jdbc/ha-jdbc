@@ -40,7 +40,7 @@ public abstract class AbstractDataSource implements Referenceable
 	 */
 	public String getName()
 	{
-		return this.connectionFactory.getDatabaseCluster().getName();
+		return this.connectionFactory.getDatabaseCluster().getId();
 	}
 	
 	public void setName(String name) throws java.sql.SQLException

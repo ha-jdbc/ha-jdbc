@@ -117,11 +117,11 @@ public final class DatabaseClusterFactory
 					databaseCluster = decoratorDescriptor.decorate(databaseCluster);
 				}
 				
-				ObjectName name = ObjectName.getInstance("net.sf.hajdbc", "cluster", ObjectName.quote(databaseCluster.getName()));
+				ObjectName name = ObjectName.getInstance("net.sf.hajdbc", "cluster", ObjectName.quote(databaseCluster.getId()));
 				
 				server.registerMBean(databaseCluster, name);
 				
-				this.databaseClusterMap.put(descriptor.getName(), databaseCluster);
+				this.databaseClusterMap.put(descriptor.getId(), databaseCluster);
 			}
 		}
 		catch (Exception e)

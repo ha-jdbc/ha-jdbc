@@ -34,7 +34,7 @@ import net.sf.hajdbc.DatabaseClusterDescriptor;
  */
 public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 {
-	private String name;
+	private String id;
 	private String validateSQL;
 	private String createForeignKeySQL;
 	private String dropForeignKeySQL;
@@ -63,9 +63,9 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 	/**
 	 * @return the name of this database cluster
 	 */
-	public String getName()
+	public String getId()
 	{
-		return this.name;
+		return this.id;
 	}
 	
 	/**

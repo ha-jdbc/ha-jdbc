@@ -41,9 +41,9 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#getName()
 	 */
-	public final String getName()
+	public final String getId()
 	{
-		return this.databaseCluster.getName();
+		return this.databaseCluster.getId();
 	}
 	
 	/**
@@ -102,5 +102,15 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 	public final Set getNewDatabaseSet(Collection databases)
 	{
 		return this.databaseCluster.getNewDatabaseSet(databases);
+	}
+	
+	public final Collection getActiveDatabases() throws java.sql.SQLException
+	{
+		return this.databaseCluster.getActiveDatabases();
+	}
+	
+	public final Collection getInactiveDatabases() throws java.sql.SQLException
+	{
+		return this.databaseCluster.getInactiveDatabases();
 	}
 }

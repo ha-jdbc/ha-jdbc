@@ -210,6 +210,10 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	public abstract Database nextDatabase() throws java.sql.SQLException;
 
 	public abstract List getActiveDatabaseList() throws java.sql.SQLException;
+
+	public abstract Collection getActiveDatabases() throws java.sql.SQLException;
+
+	public abstract Collection getInactiveDatabases() throws java.sql.SQLException;
 	
 	public abstract ConnectionFactoryProxy getConnectionFactory();
 	

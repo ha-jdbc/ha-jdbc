@@ -46,7 +46,7 @@ public class DistributableDatabaseCluster extends DatabaseClusterDecorator imple
 	{
 		super(databaseCluster);
 		
-		this.notificationBus = new NotificationBus(databaseCluster.getName(), descriptor.getProtocol());
+		this.notificationBus = new NotificationBus(databaseCluster.getId(), descriptor.getProtocol());
 		this.notificationBus.setConsumer(this);
 		this.notificationBus.start();
 	}
@@ -90,7 +90,7 @@ public class DistributableDatabaseCluster extends DatabaseClusterDecorator imple
 		}
 		catch (java.sql.SQLException e)
 		{
-			log.error("Failed to execute " + command + " on database cluster " + this.databaseCluster.getName(), e);
+			log.error("Failed to execute " + command + " on database cluster " + this.databaseCluster.getId(), e);
 		}
 	}
 

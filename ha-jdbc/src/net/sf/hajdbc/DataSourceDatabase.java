@@ -51,14 +51,6 @@ public class DataSourceDatabase extends AbstractDatabase
 	{
 		this.name = name;
 	}
-
-	/**
-	 * @see net.sf.hajdbc.Database#getId()
-	 */
-	public String getId()
-	{
-		return this.name;
-	}
 	
 	/**
 	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)

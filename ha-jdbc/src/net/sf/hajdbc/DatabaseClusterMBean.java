@@ -20,7 +20,7 @@
  */
 package net.sf.hajdbc;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * @author  Paul Ferraro
@@ -33,7 +33,7 @@ public interface DatabaseClusterMBean
 	 * Returns the name of this database cluster.
 	 * @return the database cluster name
 	 */
-	public String getName();
+	public String getId();
 	
 	/**
 	 * Determines whether or not the specified database is responsive
@@ -69,5 +69,11 @@ public interface DatabaseClusterMBean
 	 * Returns a list of active databases in this cluster.
 	 * @return a list of database objects
 	 */
-	public List getActiveDatabaseList() throws java.sql.SQLException;
+	public Collection getActiveDatabases() throws java.sql.SQLException;
+	
+	/**
+	 * Returns a list of active databases in this cluster.
+	 * @return a list of database objects
+	 */
+	public Collection getInactiveDatabases() throws java.sql.SQLException;
 }

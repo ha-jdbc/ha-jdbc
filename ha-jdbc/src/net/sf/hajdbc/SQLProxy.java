@@ -198,7 +198,7 @@ public abstract class SQLProxy
 		{
 			if (exceptionMap.isEmpty())
 			{
-				throw new SQLException("No active databases in cluster " + this.getDatabaseCluster().getName());
+				throw new SQLException("No active databases in cluster " + this.getDatabaseCluster().getId());
 			}
 			
 			throw new SQLException((Throwable) exceptionMap.get(databaseList.get(0)));
@@ -288,7 +288,7 @@ public abstract class SQLProxy
 		
 		if (databaseCluster.deactivate(database))
 		{
-			log.error("Database " + database.getId() + " from cluster " + databaseCluster.getName() + " was deactivated.", cause);
+			log.error("Database " + database.getId() + " from cluster " + databaseCluster.getId() + " was deactivated.", cause);
 		}
 	}
 	

@@ -154,9 +154,9 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#getName()
 	 */
-	public String getName()
+	public String getId()
 	{
-		return this.descriptor.getName();
+		return this.descriptor.getId();
 	}
 
 	public DatabaseClusterDescriptor getDescriptor()
@@ -180,7 +180,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 		{
 			if (this.activeDatabaseSet.size() == 0)
 			{
-				throw new SQLException("No active databases in cluster " + this.getName());
+				throw new SQLException("No active databases in cluster " + this.getId());
 			}
 			
 			return (Database) this.activeDatabaseSet.iterator().next();
@@ -220,11 +220,28 @@ public class LocalDatabaseCluster extends DatabaseCluster
 		{
 			if (this.activeDatabaseSet.size() == 0)
 			{
-				throw new SQLException("No active databases in cluster " + this.getName());
+				throw new SQLException("No active databases in cluster " + this.getId());
 			}
 			
 			return new ArrayList(this.activeDatabaseSet);
 		}
+	}
+	
+	public Collection getActiveDatabases() throws SQLException
+	{
+		return this.getActiveDatabaseList();
+	}
+
+	public Collection getInactiveDatabases()
+	{
+		Set databaseSet = new HashSet(this.descriptor.getDatabaseMap().values());
+
+		synchronized (this.activeDatabaseSet)
+		{
+			databaseSet.removeAll(this.activeDatabaseSet);
+		}
+
+		return databaseSet;
 	}
 	
 	/**
@@ -236,7 +253,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 		
 		if (database == null)
 		{
-			throw new SQLException("The database cluster '" + this.getName() + "' does not contain the database '" + databaseId + "'.");
+			throw new SQLException("The database cluster '" + this.getId() + "' does not contain the database '" + databaseId + "'.");
 		}
 		
 		return database;

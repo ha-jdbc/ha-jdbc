@@ -29,7 +29,7 @@ public interface DatabaseClusterDescriptor
 {
 	public DatabaseCluster createDatabaseCluster() throws java.sql.SQLException;
 	
-	public String getName();
+	public String getId();
 
 	public String getValidateSQL();
 	

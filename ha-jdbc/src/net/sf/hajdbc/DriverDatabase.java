@@ -98,14 +98,6 @@ public class DriverDatabase extends AbstractDatabase
 		this.user = properties.getProperty(USER);
 		this.password = properties.getProperty(PASSWORD);
 	}
-
-	/**
-	 * @see net.sf.hajdbc.Database#getId()
-	 */
-	public String getId()
-	{
-		return this.url;
-	}
 	
 	/**
 	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)

@@ -27,8 +27,25 @@ package net.sf.hajdbc;
  */
 public abstract class AbstractDatabase implements Database
 {
+	protected String id;
 	protected String user;
 	protected String password;
+
+	/**
+	 * @see net.sf.hajdbc.Database#getId()
+	 */
+	public String getId()
+	{
+		return this.id;
+	}
+	
+	/**
+	 * @param id
+	 */
+	public void setId(String id)
+	{
+		this.id = id;
+	}
 	
 	/**
 	 * @return the database user
@@ -67,7 +84,7 @@ public abstract class AbstractDatabase implements Database
 	 */
 	public int hashCode()
 	{
-		return this.getId().hashCode();
+		return this.id.hashCode();
 	}
 	
 	/**
@@ -75,14 +92,14 @@ public abstract class AbstractDatabase implements Database
 	 */
 	public boolean equals(Object object)
 	{
-		if ((object == null) || !this.getClass().isInstance(object))
+		if ((object == null) || !Database.class.isInstance(object))
 		{
 			return false;
 		}
 		
 		Database database = (Database) object;
 		
-		return this.getId().equals(database.getId());
+		return this.id.equals(database.getId());
 	}
 	
 	/**
@@ -90,6 +107,6 @@ public abstract class AbstractDatabase implements Database
 	 */
 	public String toString()
 	{
-		return this.getId();
+		return this.id;
 	}
 }
