@@ -30,15 +30,39 @@
 <!ATTLIST distributable
 	protocol CDATA #REQUIRED
 >
-<!ELEMENT cluster (validate-sql?, create-foreign-key-sql?, drop-foreign-key-sql?, create-index-sql?, drop-index-sql?, (database+ | datasource+ | pool-datasource+ | xa-datasource+))>
+<!ELEMENT cluster (validate-sql?, truncate-table-sql?, create-foreign-key-sql?, drop-foreign-key-sql?, create-index-sql?, drop-index-sql?, default-sync-strategy, (database+ | datasource+ | pool-datasource+ | xa-datasource+))>
 <!ATTLIST cluster
 	name CDATA #REQUIRED
 >
+
+<!-- Used to test whether or not a database is alive -->
 <!ELEMENT validate-sql (#PCDATA)>
+
+<!-- Used by FullSynchronizationStrategy to delete all rows from a given table -->
+<!-- Defaults to ANSI SQL-92 compliant command -->
+<!ELEMENT truncate-table-sql (#PCDATA)>
+
+<!-- Used by FullSynchronizationStrategy and DifferentialSynchronizationStrategy to re-create a foreign key on a given table -->
+<!-- Defaults to ANSI SQL-92 compliant command -->
 <!ELEMENT create-foreign-key-sql (#PCDATA)>
+
+<!-- Used by FullSynchronizationStrategy and DifferentialSynchronizationStrategy to drop a foreign key from a given table -->
+<!-- Defaults to ANSI SQL-92 compliant command -->
 <!ELEMENT drop-foreign-key-sql (#PCDATA)>
+
+<!-- Used by FullSynchronizationStrategy to re-create a non-unique index on a given table -->
+<!-- Not used if no non-unique indexes exist -->
+<!-- Defaults to common form of command -->
 <!ELEMENT create-index-sql (#PCDATA)>
+
+<!-- Used by FullSynchronizationStrategy to drop a non-unique index from a given table -->
+<!-- Not used if no non-unique indexes exist -->
+<!-- Defaults to common form of command -->
 <!ELEMENT drop-index-sql (#PCDATA)>
+
+<!-- Synchronization strategy used during activation when no strategy is specified -->
+<!-- Defaults to net.sf.hajdbc.sync.FullSynchronizationStrategy -->
+<!ELEMENT default-sync-strategy (#PCDATA)>
 
 <!ENTITY % authentication-info "(user, password)?">
 
