@@ -253,10 +253,8 @@
 				</p>
 				<p>e.g.</p>
 				<p>
-					<code><![CDATA[<?xml version="1.0"?>]]></code><br/>
-					<code><![CDATA[<!DOCTYPE ha-jdbc SYSTEM "ha-jdbc.dtd">]]></code><br/>
 					<code><![CDATA[<ha-jdbc>]]></code><br/>
-					<code>&nbsp;&nbsp;<![CDATA[<distributable protocol="UDP(mcast_addr=228.10.9.8;mcast_port=5678):PING:FD:GMS]]></code><br/>
+					<code>&nbsp;&nbsp;<![CDATA[<distributable protocol="UDP(mcast_addr=228.10.9.8;mcast_port=5678):PING:FD:GMS">]]></code><br/>
 					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<cluster name="...">]]></code><br/>
 					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<!-- ... -->]]></code><br/>
 					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</cluster>]]></code><br/>
