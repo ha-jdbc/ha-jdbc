@@ -12,7 +12,7 @@
 			automatically be used for entries of type <foo>. -->
 		<release version="1.0-beta-5" date="March 3, 2005">
 			<action type="update" dev="PF">
-				Added better data type support for SynchronizationStrategy property initialization.
+				Added better data type support for SynchronizationStrategy properties.
 			</action>
 			<action type="fix" dev="PF">
 				Fixed Java 1.4 compatibility.
