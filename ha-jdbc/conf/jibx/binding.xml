@@ -7,7 +7,7 @@
 		</structure>
 		<collection field="descriptorList" type="java.util.LinkedList"></collection>
 	</mapping>
-	<mapping name="cluster" class="net.sf.hajdbc.DatabaseClusterDescriptor" value-style="attribute">
+	<mapping name="cluster" class="net.sf.hajdbc.local.LocalDatabaseClusterDescriptor" value-style="attribute">
 		<value name="name" field="name"></value>
 		<value name="validate-sql" field="validateSQL" usage="optional" default="SELECT 1"></value>
 		<value name="create-foreign-key-sql" field="createForeignKeySQL" usage="optional" default="ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4})"></value>
