@@ -126,7 +126,7 @@ public final class DatabaseClusterFactory
 		}
 		catch (Exception e)
 		{
-			throw new SQLException("Failed to read or parse " + resourceURL, e);
+			throw new SQLException("Failed to configure HA-JDBC using " + resourceURL, e);
 		}
 		finally
 		{
