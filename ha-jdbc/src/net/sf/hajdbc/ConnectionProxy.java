@@ -137,7 +137,7 @@ public class ConnectionProxy extends AbstractConnectionProxy implements java.sql
 		{
 			public Object execute(Database database, Connection connection) throws SQLException
 			{
-				connection.commit();
+				connection.rollback();
 				
 				return null;
 			}
