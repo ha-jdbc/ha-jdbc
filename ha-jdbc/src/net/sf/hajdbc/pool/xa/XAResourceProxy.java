@@ -23,7 +23,6 @@ package net.sf.hajdbc.pool.xa;
 import java.sql.SQLException;
 import java.util.Map;
 
-import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
@@ -61,7 +60,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, XAResource resource) throws XAException
+			public Object execute(XADataSourceDatabase database, XAResource resource) throws javax.transaction.xa.XAException
 			{
 				return new Integer(resource.getTransactionTimeout());
 			}
@@ -77,7 +76,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, XAResource resource) throws XAException
+			public Object execute(XADataSourceDatabase database, XAResource resource) throws javax.transaction.xa.XAException
 			{
 				return Boolean.valueOf(resource.setTransactionTimeout(seconds));
 			}
@@ -93,7 +92,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, XAResource resource) throws XAException
+			public Object execute(XADataSourceDatabase database, XAResource resource) throws javax.transaction.xa.XAException
 			{
 				if (this.getClass().isInstance(xaResource))
 				{
@@ -116,7 +115,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, XAResource resource) throws XAException
+			public Object execute(XADataSourceDatabase database, XAResource resource) throws javax.transaction.xa.XAException
 			{
 				return resource.recover(flag);
 			}
@@ -132,7 +131,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, XAResource resource) throws XAException
+			public Object execute(XADataSourceDatabase database, XAResource resource) throws javax.transaction.xa.XAException
 			{
 				return new Integer(resource.prepare(id));
 			}
@@ -148,7 +147,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, XAResource resource) throws XAException
+			public Object execute(XADataSourceDatabase database, XAResource resource) throws javax.transaction.xa.XAException
 			{
 				resource.forget(id);
 				
@@ -166,7 +165,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, XAResource resource) throws XAException
+			public Object execute(XADataSourceDatabase database, XAResource resource) throws javax.transaction.xa.XAException
 			{
 				resource.rollback(id);
 				
@@ -184,7 +183,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, XAResource resource) throws XAException
+			public Object execute(XADataSourceDatabase database, XAResource resource) throws javax.transaction.xa.XAException
 			{
 				resource.end(id, flag);
 				
@@ -202,7 +201,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, XAResource resource) throws XAException
+			public Object execute(XADataSourceDatabase database, XAResource resource) throws javax.transaction.xa.XAException
 			{
 				resource.start(id, flag);
 				
@@ -220,7 +219,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, XAResource resource) throws XAException
+			public Object execute(XADataSourceDatabase database, XAResource resource) throws javax.transaction.xa.XAException
 			{
 				resource.commit(id, onePhase);
 				
@@ -239,9 +238,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 		}
 		catch (SQLException e)
 		{
-			XAException exception = new XAException(e.getMessage());
-			exception.initCause(e);
-			throw exception;
+			throw new XAException(e);
 		}
 	}
 
@@ -253,26 +250,10 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 		}
 		catch (SQLException e)
 		{
-			XAException exception = new XAException(e.getMessage());
-			exception.initCause(e);
-			throw exception;
+			throw new XAException(e);
 		}
 	}
-/*	
-	private Object executeRead(XAResourceOperation operation) throws XAException
-	{
-		try
-		{
-			return super.executeRead(operation);
-		}
-		catch (SQLException e)
-		{
-			XAException exception = new XAException(e.getMessage());
-			exception.initCause(e);
-			throw exception;
-		}
-	}
-*/	
+
 	private Object executeGet(XAResourceOperation operation) throws XAException
 	{
 		try
@@ -281,9 +262,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 		}
 		catch (SQLException e)
 		{
-			XAException exception = new XAException(e.getMessage());
-			exception.initCause(e);
-			throw exception;
+			throw new XAException(e);
 		}
 	}
 }

@@ -20,34 +20,39 @@
  */
 package net.sf.hajdbc.pool.xa;
 
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-
-import net.sf.hajdbc.Database;
-import net.sf.hajdbc.Operation;
-import net.sf.hajdbc.SQLException;
-
 /**
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public abstract class XAResourceOperation implements Operation
+public class XAException extends javax.transaction.xa.XAException
 {
-	public abstract Object execute(XADataSourceDatabase database, XAResource resource) throws XAException;
-	
 	/**
-	 * @see net.sf.hajdbc.Operation#execute(net.sf.hajdbc.Database, java.lang.Object)
+	 * Constructs a new XAException.
+	 * 
 	 */
-	public Object execute(Database database, Object object) throws SQLException
+	public XAException(String message)
 	{
-		try
-		{
-			return this.execute((XADataSourceDatabase) database, (XAResource) object);
-		}
-		catch (XAException e)
-		{
-			throw new SQLException(e);
-		}
+		super(message);
+	}
+
+	/**
+	 * Constructs a new XAException.
+	 * @param arg0
+	 */
+	public XAException(String message, Throwable cause)
+	{
+		super(message);
+		this.initCause(cause);
+	}
+
+	/**
+	 * Constructs a new XAException.
+	 * @param arg0
+	 */
+	public XAException(Throwable cause)
+	{
+		super();
+		this.initCause(cause);
 	}
 }
