@@ -21,53 +21,77 @@ import org.jibx.runtime.JiBXException;
 public class DatabaseClusterManagerFactory
 {
 	private static final String CONFIG_RESOURCE = "ha-jdbc.xml";
+	
 	private static Log log = LogFactory.getLog(DatabaseClusterManagerFactory.class);
+	
 	private static DatabaseClusterManager databaseClusterManager = null;
 	
 	public static synchronized DatabaseClusterManager getClusterManager() throws SQLException
 	{
 		if (databaseClusterManager == null)
 		{
-			URL url = Thread.currentThread().getContextClassLoader().getResource(CONFIG_RESOURCE);
-			InputStream inputStream = null;
-			
-			try
-			{
-				inputStream = url.openStream();
-				
-				IBindingFactory factory = BindingDirectory.getFactory(DatabaseClusterManager.class);
-				IUnmarshallingContext context = factory.createUnmarshallingContext();
-				
-				databaseClusterManager = (DatabaseClusterManager) context.unmarshalDocument(new InputStreamReader(inputStream));
-			}
-			catch (IOException e)
-			{
-				SQLException exception = new SQLException("Failed to read " + url);
-				exception.initCause(e);
-				throw exception;
-			}
-			catch (JiBXException e)
-			{
-				SQLException exception = new SQLException("Failed to parse " + url);
-				exception.initCause(e);
-				throw exception;
-			}
-			finally
-			{
-				if (inputStream != null)
-				{
-					try
-					{
-						inputStream.close();
-					}
-					catch (IOException e)
-					{
-						log.warn("Failed to close " + url, e);
-					}
-				}
-			}
+			databaseClusterManager = loadDatabaseClusterManager();
 		}
 		
 		return databaseClusterManager;
+	}
+	
+	private static DatabaseClusterManager loadDatabaseClusterManager() throws SQLException
+	{
+		URL url = Thread.currentThread().getContextClassLoader().getResource(CONFIG_RESOURCE);
+		InputStream inputStream = null;
+		
+		try
+		{
+			inputStream = url.openStream();
+			
+			IBindingFactory factory = BindingDirectory.getFactory(Configuration.class);
+			IUnmarshallingContext context = factory.createUnmarshallingContext();
+			
+			Configuration configuration = (Configuration) context.unmarshalDocument(new InputStreamReader(inputStream));
+			
+			return configuration.getDatabaseClusterManager();
+		}
+		catch (IOException e)
+		{
+			SQLException exception = new SQLException("Failed to read " + url);
+			exception.initCause(e);
+			throw exception;
+		}
+		catch (JiBXException e)
+		{
+			SQLException exception = new SQLException("Failed to parse " + url);
+			exception.initCause(e);
+			throw exception;
+		}
+		finally
+		{
+			if (inputStream != null)
+			{
+				try
+				{
+					inputStream.close();
+				}
+				catch (IOException e)
+				{
+					log.warn("Failed to close " + url, e);
+				}
+			}
+		}
+	}
+	
+	private static class Configuration
+	{
+		private DatabaseClusterManager databaseClusterManager;
+		
+		public DatabaseClusterManager getDatabaseClusterManager()
+		{
+			return this.databaseClusterManager;
+		}
+		
+		public void setDatabaseClusterManager(DatabaseClusterManager databaseClusterManager)
+		{
+			this.databaseClusterManager = databaseClusterManager;
+		}
 	}
 }

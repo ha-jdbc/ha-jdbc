@@ -12,34 +12,35 @@ import org.jgroups.blocks.NotificationBus;
  * @version $Revision$
  * @since   1.0
  */
-public class DistributedDatabaseClusterManager extends DatabaseClusterManager implements DistributedDatabaseClusterManagerMBean, NotificationBus.Consumer
+public class DistributedDatabaseClusterManager extends LocalDatabaseClusterManager implements NotificationBus.Consumer
 {
-	private static final String BUS_NAME = "DistributedDatabaseClusterManager";
+	private static final String BUS_NAME = "DatabaseClusterManager";
 	private static Log log = LogFactory.getLog(DistributedDatabaseClusterManager.class);
 	
 	private NotificationBus notificationBus;
 	
-	public DistributedDatabaseClusterManager()
+	public void setProtocol(String protocol) throws Exception
 	{
-		try
-		{
-			this.notificationBus = new NotificationBus(BUS_NAME);
-			this.notificationBus.start();
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
+		this.notificationBus = new NotificationBus(BUS_NAME, protocol);
+		this.notificationBus.setConsumer(this);
+		this.notificationBus.start();
 	}
 	
 	protected void finalize()
 	{
-		this.notificationBus.stop();
+		if (this.notificationBus != null)
+		{
+			this.notificationBus.stop();
+		}
 	}
 	
-	public void deactivate(DatabaseCluster cluster, Database database)
+	public void deactivate(DatabaseCluster databaseCluster, Database database)
 	{
-		this.notificationBus.sendNotification(new String[] { cluster.getDescriptor().getName(), database.getId() });
+		String clusterName = databaseCluster.getDescriptor().getName();
+		
+		super.deactivate(clusterName, database);
+		
+		this.notificationBus.sendNotification(new String[] { clusterName, database.getId() });
 	}
 
 	/**
