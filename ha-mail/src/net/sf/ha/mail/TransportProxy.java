@@ -151,6 +151,11 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 	 */
 	public void sendMessage(Message message, Address[] addresses) throws MessagingException
 	{
+		if (!this.isConnected())
+		{
+			throw new MessagingException("Transport not connected");
+		}
+		
 		if ((addresses == null) || (addresses.length == 0))
 		{
 			// Nobody will recieve this message
