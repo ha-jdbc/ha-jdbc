@@ -66,8 +66,8 @@ public class LocalDatabaseClusterManager implements DatabaseClusterManager
 		return (Set) this.classMap.get(databaseClass);
 	}
 	
-	public void deactivate(String clusterName, Database database)
+	public boolean deactivate(String clusterName, Database database)
 	{
-		this.getDescriptor(clusterName).removeDatabase(database);
+		return this.getDescriptor(clusterName).removeDatabase(database);
 	}
 }

@@ -54,13 +54,18 @@ public class DistributableDatabaseClusterManager extends LocalDatabaseClusterMan
 		}
 	}
 	
-	public void deactivate(DatabaseCluster databaseCluster, Database database)
+	public boolean deactivate(DatabaseCluster databaseCluster, Database database)
 	{
 		String clusterName = databaseCluster.getDescriptor().getName();
 		
-		super.deactivate(clusterName, database);
+		boolean deativated = super.deactivate(clusterName, database);
 		
-		this.notificationBus.sendNotification(new String[] { clusterName, database.getId() });
+		if (deativated)
+		{
+			this.notificationBus.sendNotification(new String[] { clusterName, database.getId() });
+		}
+		
+		return deativated;
 	}
 
 	/**
