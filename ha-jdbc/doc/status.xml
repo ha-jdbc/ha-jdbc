@@ -10,7 +10,7 @@
 			defined for 'add', 'fix', 'remove', 'update' and 'hack'. If you add
 			src/documentation/resources/images/<foo>.jpg images, these will
 			automatically be used for entries of type <foo>. -->
-		<release version="1.0-beta-4" date="Unreleased">
+		<release version="1.0-beta-4" date="February 18, 2005">
 			<action type="update" dev="PF">
 				getActiveDatabases() and getInactiveDatabases() no longer throw SQLException
 			</action>
