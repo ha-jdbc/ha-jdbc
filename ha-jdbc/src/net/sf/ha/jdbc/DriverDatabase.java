@@ -10,47 +10,13 @@ import java.util.Properties;
  * @version $Revision$
  * @since   1.0
  */
-public class DriverDatabase implements Database
+public class DriverDatabase extends AbstractDatabase
 {
 	private static final String USER = "user";
 	private static final String PASSWORD = "password";
 	
 	private String url;
 	private String driver;
-	private String user;
-	private String password;
-
-	/**
-	 * @return
-	 */
-	public String getUser()
-	{
-		return this.user;
-	}
-	
-	/**
-	 * @param user
-	 */
-	public void setUser(String user)
-	{
-		this.user = user;
-	}
-	
-	/**
-	 * @return
-	 */
-	public String getPassword()
-	{
-		return this.password;
-	}
-	
-	/**
-	 * @param password
-	 */
-	public void setPassword(String password)
-	{
-		this.password = password;
-	}
 	
 	/**
 	 * @return
@@ -112,30 +78,15 @@ public class DriverDatabase implements Database
 		this.user = properties.getProperty(USER);
 		this.password = properties.getProperty(PASSWORD);
 	}
-	
-	/**
-	 * @see java.lang.Object#hashCode()
-	 */
-	public int hashCode()
-	{
-		return this.url.hashCode();
-	}
-	
-	/**
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	public boolean equals(Object object)
-	{
-		if ((object == null) || !DriverDatabase.class.isInstance(object))
-		{
-			return false;
-		}
-		
-		DriverDatabase database = (DriverDatabase) object;
-		
-		return this.url.equals(database.url);
-	}
 
+	/**
+	 * @see net.sf.ha.jdbc.Database#getId()
+	 */
+	public String getId()
+	{
+		return this.url;
+	}
+	
 	/**
 	 * @see net.sf.ha.jdbc.ConnectionInfo#connect(java.lang.Object)
 	 */

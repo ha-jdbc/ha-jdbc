@@ -10,11 +10,9 @@ import javax.sql.DataSource;
  * @version $Revision$
  * @since   1.0
  */
-public class DataSourceDatabase implements Database
+public class DataSourceDatabase extends AbstractDatabase
 {
 	protected String name;
-	protected String user;
-	protected String password;
 	
 	/**
 	 * @return
@@ -31,62 +29,15 @@ public class DataSourceDatabase implements Database
 	{
 		this.name = name;
 	}
-	
-	/**
-	 * @return
-	 */
-	public String getUser()
-	{
-		return this.user;
-	}
-	
-	/**
-	 * @param user
-	 */
-	public void setUser(String user)
-	{
-		this.user = user;
-	}
-	
-	/**
-	 * @return
-	 */
-	public String getPassword()
-	{
-		return this.password;
-	}
-	
-	/**
-	 * @param password
-	 */
-	public void setPassword(String password)
-	{
-		this.password = password;
-	}
-	
-	/**
-	 * @see java.lang.Object#hashCode()
-	 */
-	public int hashCode()
-	{
-		return this.name.hashCode();
-	}
-	
-	/**
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	public boolean equals(Object object)
-	{
-		if ((object == null) || !this.getClass().isInstance(object))
-		{
-			return false;
-		}
-		
-		DataSourceDatabase database = (DataSourceDatabase) object;
-		
-		return this.name.equals(database.name);
-	}
 
+	/**
+	 * @see net.sf.ha.jdbc.Database#getId()
+	 */
+	public String getId()
+	{
+		return this.name;
+	}
+	
 	/**
 	 * @see net.sf.ha.jdbc.Database#connect(java.lang.Object)
 	 */
