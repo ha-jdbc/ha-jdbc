@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ha-jdbc>
+	<cluster name="resolution" type="Driver|DataSource">
+		<databases>
+			<database>
+				<context>java:comp/env/jdbc/resolution</context>
+				<user>postgres</user>
+				<password>postgres</password>
+			</database>
+			<database>
+				<driver>org.postgresql.Driver</driver>
+				<url>jdbc:postgresql://localhost:5432/resolution</url>
+				<user>postgres</user>
+				<password>postgres</password>
+			</database>
+		</databases>
+		<validate-sql>SELECT 1</validate-sql>
+	</cluster>
+</ha-jdbc>
