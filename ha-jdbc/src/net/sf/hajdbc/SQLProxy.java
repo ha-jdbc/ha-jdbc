@@ -21,7 +21,6 @@
 package net.sf.hajdbc;
 
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -88,7 +87,7 @@ public abstract class SQLProxy
 		List databaseList = this.getDatabaseCluster().getDescriptor().getActiveDatabaseList();
 		Set databaseSet = new HashSet(databaseList);
 		
-		Map returnValueMap = Collections.synchronizedMap(new HashMap(databaseList.size()));
+		Map returnValueMap = new HashMap(databaseList.size());
 
 		for (int i = 0; i < databaseList.size(); ++i)
 		{
@@ -193,7 +192,10 @@ public abstract class SQLProxy
 			{
 				Object returnValue = this.operation.execute(this.database, this.object);
 				
-				this.returnValueMap.put(this.database, returnValue);
+				synchronized (this.returnValueMap)
+				{
+					this.returnValueMap.put(this.database, returnValue);
+				}
 			}
 			catch (SQLException e)
 			{
@@ -203,7 +205,10 @@ public abstract class SQLProxy
 				}
 				catch (SQLException exception)
 				{
-					this.returnValueMap.put(this.database, e);
+					synchronized (this.returnValueMap)
+					{
+						this.returnValueMap.put(this.database, e);
+					}
 				}
 			}
 			finally
