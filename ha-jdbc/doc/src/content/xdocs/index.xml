@@ -10,7 +10,7 @@
 			<section>
 				<title>Summary</title>
 				<p>
-					HA-JDBC is a JDBC driver implementation that provides light-weight, transparent clustering capability to groups of homogeneous JDBC-accessed databases.
+					HA-JDBC is a JDBC driver proxy that provides light-weight, transparent clustering capability to any underlying JDBC driver.
 				</p>
 			</section>
 			<section>
@@ -363,9 +363,6 @@
 		</section>
 		<section>
 			<title>Architecture</title>
-			<p>
-				HA-JDBC is a JDBC driver implementation that acts as a proxy to an underlying JDBC driver.
-			</p>
 			<p>
 				JDBC operations are divided into 4 categories:
 			</p>
