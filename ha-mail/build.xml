@@ -5,12 +5,11 @@
 	<property name="lib.dir" location="${basedir}/lib"></property>
 	<property name="lib.compile.dir" location="${lib.dir}/compile"></property>
 	<property name="build.dir" location="${basedir}/build"></property>
-	<property name="jar.dir" location="${basedir}"></property>
-	<property name="jar.file" value="${ant.project.name}.jar"></property>
+	<property name="jar.file" location="${basedir}/${ant.project.name}.jar"></property>
 	
 	<target name="clean">
-		<delete dir="${build.dir}"></delete>
-		<delete file="${jar.dir}/${jar.file}"></delete>
+		<delete dir="${build.dir}" quiet="true"></delete>
+		<delete file="${jar.file}" quiet="true"></delete>
 	</target>
 	
 	<target name="init">
@@ -28,7 +27,7 @@
 	</target>
 	
 	<target name="jar" depends="compile">
-		<jar jarfile="${jar.dir}/${jar.file}">
+		<jar jarfile="${jar.file}">
 			<fileset dir="${build.dir}" includes="**"></fileset>
 		</jar>
 	</target>
