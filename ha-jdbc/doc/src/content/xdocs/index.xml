@@ -14,7 +14,7 @@
 		<section>
 			<title>Features</title>
 			<ul>
-				<li>Supports any database vender accessible via JDBC.</li>
+				<li>Supports any database accessible via JDBC.</li>
 				<li>High-availability - Database cluster can lose a node without failing transaction.</li>
 				<li>Improves performance of concurrent read-access by distributing load across individual nodes.</li>
 				<li>Support for full JDBC 3.0 (Java 1.4) feature set.</li>
