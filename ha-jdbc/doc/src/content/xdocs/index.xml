@@ -11,55 +11,110 @@
 				<title>What is HA-JDBC?</title>
 				<p>
 					HA-JDBC is a JDBC driver implementation that provides transparent clustering capability to a set of homogeneous JDBC-accessed databases.
-					This project was developed out of the need for an generic open source solution to eliminate the database as the single point of failure for a given application.
 				</p>
 			</section>
 			<section>
-				<title>What does HA-JDBC do?</title>
-				<ul>
-					<li></li>
-				</ul>
-			</section>
-			<section>
-				<title>What does HA-JDBC NOT do?</title>
-				<ul>
-					<li></li>
-				</ul>
-			</section>
-			<section>
-				<title>This project sounds similar to C-JDBC (ObjectWeb)...</title>
+				<title>How is HA-JDBC different?</title>
 				<p>
-					The <link href="http://c-jdbc.objectweb.org">C-JDBC project</link> (hosted at <link href="http://www.objectweb.org">ObjectWeb</link>) is another open source project that provides clustering ability to JDBC-accessed databases.
-					C-JDBC has a similar goal to this project, but differs in the following ways:
+					Current solutions for database redundancy are problematic:
 				</p>
 				<ul>
-					<li>Narrower scope
-						<p>
-							C-JDBC's goal is to extend the concept of RAID (Redundant Array of Inexpensive Discs) to databases.
-							Using the term "RAIDb" (Redundant Array of Inexpensive Databases), it aims to support the following configurations:
-						</p>
-						<ul>
-							<li>RAIDb-0: </li>
-						</ul>
-					</li>
+					<li>Commercial clustering solutions are <em>very</em> expensive.</li>
+					<li>Many replication solutions exist (e.g. MySQL replication, PostgreSQL eRServer), but are inadequate:</li>
 					<ul>
-						<li>C-JDBC's goal is to extend the concept of RAID (Redundant Array of Inexpensive Databases) to databases</li>
+						<li>Asynchronous replication solutions perform adequately but impose a replication latency and do not provide transactional concurrency.</li>
+						<li>Synchronous replication solutions may provide transactional concurrency but often impose a high performance cost.</li>
+						<li>The master-slave approach does not provide failover for the master.</li>
 					</ul>
+					<li>
+						The <link href="http://c-jdbc.objectweb.org">C-JDBC project</link>, hosted at <link href="http://www.objectweb.org">ObjectWeb</link>, does an impressive job at coming close to a full enterprise database clustering solution.
+						C-JDBC provides many sophisticated features, but in doing so sacrifices performance and JDBC feature support.
+					</li>
 				</ul>
-					 providing support for "RAIDb" 0, 1, and 2 configurations. This project will target full replicating (i.e. RAIDb-1) configurations only. - C-JDBC includes fine grain query caching and transparent connection pooling. There are already many excellent open source projects that implement these features, therefore this project will not address these areas. - C-JDBC offers support for clusters of heterogenous databases (i.e. different DB vendors). The normalization of SQL required to support this feature is perhaps the greatest philosophical difference between this project and C-JDBC. This project will only support clustering homogeneous databases. * Simpler design - Clustering support will be embedded in thin JDBC object proxies, rather than C-JDBC's approach of a separate JMX-based "Controller" entity. * Less processing overhead = better performance - Due to the controller-based architecture of C-JDBC, 2 socket connections are required for a database operation (client -> controller, controller -> database). The driver-based architecture of this project requires only 1 serial socket connection (client -> database). * Increased SQL-support - The C-JDBC's JDBC driver implementation restricts the feature support of its underlying database drivers. The driver implemented by this project is a thin, non-restrictive proxy for the underlying JDBC driver.
+				<p>
+					This project began as an effort to provide a "better-than-nothing" solution to the "single point of failure" problem that plagues many low-budget database-driven software projects.
+				</p>
+			</section>
+			<section>
+				<title>What features does HA-JDBC provide?</title>
+				<ul>
+					<li>Transparent integration.</li>
+					<li>Support for full JDBC 3.0 (Java 1.4) feature set.</li>
+					<li>Provides connection factory support for javax.sql.DataSource, javax.sql.ConnectionPoolDataSource, javax.sql.XADataSource, as well as the traditional java.sql.DriverManager facility.</li>
+					<li>Ensures data concurrency by deactivating failed cluster nodes.</li>
+					<li>Improves performance of concurrent read-access by distributing load accross individual cluster nodes.</li>
+				</ul>
+			</section>
+			<section>
+				<title>What features does HA-JDBC <strong>NOT</strong> provide?</title>
+				<ul>
+					<li>Distributed queries.</li>
+					<li>Data partitioning (i.e. striping)</li>
+					<li>Hot reactivation of failed cluster nodes.</li>
+					<li>ResultSet caching.</li>
+					<li>Support for proprietary (i.e. non-standard) database driver functionality (e.g. Blob and Clob constructors).</li>
+					<li>Heterogenous clusters (i.e. different databases in the same cluster).</li>
+				</ul>
 			</section>
 		</section>
 		<section>
 			<title>Configuration</title>
-			<p>
-				Coming soon...
-			</p>
+			<section>
+				<title>Cluster Configuration</title>
+				<p>
+					Coming soon...
+				</p>
+			</section>
+			<section>
+				<title>Application Configuration</title>
+				<p>
+					Coming soon...
+				</p>
+			</section>
+			<section>
+				<title>Connection Pooling</title>
+				<p>
+					Coming soon...
+				</p>
+			</section>
+			<section>
+				<title>Transactions</title>
+				<p>
+					Coming soon...
+				</p>
+			</section>
+			<section>
+				<title>Advanced JDBC Features</title>
+				<p>
+					Coming soon...
+				</p>
+			</section>
 		</section>
 		<section>
 			<title>Architecture</title>
 			<p>
-				Coming soon...
+				The concept is a simple one:
 			</p>
+			<ul>
+				<li>Delegate read requests (e.g. select) to one database in the cluster.</li>
+				<li>Delegate write requests (e.g. insert, update, delete) to all databases in the cluster.</li>
+			</ul>
+			<p>
+				Read requests are delegated to nodes in round-robin fashion.
+				If an exception is caught, the database is tested for validity:
+			</p>
+			<ul>
+				<li>If the validity check succeeds (i.e. the database is still up), the exception is returned to the caller.</li>
+				<li>If the validity check fails (i.e. the database is down), the database is globally deactivated, and the request is passed on to another node in the cluster</li>
+			</ul>
+			<p>
+				Write requests are performed asynchronously.  The call returns when all databases have completed the request.
+				If an exception is caught, the database that threw it is tested for validity:
+			</p>
+			<ul>
+				<li>If the validity check succeeds, the exception is returned to the caller.</li>
+				<li>If the validity check fails, the database is globally deactivated, and results of the succeeding databases are returned to the caller</li>
+			</ul>
 		</section>
 	</body>
 </document>
