@@ -11,6 +11,24 @@
 			src/documentation/resources/images/<foo>.jpg images, these will
 			automatically be used for entries of type <foo>. -->
 		<release version="1.0-beta-6" date="">
+			<action type="update" dev="PF">
+				Database cluster now specifies 1 of 4 different strategies for balancing read requests: simple, random, round-robin, or load.
+			</action>
+			<action type="update" dev="PF">
+				A database can now define a weight to affect how it is prioritized by the balancer.
+			</action>
+			<action type="update" dev="PF">
+				In distributed environment, a database cluster will get its initial state from the JGroups group coordinator.
+			</action>
+			<action type="fix" dev="PF">
+				Fixed bug where auto (i.e. non-manual) database deactivation behaved locally even if environment is distributed.
+			</action>
+			<action type="update" dev="PF">
+				Lots of refactored code.
+			</action>
+			<action type="update" dev="PF">
+				Protocol parameter is now optional for distributable clusters.
+			</action>
 			<action type="add" dev="PF">
 				Added error message translations for German, Spanish, French, Italian, and Portuguese.
 			</action>
@@ -172,9 +190,6 @@
 			</action>
 		</actions>
 		<actions priority="Release 1.1">
-			<action context="code" dev="PF">
-				Support weighted cluster nodes to optimize load balancing.
-			</action>
 			<action context="code" dev="PF">
 				Support for modifying HA-JDBC configuration at runtime.
 				Workaround is to create "placeholder" DataSources that can be defined and activated as needed.
