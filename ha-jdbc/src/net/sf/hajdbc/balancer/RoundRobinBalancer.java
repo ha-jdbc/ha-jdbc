@@ -21,8 +21,10 @@
 package net.sf.hajdbc.balancer;
 
 import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 import net.sf.hajdbc.Database;
 
@@ -32,14 +34,15 @@ import net.sf.hajdbc.Database;
  */
 public class RoundRobinBalancer extends AbstractBalancer
 {
-	private Map databaseMap = new LinkedHashMap();
+	private Set databaseSet = new HashSet();
+	private List databaseList = new LinkedList();
 	
 	/**
 	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
 	 */
 	protected Collection getDatabases()
 	{
-		return this.databaseMap.keySet();
+		return this.databaseSet;
 	}
 
 	/**
@@ -47,14 +50,35 @@ public class RoundRobinBalancer extends AbstractBalancer
 	 */
 	public synchronized boolean add(Database database)
 	{
-		boolean exists = this.contains(database);
+		boolean added = this.databaseSet.add(database);
 		
-		if (!exists)
+		if (added)
 		{
-			this.databaseMap.put(database, new Integer(1));
+			for (int i = 0; i < database.getWeight().intValue(); ++i)
+			{
+				this.databaseList.add(database);
+			}
 		}
 		
-		return !exists;
+		return added;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Balancer#remove(net.sf.hajdbc.Database)
+	 */
+	public synchronized boolean remove(Database database)
+	{
+		boolean removed = this.databaseSet.remove(database);
+
+		if (removed)
+		{
+			for (int i = 0; i < database.getWeight().intValue(); ++i)
+			{
+				this.databaseList.remove(database);
+			}
+		}
+		
+		return removed;
 	}
 	
 	/**
@@ -62,22 +86,14 @@ public class RoundRobinBalancer extends AbstractBalancer
 	 */
 	public synchronized Database next()
 	{
-		Database database = this.first();
-		
-		if (this.databaseMap.size() > 1)
+		if (this.databaseList.isEmpty())
 		{
-			int count = ((Integer) this.databaseMap.get(database)).intValue();
-			int weight = database.getWeight().intValue();
-			
-			if (count >= weight)
-			{
-				this.databaseMap.remove(database);
-			}
-			
-			count = (weight != 0) ? (count % weight) : 1;
-			
-			this.databaseMap.put(database, new Integer(count));
+			return this.first();
 		}
+		
+		Database database = (Database) this.databaseList.remove(0);
+		
+		this.databaseList.add(database);
 		
 		return database;
 	}
