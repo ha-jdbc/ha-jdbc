@@ -11,7 +11,7 @@ import java.util.Properties;
  * @author Paul Ferraro
  * @version $Revision$
  */
-public class Driver implements java.sql.Driver
+public final class Driver implements java.sql.Driver
 {
 	private static final String URL_PREFIX = "jdbc:ha-jdbc:";
 	private static final int MAJOR_VERSION = 1;
@@ -30,6 +30,7 @@ public class Driver implements java.sql.Driver
 		}
 	}
 
+	// Maps cluster name -> DatabaseManager
 	private Map databaseManagerMap;
 	
 	public Driver()// throws SQLException
@@ -61,11 +62,21 @@ public class Driver implements java.sql.Driver
 		return JDBC_COMPLIANT;
 	}
 	
-	private String extractName(String url)
+	private DatabaseManager getDatabaseManager(String clusterName)
+	{
+		return (DatabaseManager) this.databaseManagerMap.get(clusterName);
+	}
+	
+	private String extractClusterName(String url)
 	{
 		int index = URL_PREFIX.length();
 		
 		return (index > url.length()) ? url.substring(index) : null; 
+	}
+	
+	private boolean acceptsClusterName(String clusterName)
+	{
+		return this.databaseManagerMap.keySet().contains(clusterName);
 	}
 	
 	/**
@@ -73,7 +84,9 @@ public class Driver implements java.sql.Driver
 	 */
 	public boolean acceptsURL(String url)
 	{
-		return this.databaseManagerMap.keySet().contains(url);
+		String clusterName = this.extractClusterName(url);
+		
+		return (clusterName != null) && this.acceptsClusterName(clusterName);
 	}
 	
 	/**
@@ -81,12 +94,14 @@ public class Driver implements java.sql.Driver
 	 */
 	public Connection connect(String url, Properties properties) throws SQLException
 	{
-		if (!acceptsURL(url))
+		String clusterName = this.extractClusterName(url);
+		
+		if ((clusterName == null) || !acceptsClusterName(clusterName))
 		{
 			return null;
 		}
 		
-		DatabaseManager databaseManager = (DatabaseManager) this.databaseManagerMap.get(this.extractName(url));
+		DatabaseManager databaseManager = this.getDatabaseManager(clusterName);
 		
 		DriverOperation operation = new DriverOperation()
 		{
@@ -104,12 +119,14 @@ public class Driver implements java.sql.Driver
 	 */
 	public DriverPropertyInfo[] getPropertyInfo(String url, Properties properties) throws SQLException
 	{
-		if (!acceptsURL(url))
+		String clusterName = this.extractClusterName(url);
+		
+		if ((clusterName == null) || !acceptsClusterName(clusterName))
 		{
 			return null;
 		}
 		
-		DatabaseManager databaseManager = (DatabaseManager) this.databaseManagerMap.get(this.extractName(url));
+		DatabaseManager databaseManager = this.getDatabaseManager(clusterName);
 		
 		DriverOperation operation = new DriverOperation()
 		{
