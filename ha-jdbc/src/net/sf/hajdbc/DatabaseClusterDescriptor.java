@@ -46,7 +46,7 @@ public class DatabaseClusterDescriptor
 	 * Adds the specified database to this cluster
 	 * @param object
 	 */
-	private void addDatabase(Object object)
+	protected void addDatabase(Object object)
 	{
 		Database database = (Database) object;
 		this.databaseMap.put(database.getId(), database);
