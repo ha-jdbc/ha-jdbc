@@ -18,46 +18,43 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.activation;
+package net.sf.hajdbc.synch;
 
-import java.text.MessageFormat;
+import java.sql.Statement;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public class ForeignKey
+public class StatementExecutor implements Runnable
 {
-	private String name;
-	private String table;
-	private String column;
-	private String foreignTable;
-	private String foreignColumn;
-
-	public ForeignKey(String name, String table, String column, String foreignTable, String foreignColumn)
+	private static Log log = LogFactory.getLog(StatementExecutor.class);
+	
+	private Statement statement;
+	private String sql;
+	
+	public StatementExecutor(Statement statement, String sql)
 	{
-		this.name = name;
-		this.table = table;
-		this.column = column;
-		this.foreignTable = foreignTable;
-		this.foreignColumn = foreignColumn;
+		this.statement = statement;
+		this.sql = sql;
 	}
 	
-	public String formatSQL(String pattern)
+	/**
+	 * @see java.lang.Runnable#run()
+	 */
+	public void run()
 	{
-		return MessageFormat.format(pattern, new Object[] { this.name, this.table, this.column, this.foreignTable, this.foreignColumn });
-	}
-	
-	public boolean equals(Object object)
-	{
-		ForeignKey foreignKey = (ForeignKey) object;
-		
-		return (foreignKey != null) && (foreignKey.name != null) && foreignKey.name.equals(this.name);
-	}
-	
-	public int hashCode()
-	{
-		return this.name.hashCode();
+		try
+		{
+			this.statement.execute(this.sql);
+		}
+		catch (Throwable e)
+		{
+			log.error("Failed to execute statement: " + this.sql, e);
+		}
 	}
 }

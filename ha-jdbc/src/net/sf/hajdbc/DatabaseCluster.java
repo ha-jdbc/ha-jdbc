@@ -147,6 +147,11 @@ public class DatabaseCluster extends SQLProxy implements DatabaseClusterMBean
 		return this.descriptor.getName();
 	}
 
+	public DatabaseClusterDescriptor getDescriptor()
+	{
+		return this.descriptor;
+	}
+	
 	private Database getDatabase(String databaseId)
 	{
 		return (Database) this.descriptor.getDatabaseMap().get(databaseId);
@@ -179,14 +184,16 @@ public class DatabaseCluster extends SQLProxy implements DatabaseClusterMBean
 		{
 			Class strategyClass = Class.forName(strategyClassName);
 			
-			if (!DatabaseActivationStrategy.class.isAssignableFrom(strategyClass))
+			if (!DatabaseSynchronizationStrategy.class.isAssignableFrom(strategyClass))
 			{
-				throw new SQLException("");
+				throw new SQLException("Specified synchronization strategy does not implement " + DatabaseSynchronizationStrategy.class.getName());
 			}
 			
-			DatabaseActivationStrategy strategy = (DatabaseActivationStrategy) strategyClass.newInstance();
+			DatabaseSynchronizationStrategy strategy = (DatabaseSynchronizationStrategy) strategyClass.newInstance();
 			
-			strategy.activate(this, database);
+			strategy.synchronize(this, database);
+			
+			this.activate(database);
 		}
 		catch (ClassNotFoundException e)
 		{

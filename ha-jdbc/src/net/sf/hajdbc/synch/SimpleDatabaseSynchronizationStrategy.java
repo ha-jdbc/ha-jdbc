@@ -18,10 +18,10 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.activation;
+package net.sf.hajdbc.synch;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.DatabaseActivationStrategy;
+import net.sf.hajdbc.DatabaseSynchronizationStrategy;
 import net.sf.hajdbc.DatabaseCluster;
 
 /**
@@ -29,12 +29,12 @@ import net.sf.hajdbc.DatabaseCluster;
  * @version $Revision$
  * @since   1.0
  */
-public class SimpleDatabaseActivationStrategy implements DatabaseActivationStrategy
+public class SimpleDatabaseSynchronizationStrategy implements DatabaseSynchronizationStrategy
 {
 	/**
 	 * @see net.sf.hajdbc.DatabaseActivationStrategy#activate(net.sf.hajdbc.DatabaseCluster, net.sf.hajdbc.Database)
 	 */
-	public void activate(DatabaseCluster databaseCluster, Database database)
+	public void synchronize(DatabaseCluster databaseCluster, Database database)
 	{
 		// Do nothing
 	}

@@ -32,6 +32,10 @@ public class DatabaseClusterDescriptor
 {
 	private String name;
 	private String validateSQL = "SELECT 1";
+	private String createForeignKeySQL = "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4})";
+	private String dropForeignKeySQL = "ALTER TABLE {1} DROP CONSTRAINT {0}";
+	private String createIndexSQL = "CREATE INDEX {0} ON {1} ({2})";
+	private String dropIndexSQL = "DROP INDEX {0}";
 	private Map databaseMap = new HashMap();
 	
 	/**
@@ -66,5 +70,37 @@ public class DatabaseClusterDescriptor
 	public String getValidateSQL()
 	{
 		return this.validateSQL;
+	}
+	
+	/**
+	 * @return
+	 */
+	public String getCreateForeignKeySQL()
+	{
+		return this.createForeignKeySQL;
+	}
+	
+	/**
+	 * @return
+	 */
+	public String getCreateIndexSQL()
+	{
+		return this.createIndexSQL;
+	}
+	
+	/**
+	 * @return
+	 */
+	public String getDropForeignKeySQL()
+	{
+		return this.dropForeignKeySQL;
+	}
+	
+	/**
+	 * @return
+	 */
+	public String getDropIndexSQL()
+	{
+		return this.dropIndexSQL;
 	}
 }

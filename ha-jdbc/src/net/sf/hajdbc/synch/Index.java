@@ -18,7 +18,7 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.activation;
+package net.sf.hajdbc.synch;
 
 import java.text.MessageFormat;
 import java.util.Iterator;

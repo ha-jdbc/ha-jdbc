@@ -10,7 +10,7 @@ import java.sql.SQLException;
  * @version $Revision$
  * @since   1.0
  */
-public interface DatabaseActivationStrategy
+public interface DatabaseSynchronizationStrategy
 {
-	public void activate(DatabaseCluster databaseCluster, Database database) throws SQLException;
+	public void synchronize(DatabaseCluster databaseCluster, Database database) throws SQLException;
 }

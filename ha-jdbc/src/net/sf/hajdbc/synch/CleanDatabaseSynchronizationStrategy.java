@@ -18,7 +18,7 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.activation;
+package net.sf.hajdbc.synch;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.DatabaseActivationStrategy;
+import net.sf.hajdbc.DatabaseSynchronizationStrategy;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterDescriptor;
 
@@ -46,16 +46,16 @@ import org.apache.commons.logging.LogFactory;
  * @version $Revision$
  * @since   1.0
  */
-public class DeleteInsertDatabaseActivationStrategy implements DatabaseActivationStrategy
+public class CleanDatabaseSynchronizationStrategy implements DatabaseSynchronizationStrategy
 {
 	private static final int MAX_BATCH_SIZE = 50;
 	
-	private static Log log = LogFactory.getLog(DeleteInsertDatabaseActivationStrategy.class);
+	private static Log log = LogFactory.getLog(CleanDatabaseSynchronizationStrategy.class);
 
 	/**
 	 * @see net.sf.hajdbc.DatabaseActivationStrategy#activate(net.sf.hajdbc.DatabaseCluster, net.sf.hajdbc.Database)
 	 */
-	public void activate(DatabaseCluster databaseCluster, Database database) throws SQLException
+	public void synchronize(DatabaseCluster databaseCluster, Database database) throws SQLException
 	{
 		DatabaseClusterDescriptor descriptor = databaseCluster.getDescriptor();
 		Connection activeConnection = null;
