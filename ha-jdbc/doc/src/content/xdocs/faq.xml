@@ -26,50 +26,86 @@
 	<faqsection>
 		<title>About HA-JDBC</title>
 		<faq>
-			<question>How does HA-JDBC compare to the <a href="http://c-jdbc.objectweb.org">C-JDBC</a> project?</question>
+			<question>How does HA-JDBC compare to <a href="http://c-jdbc.objectweb.org">C-JDBC</a>, an ObjectWeb project with similiar goals?</question>
 			<answer>
 				<table>
 					<caption>Feature comparison</caption>
 					<tr>
 						<th></th>
-						<th>C-JDBC</th>
 						<th>HA-JDBC</th>
+						<th>C-JDBC</th>
 					</tr>
 					<tr>
 						<th>Architecture</th>
 						<td>
 							<ol>
-								<li>C-JDBC driver access underlying JDBC drivers via remote controller process.</li>
-								<li>Cluster details are stored in controller.</li>
-								<li>Controller uses transaction recovery log to restore intra-transactional state of a reactivated database.</li>
+								<li>HA-JDBC driver delegates JDBC methods directly to the underlying drivers.</li>
+								<li>Cluster details are stored in distributed cache on client.</li>
+								<li>High-availability is inherent in design.</li>
 							</ol>
 						</td>
 						<td>
 							<ol>
-								<li>HA-JDBC driver accesses underlying JDBC drivers directly.</li>
-								<li>Cluster details are stored in distributed cache on client.</li>
-								<li>Driver records operation list to restore state of SQL objects for reactivated databases.</li>
+								<li>C-JDBC driver interprets JDBC API and delegates parsed SQL queries to remote controller process.</li>
+								<li>Cluster details are known only to controller.</li>
+								<li>High-availability is achieved by setting up failover controller process.</li>
 							</ol>
 						</td>
+					</tr>
+					<tr>
+						<th>Cluster topography</th>
+						<td>
+							<ol>
+								<li>Databases within a cluster must be homogenous.</li>
+								<li>Supports mirroring only.</li>
+							</ol>
+						</td>
+						<td>
+							<ol>
+								<li>Supports heterogenous database clusters - requires that SQL queries be translated to appropriate SQL dialect.</li>
+								<li>Supports RAIDb-0, RAIDb-1, and RAIDb-2 configurations (i.e. mirroring (replication), striping (partitioning), and partial mirroring/striping, respectively).</li>
+							</ol>
+						</td>
+					</tr>
+					<tr>
+						<th>Failed node recovery</th>
+						<td>
+							<ol>
+								<li>No recovery log is maintained.</li>
+								<li>Synchronization achieved through various brute force strategies.</li>
+								<li>Inefficient hot synchronization capability tolerated at the savings of performance.</li>
+							</ol>
+						</td>
+						<td>
+							<ol>
+								<li>Controller uses internal database recovery log to restore state of a reactivated database.</li>
+								<li>Synchronization is done by executing SQL statements since last checkpoint.</li>
+								<li>Efficient hot synchronization capability achieved at the cost of recovery log overhead.</li>
+							</ol>
+						</td>
+					</tr>
+					<tr>
+						<th>Performance</th>
+						<td>Estimates from users place C-JDBC 4x slower on average than standard JDBC access.</td>
+						<td>Faster reads under load, slightly slower writes than standard JDBC.  Details <a href="performance.html">here</a>.</td>
 					</tr>
 					<tr>
 						<th>Cluster administration</th>
 						<td>
 							<ol>
-								<li>Provides JMX-based Administration Console GUI</li>
+								<li>Relies on a JMX management console provided by 3rd party JMX provider.</li>
+								<li>Only supports activating databases that were part of the cluster at startup.</li>
 							</ol>
 						</td>
 						<td>
 							<ol>
-								<li>Uses JMX management console provided by 3rd party JMX provider.</li>
+								<li>Provides easy-to-use JMX-based administration console</li>
+								<li>Includes the ability to add new databases to a cluster on the fly.</li>
 							</ol>
 						</td>
 					</tr>
 					<tr>
 						<th>Provides connection pooling</th>
-						<td>
-							<p>Yes - implemented in controller</p>
-						</td>
 						<td>
 							<p>
 								No - several open source solutions already exist and can be used in conjunction with HA-JDBC:
@@ -81,38 +117,30 @@
 								<li><a href="http://c3p0.sourceforge.net/">c3p0</a></li>
 							</ul>
 						</td>
-					</tr>
-					<tr>
-						<th>ResultSet caching ability</th>
 						<td>
 							<p>Yes - implemented in controller</p>
 						</td>
+					</tr>
+					<tr>
+						<th>ResultSet caching ability</th>
 						<td>
 							<p>
 								No - several open source solutions already exist and can be used in conjunction with HA-JDBC:
 							</p>
 							<ul>
 								<li><a href="http://www.irongrid.com/catalog/product_info.php?products_id=31">IronEye Cache</a></li>
+								<li>PhDataCache <em>(no longer in existence)</em></li>
 							</ul>
 						</td>
-					</tr>
-					<tr>
-						<th>Cluster topography</th>
 						<td>
-							<ol>
-								<li>Supports heterogenous database clusters - required that SQL queries be translated to proper SQL dialect.</li>
-								<li>Supports RAIDb-0, RAIDb-1, and RAIDb-2 configurations (i.e. mirroring (replication), striping (partitioning), and partial mirroring/striping, respectively).</li>
-							</ol>
-						</td>
-						<td>
-							<ol>
-								<li>Databases within a cluster must be homogenous.</li>
-								<li>Supports the equivalent of RAIDb-0 only.</li>
-							</ol>
+							<p>Yes - implemented in controller</p>
 						</td>
 					</tr>
 					<tr>
 						<th>JDBC 2.0 feature support</th>
+						<td>
+							<p>Full support</p>
+						</td>
 						<td>
 							<p>
 								Lacks support for:
@@ -129,12 +157,12 @@
 								<li><code>Statement</code> execution cancellation</li>
 							</ul>
 						</td>
-						<td>
-							<p>Full support</p>
-						</td>
 					</tr>
 					<tr>
 						<th>JDBC 3.0 feature support</th>
+						<td>
+							<p>Full support</p>
+						</td>
 						<td>
 							<p>
 								Lacks support for:
@@ -148,9 +176,6 @@
 								<li><code>ResultSet</code> holdability support</li>
 								<li>Multiple open <code>ResultSet</code>s</li>
 							</ul>
-						</td>
-						<td>
-							<p>Full support</p>
 						</td>
 					</tr>
 				</table>

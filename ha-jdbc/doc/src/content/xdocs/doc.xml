@@ -213,7 +213,7 @@
 					<li>Sequences (only supported by PostgreSQL, MySQL MaxDB (fka SAP DB), Firebird (fka Interbase), Mckoi, Oracle, DB2, etc.)</li>
 				</ul>
 				<p>
-					In general, for any of these mechanisms to work properly, each database node within a cluster would need to independently generate the same sets of identifiers.
+					In general, for unique identifier generation to function correctly, each database node within a cluster needs to independently generate the same sets of identifiers.
 					Because of the distributed nature of HA-JDBC, the execution order of 2 simulaneous requests for a new unique identifier cannot be guananteed to be the same on each database.
 					In other words, HA-JDBC cannot guarantee that the same identifier will be generated for each database in the cluster.
 					Another reason not to use either of these mechanisms is that they are not supported by every DBMS.
@@ -231,24 +231,26 @@
 			<section>
 				<title>Transactions</title>
 				<p>
-					HA-JDBC supports both traditional JDBC transactions and JTA.
-					HA-JDBC integration will not require you to change your existing transaction semantics.
+					HA-JDBC supports both traditional JDBC transactions and JTA (e.g. EJB bean-managed transactions).
+					HA-JDBC integration does not require you to change your existing transaction semantics.
 					If you are leveraging your JDBC driver's <code>javax.sql.XADataSource</code> implementation for JTA integration, you will need to configure HA-JDBC accordingly.
 				</p>
 				<p>e.g.</p>
 				<source><![CDATA[
-<cluster id="XACluster">
-  <xa-datasource id="database1">
-    <name>java:comp/env/jdbc/xa/Database1</name>
-    <user>postgres</user>
-    <password>password</password>
-  </xa-datasource>
-  <xa-datasource id="database2">
-    <name>java:comp/env/jdbc/xa/Database2</name>
-    <user>postgres</user>
-    <password>password</password>
-  </xa-datasource>
-</cluster>
+<ha-jdbc>
+  <cluster id="XACluster">
+    <xa-datasource id="database1">
+      <name>java:comp/env/jdbc/xa/Database1</name>
+      <user>postgres</user>
+      <password>password</password>
+    </xa-datasource>
+    <xa-datasource id="database2">
+      <name>java:comp/env/jdbc/xa/Database2</name>
+      <user>postgres</user>
+      <password>password</password>
+    </xa-datasource>
+  </cluster>
+</ha-jdbc>
 ]]></source>
 			</section>
 			<section>
@@ -259,18 +261,20 @@
 				</p>
 				<p>e.g.</p>
 				<source><![CDATA[
-<cluster id="PoolCluster">
-  <pool-datasource id="database1">
-    <name>java:comp/env/jdbc/pool/Database1</name>
-    <user>postgres</user>
-    <password>password</password>
-  </pool-datasource>
-  <pool-datasource id="database2">
-    <name>java:comp/env/jdbc/pool/Database2</name>
-    <user>postgres</user>
-    <password>password</password>
-  </pool-datasource>
-</cluster>
+<ha-jdbc>
+  <cluster id="PoolCluster">
+    <pool-datasource id="database1">
+      <name>java:comp/env/jdbc/pool/Database1</name>
+      <user>postgres</user>
+      <password>password</password>
+    </pool-datasource>
+    <pool-datasource id="database2">
+      <name>java:comp/env/jdbc/pool/Database2</name>
+      <user>postgres</user>
+      <password>password</password>
+    </pool-datasource>
+  </cluster>
+</ha-jdbc>
 ]]></source>
 			</section>
 		</section>
@@ -328,7 +332,7 @@ Connection connection = dataSource.getConnection("postgres", "password");
 				<section>
 					<title>JSR 114 RowSets</title>
 					<p>
-						HA-JDBC will work with any JSR 114 implementation provided that the rowsets are driven via the HA-JDBC driver.
+						HA-JDBC will work with any JSR 114 implementation provided that the rowsets are driven by the HA-JDBC driver.
 					</p>
 					<p>e.g.</p>
 					<source><![CDATA[
@@ -424,7 +428,7 @@ public class FasterFullSynchronizationStrategy extends FullSynchronizationStrate
 				<source><![CDATA[
 <ha-jdbc>
   <cluster id="cluster">
-    <default-sync-strategy>net.sf.hajdbc.sync.FasterFullSynchronizationStrategy</default-sync-strategy>
+    <default-sync-strategy>net.sf.hajdbc.sync.DifferentialSynchronizationStrategy</default-sync-strategy>
     <database id="..."><!-- ... --></database>
     <database id="..."><!-- ... --></database>
   </cluster>
@@ -446,7 +450,7 @@ public class FasterFullSynchronizationStrategy extends FullSynchronizationStrate
 					<li>getId() - Returns the unique identifier of this cluster.</li>
 					<li>getActiveDatabases() - Returns a collection of active databases in this cluster.</li>
 					<li>getInactiveDatabases() - Returns a collection of inactive databases in this cluster.</li>
-					<li>isAlive(String id) - Test whether the specified database is responding.</li>
+					<li>isAlive(String id) - Tests whether the specified database is responding.</li>
 					<li>deactivate(String id) - Deactivates the specified database from this cluster.</li>
 					<li>activate(String id) - Re-activates the specified database using the default synchronization strategy.</li>
 					<li>activate(String id, String strategyClassName) - Deactivates the specified database from this cluster using the specified synchronization strategy.</li>
@@ -457,7 +461,7 @@ public class FasterFullSynchronizationStrategy extends FullSynchronizationStrate
 					<li><a href="http://ejtools.sourceforge.net/applications/jmx.browser/">EJTools JMX Browser</a></li>
 					<li><a href="http://panoptesmgmt.sourceforge.net/">Panoptes</a></li>
 					<li><a href="http://jmxview.sourceforge.net/">JMXView</a></li>
-					<li><a href="http://www.xtremej.com/">XtremeJ Management Suite</a> (Standard Edition single user license is free)</li>
+					<li><a href="http://www.xtremej.com/">XtremeJ Management Suite</a> <em>(Standard Edition single user license is free)</em></li>
 				</ul>
 				<p>HA-JDBC database cluster may also be administered programatically:</p>
 				<p>e.g.</p>
@@ -466,7 +470,7 @@ MBeanServer server = (MBeanServer) MBeanServerFactory.findMBeanServer(null).get(
 ObjectName name = ObjectName.getInstance("net.sf.hajdbc", "cluster", ObjectName.quote("jdbc:ha-jdbc"));
 String database = "database1";
 
-// There are 2 ways to invoke methods on an mbean:
+// There are 2 ways to programatically invoke methods on an mbean:
 
 // 1. Generic invoke
 Object[] parameterValues = new Object[] { database };
