@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	HA-JDBC: High-Availability JDBC
+	Copyright (C) 2004 Paul Ferraro
+
+	This library is free software; you can redistribute it and/or modify it 
+	under the terms of the GNU Lesser General Public License as published by the 
+	Free Software Foundation; either version 2.1 of the License, or (at your 
+	option) any later version.
+	
+	This library is distributed in the hope that it will be useful, but WITHOUT
+	ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+	FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+	for more details.
+
+	You should have received a copy of the GNU Lesser General Public License
+	along with this library; if not, write to the Free Software Foundation, 
+	Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+	Contact: ferraro@users.sourceforge.net
+
+	This DTD module is identified by the PUBLIC and SYSTEM identifiers:
+
+	PUBLIC "-//HA-JDBC//DTD HA-JDBC 1.0//EN"
+	SYSTEM "http://ha-jdbc.sourceforge.net/dtd/ha-jdbc-1.0.dtd"
+-->
+<!ELEMENT ha-jdbc (local|distributed)>
+<!ELEMENT local (cluster+)>
+<!ELEMENT distributable (cluster+)>
+<!ATTLIST distributable
+	protocol CDATA #REQUIRED
+>
+<!ELEMENT cluster ((database+)|(datasource+)|(pooled-datasource+)|(xa-datasource+))>
+<!ATTLIST cluster
+	name CDATA #REQUIRED
+	validate-sql CDATA #IMPLIED
+>
+<!ELEMENT database (user,password)?>
+<!ATTLIST database
+	url CDATA #REQUIRED
+	driver CDATA #REQUIRED
+>
+<!ELEMENT datasource (user,password)?>
+<!ATTLIST datasource name CDATA #REQUIRED>
+<!ELEMENT pool-datasource (user,password)?>
+<!ATTLIST pool-datasource name CDATA #REQUIRED>
+<!ELEMENT xa-datasource (user,password)?>
+<!ATTLIST xa-datasource name CDATA #REQUIRED>
+<!ELEMENT user (#PCDATA)>
+<!ELEMENT password (#PCDATA)>
