@@ -9,9 +9,12 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,7 +36,10 @@ public class UpdateDatabaseActivationStrategy implements DatabaseActivationStrat
 		Connection activeConnection = null;
 		Connection inactiveConnection = null;
 		
+		List tableList = new LinkedList();
 		List foreignKeyList = new LinkedList();
+		List primaryKeyList = new ArrayList();
+		Set primaryKeyColumnSet = new LinkedHashSet();
 		
 		try
 		{
@@ -43,7 +49,6 @@ public class UpdateDatabaseActivationStrategy implements DatabaseActivationStrat
 			inactiveConnection.setAutoCommit(false);
 			
 			DatabaseMetaData databaseMetaData = inactiveConnection.getMetaData();
-			List tableList = new LinkedList();
 			ResultSet resultSet = databaseMetaData.getTables(null, null, "%", new String[] { "TABLE" });
 			
 			while (resultSet.next())
@@ -96,7 +101,8 @@ public class UpdateDatabaseActivationStrategy implements DatabaseActivationStrat
 			{
 				String table = (String) tables.next();
 				
-				List primaryKeyList = new LinkedList();
+				primaryKeyList.clear();
+				primaryKeyColumnSet.clear();
 				
 				resultSet = databaseMetaData.getPrimaryKeys(null, null, table);
 				
@@ -131,6 +137,14 @@ public class UpdateDatabaseActivationStrategy implements DatabaseActivationStrat
 				ResultSet inactiveResultSet = inactiveStatement.executeQuery(sql);
 				ResultSet activeResultSet = activeStatement.executeQuery(sql);
 				
+				primaryKeys = primaryKeyList.iterator();
+				
+				while (primaryKeys.hasNext())
+				{
+					String primaryKey = (String) primaryKeys.next();
+					primaryKeyColumnSet.add(new Integer(activeResultSet.findColumn(primaryKey)));
+				}
+				
 				boolean hasActiveResults = activeResultSet.next();
 				boolean hasInactiveResults = inactiveResultSet.next();
 
@@ -151,14 +165,15 @@ public class UpdateDatabaseActivationStrategy implements DatabaseActivationStrat
 					}
 					else
 					{
-						primaryKeys = primaryKeyList.iterator();
+						Iterator primaryKeyColumns = primaryKeyColumnSet.iterator();
 						
-						while (primaryKeys.hasNext())
+						while (primaryKeyColumns.hasNext())
 						{
-							String primaryKey = (String) primaryKeys.next();
+							Integer primaryKeyColumn = (Integer) primaryKeyColumns.next();
+							int column = primaryKeyColumn.intValue();
 							
-							Comparable activeObject = (Comparable) activeResultSet.getObject(primaryKey);
-							Object inactiveObject = inactiveResultSet.getObject(primaryKey);
+							Comparable activeObject = (Comparable) activeResultSet.getObject(column);
+							Object inactiveObject = inactiveResultSet.getObject(column);
 							
 							compare = activeObject.compareTo(inactiveObject);
 							
@@ -169,32 +184,59 @@ public class UpdateDatabaseActivationStrategy implements DatabaseActivationStrat
 						}
 					}
 					
-					if (compare == 0)
+					if (compare > 0)
+					{
+						inactiveResultSet.deleteRow();
+					}
+					else if (compare < 0)
+					{
+						inactiveResultSet.moveToInsertRow();
+
+						for (int i = 1; i <= columns; ++i)
+						{
+							Object object = activeResultSet.getObject(i);
+							
+							if (activeResultSet.wasNull())
+							{
+								inactiveResultSet.updateNull(i);
+							}
+							else
+							{
+								inactiveResultSet.updateObject(i, object);
+							}
+						}
+						
+						inactiveResultSet.insertRow();
+						inactiveResultSet.moveToCurrentRow();
+					}
+					else // if (compare == 0)
 					{
 						boolean updated = false;
 						
 						for (int i = 1; i <= columns; ++i)
 						{
-							String column = resultSetMetaData.getColumnName(i);
-							Object activeObject = activeResultSet.getObject(i);
-							Object inactiveObject = inactiveResultSet.getObject(column);
-							
-							if (activeResultSet.wasNull())
+							if (!primaryKeyColumnSet.contains(new Integer(i)))
 							{
-								if (!inactiveResultSet.wasNull())
+								Object activeObject = activeResultSet.getObject(i);
+								Object inactiveObject = inactiveResultSet.getObject(i);
+								
+								if (activeResultSet.wasNull())
 								{
-									inactiveResultSet.updateNull(column);
-									
-									updated = true;
+									if (!inactiveResultSet.wasNull())
+									{
+										inactiveResultSet.updateNull(i);
+										
+										updated = true;
+									}
 								}
-							}
-							else
-							{
-								if (inactiveResultSet.wasNull() || !activeObject.equals(inactiveObject))
+								else
 								{
-									inactiveResultSet.updateObject(column, activeObject);
-									
-									updated = true;
+									if (inactiveResultSet.wasNull() || !activeObject.equals(inactiveObject))
+									{
+										inactiveResultSet.updateObject(i, activeObject);
+										
+										updated = true;
+									}
 								}
 							}
 						}
@@ -203,34 +245,6 @@ public class UpdateDatabaseActivationStrategy implements DatabaseActivationStrat
 						{
 							inactiveResultSet.updateRow();
 						}
-					}
-					
-					if (compare < 0)
-					{
-						inactiveResultSet.moveToInsertRow();
-
-						for (int i = 1; i <= columns; ++i)
-						{
-							String column = resultSetMetaData.getColumnName(i);
-							Object object = activeResultSet.getObject(i);
-							
-							if (activeResultSet.wasNull())
-							{
-								inactiveResultSet.updateNull(column);
-							}
-							else
-							{
-								inactiveResultSet.updateObject(column, object);
-							}
-						}
-						
-						inactiveResultSet.insertRow();
-						inactiveResultSet.moveToCurrentRow();
-					}
-					
-					if (compare > 0)
-					{
-						inactiveResultSet.deleteRow();
 					}
 					
 					if (hasActiveResults && (compare <= 0))
