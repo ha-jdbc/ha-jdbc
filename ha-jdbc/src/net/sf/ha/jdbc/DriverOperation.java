@@ -1,5 +1,6 @@
 package net.sf.ha.jdbc;
 
+import java.sql.Driver;
 import java.sql.SQLException;
 
 /**
@@ -8,10 +9,10 @@ import java.sql.SQLException;
  */
 public abstract class DriverOperation implements Operation
 {
-	public abstract Object execute(DriverDatabase database, DriverProxy driver) throws SQLException;
+	public abstract Object execute(DriverDatabase database, Driver driver) throws SQLException;
 	
 	public final Object execute(Database database, Object connectionFactory) throws SQLException
 	{
-		return this.execute((DriverDatabase) database, (DriverProxy) connectionFactory);
+		return this.execute((DriverDatabase) database, (Driver) connectionFactory);
 	}
 }
