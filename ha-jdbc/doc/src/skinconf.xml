@@ -67,8 +67,8 @@ be used to configure the chosen Forrest skin.
 	<!-- Whether to render mailto: links unrecognisable by spam harvesters -->
 	<obfuscate-mail-links>true</obfuscate-mail-links>
 
-	<searchsite-domain>mydomain</searchsite-domain>  
-	<searchsite-name>MyProject</searchsite-name>
+	<!--searchsite-domain></searchsite-domain>  
+	<searchsite-name>MyProject</searchsite-name-->
 
 	<!-- mandatory project logo
 		 skin: forrest-site renders it at the top -->
@@ -88,8 +88,8 @@ be used to configure the chosen Forrest skin.
 
 	<!-- optional host logo (e.g. sourceforge logo)
 		 skin: forrest-site renders it at the bottom-left corner -->
-	<host-url>http://www.sourceforge.net</host-url>
-	<host-logo>http://sourceforge.net/sflogo.php?group_id=111957&amp;type=1</host-logo>
+	<!--host-url></host-url>
+	<host-logo></host-logo-->
 
 	<!-- The following are used to construct a copyright statement -->
 	<year>2004</year>
@@ -108,11 +108,25 @@ be used to configure the chosen Forrest skin.
 	generated Table of Contents (TOC). By default, if no toc element is provided
 	below, then 2 levels are included. Level 0 does not generate any TOC at all.
 	-->
-	<toc level="2"/>
+	<toc level="1"/>
 
 	<!-- Credits are typically rendered as a set of small clickable images in the
 	page footer -->
 	<credits>
+		<credit>
+			<name>SourceForge.net</name>
+			<url>http://www.sourceforge.net</url>
+			<image>http://sourceforge.net/sflogo.php?group_id=111957&amp;type=1</image>
+			<width>88</width>
+			<height>32</height>
+		</credit>
+		<credit>
+			<name>Support This Project</name>
+			<url>http://sourceforge.net/donate/index.php?group_id=111957</url>
+			<image>http://images.sourceforge.net/images/project-support.jpg</image>
+			<width>88</width>
+			<height>32</height>
+		</credit>
 		<credit>
 			<name>Built with Apache Forrest</name>
 			<url>http://xml.apache.org/forrest/</url>
