@@ -8,7 +8,6 @@ import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Date;
 import java.sql.Ref;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -1108,15 +1107,5 @@ public class RowSetProxy extends ResultSetProxy implements RowSet
 		};
 		
 		this.executeWrite(operation);
-	}
-	
-	protected abstract static class RowSetOperation extends ResultSetProxy.ResultSetOperation
-	{
-		public abstract Object execute(RowSet rowSet) throws SQLException;
-		
-		public final Object execute(ResultSet resultSet) throws SQLException
-		{
-			return this.execute((RowSet) resultSet);
-		}
 	}
 }

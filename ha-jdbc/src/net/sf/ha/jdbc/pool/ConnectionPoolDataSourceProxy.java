@@ -14,7 +14,6 @@ import javax.sql.PooledConnection;
 import net.sf.ha.jdbc.Database;
 import net.sf.ha.jdbc.DataSourceDatabase;
 import net.sf.ha.jdbc.DatabaseManager;
-import net.sf.ha.jdbc.Operation;
 
 /**
  * @author Paul Ferraro
@@ -145,16 +144,6 @@ public class ConnectionPoolDataSourceProxy extends DatabaseManager implements Co
 		return connection.getConnection();
 	}
 	
-	protected abstract static class ConnectionPoolDataSourceOperation implements Operation
-	{
-		public abstract Object execute(DataSourceDatabase database, ConnectionPoolDataSource dataSource) throws SQLException;
-		
-		public final Object execute(Database database, Object connectionFactory) throws SQLException
-		{
-			return this.execute((DataSourceDatabase) database, (ConnectionPoolDataSource) connectionFactory);
-		}
-	}
-
 	/**
 	 * @see javax.naming.Referenceable#getReference()
 	 */

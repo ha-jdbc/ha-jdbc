@@ -14,7 +14,6 @@ import java.sql.Ref;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
@@ -691,15 +690,5 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 		};
 		
 		this.executeWrite(operation);
-	}
-
-	protected abstract static class PreparedStatementOperation extends StatementProxy.StatementOperation
-	{
-		public abstract Object execute(PreparedStatement statement) throws SQLException;
-		
-		public final Object execute(Statement statement) throws SQLException
-		{
-			return this.execute((PreparedStatement) statement);
-		}
 	}
 }

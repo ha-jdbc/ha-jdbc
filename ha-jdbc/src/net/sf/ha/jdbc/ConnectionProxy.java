@@ -628,14 +628,4 @@ public class ConnectionProxy extends AbstractConnectionProxy implements java.sql
 		
 		return new PreparedStatementProxy(this, this.executeWrite(operation));
 	}
-	
-	private abstract static class ConnectionOperation implements Operation
-	{
-		public abstract Object execute(Database database, Connection connection) throws SQLException;
-
-		public final Object execute(Database database, Object connection) throws SQLException
-		{
-			return this.execute(database, (Connection) connection);
-		}
-	}
 }

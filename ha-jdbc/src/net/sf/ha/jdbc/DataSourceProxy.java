@@ -153,14 +153,4 @@ public class DataSourceProxy extends DatabaseManager implements DataSource, Refe
 		
 		return (user == null) ? dataSource.getConnection() : dataSource.getConnection(user, info.getPassword());
 	}
-	
-	protected abstract static class DataSourceOperation implements Operation
-	{
-		public abstract Object execute(Database database, DataSource dataSource) throws SQLException;
-		
-		public final Object execute(Database database, Object connectionFactory) throws SQLException
-		{
-			return this.execute(database, (DataSource) connectionFactory);
-		}
-	}
 }

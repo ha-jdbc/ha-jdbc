@@ -630,19 +630,6 @@ public class StatementProxy extends AbstractProxy implements Statement
 		return (this.getResultSetConcurrency() == ResultSet.CONCUR_READ_ONLY) ? (ResultSet) this.executeRead(operation) : new ResultSetProxy(this, this.executeWrite(operation));
 	}
 	
-	protected abstract static class StatementOperation implements Operation
-	{
-		public abstract Object execute(Statement statement) throws SQLException;
-
-		/**
-		 * @see net.sf.hajdbc.AbstractProxy.Operation#execute(net.sf.hajdbc.ConnectionInfo, java.lang.Object)
-		 */
-		public Object execute(Database database, Object object) throws SQLException
-		{
-			return this.execute((Statement) object);
-		}
-	}
-
 	/**
 	 * @see net.sf.hajdbc.AbstractProxy#getDatabaseManager()
 	 */

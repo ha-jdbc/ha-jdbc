@@ -2372,19 +2372,6 @@ public class ResultSetProxy extends AbstractProxy implements ResultSet
 		return (Timestamp) this.executeRead(operation);
 	}
 	
-	protected abstract static class ResultSetOperation implements Operation
-	{
-		public abstract Object execute(ResultSet resultSet) throws SQLException;
-
-		/**
-		 * @see net.sf.hajdbc.AbstractProxy.Operation#execute(net.sf.hajdbc.ConnectionInfo, java.lang.Object)
-		 */
-		public Object execute(Database database, Object object) throws SQLException
-		{
-			return this.execute((ResultSet) object);
-		}
-	}
-
 	/**
 	 * @see net.sf.hajdbc.AbstractProxy#getDatabaseManager()
 	 */

@@ -3,7 +3,6 @@ package net.sf.ha.jdbc.pool.xa;
 import java.sql.SQLException;
 import java.util.Map;
 
-import javax.sql.PooledConnection;
 import javax.sql.XAConnection;
 import javax.transaction.xa.XAResource;
 
@@ -40,15 +39,5 @@ public class XAConnectionProxy extends PooledConnectionProxy implements XAConnec
 		};
 		
 		return (XAResource) this.executeRead(operation);
-	}
-	
-	protected abstract static class XAConnectionOperation extends PooledConnectionProxy.PooledConnectionOperation
-	{
-		public abstract Object execute(XAConnection connection) throws SQLException;
-
-		public final Object execute(PooledConnection connection) throws SQLException
-		{
-			return this.execute((XAConnection) connection);
-		}
 	}
 }

@@ -11,7 +11,6 @@ import java.sql.Clob;
 import java.sql.Date;
 import java.sql.Ref;
 import java.sql.SQLException;
-import java.sql.PreparedStatement;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
@@ -1358,15 +1357,5 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 		};
 		
 		this.executeWrite(operation);
-	}
-
-	protected abstract static class CallableStatementOperation extends PreparedStatementProxy.PreparedStatementOperation
-	{
-		public abstract Object execute(CallableStatement statement) throws SQLException;
-		
-		public final Object execute(PreparedStatement statement) throws SQLException
-		{
-			return this.execute((CallableStatement) statement);
-		}
 	}
 }

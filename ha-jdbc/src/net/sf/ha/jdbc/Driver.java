@@ -138,14 +138,4 @@ public final class Driver implements java.sql.Driver
 		
 		return (DriverPropertyInfo[]) databaseManager.executeRead(operation);
 	}
-	
-	private abstract static class DriverOperation implements Operation
-	{
-		public abstract Object execute(DriverDatabase database, Driver driver) throws SQLException;
-		
-		public final Object execute(Database database, Object connectionFactory) throws SQLException
-		{
-			return this.execute((DriverDatabase) database, (Driver) connectionFactory);
-		}
-	}
 }

@@ -8,10 +8,8 @@ import javax.sql.ConnectionEventListener;
 import javax.sql.PooledConnection;
 
 import net.sf.ha.jdbc.AbstractConnectionProxy;
-import net.sf.ha.jdbc.Database;
 import net.sf.ha.jdbc.ConnectionProxy;
 import net.sf.ha.jdbc.DatabaseManager;
-import net.sf.ha.jdbc.Operation;
 
 /**
  * @author Paul Ferraro
@@ -105,16 +103,6 @@ public class PooledConnectionProxy extends AbstractConnectionProxy implements Po
 		catch (SQLException e)
 		{
 			throw new RuntimeException(e);
-		}
-	}
-	
-	protected abstract static class PooledConnectionOperation implements Operation
-	{
-		public abstract Object execute(PooledConnection connection) throws SQLException;
-
-		public final Object execute(Database database, Object connection) throws SQLException
-		{
-			return this.execute((PooledConnection) connection);
 		}
 	}
 }

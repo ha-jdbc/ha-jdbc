@@ -3,7 +3,6 @@ package net.sf.ha.jdbc.pool.xa;
 import java.sql.SQLException;
 import java.util.Map;
 
-import javax.sql.ConnectionPoolDataSource;
 import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 
@@ -55,18 +54,5 @@ public class XADataSourceProxy extends ConnectionPoolDataSourceProxy implements 
 		};
 		
 		return new XAConnectionProxy(this, this.executeWrite(operation));
-	}
-	
-	protected abstract static class XADataSourceOperation extends ConnectionPoolDataSourceProxy.ConnectionPoolDataSourceOperation
-	{
-		public abstract Object execute(DataSourceDatabase database, XADataSource dataSource) throws SQLException;
-		
-		/**
-		 * @see net.sf.hajdbc.pool.ConnectionPoolDataSourceProxy.Operation#execute(net.sf.hajdbc.DataSourceConnectionInfo, javax.sql.ConnectionPoolDataSource)
-		 */
-		public final Object execute(DataSourceDatabase database, ConnectionPoolDataSource dataSource) throws SQLException
-		{
-			return this.execute(database, (XADataSource) dataSource);
-		}
 	}	
 }
