@@ -31,7 +31,7 @@ import net.sf.hajdbc.DatabaseClusterDecoratorDescriptor;
  */
 public class DistributableDatabaseClusterDescriptor implements DatabaseClusterDecoratorDescriptor
 {
-	private String protocol = "UDP:PING:MERGE2:FD_SOCK:VERIFY_SUSPECT:pbcast.STABLE:pbcast.NAKACK:UNICAST:FRAG:pbcast.GMS";
+	private String protocol;
 	
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterDecoratorDescriptor#decorate(net.sf.hajdbc.DatabaseCluster)
