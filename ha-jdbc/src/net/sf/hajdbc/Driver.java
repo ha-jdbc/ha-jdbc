@@ -35,6 +35,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public final class Driver implements java.sql.Driver
 {
+	private static String URL_PREFIX = "jdbc:ha-jdbc:";
+	
 	private static final int MAJOR_VERSION = 1;
 	private static final int MINOR_VERSION = 0;
 	private static final boolean JDBC_COMPLIANT = true;
@@ -87,7 +89,7 @@ public final class Driver implements java.sql.Driver
 	 */
 	public boolean acceptsURL(String url) throws SQLException
 	{
-		return url.startsWith("jdbc:ha-jdbc:") && (DatabaseClusterFactory.getInstance().getDatabaseCluster(url) != null);
+		return url.startsWith(URL_PREFIX) && (DatabaseClusterFactory.getInstance().getDatabaseCluster(url) != null);
 	}
 	
 	/**

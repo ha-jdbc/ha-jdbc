@@ -22,36 +22,25 @@ package net.sf.hajdbc.pool;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Map;
 
 import javax.sql.ConnectionEventListener;
 import javax.sql.PooledConnection;
 
-import net.sf.hajdbc.AbstractConnectionProxy;
 import net.sf.hajdbc.ConnectionFactoryProxy;
 import net.sf.hajdbc.ConnectionProxy;
-import net.sf.hajdbc.Database;
+import net.sf.hajdbc.SQLProxy;
 
 /**
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public class PooledConnectionProxy extends AbstractConnectionProxy implements PooledConnection
+public class PooledConnectionProxy extends SQLProxy implements PooledConnection
 {
-	public PooledConnectionProxy(ConnectionFactoryProxy connectionFactory, Map connectionMap)
+	public PooledConnectionProxy(ConnectionFactoryProxy connectionFactory, ConnectionPoolDataSourceOperation operation) throws SQLException
 	{
-		super(connectionFactory, connectionMap);
+		super(connectionFactory, operation);
 	}
-
-	protected Object getConnection(Database database) throws java.sql.SQLException
-	{
-		ConnectionPoolDataSourceDatabase dataSourceDatabase = (ConnectionPoolDataSourceDatabase) database;
-		ConnectionPoolDataSource dataSource = (ConnectionPoolDataSource) this.connectionFactory.getSQLObject(database);
-		
-		return dataSourceDatabase.getPooledConnection(dataSource);
-	}
-	
 	
 	/**
 	 * @see javax.sql.PooledConnection#getConnection()
@@ -66,7 +55,7 @@ public class PooledConnectionProxy extends AbstractConnectionProxy implements Po
 			}
 		};
 		
-		return new ConnectionProxy(this.connectionFactory, this.executeWrite(operation));
+		return new ConnectionProxy(this, operation);
 	}
 
 	/**

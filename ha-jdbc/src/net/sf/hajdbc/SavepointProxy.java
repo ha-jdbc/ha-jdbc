@@ -22,20 +22,17 @@ package net.sf.hajdbc;
 
 import java.sql.SQLException;
 import java.sql.Savepoint;
-import java.util.Map;
 
 /**
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public class SavepointProxy implements Savepoint
+public class SavepointProxy extends SQLProxy implements Savepoint
 {
-	private Map savepointMap;
-	
-	public SavepointProxy(Map savepointMap)
+	public SavepointProxy(ConnectionProxy connection, ConnectionOperation operation) throws SQLException
 	{
-		this.savepointMap = savepointMap;
+		super(connection, operation);
 	}
 	
 	/**
@@ -43,7 +40,15 @@ public class SavepointProxy implements Savepoint
 	 */
 	public int getSavepointId() throws SQLException
 	{
-		return this.getSavepoint().getSavepointId();
+		SavepointOperation operation = new SavepointOperation()
+		{
+			public Object execute(Savepoint savepoint) throws SQLException
+			{
+				return Integer.valueOf(savepoint.getSavepointId());
+			}
+		};
+		
+		return ((Integer) super.executeGet(operation)).intValue();
 	}
 
 	/**
@@ -51,16 +56,14 @@ public class SavepointProxy implements Savepoint
 	 */
 	public String getSavepointName() throws SQLException
 	{
-		return this.getSavepoint().getSavepointName();
-	}
-	
-	public Savepoint getSavepoint()
-	{
-		return (Savepoint) this.savepointMap.values().iterator().next();
-	}
-	
-	public Map getSavepointMap()
-	{
-		return this.savepointMap;
+		SavepointOperation operation = new SavepointOperation()
+		{
+			public Object execute(Savepoint savepoint) throws SQLException
+			{
+				return savepoint.getSavepointName();
+			}
+		};
+		
+		return (String) super.executeGet(operation);
 	}
 }

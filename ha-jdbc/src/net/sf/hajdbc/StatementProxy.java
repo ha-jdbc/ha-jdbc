@@ -33,8 +33,6 @@ import java.sql.Statement;
  */
 public class StatementProxy extends SQLProxy implements Statement
 {
-	protected ConnectionProxy connection;
-	
 	/**
 	 * Constructs a new StatementProxy.
 	 * @param connection
@@ -42,9 +40,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	 */
 	public StatementProxy(ConnectionProxy connection, ConnectionOperation operation) throws java.sql.SQLException
 	{
-		super(connection.executeWrite(operation));
-		
-		this.connection = connection;
+		super(connection, operation);
 	}
 	
 	/**
@@ -365,6 +361,8 @@ public class StatementProxy extends SQLProxy implements Statement
 		};
 		
 		this.executeWrite(operation);
+		
+		this.record(operation);
 	}
 
 	/**
@@ -469,6 +467,8 @@ public class StatementProxy extends SQLProxy implements Statement
 		};
 		
 		this.executeWrite(operation);
+		
+		this.record(operation);
 	}
 
 	/**
@@ -556,7 +556,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	 */
 	public Connection getConnection()
 	{
-		return this.connection;
+		return (Connection) this.parent;
 	}
 
 	/**
@@ -588,7 +588,7 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 
-		return (this.getResultSetConcurrency() == ResultSet.CONCUR_READ_ONLY) ? (ResultSet) this.executeGet(operation) : new ResultSetProxy(this, this.executeSet(operation));
+		return (this.getResultSetConcurrency() == ResultSet.CONCUR_READ_ONLY) ? (ResultSet) this.executeGet(operation) : new ResultSetProxy(this, operation);
 	}
 
 	/**
@@ -652,14 +652,6 @@ public class StatementProxy extends SQLProxy implements Statement
 			}
 		};
 
-		return (this.getResultSetConcurrency() == ResultSet.CONCUR_READ_ONLY) ? (ResultSet) this.executeRead(operation) : new ResultSetProxy(this, this.executeWrite(operation));
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.SQLProxy#getDatabaseCluster()
-	 */
-	public DatabaseCluster getDatabaseCluster()
-	{
-		return this.connection.getDatabaseCluster();
+		return (this.getResultSetConcurrency() == ResultSet.CONCUR_READ_ONLY) ? (ResultSet) this.executeRead(operation) : new ResultSetProxy(this, operation);
 	}
 }

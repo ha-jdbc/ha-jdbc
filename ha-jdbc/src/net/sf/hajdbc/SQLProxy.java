@@ -39,17 +39,23 @@ public abstract class SQLProxy
 {
 	private static Log log = LogFactory.getLog(SQLProxy.class);
 	
-	private SQLProxy parentSQLObject;
+	protected SQLProxy parent;
 	private Operation parentOperation;
 	private Map sqlObjectMap;
 	private List operationList = new LinkedList();
 	
 	protected SQLProxy(SQLProxy sqlObject, Operation operation) throws java.sql.SQLException
 	{
-		this(sqlObject.executeWrite(operation));
+		this(sqlObject, sqlObject.executeWrite(operation));
 		
 		this.parentOperation = operation;
-		this.parentSQLObject = sqlObject;
+	}
+	
+	protected SQLProxy(SQLProxy sqlObject, Map sqlObjectMap)
+	{
+		this(sqlObjectMap);
+		
+		this.parent = sqlObject;
 	}
 	
 	protected SQLProxy(Map sqlObjectMap)
@@ -63,11 +69,18 @@ public abstract class SQLProxy
 		{
 			Object sqlObject = this.sqlObjectMap.get(database);
 			
-			if ((sqlObject == null) && (this.parentSQLObject != null))
+			if (sqlObject == null)
 			{
 				try
 				{
-					sqlObject = this.parentOperation.execute(database, this.parentSQLObject);
+					Object parentObject = this.parent.getSQLObject(database);
+					
+					if (parentObject == null)
+					{
+						throw new SQLException("Failed to initialize " + this.parent.getClass().getName() + " for database " + database);
+					}
+					
+					sqlObject = this.parentOperation.execute(database, parentObject);
 					
 					Iterator operations = this.operationList.iterator();
 					
@@ -82,7 +95,7 @@ public abstract class SQLProxy
 				}
 				catch (java.sql.SQLException e)
 				{
-					log.warn("");
+					this.deactivate(database, new SQLException("Failed to initialize " + this.getClass().getName() + " for database " + database, e));
 				}
 			}
 			
@@ -107,8 +120,6 @@ public abstract class SQLProxy
 		
 		if (sqlObject == null)
 		{
-			this.deactivate(database);
-			
 			return this.executeRead(operation);
 		}
 		
@@ -132,8 +143,6 @@ public abstract class SQLProxy
 		
 		if (sqlObject == null)
 		{
-			this.deactivate(database);
-			
 			return this.executeGet(operation);
 		}
 		
@@ -155,8 +164,6 @@ public abstract class SQLProxy
 			
 			if (sqlObject == null)
 			{
-				this.deactivate(database);
-				
 				continue;
 			}
 			
@@ -184,19 +191,7 @@ public abstract class SQLProxy
 			}
 		}
 
-		Set databaseSet = this.getDatabaseCluster().getNewDatabaseSet(databaseList);
-		
-		if (!databaseSet.isEmpty())
-		{
-			Iterator databases = databaseSet.iterator();
-			
-			while (databases.hasNext())
-			{
-				Database database = (Database) databases.next();
-				
-				this.deactivate(database);
-			}
-		}
+		this.deactivateNewDatabases(databaseList);
 		
 		// If no databases returned successfully, return an exception back to the caller
 		if (returnValueMap.isEmpty())
@@ -240,8 +235,6 @@ public abstract class SQLProxy
 			
 			if (sqlObject == null)
 			{
-				this.deactivate(database);
-				
 				continue;
 			}
 			
@@ -250,6 +243,15 @@ public abstract class SQLProxy
 			returnValueMap.put(database, returnValue);
 		}
 
+		this.deactivateNewDatabases(databaseList);
+		
+		this.record(operation);
+		
+		return returnValueMap;
+	}
+	
+	private void deactivateNewDatabases(List databaseList)
+	{
 		Set databaseSet = this.getDatabaseCluster().getNewDatabaseSet(databaseList);
 		
 		if (!databaseSet.isEmpty())
@@ -263,8 +265,6 @@ public abstract class SQLProxy
 				this.deactivate(database);
 			}
 		}
-		
-		return returnValueMap;
 	}
 	
 	protected final void handleException(Database database, Throwable exception) throws SQLException
@@ -292,7 +292,10 @@ public abstract class SQLProxy
 		}
 	}
 	
-	public abstract DatabaseCluster getDatabaseCluster();
+	public DatabaseCluster getDatabaseCluster()
+	{
+		return this.parent.getDatabaseCluster();
+	}
 
 	private class Executor implements Runnable
 	{

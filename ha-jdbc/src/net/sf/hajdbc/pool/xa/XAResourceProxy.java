@@ -26,7 +26,6 @@ import java.util.Map;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.SQLProxy;
 
 /**
@@ -36,39 +35,9 @@ import net.sf.hajdbc.SQLProxy;
  */
 public class XAResourceProxy extends SQLProxy implements XAResource
 {
-	private XAConnectionProxy connection;
-	
-	public XAResourceProxy(XAConnectionProxy connection, Map resourceMap)
+	public XAResourceProxy(XAConnectionProxy connection, XAConnectionOperation operation) throws SQLException
 	{
-		super(resourceMap);
-		
-		this.connection = connection;
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.SQLProxy#getSQLObject(net.sf.hajdbc.Database)
-	 */
-/*
-	public Object getSQLObject(Database database)
-	{
-		Object resource = super.getSQLObject(database);
-		
-		if (resource == null)
-		{
-			XAConnection connection = (XAConnection) this.connection.getSQLObject(database);
-			
-			resource = connection.getXAResource();
-		}
-		
-		return resource;
-	}
-*/	
-	/**
-	 * @see net.sf.hajdbc.SQLProxy#getDatabaseCluster()
-	 */
-	public DatabaseCluster getDatabaseCluster()
-	{
-		return this.connection.getDatabaseCluster();
+		super(connection, operation);
 	}
 
 	/**

@@ -35,32 +35,11 @@ import java.util.Map;
  * @version $Revision$
  * @since   1.0
  */
-public class ConnectionProxy extends AbstractConnectionProxy implements java.sql.Connection
+public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 {
-	public ConnectionProxy(ConnectionFactoryProxy connectionFactory, Operation operation) throws java.sql.SQLException
+	public ConnectionProxy(SQLProxy connectionFactory, Operation operation) throws java.sql.SQLException
 	{
 		super(connectionFactory, operation);
-	}
-
-	/**
-	 * @see net.sf.hajdbc.AbstractConnectionProxy#getConnection(net.sf.hajdbc.Database)
-	 */
-	protected Object getConnection(Database database) throws java.sql.SQLException
-	{
-		Database existingDatabase = this.getDatabaseCluster().nextDatabase();
-		Connection existingConnection = (Connection) this.getSQLObject(existingDatabase);
-		
-		Object connectionFactory = this.connectionFactory.getSQLObject(database);
-		Connection connection = database.connect(connectionFactory);
-		
-		connection.setAutoCommit(existingConnection.getAutoCommit());
-		connection.setCatalog(existingConnection.getCatalog());
-		connection.setHoldability(existingConnection.getHoldability());
-		connection.setReadOnly(existingConnection.isReadOnly());
-		connection.setTransactionIsolation(existingConnection.getTransactionIsolation());
-		connection.setTypeMap(existingConnection.getTypeMap());
-		
-		return connection;
 	}
 	
 	/**
@@ -249,6 +228,8 @@ public class ConnectionProxy extends AbstractConnectionProxy implements java.sql
 		};
 		
 		this.executeWrite(operation);
+		
+		this.record(operation);
 	}
 
 	/**
@@ -267,6 +248,8 @@ public class ConnectionProxy extends AbstractConnectionProxy implements java.sql
 		};
 		
 		this.executeWrite(operation);
+
+		this.record(operation);
 	}
 
 	/**
@@ -284,7 +267,7 @@ public class ConnectionProxy extends AbstractConnectionProxy implements java.sql
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -319,6 +302,8 @@ public class ConnectionProxy extends AbstractConnectionProxy implements java.sql
 		};
 		
 		this.executeWrite(operation);
+		
+		this.record(operation);
 	}
 
 	/**
@@ -366,7 +351,7 @@ public class ConnectionProxy extends AbstractConnectionProxy implements java.sql
 			}
 		};
 		
-		return new SavepointProxy(this.executeWrite(operation));
+		return new SavepointProxy(this, operation);
 	}
 
 	/**
@@ -380,7 +365,7 @@ public class ConnectionProxy extends AbstractConnectionProxy implements java.sql
 		{
 			public Object execute(Database database, Connection connection) throws SQLException
 			{
-				Savepoint savepoint = (Savepoint) savepointProxy.getSavepointMap().get(database);
+				Savepoint savepoint = (Savepoint) savepointProxy.getSQLObject(database);
 				
 				connection.releaseSavepoint(savepoint);
 				
@@ -402,7 +387,7 @@ public class ConnectionProxy extends AbstractConnectionProxy implements java.sql
 		{
 			public Object execute(Database database, Connection connection) throws SQLException
 			{
-				Savepoint savepoint = (Savepoint) savepointProxy.getSavepointMap().get(database);
+				Savepoint savepoint = (Savepoint) savepointProxy.getSQLObject(database);
 				
 				connection.rollback(savepoint);
 				
@@ -668,6 +653,6 @@ public class ConnectionProxy extends AbstractConnectionProxy implements java.sql
 			}
 		};
 		
-		return new SavepointProxy(this.executeWrite(operation));
+		return new SavepointProxy(this, operation);
 	}
 }

@@ -47,7 +47,7 @@ public class ConnectionPoolDataSource extends AbstractDataSource implements java
 			}
 		};
 		
-		return new PooledConnectionProxy(this.connectionFactory, this.connectionFactory.executeWrite(operation));
+		return new PooledConnectionProxy(this.connectionFactory, operation);
 	}
 
 	/**
@@ -63,7 +63,7 @@ public class ConnectionPoolDataSource extends AbstractDataSource implements java
 			}
 		};
 		
-		return new PooledConnectionProxy(this.connectionFactory, this.connectionFactory.executeWrite(operation));
+		return new PooledConnectionProxy(this.connectionFactory, operation);
 	}
 
 	/**

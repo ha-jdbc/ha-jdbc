@@ -50,18 +50,14 @@ import java.util.Map;
  */
 public class ResultSetProxy extends SQLProxy implements ResultSet
 {
-	protected StatementProxy statement;
-	
 	/**
 	 * Constructs a new ResultSetProxy.
 	 * @param statement
 	 * @param resultSetMap
 	 */
-	public ResultSetProxy(StatementProxy statement, Map resultSetMap)
+	public ResultSetProxy(StatementProxy statement, StatementOperation operation) throws SQLException
 	{
-		super(resultSetMap);
-		
-		this.statement = statement;
+		super(statement, operation);
 	}
 	
 	/**
@@ -1748,7 +1744,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	 */
 	public Statement getStatement()
 	{
-		return this.statement;
+		return (Statement) this.parent;
 	}
 
 	/**
@@ -2503,13 +2499,5 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 		};
 		
 		return (Timestamp) this.executeGet(operation);
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.SQLProxy#getDatabaseCluster()
-	 */
-	public DatabaseCluster getDatabaseCluster()
-	{
-		return this.statement.getDatabaseCluster();
 	}
 }

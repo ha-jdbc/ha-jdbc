@@ -21,13 +21,11 @@
 package net.sf.hajdbc.pool.xa;
 
 import java.sql.SQLException;
-import java.util.Map;
 
 import javax.sql.XAConnection;
 import javax.transaction.xa.XAResource;
 
 import net.sf.hajdbc.ConnectionFactoryProxy;
-import net.sf.hajdbc.Database;
 import net.sf.hajdbc.pool.PooledConnectionProxy;
 
 /**
@@ -42,20 +40,9 @@ public class XAConnectionProxy extends PooledConnectionProxy implements XAConnec
 	 * @param databaseCluster
 	 * @param connectionMap
 	 */
-	public XAConnectionProxy(ConnectionFactoryProxy connectionFactory, Map connectionMap)
+	public XAConnectionProxy(ConnectionFactoryProxy connectionFactory, XADataSourceOperation operation) throws SQLException
 	{
-		super(connectionFactory, connectionMap);
-	}
-
-	/**
-	 * @see net.sf.hajdbc.AbstractConnectionProxy#getConnection(net.sf.hajdbc.Database)
-	 */
-	protected Object getConnection(Database database) throws java.sql.SQLException
-	{
-		XADataSourceDatabase dataSourceDatabase = (XADataSourceDatabase) database;
-		XADataSource dataSource = (XADataSource) this.connectionFactory.getSQLObject(database);
-		
-		return dataSourceDatabase.getXAConnection(dataSource);
+		super(connectionFactory, operation);
 	}
 	
 	/**
@@ -71,6 +58,6 @@ public class XAConnectionProxy extends PooledConnectionProxy implements XAConnec
 			}
 		};
 		
-		return new XAResourceProxy(this, this.executeSet(operation));
+		return new XAResourceProxy(this, operation);
 	}
 }

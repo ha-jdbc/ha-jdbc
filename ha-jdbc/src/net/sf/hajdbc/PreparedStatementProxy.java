@@ -671,7 +671,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 			}
 		};
 
-		return (this.getResultSetConcurrency() == ResultSet.CONCUR_READ_ONLY) ? (ResultSet) this.executeRead(operation) : new ResultSetProxy(this, this.executeWrite(operation));
+		return (this.getResultSetConcurrency() == ResultSet.CONCUR_READ_ONLY) ? (ResultSet) this.executeRead(operation) : new ResultSetProxy(this, operation);
 	}
 
 	/**

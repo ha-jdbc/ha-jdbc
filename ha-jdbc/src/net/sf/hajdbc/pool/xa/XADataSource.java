@@ -46,7 +46,7 @@ public class XADataSource extends ConnectionPoolDataSource implements javax.sql.
 			}
 		};
 		
-		return new XAConnectionProxy(this.connectionFactory, this.connectionFactory.executeWrite(operation));
+		return new XAConnectionProxy(this.connectionFactory, operation);
 	}
 
 	/**
@@ -62,7 +62,7 @@ public class XADataSource extends ConnectionPoolDataSource implements javax.sql.
 			}
 		};
 		
-		return new XAConnectionProxy(this.connectionFactory, this.connectionFactory.executeWrite(operation));
+		return new XAConnectionProxy(this.connectionFactory, operation);
 	}
 	
 	/**
