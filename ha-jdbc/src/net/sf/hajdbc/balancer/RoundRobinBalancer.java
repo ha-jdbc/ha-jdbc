@@ -20,9 +20,10 @@
  */
 package net.sf.hajdbc.balancer;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -35,7 +36,7 @@ import net.sf.hajdbc.Database;
 public class RoundRobinBalancer extends AbstractBalancer
 {
 	private Set databaseSet = new HashSet();
-	private List databaseList = new LinkedList();
+	private List databaseList = new ArrayList();
 	
 	/**
 	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
@@ -54,7 +55,9 @@ public class RoundRobinBalancer extends AbstractBalancer
 		
 		if (added)
 		{
-			for (int i = 0; i < database.getWeight().intValue(); ++i)
+			int weight = database.getWeight().intValue();
+			
+			for (int i = 0; i < weight; ++i)
 			{
 				this.databaseList.add(database);
 			}
@@ -72,7 +75,9 @@ public class RoundRobinBalancer extends AbstractBalancer
 
 		if (removed)
 		{
-			for (int i = 0; i < database.getWeight().intValue(); ++i)
+			int weight = database.getWeight().intValue();
+
+			for (int i = 0; i < weight; ++i)
 			{
 				this.databaseList.remove(database);
 			}
@@ -91,10 +96,10 @@ public class RoundRobinBalancer extends AbstractBalancer
 			return this.first();
 		}
 		
-		Database database = (Database) this.databaseList.remove(0);
+		Database database = (Database) this.databaseList.get(0);
 		
-		this.databaseList.add(database);
-		
+		Collections.rotate(this.databaseList, -1);
+
 		return database;
 	}
 }
