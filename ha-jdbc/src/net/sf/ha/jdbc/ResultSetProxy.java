@@ -27,6 +27,11 @@ public class ResultSetProxy extends JDBCObjectProxy implements ResultSet
 {
 	protected StatementProxy statement;
 	
+	/**
+	 * Constructs a new ResultSetProxy.
+	 * @param statement
+	 * @param resultSetMap
+	 */
 	public ResultSetProxy(StatementProxy statement, Map resultSetMap)
 	{
 		super(resultSetMap);
@@ -2373,16 +2378,15 @@ public class ResultSetProxy extends JDBCObjectProxy implements ResultSet
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.AbstractProxy#getDatabaseCluster()
+	 * @see net.sf.ha.jdbc.JDBCObjectProxy#getDatabaseCluster()
 	 */
 	protected DatabaseCluster getDatabaseCluster()
 	{
 		return this.statement.getDatabaseCluster();
 	}
 	
-	
 	/**
-	 * @see net.sf.hajdbc.AbstractProxy#drop(net.sf.hajdbc.ConnectionInfo)
+	 * @see net.sf.ha.jdbc.JDBCObjectProxy#deactivate(net.sf.ha.jdbc.Database)
 	 */
 	public void deactivate(Database database)
 	{

@@ -20,46 +20,73 @@ public class DriverDatabase implements Database
 	private String user;
 	private String password;
 
+	/**
+	 * @return
+	 */
 	public String getUser()
 	{
 		return this.user;
 	}
 	
+	/**
+	 * @param user
+	 */
 	public void setUser(String user)
 	{
 		this.user = user;
 	}
 	
+	/**
+	 * @return
+	 */
 	public String getPassword()
 	{
 		return this.password;
 	}
 	
+	/**
+	 * @param password
+	 */
 	public void setPassword(String password)
 	{
 		this.password = password;
 	}
 	
+	/**
+	 * @return
+	 */
 	public String getUrl()
 	{
 		return this.url;
 	}
 	
+	/**
+	 * @param url
+	 */
 	public void setUrl(String url)
 	{
 		this.url = url;
 	}
 	
+	/**
+	 * @return
+	 */
 	public String getDriver()
 	{
 		return this.driver;
 	}
 	
+	/**
+	 * @param driver
+	 */
 	public void setDriver(String driver)
 	{
 		this.driver = driver;
 	}
 	
+	/**
+	 * @return
+	 */
 	public Properties getProperties()
 	{
 		Properties properties = new Properties();
@@ -77,17 +104,26 @@ public class DriverDatabase implements Database
 		return properties;
 	}
 	
+	/**
+	 * @param properties
+	 */
 	public void setProperties(Properties properties)
 	{
 		this.user = properties.getProperty(USER);
 		this.password = properties.getProperty(PASSWORD);
 	}
 	
+	/**
+	 * @see java.lang.Object#hashCode()
+	 */
 	public int hashCode()
 	{
 		return this.url.hashCode();
 	}
 	
+	/**
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	public boolean equals(Object object)
 	{
 		if ((object == null) || !DriverDatabase.class.isInstance(object))
@@ -102,6 +138,9 @@ public class DriverDatabase implements Database
 
 	/**
 	 * @see net.sf.ha.jdbc.ConnectionInfo#connect(java.lang.Object)
+	 */
+	/**
+	 * @see net.sf.ha.jdbc.Database#connect(java.lang.Object)
 	 */
 	public Connection connect(Object object) throws SQLException
 	{

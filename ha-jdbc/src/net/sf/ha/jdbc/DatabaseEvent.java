@@ -10,8 +10,8 @@ import java.util.EventObject;
 public class DatabaseEvent extends EventObject
 {
 	/**
-	 * Constructs a new DatabaseActivationEvent.
-	 * @param arg0
+	 * Constructs a new DatabaseEvent.
+	 * @param source
 	 */
 	public DatabaseEvent(Object source)
 	{

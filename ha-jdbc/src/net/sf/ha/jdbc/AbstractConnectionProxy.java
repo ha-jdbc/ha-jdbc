@@ -11,6 +11,11 @@ public class AbstractConnectionProxy extends JDBCObjectProxy
 {
 	private DatabaseCluster databaseCluster;
 	
+	/**
+	 * Constructs a new AbstractConnectionProxy.
+	 * @param databaseCluster
+	 * @param connectionMap
+	 */
 	protected AbstractConnectionProxy(DatabaseCluster databaseCluster, Map connectionMap)
 	{
 		super(connectionMap);
@@ -19,13 +24,16 @@ public class AbstractConnectionProxy extends JDBCObjectProxy
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.AbstractProxy#getDatabaseCluster()
+	 * @see net.sf.ha.jdbc.JDBCObjectProxy#getDatabaseCluster()
 	 */
 	protected DatabaseCluster getDatabaseCluster()
 	{
 		return this.databaseCluster;
 	}
 	
+	/**
+	 * @see net.sf.ha.jdbc.JDBCObjectProxy#deactivate(net.sf.ha.jdbc.Database)
+	 */
 	public void deactivate(Database database)
 	{
 		this.databaseCluster.deactivate(database);

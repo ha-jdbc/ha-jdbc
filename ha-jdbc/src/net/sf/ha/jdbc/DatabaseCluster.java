@@ -16,6 +16,12 @@ public class DatabaseCluster extends JDBCObjectProxy implements DatabaseEventLis
 	private String name;
 	private String validateSQL;
 	
+	/**
+	 * Constructs a new DatabaseCluster.
+	 * @param name
+	 * @param databaseMap
+	 * @param validateSQL
+	 */
 	protected DatabaseCluster(String name, Map databaseMap, String validateSQL)
 	{
 		super(databaseMap);
@@ -24,21 +30,34 @@ public class DatabaseCluster extends JDBCObjectProxy implements DatabaseEventLis
 		this.validateSQL = validateSQL;
 	}
 	
+	/**
+	 * @return
+	 */
 	public String getName()
 	{
 		return this.name;
 	}
 
+	/**
+	 * @return
+	 */
 	public String getValidateSQL()
 	{
 		return this.validateSQL;
 	}
 	
+	/**
+	 * @see net.sf.ha.jdbc.JDBCObjectProxy#getDatabaseCluster()
+	 */
 	protected DatabaseCluster getDatabaseCluster()
 	{
 		return this;
 	}
 	
+	/**
+	 * @param database
+	 * @return
+	 */
 	public boolean isActive(Database database)
 	{
 		Connection connection = null;
@@ -89,7 +108,7 @@ public class DatabaseCluster extends JDBCObjectProxy implements DatabaseEventLis
 	}
 	
 	/**
-	 * @see net.sf.ha.jdbc.DatabaseActivationEventListener#deactivated(net.sf.ha.jdbc.DatabaseActivationEvent)
+	 * @see net.sf.ha.jdbc.DatabaseEventListener#deactivated(net.sf.ha.jdbc.DatabaseEvent)
 	 */
 	public void deactivated(DatabaseEvent event)
 	{

@@ -9,10 +9,15 @@ import java.sql.Statement;
  */
 public abstract class StatementOperation implements Operation
 {
+	/**
+	 * @param statement
+	 * @return
+	 * @throws SQLException
+	 */
 	public abstract Object execute(Statement statement) throws SQLException;
 
 	/**
-	 * @see net.sf.hajdbc.AbstractProxy.Operation#execute(net.sf.hajdbc.ConnectionInfo, java.lang.Object)
+	 * @see net.sf.ha.jdbc.Operation#execute(net.sf.ha.jdbc.Database, java.lang.Object)
 	 */
 	public Object execute(Database database, Object object) throws SQLException
 	{

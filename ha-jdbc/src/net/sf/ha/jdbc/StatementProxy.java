@@ -15,6 +15,11 @@ public class StatementProxy extends JDBCObjectProxy implements Statement
 {
 	protected ConnectionProxy connection;
 
+	/**
+	 * Constructs a new StatementProxy.
+	 * @param connection
+	 * @param statementMap
+	 */
 	public StatementProxy(ConnectionProxy connection, Map statementMap)
 	{
 		super(statementMap);
@@ -631,7 +636,7 @@ public class StatementProxy extends JDBCObjectProxy implements Statement
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.AbstractProxy#getDatabaseCluster()
+	 * @see net.sf.ha.jdbc.JDBCObjectProxy#getDatabaseCluster()
 	 */
 	protected DatabaseCluster getDatabaseCluster()
 	{
@@ -639,7 +644,7 @@ public class StatementProxy extends JDBCObjectProxy implements Statement
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.AbstractProxy#drop(net.sf.hajdbc.ConnectionInfo)
+	 * @see net.sf.ha.jdbc.JDBCObjectProxy#deactivate(net.sf.ha.jdbc.Database)
 	 */
 	public void deactivate(Database database)
 	{
