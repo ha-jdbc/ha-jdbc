@@ -249,17 +249,17 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 	/**
 	 * @return the maxBatchSize.
 	 */
-	public Integer getMaxBatchSize()
+	public int getMaxBatchSize()
 	{
-		return new Integer(this.maxBatchSize);
+		return this.maxBatchSize;
 	}
 	
 	/**
 	 * @param maxBatchSize the maxBatchSize to set.
 	 */
-	public void setMaxBatchSize(Integer maxBatchSize)
+	public void setMaxBatchSize(int maxBatchSize)
 	{
-		this.maxBatchSize = maxBatchSize.intValue();
+		this.maxBatchSize = maxBatchSize;
 	}
 	
 	/**
