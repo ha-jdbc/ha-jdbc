@@ -1,7 +1,13 @@
 package net.sf.ha.jdbc;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author  Paul Ferraro
@@ -12,7 +18,8 @@ public class DatabaseClusterDescriptor
 {
 	private String name;
 	private String validateSQL;
-	private Map databaseMap = new HashMap();
+	private Set activeDatabaseSet = new LinkedHashSet();
+	private Map databaseMap = Collections.synchronizedMap(new HashMap());
 	
 	/**
 	 * @return Returns the databaseSet.
@@ -29,6 +36,7 @@ public class DatabaseClusterDescriptor
 	{
 		Database database = (Database) object;
 		this.databaseMap.put(database.getId(), database);
+		this.activeDatabaseSet.add(database);
 	}
 	
 	/**
@@ -61,5 +69,56 @@ public class DatabaseClusterDescriptor
 	public void setValidateSQL(String validateSQL)
 	{
 		this.validateSQL = validateSQL;
+	}
+	
+	public Database firstDatabase() throws SQLException
+	{
+		synchronized (this.activeDatabaseSet)
+		{
+			if (this.activeDatabaseSet.size() == 0)
+			{
+				throw new SQLException("No active databases in cluster");
+			}
+			
+			return (Database) this.activeDatabaseSet.iterator().next();
+		}
+	}
+	
+	public Database nextDatabase() throws SQLException
+	{
+		synchronized (this.activeDatabaseSet)
+		{
+			Database database = this.firstDatabase();
+			
+			if (this.activeDatabaseSet.size() > 1)
+			{
+				this.activeDatabaseSet.remove(database);
+				
+				this.activeDatabaseSet.add(database);
+			}
+			
+			return database;
+		}
+	}
+
+	public List getActiveDatabaseList() throws SQLException
+	{
+		synchronized (this.activeDatabaseSet)
+		{
+			if (this.activeDatabaseSet.size() == 0)
+			{
+				throw new SQLException("No active databases in cluster");
+			}
+			
+			return new ArrayList(this.activeDatabaseSet);
+		}
+	}
+	
+	public void removeDatabase(Database database)
+	{
+		synchronized (this.activeDatabaseSet)
+		{
+			this.activeDatabaseSet.remove(database);
+		}
 	}
 }
