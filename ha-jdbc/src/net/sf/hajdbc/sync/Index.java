@@ -18,7 +18,7 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.synch;
+package net.sf.hajdbc.sync;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -26,33 +26,47 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public class ForeignKey
+public class Index
 {
 	private String name;
 	private String table;
-	private String column;
-	private String foreignTable;
-	private String foreignColumn;
+	private List columnList = new LinkedList();
 	
 	private String formatSQL(String pattern)
 	{
-		return MessageFormat.format(pattern, new Object[] { this.name, this.table, this.column, this.foreignTable, this.foreignColumn });
+		StringBuffer buffer = new StringBuffer();
+		Iterator columns = this.columnList.iterator();
+		
+		while (columns.hasNext())
+		{
+			String column = (String) columns.next();
+			buffer.append(column);
+			
+			if (columns.hasNext())
+			{
+				buffer.append(",");
+			}
+		}
+			
+		return MessageFormat.format(pattern, new Object[] { this.name, this.table, buffer.toString() });
 	}
 	
 	public boolean equals(Object object)
 	{
-		ForeignKey foreignKey = (ForeignKey) object;
+		Index index = (Index) object;
 		
-		return (foreignKey != null) && (foreignKey.name != null) && foreignKey.name.equals(this.name);
+		return (index != null) && (index.name != null) && index.name.equals(this.name);
 	}
 	
 	public int hashCode()
@@ -60,40 +74,50 @@ public class ForeignKey
 		return this.name.hashCode();
 	}
 	
-	public static Collection getForeignKeys(Connection connection, String table) throws SQLException
+	public static Collection getIndexes(Connection connection, String table) throws SQLException
 	{
-		List foreignKeyList = new LinkedList();
-		ResultSet resultSet = connection.getMetaData().getImportedKeys(null, null, table);
+		Map indexMap = new HashMap();
+		ResultSet resultSet = connection.getMetaData().getIndexInfo(null, null, table, false, true);
 		
 		while (resultSet.next())
 		{
-			ForeignKey foreignKey = new ForeignKey();
-			
-			foreignKey.table = table;
-			foreignKey.name = resultSet.getString("FK_NAME");
-			foreignKey.column = resultSet.getString("FKCOLUMN_NAME");
-			foreignKey.foreignTable = resultSet.getString("PKTABLE_NAME");
-			foreignKey.foreignColumn = resultSet.getString("PKCOLUMN_NAME");
-
-			foreignKeyList.add(foreignKey);
+			if (resultSet.getBoolean("NON_UNIQUE"))
+			{
+				String name = resultSet.getString("INDEX_NAME");
+				String column = resultSet.getString("COLUMN_NAME");
+				
+				Index index = (Index) indexMap.get(name);
+				
+				if (index == null)
+				{
+					index = new Index();
+					
+					index.name = name;
+					index.table = table;
+					
+					indexMap.put(name, index);
+				}
+				
+				index.columnList.add(column);
+			}
 		}
 		
 		resultSet.close();
 		
-		return foreignKeyList;
+		return indexMap.values();
 	}
-
-	public static void executeSQL(Connection connection, Collection foreignKeyCollection, String sqlPattern) throws java.sql.SQLException
+	
+	public static void executeSQL(Connection connection, Collection indexCollection, String sqlPattern) throws java.sql.SQLException
 	{
 		Statement statement = connection.createStatement();
 		
-		Iterator foreignKeys = foreignKeyCollection.iterator();
+		Iterator indexes = indexCollection.iterator();
 		
-		while (foreignKeys.hasNext())
+		while (indexes.hasNext())
 		{
-			ForeignKey foreignKey = (ForeignKey) foreignKeys.next();
+			Index index = (Index) indexes.next();
 			
-			String sql = foreignKey.formatSQL(sqlPattern);
+			String sql = index.formatSQL(sqlPattern);
 			
 			statement.addBatch(sql);
 		}

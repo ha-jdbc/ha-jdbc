@@ -18,7 +18,7 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.synch;
+package net.sf.hajdbc.sync;
 
 import java.sql.Connection;
 import java.util.List;
