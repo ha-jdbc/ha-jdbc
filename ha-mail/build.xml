@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<project name="ha-mail" default="jar" basedir=".">
+
+	<property name="src.dir" location="${basedir}/src"></property>
+	<property name="lib.dir" location="${basedir}/lib"></property>
+	<property name="lib.compile.dir" location="${lib.dir}/compile"></property>
+	<property name="build.dir" location="${basedir}/build"></property>
+	<property name="jar.dir" location="${basedir}"></property>
+	<property name="jar.file" value="${ant.project.name}.jar"></property>
+	
+	<target name="clean">
+		<delete dir="${build.dir}"></delete>
+		<delete file="${jar.dir}/${jar.file}"></delete>
+	</target>
+	
+	<target name="init">
+		<mkdir dir="${build.dir}"></mkdir>
+	</target>
+	
+	<target name="compile" depends="init">
+		<javac srcdir="${src.dir}" destdir="${build.dir}" optimize="true" debug="true">
+			<classpath>
+				<dirset dir="${build.dir}"></dirset>
+				<fileset dir="${lib.dir}" includes="*.jar"></fileset>
+				<fileset dir="${lib.compile.dir}" includes="*.jar"></fileset>
+			</classpath>
+		</javac>
+	</target>
+	
+	<target name="jar" depends="compile">
+		<jar jarfile="${jar.dir}/${jar.file}">
+			<fileset dir="${build.dir}" includes="**"></fileset>
+		</jar>
+	</target>
+	
+</project>
+
