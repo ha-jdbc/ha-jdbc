@@ -20,11 +20,11 @@
 				</p>
 				<ul>
 					<li>Commercial clustering solutions are <em>very</em> expensive.</li>
-					<li>Many replication solutions exist (e.g. MySQL replication, PostgreSQL eRServer), but are inadequate:</li>
+					<li>Many replication solutions exist (e.g. <link href="http://www.mysql.com/products/mysql/">MySQL</link> replication, <link href="http://gborg.postgresql.org/project/erserver">PostgreSQL eRServer</link>), but are inadequate:</li>
 					<ul>
 						<li>Asynchronous replication solutions perform adequately but impose a replication latency and do not provide transactional concurrency.</li>
 						<li>Synchronous replication solutions may provide transactional concurrency but often impose a high performance cost.</li>
-						<li>The master-slave approach does not provide failover for the master.</li>
+						<li>The asymmetric master-slave design does not provide failover of the master database.</li>
 					</ul>
 					<li>
 						The <link href="http://c-jdbc.objectweb.org">C-JDBC project</link>, hosted at <link href="http://www.objectweb.org">ObjectWeb</link>, does an impressive job at coming close to a full enterprise database clustering solution.
@@ -38,11 +38,12 @@
 			<section>
 				<title>What features does HA-JDBC provide?</title>
 				<ul>
-					<li>Transparent integration.</li>
 					<li>Support for full JDBC 3.0 (Java 1.4) feature set.</li>
+					<li>Transparent integration.</li>
+					<li>Allows use of proprietary implementations of SQL types (e.g. Blob, Clob, Ref, etc).</li>
+					<li>Improves performance of concurrent read-access by distributing load accross individual cluster nodes.</li>
 					<li>Provides connection factory support for javax.sql.DataSource, javax.sql.ConnectionPoolDataSource, javax.sql.XADataSource, as well as the traditional java.sql.DriverManager facility.</li>
 					<li>Ensures data concurrency by deactivating failed cluster nodes.</li>
-					<li>Improves performance of concurrent read-access by distributing load accross individual cluster nodes.</li>
 				</ul>
 			</section>
 			<section>
@@ -50,9 +51,9 @@
 				<ul>
 					<li>Distributed queries.</li>
 					<li>Data partitioning (i.e. striping)</li>
-					<li>Hot reactivation of failed cluster nodes.</li>
+					<li>Hot re-activation of deactivated cluster nodes.</li>
+					<li>Auto re-synchronization of deactivated cluster nodes.</li>
 					<li>ResultSet caching.</li>
-					<li>Support for proprietary (i.e. non-standard) database driver functionality (e.g. Blob and Clob constructors).</li>
 					<li>Heterogenous clusters (i.e. different databases in the same cluster).</li>
 				</ul>
 			</section>
