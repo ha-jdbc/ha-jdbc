@@ -1,85 +1,9 @@
 <?xml version="1.0"?>
 <!DOCTYPE binding SYSTEM "binding.dtd">
-
-<!-- Copyright (c) 2004, Identity Theft 911, LLC.  All rights reserved. -->
-<!-- $Id$ -->
-
 <binding>
 	<mapping name="" class="">
-		
-	</mapping>
-	<mapping name="system-info" class="com.idtheft.SystemInfo" post-set="postSet">
-		<collection name="product-suppliers" get-method="getProductSuppliers" set-method="setProductSuppliers" type="com.idtheft.SystemCollection" item-type="com.idtheft.product.ProductSupplier"></collection>
-		<collection name="products" get-method="getProducts" set-method="setProducts" type="com.idtheft.SystemCollection" item-type="com.idtheft.product.ProductInfo"></collection>
-		<collection name="customer-suppliers" get-method="getCustomerSuppliers" set-method="setCustomerSuppliers" type="com.idtheft.SystemCollection" item-type="com.idtheft.customer.CustomerSupplierInfo"></collection>
-		<collection name="product-codes" get-method="getProductCodes" set-method="setProductCodes" type="com.idtheft.SystemCollection" item-type="com.idtheft.product.ProductCode"></collection>
-		<collection name="customers" get-method="getCustomers" set-method="setCustomers" type="com.idtheft.SystemCollection" item-type="com.idtheft.customer.CustomerInfo"></collection>
-	</mapping>
-	<mapping name="product-supplier" class="com.idtheft.product.ProductSupplier">
-		<value name="id" get-method="getID" set-method="setID" style="attribute" ident="def"></value>
-		<value field="name" style="text"></value>
-	</mapping>
-	<mapping name="product" class="com.idtheft.product.ProductInfo">
-		<value name="id" get-method="getID" set-method="setID" style="attribute" ident="def"></value>
-		<value field="name" style="text"></value>
-		<value name="supplier" field="supplier" style="attribute" ident="ref"></value>
-	</mapping>
-	<mapping name="product-code" class="com.idtheft.product.ProductCode">
-		<value name="id" get-method="getID" set-method="setID" style="attribute" ident="def"></value>
-		<value name="product" field="product" style="attribute" ident="ref"></value>
-		<value name="customerSupplier" field="customerSupplier" style="attribute" ident="ref" usage="optional"></value>
-		<value field="name" style="text"></value>
-	</mapping>
-	<mapping name="customer-supplier" class="com.idtheft.customer.CustomerSupplierInfo">
-		<value name="id" get-method="getID" set-method="setID" style="attribute" ident="def"></value>
-		<value name="name" field="name" style="element"></value>
-		<value name="term-length" field="termLength" style="element"></value>
-		<value name="term-unit" field="termUnit" style="element"></value>
-		<collection field="productSet" type="java.util.HashSet">
-			<structure name="product" type="com.idtheft.product.ProductInfo">
-				<value name="id" field="id" style="attribute"></value>
-			</structure>
-		</collection>
-	</mapping>
-	<mapping name="customer" class="com.idtheft.customer.CustomerInfo">
-		<value name="id" get-method="getID" set-method="setID" style="attribute" ident="def"></value>
-		<value name="supplier" field="supplier" style="attribute" ident="ref"></value>
-		<value name="ref-id" field="referenceId" style="element"></value>
-		<value name="start-date" field="startDate" style="element"></value>
-		<value name="end-date" field="endDate" style="element"></value>
-		<value name="notification-date" field="notificationDate" style="element" usage="optional"></value>
-		<structure name="contact-info" field="contactInfo">
-			<!--value name="id" field="id" style="attribute"></value-->
-			<structure name="name" field="name">
-				<value name="prefix" field="prefix" style="element" usage="optional"></value>
-				<value name="first" field="first" style="element" usage="optional"></value>
-				<value name="middle" field="middle" style="element" usage="optional"></value>
-				<value name="last" field="last" style="element" usage="optional"></value>
-				<value name="suffix" field="suffix" style="element" usage="optional"></value>
-			</structure>
-			<structure name="phones" usage="optional">
-				<value name="daytime" field="daytimePhone" style="element" usage="optional"></value>
-				<value name="evening" field="eveningPhone" style="element" usage="optional"></value>
-				<value name="mobile" field="mobilePhone" style="element" usage="optional"></value>
-			</structure>
-			<value name="fax" field="fax" style="element" usage="optional"></value>
-			<value name="email" field="email" style="element" usage="optional"></value>
-			<structure name="address" field="address">
-				<value name="address-1" field="address1" style="element" usage="optional"></value>
-				<value name="address-2" field="address2" style="element" usage="optional"></value>
-				<value name="city" field="city" style="element" usage="optional"></value>
-				<value name="state" field="state" style="element" usage="optional"></value>
-				<value name="zip-code" field="zipCode" style="element" usage="optional"></value>
-			</structure>
-		</structure>
-		<collection field="productCodeSet" type="java.util.HashSet">
-			<structure name="product-code" type="com.idtheft.product.ProductCode">
-				<value name="id" field="id" style="attribute"></value>
-				<structure field="product">
-					<value name="product" field="name" style="attribute"></value>
-				</structure>
-				<value field="name" style="text"></value>
-			</structure>
+		<collection>
+			
 		</collection>
 	</mapping>
 </binding>
