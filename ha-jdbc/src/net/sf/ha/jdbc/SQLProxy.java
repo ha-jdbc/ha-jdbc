@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * @author  Paul Ferraro
  * @version $Revision$
@@ -15,6 +18,8 @@ import java.util.Set;
  */
 public abstract class SQLProxy
 {
+	private static Log log = LogFactory.getLog(SQLProxy.class);
+	
 	private Map objectMap;
 	
 	protected SQLProxy(Map objectMap)
@@ -138,6 +143,8 @@ public abstract class SQLProxy
 		}
 		
 		databaseCluster.deactivate(database);
+		
+		log.error("Database " + database.getId() + " of cluster " + this.getDatabaseCluster().getDescriptor().getName() + " was deactivated.", exception);
 	}
 
 	protected abstract DatabaseCluster getDatabaseCluster();
