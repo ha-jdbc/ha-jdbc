@@ -36,9 +36,10 @@ public class OperationExecutor implements Runnable
 	
 	/**
 	 * Constructs a new OperationExecutor.
+	 * @param databaseCluster a database cluster
 	 * @param operation a database operation
 	 * @param database a database descriptor
-	 * @param sqlObject a SQL object
+	 * @param object a SQL object
 	 * @param returnValueMap a Map<Database, Object> that holds the results from the operation execution
 	 * @param exceptionMap a Map<Database, SQLException> that holds the exceptions resulting from the operation execution
 	 */
@@ -70,7 +71,7 @@ public class OperationExecutor implements Runnable
 		{
 			try
 			{
-				this.databaseCluster.handleFailure(database, e);
+				this.databaseCluster.handleFailure(this.database, e);
 			}
 			catch (Throwable exception)
 			{

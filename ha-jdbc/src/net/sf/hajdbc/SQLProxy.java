@@ -122,26 +122,54 @@ public abstract class SQLProxy
 		return valueMap.values().iterator().next();
 	}
 
+	/**
+	 * Helper method that call the appropriate execute method on the database cluster.
+	 * @param operation a database operation
+	 * @return the result of the operation
+	 * @throws java.sql.SQLException if operation execution fails
+	 */
 	public final Object executeReadFromDatabase(Operation operation) throws java.sql.SQLException
 	{
 		return this.databaseCluster.executeReadFromDatabase(this, operation);
 	}
 
+	/**
+	 * Helper method that call the appropriate execute method on the database cluster.
+	 * @param operation a database operation
+	 * @return the result of the operation
+	 * @throws java.sql.SQLException if operation execution fails
+	 */
 	public final Object executeReadFromDriver(Operation operation) throws java.sql.SQLException
 	{
 		return this.databaseCluster.executeReadFromDriver(this, operation);
 	}
 
+	/**
+	 * Helper method that call the appropriate execute method on the database cluster.
+	 * @param operation a database operation
+	 * @return the result of the operation
+	 * @throws java.sql.SQLException if operation execution fails
+	 */
 	public final Map executeWriteToDatabase(Operation operation) throws java.sql.SQLException
 	{
 		return this.databaseCluster.executeWriteToDatabase(this, operation);
 	}
 
+	/**
+	 * Helper method that call the appropriate execute method on the database cluster.
+	 * @param operation a database operation
+	 * @return the result of the operation
+	 * @throws java.sql.SQLException if operation execution fails
+	 */
 	public final Map executeWriteToDriver(Operation operation) throws java.sql.SQLException
 	{
 		return this.databaseCluster.executeWriteToDriver(this, operation);
 	}
 	
+	/**
+	 * Returns the database cluster to which this proxy is associated.
+	 * @return a database cluster
+	 */
 	public DatabaseCluster getDatabaseCluster()
 	{
 		return this.databaseCluster;

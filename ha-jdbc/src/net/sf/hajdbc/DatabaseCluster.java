@@ -326,6 +326,7 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	/**
 	 * Read-style execution that executes the specified operation on a single database in the cluster.
 	 * It is assumed that these types of operation will require access to the database.
+	 * @param proxy a sql object proxy
 	 * @param operation a database operation
 	 * @return the operation execution result
 	 * @throws java.sql.SQLException if operation execution fails
@@ -355,6 +356,7 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	/**
 	 * Get-style execution that executes the specified operation on a single database in the cluster.
 	 * It is assumed that these types of operation will <em>not</em> require access to the database.
+	 * @param proxy a sql object proxy
 	 * @param operation a database operation
 	 * @return the operation execution result
 	 * @throws java.sql.SQLException if operation execution fails
@@ -377,6 +379,7 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	/**
 	 * Write-style execution that executes the specified operation on every database in the cluster in parallel.
 	 * It is assumed that these types of operation will require access to the database.
+	 * @param proxy a sql object proxy
 	 * @param operation a database operation
 	 * @return a Map<Database, Object> of operation execution results from each database
 	 * @throws java.sql.SQLException if operation execution fails
@@ -454,6 +457,7 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	/**
 	 * Set-style execution that executes the specified operation on every database in the cluster.
 	 * It is assumed that these types of operation will <em>not</em> require access to the database.
+	 * @param proxy a sql object proxy
 	 * @param operation a database operation
 	 * @return a Map<Database, Object> of operation execution results from each database
 	 * @throws java.sql.SQLException if operation execution fails
@@ -490,7 +494,9 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#firstDatabase()
+	 * Returns the first database from the balancer
+	 * @return a database descriptor
+	 * @throws SQLException if there are no active databases in the cluster
 	 */
 	public Database firstDatabase() throws SQLException
 	{
@@ -505,7 +511,9 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#nextDatabase()
+	 * Returns the next database from the balancer
+	 * @return a database descriptor
+	 * @throws SQLException if there are no active databases in the cluster
 	 */
 	public Database nextDatabase() throws SQLException
 	{
@@ -519,6 +527,13 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 		}
 	}
 	
+	/**
+	 * Handles a failure caused by the specified cause on the specified database.
+	 * If the database is not alive, then it is deactivated, otherwise an exception is thrown back to the caller.
+	 * @param database a database descriptor
+	 * @param cause the cause of the failure
+	 * @throws SQLException if the database is alive
+	 */
 	public final void handleFailure(Database database, Throwable cause) throws SQLException
 	{
 		if (this.isAlive(database))
