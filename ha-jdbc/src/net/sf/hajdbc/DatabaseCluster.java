@@ -30,7 +30,7 @@ import java.util.List;
  */
 public abstract class DatabaseCluster implements DatabaseClusterMBean
 {
-	public abstract DatabaseConnector getDatabaseConnector();
+	public abstract ConnectionFactoryProxy getConnectionFactory();
 	
 	public abstract boolean isActive(Database database);
 	

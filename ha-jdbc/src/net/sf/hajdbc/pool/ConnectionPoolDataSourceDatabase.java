@@ -21,7 +21,6 @@
 package net.sf.hajdbc.pool;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 
 import javax.sql.ConnectionPoolDataSource;
 import javax.sql.PooledConnection;
@@ -38,9 +37,9 @@ public class ConnectionPoolDataSourceDatabase extends DataSourceDatabase
 	/**
 	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
 	 */
-	public Connection connect(Object databaseConnector) throws SQLException
+	public Connection connect(Object connectionFactory) throws java.sql.SQLException
 	{
-		ConnectionPoolDataSource dataSource = (ConnectionPoolDataSource) databaseConnector;
+		ConnectionPoolDataSource dataSource = (ConnectionPoolDataSource) connectionFactory;
 		PooledConnection connection = (this.user != null) ? dataSource.getPooledConnection(this.user, this.password) : dataSource.getPooledConnection();
 		
 		return this.getConnection(connection);
@@ -52,7 +51,7 @@ public class ConnectionPoolDataSourceDatabase extends DataSourceDatabase
 	 * @return a database connection
 	 * @throws SQLException
 	 */
-	protected Connection getConnection(PooledConnection connection) throws SQLException
+	protected Connection getConnection(PooledConnection connection) throws java.sql.SQLException
 	{
 		return connection.getConnection();
 	}

@@ -20,7 +20,6 @@
  */
 package net.sf.hajdbc;
 
-import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -53,19 +52,19 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 		return this.databaseCluster.isActive(databaseId);
 	}
 	
-	public Database firstDatabase() throws SQLException
+	public Database firstDatabase() throws java.sql.SQLException
 	{
 		return this.databaseCluster.firstDatabase();
 	}
 	
-	public List getActiveDatabaseList() throws SQLException
+	public List getActiveDatabaseList() throws java.sql.SQLException
 	{
 		return this.databaseCluster.getActiveDatabaseList();
 	}
 	
-	public DatabaseConnector getDatabaseConnector()
+	public ConnectionFactoryProxy getConnectionFactory()
 	{
-		return this.databaseCluster.getDatabaseConnector();
+		return this.databaseCluster.getConnectionFactory();
 	}
 	
 	public DatabaseClusterDescriptor getDescriptor()
@@ -78,7 +77,7 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 		return this.databaseCluster.isActive(database);
 	}
 	
-	public Database nextDatabase() throws SQLException
+	public Database nextDatabase() throws java.sql.SQLException
 	{
 		return this.databaseCluster.nextDatabase();
 	}

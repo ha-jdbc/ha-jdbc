@@ -20,8 +20,6 @@
  */
 package net.sf.hajdbc;
 
-import java.sql.SQLException;
-
 import javax.naming.Reference;
 import javax.naming.Referenceable;
 import javax.naming.StringRefAddr;
@@ -35,19 +33,19 @@ public abstract class AbstractDataSource implements Referenceable
 {
 	public static final String CLUSTER_NAME = "name";
 	
-	protected DatabaseConnector databaseConnector;
+	protected ConnectionFactoryProxy connectionFactory;
 
 	/**
 	 * @return
 	 */
 	public String getName()
 	{
-		return this.databaseConnector.getDatabaseCluster().getName();
+		return this.connectionFactory.getDatabaseCluster().getName();
 	}
 	
-	public void setName(String name) throws SQLException
+	public void setName(String name) throws java.sql.SQLException
 	{
-		this.databaseConnector = DatabaseClusterFactory.getInstance().getDatabaseCluster(name).getDatabaseConnector();
+		this.connectionFactory = DatabaseClusterFactory.getInstance().getDatabaseCluster(name).getConnectionFactory();
 	}
 	
 	/**

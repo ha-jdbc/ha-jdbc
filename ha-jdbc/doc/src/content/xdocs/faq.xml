@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE faqs PUBLIC "-//APACHE//DTD FAQ V1.2//EN" "http://xml.apache.org/forrest/dtd/faq-v12.dtd">
+
+<faqs title="Frequently Asked Questions">
+	<part id="docs">
+		<title>HA-JDBC</title>
+		<faq>
+			<question>
+			</question>
+			<answer>
+			</answer>
+		</faq>
+	</part>
+</faqs>

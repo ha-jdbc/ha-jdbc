@@ -1,5 +1,22 @@
 /*
- * Copyright (c) 2004, Identity Theft 911, LLC.  All rights reserved.
+ * HA-JDBC: High-Availability JDBC
+ * Copyright (C) 2004 Paul Ferraro
+ * 
+ * This library is free software; you can redistribute it and/or modify it 
+ * under the terms of the GNU Lesser General Public License as published by the 
+ * Free Software Foundation; either version 2.1 of the License, or (at your 
+ * option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+ * for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, 
+ * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * 
+ * Contact: ferraro@users.sourceforge.net
  */
 package net.sf.hajdbc.local;
 
@@ -17,7 +34,7 @@ import java.util.Set;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterDescriptor;
-import net.sf.hajdbc.DatabaseConnector;
+import net.sf.hajdbc.ConnectionFactoryProxy;
 import net.sf.hajdbc.SQLException;
 
 /**
@@ -29,7 +46,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 {
 	private Set activeDatabaseSet = new LinkedHashSet();
 	private LocalDatabaseClusterDescriptor descriptor;
-	private DatabaseConnector databaseConnector;
+	private ConnectionFactoryProxy connectionFactory;
 	
 	/**
 	 * Constructs a new DatabaseCluster.
@@ -41,7 +58,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 		this.descriptor = descriptor;
 		
 		Map databaseMap = descriptor.getDatabaseMap();
-		Map databaseConnectorMap = new HashMap(databaseMap.size());
+		Map connectionFactoryMap = new HashMap(databaseMap.size());
 		
 		Iterator databases = databaseMap.values().iterator();
 		
@@ -49,10 +66,10 @@ public class LocalDatabaseCluster extends DatabaseCluster
 		{
 			Database database = (Database) databases.next();
 			
-			databaseConnectorMap.put(database, database.getDatabaseConnector());
+			connectionFactoryMap.put(database, database.getConnectionFactory());
 		}
 		
-		this.databaseConnector = new DatabaseConnector(this, Collections.synchronizedMap(databaseConnectorMap));
+		this.connectionFactory = new ConnectionFactoryProxy(this, Collections.synchronizedMap(connectionFactoryMap));
 		
 		databases = databaseMap.values().iterator();
 		
@@ -67,9 +84,9 @@ public class LocalDatabaseCluster extends DatabaseCluster
 		}
 	}
 
-	public DatabaseConnector getDatabaseConnector()
+	public ConnectionFactoryProxy getConnectionFactory()
 	{
-		return this.databaseConnector;
+		return this.connectionFactory;
 	}
 	
 	/**
@@ -80,11 +97,11 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	{
 		Connection connection = null;
 		
-		Object databaseConnector = this.databaseConnector.getSQLObject(database);
+		Object connectionFactory = this.connectionFactory.getSQLObject(database);
 		
 		try
 		{
-			connection = database.connect(databaseConnector);
+			connection = database.connect(connectionFactory);
 			
 			Statement statement = connection.createStatement();
 			

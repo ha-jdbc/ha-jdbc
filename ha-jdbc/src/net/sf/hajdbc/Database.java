@@ -21,7 +21,6 @@
 package net.sf.hajdbc;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 
 /**
  * @author  Paul Ferraro
@@ -32,7 +31,7 @@ public interface Database
 {
 	public String getId();
 	
-	public Connection connect(Object databaseConnector) throws SQLException;
+	public Connection connect(Object connectionFactory) throws java.sql.SQLException;
 	
-	public Object getDatabaseConnector() throws SQLException;
+	public Object getConnectionFactory() throws java.sql.SQLException;
 }

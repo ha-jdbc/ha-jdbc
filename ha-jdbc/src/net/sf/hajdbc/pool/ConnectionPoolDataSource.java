@@ -47,7 +47,7 @@ public class ConnectionPoolDataSource extends AbstractDataSource implements java
 			}
 		};
 		
-		return new PooledConnectionProxy(this.databaseConnector, this.databaseConnector.executeWrite(operation));
+		return new PooledConnectionProxy(this.connectionFactory, this.connectionFactory.executeWrite(operation));
 	}
 
 	/**
@@ -63,7 +63,7 @@ public class ConnectionPoolDataSource extends AbstractDataSource implements java
 			}
 		};
 		
-		return new PooledConnectionProxy(this.databaseConnector, this.databaseConnector.executeWrite(operation));
+		return new PooledConnectionProxy(this.connectionFactory, this.connectionFactory.executeWrite(operation));
 	}
 
 	/**
@@ -79,7 +79,7 @@ public class ConnectionPoolDataSource extends AbstractDataSource implements java
 			}
 		};
 		
-		return ((Integer) this.databaseConnector.executeGet(operation)).intValue();
+		return ((Integer) this.connectionFactory.executeGet(operation)).intValue();
 	}
 
 	/**
@@ -97,7 +97,7 @@ public class ConnectionPoolDataSource extends AbstractDataSource implements java
 			}
 		};
 		
-		this.databaseConnector.executeSet(operation);
+		this.connectionFactory.executeSet(operation);
 	}
 
 	/**
@@ -113,7 +113,7 @@ public class ConnectionPoolDataSource extends AbstractDataSource implements java
 			}
 		};
 		
-		return (PrintWriter) this.databaseConnector.executeGet(operation);
+		return (PrintWriter) this.connectionFactory.executeGet(operation);
 	}
 
 	/**
@@ -131,7 +131,7 @@ public class ConnectionPoolDataSource extends AbstractDataSource implements java
 			}
 		};
 		
-		this.databaseConnector.executeSet(operation);
+		this.connectionFactory.executeSet(operation);
 	}
 
 	/**

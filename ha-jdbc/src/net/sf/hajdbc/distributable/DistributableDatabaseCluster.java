@@ -21,7 +21,6 @@
 package net.sf.hajdbc.distributable;
 
 import java.io.Serializable;
-import java.sql.SQLException;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
@@ -89,7 +88,7 @@ public class DistributableDatabaseCluster extends DatabaseClusterDecorator imple
 		{
 			command.execute(this.databaseCluster);
 		}
-		catch (SQLException e)
+		catch (java.sql.SQLException e)
 		{
 			log.error("Failed to execute " + command + " on database cluster " + this.databaseCluster.getName(), e);
 		}

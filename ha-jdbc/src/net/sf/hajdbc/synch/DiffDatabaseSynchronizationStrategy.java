@@ -24,7 +24,6 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -37,6 +36,7 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseSynchronizationStrategy;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterDescriptor;
+import net.sf.hajdbc.SQLException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -53,7 +53,7 @@ public class DiffDatabaseSynchronizationStrategy implements DatabaseSynchronizat
 	/**
 	 * @see net.sf.hajdbc.DatabaseActivationStrategy#activate(net.sf.hajdbc.DatabaseCluster, net.sf.hajdbc.Database)
 	 */
-	public void synchronize(DatabaseCluster databaseCluster, Database database) throws SQLException
+	public void synchronize(DatabaseCluster databaseCluster, Database database) throws java.sql.SQLException
 	{
 		DatabaseClusterDescriptor descriptor = databaseCluster.getDescriptor();
 		Connection activeConnection = null;
@@ -68,7 +68,7 @@ public class DiffDatabaseSynchronizationStrategy implements DatabaseSynchronizat
 		{
 			Database activeDatabase = databaseCluster.nextDatabase();
 			
-			inactiveConnection = database.connect(databaseCluster.getDatabaseConnector().getSQLObject(database));
+			inactiveConnection = database.connect(databaseCluster.getConnectionFactory().getSQLObject(database));
 			inactiveConnection.setAutoCommit(false);
 			
 			DatabaseMetaData databaseMetaData = inactiveConnection.getMetaData();
@@ -114,7 +114,7 @@ public class DiffDatabaseSynchronizationStrategy implements DatabaseSynchronizat
 
 			inactiveConnection.commit();
 			
-			activeConnection = activeDatabase.connect(databaseCluster.getDatabaseConnector().getSQLObject(activeDatabase));
+			activeConnection = activeDatabase.connect(databaseCluster.getConnectionFactory().getSQLObject(activeDatabase));
 			activeConnection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 			activeConnection.setAutoCommit(false);
 			
@@ -170,7 +170,7 @@ public class DiffDatabaseSynchronizationStrategy implements DatabaseSynchronizat
 				}
 				catch (InterruptedException e)
 				{
-					throw new SQLException("Execution of " + sql + " on inactive database was interrupted.");
+					throw new SQLException("Execution of " + sql + " on inactive database was interrupted.", e);
 				}
 
 				try
@@ -179,7 +179,7 @@ public class DiffDatabaseSynchronizationStrategy implements DatabaseSynchronizat
 				}
 				catch (InterruptedException e)
 				{
-					throw new SQLException("Execution of " + sql + " on active database was interrupted.");
+					throw new SQLException("Execution of " + sql + " on active database was interrupted.", e);
 				}
 				
 				ResultSet inactiveResultSet = inactiveStatement.getResultSet();
@@ -364,7 +364,7 @@ public class DiffDatabaseSynchronizationStrategy implements DatabaseSynchronizat
 					inactiveConnection.commit();
 					inactiveConnection.close();
 				}
-				catch (SQLException e)
+				catch (java.sql.SQLException e)
 				{
 					log.warn("Failed to close connection of inactive database", e);
 				}
@@ -376,9 +376,9 @@ public class DiffDatabaseSynchronizationStrategy implements DatabaseSynchronizat
 				{
 					activeConnection.close();
 				}
-				catch (SQLException sqle)
+				catch (java.sql.SQLException e)
 				{
-					log.warn("Failed to close connection of active database", sqle);
+					log.warn("Failed to close connection of active database", e);
 				}
 			}
 		}

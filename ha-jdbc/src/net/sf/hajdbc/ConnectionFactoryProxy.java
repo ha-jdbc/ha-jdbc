@@ -27,20 +27,15 @@ import java.util.Map;
  * @version $Revision$
  * @since   1.0
  */
-public class AbstractConnectionProxy extends SQLProxy
+public class ConnectionFactoryProxy extends SQLProxy
 {
-	protected ConnectionFactoryProxy connectionFactory;
+	private DatabaseCluster databaseCluster;
 	
-	/**
-	 * Constructs a new AbstractConnectionProxy.
-	 * @param databaseCluster
-	 * @param connectionMap
-	 */
-	protected AbstractConnectionProxy(ConnectionFactoryProxy connectionFactory, Map connectionMap)
+	public ConnectionFactoryProxy(DatabaseCluster databaseCluster, Map connectionFactoryMap)
 	{
-		super(connectionMap);
+		super(connectionFactoryMap);
 		
-		this.connectionFactory = connectionFactory;
+		this.databaseCluster = databaseCluster;
 	}
 	
 	/**
@@ -48,6 +43,6 @@ public class AbstractConnectionProxy extends SQLProxy
 	 */
 	protected DatabaseCluster getDatabaseCluster()
 	{
-		return this.connectionFactory.getDatabaseCluster();
+		return this.databaseCluster;
 	}
 }

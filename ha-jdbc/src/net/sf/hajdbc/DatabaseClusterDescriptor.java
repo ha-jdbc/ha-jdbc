@@ -20,8 +20,6 @@
  */
 package net.sf.hajdbc;
 
-import java.sql.SQLException;
-
 /**
  * @author  Paul Ferraro
  * @version $Revision$
@@ -29,7 +27,7 @@ import java.sql.SQLException;
  */
 public interface DatabaseClusterDescriptor
 {
-	public DatabaseCluster createDatabaseCluster() throws SQLException;
+	public DatabaseCluster createDatabaseCluster() throws java.sql.SQLException;
 	
 	public String getName();
 

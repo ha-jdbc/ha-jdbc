@@ -43,7 +43,7 @@ public class DataSource extends AbstractDataSource implements javax.sql.DataSour
 			}
 		};
 		
-		return ((Integer) this.databaseConnector.executeGet(operation)).intValue();
+		return ((Integer) this.connectionFactory.executeGet(operation)).intValue();
 	}
 
 	/**
@@ -61,7 +61,7 @@ public class DataSource extends AbstractDataSource implements javax.sql.DataSour
 			}
 		};
 		
-		this.databaseConnector.executeSet(operation);
+		this.connectionFactory.executeSet(operation);
 	}
 
 	/**
@@ -77,7 +77,7 @@ public class DataSource extends AbstractDataSource implements javax.sql.DataSour
 			}
 		};
 		
-		return (PrintWriter) this.databaseConnector.executeGet(operation);
+		return (PrintWriter) this.connectionFactory.executeGet(operation);
 	}
 
 	/**
@@ -95,7 +95,7 @@ public class DataSource extends AbstractDataSource implements javax.sql.DataSour
 			}
 		};
 		
-		this.databaseConnector.executeSet(operation);
+		this.connectionFactory.executeSet(operation);
 	}
 
 	/**
@@ -111,7 +111,7 @@ public class DataSource extends AbstractDataSource implements javax.sql.DataSour
 			}
 		};
 		
-		return new ConnectionProxy(this.databaseConnector, this.databaseConnector.executeWrite(operation));
+		return new ConnectionProxy(this.connectionFactory, this.connectionFactory.executeWrite(operation));
 	}
 
 	/**
@@ -127,7 +127,7 @@ public class DataSource extends AbstractDataSource implements javax.sql.DataSour
 			}
 		};
 		
-		return new ConnectionProxy(this.databaseConnector, this.databaseConnector.executeWrite(operation));
+		return new ConnectionProxy(this.connectionFactory, this.connectionFactory.executeWrite(operation));
 	}
 
 	/**

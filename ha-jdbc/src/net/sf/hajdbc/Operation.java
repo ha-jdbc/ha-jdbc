@@ -20,8 +20,6 @@
  */
 package net.sf.hajdbc;
 
-import java.sql.SQLException;
-
 /**
  * @author  Paul Ferraro
  * @version $Revision$
@@ -29,5 +27,5 @@ import java.sql.SQLException;
  */
 public interface Operation
 {
-	public Object execute(Database database, Object sqlObject) throws SQLException;
+	public Object execute(Database database, Object sqlObject) throws java.sql.SQLException;
 }

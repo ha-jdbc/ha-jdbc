@@ -23,7 +23,6 @@ package net.sf.hajdbc;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.Properties;
 
 /**
@@ -111,14 +110,14 @@ public class DriverDatabase extends AbstractDatabase
 	/**
 	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
 	 */
-	public Connection connect(Object databaseConnector) throws SQLException
+	public Connection connect(Object connectionFactory) throws java.sql.SQLException
 	{
-		Driver driver = (Driver) databaseConnector;
+		Driver driver = (Driver) connectionFactory;
 		
 		return driver.connect(this.url, this.getProperties());
 	}
 	
-	public Object getDatabaseConnector() throws SQLException
+	public Object getConnectionFactory() throws java.sql.SQLException
 	{
 		try
 		{
@@ -140,7 +139,7 @@ public class DriverDatabase extends AbstractDatabase
 		}
 		catch (ClassNotFoundException e)
 		{
-			throw new SQLException(this.driver + " not found in CLASSPATH");
+			throw new SQLException(this.driver + " not found in CLASSPATH", e);
 		}
 	}
 }

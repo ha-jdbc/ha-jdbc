@@ -26,7 +26,7 @@ import java.util.Map;
 import javax.sql.XAConnection;
 import javax.transaction.xa.XAResource;
 
-import net.sf.hajdbc.DatabaseConnector;
+import net.sf.hajdbc.ConnectionFactoryProxy;
 import net.sf.hajdbc.pool.PooledConnectionProxy;
 
 /**
@@ -41,9 +41,9 @@ public class XAConnectionProxy extends PooledConnectionProxy implements XAConnec
 	 * @param databaseCluster
 	 * @param connectionMap
 	 */
-	public XAConnectionProxy(DatabaseConnector databaseConnector, Map connectionMap)
+	public XAConnectionProxy(ConnectionFactoryProxy connectionFactory, Map connectionMap)
 	{
-		super(databaseConnector, connectionMap);
+		super(connectionFactory, connectionMap);
 	}
 	
 	/**

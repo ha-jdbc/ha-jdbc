@@ -63,9 +63,9 @@ public class DataSourceDatabase extends AbstractDatabase
 	/**
 	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
 	 */
-	public Connection connect(Object databaseConnector) throws java.sql.SQLException
+	public Connection connect(Object connectionFactory) throws java.sql.SQLException
 	{
-		DataSource dataSource = (DataSource) databaseConnector;
+		DataSource dataSource = (DataSource) connectionFactory;
 		
 		return (this.user != null) ? dataSource.getConnection(this.user, this.password) : dataSource.getConnection();
 	}
@@ -73,7 +73,7 @@ public class DataSourceDatabase extends AbstractDatabase
 	/**
 	 * @see net.sf.hajdbc.Database#getDatabaseConnector()
 	 */
-	public Object getDatabaseConnector() throws java.sql.SQLException
+	public Object getConnectionFactory() throws java.sql.SQLException
 	{
 		try
 		{

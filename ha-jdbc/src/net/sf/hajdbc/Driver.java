@@ -102,7 +102,7 @@ public final class Driver implements java.sql.Driver
 			return null;
 		}
 		
-		DatabaseConnector databaseConnector = databaseCluster.getDatabaseConnector();
+		ConnectionFactoryProxy connectionFactory = databaseCluster.getConnectionFactory();
 		
 		DriverOperation operation = new DriverOperation()
 		{
@@ -112,7 +112,7 @@ public final class Driver implements java.sql.Driver
 			}
 		};
 		
-		return new ConnectionProxy(databaseConnector, databaseConnector.executeWrite(operation));
+		return new ConnectionProxy(connectionFactory, connectionFactory.executeWrite(operation));
 	}
 	
 	/**
@@ -127,7 +127,7 @@ public final class Driver implements java.sql.Driver
 			return null;
 		}
 		
-		DatabaseConnector databaseConnector = databaseCluster.getDatabaseConnector();
+		ConnectionFactoryProxy connectionFactory = databaseCluster.getConnectionFactory();
 		
 		DriverOperation operation = new DriverOperation()
 		{
@@ -137,6 +137,6 @@ public final class Driver implements java.sql.Driver
 			}
 		};
 		
-		return (DriverPropertyInfo[]) databaseConnector.executeGet(operation);
+		return (DriverPropertyInfo[]) connectionFactory.executeGet(operation);
 	}
 }

@@ -20,7 +20,6 @@
  */
 package net.sf.hajdbc;
 
-import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -36,7 +35,7 @@ public interface DatabaseClusterMBean
 	
 	public void deactivate(String databaseId);
 	
-	public void activate(String databaseId, String strategyClassName) throws SQLException;
+	public void activate(String databaseId, String strategyClassName) throws java.sql.SQLException;
 	
 	public List getActiveDatabaseList() throws java.sql.SQLException;
 }
