@@ -43,8 +43,8 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 	
 	protected static Log log = LogFactory.getLog(TransportProxy.class);
 
-	protected ThreadGroup senderThreadGroup = new ThreadGroup("sender");
-	protected ThreadGroup connectorThreadGroup = new ThreadGroup("connector");
+	protected ThreadGroup senderThreadGroup = this.getThreadGroup("sender");
+	protected ThreadGroup connectorThreadGroup = this.getThreadGroup("connector");
 	protected long connectRetryPeriod;
 	private List activeTransportList = new LinkedList();
 	private List transportList;
@@ -53,6 +53,21 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 	private long connectTimeout;
 	private Provider provider;
 	private SenderStrategy senderStrategy = new SimpleSenderStrategy();
+	
+	private ThreadGroup getThreadGroup(String name)
+	{
+		return this.getThreadGroup(Thread.currentThread().getThreadGroup(), name);
+	}
+	
+	private ThreadGroup getThreadGroup(ThreadGroup group, String name)
+	{
+		if (group.getParent() != null)
+		{
+			return this.getThreadGroup(group.getParent(), name);
+		}
+		
+		return new ThreadGroup(group, name);
+	}
 	
 	/**
 	 * Constructs a new TransportProxy.
@@ -235,8 +250,10 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 			{
 				try
 				{
+					log.info("TransportProxy.protocolConnect() - wait(" + this.connectTimeout + ") begin");
 					// Wait until the first transport is available, or until connect timeout
 					this.activeTransportList.wait(this.connectTimeout);
+					log.info("TransportProxy.protocolConnect() - wait(" + this.connectTimeout + ") end");
 				}
 				catch (InterruptedException e)
 				{
@@ -253,6 +270,8 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 
 		if (connectFailed)
 		{
+			log.info("protocolConnect() failed - closing transport");
+
 			this.close();
 			
 			throw new MessagingException("Connect timeout (" + this.connectTimeout + " ms) exceeded.");
@@ -382,19 +401,23 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 	 */
 	public void close() throws MessagingException
 	{
+		log.info("TransportProxy.close() - waiting for sender threads to complete");
 		while (this.senderThreadGroup.activeCount() > 0)
 		{
 			Thread.yield();
 		}
+		log.info("TransportProxy.close() - sender threads all completed");
 		
 		if (this.connectorThreadGroup.activeCount() > 0)
 		{
 			this.connectorThreadGroup.interrupt();
 			
+			log.info("TransportProxy.close() - waiting for connector threads to complete");
 			while (this.connectorThreadGroup.activeCount() > 0)
 			{
 				Thread.yield();
 			}
+			log.info("TransportProxy.close() - connector threads all completed");
 		}
 		
 		for (int i = 0; i < this.transportList.size(); ++i)
@@ -417,6 +440,7 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 		this.activeTransportList.clear();
 		
 		super.close();
+		log.info("TransportProxy.close() - End of method");
 	}
 	
 	protected void finalize() throws Throwable
