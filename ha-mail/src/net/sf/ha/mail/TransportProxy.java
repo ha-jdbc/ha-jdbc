@@ -9,7 +9,6 @@ import java.util.Map;
 import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.MessagingException;
-import javax.mail.NoSuchProviderException;
 import javax.mail.Provider;
 import javax.mail.SendFailedException;
 import javax.mail.Session;
@@ -29,7 +28,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class TransportProxy extends Transport implements ConnectionListener
 {
-	public static final String POOL_SIZE = "transport.pool.size";
+	public static final String POOL_SIZE = "mail.transport.pool-size";
+	private static final String DEFAULT_TRANSPORT_PROTOCOL = "smtp";
 	private static final int DEFAULT_POOL_SIZE = 1;
 	
 	protected static Log log = LogFactory.getLog(TransportProxy.class);
@@ -50,15 +50,15 @@ public class TransportProxy extends Transport implements ConnectionListener
 	public TransportProxy(Session session, URLName url) throws MessagingException
 	{
 		super(session, url);
-		
+
 		String poolSizeProperty = session.getProperty(POOL_SIZE);
 		
 		if (poolSizeProperty != null)
 		{
 			this.poolSize = Integer.parseInt(poolSizeProperty);
 		}
-/*		
-		String protocol = session.getProperties().getProperty("mail.transport.protocol", "smtp");
+		
+		String protocol = session.getProperties().getProperty("mail.transport.protocol", DEFAULT_TRANSPORT_PROTOCOL);
 		String hostProperty = "mail." + protocol + ".host";
 		String host = session.getProperty(hostProperty);
 		
@@ -73,18 +73,6 @@ public class TransportProxy extends Transport implements ConnectionListener
 			throw new MessagingException("No transport host specified.");
 		}
 		
-		String[] hosts = host.split(",");
-		Session[] sessions = new Session[hosts.length];
-		
-		for (int i = 0; i < hosts.length; ++i)
-		{
-			Properties properties = new Properties(session.getProperties());
-			
-			properties.setProperty(hostProperty, hosts[i]);
-			
-			sessions[i] = Session.getInstance(properties);
-		}
-*/		
 		Provider[] providers = session.getProviders();
 		
 		for (int i = 0; i < providers.length; ++i)
@@ -104,15 +92,16 @@ public class TransportProxy extends Transport implements ConnectionListener
 		
 		if (this.provider == null)
 		{
-			throw new NoSuchProviderException("Could not find an appropriate " + url.getProtocol() + " provider.");
+			throw new MessagingException("Could not find an appropriate " + url.getProtocol() + " provider.");
 		}
 		
-		String[] hosts = url.getHost().split(",");
+		String[] hosts = host.split(",");
+		
 		this.transportList = new ArrayList(this.poolSize * hosts.length);
 		
-		for (int j = 0; j < this.poolSize; ++j)
+		for (int i = 0; i < this.poolSize; ++i)
 		{
-			for (int i = 0; i < hosts.length; ++i)
+			for (int j = 0; j < hosts.length; ++j)
 			{
 				Transport transport = this.session.getTransport(this.provider);
 				
@@ -309,28 +298,37 @@ public class TransportProxy extends Transport implements ConnectionListener
 			Thread.yield();
 		}
 		
-		log.info("Killing active connectors...");
-		
-		this.connectorThreadGroup.interrupt();
+		if (this.connectorThreadGroup.activeCount() > 0)
+		{
+			this.connectorThreadGroup.interrupt();
+		}
 		
 		for (int i = 0; i < this.transportList.size(); ++i)
 		{
 			Transport transport = (Transport) this.transportList.get(i);
 			
-			try
+			if (transport.isConnected())
 			{
-				transport.close();
-			}
-			catch (MessagingException e)
-			{
-				log.warn("Failed to close " + transport.getURLName().getProtocol() + " connection to " + transport.getURLName().getHost());
+				try
+				{
+					transport.close();
+				}
+				catch (MessagingException e)
+				{
+					log.warn("Failed to close " + transport.getURLName().getProtocol() + " connection to " + transport.getURLName().getHost());
+				}
 			}
 		}
+		
+		this.setConnected(false);
 	}
 	
 	protected void finalize()
 	{
-		this.close();
+		if (this.isConnected())
+		{
+			this.close();
+		}
 	}
 	
 	/**
