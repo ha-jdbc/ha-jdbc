@@ -3,54 +3,52 @@
 <binding direction="input">
 	<mapping name="ha-jdbc" class="net.sf.hajdbc.DatabaseClusterFactory$Configuration">
 		<structure name="distributable" field="decoratorDescriptor" type="net.sf.hajdbc.distributable.DistributableDatabaseClusterDescriptor" usage="optional">
-			<value name="protocol" field="protocol" style="attribute"></value>
+			<value name="protocol" field="protocol" style="attribute" usage="optional"></value>
 		</structure>
 		<collection field="descriptorList" type="java.util.LinkedList"></collection>
 	</mapping>
 	<mapping name="cluster" class="net.sf.hajdbc.local.LocalDatabaseClusterDescriptor">
 		<value name="id" field="id" style="attribute"></value>
-		<value name="balancer" field="balancer" style="attribute"></value>
-		<collection add-method="addDatabase" item-type="net.sf.hajdbc.DriverDatabase"></collection>
-		<collection add-method="addDatabase" item-type="net.sf.hajdbc.DataSourceDatabase"></collection>
-		<collection add-method="addDatabase" item-type="net.sf.hajdbc.pool.ConnectionPoolDataSourceDatabase"></collection>
-		<collection add-method="addDatabase" item-type="net.sf.hajdbc.pool.xa.XADataSourceDatabase"></collection>
-		<value name="validate-sql" field="validateSQL" usage="optional" default="SELECT 1"></value>
-		<collection add-method="addSynchronizationStrategy" item-type="net.sf.hajdbc.SynchronizationStrategyDescriptor"></collection>
-	</mapping>
-	<mapping name="database" class="net.sf.hajdbc.DriverDatabase">
-		<value name="id" field="id" style="attribute"></value>
-    <value name="weight" field="weight" style="attribute" default="1"></value>
-		<value name="driver" field="driver" usage="optional"></value>
-		<value name="url" field="url"></value>
-		<value name="user" field="user" usage="optional"></value>
-		<value name="password" field="password" usage="optional"></value>
-	</mapping>
-	<mapping name="datasource" class="net.sf.hajdbc.DataSourceDatabase">
-		<value name="id" field="id" style="attribute"></value>
-		<value name="name" field="name"></value>
-		<value name="user" field="user" usage="optional"></value>
-		<value name="password" field="password" usage="optional"></value>
-	</mapping>
-	<mapping name="pool-datasource" class="net.sf.hajdbc.pool.ConnectionPoolDataSourceDatabase">
-		<value name="id" field="id" style="attribute"></value>
-		<value name="name" field="name"></value>
-		<value name="user" field="user" usage="optional"></value>
-		<value name="password" field="password" usage="optional"></value>
-	</mapping>
-	<mapping name="xa-datasource" class="net.sf.hajdbc.pool.xa.XADataSourceDatabase">
-		<value name="id" field="id" style="attribute"></value>
-		<value name="name" field="name"></value>
-		<value name="user" field="user" usage="optional"></value>
-		<value name="password" field="password" usage="optional"></value>
-	</mapping>
-	<mapping name="sync-strategy" class="net.sf.hajdbc.SynchronizationStrategyDescriptor">
-		<value name="id" field="id" style="attribute"></value>
-		<value name="class" field="className" style="attribute"></value>
-		<collection field="propertyList" type="java.util.LinkedList" usage="optional">
-			<structure name="property" type="java.beans.ParameterDescriptor">
-				<value name="name" get-method="getName" set-method="setName" style="attribute"></value>
-				<value get-method="getDisplayName" set-method="setDisplayName" style="text"></value>
+		<value name="balancer" field="balancer" style="attribute" deserializer="net.sf.hajdbc.balancer.BalancerEnum.getBalancerClass"></value>
+		<collection field="databaseList" item-type="net.sf.hajdbc.sql.DriverDatabase"></collection>
+		<collection field="databaseList" item-type="net.sf.hajdbc.sql.DataSourceDatabase"></collection>
+		<collection field="databaseList" item-type="net.sf.hajdbc.sql.pool.ConnectionPoolDataSourceDatabase"></collection>
+		<collection field="databaseList" item-type="net.sf.hajdbc.sql.pool.xa.XADataSourceDatabase"></collection>
+		<value name="validate-sql" field="validateSQL" usage="optional"></value>
+		<collection field="synchronizationStrategyDescriptorList">
+			<structure name="sync-strategy" class="net.sf.hajdbc.SynchronizationStrategyDescriptor">
+				<value name="id" field="id" style="attribute"></value>
+				<value name="class" field="className" style="attribute"></value>
+				<collection field="propertyList" type="java.util.LinkedList" usage="optional">
+					<structure name="property" type="java.beans.ParameterDescriptor">
+						<value name="name" get-method="getName" set-method="setName" style="attribute"></value>
+						<value get-method="getDisplayName" set-method="setDisplayName" style="text"></value>
+					</structure>
+				</collection>
 			</structure>
 		</collection>
+	</mapping>
+	<mapping class="net.sf.hajdbc.sql.AbstractDatabase" abstract="true">
+		<value name="id" field="id" style="attribute"></value>
+    <value name="weight" field="weight" style="attribute" usage="optional"></value>
+		<value name="user" field="user" usage="optional"></value>
+		<value name="password" field="password" usage="optional"></value>
+	</mapping>
+	<mapping name="database" class="net.sf.hajdbc.sql.DriverDatabase" extends="net.sf.hajdbc.sql.AbstractDatabase">
+		<value name="driver" field="driver" usage="optional"></value>
+		<value name="url" field="url"></value>
+		<structure map-as="net.sf.hajdbc.sql.AbstractDatabase"></structure>
+	</mapping>
+	<mapping name="datasource" class="net.sf.hajdbc.sql.DataSourceDatabase" extends="net.sf.hajdbc.sql.AbstractDatabase">
+		<value name="name" field="name"></value>
+		<structure map-as="net.sf.hajdbc.sql.AbstractDatabase"></structure>
+	</mapping>
+	<mapping name="pool-datasource" class="net.sf.hajdbc.sql.pool.ConnectionPoolDataSourceDatabase" extends="net.sf.hajdbc.sql.AbstractDatabase">
+		<value name="name" field="name"></value>
+		<structure map-as="net.sf.hajdbc.sql.AbstractDatabase"></structure>
+	</mapping>
+	<mapping name="xa-datasource" class="net.sf.hajdbc.sql.pool.xa.XADataSourceDatabase" extends="net.sf.hajdbc.sql.AbstractDatabase">
+		<value name="name" field="name"></value>
+		<structure map-as="net.sf.hajdbc.sql.AbstractDatabase"></structure>
 	</mapping>
 </binding>
