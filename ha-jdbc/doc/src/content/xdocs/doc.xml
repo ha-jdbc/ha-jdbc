@@ -371,8 +371,8 @@ rs.close();
     <!-- Sample validation query for HSQLDB -->
     <validate-sql>CALL NOW()</validate-sql>
 
-	<sync-strategy id="..." class="..."></sync-strategy>
-	<sync-strategy id="..." class="..."></sync-strategy>
+    <sync-strategy id="..." class="..."></sync-strategy>
+    <sync-strategy id="..." class="..."></sync-strategy>
   </cluster>
 </ha-jdbc>
 ]]></source>
@@ -414,7 +414,7 @@ rs.close();
       <property name="maxBatchSize">100</property>
     </sync-strategy>
 
-	<sync-strategy id="diff" class="net.sf.hajdbc.sync.DifferentialSynchronizationStrategy"></sync-strategy>
+    <sync-strategy id="diff" class="net.sf.hajdbc.sync.DifferentialSynchronizationStrategy"></sync-strategy>
 	
   </cluster>
 </ha-jdbc>
