@@ -284,8 +284,8 @@
 					<li>Incrementing columns (e.g. <code>SELECT max(id) + 1 FROM table</code>)</li>
 				</ul>
 				<p>
-					For any of these mechanisms to work in a database cluster, each database node would need to generate uniform identifier independently.
-					To do this, all incoming database requests would need to be synchronized through a central cluster manager.
+					For any of these mechanisms to work in a database cluster, each database node would need to independently generate the same identifiers.
+					To make this happen, all incoming database requests would need to be synchronized through a central cluster manager.
 					This would adversely affect the scalability of the cluster as the number of distributed clients increase.
 					For now, HA-JDBC does not accommodate the above mechanisms in favor a design that uses more efficient asynchronous request execution.
 				</p>
