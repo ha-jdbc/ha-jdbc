@@ -100,7 +100,7 @@ public class DriverDatabase extends AbstractDatabase
 	}
 
 	/**
-	 * @see net.sf.ha.jdbc.Database#getId()
+	 * @see net.sf.hajdbc.Database#getId()
 	 */
 	public String getId()
 	{
@@ -108,10 +108,10 @@ public class DriverDatabase extends AbstractDatabase
 	}
 	
 	/**
-	 * @see net.sf.ha.jdbc.ConnectionInfo#connect(java.lang.Object)
+	 * @see net.sf.hajdbc.ConnectionInfo#connect(java.lang.Object)
 	 */
 	/**
-	 * @see net.sf.ha.jdbc.Database#connect(java.lang.Object)
+	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
 	 */
 	public Connection connect(Object object) throws SQLException
 	{

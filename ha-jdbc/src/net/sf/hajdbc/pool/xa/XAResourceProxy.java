@@ -47,7 +47,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 	}
 	
 	/**
-	 * @see net.sf.ha.jdbc.SQLProxy#getDatabaseCluster()
+	 * @see net.sf.hajdbc.SQLProxy#getDatabaseCluster()
 	 */
 	protected DatabaseCluster getDatabaseCluster()
 	{

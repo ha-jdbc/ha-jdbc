@@ -27,7 +27,7 @@ package net.sf.hajdbc;
 public class DataSourceFactory extends AbstractDataSourceFactory
 {
 	/**
-	 * @see net.sf.ha.jdbc.AbstractDataSourceFactory#getObjectClass()
+	 * @see net.sf.hajdbc.AbstractDataSourceFactory#getObjectClass()
 	 */
 	protected Class getObjectClass()
 	{

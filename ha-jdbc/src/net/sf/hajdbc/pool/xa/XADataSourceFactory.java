@@ -30,7 +30,7 @@ import net.sf.hajdbc.AbstractDataSourceFactory;
 public class XADataSourceFactory extends AbstractDataSourceFactory
 {
 	/**
-	 * @see net.sf.ha.jdbc.AbstractDataSourceFactory#getObjectClass()
+	 * @see net.sf.hajdbc.AbstractDataSourceFactory#getObjectClass()
 	 */
 	protected Class getObjectClass()
 	{

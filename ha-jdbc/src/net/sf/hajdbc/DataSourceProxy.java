@@ -133,7 +133,7 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements DataSour
 	}
 
 	/**
-	 * @see net.sf.ha.jdbc.AbstractDataSourceProxy#getObjectFactoryClass()
+	 * @see net.sf.hajdbc.AbstractDataSourceProxy#getObjectFactoryClass()
 	 */
 	protected Class getObjectFactoryClass()
 	{

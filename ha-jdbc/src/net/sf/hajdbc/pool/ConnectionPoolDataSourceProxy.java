@@ -136,7 +136,7 @@ public class ConnectionPoolDataSourceProxy extends AbstractDataSourceProxy imple
 	}
 
 	/**
-	 * @see net.sf.ha.jdbc.AbstractDataSourceProxy#getObjectFactoryClass()
+	 * @see net.sf.hajdbc.AbstractDataSourceProxy#getObjectFactoryClass()
 	 */
 	protected Class getObjectFactoryClass()
 	{

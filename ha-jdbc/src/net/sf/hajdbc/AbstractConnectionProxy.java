@@ -44,7 +44,7 @@ public class AbstractConnectionProxy extends SQLProxy
 	}
 	
 	/**
-	 * @see net.sf.ha.jdbc.SQLProxy#getDatabaseCluster()
+	 * @see net.sf.hajdbc.SQLProxy#getDatabaseCluster()
 	 */
 	protected DatabaseCluster getDatabaseCluster()
 	{

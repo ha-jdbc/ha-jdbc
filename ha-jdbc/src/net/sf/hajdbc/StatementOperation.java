@@ -38,7 +38,7 @@ public abstract class StatementOperation implements Operation
 	public abstract Object execute(Statement statement) throws SQLException;
 
 	/**
-	 * @see net.sf.ha.jdbc.Operation#execute(net.sf.ha.jdbc.Database, java.lang.Object)
+	 * @see net.sf.hajdbc.Operation#execute(net.sf.hajdbc.Database, java.lang.Object)
 	 */
 	public Object execute(Database database, Object object) throws SQLException
 	{

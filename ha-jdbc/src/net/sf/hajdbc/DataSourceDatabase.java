@@ -51,7 +51,7 @@ public class DataSourceDatabase extends AbstractDatabase
 	}
 
 	/**
-	 * @see net.sf.ha.jdbc.Database#getId()
+	 * @see net.sf.hajdbc.Database#getId()
 	 */
 	public String getId()
 	{
@@ -59,7 +59,7 @@ public class DataSourceDatabase extends AbstractDatabase
 	}
 	
 	/**
-	 * @see net.sf.ha.jdbc.Database#connect(java.lang.Object)
+	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
 	 */
 	public Connection connect(Object object) throws SQLException
 	{

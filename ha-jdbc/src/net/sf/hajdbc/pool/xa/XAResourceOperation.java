@@ -38,7 +38,7 @@ public abstract class XAResourceOperation implements Operation
 	public abstract Object execute(XADataSourceDatabase database, XAResource resource) throws XAException;
 	
 	/**
-	 * @see net.sf.ha.jdbc.Operation#execute(net.sf.ha.jdbc.Database, java.lang.Object)
+	 * @see net.sf.hajdbc.Operation#execute(net.sf.hajdbc.Database, java.lang.Object)
 	 */
 	public Object execute(Database database, Object object) throws SQLException
 	{
