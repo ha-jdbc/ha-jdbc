@@ -131,7 +131,7 @@ public class DataSource extends AbstractDataSource implements javax.sql.DataSour
 	}
 
 	/**
-	 * @see net.sf.hajdbc.AbstractDataSourceProxy#getObjectFactoryClass()
+	 * @see net.sf.hajdbc.AbstractDataSource#getObjectFactoryClass()
 	 */
 	protected Class getObjectFactoryClass()
 	{

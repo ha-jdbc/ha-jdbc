@@ -27,17 +27,60 @@ package net.sf.hajdbc;
  */
 public interface DatabaseClusterDescriptor
 {
+	/**
+	 * Creates a new database cluster from based on this descriptor
+	 * @return a DatabaseCluster
+	 * @throws java.sql.SQLException
+	 */
 	public DatabaseCluster createDatabaseCluster() throws java.sql.SQLException;
 	
+	/**
+	 * Returns the identifier of this database cluster
+	 * @return a database cluster identifier
+	 */
 	public String getId();
 
+	/**
+	 * Returns the SQL statement used to validate whether or not a database is responding 
+	 * @return a SQL statement
+	 */
 	public String getValidateSQL();
 	
+	/**
+	 * Returns a SQL pattern used to create a foreign key using the following arguments:
+	 * <ol seqnum="0">
+	 *   <li>Foreign key name</li>
+	 *   <li>Table name</li>
+	 *   <li>Column name</li>
+	 *   <li>Foreign table name</li>
+	 *   <li>Foreign column name</li>
+	 * </ol>
+	 * @return a SQL pattern
+	 */
 	public String getCreateForeignKeySQL();
 
+	/**
+	 * Returns a SQL pattern used to drop a foreign key using the following arguments:
+	 * <ol seqnum="0">
+	 *   <li>Foreign key name</li>
+	 *   <li>Table name</li>
+	 * </ol>
+	 * @return a SQL pattern
+	 */
 	public String getDropForeignKeySQL();
 	
+	/**
+	 * Returns a SQL pattern used to truncate a table using the following arguments:
+	 * <ol seqnum="0">
+	 *   <li>Table name</li>
+	 * </ol>
+	 * @return a SQL pattern
+	 */
 	public String getTruncateTableSQL();
 	
+	/**
+	 * Returns a class name of the default synchronization strategy.
+	 * @return a class name that implements SynchronizationStrategy
+	 */
 	public String getDefaultSynchronizationStrategy();
 }

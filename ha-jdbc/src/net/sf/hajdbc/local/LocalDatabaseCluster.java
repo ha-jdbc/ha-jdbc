@@ -55,9 +55,9 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	private ConnectionFactoryProxy connectionFactory;
 	
 	/**
-	 * Constructs a new DatabaseCluster.
-	 * @param descriptor
-	 * @param databaseMap
+	 * Constructs a new LocalDatabaseCluster.
+	 * @param descriptor a local database cluster descriptor
+	 * @throws java.sql.SQLException
 	 */
 	public LocalDatabaseCluster(LocalDatabaseClusterDescriptor descriptor) throws java.sql.SQLException
 	{
@@ -94,14 +94,16 @@ public class LocalDatabaseCluster extends DatabaseCluster
 		}
 	}
 
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getConnectionFactory()
+	 */
 	public ConnectionFactoryProxy getConnectionFactory()
 	{
 		return this.connectionFactory;
 	}
 	
 	/**
-	 * @param database
-	 * @return true if the specified database is active, false otherwise
+	 * @see net.sf.hajdbc.DatabaseCluster#isAlive(net.sf.hajdbc.Database)
 	 */
 	public boolean isAlive(Database database)
 	{
@@ -142,9 +144,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	}
 	
 	/**
-	 * Deactivates the specified database.
-	 * @param database
-	 * @return true if the database was successfully deactivated, false if it was already deactivated
+	 * @see net.sf.hajdbc.DatabaseCluster#deactivate(net.sf.hajdbc.Database)
 	 */
 	public boolean deactivate(Database database)
 	{
@@ -152,27 +152,31 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseClusterMBean#getName()
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#getId()
 	 */
 	public String getId()
 	{
 		return this.descriptor.getId();
 	}
 
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getDescriptor()
+	 */
 	public DatabaseClusterDescriptor getDescriptor()
 	{
 		return this.descriptor;
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#activate(net.sf.hajdbc.Database)
+	 */
 	public boolean activate(Database database)
 	{
 		return this.addDatabase(database);
 	}
 	
 	/**
-	 * Returns the first database in the cluster
-	 * @return the first database in the cluster
-	 * @throws SQLException
+	 * @see net.sf.hajdbc.DatabaseCluster#firstDatabase()
 	 */
 	public Database firstDatabase() throws SQLException
 	{
@@ -188,9 +192,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	}
 	
 	/**
-	 * Returns the next database in the cluster
-	 * @return the next database in the cluster
-	 * @throws SQLException
+	 * @see net.sf.hajdbc.DatabaseCluster#nextDatabase()
 	 */
 	public Database nextDatabase() throws SQLException
 	{
@@ -210,9 +212,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	}
 
 	/**
-	 * A list of active databases in this cluster
-	 * @return a list of Database objects
-	 * @throws SQLException
+	 * @see net.sf.hajdbc.DatabaseCluster#getActiveDatabaseList()
 	 */
 	public List getActiveDatabaseList() throws SQLException
 	{
@@ -227,11 +227,17 @@ public class LocalDatabaseCluster extends DatabaseCluster
 		}
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#getActiveDatabases()
+	 */
 	public Collection getActiveDatabases() throws SQLException
 	{
 		return this.getActiveDatabaseList();
 	}
 
+	/**
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#getInactiveDatabases()
+	 */
 	public Collection getInactiveDatabases()
 	{
 		Set databaseSet = new HashSet(this.descriptor.getDatabaseMap().values());
@@ -281,6 +287,9 @@ public class LocalDatabaseCluster extends DatabaseCluster
 		}
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#isActive(net.sf.hajdbc.Database)
+	 */
 	public boolean isActive(Database database)
 	{
 		synchronized (this.activeDatabaseSet)
@@ -289,6 +298,9 @@ public class LocalDatabaseCluster extends DatabaseCluster
 		}
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getNewDatabaseSet(java.util.Collection)
+	 */
 	public Set getNewDatabaseSet(Collection databases)
 	{
 		Set databaseSet = null;

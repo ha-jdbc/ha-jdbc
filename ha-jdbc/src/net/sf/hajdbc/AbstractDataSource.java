@@ -36,13 +36,19 @@ public abstract class AbstractDataSource implements Referenceable
 	protected ConnectionFactoryProxy connectionFactory;
 
 	/**
-	 * @return
+	 * Returns the name of this DataSource
+	 * @return the name of this DataSource
 	 */
 	public String getName()
 	{
 		return this.connectionFactory.getDatabaseCluster().getId();
 	}
 	
+	/**
+	 * Sets the name of this DataSource
+	 * @param name the name of this DataSource
+	 * @throws java.sql.SQLException
+	 */
 	public void setName(String name) throws java.sql.SQLException
 	{
 		this.connectionFactory = DatabaseClusterFactory.getInstance().getDatabaseCluster(name).getConnectionFactory();
@@ -60,5 +66,9 @@ public abstract class AbstractDataSource implements Referenceable
         return ref;
 	}
 	
+	/**
+	 * Returns the implementation class for the factory that will create DataSources
+	 * @return a class that implements javax.naming.spi.ObjectFactory
+	 */
 	protected abstract Class getObjectFactoryClass();
 }

@@ -35,8 +35,8 @@ public class StatementProxy extends SQLProxy implements Statement
 {
 	/**
 	 * Constructs a new StatementProxy.
-	 * @param connection
-	 * @param statementMap
+	 * @param connection a Connection proxy
+	 * @param operation an operation that creates Statements
 	 */
 	public StatementProxy(ConnectionProxy connection, ConnectionOperation operation) throws java.sql.SQLException
 	{

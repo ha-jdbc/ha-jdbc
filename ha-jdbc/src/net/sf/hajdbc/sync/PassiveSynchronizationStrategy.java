@@ -36,7 +36,7 @@ import net.sf.hajdbc.SynchronizationStrategy;
 public class PassiveSynchronizationStrategy implements SynchronizationStrategy
 {
 	/**
-	 * @see net.sf.hajdbc.DatabaseSynchronizationStrategy#synchronize(net.sf.hajdbc.DatabaseClusterDescriptor, java.sql.Connection, java.sql.Connection, java.util.List)
+	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, java.util.List, net.sf.hajdbc.DatabaseClusterDescriptor)
 	 */
 	public void synchronize(Connection inactiveConnection, Connection activeConnection, List tableList, DatabaseClusterDescriptor descriptor)
 	{

@@ -34,15 +34,22 @@ import net.sf.hajdbc.DatabaseClusterDescriptor;
  */
 public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 {
+	public static final String DEFAULT_VALIDATE_SQL = "SELECT 1";
+	public static final String DEFAULT_CREATE_FOREIGN_KEY_SQL = "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4})";
+	public static final String DEFAULT_DROP_FOREIGN_KEY_SQL = "ALTER TABLE {1} DROP CONSTRAINT {0}";
+	public static final String DEFAULT_TRUNCATE_TABLE_SQL = "DELETE FROM {0}";
+	public static final String DEFAULT_SYNC_STRATEGY = net.sf.hajdbc.sync.DifferentialSynchronizationStrategy.class.getName();
+	
 	private String id;
-	private String validateSQL;
-	private String createForeignKeySQL;
-	private String dropForeignKeySQL;
-	private String truncateTableSQL;
-	private String defaultSynchronizationStrategy;
+	private String validateSQL = DEFAULT_VALIDATE_SQL;
+	private String createForeignKeySQL = DEFAULT_CREATE_FOREIGN_KEY_SQL;
+	private String dropForeignKeySQL = DEFAULT_DROP_FOREIGN_KEY_SQL;
+	private String truncateTableSQL = DEFAULT_TRUNCATE_TABLE_SQL;
+	private String defaultSynchronizationStrategy = DEFAULT_SYNC_STRATEGY;
 	private Map databaseMap = new HashMap();
 	
 	/**
+	 * Returns a mapping of database id to Database object.
 	 * @return a map of databases in this cluster
 	 */
 	public Map getDatabaseMap()
@@ -52,7 +59,7 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 	
 	/**
 	 * Adds the specified database to this cluster
-	 * @param object
+	 * @param object add the specified database to the 
 	 */
 	protected void addDatabase(Object object)
 	{
@@ -61,7 +68,7 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 	}
 	
 	/**
-	 * @return the name of this database cluster
+	 * @see net.sf.hajdbc.DatabaseClusterDescriptor#getId()
 	 */
 	public String getId()
 	{
@@ -69,7 +76,7 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 	}
 	
 	/**
-	 * @return the SQL used to validate that a database is active
+	 * @see net.sf.hajdbc.DatabaseClusterDescriptor#getValidateSQL()
 	 */
 	public String getValidateSQL()
 	{
@@ -77,7 +84,7 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 	}
 	
 	/**
-	 * @return
+	 * @see net.sf.hajdbc.DatabaseClusterDescriptor#getCreateForeignKeySQL()
 	 */
 	public String getCreateForeignKeySQL()
 	{
@@ -85,23 +92,32 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 	}
 	
 	/**
-	 * @return
+	 * @see net.sf.hajdbc.DatabaseClusterDescriptor#getDropForeignKeySQL()
 	 */
 	public String getDropForeignKeySQL()
 	{
 		return this.dropForeignKeySQL;
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.DatabaseClusterDescriptor#getTruncateTableSQL()
+	 */
 	public String getTruncateTableSQL()
 	{
 		return this.truncateTableSQL;
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.DatabaseClusterDescriptor#getDefaultSynchronizationStrategy()
+	 */
 	public String getDefaultSynchronizationStrategy()
 	{
 		return this.defaultSynchronizationStrategy;
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.DatabaseClusterDescriptor#createDatabaseCluster()
+	 */
 	public DatabaseCluster createDatabaseCluster() throws java.sql.SQLException
 	{
 		return new LocalDatabaseCluster(this);

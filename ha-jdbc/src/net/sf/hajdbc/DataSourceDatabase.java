@@ -37,7 +37,8 @@ public class DataSourceDatabase extends AbstractDatabase
 	protected String name;
 	
 	/**
-	 * @return the DataSource JNDI name
+	 * Return the JNDI name of this DataSource
+	 * @return a JNDI name
 	 */
 	public String getName()
 	{
@@ -45,7 +46,8 @@ public class DataSourceDatabase extends AbstractDatabase
 	}
 	
 	/**
-	 * @param name
+	 * Sets the JNDI name of this DataSource
+	 * @param name a JNDI name
 	 */
 	public void setName(String name)
 	{
@@ -63,7 +65,7 @@ public class DataSourceDatabase extends AbstractDatabase
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Database#getDatabaseConnector()
+	 * @see net.sf.hajdbc.Database#getConnectionFactory()
 	 */
 	public Object getConnectionFactory() throws java.sql.SQLException
 	{
@@ -86,6 +88,10 @@ public class DataSourceDatabase extends AbstractDatabase
 		}
 	}
 	
+	/**
+	 * Returns the implementation class for this DataSource
+	 * @return a DataSource implementation class
+	 */
 	protected Class getDataSourceClass()
 	{
 		return DataSource.class;

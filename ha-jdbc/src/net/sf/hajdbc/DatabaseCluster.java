@@ -44,7 +44,7 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	private static Log log = LogFactory.getLog(DatabaseCluster.class);
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseClusterMBean#isActive(java.lang.String)
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#isAlive(java.lang.String)
 	 */
 	public final boolean isAlive(String databaseId) throws java.sql.SQLException
 	{

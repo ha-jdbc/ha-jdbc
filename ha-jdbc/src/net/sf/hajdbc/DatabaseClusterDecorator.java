@@ -39,7 +39,7 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseClusterMBean#getName()
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#getId()
 	 */
 	public final String getId()
 	{
@@ -54,61 +54,97 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 		return this.databaseCluster.isActive(database);
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#firstDatabase()
+	 */
 	public final Database firstDatabase() throws java.sql.SQLException
 	{
 		return this.databaseCluster.firstDatabase();
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getActiveDatabaseList()
+	 */
 	public final List getActiveDatabaseList() throws java.sql.SQLException
 	{
 		return this.databaseCluster.getActiveDatabaseList();
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getConnectionFactory()
+	 */
 	public final ConnectionFactoryProxy getConnectionFactory()
 	{
 		return this.databaseCluster.getConnectionFactory();
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getDescriptor()
+	 */
 	public final DatabaseClusterDescriptor getDescriptor()
 	{
 		return this.databaseCluster.getDescriptor();
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#isAlive(net.sf.hajdbc.Database)
+	 */
 	public final boolean isAlive(Database database)
 	{
 		return this.databaseCluster.isAlive(database);
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#nextDatabase()
+	 */
 	public final Database nextDatabase() throws java.sql.SQLException
 	{
 		return this.databaseCluster.nextDatabase();
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#addDatabase(net.sf.hajdbc.Database)
+	 */
 	public final boolean addDatabase(Database database)
 	{
 		return this.databaseCluster.addDatabase(database);
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#removeDatabase(net.sf.hajdbc.Database)
+	 */
 	public final boolean removeDatabase(Database database)
 	{
 		return this.databaseCluster.removeDatabase(database);
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getDatabase(java.lang.String)
+	 */
 	public final Database getDatabase(String databaseId) throws java.sql.SQLException
 	{
 		return this.databaseCluster.getDatabase(databaseId);
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getNewDatabaseSet(java.util.Collection)
+	 */
 	public final Set getNewDatabaseSet(Collection databases)
 	{
 		return this.databaseCluster.getNewDatabaseSet(databases);
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#getActiveDatabases()
+	 */
 	public final Collection getActiveDatabases() throws java.sql.SQLException
 	{
 		return this.databaseCluster.getActiveDatabases();
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#getInactiveDatabases()
+	 */
 	public final Collection getInactiveDatabases() throws java.sql.SQLException
 	{
 		return this.databaseCluster.getInactiveDatabases();

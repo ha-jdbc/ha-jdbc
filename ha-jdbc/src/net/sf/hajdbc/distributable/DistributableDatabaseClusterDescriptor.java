@@ -42,7 +42,8 @@ public class DistributableDatabaseClusterDescriptor implements DatabaseClusterDe
 	}
 	
 	/**
-	 * @return
+	 * Returns the protocol stack that this database cluster will use to broadcast cluster changes.
+	 * @return a JGroups protocol stack.
 	 */
 	public String getProtocol()
 	{

@@ -3,17 +3,17 @@
 <binding direction="input">
 	<mapping name="ha-jdbc" class="net.sf.hajdbc.DatabaseClusterFactory$Configuration">
 		<structure name="distributable" field="decoratorDescriptor" type="net.sf.hajdbc.distributable.DistributableDatabaseClusterDescriptor" usage="optional">
-			<value name="protocol" field="protocol" style="attribute" usage="required"></value>
+			<value name="protocol" field="protocol" style="attribute"></value>
 		</structure>
 		<collection field="descriptorList" type="java.util.LinkedList"></collection>
 	</mapping>
 	<mapping name="cluster" class="net.sf.hajdbc.local.LocalDatabaseClusterDescriptor">
 		<value name="id" field="id" style="attribute"></value>
-		<value name="validate-sql" field="validateSQL" usage="optional" default="SELECT 1"></value>
-		<value name="create-foreign-key-sql" field="createForeignKeySQL" usage="optional" default="ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4})"></value>
-		<value name="drop-foreign-key-sql" field="dropForeignKeySQL" usage="optional" default="ALTER TABLE {1} DROP CONSTRAINT {0}"></value>
-		<value name="truncate-table-sql" field="truncateTableSQL" usage="optional" default="DELETE FROM {0}"></value>
-		<value name="default-sync-strategy" field="defaultSynchronizationStrategy" usage="optional" default="net.sf.hajdbc.sync.DifferentialSynchronizationStrategy"></value>
+		<value name="validate-sql" field="validateSQL" usage="optional"></value>
+		<value name="create-foreign-key-sql" field="createForeignKeySQL" usage="optional"></value>
+		<value name="drop-foreign-key-sql" field="dropForeignKeySQL" usage="optional"></value>
+		<value name="truncate-table-sql" field="truncateTableSQL" usage="optional"></value>
+		<value name="default-sync-strategy" field="defaultSynchronizationStrategy" usage="optional"></value>
 		<collection add-method="addDatabase"></collection>
 	</mapping>
 	<mapping name="database" class="net.sf.hajdbc.DriverDatabase">
