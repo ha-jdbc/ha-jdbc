@@ -13,7 +13,7 @@
 		<value name="create-foreign-key-sql" field="createForeignKeySQL" usage="optional" default="ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4})"></value>
 		<value name="drop-foreign-key-sql" field="dropForeignKeySQL" usage="optional" default="ALTER TABLE {1} DROP CONSTRAINT {0}"></value>
 		<value name="truncate-table-sql" field="truncateTableSQL" usage="optional" default="DELETE FROM {0}"></value>
-		<value name="default-sync-strategy" field="defaultSynchronizationStrategy" usage="optional" default="net.sf.hajdbc.sync.FullSynchronizationStrategy"></value>
+		<value name="default-sync-strategy" field="defaultSynchronizationStrategy" usage="optional" default="net.sf.hajdbc.sync.DifferentialSynchronizationStrategy"></value>
 		<collection add-method="addDatabase"></collection>
 	</mapping>
 	<mapping name="database" class="net.sf.hajdbc.DriverDatabase">
