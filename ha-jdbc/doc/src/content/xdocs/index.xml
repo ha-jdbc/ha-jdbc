@@ -68,6 +68,7 @@
 				<title>Cluster Configuration</title>
 				<p>
 					Configuration of HA-JDBC managed database clusters is contained in a single XML file.
+					The file should be named <code>ha-jdbc.xml</code> and should reside in your CLASSPATH.
 					A DTD is provided in the <code>/conf</code> directory of the distribution.<br/>
 					e.g.
 				</p>
