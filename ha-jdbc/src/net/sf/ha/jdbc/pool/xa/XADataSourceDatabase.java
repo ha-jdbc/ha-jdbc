@@ -16,15 +16,6 @@ import net.sf.ha.jdbc.pool.ConnectionPoolDataSourceDatabase;
 public class XADataSourceDatabase extends ConnectionPoolDataSourceDatabase
 {
 	/**
-	 * Constructs a new XADataSourceConnectionInfo.
-	 * @param name
-	 */
-	public XADataSourceDatabase(String name)
-	{
-		super(name);
-	}
-
-	/**
 	 * @see net.sf.ha.jdbc.ConnectionInfo#connect(java.lang.Object)
 	 */
 	public Connection connect(Object object) throws SQLException

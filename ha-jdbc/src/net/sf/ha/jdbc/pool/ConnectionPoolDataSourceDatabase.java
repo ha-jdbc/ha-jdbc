@@ -16,15 +16,6 @@ import net.sf.ha.jdbc.DataSourceDatabase;
 public class ConnectionPoolDataSourceDatabase extends DataSourceDatabase
 {
 	/**
-	 * Constructs a new ConnectionPoolDataSourceConnectionInfo.
-	 * @param name
-	 */
-	public ConnectionPoolDataSourceDatabase(String name)
-	{
-		super(name);
-	}
-
-	/**
 	 * @see net.sf.ha.jdbc.ConnectionInfo#connect(java.lang.Object)
 	 */
 	public Connection connect(Object object) throws SQLException
