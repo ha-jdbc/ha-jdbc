@@ -20,16 +20,19 @@
  */
 package net.sf.hajdbc;
 
+import java.sql.SQLException;
+import java.util.List;
+
 /**
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public abstract class DatabaseClusterDecorator implements DatabaseClusterMBean
+public abstract class DatabaseClusterDecorator extends DatabaseCluster
 {
-	protected DatabaseClusterMBean databaseCluster;
+	protected DatabaseCluster databaseCluster;
 
-	protected DatabaseClusterDecorator(DatabaseClusterMBean databaseCluster)
+	protected DatabaseClusterDecorator(DatabaseCluster databaseCluster)
 	{
 		this.databaseCluster = databaseCluster;
 	}
@@ -48,5 +51,40 @@ public abstract class DatabaseClusterDecorator implements DatabaseClusterMBean
 	public boolean isActive(String databaseId)
 	{
 		return this.databaseCluster.isActive(databaseId);
+	}
+	
+	public Database firstDatabase() throws SQLException
+	{
+		return this.databaseCluster.firstDatabase();
+	}
+	
+	public List getActiveDatabaseList() throws SQLException
+	{
+		return this.databaseCluster.getActiveDatabaseList();
+	}
+	
+	public DatabaseConnector getDatabaseConnector()
+	{
+		return this.databaseCluster.getDatabaseConnector();
+	}
+	
+	public DatabaseClusterDescriptor getDescriptor()
+	{
+		return this.databaseCluster.getDescriptor();
+	}
+	
+	public boolean isActive(Database database)
+	{
+		return this.databaseCluster.isActive(database);
+	}
+	
+	public Database nextDatabase() throws SQLException
+	{
+		return this.databaseCluster.nextDatabase();
+	}
+	
+	protected Database getDatabase(String databaseId)
+	{
+		return this.databaseCluster.getDatabase(databaseId);
 	}
 }

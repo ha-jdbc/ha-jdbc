@@ -21,7 +21,6 @@
 package net.sf.hajdbc;
 
 import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
@@ -34,27 +33,27 @@ import org.apache.commons.logging.LogFactory;
  * @author Paul Ferraro
  * @version $Revision$
  */
-public final class DriverProxy implements java.sql.Driver
+public final class Driver implements java.sql.Driver
 {
 	private static final int MAJOR_VERSION = 1;
 	private static final int MINOR_VERSION = 0;
 	private static final boolean JDBC_COMPLIANT = true;
 
-	private static Log log = LogFactory.getLog(DriverProxy.class);
+	private static Log log = LogFactory.getLog(Driver.class);
 	
 	static
 	{
 		try
 		{
-			DriverManager.registerDriver(new DriverProxy());
+			DriverManager.registerDriver(new Driver());
 		}
 		catch (SQLException e)
 		{
-			log.fatal("Failed to register " + DriverProxy.class.getName(), e);
+			log.fatal("Failed to register " + Driver.class.getName(), e);
 		}
 	}
 	
-	private DriverProxy()
+	private Driver()
 	{
 		// private
 	}
@@ -103,15 +102,17 @@ public final class DriverProxy implements java.sql.Driver
 			return null;
 		}
 		
+		DatabaseConnector databaseConnector = databaseCluster.getDatabaseConnector();
+		
 		DriverOperation operation = new DriverOperation()
 		{
-			public Object execute(DriverDatabase database, Driver driver) throws SQLException
+			public Object execute(DriverDatabase database, java.sql.Driver driver) throws SQLException
 			{
 				return driver.connect(database.getUrl(), properties);
 			}
 		};
 		
-		return new ConnectionProxy(databaseCluster, databaseCluster.executeWrite(operation));
+		return new ConnectionProxy(databaseConnector, databaseConnector.executeWrite(operation));
 	}
 	
 	/**
@@ -126,14 +127,16 @@ public final class DriverProxy implements java.sql.Driver
 			return null;
 		}
 		
+		DatabaseConnector databaseConnector = databaseCluster.getDatabaseConnector();
+		
 		DriverOperation operation = new DriverOperation()
 		{
-			public Object execute(DriverDatabase database, Driver driver) throws SQLException
+			public Object execute(DriverDatabase database, java.sql.Driver driver) throws SQLException
 			{
 				return driver.getPropertyInfo(database.getUrl(), properties);
 			}
 		};
 		
-		return (DriverPropertyInfo[]) databaseCluster.executeGet(operation);
+		return (DriverPropertyInfo[]) databaseConnector.executeGet(operation);
 	}
 }

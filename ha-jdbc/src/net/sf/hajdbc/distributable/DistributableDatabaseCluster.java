@@ -23,8 +23,9 @@ package net.sf.hajdbc.distributable;
 import java.io.Serializable;
 import java.sql.SQLException;
 
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterDecorator;
-import net.sf.hajdbc.DatabaseClusterMBean;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,7 +43,7 @@ public class DistributableDatabaseCluster extends DatabaseClusterDecorator imple
 	
 	private NotificationBus notificationBus;
 	
-	public DistributableDatabaseCluster(DatabaseClusterMBean databaseCluster, DistributableDatabaseClusterDescriptor descriptor) throws Exception
+	public DistributableDatabaseCluster(DatabaseCluster databaseCluster, DistributableDatabaseClusterDescriptor descriptor) throws Exception
 	{
 		super(databaseCluster);
 		
@@ -51,24 +52,28 @@ public class DistributableDatabaseCluster extends DatabaseClusterDecorator imple
 		this.notificationBus.start();
 	}
 
-	/**
-	 * @see net.sf.hajdbc.DatabaseClusterMBean#deactivate(java.lang.String)
-	 */
-	public void deactivate(String databaseId)
+	public boolean deactivate(Database database)
 	{
-		this.databaseCluster.deactivate(databaseId);
+		boolean deactivated = this.databaseCluster.deactivate(database);
 		
-		this.notificationBus.sendNotification(new DatabaseDeactivationCommand(databaseId));
+		if (deactivated)
+		{
+			this.notificationBus.sendNotification(new DatabaseDeactivationCommand(database.getId()));
+		}
+		
+		return deactivated;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.DatabaseClusterMBean#activate(java.lang.String, java.lang.String)
-	 */
-	public void activate(String databaseId, String strategyClassName) throws SQLException
+	public boolean activate(Database database)
 	{
-		this.databaseCluster.activate(databaseId, strategyClassName);
+		boolean activated = this.databaseCluster.activate(database);
 		
-		this.notificationBus.sendNotification(new DatabaseActivationCommand(databaseId));
+		if (activated)
+		{
+			this.notificationBus.sendNotification(new DatabaseActivationCommand(database.getId()));
+		}
+		
+		return activated;
 	}
 
 	/**
@@ -77,6 +82,8 @@ public class DistributableDatabaseCluster extends DatabaseClusterDecorator imple
 	public void handleNotification(Serializable object)
 	{
 		DatabaseCommand command = (DatabaseCommand) object;
+		
+		log.info("Notification received: " + command.getClass().getName());
 		
 		try
 		{

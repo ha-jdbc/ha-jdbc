@@ -29,7 +29,7 @@ import javax.sql.PooledConnection;
 
 import net.sf.hajdbc.AbstractConnectionProxy;
 import net.sf.hajdbc.ConnectionProxy;
-import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.DatabaseConnector;
 
 /**
  * @author  Paul Ferraro
@@ -38,9 +38,9 @@ import net.sf.hajdbc.DatabaseCluster;
  */
 public class PooledConnectionProxy extends AbstractConnectionProxy implements PooledConnection
 {
-	public PooledConnectionProxy(DatabaseCluster databaseCluster, Map connectionMap)
+	public PooledConnectionProxy(DatabaseConnector databaseConnector, Map connectionMap)
 	{
-		super(databaseCluster, connectionMap);
+		super(databaseConnector, connectionMap);
 	}
 	
 	/**
@@ -56,7 +56,7 @@ public class PooledConnectionProxy extends AbstractConnectionProxy implements Po
 			}
 		};
 		
-		return new ConnectionProxy(this.getDatabaseCluster(), this.executeWrite(operation));
+		return new ConnectionProxy(this.databaseConnector, this.executeWrite(operation));
 	}
 
 	/**

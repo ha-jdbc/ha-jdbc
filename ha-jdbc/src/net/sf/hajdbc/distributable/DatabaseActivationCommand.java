@@ -32,6 +32,11 @@ import net.sf.hajdbc.DatabaseClusterMBean;
  */
 public class DatabaseActivationCommand extends DatabaseCommand
 {
+	public DatabaseActivationCommand()
+	{
+		// Do nothing
+	}
+	
 	/**
 	 * Constructs a new DatabaseActivationCommand.
 	 * @param databaseId

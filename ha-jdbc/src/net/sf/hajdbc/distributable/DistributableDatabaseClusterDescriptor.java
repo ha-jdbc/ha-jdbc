@@ -20,8 +20,8 @@
  */
 package net.sf.hajdbc.distributable;
 
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterDecoratorDescriptor;
-import net.sf.hajdbc.DatabaseClusterMBean;
 
 /**
  * @author  Paul Ferraro
@@ -35,7 +35,7 @@ public class DistributableDatabaseClusterDescriptor implements DatabaseClusterDe
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterDecoratorDescriptor#decorate(net.sf.hajdbc.DatabaseClusterMBean)
 	 */
-	public DatabaseClusterMBean decorate(DatabaseClusterMBean databaseCluster) throws Exception
+	public DatabaseCluster decorate(DatabaseCluster databaseCluster) throws Exception
 	{
 		return new DistributableDatabaseCluster(databaseCluster, this);
 	}

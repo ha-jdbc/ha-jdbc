@@ -27,5 +27,5 @@ package net.sf.hajdbc;
  */
 public interface DatabaseClusterDecoratorDescriptor
 {
-	public DatabaseClusterMBean decorate(DatabaseClusterMBean databaseCluster) throws Exception; 
+	public DatabaseCluster decorate(DatabaseCluster databaseCluster) throws Exception; 
 }

@@ -34,6 +34,6 @@ public class ConnectionPoolDataSourceFactory extends AbstractDataSourceFactory
 	 */
 	protected Class getObjectClass()
 	{
-		return ConnectionPoolDataSourceProxy.class;
+		return ConnectionPoolDataSource.class;
 	}
 }

@@ -31,6 +31,6 @@ public class DataSourceFactory extends AbstractDataSourceFactory
 	 */
 	protected Class getObjectClass()
 	{
-		return DataSourceProxy.class;
+		return DataSource.class;
 	}
 }

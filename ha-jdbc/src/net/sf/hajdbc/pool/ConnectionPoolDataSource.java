@@ -23,17 +23,16 @@ package net.sf.hajdbc.pool;
 import java.io.PrintWriter;
 import java.sql.SQLException;
 
-import javax.sql.ConnectionPoolDataSource;
 import javax.sql.PooledConnection;
 
-import net.sf.hajdbc.AbstractDataSourceProxy;
+import net.sf.hajdbc.AbstractDataSource;
 
 /**
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public class ConnectionPoolDataSourceProxy extends AbstractDataSourceProxy implements ConnectionPoolDataSource
+public class ConnectionPoolDataSource extends AbstractDataSource implements javax.sql.ConnectionPoolDataSource
 {
 	/**
 	 * @see javax.sql.ConnectionPoolDataSource#getPooledConnection()
@@ -42,13 +41,13 @@ public class ConnectionPoolDataSourceProxy extends AbstractDataSourceProxy imple
 	{
 		ConnectionPoolDataSourceOperation operation = new ConnectionPoolDataSourceOperation()
 		{
-			public Object execute(ConnectionPoolDataSource dataSource) throws SQLException
+			public Object execute(javax.sql.ConnectionPoolDataSource dataSource) throws SQLException
 			{
 				return dataSource.getPooledConnection();
 			}
 		};
 		
-		return new PooledConnectionProxy(this.databaseCluster, this.databaseCluster.executeWrite(operation));
+		return new PooledConnectionProxy(this.databaseConnector, this.databaseConnector.executeWrite(operation));
 	}
 
 	/**
@@ -58,13 +57,13 @@ public class ConnectionPoolDataSourceProxy extends AbstractDataSourceProxy imple
 	{
 		ConnectionPoolDataSourceOperation operation = new ConnectionPoolDataSourceOperation()
 		{
-			public Object execute(ConnectionPoolDataSource dataSource) throws SQLException
+			public Object execute(javax.sql.ConnectionPoolDataSource dataSource) throws SQLException
 			{
 				return dataSource.getPooledConnection(user, password);
 			}
 		};
 		
-		return new PooledConnectionProxy(this.databaseCluster, this.databaseCluster.executeWrite(operation));
+		return new PooledConnectionProxy(this.databaseConnector, this.databaseConnector.executeWrite(operation));
 	}
 
 	/**
@@ -74,13 +73,13 @@ public class ConnectionPoolDataSourceProxy extends AbstractDataSourceProxy imple
 	{
 		ConnectionPoolDataSourceOperation operation = new ConnectionPoolDataSourceOperation()
 		{
-			public Object execute(ConnectionPoolDataSource dataSource) throws SQLException
+			public Object execute(javax.sql.ConnectionPoolDataSource dataSource) throws SQLException
 			{
 				return new Integer(dataSource.getLoginTimeout());
 			}
 		};
 		
-		return ((Integer) this.databaseCluster.executeGet(operation)).intValue();
+		return ((Integer) this.databaseConnector.executeGet(operation)).intValue();
 	}
 
 	/**
@@ -90,7 +89,7 @@ public class ConnectionPoolDataSourceProxy extends AbstractDataSourceProxy imple
 	{
 		ConnectionPoolDataSourceOperation operation = new ConnectionPoolDataSourceOperation()
 		{
-			public Object execute(ConnectionPoolDataSource dataSource) throws SQLException
+			public Object execute(javax.sql.ConnectionPoolDataSource dataSource) throws SQLException
 			{
 				dataSource.setLoginTimeout(seconds);
 				
@@ -98,7 +97,7 @@ public class ConnectionPoolDataSourceProxy extends AbstractDataSourceProxy imple
 			}
 		};
 		
-		this.databaseCluster.executeSet(operation);
+		this.databaseConnector.executeSet(operation);
 	}
 
 	/**
@@ -108,13 +107,13 @@ public class ConnectionPoolDataSourceProxy extends AbstractDataSourceProxy imple
 	{
 		ConnectionPoolDataSourceOperation operation = new ConnectionPoolDataSourceOperation()
 		{
-			public Object execute(ConnectionPoolDataSource dataSource) throws SQLException
+			public Object execute(javax.sql.ConnectionPoolDataSource dataSource) throws SQLException
 			{
 				return dataSource.getLogWriter();
 			}
 		};
 		
-		return (PrintWriter) this.databaseCluster.executeGet(operation);
+		return (PrintWriter) this.databaseConnector.executeGet(operation);
 	}
 
 	/**
@@ -124,7 +123,7 @@ public class ConnectionPoolDataSourceProxy extends AbstractDataSourceProxy imple
 	{
 		ConnectionPoolDataSourceOperation operation = new ConnectionPoolDataSourceOperation()
 		{
-			public Object execute(ConnectionPoolDataSource dataSource) throws SQLException
+			public Object execute(javax.sql.ConnectionPoolDataSource dataSource) throws SQLException
 			{
 				dataSource.setLogWriter(writer);
 				
@@ -132,7 +131,7 @@ public class ConnectionPoolDataSourceProxy extends AbstractDataSourceProxy imple
 			}
 		};
 		
-		this.databaseCluster.executeSet(operation);
+		this.databaseConnector.executeSet(operation);
 	}
 
 	/**

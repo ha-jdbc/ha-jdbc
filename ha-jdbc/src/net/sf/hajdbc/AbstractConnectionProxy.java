@@ -29,18 +29,18 @@ import java.util.Map;
  */
 public class AbstractConnectionProxy extends SQLProxy
 {
-	private DatabaseCluster databaseCluster;
+	protected DatabaseConnector databaseConnector;
 	
 	/**
 	 * Constructs a new AbstractConnectionProxy.
 	 * @param databaseCluster
 	 * @param connectionMap
 	 */
-	protected AbstractConnectionProxy(DatabaseCluster databaseCluster, Map connectionMap)
+	protected AbstractConnectionProxy(DatabaseConnector databaseConnector, Map connectionMap)
 	{
 		super(connectionMap);
 		
-		this.databaseCluster = databaseCluster;
+		this.databaseConnector = databaseConnector;
 	}
 	
 	/**
@@ -48,6 +48,6 @@ public class AbstractConnectionProxy extends SQLProxy
 	 */
 	protected DatabaseCluster getDatabaseCluster()
 	{
-		return this.databaseCluster;
+		return this.databaseConnector.getDatabaseCluster();
 	}
 }

@@ -23,16 +23,15 @@ package net.sf.hajdbc.pool.xa;
 import java.sql.SQLException;
 
 import javax.sql.XAConnection;
-import javax.sql.XADataSource;
 
-import net.sf.hajdbc.pool.ConnectionPoolDataSourceProxy;
+import net.sf.hajdbc.pool.ConnectionPoolDataSource;
 
 /**
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public class XADataSourceProxy extends ConnectionPoolDataSourceProxy implements XADataSource
+public class XADataSource extends ConnectionPoolDataSource implements javax.sql.XADataSource
 {
 	/**
 	 * @see javax.sql.XADataSource#getXAConnection()
@@ -41,13 +40,13 @@ public class XADataSourceProxy extends ConnectionPoolDataSourceProxy implements 
 	{
 		XADataSourceOperation operation = new XADataSourceOperation()
 		{
-			public Object execute(XADataSource dataSource) throws SQLException
+			public Object execute(javax.sql.XADataSource dataSource) throws SQLException
 			{
 				return dataSource.getXAConnection();
 			}
 		};
 		
-		return new XAConnectionProxy(this.databaseCluster, this.databaseCluster.executeWrite(operation));
+		return new XAConnectionProxy(this.databaseConnector, this.databaseConnector.executeWrite(operation));
 	}
 
 	/**
@@ -57,13 +56,13 @@ public class XADataSourceProxy extends ConnectionPoolDataSourceProxy implements 
 	{
 		XADataSourceOperation operation = new XADataSourceOperation()
 		{
-			public Object execute(XADataSource dataSource) throws SQLException
+			public Object execute(javax.sql.XADataSource dataSource) throws SQLException
 			{
 				return dataSource.getXAConnection(user, password);
 			}
 		};
 		
-		return new XAConnectionProxy(this.databaseCluster, this.databaseCluster.executeWrite(operation));
+		return new XAConnectionProxy(this.databaseConnector, this.databaseConnector.executeWrite(operation));
 	}
 	
 	/**
@@ -71,6 +70,6 @@ public class XADataSourceProxy extends ConnectionPoolDataSourceProxy implements 
 	 */
 	protected Class getObjectFactoryClass()
 	{
-		return XADataSourceProxy.class;
+		return XADataSourceFactory.class;
 	}
 }

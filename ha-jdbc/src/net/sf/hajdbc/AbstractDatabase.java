@@ -80,8 +80,16 @@ public abstract class AbstractDatabase implements Database
 			return false;
 		}
 		
-		DataSourceDatabase database = (DataSourceDatabase) object;
+		Database database = (Database) object;
 		
-		return this.getId().equals(database.name);
+		return this.getId().equals(database.getId());
+	}
+	
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString()
+	{
+		return this.getId();
 	}
 }

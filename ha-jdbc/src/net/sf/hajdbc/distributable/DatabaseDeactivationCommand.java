@@ -34,6 +34,15 @@ public class DatabaseDeactivationCommand extends DatabaseCommand
 	 * Constructs a new DatabaseDeactivationCommand.
 	 * @param databaseId
 	 */
+	public DatabaseDeactivationCommand()
+	{
+		super();
+	}
+
+	/**
+	 * Constructs a new DatabaseDeactivationCommand.
+	 * @param databaseId
+	 */
 	public DatabaseDeactivationCommand(String databaseId)
 	{
 		super(databaseId);

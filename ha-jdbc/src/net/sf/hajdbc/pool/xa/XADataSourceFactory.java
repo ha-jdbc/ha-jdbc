@@ -34,6 +34,6 @@ public class XADataSourceFactory extends AbstractDataSourceFactory
 	 */
 	protected Class getObjectClass()
 	{
-		return XADataSourceProxy.class;
+		return XADataSource.class;
 	}
 }

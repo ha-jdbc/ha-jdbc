@@ -68,7 +68,7 @@ public class CleanDatabaseSynchronizationStrategy implements DatabaseSynchroniza
 		{
 			Database activeDatabase = databaseCluster.nextDatabase();
 			
-			inactiveConnection = database.connect(databaseCluster.getSQLObject(database));
+			inactiveConnection = database.connect(databaseCluster.getDatabaseConnector().getSQLObject(database));
 			inactiveConnection.setAutoCommit(false);
 			
 			DatabaseMetaData databaseMetaData = inactiveConnection.getMetaData();
@@ -148,7 +148,7 @@ public class CleanDatabaseSynchronizationStrategy implements DatabaseSynchroniza
 			
 			inactiveConnection.commit();
 			
-			activeConnection = activeDatabase.connect(databaseCluster.getSQLObject(activeDatabase));
+			activeConnection = activeDatabase.connect(databaseCluster.getDatabaseConnector().getSQLObject(activeDatabase));
 			activeConnection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 			activeConnection.setAutoCommit(false);
 			

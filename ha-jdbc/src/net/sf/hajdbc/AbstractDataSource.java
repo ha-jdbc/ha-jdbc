@@ -31,26 +31,23 @@ import javax.naming.StringRefAddr;
  * @version $Revision$
  * @since   1.0
  */
-public abstract class AbstractDataSourceProxy implements Referenceable
+public abstract class AbstractDataSource implements Referenceable
 {
-	protected DatabaseCluster databaseCluster;
-
-	public DatabaseCluster getDatabaseCluster()
-	{
-		return this.databaseCluster;
-	}
+	public static final String CLUSTER_NAME = "name";
+	
+	protected DatabaseConnector databaseConnector;
 
 	/**
 	 * @return
 	 */
 	public String getName()
 	{
-		return this.databaseCluster.getName();
+		return this.databaseConnector.getDatabaseCluster().getName();
 	}
 	
 	public void setName(String name) throws SQLException
 	{
-		this.databaseCluster = DatabaseClusterFactory.getInstance().getDatabaseCluster(name);
+		this.databaseConnector = DatabaseClusterFactory.getInstance().getDatabaseCluster(name).getDatabaseConnector();
 	}
 	
 	/**
@@ -60,7 +57,7 @@ public abstract class AbstractDataSourceProxy implements Referenceable
 	{
         Reference ref = new Reference(this.getClass().getName(), this.getObjectFactoryClass().getName(), null);
         
-        ref.add(new StringRefAddr(AbstractDataSourceFactory.CLUSTER_NAME, this.getName()));
+        ref.add(new StringRefAddr(CLUSTER_NAME, this.getName()));
         
         return ref;
 	}

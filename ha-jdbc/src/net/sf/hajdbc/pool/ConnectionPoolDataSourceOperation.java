@@ -24,7 +24,6 @@ import java.sql.SQLException;
 
 import javax.sql.ConnectionPoolDataSource;
 
-
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Operation;
 

@@ -37,6 +37,11 @@ public abstract class DatabaseCommand implements Externalizable
 {
 	protected String databaseId;
 	
+	protected DatabaseCommand()
+	{
+		// Do nothing
+	}
+	
 	/**
 	 * Constructs a new DatabaseCommand.
 	 * @param databaseId

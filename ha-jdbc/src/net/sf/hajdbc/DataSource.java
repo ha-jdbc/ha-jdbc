@@ -24,13 +24,11 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import javax.sql.DataSource;
-
 /**
  * @author Paul Ferraro
  * @version $Revision$
  */
-public class DataSourceProxy extends AbstractDataSourceProxy implements DataSource
+public class DataSource extends AbstractDataSource implements javax.sql.DataSource
 {
 	/**
 	 * @see javax.sql.DataSource#getLoginTimeout()
@@ -39,13 +37,13 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements DataSour
 	{
 		DataSourceOperation operation = new DataSourceOperation()
 		{
-			public Object execute(DataSource dataSource) throws SQLException
+			public Object execute(javax.sql.DataSource dataSource) throws SQLException
 			{
 				return new Integer(dataSource.getLoginTimeout());
 			}
 		};
 		
-		return ((Integer) this.databaseCluster.executeGet(operation)).intValue();
+		return ((Integer) this.databaseConnector.executeGet(operation)).intValue();
 	}
 
 	/**
@@ -55,7 +53,7 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements DataSour
 	{
 		DataSourceOperation operation = new DataSourceOperation()
 		{
-			public Object execute(DataSource dataSource) throws SQLException
+			public Object execute(javax.sql.DataSource dataSource) throws SQLException
 			{
 				dataSource.setLoginTimeout(seconds);
 				
@@ -63,7 +61,7 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements DataSour
 			}
 		};
 		
-		this.databaseCluster.executeSet(operation);
+		this.databaseConnector.executeSet(operation);
 	}
 
 	/**
@@ -73,13 +71,13 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements DataSour
 	{
 		DataSourceOperation operation = new DataSourceOperation()
 		{
-			public Object execute(DataSource dataSource) throws SQLException
+			public Object execute(javax.sql.DataSource dataSource) throws SQLException
 			{
 				return dataSource.getLogWriter();
 			}
 		};
 		
-		return (PrintWriter) this.databaseCluster.executeGet(operation);
+		return (PrintWriter) this.databaseConnector.executeGet(operation);
 	}
 
 	/**
@@ -89,7 +87,7 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements DataSour
 	{
 		DataSourceOperation operation = new DataSourceOperation()
 		{
-			public Object execute(DataSource dataSource) throws SQLException
+			public Object execute(javax.sql.DataSource dataSource) throws SQLException
 			{
 				dataSource.setLogWriter(writer);
 				
@@ -97,7 +95,7 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements DataSour
 			}
 		};
 		
-		this.databaseCluster.executeSet(operation);
+		this.databaseConnector.executeSet(operation);
 	}
 
 	/**
@@ -107,13 +105,13 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements DataSour
 	{
 		DataSourceOperation operation = new DataSourceOperation()
 		{
-			public Object execute(DataSource dataSource) throws SQLException
+			public Object execute(javax.sql.DataSource dataSource) throws SQLException
 			{
 				return dataSource.getConnection();
 			}
 		};
 		
-		return new ConnectionProxy(this.databaseCluster, this.databaseCluster.executeWrite(operation));
+		return new ConnectionProxy(this.databaseConnector, this.databaseConnector.executeWrite(operation));
 	}
 
 	/**
@@ -123,13 +121,13 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements DataSour
 	{
 		DataSourceOperation operation = new DataSourceOperation()
 		{
-			public Object execute(DataSource dataSource) throws SQLException
+			public Object execute(javax.sql.DataSource dataSource) throws SQLException
 			{
 				return dataSource.getConnection(user, password);
 			}
 		};
 		
-		return new ConnectionProxy(this.databaseCluster, this.databaseCluster.executeWrite(operation));
+		return new ConnectionProxy(this.databaseConnector, this.databaseConnector.executeWrite(operation));
 	}
 
 	/**

@@ -109,7 +109,7 @@ public final class DatabaseClusterFactory
 			{
 				DatabaseClusterDescriptor descriptor = (DatabaseClusterDescriptor) descriptors.next();
 				
-				DatabaseClusterMBean databaseCluster = new DatabaseCluster(descriptor);
+				DatabaseCluster databaseCluster = descriptor.createDatabaseCluster();
 				DatabaseClusterDecoratorDescriptor decoratorDescriptor = configuration.getDecoratorDescriptor();
 				
 				if (decoratorDescriptor != null)

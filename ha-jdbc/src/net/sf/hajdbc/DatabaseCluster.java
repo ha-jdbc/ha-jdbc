@@ -20,16 +20,7 @@
  */
 package net.sf.hajdbc;
 
-import java.sql.Connection;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Contains a map of <code>Database</code> -&gt; database connection factory (i.e. Driver, DataSource, ConnectionPoolDataSource, XADataSource)
@@ -37,123 +28,17 @@ import java.util.Set;
  * @version $Revision$
  * @since   1.0
  */
-public class DatabaseCluster extends SQLProxy implements DatabaseClusterMBean
+public abstract class DatabaseCluster implements DatabaseClusterMBean
 {
-	private Set activeDatabaseSet = new LinkedHashSet();
-	private DatabaseClusterDescriptor descriptor;
+	public abstract DatabaseConnector getDatabaseConnector();
 	
-	/**
-	 * Constructs a new DatabaseCluster.
-	 * @param descriptor
-	 * @param databaseMap
-	 */
-	protected DatabaseCluster(DatabaseClusterDescriptor descriptor) throws java.sql.SQLException
-	{
-		super(buildDatabaseConnectorMap(descriptor.getDatabaseMap()));
-		
-		this.descriptor = descriptor;
-		
-		Iterator databases = this.descriptor.getDatabaseMap().values().iterator();
-		
-		while (databases.hasNext())
-		{
-			Database database = (Database) databases.next();
-			
-			if (this.isActive(database))
-			{
-				this.activeDatabaseSet.add(database);
-			}
-		}
-	}
+	public abstract boolean isActive(Database database);
 	
-	private static Map buildDatabaseConnectorMap(Map databaseMap) throws java.sql.SQLException
-	{
-		Map databaseConnectorMap = new HashMap(databaseMap.size());
-		
-		Iterator databases = databaseMap.values().iterator();
-		
-		while (databases.hasNext())
-		{
-			Database database = (Database) databases.next();
-			
-			databaseConnectorMap.put(database, database.getDatabaseConnector());
-		}
-		
-		return Collections.synchronizedMap(databaseConnectorMap);
-	}
-	
-	/**
-	 * @param database
-	 * @return true if the specified database is active, false otherwise
-	 */
-	public boolean isActive(Database database)
-	{
-		Connection connection = null;
-		
-		Object databaseConnector = this.getSQLObject(database);
-		
-		try
-		{
-			connection = database.connect(databaseConnector);
-			
-			Statement statement = connection.createStatement();
-			
-			statement.execute(this.descriptor.getValidateSQL());
+	public abstract boolean deactivate(Database database);
 
-			statement.close();
-			
-			return true;
-		}
-		catch (java.sql.SQLException e)
-		{
-			return false;
-		}
-		finally
-		{
-			if (connection != null)
-			{
-				try
-				{
-					connection.close();
-				}
-				catch (java.sql.SQLException e)
-				{
-					// Ignore
-				}
-			}
-		}
-	}
+	public abstract DatabaseClusterDescriptor getDescriptor();
 	
-	/**
-	 * Deactivates the specified database.
-	 * @param database
-	 * @return true if the database was successfully deactivated, false if it was already deactivated
-	 */
-	public boolean deactivate(Database database)
-	{
-		synchronized (this.activeDatabaseSet)
-		{
-			return this.activeDatabaseSet.remove(database);
-		}
-	}
-
-	/**
-	 * @see net.sf.hajdbc.DatabaseClusterMBean#getName()
-	 */
-	public String getName()
-	{
-		return this.descriptor.getName();
-	}
-
-	public DatabaseClusterDescriptor getDescriptor()
-	{
-		return this.descriptor;
-	}
-	
-	private Database getDatabase(String databaseId)
-	{
-		return (Database) this.descriptor.getDatabaseMap().get(databaseId);
-	}
+	protected abstract Database getDatabase(String databaseId);
 	
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#isActive(java.lang.String)
@@ -212,77 +97,11 @@ public class DatabaseCluster extends SQLProxy implements DatabaseClusterMBean
 		this.activate(this.getDatabase(databaseId));
 	}
 	
-	public boolean activate(Database database)
-	{
-		synchronized (this.activeDatabaseSet)
-		{
-			return this.activeDatabaseSet.add(database);
-		}
-	}
+	public abstract boolean activate(Database database);
 	
-	/**
-	 * Returns the first database in the cluster
-	 * @return the first database in the cluster
-	 * @throws SQLException
-	 */
-	public Database firstDatabase() throws SQLException
-	{
-		synchronized (this.activeDatabaseSet)
-		{
-			if (this.activeDatabaseSet.size() == 0)
-			{
-				throw new SQLException("No active databases in cluster");
-			}
-			
-			return (Database) this.activeDatabaseSet.iterator().next();
-		}
-	}
+	public abstract Database firstDatabase() throws java.sql.SQLException;
 	
-	/**
-	 * Returns the next database in the cluster
-	 * @return the next database in the cluster
-	 * @throws SQLException
-	 */
-	public Database nextDatabase() throws SQLException
-	{
-		synchronized (this.activeDatabaseSet)
-		{
-			Database database = this.firstDatabase();
-			
-			if (this.activeDatabaseSet.size() > 1)
-			{
-				this.activeDatabaseSet.remove(database);
-				
-				this.activeDatabaseSet.add(database);
-			}
-			
-			return database;
-		}
-	}
+	public abstract Database nextDatabase() throws java.sql.SQLException;
 
-	/**
-	 * A list of active databases in this cluster
-	 * @return a list of Database objects
-	 * @throws SQLException
-	 */
-	public List getActiveDatabaseList() throws SQLException
-	{
-		synchronized (this.activeDatabaseSet)
-		{
-			if (this.activeDatabaseSet.size() == 0)
-			{
-				throw new SQLException("No active databases in cluster");
-			}
-			
-			return new ArrayList(this.activeDatabaseSet);
-		}
-	}
-
-	/**
-	 * @see net.sf.hajdbc.SQLProxy#getDatabaseCluster()
-	 */
-	protected DatabaseCluster getDatabaseCluster()
-	{
-		return this;
-	}
+	public abstract List getActiveDatabaseList() throws java.sql.SQLException;
 }

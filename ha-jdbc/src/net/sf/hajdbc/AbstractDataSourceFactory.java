@@ -34,8 +34,6 @@ import javax.naming.spi.ObjectFactory;
  */
 public abstract class AbstractDataSourceFactory implements ObjectFactory
 {
-	public static final String CLUSTER_NAME = "name";
-	
 	/**
 	 * @see javax.naming.spi.ObjectFactory#getObjectInstance(java.lang.Object, javax.naming.Name, javax.naming.Context, java.util.Hashtable)
 	 */
@@ -67,9 +65,9 @@ public abstract class AbstractDataSourceFactory implements ObjectFactory
 			return null;
 		}
 		
-		AbstractDataSourceProxy dataSource = (AbstractDataSourceProxy) objectClass.newInstance();
+		AbstractDataSource dataSource = (AbstractDataSource) objectClass.newInstance();
 		
-		String clusterName = (String) reference.get(CLUSTER_NAME).getContent();
+		String clusterName = (String) reference.get(AbstractDataSource.CLUSTER_NAME).getContent();
 		
 		dataSource.setName(clusterName);
 		
