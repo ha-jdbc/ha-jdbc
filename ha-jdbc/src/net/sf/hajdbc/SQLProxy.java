@@ -196,23 +196,22 @@ public abstract class SQLProxy
 				}
 				catch (SQLException exception)
 				{
-					synchronized (this.exception)
-					{
-						if (this.exception.getCause() != null)
-						{
-							this.exception.initCause(e);
-						}
-					}
+					this.handleException(e);
 				}
 			}
 			catch (Throwable e)
 			{
-				synchronized (this.exception)
+				this.handleException(e);
+			}
+		}
+		
+		private void handleException(Throwable e)
+		{
+			synchronized (this.exception)
+			{
+				if (this.exception.getCause() == null)
 				{
-					if (this.exception.getCause() != null)
-					{
-						this.exception.initCause(e);
-					}
+					this.exception.initCause(e);
 				}
 			}
 		}
