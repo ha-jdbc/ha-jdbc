@@ -98,7 +98,10 @@ public class RoundRobinBalancer extends AbstractBalancer
 		
 		Database database = (Database) this.databaseList.get(0);
 		
-		Collections.rotate(this.databaseList, -1);
+		if (this.databaseList.size() > 1)
+		{
+			Collections.rotate(this.databaseList, -1);
+		}
 
 		return database;
 	}
