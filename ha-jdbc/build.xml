@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <project name="ha-jdbc" default="jar" basedir=".">
 
-	<property file="build.properties"></property>
+	<property file="${basedir}/build.properties"></property>
 	
 	<property name="build.dir" location="${basedir}/build"></property>
 	<property name="src.dir" location="${basedir}/src"></property>
