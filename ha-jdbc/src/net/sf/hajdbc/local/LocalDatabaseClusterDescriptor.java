@@ -20,14 +20,11 @@
  */
 package net.sf.hajdbc.local;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedList;
+import java.util.List;
 
-import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterDescriptor;
-import net.sf.hajdbc.SynchronizationStrategy;
-import net.sf.hajdbc.SynchronizationStrategyDescriptor;
 
 /**
  * @author  Paul Ferraro
@@ -37,46 +34,10 @@ import net.sf.hajdbc.SynchronizationStrategyDescriptor;
 public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 {
 	private String id;
-	private String balancer;
+	private Class balancerClass;
 	private String validateSQL;
-	private Map databaseMap = new HashMap();
-	private Map synchronizationStrategyMap = new HashMap();
-	
-	/**
-	 * Returns a mapping of database id to Database object.
-	 * @return a map of databases in this cluster
-	 */
-	public Map getDatabaseMap()
-	{
-		return this.databaseMap;
-	}
-	
-	/**
-	 * Adds the specified database to this cluster.
-	 * This method is only used by JiBX.
-	 * @param object a Database object
-	 */
-	void addDatabase(Object object)
-	{
-		Database database = (Database) object;
-		
-		this.databaseMap.put(database.getId(), database);
-	}
-	
-	/**
-	 * Adds the specified synchronization strategy descriptor to this cluster.
-	 * This method is only used by JiBX.
-	 * @param object a SynchronizationStrategyDescriptor
-	 * @throws Exception if synchronization strategy could not be created
-	 */
-	void addSynchronizationStrategy(Object object) throws Exception
-	{
-		SynchronizationStrategyDescriptor descriptor = (SynchronizationStrategyDescriptor) object;
-		
-		SynchronizationStrategy strategy = descriptor.createSynchronizationStrategy();
-		
-		this.synchronizationStrategyMap.put(descriptor.getId(), strategy);
-	}
+	private List databaseList = new LinkedList();
+	private List synchronizationStrategyDescriptorList = new LinkedList();
 	
 	/**
 	 * Returns the identifier of this database cluster.
@@ -85,11 +46,6 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 	public String getId()
 	{
 		return this.id;
-	}
-	
-	public String getBalancer()
-	{
-		return this.balancer;
 	}
 	
 	/**
@@ -101,13 +57,27 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 		return this.validateSQL;
 	}
 	
+	public Class getBalancerClass()
+	{
+		return this.balancerClass;
+	}
+	
+	/**
+	 * Returns a mapping of database id to Database object.
+	 * @return a map of databases in this cluster
+	 */
+	public List getDatabaseList()
+	{
+		return this.databaseList;
+	}
+	
 	/**
 	 * Returns a map of synchronization strategies for this cluster. 
 	 * @return a Map<String, SynchronizationStrategy>
 	 */
-	public Map getSynchronizationStrategyMap()
+	public List getSynchronizationStrategyList()
 	{
-		return this.synchronizationStrategyMap;
+		return this.synchronizationStrategyDescriptorList;
 	}
 	
 	/**

@@ -18,35 +18,43 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.distributable;
+package net.sf.hajdbc.balancer;
 
-import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.DatabaseClusterDecoratorDescriptor;
+import java.util.HashMap;
+import java.util.Map;
+
+import net.sf.hajdbc.Messages;
 
 /**
- * Describes a distributable database cluster. 
  * @author  Paul Ferraro
- * @version $Revision$
- * @since   1.0
+ * @since   3.1
  */
-public class DistributableDatabaseClusterDescriptor implements DatabaseClusterDecoratorDescriptor
+public final class BalancerEnum
 {
-	private String protocol = "UDP:PING:MERGE2:FD_SOCK:VERIFY_SUSPECT:pbcast.STABLE:pbcast.NAKACK:UNICAST:FRAG:pbcast.GMS";
+	private static Map balancerMap = new HashMap(4);
 	
-	/**
-	 * @see net.sf.hajdbc.DatabaseClusterDecoratorDescriptor#decorate(net.sf.hajdbc.DatabaseCluster)
-	 */
-	public DatabaseCluster decorate(DatabaseCluster databaseCluster) throws Exception
+	static
 	{
-		return new DistributableDatabaseCluster(databaseCluster, this);
+		balancerMap.put("simple", SimpleBalancer.class);
+		balancerMap.put("random", RandomBalancer.class);
+		balancerMap.put("round-robin", RoundRobinBalancer.class);
+		balancerMap.put("load", LoadBalancer.class);
 	}
-	
-	/**
-	 * Returns the protocol stack that this database cluster will use to broadcast cluster changes.
-	 * @return a JGroups protocol stack.
-	 */
-	public String getProtocol()
+
+	public static Class getBalancerClass(String id)
 	{
-		return this.protocol;
+		Class balancerClass = (Class) balancerMap.get(id);
+		
+		if (balancerClass == null)
+		{
+			throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_BALANCER, id));
+		}
+		
+		return (Class) balancerMap.get(id);
+	}
+
+	private BalancerEnum()
+	{
+		// Hide constructor
 	}
 }

@@ -303,12 +303,6 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	public abstract boolean isAlive(Database database);
 	
 	/**
-	 * Returns the descriptor for this cluster.
-	 * @return a database cluster descriptor
-	 */
-	public abstract DatabaseClusterDescriptor getDescriptor();
-	
-	/**
 	 * Returns the database identified by the specified id
 	 * @param id a database identifier
 	 * @return a database descriptor
@@ -323,4 +317,6 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	 * @throws java.sql.SQLException if no strategy exists with the specified identifier
 	 */
 	public abstract SynchronizationStrategy getSynchronizationStrategy(String id) throws java.sql.SQLException;
+	
+	public abstract void init() throws java.sql.SQLException;
 }

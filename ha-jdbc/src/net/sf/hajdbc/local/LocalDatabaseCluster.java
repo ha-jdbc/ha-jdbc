@@ -33,18 +33,14 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import net.sf.hajdbc.Balancer;
-import net.sf.hajdbc.BalancerFactory;
 import net.sf.hajdbc.ConnectionFactoryProxy;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.DatabaseClusterDescriptor;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SQLException;
 import net.sf.hajdbc.SynchronizationStrategy;
+import net.sf.hajdbc.SynchronizationStrategyDescriptor;
 
 /**
  * @author  Paul Ferraro
@@ -53,11 +49,12 @@ import net.sf.hajdbc.SynchronizationStrategy;
  */
 public class LocalDatabaseCluster extends DatabaseCluster
 {
-	private static Log log = LogFactory.getLog(LocalDatabaseCluster.class);
-	
+	private String id;
+	private String validateSQL;
+	private Map databaseMap;
 	private Balancer balancer;
-	private LocalDatabaseClusterDescriptor descriptor;
 	private ConnectionFactoryProxy connectionFactory;
+	private Map synchronizationStrategyMap;
 	
 	/**
 	 * Constructs a new LocalDatabaseCluster.
@@ -66,25 +63,55 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	 */
 	public LocalDatabaseCluster(LocalDatabaseClusterDescriptor descriptor) throws java.sql.SQLException
 	{
-		this.descriptor = descriptor;
+		this.id = descriptor.getId();
+		this.validateSQL = descriptor.getValidateSQL();
 		
-		this.balancer = BalancerFactory.getBalancer(descriptor.getBalancer());
+		List databaseList = descriptor.getDatabaseList();
+		int size = databaseList.size();
 		
-		Map databaseMap = descriptor.getDatabaseMap();
-		Map connectionFactoryMap = new HashMap(databaseMap.size());
+		Map connectionFactoryMap = new HashMap(size);
 		
-		Iterator databases = databaseMap.values().iterator();
+		this.databaseMap = new HashMap(size);
+		
+		Iterator databases = descriptor.getDatabaseList().iterator();
 		
 		while (databases.hasNext())
 		{
 			Database database = (Database) databases.next();
 			
+			this.databaseMap.put(database.getId(), database);
+
 			connectionFactoryMap.put(database, database.createConnectionFactory());
 		}
 		
 		this.connectionFactory = new ConnectionFactoryProxy(this, connectionFactoryMap);
 		
-		databases = databaseMap.values().iterator();
+		List strategyList = descriptor.getSynchronizationStrategyList();
+		
+		this.synchronizationStrategyMap = new HashMap(strategyList.size());
+		
+		Iterator strategies = strategyList.iterator();
+		
+		try
+		{
+			while (strategies.hasNext())
+			{
+				SynchronizationStrategyDescriptor strategy = (SynchronizationStrategyDescriptor) strategies.next();
+				
+				this.synchronizationStrategyMap.put(strategy.getId(), strategy.createSynchronizationStrategy());
+			}
+			
+			this.balancer = (Balancer) descriptor.getBalancerClass().newInstance();
+		}
+		catch (Exception e)
+		{
+			throw new SQLException(e);
+		}
+	}
+
+	public void init()
+	{
+		Iterator databases = this.databaseMap.values().iterator();
 		
 		while (databases.hasNext())
 		{
@@ -92,15 +119,11 @@ public class LocalDatabaseCluster extends DatabaseCluster
 			
 			if (this.isAlive(database))
 			{
-				this.balancer.add(database);
-			}
-			else
-			{
-				log.warn(Messages.getMessage(Messages.DATABASE_INACTIVE, database));
+				this.activate(database);
 			}
 		}
 	}
-
+	
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getConnectionFactory()
 	 */
@@ -124,7 +147,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 			
 			Statement statement = connection.createStatement();
 			
-			statement.execute(this.descriptor.getValidateSQL());
+			statement.execute(this.validateSQL);
 
 			statement.close();
 			
@@ -163,15 +186,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	 */
 	public String getId()
 	{
-		return this.descriptor.getId();
-	}
-
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getDescriptor()
-	 */
-	public DatabaseClusterDescriptor getDescriptor()
-	{
-		return this.descriptor;
+		return this.id;
 	}
 	
 	/**
@@ -240,7 +255,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	 */
 	public Collection getInactiveDatabases()
 	{
-		Set databaseSet = new HashSet(this.descriptor.getDatabaseMap().values());
+		Set databaseSet = new HashSet(this.databaseMap.values());
 
 		databaseSet.removeAll(Arrays.asList(this.balancer.toArray()));
 
@@ -268,7 +283,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	 */
 	public Database getDatabase(String databaseId) throws java.sql.SQLException
 	{
-		Database database = (Database) this.descriptor.getDatabaseMap().get(databaseId);
+		Database database = (Database) this.databaseMap.get(databaseId);
 		
 		if (database == null)
 		{
@@ -291,8 +306,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	 */
 	public SynchronizationStrategy getSynchronizationStrategy(String id) throws java.sql.SQLException
 	{
-		Map strategyMap = this.descriptor.getSynchronizationStrategyMap();
-		SynchronizationStrategy strategy = (SynchronizationStrategy) strategyMap.get(id);
+		SynchronizationStrategy strategy = (SynchronizationStrategy) this.synchronizationStrategyMap.get(id);
 		
 		if (strategy == null)
 		{
@@ -307,6 +321,6 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	 */
 	public Collection getSynchronizationStrategies()
 	{
-		return this.descriptor.getSynchronizationStrategyMap().keySet();
+		return this.synchronizationStrategyMap.keySet();
 	}
 }

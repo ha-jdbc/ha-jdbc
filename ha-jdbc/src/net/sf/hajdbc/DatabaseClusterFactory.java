@@ -99,6 +99,9 @@ public final class DatabaseClusterFactory
 			
 			Configuration configuration = (Configuration) context.unmarshalDocument(new InputStreamReader(inputStream));
 
+			inputStream.close();
+			inputStream = null;
+			
 			List serverList = MBeanServerFactory.findMBeanServer(null);
 			
 			if (serverList.isEmpty())
@@ -125,6 +128,8 @@ public final class DatabaseClusterFactory
 				{
 					databaseCluster = decoratorDescriptor.decorate(databaseCluster);
 				}
+				
+				databaseCluster.init();
 				
 				ObjectName name = DatabaseCluster.getObjectName(databaseCluster.getId());
 				

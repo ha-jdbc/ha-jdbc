@@ -18,35 +18,44 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.distributable;
-
-import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.DatabaseClusterDecoratorDescriptor;
+package net.sf.hajdbc.sql.pool.xa;
 
 /**
- * Describes a distributable database cluster. 
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public class DistributableDatabaseClusterDescriptor implements DatabaseClusterDecoratorDescriptor
+public class XAException extends javax.transaction.xa.XAException
 {
-	private String protocol = "UDP:PING:MERGE2:FD_SOCK:VERIFY_SUSPECT:pbcast.STABLE:pbcast.NAKACK:UNICAST:FRAG:pbcast.GMS";
-	
+	private static final long serialVersionUID = 3833460721462950199L;
+
 	/**
-	 * @see net.sf.hajdbc.DatabaseClusterDecoratorDescriptor#decorate(net.sf.hajdbc.DatabaseCluster)
+	 * Constructs a new XAException.
+	 * @param message
 	 */
-	public DatabaseCluster decorate(DatabaseCluster databaseCluster) throws Exception
+	public XAException(String message)
 	{
-		return new DistributableDatabaseCluster(databaseCluster, this);
+		super(message);
 	}
-	
+
 	/**
-	 * Returns the protocol stack that this database cluster will use to broadcast cluster changes.
-	 * @return a JGroups protocol stack.
+	 * Constructs a new XAException.
+	 * @param message
+	 * @param cause 
 	 */
-	public String getProtocol()
+	public XAException(String message, Throwable cause)
 	{
-		return this.protocol;
+		super(message);
+		this.initCause(cause);
+	}
+
+	/**
+	 * Constructs a new XAException.
+	 * @param cause
+	 */
+	public XAException(Throwable cause)
+	{
+		super();
+		this.initCause(cause);
 	}
 }

@@ -21,6 +21,7 @@
 package net.sf.hajdbc.distributable;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
@@ -117,7 +118,9 @@ public class DistributableDatabaseCluster extends DatabaseClusterDecorator imple
 	 */
 	public Serializable getCache()
 	{
-		return null;
+		Collection databases = this.databaseCluster.getActiveDatabases();
+		
+		return (String[]) this.databaseCluster.getActiveDatabases().toArray(new String[databases.size()]);
 	}
 
 	/**
@@ -125,12 +128,9 @@ public class DistributableDatabaseCluster extends DatabaseClusterDecorator imple
 	 */
 	public void memberJoined(Address address)
 	{
-		if (log.isInfoEnabled())
-		{
-			String channel = this.notificationBus.getChannel().getChannelName();
-			
-			log.info(Messages.getMessage(Messages.GROUP_MEMBER_JOINED, new Object[] { address, channel }));
-		}
+		String channel = this.notificationBus.getChannel().getChannelName();
+		
+		log.info(Messages.getMessage(Messages.GROUP_MEMBER_JOINED, new Object[] { address, channel }));
 	}
 
 	/**
@@ -138,12 +138,9 @@ public class DistributableDatabaseCluster extends DatabaseClusterDecorator imple
 	 */
 	public void memberLeft(Address address)
 	{
-		if (log.isInfoEnabled())
-		{
-			String channel = this.notificationBus.getChannel().getChannelName();
-			
-			log.info(Messages.getMessage(Messages.GROUP_MEMBER_LEFT, new Object[] { address, channel }));
-		}
+		String channel = this.notificationBus.getChannel().getChannelName();
+		
+		log.info(Messages.getMessage(Messages.GROUP_MEMBER_LEFT, new Object[] { address, channel }));
 	}
 	
 	/**
@@ -154,5 +151,22 @@ public class DistributableDatabaseCluster extends DatabaseClusterDecorator imple
 		this.notificationBus.stop();
 		
 		super.finalize();
+	}
+
+	public void init() throws java.sql.SQLException
+	{
+		String[] databases = (String[]) this.notificationBus.getCache();
+		
+		if (databases != null)
+		{
+			for (int i = 0; i < databases.length; ++i)
+			{
+				this.databaseCluster.activate(databases[i]);
+			}
+		}
+		else
+		{
+			this.databaseCluster.init();
+		}
 	}
 }

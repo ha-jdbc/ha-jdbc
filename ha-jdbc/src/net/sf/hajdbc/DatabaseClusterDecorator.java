@@ -77,14 +77,6 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getDescriptor()
-	 */
-	public final DatabaseClusterDescriptor getDescriptor()
-	{
-		return this.databaseCluster.getDescriptor();
-	}
-	
-	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#isAlive(net.sf.hajdbc.Database)
 	 */
 	public final boolean isAlive(Database database)

@@ -18,35 +18,34 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.distributable;
+package net.sf.hajdbc.sql;
 
-import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.DatabaseClusterDecoratorDescriptor;
+import java.sql.Driver;
+import java.sql.SQLException;
+
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.Operation;
 
 /**
- * Describes a distributable database cluster. 
- * @author  Paul Ferraro
+ * @author Paul Ferraro
  * @version $Revision$
- * @since   1.0
  */
-public class DistributableDatabaseClusterDescriptor implements DatabaseClusterDecoratorDescriptor
+public abstract class DriverOperation implements Operation
 {
-	private String protocol = "UDP:PING:MERGE2:FD_SOCK:VERIFY_SUSPECT:pbcast.STABLE:pbcast.NAKACK:UNICAST:FRAG:pbcast.GMS";
+	/**
+	 * Helper method that simplifies operation interface for the HA-JDBC Driver.
+	 * @param database a database descriptor
+	 * @param driver a database driver
+	 * @return the result from executing this operation
+	 * @throws SQLException if execution fails
+	 */
+	public abstract Object execute(DriverDatabase database, Driver driver) throws SQLException;
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseClusterDecoratorDescriptor#decorate(net.sf.hajdbc.DatabaseCluster)
+	 * @see net.sf.hajdbc.Operation#execute(net.sf.hajdbc.Database, java.lang.Object)
 	 */
-	public DatabaseCluster decorate(DatabaseCluster databaseCluster) throws Exception
+	public final Object execute(Database database, Object driver) throws SQLException
 	{
-		return new DistributableDatabaseCluster(databaseCluster, this);
-	}
-	
-	/**
-	 * Returns the protocol stack that this database cluster will use to broadcast cluster changes.
-	 * @return a JGroups protocol stack.
-	 */
-	public String getProtocol()
-	{
-		return this.protocol;
+		return this.execute((DriverDatabase) database, (Driver) driver);
 	}
 }

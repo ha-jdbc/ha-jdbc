@@ -18,35 +18,42 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.distributable;
+package net.sf.hajdbc.sql.pool.xa;
 
-import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.DatabaseClusterDecoratorDescriptor;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.Operation;
+import net.sf.hajdbc.SQLException;
 
 /**
- * Describes a distributable database cluster. 
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public class DistributableDatabaseClusterDescriptor implements DatabaseClusterDecoratorDescriptor
+public abstract class XAResourceOperation implements Operation
 {
-	private String protocol = "UDP:PING:MERGE2:FD_SOCK:VERIFY_SUSPECT:pbcast.STABLE:pbcast.NAKACK:UNICAST:FRAG:pbcast.GMS";
+	/**
+	 * @param database
+	 * @param resource
+	 * @return the return value of the XAResource operation
+	 * @throws XAException
+	 */
+	public abstract Object execute(XADataSourceDatabase database, XAResource resource) throws XAException;
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseClusterDecoratorDescriptor#decorate(net.sf.hajdbc.DatabaseCluster)
+	 * @see net.sf.hajdbc.Operation#execute(net.sf.hajdbc.Database, java.lang.Object)
 	 */
-	public DatabaseCluster decorate(DatabaseCluster databaseCluster) throws Exception
+	public Object execute(Database database, Object resource) throws SQLException
 	{
-		return new DistributableDatabaseCluster(databaseCluster, this);
-	}
-	
-	/**
-	 * Returns the protocol stack that this database cluster will use to broadcast cluster changes.
-	 * @return a JGroups protocol stack.
-	 */
-	public String getProtocol()
-	{
-		return this.protocol;
+		try
+		{
+			return this.execute((XADataSourceDatabase) database, (XAResource) resource);
+		}
+		catch (XAException e)
+		{
+			throw new SQLException(e);
+		}
 	}
 }

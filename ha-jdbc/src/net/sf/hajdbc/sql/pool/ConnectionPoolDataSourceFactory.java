@@ -18,35 +18,22 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.distributable;
+package net.sf.hajdbc.sql.pool;
 
-import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.DatabaseClusterDecoratorDescriptor;
+import net.sf.hajdbc.sql.AbstractDataSourceFactory;
 
 /**
- * Describes a distributable database cluster. 
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public class DistributableDatabaseClusterDescriptor implements DatabaseClusterDecoratorDescriptor
+public class ConnectionPoolDataSourceFactory extends AbstractDataSourceFactory
 {
-	private String protocol = "UDP:PING:MERGE2:FD_SOCK:VERIFY_SUSPECT:pbcast.STABLE:pbcast.NAKACK:UNICAST:FRAG:pbcast.GMS";
-	
 	/**
-	 * @see net.sf.hajdbc.DatabaseClusterDecoratorDescriptor#decorate(net.sf.hajdbc.DatabaseCluster)
+	 * @see net.sf.hajdbc.AbstractDataSourceFactory#getObjectClass()
 	 */
-	public DatabaseCluster decorate(DatabaseCluster databaseCluster) throws Exception
+	protected Class getObjectClass()
 	{
-		return new DistributableDatabaseCluster(databaseCluster, this);
-	}
-	
-	/**
-	 * Returns the protocol stack that this database cluster will use to broadcast cluster changes.
-	 * @return a JGroups protocol stack.
-	 */
-	public String getProtocol()
-	{
-		return this.protocol;
+		return ConnectionPoolDataSource.class;
 	}
 }

@@ -32,47 +32,40 @@ import java.util.ResourceBundle;
  */
 public class Messages
 {
-	public static final String DATABASE_INACTIVE = "database-inactive";
-	public static final String NO_ACTIVE_DATABASES = "no-active-databases";
-	public static final String INVALID_DATABASE = "invalid-database";
-
-	public static final String DATABASE_DEACTIVATED = "database-deactivated";
-	public static final String DATABASE_ACTIVATED = "database-activated";
-
-	public static final String DATABASE_VALIDATE_FAILED = "database-validate-failed";
-	public static final String DATABASE_DEACTIVATE_FAILED = "database-deactivate-failed";
-	public static final String INVALID_SYNC_STRATEGY = "invalid-sync-strategy";
-	public static final String INVALID_PROPERTY = "invalid-property";
-	public static final String INVALID_PROPERTY_VALUE = "invalid-property-value";
-	public static final String DATABASE_ACTIVATE_FAILED = "database-activate-failed";
-	public static final String DATABASE_SYNC_START = "database-sync-start";
-	public static final String DATABASE_SYNC_END = "database-sync-end";
-	public static final String CONNECTION_CLOSE_FAILED = "connection-close-failed";
-	
-	public static final String CONFIG_NOT_FOUND = "config-not-found";
 	public static final String CONFIG_FAILED = "config-failed";
-	public static final String STREAM_CLOSE_FAILED = "stream-close-failed";
-	
-	public static final String DRIVER_REGISTER_FAILED = "driver-register-failed";
-	public static final String DRIVER_NOT_FOUND = "driver-not-found";
-	public static final String JDBC_URL_REJECTED = "jdbc-url-rejected";
-	
-	public static final String JNDI_LOOKUP_FAILED = "jndi-lookup-failed";
-	public static final String NOT_INSTANCE_OF = "not-instance-of";
-	
-	public static final String SQL_OBJECT_INIT_FAILED = "sql-object-init-failed";
-	public static final String DATABASE_NOT_ACTIVE = "database-not-active";
-
-	public static final String PRIMARY_KEY_REQUIRED = "primary-key-required";
-	public static final String INSERT_COUNT = "insert-count";
-	public static final String UPDATE_COUNT = "update-count";
-	public static final String DELETE_COUNT = "delete-count";
-	public static final String STATEMENT_FAILED = "statement-failed";
-	
+	public static final String CONFIG_NOT_FOUND = "config-not-found";
+	public static final String CONNECTION_CLOSE_FAILED = "connection-close-failed";
+	public static final String DATABASE_ACTIVATE_FAILED = "database-activate-failed";
+	public static final String DATABASE_ACTIVATED = "database-activated";
 	public static final String DATABASE_COMMAND_RECEIVED = "database-command-received";
 	public static final String DATABASE_COMMAND_FAILED = "database-command-failed";
+	public static final String DATABASE_DEACTIVATE_FAILED = "database-deactivate-failed";
+	public static final String DATABASE_DEACTIVATED = "database-deactivated";
+	public static final String DATABASE_INACTIVE = "database-inactive";
+	public static final String DATABASE_NOT_ACTIVE = "database-not-active";
+	public static final String DATABASE_SYNC_END = "database-sync-end";
+	public static final String DATABASE_SYNC_START = "database-sync-start";
+	public static final String DATABASE_VALIDATE_FAILED = "database-validate-failed";
+	public static final String DELETE_COUNT = "delete-count";
+	public static final String DRIVER_NOT_FOUND = "driver-not-found";
+	public static final String DRIVER_REGISTER_FAILED = "driver-register-failed";
 	public static final String GROUP_MEMBER_JOINED = "group-member-joined";
 	public static final String GROUP_MEMBER_LEFT = "group-member-left";
+	public static final String INSERT_COUNT = "insert-count";
+	public static final String INVALID_BALANCER = "invalid-balancer";
+	public static final String INVALID_DATABASE = "invalid-database";
+	public static final String INVALID_PROPERTY = "invalid-property";
+	public static final String INVALID_PROPERTY_VALUE = "invalid-property-value";
+	public static final String INVALID_SYNC_STRATEGY = "invalid-sync-strategy";
+	public static final String JDBC_URL_REJECTED = "jdbc-url-rejected";
+	public static final String JNDI_LOOKUP_FAILED = "jndi-lookup-failed";
+	public static final String NO_ACTIVE_DATABASES = "no-active-databases";
+	public static final String NOT_INSTANCE_OF = "not-instance-of";
+	public static final String PRIMARY_KEY_REQUIRED = "primary-key-required";
+	public static final String SQL_OBJECT_INIT_FAILED = "sql-object-init-failed";
+	public static final String STATEMENT_FAILED = "statement-failed";
+	public static final String STREAM_CLOSE_FAILED = "stream-close-failed";
+	public static final String UPDATE_COUNT = "update-count";
 	
 	private static ResourceBundle resource = ResourceBundle.getBundle(Messages.class.getName());
 	

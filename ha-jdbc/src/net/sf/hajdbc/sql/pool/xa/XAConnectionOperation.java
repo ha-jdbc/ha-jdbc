@@ -18,35 +18,35 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.distributable;
+package net.sf.hajdbc.sql.pool.xa;
 
-import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.DatabaseClusterDecoratorDescriptor;
+import java.sql.SQLException;
+
+import javax.sql.PooledConnection;
+import javax.sql.XAConnection;
+
+import net.sf.hajdbc.sql.pool.PooledConnectionOperation;
 
 /**
- * Describes a distributable database cluster. 
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public class DistributableDatabaseClusterDescriptor implements DatabaseClusterDecoratorDescriptor
+public abstract class XAConnectionOperation extends PooledConnectionOperation
 {
-	private String protocol = "UDP:PING:MERGE2:FD_SOCK:VERIFY_SUSPECT:pbcast.STABLE:pbcast.NAKACK:UNICAST:FRAG:pbcast.GMS";
-	
 	/**
-	 * @see net.sf.hajdbc.DatabaseClusterDecoratorDescriptor#decorate(net.sf.hajdbc.DatabaseCluster)
+	 * Helper method that simplifies operation interface for XAConnectionProxy.
+	 * @param connection a database connection
+	 * @return the result from executing this operation
+	 * @throws SQLException if execution fails
 	 */
-	public DatabaseCluster decorate(DatabaseCluster databaseCluster) throws Exception
-	{
-		return new DistributableDatabaseCluster(databaseCluster, this);
-	}
-	
+	public abstract Object execute(XAConnection connection) throws SQLException;
+
 	/**
-	 * Returns the protocol stack that this database cluster will use to broadcast cluster changes.
-	 * @return a JGroups protocol stack.
+	 * @see net.sf.hajdbc.pool.PooledConnectionOperation#execute(javax.sql.PooledConnection)
 	 */
-	public String getProtocol()
+	public final Object execute(PooledConnection connection) throws SQLException
 	{
-		return this.protocol;
+		return this.execute((XAConnection) connection);
 	}
 }
