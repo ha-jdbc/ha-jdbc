@@ -7,6 +7,7 @@
 	<property name="test.dir" location="${basedir}/test"></property>
 	<property name="lib.dir" location="${basedir}/lib"></property>
 	<property name="lib.compile.dir" location="${lib.dir}/compile"></property>
+	<property name="conf.dir" location="${basedir}/conf"></property>
 	<property name="build.dir" location="${basedir}/build"></property>
 	<property name="doc.dir" location="${basedir}/doc"></property>
 	<property name="doc.api.dir" location="${doc.dir}/api"></property>
@@ -41,6 +42,7 @@
 	<target name="jar" depends="compile">
 		<jar jarfile="${jar.file}">
 			<fileset dir="${build.dir}" includes="**" excludes="**/*Test.class"></fileset>
+			<metainf dir="${conf.dir}"></metainf>
 		</jar>
 	</target>
 
