@@ -28,7 +28,7 @@
 					<p>Exclusive write access to each database in the cluster.</p>
 				</li>
 				<li>
-					<p>Each database in the cluster must initially be in sync.</p>
+					<p>All databases in cluster must initially be in sync.</p>
 				</li>
 			</ul>
 		</section>
@@ -418,7 +418,21 @@ public class FasterFullSynchronizationStrategy extends FullSynchronizationStrate
 			</section>
 			<section id="JMX">
 				<title>Database Cluster Administration</title>
-				<p>A 3rd party JMX clients provides easy graphical interfaces for managing HA-JDBC clusters:</p>
+				<p>
+					HA-JDBC database clusters are administered via a JMX management interface: <a href="api/net.sf.hajdbc.DatabaseClusterMBean">DatabaseClusterMBean</a>
+				</p>
+				<p>
+					The MBean exposes the following methods:
+				</p>
+				<ul>
+					<li>getName() - Returns the name of this cluster.</li>
+					<li>getActiveDatabaseList() - Returns a list of active databases for this cluster.</li>
+					<li>isAlive(String id) - Test whether the specified database is responding.</li>
+					<li>deactivate(String id) - Deactivates the specified database from this cluster.</li>
+					<li>activate(String id) - Re-activates the specified database using the default synchronization strategy.</li>
+					<li>activate(String id, String strategyClassName) - Deactivates the specified database from this cluster using the specified synchronization strategy.</li>
+				</ul>
+				<p>3rd-party JMX clients provide easy graphical interfaces for managing HA-JDBC clusters:</p>
 				<ul>
 					<li><a href="http://mc4j.sourceforge.net/">MC4J</a></li>
 					<li><a href="http://ejtools.sourceforge.net/applications/jmx.browser/">EJTools JMX Browser</a></li>

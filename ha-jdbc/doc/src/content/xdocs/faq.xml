@@ -3,114 +3,6 @@
 <faqs>
 	<title>Frequently Asked Questions</title>
 	<faqsection>
-		<title>About HA-JDBC</title>
-		<faq>
-			<question>How does HA-JDBC compare to the <a href="http://c-jdbc.objectweb.org">C-JDBC</a> project?</question>
-			<answer>
-				<table>
-					<caption>Feature comparison</caption>
-					<tr>
-						<th></th>
-						<th>C-JDBC</th>
-						<th>HA-JDBC</th>
-					</tr>
-					<tr>
-						<th>Architecture</th>
-						<td>
-							JDBC clients do not access the database directly.
-							Clients use C-JDBC driver to send requests to a central external controller process.
-							Controller manages central registry of active databases to which it forwards requests to databases in cluster.
-							Database request requires two network hops.
-						</td>
-						<td>
-							JDBC clients access database directly.
-							Clustering functionality is implemented directly into JDBC driver.
-							Database registry is stored in distributed cache within each client JVM.
-							Database request requires one network hop.
-						</td>
-					</tr>
-					<tr>
-						<th>Database synchronization</th>
-						<td>Achieved by "replaying" request log.</td>
-						<td>Databases are synchronized </td>
-					</tr>
-					<tr>
-						<th>Data partitioning (aka striping) support</th>
-						<td>Yes</td>
-						<td>No</td>
-					</tr>
-					<tr>
-						<th>JTA compatible</th>
-						<td>No</td>
-						<td>Yes</td>
-					</tr>
-					<tr>
-						<th>Does connection pooling</th>
-						<td>Yes</td>
-						<td>
-							No - many mature open source solutions already exist:
-							<ul>
-								<li>Commons DBCP</li>
-								<li>XAPool</li>
-								<li>C3P0</li>
-								<li>Proxool</li>
-							</ul>
-						</td>
-					</tr>
-					<tr>
-						<th>Result set caching ability</th>
-						<td>Yes</td>
-						<td>
-							No - many mature open source solutions already exist:
-							<ul>
-								<li></li>
-							</ul>
-						</td>
-					</tr>
-					<tr>
-						<th>Heterogeneous database cluster support</th>
-						<td>Yes - Database queries can be translated from one SQL dialect to another.</td>
-						<td>
-							No - Database clusters must be homogeneous.
-						</td>
-					</tr>
-					<tr>
-						<th>Prepared statement support</th>
-						<td>No</td>
-						<td>Yes</td>
-					</tr>
-					<tr>
-						<th>Updatable result set support</th>
-						<td>No</td>
-						<td>Yes</td>
-					</tr>
-					<tr>
-						<th>Large object support</th>
-						<td>No - simulated using byte arrays</td>
-						<td>Yes</td>
-					</tr>
-					<tr>
-						<th>Byte/Character stream support</th>
-						<td>No</td>
-						<td>Yes</td>
-					</tr>
-				</table>
-			</answer>
-		</faq>
-		<faq>
-			<question>Does HA-JDBC do result set caching?</question>
-			<answer>
-				No
-			</answer>
-		</faq>
-		<faq>
-			<question>Does HA-JDBC provide connection pooling?</question>
-			<answer>
-				No
-			</answer>
-		</faq>
-	</faqsection>
-	<faqsection>
 		<title>Configuring HA-JDBC</title>
 		<faq>
 			<question>What does the "distributable" feature do? and when would I need it?</question>
@@ -128,6 +20,140 @@
 			<answer>
 				The JGroups protocol stack should be setup according to the reliability afforded by the features on your network.
 				Refer to the JGroups protocol documentation (http://www.jgroups.org/javagroupsnew/docs/user/node134.html) for more specifics.
+			</answer>
+		</faq>
+	</faqsection>
+	<faqsection>
+		<title>About HA-JDBC</title>
+		<faq>
+			<question>How does HA-JDBC compare to the <a href="http://c-jdbc.objectweb.org">C-JDBC</a> project?</question>
+			<answer>
+				<table>
+					<caption>Feature comparison</caption>
+					<tr>
+						<th></th>
+						<th>C-JDBC</th>
+						<th>HA-JDBC</th>
+					</tr>
+					<tr>
+						<th>Architecture</th>
+						<td>
+							<ol>
+								<li>C-JDBC driver access underlying JDBC drivers via remote controller process.</li>
+								<li>Cluster details are stored in controller.</li>
+								<li>Controller uses transaction recovery log to restore intra-transactional state of a reactivated database.</li>
+							</ol>
+						</td>
+						<td>
+							<ol>
+								<li>HA-JDBC driver accesses underlying JDBC drivers directly.</li>
+								<li>Cluster details are stored in distributed cache on client.</li>
+								<li>Driver records operation list to restore state of SQL objects for reactivated databases.</li>
+							</ol>
+						</td>
+					</tr>
+					<tr>
+						<th>Cluster administration</th>
+						<td>
+							<ol>
+								<li>Provides JMX-based Administration Console GUI</li>
+							</ol>
+						</td>
+						<td>
+							<ol>
+								<li>Uses JMX management console provided by 3rd party JMX provider.</li>
+							</ol>
+						</td>
+					</tr>
+					<tr>
+						<th>Provides connection pooling</th>
+						<td>
+							<p>Yes - implemented in controller</p>
+						</td>
+						<td>
+							<p>
+								No - several open source solutions already exist and can be used in conjunction with HA-JDBC:
+							</p>
+							<ul>
+								<li><a href="http://jakarta.apache.org/commons/dbcp">Commons DBCP</a></li>
+								<li><a href="http://xapool.objectweb.org/">XAPool</a></li>
+								<li><a href="http://proxool.sourceforge.net/">Proxool</a></li>
+								<li><a href="http://c3p0.sourceforge.net/">c3p0</a></li>
+							</ul>
+						</td>
+					</tr>
+					<tr>
+						<th>ResultSet caching ability</th>
+						<td>
+							<p>Yes - implemented in controller</p>
+						</td>
+						<td>
+							<p>
+								No - several open source solutions already exist and can be used in conjunction with HA-JDBC:
+							</p>
+							<ul>
+								<li><a href="http://www.irongrid.com/catalog/product_info.php?products_id=31">IronEye Cache</a></li>
+							</ul>
+						</td>
+					</tr>
+					<tr>
+						<th>Cluster topography</th>
+						<td>
+							<ol>
+								<li>Supports heterogenous database clusters - required that SQL queries be translated to proper SQL dialect.</li>
+								<li>Supports RAIDb-0, RAIDb-1, and RAIDb-2 configurations (i.e. mirroring (replication), striping (partitioning), and partial mirroring/striping, respectively).</li>
+							</ol>
+						</td>
+						<td>
+							<ol>
+								<li>Databases within a cluster must be homogenous.</li>
+								<li>Supports the equivalent of RAIDb-0 only.</li>
+							</ol>
+						</td>
+					</tr>
+					<tr>
+						<th>JDBC 2.0 feature support</th>
+						<td>
+							<p>
+								Lacks support for:
+							</p>
+							<ul>
+								<li>Pre-compilable <code>PreparedStatement</code>s</li>
+								<li>Updatable <code>ResultSet</code>s</li>
+								<li><code>CallableStatement</code>s with OUT parameters</li>
+								<li>True large object support - BLOB and CLOB are simulated with encoded <code>byte[]</code> and <code>String</code>, respectively</li>
+								<li>True binary/character stream support - simulated with encoded <code>byte[]</code> and <code>String</code>, respectively</li>
+								<li>Array and Ref types</li>
+								<li>Custom type mapping</li>
+								<li>Block fetched scrollable <code>ResultSet</code>s</li>
+								<li><code>Statement</code> execution cancellation</li>
+							</ul>
+						</td>
+						<td>
+							<p>Full support</p>
+						</td>
+					</tr>
+					<tr>
+						<th>JDBC 3.0 feature support</th>
+						<td>
+							<p>
+								Lacks support for:
+							</p>
+							<ul>
+								<li>Transactional <code>Savepoint</code>s</li>
+								<li><code>XADataSource</code> and <code>XAConnection</code></li>
+								<li><code>PreparedStatement</code> pooling</li>
+								<li>Retrieval of auto-generated keys</li>
+								<li><code>ParameterMetaData</code></li>
+								<li><code>ResultSet</code> holdability support</li>
+								<li>Multiple open <code>ResultSet</code>s</li>
+							</ul>
+						</td>
+						<td>
+							<p>Full support</p>
+						</td>
+					</tr>
+				</table>
 			</answer>
 		</faq>
 	</faqsection>
