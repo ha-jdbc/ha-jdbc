@@ -60,6 +60,14 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	}
 
 	/**
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#activate(java.lang.String)
+	 */
+	public final void activate(String databaseId) throws java.sql.SQLException
+	{
+		this.activate(databaseId, this.getDescriptor().getDefaultSynchronizationStrategy());
+	}
+	
+	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#activate(java.lang.String, java.lang.String)
 	 */
 	public final void activate(String databaseId, String strategyClassName) throws java.sql.SQLException
@@ -187,11 +195,6 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 				log.warn("Failed to close connection of database: " + database);
 			}
 		}
-	}
-	
-	public final void activate(String databaseId) throws java.sql.SQLException
-	{
-		this.activate(this.getDatabase(databaseId));
 	}
 	
 	public abstract boolean isActive(Database database);

@@ -29,13 +29,45 @@ import java.util.List;
  */
 public interface DatabaseClusterMBean
 {
+	/**
+	 * Returns the name of this database cluster.
+	 * @return the database cluster name
+	 */
 	public String getName();
 	
+	/**
+	 * Determines whether or not the specified database is responsive
+	 * @param databaseId a database identifier
+	 * @return true, if the database is alive, false otherwise
+	 * @throws java.sql.SQLException if there is no such database in the cluster
+	 */
 	public boolean isAlive(String databaseId) throws java.sql.SQLException;
 	
+	/**
+	 * Deactivates the specified database.
+	 * @param databaseId a database identifier
+	 * @throws java.sql.SQLException if there is no such database in the cluster
+	 */
 	public void deactivate(String databaseId) throws java.sql.SQLException;
-	
+
+	/**
+	 * Synchronizes, using the default strategy, and reactivates the specified database.
+	 * @param databaseId a database identifier
+	 * @throws java.sql.SQLException if there is no such database in the cluster, or if activation fails
+	 */
+	public void activate(String databaseId) throws java.sql.SQLException;
+
+	/**
+	 * Synchronizes, using the specified strategy, and reactivates the specified database.
+	 * @param databaseId a database identifier
+	 * @param strategyClassName the class name of a synchronization strategy
+	 * @throws java.sql.SQLException if there is no such database in the cluster, or if activation fails
+	 */
 	public void activate(String databaseId, String strategyClassName) throws java.sql.SQLException;
 	
+	/**
+	 * Returns a list of active databases in this cluster.
+	 * @return a list of database objects
+	 */
 	public List getActiveDatabaseList() throws java.sql.SQLException;
 }
