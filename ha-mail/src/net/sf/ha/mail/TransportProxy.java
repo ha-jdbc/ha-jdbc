@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.mail.Address;
 import javax.mail.Message;
@@ -26,10 +27,14 @@ import org.apache.commons.logging.LogFactory;
  * @version $Revision$
  * @since   1.0
  */
-public class TransportProxy extends Transport implements ConnectionListener
+public class TransportProxy extends Transport implements Sender, ConnectionListener
 {
 	public static final String POOL_SIZE = "mail.transport.pool-size";
+	public static final String SENDER_STRATEGY = "mail.transport.sender-strategy";
+	public static final String CONNECT_RETRY_PERIOD = "mail.transport.connect-retry-period";
+	private static final String DEFAULT_SENDER_STRATEGY = SimpleMailSenderStrategy.class.getName();
 	private static final String DEFAULT_TRANSPORT_PROTOCOL = "smtp";
+	private static final int DEFAULT_CONNECT_RETRY_PERIOD = 60;
 	private static final int DEFAULT_POOL_SIZE = 1;
 	
 	protected static Log log = LogFactory.getLog(TransportProxy.class);
@@ -38,9 +43,11 @@ public class TransportProxy extends Transport implements ConnectionListener
 	protected List activeTransportList = new LinkedList();
 	protected ThreadGroup senderThreadGroup = new ThreadGroup("sender");
 	protected ThreadGroup connectorThreadGroup = new ThreadGroup("connector");
-	private int poolSize = DEFAULT_POOL_SIZE;
+	private int poolSize;
+	protected long connectRetryPeriod;
 	protected Map urlNameMap = new HashMap();
 	private Provider provider;
+	private SenderStrategy senderStrategy = new SimpleSenderStrategy();
 	
 	/**
 	 * Constructs a new Transport.
@@ -51,26 +58,51 @@ public class TransportProxy extends Transport implements ConnectionListener
 	{
 		super(session, url);
 
-		String poolSizeProperty = session.getProperty(POOL_SIZE);
+		Properties properties = session.getProperties();
 		
-		if (poolSizeProperty != null)
-		{
-			this.poolSize = Integer.parseInt(poolSizeProperty);
-		}
+		this.poolSize = Integer.parseInt(properties.getProperty(POOL_SIZE, Integer.toString(DEFAULT_POOL_SIZE)));
+		this.connectRetryPeriod = 1000 * Integer.parseInt(properties.getProperty(CONNECT_RETRY_PERIOD, Integer.toString(DEFAULT_CONNECT_RETRY_PERIOD)));
 		
-		String protocol = session.getProperties().getProperty("mail.transport.protocol", DEFAULT_TRANSPORT_PROTOCOL);
+		String protocol = properties.getProperty("mail.transport.protocol", DEFAULT_TRANSPORT_PROTOCOL);
 		String hostProperty = "mail." + protocol + ".host";
-		String host = session.getProperty(hostProperty);
+		String host = properties.getProperty(hostProperty);
 		
 		if ((host == null) || (host.length() == 0))
 		{
 			hostProperty = "mail.host";
-			host = session.getProperty(hostProperty);
+			host = properties.getProperty(hostProperty);
 		}
 		
 		if ((host == null) || (host.length() == 0))
 		{
 			throw new MessagingException("No transport host specified.");
+		}
+		
+		String senderStrategyClassName = properties.getProperty(SENDER_STRATEGY, DEFAULT_SENDER_STRATEGY);
+		
+		try
+		{
+			Class senderStrategyClass = Class.forName(senderStrategyClassName);
+			Object senderStrategy = senderStrategyClass.newInstance();
+			
+			if (SenderStrategy.class.isInstance(senderStrategy))
+			{
+				throw new MessagingException("Sender strategry " + senderStrategyClassName + " does not implement " + SenderStrategy.class.getName());
+			}
+			
+			this.senderStrategy = (SenderStrategy) senderStrategy;
+		}
+		catch (ClassNotFoundException e)
+		{
+			throw new MessagingException("Invalid sender strategy: " + senderStrategyClassName, e);
+		}
+		catch (InstantiationException e)
+		{
+			throw new MessagingException("Failed to create sender strategy: " + senderStrategyClassName, e);
+		}
+		catch (IllegalAccessException e)
+		{
+			throw new MessagingException("Invalid sender strategy: " + senderStrategyClassName, e);
 		}
 		
 		Provider[] providers = session.getProviders();
@@ -115,9 +147,17 @@ public class TransportProxy extends Transport implements ConnectionListener
 	/**
 	 * @see javax.mail.Transport#sendMessage(javax.mail.Message, javax.mail.Address[])
 	 */
-	public void sendMessage(Message message, Address[] addresses)
+	public void sendMessage(Message message, Address[] addresses) throws MessagingException
 	{
-		new TransportSender(this.nextTransport(), message, addresses).start();
+		this.senderStrategy.send(this, message, addresses);
+	}
+	
+	/**
+	 * @see net.sf.ha.mail.Sender#send(javax.mail.Transport, javax.mail.Message, javax.mail.Address[])
+	 */
+	public void send(Transport transport, Message message, Address[] addresses)
+	{
+		new TransportSender(transport, message, addresses).start();
 	}
 	
 	/**
@@ -180,7 +220,7 @@ public class TransportProxy extends Transport implements ConnectionListener
 	 * Returns the next available transport to use for sending.
 	 * @return a JavaMail transport
 	 */
-	protected Transport nextTransport()
+	public Transport nextAvailableTransport()
 	{
 		synchronized (this.activeTransportList)
 		{
@@ -375,8 +415,8 @@ public class TransportProxy extends Transport implements ConnectionListener
 					
 					try
 					{
-						// Try again in a minute
-						Thread.sleep(60000);
+						// Try again after a delay
+						Thread.sleep(TransportProxy.this.connectRetryPeriod);
 					}
 					catch (InterruptedException ie)
 					{
@@ -431,7 +471,7 @@ public class TransportProxy extends Transport implements ConnectionListener
 					TransportProxy.this.connect(this.transport, url);
 
 					// Try again with a new transport
-					this.transport = TransportProxy.this.nextTransport();
+					this.transport = TransportProxy.this.nextAvailableTransport();
 					
 					retry = true;
 				}
