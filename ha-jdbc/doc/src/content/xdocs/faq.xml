@@ -86,8 +86,8 @@
 					</tr>
 					<tr>
 						<th>Performance</th>
-						<td>Estimates from users place C-JDBC 4x slower on average than standard JDBC access.</td>
 						<td>Faster reads under load, slightly slower writes than standard JDBC.  Details <a href="performance.html">here</a>.</td>
+						<td>Estimates from users place C-JDBC (without ResultSet caching) 4x slower on average than standard JDBC access.</td>
 					</tr>
 					<tr>
 						<th>Cluster administration</th>
