@@ -22,7 +22,6 @@ package net.sf.hajdbc;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -39,7 +38,7 @@ public class DatabaseClusterDescriptor
 	private String name;
 	private String validateSQL = "SELECT 1";
 	private Set activeDatabaseSet = new LinkedHashSet();
-	private Map databaseMap = Collections.synchronizedMap(new HashMap());
+	private Map databaseMap = new HashMap();
 	
 	/**
 	 * @return Returns the databaseSet.
@@ -134,11 +133,11 @@ public class DatabaseClusterDescriptor
 		}
 	}
 	
-	public void removeDatabase(Database database)
+	public boolean removeDatabase(Database database)
 	{
 		synchronized (this.activeDatabaseSet)
 		{
-			this.activeDatabaseSet.remove(database);
+			return this.activeDatabaseSet.remove(database);
 		}
 	}
 }
