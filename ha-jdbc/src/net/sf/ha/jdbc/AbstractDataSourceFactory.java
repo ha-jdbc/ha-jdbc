@@ -1,9 +1,8 @@
 package net.sf.ha.jdbc;
 
-import java.util.Collections;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.naming.Context;
@@ -49,20 +48,20 @@ public abstract class AbstractDataSourceFactory implements ObjectFactory
 		AbstractDataSourceProxy dataSource = (AbstractDataSourceProxy) objectClass.newInstance();
 		
 		String clusterName = (String) reference.get(CLUSTER_NAME).getContent();
-		DatabaseClusterDescriptor descriptor = DatabaseClusterManagerFactory.getClusterManager().getDescriptor(clusterName);
-		Map databaseMap = descriptor.getDatabaseMap();
-		Map dataSourceMap = new LinkedHashMap(databaseMap.size(), 0.75f, true);
-		Iterator databases = databaseMap.values().iterator();
+		DatabaseClusterManager manager = DatabaseClusterManagerFactory.getClusterManager();
+		DatabaseClusterDescriptor descriptor = manager.getDescriptor(clusterName);
+		List databaseList = descriptor.getActiveDatabaseList();
+		Map dataSourceMap = new LinkedHashMap(databaseList.size(), 0.75f, true);
 		
-		while (databases.hasNext())
+		for (int i = 0; i < databaseList.size(); ++i)
 		{
-			DataSourceDatabase database = (DataSourceDatabase) databases.next();
+			DataSourceDatabase database = (DataSourceDatabase) databaseList.get(i);
 			Object object = context.lookup(database.getName());
 			
 			dataSourceMap.put(database, object);
 		}
 		
-		dataSource.setDatabaseCluster(new DatabaseCluster(descriptor, Collections.synchronizedMap(dataSourceMap)));
+		dataSource.setDatabaseCluster(new DatabaseCluster(manager, descriptor, dataSourceMap));
 		
 		return dataSource;
 	}
