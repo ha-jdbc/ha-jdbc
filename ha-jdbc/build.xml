@@ -37,10 +37,12 @@
 	</taskdef>
 	
 	<target name="clean">
-		<delete dir="build" quiet="true"></delete>
 		<delete quiet="true">
 			<fileset dir="${basedir}" includes="${dist.name}-*.*"></fileset>
 		</delete>
+		<delete dir="build" quiet="true"></delete>
+		<delete dir="${doc.dir}/build" quiet="true"></delete>
+		<delete dir="${doc.api.dir}" quiet="true"></delete>
 	</target>
 	
 	<target name="init">
@@ -72,7 +74,7 @@
 			<tarfileset dir="${basedir}" includes="${dist.version.name}.jar"></tarfileset>
 			<tarfileset dir="${basedir}" includes="*.txt"></tarfileset>
 			<tarfileset dir="${basedir}" includes="lib/**" excludes="lib/compile/**"></tarfileset>
-			<tarfileset dir="${basedir}/doc/build" includes="site/**"></tarfileset>
+			<tarfileset dir="${basedir}" includes="doc/build/site/**"></tarfileset>
 		</tar>
 	</target>
 	
@@ -91,7 +93,6 @@
 	</target>
 	
 	<target name="javadoc">
-		<delete dir="${doc.api.dir}" quiet="true"></delete>
 		<javadoc destdir="${doc.api.dir}" classpathref="classpath">
 			<fileset dir="${src.dir}"></fileset>
 			<link href="http://java.sun.com/j2se/1.4.2/docs/api/"></link>
@@ -100,7 +101,6 @@
 	</target>
 	
 	<target name="site" depends="javadoc">
-		<delete dir="${doc.dir}/build" quiet="true"></delete>
 		<ant dir="${doc.dir}" inheritall="false"></ant>
 	</target>
 	
