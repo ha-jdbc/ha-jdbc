@@ -20,6 +20,10 @@
  */
 package net.sf.hajdbc;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -773,55 +777,103 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	/**
 	 * @see java.sql.CallableStatement#setAsciiStream(java.lang.String, java.io.InputStream, int)
 	 */
-	public void setAsciiStream(final String name, final InputStream inputStream, final int length) throws SQLException
+	public void setAsciiStream(final String name, InputStream inputStream, final int length) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
-		{
-			public Object execute(CallableStatement statement) throws SQLException
-			{
-				statement.setAsciiStream(name, inputStream, length);
-				
-				return null;
-			}
-		};
+		final File file = BlobProxy.createFile(inputStream);
 		
-		this.executeSet(operation);
+		try
+		{
+			CallableStatementOperation operation = new CallableStatementOperation()
+			{
+				public Object execute(CallableStatement statement) throws SQLException
+				{
+					try
+					{
+						statement.setAsciiStream(name, new FileInputStream(file), length);
+						
+						return null;
+					}
+					catch (IOException e)
+					{
+						throw new SQLException(e.getMessage());
+					}
+				}
+			};
+			
+			this.executeSet(operation);
+		}
+		finally
+		{
+			file.delete();
+		}
 	}
 
 	/**
 	 * @see java.sql.CallableStatement#setBinaryStream(java.lang.String, java.io.InputStream, int)
 	 */
-	public void setBinaryStream(final String name, final InputStream inputStream, final int length) throws SQLException
+	public void setBinaryStream(final String name, InputStream inputStream, final int length) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
-		{
-			public Object execute(CallableStatement statement) throws SQLException
-			{
-				statement.setBinaryStream(name, inputStream, length);
-				
-				return null;
-			}
-		};
+		final File file = BlobProxy.createFile(inputStream);
 		
-		this.executeSet(operation);
+		try
+		{
+			CallableStatementOperation operation = new CallableStatementOperation()
+			{
+				public Object execute(CallableStatement statement) throws SQLException
+				{
+					try
+					{
+						statement.setBinaryStream(name, new FileInputStream(file), length);
+						
+						return null;
+					}
+					catch (IOException e)
+					{
+						throw new SQLException(e.getMessage());
+					}
+				}
+			};
+			
+			this.executeSet(operation);
+		}
+		finally
+		{
+			file.delete();
+		}
 	}
 
 	/**
 	 * @see java.sql.CallableStatement#setCharacterStream(java.lang.String, java.io.Reader, int)
 	 */
-	public void setCharacterStream(final String name, final Reader reader, final int length) throws SQLException
+	public void setCharacterStream(final String name, Reader reader, final int length) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
-		{
-			public Object execute(CallableStatement statement) throws SQLException
-			{
-				statement.setCharacterStream(name, reader, length);
-				
-				return null;
-			}
-		};
+		final File file = ClobProxy.createFile(reader);
 		
-		this.executeSet(operation);
+		try
+		{
+			CallableStatementOperation operation = new CallableStatementOperation()
+			{
+				public Object execute(CallableStatement statement) throws SQLException
+				{
+					try
+					{
+						statement.setCharacterStream(name, new FileReader(file), length);
+						
+						return null;
+					}
+					catch (IOException e)
+					{
+						throw new SQLException(e.getMessage());
+					}
+				}
+			};
+			
+			this.executeSet(operation);
+		}
+		finally
+		{
+			file.delete();
+		}
 	}
 
 	/**

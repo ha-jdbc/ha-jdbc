@@ -20,6 +20,10 @@
  */
 package net.sf.hajdbc;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -289,76 +293,140 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	/**
 	 * @see java.sql.PreparedStatement#setAsciiStream(int, java.io.InputStream, int)
 	 */
-	public void setAsciiStream(final int index, final InputStream inputStream, final int length) throws SQLException
+	public void setAsciiStream(final int index, InputStream inputStream, final int length) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
-		{
-			public Object execute(PreparedStatement statement) throws SQLException
-			{
-				statement.setAsciiStream(index, inputStream, length);
-				
-				return null;
-			}
-		};
+		final File file = BlobProxy.createFile(inputStream);
 		
-		this.executeSet(operation);
+		try
+		{
+			PreparedStatementOperation operation = new PreparedStatementOperation()
+			{
+				public Object execute(PreparedStatement statement) throws SQLException
+				{
+					try
+					{
+						statement.setAsciiStream(index, new FileInputStream(file), length);
+					
+						return null;
+					}
+					catch (IOException e)
+					{
+						throw new SQLException(e.getMessage());
+					}
+				}
+			};
+			
+			this.executeSet(operation);
+		}
+		finally
+		{
+			file.delete();
+		}
 	}
 
 	/**
 	 * @see java.sql.PreparedStatement#setBinaryStream(int, java.io.InputStream, int)
 	 */
-	public void setBinaryStream(final int index, final InputStream inputStream, final int length) throws SQLException
+	public void setBinaryStream(final int index, InputStream inputStream, final int length) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		final File file = BlobProxy.createFile(inputStream);
+
+		try
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			PreparedStatementOperation operation = new PreparedStatementOperation()
 			{
-				statement.setBinaryStream(index, inputStream, length);
-				
-				return null;
-			}
-		};
-		
-		this.executeSet(operation);
+				public Object execute(PreparedStatement statement) throws SQLException
+				{
+					try
+					{
+						statement.setBinaryStream(index, new FileInputStream(file), length);
+						
+						return null;
+					}
+					catch (IOException e)
+					{
+						throw new SQLException(e.getMessage());
+					}
+				}
+			};
+			
+			this.executeSet(operation);			
+		}
+		finally
+		{
+			file.delete();
+		}
 	}
 
 	/**
 	 * @see java.sql.PreparedStatement#setUnicodeStream(int, java.io.InputStream, int)
 	 * @deprecated
 	 */
-	public void setUnicodeStream(final int index, final InputStream inputStream, final int length) throws SQLException
+	public void setUnicodeStream(final int index, InputStream inputStream, final int length) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		final File file = BlobProxy.createFile(inputStream);
+
+		try
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			PreparedStatementOperation operation = new PreparedStatementOperation()
 			{
-				statement.setUnicodeStream(index, inputStream, length);
-				
-				return null;
-			}
-		};
-		
-		this.executeSet(operation);
+				public Object execute(PreparedStatement statement) throws SQLException
+				{
+					try
+					{
+						statement.setUnicodeStream(index, new FileInputStream(file), length);
+						
+						return null;
+					}
+					catch (IOException e)
+					{
+						throw new SQLException(e.getMessage());
+					}
+				}
+			};
+			
+			this.executeSet(operation);
+		}
+		finally
+		{
+			file.delete();
+		}
 	}
 
 	/**
 	 * @see java.sql.PreparedStatement#setCharacterStream(int, java.io.Reader, int)
 	 */
-	public void setCharacterStream(final int index, final Reader reader, final int length) throws SQLException
+	public void setCharacterStream(final int index, Reader reader, final int length) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
-		{
-			public Object execute(PreparedStatement statement) throws SQLException
-			{
-				statement.setCharacterStream(index, reader, length);
-				
-				return null;
-			}
-		};
+		final File file = ClobProxy.createFile(reader);
 		
-		this.executeSet(operation);
+		try
+		{
+			PreparedStatementOperation operation = new PreparedStatementOperation()
+			{
+				public Object execute(PreparedStatement statement) throws SQLException
+				{
+					try
+					{
+						statement.setCharacterStream(index, new FileReader(file), length);
+						
+						return null;
+					}
+					catch (IOException e)
+					{
+						throw new SQLException(e.getMessage());
+					}
+				}
+			};
+			
+			this.executeSet(operation);
+		}
+		finally
+		{
+			file.delete();
+		}
 	}
-
+	
 	/**
 	 * @see java.sql.PreparedStatement#setObject(int, java.lang.Object)
 	 */
