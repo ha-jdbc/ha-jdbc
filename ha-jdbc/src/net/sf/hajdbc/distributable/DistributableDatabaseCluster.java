@@ -153,9 +153,12 @@ public class DistributableDatabaseCluster extends DatabaseClusterDecorator imple
 		super.finalize();
 	}
 
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#init()
+	 */
 	public void init() throws java.sql.SQLException
 	{
-		String[] databases = (String[]) this.notificationBus.getCache();
+		String[] databases = (String[]) this.notificationBus.getCacheFromCoordinator(5000, 2);
 		
 		if (databases != null)
 		{
