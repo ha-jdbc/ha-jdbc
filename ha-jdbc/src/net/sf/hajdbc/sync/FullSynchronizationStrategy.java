@@ -121,7 +121,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 			ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
 			
 			int columns = resultSetMetaData.getColumnCount();
-
+			
 			for (int i = 1; i <= columns; ++i)
 			{
 				if (i > 1)
@@ -153,8 +153,6 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 			
 			while (resultSet.next())
 			{
-				insertStatement.clearParameters();
-				
 				for (int i = 1; i <= columns; ++i)
 				{
 					Object object = resultSet.getObject(i);
@@ -176,10 +174,13 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 				if ((statementCount % MAX_BATCH_SIZE) == 0)
 				{
 					insertStatement.executeBatch();
+					insertStatement.clearBatch();
 				}
+				
+				insertStatement.clearParameters();
 			}
 
-			if (statementCount > 0)
+			if ((statementCount % MAX_BATCH_SIZE) > 0)
 			{
 				insertStatement.executeBatch();
 			}
