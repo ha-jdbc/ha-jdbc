@@ -50,7 +50,8 @@ public abstract class AbstractDataSourceFactory implements ObjectFactory
 		AbstractDataSourceProxy dataSource = (AbstractDataSourceProxy) objectClass.newInstance();
 		
 		String clusterName = (String) reference.get(CLUSTER_NAME).getContent();
-		Set databaseSet = DatabaseClusterManagerFactory.getClusterManager().getDatabaseSet(clusterName);
+		DatabaseClusterDescriptor descriptor = DatabaseClusterManagerFactory.getClusterManager().getDescriptor(clusterName);
+		Set databaseSet = descriptor.getDatabaseSet();
 		Map dataSourceMap = new HashMap(databaseSet.size());
 		Iterator databases = databaseSet.iterator();
 		
@@ -62,11 +63,7 @@ public abstract class AbstractDataSourceFactory implements ObjectFactory
 			dataSourceMap.put(database, object);
 		}
 		
-		DatabaseCluster databaseCluster = new DatabaseCluster(Collections.unmodifiableMap(dataSourceMap));
-		databaseCluster.setName(clusterName);
-		databaseCluster.setValidateSQL("SELECT 1");
-		
-		dataSource.setDatabaseManager(databaseCluster);
+		dataSource.setDatabaseCluster(new DatabaseCluster(clusterName, Collections.synchronizedMap(dataSourceMap), descriptor.getValidateSQL()));
 		
 		return dataSource;
 	}
