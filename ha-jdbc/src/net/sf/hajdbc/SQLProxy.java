@@ -22,11 +22,8 @@ package net.sf.hajdbc;
 
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,31 +37,32 @@ public abstract class SQLProxy
 {
 	private static Log log = LogFactory.getLog(SQLProxy.class);
 	
-	private Map objectMap;
+	private Map sqlObjectMap;
 	
-	protected SQLProxy(Map objectMap)
+	protected SQLProxy(Map sqlObjectMap)
 	{
-		this.objectMap = objectMap;
+		this.sqlObjectMap = sqlObjectMap;
 	}
 	
-	public Object getObject(Database database)
+	public Object getSQLObject(Database database)
 	{
-		return this.objectMap.get(database);
+		return this.sqlObjectMap.get(database);
 	}
 	
 	public final Object executeRead(Operation operation) throws SQLException
 	{
 		Database database = this.getDatabaseCluster().getDescriptor().nextDatabase();
-		Object object = this.objectMap.get(database);
+		Object sqlObject = this.sqlObjectMap.get(database);
 		
 		try
 		{
-			return operation.execute(database, object);
+			return operation.execute(database, sqlObject);
 		}
 		catch (SQLException e)
 		{
 			this.handleSQLException(e, database);
 			
+			// Retry with next database in cluster...
 			return this.executeRead(operation);
 		}
 	}
@@ -72,9 +70,9 @@ public abstract class SQLProxy
 	public final Object executeGet(Operation operation) throws SQLException
 	{
 		Database database = this.getDatabaseCluster().getDescriptor().firstDatabase();
-		Object object = this.objectMap.get(database);
+		Object sqlObject = this.sqlObjectMap.get(database);
 		
-		return operation.execute(database, object);
+		return operation.execute(database, sqlObject);
 	}
 	
 	public final Object firstItem(Map returnValueMap)
@@ -85,51 +83,38 @@ public abstract class SQLProxy
 	public final Map executeWrite(Operation operation) throws SQLException
 	{
 		List databaseList = this.getDatabaseCluster().getDescriptor().getActiveDatabaseList();
-		Set databaseSet = new HashSet(databaseList);
+		Thread[] executorThreads = new Thread[databaseList.size()];
 		
-		Map returnValueMap = new HashMap(databaseList.size());
+		Map returnValueMap = new HashMap(executorThreads.length);
+		SQLException exception = new SQLException();
 
-		for (int i = 0; i < databaseList.size(); ++i)
+		for (int i = 0; i < executorThreads.length; ++i)
 		{
 			Database database = (Database) databaseList.get(i);
-			Object object = this.objectMap.get(database);
+			Object sqlObject = this.sqlObjectMap.get(database);
 			
-			Executor executor = new Executor(operation, database, object, returnValueMap, databaseSet);
+			Executor executor = new Executor(operation, database, sqlObject, returnValueMap, exception);
 			
-			new Thread(executor).start();
+			executorThreads[i] = new Thread(executor);
+			executorThreads[i].start();
 		}
 		
 		// Wait until all threads have completed
-		synchronized (databaseSet)
+		for (int i = 0; i < executorThreads.length; ++i)
 		{
-			while (databaseSet.size() > 0)
+			try
 			{
-				try
-				{
-					databaseSet.wait();
-				}
-				catch (InterruptedException e)
-				{
-					throw new SQLException("Interruption during execution.");
-				}
+				executorThreads[i].join();
+			}
+			catch (InterruptedException e)
+			{
+				// Ignore
 			}
 		}
 
-		if (returnValueMap.isEmpty())
+		if (exception.getCause() != null)
 		{
-			throw new SQLException("No active database connection available");
-		}
-		
-		Iterator returnValues = returnValueMap.values().iterator();
-		
-		while (returnValues.hasNext())
-		{
-			Object object = returnValues.next();
-			
-			if (SQLException.class.isInstance(object))
-			{
-				throw (SQLException) object;
-			}
+			throw exception;
 		}
 		
 		return returnValueMap;
@@ -143,9 +128,9 @@ public abstract class SQLProxy
 		for (int i = 0; i < databaseList.size(); ++i)
 		{
 			Database database = (Database) databaseList.get(i);
-			Object object = this.objectMap.get(database);
+			Object sqlObject = this.sqlObjectMap.get(database);
 			
-			Object returnValue = operation.execute(database, object);
+			Object returnValue = operation.execute(database, sqlObject);
 			
 			returnValueMap.put(database, returnValue);
 		}
@@ -159,26 +144,12 @@ public abstract class SQLProxy
 		
 		if (databaseCluster.isActive(database))
 		{
-			this.initCause(exception);
-			
 			throw exception;
 		}
 		
 		if (databaseCluster.deactivate(database))
 		{
 			log.error("Database " + database.getId() + " from cluster " + this.getDatabaseCluster().getDescriptor().getName() + " was deactivated.", exception);
-		}
-	}
-
-	private void initCause(SQLException e)
-	{
-		SQLException exception = e.getNextException();
-		
-		if (exception != null)
-		{
-			e.initCause(exception);
-			
-			initCause(exception);
 		}
 	}
 	
@@ -188,24 +159,24 @@ public abstract class SQLProxy
 	{
 		private Operation operation;
 		private Database database;
-		private Object object;
+		private Object sqlObject;
 		private Map returnValueMap;
-		private Set databaseSet;
+		private SQLException exception;
 		
-		public Executor(Operation operation, Database database, Object object, Map returnValueMap, Set databaseSet)
+		public Executor(Operation operation, Database database, Object sqlObject, Map returnValueMap, SQLException exception)
 		{
 			this.operation = operation;
 			this.database = database;
-			this.object = object;
+			this.sqlObject = sqlObject;
 			this.returnValueMap = returnValueMap;
-			this.databaseSet = databaseSet;
+			this.exception = exception;
 		}
 		
 		public void run()
 		{
 			try
 			{
-				Object returnValue = this.operation.execute(this.database, this.object);
+				Object returnValue = this.operation.execute(this.database, this.sqlObject);
 				
 				synchronized (this.returnValueMap)
 				{
@@ -220,18 +191,23 @@ public abstract class SQLProxy
 				}
 				catch (SQLException exception)
 				{
-					synchronized (this.returnValueMap)
+					synchronized (this.exception)
 					{
-						this.returnValueMap.put(this.database, e);
+						if (this.exception.getCause() != null)
+						{
+							this.exception.initCause(e);
+						}
 					}
 				}
 			}
-			finally
+			catch (Throwable e)
 			{
-				synchronized (this.databaseSet)
+				synchronized (this.exception)
 				{
-					this.databaseSet.remove(this.database);
-					this.databaseSet.notify();
+					if (this.exception.getCause() != null)
+					{
+						this.exception.initCause(e);
+					}
 				}
 			}
 		}
