@@ -125,11 +125,6 @@ public final class DriverProxy implements java.sql.Driver
 		return JDBC_COMPLIANT;
 	}
 	
-	private DatabaseCluster getDatabaseCluster(String clusterName)
-	{
-		return (DatabaseCluster) this.databaseClusterMap.get(clusterName);
-	}
-	
 	/**
 	 * @see java.sql.Driver#acceptsURL(java.lang.String)
 	 */
@@ -143,7 +138,7 @@ public final class DriverProxy implements java.sql.Driver
 	 */
 	public Connection connect(String url, final Properties properties) throws SQLException
 	{
-		DatabaseCluster databaseCluster = this.getDatabaseCluster(url);
+		DatabaseCluster databaseCluster = (DatabaseCluster) this.databaseClusterMap.get(url);
 		
 		if (databaseCluster == null)
 		{
@@ -166,7 +161,7 @@ public final class DriverProxy implements java.sql.Driver
 	 */
 	public DriverPropertyInfo[] getPropertyInfo(String url, final Properties properties) throws SQLException
 	{
-		DatabaseCluster databaseCluster = this.getDatabaseCluster(url);
+		DatabaseCluster databaseCluster = (DatabaseCluster) this.databaseClusterMap.get(url);
 		
 		if (databaseCluster == null)
 		{
