@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!ELEMENT ha-jdbc (cluster+)>
-<!ELEMENT cluster ((driver+)|(datasource+)|(pooled-datasource+)|(xa-datasource+))>
+<!ELEMENT cluster ((database+)|(datasource+)|(pooled-datasource+)|(xa-datasource+))>
 <!ATTLIST cluster
 	name CDATA #REQUIRED
 	validate-sql CDATA #REQUIRED
