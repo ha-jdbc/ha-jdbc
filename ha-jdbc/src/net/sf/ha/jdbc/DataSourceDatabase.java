@@ -16,14 +16,14 @@ public class DataSourceDatabase implements Database
 	protected String user;
 	protected String password;
 	
-	public DataSourceDatabase(String name)
-	{
-		this.name = name;
-	}
-	
 	public String getName()
 	{
 		return this.name;
+	}
+	
+	public void setName(String name)
+	{
+		this.name = name;
 	}
 	
 	public String getUser()
@@ -53,7 +53,7 @@ public class DataSourceDatabase implements Database
 	
 	public boolean equals(Object object)
 	{
-		if ((object == null) || !DataSourceDatabase.class.isInstance(object))
+		if ((object == null) || !this.getClass().isInstance(object))
 		{
 			return false;
 		}
