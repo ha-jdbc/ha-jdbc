@@ -30,13 +30,4 @@ public class AbstractConnectionProxy extends SQLProxy
 	{
 		return this.databaseCluster;
 	}
-	
-	/**
-	 * @see net.sf.ha.jdbc.SQLProxy#deactivate(net.sf.ha.jdbc.Database)
-	 */
-	public void deactivate(Database database)
-	{
-		this.databaseCluster.deactivate(database);
-		super.deactivate(database);
-	}
 }

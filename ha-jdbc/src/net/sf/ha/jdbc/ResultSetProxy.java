@@ -2384,13 +2384,4 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		return this.statement.getDatabaseCluster();
 	}
-	
-	/**
-	 * @see net.sf.ha.jdbc.SQLProxy#deactivate(net.sf.ha.jdbc.Database)
-	 */
-	public void deactivate(Database database)
-	{
-		this.statement.deactivate(database);
-		super.deactivate(database);
-	}
 }

@@ -642,13 +642,4 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		return this.connection.getDatabaseCluster();
 	}
-	
-	/**
-	 * @see net.sf.ha.jdbc.SQLProxy#deactivate(net.sf.ha.jdbc.Database)
-	 */
-	public void deactivate(Database database)
-	{
-		this.connection.deactivate(database);
-		super.deactivate(database);
-	}
 }
