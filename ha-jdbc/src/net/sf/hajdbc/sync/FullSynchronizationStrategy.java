@@ -42,7 +42,6 @@ import org.apache.commons.logging.LogFactory;
  * The following algorithm is used:
  * <ol>
  *  <li>Drop the foreign keys on the inactive database (to avoid integrity constraint violations)</li>
- *  <li>Drop the non-unique indexes on the inactive database (for efficiency)</li>
  *  <li>For each database table:
  *   <ol>
  *    <li>Delete all rows in the inactive database table</li>
@@ -54,7 +53,6 @@ import org.apache.commons.logging.LogFactory;
  *    </li>
  *   </ol>
  *  </li>
- *  <li>Re-create the non-unique indexes on the inactive database</li>
  *  <li>Re-create the foreign keys on the inactive database</li>
  * </ol>
  * @author  Paul Ferraro
@@ -76,9 +74,6 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		
 		// Drop foreign keys
 		ForeignKey.drop(inactiveConnection, ForeignKey.collectForeignKeys(inactiveConnection, tableList), descriptor);
-		
-		// Drop non-unique indexes
-		Index.drop(inactiveConnection, Index.collectIndexes(inactiveConnection, tableList), descriptor);
 		
 		inactiveConnection.setAutoCommit(false);
 		
@@ -198,9 +193,6 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 
 		inactiveConnection.setAutoCommit(true);
 
-		// Recreate indexes
-		Index.create(inactiveConnection, Index.collectIndexes(activeConnection, tableList), descriptor);
-		
 		// Recreate foreign keys
 		ForeignKey.create(inactiveConnection, ForeignKey.collectForeignKeys(activeConnection, tableList), descriptor);
 	}
