@@ -20,18 +20,23 @@
  */
 package net.sf.hajdbc;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * @author  Paul Ferraro
@@ -40,6 +45,8 @@ import java.util.List;
  */
 public class FileSupport
 {
+	private static final int BUFFER_SIZE = 8192;
+	
 	private List fileList = new LinkedList();
 	
 	public File createFile(InputStream inputStream) throws java.sql.SQLException
@@ -48,8 +55,8 @@ public class FileSupport
 		
 		try
 		{
-			OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file), 8192);
-			byte[] chunk = new byte[8192];
+			OutputStream outputStream = new BufferedOutputStream(new GZIPOutputStream(new FileOutputStream(file), BUFFER_SIZE));
+			byte[] chunk = new byte[BUFFER_SIZE];
 			int byteCount = inputStream.read(chunk);
 			
 			while (byteCount >= 0)
@@ -75,8 +82,8 @@ public class FileSupport
 		
 		try
 		{
-			Writer writer = new BufferedWriter(new FileWriter(file), 8192);
-			char[] chunk = new char[8192];
+			Writer writer = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(file))), BUFFER_SIZE);
+			char[] chunk = new char[BUFFER_SIZE];
 			int byteCount = reader.read(chunk);
 			
 			while (byteCount >= 0)
@@ -89,6 +96,23 @@ public class FileSupport
 			writer.close();
 			
 			return file;
+		}
+		catch (IOException e)
+		{
+			throw new SQLException(e);
+		}
+	}
+	
+	public Reader getReader(File file) throws java.sql.SQLException
+	{
+		return new InputStreamReader(this.getInputStream(file));
+	}
+	
+	public InputStream getInputStream(File file) throws java.sql.SQLException
+	{
+		try
+		{
+			return new BufferedInputStream(new GZIPInputStream(new FileInputStream(file)), BUFFER_SIZE);
 		}
 		catch (IOException e)
 		{

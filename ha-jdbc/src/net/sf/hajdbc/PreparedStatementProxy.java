@@ -21,9 +21,6 @@
 package net.sf.hajdbc;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -301,16 +298,9 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 		{
 			public Object execute(PreparedStatement statement) throws SQLException
 			{
-				try
-				{
-					statement.setAsciiStream(index, new FileInputStream(file), length);
-				
-					return null;
-				}
-				catch (IOException e)
-				{
-					throw new SQLException(e.getMessage());
-				}
+				statement.setAsciiStream(index, PreparedStatementProxy.this.fileSupport.getInputStream(file), length);
+			
+				return null;
 			}
 		};
 		
@@ -328,16 +318,9 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 		{
 			public Object execute(PreparedStatement statement) throws SQLException
 			{
-				try
-				{
-					statement.setBinaryStream(index, new FileInputStream(file), length);
-					
-					return null;
-				}
-				catch (IOException e)
-				{
-					throw new SQLException(e.getMessage());
-				}
+				statement.setBinaryStream(index, PreparedStatementProxy.this.fileSupport.getInputStream(file), length);
+				
+				return null;
 			}
 		};
 		
@@ -356,16 +339,9 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 		{
 			public Object execute(PreparedStatement statement) throws SQLException
 			{
-				try
-				{
-					statement.setUnicodeStream(index, new FileInputStream(file), length);
-					
-					return null;
-				}
-				catch (IOException e)
-				{
-					throw new SQLException(e.getMessage());
-				}
+				statement.setUnicodeStream(index, PreparedStatementProxy.this.fileSupport.getInputStream(file), length);
+				
+				return null;
 			}
 		};
 		
@@ -383,16 +359,9 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 		{
 			public Object execute(PreparedStatement statement) throws SQLException
 			{
-				try
-				{
-					statement.setCharacterStream(index, new FileReader(file), length);
-					
-					return null;
-				}
-				catch (IOException e)
-				{
-					throw new SQLException(e.getMessage());
-				}
+				statement.setCharacterStream(index, PreparedStatementProxy.this.fileSupport.getReader(file), length);
+				
+				return null;
 			}
 		};
 		

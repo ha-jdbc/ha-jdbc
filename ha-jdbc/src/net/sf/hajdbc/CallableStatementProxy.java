@@ -21,9 +21,6 @@
 package net.sf.hajdbc;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -784,16 +781,9 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 		{
 			public Object execute(CallableStatement statement) throws SQLException
 			{
-				try
-				{
-					statement.setAsciiStream(name, new FileInputStream(file), length);
-					
-					return null;
-				}
-				catch (IOException e)
-				{
-					throw new SQLException(e.getMessage());
-				}
+				statement.setAsciiStream(name, CallableStatementProxy.this.fileSupport.getInputStream(file), length);
+				
+				return null;
 			}
 		};
 		
@@ -811,16 +801,9 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 		{
 			public Object execute(CallableStatement statement) throws SQLException
 			{
-				try
-				{
-					statement.setBinaryStream(name, new FileInputStream(file), length);
-					
-					return null;
-				}
-				catch (IOException e)
-				{
-					throw new SQLException(e.getMessage());
-				}
+				statement.setBinaryStream(name, CallableStatementProxy.this.fileSupport.getInputStream(file), length);
+				
+				return null;
 			}
 		};
 		
@@ -838,16 +821,9 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 		{
 			public Object execute(CallableStatement statement) throws SQLException
 			{
-				try
-				{
-					statement.setCharacterStream(name, new FileReader(file), length);
-					
-					return null;
-				}
-				catch (IOException e)
-				{
-					throw new SQLException(e.getMessage());
-				}
+				statement.setCharacterStream(name, CallableStatementProxy.this.fileSupport.getReader(file), length);
+				
+				return null;
 			}
 		};
 		

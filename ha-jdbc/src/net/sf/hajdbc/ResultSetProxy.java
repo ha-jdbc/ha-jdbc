@@ -21,9 +21,6 @@
 package net.sf.hajdbc;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -48,7 +45,7 @@ import java.util.Map;
  */
 public class ResultSetProxy extends SQLProxy implements ResultSet
 {
-	private FileSupport fileSupport = new FileSupport();
+	protected FileSupport fileSupport = new FileSupport();
 	
 	/**
 	 * Constructs a new ResultSetProxy.
@@ -958,16 +955,9 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 		{
 			public Object execute(ResultSet resultSet) throws SQLException
 			{
-				try
-				{
-					resultSet.updateAsciiStream(index, new FileInputStream(file), length);
-					
-					return null;
-				}
-				catch (IOException e)
-				{
-					throw new SQLException(e.getMessage());
-				}
+				resultSet.updateAsciiStream(index, ResultSetProxy.this.fileSupport.getInputStream(file), length);
+				
+				return null;
 			}
 		};
 		
@@ -987,16 +977,9 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			{
 				public Object execute(ResultSet resultSet) throws SQLException
 				{
-					try
-					{
-						resultSet.updateBinaryStream(index, new FileInputStream(file), length);
-						
-						return null;
-					}
-					catch (IOException e)
-					{
-						throw new SQLException(e.getMessage());
-					}
+					resultSet.updateBinaryStream(index, ResultSetProxy.this.fileSupport.getInputStream(file), length);
+					
+					return null;
 				}
 			};
 			
@@ -1035,16 +1018,9 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 		{
 			public Object execute(ResultSet resultSet) throws SQLException
 			{
-				try
-				{
-					resultSet.updateCharacterStream(index, new FileReader(file), length);
-					
-					return null;
-				}
-				catch (IOException e)
-				{
-					throw new SQLException(e.getMessage());
-				}
+				resultSet.updateCharacterStream(index, ResultSetProxy.this.fileSupport.getReader(file), length);
+				
+				return null;
 			}
 		};
 		
@@ -1864,16 +1840,9 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 		{
 			public Object execute(ResultSet resultSet) throws SQLException
 			{
-				try
-				{
-					resultSet.updateAsciiStream(name, new FileInputStream(file), length);
-					
-					return null;
-				}
-				catch (IOException e)
-				{
-					throw new SQLException(e.getMessage());
-				}
+				resultSet.updateAsciiStream(name, ResultSetProxy.this.fileSupport.getInputStream(file), length);
+				
+				return null;
 			}
 		};
 		
@@ -1891,16 +1860,9 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 		{
 			public Object execute(ResultSet resultSet) throws SQLException
 			{
-				try
-				{
-					resultSet.updateBinaryStream(name, new FileInputStream(file), length);
-					
-					return null;
-				}
-				catch (IOException e)
-				{
-					throw new SQLException(e.getMessage());
-				}
+				resultSet.updateBinaryStream(name, ResultSetProxy.this.fileSupport.getInputStream(file), length);
+				
+				return null;
 			}
 		};
 		
@@ -1934,16 +1896,9 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 		{
 			public Object execute(ResultSet resultSet) throws SQLException
 			{
-				try
-				{
-					resultSet.updateCharacterStream(name, new FileReader(file), length);
-					
-					return null;
-				}
-				catch (IOException e)
-				{
-					throw new SQLException(e.getMessage());
-				}
+				resultSet.updateCharacterStream(name, ResultSetProxy.this.fileSupport.getReader(file), length);
+				
+				return null;
 			}
 		};
 		
