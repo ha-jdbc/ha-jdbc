@@ -3,8 +3,7 @@
  */
 package net.sf.hajdbc.distributable;
 
-import net.sf.hajdbc.Database;
-import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.DatabaseClusterMBean;
 
 
 /**
@@ -18,15 +17,15 @@ public class DatabaseDeactivationCommand extends DatabaseCommand
 	 * Constructs a new DatabaseDeactivationCommand.
 	 * @param databaseId
 	 */
-	public DatabaseDeactivationCommand(Database database)
+	public DatabaseDeactivationCommand(String databaseId)
 	{
-		super(database);
+		super(databaseId);
 	}
 
 	/**
 	 * @see net.sf.hajdbc.distributable.DatabaseCommand#execute(net.sf.hajdbc.DatabaseCluster)
 	 */
-	public void execute(DatabaseCluster databaseCluster)
+	public void execute(DatabaseClusterMBean databaseCluster)
 	{
 		databaseCluster.deactivate(this.databaseId);
 	}

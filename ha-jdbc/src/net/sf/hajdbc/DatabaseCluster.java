@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,7 +41,6 @@ public class DatabaseCluster extends SQLProxy implements DatabaseClusterMBean
 {
 	private Set activeDatabaseSet = new LinkedHashSet();
 	private DatabaseClusterDescriptor descriptor;
-	private List databaseClusterListenerList = new LinkedList();
 	
 	/**
 	 * Constructs a new DatabaseCluster.
@@ -286,10 +284,5 @@ public class DatabaseCluster extends SQLProxy implements DatabaseClusterMBean
 	protected DatabaseCluster getDatabaseCluster()
 	{
 		return this;
-	}
-	
-	public void addDatabaseClusterListener(DatabaseClusterListener listener)
-	{
-		this.databaseClusterListenerList.add(listener);
 	}
 }

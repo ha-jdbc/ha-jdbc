@@ -7,9 +7,9 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.sql.SQLException;
 
-import net.sf.hajdbc.Database;
-import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.DatabaseClusterMBean;
 
 /**
  * @author  Paul Ferraro
@@ -24,9 +24,9 @@ public abstract class DatabaseCommand implements Externalizable
 	 * Constructs a new DatabaseCommand.
 	 * @param databaseId
 	 */
-	public DatabaseCommand(Database database)
+	public DatabaseCommand(String databaseId)
 	{
-		this.databaseId = database.getId();
+		this.databaseId = databaseId;
 	}
 	
 	/**
@@ -45,5 +45,5 @@ public abstract class DatabaseCommand implements Externalizable
 		this.databaseId = input.readUTF();
 	}
 	
-	public abstract void execute(DatabaseCluster databaseCluster);
+	public abstract void execute(DatabaseClusterMBean databaseCluster) throws SQLException;
 }

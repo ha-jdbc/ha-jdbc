@@ -3,8 +3,9 @@
  */
 package net.sf.hajdbc.distributable;
 
-import net.sf.hajdbc.Database;
-import net.sf.hajdbc.DatabaseCluster;
+import java.sql.SQLException;
+
+import net.sf.hajdbc.DatabaseClusterMBean;
 
 
 /**
@@ -18,16 +19,16 @@ public class DatabaseActivationCommand extends DatabaseCommand
 	 * Constructs a new DatabaseActivationCommand.
 	 * @param databaseId
 	 */
-	public DatabaseActivationCommand(Database database)
+	public DatabaseActivationCommand(String databaseId)
 	{
-		super(database);
+		super(databaseId);
 	}
 
 	/**
 	 * @see net.sf.hajdbc.distributable.DatabaseCommand#execute(net.sf.hajdbc.DatabaseCluster)
 	 */
-	public void execute(DatabaseCluster databaseCluster)
+	public void execute(DatabaseClusterMBean databaseCluster) throws SQLException
 	{
-		databaseCluster.activate(this.databaseId);
+		databaseCluster.activate(this.databaseId, null);
 	}
 }
