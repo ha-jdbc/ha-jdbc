@@ -16,6 +16,7 @@ public class DriverDatabase implements Database
 	private static final String PASSWORD = "password";
 	
 	private String url;
+	private String driver;
 	private String user;
 	private String password;
 
@@ -47,6 +48,16 @@ public class DriverDatabase implements Database
 	public void setUrl(String url)
 	{
 		this.url = url;
+	}
+	
+	public String getDriver()
+	{
+		return this.driver;
+	}
+	
+	public void setDriver(String driver)
+	{
+		this.driver = driver;
 	}
 	
 	public Properties getProperties()
