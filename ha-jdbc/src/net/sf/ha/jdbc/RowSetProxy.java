@@ -608,7 +608,7 @@ public class RowSetProxy extends ResultSetProxy implements RowSet
 		
 		try
 		{
-			return (String) this.executeRead(operation);
+			return (String) this.executeGet(operation);
 		}
 		catch (SQLException e)
 		{
@@ -631,7 +631,7 @@ public class RowSetProxy extends ResultSetProxy implements RowSet
 		
 		try
 		{
-			return (String) this.executeRead(operation);
+			return (String) this.executeGet(operation);
 		}
 		catch (SQLException e)
 		{
@@ -654,7 +654,7 @@ public class RowSetProxy extends ResultSetProxy implements RowSet
 		
 		try
 		{
-			return (String) this.executeRead(operation);
+			return (String) this.executeGet(operation);
 		}
 		catch (SQLException e)
 		{
@@ -675,7 +675,7 @@ public class RowSetProxy extends ResultSetProxy implements RowSet
 			}
 		};
 		
-		return (String) this.executeRead(operation);
+		return (String) this.executeGet(operation);
 	}
 
 	/**
@@ -693,7 +693,7 @@ public class RowSetProxy extends ResultSetProxy implements RowSet
 		
 		try
 		{
-			return (String) this.executeRead(operation);
+			return (String) this.executeGet(operation);
 		}
 		catch (SQLException e)
 		{
@@ -752,7 +752,7 @@ public class RowSetProxy extends ResultSetProxy implements RowSet
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -770,7 +770,7 @@ public class RowSetProxy extends ResultSetProxy implements RowSet
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -788,7 +788,7 @@ public class RowSetProxy extends ResultSetProxy implements RowSet
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -806,7 +806,7 @@ public class RowSetProxy extends ResultSetProxy implements RowSet
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -824,7 +824,7 @@ public class RowSetProxy extends ResultSetProxy implements RowSet
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
