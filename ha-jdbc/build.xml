@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 <project name="ha-jdbc" default="jar" basedir=".">
-	
+
 	<property name="build.dir" location="${basedir}/build"></property>
 	<property name="src.dir" location="${basedir}/src"></property>
+	<property name="doc.dir" location="${basedir}/doc"></property>
 	<property name="lib.dir" location="${basedir}/lib"></property>
 	<property name="lib.compile.dir" location="${lib.dir}/compile"></property>
 	<property name="conf.dir" location="${basedir}/conf"></property>
@@ -54,5 +55,16 @@
 		</jar>
     </target>
 
-</project>
+	<!--target name="doc" depends="javadoc, site"></target>
 
+	<target name="javadoc">
+		<javadoc sourcepath="${src.dir}" destdir="">
+			
+		</javadoc>
+	</target-->
+	
+	<target name="site">
+		<ant dir="${doc.dir}" inheritall="false"></ant>
+	</target>
+	
+</project>
