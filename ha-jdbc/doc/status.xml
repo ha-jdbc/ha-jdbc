@@ -10,6 +10,14 @@
 			defined for 'add', 'fix', 'remove', 'update' and 'hack'. If you add
 			src/documentation/resources/images/<foo>.jpg images, these will
 			automatically be used for entries of type <foo>. -->
+		<release version="1.0-beta-6" date="">
+			<action type="add" dev="PF">
+				Added error message translations for German, Spanish, French, Italian, and Portuguese.
+			</action>
+			<action type="add" dev="PF">
+				Added error message for tables without primary keys in DifferentialSynchronizationStrategy.
+			</action>
+		</release>
 		<release version="1.0-beta-5" date="March 3, 2005">
 			<action type="update" dev="PF">
 				Added better data type support for SynchronizationStrategy properties.
