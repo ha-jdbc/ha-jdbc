@@ -11,4 +11,6 @@ import java.sql.SQLException;
 public interface Database
 {
 	public Connection connect(Object object) throws SQLException;
+	
+	public String getId();
 }
