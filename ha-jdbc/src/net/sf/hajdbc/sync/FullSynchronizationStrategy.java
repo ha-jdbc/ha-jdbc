@@ -158,14 +158,15 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 				for (int i = 1; i <= columns; ++i)
 				{
 					Object object = resultSet.getObject(i);
+					int type = resultSetMetaData.getColumnType(i);
 					
 					if (resultSet.wasNull())
 					{
-						insertStatement.setNull(i, resultSetMetaData.getColumnType(i));
+						insertStatement.setNull(i, type);
 					}
 					else
 					{
-						insertStatement.setObject(i, object);
+						insertStatement.setObject(i, object, type);
 					}
 				}
 				
