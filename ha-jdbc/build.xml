@@ -6,7 +6,7 @@
 	<property name="build.dir" location="${basedir}/build"></property>
 	<property name="src.dir" location="${basedir}/src"></property>
 	<property name="doc.dir" location="${basedir}/doc"></property>
-	<property name="doc.api.dir" location="${doc.dir}/src/content/api"></property>
+	<property name="doc.api.dir" location="${doc.dir}/build/site/api"></property>
 	<property name="lib.dir" location="${basedir}/lib"></property>
 	<property name="lib.compile.dir" location="${lib.dir}/compile"></property>
 	<property name="conf.dir" location="${basedir}/conf"></property>
@@ -101,6 +101,7 @@
 	</target>
 	
 	<target name="site" depends="javadoc">
+		<!-- requires Apache Forrest 0.6 -->
 		<ant dir="${doc.dir}" inheritall="false"></ant>
 	</target>
 	
