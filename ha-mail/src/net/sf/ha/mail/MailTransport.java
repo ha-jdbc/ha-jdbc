@@ -15,8 +15,6 @@ import javax.mail.event.ConnectionAdapter;
 import javax.mail.event.ConnectionEvent;
 import javax.mail.event.TransportListener;
 import javax.mail.internet.MimeMessage;
-import javax.naming.Context;
-import javax.naming.NamingException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,82 +36,57 @@ public class MailTransport extends ConnectionAdapter implements MailSender
 	protected List transportList = new LinkedList();
 	protected ThreadGroup senderThreadGroup = new ThreadGroup("sender");
 	protected ThreadGroup connectorThreadGroup = new ThreadGroup("connector");
-	
-	private static Session[] createSessions(Context context, String[] names) throws NamingException
-	{
-		Session[] sessions = new Session[names.length];
-		
-		for (int i = 0; i < names.length; ++i)
-		{
-			String name = names[i];
-			Object object = context.lookup(name);
-			
-			if (!Session.class.isInstance(object))
-			{
-				throw new NamingException(name + " refers to " + object.getClass().getName() + ", expected " + Session.class.getName());
-			}
-			
-			sessions[i] = (Session) object;
-		}
-		
-		return sessions;
-	}
-	
-	private static Session[] createSessions(Properties[] properties)
-	{
-		Session[] sessions = new Session[properties.length];
-		
-		for (int i = 0; i < properties.length; ++i)
-		{
-			sessions[i] = Session.getInstance(properties[i]);
-		}
-		
-		return sessions;
-	}
-	
-	public MailTransport(Context context, String name) throws NamingException, MessagingException 
-	{
-		this(context, new String[] { name }, DEFAULT_POOL_SIZE);
-	}
-	
-	public MailTransport(Context context, String name, int poolSize) throws NamingException, MessagingException 
-	{
-		this(context, new String[] { name }, poolSize);
-	}
-	
-	public MailTransport(Context context, String[] names) throws NamingException, MessagingException 
-	{
-		this(context, names, DEFAULT_POOL_SIZE);
-	}
-	
-	public MailTransport(Context context, String[] names, int poolSize) throws NamingException, MessagingException 
-	{
-		this(createSessions(context, names), poolSize);
-	}
-	
-	public MailTransport(Properties properties) throws MessagingException 
-	{
-		this(new Properties[] { properties }, DEFAULT_POOL_SIZE);
-	}
-	
-	public MailTransport(Properties properties, int poolSize) throws MessagingException 
-	{
-		this(new Properties[] { properties }, poolSize);
-	}
-	
-	public MailTransport(Properties[] properties) throws MessagingException 
-	{
-		this(properties, DEFAULT_POOL_SIZE);
-	}
 
-	public MailTransport(Properties[] properties, int poolSize) throws MessagingException 
+	public MailTransport(Session session) throws MessagingException
 	{
-		this(createSessions(properties), poolSize);
+		this(session, DEFAULT_POOL_SIZE);
 	}
 
 	public MailTransport(Session session, int poolSize) throws MessagingException
 	{
-		this(new Session[] { session }, poolSize);
+		this(getSessions(session), poolSize);
+	}
+
+	private static Session[] getSessions(Session session) throws MessagingException
+	{
+		if (session == null)
+		{
+			throw new IllegalArgumentException("No session specified.");
+		}
+		
+		String protocol = session.getProperties().getProperty("mail.transport.protocol", "smtp");
+		String hostProperty = "mail." + protocol + ".host";
+		String host = session.getProperty(hostProperty);
+		
+		if ((host == null) || (host.length() == 0))
+		{
+			hostProperty = "mail.host";
+			host = session.getProperty(hostProperty);
+		}
+		
+		if ((host == null) || (host.length() == 0))
+		{
+			throw new MessagingException("No transport host specified.");
+		}
+		
+		String[] hosts = host.split(",");
+		Session[] sessions = new Session[hosts.length];
+		
+		for (int i = 0; i < hosts.length; ++i)
+		{
+			Properties properties = new Properties(session.getProperties());
+			
+			properties.setProperty(hostProperty, hosts[i]);
+			
+			sessions[i] = Session.getInstance(properties);
+		}
+		
+		return sessions;
+	}
+	
+	public MailTransport(Session[] sessions) throws MessagingException
+	{
+		this(sessions, DEFAULT_POOL_SIZE);
 	}
 	
 	public MailTransport(Session[] sessions, int poolSize) throws MessagingException
