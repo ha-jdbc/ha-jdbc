@@ -44,7 +44,6 @@
 					<li>Allows use of vendor implementations of SQL types (e.g. <code>Blob</code>, <code>Clob</code>, <code>Ref</code>, etc).</li>
 					<li>Improves performance of concurrent read-access by distributing load across individual cluster nodes.</li>
 					<li>Ensures data concurrency by deactivating failed cluster nodes.</li>
-					<li>Support for clustered client environments (i.e. Distributable cluster registry) (coming soon)</li>
 					<li>Library of connected and disconnected cluster-aware <code>javax.sql.RowSet</code> implementations (coming soon)</li>
 					<li>Configurable node failure strategies (coming soon)</li>
 					<li>Cluster health introspection (coming soon)</li>
@@ -102,7 +101,7 @@
 			<section>
 				<title>Application Configuration</title>
 				<section>
-				<title>DriverManager-based access</title>
+					<title>DriverManager-based access</title>
 					<ol>
 						<li>As with your existing JDBC drivers, the HA-JDBC driver must first be loaded.  This can be accomplished in one of two ways:<br/>
 							<br/>
@@ -148,9 +147,46 @@
 							</p>
 						</li>
 					</ol>
-					<p>
-						Server configuration examples coming soon...
-					</p>
+				</section>
+				<section>
+					<title>Server configuration examples</title>
+					<ul>
+						<li><p><link href="http://jetty.mortbay.org">Jetty</link> (using <link href="http://jotm.objectweb.org">JOTM</link> and <link href="http://xapool.objectweb.org">XAPool</link>)</p>
+							<p>
+								<code><![CDATA[<Configure class="org.mortbay.jetty.plus.Server">]]></code><br/>
+								<code>&nbsp;&nbsp;<![CDATA[<Call name="addService">]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<Arg>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<New class="org.mortbay.jetty.plus.JotmService">]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<Set name="Name">TransactionManager</Set>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<Call name="addDataSource">]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<Arg>jdbc/database</Arg>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<Arg>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<New class="org.enhydra.jdbc.standard.StandardXADataSource">]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<Set name="DriverName">net.sf.ha.jdbc.DriverProxy</Set>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<Set name="Url">jdbc:ha-jdbc:cluster1</Set>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<Set name="User">postgres</Set>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<Set name="Password">password</Set>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<Set name="TransactionIsolation">]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<Get class="java.sql.Connection" name="TRANSACTION_READ_COMMITTED"/>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</Set>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</New>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</Arg>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<Arg>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<New class="org.enhydra.jdbc.pool.StandardXAPoolDataSource">]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<Arg type="Integer">5</Arg>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<Set name="MinSize">5</Set>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<Set name="MaxSize">50</Set>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</New>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</Arg>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</Call>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</New>]]></code><br/>
+								<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</Arg>]]></code><br/>
+								<code>&nbsp;&nbsp;<![CDATA[</Call>]]></code><br/>
+								<code><![CDATA[</Configure>]]></code><br/>
+							</p>
+						</li>
+						<li><p>More server configuration examples coming soon...</p></li>
+					</ul>
 				</section>
 			</section>
 			<section>
