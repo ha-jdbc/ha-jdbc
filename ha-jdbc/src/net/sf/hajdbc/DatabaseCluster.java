@@ -116,8 +116,8 @@ public class DatabaseCluster extends SQLProxy
 		}
 	}
 	
-	public void deactivate(Database database)
+	public boolean deactivate(Database database)
 	{
-		this.manager.deactivate(this.descriptor.getName(), database);
+		return this.manager.deactivate(this.descriptor.getName(), database);
 	}
 }
