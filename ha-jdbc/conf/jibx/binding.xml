@@ -9,24 +9,25 @@
 		<value name="validate-sql" field="validateSQL"></value>
 		<collection field="databaseSet" type="java.util.HashSet"></collection>
 	</mapping>
-	<mapping name="driver" class="net.sf.ha.jdbc.DriverDatabase" value-style="element">
-		<value name="url" field="url" usage="optional"></value>
-		<value name="user" field="user" usage="optional"></value>
-		<value name="password" field="password" usage="optional"></value>
+	<mapping name="database" class="net.sf.ha.jdbc.DriverDatabase">
+		<value name="url" field="url" usage="required" style="attribute"></value>
+		<value name="driver" field="driver" usage="required" style="attribute"></value>
+		<value name="user" field="user" usage="optional" style="element"></value>
+		<value name="password" field="password" usage="optional" style="element"></value>
 	</mapping>
-	<mapping name="datasource" class="net.sf.ha.jdbc.DataSourceDatabase" value-style="element" >
-		<value name="name" field="name" usage="optional"></value>
-		<value name="user" field="user" usage="optional"></value>
-		<value name="password" field="password" usage="optional"></value>
+	<mapping name="datasource" class="net.sf.ha.jdbc.DataSourceDatabase">
+		<value name="name" field="name" usage="required" style="attribute"></value>
+		<value name="user" field="user" usage="optional" style="element"></value>
+		<value name="password" field="password" usage="optional" style="element"></value>
 	</mapping>
 	<mapping name="pooled-datasource" class="net.sf.ha.jdbc.pool.ConnectionPoolDataSourceDatabase">
-		<value name="name" field="name" usage="optional"></value>
-		<value name="user" field="user" usage="optional"></value>
-		<value name="password" field="password" usage="optional"></value>
+		<value name="name" field="name" usage="required" style="attribute"></value>
+		<value name="user" field="user" usage="optional" style="element"></value>
+		<value name="password" field="password" usage="optional" style="element"></value>
 	</mapping>
 	<mapping name="xa-datasource" class="net.sf.ha.jdbc.pool.xa.XADataSourceDatabase">
-		<value name="name" field="name" usage="optional"></value>
-		<value name="user" field="user" usage="optional"></value>
-		<value name="password" field="password" usage="optional"></value>
+		<value name="name" field="name" usage="required" style="attribute"></value>
+		<value name="user" field="user" usage="optional" style="element"></value>
+		<value name="password" field="password" usage="optional" style="element"></value>
 	</mapping>
 </binding>
