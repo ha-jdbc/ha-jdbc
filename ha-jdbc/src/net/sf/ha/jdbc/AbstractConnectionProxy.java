@@ -7,7 +7,7 @@ import java.util.Map;
  * @version $Revision$
  * @since   1.0
  */
-public class AbstractConnectionProxy extends JDBCObjectProxy
+public class AbstractConnectionProxy extends SQLObjectProxy
 {
 	private DatabaseCluster databaseCluster;
 	
@@ -24,7 +24,7 @@ public class AbstractConnectionProxy extends JDBCObjectProxy
 	}
 	
 	/**
-	 * @see net.sf.ha.jdbc.JDBCObjectProxy#getDatabaseCluster()
+	 * @see net.sf.ha.jdbc.SQLObjectProxy#getDatabaseCluster()
 	 */
 	protected DatabaseCluster getDatabaseCluster()
 	{
@@ -32,7 +32,7 @@ public class AbstractConnectionProxy extends JDBCObjectProxy
 	}
 	
 	/**
-	 * @see net.sf.ha.jdbc.JDBCObjectProxy#deactivate(net.sf.ha.jdbc.Database)
+	 * @see net.sf.ha.jdbc.SQLObjectProxy#deactivate(net.sf.ha.jdbc.Database)
 	 */
 	public void deactivate(Database database)
 	{

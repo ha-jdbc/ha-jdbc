@@ -14,11 +14,11 @@ import java.util.Set;
  * @version $Revision$
  * @since   1.0
  */
-public abstract class JDBCObjectProxy
+public abstract class SQLObjectProxy
 {
 	protected Map objectMap;
 	
-	protected JDBCObjectProxy(Map objectMap)
+	protected SQLObjectProxy(Map objectMap)
 	{
 		this.objectMap = Collections.synchronizedMap(objectMap);
 	}
@@ -162,7 +162,7 @@ public abstract class JDBCObjectProxy
 			{
 				try
 				{
-					JDBCObjectProxy.this.handleSQLException(e, this.database);
+					SQLObjectProxy.this.handleSQLException(e, this.database);
 				}
 				catch (SQLException exception)
 				{

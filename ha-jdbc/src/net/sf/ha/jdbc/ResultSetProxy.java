@@ -23,7 +23,7 @@ import java.util.Map;
  * @author Paul Ferraro
  * @version $Revision$
  */
-public class ResultSetProxy extends JDBCObjectProxy implements ResultSet
+public class ResultSetProxy extends SQLObjectProxy implements ResultSet
 {
 	protected StatementProxy statement;
 	
@@ -2378,7 +2378,7 @@ public class ResultSetProxy extends JDBCObjectProxy implements ResultSet
 	}
 	
 	/**
-	 * @see net.sf.ha.jdbc.JDBCObjectProxy#getDatabaseCluster()
+	 * @see net.sf.ha.jdbc.SQLObjectProxy#getDatabaseCluster()
 	 */
 	protected DatabaseCluster getDatabaseCluster()
 	{
@@ -2386,7 +2386,7 @@ public class ResultSetProxy extends JDBCObjectProxy implements ResultSet
 	}
 	
 	/**
-	 * @see net.sf.ha.jdbc.JDBCObjectProxy#deactivate(net.sf.ha.jdbc.Database)
+	 * @see net.sf.ha.jdbc.SQLObjectProxy#deactivate(net.sf.ha.jdbc.Database)
 	 */
 	public void deactivate(Database database)
 	{
