@@ -72,7 +72,7 @@
 				<p>Sample configuration file:</p>
 				<p>
 					<code><![CDATA[<?xml version="1.0"?>]]></code><br/>
-					<code><![CDATA[<!DOCTYPE ha-jdbc PUBLIC "-//HA-JDBC//DTD HA-JDBC 1.0//EN" "ha-jdbc-1.0.dtd">]]></code><br/>
+					<code><![CDATA[<!DOCTYPE ha-jdbc PUBLIC "-//HA-JDBC//DTD HA-JDBC 1.0//EN" "http://ha-jdbc.sourceforge.net/dtd/ha-jdbc-1.0.dtd">]]></code><br/>
 					<code><![CDATA[<ha-jdbc>]]></code><br/>
 					<code>&nbsp;&nbsp;<![CDATA[<local><!-- These clusters will only be referenced from one JVM -->]]></code><br/>
 					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<cluster name="jdbc:ha-jdbc:cluster" validate-sql="SELECT 1">]]></code><br/>
@@ -364,7 +364,7 @@
 		<section>
 			<title>Architecture</title>
 			<p>
-				HA-JDBC is a JDBC driver implementation that acts as a proxy an underlying JDBC driver.
+				HA-JDBC is a JDBC driver implementation that acts as a proxy to an underlying JDBC driver.
 			</p>
 			<p>
 				JDBC operations are divided into 4 categories:
@@ -405,6 +405,12 @@
 				<dt>Set Operations</dt>
 				<dd>The exception is immediately returned to the caller.</dd>
 			</dl>
+		</section>
+		<section>
+			<title>Performance</title>
+			<p>
+				Coming soon...
+			</p>
 		</section>
 	</body>
 </document>
