@@ -28,6 +28,7 @@ import java.io.ObjectOutput;
 import net.sf.hajdbc.DatabaseCluster;
 
 /**
+ * Represents a database command to be executed on a given database cluster.
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
@@ -36,6 +37,9 @@ public abstract class DatabaseCommand implements Externalizable
 {
 	protected String databaseId;
 	
+	/**
+	 * Constructs a new DatabaseCommand.
+	 */
 	protected DatabaseCommand()
 	{
 		// Do nothing
@@ -43,7 +47,7 @@ public abstract class DatabaseCommand implements Externalizable
 	
 	/**
 	 * Constructs a new DatabaseCommand.
-	 * @param databaseId
+	 * @param databaseId a database identifier
 	 */
 	public DatabaseCommand(String databaseId)
 	{
@@ -66,5 +70,10 @@ public abstract class DatabaseCommand implements Externalizable
 		this.databaseId = input.readUTF();
 	}
 	
+	/**
+	 * Execute this command on the specified database cluster.
+	 * @param databaseCluster a database cluster
+	 * @throws java.sql.SQLException if command failed to execute
+	 */
 	public abstract void execute(DatabaseCluster databaseCluster) throws java.sql.SQLException;
 }

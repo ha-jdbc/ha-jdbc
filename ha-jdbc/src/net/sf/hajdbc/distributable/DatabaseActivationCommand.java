@@ -24,12 +24,16 @@ import net.sf.hajdbc.DatabaseCluster;
 
 
 /**
+ * Command pattern object indicating that a database is to be activated.
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
 public class DatabaseActivationCommand extends DatabaseCommand
 {
+	/**
+	 * Constructs a new DatabaseActivationCommand.
+	 */
 	public DatabaseActivationCommand()
 	{
 		// Do nothing
@@ -37,7 +41,7 @@ public class DatabaseActivationCommand extends DatabaseCommand
 	
 	/**
 	 * Constructs a new DatabaseActivationCommand.
-	 * @param databaseId
+	 * @param databaseId a database identifier
 	 */
 	public DatabaseActivationCommand(String databaseId)
 	{
