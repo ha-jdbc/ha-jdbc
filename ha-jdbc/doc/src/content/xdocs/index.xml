@@ -91,7 +91,7 @@
 					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<user>postgres</user>]]></code><br/>
 					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<password>password</password>]]></code><br/>
 					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</datasource>]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<datasource name="java:comp/env/jdbc/Database1">]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<datasource name="java:comp/env/jdbc/Database2">]]></code><br/>
 					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<user>postgres</user>]]></code><br/>
 					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<password>password</password>]]></code><br/>
 					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</datasource>]]></code><br/>
@@ -143,7 +143,7 @@
 							<p>e.g.</p>
 							<p>
 								<code>Context context = new InitialContext();</code><br/>
-								<code>DataSource dataSource = (DataSource) context.lookup("java:comp/env/jdbc/Database1");</code><br/>
+								<code>DataSource dataSource = (DataSource) context.lookup("java:comp/env/jdbc/Cluster2");</code><br/>
 								<code>Connection connection = dataSource.getConnection("postgres", "password");</code><br/>
 							</p>
 						</li>
