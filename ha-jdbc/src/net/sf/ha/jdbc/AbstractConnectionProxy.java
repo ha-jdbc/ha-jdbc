@@ -7,7 +7,7 @@ import java.util.Map;
  * @version $Revision$
  * @since   1.0
  */
-public class AbstractConnectionProxy extends AbstractProxy
+public class AbstractConnectionProxy extends JDBCObjectProxy
 {
 	private DatabaseCluster databaseCluster;
 	

@@ -11,7 +11,7 @@ import java.util.Map;
  * @version $Revision$
  * @since   1.0
  */
-public class DatabaseCluster extends AbstractProxy implements DatabaseEventListener
+public class DatabaseCluster extends JDBCObjectProxy implements DatabaseEventListener
 {
 	private String name;
 	private String validateSQL;

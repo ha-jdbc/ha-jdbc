@@ -23,7 +23,7 @@ import java.util.Map;
  * @author Paul Ferraro
  * @version $Revision$
  */
-public class ResultSetProxy extends AbstractProxy implements ResultSet
+public class ResultSetProxy extends JDBCObjectProxy implements ResultSet
 {
 	protected StatementProxy statement;
 	

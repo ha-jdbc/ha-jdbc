@@ -11,7 +11,7 @@ import java.util.Map;
  * @author Paul Ferraro
  * @version $Revision$
  */
-public class StatementProxy extends AbstractProxy implements Statement
+public class StatementProxy extends JDBCObjectProxy implements Statement
 {
 	protected ConnectionProxy connection;
 
