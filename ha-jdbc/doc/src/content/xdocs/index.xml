@@ -68,7 +68,38 @@
 				<title>Cluster Configuration</title>
 				<p>
 					Configuration of HA-JDBC managed database clusters is contained in a single XML file.
-					The format of the configuration file should match the DTD provided in the distribution: <code>conf/dtd/ha-jdbc.dtd</code><br/>
+					The format of the configuration file should match the DTD provided in the distribution: <code>conf/dtd/ha-jdbc.dtd</code>
+				</p>
+				<p>Sample configuration file:</p>
+				<p>
+					<code><![CDATA[<?xml version="1.0"?>]]></code><br/>
+					<code><![CDATA[<!DOCTYPE ha-jdbc SYSTEM "ha-jdbc.dtd">]]></code><br/>
+					<code><![CDATA[<ha-jdbc>]]></code><br/>
+					<code>&nbsp;&nbsp;<![CDATA[<local>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<cluster name="jdbc:ha-jdbc:cluster" validate-sql="SELECT 1">]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<database url="jdbc:postgresql://server1:5432/database" driver="org.postgresql.Driver">]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<user>postgres</user>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<password>password</password>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</database>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<database url="jdbc:postgresql://server2:5432/database" driver="org.postgresql.Driver">]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<user>postgres</user>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<password>password</password>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</database>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</cluster>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<cluster name="java:comp/env/jdbc/Cluster" validate-sql="SELECT 1">]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<datasource name="java:comp/env/jdbc/Database1">]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<user>postgres</user>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<password>password</password>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</datasource>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<datasource name="java:comp/env/jdbc/Database2">]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<user>postgres</user>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<password>password</password>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</datasource>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</cluster>]]></code><br/>
+					<code>&nbsp;&nbsp;<![CDATA[</local>]]></code><br/>
+					<code><![CDATA[</ha-jdbc>]]></code><br/>
+				</p>
+				<p>
 					The algorithm for locating the configuration file resource is as follows:<br/>
 				</p>
 				<ol>
@@ -82,37 +113,6 @@
 					</ol>
 					<li>If still not found, throw an exception back to the caller.</li>
 				</ol>
-				<p>
-					Sample configuration file:
-				</p>
-				<p>
-					<code><![CDATA[<?xml version="1.0"?>]]></code><br/>
-					<code><![CDATA[<!DOCTYPE ha-jdbc SYSTEM "ha-jdbc.dtd">]]></code><br/>
-					<code><![CDATA[<ha-jdbc>]]></code><br/>
-					<code>&nbsp;&nbsp;<![CDATA[<local>]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<cluster name="cluster1" validate-sql="SELECT 1">]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<database url="jdbc:postgresql://server1:5432/database" driver="org.postgresql.Driver">]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<user>postgres</user>]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<password>password</password>]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</database>]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<database url="jdbc:postgresql://server2:5432/database" driver="org.postgresql.Driver">]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<user>postgres</user>]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<password>password</password>]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</database>]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</cluster>]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<cluster name="cluster2" validate-sql="SELECT 1">]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<datasource name="java:comp/env/jdbc/Database1">]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<user>postgres</user>]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<password>password</password>]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</datasource>]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<datasource name="java:comp/env/jdbc/Database2">]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<user>postgres</user>]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<password>password</password>]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</datasource>]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</cluster>]]></code><br/>
-					<code>&nbsp;&nbsp;<![CDATA[</local>]]></code><br/>
-					<code><![CDATA[</ha-jdbc>]]></code><br/>
-				</p>
 			</section>
 			<section>
 				<title>Application Configuration</title>
@@ -132,11 +132,11 @@
 							</ul>
 							<br/>
 						</li>
-						<li>Use the following URL in subsequent calls to <code>DriverManager.connect(...)</code><br/>
+						<li>The URL to use in subsequent calls to <code>DriverManager.connect(...)</code> should be the name of your cluster.  So that your URLs do not collide with those of other drivers, the following convention is recommended:<br/>
 							<p><code>jdbc:ha-jdbc:</code><em>cluster-name</em></p>
 							<p>e.g.</p>
 							<p>
-								<code>Connection connection = DriverManager.connect("jdbc:ha-jdbc:cluster1", "postgres", "password");</code>
+								<code>Connection connection = DriverManager.connect("jdbc:ha-jdbc:cluster", "postgres", "password");</code>
 							</p>
 						</li>
 					</ol>
@@ -158,7 +158,7 @@
 							<p>e.g.</p>
 							<p>
 								<code>Context context = new InitialContext();</code><br/>
-								<code>DataSource dataSource = (DataSource) context.lookup("java:comp/env/jdbc/Cluster2");</code><br/>
+								<code>DataSource dataSource = (DataSource) context.lookup("java:comp/env/jdbc/Cluster");</code><br/>
 								<code>Connection connection = dataSource.getConnection("postgres", "password");</code><br/>
 							</p>
 						</li>
@@ -206,31 +206,100 @@
 				</section>
 			</section>
 			<section>
+				<title>Distributed environment</title>
+				<p>
+					When running HA-JDBC in a distributed environment, i.e. JDBC clients in seperate JVMs are accessing the same set of databases, special configuration is required.
+					HA-JDBC leverages the <link href="http://www.jgroups.org">JGroups</link> project to handle communication between cluster managers.
+					See the JGroup User's guide for assistance customizing the protocol stack for your network.
+				</p>
+				<p>e.g.</p>
+				<p>
+					<code><![CDATA[<?xml version="1.0"?>]]></code><br/>
+					<code><![CDATA[<!DOCTYPE ha-jdbc SYSTEM "ha-jdbc.dtd">]]></code><br/>
+					<code><![CDATA[<ha-jdbc>]]></code><br/>
+					<code>&nbsp;&nbsp;<![CDATA[<distributable protocol="UDP(mcast_port=45566;use_incoming_packet_handler=false;mcast_addr=228.8.8.8;use_outgoing_packet_handler=false;ip_ttl=32):UNICAST(timeout=1200)">]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<cluster name="...">]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<!-- ... -->]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</cluster>]]></code><br/>
+					<code>&nbsp;&nbsp;<![CDATA[</distributable>]]></code><br/>
+					<code><![CDATA[</ha-jdbc>]]></code><br/>
+				</p>
+			</section>
+			<section>
 				<title>Unique identifier generation</title>
 				<p>
-					Coming soon...
+					The following traditional mechanisms for generating unique identifiers are problematic for clustered database environments:
 				</p>
+				<ul>
+					<li>Identity columns (supported by MySQL, HSQLDB, DB2, MS SQL Server, Sybase, etc.) fetched using the Java 1.4 <code>ResultSet.getGeneratedKeys()</code> method</li>
+					<li>Sequences (supported by PostgreSQL, MySQL MaxDB (fka SAP DB), Firebird (fka Interbase), Mckoi, Oracle, DB2, etc.)</li>
+					<li>Incrementing columns (e.g. <code>SELECT max(id) + 1 FROM table</code>)</li>
+				</ul>
+				<p>
+					In order for any of these mechanisms to work in a database cluster each database node would need to generate uniform identifier independantly.
+					To do this, we would have to synchronize all incoming database requests through a central cluster manager.
+					This is the approach taken by the <link href="http://c-jdbc.objectweb.org">C-JDBC project</link>.
+					However, alternative cluster-friendly unique identifier generation algorithms exist.
+					HA-JDBC does not support the above mechanisms in favor a design that allows efficient asynchronous request execution.
+				</p>
+				<p>
+					The following unique identifier generation methods will work properly with HA-JDBC:
+				</p>
+				<ul>
+					<li>High-Low algorithm</li>
+					<li>UUID algorithms</li>
+					<li>Others?</li>
+				</ul>
 			</section>
 			<section>
 				<title>Transactions</title>
 				<p>
-					Coming soon...
+					HA-JDBC supports both traditional JDBC transactions and JTA.
+					HA-JDBC integration will not change your existing transaction semantics.
+					If you are leveraging your JDBC driver's <code>javax.sql.XADataSource</code> implementation for JTA integration, you will need to configure HA-JDBC accordingly.
+				</p>
+				<p>e.g.</p>
+				<p>
+					<code>&nbsp;&nbsp;<![CDATA[<cluster name="java:comp/env/jdbc/Cluster">]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<xa-datasource name="java:comp/env/jdbc/xa/DataSource1">]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<user>postgres</user>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<password>password</password>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</xa-datasource>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<xa-datasource name="java:comp/env/jdbc/xa/DataSource2">]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<user>postgres</user>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<password>password</password>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</xa-datasource>]]></code><br/>
+					<code>&nbsp;&nbsp;<![CDATA[</cluster>]]></code><br/>
 				</p>
 			</section>
 			<section>
 				<title>Connection Pooling</title>
 				<p>
-					Coming soon...
+					HA-JDBC is designed to integrate with your existing connection pooling mechanism.
+					If you are leveraging your JDBC driver's <code>javax.sql.ConnectionPoolDataSource</code> implementation for connection pooling, you will need to configure HA-JDBC accordingly.
+				</p>
+				<p>e.g.</p>
+				<p>
+					<code>&nbsp;&nbsp;<![CDATA[<cluster name="java:comp/env/jdbc/Cluster">]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<pool-datasource name="java:comp/env/jdbc/pool/DataSource1">]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<user>postgres</user>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<password>password</password>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</pool-datasource>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<pool-datasource name="java:comp/env/jdbc/pool/DataSource2">]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<user>postgres</user>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<password>password</password>]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</pool-datasource>]]></code><br/>
+					<code>&nbsp;&nbsp;<![CDATA[</cluster>]]></code><br/>
 				</p>
 			</section>
 			<section>
-				<title>Distributed environment</title>
+				<title>Advanced JDBC Features</title>
 				<p>
 					Coming soon...
 				</p>
 			</section>
 			<section>
-				<title>Advanced JDBC Features</title>
+				<title>Integration with O/R Mapping Frameworks</title>
 				<p>
 					Coming soon...
 				</p>
@@ -273,9 +342,9 @@
 				<dt>Write Operations</dt>
 				<dd>Perform validation check on failed database.  If successful, return the caught exception to the caller.  If unsuccessful, the database is deactivated and the results of the succeeding database nodes are returned to the caller.</dd>
 				<dt>Get Operations</dt>
-				<dd>The exception is immediately return to the caller.</dd>
+				<dd>The exception is immediately returned to the caller.</dd>
 				<dt>Set Operations</dt>
-				<dd>The exception is immediately return to the caller.</dd>
+				<dd>The exception is immediately returned to the caller.</dd>
 			</dl>
 		</section>
 	</body>
