@@ -1,11 +1,10 @@
 package net.sf.ha.jdbc;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,7 +19,7 @@ public abstract class SQLProxy
 	
 	protected SQLProxy(Map objectMap)
 	{
-		this.objectMap = Collections.synchronizedMap(objectMap);
+		this.objectMap = objectMap;
 	}
 	
 	public Object getObject(Database database)
@@ -30,19 +29,8 @@ public abstract class SQLProxy
 	
 	public final Object executeRead(Operation operation) throws SQLException
 	{
-		Database database = null;
-		Object object = null;
-		
-		synchronized (this.objectMap)
-		{
-			if (this.objectMap.size() == 0)
-			{
-				throw new SQLException("No available databases");
-			}
-			
-			database = (Database) this.objectMap.keySet().iterator().next();
-			object = this.objectMap.get(database);
-		}
+		Database database = this.getDatabaseCluster().getDescriptor().nextDatabase();
+		Object object = this.objectMap.get(database);
 		
 		try
 		{
@@ -58,20 +46,8 @@ public abstract class SQLProxy
 	
 	public final Object executeGet(Operation operation) throws SQLException
 	{
-		Map.Entry objectMapEntry = null;
-		
-		synchronized (this.objectMap)
-		{
-			if (this.objectMap.size() == 0)
-			{
-				throw new SQLException("No available databases");
-			}
-			
-			objectMapEntry = (Map.Entry) this.objectMap.entrySet().iterator().next();
-		}
-		
-		Database database = (Database) objectMapEntry.getKey();
-		Object object = objectMapEntry.getValue();
+		Database database = this.getDatabaseCluster().getDescriptor().firstDatabase();
+		Object object = this.objectMap.get(database);
 		
 		return operation.execute(database, object);
 	}
@@ -83,35 +59,19 @@ public abstract class SQLProxy
 	
 	public final Map executeWrite(Operation operation) throws SQLException
 	{
-		Set databaseSet = new HashSet(this.objectMap.keySet());
+		List databaseList = this.getDatabaseCluster().getDescriptor().getActiveDatabaseList();
+		Set databaseSet = new HashSet(databaseList);
 		
-		if (databaseSet.size() == 0)
+		Map returnValueMap = new HashMap(databaseList.size());
+
+		for (int i = 0; i < databaseList.size(); ++i)
 		{
-			throw new SQLException("No available databases");
-		}
-		
-		Map returnValueMap = new LinkedHashMap(databaseSet.size(), 0.75f, true);
-		
-		Iterator databases = new ArrayList(databaseSet).iterator();
-		
-		while (databases.hasNext())
-		{
-			Database database = (Database) databases.next();
+			Database database = (Database) databaseList.get(i);
 			Object object = this.objectMap.get(database);
 			
-			if (object != null)
-			{
-				Executor executor = new Executor(operation, database, object, returnValueMap, databaseSet);
-				
-				new Thread(executor).start();
-			}
-			else
-			{
-				synchronized (databaseSet)
-				{
-					databaseSet.remove(database);
-				}
-			}
+			Executor executor = new Executor(operation, database, object, returnValueMap, databaseSet);
+			
+			new Thread(executor).start();
 		}
 		
 		// Wait until all threads have completed
@@ -152,29 +112,17 @@ public abstract class SQLProxy
 
 	public final Map executeSet(Operation operation) throws SQLException
 	{
-		Set objectMapEntrySet = new HashSet(this.objectMap.entrySet());
-		
-		if (objectMapEntrySet.size() == 0)
+		List databaseList = this.getDatabaseCluster().getDescriptor().getActiveDatabaseList();
+		Map returnValueMap = new HashMap(databaseList.size());
+
+		for (int i = 0; i < databaseList.size(); ++i)
 		{
-			throw new SQLException("No available databases");
-		}
-		
-		Map returnValueMap = new LinkedHashMap(objectMapEntrySet.size(), 0.75f, true);
-		
-		Iterator objectMapEntries = objectMapEntrySet.iterator();
-		
-		while (objectMapEntries.hasNext())
-		{
-			Map.Entry objectMapEntry = (Map.Entry) objectMapEntries.next();
-			Database database = (Database) objectMapEntry.getKey();
-			Object object = objectMapEntry.getValue();
+			Database database = (Database) databaseList.get(i);
+			Object object = this.objectMap.get(database);
 			
-			if (object != null)
-			{
-				Object returnValue = operation.execute(database, object);
-				
-				returnValueMap.put(database, returnValue);
-			}
+			Object returnValue = operation.execute(database, object);
+			
+			returnValueMap.put(database, returnValue);
 		}
 		
 		return returnValueMap;
@@ -182,23 +130,17 @@ public abstract class SQLProxy
 	
 	protected final void handleSQLException(SQLException exception, Database database) throws SQLException
 	{
-		if (this.getDatabaseCluster().isActive(database))
+		DatabaseCluster databaseCluster = this.getDatabaseCluster();
+		
+		if (databaseCluster.isActive(database))
 		{
 			throw exception;
 		}
 		
-		this.deactivate(database);
+		databaseCluster.deactivate(database);
 	}
 
 	protected abstract DatabaseCluster getDatabaseCluster();
-	
-	public void deactivate(Database database)
-	{
-		synchronized (this.objectMap)
-		{
-			this.objectMap.remove(database);
-		}
-	}
 
 	private class Executor implements Runnable
 	{
