@@ -631,11 +631,11 @@ public class StatementProxy extends AbstractProxy implements Statement
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.AbstractProxy#getDatabaseManager()
+	 * @see net.sf.hajdbc.AbstractProxy#getDatabaseCluster()
 	 */
-	protected DatabaseManager getDatabaseManager()
+	protected DatabaseCluster getDatabaseCluster()
 	{
-		return this.connection.getDatabaseManager();
+		return this.connection.getDatabaseCluster();
 	}
 	
 	/**

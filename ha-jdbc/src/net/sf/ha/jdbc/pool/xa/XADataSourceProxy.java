@@ -1,12 +1,12 @@
 package net.sf.ha.jdbc.pool.xa;
 
 import java.sql.SQLException;
-import java.util.Map;
 
 import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 
 import net.sf.ha.jdbc.DataSourceDatabase;
+import net.sf.ha.jdbc.DatabaseCluster;
 import net.sf.ha.jdbc.pool.ConnectionPoolDataSourceProxy;
 
 /**
@@ -15,13 +15,16 @@ import net.sf.ha.jdbc.pool.ConnectionPoolDataSourceProxy;
  */
 public class XADataSourceProxy extends ConnectionPoolDataSourceProxy implements XADataSource
 {
-	/**
-	 * Constructs a new XADataSourceProxy.
-	 * @param databaseMap
-	 */
-	protected XADataSourceProxy(Map databaseMap)
+	private DatabaseCluster databaseCluster;
+
+	public DatabaseCluster getDatabaseCluster()
 	{
-		super(databaseMap);
+		return this.databaseCluster;
+	}
+	
+	public void setDatabaseManager(DatabaseCluster databaseCluster)
+	{
+		this.databaseCluster = databaseCluster;
 	}
 
 	/**
@@ -37,7 +40,7 @@ public class XADataSourceProxy extends ConnectionPoolDataSourceProxy implements 
 			}
 		};
 		
-		return new XAConnectionProxy(this, this.executeWrite(operation));
+		return new XAConnectionProxy(this.databaseCluster, this.databaseCluster.executeWrite(operation));
 	}
 
 	/**
@@ -53,6 +56,14 @@ public class XADataSourceProxy extends ConnectionPoolDataSourceProxy implements 
 			}
 		};
 		
-		return new XAConnectionProxy(this, this.executeWrite(operation));
-	}	
+		return new XAConnectionProxy(this.databaseCluster, this.databaseCluster.executeWrite(operation));
+	}
+	
+	/**
+	 * @see net.sf.ha.jdbc.AbstractDataSourceProxy#getObjectFactoryClass()
+	 */
+	protected Class getObjectFactoryClass()
+	{
+		return XADataSourceProxy.class;
+	}
 }

@@ -11,12 +11,12 @@ import java.util.Map;
  * @version $Revision$
  * @since   1.0
  */
-public class DatabaseManager extends AbstractProxy implements DatabaseEventListener
+public class DatabaseCluster extends AbstractProxy implements DatabaseEventListener
 {
 	private String name;
 	private String validateSQL;
 	
-	protected DatabaseManager(Map databaseMap)
+	protected DatabaseCluster(Map databaseMap)
 	{
 		super(databaseMap);
 	}
@@ -41,7 +41,7 @@ public class DatabaseManager extends AbstractProxy implements DatabaseEventListe
 		this.validateSQL = validateSQL;
 	}
 	
-	protected DatabaseManager getDatabaseManager()
+	protected DatabaseCluster getDatabaseCluster()
 	{
 		return this;
 	}

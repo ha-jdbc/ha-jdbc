@@ -5,7 +5,7 @@ package net.sf.ha.jdbc;
  * @version $Revision$
  * @since   1.0
  */
-public class DistributedClusterManager extends ClusterManager implements DistributedClusterManagerMBean
+public class DistributedClusterManager extends DatabaseClusterManager implements DistributedClusterManagerMBean
 {
 
 }

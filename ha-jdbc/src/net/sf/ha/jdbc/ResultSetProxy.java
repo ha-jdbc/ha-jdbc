@@ -2373,11 +2373,11 @@ public class ResultSetProxy extends AbstractProxy implements ResultSet
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.AbstractProxy#getDatabaseManager()
+	 * @see net.sf.hajdbc.AbstractProxy#getDatabaseCluster()
 	 */
-	protected DatabaseManager getDatabaseManager()
+	protected DatabaseCluster getDatabaseCluster()
 	{
-		return this.statement.getDatabaseManager();
+		return this.statement.getDatabaseCluster();
 	}
 	
 	

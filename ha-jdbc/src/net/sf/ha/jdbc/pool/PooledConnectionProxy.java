@@ -9,7 +9,7 @@ import javax.sql.PooledConnection;
 
 import net.sf.ha.jdbc.AbstractConnectionProxy;
 import net.sf.ha.jdbc.ConnectionProxy;
-import net.sf.ha.jdbc.DatabaseManager;
+import net.sf.ha.jdbc.DatabaseCluster;
 
 /**
  * @author Paul Ferraro
@@ -17,9 +17,9 @@ import net.sf.ha.jdbc.DatabaseManager;
  */
 public class PooledConnectionProxy extends AbstractConnectionProxy implements PooledConnection
 {
-	public PooledConnectionProxy(DatabaseManager databaseManager, Map connectionMap)
+	public PooledConnectionProxy(DatabaseCluster databaseCluster, Map connectionMap)
 	{
-		super(databaseManager, connectionMap);
+		super(databaseCluster, connectionMap);
 	}
 	
 	/**
@@ -35,7 +35,7 @@ public class PooledConnectionProxy extends AbstractConnectionProxy implements Po
 			}
 		};
 		
-		return new ConnectionProxy(this.getDatabaseManager(), this.executeWrite(operation));
+		return new ConnectionProxy(this.getDatabaseCluster(), this.executeWrite(operation));
 	}
 
 	/**

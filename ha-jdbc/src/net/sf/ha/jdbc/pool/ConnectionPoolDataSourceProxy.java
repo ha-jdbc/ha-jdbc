@@ -1,35 +1,20 @@
 package net.sf.ha.jdbc.pool;
 
 import java.io.PrintWriter;
-import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Map;
 
-import javax.naming.NamingException;
-import javax.naming.Reference;
-import javax.naming.Referenceable;
 import javax.sql.ConnectionPoolDataSource;
 import javax.sql.PooledConnection;
 
-import net.sf.ha.jdbc.Database;
+import net.sf.ha.jdbc.AbstractDataSourceProxy;
 import net.sf.ha.jdbc.DataSourceDatabase;
-import net.sf.ha.jdbc.DatabaseManager;
 
 /**
  * @author Paul Ferraro
  * @version $Revision$
  */
-public class ConnectionPoolDataSourceProxy extends DatabaseManager implements ConnectionPoolDataSource, Referenceable
+public class ConnectionPoolDataSourceProxy extends AbstractDataSourceProxy implements ConnectionPoolDataSource
 {
-	/**
-	 * Constructs a new ConnectionPoolDataSourceProxy.
-	 * @param databaseMap
-	 */
-	protected ConnectionPoolDataSourceProxy(Map databaseMap)
-	{
-		super(databaseMap);
-	}
-
 	/**
 	 * @see javax.sql.ConnectionPoolDataSource#getPooledConnection()
 	 */
@@ -43,7 +28,7 @@ public class ConnectionPoolDataSourceProxy extends DatabaseManager implements Co
 			}
 		};
 		
-		return new PooledConnectionProxy(this, this.executeWrite(operation));
+		return new PooledConnectionProxy(this.databaseCluster, this.databaseCluster.executeWrite(operation));
 	}
 
 	/**
@@ -59,7 +44,7 @@ public class ConnectionPoolDataSourceProxy extends DatabaseManager implements Co
 			}
 		};
 		
-		return new PooledConnectionProxy(this, this.executeWrite(operation));
+		return new PooledConnectionProxy(this.databaseCluster, this.databaseCluster.executeWrite(operation));
 	}
 
 	/**
@@ -75,7 +60,7 @@ public class ConnectionPoolDataSourceProxy extends DatabaseManager implements Co
 			}
 		};
 		
-		return ((Integer) this.executeRead(operation)).intValue();
+		return ((Integer) this.databaseCluster.executeRead(operation)).intValue();
 	}
 
 	/**
@@ -93,7 +78,7 @@ public class ConnectionPoolDataSourceProxy extends DatabaseManager implements Co
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.databaseCluster.executeWrite(operation);
 	}
 
 	/**
@@ -109,7 +94,7 @@ public class ConnectionPoolDataSourceProxy extends DatabaseManager implements Co
 			}
 		};
 		
-		return (PrintWriter) this.executeRead(operation);
+		return (PrintWriter) this.databaseCluster.executeRead(operation);
 	}
 
 	/**
@@ -127,28 +112,14 @@ public class ConnectionPoolDataSourceProxy extends DatabaseManager implements Co
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.databaseCluster.executeWrite(operation);
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseManager#getConnection(net.sf.hajdbc.ConnectionInfo)
+	 * @see net.sf.ha.jdbc.AbstractDataSourceProxy#getObjectFactoryClass()
 	 */
-	protected Connection connect(Database database, Object object) throws SQLException
+	protected Class getObjectFactoryClass()
 	{
-		DataSourceDatabase info = (DataSourceDatabase) database;
-		ConnectionPoolDataSource dataSource = (ConnectionPoolDataSource) object;
-		String user = info.getUser();
-		
-		PooledConnection connection = (user == null) ? dataSource.getPooledConnection() : dataSource.getPooledConnection(user, info.getPassword());
-		
-		return connection.getConnection();
+		return ConnectionPoolDataSourceFactory.class;
 	}
-	
-	/**
-	 * @see javax.naming.Referenceable#getReference()
-	 */
-	public Reference getReference() throws NamingException
-	{
-		throw new NamingException();
-	}	
 }

@@ -11,12 +11,12 @@ import javax.management.ObjectName;
  * @version $Revision$
  * @since   1.0
  */
-public class ClusterManagerFactory
+public class DatabaseClusterManagerFactory
 {
 	private static final boolean DISTRIBUTED = false;
 	private static MBeanServer server;
 	
-	public static synchronized ClusterManager getClusterManager()
+	public static synchronized DatabaseClusterManager getClusterManager()
 	{
 		if (DISTRIBUTED)
 		{
@@ -27,7 +27,7 @@ public class ClusterManagerFactory
 			
 			try
 			{
-				return (ClusterManager) MBeanServerInvocationHandler.newProxyInstance(server, ObjectName.getInstance(""), DistributedClusterManagerMBean.class, false);
+				return (DatabaseClusterManager) MBeanServerInvocationHandler.newProxyInstance(server, ObjectName.getInstance(""), DistributedClusterManagerMBean.class, false);
 			}
 			catch (JMException e)
 			{

@@ -3,24 +3,15 @@ package net.sf.ha.jdbc;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Map;
 
-import javax.naming.NamingException;
-import javax.naming.Reference;
-import javax.naming.Referenceable;
 import javax.sql.DataSource;
 
 /**
  * @author Paul Ferraro
  * @version $Revision$
  */
-public class DataSourceProxy extends DatabaseManager implements DataSource, Referenceable
+public class DataSourceProxy extends AbstractDataSourceProxy implements DataSource
 {
-	public DataSourceProxy(Map dataSourceMap)
-	{
-		super(dataSourceMap);
-	}
-	
 	/**
 	 * @see javax.sql.DataSource#getLoginTimeout()
 	 */
@@ -34,7 +25,7 @@ public class DataSourceProxy extends DatabaseManager implements DataSource, Refe
 			}
 		};
 		
-		return ((Integer) this.executeRead(operation)).intValue();
+		return ((Integer) this.databaseCluster.executeRead(operation)).intValue();
 	}
 
 	/**
@@ -52,7 +43,7 @@ public class DataSourceProxy extends DatabaseManager implements DataSource, Refe
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.databaseCluster.executeWrite(operation);
 	}
 
 	/**
@@ -68,7 +59,7 @@ public class DataSourceProxy extends DatabaseManager implements DataSource, Refe
 			}
 		};
 		
-		return (PrintWriter) this.executeRead(operation);
+		return (PrintWriter) this.databaseCluster.executeRead(operation);
 	}
 
 	/**
@@ -86,7 +77,7 @@ public class DataSourceProxy extends DatabaseManager implements DataSource, Refe
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.databaseCluster.executeWrite(operation);
 	}
 
 	/**
@@ -102,7 +93,7 @@ public class DataSourceProxy extends DatabaseManager implements DataSource, Refe
 			}
 		};
 		
-		return new ConnectionProxy(this, this.executeWrite(operation));
+		return new ConnectionProxy(this.databaseCluster, this.databaseCluster.executeWrite(operation));
 	}
 
 	/**
@@ -118,39 +109,14 @@ public class DataSourceProxy extends DatabaseManager implements DataSource, Refe
 			}
 		};
 		
-		return new ConnectionProxy(this, this.executeWrite(operation));
+		return new ConnectionProxy(this.databaseCluster, this.databaseCluster.executeWrite(operation));
 	}
 
 	/**
-	 * @see javax.naming.Referenceable#getReference()
+	 * @see net.sf.ha.jdbc.AbstractDataSourceProxy#getObjectFactoryClass()
 	 */
-	public Reference getReference() throws NamingException
+	protected Class getObjectFactoryClass()
 	{
-        Reference ref = new Reference(this.getClass().getName(), DataSourceFactory.class.getName(), null);
-/*        
-        ref.add(new StringRefAddr("user", getUser()));
-        ref.add(new StringRefAddr("password", password));
-        ref.add(new StringRefAddr("serverName", getServerName()));
-        ref.add(new StringRefAddr("port", "" + getPort()));
-        ref.add(new StringRefAddr("databaseName", getDatabaseName()));
-        ref.add(new StringRefAddr("profileSql", getProfileSql()));
-        ref.add(new StringRefAddr("explicitUrl", String.valueOf(this.explicitUrl)));
-        ref.add(new StringRefAddr("url", getUrl()));
-*/
-        if (false)
-        {
-        	throw new NamingException();
-        }
-        
-        return ref;
-	}
-	
-	protected Connection connect(Database database, Object object) throws SQLException
-	{
-		DataSourceDatabase info = (DataSourceDatabase) database;
-		DataSource dataSource = (DataSource) object;
-		String user = info.getUser();
-		
-		return (user == null) ? dataSource.getConnection() : dataSource.getConnection(user, info.getPassword());
+		return DataSourceFactory.class;
 	}
 }

@@ -9,26 +9,26 @@ import java.util.Map;
  */
 public class AbstractConnectionProxy extends AbstractProxy
 {
-	private DatabaseManager databaseManager;
+	private DatabaseCluster databaseCluster;
 	
-	protected AbstractConnectionProxy(DatabaseManager databaseManager, Map connectionMap)
+	protected AbstractConnectionProxy(DatabaseCluster databaseCluster, Map connectionMap)
 	{
 		super(connectionMap);
 		
-		this.databaseManager = databaseManager;
+		this.databaseCluster = databaseCluster;
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.AbstractProxy#getDatabaseManager()
+	 * @see net.sf.hajdbc.AbstractProxy#getDatabaseCluster()
 	 */
-	protected DatabaseManager getDatabaseManager()
+	protected DatabaseCluster getDatabaseCluster()
 	{
-		return this.databaseManager;
+		return this.databaseCluster;
 	}
 	
 	public void deactivate(Database database)
 	{
-		this.databaseManager.deactivate(database);
+		this.databaseCluster.deactivate(database);
 		super.deactivate(database);
 	}
 }

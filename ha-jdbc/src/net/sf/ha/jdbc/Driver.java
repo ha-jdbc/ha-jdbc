@@ -4,8 +4,11 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * @author Paul Ferraro
@@ -30,12 +33,37 @@ public final class Driver implements java.sql.Driver
 		}
 	}
 
-	// Maps cluster name -> DatabaseManager
-	private Map databaseManagerMap;
+	// Maps cluster name -> DatabaseCluster
+	private Map databaseClusterMap;
 	
-	public Driver()// throws SQLException
+	public Driver() throws SQLException
 	{
-//		ClusterManagerFactory.getClusterManager().getCluster();
+		Set clusterSet = DatabaseClusterManagerFactory.getClusterManager().getClusterSet(this.getClass());
+		
+		this.databaseClusterMap = new HashMap(clusterSet.size());
+		
+		Iterator clusters = clusterSet.iterator();
+		
+		while (clusters.hasNext())
+		{
+			String clusterName = (String) clusters.next();
+
+			Set databaseSet = DatabaseClusterManagerFactory.getClusterManager().getDatabaseSet(clusterName);
+			
+			Map driverMap = new HashMap(databaseSet.size());
+			
+			Iterator databases = databaseSet.iterator();
+			
+			while (databases.hasNext())
+			{
+				DriverDatabase database = (DriverDatabase) databases.next();
+				
+				java.sql.Driver driver = DriverManager.getDriver(database.getUrl());
+				driverMap.put(database, driver);
+			}
+			
+			this.databaseClusterMap.put(clusterName, driverMap);
+		}
 	}
 	
 	/**
@@ -62,9 +90,9 @@ public final class Driver implements java.sql.Driver
 		return JDBC_COMPLIANT;
 	}
 	
-	private DatabaseManager getDatabaseManager(String clusterName)
+	private DatabaseCluster getDatabaseCluster(String clusterName)
 	{
-		return (DatabaseManager) this.databaseManagerMap.get(clusterName);
+		return (DatabaseCluster) this.databaseClusterMap.get(clusterName);
 	}
 	
 	private String extractClusterName(String url)
@@ -76,7 +104,7 @@ public final class Driver implements java.sql.Driver
 	
 	private boolean acceptsClusterName(String clusterName)
 	{
-		return this.databaseManagerMap.keySet().contains(clusterName);
+		return this.databaseClusterMap.keySet().contains(clusterName);
 	}
 	
 	/**
@@ -101,7 +129,7 @@ public final class Driver implements java.sql.Driver
 			return null;
 		}
 		
-		DatabaseManager databaseManager = this.getDatabaseManager(clusterName);
+		DatabaseCluster databaseCluster = this.getDatabaseCluster(clusterName);
 		
 		DriverOperation operation = new DriverOperation()
 		{
@@ -111,7 +139,7 @@ public final class Driver implements java.sql.Driver
 			}
 		};
 		
-		return new ConnectionProxy(databaseManager, databaseManager.executeWrite(operation));
+		return new ConnectionProxy(databaseCluster, databaseCluster.executeWrite(operation));
 	}
 	
 	/**
@@ -126,7 +154,7 @@ public final class Driver implements java.sql.Driver
 			return null;
 		}
 		
-		DatabaseManager databaseManager = this.getDatabaseManager(clusterName);
+		DatabaseCluster databaseCluster = this.getDatabaseCluster(clusterName);
 		
 		DriverOperation operation = new DriverOperation()
 		{
@@ -136,6 +164,6 @@ public final class Driver implements java.sql.Driver
 			}
 		};
 		
-		return (DriverPropertyInfo[]) databaseManager.executeRead(operation);
+		return (DriverPropertyInfo[]) databaseCluster.executeRead(operation);
 	}
 }

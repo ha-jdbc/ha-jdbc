@@ -16,9 +16,9 @@ import java.util.Map;
  */
 public class ConnectionProxy extends AbstractConnectionProxy implements java.sql.Connection
 {
-	public ConnectionProxy(DatabaseManager databaseManager, Map connectionMap)
+	public ConnectionProxy(DatabaseCluster databaseCluster, Map connectionMap)
 	{
-		super(databaseManager, connectionMap);
+		super(databaseCluster, connectionMap);
 	}
 	
 	/**

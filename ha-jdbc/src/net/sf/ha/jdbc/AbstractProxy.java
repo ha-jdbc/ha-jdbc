@@ -20,7 +20,7 @@ public abstract class AbstractProxy
 		this.objectMap = Collections.synchronizedMap(objectMap);
 	}
 	
-	protected final Object executeRead(Operation operation) throws SQLException
+	public final Object executeRead(Operation operation) throws SQLException
 	{
 		Database database = null;
 		
@@ -45,12 +45,12 @@ public abstract class AbstractProxy
 		}
 	}
 	
-	protected final Object firstItem(Map returnValueMap)
+	public final Object firstItem(Map returnValueMap)
 	{
 		return returnValueMap.values().iterator().next();
 	}
 	
-	protected final Map executeWrite(Operation operation) throws SQLException
+	public final Map executeWrite(Operation operation) throws SQLException
 	{
 		ThreadGroup threadGroup = new ThreadGroup(null);
 		Map returnValueMap = Collections.synchronizedMap(new HashMap(this.objectMap.size()));
@@ -108,7 +108,7 @@ public abstract class AbstractProxy
 	
 	protected final void handleSQLException(SQLException exception, Database database) throws SQLException
 	{
-		if (this.getDatabaseManager().isActive(database))
+		if (this.getDatabaseCluster().isActive(database))
 		{
 			throw exception;
 		}
@@ -116,7 +116,7 @@ public abstract class AbstractProxy
 		this.deactivate(database);
 	}
 
-	protected abstract DatabaseManager getDatabaseManager();
+	protected abstract DatabaseCluster getDatabaseCluster();
 	
 	public void deactivate(Database database)
 	{

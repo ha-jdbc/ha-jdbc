@@ -5,16 +5,16 @@ package net.sf.ha.jdbc;
  * @version $Revision$
  * @since   1.0
  */
-public class SimpleClusterManager extends ClusterManager
+public class SimpleClusterManager extends DatabaseClusterManager
 {
-	public static ClusterManager instance = new SimpleClusterManager();
+	public static DatabaseClusterManager instance = new SimpleClusterManager();
 	
 	private SimpleClusterManager()
 	{
 		super();
 	}
 	
-	public static ClusterManager getInstance()
+	public static DatabaseClusterManager getInstance()
 	{
 		return instance;
 	}

@@ -10,19 +10,27 @@ import java.util.Set;
  * @version $Revision$
  * @since   1.0
  */
-public class ClusterManager
+public class DatabaseClusterManager
 {
 	private Set listenerSet = Collections.synchronizedSet(new HashSet());
-	private Map clusterMap;
+	// Maps cluster name -> Set of Databases
+	private Map databaseClusterMap;
+	// Maps cluster type -> Set of cluster names
+	private Map classMap;
 	
-	protected ClusterManager()
+	protected DatabaseClusterManager()
 	{
 		// Initialize cluster
 	}
 	
-	public Set getCluster(String name)
+	public Set getDatabaseSet(String name)
 	{
-		return (Set) this.clusterMap.get(name);
+		return (Set) this.databaseClusterMap.get(name);
+	}
+	
+	public Set getClusterSet(Class databaseClass)
+	{
+		return (Set) this.classMap.get(databaseClass);
 	}
 	
 	public void addDatabaseEventListener(DatabaseEventListener listener)

@@ -6,7 +6,7 @@ import java.util.Map;
 import javax.sql.XAConnection;
 import javax.transaction.xa.XAResource;
 
-import net.sf.ha.jdbc.DatabaseManager;
+import net.sf.ha.jdbc.DatabaseCluster;
 import net.sf.ha.jdbc.pool.PooledConnectionProxy;
 
 /**
@@ -20,9 +20,9 @@ public class XAConnectionProxy extends PooledConnectionProxy implements XAConnec
 	 * @param driver
 	 * @param connectionMap
 	 */
-	public XAConnectionProxy(DatabaseManager databaseManager, Map connectionMap)
+	public XAConnectionProxy(DatabaseCluster databaseCluster, Map connectionMap)
 	{
-		super(databaseManager, connectionMap);
+		super(databaseCluster, connectionMap);
 	}
 	
 	/**
