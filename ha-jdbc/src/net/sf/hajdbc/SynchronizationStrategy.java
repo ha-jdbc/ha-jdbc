@@ -30,5 +30,14 @@ import java.util.List;
  */
 public interface SynchronizationStrategy
 {
+	/**
+	 * Synchronizes the an inactive database with an active database using the specified connections.
+	 * Implementors must not close the specified connections.
+	 * @param inactiveConnection a connection to the inactive database
+	 * @param activeConnection a connection to the active database
+	 * @param tableList a list of every table in the database
+	 * @param descriptor the descriptor of this database cluster
+	 * @throws java.sql.SQLException if synchronization fails
+	 */
 	public void synchronize(Connection inactiveConnection, Connection activeConnection, List tableList, DatabaseClusterDescriptor descriptor) throws java.sql.SQLException;
 }
