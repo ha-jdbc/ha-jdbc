@@ -193,24 +193,23 @@
 				<title>Unique identifier generation</title>
 				<p>The following traditional mechanisms for generating unique identifiers are problematic for clustered database environments:</p>
 				<ul>
-					<li>Identity columns (supported by MySQL, HSQLDB, DB2, MS SQL Server, Sybase, etc.) fetched using the Java 1.4 <code>ResultSet.getGeneratedKeys()</code> method</li>
-					<li>Sequences (supported by PostgreSQL, MySQL MaxDB (fka SAP DB), Firebird (fka Interbase), Mckoi, Oracle, DB2, etc.)</li>
+					<li>Identity columns (only supported by MySQL, HSQLDB, DB2, MS SQL Server, Sybase, etc.) fetched using the JDBC 3.0 <code>ResultSet.getGeneratedKeys()</code> method</li>
+					<li>Sequences (only supported by PostgreSQL, MySQL MaxDB (fka SAP DB), Firebird (fka Interbase), Mckoi, Oracle, DB2, etc.)</li>
 				</ul>
 				<p>
-					For any of these mechanisms to work in a database cluster, each database node would need to independently generate the same identifiers.
-					To make this happen, all incoming database requests would need to be synchronized through a central cluster manager.
-					This would adversely affect the scalability of the cluster as the number of distributed clients increase.
-					For now, HA-JDBC does not accommodate the above mechanisms in favor a design that uses more efficient asynchronous request execution.
+					In general, for any of these mechanisms to work properly, each database node within a cluster would need to independently generate the same sets of identifiers.
+					Because of the distributed nature of HA-JDBC, the execution order of 2 simulaneous requests for a new unique identifier cannot be guananteed to be the same on each database.
+					In other words, HA-JDBC cannot guarantee that the same identifier will be generated for each database in the cluster.
+					Another reason not to use either of these mechanisms is that they are not supported by every DBMS.
 				</p>
-				<p>The following alternative unique identifier generation methods will work properly with HA-JDBC:</p>
+				<p>The following alternative unique identifier generation methods are certain to function properly with HA-JDBC for any database:</p>
 				<ul>
 					<li>High-Low algorithm (often implemented using a Stateless Session EJB)</li>
 					<li>UUID algorithms</li>
 					<li>Others?</li>
 				</ul>
 				<p>
-					Most object-relation mapping (ORM) frameworks (e.g. JDO, Hibernate, OJB, Cayanne) include implementations of these mechanisms.
-					ORM frameworks will even recommend these mechanisms over sequences and identity columns for the sake of portability.
+					Object-relation mapping (ORM) frameworks (e.g. Hibernate, OJB, Cayanne) typically include implementations of these mechanisms.
 				</p>
 			</section>
 			<section>
@@ -345,12 +344,12 @@ rs.close();
 				<p>e.g.</p>
 				<source><![CDATA[
 <ha-jdbc>
-	<cluster name="cluster">
-		<!-- Sample validation query for HSQLDB -->
-		<validate-sql>CALL NOW()</validate-sql>
-		<database url="..." driver="..."></database>
-		<database url="..." driver="..."></database>
-	</cluster>
+  <cluster name="cluster">
+    <!-- Sample validation query for HSQLDB -->
+    <validate-sql>CALL NOW()</validate-sql>
+    <database url="..." driver="..."></database>
+    <database url="..." driver="..."></database>
+  </cluster>
 </ha-jdbc>
 ]]></source>
 				<p>If HA-JDBC determines that a given database has failed:</p>
@@ -405,11 +404,11 @@ public class FasterFullSynchronizationStrategy extends FullSynchronizationStrate
 				<p>e.g.</p>
 				<source><![CDATA[
 <ha-jdbc>
-	<cluster name="cluster">
-		<default-sync-strategy>net.sf.hajdbc.sync.FullSynchronizationStrategy</default-sync-strategy>
-		<database url="..." driver="..."></database>
-		<database url="..." driver="..."></database>
-	</cluster>
+  <cluster name="cluster">
+    <default-sync-strategy>net.sf.hajdbc.sync.FullSynchronizationStrategy</default-sync-strategy>
+    <database url="..." driver="..."></database>
+    <database url="..." driver="..."></database>
+  </cluster>
 </ha-jdbc>
 ]]></source>
 				<p>
