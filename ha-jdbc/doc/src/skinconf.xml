@@ -79,10 +79,10 @@ be used to configure the chosen Forrest skin.
 
 	<!-- optional group logo
 		 skin: forrest-site renders it at the top-left corner -->
-	<group-name></group-name>
+	<!--group-name></group-name>
 	<group-description></group-description>
 	<group-url></group-url>
-	<group-logo></group-logo>
+	<group-logo></group-logo-->
 	<!-- Alternative static image:
 	<group-logo>images/group-logo.gif</group-logo> -->
 
