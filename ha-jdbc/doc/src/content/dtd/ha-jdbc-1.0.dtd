@@ -24,27 +24,34 @@
 	PUBLIC "-//HA-JDBC//DTD HA-JDBC 1.0//EN"
 	SYSTEM "http://ha-jdbc.sourceforge.net/dtd/ha-jdbc-1.0.dtd"
 -->
-<!ELEMENT ha-jdbc (local|distributed)>
-<!ELEMENT local (cluster+)>
-<!ELEMENT distributable (cluster+)>
+<!ELEMENT ha-jdbc (distributable?, cluster+)>
+
+<!ELEMENT distributable EMPTY>
 <!ATTLIST distributable
 	protocol CDATA #REQUIRED
 >
-<!ELEMENT cluster ((database+)|(datasource+)|(pooled-datasource+)|(xa-datasource+))>
+<!ELEMENT cluster (validate-sql?, create-foreign-key-sql?, drop-foreign-key-sql?, create-index-sql?, drop-index-sql?, (database+ | datasource+ | pool-datasource+ | xa-datasource+))>
 <!ATTLIST cluster
 	name CDATA #REQUIRED
-	validate-sql CDATA #IMPLIED
 >
-<!ELEMENT database (user,password)?>
+<!ELEMENT validate-sql (#PCDATA)>
+<!ELEMENT create-foreign-key-sql (#PCDATA)>
+<!ELEMENT drop-foreign-key-sql (#PCDATA)>
+<!ELEMENT create-index-sql (#PCDATA)>
+<!ELEMENT drop-index-sql (#PCDATA)>
+
+<!ENTITY % authentication-info "(user, password)?">
+
+<!ELEMENT database %authentication-info;>
 <!ATTLIST database
 	url CDATA #REQUIRED
 	driver CDATA #REQUIRED
 >
-<!ELEMENT datasource (user,password)?>
+<!ELEMENT datasource %authentication-info;>
 <!ATTLIST datasource name CDATA #REQUIRED>
-<!ELEMENT pool-datasource (user,password)?>
+<!ELEMENT pool-datasource %authentication-info;>
 <!ATTLIST pool-datasource name CDATA #REQUIRED>
-<!ELEMENT xa-datasource (user,password)?>
+<!ELEMENT xa-datasource %authentication-info;>
 <!ATTLIST xa-datasource name CDATA #REQUIRED>
 <!ELEMENT user (#PCDATA)>
 <!ELEMENT password (#PCDATA)>
