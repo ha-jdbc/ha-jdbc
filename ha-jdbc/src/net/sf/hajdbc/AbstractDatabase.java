@@ -30,6 +30,7 @@ public abstract class AbstractDatabase implements Database
 	protected String id;
 	protected String user;
 	protected String password;
+	protected Integer weight;
 
 	/**
 	 * @see net.sf.hajdbc.Database#getId()
@@ -79,6 +80,22 @@ public abstract class AbstractDatabase implements Database
 		this.password = password;
 	}
 
+	/**
+	 * @see net.sf.hajdbc.Database#getWeight()
+	 */
+	public Integer getWeight()
+	{
+		return weight;
+	}
+	
+	/**
+	 * @param weight The weight to set.
+	 */
+	public void setWeight(Integer weight)
+	{
+		this.weight = weight;
+	}
+	
 	/**
 	 * @see java.lang.Object#hashCode()
 	 */

@@ -50,4 +50,13 @@ public interface Database
 	 * @throws SQLException if connection factory could not be created
 	 */
 	public Object createConnectionFactory() throws SQLException;
+	
+	/**
+	 * Returns the relative "weight" of this cluster node.
+	 * In general, when choosing a node to service read requests, a cluster will favor the node with the highest weight.
+	 * A weight of 0 is somewhat special, depending on the type of balancer used by the cluster.
+	 * In most cases, a weight of 0 means that this node will never service read requests unless it is the only node in the cluster.
+	 * @return a positive integer
+	 */
+	public Integer getWeight();
 }

@@ -24,11 +24,9 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -152,15 +150,10 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 			return;
 		}
 		
-		List databaseList = this.getDatabaseList();
-		
-		if (databaseList.isEmpty())
-		{
-			return;
-		}
+		Database[] databases = this.getDatabases();
 		
 		Connection inactiveConnection = null;
-		Connection[] activeConnections = new Connection[databaseList.size()];
+		Connection[] activeConnections = new Connection[databases.length];
 		
 		try
 		{
@@ -180,9 +173,9 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 			resultSet.close();
 
 			// Open connections to all active databases
-			for (int i = 0; i < databaseList.size(); ++i)
+			for (int i = 0; i < databases.length; ++i)
 			{
-				Database activeDatabase = (Database) databaseList.get(i);
+				Database activeDatabase = databases[i];
 				
 				activeConnections[i] = activeDatabase.connect(DatabaseCluster.this.getConnectionFactory().getSQLObject(activeDatabase));
 			}
@@ -226,7 +219,7 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 			
 			for (int i = 0; i < activeConnections.length; ++i)
 			{
-				this.close(activeConnections[i], (Database) databaseList.get(i));
+				this.close(activeConnections[i], databases[i]);
 			}
 		}
 	}
@@ -291,10 +284,10 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 
 	/**
 	 * Returns all the databases in this cluster.
-	 * @return a list of database descriptors
+	 * @return an array of Database descriptors
 	 * @throws java.sql.SQLException if the cluster is empty
 	 */
-	public abstract List getDatabaseList() throws java.sql.SQLException;
+	public abstract Database[] getDatabases() throws java.sql.SQLException;
 
 	/**
 	 * Returns a connection factory proxy for this obtaining connections to databases in this cluster.
@@ -322,13 +315,6 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	 * @throws java.sql.SQLException if no database exists with the specified identifier
 	 */
 	public abstract Database getDatabase(String id) throws java.sql.SQLException;
-	
-	/**
-	 * Returns a set of databases added to this cluster since the last call to {@link #getDatabaseList()}.
-	 * @param databases a collection of known databases
-	 * @return a Set<Database>
-	 */
-	public abstract Set getNewDatabaseSet(Collection databases);
 	
 	/**
 	 * Returns the synchronization strategy identified by the specified id

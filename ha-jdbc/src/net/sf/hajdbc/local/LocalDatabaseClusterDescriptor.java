@@ -37,6 +37,7 @@ import net.sf.hajdbc.SynchronizationStrategyDescriptor;
 public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 {
 	private String id;
+	private String balancer;
 	private String validateSQL;
 	private Map databaseMap = new HashMap();
 	private Map synchronizationStrategyMap = new HashMap();
@@ -84,6 +85,11 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 	public String getId()
 	{
 		return this.id;
+	}
+	
+	public String getBalancer()
+	{
+		return this.balancer;
 	}
 	
 	/**

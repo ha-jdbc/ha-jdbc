@@ -21,8 +21,6 @@
 package net.sf.hajdbc;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author  Paul Ferraro
@@ -65,9 +63,9 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getDatabaseList()
 	 */
-	public final List getDatabaseList() throws java.sql.SQLException
+	public final Database[] getDatabases() throws java.sql.SQLException
 	{
-		return this.databaseCluster.getDatabaseList();
+		return this.databaseCluster.getDatabases();
 	}
 	
 	/**
@@ -108,14 +106,6 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 	public final Database getDatabase(String databaseId) throws java.sql.SQLException
 	{
 		return this.databaseCluster.getDatabase(databaseId);
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getNewDatabaseSet(java.util.Collection)
-	 */
-	public final Set getNewDatabaseSet(Collection databases)
-	{
-		return this.databaseCluster.getNewDatabaseSet(databases);
 	}
 	
 	/**

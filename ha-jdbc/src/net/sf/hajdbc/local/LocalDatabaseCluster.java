@@ -23,18 +23,21 @@ package net.sf.hajdbc.local;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import net.sf.hajdbc.Balancer;
+import net.sf.hajdbc.BalancerFactory;
 import net.sf.hajdbc.ConnectionFactoryProxy;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
@@ -52,7 +55,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 {
 	private static Log log = LogFactory.getLog(LocalDatabaseCluster.class);
 	
-	private Set activeDatabaseSet = new LinkedHashSet();
+	private Balancer balancer;
 	private LocalDatabaseClusterDescriptor descriptor;
 	private ConnectionFactoryProxy connectionFactory;
 	
@@ -64,6 +67,8 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	public LocalDatabaseCluster(LocalDatabaseClusterDescriptor descriptor) throws java.sql.SQLException
 	{
 		this.descriptor = descriptor;
+		
+		this.balancer = BalancerFactory.getBalancer(descriptor.getBalancer());
 		
 		Map databaseMap = descriptor.getDatabaseMap();
 		Map connectionFactoryMap = new HashMap(databaseMap.size());
@@ -87,7 +92,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 			
 			if (this.isAlive(database))
 			{
-				this.activeDatabaseSet.add(database);
+				this.balancer.add(database);
 			}
 			else
 			{
@@ -150,10 +155,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	 */
 	public boolean deactivate(Database database)
 	{
-		synchronized (this.activeDatabaseSet)
-		{
-			return this.activeDatabaseSet.remove(database);
-		}
+		return this.balancer.remove(database);
 	}
 
 	/**
@@ -177,10 +179,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	 */
 	public boolean activate(Database database)
 	{
-		synchronized (this.activeDatabaseSet)
-		{
-			return this.activeDatabaseSet.add(database);
-		}
+		return this.balancer.add(database);
 	}
 	
 	/**
@@ -188,14 +187,13 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	 */
 	public Database firstDatabase() throws SQLException
 	{
-		synchronized (this.activeDatabaseSet)
+		try
 		{
-			if (this.activeDatabaseSet.isEmpty())
-			{
-				throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this));
-			}
-			
-			return (Database) this.activeDatabaseSet.iterator().next();
+			return this.balancer.first();
+		}
+		catch (NoSuchElementException e)
+		{
+			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this));
 		}
 	}
 	
@@ -204,42 +202,29 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	 */
 	public Database nextDatabase() throws SQLException
 	{
-		synchronized (this.activeDatabaseSet)
+		try
 		{
-			Database database = this.firstDatabase();
-			
-			if (this.activeDatabaseSet.size() > 1)
-			{
-				this.activeDatabaseSet.remove(database);
-				
-				this.activeDatabaseSet.add(database);
-			}
-			
-			return database;
+			return this.balancer.next();
+		}
+		catch (NoSuchElementException e)
+		{
+			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this));
 		}
 	}
 
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getDatabaseList()
 	 */
-	public List getDatabaseList() throws SQLException
+	public Database[] getDatabases() throws SQLException
 	{
-		List activeDatabaseList = this.getActiveDatabaseList();
+		Database[] databases = this.balancer.toArray();
 		
-		if (activeDatabaseList.isEmpty())
+		if (databases.length == 0)
 		{
 			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this));
 		}
-
-		return activeDatabaseList;
-	}
-	
-	private List getActiveDatabaseList()
-	{
-		synchronized (this.activeDatabaseSet)
-		{
-			return new ArrayList(this.activeDatabaseSet);
-		}
+		
+		return databases;
 	}
 	
 	/**
@@ -247,7 +232,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	 */
 	public Collection getActiveDatabases()
 	{
-		return this.getDatabaseIds(this.getActiveDatabaseList());
+		return this.getDatabaseIds(Arrays.asList(this.balancer.toArray()));
 	}
 
 	/**
@@ -257,10 +242,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	{
 		Set databaseSet = new HashSet(this.descriptor.getDatabaseMap().values());
 
-		synchronized (this.activeDatabaseSet)
-		{
-			databaseSet.removeAll(this.activeDatabaseSet);
-		}
+		databaseSet.removeAll(Arrays.asList(this.balancer.toArray()));
 
 		return this.getDatabaseIds(databaseSet);
 	}
@@ -301,29 +283,9 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	 */
 	public boolean isActive(Database database)
 	{
-		synchronized (this.activeDatabaseSet)
-		{
-			return this.activeDatabaseSet.contains(database);
-		}
+		return this.balancer.contains(database);
 	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getNewDatabaseSet(java.util.Collection)
-	 */
-	public Set getNewDatabaseSet(Collection databases)
-	{
-		Set databaseSet = null;
-		
-		synchronized (this.activeDatabaseSet)
-		{
-			databaseSet = new HashSet(this.activeDatabaseSet);
-		}
-		
-		databaseSet.removeAll(databases);
-		
-		return databaseSet;
-	}
-	
+
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getSynchronizationStrategy(java.lang.String)
 	 */
