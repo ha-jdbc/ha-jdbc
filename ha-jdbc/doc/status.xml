@@ -10,6 +10,14 @@
 			defined for 'add', 'fix', 'remove', 'update' and 'hack'. If you add
 			src/documentation/resources/images/<foo>.jpg images, these will
 			automatically be used for entries of type <foo>. -->
+		<release version="1.0-beta-7" date="April 5, 2005">
+			<action type="fix" dev="PF">
+				Fixed buggy weighted round-robin algorithm.
+			</action>
+			<action type="fix" dev="PF">
+				Round-robin balancer now handles databases with 0 weight properly.
+			</action>
+		</release>
 		<release version="1.0-beta-6" date="March 31, 2005">
 			<action type="update" dev="PF">
 				Database cluster now specifies 1 of 4 different strategies for balancing read requests: simple, random, round-robin, or load.
