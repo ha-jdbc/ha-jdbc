@@ -32,6 +32,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import net.sf.hajdbc.ConnectionFactoryProxy;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
@@ -45,6 +48,8 @@ import net.sf.hajdbc.SQLException;
  */
 public class LocalDatabaseCluster extends DatabaseCluster
 {
+	private static Log log = LogFactory.getLog(LocalDatabaseCluster.class);
+	
 	private Set activeDatabaseSet = new LinkedHashSet();
 	private LocalDatabaseClusterDescriptor descriptor;
 	private ConnectionFactoryProxy connectionFactory;
@@ -81,6 +86,10 @@ public class LocalDatabaseCluster extends DatabaseCluster
 			if (this.isAlive(database))
 			{
 				this.activeDatabaseSet.add(database);
+			}
+			else
+			{
+				log.warn(database + " is not responding and will be deactived by default.");
 			}
 		}
 	}
