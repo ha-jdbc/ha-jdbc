@@ -26,13 +26,18 @@ public abstract class SQLProxy
 	public final Object executeRead(Operation operation) throws SQLException
 	{
 		Database database = null;
+		Object object = null;
 		
 		synchronized (this.objectMap)
 		{
+			if (this.objectMap.size() == 0)
+			{
+				throw new SQLException("No available databases");
+			}
+			
 			database = (Database) this.objectMap.keySet().iterator().next();
+			object = this.objectMap.get(database);
 		}
-
-		Object object = this.objectMap.get(database);
 		
 		try
 		{
@@ -44,6 +49,26 @@ public abstract class SQLProxy
 			
 			return this.executeRead(operation);
 		}
+	}
+	
+	public final Object executeGet(Operation operation) throws SQLException
+	{
+		Map.Entry objectMapEntry = null;
+		
+		synchronized (this.objectMap)
+		{
+			if (this.objectMap.size() == 0)
+			{
+				throw new SQLException("No available databases");
+			}
+			
+			objectMapEntry = (Map.Entry) this.objectMap.entrySet().iterator().next();
+		}
+		
+		Database database = (Database) objectMapEntry.getKey();
+		Object object = objectMapEntry.getValue();
+		
+		return operation.execute(database, object);
 	}
 	
 	public final Object firstItem(Map returnValueMap)
@@ -69,9 +94,19 @@ public abstract class SQLProxy
 			Database database = (Database) databases.next();
 			Object object = this.objectMap.get(database);
 			
-			Executor executor = new Executor(operation, database, object, returnValueMap, databaseSet);
-			
-			new Thread(executor).start();
+			if (object != null)
+			{
+				Executor executor = new Executor(operation, database, object, returnValueMap, databaseSet);
+				
+				new Thread(executor).start();
+			}
+			else
+			{
+				synchronized (databaseSet)
+				{
+					databaseSet.remove(database);
+				}
+			}
 		}
 		
 		// Wait until all threads have completed
@@ -104,6 +139,36 @@ public abstract class SQLProxy
 			if (SQLException.class.isInstance(object))
 			{
 				throw (SQLException) object;
+			}
+		}
+		
+		return returnValueMap;
+	}
+
+	public final Map executeSet(Operation operation) throws SQLException
+	{
+		Set objectMapEntrySet = new HashSet(this.objectMap.entrySet());
+		
+		if (objectMapEntrySet.size() == 0)
+		{
+			throw new SQLException("No available databases");
+		}
+		
+		Map returnValueMap = new LinkedHashMap(objectMapEntrySet.size(), 0.75f, true);
+		
+		Iterator objectMapEntries = objectMapEntrySet.iterator();
+		
+		while (objectMapEntries.hasNext())
+		{
+			Map.Entry objectMapEntry = (Map.Entry) objectMapEntries.next();
+			Database database = (Database) objectMapEntry.getKey();
+			Object object = objectMapEntry.getValue();
+			
+			if (object != null)
+			{
+				Object returnValue = operation.execute(database, object);
+				
+				returnValueMap.put(database, returnValue);
 			}
 		}
 		

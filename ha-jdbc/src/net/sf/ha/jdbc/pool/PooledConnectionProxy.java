@@ -73,7 +73,7 @@ public class PooledConnectionProxy extends AbstractConnectionProxy implements Po
 		
 		try
 		{
-			this.executeWrite(operation);
+			this.executeSet(operation);
 		}
 		catch (SQLException e)
 		{
@@ -98,7 +98,7 @@ public class PooledConnectionProxy extends AbstractConnectionProxy implements Po
 		
 		try
 		{
-			this.executeWrite(operation);
+			this.executeSet(operation);
 		}
 		catch (SQLException e)
 		{

@@ -25,7 +25,7 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements DataSour
 			}
 		};
 		
-		return ((Integer) this.databaseCluster.executeRead(operation)).intValue();
+		return ((Integer) this.databaseCluster.executeGet(operation)).intValue();
 	}
 
 	/**
@@ -43,7 +43,7 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements DataSour
 			}
 		};
 		
-		this.databaseCluster.executeWrite(operation);
+		this.databaseCluster.executeSet(operation);
 	}
 
 	/**
@@ -59,7 +59,7 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements DataSour
 			}
 		};
 		
-		return (PrintWriter) this.databaseCluster.executeRead(operation);
+		return (PrintWriter) this.databaseCluster.executeGet(operation);
 	}
 
 	/**
@@ -77,7 +77,7 @@ public class DataSourceProxy extends AbstractDataSourceProxy implements DataSour
 			}
 		};
 		
-		this.databaseCluster.executeWrite(operation);
+		this.databaseCluster.executeSet(operation);
 	}
 
 	/**

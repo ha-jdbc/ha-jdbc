@@ -52,7 +52,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Integer) this.executeRead(operation)).intValue();
+		return ((Integer) this.executeGet(operation)).intValue();
 	}
 
 	/**
@@ -68,7 +68,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Integer) this.executeRead(operation)).intValue();
+		return ((Integer) this.executeGet(operation)).intValue();
 	}
 
 	/**
@@ -116,7 +116,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		return ((Integer) this.executeRead(operation)).intValue();
+		return ((Integer) this.executeGet(operation)).intValue();
 	}
 
 	/**

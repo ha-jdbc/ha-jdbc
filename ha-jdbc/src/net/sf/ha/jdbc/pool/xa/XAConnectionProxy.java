@@ -38,6 +38,6 @@ public class XAConnectionProxy extends PooledConnectionProxy implements XAConnec
 			}
 		};
 		
-		return (XAResource) this.executeRead(operation);
+		return (XAResource) this.executeGet(operation);
 	}
 }

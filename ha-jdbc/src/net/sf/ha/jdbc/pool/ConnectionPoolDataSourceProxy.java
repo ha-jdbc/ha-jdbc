@@ -59,7 +59,7 @@ public class ConnectionPoolDataSourceProxy extends AbstractDataSourceProxy imple
 			}
 		};
 		
-		return ((Integer) this.databaseCluster.executeRead(operation)).intValue();
+		return ((Integer) this.databaseCluster.executeGet(operation)).intValue();
 	}
 
 	/**
@@ -77,7 +77,7 @@ public class ConnectionPoolDataSourceProxy extends AbstractDataSourceProxy imple
 			}
 		};
 		
-		this.databaseCluster.executeWrite(operation);
+		this.databaseCluster.executeSet(operation);
 	}
 
 	/**
@@ -93,7 +93,7 @@ public class ConnectionPoolDataSourceProxy extends AbstractDataSourceProxy imple
 			}
 		};
 		
-		return (PrintWriter) this.databaseCluster.executeRead(operation);
+		return (PrintWriter) this.databaseCluster.executeGet(operation);
 	}
 
 	/**
@@ -111,7 +111,7 @@ public class ConnectionPoolDataSourceProxy extends AbstractDataSourceProxy imple
 			}
 		};
 		
-		this.databaseCluster.executeWrite(operation);
+		this.databaseCluster.executeSet(operation);
 	}
 
 	/**
