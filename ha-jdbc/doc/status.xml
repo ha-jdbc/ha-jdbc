@@ -6,20 +6,57 @@
 	
 	<changes>
 		<!-- Add new releases here -->
-		<release version="0.1" date="unreleased">
 			<!-- Some action types have associated images. By default, images are
 			defined for 'add', 'fix', 'remove', 'update' and 'hack'. If you add
 			src/documentation/resources/images/<foo>.jpg images, these will
 			automatically be used for entries of type <foo>. -->
-			<action dev="JB" type="add" context="admin">
-				Initial Import
+		<release version="1.0-alpha-3" date="Not yet released">
+			<action type="update" context="admin" dev="PF">
+				Configuration DTD is now PUBLIC
 			</action>
-			<!-- Sample action:
-			<action dev="JB" type="fix" due-to="Joe Contributor"
-				due-to-email="joec@apache.org" fixes-bug="123">
-				Fixed a bug in the Foo class.
-			  </action>
-			  -->
+			<action type="update" context="admin" dev="PF">
+				Upgraded JGroups to v2.2.6
+			</action>
+			<action type="fix" context="admin" dev="PF">
+				Fixed thread safety bug in SQLProxy.executeWrite()
+			</action>
+			<action type="update" context="admin" dev="PF">
+				Changed license to LGPL, added license details to source code
+			</action>
+			<action type="remove" context="admin" dev="PF">
+				Removed obsolete RowSetProxy class, javax.sql.RowSet implementation are implicitly supported
+			</action>
+			<action type="update" context="admin" dev="PF">
+				Refactored package names to reflect project name
+			</action>
+			<action type="update" context="admin" dev="PF">
+				Replaced CHANGES.txt with this page
+			</action>
+		</release>
+		<release version="1.0-alpha-2" date="July 17, 2004">
+			<action type="add" context="admin" dev="PF">
+				Added ability specify location of configuration file using a system property
+			</action>
+			<action type="update" context="admin" dev="PF">
+				Extended classpath search for configuration file to include system classpath
+			</action>
+			<action type="fix" context="admin" dev="PF">
+				Fixed DataSource proxy initialization
+			</action>
+			<action type="update" context="admin" dev="PF">
+				DriverProxy now expects the cluster name to match the JDBC url
+			</action>
+			<action type="add" context="admin" dev="PF">
+				Several refactorings affecting configuration dtd
+			</action>
+			<action type="fix" context="admin" dev="PF">
+				Fixed bug in clean target of ant build file
+			</action>
+		</release>
+		<release version="1.0-alpha-1" date="July 14, 2004">
+			<action type="add" context="admin" dev="PF">
+				Initial Release
+			</action>
 		</release>
 	</changes>
 
