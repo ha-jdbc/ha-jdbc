@@ -54,14 +54,6 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#firstDatabase()
-	 */
-	public final Database firstDatabase() throws java.sql.SQLException
-	{
-		return this.databaseCluster.firstDatabase();
-	}
-	
-	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getDatabases()
 	 */
 	public final Database[] getDatabases() throws java.sql.SQLException
@@ -83,14 +75,6 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 	public final boolean isAlive(Database database)
 	{
 		return this.databaseCluster.isAlive(database);
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#nextDatabase()
-	 */
-	public final Database nextDatabase() throws java.sql.SQLException
-	{
-		return this.databaseCluster.nextDatabase();
 	}
 	
 	/**

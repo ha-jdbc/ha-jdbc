@@ -30,7 +30,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 import net.sf.hajdbc.Balancer;
@@ -194,36 +193,6 @@ public class LocalDatabaseCluster extends DatabaseCluster
 		return this.balancer.add(database);
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#firstDatabase()
-	 */
-	public Database firstDatabase() throws SQLException
-	{
-		try
-		{
-			return this.balancer.first();
-		}
-		catch (NoSuchElementException e)
-		{
-			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this));
-		}
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#nextDatabase()
-	 */
-	public Database nextDatabase() throws SQLException
-	{
-		try
-		{
-			return this.balancer.next();
-		}
-		catch (NoSuchElementException e)
-		{
-			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this));
-		}
-	}
-
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getDatabases()
 	 */
