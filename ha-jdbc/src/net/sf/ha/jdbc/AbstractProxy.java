@@ -2,7 +2,6 @@ package net.sf.ha.jdbc;
 
 import java.sql.SQLException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -53,33 +52,28 @@ public abstract class AbstractProxy
 	
 	public final Map executeWrite(Operation operation) throws SQLException
 	{
-		Map objectMap = null;
+		Set databaseSet = null;
 		
-		// Avoid prolonged synchronization by making a copy
 		synchronized (this.objectMap)
 		{
-			objectMap = new HashMap(this.objectMap);
+			databaseSet = new HashSet(this.objectMap.keySet());
 		}
 		
-		if (objectMap.size() == 0)
+		if (databaseSet.size() == 0)
 		{
-			throw new SQLException("No available connection");
+			throw new SQLException("No available databases");
 		}
 		
-		Map returnValueMap = new LinkedHashMap(objectMap.size(), 0.75f, true);
-		Set databaseSet = new HashSet(objectMap.keySet());
+		Map returnValueMap = new LinkedHashMap(databaseSet.size(), 0.75f, true);
 		
-		Iterator objectMapEntries = objectMap.entrySet().iterator();
+		Iterator databases = databaseSet.iterator();
 		
-		while (objectMapEntries.hasNext())
+		while (databases.hasNext())
 		{
-			Map.Entry objectMapEntry = (Map.Entry) objectMapEntries.next();
-			Database database = (Database) objectMapEntry.getKey();
-			Object object = objectMapEntry.getValue();
+			Database database = (Database) databases.next();
+			Object object = this.objectMap.get(database);
 			
 			Executor executor = new Executor(operation, database, object, returnValueMap, databaseSet);
-			
-			databaseSet.add(database);
 			
 			new Thread(executor).start();
 		}
@@ -134,7 +128,10 @@ public abstract class AbstractProxy
 	
 	public void deactivate(Database database)
 	{
-		this.objectMap.remove(database);
+		synchronized (this.objectMap)
+		{
+			this.objectMap.remove(database);
+		}
 	}
 
 	private class Executor implements Runnable
