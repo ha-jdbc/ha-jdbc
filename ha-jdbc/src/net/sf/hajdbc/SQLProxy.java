@@ -301,9 +301,9 @@ public abstract class SQLProxy
 		return returnValueMap;
 	}
 	
-	private void deactivateNewDatabases(List databaseList)
+	private void deactivateNewDatabases(List databaseList) throws java.sql.SQLException
 	{
-		Set databaseSet = new HashSet(this.getDatabaseCluster().getActiveDatabases());
+		Set databaseSet = new HashSet(Arrays.asList(this.getDatabaseCluster().getDatabases()));
 		
 		databaseSet.removeAll(databaseList);
 		
