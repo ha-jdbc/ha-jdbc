@@ -3,6 +3,7 @@ package net.sf.ha.jdbc;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.SQLException;
 
@@ -20,7 +21,8 @@ import org.jibx.runtime.JiBXException;
  */
 public class DatabaseClusterManagerFactory
 {
-	private static final String CONFIG_RESOURCE = "ha-jdbc.xml";
+	private static final String SYSTEM_PROPERTY = "ha-jdbc.configuration";
+	private static final String DEFAULT_RESOURCE = "ha-jdbc.xml";
 	
 	private static Log log = LogFactory.getLog(DatabaseClusterManagerFactory.class);
 	
@@ -36,14 +38,46 @@ public class DatabaseClusterManagerFactory
 		return databaseClusterManager;
 	}
 	
+	private static URL getResourceURL(String resourceName)
+	{
+		try
+		{
+			return new URL(resourceName);
+		}
+		catch (MalformedURLException e)
+		{
+			URL url = Thread.currentThread().getContextClassLoader().getResource(resourceName);
+			
+			if (url == null)
+			{
+				url = DatabaseClusterManagerFactory.class.getClassLoader().getResource(resourceName);
+			}
+
+			if (url == null)
+			{
+				url = ClassLoader.getSystemResource(resourceName);
+			}
+			
+			return url;
+		}
+	}
+	
 	private static DatabaseClusterManager loadDatabaseClusterManager() throws SQLException
 	{
-		URL url = Thread.currentThread().getContextClassLoader().getResource(CONFIG_RESOURCE);
+		String resourceName = System.getProperty(SYSTEM_PROPERTY, DEFAULT_RESOURCE);
+		
+		URL resourceURL = getResourceURL(resourceName);
+		
+		if (resourceURL == null)
+		{
+			throw new SQLException("Failed to locate database cluster configuration file: " + resourceName);
+		}
+		
 		InputStream inputStream = null;
 		
 		try
 		{
-			inputStream = url.openStream();
+			inputStream = resourceURL.openStream();
 			
 			IBindingFactory factory = BindingDirectory.getFactory(Configuration.class);
 			IUnmarshallingContext context = factory.createUnmarshallingContext();
@@ -54,13 +88,13 @@ public class DatabaseClusterManagerFactory
 		}
 		catch (IOException e)
 		{
-			SQLException exception = new SQLException("Failed to read " + url);
+			SQLException exception = new SQLException("Failed to read " + resourceURL);
 			exception.initCause(e);
 			throw exception;
 		}
 		catch (JiBXException e)
 		{
-			SQLException exception = new SQLException("Failed to parse " + url);
+			SQLException exception = new SQLException("Failed to parse " + resourceURL);
 			exception.initCause(e);
 			throw exception;
 		}
@@ -74,7 +108,7 @@ public class DatabaseClusterManagerFactory
 				}
 				catch (IOException e)
 				{
-					log.warn("Failed to close " + url, e);
+					log.warn("Failed to close " + resourceURL, e);
 				}
 			}
 		}
