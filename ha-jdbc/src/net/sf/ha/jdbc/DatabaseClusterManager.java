@@ -26,7 +26,7 @@ public class DatabaseClusterManager
 		
 		this.descriptorMap.put(clusterName, descriptor);
 		
-		Class databaseClass = descriptor.getDatabaseSet().iterator().next().getClass();
+		Class databaseClass = descriptor.getDatabaseMap().values().iterator().next().getClass();
 		Set nameSet = (Set) this.classMap.get(databaseClass);
 		
 		if (nameSet == null)

@@ -5,7 +5,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 import javax.naming.Context;
 import javax.naming.Name;
@@ -51,9 +50,9 @@ public abstract class AbstractDataSourceFactory implements ObjectFactory
 		
 		String clusterName = (String) reference.get(CLUSTER_NAME).getContent();
 		DatabaseClusterDescriptor descriptor = DatabaseClusterManagerFactory.getClusterManager().getDescriptor(clusterName);
-		Set databaseSet = descriptor.getDatabaseSet();
-		Map dataSourceMap = new LinkedHashMap(databaseSet.size(), 0.75f, true);
-		Iterator databases = databaseSet.iterator();
+		Map databaseMap = descriptor.getDatabaseMap();
+		Map dataSourceMap = new LinkedHashMap(databaseMap.size(), 0.75f, true);
+		Iterator databases = databaseMap.values().iterator();
 		
 		while (databases.hasNext())
 		{

@@ -58,11 +58,11 @@ public final class DriverProxy implements java.sql.Driver
 			String clusterName = (String) clusters.next();
 
 			DatabaseClusterDescriptor descriptor = DatabaseClusterManagerFactory.getClusterManager().getDescriptor(clusterName);
-			Set databaseSet = descriptor.getDatabaseSet();
+			Map databaseMap = descriptor.getDatabaseMap();
 			
-			Map driverMap = new LinkedHashMap(databaseSet.size(), 0.75f, true);
+			Map driverMap = new LinkedHashMap(databaseMap.size(), 0.75f, true);
 			
-			Iterator databases = databaseSet.iterator();
+			Iterator databases = databaseMap.values().iterator();
 			
 			while (databases.hasNext())
 			{

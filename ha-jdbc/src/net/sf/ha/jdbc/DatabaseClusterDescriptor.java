@@ -1,6 +1,7 @@
 package net.sf.ha.jdbc;
 
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author  Paul Ferraro
@@ -11,22 +12,23 @@ public class DatabaseClusterDescriptor
 {
 	private String name;
 	private String validateSQL;
-	private Set databaseSet;
+	private Map databaseMap = new HashMap();
 	
 	/**
 	 * @return Returns the databaseSet.
 	 */
-	public Set getDatabaseSet()
+	public Map getDatabaseMap()
 	{
-		return this.databaseSet;
+		return this.databaseMap;
 	}
 	
 	/**
 	 * @param databaseSet The databaseSet to set.
 	 */
-	public void setDatabaseSet(Set databaseSet)
+	public void addDatabase(Object object)
 	{
-		this.databaseSet = databaseSet;
+		Database database = (Database) object;
+		this.databaseMap.put(database.getId(), database);
 	}
 	
 	/**
