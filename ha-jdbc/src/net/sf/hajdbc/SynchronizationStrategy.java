@@ -36,8 +36,7 @@ public interface SynchronizationStrategy
 	 * @param inactiveConnection a connection to the inactive database
 	 * @param activeConnection a connection to the active database
 	 * @param tableList a list of every table in the database
-	 * @param descriptor the descriptor of this database cluster
 	 * @throws java.sql.SQLException if synchronization fails
 	 */
-	public void synchronize(Connection inactiveConnection, Connection activeConnection, List tableList, DatabaseClusterDescriptor descriptor) throws java.sql.SQLException;
+	public void synchronize(Connection inactiveConnection, Connection activeConnection, List tableList) throws java.sql.SQLException;
 }

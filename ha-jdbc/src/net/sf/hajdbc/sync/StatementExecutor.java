@@ -28,6 +28,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
+ * Asynchronously executes a sql statement.
+ * Results of execution are obtainable via the specified statement object.
+ * 
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
@@ -39,6 +42,11 @@ public class StatementExecutor implements Runnable
 	private Statement statement;
 	private String sql;
 	
+	/**
+	 * Constructs a new StatementExecutor.
+	 * @param statement a statement object
+	 * @param sql a sql query to execute
+	 */
 	public StatementExecutor(Statement statement, String sql)
 	{
 		this.statement = statement;

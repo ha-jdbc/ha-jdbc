@@ -32,7 +32,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.sf.hajdbc.DatabaseClusterDescriptor;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationStrategy;
 
@@ -68,15 +67,18 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 {
 	private static Log log = LogFactory.getLog(DifferentialSynchronizationStrategy.class);
 
+	private String createForeignKeySQL = ForeignKey.DEFAULT_CREATE_SQL;
+	private String dropForeignKeySQL = ForeignKey.DEFAULT_DROP_SQL;
+	
 	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, java.util.List, net.sf.hajdbc.DatabaseClusterDescriptor)
+	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, java.util.List)
 	 */
-	public void synchronize(Connection inactiveConnection, Connection activeConnection, List tableList, DatabaseClusterDescriptor descriptor) throws SQLException
+	public void synchronize(Connection inactiveConnection, Connection activeConnection, List tableList) throws SQLException
 	{
 		inactiveConnection.setAutoCommit(true);
 		
 		// Drop foreign keys
-		ForeignKey.drop(inactiveConnection, ForeignKey.collectForeignKeys(inactiveConnection, tableList), descriptor);
+		ForeignKey.executeSQL(inactiveConnection, ForeignKey.collect(inactiveConnection, tableList), this.dropForeignKeySQL);
 		
 		inactiveConnection.setAutoCommit(false);
 		
@@ -303,6 +305,38 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		inactiveConnection.setAutoCommit(true);
 
 		// Recreate foreign keys
-		ForeignKey.create(inactiveConnection, ForeignKey.collectForeignKeys(activeConnection, tableList), descriptor);
+		ForeignKey.executeSQL(inactiveConnection, ForeignKey.collect(activeConnection, tableList), this.createForeignKeySQL);
+	}
+	
+	/**
+	 * @return the createForeignKeySQL.
+	 */
+	public String getCreateForeignKeySQL()
+	{
+		return this.createForeignKeySQL;
+	}
+	
+	/**
+	 * @param createForeignKeySQL the createForeignKeySQL to set.
+	 */
+	public void setCreateForeignKeySQL(String createForeignKeySQL)
+	{
+		this.createForeignKeySQL = createForeignKeySQL;
+	}
+	
+	/**
+	 * @return the dropForeignKeySQL.
+	 */
+	public String getDropForeignKeySQL()
+	{
+		return this.dropForeignKeySQL;
+	}
+	
+	/**
+	 * @param dropForeignKeySQL the dropForeignKeySQL to set.
+	 */
+	public void setDropForeignKeySQL(String dropForeignKeySQL)
+	{
+		this.dropForeignKeySQL = dropForeignKeySQL;
 	}
 }

@@ -31,8 +31,17 @@ import java.sql.Statement;
  */
 public abstract class PreparedStatementOperation extends StatementOperation
 {
+	/**
+	 * Helper method that simplifies operation interface for PreparedStatementProxy.
+	 * @param statement a prepared statement
+	 * @return the result from executing this operation
+	 * @throws SQLException if execution fails
+	 */
 	public abstract Object execute(PreparedStatement statement) throws SQLException;
 	
+	/**
+	 * @see net.sf.hajdbc.StatementOperation#execute(java.sql.Statement)
+	 */
 	public final Object execute(Statement statement) throws SQLException
 	{
 		return this.execute((PreparedStatement) statement);

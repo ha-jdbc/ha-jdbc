@@ -31,9 +31,10 @@ import java.sql.Statement;
 public abstract class StatementOperation implements Operation
 {
 	/**
-	 * @param statement
-	 * @return the return value of the Statement operation
-	 * @throws SQLException
+	 * Helper method that simplifies operation interface for StatementProxy.
+	 * @param statement a statement
+	 * @return the result from executing this operation
+	 * @throws SQLException if execution fails
 	 */
 	public abstract Object execute(Statement statement) throws SQLException;
 

@@ -65,9 +65,9 @@ public class DataSourceDatabase extends AbstractDatabase
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Database#getConnectionFactory()
+	 * @see net.sf.hajdbc.Database#createConnectionFactory()
 	 */
-	public Object getConnectionFactory() throws java.sql.SQLException
+	public Object createConnectionFactory() throws java.sql.SQLException
 	{
 		try
 		{

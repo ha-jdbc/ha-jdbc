@@ -30,7 +30,6 @@ import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.List;
 
-import net.sf.hajdbc.DatabaseClusterDescriptor;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationStrategy;
 
@@ -62,19 +61,22 @@ import org.apache.commons.logging.LogFactory;
  */
 public class FullSynchronizationStrategy implements SynchronizationStrategy
 {
-	private static final int MAX_BATCH_SIZE = 100;
-	
 	private static Log log = LogFactory.getLog(FullSynchronizationStrategy.class);
 
+	private String createForeignKeySQL = ForeignKey.DEFAULT_CREATE_SQL;
+	private String dropForeignKeySQL = ForeignKey.DEFAULT_DROP_SQL;
+	private String truncateTableSQL = "DELETE FROM {0}";
+	private int maxBatchSize = 100;
+	
 	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, java.util.List, net.sf.hajdbc.DatabaseClusterDescriptor)
+	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, java.util.List)
 	 */
-	public void synchronize(Connection inactiveConnection, Connection activeConnection, List tableList, DatabaseClusterDescriptor descriptor) throws SQLException
+	public void synchronize(Connection inactiveConnection, Connection activeConnection, List tableList) throws SQLException
 	{
 		inactiveConnection.setAutoCommit(true);
 		
 		// Drop foreign keys
-		ForeignKey.drop(inactiveConnection, ForeignKey.collectForeignKeys(inactiveConnection, tableList), descriptor);
+		ForeignKey.executeSQL(inactiveConnection, ForeignKey.collect(inactiveConnection, tableList), this.dropForeignKeySQL);
 		
 		inactiveConnection.setAutoCommit(false);
 		
@@ -84,7 +86,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		{
 			String table = (String) tables.next();
 			
-			String deleteSQL = MessageFormat.format(descriptor.getTruncateTableSQL(), new Object[] { table });
+			String deleteSQL = MessageFormat.format(this.truncateTableSQL, new Object[] { table });
 			String selectSQL = "SELECT * FROM " + table;
 
 			if (log.isDebugEnabled())
@@ -181,7 +183,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 				insertStatement.addBatch();
 				statementCount += 1;
 				
-				if ((statementCount % MAX_BATCH_SIZE) == 0)
+				if ((statementCount % this.maxBatchSize) == 0)
 				{
 					insertStatement.executeBatch();
 					insertStatement.clearBatch();
@@ -190,7 +192,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 				insertStatement.clearParameters();
 			}
 
-			if ((statementCount % MAX_BATCH_SIZE) > 0)
+			if ((statementCount % this.maxBatchSize) > 0)
 			{
 				insertStatement.executeBatch();
 			}
@@ -209,6 +211,70 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		inactiveConnection.setAutoCommit(true);
 
 		// Recreate foreign keys
-		ForeignKey.create(inactiveConnection, ForeignKey.collectForeignKeys(activeConnection, tableList), descriptor);
+		ForeignKey.executeSQL(inactiveConnection, ForeignKey.collect(activeConnection, tableList), this.createForeignKeySQL);
+	}
+	
+	/**
+	 * @return the createForeignKeySQL.
+	 */
+	public String getCreateForeignKeySQL()
+	{
+		return this.createForeignKeySQL;
+	}
+	
+	/**
+	 * @param createForeignKeySQL the createForeignKeySQL to set.
+	 */
+	public void setCreateForeignKeySQL(String createForeignKeySQL)
+	{
+		this.createForeignKeySQL = createForeignKeySQL;
+	}
+	
+	/**
+	 * @return the dropForeignKeySQL.
+	 */
+	public String getDropForeignKeySQL()
+	{
+		return this.dropForeignKeySQL;
+	}
+	
+	/**
+	 * @param dropForeignKeySQL the dropForeignKeySQL to set.
+	 */
+	public void setDropForeignKeySQL(String dropForeignKeySQL)
+	{
+		this.dropForeignKeySQL = dropForeignKeySQL;
+	}
+	
+	/**
+	 * @return the maxBatchSize.
+	 */
+	public Integer getMaxBatchSize()
+	{
+		return Integer.valueOf(this.maxBatchSize);
+	}
+	
+	/**
+	 * @param maxBatchSize the maxBatchSize to set.
+	 */
+	public void setMaxBatchSize(Integer maxBatchSize)
+	{
+		this.maxBatchSize = maxBatchSize.intValue();
+	}
+	
+	/**
+	 * @return the truncateTableSQL.
+	 */
+	public String getTruncateTableSQL()
+	{
+		return this.truncateTableSQL;
+	}
+	
+	/**
+	 * @param truncateTableSQL the truncateTableSQL to set.
+	 */
+	public void setTruncateTableSQL(String truncateTableSQL)
+	{
+		this.truncateTableSQL = truncateTableSQL;
 	}
 }

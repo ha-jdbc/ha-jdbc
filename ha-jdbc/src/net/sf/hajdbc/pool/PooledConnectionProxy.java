@@ -40,8 +40,8 @@ public class PooledConnectionProxy extends SQLProxy implements PooledConnection
 	/**
 	 * Constructs a new PooledConnectionProxy.
 	 * @param dataSource a ConnectionPoolDataSource proxy
-	 * @param operation an operation that will create PooleConnections
-	 * @throws SQLException
+	 * @param operation an operation that will create PooledConnections
+	 * @throws SQLException if operation execution fails
 	 */
 	public PooledConnectionProxy(ConnectionFactoryProxy dataSource, ConnectionPoolDataSourceOperation operation) throws SQLException
 	{

@@ -35,9 +35,10 @@ import net.sf.hajdbc.pool.ConnectionPoolDataSourceOperation;
 public abstract class XADataSourceOperation extends ConnectionPoolDataSourceOperation
 {
 	/**
-	 * @param dataSource
-	 * @return the return value of the XADataSource operation
-	 * @throws SQLException
+	 * Helper method that simplifies operation interface for XADataSourceProxy.
+	 * @param dataSource a JTA-aware data source
+	 * @return the result from executing this operation
+	 * @throws SQLException if execution fails
 	 */
 	public abstract Object execute(XADataSource dataSource) throws SQLException;
 	

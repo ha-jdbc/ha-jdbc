@@ -33,8 +33,8 @@ public class ConnectionFactoryProxy extends SQLProxy
 	
 	/**
 	 * Constructs a new ConnectionFactoryProxy.
-	 * @param databaseCluster
-	 * @param connectionFactoryMap
+	 * @param databaseCluster a database cluster
+	 * @param connectionFactoryMap a Map<Database, Object>
 	 */
 	public ConnectionFactoryProxy(DatabaseCluster databaseCluster, Map connectionFactoryMap)
 	{

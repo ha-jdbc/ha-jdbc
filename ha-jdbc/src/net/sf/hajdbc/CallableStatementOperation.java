@@ -31,8 +31,17 @@ import java.sql.SQLException;
  */
 public abstract class CallableStatementOperation extends PreparedStatementOperation
 {
+	/**
+	 * Helper method to simplify operation interface for CallableStatementProxy.
+	 * @param statement a callable statement
+	 * @return the result from executing this operation
+	 * @throws SQLException if execution fails
+	 */
 	public abstract Object execute(CallableStatement statement) throws SQLException;
 	
+	/**
+	 * @see net.sf.hajdbc.PreparedStatementOperation#execute(java.sql.PreparedStatement)
+	 */
 	public final Object execute(PreparedStatement statement) throws SQLException
 	{
 		return this.execute((CallableStatement) statement);

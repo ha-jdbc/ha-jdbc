@@ -35,9 +35,10 @@ import net.sf.hajdbc.Operation;
 public abstract class ConnectionPoolDataSourceOperation implements Operation
 {
 	/**
-	 * @param dataSource
-	 * @return the return value of the ConnectionPoolDataSource operation
-	 * @throws SQLException
+	 * Helper method that simplifies operation interface for ConnectionPoolDataSourceProxy.
+	 * @param dataSource a connection pool data source
+	 * @return the result from executing this operation
+	 * @throws SQLException if execution fails
 	 */
 	public abstract Object execute(ConnectionPoolDataSource dataSource) throws SQLException;
 	

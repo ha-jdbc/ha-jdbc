@@ -39,6 +39,8 @@ public class Messages
 	public static final String DATABASE_VALIDATE_FAILED = "database-validate-failed";
 	public static final String DATABASE_DEACTIVATE_FAILED = "database-deactivate-failed";
 	public static final String INVALID_SYNC_STRATEGY = "invalid-sync-strategy";
+	public static final String INVALID_PROPERTY = "invalid-property";
+	public static final String INVALID_PROPERTY_VALUE = "invalid-property-value";
 	public static final String DATABASE_ACTIVATE_FAILED = "database-activate-failed";
 	public static final String DATABASE_SYNC_START = "database-sync-start";
 	public static final String DATABASE_SYNC_END = "database-sync-end";

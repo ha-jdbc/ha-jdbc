@@ -48,9 +48,9 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	
 	/**
 	 * Constructs a new PreparedStatementProxy.
-	 * @param connection
-	 * @param operation
-	 * @throws java.sql.SQLException
+	 * @param connection a Connection proxy
+	 * @param operation an operation that creates PreparedStatements
+	 * @throws java.sql.SQLException if operation execution fails
 	 */
 	public PreparedStatementProxy(ConnectionProxy connection, ConnectionOperation operation) throws java.sql.SQLException
 	{

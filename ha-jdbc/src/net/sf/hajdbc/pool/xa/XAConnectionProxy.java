@@ -39,7 +39,7 @@ public class XAConnectionProxy extends PooledConnectionProxy implements XAConnec
 	 * Constructs a new XAConnectionProxy.
 	 * @param dataSource an XADataSource proxy
 	 * @param operation the operation that will create XAConnections
-	 * @throws SQLException
+	 * @throws SQLException if operation execution fails
 	 */
 	public XAConnectionProxy(ConnectionFactoryProxy dataSource, XADataSourceOperation operation) throws SQLException
 	{

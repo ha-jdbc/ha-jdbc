@@ -36,8 +36,8 @@ public class Clob implements java.sql.Clob
 	private java.sql.Clob clob;
 	
 	/**
-	 * Constructs a new ClobProxy.
-	 * 
+	 * Constructs a new Clob.
+	 * @param clob a character large object
 	 */
 	public Clob(java.sql.Clob clob)
 	{

@@ -41,6 +41,7 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterDescriptor;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SQLException;
+import net.sf.hajdbc.SynchronizationStrategy;
 
 /**
  * @author  Paul Ferraro
@@ -73,7 +74,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 		{
 			Database database = (Database) databases.next();
 			
-			connectionFactoryMap.put(database, database.getConnectionFactory());
+			connectionFactoryMap.put(database, database.createConnectionFactory());
 		}
 		
 		this.connectionFactory = new ConnectionFactoryProxy(this, connectionFactoryMap);
@@ -213,17 +214,24 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getActiveDatabaseList()
+	 * @see net.sf.hajdbc.DatabaseCluster#getDatabaseList()
 	 */
-	public List getActiveDatabaseList() throws SQLException
+	public List getDatabaseList() throws SQLException
+	{
+		List activeDatabaseList = this.getActiveDatabaseList();
+		
+		if (activeDatabaseList.isEmpty())
+		{
+			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this));
+		}
+
+		return activeDatabaseList;
+	}
+	
+	private List getActiveDatabaseList()
 	{
 		synchronized (this.activeDatabaseSet)
 		{
-			if (this.activeDatabaseSet.isEmpty())
-			{
-				throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this));
-			}
-			
 			return new ArrayList(this.activeDatabaseSet);
 		}
 	}
@@ -231,9 +239,9 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#getActiveDatabases()
 	 */
-	public Collection getActiveDatabases() throws SQLException
+	public Collection getActiveDatabases()
 	{
-		return this.getActiveDatabaseList();
+		return this.getDatabaseIds(this.getActiveDatabaseList());
 	}
 
 	/**
@@ -248,7 +256,23 @@ public class LocalDatabaseCluster extends DatabaseCluster
 			databaseSet.removeAll(this.activeDatabaseSet);
 		}
 
-		return databaseSet;
+		return this.getDatabaseIds(databaseSet);
+	}
+	
+	private List getDatabaseIds(Collection databaseCollection)
+	{
+		List databaseList = new ArrayList(databaseCollection.size());
+		
+		Iterator databases = databaseCollection.iterator();
+		
+		while (databases.hasNext())
+		{
+			Database database = (Database) databases.next();
+			
+			databaseList.add(database.getId());
+		}
+		
+		return databaseList;
 	}
 	
 	/**
@@ -314,5 +338,29 @@ public class LocalDatabaseCluster extends DatabaseCluster
 		databaseSet.removeAll(databases);
 		
 		return databaseSet;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getSynchronizationStrategy(java.lang.String)
+	 */
+	public SynchronizationStrategy getSynchronizationStrategy(String id) throws java.sql.SQLException
+	{
+		Map strategyMap = this.descriptor.getSynchronizationStrategyMap();
+		SynchronizationStrategy strategy = (SynchronizationStrategy) strategyMap.get(id);
+		
+		if (strategy == null)
+		{
+			throw new SQLException(Messages.getMessage(Messages.INVALID_SYNC_STRATEGY, new Object[] { this, id }));
+		}
+		
+		return strategy;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getSynchronizationStrategies()
+	 */
+	public Collection getSynchronizationStrategies()
+	{
+		return this.descriptor.getSynchronizationStrategyMap().keySet();
 	}
 }

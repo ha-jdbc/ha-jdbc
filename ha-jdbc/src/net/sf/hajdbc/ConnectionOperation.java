@@ -30,8 +30,18 @@ import java.sql.SQLException;
  */
 public abstract class ConnectionOperation implements Operation
 {
+	/**
+	 * Helper method that simplifies operation interface for ConnectionProxy.
+	 * @param database a database descriptor
+	 * @param connection a database connection
+	 * @return the result from executing this operation
+	 * @throws SQLException if execution fails
+	 */
 	public abstract Object execute(Database database, Connection connection) throws SQLException;
 
+	/**
+	 * @see net.sf.hajdbc.Operation#execute(net.sf.hajdbc.Database, java.lang.Object)
+	 */
 	public final Object execute(Database database, Object connection) throws SQLException
 	{
 		return this.execute(database, (Connection) connection);

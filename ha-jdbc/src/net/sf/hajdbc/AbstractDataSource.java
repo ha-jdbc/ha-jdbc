@@ -31,6 +31,7 @@ import javax.naming.StringRefAddr;
  */
 public abstract class AbstractDataSource implements Referenceable
 {
+	/**	Property that identifies this data source */
 	public static final String CLUSTER_NAME = "name";
 	
 	protected ConnectionFactoryProxy connectionFactory;

@@ -35,9 +35,10 @@ import net.sf.hajdbc.pool.PooledConnectionOperation;
 public abstract class XAConnectionOperation extends PooledConnectionOperation
 {
 	/**
-	 * @param connection
-	 * @return the return value of the XAConnection operation
-	 * @throws SQLException
+	 * Helper method that simplifies operation interface for XAConnectionProxy.
+	 * @param connection a database connection
+	 * @return the result from executing this operation
+	 * @throws SQLException if execution fails
 	 */
 	public abstract Object execute(XAConnection connection) throws SQLException;
 

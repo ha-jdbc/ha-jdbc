@@ -29,8 +29,18 @@ import java.sql.SQLException;
  */
 public abstract class DriverOperation implements Operation
 {
+	/**
+	 * Helper method that simplifies operation interface for the HA-JDBC Driver.
+	 * @param database a database descriptor
+	 * @param driver a database driver
+	 * @return the result from executing this operation
+	 * @throws SQLException if execution fails
+	 */
 	public abstract Object execute(DriverDatabase database, Driver driver) throws SQLException;
 	
+	/**
+	 * @see net.sf.hajdbc.Operation#execute(net.sf.hajdbc.Database, java.lang.Object)
+	 */
 	public final Object execute(Database database, Object driver) throws SQLException
 	{
 		return this.execute((DriverDatabase) database, (Driver) driver);

@@ -20,12 +20,23 @@
  */
 package net.sf.hajdbc;
 
+import java.sql.SQLException;
+
 /**
+ * General interface for defining operation on an SQL object.
+ * 
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
 public interface Operation
 {
-	public Object execute(Database database, Object sqlObject) throws java.sql.SQLException;
+	/**
+	 * Executes this operation of the specified SQL object for the specified database.
+	 * @param database a database descriptor
+	 * @param sqlObject a java.sql or javax.sql object.
+	 * @return the result of this operation
+	 * @throws SQLException if execution fails
+	 */
+	public Object execute(Database database, Object sqlObject) throws SQLException;
 }

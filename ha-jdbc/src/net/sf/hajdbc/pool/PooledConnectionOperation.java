@@ -35,9 +35,10 @@ import net.sf.hajdbc.Operation;
 public abstract class PooledConnectionOperation implements Operation
 {
 	/**
-	 * @param connection
-	 * @return the return value of the PooledConnection operation
-	 * @throws SQLException
+	 * Helper method that simplifies operation interface for PooledConnectionProxy.
+	 * @param connection a database connection
+	 * @return the result from executing this operation
+	 * @throws SQLException if execution fails
 	 */
 	public abstract Object execute(PooledConnection connection) throws SQLException;
 

@@ -41,7 +41,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 	 * Constructs a new ConnectionProxy.
 	 * @param connectionFactory a proxy to an object that can create connections
 	 * @param operation an operation that will create Connections
-	 * @throws java.sql.SQLException
+	 * @throws java.sql.SQLException if operation execution fails
 	 */
 	public ConnectionProxy(SQLProxy connectionFactory, Operation operation) throws java.sql.SQLException
 	{

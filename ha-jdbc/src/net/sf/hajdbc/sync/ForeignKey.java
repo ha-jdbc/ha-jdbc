@@ -30,8 +30,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import net.sf.hajdbc.DatabaseClusterDescriptor;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -42,6 +40,12 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ForeignKey
 {
+	/** SQL-92 compatible create foreign key statement pattern */
+	public static final String DEFAULT_CREATE_SQL = "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4})";
+
+	/** SQL-92 compatible drop foreign key statement pattern */
+	public static final String DEFAULT_DROP_SQL = "ALTER TABLE {1} DROP CONSTRAINT {0}";
+	
 	private static Log log = LogFactory.getLog(ForeignKey.class);
 	
 	private String name;
@@ -55,6 +59,9 @@ public class ForeignKey
 		return MessageFormat.format(pattern, new Object[] { this.name, this.table, this.column, this.foreignTable, this.foreignColumn });
 	}
 	
+	/**
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	public boolean equals(Object object)
 	{
 		ForeignKey foreignKey = (ForeignKey) object;
@@ -62,12 +69,22 @@ public class ForeignKey
 		return (foreignKey != null) && (foreignKey.name != null) && foreignKey.name.equals(this.name);
 	}
 	
+	/**
+	 * @see java.lang.Object#hashCode()
+	 */
 	public int hashCode()
 	{
 		return this.name.hashCode();
 	}
 	
-	public static Collection collectForeignKeys(Connection connection, List tableList) throws SQLException
+	/**
+	 * Collects all foreign keys from the specified tables using the specified connection. 
+	 * @param connection a database connection
+	 * @param tableList a list of table names
+	 * @return a Collection<ForeignKey>.
+	 * @throws SQLException if a database error occurs
+	 */
+	public static Collection collect(Connection connection, List tableList) throws SQLException
 	{
 		List foreignKeyList = new LinkedList();
 		
@@ -98,7 +115,14 @@ public class ForeignKey
 		return foreignKeyList;
 	}
 
-	private static void executeSQL(Connection connection, Collection foreignKeyCollection, String sqlPattern) throws java.sql.SQLException
+	/**
+	 * For each foreign key in the specified collection, generates and executes sql statements using the specified pattern and the specified connection.
+	 * @param connection a database connection
+	 * @param foreignKeyCollection a Collection<ForeignKey>
+	 * @param sqlPattern a sql pattern
+	 * @throws SQLException if a database error occurs
+	 */
+	public static void executeSQL(Connection connection, Collection foreignKeyCollection, String sqlPattern) throws SQLException
 	{
 		Statement statement = connection.createStatement();
 		
@@ -119,15 +143,5 @@ public class ForeignKey
 		}
 
 		statement.close();
-	}
-	
-	public static void drop(Connection connection, Collection foreignKeyCollection, DatabaseClusterDescriptor descriptor) throws java.sql.SQLException
-	{
-		executeSQL(connection, foreignKeyCollection, descriptor.getDropForeignKeySQL());
-	}
-	
-	public static void create(Connection connection, Collection foreignKeyCollection, DatabaseClusterDescriptor descriptor) throws java.sql.SQLException
-	{
-		executeSQL(connection, foreignKeyCollection, descriptor.getCreateForeignKeySQL());
 	}
 }

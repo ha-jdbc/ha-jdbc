@@ -44,9 +44,9 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 {
 	/**
 	 * Constructs a new CallableStatementProxy.
-	 * @param connection
-	 * @param operation
-	 * @throws java.sql.SQLException
+	 * @param connection a Connection proxy
+	 * @param operation an operation that creates CallableStatements
+	 * @throws java.sql.SQLException if operation execution fails
 	 */
 	public CallableStatementProxy(ConnectionProxy connection, ConnectionOperation operation) throws java.sql.SQLException
 	{

@@ -50,13 +50,16 @@ public final class DatabaseClusterFactory
 {
 	private static final String SYSTEM_PROPERTY = "ha-jdbc.configuration";
 	private static final String DEFAULT_RESOURCE = "ha-jdbc.xml";
-	private static final String MBEAN_DOMAIN = "net.sf.hajdbc";
-	private static final String MBEAN_KEY = "cluster";
 	
 	private static Log log = LogFactory.getLog(DatabaseClusterFactory.class);
 	
 	private static DatabaseClusterFactory instance = null;
 	
+	/**
+	 * Provides access to the singleton instance of this factory object.
+	 * @return a factory for creating database clusters
+	 * @throws java.sql.SQLException if factory instantiation fails
+	 */
 	public static synchronized DatabaseClusterFactory getInstance() throws java.sql.SQLException
 	{
 		if (instance == null)
@@ -69,6 +72,10 @@ public final class DatabaseClusterFactory
 	
 	private Map databaseClusterMap;
 	
+	/**
+	 * Constructs a new DatabaseClusterFactory.
+	 * @throws java.sql.SQLException if construction fails
+	 */
 	private DatabaseClusterFactory() throws java.sql.SQLException
 	{
 		String resourceName = System.getProperty(SYSTEM_PROPERTY, DEFAULT_RESOURCE);
@@ -119,14 +126,14 @@ public final class DatabaseClusterFactory
 					databaseCluster = decoratorDescriptor.decorate(databaseCluster);
 				}
 				
-				ObjectName name = ObjectName.getInstance(MBEAN_DOMAIN, MBEAN_KEY, ObjectName.quote(databaseCluster.getId()));
+				ObjectName name = DatabaseCluster.getObjectName(databaseCluster.getId());
 				
 				if (!server.isRegistered(name))
 				{
 					server.registerMBean(databaseCluster, name);
 				}
 				
-				this.databaseClusterMap.put(descriptor.getId(), databaseCluster);
+				this.databaseClusterMap.put(databaseCluster.getId(), databaseCluster);
 			}
 		}
 		catch (Exception e)
@@ -153,11 +160,21 @@ public final class DatabaseClusterFactory
 		}
 	}
 	
-	public DatabaseCluster getDatabaseCluster(String name)
+	/**
+	 * Returns the database cluster identified by the specified id
+	 * @param id a database cluster identifier
+	 * @return a database cluster
+	 */
+	public DatabaseCluster getDatabaseCluster(String id)
 	{
-		return (DatabaseCluster) this.databaseClusterMap.get(name);
+		return (DatabaseCluster) this.databaseClusterMap.get(id);
 	}
 	
+	/**
+	 * Algorithm for searching class loaders for a specified resource.
+	 * @param resourceName a resource to find
+	 * @return a URL for the resource
+	 */
 	private static URL getResourceURL(String resourceName)
 	{
 		try
@@ -182,16 +199,27 @@ public final class DatabaseClusterFactory
 		}
 	}
 	
+	/**
+	 * Base xml binding object used by JiBX
+	 */
 	private static class Configuration
 	{
 		private DatabaseClusterDecoratorDescriptor decoratorDescriptor = null;
 		private List descriptorList = new LinkedList();
 		
+		/**
+		 * Returns a descriptor of a database cluster decorator.
+		 * @return a DatabaseClusterDecoratorDescriptor, or null if one was not defined
+		 */
 		public DatabaseClusterDecoratorDescriptor getDecoratorDescriptor()
 		{
 			return this.decoratorDescriptor;
 		}
 		
+		/**
+		 * Returns a list of database cluster descriptors
+		 * @return a List<DatabaseClusterDescriptor>
+		 */
 		public List getDescriptorList()
 		{
 			return this.descriptorList;

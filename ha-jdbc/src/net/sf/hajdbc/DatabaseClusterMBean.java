@@ -66,14 +66,20 @@ public interface DatabaseClusterMBean
 	public void activate(String databaseId, String strategyClassName) throws java.sql.SQLException;
 	
 	/**
-	 * Returns a list of active databases in this cluster.
-	 * @return a list of database objects
+	 * Returns a collection of active databases in this cluster.
+	 * @return a list of database identifiers
 	 */
-	public Collection getActiveDatabases() throws java.sql.SQLException;
+	public Collection getActiveDatabases();
 	
 	/**
-	 * Returns a list of active databases in this cluster.
-	 * @return a list of database objects
+	 * Returns a collection of inactive databases in this cluster.
+	 * @return a collection of database identifiers
 	 */
-	public Collection getInactiveDatabases() throws java.sql.SQLException;
+	public Collection getInactiveDatabases();
+
+	/**
+	 * Returns a collection of synchronization strategies for this cluster.
+	 * @return a collection of synchronization strategy identifiers
+	 */
+	public Collection getSynchronizationStrategies();
 }

@@ -31,9 +31,10 @@ import java.sql.SQLException;
 public abstract class ResultSetOperation implements Operation
 {
 	/**
-	 * @param resultSet
-	 * @return the return value of the ResultSet operation
-	 * @throws SQLException
+	 * Helper method that simplifies operation interface for ResultSetProxy.
+	 * @param resultSet a query result set
+	 * @return the result from executing this operation
+	 * @throws SQLException if execution fails
 	 */
 	public abstract Object execute(ResultSet resultSet) throws SQLException;
 

@@ -30,6 +30,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -41,7 +44,22 @@ import org.apache.commons.logging.LogFactory;
  */
 public abstract class DatabaseCluster implements DatabaseClusterMBean
 {
+	private static final String MBEAN_DOMAIN = "net.sf.hajdbc";
+	private static final String MBEAN_KEY = "cluster";
+	
 	private static Log log = LogFactory.getLog(DatabaseCluster.class);
+	
+	/**
+	 * Convenience method for constructing an mbean ObjectName for this cluster.
+	 * The ObjectName is constructed using {@link #MBEAN_DOMAIN} and {@link #MBEAN_KEY} and the quoted cluster identifier.
+	 * @param clusterId a cluster identifier
+	 * @return an ObjectName for this cluster
+	 * @throws MalformedObjectNameException if the ObjectName could not be constructed
+	 */
+	public static ObjectName getObjectName(String clusterId) throws MalformedObjectNameException
+	{
+		return ObjectName.getInstance(MBEAN_DOMAIN, MBEAN_KEY, ObjectName.quote(clusterId));
+	}
 	
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#isAlive(java.lang.String)
@@ -82,51 +100,9 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	 */
 	public final void activate(String databaseId) throws java.sql.SQLException
 	{
-		this.activate(databaseId, this.getDescriptor().getDefaultSynchronizationStrategy());
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseClusterMBean#activate(java.lang.String, java.lang.String)
-	 */
-	public final void activate(String databaseId, String strategyClassName) throws java.sql.SQLException
-	{
 		try
 		{
-			Database database = this.getDatabase(databaseId);
-			
-			// If this database is already active, or there are no active databases then skip synchronization
-			if (this.isActive(database) || this.getActiveDatabaseList().isEmpty())
-			{
-				this.activate(database);
-			}
-			else
-			{
-				try
-				{
-					Class strategyClass = Class.forName(strategyClassName);
-					
-					if (!SynchronizationStrategy.class.isAssignableFrom(strategyClass))
-					{
-						throw new SQLException(Messages.getMessage(Messages.INVALID_SYNC_STRATEGY, SynchronizationStrategy.class.getName()));
-					}
-					
-					SynchronizationStrategy strategy = (SynchronizationStrategy) strategyClass.newInstance();
-	
-					this.activate(database, strategy);
-				}
-				catch (ClassNotFoundException e)
-				{
-					throw new SQLException(e);
-				}
-				catch (InstantiationException e)
-				{
-					throw new SQLException(e);
-				}
-				catch (IllegalAccessException e)
-				{
-					throw new SQLException(e);
-				}
-			}
+			this.activate(this.getDatabase(databaseId));
 		}
 		catch (java.sql.SQLException e)
 		{
@@ -136,10 +112,44 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 		}
 	}
 	
-	public final void activate(Database inactiveDatabase, SynchronizationStrategy strategy) throws java.sql.SQLException
+	/**
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#activate(java.lang.String, java.lang.String)
+	 */
+	public final void activate(String databaseId, String strategyId) throws java.sql.SQLException
 	{
+		try
+		{
+			this.activate(this.getDatabase(databaseId), this.getSynchronizationStrategy(strategyId));
+		}
+		catch (java.sql.SQLException e)
+		{
+			log.warn(Messages.getMessage(Messages.DATABASE_ACTIVATE_FAILED, databaseId), e);
+			
+			throw e;
+		}
+	}
+	
+	/**
+	 * Synchronizes and activates the specified database using the specified synchronization strategy
+	 * @param inactiveDatabase an inactive database
+	 * @param strategy a synchronization strategy
+	 * @throws java.sql.SQLException if synchronization fails
+	 */
+	private void activate(Database inactiveDatabase, SynchronizationStrategy strategy) throws java.sql.SQLException
+	{
+		if (this.isActive(inactiveDatabase))
+		{
+			return;
+		}
+		
+		List databaseList = this.getDatabaseList();
+		
+		if (databaseList.isEmpty())
+		{
+			return;
+		}
+		
 		Connection inactiveConnection = null;
-		List databaseList = this.getActiveDatabaseList();
 		Connection[] activeConnections = new Connection[databaseList.size()];
 		
 		try
@@ -188,7 +198,7 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 			
 			log.info(Messages.getMessage(Messages.DATABASE_SYNC_START, inactiveDatabase));
 
-			strategy.synchronize(inactiveConnection, activeConnections[0], tableList, this.getDescriptor());
+			strategy.synchronize(inactiveConnection, activeConnections[0], tableList);
 			
 			log.info(Messages.getMessage(Messages.DATABASE_SYNC_END, inactiveDatabase));
 	
@@ -226,38 +236,109 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 		}
 	}
 	
+	/**
+	 * @see java.lang.Object#toString()
+	 */
 	public String toString()
 	{
 		return this.getId();
 	}
 	
+	/**
+	 * Determines whether the specified database is active.
+	 * @param database a database descriptor
+	 * @return true, if the database is active, false otherwise
+	 */
 	public abstract boolean isActive(Database database);
 
+	/**
+	 * Activates the specified database.
+	 * @param database a database descriptor
+	 * @return result of {@link #addDatabase(Database)}
+	 */
 	public abstract boolean activate(Database database);
 	
-	public abstract boolean addDatabase(Database database);
-	
-	public abstract boolean removeDatabase(Database database);
-	
-	public abstract Database firstDatabase() throws java.sql.SQLException;
-	
-	public abstract Database nextDatabase() throws java.sql.SQLException;
-
-	public abstract List getActiveDatabaseList() throws java.sql.SQLException;
-
-	public abstract Collection getActiveDatabases() throws java.sql.SQLException;
-
-	public abstract Collection getInactiveDatabases() throws java.sql.SQLException;
-	
-	public abstract ConnectionFactoryProxy getConnectionFactory();
-	
-	public abstract boolean isAlive(Database database);
-	
+	/**
+	 * Deactivates the specified database
+	 * @param database a database descriptor
+	 * @return result of {@link #removeDatabase(Database)}
+	 */
 	public abstract boolean deactivate(Database database);
 
+	/**
+	 * Adds the specified database to this cluster.
+	 * @param database a database descriptor
+	 * @return true, if database was added, false if it already existed in this cluster
+	 */
+	public abstract boolean addDatabase(Database database);
+	
+	/**
+	 * Removes the specified database from this cluster
+	 * @param database a database descriptor
+	 * @return true, if database was removed, false if it did not exist in this cluster
+	 */
+	public abstract boolean removeDatabase(Database database);
+	
+	/**
+	 * Returns the first database in this cluster ignoring load balancing strategy.
+	 * @return a database descriptor
+	 * @throws java.sql.SQLException if the cluster is empty
+	 */
+	public abstract Database firstDatabase() throws java.sql.SQLException;
+	
+	/**
+	 * Returns the next available database in this cluster determined via the load balancing strategy.
+	 * @return a database descriptor
+	 * @throws java.sql.SQLException if the cluster is empty
+	 */
+	public abstract Database nextDatabase() throws java.sql.SQLException;
+
+	/**
+	 * Returns all the databases in this cluster.
+	 * @return a list of database descriptors
+	 * @throws java.sql.SQLException if the cluster is empty
+	 */
+	public abstract List getDatabaseList() throws java.sql.SQLException;
+
+	/**
+	 * Returns a connection factory proxy for this obtaining connections to databases in this cluster.
+	 * @return a connection factory proxy
+	 */
+	public abstract ConnectionFactoryProxy getConnectionFactory();
+	
+	/**
+	 * Determines whether or not the specified database is responding
+	 * @param database a database descriptor
+	 * @return true, if the database is responding, false if it appears down
+	 */
+	public abstract boolean isAlive(Database database);
+	
+	/**
+	 * Returns the descriptor for this cluster.
+	 * @return a database cluster descriptor
+	 */
 	public abstract DatabaseClusterDescriptor getDescriptor();
 	
-	public abstract Database getDatabase(String databaseId) throws java.sql.SQLException;
+	/**
+	 * Returns the database identified by the specified id
+	 * @param id a database identifier
+	 * @return a database descriptor
+	 * @throws java.sql.SQLException if no database exists with the specified identifier
+	 */
+	public abstract Database getDatabase(String id) throws java.sql.SQLException;
 	
+	/**
+	 * Returns a set of databases added to this cluster since the last call to {@link #getDatabaseList()}.
+	 * @param databases a collection of known databases
+	 * @return a Set<Database>
+	 */
 	public abstract Set getNewDatabaseSet(Collection databases);
+	
+	/**
+	 * Returns the synchronization strategy identified by the specified id
+	 * @param id synchronization strategy unique identifier
+	 * @return a SynchronizationStrategy implementation
+	 * @throws java.sql.SQLException if no strategy exists with the specified identifier
+	 */
+	public abstract SynchronizationStrategy getSynchronizationStrategy(String id) throws java.sql.SQLException;
 }

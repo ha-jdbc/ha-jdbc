@@ -35,6 +35,12 @@ import net.sf.hajdbc.SQLProxy;
  */
 public class XAResourceProxy extends SQLProxy implements XAResource
 {
+	/**
+	 * Constructs a new XAResourceProxy.
+	 * @param connection a proxy for XAConnections
+	 * @param operation an operation that creates XAResources
+	 * @throws SQLException if operation execution fails
+	 */
 	public XAResourceProxy(XAConnectionProxy connection, XAConnectionOperation operation) throws SQLException
 	{
 		super(connection, operation);

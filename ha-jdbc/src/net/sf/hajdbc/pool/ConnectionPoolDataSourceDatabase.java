@@ -21,6 +21,7 @@
 package net.sf.hajdbc.pool;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import javax.sql.ConnectionPoolDataSource;
 import javax.sql.PooledConnection;
@@ -45,7 +46,13 @@ public class ConnectionPoolDataSourceDatabase extends DataSourceDatabase
 		return this.getConnection(connection);
 	}
 	
-	public PooledConnection getPooledConnection(ConnectionPoolDataSource dataSource) throws java.sql.SQLException
+	/**
+	 * Returns a pooled connection from the specified connection pool data source.
+	 * @param dataSource a connection pool data source
+	 * @return a PooledConnection object
+	 * @throws SQLException if a connection could not be obtained.
+	 */
+	public PooledConnection getPooledConnection(ConnectionPoolDataSource dataSource) throws SQLException
 	{
 		return (this.user != null) ? dataSource.getPooledConnection(this.user, this.password) : dataSource.getPooledConnection();
 	}
@@ -54,9 +61,9 @@ public class ConnectionPoolDataSourceDatabase extends DataSourceDatabase
 	 * Returns a database connection from the specified pool.
 	 * @param connection
 	 * @return a database connection
-	 * @throws SQLException
+	 * @throws SQLException if a connection could not be obtained from the specified pool.
 	 */
-	protected Connection getConnection(PooledConnection connection) throws java.sql.SQLException
+	protected Connection getConnection(PooledConnection connection) throws SQLException
 	{
 		return connection.getConnection();
 	}

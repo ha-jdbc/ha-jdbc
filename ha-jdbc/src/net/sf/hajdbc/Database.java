@@ -21,6 +21,7 @@
 package net.sf.hajdbc;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
 /**
  * @author  Paul Ferraro
@@ -29,9 +30,24 @@ import java.sql.Connection;
  */
 public interface Database
 {
+	/**
+	 * Returns the unique idenfier for this database
+	 * @return a unique identifier
+	 */
 	public String getId();
 	
-	public Connection connect(Object connectionFactory) throws java.sql.SQLException;
+	/**
+	 * Connects to the database using the specified connection factory.
+	 * @param connectionFactory a factory object for creating connections
+	 * @return a database connection
+	 * @throws SQLException if connection fails
+	 */
+	public Connection connect(Object connectionFactory) throws SQLException;
 	
-	public Object getConnectionFactory() throws java.sql.SQLException;
+	/**
+	 * Factory method for creating a connection factory object for this database.
+	 * @return a connection factory object
+	 * @throws SQLException if connection factory could not be created
+	 */
+	public Object createConnectionFactory() throws SQLException;
 }

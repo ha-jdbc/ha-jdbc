@@ -21,11 +21,19 @@
 package net.sf.hajdbc;
 
 /**
+ * A database cluster descriptor that decorates an underlying database cluster descriptor.
+ * 
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
 public interface DatabaseClusterDecoratorDescriptor
 {
+	/**
+	 * Decorates the specified database cluster with some additional functionality.
+	 * @param databaseCluster a database cluster
+	 * @return a DatabaseCluster implementation
+	 * @throws Exception if decoration fails
+	 */
 	public DatabaseCluster decorate(DatabaseCluster databaseCluster) throws Exception; 
 }

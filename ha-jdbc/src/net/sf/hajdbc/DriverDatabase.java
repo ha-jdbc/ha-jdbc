@@ -39,7 +39,8 @@ public class DriverDatabase extends AbstractDatabase
 	private String driver;
 	
 	/**
-	 * @return the database url
+	 * Returns the url for this database
+	 * @return a database url
 	 */
 	public String getUrl()
 	{
@@ -47,7 +48,8 @@ public class DriverDatabase extends AbstractDatabase
 	}
 	
 	/**
-	 * @param url
+	 * Set the url for this database
+	 * @param url a database url
 	 */
 	public void setUrl(String url)
 	{
@@ -55,7 +57,8 @@ public class DriverDatabase extends AbstractDatabase
 	}
 	
 	/**
-	 * @return the database driver class name 
+	 * Returns the driver class name for this database.
+	 * @return a driver class name
 	 */
 	public String getDriver()
 	{
@@ -63,7 +66,8 @@ public class DriverDatabase extends AbstractDatabase
 	}
 	
 	/**
-	 * @param driver
+	 * Sets the driver class name for this database.
+	 * @param driver a driver class name
 	 */
 	public void setDriver(String driver)
 	{
@@ -71,7 +75,8 @@ public class DriverDatabase extends AbstractDatabase
 	}
 	
 	/**
-	 * @return the user and password as a set of properties
+	 * Builds a properties object from the user and password for this database.
+	 * @return a properties object
 	 */
 	public Properties getProperties()
 	{
@@ -91,7 +96,8 @@ public class DriverDatabase extends AbstractDatabase
 	}
 	
 	/**
-	 * @param properties
+	 * Extracts the user and password for this database from the specified properties object.
+	 * @param properties a properties object
 	 */
 	public void setProperties(Properties properties)
 	{
@@ -109,7 +115,10 @@ public class DriverDatabase extends AbstractDatabase
 		return driver.connect(this.url, this.getProperties());
 	}
 	
-	public Object getConnectionFactory() throws java.sql.SQLException
+	/**
+	 * @see net.sf.hajdbc.Database#createConnectionFactory()
+	 */
+	public Object createConnectionFactory() throws java.sql.SQLException
 	{
 		if (this.driver != null)
 		{

@@ -30,8 +30,17 @@ import javax.sql.DataSource;
  */
 public abstract class DataSourceOperation implements Operation
 {
+	/**
+	 * Helper method that simplifies operation interface for DataSourceProxy.
+	 * @param dataSource a data source
+	 * @return the result from executing this operation
+	 * @throws SQLException if execution fails
+	 */
 	public abstract Object execute(DataSource dataSource) throws SQLException;
 	
+	/**
+	 * @see net.sf.hajdbc.Operation#execute(net.sf.hajdbc.Database, java.lang.Object)
+	 */
 	public final Object execute(Database database, Object dataSource) throws SQLException
 	{
 		return this.execute((DataSource) dataSource);

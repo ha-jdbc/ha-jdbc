@@ -63,11 +63,11 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getActiveDatabaseList()
+	 * @see net.sf.hajdbc.DatabaseCluster#getDatabaseList()
 	 */
-	public final List getActiveDatabaseList() throws java.sql.SQLException
+	public final List getDatabaseList() throws java.sql.SQLException
 	{
-		return this.databaseCluster.getActiveDatabaseList();
+		return this.databaseCluster.getDatabaseList();
 	}
 	
 	/**
@@ -137,7 +137,7 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#getActiveDatabases()
 	 */
-	public final Collection getActiveDatabases() throws java.sql.SQLException
+	public final Collection getActiveDatabases()
 	{
 		return this.databaseCluster.getActiveDatabases();
 	}
@@ -145,8 +145,24 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#getInactiveDatabases()
 	 */
-	public final Collection getInactiveDatabases() throws java.sql.SQLException
+	public final Collection getInactiveDatabases()
 	{
 		return this.databaseCluster.getInactiveDatabases();
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#getSynchronizationStrategies()
+	 */
+	public final Collection getSynchronizationStrategies()
+	{
+		return this.databaseCluster.getSynchronizationStrategies();
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getSynchronizationStrategy(java.lang.String)
+	 */
+	public final SynchronizationStrategy getSynchronizationStrategy(String id) throws java.sql.SQLException
+	{
+		return this.databaseCluster.getSynchronizationStrategy(id);
 	}
 }

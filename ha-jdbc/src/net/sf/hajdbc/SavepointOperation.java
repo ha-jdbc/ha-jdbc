@@ -30,6 +30,12 @@ import java.sql.Savepoint;
  */
 public abstract class SavepointOperation implements Operation
 {
+	/**
+	 * Helper method that simplifies operation interface for SavepointProxy.
+	 * @param savepoint a transaction savepoint
+	 * @return the result from executing this operation
+	 * @throws SQLException if execution fails
+	 */
 	public abstract Object execute(Savepoint savepoint) throws SQLException;
 	
 	/**

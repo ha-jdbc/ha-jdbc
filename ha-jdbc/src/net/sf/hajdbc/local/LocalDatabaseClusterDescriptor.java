@@ -26,6 +26,8 @@ import java.util.Map;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterDescriptor;
+import net.sf.hajdbc.SynchronizationStrategy;
+import net.sf.hajdbc.SynchronizationStrategyDescriptor;
 
 /**
  * @author  Paul Ferraro
@@ -36,11 +38,8 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 {
 	private String id;
 	private String validateSQL;
-	private String createForeignKeySQL;
-	private String dropForeignKeySQL;
-	private String truncateTableSQL;
-	private String defaultSynchronizationStrategy;
 	private Map databaseMap = new HashMap();
+	private Map synchronizationStrategyMap = new HashMap();
 	
 	/**
 	 * Returns a mapping of database id to Database object.
@@ -52,17 +51,35 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 	}
 	
 	/**
-	 * Adds the specified database to this cluster
-	 * @param object add the specified database to the 
+	 * Adds the specified database to this cluster.
+	 * This method is only used by JiBX.
+	 * @param object a Database object
 	 */
-	protected void addDatabase(Object object)
+	void addDatabase(Object object)
 	{
 		Database database = (Database) object;
+		
 		this.databaseMap.put(database.getId(), database);
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseClusterDescriptor#getId()
+	 * Adds the specified synchronization strategy descriptor to this cluster.
+	 * This method is only used by JiBX.
+	 * @param object a SynchronizationStrategyDescriptor
+	 * @throws Exception if synchronization strategy could not be created
+	 */
+	void addSynchronizationStrategy(Object object) throws Exception
+	{
+		SynchronizationStrategyDescriptor descriptor = (SynchronizationStrategyDescriptor) object;
+		
+		SynchronizationStrategy strategy = descriptor.createSynchronizationStrategy();
+		
+		this.synchronizationStrategyMap.put(descriptor.getId(), strategy);
+	}
+	
+	/**
+	 * Returns the identifier of this database cluster.
+	 * @return a database cluster identifier
 	 */
 	public String getId()
 	{
@@ -70,7 +87,8 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseClusterDescriptor#getValidateSQL()
+	 * Returns the SQL statement used to validate whether or not a database is responding.
+	 * @return a SQL statement
 	 */
 	public String getValidateSQL()
 	{
@@ -78,35 +96,12 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseClusterDescriptor#getCreateForeignKeySQL()
+	 * Returns a map of synchronization strategies for this cluster. 
+	 * @return a Map<String, SynchronizationStrategy>
 	 */
-	public String getCreateForeignKeySQL()
+	public Map getSynchronizationStrategyMap()
 	{
-		return this.createForeignKeySQL;
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseClusterDescriptor#getDropForeignKeySQL()
-	 */
-	public String getDropForeignKeySQL()
-	{
-		return this.dropForeignKeySQL;
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseClusterDescriptor#getTruncateTableSQL()
-	 */
-	public String getTruncateTableSQL()
-	{
-		return this.truncateTableSQL;
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseClusterDescriptor#getDefaultSynchronizationStrategy()
-	 */
-	public String getDefaultSynchronizationStrategy()
-	{
-		return this.defaultSynchronizationStrategy;
+		return this.synchronizationStrategyMap;
 	}
 	
 	/**

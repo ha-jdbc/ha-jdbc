@@ -39,6 +39,10 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
+ * Provides temp file support for serializing data for large objects.
+ * Data is GZIPed for disk optimization and simple obfuscation.
+ * Any files created by this object are deleted when {@link #close()} is called.
+ * 
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
@@ -51,6 +55,12 @@ public class FileSupport
 	
 	private List fileList = new LinkedList();
 	
+	/**
+	 * Create a file from the specified binary input stream.
+	 * @param inputStream a binary stream of data
+	 * @return a temporary file
+	 * @throws java.sql.SQLException if an IO error occurs
+	 */
 	public File createFile(InputStream inputStream) throws java.sql.SQLException
 	{
 		File file = this.createTempFile();;
@@ -78,6 +88,12 @@ public class FileSupport
 		}
 	}
 	
+	/**
+	 * Create a file from the specified character input stream
+	 * @param reader a character stream of data
+	 * @return a temporary file
+	 * @throws java.sql.SQLException if an IO error occurs
+	 */
 	public File createFile(Reader reader) throws java.sql.SQLException
 	{
 		File file = this.createTempFile();;
@@ -105,11 +121,23 @@ public class FileSupport
 		}
 	}
 	
+	/**
+	 * Returns a reader for the specified file.
+	 * @param file a temp file
+	 * @return a reader
+	 * @throws java.sql.SQLException if IO error occurs
+	 */
 	public Reader getReader(File file) throws java.sql.SQLException
 	{
 		return new InputStreamReader(this.getInputStream(file));
 	}
 	
+	/**
+	 * Returns an input stream for the specified file.
+	 * @param file a temp file
+	 * @return an input stream
+	 * @throws java.sql.SQLException if IO error occurs
+	 */
 	public InputStream getInputStream(File file) throws java.sql.SQLException
 	{
 		try
@@ -122,6 +150,11 @@ public class FileSupport
 		}
 	}
 	
+	/**
+	 * Creates a temp file and stores a reference to it so that it can be deleted later.
+	 * @return a temp file
+	 * @throws SQLException if an IO error occurs
+	 */
 	private File createTempFile() throws SQLException
 	{
 		try
@@ -138,6 +171,9 @@ public class FileSupport
 		}
 	}
 	
+	/**
+	 * Deletes any files created by this object.
+	 */
 	public void close()
 	{
 		while (!this.fileList.isEmpty())

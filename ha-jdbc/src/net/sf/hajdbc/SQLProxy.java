@@ -63,6 +63,13 @@ public abstract class SQLProxy
 		this.sqlObjectMap = sqlObjectMap;
 	}
 	
+	/**
+	 * Returns the underlying SQL object for the specified database.
+	 * If the sql object does not exist (this might be the case if the database was newly activated), it will be created from the stored operation.
+	 * Any recorded operations are also executed. If the object could not be created, or if any of the executed operations failed, then the specified database is deactivated.
+	 * @param database a database descriptor.
+	 * @return an underlying SQL object
+	 */
 	public Object getSQLObject(Database database)
 	{
 		synchronized (this.sqlObjectMap)
@@ -105,16 +112,32 @@ public abstract class SQLProxy
 		}
 	}
 	
+	/**
+	 * Records an operation.
+	 * @param operation a database operation
+	 */
 	protected void record(Operation operation)
 	{
 		this.operationList.add(operation);
 	}
 	
-	public final Object firstValue(Map valueMap)
+	/**
+	 * Helper method that extracts the first result from a map of results.
+	 * @param valueMap a Map<Database, Object> of operation execution results.
+	 * @return a operation execution result
+	 */
+	protected final Object firstValue(Map valueMap)
 	{
 		return valueMap.values().iterator().next();
 	}
 	
+	/**
+	 * Read-style execution that executes the specified operation on a single database in the cluster.
+	 * It is assumed that these types of operation will require access to the database.
+	 * @param operation a database operation
+	 * @return the operation execution result
+	 * @throws java.sql.SQLException if operation execution fails
+	 */
 	public final Object executeRead(Operation operation) throws java.sql.SQLException
 	{
 		Database database = this.getDatabaseCluster().nextDatabase();
@@ -138,6 +161,13 @@ public abstract class SQLProxy
 		}
 	}
 	
+	/**
+	 * Get-style execution that executes the specified operation on a single database in the cluster.
+	 * It is assumed that these types of operation will <em>not</em> require access to the database.
+	 * @param operation a database operation
+	 * @return the operation execution result
+	 * @throws java.sql.SQLException if operation execution fails
+	 */
 	public final Object executeGet(Operation operation) throws java.sql.SQLException
 	{
 		Database database = this.getDatabaseCluster().firstDatabase();
@@ -151,9 +181,16 @@ public abstract class SQLProxy
 		return operation.execute(database, sqlObject);
 	}
 	
+	/**
+	 * Write-style execution that executes the specified operation on every database in the cluster in parallel.
+	 * It is assumed that these types of operation will require access to the database.
+	 * @param operation a database operation
+	 * @return a Map<Database, Object> of operation execution results from each database
+	 * @throws java.sql.SQLException if operation execution fails
+	 */
 	public final Map executeWrite(Operation operation) throws java.sql.SQLException
 	{
-		List databaseList = this.getDatabaseCluster().getActiveDatabaseList();
+		List databaseList = this.getDatabaseCluster().getDatabaseList();
 		Thread[] threads = new Thread[databaseList.size()];
 		
 		Map returnValueMap = new HashMap(threads.length);
@@ -169,7 +206,7 @@ public abstract class SQLProxy
 				continue;
 			}
 			
-			Executor executor = new Executor(operation, database, sqlObject, returnValueMap, exceptionMap);
+			OperationExecutor executor = new OperationExecutor(operation, database, sqlObject, returnValueMap, exceptionMap);
 			
 			threads[i] = new Thread(executor);
 			threads[i].start();
@@ -225,9 +262,16 @@ public abstract class SQLProxy
 		return returnValueMap;
 	}
 
+	/**
+	 * Set-style execution that executes the specified operation on every database in the cluster.
+	 * It is assumed that these types of operation will <em>not</em> require access to the database.
+	 * @param operation a database operation
+	 * @return a Map<Database, Object> of operation execution results from each database
+	 * @throws java.sql.SQLException if operation execution fails
+	 */
 	public final Map executeSet(Operation operation) throws java.sql.SQLException
 	{
-		List databaseList = this.getDatabaseCluster().getActiveDatabaseList();
+		List databaseList = this.getDatabaseCluster().getDatabaseList();
 		Map returnValueMap = new HashMap(databaseList.size());
 
 		for (int i = 0; i < databaseList.size(); ++i)
@@ -269,6 +313,11 @@ public abstract class SQLProxy
 		}
 	}
 	
+	/**
+	 * @param database
+	 * @param exception
+	 * @throws SQLException
+	 */
 	protected final void handleException(Database database, Throwable exception) throws SQLException
 	{
 		if (this.getDatabaseCluster().isAlive(database))
@@ -284,6 +333,10 @@ public abstract class SQLProxy
 		this.deactivate(database, new SQLException(Messages.getMessage(Messages.DATABASE_NOT_ACTIVE, this.getClass().getName())));
 	}
 	
+	/**
+	 * @param database
+	 * @param cause
+	 */
 	protected final void deactivate(Database database, Throwable cause)
 	{
 		DatabaseCluster databaseCluster = this.getDatabaseCluster();
@@ -294,12 +347,19 @@ public abstract class SQLProxy
 		}
 	}
 	
+	/**
+	 * Returns the database cluster for this SQL object.
+	 * @return a database cluster
+	 */
 	public DatabaseCluster getDatabaseCluster()
 	{
 		return this.parent.getDatabaseCluster();
 	}
 
-	private class Executor implements Runnable
+	/**
+	 * Helper class that enables asynchronous execution of an operation.
+	 */
+	private class OperationExecutor implements Runnable
 	{
 		private Operation operation;
 		private Database database;
@@ -307,7 +367,15 @@ public abstract class SQLProxy
 		private Map returnValueMap;
 		private Map exceptionMap;
 		
-		public Executor(Operation operation, Database database, Object sqlObject, Map returnValueMap, Map exceptionMap)
+		/**
+		 * Constructs a new OperationExecutor.
+		 * @param operation a database operation
+		 * @param database a database descriptor
+		 * @param sqlObject a SQL object
+		 * @param returnValueMap a Map<Database, Object> that holds the results from the operation execution
+		 * @param exceptionMap a Map<Database, SQLException> that holds the exceptions resulting from the operation execution
+		 */
+		public OperationExecutor(Operation operation, Database database, Object sqlObject, Map returnValueMap, Map exceptionMap)
 		{
 			this.operation = operation;
 			this.database = database;
@@ -316,6 +384,9 @@ public abstract class SQLProxy
 			this.exceptionMap = exceptionMap;
 		}
 		
+		/**
+		 * @see java.lang.Runnable#run()
+		 */
 		public void run()
 		{
 			try

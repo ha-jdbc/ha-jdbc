@@ -46,6 +46,12 @@ public class XADataSourceDatabase extends ConnectionPoolDataSourceDatabase
 		return this.getConnection(connection);
 	}
 	
+	/**
+	 * Returns a JTA-aware connection from the specified data source.
+	 * @param dataSource a JTA-aware data source
+	 * @return a JTA-aware connection
+	 * @throws SQLException if a connection could not be obtained
+	 */
 	public XAConnection getXAConnection(XADataSource dataSource) throws SQLException
 	{
 		return (this.user != null) ? dataSource.getXAConnection(this.user, this.password) : dataSource.getXAConnection();

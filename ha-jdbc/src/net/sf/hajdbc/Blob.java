@@ -34,7 +34,8 @@ public class Blob implements java.sql.Blob
 	private java.sql.Blob blob;
 	
 	/**
-	 * Constructs a new BlobProxy.
+	 * Constructs a new Blob.
+	 * @param blob a binary large object
 	 */
 	public Blob(java.sql.Blob blob)
 	{
