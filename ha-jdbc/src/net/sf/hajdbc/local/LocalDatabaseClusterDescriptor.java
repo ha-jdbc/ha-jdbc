@@ -41,6 +41,7 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 	private String createIndexSQL;
 	private String dropIndexSQL;
 	private String truncateTableSQL;
+	private String defaultSynchronizationStrategy;
 	private Map databaseMap = new HashMap();
 	
 	/**
@@ -112,6 +113,11 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 	public String getTruncateTableSQL()
 	{
 		return this.truncateTableSQL;
+	}
+	
+	public String getDefaultSynchronizationStrategy()
+	{
+		return this.defaultSynchronizationStrategy;
 	}
 	
 	public DatabaseCluster createDatabaseCluster() throws java.sql.SQLException

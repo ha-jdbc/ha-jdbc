@@ -42,4 +42,6 @@ public interface DatabaseClusterDescriptor
 	public String getDropIndexSQL();
 	
 	public String getTruncateTableSQL();
+	
+	public String getDefaultSynchronizationStrategy();
 }
