@@ -31,10 +31,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.hajdbc.ConnectionFactoryProxy;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterDescriptor;
-import net.sf.hajdbc.ConnectionFactoryProxy;
 import net.sf.hajdbc.SQLException;
 
 /**
