@@ -44,7 +44,7 @@
 					<li>Allows use of vendor implementations of SQL types (e.g. <code>Blob</code>, <code>Clob</code>, <code>Ref</code>, etc).</li>
 					<li>Improves performance of concurrent read-access by distributing load across individual cluster nodes.</li>
 					<li>Ensures data concurrency by deactivating failed cluster nodes.</li>
-					<li>Library of cluster-aware <link href="http://www.jcp.org/en/jsr/detail?id=114">JSR 114</link> <code>javax.sql.RowSet</code> implementations (coming soon)</li>
+					<li>Inherently compatible with <link href="http://www.jcp.org/en/jsr/detail?id=114">JSR 114</link> <code>javax.sql.RowSet</code> API</li>
 					<li>Configurable node failure strategies (coming soon)</li>
 					<li>Configurable distributed cluster manager strategies (coming soon)</li>
 					<li>Cluster health introspection (coming soon)</li>
@@ -58,7 +58,6 @@
 					<li>Hot activation/synchronization of new/failed cluster nodes.</li>
 					<li><code>ResultSet</code> caching.</li>
 					<li>Heterogeneous clusters (i.e. different database vendors within in the same cluster).</li>
-					<li>Support for write operations (i.e. <code>setXXX(...)</code>) in third-party <code>javax.sql.RowSet</code> implementations.</li>
 				</ul>
 			</section>
 		</section>
@@ -330,12 +329,33 @@
 			</section>
 			<section>
 				<title>Advanced JDBC Features</title>
+				<section>
+					<title>JSR 114 RowSets</title>
+					<p>
+						HA-JDBC will work with any JSR 114 implementation provided that the rowsets are driven via the HA-JDBC driver.
+					</p>
+					<p>e.g.</p>
+					<p>
+						<code><![CDATA[com.sun.rowset.CachedRowSetImpl rs = new com.sun.rowset.CachedRowSetImpl();]]></code><br/>
+						<code><![CDATA[rs.setCommand("SELECT * FROM TITLES WHERE TYPE = ?");]]></code><br/>
+						<code><![CDATA[rs.setURL("jdbc:ha-jdbc:cluster");]]></code><br/>
+						<code><![CDATA[rs.setUsername("postgres");]]></code><br/>
+						<code><![CDATA[rs.setPassword("password");]]></code><br/>
+						<code><![CDATA[rs.setString(1, "BIOGRAPHY");]]></code><br/>
+						<code><![CDATA[rs.execute();]]></code><br/>
+						<code><![CDATA[// ...]]></code><br/>
+						<code><![CDATA[rs.close();]]></code><br/>
+					</p>
+				</section>
+			</section>
+			<section>
+				<title>Integration with O/R Mapping Frameworks</title>
 				<p>
 					Coming soon...
 				</p>
 			</section>
 			<section>
-				<title>Integration with O/R Mapping Frameworks</title>
+				<title>Entity EJBs with HA-JDBC</title>
 				<p>
 					Coming soon...
 				</p>
