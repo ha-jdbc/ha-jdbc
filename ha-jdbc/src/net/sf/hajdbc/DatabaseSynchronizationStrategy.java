@@ -30,5 +30,5 @@ import java.util.List;
  */
 public interface DatabaseSynchronizationStrategy
 {
-	public void synchronize(Connection connection, ConnectionProxy connectionProxy, List tableList) throws java.sql.SQLException;
+	public void synchronize(DatabaseClusterDescriptor descriptor, Connection activeConnection, Connection inactiveConnection, List tableList) throws java.sql.SQLException;
 }
