@@ -11,7 +11,7 @@ import java.util.Map;
  * @version $Revision$
  * @since   1.0
  */
-public class DatabaseCluster extends SQLObjectProxy implements DatabaseEventListener
+public class DatabaseCluster extends SQLProxy implements DatabaseEventListener
 {
 	private String name;
 	private String validateSQL;
@@ -47,7 +47,7 @@ public class DatabaseCluster extends SQLObjectProxy implements DatabaseEventList
 	}
 	
 	/**
-	 * @see net.sf.ha.jdbc.SQLObjectProxy#getDatabaseCluster()
+	 * @see net.sf.ha.jdbc.SQLProxy#getDatabaseCluster()
 	 */
 	protected DatabaseCluster getDatabaseCluster()
 	{

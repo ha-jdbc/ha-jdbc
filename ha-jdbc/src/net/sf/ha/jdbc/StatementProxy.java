@@ -11,7 +11,7 @@ import java.util.Map;
  * @author Paul Ferraro
  * @version $Revision$
  */
-public class StatementProxy extends SQLObjectProxy implements Statement
+public class StatementProxy extends SQLProxy implements Statement
 {
 	protected ConnectionProxy connection;
 
@@ -636,7 +636,7 @@ public class StatementProxy extends SQLObjectProxy implements Statement
 	}
 	
 	/**
-	 * @see net.sf.ha.jdbc.SQLObjectProxy#getDatabaseCluster()
+	 * @see net.sf.ha.jdbc.SQLProxy#getDatabaseCluster()
 	 */
 	protected DatabaseCluster getDatabaseCluster()
 	{
@@ -644,7 +644,7 @@ public class StatementProxy extends SQLObjectProxy implements Statement
 	}
 	
 	/**
-	 * @see net.sf.ha.jdbc.SQLObjectProxy#deactivate(net.sf.ha.jdbc.Database)
+	 * @see net.sf.ha.jdbc.SQLProxy#deactivate(net.sf.ha.jdbc.Database)
 	 */
 	public void deactivate(Database database)
 	{
