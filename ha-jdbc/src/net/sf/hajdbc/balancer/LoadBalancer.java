@@ -22,7 +22,6 @@ package net.sf.hajdbc.balancer;
 
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Map;
 import java.util.TreeMap;
 
 import net.sf.hajdbc.Database;
@@ -33,35 +32,7 @@ import net.sf.hajdbc.Database;
  */
 public class LoadBalancer extends AbstractBalancer
 {
-	private static Comparator comparator = new Comparator()
-	{
-		public int compare(Object object1, Object object2)
-		{
-			Map.Entry databaseMapEntry1 = (Map.Entry) object1;
-			Map.Entry databaseMapEntry2 = (Map.Entry) object2;
-			
-			Database database1 = (Database) databaseMapEntry1.getKey();
-			Database database2 = (Database) databaseMapEntry2.getKey();
-
-			Integer load1 = (Integer) databaseMapEntry1.getValue();
-			Integer load2 = (Integer) databaseMapEntry2.getValue();
-			
-			int weight1 = database1.getWeight().intValue();
-			int weight2 = database2.getWeight().intValue();
-			
-			if (weight1 == weight2)
-			{
-				return load1.compareTo(load2);
-			}
-			
-			float weightedLoad1 = (weight1 != 0) ? (load1.floatValue() / weight1) : Float.POSITIVE_INFINITY;
-			float weightedLoad2 = (weight2 != 0) ? (load2.floatValue() / weight2) : Float.POSITIVE_INFINITY;
-			
-			return Float.compare(weightedLoad1, weightedLoad2);
-		}
-	};
-	
-	private TreeMap databaseMap = new TreeMap(comparator);
+	TreeMap databaseMap = new TreeMap(new LoadBalancerComparator());
 	
 	/**
 	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
@@ -123,5 +94,33 @@ public class LoadBalancer extends AbstractBalancer
 		Integer load = (Integer) this.databaseMap.remove(database);
 
 		this.databaseMap.put(database, new Integer(load.intValue() + increment));
+	}
+	
+	private class LoadBalancerComparator implements Comparator
+	{
+		/**
+		 * @see java.util.Comparator#compare(Object, Object)
+		 */
+		public int compare(Object object1, Object object2)
+		{
+			Database database1 = (Database) object1;
+			Database database2 = (Database) object2;
+
+			Integer load1 = (Integer) LoadBalancer.this.databaseMap.get(database1);
+			Integer load2 = (Integer) LoadBalancer.this.databaseMap.get(database2);
+			
+			int weight1 = database1.getWeight().intValue();
+			int weight2 = database2.getWeight().intValue();
+			
+			if (weight1 == weight2)
+			{
+				return load1.compareTo(load2);
+			}
+			
+			float weightedLoad1 = (weight1 != 0) ? (load1.floatValue() / weight1) : Float.POSITIVE_INFINITY;
+			float weightedLoad2 = (weight2 != 0) ? (load2.floatValue() / weight2) : Float.POSITIVE_INFINITY;
+			
+			return Float.compare(weightedLoad1, weightedLoad2);
+		}
 	}
 }
