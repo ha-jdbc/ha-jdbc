@@ -29,9 +29,6 @@ import java.text.MessageFormat;
  */
 public class ForeignKey
 {
-	private static final String CREATE_SQL = "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4})";
-	private static final String DROP_SQL = "ALTER TABLE {1} DROP CONSTRAINT {0}";
-	
 	private String name;
 	private String table;
 	private String column;
@@ -47,17 +44,7 @@ public class ForeignKey
 		this.foreignColumn = foreignColumn;
 	}
 	
-	public String createSQL()
-	{
-		return formatSQL(CREATE_SQL);
-	}
-	
-	public String dropSQL()
-	{
-		return formatSQL(DROP_SQL);
-	}
-	
-	private String formatSQL(String pattern)
+	public String formatSQL(String pattern)
 	{
 		return MessageFormat.format(pattern, new Object[] { this.name, this.table, this.column, this.foreignTable, this.foreignColumn });
 	}

@@ -36,6 +36,7 @@ import java.util.Set;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseActivationStrategy;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.DatabaseClusterDescriptor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,13 +48,14 @@ import org.apache.commons.logging.LogFactory;
  */
 public class UpdateDatabaseActivationStrategy implements DatabaseActivationStrategy
 {
-	static Log log = LogFactory.getLog(UpdateDatabaseActivationStrategy.class);
+	private static Log log = LogFactory.getLog(UpdateDatabaseActivationStrategy.class);
 	
 	/**
 	 * @see net.sf.hajdbc.DatabaseActivationStrategy#activate(net.sf.hajdbc.DatabaseCluster, net.sf.hajdbc.Database)
 	 */
 	public void activate(DatabaseCluster databaseCluster, Database database) throws SQLException
 	{
+		DatabaseClusterDescriptor descriptor = databaseCluster.getDescriptor();
 		Connection activeConnection = null;
 		Connection inactiveConnection = null;
 		
@@ -96,7 +98,7 @@ public class UpdateDatabaseActivationStrategy implements DatabaseActivationStrat
 					String foreignColumn = resultSet.getString("PKCOLUMN_NAME");
 					
 					ForeignKey foreignKey = new ForeignKey(name, table, column, foreignTable, foreignColumn);
-					String sql = foreignKey.dropSQL();
+					String sql = foreignKey.formatSQL(descriptor.getDropForeignKeySQL());
 					
 					log.info("Dropping foreign key: " + sql);
 
@@ -350,7 +352,7 @@ public class UpdateDatabaseActivationStrategy implements DatabaseActivationStrat
 					while (foreignKeys.hasNext())
 					{
 						ForeignKey foreignKey = (ForeignKey) foreignKeys.next();
-						String sql = foreignKey.createSQL();
+						String sql = foreignKey.formatSQL(descriptor.getCreateForeignKeySQL());
 						
 						log.info("Recreating foreign key: " + sql);
 						

@@ -32,9 +32,6 @@ import java.util.List;
  */
 public class Index
 {
-	private static final String CREATE_SQL = "CREATE INDEX {0} ON {1} ({2})";
-	private static final String DROP_SQL = "DROP INDEX {0}";
-	
 	private String name;
 	private String table;
 	private List columnList = new LinkedList();
@@ -50,17 +47,7 @@ public class Index
 		this.columnList.add(column);
 	}
 	
-	public String createSQL()
-	{
-		return formatSQL(CREATE_SQL);
-	}
-	
-	public String dropSQL()
-	{
-		return formatSQL(DROP_SQL);
-	}
-	
-	private String formatSQL(String pattern)
+	public String formatSQL(String pattern)
 	{
 		StringBuffer buffer = new StringBuffer();
 		Iterator columns = this.columnList.iterator();

@@ -36,6 +36,7 @@ import java.util.Map;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseActivationStrategy;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.DatabaseClusterDescriptor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -56,6 +57,7 @@ public class DeleteInsertDatabaseActivationStrategy implements DatabaseActivatio
 	 */
 	public void activate(DatabaseCluster databaseCluster, Database database) throws SQLException
 	{
+		DatabaseClusterDescriptor descriptor = databaseCluster.getDescriptor();
 		Connection activeConnection = null;
 		Connection inactiveConnection = null;
 		
@@ -98,12 +100,12 @@ public class DeleteInsertDatabaseActivationStrategy implements DatabaseActivatio
 					String foreignColumn = resultSet.getString("PKCOLUMN_NAME");
 					
 					ForeignKey foreignKey = new ForeignKey(name, table, column, foreignTable, foreignColumn);
-					String sql = foreignKey.dropSQL();
+					String sql = foreignKey.formatSQL(descriptor.getDropForeignKeySQL());
 					
 					log.info("Dropping foreign key: " + sql);
 					
 					Statement statement = inactiveConnection.createStatement();
-					statement.execute(foreignKey.dropSQL());
+					statement.execute(sql);
 					statement.close();
 					
 					foreignKeyList.add(foreignKey);
@@ -125,11 +127,13 @@ public class DeleteInsertDatabaseActivationStrategy implements DatabaseActivatio
 						if (index == null)
 						{
 							index = new Index(name, table);
-	
-							log.info("Dropping non-unique index: " + name);
+							
+							String sql = index.formatSQL(descriptor.getDropIndexSQL());
+							
+							log.info("Dropping non-unique index: " + sql);
 							
 							Statement statement = inactiveConnection.createStatement();
-							statement.execute(index.dropSQL());
+							statement.execute(index.formatSQL(sql));
 							statement.close();
 							
 							indexMap.put(name, index);
@@ -293,12 +297,12 @@ public class DeleteInsertDatabaseActivationStrategy implements DatabaseActivatio
 					while (foreignKeys.hasNext())
 					{
 						ForeignKey foreignKey = (ForeignKey) foreignKeys.next();
-						String sql = foreignKey.dropSQL();
+						String sql = foreignKey.formatSQL(descriptor.getCreateForeignKeySQL());
 						
 						log.info("Recreating foreign key: " + sql);
 						
 						Statement statement = inactiveConnection.createStatement();
-						statement.execute(foreignKey.createSQL());
+						statement.execute(sql);
 						statement.close();
 					}
 					
@@ -307,15 +311,13 @@ public class DeleteInsertDatabaseActivationStrategy implements DatabaseActivatio
 					while (indexes.hasNext())
 					{
 						Index index = (Index) indexes.next();
-						String sql = index.createSQL();
+						String sql = index.formatSQL(descriptor.getCreateIndexSQL());
 						
 						log.info("Recreating non-unique index: " + sql);
 						
 						Statement statement = inactiveConnection.createStatement();
 						statement.execute(sql);
 						statement.close();
-						
-						index.dropSQL();
 					}
 
 					inactiveConnection.commit();
