@@ -113,9 +113,9 @@ public class DriverDatabase extends AbstractDatabase
 	/**
 	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
 	 */
-	public Connection connect(Object object) throws SQLException
+	public Connection connect(Object sqlObject) throws SQLException
 	{
-		Driver driver = (Driver) object;
+		Driver driver = (Driver) sqlObject;
 		
 		return driver.connect(this.url, this.getProperties());
 	}

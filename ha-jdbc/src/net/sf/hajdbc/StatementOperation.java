@@ -40,8 +40,8 @@ public abstract class StatementOperation implements Operation
 	/**
 	 * @see net.sf.hajdbc.Operation#execute(net.sf.hajdbc.Database, java.lang.Object)
 	 */
-	public Object execute(Database database, Object object) throws SQLException
+	public Object execute(Database database, Object statement) throws SQLException
 	{
-		return this.execute((Statement) object);
+		return this.execute((Statement) statement);
 	}
 }

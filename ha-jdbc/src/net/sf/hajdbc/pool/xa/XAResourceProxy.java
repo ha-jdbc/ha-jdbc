@@ -98,7 +98,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 				{
 					XAResourceProxy proxy = (XAResourceProxy) xaResource;
 					
-					return Boolean.valueOf(resource.isSameRM((XAResource) proxy.getObject(database)));
+					return Boolean.valueOf(resource.isSameRM((XAResource) proxy.getSQLObject(database)));
 				}
 
 				return Boolean.valueOf(resource.isSameRM(xaResource));

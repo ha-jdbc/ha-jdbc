@@ -67,9 +67,9 @@ public abstract class AbstractDataSourceProxy implements Referenceable
 		for (int i = 0; i < databaseList.size(); ++i)
 		{
 			DataSourceDatabase database = (DataSourceDatabase) databaseList.get(i);
-			Object object = context.lookup(database.getName());
+			Object dataSource = context.lookup(database.getName());
 			
-			dataSourceMap.put(database, object);
+			dataSourceMap.put(database, dataSource);
 		}
 		
 		this.databaseCluster = new DatabaseCluster(manager, descriptor, dataSourceMap);

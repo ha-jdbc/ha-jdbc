@@ -29,5 +29,5 @@ import java.sql.SQLException;
  */
 public interface Operation
 {
-	public Object execute(Database database, Object object) throws SQLException;
+	public Object execute(Database database, Object sqlObject) throws SQLException;
 }

@@ -39,11 +39,11 @@ public abstract class XAResourceOperation implements Operation
 	/**
 	 * @see net.sf.hajdbc.Operation#execute(net.sf.hajdbc.Database, java.lang.Object)
 	 */
-	public Object execute(Database database, Object object) throws SQLException
+	public Object execute(Database database, Object resource) throws SQLException
 	{
 		try
 		{
-			return this.execute((XADataSourceDatabase) database, (XAResource) object);
+			return this.execute((XADataSourceDatabase) database, (XAResource) resource);
 		}
 		catch (XAException e)
 		{

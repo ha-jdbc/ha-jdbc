@@ -72,11 +72,11 @@ public class DatabaseCluster extends SQLProxy
 		Connection connection = null;
 		Statement statement = null;
 		
-		Object object = this.getObject(database);
+		Object sqlObject = this.getSQLObject(database);
 		
 		try
 		{
-			connection = database.connect(object);
+			connection = database.connect(sqlObject);
 			
 			statement = connection.createStatement();
 			

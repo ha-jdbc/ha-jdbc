@@ -40,8 +40,8 @@ public abstract class ResultSetOperation implements Operation
 	/**
 	 * @see net.sf.hajdbc.Operation#execute(net.sf.hajdbc.Database, java.lang.Object)
 	 */
-	public Object execute(Database database, Object object) throws SQLException
+	public Object execute(Database database, Object resultSet) throws SQLException
 	{
-		return this.execute((ResultSet) object);
+		return this.execute((ResultSet) resultSet);
 	}
 }

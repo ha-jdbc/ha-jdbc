@@ -37,8 +37,8 @@ public abstract class ConnectionPoolDataSourceOperation implements Operation
 {
 	public abstract Object execute(ConnectionPoolDataSource dataSource) throws SQLException;
 	
-	public final Object execute(Database database, Object connectionFactory) throws SQLException
+	public final Object execute(Database database, Object dataSource) throws SQLException
 	{
-		return this.execute((ConnectionPoolDataSource) connectionFactory);
+		return this.execute((ConnectionPoolDataSource) dataSource);
 	}
 }

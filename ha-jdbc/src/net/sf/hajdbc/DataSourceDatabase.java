@@ -61,9 +61,9 @@ public class DataSourceDatabase extends AbstractDatabase
 	/**
 	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
 	 */
-	public Connection connect(Object object) throws SQLException
+	public Connection connect(Object sqlObject) throws SQLException
 	{
-		DataSource dataSource = (DataSource) object;
+		DataSource dataSource = (DataSource) sqlObject;
 		
 		return (this.user != null) ? dataSource.getConnection(this.user, this.password) : dataSource.getConnection();
 	}
