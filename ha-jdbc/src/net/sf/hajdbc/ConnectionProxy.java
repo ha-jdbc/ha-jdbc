@@ -41,6 +41,27 @@ public class ConnectionProxy extends AbstractConnectionProxy implements java.sql
 	{
 		super(connectionFactory, connectionMap);
 	}
+
+	/**
+	 * @see net.sf.hajdbc.AbstractConnectionProxy#getConnection(net.sf.hajdbc.Database)
+	 */
+	protected Object getConnection(Database database) throws java.sql.SQLException
+	{
+		Database existingDatabase = this.getDatabaseCluster().nextDatabase();
+		Connection existingConnection = (Connection) this.getSQLObject(existingDatabase);
+		
+		Object connectionFactory = this.connectionFactory.getSQLObject(database);
+		Connection connection = database.connect(connectionFactory);
+		
+		connection.setAutoCommit(existingConnection.getAutoCommit());
+		connection.setCatalog(existingConnection.getCatalog());
+		connection.setHoldability(existingConnection.getHoldability());
+		connection.setReadOnly(existingConnection.isReadOnly());
+		connection.setTransactionIsolation(existingConnection.getTransactionIsolation());
+		connection.setTypeMap(existingConnection.getTypeMap());
+		
+		return connection;
+	}
 	
 	/**
 	 * @see java.sql.Connection#getHoldability()

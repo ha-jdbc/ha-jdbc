@@ -27,6 +27,7 @@ import javax.sql.XAConnection;
 import javax.transaction.xa.XAResource;
 
 import net.sf.hajdbc.ConnectionFactoryProxy;
+import net.sf.hajdbc.Database;
 import net.sf.hajdbc.pool.PooledConnectionProxy;
 
 /**
@@ -45,6 +46,17 @@ public class XAConnectionProxy extends PooledConnectionProxy implements XAConnec
 	{
 		super(connectionFactory, connectionMap);
 	}
+
+	/**
+	 * @see net.sf.hajdbc.AbstractConnectionProxy#getConnection(net.sf.hajdbc.Database)
+	 */
+	protected Object getConnection(Database database) throws java.sql.SQLException
+	{
+		XADataSourceDatabase dataSourceDatabase = (XADataSourceDatabase) database;
+		XADataSource dataSource = (XADataSource) this.connectionFactory.getSQLObject(database);
+		
+		return dataSourceDatabase.getXAConnection(dataSource);
+	}
 	
 	/**
 	 * @see javax.sql.XAConnection#getXAResource()
@@ -59,6 +71,6 @@ public class XAConnectionProxy extends PooledConnectionProxy implements XAConnec
 			}
 		};
 		
-		return new XAResourceProxy(this.getDatabaseCluster(), this.executeSet(operation));
+		return new XAResourceProxy(this, this.executeSet(operation));
 	}
 }

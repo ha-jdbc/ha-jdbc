@@ -27,7 +27,7 @@ import java.util.Map;
  * @version $Revision$
  * @since   1.0
  */
-public class AbstractConnectionProxy extends SQLProxy
+public abstract class AbstractConnectionProxy extends SQLProxy
 {
 	protected ConnectionFactoryProxy connectionFactory;
 	
@@ -50,4 +50,23 @@ public class AbstractConnectionProxy extends SQLProxy
 	{
 		return this.connectionFactory.getDatabaseCluster();
 	}
+	
+	/**
+	 * @see net.sf.hajdbc.SQLProxy#getSQLObject(net.sf.hajdbc.Database)
+	 */
+/*	
+	public Object getSQLObject(Database database)
+	{
+		Object connection = super.getSQLObject(database);
+		
+		if (connection == null)
+		{
+			connection = this.getConnection(database);
+		}
+		
+		return connection;
+	}
+*/
+	
+	protected abstract Object getConnection(Database database) throws java.sql.SQLException;
 }

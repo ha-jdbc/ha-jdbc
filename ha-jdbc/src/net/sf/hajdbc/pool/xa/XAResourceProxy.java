@@ -36,21 +36,39 @@ import net.sf.hajdbc.SQLProxy;
  */
 public class XAResourceProxy extends SQLProxy implements XAResource
 {
-	private DatabaseCluster databaseCluster;
+	private XAConnectionProxy connection;
 	
-	public XAResourceProxy(DatabaseCluster databaseCluster, Map resourceMap)
+	public XAResourceProxy(XAConnectionProxy connection, Map resourceMap)
 	{
 		super(resourceMap);
 		
-		this.databaseCluster = databaseCluster;
+		this.connection = connection;
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.SQLProxy#getSQLObject(net.sf.hajdbc.Database)
+	 */
+/*
+	public Object getSQLObject(Database database)
+	{
+		Object resource = super.getSQLObject(database);
+		
+		if (resource == null)
+		{
+			XAConnection connection = (XAConnection) this.connection.getSQLObject(database);
+			
+			resource = connection.getXAResource();
+		}
+		
+		return resource;
+	}
+*/	
 	/**
 	 * @see net.sf.hajdbc.SQLProxy#getDatabaseCluster()
 	 */
 	public DatabaseCluster getDatabaseCluster()
 	{
-		return this.databaseCluster;
+		return this.connection.getDatabaseCluster();
 	}
 
 	/**
