@@ -21,6 +21,7 @@
 package net.sf.hajdbc;
 
 /**
+ * Wrapper for java.sql.SQLException that handles nested exceptions
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
@@ -44,6 +45,7 @@ public class SQLException extends java.sql.SQLException
 	public SQLException(String message, Throwable cause)
 	{
 		super(message);
+		
 		this.initCause(cause);
 	}
 
@@ -54,6 +56,7 @@ public class SQLException extends java.sql.SQLException
 	public SQLException(Throwable cause)
 	{
 		super();
+		
 		this.initCause(cause);
 	}
 }
