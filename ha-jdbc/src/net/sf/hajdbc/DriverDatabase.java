@@ -111,27 +111,30 @@ public class DriverDatabase extends AbstractDatabase
 	
 	public Object getConnectionFactory() throws java.sql.SQLException
 	{
+		if (this.driver != null)
+		{
+			try
+			{
+				Class driverClass = Class.forName(this.driver);
+				
+				if (!Driver.class.isAssignableFrom(driverClass))
+				{
+					throw new SQLException(Messages.getMessage(Messages.NOT_INSTANCE_OF, new Object[] { this.driver, Driver.class.getName() }));
+				}
+			}
+			catch (ClassNotFoundException e)
+			{
+				throw new SQLException(Messages.getMessage(Messages.CLASS_NOT_FOUND, this.driver), e);
+			}
+		}
+		
 		try
 		{
-			Class driverClass = Class.forName(this.driver);
-			
-			if (!Driver.class.isAssignableFrom(driverClass))
-			{
-				throw new SQLException(this.driver + " does not implement " + Driver.class.getName());
-			}
-			
-			Driver driver = DriverManager.getDriver(this.url);
-			
-			if (driver == null)
-			{
-				throw new SQLException(this.driver + " does not accept url: " + this.url);
-			}
-			
-			return driver;
+			return DriverManager.getDriver(this.url);
 		}
-		catch (ClassNotFoundException e)
+		catch (java.sql.SQLException e)
 		{
-			throw new SQLException(this.driver + " not found in CLASSPATH", e);
+			throw new SQLException(Messages.getMessage(Messages.JDBC_URL_REJECTED, new Object[] { this.url }), e);
 		}
 	}
 }
