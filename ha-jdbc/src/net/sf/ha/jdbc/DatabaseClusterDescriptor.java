@@ -17,7 +17,7 @@ import java.util.Set;
 public class DatabaseClusterDescriptor
 {
 	private String name;
-	private String validateSQL;
+	private String validateSQL = "SELECT 1";
 	private Set activeDatabaseSet = new LinkedHashSet();
 	private Map databaseMap = Collections.synchronizedMap(new HashMap());
 	
