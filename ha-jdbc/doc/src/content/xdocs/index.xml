@@ -77,11 +77,11 @@
 					<code><![CDATA[<!DOCTYPE ha-jdbc SYSTEM "ha-jdbc.dtd">]]></code><br/>
 					<code><![CDATA[<ha-jdbc>]]></code><br/>
 					<code>&nbsp;&nbsp;<![CDATA[<cluster name="cluster1" validate-sql="SELECT 1">]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<database url="jdbc:postgresql://db1:5432/database1" driver="org.postgresql.Driver">]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<database url="jdbc:postgresql://server1:5432/database" driver="org.postgresql.Driver">]]></code><br/>
 					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<user>postgres</user>]]></code><br/>
 					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<password>password</password>]]></code><br/>
 					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</database>]]></code><br/>
-					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<database url="jdbc:postgresql://db2:5432/database2" driver="org.postgresql.Driver">]]></code><br/>
+					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<database url="jdbc:postgresql://server2:5432/database" driver="org.postgresql.Driver">]]></code><br/>
 					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<user>postgres</user>]]></code><br/>
 					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<password>password</password>]]></code><br/>
 					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</database>]]></code><br/>
