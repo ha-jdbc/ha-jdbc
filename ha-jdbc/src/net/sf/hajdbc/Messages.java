@@ -54,7 +54,7 @@ public class Messages
 	public static final String STREAM_CLOSE_FAILED = "stream-close-failed";
 	
 	public static final String DRIVER_REGISTER_FAILED = "driver-register-failed";
-	public static final String CLASS_NOT_FOUND = "class-not-found";
+	public static final String DRIVER_NOT_FOUND = "driver-not-found";
 	public static final String JDBC_URL_REJECTED = "jdbc-url-rejected";
 	
 	public static final String JNDI_LOOKUP_FAILED = "jndi-lookup-failed";
