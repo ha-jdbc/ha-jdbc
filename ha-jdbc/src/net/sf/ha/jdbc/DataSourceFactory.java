@@ -6,7 +6,7 @@ package net.sf.ha.jdbc;
  * @author  Paul Ferraro
  * @version $Revision$
  */
-public class DataSourceFactory extends AbstractObjectFactory
+public class DataSourceFactory extends AbstractDataSourceFactory
 {
 	/**
 	 * @see net.sf.ha.jdbc.AbstractObjectFactory#getObjectClass()

@@ -17,7 +17,7 @@ import javax.naming.spi.ObjectFactory;
  * @version $Revision$
  * @since   1.0
  */
-public abstract class AbstractObjectFactory implements ObjectFactory
+public abstract class AbstractDataSourceFactory implements ObjectFactory
 {
 	public static final String CLUSTER_NAME = "name";
 	
