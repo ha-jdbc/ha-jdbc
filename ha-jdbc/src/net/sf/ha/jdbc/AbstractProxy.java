@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -65,7 +66,7 @@ public abstract class AbstractProxy
 			throw new SQLException("No available connection");
 		}
 		
-		Map returnValueMap = new HashMap(objectMap.size());
+		Map returnValueMap = new LinkedHashMap(objectMap.size(), 0.75f, true);
 		Set databaseSet = new HashSet(objectMap.keySet());
 		
 		Iterator objectMapEntries = objectMap.entrySet().iterator();
