@@ -68,9 +68,22 @@
 				<title>Cluster Configuration</title>
 				<p>
 					Configuration of HA-JDBC managed database clusters is contained in a single XML file.
-					The file should be named <code>ha-jdbc.xml</code> and should reside in your CLASSPATH.
-					A DTD is provided in the <code>/conf</code> directory of the distribution.<br/>
-					e.g.
+					The format of the configuration file should match the DTD provided in the distribution: <code>conf/dtd/ha-jdbc.dtd</code><br/>
+					The algorithm for locating the configuration file resource is as follows:<br/>
+				</p>
+				<ol>
+					<li>Read the resource name from the <code>ha-jdbc.configuration</code> system property.  If not defined, default the value "<code>ha-jdbc.xml</code>" is used.</li>
+					<li>Attempt to convert the resource name into a URL.</li>
+					<li>If the resource name cannot be converted to a URL, then search for the resource in the classpath using the following algorithm:</li>
+					<ol>
+						<li>Search for resource using the thread context class loader.</li>
+						<li>If not found, search for resource using the class loader of the current class.</li>
+						<li>If not found, search for resource using the system class loader.</li>
+					</ol>
+					<li>If still not found, throw an exception back to the caller.</li>
+				</ol>
+				<p>
+					Sample configuration file:
 				</p>
 				<p>
 					<code><![CDATA[<?xml version="1.0"?>]]></code><br/>
