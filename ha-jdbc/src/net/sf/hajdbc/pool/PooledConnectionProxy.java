@@ -37,9 +37,15 @@ import net.sf.hajdbc.SQLProxy;
  */
 public class PooledConnectionProxy extends SQLProxy implements PooledConnection
 {
-	public PooledConnectionProxy(ConnectionFactoryProxy connectionFactory, ConnectionPoolDataSourceOperation operation) throws SQLException
+	/**
+	 * Constructs a new PooledConnectionProxy.
+	 * @param connectionFactory a proxy of ConnectionPoolDataSource objects
+	 * @param operation an operation that will create PooleConnections
+	 * @throws SQLException
+	 */
+	public PooledConnectionProxy(ConnectionFactoryProxy dataSource, ConnectionPoolDataSourceOperation operation) throws SQLException
 	{
-		super(connectionFactory, operation);
+		super(dataSource, operation);
 	}
 	
 	/**

@@ -46,9 +46,10 @@ import java.util.Map;
 public class CallableStatementProxy extends PreparedStatementProxy implements CallableStatement
 {
 	/**
-	 * Constructs a new CallableStatementProxy
+	 * Constructs a new CallableStatementProxy.
 	 * @param connection
-	 * @param statementMap
+	 * @param operation
+	 * @throws java.sql.SQLException
 	 */
 	public CallableStatementProxy(ConnectionProxy connection, ConnectionOperation operation) throws java.sql.SQLException
 	{

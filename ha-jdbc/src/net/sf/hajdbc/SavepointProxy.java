@@ -30,6 +30,12 @@ import java.sql.Savepoint;
  */
 public class SavepointProxy extends SQLProxy implements Savepoint
 {
+	/**
+	 * Constructs a new SavepointProxy.
+	 * @param connection
+	 * @param operation
+	 * @throws SQLException
+	 */
 	public SavepointProxy(ConnectionProxy connection, ConnectionOperation operation) throws SQLException
 	{
 		super(connection, operation);

@@ -43,15 +43,17 @@ import org.apache.commons.logging.LogFactory;
  * <ol>
  *  <li>Drop the foreign keys on the inactive database (to avoid integrity constraint violations)</li>
  *  <li>Drop the non-unique indexes on the inactive database (for efficiency)</li>
- *  <li>For each database table:</li>
- *  <ol>
- *   <li>Delete all rows in the inactive database table</li>
- *   <li>Query all rows on the active database table</li>
- *   <li>For each row in active database table:</li>
+ *  <li>For each database table:
  *   <ol>
- *    <li>Insert new row into inactive database table</li>
+ *    <li>Delete all rows in the inactive database table</li>
+ *    <li>Query all rows on the active database table</li>
+ *    <li>For each row in active database table:
+ *     <ol>
+ *      <li>Insert new row into inactive database table</li>
+ *     </ol>
+ *    </li>
  *   </ol>
- *  </ol>
+ *  </li>
  *  <li>Re-create the non-unique indexes on the inactive database</li>
  *  <li>Re-create the foreign keys on the inactive database</li>
  * </ol>

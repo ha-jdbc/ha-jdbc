@@ -31,6 +31,11 @@ public class ConnectionFactoryProxy extends SQLProxy
 {
 	private DatabaseCluster databaseCluster;
 	
+	/**
+	 * Constructs a new ConnectionFactoryProxy.
+	 * @param databaseCluster
+	 * @param connectionFactoryMap
+	 */
 	public ConnectionFactoryProxy(DatabaseCluster databaseCluster, Map connectionFactoryMap)
 	{
 		super(connectionFactoryMap);

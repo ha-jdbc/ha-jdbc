@@ -50,9 +50,10 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	protected FileSupport fileSupport = new FileSupport();
 	
 	/**
-	 * Constructs a new PreparedStatementProxy
+	 * Constructs a new PreparedStatementProxy.
 	 * @param connection
-	 * @param statementMap
+	 * @param operation
+	 * @throws java.sql.SQLException
 	 */
 	public PreparedStatementProxy(ConnectionProxy connection, ConnectionOperation operation) throws java.sql.SQLException
 	{

@@ -53,7 +53,8 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	/**
 	 * Constructs a new ResultSetProxy.
 	 * @param statement
-	 * @param resultSetMap
+	 * @param operation
+	 * @throws SQLException
 	 */
 	public ResultSetProxy(StatementProxy statement, StatementOperation operation) throws SQLException
 	{

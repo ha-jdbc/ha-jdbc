@@ -37,6 +37,12 @@ import java.util.Map;
  */
 public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 {
+	/**
+	 * Constructs a new ConnectionProxy.
+	 * @param connectionFactory a proxy to an object that can create connections
+	 * @param operation an operation that will create Connections
+	 * @throws java.sql.SQLException
+	 */
 	public ConnectionProxy(SQLProxy connectionFactory, Operation operation) throws java.sql.SQLException
 	{
 		super(connectionFactory, operation);

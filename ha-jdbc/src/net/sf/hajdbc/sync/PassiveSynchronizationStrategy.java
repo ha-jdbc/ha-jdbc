@@ -27,6 +27,8 @@ import net.sf.hajdbc.DatabaseClusterDescriptor;
 import net.sf.hajdbc.SynchronizationStrategy;
 
 /**
+ * Trivial synchronization strategy that does nothing.
+ * Use this strategy only if you are sure that the databases are already in sync.
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0

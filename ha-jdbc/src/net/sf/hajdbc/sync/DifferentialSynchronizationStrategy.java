@@ -44,17 +44,19 @@ import org.apache.commons.logging.LogFactory;
  * The following algorithm is used:
  * <ol>
  *  <li>Drop the foreign keys on the inactive database (to avoid integrity constraint violations)</li>
- *  <li>For each database table:</li>
- *  <ol>
- *   <li>Find the primary key(s) of the table</li>
- *   <li>Query all rows in the inactive database table, sorting by the primary key(s)</li>
- *   <li>Query all rows on the active database table</li>
- *   <li>For each row in table:</li>
+ *  <li>For each database table:
  *   <ol>
- *    <li>If primary key of the rows are the same, determine whether or not row needs to be updated</li>
- *    <li>Otherwise, determine whether row should be deleted, or a new row is to be inserted</li>
+ *    <li>Find the primary key(s) of the table</li>
+ *    <li>Query all rows in the inactive database table, sorting by the primary key(s)</li>
+ *    <li>Query all rows on the active database table</li>
+ *    <li>For each row in table:
+ *     <ol>
+ *      <li>If primary key of the rows are the same, determine whether or not row needs to be updated</li>
+ *      <li>Otherwise, determine whether row should be deleted, or a new row is to be inserted</li>
+ *     </ol>
+ *    </li>
  *   </ol>
- *  </ol>
+ *  </li>
  *  <li>Re-create the foreign keys on the inactive database</li>
  * </ol>
  * @author  Paul Ferraro

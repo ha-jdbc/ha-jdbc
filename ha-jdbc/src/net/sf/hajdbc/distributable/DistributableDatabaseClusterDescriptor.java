@@ -33,13 +33,16 @@ public class DistributableDatabaseClusterDescriptor implements DatabaseClusterDe
 	private String protocol;
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseClusterDecoratorDescriptor#decorate(net.sf.hajdbc.DatabaseClusterMBean)
+	 * @see net.sf.hajdbc.DatabaseClusterDecoratorDescriptor#decorate(net.sf.hajdbc.DatabaseCluster)
 	 */
 	public DatabaseCluster decorate(DatabaseCluster databaseCluster) throws Exception
 	{
 		return new DistributableDatabaseCluster(databaseCluster, this);
 	}
 	
+	/**
+	 * @return
+	 */
 	public String getProtocol()
 	{
 		return this.protocol;
