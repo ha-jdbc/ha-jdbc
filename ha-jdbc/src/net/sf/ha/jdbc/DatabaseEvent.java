@@ -13,13 +13,13 @@ public class DatabaseEvent extends EventObject
 	 * Constructs a new DatabaseEvent.
 	 * @param source
 	 */
-	public DatabaseEvent(String databaseId)
+	public DatabaseEvent(Database database)
 	{
-		super(databaseId);
+		super(database);
 	}
 	
-	public String getDatabaseId()
+	public Database getDatabase()
 	{
-		return (String) this.getSource();
+		return (Database) this.getSource();
 	}
 }
