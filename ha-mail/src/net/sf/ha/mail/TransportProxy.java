@@ -33,21 +33,24 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 	public static final String POOL_SIZE = "mail.transport.pool-size";
 	public static final String SENDER_STRATEGY = "mail.transport.sender-strategy";
 	public static final String CONNECT_RETRY_PERIOD = "mail.transport.connect-retry-period";
+	public static final String CONNECT_TIMEOUT = "mail.transport.connect-timeout";
 	
 	private static final String DEFAULT_SENDER_STRATEGY = SimpleSenderStrategy.class.getName();
 	private static final String DEFAULT_TRANSPORT_PROTOCOL = "smtp";
 	private static final int DEFAULT_CONNECT_RETRY_PERIOD = 60;
 	private static final int DEFAULT_POOL_SIZE = 1;
+	private static final int DEFAULT_CONNECT_TIMEOUT = 0;
 	
 	protected static Log log = LogFactory.getLog(TransportProxy.class);
 
-	protected List transportList;
-	protected List activeTransportList = new LinkedList();
 	protected ThreadGroup senderThreadGroup = new ThreadGroup("sender");
 	protected ThreadGroup connectorThreadGroup = new ThreadGroup("connector");
 	protected long connectRetryPeriod;
-	protected Map urlNameMap = new HashMap();
+	private List activeTransportList = new LinkedList();
+	private List transportList;
+	private Map urlNameMap = new HashMap();
 	private int poolSize;
+	private long connectTimeout;
 	private Provider provider;
 	private SenderStrategy senderStrategy = new SimpleSenderStrategy();
 	
@@ -64,6 +67,7 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 		
 		this.poolSize = Integer.parseInt(properties.getProperty(POOL_SIZE, Integer.toString(DEFAULT_POOL_SIZE)));
 		this.connectRetryPeriod = 1000 * Integer.parseInt(properties.getProperty(CONNECT_RETRY_PERIOD, Integer.toString(DEFAULT_CONNECT_RETRY_PERIOD)));
+		this.connectTimeout = 1000 * Integer.parseInt(properties.getProperty(CONNECT_TIMEOUT, Integer.toString(DEFAULT_CONNECT_TIMEOUT)));
 		
 		String protocol = properties.getProperty("mail.transport.protocol", DEFAULT_TRANSPORT_PROTOCOL);
 		String hostProperty = "mail." + protocol + ".host";
@@ -202,7 +206,7 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 	 * Creates and starts a new connector thread for each underlying transport.
 	 * @see javax.mail.Service#protocolConnect(java.lang.String, int, java.lang.String, java.lang.String)
 	 */
-	protected boolean protocolConnect(String hostList, int port, String user, String password)
+	protected boolean protocolConnect(String hostList, int port, String user, String password) throws MessagingException
 	{
 		String[] hosts = hostList.split(",");
 		
@@ -222,7 +226,38 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 
 			new ConnectorThread(transport, this.getURLName(host)).start();
 		}
-	
+
+		boolean connectFailed = false;
+		
+		synchronized (this.activeTransportList)
+		{
+			if (this.activeTransportList.isEmpty())
+			{
+				try
+				{
+					// Wait until the first transport is available, or until connect timeout
+					this.activeTransportList.wait(this.connectTimeout);
+				}
+				catch (InterruptedException e)
+				{
+					// Do nothing
+				}
+				
+				// If there are no active transports, then timeout was exceeded.
+				if (this.activeTransportList.isEmpty())
+				{
+					connectFailed = true;
+				}
+			}
+		}
+
+		if (connectFailed)
+		{
+			this.close();
+			
+			throw new MessagingException("Connect timeout (" + this.connectTimeout + " ms) exceeded.");
+		}
+		
 		return true;
 	}
 
@@ -355,6 +390,11 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 		if (this.connectorThreadGroup.activeCount() > 0)
 		{
 			this.connectorThreadGroup.interrupt();
+			
+			while (this.connectorThreadGroup.activeCount() > 0)
+			{
+				Thread.yield();
+			}
 		}
 		
 		for (int i = 0; i < this.transportList.size(); ++i)
@@ -373,6 +413,8 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 				}
 			}
 		}
+		
+		this.activeTransportList.clear();
 		
 		super.close();
 	}
