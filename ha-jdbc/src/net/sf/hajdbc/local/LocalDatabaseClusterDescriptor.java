@@ -37,7 +37,7 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 	private Class balancerClass;
 	private String validateSQL;
 	private List databaseList = new LinkedList();
-	private List synchronizationStrategyDescriptorList = new LinkedList();
+	private List synchronizationStrategyDescriptorList;
 	
 	/**
 	 * Returns the identifier of this database cluster.
@@ -57,6 +57,10 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 		return this.validateSQL;
 	}
 	
+	/**
+	 * Returns the class of the balancer implementation
+	 * @return the class of the balancer implementation
+	 */
 	public Class getBalancerClass()
 	{
 		return this.balancerClass;
@@ -86,5 +90,10 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 	public DatabaseCluster createDatabaseCluster() throws java.sql.SQLException
 	{
 		return new LocalDatabaseCluster(this);
+	}
+	
+	void addDatabase(Object database)
+	{
+		this.databaseList.add(database);
 	}
 }
