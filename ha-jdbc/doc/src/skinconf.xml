@@ -76,8 +76,6 @@ be used to configure the chosen Forrest skin.
 	<project-description>High-Availability JDBC</project-description>
 	<project-url>http://ha-jdbc.sourceforge.net/</project-url>
 	<project-logo>images/project.png</project-logo>
-	<!-- Alternative static image:
-	<project-logo>images/project-logo.gif</project-logo> -->
 
 	<!-- optional group logo
 		 skin: forrest-site renders it at the top-left corner -->
