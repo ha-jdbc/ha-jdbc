@@ -1,5 +1,6 @@
 package net.sf.ha.mail;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -149,6 +150,36 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 	 */
 	public void sendMessage(Message message, Address[] addresses) throws MessagingException
 	{
+		if ((addresses == null) || (addresses.length == 0))
+		{
+			// Nobody will recieve this message
+			return;
+		}
+		
+		if (message.getSubject() == null)
+		{
+			message.setSubject("");
+		}
+
+		Address[] recipients = message.getAllRecipients();
+		
+		if ((recipients == null) || (recipients.length == 0))
+		{
+			throw new MessagingException("Message contains no recipients.");
+		}
+		
+		try
+		{
+			if (message.getContent() == null)
+			{
+				message.setText("");
+			}
+		}
+		catch (IOException e)
+		{
+			throw new MessagingException("Failed to get message content", e);
+		}
+		
 		this.senderStrategy.send(this, message, addresses);
 	}
 	

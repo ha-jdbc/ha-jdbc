@@ -19,8 +19,6 @@ public abstract class GroupingSenderStrategy extends SimpleSenderStrategy
 	 */
 	public void send(Sender sender, Message message, Address[] addresses) throws MessagingException
 	{
-		this.validate(message);
-		
 		if (addresses.length > 1)
 		{
 			Iterator addressGroups = this.groupAddresses(addresses).iterator();
