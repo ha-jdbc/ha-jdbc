@@ -10,9 +10,9 @@
 			defined for 'add', 'fix', 'remove', 'update' and 'hack'. If you add
 			src/documentation/resources/images/<foo>.jpg images, these will
 			automatically be used for entries of type <foo>. -->
-		<release version="1.0-beta-5" date="">
+		<release version="1.0-beta-5" date="March 3, 2005">
 			<action type="update" dev="PF">
-				SynchronizationStrategy initialization uses java.bean.PropertyEditor to support more property types.
+				Added better data type support for SynchronizationStrategy property initialization.
 			</action>
 			<action type="fix" dev="PF">
 				Fixed Java 1.4 compatibility.
