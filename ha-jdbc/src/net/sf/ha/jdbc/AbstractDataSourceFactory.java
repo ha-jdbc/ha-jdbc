@@ -1,9 +1,6 @@
 package net.sf.ha.jdbc;
 
 import java.util.Hashtable;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 import javax.naming.Context;
 import javax.naming.Name;
@@ -22,14 +19,19 @@ public abstract class AbstractDataSourceFactory implements ObjectFactory
 	/**
 	 * @see javax.naming.spi.ObjectFactory#getObjectInstance(java.lang.Object, javax.naming.Name, javax.naming.Context, java.util.Hashtable)
 	 */
-	public Object getObjectInstance(Object refObject, Name name, Context context, Hashtable environment) throws Exception
+	public Object getObjectInstance(Object object, Name name, Context context, Hashtable environment) throws Exception
 	{
-		Reference reference = (Reference) refObject;
-		
-		if (refObject == null)
+		if (object == null)
 		{
 			return null;
 		}
+		
+		if (!Reference.class.isInstance(object))
+		{
+			return null;
+		}
+		
+		Reference reference = (Reference) object;
 		
 		String className = reference.getClassName();
 		
@@ -48,20 +50,8 @@ public abstract class AbstractDataSourceFactory implements ObjectFactory
 		AbstractDataSourceProxy dataSource = (AbstractDataSourceProxy) objectClass.newInstance();
 		
 		String clusterName = (String) reference.get(CLUSTER_NAME).getContent();
-		DatabaseClusterManager manager = DatabaseClusterManagerFactory.getClusterManager();
-		DatabaseClusterDescriptor descriptor = manager.getDescriptor(clusterName);
-		List databaseList = descriptor.getActiveDatabaseList();
-		Map dataSourceMap = new LinkedHashMap(databaseList.size(), 0.75f, true);
 		
-		for (int i = 0; i < databaseList.size(); ++i)
-		{
-			DataSourceDatabase database = (DataSourceDatabase) databaseList.get(i);
-			Object object = context.lookup(database.getName());
-			
-			dataSourceMap.put(database, object);
-		}
-		
-		dataSource.setDatabaseCluster(new DatabaseCluster(manager, descriptor, dataSourceMap));
+		dataSource.setName(clusterName);
 		
 		return dataSource;
 	}
