@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import net.sf.hajdbc.DatabaseClusterMBean;
+import net.sf.hajdbc.DatabaseCluster;
 
 /**
  * @author  Paul Ferraro
@@ -66,5 +66,5 @@ public abstract class DatabaseCommand implements Externalizable
 		this.databaseId = input.readUTF();
 	}
 	
-	public abstract void execute(DatabaseClusterMBean databaseCluster) throws java.sql.SQLException;
+	public abstract void execute(DatabaseCluster databaseCluster) throws java.sql.SQLException;
 }

@@ -20,7 +20,7 @@
  */
 package net.sf.hajdbc.distributable;
 
-import net.sf.hajdbc.DatabaseClusterMBean;
+import net.sf.hajdbc.DatabaseCluster;
 
 
 /**
@@ -51,8 +51,8 @@ public class DatabaseDeactivationCommand extends DatabaseCommand
 	/**
 	 * @see net.sf.hajdbc.distributable.DatabaseCommand#execute(net.sf.hajdbc.DatabaseCluster)
 	 */
-	public void execute(DatabaseClusterMBean databaseCluster)
+	public void execute(DatabaseCluster databaseCluster) throws java.sql.SQLException
 	{
-		databaseCluster.deactivate(this.databaseId);
+		databaseCluster.removeDatabase(databaseCluster.getDatabase(this.databaseId));
 	}
 }

@@ -86,7 +86,7 @@ public class DistributableDatabaseCluster extends DatabaseClusterDecorator imple
 		
 		try
 		{
-			command.execute(this.databaseCluster);
+			command.execute(this);
 		}
 		catch (java.sql.SQLException e)
 		{

@@ -47,9 +47,9 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#isActive(java.lang.String)
 	 */
-	public boolean isActive(String databaseId)
+	public boolean isAlive(String databaseId) throws java.sql.SQLException
 	{
-		return this.databaseCluster.isActive(databaseId);
+		return this.databaseCluster.isAlive(databaseId);
 	}
 	
 	public Database firstDatabase() throws java.sql.SQLException
@@ -72,9 +72,9 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 		return this.databaseCluster.getDescriptor();
 	}
 	
-	public boolean isActive(Database database)
+	public boolean isAlive(Database database)
 	{
-		return this.databaseCluster.isActive(database);
+		return this.databaseCluster.isAlive(database);
 	}
 	
 	public Database nextDatabase() throws java.sql.SQLException
@@ -82,7 +82,17 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 		return this.databaseCluster.nextDatabase();
 	}
 	
-	protected Database getDatabase(String databaseId)
+	public boolean addDatabase(Database database)
+	{
+		return this.databaseCluster.addDatabase(database);
+	}
+	
+	public boolean removeDatabase(Database database)
+	{
+		return this.databaseCluster.removeDatabase(database);
+	}
+	
+	public Database getDatabase(String databaseId) throws java.sql.SQLException
 	{
 		return this.databaseCluster.getDatabase(databaseId);
 	}

@@ -77,7 +77,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 		{
 			Database database = (Database) databases.next();
 			
-			if (this.isActive(database))
+			if (this.isAlive(database))
 			{
 				this.activeDatabaseSet.add(database);
 			}
@@ -93,7 +93,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	 * @param database
 	 * @return true if the specified database is active, false otherwise
 	 */
-	public boolean isActive(Database database)
+	public boolean isAlive(Database database)
 	{
 		Connection connection = null;
 		
@@ -138,10 +138,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	 */
 	public boolean deactivate(Database database)
 	{
-		synchronized (this.activeDatabaseSet)
-		{
-			return this.activeDatabaseSet.remove(database);
-		}
+		return this.removeDatabase(database);
 	}
 
 	/**
@@ -159,10 +156,7 @@ public class LocalDatabaseCluster extends DatabaseCluster
 	
 	public boolean activate(Database database)
 	{
-		synchronized (this.activeDatabaseSet)
-		{
-			return this.activeDatabaseSet.add(database);
-		}
+		return this.addDatabase(database);
 	}
 	
 	/**
@@ -235,11 +229,41 @@ public class LocalDatabaseCluster extends DatabaseCluster
 		
 		return databases;
 	}
+	
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getDatabase(java.lang.String)
 	 */
-	protected Database getDatabase(String databaseId)
+	public Database getDatabase(String databaseId) throws java.sql.SQLException
 	{
-		return (Database) this.descriptor.getDatabaseMap().get(databaseId);
+		Database database = (Database) this.descriptor.getDatabaseMap().get(databaseId);
+		
+		if (database == null)
+		{
+			throw new SQLException("The database cluster '" + this.getName() + "' does not contain the database '" + databaseId + "'.");
+		}
+		
+		return database;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#addDatabase(net.sf.hajdbc.Database)
+	 */
+	public boolean addDatabase(Database database)
+	{
+		synchronized (this.activeDatabaseSet)
+		{
+			return this.activeDatabaseSet.add(database);
+		}
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#removeDatabase(net.sf.hajdbc.Database)
+	 */
+	public boolean removeDatabase(Database database)
+	{
+		synchronized (this.activeDatabaseSet)
+		{
+			return this.activeDatabaseSet.remove(database);
+		}
 	}
 }

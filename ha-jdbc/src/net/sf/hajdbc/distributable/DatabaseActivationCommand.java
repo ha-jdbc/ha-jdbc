@@ -20,7 +20,7 @@
  */
 package net.sf.hajdbc.distributable;
 
-import net.sf.hajdbc.DatabaseClusterMBean;
+import net.sf.hajdbc.DatabaseCluster;
 
 
 /**
@@ -47,8 +47,8 @@ public class DatabaseActivationCommand extends DatabaseCommand
 	/**
 	 * @see net.sf.hajdbc.distributable.DatabaseCommand#execute(net.sf.hajdbc.DatabaseCluster)
 	 */
-	public void execute(DatabaseClusterMBean databaseCluster) throws java.sql.SQLException
+	public void execute(DatabaseCluster databaseCluster) throws java.sql.SQLException
 	{
-		databaseCluster.activate(this.databaseId, null);
+		databaseCluster.addDatabase(databaseCluster.getDatabase(this.databaseId));
 	}
 }

@@ -31,9 +31,9 @@ public interface DatabaseClusterMBean
 {
 	public String getName();
 	
-	public boolean isActive(String databaseId);
+	public boolean isAlive(String databaseId) throws java.sql.SQLException;
 	
-	public void deactivate(String databaseId);
+	public void deactivate(String databaseId) throws java.sql.SQLException;
 	
 	public void activate(String databaseId, String strategyClassName) throws java.sql.SQLException;
 	

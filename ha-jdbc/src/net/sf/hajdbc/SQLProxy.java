@@ -167,7 +167,7 @@ public abstract class SQLProxy
 	
 	protected final void handleException(Database database, Throwable exception) throws SQLException
 	{
-		if (this.getDatabaseCluster().isActive(database))
+		if (this.getDatabaseCluster().isAlive(database))
 		{
 			throw new SQLException(exception);
 		}

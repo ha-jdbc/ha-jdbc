@@ -32,26 +32,26 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 {
 	public abstract ConnectionFactoryProxy getConnectionFactory();
 	
-	public abstract boolean isActive(Database database);
+	public abstract boolean isAlive(Database database);
 	
 	public abstract boolean deactivate(Database database);
 
 	public abstract DatabaseClusterDescriptor getDescriptor();
 	
-	protected abstract Database getDatabase(String databaseId);
+	public abstract Database getDatabase(String databaseId) throws java.sql.SQLException;
 	
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#isActive(java.lang.String)
 	 */
-	public boolean isActive(String databaseId)
+	public boolean isAlive(String databaseId) throws java.sql.SQLException
 	{
-		return this.isActive(this.getDatabase(databaseId));
+		return this.isAlive(this.getDatabase(databaseId));
 	}
 
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#deactivate(java.lang.String)
 	 */
-	public void deactivate(String databaseId)
+	public void deactivate(String databaseId) throws java.sql.SQLException
 	{
 		this.deactivate(this.getDatabase(databaseId));
 	}
@@ -92,12 +92,16 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 		}
 	}
 	
-	public void activate(String databaseId)
+	public void activate(String databaseId) throws java.sql.SQLException
 	{
 		this.activate(this.getDatabase(databaseId));
 	}
 	
 	public abstract boolean activate(Database database);
+	
+	public abstract boolean addDatabase(Database database);
+	
+	public abstract boolean removeDatabase(Database database);
 	
 	public abstract Database firstDatabase() throws java.sql.SQLException;
 	
