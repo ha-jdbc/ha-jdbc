@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -59,7 +60,7 @@ public final class DriverProxy implements java.sql.Driver
 			DatabaseClusterDescriptor descriptor = DatabaseClusterManagerFactory.getClusterManager().getDescriptor(clusterName);
 			Set databaseSet = descriptor.getDatabaseSet();
 			
-			Map driverMap = new HashMap(databaseSet.size());
+			Map driverMap = new LinkedHashMap(databaseSet.size(), 0.75f, true);
 			
 			Iterator databases = databaseSet.iterator();
 			
