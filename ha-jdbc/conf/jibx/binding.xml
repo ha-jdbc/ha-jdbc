@@ -7,7 +7,7 @@
 	<mapping name="cluster" class="net.sf.ha.jdbc.DatabaseClusterDescriptor" value-style="attribute">
 		<value name="name" field="name"></value>
 		<value name="validate-sql" field="validateSQL"></value>
-		<collection field="databaseSet" type="java.util.HashSet"></collection>
+		<collection add-method="addDatabase"></collection>
 	</mapping>
 	<mapping name="database" class="net.sf.ha.jdbc.DriverDatabase">
 		<value name="url" field="url" usage="required" style="attribute"></value>
