@@ -14,6 +14,7 @@ import org.jgroups.blocks.NotificationBus;
  */
 public class DistributedDatabaseClusterManager extends DatabaseClusterManager implements DistributedDatabaseClusterManagerMBean, NotificationBus.Consumer
 {
+	private static final String BUS_NAME = "DistributedDatabaseClusterManager";
 	private static Log log = LogFactory.getLog(DistributedDatabaseClusterManager.class);
 	
 	private NotificationBus notificationBus;
@@ -22,7 +23,7 @@ public class DistributedDatabaseClusterManager extends DatabaseClusterManager im
 	{
 		try
 		{
-			this.notificationBus = new NotificationBus("");
+			this.notificationBus = new NotificationBus(BUS_NAME);
 			this.notificationBus.start();
 		}
 		catch (Exception e)
@@ -50,6 +51,9 @@ public class DistributedDatabaseClusterManager extends DatabaseClusterManager im
 		String clusterName = notification[0];
 		String databaseId = notification[1];
 		
+		Database database = (Database) this.getDescriptor(clusterName).getDatabaseMap().get(databaseId);
+		
+		super.deactivate(clusterName, database);
 	}
 
 	/**
