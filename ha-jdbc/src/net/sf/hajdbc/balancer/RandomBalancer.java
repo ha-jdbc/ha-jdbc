@@ -23,6 +23,7 @@ package net.sf.hajdbc.balancer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
@@ -36,7 +37,7 @@ public class RandomBalancer extends AbstractBalancer
 {
 	private Random random = new Random();
 	private Set databaseSet = new HashSet();
-	private ArrayList databaseList = new ArrayList();
+	private List databaseList = new ArrayList();
 	
 	/**
 	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
@@ -56,8 +57,6 @@ public class RandomBalancer extends AbstractBalancer
 		if (added)
 		{
 			int weight = database.getWeight().intValue();
-			
-			this.databaseList.ensureCapacity(this.databaseList.size() + weight);
 			
 			for (int i = 0; i < weight; ++i)
 			{
@@ -82,8 +81,6 @@ public class RandomBalancer extends AbstractBalancer
 			int index = this.databaseList.indexOf(database);
 			
 			this.databaseList.subList(index, index + weight).clear();
-			
-			this.databaseList.trimToSize();
 		}
 		
 		return removed;
