@@ -55,6 +55,11 @@ public final class DriverProxy implements java.sql.Driver
 		}
 	}
 	
+	private DriverProxy()
+	{
+		// private
+	}
+	
 	/**
 	 * @see java.sql.Driver#getMajorVersion()
 	 */
