@@ -34,18 +34,12 @@ import net.sf.hajdbc.DatabaseClusterDescriptor;
  */
 public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 {
-	public static final String DEFAULT_VALIDATE_SQL = "SELECT 1";
-	public static final String DEFAULT_CREATE_FOREIGN_KEY_SQL = "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4})";
-	public static final String DEFAULT_DROP_FOREIGN_KEY_SQL = "ALTER TABLE {1} DROP CONSTRAINT {0}";
-	public static final String DEFAULT_TRUNCATE_TABLE_SQL = "DELETE FROM {0}";
-	public static final String DEFAULT_SYNC_STRATEGY = "net.sf.hajdbc.sync.DifferentialSynchronizationStrategy";
-	
 	private String id;
-	private String validateSQL = DEFAULT_VALIDATE_SQL;
-	private String createForeignKeySQL = DEFAULT_CREATE_FOREIGN_KEY_SQL;
-	private String dropForeignKeySQL = DEFAULT_DROP_FOREIGN_KEY_SQL;
-	private String truncateTableSQL = DEFAULT_TRUNCATE_TABLE_SQL;
-	private String defaultSynchronizationStrategy = DEFAULT_SYNC_STRATEGY;
+	private String validateSQL;
+	private String createForeignKeySQL;
+	private String dropForeignKeySQL;
+	private String truncateTableSQL;
+	private String defaultSynchronizationStrategy;
 	private Map databaseMap = new HashMap();
 	
 	/**
