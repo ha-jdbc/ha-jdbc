@@ -50,7 +50,7 @@ public class ConnectionProxy extends AbstractConnectionProxy implements java.sql
 			}
 		};
 		
-		return ((Integer) this.executeGet(operation)).intValue();
+		return ((Integer) this.executeRead(operation)).intValue();
 	}
 
 	/**
@@ -170,7 +170,7 @@ public class ConnectionProxy extends AbstractConnectionProxy implements java.sql
 			}
 		};
 		
-		return ((Boolean) this.executeGet(operation)).booleanValue();
+		return ((Boolean) this.executeRead(operation)).booleanValue();
 	}
 
 	/**
@@ -188,7 +188,7 @@ public class ConnectionProxy extends AbstractConnectionProxy implements java.sql
 			}
 		};
 		
-		this.executeWrite(operation);
+		this.executeSet(operation);
 	}
 
 	/**
@@ -258,7 +258,7 @@ public class ConnectionProxy extends AbstractConnectionProxy implements java.sql
 			}
 		};
 		
-		return (String) this.executeGet(operation);
+		return (String) this.executeRead(operation);
 	}
 
 	/**
