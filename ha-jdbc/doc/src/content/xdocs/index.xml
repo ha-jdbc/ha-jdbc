@@ -10,7 +10,7 @@
 			<section>
 				<title>What is HA-JDBC?</title>
 				<p>
-					HA-JDBC is a JDBC driver implementation that provides light-weight, transparent clustering capability sets of homogeneous JDBC-accessed databases.
+					HA-JDBC is a JDBC driver implementation that provides light-weight, transparent clustering capability to groups of homogeneous JDBC-accessed databases.
 				</p>
 			</section>
 			<section>
