@@ -10,10 +10,10 @@ import javax.sql.DataSource;
  */
 public abstract class DataSourceOperation implements Operation
 {
-	public abstract Object execute(Database database, DataSource dataSource) throws SQLException;
+	public abstract Object execute(DataSourceDatabase database, DataSource dataSource) throws SQLException;
 	
 	public final Object execute(Database database, Object connectionFactory) throws SQLException
 	{
-		return this.execute(database, (DataSource) connectionFactory);
+		return this.execute((DataSourceDatabase) database, (DataSource) connectionFactory);
 	}
 }
