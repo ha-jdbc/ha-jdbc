@@ -29,8 +29,8 @@
 					</ul>
 					<li>
 						The <link href="http://c-jdbc.objectweb.org">C-JDBC</link> project, hosted at <link href="http://www.objectweb.org">ObjectWeb</link>, makes an impressive attempt at providing a full database clustering solution.
-						C-JDBC provides many sophisticated features, but due to the nature of its design, limits the functionality of the underlying JDBC drivers.
-						Present issues aside, it does many things well and is definitely worth checking out.
+						C-JDBC provides many sophisticated features, but due to the nature of its design, limits the functionality of the underlying JDBC drivers and is unable to support many JDBC 3.0 features.
+						These issues aside, it does many things well and is definitely worth checking out.
 					</li>
 				</ul>
 				<p>
@@ -54,8 +54,7 @@
 				<ul>
 					<li>Distributed queries.</li>
 					<li>Data partitioning</li>
-					<li>Hot re-activation of deactivated cluster nodes.</li>
-					<li>Auto re-synchronization of deactivated cluster nodes.</li>
+					<li>Hot activation/synchronization of new/failed cluster nodes.</li>
 					<li><code>ResultSet</code> caching.</li>
 					<li>Heterogeneous clusters (i.e. different database vendors within in the same cluster).</li>
 					<li>Support for write operations (i.e. <code>setXXX(...)</code>) in third-party <code>javax.sql.RowSet</code> implementations.</li>
@@ -67,7 +66,7 @@
 			<section>
 				<title>Cluster Configuration</title>
 				<p>
-					Configuration of HA-JDBC managed database clusters is contained in a single XML file.
+					Configuration for HA-JDBC managed database clusters is contained in a single XML file.
 					The format of the configuration file should match the DTD provided in the distribution: <code>conf/dtd/ha-jdbc.dtd</code>
 				</p>
 				<p>Sample configuration file:</p>
@@ -75,7 +74,7 @@
 					<code><![CDATA[<?xml version="1.0"?>]]></code><br/>
 					<code><![CDATA[<!DOCTYPE ha-jdbc SYSTEM "ha-jdbc.dtd">]]></code><br/>
 					<code><![CDATA[<ha-jdbc>]]></code><br/>
-					<code>&nbsp;&nbsp;<![CDATA[<local>]]></code><br/>
+					<code>&nbsp;&nbsp;<![CDATA[<local><!-- These clusters will only be referenced from one JVM -->]]></code><br/>
 					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<cluster name="jdbc:ha-jdbc:cluster" validate-sql="SELECT 1">]]></code><br/>
 					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<database url="jdbc:postgresql://server1:5432/database" driver="org.postgresql.Driver">]]></code><br/>
 					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<user>postgres</user>]]></code><br/>
@@ -103,8 +102,8 @@
 					The algorithm for locating the configuration file resource is as follows:<br/>
 				</p>
 				<ol>
-					<li>Read the resource name from the <code>ha-jdbc.configuration</code> system property.  If not defined, default the value "<code>ha-jdbc.xml</code>" is used.</li>
-					<li>Attempt to convert the resource name into a URL.</li>
+					<li>Read the resource name from the <code>ha-jdbc.configuration</code> system property.  If not defined, the default value "<code>ha-jdbc.xml</code>" is used.</li>
+					<li>Attempt to interpret the resource name as a URL.</li>
 					<li>If the resource name cannot be converted to a URL, then search for the resource in the classpath using the following algorithm:</li>
 					<ol>
 						<li>Search for resource using the thread context class loader.</li>
@@ -217,7 +216,7 @@
 					<code><![CDATA[<?xml version="1.0"?>]]></code><br/>
 					<code><![CDATA[<!DOCTYPE ha-jdbc SYSTEM "ha-jdbc.dtd">]]></code><br/>
 					<code><![CDATA[<ha-jdbc>]]></code><br/>
-					<code>&nbsp;&nbsp;<![CDATA[<distributable protocol="UDP(mcast_port=45566;use_incoming_packet_handler=false;mcast_addr=228.8.8.8;use_outgoing_packet_handler=false;ip_ttl=32):UNICAST(timeout=1200)">]]></code><br/>
+					<code>&nbsp;&nbsp;<![CDATA[<distributable protocol="UDP(mcast_port=45566;use_incoming_packet_handler=false;mcast_addr=228.8.8.8; use_outgoing_packet_handler=false;ip_ttl=32):UNICAST(timeout=1200)">]]></code><br/>
 					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<cluster name="...">]]></code><br/>
 					<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[<!-- ... -->]]></code><br/>
 					<code>&nbsp;&nbsp;&nbsp;&nbsp;<![CDATA[</cluster>]]></code><br/>
@@ -236,17 +235,16 @@
 					<li>Incrementing columns (e.g. <code>SELECT max(id) + 1 FROM table</code>)</li>
 				</ul>
 				<p>
-					In order for any of these mechanisms to work in a database cluster each database node would need to generate uniform identifier independantly.
-					To do this, we would have to synchronize all incoming database requests through a central cluster manager.
-					This is the approach taken by the <link href="http://c-jdbc.objectweb.org">C-JDBC project</link>.
-					However, alternative cluster-friendly unique identifier generation algorithms exist.
-					HA-JDBC does not support the above mechanisms in favor a design that allows efficient asynchronous request execution.
+					For any of these mechanisms to work in a database cluster, each database node would need to generate uniform identifier independently.
+					To do this, all incoming database requests would need to be synchronized through a central cluster manager.
+					This would adversely affect the scalability of the cluster as the number of distributed clients increase.
+					For now, HA-JDBC does not accommodate the above mechanisms in favor a design that uses more efficient asynchronous request execution.
 				</p>
 				<p>
-					The following unique identifier generation methods will work properly with HA-JDBC:
+					The following alternative unique identifier generation methods will work properly with HA-JDBC:
 				</p>
 				<ul>
-					<li>High-Low algorithm</li>
+					<li>High-Low algorithm (often implemented using a Stateless Session EJB)</li>
 					<li>UUID algorithms</li>
 					<li>Others?</li>
 				</ul>
@@ -255,7 +253,7 @@
 				<title>Transactions</title>
 				<p>
 					HA-JDBC supports both traditional JDBC transactions and JTA.
-					HA-JDBC integration will not change your existing transaction semantics.
+					HA-JDBC integration will not require you to change your existing transaction semantics.
 					If you are leveraging your JDBC driver's <code>javax.sql.XADataSource</code> implementation for JTA integration, you will need to configure HA-JDBC accordingly.
 				</p>
 				<p>e.g.</p>
