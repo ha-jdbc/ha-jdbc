@@ -39,7 +39,7 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#getName()
 	 */
-	public String getName()
+	public final String getName()
 	{
 		return this.databaseCluster.getName();
 	}
@@ -47,52 +47,52 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#isActive(java.lang.String)
 	 */
-	public boolean isAlive(String databaseId) throws java.sql.SQLException
+	public final boolean isAlive(String databaseId) throws java.sql.SQLException
 	{
 		return this.databaseCluster.isAlive(databaseId);
 	}
 	
-	public Database firstDatabase() throws java.sql.SQLException
+	public final Database firstDatabase() throws java.sql.SQLException
 	{
 		return this.databaseCluster.firstDatabase();
 	}
 	
-	public List getActiveDatabaseList() throws java.sql.SQLException
+	public final List getActiveDatabaseList() throws java.sql.SQLException
 	{
 		return this.databaseCluster.getActiveDatabaseList();
 	}
 	
-	public ConnectionFactoryProxy getConnectionFactory()
+	public final ConnectionFactoryProxy getConnectionFactory()
 	{
 		return this.databaseCluster.getConnectionFactory();
 	}
 	
-	public DatabaseClusterDescriptor getDescriptor()
+	public final DatabaseClusterDescriptor getDescriptor()
 	{
 		return this.databaseCluster.getDescriptor();
 	}
 	
-	public boolean isAlive(Database database)
+	public final boolean isAlive(Database database)
 	{
 		return this.databaseCluster.isAlive(database);
 	}
 	
-	public Database nextDatabase() throws java.sql.SQLException
+	public final Database nextDatabase() throws java.sql.SQLException
 	{
 		return this.databaseCluster.nextDatabase();
 	}
 	
-	public boolean addDatabase(Database database)
+	public final boolean addDatabase(Database database)
 	{
 		return this.databaseCluster.addDatabase(database);
 	}
 	
-	public boolean removeDatabase(Database database)
+	public final boolean removeDatabase(Database database)
 	{
 		return this.databaseCluster.removeDatabase(database);
 	}
 	
-	public Database getDatabase(String databaseId) throws java.sql.SQLException
+	public final Database getDatabase(String databaseId) throws java.sql.SQLException
 	{
 		return this.databaseCluster.getDatabase(databaseId);
 	}
