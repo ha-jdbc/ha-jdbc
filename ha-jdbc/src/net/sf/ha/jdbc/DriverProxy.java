@@ -12,6 +12,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * @author Paul Ferraro
  * @version $Revision$
@@ -22,6 +25,8 @@ public final class DriverProxy implements java.sql.Driver
 	private static final int MAJOR_VERSION = 1;
 	private static final int MINOR_VERSION = 0;
 	private static final boolean JDBC_COMPLIANT = true;
+
+	private static Log log = LogFactory.getLog(DriverProxy.class);
 	
 	static
 	{
@@ -31,6 +36,7 @@ public final class DriverProxy implements java.sql.Driver
 		}
 		catch (SQLException e)
 		{
+			log.fatal("Failed to initialize " + DriverProxy.class.getName(), e);
 			throw new RuntimeException(e);
 		}
 	}
@@ -40,9 +46,9 @@ public final class DriverProxy implements java.sql.Driver
 	
 	public DriverProxy() throws SQLException
 	{
-		Set clusterSet = DatabaseClusterManagerFactory.getClusterManager().getClusterSet(Driver.class);
+		Set clusterSet = DatabaseClusterManagerFactory.getClusterManager().getClusterSet(DriverDatabase.class);
 		
-		this.databaseClusterMap = new HashMap(clusterSet.size());
+		Map databaseClusterMap = new HashMap(clusterSet.size());
 		
 		Iterator clusters = clusterSet.iterator();
 		
@@ -61,14 +67,39 @@ public final class DriverProxy implements java.sql.Driver
 			{
 				DriverDatabase database = (DriverDatabase) databases.next();
 				
-				Driver driver = DriverManager.getDriver(database.getUrl());
-				driverMap.put(database, driver);
+				String driverClassName = database.getDriver();
+				
+				try
+				{
+					Class driverClass = Class.forName(driverClassName);
+					
+					if (!Driver.class.isAssignableFrom(driverClass))
+					{
+						throw new SQLException(driverClassName + " does not implement " + Driver.class.getName());
+					}
+					
+					String url = database.getUrl();
+					Driver driver = DriverManager.getDriver(url);
+					
+					if (driver == null)
+					{
+						throw new SQLException(driverClassName + " does not accept url: " + url);
+					}
+					
+					driverMap.put(database, driver);
+				}
+				catch (ClassNotFoundException e)
+				{
+					throw new SQLException(driverClassName + " not found in CLASSPATH");
+				}
 			}
 			
 			DatabaseCluster databaseCluster = new DatabaseCluster(clusterName, Collections.synchronizedMap(driverMap), descriptor.getValidateSQL());
 			
-			this.databaseClusterMap.put(clusterName, databaseCluster);
+			databaseClusterMap.put(clusterName, databaseCluster);
 		}
+		
+		this.databaseClusterMap = Collections.synchronizedMap(databaseClusterMap);
 	}
 	
 	/**
@@ -104,7 +135,7 @@ public final class DriverProxy implements java.sql.Driver
 	{
 		int index = URL_PREFIX.length();
 		
-		return (index > url.length()) ? url.substring(index) : null; 
+		return (url.length() > index) ? url.substring(index) : null; 
 	}
 	
 	private boolean acceptsClusterName(String clusterName)
@@ -118,7 +149,7 @@ public final class DriverProxy implements java.sql.Driver
 	public boolean acceptsURL(String url)
 	{
 		String clusterName = this.extractClusterName(url);
-		
+
 		return (clusterName != null) && this.acceptsClusterName(clusterName);
 	}
 	
@@ -128,17 +159,17 @@ public final class DriverProxy implements java.sql.Driver
 	public Connection connect(String url, final Properties properties) throws SQLException
 	{
 		String clusterName = this.extractClusterName(url);
-		
+
 		if ((clusterName == null) || !acceptsClusterName(clusterName))
 		{
 			return null;
 		}
-		
+
 		DatabaseCluster databaseCluster = this.getDatabaseCluster(clusterName);
 		
 		DriverOperation operation = new DriverOperation()
 		{
-			public Object execute(DriverDatabase database, DriverProxy driver) throws SQLException
+			public Object execute(DriverDatabase database, Driver driver) throws SQLException
 			{
 				return driver.connect(database.getUrl(), properties);
 			}
@@ -163,7 +194,7 @@ public final class DriverProxy implements java.sql.Driver
 		
 		DriverOperation operation = new DriverOperation()
 		{
-			public Object execute(DriverDatabase database, DriverProxy driver) throws SQLException
+			public Object execute(DriverDatabase database, Driver driver) throws SQLException
 			{
 				return driver.getPropertyInfo(database.getUrl(), properties);
 			}
