@@ -12,20 +12,21 @@ This file contains an outline of the site's information content.  It is used to:
 
 See http://xml.apache.org/forrest/linking.html for more info
 -->
-<site label="HA-JDBC" xmlns="http://apache.org/forrest/linkmap/1.0" tab="" href="">
+<site label="HA-JDBC" xmlns="http://apache.org/forrest/linkmap/1.0" href="">
 
-	<home label="HA-JDBC" href="">
+	<home label="HA-JDBC">
 		<overview label="Overview" href="index.html"/>
 		<documentation label="Documentation" href="doc.html"/>
 		<performance label="Performance" href="performance.html"/>
 		<faq label="FAQ" href="faq.html"/>
 		<api label="API" href="http://ha-jdbc.sourceforge.net/api"/>
-		<changes label="Changes" href="changes.html"/>
+		<download label="Download" href="http://sourceforge.net/project/showfiles.php?group_id=111957"/>
+		<changes label="Change Log" href="changes.html"/>
+		<license label="License" href="http://www.gnu.org/licenses/lgpl.html"/>
 	</home>
 
-	<project label="Project" href="">
+	<project label="Project">
 		<project label="Project Page" href="http://sourceforge.net/projects/ha-jdbc"/>
-		<download label="Downloads" href="http://sourceforge.net/project/showfiles.php?group_id=111957"/>
 		<list label="User Mailing List" href="http://sourceforge.net/mail/?group_id=111957"/>
 		<bugs label="Report Bugs" href="http://sourceforge.net/tracker/?group_id=111957&amp;atid=660861"/>
 		<support label="Support Requests" href="http://sourceforge.net/tracker/?group_id=111957&amp;atid=660862"/>
