@@ -17,8 +17,8 @@
 >
 <!ELEMENT datasource (user,password)?>
 <!ATTLIST datasource name CDATA #REQUIRED>
-<!ELEMENT pooled-datasource (user,password)?>
-<!ATTLIST pooled-datasource name CDATA #REQUIRED>
+<!ELEMENT pool-datasource (user,password)?>
+<!ATTLIST pool-datasource name CDATA #REQUIRED>
 <!ELEMENT xa-datasource (user,password)?>
 <!ATTLIST xa-datasource name CDATA #REQUIRED>
 <!ELEMENT user (#PCDATA)>

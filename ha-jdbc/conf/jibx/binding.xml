@@ -27,7 +27,7 @@
 		<value name="user" field="user" usage="optional" style="element"></value>
 		<value name="password" field="password" usage="optional" style="element"></value>
 	</mapping>
-	<mapping name="pooled-datasource" class="net.sf.ha.jdbc.pool.ConnectionPoolDataSourceDatabase">
+	<mapping name="pool-datasource" class="net.sf.ha.jdbc.pool.ConnectionPoolDataSourceDatabase">
 		<value name="name" field="name" usage="required" style="attribute"></value>
 		<value name="user" field="user" usage="optional" style="element"></value>
 		<value name="password" field="password" usage="optional" style="element"></value>
