@@ -31,7 +31,7 @@ public abstract class AbstractDatabase implements Database
 	protected String password;
 	
 	/**
-	 * @return
+	 * @return the database user
 	 */
 	public String getUser()
 	{
@@ -47,7 +47,7 @@ public abstract class AbstractDatabase implements Database
 	}
 	
 	/**
-	 * @return
+	 * @return the password of the database user
 	 */
 	public String getPassword()
 	{

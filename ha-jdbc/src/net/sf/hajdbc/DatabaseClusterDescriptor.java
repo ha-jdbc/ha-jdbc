@@ -41,7 +41,7 @@ public class DatabaseClusterDescriptor
 	private Map databaseMap = new HashMap();
 	
 	/**
-	 * @return Returns the databaseSet.
+	 * @return a map of databases in this cluster
 	 */
 	public Map getDatabaseMap()
 	{
@@ -49,7 +49,8 @@ public class DatabaseClusterDescriptor
 	}
 	
 	/**
-	 * @param databaseSet The databaseSet to set.
+	 * Adds the specified database to this cluster
+	 * @param object
 	 */
 	public void addDatabase(Object object)
 	{
@@ -59,7 +60,7 @@ public class DatabaseClusterDescriptor
 	}
 	
 	/**
-	 * @return Returns the name.
+	 * @return the name of this database cluster
 	 */
 	public String getName()
 	{
@@ -67,7 +68,7 @@ public class DatabaseClusterDescriptor
 	}
 	
 	/**
-	 * @param name The name to set.
+	 * @param name
 	 */
 	public void setName(String name)
 	{
@@ -75,7 +76,7 @@ public class DatabaseClusterDescriptor
 	}
 	
 	/**
-	 * @return Returns the validateSQL.
+	 * @return the SQL used to validate that a database is active
 	 */
 	public String getValidateSQL()
 	{
@@ -83,13 +84,18 @@ public class DatabaseClusterDescriptor
 	}
 	
 	/**
-	 * @param validateSQL The validateSQL to set.
+	 * @param validateSQL
 	 */
 	public void setValidateSQL(String validateSQL)
 	{
 		this.validateSQL = validateSQL;
 	}
 	
+	/**
+	 * Returns the first database in the cluster
+	 * @return the first database in the cluster
+	 * @throws SQLException
+	 */
 	public Database firstDatabase() throws SQLException
 	{
 		synchronized (this.activeDatabaseSet)
@@ -103,6 +109,11 @@ public class DatabaseClusterDescriptor
 		}
 	}
 	
+	/**
+	 * Returns the next database in the cluster
+	 * @return the next database in the cluster
+	 * @throws SQLException
+	 */
 	public Database nextDatabase() throws SQLException
 	{
 		synchronized (this.activeDatabaseSet)
@@ -120,6 +131,11 @@ public class DatabaseClusterDescriptor
 		}
 	}
 
+	/**
+	 * A list of active databases in this cluster
+	 * @return a list of Database objects
+	 * @throws SQLException
+	 */
 	public List getActiveDatabaseList() throws SQLException
 	{
 		synchronized (this.activeDatabaseSet)
@@ -133,6 +149,11 @@ public class DatabaseClusterDescriptor
 		}
 	}
 	
+	/**
+	 * Removes the specified database from the set active databases
+	 * @param database the database to remove
+	 * @return true if the database was removed successfully, false if it has already been removed
+	 */
 	public boolean removeDatabase(Database database)
 	{
 		synchronized (this.activeDatabaseSet)

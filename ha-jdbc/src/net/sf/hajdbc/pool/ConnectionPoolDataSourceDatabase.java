@@ -47,8 +47,9 @@ public class ConnectionPoolDataSourceDatabase extends DataSourceDatabase
 	}
 	
 	/**
+	 * Returns a database connection from the specified pool.
 	 * @param connection
-	 * @return
+	 * @return a database connection
 	 * @throws SQLException
 	 */
 	protected Connection getConnection(PooledConnection connection) throws SQLException

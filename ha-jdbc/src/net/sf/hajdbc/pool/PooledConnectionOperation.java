@@ -34,8 +34,16 @@ import net.sf.hajdbc.Operation;
  */
 public abstract class PooledConnectionOperation implements Operation
 {
+	/**
+	 * @param connection
+	 * @return the return value of the PooledConnection operation
+	 * @throws SQLException
+	 */
 	public abstract Object execute(PooledConnection connection) throws SQLException;
 
+	/**
+	 * @see net.sf.hajdbc.Operation#execute(net.sf.hajdbc.Database, java.lang.Object)
+	 */
 	public final Object execute(Database database, Object connection) throws SQLException
 	{
 		return this.execute((PooledConnection) connection);

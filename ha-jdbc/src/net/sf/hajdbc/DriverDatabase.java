@@ -39,7 +39,7 @@ public class DriverDatabase extends AbstractDatabase
 	private String driver;
 	
 	/**
-	 * @return
+	 * @return the database url
 	 */
 	public String getUrl()
 	{
@@ -55,7 +55,7 @@ public class DriverDatabase extends AbstractDatabase
 	}
 	
 	/**
-	 * @return
+	 * @return the database driver class name 
 	 */
 	public String getDriver()
 	{
@@ -71,7 +71,7 @@ public class DriverDatabase extends AbstractDatabase
 	}
 	
 	/**
-	 * @return
+	 * @return the user and password as a set of properties
 	 */
 	public Properties getProperties()
 	{
@@ -107,9 +107,6 @@ public class DriverDatabase extends AbstractDatabase
 		return this.url;
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.ConnectionInfo#connect(java.lang.Object)
-	 */
 	/**
 	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
 	 */

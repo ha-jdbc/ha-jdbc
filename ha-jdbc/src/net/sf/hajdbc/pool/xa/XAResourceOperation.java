@@ -34,6 +34,12 @@ import net.sf.hajdbc.SQLException;
  */
 public abstract class XAResourceOperation implements Operation
 {
+	/**
+	 * @param database
+	 * @param resource
+	 * @return the return value of the XAResource operation
+	 * @throws XAException
+	 */
 	public abstract Object execute(XADataSourceDatabase database, XAResource resource) throws XAException;
 	
 	/**

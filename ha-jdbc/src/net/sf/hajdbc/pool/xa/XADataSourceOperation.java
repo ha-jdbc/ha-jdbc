@@ -36,7 +36,7 @@ public abstract class XADataSourceOperation extends ConnectionPoolDataSourceOper
 {
 	/**
 	 * @param dataSource
-	 * @return
+	 * @return the return value of the XADataSource operation
 	 * @throws SQLException
 	 */
 	public abstract Object execute(XADataSource dataSource) throws SQLException;

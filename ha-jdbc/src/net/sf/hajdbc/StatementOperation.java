@@ -32,7 +32,7 @@ public abstract class StatementOperation implements Operation
 {
 	/**
 	 * @param statement
-	 * @return
+	 * @return the return value of the Statement operation
 	 * @throws SQLException
 	 */
 	public abstract Object execute(Statement statement) throws SQLException;

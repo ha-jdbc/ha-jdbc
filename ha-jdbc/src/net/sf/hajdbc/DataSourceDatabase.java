@@ -35,7 +35,7 @@ public class DataSourceDatabase extends AbstractDatabase
 	protected String name;
 	
 	/**
-	 * @return
+	 * @return the DataSource JNDI name
 	 */
 	public String getName()
 	{

@@ -32,7 +32,7 @@ public abstract class ResultSetOperation implements Operation
 {
 	/**
 	 * @param resultSet
-	 * @return
+	 * @return the return value of the ResultSet operation
 	 * @throws SQLException
 	 */
 	public abstract Object execute(ResultSet resultSet) throws SQLException;

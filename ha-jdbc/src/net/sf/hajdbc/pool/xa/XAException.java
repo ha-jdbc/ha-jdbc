@@ -29,7 +29,7 @@ public class XAException extends javax.transaction.xa.XAException
 {
 	/**
 	 * Constructs a new XAException.
-	 * 
+	 * @param message
 	 */
 	public XAException(String message)
 	{
@@ -38,7 +38,8 @@ public class XAException extends javax.transaction.xa.XAException
 
 	/**
 	 * Constructs a new XAException.
-	 * @param arg0
+	 * @param message
+	 * @param cause 
 	 */
 	public XAException(String message, Throwable cause)
 	{
@@ -48,7 +49,7 @@ public class XAException extends javax.transaction.xa.XAException
 
 	/**
 	 * Constructs a new XAException.
-	 * @param arg0
+	 * @param cause
 	 */
 	public XAException(Throwable cause)
 	{

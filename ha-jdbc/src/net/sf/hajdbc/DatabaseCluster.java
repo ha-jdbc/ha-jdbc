@@ -38,9 +38,9 @@ public class DatabaseCluster extends SQLProxy
 	
 	/**
 	 * Constructs a new DatabaseCluster.
-	 * @param name
+	 * @param manager
+	 * @param descriptor
 	 * @param databaseMap
-	 * @param validateSQL
 	 */
 	protected DatabaseCluster(DatabaseClusterManager manager, DatabaseClusterDescriptor descriptor, Map databaseMap)
 	{
@@ -58,6 +58,9 @@ public class DatabaseCluster extends SQLProxy
 		return this;
 	}
 	
+	/**
+	 * @return the descriptor for this database cluster
+	 */
 	public DatabaseClusterDescriptor getDescriptor()
 	{
 		return this.descriptor;
@@ -65,7 +68,7 @@ public class DatabaseCluster extends SQLProxy
 	
 	/**
 	 * @param database
-	 * @return
+	 * @return true if the specified database is active, false otherwise
 	 */
 	public boolean isActive(Database database)
 	{
@@ -116,6 +119,11 @@ public class DatabaseCluster extends SQLProxy
 		}
 	}
 	
+	/**
+	 * Deactivates the specified database.
+	 * @param database
+	 * @return true if the database was successfully deactivated, false if it was already deactivated
+	 */
 	public boolean deactivate(Database database)
 	{
 		return this.manager.deactivate(this.descriptor.getName(), database);
