@@ -10,6 +10,29 @@
 			defined for 'add', 'fix', 'remove', 'update' and 'hack'. If you add
 			src/documentation/resources/images/<foo>.jpg images, these will
 			automatically be used for entries of type <foo>. -->
+		<release version="1.0-beta-4" date="Unreleased">
+			<action type="update" dev="PF">
+				getActiveDatabases() and getInactiveDatabases() no longer throw SQLException
+			</action>
+			<action type="update" dev="PF">
+				Configuration DTD updated:  Synchronization strategies and properties are now explicitly defined per cluster.
+			</action>
+			<action type="add" dev="PF">
+				Added getSynchronizationStrategies() method to cluster management interface.
+			</action>
+			<action type="update" dev="PF">
+				Changed symantics of activate(...) methods on management interface:  activate(String, String) uses synchronization strategy identifier instead of class name; activate(String) now activates a database without synchronizing.
+			</action>
+			<action type="remove" dev="PF">
+				PassiveSynchronizationStrategy is obsolete.  Use activate(String) instead.
+			</action>
+			<action type="update" dev="PF">
+				synchronize() method of SynchronizationStrategy interface no longer uses DatabaseClusterDescriptor.
+			</action>
+			<action type="fix" dev="PF">
+				Fixed various bugs in documentation and javadoc.
+			</action>
+		</release>
 		<release version="1.0-beta-3" date="February 7, 2005">
 			<action type="add" dev="PF">
 				All log/exception messages are now localized.
@@ -126,9 +149,6 @@
 	<todo>
 		<actions priority="Release 1.0">
 			<action context="code" dev="PF">
-				Modularize synchronization strategy configuration properties.
-			</action>
-			<action context="code" dev="PF">
 				JUnit unit test suite. (in progress)
 			</action>
 			<action context="code" dev="PF">
@@ -137,10 +157,11 @@
 		</actions>
 		<actions priority="Release 1.1">
 			<action context="code" dev="PF">
-				Support weighted cluster nodes.
+				Support weighted cluster nodes to optimize load balancing.
 			</action>
 			<action context="code" dev="PF">
 				Support for modifying HA-JDBC configuration at runtime.
+				Workaround is to create "placeholder" DataSources that can be defined and activated as needed.
 			</action>
 		</actions>
 	</todo>
