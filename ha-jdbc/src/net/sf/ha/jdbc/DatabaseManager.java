@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import java.util.Map;
 
 /**
- * Contains a map of <code>Database</code> -&gt; connection factory (e.g. Driver, DataSource, etc.)
+ * Contains a map of <code>Database</code> -&gt; database connection factory (i.e. Driver, DataSource, ConnectionPoolDataSource, XADataSource)
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
