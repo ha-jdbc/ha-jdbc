@@ -285,7 +285,7 @@ public class MailTransport extends ConnectionAdapter implements MailSender
 	{
 		Transport transport = (Transport) event.getSource();
 		
-		log.info(transport.getURLName().getProtocol() + " connection made to " + transport.getURLName().getHost());
+		log.info("Opened " + transport.getURLName().getProtocol() + " connection to " + transport.getURLName().getHost());
 		
 		this.addTransport(transport);
 	}
@@ -297,7 +297,7 @@ public class MailTransport extends ConnectionAdapter implements MailSender
 	{
 		Transport transport = (Transport) event.getSource();
 		
-		log.info(transport.getURLName().getProtocol() + " connection closed to " + transport.getURLName().getHost());
+		log.info("Closed " + transport.getURLName().getProtocol() + " connection to " + transport.getURLName().getHost());
 	}
 
 	/**
@@ -323,12 +323,10 @@ public class MailTransport extends ConnectionAdapter implements MailSender
 			try
 			{
 				transport.close();
-				
-				log.info("Closed " + transport.getURLName().getProtocol() + " connection to " + transport.getURLName().getHost());
 			}
 			catch (MessagingException e)
 			{
-				log.warn("Failure closing " + transport.getURLName().getProtocol() + " connection to " + transport.getURLName().getHost());
+				log.warn("Failed to close " + transport.getURLName().getProtocol() + " connection to " + transport.getURLName().getHost());
 			}
 		}
 	}
