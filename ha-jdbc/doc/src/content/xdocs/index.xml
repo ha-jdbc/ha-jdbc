@@ -44,8 +44,9 @@
 					<li>Allows use of vendor implementations of SQL types (e.g. <code>Blob</code>, <code>Clob</code>, <code>Ref</code>, etc).</li>
 					<li>Improves performance of concurrent read-access by distributing load across individual cluster nodes.</li>
 					<li>Ensures data concurrency by deactivating failed cluster nodes.</li>
-					<li>Library of connected and disconnected cluster-aware <code>javax.sql.RowSet</code> implementations (coming soon)</li>
+					<li>Library of cluster-aware <link href="http://www.jcp.org/en/jsr/detail?id=114">JSR 114</link> <code>javax.sql.RowSet</code> implementations (coming soon)</li>
 					<li>Configurable node failure strategies (coming soon)</li>
+					<li>Configurable distributed cluster manager strategies (coming soon)</li>
 					<li>Cluster health introspection (coming soon)</li>
 				</ul>
 			</section>
