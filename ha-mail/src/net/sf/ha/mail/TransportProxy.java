@@ -87,7 +87,7 @@ public class TransportProxy extends Transport implements Sender, ConnectionListe
 			Class senderStrategyClass = Class.forName(senderStrategyClassName);
 			Object senderStrategy = senderStrategyClass.newInstance();
 			
-			if (SenderStrategy.class.isInstance(senderStrategy))
+			if (!SenderStrategy.class.isInstance(senderStrategy))
 			{
 				throw new MessagingException("Sender strategry " + senderStrategyClassName + " does not implement " + SenderStrategy.class.getName());
 			}
