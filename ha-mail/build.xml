@@ -23,7 +23,7 @@
 	
 	<target name="clean">
 		<delete dir="${build.dir}" quiet="true"></delete>
-		<delete file="${jar.file}" quiet="true"></delete>
+		<delete file="${basedir}/${dist.name}-*.*" quiet="true"></delete>
 	</target>
 	
 	<target name="init">
