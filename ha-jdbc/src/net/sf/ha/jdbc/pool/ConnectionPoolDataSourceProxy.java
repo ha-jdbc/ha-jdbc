@@ -7,7 +7,6 @@ import javax.sql.ConnectionPoolDataSource;
 import javax.sql.PooledConnection;
 
 import net.sf.ha.jdbc.AbstractDataSourceProxy;
-import net.sf.ha.jdbc.DataSourceDatabase;
 
 /**
  * @author Paul Ferraro
@@ -22,7 +21,7 @@ public class ConnectionPoolDataSourceProxy extends AbstractDataSourceProxy imple
 	{
 		ConnectionPoolDataSourceOperation operation = new ConnectionPoolDataSourceOperation()
 		{
-			public Object execute(DataSourceDatabase database, ConnectionPoolDataSource dataSource) throws SQLException
+			public Object execute(ConnectionPoolDataSource dataSource) throws SQLException
 			{
 				return dataSource.getPooledConnection();
 			}
@@ -34,13 +33,13 @@ public class ConnectionPoolDataSourceProxy extends AbstractDataSourceProxy imple
 	/**
 	 * @see javax.sql.ConnectionPoolDataSource#getPooledConnection(java.lang.String, java.lang.String)
 	 */
-	public PooledConnection getPooledConnection(String user, String password) throws SQLException
+	public PooledConnection getPooledConnection(final String user, final String password) throws SQLException
 	{
 		ConnectionPoolDataSourceOperation operation = new ConnectionPoolDataSourceOperation()
 		{
-			public Object execute(DataSourceDatabase database, ConnectionPoolDataSource dataSource) throws SQLException
+			public Object execute(ConnectionPoolDataSource dataSource) throws SQLException
 			{
-				return dataSource.getPooledConnection(database.getUser(), database.getPassword());
+				return dataSource.getPooledConnection(user, password);
 			}
 		};
 		
@@ -54,7 +53,7 @@ public class ConnectionPoolDataSourceProxy extends AbstractDataSourceProxy imple
 	{
 		ConnectionPoolDataSourceOperation operation = new ConnectionPoolDataSourceOperation()
 		{
-			public Object execute(DataSourceDatabase database, ConnectionPoolDataSource dataSource) throws SQLException
+			public Object execute(ConnectionPoolDataSource dataSource) throws SQLException
 			{
 				return new Integer(dataSource.getLoginTimeout());
 			}
@@ -70,7 +69,7 @@ public class ConnectionPoolDataSourceProxy extends AbstractDataSourceProxy imple
 	{
 		ConnectionPoolDataSourceOperation operation = new ConnectionPoolDataSourceOperation()
 		{
-			public Object execute(DataSourceDatabase database, ConnectionPoolDataSource dataSource) throws SQLException
+			public Object execute(ConnectionPoolDataSource dataSource) throws SQLException
 			{
 				dataSource.setLoginTimeout(seconds);
 				
@@ -88,7 +87,7 @@ public class ConnectionPoolDataSourceProxy extends AbstractDataSourceProxy imple
 	{
 		ConnectionPoolDataSourceOperation operation = new ConnectionPoolDataSourceOperation()
 		{
-			public Object execute(DataSourceDatabase database, ConnectionPoolDataSource dataSource) throws SQLException
+			public Object execute(ConnectionPoolDataSource dataSource) throws SQLException
 			{
 				return dataSource.getLogWriter();
 			}
@@ -104,7 +103,7 @@ public class ConnectionPoolDataSourceProxy extends AbstractDataSourceProxy imple
 	{
 		ConnectionPoolDataSourceOperation operation = new ConnectionPoolDataSourceOperation()
 		{
-			public Object execute(DataSourceDatabase database, ConnectionPoolDataSource dataSource) throws SQLException
+			public Object execute(ConnectionPoolDataSource dataSource) throws SQLException
 			{
 				dataSource.setLogWriter(writer);
 				

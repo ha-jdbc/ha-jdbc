@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 
-import net.sf.ha.jdbc.DataSourceDatabase;
 import net.sf.ha.jdbc.DatabaseCluster;
 import net.sf.ha.jdbc.pool.ConnectionPoolDataSourceProxy;
 
@@ -34,7 +33,7 @@ public class XADataSourceProxy extends ConnectionPoolDataSourceProxy implements 
 	{
 		XADataSourceOperation operation = new XADataSourceOperation()
 		{
-			public Object execute(DataSourceDatabase database, XADataSource dataSource) throws SQLException
+			public Object execute(XADataSource dataSource) throws SQLException
 			{
 				return dataSource.getXAConnection();
 			}
@@ -46,13 +45,13 @@ public class XADataSourceProxy extends ConnectionPoolDataSourceProxy implements 
 	/**
 	 * @see javax.sql.XADataSource#getXAConnection(java.lang.String, java.lang.String)
 	 */
-	public XAConnection getXAConnection(String user, String password) throws SQLException
+	public XAConnection getXAConnection(final String user, final String password) throws SQLException
 	{
 		XADataSourceOperation operation = new XADataSourceOperation()
 		{
-			public Object execute(DataSourceDatabase database, XADataSource dataSource) throws SQLException
+			public Object execute(XADataSource dataSource) throws SQLException
 			{
-				return dataSource.getXAConnection(database.getUser(), database.getPassword());
+				return dataSource.getXAConnection(user, password);
 			}
 		};
 		

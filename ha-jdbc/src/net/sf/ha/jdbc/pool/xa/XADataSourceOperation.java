@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import javax.sql.ConnectionPoolDataSource;
 import javax.sql.XADataSource;
 
-import net.sf.ha.jdbc.DataSourceDatabase;
 import net.sf.ha.jdbc.pool.ConnectionPoolDataSourceOperation;
 
 /**
@@ -14,13 +13,13 @@ import net.sf.ha.jdbc.pool.ConnectionPoolDataSourceOperation;
  */
 public abstract class XADataSourceOperation extends ConnectionPoolDataSourceOperation
 {
-	public abstract Object execute(DataSourceDatabase database, XADataSource dataSource) throws SQLException;
+	public abstract Object execute(XADataSource dataSource) throws SQLException;
 	
 	/**
 	 * @see net.sf.hajdbc.pool.ConnectionPoolDataSourceProxy.Operation#execute(net.sf.hajdbc.DataSourceConnectionInfo, javax.sql.ConnectionPoolDataSource)
 	 */
-	public final Object execute(DataSourceDatabase database, ConnectionPoolDataSource dataSource) throws SQLException
+	public final Object execute(ConnectionPoolDataSource dataSource) throws SQLException
 	{
-		return this.execute(database, (XADataSource) dataSource);
+		return this.execute((XADataSource) dataSource);
 	}
 }

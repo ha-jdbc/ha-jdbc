@@ -125,7 +125,7 @@ public final class DriverProxy implements java.sql.Driver
 	/**
 	 * @see java.sql.Driver#connect(java.lang.String, java.util.Properties)
 	 */
-	public Connection connect(String url, Properties properties) throws SQLException
+	public Connection connect(String url, final Properties properties) throws SQLException
 	{
 		String clusterName = this.extractClusterName(url);
 		
@@ -140,7 +140,7 @@ public final class DriverProxy implements java.sql.Driver
 		{
 			public Object execute(DriverDatabase database, DriverProxy driver) throws SQLException
 			{
-				return driver.connect(database.getUrl(), database.getProperties());
+				return driver.connect(database.getUrl(), properties);
 			}
 		};
 		
@@ -150,7 +150,7 @@ public final class DriverProxy implements java.sql.Driver
 	/**
 	 * @see java.sql.Driver#getPropertyInfo(java.lang.String, java.util.Properties)
 	 */
-	public DriverPropertyInfo[] getPropertyInfo(String url, Properties properties) throws SQLException
+	public DriverPropertyInfo[] getPropertyInfo(String url, final Properties properties) throws SQLException
 	{
 		String clusterName = this.extractClusterName(url);
 		
@@ -165,7 +165,7 @@ public final class DriverProxy implements java.sql.Driver
 		{
 			public Object execute(DriverDatabase database, DriverProxy driver) throws SQLException
 			{
-				return driver.getPropertyInfo(database.getUrl(), database.getProperties());
+				return driver.getPropertyInfo(database.getUrl(), properties);
 			}
 		};
 		
