@@ -4,10 +4,11 @@ HA-JDBC Versions
 1.0-alpha-2
 -----------
 * Added ability specify url of configuration file using "ha-jdbc.configuration" system property
-* Extended CLASSPATH search for non-url configuration file to include system classpath
-* Allow all DataSource proxys to correctly initialize via reflection so that a Reference can be stored using JNDI
+* Extended classpath search for configuration file to include system classpath
+* Fixed DataSource proxy initialization
 * DriverProxy now expects the cluster name to match the JDBC url
 * Renamed DistributedDatabaseClusterManager -> DistributableDatabaseClusterManager
+* Renamed pooled-datasource -> pool-datasource in configuration DTD and JiBX mapping
 * Fixed bug in clean target of ant build file
 
 1.0-alpha-1
