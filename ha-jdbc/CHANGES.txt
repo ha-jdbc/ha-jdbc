@@ -1,6 +1,13 @@
 HA-JDBC Versions
 ================
 
+1.0-alpha-3
+-----------
+* Upgraded JGroups to v2.2.6
+* Fixed multi-threading bug in SQLProxy
+* Changed license to LGPL - added license details to source code
+* Removed obsolete RowSetProxy
+
 1.0-alpha-2
 -----------
 * Added ability specify url of configuration file using "ha-jdbc.configuration" system property
