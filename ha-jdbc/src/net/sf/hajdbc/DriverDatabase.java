@@ -133,7 +133,7 @@ public class DriverDatabase extends AbstractDatabase
 			}
 			catch (ClassNotFoundException e)
 			{
-				throw new SQLException(Messages.getMessage(Messages.CLASS_NOT_FOUND, this.driver), e);
+				throw new SQLException(Messages.getMessage(Messages.DRIVER_NOT_FOUND, this.driver), e);
 			}
 		}
 		
