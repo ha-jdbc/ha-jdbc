@@ -1,7 +1,24 @@
 /*
- * Copyright (c) 2004, Identity Theft 911, LLC.  All rights reserved.
+ * HA-JDBC: High-Availability JDBC
+ * Copyright (C) 2004 Paul Ferraro
+ * 
+ * This library is free software; you can redistribute it and/or modify it 
+ * under the terms of the GNU Lesser General Public License as published by the 
+ * Free Software Foundation; either version 2.1 of the License, or (at your 
+ * option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+ * for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, 
+ * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * 
+ * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc;
+package net.sf.hajdbc.activation;
 
 import java.text.MessageFormat;
 import java.util.Iterator;
@@ -15,18 +32,16 @@ import java.util.List;
  */
 public class Index
 {
-	private static final String CREATE_SQL = "CREATE {1,choice,0#|1#UNIQUE} INDEX {0} ON {2} ({3})";
+	private static final String CREATE_SQL = "CREATE INDEX {0} ON {1} ({2})";
 	private static final String DROP_SQL = "DROP INDEX {0}";
 	
 	private String name;
-	private boolean unique;
 	private String table;
 	private List columnList = new LinkedList();
 	
-	public Index(String name, boolean unique, String table)
+	public Index(String name, String table)
 	{
 		this.name = name;
-		this.unique = unique;
 		this.table = table;
 	}
 	
@@ -61,7 +76,7 @@ public class Index
 			}
 		}
 			
-		return MessageFormat.format(pattern, new Object[] { this.name, new Integer(this.unique ? 1 : 0), this.table, buffer.toString() });
+		return MessageFormat.format(pattern, new Object[] { this.name, this.table, buffer.toString() });
 	}
 	
 	public boolean equals(Object object)

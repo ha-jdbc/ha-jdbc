@@ -1,7 +1,24 @@
 /*
- * Copyright (c) 2004, Identity Theft 911, LLC.  All rights reserved.
+ * HA-JDBC: High-Availability JDBC
+ * Copyright (C) 2004 Paul Ferraro
+ * 
+ * This library is free software; you can redistribute it and/or modify it 
+ * under the terms of the GNU Lesser General Public License as published by the 
+ * Free Software Foundation; either version 2.1 of the License, or (at your 
+ * option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+ * for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, 
+ * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * 
+ * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc;
+package net.sf.hajdbc.activation;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -16,6 +33,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseActivationStrategy;
+import net.sf.hajdbc.DatabaseCluster;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -26,7 +47,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class UpdateDatabaseActivationStrategy implements DatabaseActivationStrategy
 {
-	private static Log log = LogFactory.getLog(UpdateDatabaseActivationStrategy.class);
+	static Log log = LogFactory.getLog(UpdateDatabaseActivationStrategy.class);
 	
 	/**
 	 * @see net.sf.hajdbc.DatabaseActivationStrategy#activate(net.sf.hajdbc.DatabaseCluster, net.sf.hajdbc.Database)
@@ -134,8 +155,44 @@ public class UpdateDatabaseActivationStrategy implements DatabaseActivationStrat
 				Statement activeStatement = activeConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				
 				log.info("Updating: " + sql);
-				ResultSet inactiveResultSet = inactiveStatement.executeQuery(sql);
-				ResultSet activeResultSet = activeStatement.executeQuery(sql);
+				
+				Thread inactiveExecutor = new Thread(new StatementExecutor(inactiveStatement, sql));
+				inactiveExecutor.start();
+				
+				Thread activeExecutor = new Thread(new StatementExecutor(activeStatement, sql));
+				activeExecutor.start();
+				
+				try
+				{
+					inactiveExecutor.join();
+				}
+				catch (InterruptedException e)
+				{
+					throw new SQLException("Execution of " + sql + " on inactive database was interrupted.");
+				}
+
+				try
+				{
+					activeExecutor.join();
+				}
+				catch (InterruptedException e)
+				{
+					throw new SQLException("Execution of " + sql + " on active database was interrupted.");
+				}
+				
+				ResultSet inactiveResultSet = inactiveStatement.getResultSet();
+
+				if (inactiveResultSet == null)
+				{
+					throw inactiveStatement.getWarnings();
+				}
+				
+				ResultSet activeResultSet = activeStatement.getResultSet();
+				
+				if (activeResultSet == null)
+				{
+					throw activeStatement.getWarnings();
+				}
 				
 				primaryKeys = primaryKeyList.iterator();
 				
@@ -150,6 +207,10 @@ public class UpdateDatabaseActivationStrategy implements DatabaseActivationStrat
 
 				ResultSetMetaData resultSetMetaData = activeResultSet.getMetaData();
 				int columns = resultSetMetaData.getColumnCount();
+				
+				int insertCount = 0;
+				int updateCount = 0;
+				int deleteCount = 0;
 				
 				while (hasActiveResults || hasInactiveResults)
 				{
@@ -187,6 +248,8 @@ public class UpdateDatabaseActivationStrategy implements DatabaseActivationStrat
 					if (compare > 0)
 					{
 						inactiveResultSet.deleteRow();
+						
+						deleteCount += 1;
 					}
 					else if (compare < 0)
 					{
@@ -208,6 +271,8 @@ public class UpdateDatabaseActivationStrategy implements DatabaseActivationStrat
 						
 						inactiveResultSet.insertRow();
 						inactiveResultSet.moveToCurrentRow();
+						
+						insertCount += 1;
 					}
 					else // if (compare == 0)
 					{
@@ -244,6 +309,8 @@ public class UpdateDatabaseActivationStrategy implements DatabaseActivationStrat
 						if (updated)
 						{
 							inactiveResultSet.updateRow();
+							
+							updateCount += 1;
 						}
 					}
 					
@@ -257,6 +324,10 @@ public class UpdateDatabaseActivationStrategy implements DatabaseActivationStrat
 						hasInactiveResults = inactiveResultSet.next();
 					}
 				}
+				
+				log.info("Inserted " + insertCount + " rows into " + table);
+				log.info("Deleted " + deleteCount + " rows from " + table);
+				log.info("Updated " + updateCount + " rows in " + table);
 				
 				inactiveStatement.close();
 				activeStatement.close();

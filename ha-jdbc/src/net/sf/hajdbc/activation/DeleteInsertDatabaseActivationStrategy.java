@@ -1,7 +1,24 @@
 /*
- * Copyright (c) 2004, Identity Theft 911, LLC.  All rights reserved.
+ * HA-JDBC: High-Availability JDBC
+ * Copyright (C) 2004 Paul Ferraro
+ * 
+ * This library is free software; you can redistribute it and/or modify it 
+ * under the terms of the GNU Lesser General Public License as published by the 
+ * Free Software Foundation; either version 2.1 of the License, or (at your 
+ * option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+ * for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, 
+ * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * 
+ * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc;
+package net.sf.hajdbc.activation;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -10,9 +27,15 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseActivationStrategy;
+import net.sf.hajdbc.DatabaseCluster;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,6 +60,7 @@ public class DeleteInsertDatabaseActivationStrategy implements DatabaseActivatio
 		Connection inactiveConnection = null;
 		
 		List foreignKeyList = new LinkedList();
+		Map indexMap = new HashMap();
 		
 		try
 		{
@@ -86,6 +110,36 @@ public class DeleteInsertDatabaseActivationStrategy implements DatabaseActivatio
 				}
 				
 				resultSet.close();
+				
+				resultSet = databaseMetaData.getIndexInfo(null, null, table, false, true);
+				
+				while (resultSet.next())
+				{
+					if (resultSet.getBoolean("NON_UNIQUE"))
+					{
+						String name = resultSet.getString("INDEX_NAME");
+						String column = resultSet.getString("COLUMN_NAME");
+						
+						Index index = (Index) indexMap.get(name);
+						
+						if (index == null)
+						{
+							index = new Index(name, table);
+	
+							log.info("Dropping non-unique index: " + name);
+							
+							Statement statement = inactiveConnection.createStatement();
+							statement.execute(index.dropSQL());
+							statement.close();
+							
+							indexMap.put(name, index);
+						}
+						
+						index.addColumn(column);
+					}
+				}
+				
+				resultSet.close();
 			}
 			
 			inactiveConnection.commit();
@@ -101,16 +155,55 @@ public class DeleteInsertDatabaseActivationStrategy implements DatabaseActivatio
 				String table = (String) tables.next();
 
 				String deleteSQL = "DELETE FROM " + table;
+				String selectSQL = "SELECT * FROM " + table;
 
 				log.info("Deleting: " + deleteSQL);
 				
 				Statement deleteStatement = inactiveConnection.createStatement();
-				deleteStatement.executeUpdate(deleteSQL);
-				deleteStatement.close();
-				
 				Statement selectStatement = activeConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				
-				resultSet = selectStatement.executeQuery("SELECT * FROM " + table);
+				Thread deleteExecutor = new Thread(new StatementExecutor(deleteStatement, deleteSQL));
+				deleteExecutor.start();
+
+				Thread selectExecutor = new Thread(new StatementExecutor(selectStatement, selectSQL));
+				selectExecutor.start();
+				
+				try
+				{
+					deleteExecutor.join();
+				}
+				catch (InterruptedException e)
+				{
+					throw new SQLException("Execution of " + deleteSQL + " was interrupted.");
+				}
+
+				try
+				{
+					selectExecutor.join();
+				}
+				catch (InterruptedException e)
+				{
+					throw new SQLException("Execution of " + selectSQL + " was interrupted.");
+				}
+				
+				int deletedRows = deleteStatement.getUpdateCount();
+				
+				if (deletedRows < 0)
+				{
+					throw deleteStatement.getWarnings();
+				}
+				
+				log.info("Deleted " + deletedRows + " rows from " + table);
+				
+				deleteStatement.close();
+				
+				resultSet = selectStatement.getResultSet();
+				
+				if (resultSet == null)
+				{
+					throw selectStatement.getWarnings();
+				}
+				
 				ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
 				
 				int columns = resultSetMetaData.getColumnCount();
@@ -166,10 +259,9 @@ public class DeleteInsertDatabaseActivationStrategy implements DatabaseActivatio
 					insertStatement.addBatch();
 					statementCount += 1;
 					
-					if (statementCount >= MAX_BATCH_SIZE)
+					if ((statementCount % MAX_BATCH_SIZE) == 0)
 					{
 						insertStatement.executeBatch();
-						statementCount = 0;
 					}
 				}
 
@@ -177,6 +269,8 @@ public class DeleteInsertDatabaseActivationStrategy implements DatabaseActivatio
 				{
 					insertStatement.executeBatch();
 				}
+
+				log.info("Inserted " + statementCount + " rows into " + table);
 				
 				insertStatement.close();
 				selectStatement.close();
@@ -206,6 +300,22 @@ public class DeleteInsertDatabaseActivationStrategy implements DatabaseActivatio
 						Statement statement = inactiveConnection.createStatement();
 						statement.execute(foreignKey.createSQL());
 						statement.close();
+					}
+					
+					Iterator indexes = indexMap.values().iterator();
+					
+					while (indexes.hasNext())
+					{
+						Index index = (Index) indexes.next();
+						String sql = index.createSQL();
+						
+						log.info("Recreating non-unique index: " + sql);
+						
+						Statement statement = inactiveConnection.createStatement();
+						statement.execute(sql);
+						statement.close();
+						
+						index.dropSQL();
 					}
 
 					inactiveConnection.commit();
