@@ -33,6 +33,11 @@ public class MockDatabase implements Database
 	private String id;
 	private Integer weight;
 	
+	/**
+	 * Constructs a new MockDatabase.
+	 * @param id
+	 * @param weight
+	 */
 	public MockDatabase(String id, int weight)
 	{
 		this.id = id;
@@ -71,6 +76,9 @@ public class MockDatabase implements Database
 		return this.weight;
 	}
 	
+	/**
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	public boolean equals(Object object)
 	{
 		Database database = (Database) object;
