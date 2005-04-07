@@ -279,7 +279,7 @@
 </ha-jdbc>
 ]]></source>
 				<p>
-					The <![CDATA[<distributable>]]> element may contain an optional <![CDATA[<protocol>]]> attribute.  This lets you customize the JGroups protocol stack.
+					The <![CDATA[<distributable>]]> element may contain an optional <![CDATA[protocol]]> attribute.  This lets you customize the JGroups protocol stack.
 					If left unspecified, HA-JDBC will use the following default protocol stack:
 				</p>
 				<p>UDP:PING:MERGE2:FD:VERIFY_SUSPECT:pbcast.NAKACK:UNICAST:pbcast.STABLE:FRAG:pbcast.GMS</p>
@@ -449,7 +449,7 @@ rs.close();
 				<p>e.g.</p>
 				<source><![CDATA[
 <ha-jdbc>
-  <cluster id="cluster">
+  <cluster id="..." balancer="...">
     <database id="..."><!-- ... --></database>
     <database id="..."><!-- ... --></database>
 
@@ -490,7 +490,7 @@ rs.close();
 				<p>e.g.</p>
 				<source><![CDATA[
 <ha-jdbc>
-  <cluster id="cluster">
+  <cluster id="..." balancer="...">
     <database id="..."><!-- ... --></database>
     <database id="..."><!-- ... --></database>
 	

@@ -18,7 +18,7 @@
 		<faq>
 			<question>When using the "distributable" feature, I get a <code>ChannelException</code>: "unable to set up the protocol stack".</question>
 			<answer>
-				The server on which HA-JDBC is running may need additional network features installed.
+				The server on which HA-JDBC is running may need additional network features installed/enabled.
 				Refer to the JGroups <a href="http://www.jgroups.org/javagroupsnew/docs/user/index.html">documentation</a> for more specifics.
 			</answer>
 		</faq>
