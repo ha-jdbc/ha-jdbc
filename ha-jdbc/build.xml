@@ -41,7 +41,7 @@
 	<taskdef name="testng" classname="com.beust.testng.TestNGAntTask">
 		<classpath>
 			<fileset dir="${lib.test.dir}">
-				<include name="testng-2.2-jdk14.jar"/>
+				<include name="testng-2.2-*.jar"/>
 			</fileset>
 		</classpath>
 	</taskdef>
