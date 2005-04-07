@@ -5,10 +5,12 @@
 	
 	<property name="build.dir" location="${basedir}/build"></property>
 	<property name="src.dir" location="${basedir}/src"></property>
+	<property name="test.dir" location="${basedir}/test"></property>
 	<property name="doc.dir" location="${basedir}/doc"></property>
 	<property name="doc.api.dir" location="${doc.dir}/build/site/api"></property>
 	<property name="lib.dir" location="${basedir}/lib"></property>
 	<property name="lib.compile.dir" location="${lib.dir}/compile"></property>
+	<property name="lib.test.dir" location="${lib.dir}/test"></property>
 	<property name="conf.dir" location="${basedir}/conf"></property>
 	<property name="conf.jibx.dir" location="${conf.dir}/jibx"></property>
 	<property name="dist.name" value="${ant.project.name}"></property>
@@ -21,6 +23,7 @@
 		<dirset dir="${build.dir}"></dirset>
 		<fileset dir="${lib.dir}" includes="*.jar"></fileset>
 		<fileset dir="${lib.compile.dir}" includes="*.jar"></fileset>
+		<fileset dir="${lib.test.dir}" includes="*.jar"></fileset>
 	</path>
 
 	<taskdef name="bind" classname="org.jibx.binding.ant.CompileTask">
@@ -32,6 +35,13 @@
 			<fileset dir="${lib.compile.dir}">
 				<include name="jibx-bind-*.jar"/>
 				<include name="bcel-*.jar"/>
+			</fileset>
+		</classpath>
+	</taskdef>
+	<taskdef name="testng" classname="com.beust.testng.TestNGAntTask">
+		<classpath>
+			<fileset dir="${lib.test.dir}">
+				<include name="testng-2.2-jdk14.jar"/>
 			</fileset>
 		</classpath>
 	</taskdef>
@@ -100,6 +110,13 @@
 	<target name="site" depends="javadoc">
 		<!-- requires Apache Forrest 0.6 -->
 		<ant dir="${doc.dir}" inheritall="false"></ant>
+	</target>
+
+	<target name="run-tests" depends="compile">
+		<testng sourcedir="${test.dir}" classpathref="classpath" fork="yes">
+			<fileset dir="${test.dir}" includes="*.xml"></fileset>
+			<jvmarg value="-ea"/>
+		</testng>
 	</target>
 	
 </project>
