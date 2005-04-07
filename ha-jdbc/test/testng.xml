@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://beust.com/testng/testng-1.0.dtd">
+<suite name="HA-JDBC">
+	<test name="Balancer">
+		<classes>
+			<class name="net.sf.hajdbc.balancer.TestSimpleBalancer"/>
+			<class name="net.sf.hajdbc.balancer.TestRandomBalancer"/>
+			<class name="net.sf.hajdbc.balancer.TestRoundRobinBalancer"/>
+		</classes>
+	</test>
+</suite>
