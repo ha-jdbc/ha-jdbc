@@ -91,7 +91,7 @@ public class RandomBalancer extends AbstractBalancer
 	 */
 	public synchronized Database next()
 	{
-		if (this.databaseList.size() <= 1)
+		if (this.databaseList.isEmpty())
 		{
 			return this.first();
 		}
