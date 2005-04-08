@@ -79,11 +79,11 @@ public class LoadBalancer extends AbstractBalancer
 	 */
 	public synchronized boolean add(Database database)
 	{
-		boolean exists = this.contains(database);
+		boolean exists = this.databaseMap.containsKey(database);
 		
 		if (!exists)
 		{
-			this.databaseMap.put(database, new Integer(0));
+			this.databaseMap.put(database, new Integer(1));
 		}
 		
 		return !exists;
