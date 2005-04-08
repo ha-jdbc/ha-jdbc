@@ -112,7 +112,11 @@
 		<ant dir="${doc.dir}" inheritall="false"></ant>
 	</target>
 
-	<target name="run-tests" depends="compile">
+	<target name="compile-tests" depends="bind">
+		<javac srcdir="${test.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="classpath" source="1.4" target="1.4"></javac>
+	</target>
+	
+	<target name="run-tests" depends="compile-tests">
 		<testng sourcedir="${test.dir}" classpathref="classpath" fork="yes">
 			<fileset dir="${test.dir}" includes="*.xml"></fileset>
 			<jvmarg value="-ea"/>
