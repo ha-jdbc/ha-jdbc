@@ -6,6 +6,7 @@
 			<class name="net.sf.hajdbc.balancer.TestSimpleBalancer"/>
 			<class name="net.sf.hajdbc.balancer.TestRandomBalancer"/>
 			<class name="net.sf.hajdbc.balancer.TestRoundRobinBalancer"/>
+			<class name="net.sf.hajdbc.balancer.TestLoadBalancer"/>
 		</classes>
 	</test>
 </suite>

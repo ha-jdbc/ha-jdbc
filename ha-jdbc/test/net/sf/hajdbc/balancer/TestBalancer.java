@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc.balancer;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
@@ -211,4 +212,71 @@ public abstract class TestBalancer
 	}
 	
 	protected abstract void testNext(Balancer balancer);
+	
+	protected class MockDatabase implements Database
+	{
+		private String id;
+		private Integer weight;
+		
+		/**
+		 * Constructs a new MockDatabase.
+		 * @param id
+		 * @param weight
+		 */
+		public MockDatabase(String id, int weight)
+		{
+			this.id = id;
+			this.weight = new Integer(weight);
+		}
+		
+		/**
+		 * @see net.sf.hajdbc.Database#getId()
+		 */
+		public String getId()
+		{
+			return this.id;
+		}
+
+		/**
+		 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
+		 */
+		public Connection connect(Object connectionFactory)
+		{
+			return null;
+		}
+
+		/**
+		 * @see net.sf.hajdbc.Database#createConnectionFactory()
+		 */
+		public Object createConnectionFactory()
+		{
+			return null;
+		}
+
+		/**
+		 * @see net.sf.hajdbc.Database#getWeight()
+		 */
+		public Integer getWeight()
+		{
+			return this.weight;
+		}
+		
+		/**
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		public boolean equals(Object object)
+		{
+			Database database = (Database) object;
+			
+			return this.id.equals(database.getId());
+		}
+		
+		/**
+		 * @see java.lang.Object#toString()
+		 */
+		public String toString()
+		{
+			return this.id;
+		}
+	}
 }
