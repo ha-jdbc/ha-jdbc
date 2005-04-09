@@ -10,6 +10,20 @@
 			defined for 'add', 'fix', 'remove', 'update' and 'hack'. If you add
 			src/documentation/resources/images/<foo>.jpg images, these will
 			automatically be used for entries of type <foo>. -->
+		<release version="1.0-rc-1" date="...">
+			<action type="add" dev="PF">
+				Cluster state is now persisted locally so that it can be restored between application restarts.
+			</action>
+			<action type="fix" dev="PF">
+				Minor fixes to zero weight handling in random and load balancers.
+			</action>
+			<action type="fix" dev="PF">
+				Corrected German translation of error messages (thanks to Oezcan Acar).
+			</action>
+			<action type="add" dev="PF">
+				Added TestNG unit tests for each balancer implementation.
+			</action>
+		</release>
 		<release version="1.0-beta-7" date="April 5, 2005">
 			<action type="fix" dev="PF">
 				Fixed buggy weighted round-robin algorithm.
@@ -194,7 +208,7 @@
 	<todo>
 		<actions priority="Release 1.0">
 			<action context="code" dev="PF">
-				JUnit unit test suite. (in progress)
+				TestNG unit test suite. (in progress)
 			</action>
 			<action context="code" dev="PF">
 				Complete documentation.
