@@ -28,9 +28,7 @@ import java.net.URL;
 import java.sql.Array;
 import java.sql.Date;
 import java.sql.ParameterMetaData;
-import java.sql.PreparedStatement;
 import java.sql.Ref;
-import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Time;
@@ -43,7 +41,7 @@ import java.util.Calendar;
  * @version $Revision$
  * @since   1.0
  */
-public class PreparedStatementProxy extends StatementProxy implements PreparedStatement
+public class PreparedStatement extends Statement implements java.sql.PreparedStatement
 {
 	protected FileSupport fileSupport = new FileSupport();
 	
@@ -53,7 +51,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	 * @param operation an operation that creates PreparedStatements
 	 * @throws java.sql.SQLException if operation execution fails
 	 */
-	public PreparedStatementProxy(ConnectionProxy connection, ConnectionOperation operation) throws java.sql.SQLException
+	public PreparedStatement(Connection connection, ConnectionOperation operation) throws java.sql.SQLException
 	{
 		super(connection, operation);
 	}
@@ -65,7 +63,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				return new Integer(statement.executeUpdate());
 			}
@@ -81,7 +79,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.addBatch();
 				
@@ -99,7 +97,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.clearParameters();
 				
@@ -117,7 +115,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				return new Boolean(statement.execute());
 			}
@@ -133,7 +131,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.setByte(index, value);
 				
@@ -151,7 +149,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.setDouble(index, value);
 				
@@ -169,7 +167,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.setFloat(index, value);
 				
@@ -187,7 +185,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.setInt(index, value);
 				
@@ -205,7 +203,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.setNull(index, sqlType);
 				
@@ -223,7 +221,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.setLong(index, value);
 				
@@ -241,7 +239,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.setShort(index, value);
 				
@@ -259,7 +257,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.setBoolean(index, value);
 				
@@ -277,7 +275,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.setBytes(index, value);
 				
@@ -297,9 +295,9 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 		
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
-				statement.setAsciiStream(index, PreparedStatementProxy.this.fileSupport.getInputStream(file), length);
+				statement.setAsciiStream(index, PreparedStatement.this.fileSupport.getInputStream(file), length);
 			
 				return null;
 			}
@@ -317,9 +315,9 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
-				statement.setBinaryStream(index, PreparedStatementProxy.this.fileSupport.getInputStream(file), length);
+				statement.setBinaryStream(index, PreparedStatement.this.fileSupport.getInputStream(file), length);
 				
 				return null;
 			}
@@ -338,9 +336,9 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
-				statement.setUnicodeStream(index, PreparedStatementProxy.this.fileSupport.getInputStream(file), length);
+				statement.setUnicodeStream(index, PreparedStatement.this.fileSupport.getInputStream(file), length);
 				
 				return null;
 			}
@@ -358,9 +356,9 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 		
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
-				statement.setCharacterStream(index, PreparedStatementProxy.this.fileSupport.getReader(file), length);
+				statement.setCharacterStream(index, PreparedStatement.this.fileSupport.getReader(file), length);
 				
 				return null;
 			}
@@ -376,7 +374,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.setObject(index, value);
 				
@@ -394,7 +392,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.setObject(index, value, sqlType);
 				
@@ -412,7 +410,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.setObject(index, value, sqlType, scale);
 				
@@ -430,7 +428,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.setNull(index, sqlType, typeName);
 				
@@ -448,7 +446,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.setString(index, value);
 				
@@ -466,7 +464,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.setBigDecimal(index, value);
 				
@@ -484,7 +482,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.setURL(index, value);
 				
@@ -502,7 +500,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.setArray(index, value);
 				
@@ -520,7 +518,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.setBlob(index, value);
 				
@@ -538,7 +536,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.setClob(index, value);
 				
@@ -556,7 +554,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.setDate(index, value);
 				
@@ -574,7 +572,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				return statement.getParameterMetaData();
 			}
@@ -590,7 +588,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.setRef(index, value);
 				
@@ -604,17 +602,17 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	/**
 	 * @see java.sql.PreparedStatement#executeQuery()
 	 */
-	public ResultSet executeQuery() throws SQLException
+	public java.sql.ResultSet executeQuery() throws SQLException
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				return statement.executeQuery();
 			}
 		};
 
-		return (this.getResultSetConcurrency() == ResultSet.CONCUR_READ_ONLY) ? (ResultSet) this.executeReadFromDatabase(operation) : new ResultSetProxy(this, operation);
+		return (this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) ? (java.sql.ResultSet) this.executeReadFromDatabase(operation) : new ResultSet(this, operation);
 	}
 
 	/**
@@ -624,7 +622,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				return statement.getMetaData();
 			}
@@ -640,7 +638,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.setTime(index, value);
 				
@@ -658,7 +656,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.setTimestamp(index, value);
 				
@@ -676,7 +674,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.setDate(index, value, calendar);
 				
@@ -694,7 +692,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.setTime(index, value, calendar);
 				
@@ -712,7 +710,7 @@ public class PreparedStatementProxy extends StatementProxy implements PreparedSt
 	{
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
-			public Object execute(PreparedStatement statement) throws SQLException
+			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
 				statement.setTimestamp(index, value, calendar);
 				

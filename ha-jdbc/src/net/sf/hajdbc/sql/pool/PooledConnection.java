@@ -20,22 +20,20 @@
  */
 package net.sf.hajdbc.sql.pool;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 
 import javax.sql.ConnectionEventListener;
-import javax.sql.PooledConnection;
 
-import net.sf.hajdbc.ConnectionFactoryProxy;
-import net.sf.hajdbc.SQLProxy;
-import net.sf.hajdbc.sql.ConnectionProxy;
+import net.sf.hajdbc.ConnectionFactory;
+import net.sf.hajdbc.SQLObject;
+import net.sf.hajdbc.sql.Connection;
 
 /**
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public class PooledConnectionProxy extends SQLProxy implements PooledConnection
+public class PooledConnection extends SQLObject implements javax.sql.PooledConnection
 {
 	/**
 	 * Constructs a new PooledConnectionProxy.
@@ -43,7 +41,7 @@ public class PooledConnectionProxy extends SQLProxy implements PooledConnection
 	 * @param operation an operation that will create PooledConnections
 	 * @throws SQLException if operation execution fails
 	 */
-	public PooledConnectionProxy(ConnectionFactoryProxy dataSource, ConnectionPoolDataSourceOperation operation) throws SQLException
+	public PooledConnection(ConnectionFactory dataSource, ConnectionPoolDataSourceOperation operation) throws SQLException
 	{
 		super(dataSource, operation);
 	}
@@ -51,17 +49,17 @@ public class PooledConnectionProxy extends SQLProxy implements PooledConnection
 	/**
 	 * @see javax.sql.PooledConnection#getConnection()
 	 */
-	public Connection getConnection() throws SQLException
+	public java.sql.Connection getConnection() throws SQLException
 	{
 		PooledConnectionOperation operation = new PooledConnectionOperation()
 		{
-			public Object execute(PooledConnection connection) throws SQLException
+			public Object execute(javax.sql.PooledConnection connection) throws SQLException
 			{
 				return connection.getConnection();
 			}
 		};
 		
-		return new ConnectionProxy(this, operation);
+		return new Connection(this, operation);
 	}
 
 	/**
@@ -71,7 +69,7 @@ public class PooledConnectionProxy extends SQLProxy implements PooledConnection
 	{
 		PooledConnectionOperation operation = new PooledConnectionOperation()
 		{
-			public Object execute(PooledConnection connection) throws SQLException
+			public Object execute(javax.sql.PooledConnection connection) throws SQLException
 			{
 				connection.close();
 				
@@ -89,7 +87,7 @@ public class PooledConnectionProxy extends SQLProxy implements PooledConnection
 	{
 		PooledConnectionOperation operation = new PooledConnectionOperation()
 		{
-			public Object execute(PooledConnection connection)
+			public Object execute(javax.sql.PooledConnection connection)
 			{
 				connection.addConnectionEventListener(listener);
 				
@@ -114,7 +112,7 @@ public class PooledConnectionProxy extends SQLProxy implements PooledConnection
 	{
 		PooledConnectionOperation operation = new PooledConnectionOperation()
 		{
-			public Object execute(PooledConnection connection)
+			public Object execute(javax.sql.PooledConnection connection)
 			{
 				connection.removeConnectionEventListener(listener);
 				

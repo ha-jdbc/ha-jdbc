@@ -22,18 +22,15 @@ package net.sf.hajdbc.sql.pool.xa;
 
 import java.sql.SQLException;
 
-import javax.sql.XAConnection;
-import javax.transaction.xa.XAResource;
-
-import net.sf.hajdbc.ConnectionFactoryProxy;
-import net.sf.hajdbc.sql.pool.PooledConnectionProxy;
+import net.sf.hajdbc.ConnectionFactory;
+import net.sf.hajdbc.sql.pool.PooledConnection;
 
 /**
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public class XAConnectionProxy extends PooledConnectionProxy implements XAConnection
+public class XAConnection extends PooledConnection implements javax.sql.XAConnection
 {
 	/**
 	 * Constructs a new XAConnectionProxy.
@@ -41,7 +38,7 @@ public class XAConnectionProxy extends PooledConnectionProxy implements XAConnec
 	 * @param operation the operation that will create XAConnections
 	 * @throws SQLException if operation execution fails
 	 */
-	public XAConnectionProxy(ConnectionFactoryProxy dataSource, XADataSourceOperation operation) throws SQLException
+	public XAConnection(ConnectionFactory dataSource, XADataSourceOperation operation) throws SQLException
 	{
 		super(dataSource, operation);
 	}
@@ -49,16 +46,16 @@ public class XAConnectionProxy extends PooledConnectionProxy implements XAConnec
 	/**
 	 * @see javax.sql.XAConnection#getXAResource()
 	 */
-	public XAResource getXAResource() throws SQLException
+	public javax.transaction.xa.XAResource getXAResource() throws SQLException
 	{
 		XAConnectionOperation operation = new XAConnectionOperation()
 		{
-			public Object execute(XAConnection connection) throws SQLException
+			public Object execute(javax.sql.XAConnection connection) throws SQLException
 			{
 				return connection.getXAResource();
 			}
 		};
 		
-		return new XAResourceProxy(this, operation);
+		return new XAResource(this, operation);
 	}
 }

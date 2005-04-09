@@ -64,7 +64,7 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getConnectionFactory()
 	 */
-	public final ConnectionFactoryProxy getConnectionFactory()
+	public final ConnectionFactory getConnectionFactory()
 	{
 		return this.databaseCluster.getConnectionFactory();
 	}

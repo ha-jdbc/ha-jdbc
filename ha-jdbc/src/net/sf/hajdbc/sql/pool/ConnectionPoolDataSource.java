@@ -23,8 +23,6 @@ package net.sf.hajdbc.sql.pool;
 import java.io.PrintWriter;
 import java.sql.SQLException;
 
-import javax.sql.PooledConnection;
-
 import net.sf.hajdbc.sql.AbstractDataSource;
 
 /**
@@ -37,7 +35,7 @@ public class ConnectionPoolDataSource extends AbstractDataSource implements java
 	/**
 	 * @see javax.sql.ConnectionPoolDataSource#getPooledConnection()
 	 */
-	public PooledConnection getPooledConnection() throws SQLException
+	public javax.sql.PooledConnection getPooledConnection() throws SQLException
 	{
 		ConnectionPoolDataSourceOperation operation = new ConnectionPoolDataSourceOperation()
 		{
@@ -47,13 +45,13 @@ public class ConnectionPoolDataSource extends AbstractDataSource implements java
 			}
 		};
 		
-		return new PooledConnectionProxy(this.connectionFactory, operation);
+		return new PooledConnection(this.connectionFactory, operation);
 	}
 
 	/**
 	 * @see javax.sql.ConnectionPoolDataSource#getPooledConnection(java.lang.String, java.lang.String)
 	 */
-	public PooledConnection getPooledConnection(final String user, final String password) throws SQLException
+	public javax.sql.PooledConnection getPooledConnection(final String user, final String password) throws SQLException
 	{
 		ConnectionPoolDataSourceOperation operation = new ConnectionPoolDataSourceOperation()
 		{
@@ -63,7 +61,7 @@ public class ConnectionPoolDataSource extends AbstractDataSource implements java
 			}
 		};
 		
-		return new PooledConnectionProxy(this.connectionFactory, operation);
+		return new PooledConnection(this.connectionFactory, operation);
 	}
 
 	/**

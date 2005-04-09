@@ -20,20 +20,17 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
-import java.sql.Statement;
 
-import net.sf.hajdbc.SQLProxy;
+import net.sf.hajdbc.SQLObject;
 
 /**
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public class StatementProxy extends SQLProxy implements Statement
+public class Statement extends SQLObject implements java.sql.Statement
 {
 	/**
 	 * Constructs a new StatementProxy.
@@ -41,7 +38,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	 * @param operation an operation that creates Statements
 	 * @throws SQLException if operation execution fails
 	 */
-	public StatementProxy(ConnectionProxy connection, ConnectionOperation operation) throws java.sql.SQLException
+	public Statement(Connection connection, ConnectionOperation operation) throws java.sql.SQLException
 	{
 		super(connection, operation);
 	}
@@ -53,7 +50,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				return new Integer(statement.getFetchDirection());
 			}
@@ -69,7 +66,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				return new Integer(statement.getFetchSize());
 			}
@@ -85,7 +82,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				return new Integer(statement.getMaxFieldSize());
 			}
@@ -101,7 +98,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				return new Integer(statement.getMaxRows());
 			}
@@ -117,7 +114,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				return new Integer(statement.getQueryTimeout());
 			}
@@ -133,7 +130,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				return new Integer(statement.getResultSetConcurrency());
 			}
@@ -149,7 +146,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				return new Integer(statement.getResultSetHoldability());
 			}
@@ -165,7 +162,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				return new Integer(statement.getResultSetType());
 			}
@@ -181,7 +178,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				return new Integer(statement.getUpdateCount());
 			}
@@ -197,7 +194,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				statement.cancel();
 				
@@ -215,7 +212,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				statement.clearBatch();
 				
@@ -233,7 +230,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				statement.clearWarnings();
 				
@@ -251,7 +248,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				statement.close();
 				
@@ -269,7 +266,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				return new Boolean(statement.getMoreResults());
 			}
@@ -285,7 +282,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				return statement.executeBatch();
 			}
@@ -301,7 +298,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				statement.setFetchDirection(direction);
 				
@@ -319,7 +316,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				statement.setFetchSize(size);
 				
@@ -337,7 +334,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				statement.setMaxFieldSize(size);
 				
@@ -355,7 +352,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				statement.setMaxRows(rows);
 				
@@ -375,7 +372,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				statement.setQueryTimeout(seconds);
 				
@@ -393,7 +390,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				return new Boolean(statement.getMoreResults(current));
 			}
@@ -409,7 +406,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				statement.setEscapeProcessing(enable);
 				
@@ -427,7 +424,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				return new Integer(statement.executeUpdate(sql));
 			}
@@ -443,7 +440,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				statement.addBatch(sql);
 				
@@ -461,7 +458,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				statement.setCursorName(name);
 				
@@ -481,7 +478,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				return new Boolean(statement.execute(sql));
 			}
@@ -497,7 +494,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				return new Integer(statement.executeUpdate(sql, autoGeneratedKeys));
 			}
@@ -513,7 +510,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				return new Boolean(statement.execute(sql, autoGeneratedKeys));
 			}
@@ -529,7 +526,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				return new Integer(statement.executeUpdate(sql, columnIndexes));
 			}
@@ -545,7 +542,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				return new Boolean(statement.execute(sql, columnIndexes));
 			}
@@ -557,7 +554,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	/**
 	 * @see java.sql.Statement#getConnection()
 	 */
-	public Connection getConnection()
+	public java.sql.Connection getConnection()
 	{
 		return (Connection) this.parent;
 	}
@@ -565,33 +562,33 @@ public class StatementProxy extends SQLProxy implements Statement
 	/**
 	 * @see java.sql.Statement#getGeneratedKeys()
 	 */
-	public ResultSet getGeneratedKeys() throws SQLException
+	public java.sql.ResultSet getGeneratedKeys() throws SQLException
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				return statement.getGeneratedKeys();
 			}
 		};
 
-		return (ResultSet) this.executeReadFromDriver(operation);
+		return (java.sql.ResultSet) this.executeReadFromDriver(operation);
 	}
 
 	/**
 	 * @see java.sql.Statement#getResultSet()
 	 */
-	public ResultSet getResultSet() throws SQLException
+	public java.sql.ResultSet getResultSet() throws SQLException
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				return statement.getResultSet();
 			}
 		};
 
-		return (this.getResultSetConcurrency() == ResultSet.CONCUR_READ_ONLY) ? (ResultSet) this.executeReadFromDriver(operation) : new ResultSetProxy(this, operation);
+		return (this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) ? (java.sql.ResultSet) this.executeReadFromDriver(operation) : new ResultSet(this, operation);
 	}
 
 	/**
@@ -601,7 +598,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				return statement.getWarnings();
 			}
@@ -617,7 +614,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				return new Integer(statement.executeUpdate(sql, columnNames));
 			}
@@ -633,7 +630,7 @@ public class StatementProxy extends SQLProxy implements Statement
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				return new Boolean(statement.execute(sql, columnNames));
 			}
@@ -645,16 +642,16 @@ public class StatementProxy extends SQLProxy implements Statement
 	/**
 	 * @see java.sql.Statement#executeQuery(java.lang.String)
 	 */
-	public ResultSet executeQuery(final String sql) throws SQLException
+	public java.sql.ResultSet executeQuery(final String sql) throws SQLException
 	{
 		StatementOperation operation = new StatementOperation()
 		{
-			public Object execute(Statement statement) throws SQLException
+			public Object execute(java.sql.Statement statement) throws SQLException
 			{
 				return statement.executeQuery(sql);
 			}
 		};
 
-		return (this.getResultSetConcurrency() == ResultSet.CONCUR_READ_ONLY) ? (ResultSet) this.executeReadFromDatabase(operation) : new ResultSetProxy(this, operation);
+		return (this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) ? (java.sql.ResultSet) this.executeReadFromDatabase(operation) : new ResultSet(this, operation);
 	}
 }

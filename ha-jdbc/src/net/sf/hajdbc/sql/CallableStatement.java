@@ -26,7 +26,6 @@ import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.Array;
-import java.sql.CallableStatement;
 import java.sql.Date;
 import java.sql.Ref;
 import java.sql.SQLException;
@@ -40,7 +39,7 @@ import java.util.Map;
  * @version $Revision$
  * @since   1.0
  */
-public class CallableStatementProxy extends PreparedStatementProxy implements CallableStatement
+public class CallableStatement extends PreparedStatement implements java.sql.CallableStatement
 {
 	/**
 	 * Constructs a new CallableStatementProxy.
@@ -48,7 +47,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	 * @param operation an operation that creates CallableStatements
 	 * @throws java.sql.SQLException if operation execution fails
 	 */
-	public CallableStatementProxy(ConnectionProxy connection, ConnectionOperation operation) throws java.sql.SQLException
+	public CallableStatement(Connection connection, ConnectionOperation operation) throws java.sql.SQLException
 	{
 		super(connection, operation);
 	}
@@ -60,7 +59,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return new Boolean(statement.wasNull());
 			}
@@ -76,7 +75,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return new Byte(statement.getByte(index));
 			}
@@ -92,7 +91,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return new Double(statement.getDouble(index));
 			}
@@ -108,7 +107,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return new Float(statement.getFloat(index));
 			}
@@ -124,7 +123,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return new Integer(statement.getInt(index));
 			}
@@ -140,7 +139,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return new Long(statement.getLong(index));
 			}
@@ -156,7 +155,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return new Short(statement.getShort(index));
 			}
@@ -172,7 +171,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return new Boolean(statement.getBoolean(index));
 			}
@@ -188,7 +187,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getBytes(index);
 			}
@@ -204,7 +203,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.registerOutParameter(index, sqlType);
 				
@@ -222,7 +221,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.registerOutParameter(index, sqlType, scale);
 				
@@ -240,7 +239,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getObject(index);
 			}
@@ -256,7 +255,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getString(index);
 			}
@@ -272,7 +271,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.registerOutParameter(index, sqlType, typeName);
 				
@@ -290,7 +289,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return new Byte(statement.getByte(name));
 			}
@@ -306,7 +305,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return new Double(statement.getDouble(name));
 			}
@@ -322,7 +321,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return new Float(statement.getFloat(name));
 			}
@@ -338,7 +337,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return new Integer(statement.getInt(name));
 			}
@@ -354,7 +353,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return new Long(statement.getLong(name));
 			}
@@ -370,7 +369,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return new Short(statement.getShort(name));
 			}
@@ -386,7 +385,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return new Boolean(statement.getBoolean(name));
 			}
@@ -402,7 +401,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getBytes(name);
 			}
@@ -418,7 +417,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setByte(name, value);
 				
@@ -436,7 +435,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setDouble(name, value);
 				
@@ -454,7 +453,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setFloat(name, value);
 				
@@ -472,7 +471,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.registerOutParameter(name, sqlType);
 				
@@ -490,7 +489,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setInt(name, value);
 				
@@ -508,7 +507,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setNull(name, sqlType);
 				
@@ -526,7 +525,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.registerOutParameter(name, sqlType, scale);
 				
@@ -544,7 +543,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setLong(name, value);
 				
@@ -562,7 +561,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setShort(name, value);
 				
@@ -580,7 +579,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setBoolean(name, value);
 				
@@ -598,7 +597,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setBytes(name, value);
 				
@@ -616,7 +615,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getBigDecimal(index);
 			}
@@ -633,7 +632,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getBigDecimal(index, scale);
 			}
@@ -649,7 +648,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getURL(index);
 			}
@@ -665,7 +664,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getArray(index);
 			}
@@ -681,7 +680,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getBlob(index);
 			}
@@ -697,7 +696,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getClob(index);
 			}
@@ -713,7 +712,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getDate(index);
 			}
@@ -729,7 +728,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getRef(index);
 			}
@@ -745,7 +744,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getTime(index);
 			}
@@ -761,7 +760,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getTimestamp(index);
 			}
@@ -779,9 +778,9 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 		
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
-				statement.setAsciiStream(name, CallableStatementProxy.this.fileSupport.getInputStream(file), length);
+				statement.setAsciiStream(name, CallableStatement.this.fileSupport.getInputStream(file), length);
 				
 				return null;
 			}
@@ -799,9 +798,9 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 		
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
-				statement.setBinaryStream(name, CallableStatementProxy.this.fileSupport.getInputStream(file), length);
+				statement.setBinaryStream(name, CallableStatement.this.fileSupport.getInputStream(file), length);
 				
 				return null;
 			}
@@ -819,9 +818,9 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 		
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
-				statement.setCharacterStream(name, CallableStatementProxy.this.fileSupport.getReader(file), length);
+				statement.setCharacterStream(name, CallableStatement.this.fileSupport.getReader(file), length);
 				
 				return null;
 			}
@@ -837,7 +836,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getObject(name);
 			}
@@ -853,7 +852,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setObject(name, value);
 				
@@ -871,7 +870,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setObject(name, value, sqlType);
 				
@@ -889,7 +888,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setObject(name, value, sqlType, scale);
 				
@@ -907,7 +906,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getObject(index, typeMap);
 			}
@@ -923,7 +922,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getString(name);
 			}
@@ -939,7 +938,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.registerOutParameter(name, sqlType, typeName);
 				
@@ -957,7 +956,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setNull(name, sqlType, typeName);
 				
@@ -975,7 +974,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setString(name, value);
 				
@@ -993,7 +992,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getBigDecimal(name);
 			}
@@ -1009,7 +1008,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setBigDecimal(name, value);
 				
@@ -1027,7 +1026,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getURL(name);
 			}
@@ -1043,7 +1042,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setURL(name, value);
 				
@@ -1061,7 +1060,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getArray(name);
 			}
@@ -1077,7 +1076,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getBlob(name);
 			}
@@ -1093,7 +1092,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getClob(name);
 			}
@@ -1109,7 +1108,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getDate(name);
 			}
@@ -1125,7 +1124,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setDate(name, value);
 				
@@ -1143,7 +1142,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getDate(index, calendar);
 			}
@@ -1159,7 +1158,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getRef(name);
 			}
@@ -1175,7 +1174,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getTime(name);
 			}
@@ -1191,7 +1190,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setTime(name, value);
 				
@@ -1209,7 +1208,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getTime(index, calendar);
 			}
@@ -1225,7 +1224,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getTimestamp(name);
 			}
@@ -1241,7 +1240,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setTimestamp(name, value);
 				
@@ -1259,7 +1258,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getTimestamp(index, calendar);
 			}
@@ -1275,7 +1274,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getObject(name, typeMap);
 			}
@@ -1291,7 +1290,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getDate(name, calendar);
 			}
@@ -1307,7 +1306,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getTime(name, calendar);
 			}
@@ -1323,7 +1322,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getTimestamp(name, calendar);
 			}
@@ -1339,7 +1338,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setDate(name, value, calendar);
 				
@@ -1357,7 +1356,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setTime(name, value, calendar);
 				
@@ -1375,7 +1374,7 @@ public class CallableStatementProxy extends PreparedStatementProxy implements Ca
 	{
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
-			public Object execute(CallableStatement statement) throws SQLException
+			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setTimestamp(name, value, calendar);
 				

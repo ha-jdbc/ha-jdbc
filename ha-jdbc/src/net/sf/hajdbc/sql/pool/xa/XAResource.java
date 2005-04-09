@@ -23,17 +23,16 @@ package net.sf.hajdbc.sql.pool.xa;
 import java.sql.SQLException;
 import java.util.Map;
 
-import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import net.sf.hajdbc.SQLProxy;
+import net.sf.hajdbc.SQLObject;
 
 /**
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public class XAResourceProxy extends SQLProxy implements XAResource
+public class XAResource extends SQLObject implements javax.transaction.xa.XAResource
 {
 	/**
 	 * Constructs a new XAResourceProxy.
@@ -41,7 +40,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 	 * @param operation an operation that creates XAResources
 	 * @throws SQLException if operation execution fails
 	 */
-	public XAResourceProxy(XAConnectionProxy connection, XAConnectionOperation operation) throws SQLException
+	public XAResource(XAConnection connection, XAConnectionOperation operation) throws SQLException
 	{
 		super(connection, operation);
 	}
@@ -53,7 +52,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, XAResource resource) throws javax.transaction.xa.XAException
+			public Object execute(XADataSourceDatabase database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
 			{
 				return new Integer(resource.getTransactionTimeout());
 			}
@@ -69,7 +68,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, XAResource resource) throws javax.transaction.xa.XAException
+			public Object execute(XADataSourceDatabase database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
 			{
 				return Boolean.valueOf(resource.setTransactionTimeout(seconds));
 			}
@@ -81,15 +80,15 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 	/**
 	 * @see javax.transaction.xa.XAResource#isSameRM(javax.transaction.xa.XAResource)
 	 */
-	public boolean isSameRM(final XAResource xaResource) throws XAException
+	public boolean isSameRM(final javax.transaction.xa.XAResource xaResource) throws XAException
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, XAResource resource) throws javax.transaction.xa.XAException
+			public Object execute(XADataSourceDatabase database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
 			{
 				if (this.getClass().isInstance(xaResource))
 				{
-					XAResourceProxy proxy = (XAResourceProxy) xaResource;
+					XAResource proxy = (XAResource) xaResource;
 					
 					return Boolean.valueOf(resource.isSameRM((XAResource) proxy.getObject(database)));
 				}
@@ -108,7 +107,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, XAResource resource) throws javax.transaction.xa.XAException
+			public Object execute(XADataSourceDatabase database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
 			{
 				return resource.recover(flag);
 			}
@@ -124,7 +123,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, XAResource resource) throws javax.transaction.xa.XAException
+			public Object execute(XADataSourceDatabase database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
 			{
 				return new Integer(resource.prepare(id));
 			}
@@ -140,7 +139,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, XAResource resource) throws javax.transaction.xa.XAException
+			public Object execute(XADataSourceDatabase database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
 			{
 				resource.forget(id);
 				
@@ -158,7 +157,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, XAResource resource) throws javax.transaction.xa.XAException
+			public Object execute(XADataSourceDatabase database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
 			{
 				resource.rollback(id);
 				
@@ -176,7 +175,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, XAResource resource) throws javax.transaction.xa.XAException
+			public Object execute(XADataSourceDatabase database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
 			{
 				resource.end(id, flag);
 				
@@ -194,7 +193,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, XAResource resource) throws javax.transaction.xa.XAException
+			public Object execute(XADataSourceDatabase database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
 			{
 				resource.start(id, flag);
 				
@@ -212,7 +211,7 @@ public class XAResourceProxy extends SQLProxy implements XAResource
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, XAResource resource) throws javax.transaction.xa.XAException
+			public Object execute(XADataSourceDatabase database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
 			{
 				resource.commit(id, onePhase);
 				

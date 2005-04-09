@@ -22,8 +22,6 @@ package net.sf.hajdbc.sql.pool.xa;
 
 import java.sql.SQLException;
 
-import javax.sql.XAConnection;
-
 import net.sf.hajdbc.sql.pool.ConnectionPoolDataSource;
 
 /**
@@ -36,7 +34,7 @@ public class XADataSource extends ConnectionPoolDataSource implements javax.sql.
 	/**
 	 * @see javax.sql.XADataSource#getXAConnection()
 	 */
-	public XAConnection getXAConnection() throws SQLException
+	public javax.sql.XAConnection getXAConnection() throws SQLException
 	{
 		XADataSourceOperation operation = new XADataSourceOperation()
 		{
@@ -46,13 +44,13 @@ public class XADataSource extends ConnectionPoolDataSource implements javax.sql.
 			}
 		};
 		
-		return new XAConnectionProxy(this.connectionFactory, operation);
+		return new XAConnection(this.connectionFactory, operation);
 	}
 
 	/**
 	 * @see javax.sql.XADataSource#getXAConnection(java.lang.String, java.lang.String)
 	 */
-	public XAConnection getXAConnection(final String user, final String password) throws SQLException
+	public javax.sql.XAConnection getXAConnection(final String user, final String password) throws SQLException
 	{
 		XADataSourceOperation operation = new XADataSourceOperation()
 		{
@@ -62,7 +60,7 @@ public class XADataSource extends ConnectionPoolDataSource implements javax.sql.
 			}
 		};
 		
-		return new XAConnectionProxy(this.connectionFactory, operation);
+		return new XAConnection(this.connectionFactory, operation);
 	}
 	
 	/**

@@ -28,24 +28,22 @@ import java.net.URL;
 import java.sql.Array;
 import java.sql.Date;
 import java.sql.Ref;
-import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
-import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Map;
 
-import net.sf.hajdbc.SQLProxy;
+import net.sf.hajdbc.SQLObject;
 
 /**
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public class ResultSetProxy extends SQLProxy implements ResultSet
+public class ResultSet extends SQLObject implements java.sql.ResultSet
 {
 	protected FileSupport fileSupport = new FileSupport();
 	
@@ -55,7 +53,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	 * @param operation an operation that creates ResultSets
 	 * @throws SQLException if operation execution fails
 	 */
-	public ResultSetProxy(StatementProxy statement, StatementOperation operation) throws SQLException
+	public ResultSet(Statement statement, StatementOperation operation) throws SQLException
 	{
 		super(statement, operation);
 	}
@@ -67,7 +65,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Integer(resultSet.getConcurrency());
 			}
@@ -83,7 +81,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Integer(resultSet.getFetchDirection());
 			}
@@ -99,7 +97,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Integer(resultSet.getFetchSize());
 			}
@@ -115,7 +113,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Integer(resultSet.getRow());
 			}
@@ -131,7 +129,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Integer(resultSet.getType());
 			}
@@ -147,7 +145,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.afterLast();
 				
@@ -165,7 +163,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.beforeFirst();
 				
@@ -183,7 +181,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.cancelRowUpdates();
 				
@@ -201,7 +199,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.clearWarnings();
 				
@@ -219,7 +217,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.close();
 				
@@ -239,7 +237,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.deleteRow();
 				
@@ -257,7 +255,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.insertRow();
 				
@@ -275,7 +273,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.moveToCurrentRow();
 				
@@ -283,7 +281,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 			}
 		};
 		
-		if (this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE)
+		if (this.getType() == java.sql.ResultSet.TYPE_SCROLL_SENSITIVE)
 		{
 			this.executeWriteToDatabase(operation);
 		}
@@ -300,7 +298,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.moveToInsertRow();
 				
@@ -318,7 +316,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.refreshRow();
 				
@@ -336,7 +334,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateRow();
 				
@@ -354,13 +352,13 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Boolean(resultSet.first());
 			}
 		};
 		
-		return ((Boolean) this.firstValue((this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWriteToDatabase(operation) : this.executeWriteToDriver(operation))).booleanValue();
+		return ((Boolean) this.firstValue((this.getType() == java.sql.ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWriteToDatabase(operation) : this.executeWriteToDriver(operation))).booleanValue();
 	}
 
 	/**
@@ -370,7 +368,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Boolean(resultSet.isAfterLast());
 			}
@@ -386,7 +384,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Boolean(resultSet.isBeforeFirst());
 			}
@@ -402,13 +400,13 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Boolean(resultSet.isFirst());
 			}
 		};
 		
-		return ((Boolean) ((this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeReadFromDatabase(operation) : this.executeReadFromDriver(operation))).booleanValue();
+		return ((Boolean) ((this.getType() == java.sql.ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeReadFromDatabase(operation) : this.executeReadFromDriver(operation))).booleanValue();
 	}
 
 	/**
@@ -418,13 +416,13 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Boolean(resultSet.isLast());
 			}
 		};
 		
-		return ((Boolean) ((this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeReadFromDatabase(operation) : this.executeReadFromDriver(operation))).booleanValue();
+		return ((Boolean) ((this.getType() == java.sql.ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeReadFromDatabase(operation) : this.executeReadFromDriver(operation))).booleanValue();
 	}
 
 	/**
@@ -434,13 +432,13 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Boolean(resultSet.last());
 			}
 		};
 		
-		return ((Boolean) this.firstValue((this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWriteToDatabase(operation) : this.executeWriteToDriver(operation))).booleanValue();
+		return ((Boolean) this.firstValue((this.getType() == java.sql.ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWriteToDatabase(operation) : this.executeWriteToDriver(operation))).booleanValue();
 	}
 
 	/**
@@ -450,13 +448,13 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Boolean(resultSet.next());
 			}
 		};
 		
-		return ((Boolean) this.firstValue((this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWriteToDatabase(operation) : this.executeWriteToDriver(operation))).booleanValue();
+		return ((Boolean) this.firstValue((this.getType() == java.sql.ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWriteToDatabase(operation) : this.executeWriteToDriver(operation))).booleanValue();
 	}
 
 	/**
@@ -466,13 +464,13 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Boolean(resultSet.previous());
 			}
 		};
 		
-		return ((Boolean) this.firstValue((this.getType() == ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWriteToDatabase(operation) : this.executeWriteToDriver(operation))).booleanValue();
+		return ((Boolean) this.firstValue((this.getType() == java.sql.ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWriteToDatabase(operation) : this.executeWriteToDriver(operation))).booleanValue();
 	}
 
 	/**
@@ -482,7 +480,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Boolean(resultSet.rowDeleted());
 			}
@@ -498,7 +496,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Boolean(resultSet.rowInserted());
 			}
@@ -514,7 +512,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Boolean(resultSet.rowUpdated());
 			}
@@ -530,7 +528,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Boolean(resultSet.wasNull());
 			}
@@ -546,7 +544,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Byte(resultSet.getByte(index));
 			}
@@ -562,7 +560,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Double(resultSet.getDouble(index));
 			}
@@ -578,7 +576,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Float(resultSet.getFloat(index));
 			}
@@ -594,7 +592,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Integer(resultSet.getInt(index));
 			}
@@ -610,7 +608,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Long(resultSet.getLong(index));
 			}
@@ -626,7 +624,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Short(resultSet.getShort(index));
 			}
@@ -642,7 +640,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.setFetchDirection(direction);
 				
@@ -660,7 +658,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.setFetchSize(size);
 				
@@ -678,7 +676,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateNull(index);
 				
@@ -696,7 +694,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Boolean(resultSet.absolute(index));
 			}
@@ -712,7 +710,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Boolean(resultSet.getBoolean(index));
 			}
@@ -728,7 +726,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Boolean(resultSet.relative(index));
 			}
@@ -744,7 +742,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getBytes(index);
 			}
@@ -760,7 +758,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateByte(index, value);
 				
@@ -778,7 +776,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateDouble(index, value);
 				
@@ -796,7 +794,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateFloat(index, value);
 				
@@ -814,7 +812,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateInt(index, value);
 				
@@ -832,7 +830,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateLong(index, value);
 				
@@ -850,7 +848,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateShort(index, value);
 				
@@ -868,7 +866,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateBoolean(index, value);
 				
@@ -886,7 +884,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateBytes(index, value);
 				
@@ -904,7 +902,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getAsciiStream(index);
 			}
@@ -920,7 +918,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getBinaryStream(index);
 			}
@@ -937,7 +935,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getUnicodeStream(index);
 			}
@@ -955,9 +953,9 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 		
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
-				resultSet.updateAsciiStream(index, ResultSetProxy.this.fileSupport.getInputStream(file), length);
+				resultSet.updateAsciiStream(index, ResultSet.this.fileSupport.getInputStream(file), length);
 				
 				return null;
 			}
@@ -977,9 +975,9 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 		{
 			ResultSetOperation operation = new ResultSetOperation()
 			{
-				public Object execute(ResultSet resultSet) throws SQLException
+				public Object execute(java.sql.ResultSet resultSet) throws SQLException
 				{
-					resultSet.updateBinaryStream(index, ResultSetProxy.this.fileSupport.getInputStream(file), length);
+					resultSet.updateBinaryStream(index, ResultSet.this.fileSupport.getInputStream(file), length);
 					
 					return null;
 				}
@@ -1000,7 +998,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getCharacterStream(index);
 			}
@@ -1018,9 +1016,9 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 		
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
-				resultSet.updateCharacterStream(index, ResultSetProxy.this.fileSupport.getReader(file), length);
+				resultSet.updateCharacterStream(index, ResultSet.this.fileSupport.getReader(file), length);
 				
 				return null;
 			}
@@ -1036,7 +1034,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getObject(index);
 			}
@@ -1052,7 +1050,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateObject(index, value);
 				
@@ -1070,7 +1068,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateObject(index, value, sqlType);
 				
@@ -1088,7 +1086,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getCursorName();
 			}
@@ -1104,7 +1102,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getString(index);
 			}
@@ -1120,7 +1118,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateString(index, value);
 				
@@ -1138,7 +1136,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Byte(resultSet.getByte(name));
 			}
@@ -1154,7 +1152,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Double(resultSet.getDouble(name));
 			}
@@ -1170,7 +1168,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Float(resultSet.getFloat(name));
 			}
@@ -1186,7 +1184,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Integer(resultSet.findColumn(name));
 			}
@@ -1202,7 +1200,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Integer(resultSet.getInt(name));
 			}
@@ -1218,7 +1216,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Long(resultSet.getLong(name));
 			}
@@ -1234,7 +1232,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return new Short(resultSet.getShort(name));
 			}
@@ -1250,7 +1248,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateNull(name);
 				
@@ -1268,7 +1266,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return Boolean.valueOf(resultSet.getBoolean(name));
 			}
@@ -1284,7 +1282,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getBytes(name);
 			}
@@ -1300,7 +1298,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateByte(name, value);
 				
@@ -1318,7 +1316,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateDouble(name, value);
 				
@@ -1336,7 +1334,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateFloat(name, value);
 				
@@ -1354,7 +1352,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateInt(name, value);
 				
@@ -1372,7 +1370,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateLong(name, value);
 				
@@ -1390,7 +1388,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateShort(name, value);
 				
@@ -1408,7 +1406,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateBoolean(name, value);
 				
@@ -1426,7 +1424,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateBytes(name, value);
 				
@@ -1444,7 +1442,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getBigDecimal(index);
 			}
@@ -1461,7 +1459,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getBigDecimal(index, scale);
 			}
@@ -1477,7 +1475,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateBigDecimal(index, value);
 				
@@ -1495,7 +1493,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getURL(index);
 			}
@@ -1511,7 +1509,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getArray(index);
 			}
@@ -1527,7 +1525,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateArray(index, value);
 				
@@ -1545,7 +1543,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getBlob(index);
 			}
@@ -1561,7 +1559,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateBlob(index, value);
 				
@@ -1579,7 +1577,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getClob(index);
 			}
@@ -1595,7 +1593,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateClob(index, value);
 				
@@ -1613,7 +1611,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getDate(index);
 			}
@@ -1629,7 +1627,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateDate(index, value);
 				
@@ -1647,7 +1645,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getRef(index);
 			}
@@ -1663,7 +1661,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateRef(index, value);
 				
@@ -1681,7 +1679,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getMetaData();
 			}
@@ -1697,7 +1695,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getWarnings();
 			}
@@ -1709,7 +1707,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	/**
 	 * @see java.sql.ResultSet#getStatement()
 	 */
-	public Statement getStatement()
+	public java.sql.Statement getStatement()
 	{
 		return (Statement) this.parent;
 	}
@@ -1721,7 +1719,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getTime(index);
 			}
@@ -1737,7 +1735,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateTime(index, value);
 				
@@ -1755,7 +1753,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getTimestamp(index);
 			}
@@ -1771,7 +1769,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateTimestamp(index, value);
 				
@@ -1789,7 +1787,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getAsciiStream(name);
 			}
@@ -1805,7 +1803,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getBinaryStream(name);
 			}
@@ -1822,7 +1820,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getUnicodeStream(name);
 			}
@@ -1840,9 +1838,9 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 		
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
-				resultSet.updateAsciiStream(name, ResultSetProxy.this.fileSupport.getInputStream(file), length);
+				resultSet.updateAsciiStream(name, ResultSet.this.fileSupport.getInputStream(file), length);
 				
 				return null;
 			}
@@ -1860,9 +1858,9 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 		
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
-				resultSet.updateBinaryStream(name, ResultSetProxy.this.fileSupport.getInputStream(file), length);
+				resultSet.updateBinaryStream(name, ResultSet.this.fileSupport.getInputStream(file), length);
 				
 				return null;
 			}
@@ -1878,7 +1876,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getCharacterStream(name);
 			}
@@ -1896,9 +1894,9 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 		
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
-				resultSet.updateCharacterStream(name, ResultSetProxy.this.fileSupport.getReader(file), length);
+				resultSet.updateCharacterStream(name, ResultSet.this.fileSupport.getReader(file), length);
 				
 				return null;
 			}
@@ -1914,7 +1912,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getObject(name);
 			}
@@ -1930,7 +1928,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateObject(name, value);
 				
@@ -1948,7 +1946,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateObject(name, value, sqlType);
 				
@@ -1966,7 +1964,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getObject(index, typeMap);
 			}
@@ -1982,7 +1980,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getString(name);
 			}
@@ -1998,7 +1996,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateString(name, value);
 				
@@ -2016,7 +2014,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getBigDecimal(name);
 			}
@@ -2033,7 +2031,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getBigDecimal(name, scale);
 			}
@@ -2049,7 +2047,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateBigDecimal(name, value);
 				
@@ -2067,7 +2065,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getURL(name);
 			}
@@ -2083,7 +2081,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getArray(name);
 			}
@@ -2099,7 +2097,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateArray(name, value);
 				
@@ -2117,7 +2115,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getBlob(name);
 			}
@@ -2133,7 +2131,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateBlob(name, value);
 				
@@ -2151,7 +2149,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getClob(name);
 			}
@@ -2167,7 +2165,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateClob(name, value);
 				
@@ -2185,7 +2183,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getDate(name);
 			}
@@ -2201,7 +2199,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateDate(name, value);
 				
@@ -2219,7 +2217,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getDate(index, calendar);
 			}
@@ -2235,7 +2233,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getRef(name);
 			}
@@ -2251,7 +2249,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateRef(name, value);
 				
@@ -2269,7 +2267,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getTime(name);
 			}
@@ -2285,7 +2283,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateTime(name, value);
 				
@@ -2303,7 +2301,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getTime(index, calendar);
 			}
@@ -2319,7 +2317,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getTimestamp(name);
 			}
@@ -2335,7 +2333,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateTimestamp(name, value);
 				
@@ -2353,7 +2351,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getTimestamp(index, calendar);
 			}
@@ -2369,7 +2367,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getObject(name, typeMap);
 			}
@@ -2385,7 +2383,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getDate(name, calendar);
 			}
@@ -2401,7 +2399,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getTime(name, calendar);
 			}
@@ -2417,7 +2415,7 @@ public class ResultSetProxy extends SQLProxy implements ResultSet
 	{
 		ResultSetOperation operation = new ResultSetOperation()
 		{
-			public Object execute(ResultSet resultSet) throws SQLException
+			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getTimestamp(name, calendar);
 			}

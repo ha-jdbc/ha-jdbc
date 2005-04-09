@@ -27,14 +27,14 @@ import java.util.Map;
  * @version $Revision$
  * @since   1.0
  */
-public class ConnectionFactoryProxy extends SQLProxy
+public class ConnectionFactory extends SQLObject
 {
 	/**
 	 * Constructs a new ConnectionFactoryProxy.
 	 * @param databaseCluster a database cluster
 	 * @param connectionFactoryMap a Map<Database, Object>
 	 */
-	public ConnectionFactoryProxy(DatabaseCluster databaseCluster, Map connectionFactoryMap)
+	public ConnectionFactory(DatabaseCluster databaseCluster, Map connectionFactoryMap)
 	{
 		super(databaseCluster, connectionFactoryMap);
 	}

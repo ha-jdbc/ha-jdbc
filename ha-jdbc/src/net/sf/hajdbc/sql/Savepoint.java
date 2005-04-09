@@ -21,16 +21,15 @@
 package net.sf.hajdbc.sql;
 
 import java.sql.SQLException;
-import java.sql.Savepoint;
 
-import net.sf.hajdbc.SQLProxy;
+import net.sf.hajdbc.SQLObject;
 
 /**
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public class SavepointProxy extends SQLProxy implements Savepoint
+public class Savepoint extends SQLObject implements java.sql.Savepoint
 {
 	/**
 	 * Constructs a new SavepointProxy.
@@ -38,7 +37,7 @@ public class SavepointProxy extends SQLProxy implements Savepoint
 	 * @param operation
 	 * @throws SQLException
 	 */
-	public SavepointProxy(ConnectionProxy connection, ConnectionOperation operation) throws SQLException
+	public Savepoint(Connection connection, ConnectionOperation operation) throws SQLException
 	{
 		super(connection, operation);
 	}
@@ -50,7 +49,7 @@ public class SavepointProxy extends SQLProxy implements Savepoint
 	{
 		SavepointOperation operation = new SavepointOperation()
 		{
-			public Object execute(Savepoint savepoint) throws SQLException
+			public Object execute(java.sql.Savepoint savepoint) throws SQLException
 			{
 				return new Integer(savepoint.getSavepointId());
 			}
@@ -66,7 +65,7 @@ public class SavepointProxy extends SQLProxy implements Savepoint
 	{
 		SavepointOperation operation = new SavepointOperation()
 		{
-			public Object execute(Savepoint savepoint) throws SQLException
+			public Object execute(java.sql.Savepoint savepoint) throws SQLException
 			{
 				return savepoint.getSavepointName();
 			}

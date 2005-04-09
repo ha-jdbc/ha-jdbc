@@ -20,7 +20,6 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
@@ -28,7 +27,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.sf.hajdbc.ConnectionFactoryProxy;
+import net.sf.hajdbc.ConnectionFactory;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.Messages;
@@ -113,7 +112,7 @@ public final class Driver implements java.sql.Driver
 	/**
 	 * @see java.sql.Driver#connect(java.lang.String, java.util.Properties)
 	 */
-	public Connection connect(String url, final Properties properties) throws SQLException
+	public java.sql.Connection connect(String url, final Properties properties) throws SQLException
 	{
 		DatabaseCluster databaseCluster = this.getDatabaseCluster(url);
 		
@@ -122,7 +121,7 @@ public final class Driver implements java.sql.Driver
 			return null;
 		}
 		
-		ConnectionFactoryProxy connectionFactory = databaseCluster.getConnectionFactory();
+		ConnectionFactory connectionFactory = databaseCluster.getConnectionFactory();
 		
 		DriverOperation operation = new DriverOperation()
 		{
@@ -132,7 +131,7 @@ public final class Driver implements java.sql.Driver
 			}
 		};
 		
-		return new ConnectionProxy(connectionFactory, operation);
+		return new Connection(connectionFactory, operation);
 	}
 	
 	/**
@@ -147,7 +146,7 @@ public final class Driver implements java.sql.Driver
 			return null;
 		}
 		
-		ConnectionFactoryProxy connectionFactory = databaseCluster.getConnectionFactory();
+		ConnectionFactory connectionFactory = databaseCluster.getConnectionFactory();
 		
 		DriverOperation operation = new DriverOperation()
 		{

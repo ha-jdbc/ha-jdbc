@@ -21,7 +21,6 @@
 package net.sf.hajdbc.sql;
 
 import java.io.PrintWriter;
-import java.sql.Connection;
 import java.sql.SQLException;
 
 
@@ -102,7 +101,7 @@ public class DataSource extends AbstractDataSource implements javax.sql.DataSour
 	/**
 	 * @see javax.sql.DataSource#getConnection()
 	 */
-	public Connection getConnection() throws SQLException
+	public java.sql.Connection getConnection() throws SQLException
 	{
 		DataSourceOperation operation = new DataSourceOperation()
 		{
@@ -112,13 +111,13 @@ public class DataSource extends AbstractDataSource implements javax.sql.DataSour
 			}
 		};
 		
-		return new ConnectionProxy(this.connectionFactory, operation);
+		return new Connection(this.connectionFactory, operation);
 	}
 
 	/**
 	 * @see javax.sql.DataSource#getConnection(java.lang.String, java.lang.String)
 	 */
-	public Connection getConnection(final String user, final String password) throws SQLException
+	public java.sql.Connection getConnection(final String user, final String password) throws SQLException
 	{
 		DataSourceOperation operation = new DataSourceOperation()
 		{
@@ -128,7 +127,7 @@ public class DataSource extends AbstractDataSource implements javax.sql.DataSour
 			}
 		};
 		
-		return new ConnectionProxy(this.connectionFactory, operation);
+		return new Connection(this.connectionFactory, operation);
 	}
 
 	/**

@@ -33,17 +33,17 @@ import org.apache.commons.logging.LogFactory;
  * @version $Revision$
  * @since   1.0
  */
-public abstract class SQLProxy
+public abstract class SQLObject
 {
-	private static Log log = LogFactory.getLog(SQLProxy.class);
+	private static Log log = LogFactory.getLog(SQLObject.class);
 	
-	protected SQLProxy parent;
+	protected SQLObject parent;
 	private DatabaseCluster databaseCluster;
 	private Operation parentOperation;
 	private Map objectMap;
 	private List operationList = new LinkedList();
 	
-	protected SQLProxy(SQLProxy parent, Operation operation) throws java.sql.SQLException
+	protected SQLObject(SQLObject parent, Operation operation) throws java.sql.SQLException
 	{
 		this(parent.getDatabaseCluster(), parent.executeWriteToDatabase(operation));
 		
@@ -51,7 +51,7 @@ public abstract class SQLProxy
 		this.parentOperation = operation;
 	}
 	
-	protected SQLProxy(DatabaseCluster databaseCluster, Map objectMap)
+	protected SQLObject(DatabaseCluster databaseCluster, Map objectMap)
 	{
 		this.databaseCluster = databaseCluster;
 		this.objectMap = objectMap;

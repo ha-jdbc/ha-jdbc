@@ -285,9 +285,9 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	 * Returns a connection factory proxy for this obtaining connections to databases in this cluster.
 	 * @return a connection factory proxy
 	 */
-	public ConnectionFactoryProxy getConnectionFactory()
+	public ConnectionFactory getConnectionFactory()
 	{
-		return new ConnectionFactoryProxy(this, this.getConnectionFactoryMap());
+		return new ConnectionFactory(this, this.getConnectionFactoryMap());
 	}
 	
 	protected abstract Map getConnectionFactoryMap();
@@ -331,7 +331,7 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	 * @return the operation execution result
 	 * @throws java.sql.SQLException if operation execution fails
 	 */
-	public Object executeReadFromDatabase(SQLProxy proxy, Operation operation) throws java.sql.SQLException
+	public Object executeReadFromDatabase(SQLObject proxy, Operation operation) throws java.sql.SQLException
 	{
 		while (true)
 		{
@@ -357,7 +357,7 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	 * @return the operation execution result
 	 * @throws java.sql.SQLException if operation execution fails
 	 */
-	public final Object executeReadFromDriver(SQLProxy proxy, Operation operation) throws java.sql.SQLException
+	public final Object executeReadFromDriver(SQLObject proxy, Operation operation) throws java.sql.SQLException
 	{
 		Database database = this.firstDatabase();
 		Object object = proxy.getObject(database);
@@ -373,7 +373,7 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	 * @return a Map<Database, Object> of operation execution results from each database
 	 * @throws java.sql.SQLException if operation execution fails
 	 */
-	public final Map executeWriteToDatabase(SQLProxy proxy, Operation operation) throws java.sql.SQLException
+	public final Map executeWriteToDatabase(SQLObject proxy, Operation operation) throws java.sql.SQLException
 	{
 		Database[] databases = this.getDatabases();
 		Thread[] threads = new Thread[databases.length];
@@ -448,7 +448,7 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 	 * @return a Map<Database, Object> of operation execution results from each database
 	 * @throws java.sql.SQLException if operation execution fails
 	 */
-	public final Map executeWriteToDriver(SQLProxy proxy, Operation operation) throws java.sql.SQLException
+	public final Map executeWriteToDriver(SQLObject proxy, Operation operation) throws java.sql.SQLException
 	{
 		Database[] databases = this.getBalancer().toArray();
 		
