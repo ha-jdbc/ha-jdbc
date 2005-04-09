@@ -201,7 +201,7 @@ public class ConnectionProxy extends SQLProxy implements java.sql.Connection
 			}
 		};
 		
-		return ((Boolean) this.executeReadFromDatabase(operation)).booleanValue();
+		return ((Boolean) this.executeReadFromDriver(operation)).booleanValue();
 	}
 
 	/**
