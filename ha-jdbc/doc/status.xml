@@ -14,6 +14,12 @@
 			<action type="add" dev="PF">
 				Cluster state is now persisted locally so that it can be restored between application restarts.
 			</action>
+			<action type="update" dev="PF">
+				Connection.isReadOnly() was changed from a database-deep read to a driver-deep read.
+			</action>
+			<action type="update" dev="PF">
+				Refactored java.sql.* proxy classes.
+			</action>
 			<action type="fix" dev="PF">
 				Minor fixes to zero weight handling in random and load balancers.
 			</action>
