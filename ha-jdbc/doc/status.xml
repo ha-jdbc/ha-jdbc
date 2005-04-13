@@ -26,6 +26,9 @@
 			<action type="fix" dev="PF">
 				Corrected German translation of error messages (thanks to Oezcan Acar).
 			</action>
+            <action type="update" dev="PF">
+                Updated JiBX to version 1.0-rc-0
+            </action>
 			<action type="add" dev="PF">
 				Added TestNG unit tests for each balancer implementation.
 			</action>
