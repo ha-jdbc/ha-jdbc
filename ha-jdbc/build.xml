@@ -83,7 +83,7 @@
 		<tar tarfile="${dist.bin.file}" compression="gzip">
 			<tarfileset dir="${basedir}" includes="${dist.version.name}.jar"></tarfileset>
 			<tarfileset dir="${basedir}" includes="*.txt"></tarfileset>
-			<tarfileset dir="${basedir}" includes="lib/**" excludes="lib/compile/**"></tarfileset>
+			<tarfileset dir="${basedir}" includes="lib/*.jar"></tarfileset>
 			<tarfileset dir="${basedir}" includes="doc/build/site/**"></tarfileset>
 		</tar>
 	</target>
@@ -93,6 +93,7 @@
 			<tarfileset dir="${basedir}" includes="*.txt"></tarfileset>
 			<tarfileset dir="${basedir}" includes="build.*"></tarfileset>
 			<tarfileset dir="${basedir}" includes="src/**"></tarfileset>
+			<tarfileset dir="${basedir}" includes="test/**"></tarfileset>
 			<tarfileset dir="${basedir}" includes="lib/**"></tarfileset>
 			<tarfileset dir="${basedir}" includes="conf/**"></tarfileset>
 			<tarfileset dir="${basedir}" includes="doc/**" excludes="doc/build/**"></tarfileset>
