@@ -11,11 +11,14 @@
 			src/documentation/resources/images/<foo>.jpg images, these will
 			automatically be used for entries of type <foo>. -->
 		<release version="1.0-rc-1" date="...">
+			<action type="update" dev="PF">
+				executeWriteToDatabase() will now throw SQLException for Statements and ResultSets if some valid databases fail while others succeed and auto-commit is off, giving the client the opportunity to rollback the current transaction.
+			</action>
 			<action type="add" dev="PF">
 				Cluster state is now persisted locally so that it can be restored between application restarts.
 			</action>
 			<action type="update" dev="PF">
-				Connection.isReadOnly() was changed from a database-deep read to a driver-deep read.
+				Connection.isReadOnly() was changed from executeReadFromDatabase() to executeReadFromDriver().
 			</action>
 			<action type="update" dev="PF">
 				Refactored java.sql.* proxy classes.
