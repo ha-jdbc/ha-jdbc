@@ -21,6 +21,7 @@
 
 	<path id="classpath">
 		<dirset dir="${build.dir}"></dirset>
+		<dirset dir="${test.dir}"></dirset>
 		<fileset dir="${lib.dir}" includes="*.jar"></fileset>
 		<fileset dir="${lib.compile.dir}" includes="*.jar"></fileset>
 		<fileset dir="${lib.test.dir}" includes="*.jar"></fileset>
@@ -79,7 +80,7 @@
 		</jar>
     </target>
 
-	<target name="dist" depends="jar, site">
+	<target name="dist" depends="clean, jar, site">
 		<tar tarfile="${dist.bin.file}" compression="gzip">
 			<tarfileset dir="${basedir}" includes="${dist.version.name}.jar"></tarfileset>
 			<tarfileset dir="${basedir}" includes="*.txt"></tarfileset>
@@ -119,7 +120,7 @@
 	
 	<target name="run-tests" depends="compile-tests">
 		<testng sourcedir="${test.dir}" classpathref="classpath" fork="yes">
-			<fileset dir="${test.dir}" includes="*.xml"></fileset>
+			<fileset dir="${test.dir}" includes="testng.xml"></fileset>
 			<jvmarg value="-ea"/>
 		</testng>
 	</target>
