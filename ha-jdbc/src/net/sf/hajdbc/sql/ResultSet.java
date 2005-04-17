@@ -2423,4 +2423,9 @@ public class ResultSet extends SQLObject implements java.sql.ResultSet
 		
 		return (Timestamp) this.executeReadFromDriver(operation);
 	}
+
+	public void handleExceptions(Map exceptionMap) throws SQLException
+	{
+		this.parent.handleExceptions(exceptionMap);
+	}
 }

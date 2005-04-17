@@ -424,16 +424,7 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 		// If any databases failed, while others succeeded, deactivate them
 		if (!exceptionMap.isEmpty())
 		{
-			Iterator exceptionMapEntries = exceptionMap.entrySet().iterator();
-			
-			while (exceptionMapEntries.hasNext())
-			{
-				Map.Entry exceptionMapEntry = (Map.Entry) exceptionMapEntries.next();
-				Database database = (Database) exceptionMapEntry.getKey();
-				Throwable exception = (Throwable) exceptionMapEntry.getValue();
-				
-				this.deactivate(database, exception);
-			}
+			proxy.handleExceptions(exceptionMap);
 		}
 		
 		// Return results from successful operations
@@ -522,11 +513,6 @@ public abstract class DatabaseCluster implements DatabaseClusterMBean
 			throw new SQLException(cause);
 		}
 		
-		this.deactivate(database, cause);
-	}
-	
-	private void deactivate(Database database, Throwable cause)
-	{
 		if (this.deactivate(database))
 		{
 			log.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, new Object[] { database, this }), cause);

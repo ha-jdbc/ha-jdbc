@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc;
 
+import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -173,5 +174,22 @@ public abstract class SQLObject
 	public DatabaseCluster getDatabaseCluster()
 	{
 		return this.databaseCluster;
+	}
+	
+	public void handleExceptions(Map exceptionMap) throws SQLException
+	{
+		Iterator exceptionMapEntries = exceptionMap.entrySet().iterator();
+		
+		while (exceptionMapEntries.hasNext())
+		{
+			Map.Entry exceptionMapEntry = (Map.Entry) exceptionMapEntries.next();
+			Database database = (Database) exceptionMapEntry.getKey();
+			Throwable exception = (Throwable) exceptionMapEntry.getValue();
+			
+			if (this.databaseCluster.deactivate(database))
+			{
+				log.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, new Object[] { database, this }), exception);
+			}
+		}
 	}
 }

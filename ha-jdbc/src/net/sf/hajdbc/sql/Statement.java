@@ -22,7 +22,10 @@ package net.sf.hajdbc.sql;
 
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.util.Iterator;
+import java.util.Map;
 
+import net.sf.hajdbc.Database;
 import net.sf.hajdbc.SQLObject;
 
 /**
@@ -653,5 +656,59 @@ public class Statement extends SQLObject implements java.sql.Statement
 		};
 
 		return (this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) ? (java.sql.ResultSet) this.executeReadFromDatabase(operation) : new ResultSet(this, operation);
+	}
+
+	public void handleExceptions(Map exceptionMap) throws SQLException
+	{
+		if (this.getAutoCommit())
+		{
+			super.handleExceptions(exceptionMap);
+		}
+		else
+		{
+			// If auto-commit is off, give client the opportunity to rollback the transaction
+			Iterator exceptionMapEntries = exceptionMap.entrySet().iterator();
+			SQLException exception = null;
+			
+			while (exceptionMapEntries.hasNext())
+			{
+				Map.Entry exceptionMapEntry = (Map.Entry) exceptionMapEntries.next();
+				Database database = (Database) exceptionMapEntry.getKey();
+				Throwable cause = (Throwable) exceptionMapEntry.getValue();
+				
+				try
+				{
+					this.getDatabaseCluster().handleFailure(database, cause);
+				}
+				catch (SQLException e)
+				{
+					if (exception == null)
+					{
+						exception = e;
+					}
+					else
+					{
+						exception.setNextException(e);
+					}
+				}
+			}
+			
+			if (exception != null)
+			{
+				throw exception;
+			}
+		}
+	}
+	
+	private boolean getAutoCommit()
+	{
+		try
+		{
+			return this.getConnection().getAutoCommit();
+		}
+		catch (SQLException e)
+		{
+			return true;
+		}
 	}
 }
