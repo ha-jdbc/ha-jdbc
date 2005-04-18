@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://beust.com/testng/testng-1.0.dtd">
 <suite name="HA-JDBC">
-	<test name="Balancer">
+	<test name="balancer">
 		<classes>
 			<class name="net.sf.hajdbc.balancer.TestSimpleBalancer"/>
 			<class name="net.sf.hajdbc.balancer.TestRandomBalancer"/>
@@ -9,4 +9,15 @@
 			<class name="net.sf.hajdbc.balancer.TestLoadBalancer"/>
 		</classes>
 	</test>
+	<test name="sql">
+		<classes>
+			<class name="net.sf.hajdbc.sql.TestDriver"/>
+			<class name="net.sf.hajdbc.sql.TestConnection"/>
+		</classes>
+	</test>
+	<!--test name="cluster">
+		<classes>
+			<class name="net.sf.hajdbc.TestDatabaseClusterMBean"/>
+		</classes>
+	</test-->
 </suite>
