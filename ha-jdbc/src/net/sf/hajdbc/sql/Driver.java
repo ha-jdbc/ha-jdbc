@@ -36,17 +36,17 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * @author Paul Ferraro
+ * @author  Paul Ferraro
  * @version $Revision$
  */
 public final class Driver implements java.sql.Driver
 {
-	private static final Pattern URL_PATTERN = Pattern.compile("^jdbc:ha-jdbc:(.*)$");
-	
+	private static final boolean JDBC_COMPLIANT = true;
 	private static final int MAJOR_VERSION = 1;
 	private static final int MINOR_VERSION = 0;
-	private static final boolean JDBC_COMPLIANT = true;
-
+	
+	private static final Pattern URL_PATTERN = Pattern.compile("^jdbc:ha-jdbc:(.*)$");
+	
 	private static Log log = LogFactory.getLog(Driver.class);
 	
 	static
@@ -61,44 +61,6 @@ public final class Driver implements java.sql.Driver
 		{
 			log.fatal(Messages.getMessage(Messages.DRIVER_REGISTER_FAILED, driver.getClass().getName()), e);
 		}
-	}
-	
-	/**
-	 * @see java.sql.Driver#getMajorVersion()
-	 */
-	public int getMajorVersion()
-	{
-		return MAJOR_VERSION;
-	}
-	
-	/**
-	 * @see java.sql.Driver#getMinorVersion()
-	 */
-	public int getMinorVersion()
-	{
-		return MINOR_VERSION;
-	}
-	
-	/**
-	 * @see java.sql.Driver#jdbcCompliant()
-	 */
-	public boolean jdbcCompliant()
-	{
-		return JDBC_COMPLIANT;
-	}
-	
-	private DatabaseCluster getDatabaseCluster(String url) throws SQLException
-	{
-		Matcher matcher = URL_PATTERN.matcher(url);
-		
-		if (!matcher.matches())
-		{
-			return null;
-		}
-		
-		String name = matcher.group(1);
-		
-		return DatabaseClusterFactory.getInstance().getDatabaseCluster(name);
 	}
 	
 	/**
@@ -135,6 +97,22 @@ public final class Driver implements java.sql.Driver
 	}
 	
 	/**
+	 * @see java.sql.Driver#getMajorVersion()
+	 */
+	public int getMajorVersion()
+	{
+		return MAJOR_VERSION;
+	}
+	
+	/**
+	 * @see java.sql.Driver#getMinorVersion()
+	 */
+	public int getMinorVersion()
+	{
+		return MINOR_VERSION;
+	}
+	
+	/**
 	 * @see java.sql.Driver#getPropertyInfo(java.lang.String, java.util.Properties)
 	 */
 	public DriverPropertyInfo[] getPropertyInfo(String url, final Properties properties) throws SQLException
@@ -157,5 +135,27 @@ public final class Driver implements java.sql.Driver
 		};
 		
 		return (DriverPropertyInfo[]) connectionFactory.executeReadFromDriver(operation);
+	}
+	
+	/**
+	 * @see java.sql.Driver#jdbcCompliant()
+	 */
+	public boolean jdbcCompliant()
+	{
+		return JDBC_COMPLIANT;
+	}
+	
+	private DatabaseCluster getDatabaseCluster(String url) throws SQLException
+	{
+		Matcher matcher = URL_PATTERN.matcher(url);
+		
+		if (!matcher.matches())
+		{
+			return null;
+		}
+		
+		String name = matcher.group(1);
+		
+		return DatabaseClusterFactory.getInstance().getDatabaseCluster(name);
 	}
 }

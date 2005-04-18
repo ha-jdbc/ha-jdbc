@@ -45,149 +45,80 @@ public class Statement extends SQLObject implements java.sql.Statement
 	{
 		super(connection, operation);
 	}
+
+	/**
+	 * @see net.sf.hajdbc.SQLObject#handleExceptions(java.util.Map)
+	 */
+	public void handleExceptions(Map exceptionMap) throws SQLException
+	{
+		if (this.getAutoCommit())
+		{
+			super.handleExceptions(exceptionMap);
+		}
+		else
+		{
+			// If auto-commit is off, give client the opportunity to rollback the transaction
+			Iterator exceptionMapEntries = exceptionMap.entrySet().iterator();
+			SQLException exception = null;
+			
+			while (exceptionMapEntries.hasNext())
+			{
+				Map.Entry exceptionMapEntry = (Map.Entry) exceptionMapEntries.next();
+				Database database = (Database) exceptionMapEntry.getKey();
+				Throwable cause = (Throwable) exceptionMapEntry.getValue();
+				
+				try
+				{
+					this.getDatabaseCluster().handleFailure(database, cause);
+				}
+				catch (SQLException e)
+				{
+					if (exception == null)
+					{
+						exception = e;
+					}
+					else
+					{
+						exception.setNextException(e);
+					}
+				}
+			}
+			
+			if (exception != null)
+			{
+				throw exception;
+			}
+		}
+	}
+
+	private boolean getAutoCommit()
+	{
+		try
+		{
+			return this.getConnection().getAutoCommit();
+		}
+		catch (SQLException e)
+		{
+			return true;
+		}
+	}
 	
 	/**
-	 * @see java.sql.Statement#getFetchDirection()
+	 * @see java.sql.Statement#addBatch(java.lang.String)
 	 */
-	public int getFetchDirection() throws SQLException
+	public void addBatch(final String sql) throws SQLException
 	{
 		StatementOperation operation = new StatementOperation()
 		{
 			public Object execute(java.sql.Statement statement) throws SQLException
 			{
-				return new Integer(statement.getFetchDirection());
+				statement.addBatch(sql);
+				
+				return null;
 			}
 		};
 		
-		return ((Integer) this.executeReadFromDriver(operation)).intValue();
-	}
-
-	/**
-	 * @see java.sql.Statement#getFetchSize()
-	 */
-	public int getFetchSize() throws SQLException
-	{
-		StatementOperation operation = new StatementOperation()
-		{
-			public Object execute(java.sql.Statement statement) throws SQLException
-			{
-				return new Integer(statement.getFetchSize());
-			}
-		};
-		
-		return ((Integer) this.executeReadFromDriver(operation)).intValue();
-	}
-
-	/**
-	 * @see java.sql.Statement#getMaxFieldSize()
-	 */
-	public int getMaxFieldSize() throws SQLException
-	{
-		StatementOperation operation = new StatementOperation()
-		{
-			public Object execute(java.sql.Statement statement) throws SQLException
-			{
-				return new Integer(statement.getMaxFieldSize());
-			}
-		};
-		
-		return ((Integer) this.executeReadFromDriver(operation)).intValue();
-	}
-
-	/**
-	 * @see java.sql.Statement#getMaxRows()
-	 */
-	public int getMaxRows() throws SQLException
-	{
-		StatementOperation operation = new StatementOperation()
-		{
-			public Object execute(java.sql.Statement statement) throws SQLException
-			{
-				return new Integer(statement.getMaxRows());
-			}
-		};
-		
-		return ((Integer) this.executeReadFromDriver(operation)).intValue();
-	}
-
-	/**
-	 * @see java.sql.Statement#getQueryTimeout()
-	 */
-	public int getQueryTimeout() throws SQLException
-	{
-		StatementOperation operation = new StatementOperation()
-		{
-			public Object execute(java.sql.Statement statement) throws SQLException
-			{
-				return new Integer(statement.getQueryTimeout());
-			}
-		};
-		
-		return ((Integer) this.executeReadFromDriver(operation)).intValue();
-	}
-
-	/**
-	 * @see java.sql.Statement#getResultSetConcurrency()
-	 */
-	public int getResultSetConcurrency() throws SQLException
-	{
-		StatementOperation operation = new StatementOperation()
-		{
-			public Object execute(java.sql.Statement statement) throws SQLException
-			{
-				return new Integer(statement.getResultSetConcurrency());
-			}
-		};
-		
-		return ((Integer) this.executeReadFromDriver(operation)).intValue();
-	}
-
-	/**
-	 * @see java.sql.Statement#getResultSetHoldability()
-	 */
-	public int getResultSetHoldability() throws SQLException
-	{
-		StatementOperation operation = new StatementOperation()
-		{
-			public Object execute(java.sql.Statement statement) throws SQLException
-			{
-				return new Integer(statement.getResultSetHoldability());
-			}
-		};
-		
-		return ((Integer) this.executeReadFromDriver(operation)).intValue();
-	}
-
-	/**
-	 * @see java.sql.Statement#getResultSetType()
-	 */
-	public int getResultSetType() throws SQLException
-	{
-		StatementOperation operation = new StatementOperation()
-		{
-			public Object execute(java.sql.Statement statement) throws SQLException
-			{
-				return new Integer(statement.getResultSetType());
-			}
-		};
-		
-		return ((Integer) this.executeReadFromDriver(operation)).intValue();
-	}
-
-	/**
-	 * @see java.sql.Statement#getUpdateCount()
-	 */
-	public int getUpdateCount() throws SQLException
-	{
-		StatementOperation operation = new StatementOperation()
-		{
-			public Object execute(java.sql.Statement statement) throws SQLException
-			{
-				return new Integer(statement.getUpdateCount());
-			}
-		};
-		
-		return ((Integer) this.executeReadFromDriver(operation)).intValue();
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -263,19 +194,67 @@ public class Statement extends SQLObject implements java.sql.Statement
 	}
 
 	/**
-	 * @see java.sql.Statement#getMoreResults()
+	 * @see java.sql.Statement#execute(java.lang.String)
 	 */
-	public boolean getMoreResults() throws SQLException
+	public boolean execute(final String sql) throws SQLException
 	{
 		StatementOperation operation = new StatementOperation()
 		{
 			public Object execute(java.sql.Statement statement) throws SQLException
 			{
-				return new Boolean(statement.getMoreResults());
+				return new Boolean(statement.execute(sql));
 			}
 		};
 		
-		return ((Boolean) this.firstValue(this.executeWriteToDriver(operation))).booleanValue();
+		return ((Boolean) this.firstValue(this.executeWriteToDatabase(operation))).booleanValue();
+	}
+
+	/**
+	 * @see java.sql.Statement#execute(java.lang.String, int)
+	 */
+	public boolean execute(final String sql, final int autoGeneratedKeys) throws SQLException
+	{
+		StatementOperation operation = new StatementOperation()
+		{
+			public Object execute(java.sql.Statement statement) throws SQLException
+			{
+				return new Boolean(statement.execute(sql, autoGeneratedKeys));
+			}
+		};
+		
+		return ((Boolean) this.firstValue(this.executeWriteToDatabase(operation))).booleanValue();
+	}
+
+	/**
+	 * @see java.sql.Statement#execute(java.lang.String, int[])
+	 */
+	public boolean execute(final String sql, final int[] columnIndexes) throws SQLException
+	{
+		StatementOperation operation = new StatementOperation()
+		{
+			public Object execute(java.sql.Statement statement) throws SQLException
+			{
+				return new Boolean(statement.execute(sql, columnIndexes));
+			}
+		};
+		
+		return ((Boolean) this.firstValue(this.executeWriteToDatabase(operation))).booleanValue();
+	}
+
+	/**
+	 * @see java.sql.Statement#execute(java.lang.String, java.lang.String[])
+	 */
+	public boolean execute(final String sql, final String[] columnNames) throws SQLException
+	{
+		StatementOperation operation = new StatementOperation()
+		{
+			public Object execute(java.sql.Statement statement) throws SQLException
+			{
+				return new Boolean(statement.execute(sql, columnNames));
+			}
+		};
+		
+		return ((Boolean) this.firstValue(this.executeWriteToDatabase(operation))).booleanValue();
 	}
 
 	/**
@@ -292,6 +271,356 @@ public class Statement extends SQLObject implements java.sql.Statement
 		};
 		
 		return (int[]) this.firstValue(this.executeWriteToDatabase(operation));
+	}
+
+	/**
+	 * @see java.sql.Statement#executeQuery(java.lang.String)
+	 */
+	public java.sql.ResultSet executeQuery(final String sql) throws SQLException
+	{
+		StatementOperation operation = new StatementOperation()
+		{
+			public Object execute(java.sql.Statement statement) throws SQLException
+			{
+				return statement.executeQuery(sql);
+			}
+		};
+
+		return (this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) ? (java.sql.ResultSet) this.executeReadFromDatabase(operation) : new ResultSet(this, operation);
+	}
+
+	/**
+	 * @see java.sql.Statement#executeUpdate(java.lang.String)
+	 */
+	public int executeUpdate(final String sql) throws SQLException
+	{
+		StatementOperation operation = new StatementOperation()
+		{
+			public Object execute(java.sql.Statement statement) throws SQLException
+			{
+				return new Integer(statement.executeUpdate(sql));
+			}
+		};
+		
+		return ((Integer) this.firstValue(this.executeWriteToDatabase(operation))).intValue();
+	}
+
+	/**
+	 * @see java.sql.Statement#executeUpdate(java.lang.String, int)
+	 */
+	public int executeUpdate(final String sql, final int autoGeneratedKeys) throws SQLException
+	{
+		StatementOperation operation = new StatementOperation()
+		{
+			public Object execute(java.sql.Statement statement) throws SQLException
+			{
+				return new Integer(statement.executeUpdate(sql, autoGeneratedKeys));
+			}
+		};
+		
+		return ((Integer) this.firstValue(this.executeWriteToDatabase(operation))).intValue();
+	}
+
+	/**
+	 * @see java.sql.Statement#executeUpdate(java.lang.String, int[])
+	 */
+	public int executeUpdate(final String sql, final int[] columnIndexes) throws SQLException
+	{
+		StatementOperation operation = new StatementOperation()
+		{
+			public Object execute(java.sql.Statement statement) throws SQLException
+			{
+				return new Integer(statement.executeUpdate(sql, columnIndexes));
+			}
+		};
+		
+		return ((Integer) this.firstValue(this.executeWriteToDatabase(operation))).intValue();
+	}
+
+	/**
+	 * @see java.sql.Statement#executeUpdate(java.lang.String, java.lang.String[])
+	 */
+	public int executeUpdate(final String sql, final String[] columnNames) throws SQLException
+	{
+		StatementOperation operation = new StatementOperation()
+		{
+			public Object execute(java.sql.Statement statement) throws SQLException
+			{
+				return new Integer(statement.executeUpdate(sql, columnNames));
+			}
+		};
+		
+		return ((Integer) this.firstValue(this.executeWriteToDatabase(operation))).intValue();
+	}
+
+	/**
+	 * @see java.sql.Statement#getConnection()
+	 */
+	public java.sql.Connection getConnection()
+	{
+		return (Connection) this.parent;
+	}
+
+	/**
+	 * @see java.sql.Statement#getFetchDirection()
+	 */
+	public int getFetchDirection() throws SQLException
+	{
+		StatementOperation operation = new StatementOperation()
+		{
+			public Object execute(java.sql.Statement statement) throws SQLException
+			{
+				return new Integer(statement.getFetchDirection());
+			}
+		};
+		
+		return ((Integer) this.executeReadFromDriver(operation)).intValue();
+	}
+
+	/**
+	 * @see java.sql.Statement#getFetchSize()
+	 */
+	public int getFetchSize() throws SQLException
+	{
+		StatementOperation operation = new StatementOperation()
+		{
+			public Object execute(java.sql.Statement statement) throws SQLException
+			{
+				return new Integer(statement.getFetchSize());
+			}
+		};
+		
+		return ((Integer) this.executeReadFromDriver(operation)).intValue();
+	}
+
+	/**
+	 * @see java.sql.Statement#getGeneratedKeys()
+	 */
+	public java.sql.ResultSet getGeneratedKeys() throws SQLException
+	{
+		StatementOperation operation = new StatementOperation()
+		{
+			public Object execute(java.sql.Statement statement) throws SQLException
+			{
+				return statement.getGeneratedKeys();
+			}
+		};
+
+		return (java.sql.ResultSet) this.executeReadFromDriver(operation);
+	}
+
+	/**
+	 * @see java.sql.Statement#getMaxFieldSize()
+	 */
+	public int getMaxFieldSize() throws SQLException
+	{
+		StatementOperation operation = new StatementOperation()
+		{
+			public Object execute(java.sql.Statement statement) throws SQLException
+			{
+				return new Integer(statement.getMaxFieldSize());
+			}
+		};
+		
+		return ((Integer) this.executeReadFromDriver(operation)).intValue();
+	}
+
+	/**
+	 * @see java.sql.Statement#getMaxRows()
+	 */
+	public int getMaxRows() throws SQLException
+	{
+		StatementOperation operation = new StatementOperation()
+		{
+			public Object execute(java.sql.Statement statement) throws SQLException
+			{
+				return new Integer(statement.getMaxRows());
+			}
+		};
+		
+		return ((Integer) this.executeReadFromDriver(operation)).intValue();
+	}
+
+	/**
+	 * @see java.sql.Statement#getMoreResults()
+	 */
+	public boolean getMoreResults() throws SQLException
+	{
+		StatementOperation operation = new StatementOperation()
+		{
+			public Object execute(java.sql.Statement statement) throws SQLException
+			{
+				return new Boolean(statement.getMoreResults());
+			}
+		};
+		
+		return ((Boolean) this.firstValue(this.executeWriteToDriver(operation))).booleanValue();
+	}
+
+	/**
+	 * @see java.sql.Statement#getMoreResults(int)
+	 */
+	public boolean getMoreResults(final int current) throws SQLException
+	{
+		StatementOperation operation = new StatementOperation()
+		{
+			public Object execute(java.sql.Statement statement) throws SQLException
+			{
+				return new Boolean(statement.getMoreResults(current));
+			}
+		};
+		
+		return ((Boolean) this.firstValue(this.executeWriteToDriver(operation))).booleanValue();
+	}
+
+	/**
+	 * @see java.sql.Statement#getQueryTimeout()
+	 */
+	public int getQueryTimeout() throws SQLException
+	{
+		StatementOperation operation = new StatementOperation()
+		{
+			public Object execute(java.sql.Statement statement) throws SQLException
+			{
+				return new Integer(statement.getQueryTimeout());
+			}
+		};
+		
+		return ((Integer) this.executeReadFromDriver(operation)).intValue();
+	}
+
+	/**
+	 * @see java.sql.Statement#getResultSet()
+	 */
+	public java.sql.ResultSet getResultSet() throws SQLException
+	{
+		StatementOperation operation = new StatementOperation()
+		{
+			public Object execute(java.sql.Statement statement) throws SQLException
+			{
+				return statement.getResultSet();
+			}
+		};
+
+		return (this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) ? (java.sql.ResultSet) this.executeReadFromDriver(operation) : new ResultSet(this, operation);
+	}
+
+	/**
+	 * @see java.sql.Statement#getResultSetConcurrency()
+	 */
+	public int getResultSetConcurrency() throws SQLException
+	{
+		StatementOperation operation = new StatementOperation()
+		{
+			public Object execute(java.sql.Statement statement) throws SQLException
+			{
+				return new Integer(statement.getResultSetConcurrency());
+			}
+		};
+		
+		return ((Integer) this.executeReadFromDriver(operation)).intValue();
+	}
+
+	/**
+	 * @see java.sql.Statement#getResultSetHoldability()
+	 */
+	public int getResultSetHoldability() throws SQLException
+	{
+		StatementOperation operation = new StatementOperation()
+		{
+			public Object execute(java.sql.Statement statement) throws SQLException
+			{
+				return new Integer(statement.getResultSetHoldability());
+			}
+		};
+		
+		return ((Integer) this.executeReadFromDriver(operation)).intValue();
+	}
+
+	/**
+	 * @see java.sql.Statement#getResultSetType()
+	 */
+	public int getResultSetType() throws SQLException
+	{
+		StatementOperation operation = new StatementOperation()
+		{
+			public Object execute(java.sql.Statement statement) throws SQLException
+			{
+				return new Integer(statement.getResultSetType());
+			}
+		};
+		
+		return ((Integer) this.executeReadFromDriver(operation)).intValue();
+	}
+
+	/**
+	 * @see java.sql.Statement#getUpdateCount()
+	 */
+	public int getUpdateCount() throws SQLException
+	{
+		StatementOperation operation = new StatementOperation()
+		{
+			public Object execute(java.sql.Statement statement) throws SQLException
+			{
+				return new Integer(statement.getUpdateCount());
+			}
+		};
+		
+		return ((Integer) this.executeReadFromDriver(operation)).intValue();
+	}
+
+	/**
+	 * @see java.sql.Statement#getWarnings()
+	 */
+	public SQLWarning getWarnings() throws SQLException
+	{
+		StatementOperation operation = new StatementOperation()
+		{
+			public Object execute(java.sql.Statement statement) throws SQLException
+			{
+				return statement.getWarnings();
+			}
+		};
+
+		return (SQLWarning) this.executeReadFromDriver(operation);
+	}
+
+	/**
+	 * @see java.sql.Statement#setCursorName(java.lang.String)
+	 */
+	public void setCursorName(final String name) throws SQLException
+	{
+		StatementOperation operation = new StatementOperation()
+		{
+			public Object execute(java.sql.Statement statement) throws SQLException
+			{
+				statement.setCursorName(name);
+				
+				return null;
+			}
+		};
+		
+		this.executeWriteToDatabase(operation);
+		
+		this.record(operation);
+	}
+
+	/**
+	 * @see java.sql.Statement#setEscapeProcessing(boolean)
+	 */
+	public void setEscapeProcessing(final boolean enable) throws SQLException
+	{
+		StatementOperation operation = new StatementOperation()
+		{
+			public Object execute(java.sql.Statement statement) throws SQLException
+			{
+				statement.setEscapeProcessing(enable);
+				
+				return null;
+			}
+		};
+		
+		this.executeWriteToDriver(operation);
 	}
 
 	/**
@@ -367,7 +696,7 @@ public class Statement extends SQLObject implements java.sql.Statement
 		
 		this.record(operation);
 	}
-
+	
 	/**
 	 * @see java.sql.Statement#setQueryTimeout(int)
 	 */
@@ -384,331 +713,5 @@ public class Statement extends SQLObject implements java.sql.Statement
 		};
 		
 		this.executeWriteToDriver(operation);
-	}
-
-	/**
-	 * @see java.sql.Statement#getMoreResults(int)
-	 */
-	public boolean getMoreResults(final int current) throws SQLException
-	{
-		StatementOperation operation = new StatementOperation()
-		{
-			public Object execute(java.sql.Statement statement) throws SQLException
-			{
-				return new Boolean(statement.getMoreResults(current));
-			}
-		};
-		
-		return ((Boolean) this.firstValue(this.executeWriteToDriver(operation))).booleanValue();
-	}
-
-	/**
-	 * @see java.sql.Statement#setEscapeProcessing(boolean)
-	 */
-	public void setEscapeProcessing(final boolean enable) throws SQLException
-	{
-		StatementOperation operation = new StatementOperation()
-		{
-			public Object execute(java.sql.Statement statement) throws SQLException
-			{
-				statement.setEscapeProcessing(enable);
-				
-				return null;
-			}
-		};
-		
-		this.executeWriteToDriver(operation);
-	}
-
-	/**
-	 * @see java.sql.Statement#executeUpdate(java.lang.String)
-	 */
-	public int executeUpdate(final String sql) throws SQLException
-	{
-		StatementOperation operation = new StatementOperation()
-		{
-			public Object execute(java.sql.Statement statement) throws SQLException
-			{
-				return new Integer(statement.executeUpdate(sql));
-			}
-		};
-		
-		return ((Integer) this.firstValue(this.executeWriteToDatabase(operation))).intValue();
-	}
-
-	/**
-	 * @see java.sql.Statement#addBatch(java.lang.String)
-	 */
-	public void addBatch(final String sql) throws SQLException
-	{
-		StatementOperation operation = new StatementOperation()
-		{
-			public Object execute(java.sql.Statement statement) throws SQLException
-			{
-				statement.addBatch(sql);
-				
-				return null;
-			}
-		};
-		
-		this.executeWriteToDriver(operation);
-	}
-
-	/**
-	 * @see java.sql.Statement#setCursorName(java.lang.String)
-	 */
-	public void setCursorName(final String name) throws SQLException
-	{
-		StatementOperation operation = new StatementOperation()
-		{
-			public Object execute(java.sql.Statement statement) throws SQLException
-			{
-				statement.setCursorName(name);
-				
-				return null;
-			}
-		};
-		
-		this.executeWriteToDatabase(operation);
-		
-		this.record(operation);
-	}
-
-	/**
-	 * @see java.sql.Statement#execute(java.lang.String)
-	 */
-	public boolean execute(final String sql) throws SQLException
-	{
-		StatementOperation operation = new StatementOperation()
-		{
-			public Object execute(java.sql.Statement statement) throws SQLException
-			{
-				return new Boolean(statement.execute(sql));
-			}
-		};
-		
-		return ((Boolean) this.firstValue(this.executeWriteToDatabase(operation))).booleanValue();
-	}
-
-	/**
-	 * @see java.sql.Statement#executeUpdate(java.lang.String, int)
-	 */
-	public int executeUpdate(final String sql, final int autoGeneratedKeys) throws SQLException
-	{
-		StatementOperation operation = new StatementOperation()
-		{
-			public Object execute(java.sql.Statement statement) throws SQLException
-			{
-				return new Integer(statement.executeUpdate(sql, autoGeneratedKeys));
-			}
-		};
-		
-		return ((Integer) this.firstValue(this.executeWriteToDatabase(operation))).intValue();
-	}
-
-	/**
-	 * @see java.sql.Statement#execute(java.lang.String, int)
-	 */
-	public boolean execute(final String sql, final int autoGeneratedKeys) throws SQLException
-	{
-		StatementOperation operation = new StatementOperation()
-		{
-			public Object execute(java.sql.Statement statement) throws SQLException
-			{
-				return new Boolean(statement.execute(sql, autoGeneratedKeys));
-			}
-		};
-		
-		return ((Boolean) this.firstValue(this.executeWriteToDatabase(operation))).booleanValue();
-	}
-
-	/**
-	 * @see java.sql.Statement#executeUpdate(java.lang.String, int[])
-	 */
-	public int executeUpdate(final String sql, final int[] columnIndexes) throws SQLException
-	{
-		StatementOperation operation = new StatementOperation()
-		{
-			public Object execute(java.sql.Statement statement) throws SQLException
-			{
-				return new Integer(statement.executeUpdate(sql, columnIndexes));
-			}
-		};
-		
-		return ((Integer) this.firstValue(this.executeWriteToDatabase(operation))).intValue();
-	}
-
-	/**
-	 * @see java.sql.Statement#execute(java.lang.String, int[])
-	 */
-	public boolean execute(final String sql, final int[] columnIndexes) throws SQLException
-	{
-		StatementOperation operation = new StatementOperation()
-		{
-			public Object execute(java.sql.Statement statement) throws SQLException
-			{
-				return new Boolean(statement.execute(sql, columnIndexes));
-			}
-		};
-		
-		return ((Boolean) this.firstValue(this.executeWriteToDatabase(operation))).booleanValue();
-	}
-
-	/**
-	 * @see java.sql.Statement#getConnection()
-	 */
-	public java.sql.Connection getConnection()
-	{
-		return (Connection) this.parent;
-	}
-
-	/**
-	 * @see java.sql.Statement#getGeneratedKeys()
-	 */
-	public java.sql.ResultSet getGeneratedKeys() throws SQLException
-	{
-		StatementOperation operation = new StatementOperation()
-		{
-			public Object execute(java.sql.Statement statement) throws SQLException
-			{
-				return statement.getGeneratedKeys();
-			}
-		};
-
-		return (java.sql.ResultSet) this.executeReadFromDriver(operation);
-	}
-
-	/**
-	 * @see java.sql.Statement#getResultSet()
-	 */
-	public java.sql.ResultSet getResultSet() throws SQLException
-	{
-		StatementOperation operation = new StatementOperation()
-		{
-			public Object execute(java.sql.Statement statement) throws SQLException
-			{
-				return statement.getResultSet();
-			}
-		};
-
-		return (this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) ? (java.sql.ResultSet) this.executeReadFromDriver(operation) : new ResultSet(this, operation);
-	}
-
-	/**
-	 * @see java.sql.Statement#getWarnings()
-	 */
-	public SQLWarning getWarnings() throws SQLException
-	{
-		StatementOperation operation = new StatementOperation()
-		{
-			public Object execute(java.sql.Statement statement) throws SQLException
-			{
-				return statement.getWarnings();
-			}
-		};
-
-		return (SQLWarning) this.executeReadFromDriver(operation);
-	}
-
-	/**
-	 * @see java.sql.Statement#executeUpdate(java.lang.String, java.lang.String[])
-	 */
-	public int executeUpdate(final String sql, final String[] columnNames) throws SQLException
-	{
-		StatementOperation operation = new StatementOperation()
-		{
-			public Object execute(java.sql.Statement statement) throws SQLException
-			{
-				return new Integer(statement.executeUpdate(sql, columnNames));
-			}
-		};
-		
-		return ((Integer) this.firstValue(this.executeWriteToDatabase(operation))).intValue();
-	}
-
-	/**
-	 * @see java.sql.Statement#execute(java.lang.String, java.lang.String[])
-	 */
-	public boolean execute(final String sql, final String[] columnNames) throws SQLException
-	{
-		StatementOperation operation = new StatementOperation()
-		{
-			public Object execute(java.sql.Statement statement) throws SQLException
-			{
-				return new Boolean(statement.execute(sql, columnNames));
-			}
-		};
-		
-		return ((Boolean) this.firstValue(this.executeWriteToDatabase(operation))).booleanValue();
-	}
-
-	/**
-	 * @see java.sql.Statement#executeQuery(java.lang.String)
-	 */
-	public java.sql.ResultSet executeQuery(final String sql) throws SQLException
-	{
-		StatementOperation operation = new StatementOperation()
-		{
-			public Object execute(java.sql.Statement statement) throws SQLException
-			{
-				return statement.executeQuery(sql);
-			}
-		};
-
-		return (this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) ? (java.sql.ResultSet) this.executeReadFromDatabase(operation) : new ResultSet(this, operation);
-	}
-
-	public void handleExceptions(Map exceptionMap) throws SQLException
-	{
-		if (this.getAutoCommit())
-		{
-			super.handleExceptions(exceptionMap);
-		}
-		else
-		{
-			// If auto-commit is off, give client the opportunity to rollback the transaction
-			Iterator exceptionMapEntries = exceptionMap.entrySet().iterator();
-			SQLException exception = null;
-			
-			while (exceptionMapEntries.hasNext())
-			{
-				Map.Entry exceptionMapEntry = (Map.Entry) exceptionMapEntries.next();
-				Database database = (Database) exceptionMapEntry.getKey();
-				Throwable cause = (Throwable) exceptionMapEntry.getValue();
-				
-				try
-				{
-					this.getDatabaseCluster().handleFailure(database, cause);
-				}
-				catch (SQLException e)
-				{
-					if (exception == null)
-					{
-						exception = e;
-					}
-					else
-					{
-						exception.setNextException(e);
-					}
-				}
-			}
-			
-			if (exception != null)
-			{
-				throw exception;
-			}
-		}
-	}
-	
-	private boolean getAutoCommit()
-	{
-		try
-		{
-			return this.getConnection().getAutoCommit();
-		}
-		catch (SQLException e)
-		{
-			return true;
-		}
 	}
 }
