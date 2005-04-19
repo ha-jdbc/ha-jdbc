@@ -549,6 +549,8 @@ public class TestConnection
 			statement.executeUpdate("INSERT INTO test (id) VALUES (1)");
 
 			java.sql.Savepoint savepoint = this.connection.setSavepoint("savepoint1");
+
+			assert Savepoint.class.isInstance(savepoint);
 			
 			statement.executeUpdate("INSERT INTO test (id) VALUES (2)");
 
@@ -577,19 +579,21 @@ public class TestConnection
 	{
 		try
 		{
+			this.connection.setAutoCommit(false);
+			
 			boolean autoCommit1 = this.connection1.getAutoCommit();
 			boolean autoCommit2 = this.connection2.getAutoCommit();
 			
-			assert autoCommit1;
-			assert autoCommit2;
+			assert !autoCommit1;
+			assert !autoCommit2;
 
-			this.connection.setAutoCommit(false);
+			this.connection.setAutoCommit(true);
 			
 			autoCommit1 = this.connection1.getAutoCommit();
 			autoCommit2 = this.connection2.getAutoCommit();
 			
-			assert !autoCommit1;
-			assert !autoCommit2;
+			assert autoCommit1;
+			assert autoCommit2;
 		}
 		catch (SQLException e)
 		{
@@ -605,6 +609,12 @@ public class TestConnection
 		try
 		{
 			this.connection.setCatalog("catalog");
+			
+			String catalog1 = this.connection1.getCatalog();
+			String catalog2 = this.connection2.getCatalog();
+			
+			assert catalog1 == null;
+			assert catalog2 == null;
 		}
 		catch (SQLException e)
 		{
@@ -619,13 +629,28 @@ public class TestConnection
 	{
 		try
 		{
-			this.connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
+			try
+			{
+				this.connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
+				
+				assert false : "CLOSE_CURSORS_AT_COMMIT holdability is not supported in HSQL";
+			}
+			catch (SQLException e)
+			{
+				assert true;
+			}
 			
-			assert false : "CLOSE_CURSORS_AT_COMMIT holdability is not supported in HSQL";
+			this.connection.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);
+			
+			int holdability1 = this.connection1.getHoldability();
+			int holdability2 = this.connection2.getHoldability();
+			
+			assert holdability1 == ResultSet.HOLD_CURSORS_OVER_COMMIT;
+			assert holdability2 == ResultSet.HOLD_CURSORS_OVER_COMMIT;
 		}
 		catch (SQLException e)
 		{
-			assert true;
+			assert false : e.getMessage();
 		}
 	}
 
@@ -636,19 +661,21 @@ public class TestConnection
 	{
 		try
 		{
+			this.connection.setReadOnly(true);
+			
 			boolean readOnly1 = this.connection1.isReadOnly();
 			boolean readOnly2 = this.connection2.isReadOnly();
 
-			assert !readOnly1;
-			assert !readOnly2;
+			assert readOnly1;
+			assert readOnly2;
 			
-			this.connection.setReadOnly(true);
+			this.connection.setReadOnly(false);
 			
 			readOnly1 = this.connection1.isReadOnly();
 			readOnly2 = this.connection2.isReadOnly();
 
-			assert readOnly1;
-			assert readOnly2;
+			assert !readOnly1;
+			assert !readOnly2;
 		}
 		catch (SQLException e)
 		{
@@ -669,7 +696,7 @@ public class TestConnection
 			{
 				this.connection.setSavepoint();
 				
-				assert false : "setSavepoint() is not supported in HSQL";
+				assert false : "HSQLDB does not support setSavepoint()";
 			}
 			catch (SQLException e)
 			{
@@ -693,13 +720,61 @@ public class TestConnection
 	{
 		try
 		{
-			this.connection.setTransactionIsolation(java.sql.Connection.TRANSACTION_NONE);
+			try
+			{
+				this.connection.setTransactionIsolation(java.sql.Connection.TRANSACTION_NONE);
+				
+				assert false : "HSQLDB does not support TRANSACTION_NONE";
+			}
+			catch (SQLException e)
+			{
+				assert true;
+			}
 			
-			assert false : "TRANSACTION_NONE is not supported in HSQL";
+			try
+			{
+				this.connection.setTransactionIsolation(java.sql.Connection.TRANSACTION_READ_COMMITTED);
+				
+				assert false : "HSQLDB does not support TRANSACTION_READ_COMMITTED";
+			}
+			catch (SQLException e)
+			{
+				assert true;
+			}
+
+			this.connection.setTransactionIsolation(java.sql.Connection.TRANSACTION_READ_UNCOMMITTED);
+			
+			int isolation1 = this.connection1.getTransactionIsolation();
+			int isolation2 = this.connection1.getTransactionIsolation();
+			
+			assert isolation1 == java.sql.Connection.TRANSACTION_READ_UNCOMMITTED;
+			assert isolation2 == java.sql.Connection.TRANSACTION_READ_UNCOMMITTED;
+			
+			try
+			{
+				this.connection.setTransactionIsolation(java.sql.Connection.TRANSACTION_REPEATABLE_READ);
+				
+				assert false : "HSQLDB does not support TRANSACTION_REPEATABLE_READ";
+			}
+			catch (SQLException e)
+			{
+				assert true;
+			}
+			
+			try
+			{
+				this.connection.setTransactionIsolation(java.sql.Connection.TRANSACTION_SERIALIZABLE);
+				
+				assert false : "HSQLDB does not support TRANSACTION_SERIALIZABLE";
+			}
+			catch (SQLException e)
+			{
+				assert true;
+			}
 		}
 		catch (SQLException e)
 		{
-			assert true;
+			assert false : e.getMessage();
 		}
 	}
 	
@@ -712,7 +787,7 @@ public class TestConnection
 		{
 			this.connection.setTypeMap(null);
 			
-			assert false : "setTypeMap() is not supported in HSQL";
+			assert false : "HSQLDB does not support setTypeMap()";
 		}
 		catch (SQLException e)
 		{
