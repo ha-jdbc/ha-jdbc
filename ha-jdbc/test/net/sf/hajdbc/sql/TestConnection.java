@@ -54,6 +54,10 @@ public class TestConnection
 		Class.forName("net.sf.hajdbc.sql.Driver");
 
 		this.connection = (Connection) DriverManager.getConnection("jdbc:ha-jdbc:cluster", "sa", "");
+
+		java.sql.Statement statement = this.connection.createStatement();
+		statement.execute("CREATE TEMP TABLE test (id INTEGER PRIMARY KEY)");
+		statement.close();
 		
 		DatabaseCluster databaseCluster = DatabaseClusterFactory.getInstance().getDatabaseCluster("cluster");
 		Database database1 = databaseCluster.getDatabase("database1");
@@ -72,13 +76,6 @@ public class TestConnection
 		{
 			this.connection.close();
 		}
-	}
-
-	private void createTable() throws SQLException
-	{
-		java.sql.Statement statement = this.connection.createStatement();
-		statement.execute("CREATE TABLE test (id INTEGER PRIMARY KEY)");
-		statement.close();
 	}
 	
 	private int countRows(java.sql.Connection connection) throws SQLException
@@ -146,8 +143,6 @@ public class TestConnection
 	{
 		try
 		{
-			this.createTable();
-			
 			this.connection.setAutoCommit(false);
 			
 			java.sql.Statement statement = this.connection.createStatement();
@@ -482,8 +477,6 @@ public class TestConnection
 	{
 		try
 		{
-			this.createTable();
-			
 			this.connection.setAutoCommit(false);
 			
 			java.sql.Statement statement = this.connection.createStatement();
@@ -510,7 +503,6 @@ public class TestConnection
 		}
 		catch (SQLException e)
 		{
-			e.printStackTrace();
 			assert false : e.getMessage();
 		}
 	}
@@ -522,8 +514,6 @@ public class TestConnection
 	{
 		try
 		{
-			this.createTable();
-			
 			this.connection.setAutoCommit(false);
 			
 			java.sql.Statement statement = this.connection.createStatement();
@@ -552,8 +542,6 @@ public class TestConnection
 	{
 		try
 		{
-			this.createTable();
-			
 			this.connection.setAutoCommit(false);
 			
 			java.sql.Statement statement = this.connection.createStatement();
@@ -578,7 +566,6 @@ public class TestConnection
 		}
 		catch (SQLException e)
 		{
-			e.printStackTrace();
 			assert false : e.getMessage();
 		}
 	}
