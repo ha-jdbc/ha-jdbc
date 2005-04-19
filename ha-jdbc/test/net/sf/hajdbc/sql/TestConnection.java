@@ -25,10 +25,13 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.sql.Statement;
+import java.util.prefs.Preferences;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterFactory;
+import net.sf.hajdbc.local.LocalDatabaseCluster;
 
 public class TestConnection
 {
@@ -46,24 +49,18 @@ public class TestConnection
 	 */
 	public void setUp() throws Exception
 	{
-		try
-		{
-			Class.forName("net.sf.hajdbc.sql.Driver");
+		Preferences.userNodeForPackage(LocalDatabaseCluster.class).remove("cluster");
+		
+		Class.forName("net.sf.hajdbc.sql.Driver");
 
-			this.connection = (Connection) DriverManager.getConnection("jdbc:ha-jdbc:cluster", "sa", "");
-			
-			DatabaseCluster databaseCluster = DatabaseClusterFactory.getInstance().getDatabaseCluster("cluster");
-			Database database1 = databaseCluster.getDatabase("database1");
-			Database database2 = databaseCluster.getDatabase("database2");
-			
-			this.connection1 = (java.sql.Connection) this.connection.getObject(database1);
-			this.connection2 = (java.sql.Connection) this.connection.getObject(database2);
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace(System.err);
-			throw e;
-		}
+		this.connection = (Connection) DriverManager.getConnection("jdbc:ha-jdbc:cluster", "sa", "");
+		
+		DatabaseCluster databaseCluster = DatabaseClusterFactory.getInstance().getDatabaseCluster("cluster");
+		Database database1 = databaseCluster.getDatabase("database1");
+		Database database2 = databaseCluster.getDatabase("database2");
+		
+		this.connection1 = (java.sql.Connection) this.connection.getObject(database1);
+		this.connection2 = (java.sql.Connection) this.connection.getObject(database2);
 	}
 
 	/**
@@ -77,6 +74,29 @@ public class TestConnection
 		}
 	}
 
+	private void createTable() throws SQLException
+	{
+		java.sql.Statement statement = this.connection.createStatement();
+		statement.execute("CREATE TABLE test (id INTEGER PRIMARY KEY)");
+		statement.close();
+	}
+	
+	private int countRows(java.sql.Connection connection) throws SQLException
+	{
+		Statement statement = this.connection.createStatement();
+		
+		ResultSet resultSet = statement.executeQuery("SELECT count(*) FROM test");
+		
+		resultSet.next();
+		
+		int rows = resultSet.getInt(1);
+		
+		resultSet.close();
+		statement.close();
+		
+		return rows;
+	}
+	
 	/**
 	 * @testng.test
 	 */
@@ -126,7 +146,22 @@ public class TestConnection
 	{
 		try
 		{
+			this.createTable();
+			
+			this.connection.setAutoCommit(false);
+			
+			java.sql.Statement statement = this.connection.createStatement();
+			
+			statement.executeUpdate("INSERT INTO test (id) VALUES (1)");
+			statement.close();
+			
 			this.connection.commit();
+			
+			int count1 = this.countRows(this.connection1);
+			int count2 = this.countRows(this.connection2);
+			
+			assert count1 == 1;
+			assert count2 == 1;
 		}
 		catch (SQLException e)
 		{
@@ -173,7 +208,6 @@ public class TestConnection
 		}
 		catch (SQLException e)
 		{
-			e.printStackTrace();
 			assert false : e.getMessage();
 		}
 	}
@@ -448,10 +482,31 @@ public class TestConnection
 	{
 		try
 		{
+			this.createTable();
+			
 			this.connection.setAutoCommit(false);
+			
+			java.sql.Statement statement = this.connection.createStatement();
+			
+			statement.executeUpdate("INSERT INTO test (id) VALUES (1)");
+
 			java.sql.Savepoint savepoint = this.connection.setSavepoint("savepoint1");
 			
+			assert Savepoint.class.isInstance(savepoint);
+			
+			statement.executeUpdate("INSERT INTO test (id) VALUES (2)");
+
+			statement.close();
+			
 			this.connection.releaseSavepoint(savepoint);
+			
+			this.connection.commit();
+			
+			int count1 = this.countRows(this.connection1);
+			int count2 = this.countRows(this.connection2);
+			
+			assert count1 == 2 : count1;
+			assert count2 == 2 : count2;
 		}
 		catch (SQLException e)
 		{
@@ -467,7 +522,22 @@ public class TestConnection
 	{
 		try
 		{
+			this.createTable();
+			
+			this.connection.setAutoCommit(false);
+			
+			java.sql.Statement statement = this.connection.createStatement();
+			
+			statement.executeUpdate("INSERT INTO test (id) VALUES (1)");
+			statement.close();
+			
 			this.connection.rollback();
+			
+			int count1 = this.countRows(this.connection1);
+			int count2 = this.countRows(this.connection2);
+			
+			assert count1 == 0 : count1;
+			assert count2 == 0 : count2;
 		}
 		catch (SQLException e)
 		{
@@ -482,10 +552,29 @@ public class TestConnection
 	{
 		try
 		{
+			this.createTable();
+			
 			this.connection.setAutoCommit(false);
+			
+			java.sql.Statement statement = this.connection.createStatement();
+			
+			statement.executeUpdate("INSERT INTO test (id) VALUES (1)");
+
 			java.sql.Savepoint savepoint = this.connection.setSavepoint("savepoint1");
 			
+			statement.executeUpdate("INSERT INTO test (id) VALUES (2)");
+
+			statement.close();
+			
 			this.connection.rollback(savepoint);
+			
+			this.connection.commit();
+			
+			int count1 = this.countRows(this.connection1);
+			int count2 = this.countRows(this.connection2);
+			
+			assert count1 == 1;
+			assert count2 == 1;
 		}
 		catch (SQLException e)
 		{

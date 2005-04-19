@@ -23,6 +23,9 @@ package net.sf.hajdbc.sql;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.util.Properties;
+import java.util.prefs.Preferences;
+
+import net.sf.hajdbc.local.LocalDatabaseCluster;
 
 public class TestDriver
 {
@@ -33,6 +36,8 @@ public class TestDriver
 	 */
 	public void setUp() throws Exception
 	{
+		Preferences.userNodeForPackage(LocalDatabaseCluster.class).remove("cluster");
+		
 		this.driver = new Driver();
 	}
 
