@@ -13,6 +13,7 @@
 		<classes>
 			<class name="net.sf.hajdbc.sql.TestDriver"/>
 			<class name="net.sf.hajdbc.sql.TestConnection"/>
+			<class name="net.sf.hajdbc.sql.TestStatement"/>
 		</classes>
 	</test>
 	<!--test name="cluster">
