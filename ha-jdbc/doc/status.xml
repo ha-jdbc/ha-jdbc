@@ -11,6 +11,9 @@
 			src/documentation/resources/images/<foo>.jpg images, these will
 			automatically be used for entries of type <foo>. -->
 		<release version="1.0-rc-1" date="...">
+			<action type="fix" dev="">
+				Fixed ClassCastException in Connection.releaseSavepoint(Savepoint) and Connection.rollback(Savepoint) methods.
+			</action>
 			<action type="update" dev="PF">
 				executeWriteToDatabase() will now throw SQLException for Statements and ResultSets if some valid databases fail while others succeed and auto-commit is off, giving the client the opportunity to rollback the current transaction.
 			</action>
