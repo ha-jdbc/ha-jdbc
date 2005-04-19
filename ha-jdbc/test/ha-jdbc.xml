@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!DOCTYPE ha-jdbc SYSTEM "../doc/src/content/dtd/ha-jdbc-1.0.dtd">
+<ha-jdbc>
+	<cluster id="cluster" balancer="round-robin">
+		<database id="database1">
+			<driver>org.hsqldb.jdbcDriver</driver>
+			<url>jdbc:hsqldb:mem:database1</url>
+			<user>sa</user>
+			<password></password>
+		</database>
+		<database id="database2">
+			<driver>org.hsqldb.jdbcDriver</driver>
+			<url>jdbc:hsqldb:mem:database2</url>
+			<user>sa</user>
+			<password></password>
+		</database>
+		<validate-sql>CALL NOW()</validate-sql>
+	</cluster>
+</ha-jdbc>
