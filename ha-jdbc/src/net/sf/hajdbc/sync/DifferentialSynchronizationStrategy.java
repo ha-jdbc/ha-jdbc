@@ -110,6 +110,13 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 			{
 				throw new SQLException(Messages.getMessage(Messages.PRIMARY_KEY_REQUIRED, new Object[] { this.getClass().getName(), table }));
 			}
+
+			// Fetch row count of table from inactive connection
+			Statement statement = inactiveConnection.createStatement();
+			ResultSet resultSet = statement.executeQuery("SELECT count(*) FROM " + table);
+			resultSet.next();
+			int rows = resultSet.getInt(1);
+			statement.close();
 			
 			// Retrieve table rows in primary key order
 			StringBuffer buffer = new StringBuffer("SELECT * FROM ").append(table).append(" ORDER BY ");
@@ -290,7 +297,8 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				
 				if (hasMoreInactiveResults && (compare >= 0))
 				{
-					hasMoreInactiveResults = inactiveResultSet.next();
+					// The ResultSet may have been affected by calls to insertRow(), so use pre-determined row count as additional criteria to determine if there are more results
+					hasMoreInactiveResults = inactiveResultSet.next() && (inactiveResultSet.getRow() <= rows);
 				}
 			}
 			
