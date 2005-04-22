@@ -67,6 +67,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 	private String dropForeignKeySQL = ForeignKey.DEFAULT_DROP_SQL;
 	private String truncateTableSQL = "DELETE FROM {0}";
 	private int maxBatchSize = 100;
+	private int fetchSize = 0;
 	
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, java.util.List)
@@ -95,7 +96,9 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 			}
 			
 			Statement deleteStatement = inactiveConnection.createStatement();
+
 			Statement selectStatement = activeConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			selectStatement.setFetchSize(this.fetchSize);
 			
 			Thread deleteExecutor = new Thread(new StatementExecutor(deleteStatement, deleteSQL));
 			deleteExecutor.start();
@@ -270,5 +273,21 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 	public void setTruncateTableSQL(String truncateTableSQL)
 	{
 		this.truncateTableSQL = truncateTableSQL;
+	}
+
+	/**
+	 * @return the fetchSize.
+	 */
+	public int getFetchSize()
+	{
+		return this.fetchSize;
+	}
+
+	/**
+	 * @param fetchSize the fetchSize to set.
+	 */
+	public void setFetchSize(int fetchSize)
+	{
+		this.fetchSize = fetchSize;
 	}
 }

@@ -69,6 +69,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 
 	private String createForeignKeySQL = ForeignKey.DEFAULT_CREATE_SQL;
 	private String dropForeignKeySQL = ForeignKey.DEFAULT_DROP_SQL;
+	private int fetchSize = 0;
 	
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, java.util.List)
@@ -138,7 +139,10 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 			String sql = buffer.toString();
 			
 			Statement inactiveStatement = inactiveConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+			inactiveStatement.setFetchSize(this.fetchSize);
+
 			Statement activeStatement = activeConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			activeStatement.setFetchSize(this.fetchSize);
 			
 			if (log.isDebugEnabled())
 			{
@@ -348,5 +352,21 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 	public void setDropForeignKeySQL(String dropForeignKeySQL)
 	{
 		this.dropForeignKeySQL = dropForeignKeySQL;
+	}
+
+	/**
+	 * @return the fetchSize.
+	 */
+	public int getFetchSize()
+	{
+		return this.fetchSize;
+	}
+
+	/**
+	 * @param fetchSize the fetchSize to set.
+	 */
+	public void setFetchSize(int fetchSize)
+	{
+		this.fetchSize = fetchSize;
 	}
 }
