@@ -11,7 +11,13 @@
 			src/documentation/resources/images/<foo>.jpg images, these will
 			automatically be used for entries of type <foo>. -->
 		<release version="1.0-rc-1" date="...">
-			<action type="fix" dev="">
+			<action type="update" dev="PF">
+				Added customizable fetchSize property to each synchronization strategy to avoid out of memory errors when synchronizing large tables.
+			</action>
+			<action type="fix" dev="PF">
+				Fixed issue in DifferentialSynchronizationStrategy with some updatable result set implementations where inserted rows were deleted again.
+			</action>
+			<action type="fix" dev="PF">
 				Fixed ClassCastException in Connection.releaseSavepoint(Savepoint) and Connection.rollback(Savepoint) methods.
 			</action>
 			<action type="update" dev="PF">
@@ -33,7 +39,7 @@
 				Corrected German translation of error messages (thanks to Oezcan Acar).
 			</action>
             <action type="update" dev="PF">
-                Updated JiBX to version 1.0-rc-0
+                Updated JiBX to version 1.0-rc-0.
             </action>
 			<action type="add" dev="PF">
 				Added TestNG unit tests for each balancer implementation.
