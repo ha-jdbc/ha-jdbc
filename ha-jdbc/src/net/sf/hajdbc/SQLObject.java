@@ -188,7 +188,7 @@ public abstract class SQLObject
 			
 			if (this.databaseCluster.deactivate(database))
 			{
-				log.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, new Object[] { database, this }), exception);
+				log.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, new Object[] { database, this.databaseCluster }), exception);
 			}
 		}
 	}
