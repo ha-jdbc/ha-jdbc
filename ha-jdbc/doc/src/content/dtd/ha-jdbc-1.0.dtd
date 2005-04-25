@@ -28,9 +28,8 @@
 <!ELEMENT ha-jdbc (distributable?, cluster+)>
 
 <!ELEMENT distributable EMPTY>
-<!ATTLIST distributable
-	protocol CDATA #REQUIRED
->
+<!ATTLIST distributable	protocol CDATA #IMPLIED>
+
 <!ELEMENT cluster ((database+ | datasource+ | pool-datasource+ | xa-datasource+), validate-sql?, sync-strategy*)>
 <!ATTLIST cluster id CDATA #REQUIRED>
 <!ATTLIST cluster balancer (simple|random|round-robin|load) #REQUIRED>
