@@ -85,6 +85,8 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		
 		DatabaseMetaData databaseMetaData = inactiveConnection.getMetaData();
 		
+		boolean deletesAreDetected = databaseMetaData.deletesAreDetected(ResultSet.TYPE_SCROLL_INSENSITIVE);
+		
 		List primaryKeyList = new ArrayList();
 		Set primaryKeyColumnSet = new LinkedHashSet();
 		
@@ -116,7 +118,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 			Statement statement = inactiveConnection.createStatement();
 			ResultSet resultSet = statement.executeQuery("SELECT count(*) FROM " + table);
 			resultSet.next();
-			int rows = resultSet.getInt(1);
+			int totalRowCount = resultSet.getInt(1);
 			statement.close();
 			
 			// Retrieve table rows in primary key order
@@ -138,7 +140,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 			
 			String sql = buffer.toString();
 			
-			Statement inactiveStatement = inactiveConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+			Statement inactiveStatement = inactiveConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
 			inactiveStatement.setFetchSize(this.fetchSize);
 
 			Statement activeStatement = activeConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -301,8 +303,11 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				
 				if (hasMoreInactiveResults && (compare >= 0))
 				{
+					// ResultSet.getRow() will not include deleted rows if deletes are not detected
+					int row = inactiveResultSet.getRow() + (deletesAreDetected ? 0 : deleteCount);
+					
 					// The ResultSet may have been affected by calls to insertRow(), so use pre-determined row count as additional criteria to determine if there are more results
-					hasMoreInactiveResults = inactiveResultSet.next() && (inactiveResultSet.getRow() <= rows);
+					hasMoreInactiveResults = inactiveResultSet.next() && (row <= totalRowCount);
 				}
 			}
 			
