@@ -22,6 +22,14 @@
 				Refer to the JGroups <a href="http://www.jgroups.org/javagroupsnew/docs/user/index.html">documentation</a> for more specifics.
 			</answer>
 		</faq>
+		<faq>
+			<question>How do I configure HA-JDBC to notify me when a database is deactivated?</question>
+			<answer>
+				Use your logging facility.  HA-JDBC will log database activations and deactivations with ERROR level.
+				If you use Log4J, configure an SMTP appender for the "net.sf.hajdbc" logger.<br/>
+				If you use java.util.logging, configure an <a href="http://http://smtphandler.sourceforge.net/">SMTPHandler</a> for the "net.sf.hajdbc" package.
+			</answer>
+		</faq>
 	</faqsection>
 	<faqsection>
 		<title>About HA-JDBC</title>
