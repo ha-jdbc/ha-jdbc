@@ -10,12 +10,18 @@
 			defined for 'add', 'fix', 'remove', 'update' and 'hack'. If you add
 			src/documentation/resources/images/<foo>.jpg images, these will
 			automatically be used for entries of type <foo>. -->
-		<release version="1.0-beta-8" date="...">
+		<release version="1.0-beta-8" date="April 27, 2005">
+			<action type="add" dev="PF">
+				Cluster state is now persisted locally so that it can be restored between application restarts.
+			</action>
+			<action type="add" dev="PF">
+				Added customizable fetchSize property to each synchronization strategy to avoid out of memory errors when synchronizing large tables.
+			</action>
+			<action type="add" dev="PF">
+				Added TestNG unit tests for Driver, Connection, Statement, and each balancer implementation.  Other tests are still in progress.
+			</action>
 			<action type="fix" dev="PF">
 				Fixed issue with driver returning non-distributable connections when in distributable mode.
-			</action>
-			<action type="update" dev="PF">
-				Added customizable fetchSize property to each synchronization strategy to avoid out of memory errors when synchronizing large tables.
 			</action>
 			<action type="fix" dev="PF">
 				Fixed issue in DifferentialSynchronizationStrategy with some updatable result set implementations where inserted rows were deleted again.
@@ -23,11 +29,14 @@
 			<action type="fix" dev="PF">
 				Fixed ClassCastException in Connection.releaseSavepoint(Savepoint) and Connection.rollback(Savepoint) methods.
 			</action>
+			<action type="fix" dev="PF">
+				Minor fixes to zero weight handling in random and load balancers.
+			</action>
+			<action type="fix" dev="PF">
+				Corrected German translation of error messages (thanks to Oezcan Acar).
+			</action>
 			<action type="update" dev="PF">
 				executeWriteToDatabase() will now throw SQLException for Statements and ResultSets if some valid databases fail while others succeed and auto-commit is off, giving the client the opportunity to rollback the current transaction.
-			</action>
-			<action type="add" dev="PF">
-				Cluster state is now persisted locally so that it can be restored between application restarts.
 			</action>
 			<action type="update" dev="PF">
 				Connection.isReadOnly() was changed from executeReadFromDatabase() to executeReadFromDriver().
@@ -35,18 +44,9 @@
 			<action type="update" dev="PF">
 				Refactored java.sql.* proxy classes.
 			</action>
-			<action type="fix" dev="PF">
-				Minor fixes to zero weight handling in random and load balancers.
-			</action>
-			<action type="fix" dev="PF">
-				Corrected German translation of error messages (thanks to Oezcan Acar).
-			</action>
             <action type="update" dev="PF">
                 Updated JiBX to version 1.0-rc-0.
             </action>
-			<action type="add" dev="PF">
-				Added TestNG unit tests for Driver, Connection, Statement, and each balancer implementation.  Other tests are still in progress.
-			</action>
 		</release>
 		<release version="1.0-beta-7" date="April 5, 2005">
 			<action type="fix" dev="PF">
