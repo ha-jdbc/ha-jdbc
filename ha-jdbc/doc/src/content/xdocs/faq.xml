@@ -41,7 +41,7 @@
 							<ol>
 								<li>HA-JDBC driver delegates JDBC methods directly to the underlying drivers.</li>
 								<li>Cluster details are stored in distributed cache on client.</li>
-								<li>Leverages database locking for </li>
+								<li>Leverages underlying database for request scheduling.</li>
 								<li>High-availability is inherent in design.</li>
 							</ol>
 						</td>
@@ -49,7 +49,7 @@
 							<ol>
 								<li>C-JDBC driver interprets JDBC API and delegates parsed SQL queries to remote controller process, which, in turn, delegates query execution to the underlying drivers.</li>
 								<li>Cluster details are known only to controller.</li>
-								<li>The controller's request scheduler strategy is responsible for serializing execution order</li>
+								<li>The controller's request scheduler strategy is responsible for serializing execution order.</li>
 								<li>High-availability is achieved by setting up failover controller process.</li>
 							</ol>
 						</td>
@@ -75,7 +75,7 @@
 							<ol>
 								<li>No recovery log is maintained.</li>
 								<li>Synchronization achieved through various brute force strategies.</li>
-								<li>Inefficient hot synchronization capability tolerated at the savings of performance.</li>
+								<li>Inefficient hot synchronization capability tolerated at the savings of performance during normal usage.</li>
 							</ol>
 						</td>
 						<td>
@@ -113,9 +113,9 @@
 								No - several open source solutions already exist and can be used in conjunction with HA-JDBC:
 							</p>
 							<ul>
-								<li><a href="http://jakarta.apache.org/commons/dbcp">Commons DBCP</a></li>
 								<li><a href="http://c3p0.sourceforge.net/">c3p0</a></li>
 								<li><a href="http://proxool.sourceforge.net/">Proxool</a></li>
+								<li><a href="http://jakarta.apache.org/commons/dbcp">Commons DBCP</a></li>
 								<li><a href="http://xapool.objectweb.org/">XAPool</a></li>
 							</ul>
 						</td>
@@ -127,12 +127,8 @@
 						<th>ResultSet caching ability</th>
 						<td>
 							<p>
-								No - several open source solutions already exist and can be used in conjunction with HA-JDBC:
+								No - caching mechanisms are typically available through O/R mapping frameworks.
 							</p>
-							<ul>
-								<li><a href="http://www.irongrid.com/catalog/product_info.php?products_id=31">IronEye Cache</a></li>
-								<li>PhDataCache <em>(no longer in existence)</em></li>
-							</ul>
 						</td>
 						<td>
 							<p>Yes - implemented in controller</p>
@@ -175,7 +171,7 @@
 								<li>Retrieval of auto-generated keys</li>
 								<li><code>ParameterMetaData</code></li>
 								<li><code>ResultSet</code> holdability support</li>
-								<li>Multiple open <code>ResultSet</code>s</li>
+								<li>Queries/Store procedures that return multiple <code>ResultSet</code>s</li>
 							</ul>
 						</td>
 					</tr>
