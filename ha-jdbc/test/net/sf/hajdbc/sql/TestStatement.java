@@ -463,7 +463,7 @@ public class TestStatement
 			assert count == 0;
 			
 			boolean more = this.statement.getMoreResults();
-			
+/*			
 			assert more : "Expected more results";
 
 			resultSet = this.statement.getResultSet();
@@ -477,7 +477,7 @@ public class TestStatement
 			assert count == 0;
 			
 			more = this.statement.getMoreResults();
-			
+*/			
 			assert !more : "Expected no more results";
 			
 			try
