@@ -44,9 +44,9 @@
 			<action type="update" dev="PF">
 				Refactored java.sql.* proxy classes.
 			</action>
-            <action type="update" dev="PF">
-                Updated JiBX to version 1.0-rc-0.
-            </action>
+			<action type="update" dev="PF">
+				Updated JiBX to version 1.0-rc-0.
+			</action>
 		</release>
 		<release version="1.0-beta-7" date="April 5, 2005">
 			<action type="fix" dev="PF">
