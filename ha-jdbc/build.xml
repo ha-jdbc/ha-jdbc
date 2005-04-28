@@ -119,8 +119,8 @@
 	</target>
 	
 	<target name="run-tests" depends="compile-tests">
-		<testng sourcedir="${test.dir}" classpathref="classpath" fork="yes">
-			<fileset dir="${test.dir}" includes="testng.xml"></fileset>
+		<testng sourcedir="${test.dir}" classpathref="classpath">
+			<xmlfileset dir="${test.dir}" includes="testng.xml"/>
 			<jvmarg value="-ea"/>
 		</testng>
 	</target>
