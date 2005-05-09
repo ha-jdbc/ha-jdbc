@@ -22,6 +22,7 @@ package net.sf.hajdbc.sync;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -85,8 +86,6 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		
 		DatabaseMetaData databaseMetaData = inactiveConnection.getMetaData();
 		
-		boolean deletesAreDetected = databaseMetaData.deletesAreDetected(ResultSet.TYPE_SCROLL_INSENSITIVE);
-		
 		List primaryKeyList = new ArrayList();
 		Set primaryKeyColumnSet = new LinkedHashSet();
 		
@@ -114,33 +113,24 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				throw new SQLException(Messages.getMessage(Messages.PRIMARY_KEY_REQUIRED, new Object[] { this.getClass().getName(), table }));
 			}
 
-			// Fetch row count of table from inactive connection
-			Statement statement = inactiveConnection.createStatement();
-			ResultSet resultSet = statement.executeQuery("SELECT count(*) FROM " + table);
-			resultSet.next();
-			int totalRowCount = resultSet.getInt(1);
-			statement.close();
-			
 			// Retrieve table rows in primary key order
 			StringBuffer buffer = new StringBuffer("SELECT * FROM ").append(table).append(" ORDER BY ");
 			
-			Iterator primaryKeys = primaryKeyList.iterator();
-			
-			while (primaryKeys.hasNext())
+			for (int i = 0; i < primaryKeyList.size(); ++i)
 			{
-				String primaryKey = (String) primaryKeys.next();
+				String primaryKey = (String) primaryKeyList.get(i);
 				
-				buffer.append(primaryKey);
-				
-				if (primaryKeys.hasNext())
+				if (i > 0)
 				{
 					buffer.append(", ");
 				}
+				
+				buffer.append(primaryKey);
 			}
 			
 			String sql = buffer.toString();
 			
-			Statement inactiveStatement = inactiveConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			Statement inactiveStatement = inactiveConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 			inactiveStatement.setFetchSize(this.fetchSize);
 
 			Statement activeStatement = activeConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -174,21 +164,63 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				throw inactiveStatement.getWarnings();
 			}
 			
-			// Create set of primary key columns
-			primaryKeys = primaryKeyList.iterator();
+			// Construct DELETE SQL
+			StringBuffer deleteSQL = new StringBuffer("DELETE FROM ").append(table).append(" WHERE ");
 			
-			while (primaryKeys.hasNext())
+			// Create set of primary key columns 
+			for (int i = 0; i < primaryKeyList.size(); ++i)
 			{
-				String primaryKey = (String) primaryKeys.next();
+				String primaryKey = (String) primaryKeyList.get(i);
+				
 				primaryKeyColumnSet.add(new Integer(activeResultSet.findColumn(primaryKey)));
+				
+				if (i > 0)
+				{
+					deleteSQL.append(" AND ");
+				}
+				
+				deleteSQL.append(primaryKey).append(" = ?");
 			}
+
+			PreparedStatement deleteStatement = inactiveConnection.prepareStatement(deleteSQL.toString());
+			
+			ResultSetMetaData resultSetMetaData = activeResultSet.getMetaData();
+			int columns = resultSetMetaData.getColumnCount();
+			int[] types = new int[columns + 1];
+			
+			// Construct INSERT SQL
+			StringBuffer insertSQL = new StringBuffer("INSERT INTO ").append(table).append(" (");
+			
+			for (int i = 1; i <= columns; ++i)
+			{
+				types[i] = resultSetMetaData.getColumnType(i);
+				
+				if (i > 1)
+				{
+					insertSQL.append(", ");
+				}
+				
+				insertSQL.append(resultSetMetaData.getColumnName(i));
+			}
+
+			insertSQL.append(") VALUES (");
+
+			for (int i = 1; i <= columns; ++i)
+			{
+				if (i > 1)
+				{
+					insertSQL.append(", ");
+				}
+				
+				insertSQL.append("?");
+			}
+
+			insertSQL.append(")");
+
+			PreparedStatement insertStatement = inactiveConnection.prepareStatement(insertSQL.toString());
 			
 			boolean hasMoreActiveResults = activeResultSet.next();
 			boolean hasMoreInactiveResults = inactiveResultSet.next();
-
-			ResultSetMetaData resultSetMetaData = activeResultSet.getMetaData();
-
-			int columns = resultSetMetaData.getColumnCount();
 			
 			int insertCount = 0;
 			int updateCount = 0;
@@ -229,13 +261,28 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				
 				if (compare > 0)
 				{
-					inactiveResultSet.deleteRow();
+					deleteStatement.clearParameters();
+					
+					Iterator primaryKeyColumns = primaryKeyColumnSet.iterator();
+					int index = 1;
+					
+					while (primaryKeyColumns.hasNext())
+					{
+						Integer primaryKeyColumn = (Integer) primaryKeyColumns.next();
+						int column = primaryKeyColumn.intValue();
+						
+						deleteStatement.setObject(index, inactiveResultSet.getObject(column), types[column]);
+						
+						index += 1;
+					}
+					
+					deleteStatement.addBatch();
 					
 					deleteCount += 1;
 				}
 				else if (compare < 0)
 				{
-					inactiveResultSet.moveToInsertRow();
+					insertStatement.clearParameters();
 
 					for (int i = 1; i <= columns; ++i)
 					{
@@ -243,16 +290,15 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 						
 						if (activeResultSet.wasNull())
 						{
-							inactiveResultSet.updateNull(i);
+							insertStatement.setNull(i, types[i]);
 						}
 						else
 						{
-							inactiveResultSet.updateObject(i, object);
+							insertStatement.setObject(i, object, types[i]);
 						}
 					}
 					
-					inactiveResultSet.insertRow();
-					inactiveResultSet.moveToCurrentRow();
+					insertStatement.addBatch();
 					
 					insertCount += 1;
 				}
@@ -303,22 +349,32 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				
 				if (hasMoreInactiveResults && (compare >= 0))
 				{
-					// ResultSet.getRow() will not include deleted rows if deletes are not detected
-					int row = inactiveResultSet.getRow() + (deletesAreDetected ? 0 : deleteCount);
-					
-					// The ResultSet may have been affected by calls to insertRow(), so use pre-determined row count as additional criteria to determine if there are more results
-					hasMoreInactiveResults = inactiveResultSet.next() && (row <= totalRowCount);
+					hasMoreInactiveResults = inactiveResultSet.next();
 				}
 			}
 			
-			log.info(Messages.getMessage(Messages.INSERT_COUNT, new Object[] { new Integer(insertCount), table }));
-			log.info(Messages.getMessage(Messages.UPDATE_COUNT, new Object[] { new Integer(updateCount), table }));
-			log.info(Messages.getMessage(Messages.DELETE_COUNT, new Object[] { new Integer(deleteCount), table }));
+			if (deleteCount > 0)
+			{
+				deleteStatement.executeBatch();
+			}
+			
+			deleteStatement.close();
+			
+			if (insertCount > 0)
+			{
+				insertStatement.executeBatch();
+			}
+			
+			insertStatement.close();
 			
 			inactiveStatement.close();
 			activeStatement.close();
 			
 			inactiveConnection.commit();
+			
+			log.info(Messages.getMessage(Messages.INSERT_COUNT, new Object[] { new Integer(insertCount), table }));
+			log.info(Messages.getMessage(Messages.UPDATE_COUNT, new Object[] { new Integer(updateCount), table }));
+			log.info(Messages.getMessage(Messages.DELETE_COUNT, new Object[] { new Integer(deleteCount), table }));
 		}
 
 		inactiveConnection.setAutoCommit(true);
