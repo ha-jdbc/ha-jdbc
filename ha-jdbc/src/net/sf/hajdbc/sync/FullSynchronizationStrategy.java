@@ -155,11 +155,6 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 			
 			insertSQL.append(")");
 			
-			if (log.isDebugEnabled())
-			{
-				log.debug(insertSQL);
-			}
-			
 			PreparedStatement insertStatement = inactiveConnection.prepareStatement(insertSQL.toString());
 			int statementCount = 0;
 			
