@@ -10,6 +10,14 @@
 			defined for 'add', 'fix', 'remove', 'update' and 'hack'. If you add
 			src/documentation/resources/images/<foo>.jpg images, these will
 			automatically be used for entries of type <foo>. -->
+		<release version="1.0-rc-1" date="Unreleased">
+			<action type="update" dev="PF">
+				Optimized performance of balancers by replacing synchronize blocks with read/write locks from concurrent package.
+			</action>
+			<action type="update" dev="PF">
+				Updated DifferentialSynchronizationStrategy to use PreparedStatements for inserts and deletions instead of using problematic updatable result set methods.
+			</action>
+		</release>
 		<release version="1.0-beta-8" date="April 27, 2005">
 			<action type="add" dev="PF">
 				Cluster state is now persisted locally so that it can be restored between application restarts.
