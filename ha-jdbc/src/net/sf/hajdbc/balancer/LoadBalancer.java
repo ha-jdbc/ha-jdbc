@@ -28,6 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import EDU.oswego.cs.dl.util.concurrent.Sync;
+
 import net.sf.hajdbc.Database;
 
 /**
@@ -77,35 +79,53 @@ public class LoadBalancer extends AbstractBalancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#add(net.sf.hajdbc.Database)
 	 */
-	public synchronized boolean add(Database database)
+	public boolean add(Database database)
 	{
-		boolean exists = this.databaseMap.containsKey(database);
+		Sync lock = this.acquireWriteLock();
 		
-		if (!exists)
+		try
 		{
-			this.databaseMap.put(database, new Integer(1));
+			boolean exists = this.databaseMap.containsKey(database);
+			
+			if (!exists)
+			{
+				this.databaseMap.put(database, new Integer(1));
+			}
+			
+			return !exists;
 		}
-		
-		return !exists;
+		finally
+		{
+			lock.release();
+		}
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.Balancer#next()
 	 */
-	public synchronized Database next()
+	public Database next()
 	{
-		if (this.databaseMap.size() <= 1)
+		Sync lock = this.acquireReadLock();
+
+		try
 		{
-			return this.first();
+			if (this.databaseMap.size() <= 1)
+			{
+				return this.first();
+			}
+			
+			List databaseMapEntryList = new ArrayList(this.databaseMap.entrySet());
+			
+			Collections.sort(databaseMapEntryList, comparator);
+			
+			Map.Entry mapEntry = (Map.Entry) databaseMapEntryList.get(0);
+			
+			return (Database) mapEntry.getKey();
 		}
-		
-		List databaseMapEntryList = new ArrayList(this.databaseMap.entrySet());
-		
-		Collections.sort(databaseMapEntryList, comparator);
-		
-		Map.Entry mapEntry = (Map.Entry) databaseMapEntryList.get(0);
-		
-		return (Database) mapEntry.getKey();
+		finally
+		{
+			lock.release();
+		}
 	}
 	
 	/**
@@ -124,10 +144,19 @@ public class LoadBalancer extends AbstractBalancer
 		this.incrementLoad(database, -1);
 	}
 	
-	private synchronized void incrementLoad(Database database, int increment)
+	private void incrementLoad(Database database, int increment)
 	{
-		Integer load = (Integer) this.databaseMap.remove(database);
-
-		this.databaseMap.put(database, new Integer(load.intValue() + increment));
+		Sync lock = this.acquireWriteLock();
+		
+		try
+		{
+			Integer load = (Integer) this.databaseMap.remove(database);
+	
+			this.databaseMap.put(database, new Integer(load.intValue() + increment));
+		}
+		finally
+		{
+			lock.release();
+		}
 	}
 }

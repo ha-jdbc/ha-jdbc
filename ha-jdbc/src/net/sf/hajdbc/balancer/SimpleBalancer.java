@@ -27,6 +27,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import EDU.oswego.cs.dl.util.concurrent.Sync;
+
 import net.sf.hajdbc.Database;
 
 /**
@@ -59,38 +61,65 @@ public class SimpleBalancer extends AbstractBalancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#add(net.sf.hajdbc.Database)
 	 */
-	public synchronized boolean add(Database database)
+	public boolean add(Database database)
 	{
-		boolean exists = this.databaseList.contains(database);
+		Sync lock = this.acquireWriteLock();
 		
-		if (!exists)
+		try
 		{
-			this.databaseList.add(database);
+			boolean exists = this.databaseList.contains(database);
 			
-			Collections.sort(this.databaseList, comparator);
+			if (!exists)
+			{
+				this.databaseList.add(database);
+				
+				Collections.sort(this.databaseList, comparator);
+			}
+			
+			return !exists;
 		}
-		
-		return !exists;
+		finally
+		{
+			lock.release();
+		}
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.Balancer#first()
 	 */
-	public synchronized Database first()
+	public Database first()
 	{
-		if (this.databaseList.isEmpty())
-		{
-			throw new NoSuchElementException();
-		}
+		Sync lock = this.acquireReadLock();
 		
-		return (Database) this.databaseList.get(0);
+		try
+		{
+			if (this.databaseList.isEmpty())
+			{
+				throw new NoSuchElementException();
+			}
+			
+			return (Database) this.databaseList.get(0);
+		}
+		finally
+		{
+			lock.release();
+		}
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.Balancer#next()
 	 */
-	public synchronized Database next()
+	public Database next()
 	{
-		return this.first();
+		Sync lock = this.acquireReadLock();
+		
+		try
+		{
+			return this.first();
+		}
+		finally
+		{
+			lock.release();
+		}
 	}
 }

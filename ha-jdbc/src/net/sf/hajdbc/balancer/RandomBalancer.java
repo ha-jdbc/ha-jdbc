@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import EDU.oswego.cs.dl.util.concurrent.Sync;
+
 import net.sf.hajdbc.Database;
 
 /**
@@ -50,54 +52,81 @@ public class RandomBalancer extends AbstractBalancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#add(net.sf.hajdbc.Database)
 	 */
-	public synchronized boolean add(Database database)
+	public boolean add(Database database)
 	{
-		boolean added = this.databaseSet.add(database);
+		Sync lock = this.acquireWriteLock();
 		
-		if (added)
+		try
 		{
-			int weight = database.getWeight().intValue();
+			boolean added = this.databaseSet.add(database);
 			
-			for (int i = 0; i < weight; ++i)
+			if (added)
 			{
-				this.databaseList.add(database);
+				int weight = database.getWeight().intValue();
+				
+				for (int i = 0; i < weight; ++i)
+				{
+					this.databaseList.add(database);
+				}
 			}
+			
+			return added;
 		}
-		
-		return added;
+		finally
+		{
+			lock.release();
+		}
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.Balancer#remove(net.sf.hajdbc.Database)
 	 */
-	public synchronized boolean remove(Database database)
+	public boolean remove(Database database)
 	{
-		boolean removed = this.databaseSet.remove(database);
+		Sync lock = this.acquireWriteLock();
 		
-		int weight = database.getWeight().intValue();
-		
-		if (removed && (weight > 0))
+		try
 		{
-			int index = this.databaseList.indexOf(database);
+			boolean removed = this.databaseSet.remove(database);
 			
-			this.databaseList.subList(index, index + weight).clear();
+			int weight = database.getWeight().intValue();
+			
+			if (removed && (weight > 0))
+			{
+				int index = this.databaseList.indexOf(database);
+				
+				this.databaseList.subList(index, index + weight).clear();
+			}
+			
+			return removed;
 		}
-		
-		return removed;
+		finally
+		{
+			lock.release();
+		}
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.Balancer#next()
 	 */
-	public synchronized Database next()
+	public Database next()
 	{
-		if (this.databaseList.isEmpty())
+		Sync lock = this.acquireReadLock();
+		
+		try
 		{
-			return this.first();
+			if (this.databaseList.isEmpty())
+			{
+				return this.first();
+			}
+			
+			int index = this.random.nextInt(this.databaseList.size());
+			
+			return (Database) this.databaseList.get(index);
 		}
-		
-		int index = this.random.nextInt(this.databaseList.size());
-		
-		return (Database) this.databaseList.get(index);
+		finally
+		{
+			lock.release();
+		}
 	}
 }
