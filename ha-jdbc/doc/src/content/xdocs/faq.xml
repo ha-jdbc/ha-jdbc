@@ -135,7 +135,8 @@
 						<th>ResultSet caching ability</th>
 						<td>
 							<p>
-								No - caching mechanisms are typically available through O/R mapping frameworks.
+								No - Transparent result set caching is available through <a href="http://www.irongrid.com/catalog/product_info.php?products_id=31">IronEye Cache</a>.
+								Most O/R mapping frameworks include integrated caching mechanisms.
 							</p>
 						</td>
 						<td>
