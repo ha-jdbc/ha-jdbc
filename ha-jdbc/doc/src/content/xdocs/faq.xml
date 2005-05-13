@@ -96,8 +96,16 @@
 					</tr>
 					<tr>
 						<th>Performance</th>
-						<td>Faster reads under load, slightly slower writes than standard JDBC.  Details <a href="performance.html">here</a>.</td>
-						<td>Estimates from users place C-JDBC (without ResultSet caching) 4x slower on average than standard JDBC access.</td>
+						<td>
+							<p>
+								Faster reads under load, slightly slower writes than standard JDBC.  Details <a href="performance.html">here</a>.
+							</p>
+						</td>
+						<td>
+							<p>
+								Estimates from users place C-JDBC (without ResultSet caching) 4x slower on average than standard JDBC access.
+							</p>
+						</td>
 					</tr>
 					<tr>
 						<th>Cluster administration</th>
@@ -136,7 +144,6 @@
 						<td>
 							<p>
 								No - Transparent result set caching is available through <a href="http://www.irongrid.com/catalog/product_info.php?products_id=31">IronEye Cache</a>.
-								Most O/R mapping frameworks include integrated caching mechanisms.
 							</p>
 						</td>
 						<td>
