@@ -18,7 +18,10 @@
 				Updated DifferentialSynchronizationStrategy to use PreparedStatements for inserts and deletions instead of using problematic updatable result set methods.
 			</action>
 			<action type="fix" dev="PF">
-				Altered DifferentialSynchronizationStrategy to drop and re-create unique keys on each table to prevent possible unique constraint violations.
+				Fixed DifferentialSynchronizationStrategy to drop and re-create unique keys on each table to prevent possible unique constraint violations.
+			</action>
+			<action type="update" dev="PF">
+				Updated DifferentialSynchronizationStrategy to not assume that DatabaseMetaData returns primary and unique keys ordered by position.
 			</action>
 		</release>
 		<release version="1.0-beta-8" date="April 27, 2005">

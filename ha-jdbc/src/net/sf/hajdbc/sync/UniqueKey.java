@@ -28,9 +28,8 @@ import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * @author  Paul Ferraro
@@ -44,13 +43,13 @@ public class UniqueKey extends Key
 	/** SQL-92 compatible drop foreign key statement pattern */
 	public static final String DEFAULT_DROP_SQL = "ALTER TABLE {1} DROP CONSTRAINT {0}";
 	
-	private List columnList;
+	private Map columnMap;
 	
 	protected String formatSQL(String pattern)
 	{
 		StringBuffer buffer = new StringBuffer();
 		
-		Iterator columns = this.columnList.iterator();
+		Iterator columns = this.columnMap.values().iterator();
 		
 		while (columns.hasNext())
 		{
@@ -96,12 +95,15 @@ public class UniqueKey extends Key
 				key.table = table;
 				key.quote = quote;
 				key.name = name;
-				key.columnList = new LinkedList();
+				key.columnMap = new TreeMap();
 				
 				keyMap.put(name, key);
 			}
 			
-			key.columnList.add(resultSet.getString("COLUMN_NAME"));
+			short position = resultSet.getShort("ORDINAL_POSITION");
+			String column = resultSet.getString("COLUMN_NAME");
+			
+			key.columnMap.put(new Short(position), column);
 		}
 		
 		resultSet.close();

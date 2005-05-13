@@ -27,11 +27,12 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationStrategy;
@@ -88,8 +89,8 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		
 		DatabaseMetaData databaseMetaData = inactiveConnection.getMetaData();
 		
-		List primaryKeyList = new ArrayList();
-		Set primaryKeyColumnSet = new LinkedHashSet();
+		Map primaryKeyColumnMap = new TreeMap();
+		Set primaryKeyColumnIndexSet = new LinkedHashSet();
 		
 		Iterator tables = tableList.iterator();
 		
@@ -97,8 +98,8 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		{	
 			String table = (String) tables.next();
 			
-			primaryKeyList.clear();
-			primaryKeyColumnSet.clear();
+			primaryKeyColumnMap.clear();
+			primaryKeyColumnIndexSet.clear();
 			
 			// Fetch primary keys of this table
 			ResultSet primaryKeyResultSet = databaseMetaData.getPrimaryKeys(null, null, table);
@@ -106,13 +107,17 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 			
 			while (primaryKeyResultSet.next())
 			{
-				primaryKeyList.add(primaryKeyResultSet.getString("COLUMN_NAME"));
+				String name = primaryKeyResultSet.getString("COLUMN_NAME");
+				short position = primaryKeyResultSet.getShort("KEY_SEQ");
+
+				primaryKeyColumnMap.put(new Short(position), name);
+				
 				primaryKeyName = primaryKeyResultSet.getString("PK_NAME");
 			}
 			
 			primaryKeyResultSet.close();
 			
-			if (primaryKeyList.isEmpty())
+			if (primaryKeyColumnMap.isEmpty())
 			{
 				throw new SQLException(Messages.getMessage(Messages.PRIMARY_KEY_REQUIRED, new Object[] { this.getClass().getName(), table }));
 			}
@@ -122,14 +127,16 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 			// Retrieve table rows in primary key order
 			StringBuffer buffer = new StringBuffer("SELECT * FROM ").append(table).append(" ORDER BY ");
 			
-			for (int i = 0; i < primaryKeyList.size(); ++i)
+			Iterator primaryKeyColumns = primaryKeyColumnMap.values().iterator();
+			
+			while (primaryKeyColumns.hasNext())
 			{
-				if (i > 0)
+				buffer.append(primaryKeyColumns.next());
+				
+				if (primaryKeyColumns.hasNext())
 				{
 					buffer.append(", ");
 				}
-				
-				buffer.append(primaryKeyList.get(i));
 			}
 			
 			String sql = buffer.toString();
@@ -171,19 +178,21 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 			// Construct DELETE SQL
 			StringBuffer deleteSQL = new StringBuffer("DELETE FROM ").append(table).append(" WHERE ");
 			
-			// Create set of primary key columns 
-			for (int i = 0; i < primaryKeyList.size(); ++i)
+			// Create set of primary key columns
+			primaryKeyColumns = primaryKeyColumnMap.values().iterator();
+			
+			while (primaryKeyColumns.hasNext())
 			{
-				String primaryKey = (String) primaryKeyList.get(i);
+				String primaryKeyColumn = (String) primaryKeyColumns.next();
 				
-				primaryKeyColumnSet.add(new Integer(activeResultSet.findColumn(primaryKey)));
+				primaryKeyColumnIndexSet.add(new Integer(activeResultSet.findColumn(primaryKeyColumn)));
 				
-				if (i > 0)
+				if (primaryKeyColumns.hasNext())
 				{
 					deleteSQL.append(" AND ");
 				}
 				
-				deleteSQL.append(primaryKey).append(" = ?");
+				deleteSQL.append(primaryKeyColumn).append(" = ?");
 			}
 
 			PreparedStatement deleteStatement = inactiveConnection.prepareStatement(deleteSQL.toString());
@@ -244,12 +253,12 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				}
 				else
 				{
-					Iterator primaryKeyColumns = primaryKeyColumnSet.iterator();
+					Iterator primaryKeyColumnIndexes = primaryKeyColumnIndexSet.iterator();
 					
-					while (primaryKeyColumns.hasNext())
+					while (primaryKeyColumnIndexes.hasNext())
 					{
-						Integer primaryKeyColumn = (Integer) primaryKeyColumns.next();
-						int column = primaryKeyColumn.intValue();
+						Integer primaryKeyColumnIndex = (Integer) primaryKeyColumnIndexes.next();
+						int column = primaryKeyColumnIndex.intValue();
 						
 						Comparable activeObject = (Comparable) activeResultSet.getObject(column);
 						Object inactiveObject = inactiveResultSet.getObject(column);
@@ -267,13 +276,13 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				{
 					deleteStatement.clearParameters();
 					
-					Iterator primaryKeyColumns = primaryKeyColumnSet.iterator();
+					Iterator primaryKeyColumnIndexes = primaryKeyColumnIndexSet.iterator();
 					int index = 1;
 					
-					while (primaryKeyColumns.hasNext())
+					while (primaryKeyColumnIndexes.hasNext())
 					{
-						Integer primaryKeyColumn = (Integer) primaryKeyColumns.next();
-						int column = primaryKeyColumn.intValue();
+						Integer primaryKeyColumnIndex = (Integer) primaryKeyColumnIndexes.next();
+						int column = primaryKeyColumnIndex.intValue();
 						
 						deleteStatement.setObject(index, inactiveResultSet.getObject(column), types[column]);
 						
@@ -312,7 +321,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 					
 					for (int i = 1; i <= columns; ++i)
 					{
-						if (!primaryKeyColumnSet.contains(new Integer(i)))
+						if (!primaryKeyColumnIndexSet.contains(new Integer(i)))
 						{
 							Object activeObject = activeResultSet.getObject(i);
 							Object inactiveObject = inactiveResultSet.getObject(i);
