@@ -26,70 +26,86 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author  Paul Ferraro
- * @version $Revision$
  * @since   1.0
  */
-public class ForeignKey extends Key
+public class UniqueKey extends Key
 {
 	/** SQL-92 compatible create foreign key statement pattern */
-	public static final String DEFAULT_CREATE_SQL = "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4})";
+	public static final String DEFAULT_CREATE_SQL = "ALTER TABLE {1} ADD CONSTRAINT {0} UNIQUE ({2})";
 
 	/** SQL-92 compatible drop foreign key statement pattern */
 	public static final String DEFAULT_DROP_SQL = "ALTER TABLE {1} DROP CONSTRAINT {0}";
 	
-	private String column;
-	private String foreignTable;
-	private String foreignColumn;
+	private List columnList;
 	
 	protected String formatSQL(String pattern)
 	{
-		return MessageFormat.format(pattern, new Object[] { this.quote(this.name), this.table, this.column, this.quote(this.foreignTable), this.foreignColumn });
+		StringBuffer buffer = new StringBuffer();
+		
+		Iterator columns = this.columnList.iterator();
+		
+		while (columns.hasNext())
+		{
+			buffer.append(columns.next());
+			
+			if (columns.hasNext())
+			{
+				buffer.append(", ");
+			}
+		}
+		
+		return MessageFormat.format(pattern, new Object[] { this.quote(this.name), this.table, buffer.toString() });
 	}
 	
 	/**
 	 * Collects all foreign keys from the specified tables using the specified connection. 
 	 * @param connection a database connection
-	 * @param tableList a list of table names
+	 * @param table a table name
+	 * @param primaryKeyName the name of the primary key of this table
 	 * @return a Collection<ForeignKey>.
 	 * @throws SQLException if a database error occurs
 	 */
-	public static Collection collect(Connection connection, List tableList) throws SQLException
+	public static Collection collect(Connection connection, String table, String primaryKeyName) throws SQLException
 	{
-		List foreignKeyList = new LinkedList();
+		Map keyMap = new HashMap();
 		DatabaseMetaData metaData = connection.getMetaData();
 		String quote = metaData.getIdentifierQuoteString();
 		
-		Iterator tables = tableList.iterator();
+		ResultSet resultSet = metaData.getIndexInfo(null, null, table, true, false);
 		
-		while (tables.hasNext())
+		while (resultSet.next())
 		{
-			String table = (String) tables.next();
+			String name = resultSet.getString("INDEX_NAME");
 			
-			ResultSet resultSet = metaData.getImportedKeys(null, null, table);
+			if ((name == null) || name.equals(primaryKeyName)) continue;
 			
-			while (resultSet.next())
+			UniqueKey key = (UniqueKey) keyMap.get(name);
+			
+			if (key == null)
 			{
-				ForeignKey key = new ForeignKey();
+				key = new UniqueKey();
 				
 				key.table = table;
 				key.quote = quote;
-				key.name = resultSet.getString("FK_NAME");
-				key.column = resultSet.getString("FKCOLUMN_NAME");
-				key.foreignTable = resultSet.getString("PKTABLE_NAME");
-				key.foreignColumn = resultSet.getString("PKCOLUMN_NAME");
-	
-				foreignKeyList.add(key);
+				key.name = name;
+				key.columnList = new LinkedList();
+				
+				keyMap.put(name, key);
 			}
 			
-			resultSet.close();
+			key.columnList.add(resultSet.getString("COLUMN_NAME"));
 		}
 		
-		return foreignKeyList;
+		resultSet.close();
+		
+		return keyMap.values();
 	}
 }

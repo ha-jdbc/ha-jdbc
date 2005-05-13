@@ -77,7 +77,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		inactiveConnection.setAutoCommit(true);
 		
 		// Drop foreign keys
-		ForeignKey.executeSQL(inactiveConnection, ForeignKey.collect(inactiveConnection, tableList), this.dropForeignKeySQL);
+		Key.executeSQL(inactiveConnection, ForeignKey.collect(inactiveConnection, tableList), this.dropForeignKeySQL);
 		
 		inactiveConnection.setAutoCommit(false);
 		
@@ -203,7 +203,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		inactiveConnection.setAutoCommit(true);
 
 		// Recreate foreign keys
-		ForeignKey.executeSQL(inactiveConnection, ForeignKey.collect(activeConnection, tableList), this.createForeignKeySQL);
+		Key.executeSQL(inactiveConnection, ForeignKey.collect(activeConnection, tableList), this.createForeignKeySQL);
 	}
 	
 	/**

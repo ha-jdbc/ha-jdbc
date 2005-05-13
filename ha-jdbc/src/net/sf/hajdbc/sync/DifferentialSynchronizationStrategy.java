@@ -70,6 +70,8 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 
 	private String createForeignKeySQL = ForeignKey.DEFAULT_CREATE_SQL;
 	private String dropForeignKeySQL = ForeignKey.DEFAULT_DROP_SQL;
+	private String createUniqueKeySQL = UniqueKey.DEFAULT_CREATE_SQL;
+	private String dropUniqueKeySQL = UniqueKey.DEFAULT_DROP_SQL;
 	private int fetchSize = 0;
 	
 	/**
@@ -80,7 +82,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		inactiveConnection.setAutoCommit(true);
 		
 		// Drop foreign keys
-		ForeignKey.executeSQL(inactiveConnection, ForeignKey.collect(inactiveConnection, tableList), this.dropForeignKeySQL);
+		Key.executeSQL(inactiveConnection, ForeignKey.collect(inactiveConnection, tableList), this.dropForeignKeySQL);
 		
 		inactiveConnection.setAutoCommit(false);
 		
@@ -100,10 +102,12 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 			
 			// Fetch primary keys of this table
 			ResultSet primaryKeyResultSet = databaseMetaData.getPrimaryKeys(null, null, table);
+			String primaryKeyName = null;
 			
 			while (primaryKeyResultSet.next())
 			{
 				primaryKeyList.add(primaryKeyResultSet.getString("COLUMN_NAME"));
+				primaryKeyName = primaryKeyResultSet.getString("PK_NAME");
 			}
 			
 			primaryKeyResultSet.close();
@@ -113,19 +117,19 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				throw new SQLException(Messages.getMessage(Messages.PRIMARY_KEY_REQUIRED, new Object[] { this.getClass().getName(), table }));
 			}
 
+			Key.executeSQL(inactiveConnection, UniqueKey.collect(inactiveConnection, table, primaryKeyName), this.dropUniqueKeySQL);
+			
 			// Retrieve table rows in primary key order
 			StringBuffer buffer = new StringBuffer("SELECT * FROM ").append(table).append(" ORDER BY ");
 			
 			for (int i = 0; i < primaryKeyList.size(); ++i)
 			{
-				String primaryKey = (String) primaryKeyList.get(i);
-				
 				if (i > 0)
 				{
 					buffer.append(", ");
 				}
 				
-				buffer.append(primaryKey);
+				buffer.append(primaryKeyList.get(i));
 			}
 			
 			String sql = buffer.toString();
@@ -369,18 +373,20 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 			
 			inactiveStatement.close();
 			activeStatement.close();
+
+			Key.executeSQL(inactiveConnection, UniqueKey.collect(activeConnection, table, primaryKeyName), this.createUniqueKeySQL);
 			
 			inactiveConnection.commit();
 			
 			log.info(Messages.getMessage(Messages.INSERT_COUNT, new Object[] { new Integer(insertCount), table }));
 			log.info(Messages.getMessage(Messages.UPDATE_COUNT, new Object[] { new Integer(updateCount), table }));
-			log.info(Messages.getMessage(Messages.DELETE_COUNT, new Object[] { new Integer(deleteCount), table }));
+			log.info(Messages.getMessage(Messages.DELETE_COUNT, new Object[] { new Integer(deleteCount), table }));			
 		}
 
 		inactiveConnection.setAutoCommit(true);
 
 		// Recreate foreign keys
-		ForeignKey.executeSQL(inactiveConnection, ForeignKey.collect(activeConnection, tableList), this.createForeignKeySQL);
+		Key.executeSQL(inactiveConnection, ForeignKey.collect(activeConnection, tableList), this.createForeignKeySQL);
 	}
 	
 	/**
