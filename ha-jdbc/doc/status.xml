@@ -249,6 +249,9 @@
 				TestNG unit test suite. (in progress)
 			</action>
 			<action context="code" dev="PF">
+				Add more FAQs.
+			</action>
+			<action context="code" dev="PF">
 				Complete documentation.
 			</action>
 		</actions>
@@ -256,6 +259,9 @@
 			<action context="code" dev="PF">
 				Support for modifying HA-JDBC configuration at runtime.
 				Workaround is to create "placeholder" DataSources that can be defined and activated as needed.
+			</action>
+			<action context="code" dev="PF">
+				Support for using native database replication capabilities.
 			</action>
 		</actions>
 	</todo>
