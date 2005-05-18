@@ -26,7 +26,7 @@ import net.sf.hajdbc.Balancer;
 
 /**
  * @author  Paul Ferraro
- * @since   3.1
+ * @since   1.0
  */
 public class TestRandomBalancer extends TestBalancer
 {

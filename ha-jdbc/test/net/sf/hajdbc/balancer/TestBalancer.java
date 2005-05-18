@@ -31,7 +31,7 @@ import net.sf.hajdbc.Operation;
 
 /**
  * @author  Paul Ferraro
- * @since   3.1
+ * @since   1.0
  */
 public abstract class TestBalancer
 {

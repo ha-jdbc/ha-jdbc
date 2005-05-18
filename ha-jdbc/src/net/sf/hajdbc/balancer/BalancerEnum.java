@@ -27,7 +27,7 @@ import net.sf.hajdbc.Messages;
 
 /**
  * @author  Paul Ferraro
- * @since   3.1
+ * @since   1.0
  */
 public final class BalancerEnum
 {
