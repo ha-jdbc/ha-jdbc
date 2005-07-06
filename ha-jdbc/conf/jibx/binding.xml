@@ -22,6 +22,7 @@
 		<value name="weight" field="weight" style="attribute" usage="optional" default="1"></value>
 		<value name="user" field="user" usage="optional"></value>
 		<value name="password" field="password" usage="optional"></value>
+		<structure field="properties" unmarshaller="net.sf.hajdbc.util.PropertiesUnmarshaller"></structure>
 	</mapping>
 	<mapping name="database" class="net.sf.hajdbc.sql.DriverDatabase" extends="net.sf.hajdbc.sql.AbstractDatabase">
 		<value name="driver" field="driver" usage="optional"></value>
@@ -43,11 +44,6 @@
 	<mapping name="sync-strategy" class="net.sf.hajdbc.SynchronizationStrategyDescriptor">
 		<value name="id" field="id" style="attribute"></value>
 		<value name="class" field="className" style="attribute"></value>
-		<collection field="propertyList" type="java.util.LinkedList">
-			<structure name="property" type="java.beans.ParameterDescriptor">
-				<value name="name" get-method="getName" set-method="setName" style="attribute"></value>
-				<value get-method="getDisplayName" set-method="setDisplayName" style="text"></value>
-			</structure>
-		</collection>
+		<structure field="properties" unmarshaller="net.sf.hajdbc.util.PropertiesUnmarshaller"></structure>
 	</mapping>
 </binding>
