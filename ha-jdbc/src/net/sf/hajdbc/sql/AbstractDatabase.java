@@ -133,7 +133,8 @@ public abstract class AbstractDatabase implements Database
 	}
 	
 	/**
-	 * @return
+	 * Returns a collection of additional properties of this database.
+	 * @return additional properties of this database
 	 */
 	public Properties getProperties()
 	{
@@ -141,6 +142,7 @@ public abstract class AbstractDatabase implements Database
 	}
 	
 	/**
+	 * Sets a collection of additional properties for this database.
 	 * @param properties
 	 */
 	public void setProperties(Properties properties)

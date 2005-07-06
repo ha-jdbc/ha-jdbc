@@ -42,6 +42,7 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 * Constructs a new ConnectionProxy.
 	 * @param object a proxy to an object that can create connections
 	 * @param operation an operation that will create Connections
+	 * @param fileSupport a file support object
 	 * @throws java.sql.SQLException if operation execution fails
 	 */
 	public Connection(SQLObject object, Operation operation, FileSupport fileSupport) throws java.sql.SQLException
