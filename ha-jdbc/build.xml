@@ -2,10 +2,13 @@
 <project name="ha-jdbc" default="jar" basedir=".">
 
 	<property file="${basedir}/build.properties"></property>
-	
+
+	<property name="junit.jar" value="junit-3.8.1.jar"></property>
+		
 	<property name="build.dir" location="${basedir}/build"></property>
 	<property name="src.dir" location="${basedir}/src"></property>
 	<property name="test.dir" location="${basedir}/test"></property>
+	<property name="test.output.dir" location="${basedir}/test-output"></property>
 	<property name="doc.dir" location="${basedir}/doc"></property>
 	<property name="doc.api.dir" location="${doc.dir}/build/site/api"></property>
 	<property name="lib.dir" location="${basedir}/lib"></property>
@@ -18,15 +21,21 @@
 	<property name="jar.file" location="${basedir}/${dist.version.name}.jar"></property>
 	<property name="dist.bin.file" location="${basedir}/${dist.version.name}-bin.tar.gz"></property>
 	<property name="dist.src.file" location="${basedir}/${dist.version.name}-src.tar.gz"></property>
-
-	<path id="classpath">
+	
+	<available property="junit-available" file="${ant.home}/lib/${junit.jar}"/>
+	
+	<path id="build.classpath">
 		<dirset dir="${build.dir}"></dirset>
-		<dirset dir="${test.dir}"></dirset>
 		<fileset dir="${lib.dir}" includes="*.jar"></fileset>
 		<fileset dir="${lib.compile.dir}" includes="*.jar"></fileset>
-		<fileset dir="${lib.test.dir}" includes="*.jar"></fileset>
 	</path>
 
+	<path id="test.classpath">
+		<path refid="build.classpath"></path>
+		<dirset dir="${test.dir}"></dirset>
+		<fileset dir="${lib.test.dir}" includes="*.jar"></fileset>
+	</path>
+	
 	<taskdef name="bind" classname="org.jibx.binding.ant.CompileTask">
 		<classpath>
 			<fileset dir="${lib.dir}">
@@ -39,13 +48,6 @@
 			</fileset>
 		</classpath>
 	</taskdef>
-	<taskdef name="testng" classname="com.beust.testng.TestNGAntTask">
-		<classpath>
-			<fileset dir="${lib.test.dir}">
-				<include name="testng-*.jar"/>
-			</fileset>
-		</classpath>
-	</taskdef>
 	
 	<target name="clean">
 		<delete quiet="true">
@@ -55,13 +57,13 @@
 		<delete dir="${doc.dir}/build" quiet="true"></delete>
 		<delete dir="${doc.api.dir}" quiet="true"></delete>
 	</target>
-	
+
 	<target name="init">
-		<mkdir dir="${build.dir}"></mkdir>
+		<mkdir dir="${build.dir}"/>
 	</target>
 	
     <target name="compile" depends="init">
-        <javac srcdir="${src.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="classpath" source="1.4" target="1.4"></javac>
+        <javac srcdir="${src.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="build.classpath" source="1.4" target="1.4"></javac>
 		<copy todir="${build.dir}">
 			<fileset dir="${src.dir}" excludes="**/*.java"></fileset>
 		</copy>
@@ -70,18 +72,18 @@
     <target name="bind" depends="compile">
 		<bind verbose="false" load="true">
 			<bindingfileset dir="${conf.jibx.dir}" includes="*.xml"/>
-			<classpath refid="classpath"></classpath>
+			<classpath refid="build.classpath"></classpath>
 		</bind> 
     </target>
 
     <target name="jar" depends="bind">
-        <jar jarfile="${jar.file}">
+        <jar jarfile="${jar.file}" index="true">
 			<fileset dir="${build.dir}"></fileset>
 		</jar>
     </target>
 
 	<target name="dist" depends="clean, jar, site">
-		<tar tarfile="${dist.bin.file}" compression="gzip">
+		<tar tarfile="${dist.bin.file}" prefix="${dist.version.name}" compression="gzip">
 			<tarfileset dir="${basedir}" includes="${dist.version.name}.jar"></tarfileset>
 			<tarfileset dir="${basedir}" includes="*.txt"></tarfileset>
 			<tarfileset dir="${basedir}" includes="lib/*.jar"></tarfileset>
@@ -90,7 +92,7 @@
 	</target>
 	
 	<target name="dist-src">
-		<tar tarfile="${dist.src.file}" compression="gzip">
+		<tar tarfile="${dist.src.file}" prefix="${dist.version.name}" compression="gzip">
 			<tarfileset dir="${basedir}" includes="*.txt"></tarfileset>
 			<tarfileset dir="${basedir}" includes="build.*"></tarfileset>
 			<tarfileset dir="${basedir}" includes="src/**"></tarfileset>
@@ -110,19 +112,28 @@
 	</target>
 	
 	<target name="site" depends="javadoc">
-		<!-- requires Apache Forrest 0.6 -->
+		<!-- requires Apache Forrest 0.7 -->
 		<ant dir="${doc.dir}" inheritall="false"></ant>
 	</target>
 
 	<target name="compile-tests" depends="bind">
-		<javac srcdir="${test.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="classpath" source="1.4" target="1.4"></javac>
+		<javac srcdir="${test.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="test.classpath" source="1.4" target="1.4"></javac>
+	</target>
+
+	<target name="install-junit" unless="junit-available">
+		<copy file="${lib.test.dir}/${junit.jar}" todir="${ant.home}/lib"/>
+		<echo message="${junit.jar} has been installed in ${ant.home}/lib."></echo>
+		<fail message="You must restart the build to continue."/>
 	</target>
 	
-	<target name="run-tests" depends="compile-tests">
-		<testng sourcedir="${test.dir}" classpathref="classpath">
-			<xmlfileset dir="${test.dir}" includes="testng.xml"/>
-			<jvmarg value="-ea"/>
-		</testng>
+	<target name="run-tests" depends="install-junit, compile-tests">
+		<junit fork="yes" haltonfailure="off">
+			<classpath refid="test.classpath"></classpath>
+			<formatter type="brief" usefile="false"/>
+			<batchtest>
+				<fileset dir="${test.dir}" includes="**/Test*.java"></fileset>
+			</batchtest>
+		</junit>
 	</target>
 	
 </project>
