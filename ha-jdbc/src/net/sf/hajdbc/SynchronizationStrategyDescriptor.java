@@ -21,14 +21,13 @@
 package net.sf.hajdbc;
 
 import java.beans.Introspector;
-import java.beans.ParameterDescriptor;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * Describes a SynchronizationStrategy implementation.
@@ -41,7 +40,7 @@ public class SynchronizationStrategyDescriptor
 {
 	private String id;
 	private String className;
-	private List propertyList;
+	private Properties properties;
 	
 	/**
 	 * @return the id.
@@ -50,7 +49,7 @@ public class SynchronizationStrategyDescriptor
 	{
 		return this.id;
 	}
-
+	
 	/**
 	 * Factory method for creating a SynchronizationStrategy from this descriptor.
 	 * @return a SynchronizationStrategy implementation
@@ -67,7 +66,7 @@ public class SynchronizationStrategyDescriptor
 		
 		SynchronizationStrategy strategy = (SynchronizationStrategy) strategyClass.newInstance();
 
-		if ((this.propertyList != null) && !this.propertyList.isEmpty())
+		if ((this.properties != null) && !this.properties.isEmpty())
 		{
 			PropertyDescriptor[] descriptors = Introspector.getBeanInfo(strategyClass).getPropertyDescriptors();
 			
@@ -80,42 +79,38 @@ public class SynchronizationStrategyDescriptor
 				propertyDescriptorMap.put(descriptor.getName(), descriptor);
 			}
 			
-			Iterator properties = this.propertyList.iterator();
+			Iterator names = properties.keySet().iterator();
 			
-			while (properties.hasNext())
+			while (names.hasNext())
 			{
-				ParameterDescriptor property = (ParameterDescriptor) properties.next();
+				String name = (String) names.next();
 				
-				PropertyDescriptor descriptor = (PropertyDescriptor) propertyDescriptorMap.get(property.getName());
+				PropertyDescriptor descriptor = (PropertyDescriptor) propertyDescriptorMap.get(name);
 				
 				if (descriptor == null)
 				{
-					throw new SQLException(Messages.getMessage(Messages.INVALID_PROPERTY, new Object[] { property.getName(), this.className }));
+					throw new SQLException(Messages.getMessage(Messages.INVALID_PROPERTY, new Object[] { name, this.className }));
 				}
 				
-				if (descriptor.getName().equals(property.getName()))
+				PropertyEditor editor = PropertyEditorManager.findEditor(descriptor.getPropertyType());
+				
+				String textValue = this.properties.getProperty(name);
+				
+				try
 				{
-					PropertyEditor editor = PropertyEditorManager.findEditor(descriptor.getPropertyType());
-					
-					// Yes - we shamelessly hijacked the display name for the property value
-					String textValue = property.getDisplayName();
-					
-					try
+					if (editor == null)
 					{
-						if (editor == null)
-						{
-							throw new IllegalArgumentException();
-						}
+						throw new IllegalArgumentException();
+					}
 
-						editor.setAsText(textValue);
-					}
-					catch (IllegalArgumentException e)
-					{
-						throw new SQLException(Messages.getMessage(Messages.INVALID_PROPERTY_VALUE, new Object[] { textValue, property.getName(), this.className }));
-					}
-					
-					descriptor.getWriteMethod().invoke(strategy, new Object[] { editor.getValue() });
+					editor.setAsText(textValue);
 				}
+				catch (IllegalArgumentException e)
+				{
+					throw new SQLException(Messages.getMessage(Messages.INVALID_PROPERTY_VALUE, new Object[] { textValue, name, this.className }));
+				}
+				
+				descriptor.getWriteMethod().invoke(strategy, new Object[] { editor.getValue() });
 			}
 		}
 		

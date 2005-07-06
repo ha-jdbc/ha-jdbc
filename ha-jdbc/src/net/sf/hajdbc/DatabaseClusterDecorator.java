@@ -21,14 +21,13 @@
 package net.sf.hajdbc;
 
 import java.util.Collection;
-import java.util.Map;
 
 /**
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public abstract class DatabaseClusterDecorator extends DatabaseCluster
+public abstract class DatabaseClusterDecorator extends AbstractDatabaseCluster
 {
 	protected DatabaseCluster databaseCluster;
 
@@ -43,22 +42,6 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 	public final String getId()
 	{
 		return this.databaseCluster.getId();
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#isActive(net.sf.hajdbc.Database)
-	 */
-	public boolean isActive(Database database)
-	{
-		return this.databaseCluster.isActive(database);
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getDatabases()
-	 */
-	public final Database[] getDatabases() throws java.sql.SQLException
-	{
-		return this.databaseCluster.getDatabases();
 	}
 	
 	/**
@@ -109,13 +92,19 @@ public abstract class DatabaseClusterDecorator extends DatabaseCluster
 		return this.databaseCluster.getSynchronizationStrategy(id);
 	}
 	
-	protected Map getConnectionFactoryMap()
-	{
-		return this.databaseCluster.getConnectionFactoryMap();
-	}
-	
-	protected Balancer getBalancer()
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getBalancer()
+	 */
+	public Balancer getBalancer()
 	{
 		return this.databaseCluster.getBalancer();
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getConnectionFactory()
+	 */
+	public ConnectionFactory getConnectionFactory()
+	{
+		return this.databaseCluster.getConnectionFactory();
 	}
 }

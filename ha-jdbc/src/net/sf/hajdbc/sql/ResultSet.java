@@ -45,8 +45,6 @@ import net.sf.hajdbc.SQLObject;
  */
 public class ResultSet extends SQLObject implements java.sql.ResultSet
 {
-	protected FileSupport fileSupport = new FileSupport();
-	
 	/**
 	 * Constructs a new ResultSetProxy.
 	 * @param statement a Statement proxy
@@ -170,8 +168,6 @@ public class ResultSet extends SQLObject implements java.sql.ResultSet
 		};
 		
 		this.executeWriteToDatabase(operation);
-		
-		this.fileSupport.close();
 	}
 
 	/**
@@ -1592,13 +1588,14 @@ public class ResultSet extends SQLObject implements java.sql.ResultSet
 	 */
 	public void updateAsciiStream(final int index, InputStream inputStream, final int length) throws SQLException
 	{
-		final File file = this.fileSupport.createFile(inputStream);
+		final FileSupport fileSupport = this.getFileSupport();
+		final File file = fileSupport.createFile(inputStream);
 		
 		ResultSetOperation operation = new ResultSetOperation()
 		{
 			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
-				resultSet.updateAsciiStream(index, ResultSet.this.fileSupport.getInputStream(file), length);
+				resultSet.updateAsciiStream(index, fileSupport.getInputStream(file), length);
 				
 				return null;
 			}
@@ -1612,13 +1609,14 @@ public class ResultSet extends SQLObject implements java.sql.ResultSet
 	 */
 	public void updateAsciiStream(final String name, InputStream inputStream, final int length) throws SQLException
 	{
-		final File file = this.fileSupport.createFile(inputStream);
+		final FileSupport fileSupport = this.getFileSupport();
+		final File file = fileSupport.createFile(inputStream);
 		
 		ResultSetOperation operation = new ResultSetOperation()
 		{
 			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
-				resultSet.updateAsciiStream(name, ResultSet.this.fileSupport.getInputStream(file), length);
+				resultSet.updateAsciiStream(name, fileSupport.getInputStream(file), length);
 				
 				return null;
 			}
@@ -1668,7 +1666,8 @@ public class ResultSet extends SQLObject implements java.sql.ResultSet
 	 */
 	public void updateBinaryStream(final int index, InputStream inputStream, final int length) throws SQLException
 	{
-		final File file = this.fileSupport.createFile(inputStream);
+		final FileSupport fileSupport = this.getFileSupport();
+		final File file = fileSupport.createFile(inputStream);
 		
 		try
 		{
@@ -1676,7 +1675,7 @@ public class ResultSet extends SQLObject implements java.sql.ResultSet
 			{
 				public Object execute(java.sql.ResultSet resultSet) throws SQLException
 				{
-					resultSet.updateBinaryStream(index, ResultSet.this.fileSupport.getInputStream(file), length);
+					resultSet.updateBinaryStream(index, fileSupport.getInputStream(file), length);
 					
 					return null;
 				}
@@ -1695,13 +1694,14 @@ public class ResultSet extends SQLObject implements java.sql.ResultSet
 	 */
 	public void updateBinaryStream(final String name, InputStream inputStream, final int length) throws SQLException
 	{
-		final File file = this.fileSupport.createFile(inputStream);
+		final FileSupport fileSupport = this.getFileSupport();
+		final File file = fileSupport.createFile(inputStream);
 		
 		ResultSetOperation operation = new ResultSetOperation()
 		{
 			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
-				resultSet.updateBinaryStream(name, ResultSet.this.fileSupport.getInputStream(file), length);
+				resultSet.updateBinaryStream(name, fileSupport.getInputStream(file), length);
 				
 				return null;
 			}
@@ -1859,13 +1859,14 @@ public class ResultSet extends SQLObject implements java.sql.ResultSet
 	 */
 	public void updateCharacterStream(final int index, Reader reader, final int length) throws SQLException
 	{
-		final File file = this.fileSupport.createFile(reader);
+		final FileSupport fileSupport = this.getFileSupport();
+		final File file = fileSupport.createFile(reader);
 		
 		ResultSetOperation operation = new ResultSetOperation()
 		{
 			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
-				resultSet.updateCharacterStream(index, ResultSet.this.fileSupport.getReader(file), length);
+				resultSet.updateCharacterStream(index, fileSupport.getReader(file), length);
 				
 				return null;
 			}
@@ -1879,13 +1880,14 @@ public class ResultSet extends SQLObject implements java.sql.ResultSet
 	 */
 	public void updateCharacterStream(final String name, Reader reader, final int length) throws SQLException
 	{
-		final File file = this.fileSupport.createFile(reader);
+		final FileSupport fileSupport = this.getFileSupport();
+		final File file = fileSupport.createFile(reader);
 		
 		ResultSetOperation operation = new ResultSetOperation()
 		{
 			public Object execute(java.sql.ResultSet resultSet) throws SQLException
 			{
-				resultSet.updateCharacterStream(name, ResultSet.this.fileSupport.getReader(file), length);
+				resultSet.updateCharacterStream(name, fileSupport.getReader(file), length);
 				
 				return null;
 			}
@@ -2430,5 +2432,12 @@ public class ResultSet extends SQLObject implements java.sql.ResultSet
 		};
 		
 		return ((Boolean) this.executeReadFromDriver(operation)).booleanValue();
+	}
+	
+	protected FileSupport getFileSupport() throws SQLException
+	{
+		Connection connection = (Connection) this.getStatement().getConnection();
+		
+		return connection.getFileSupport();
 	}
 }

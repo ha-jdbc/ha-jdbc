@@ -20,6 +20,8 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.util.Properties;
+
 import net.sf.hajdbc.Database;
 
 /**
@@ -32,6 +34,7 @@ public abstract class AbstractDatabase implements Database
 	protected String id;
 	protected String user;
 	protected String password;
+	protected Properties properties;
 	protected Integer weight;
 
 	/**
@@ -127,5 +130,21 @@ public abstract class AbstractDatabase implements Database
 	public String toString()
 	{
 		return this.id;
+	}
+	
+	/**
+	 * @return
+	 */
+	public Properties getProperties()
+	{
+		return this.properties;
+	}
+	
+	/**
+	 * @param properties
+	 */
+	public void setProperties(Properties properties)
+	{
+		this.properties = properties;
 	}
 }

@@ -30,7 +30,7 @@ import java.util.Map;
 public class ConnectionFactory extends SQLObject
 {
 	/**
-	 * Constructs a new ConnectionFactoryProxy.
+	 * Constructs a new ConnectionFactory.
 	 * @param databaseCluster a database cluster
 	 * @param connectionFactoryMap a Map<Database, Object>
 	 */

@@ -22,13 +22,11 @@ package net.sf.hajdbc.balancer;
 
 import java.util.Collection;
 
+import net.sf.hajdbc.Balancer;
+import net.sf.hajdbc.Database;
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
-
-import net.sf.hajdbc.Balancer;
-import net.sf.hajdbc.Database;
-import net.sf.hajdbc.Operation;
 
 /**
  * @author  Paul Ferraro
@@ -65,36 +63,17 @@ public abstract class AbstractBalancer implements Balancer
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Balancer#execute(net.sf.hajdbc.Operation, net.sf.hajdbc.Database, java.lang.Object)
+	 * @see net.sf.hajdbc.Balancer#beforeOperation(net.sf.hajdbc.Database)
 	 */
-	public Object execute(Operation operation, Database database, Object object) throws java.sql.SQLException
-	{
-		this.beforeOperation(database);
-		
-		try
-		{
-			return operation.execute(database, object);
-		}
-		finally
-		{
-			this.afterOperation(database);
-		}
-	}
-	
-	/**
-	 * Called before an operation is performed on the specified database.
-	 * @param database a database descriptor
-	 */
-	protected void beforeOperation(Database database)
+	public void beforeOperation(Database database)
 	{
 		// Do nothing
 	}
 	
 	/**
-	 * Called after an operation is performed on the specified database.
-	 * @param database a database descriptor
+	 * @see net.sf.hajdbc.Balancer#afterOperation(net.sf.hajdbc.Database)
 	 */
-	protected void afterOperation(Database database)
+	public void afterOperation(Database database)
 	{
 		// Do nothing
 	}

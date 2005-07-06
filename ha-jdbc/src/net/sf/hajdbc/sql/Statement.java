@@ -25,8 +25,8 @@ import java.sql.SQLWarning;
 import java.util.Iterator;
 import java.util.Map;
 
-import net.sf.hajdbc.Database;
 import net.sf.hajdbc.SQLObject;
+import net.sf.hajdbc.Database;
 
 /**
  * @author  Paul Ferraro

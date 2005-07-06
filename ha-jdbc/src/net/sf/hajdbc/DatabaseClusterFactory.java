@@ -32,7 +32,9 @@ import java.util.Map;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
+import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+import javax.management.StandardMBean;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -50,9 +52,24 @@ public final class DatabaseClusterFactory
 	private static final String SYSTEM_PROPERTY = "ha-jdbc.configuration";
 	private static final String DEFAULT_RESOURCE = "ha-jdbc.xml";
 	
+	private static final String MBEAN_DOMAIN = "net.sf.hajdbc";
+	private static final String MBEAN_KEY = "database-cluster";
+	
 	private static Log log = LogFactory.getLog(DatabaseClusterFactory.class);
 	
 	private static DatabaseClusterFactory instance = null;
+	
+	/**
+	 * Convenience method for constructing an mbean ObjectName for this cluster.
+	 * The ObjectName is constructed using {@link #MBEAN_DOMAIN} and {@link #MBEAN_KEY} and the quoted cluster identifier.
+	 * @param databaseClusterId a cluster identifier
+	 * @return an ObjectName for this cluster
+	 * @throws MalformedObjectNameException if the ObjectName could not be constructed
+	 */
+	public static ObjectName getObjectName(String databaseClusterId) throws MalformedObjectNameException
+	{
+		return ObjectName.getInstance(MBEAN_DOMAIN, MBEAN_KEY, ObjectName.quote(databaseClusterId));
+	}
 	
 	/**
 	 * Provides access to the singleton instance of this factory object.
@@ -130,11 +147,11 @@ public final class DatabaseClusterFactory
 				
 				databaseCluster.init();
 				
-				ObjectName name = DatabaseCluster.getObjectName(databaseCluster.getId());
+				ObjectName name = getObjectName(databaseCluster.getId());
 				
 				if (!server.isRegistered(name))
 				{
-					server.registerMBean(databaseCluster, name);
+					server.registerMBean(new StandardMBean(databaseCluster, DatabaseClusterMBean.class), name);
 				}
 				
 				this.databaseClusterMap.put(databaseCluster.getId(), databaseCluster);

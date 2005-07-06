@@ -78,44 +78,24 @@ public class DriverDatabase extends AbstractDatabase
 	}
 	
 	/**
-	 * Builds a properties object from the user and password for this database.
-	 * @return a properties object
-	 */
-	public Properties getProperties()
-	{
-		Properties properties = new Properties();
-		
-		if (this.user != null)
-		{
-			properties.setProperty(USER, this.user);
-		}
-		
-		if (this.password != null)
-		{
-			properties.setProperty(PASSWORD, this.password);
-		}
-		
-		return properties;
-	}
-	
-	/**
-	 * Extracts the user and password for this database from the specified properties object.
-	 * @param properties a properties object
-	 */
-	public void setProperties(Properties properties)
-	{
-		this.user = properties.getProperty(USER);
-		this.password = properties.getProperty(PASSWORD);
-	}
-	
-	/**
 	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
 	 */
 	public Connection connect(Object connectionFactory) throws java.sql.SQLException
 	{
 		Driver driver = (Driver) connectionFactory;
+		Properties properties = new Properties(this.getProperties());
 		
-		return driver.connect(this.url, this.getProperties());
+		if (this.user != null)
+		{
+			properties.setProperty(USER, this.user);
+		}
+
+		if (this.password != null)
+		{
+			properties.setProperty(PASSWORD, this.password);
+		}
+		
+		return driver.connect(this.url, properties);
 	}
 	
 	/**

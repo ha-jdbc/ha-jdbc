@@ -66,12 +66,14 @@ public interface Balancer
 	public boolean contains(Database database);
 	
 	/**
-	 * Executes the specifed operation on the specified object of the specified database.
-	 * @param operation a database operation
+	 * Called before an operation is performed on the specified database retrieved via {@link #next()}.
 	 * @param database a database descriptor
-	 * @param object a SQL object
-	 * @return the result of the operation
-	 * @throws java.sql.SQLException if the operation fails
 	 */
-	public Object execute(Operation operation, Database database, Object object) throws java.sql.SQLException;
+	public void beforeOperation(Database database);
+	
+	/**
+	 * Called after an operation is performed on the specified database retrieved via {@link #next()}.
+	 * @param database a database descriptor
+	 */
+	public void afterOperation(Database database);
 }

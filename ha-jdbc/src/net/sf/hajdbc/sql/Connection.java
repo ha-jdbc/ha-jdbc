@@ -36,15 +36,19 @@ import net.sf.hajdbc.SQLObject;
  */
 public class Connection extends SQLObject implements java.sql.Connection
 {
+	private FileSupport fileSupport;
+	
 	/**
 	 * Constructs a new ConnectionProxy.
-	 * @param connectionFactory a proxy to an object that can create connections
+	 * @param object a proxy to an object that can create connections
 	 * @param operation an operation that will create Connections
 	 * @throws java.sql.SQLException if operation execution fails
 	 */
-	public Connection(SQLObject connectionFactory, Operation operation) throws java.sql.SQLException
+	public Connection(SQLObject object, Operation operation, FileSupport fileSupport) throws java.sql.SQLException
 	{
-		super(connectionFactory, operation);
+		super(object, operation);
+		
+		this.fileSupport = fileSupport;
 	}
 	
 	/**
@@ -81,6 +85,8 @@ public class Connection extends SQLObject implements java.sql.Connection
 		};
 		
 		this.executeWriteToDatabase(operation);
+		
+		this.fileSupport.close();
 	}
 
 	/**
@@ -659,5 +665,13 @@ public class Connection extends SQLObject implements java.sql.Connection
 		};
 		
 		this.executeWriteToDriver(operation);
+	}
+	
+	/**
+	 * @return a file support object
+	 */
+	public FileSupport getFileSupport()
+	{
+		return this.fileSupport;
 	}
 }

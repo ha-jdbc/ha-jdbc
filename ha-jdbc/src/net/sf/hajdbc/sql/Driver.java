@@ -93,7 +93,7 @@ public final class Driver implements java.sql.Driver
 			}
 		};
 		
-		return new Connection(connectionFactory, operation);
+		return new Connection(connectionFactory, operation, new FileSupportImpl());
 	}
 	
 	/**

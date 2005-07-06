@@ -74,10 +74,10 @@ public class DataSourceDatabase extends AbstractDatabase
 	{
 		try
 		{
-			Context context = new InitialContext();
+			Context context = new InitialContext(this.properties);
 	
 			Object object = context.lookup(this.name);
-	
+			
 			if (!this.getDataSourceClass().isInstance(object))
 			{
 				throw new SQLException(Messages.getMessage(Messages.NOT_INSTANCE_OF, new Object[] { this.name, this.getDataSourceClass().getName() }));

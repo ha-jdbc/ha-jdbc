@@ -20,21 +20,24 @@
  */
 package net.sf.hajdbc;
 
-import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
  * @author  Paul Ferraro
- * @version $Revision$
  * @since   1.0
  */
-public abstract class SQLObject
+public class SQLObject
 {
 	private static Log log = LogFactory.getLog(SQLObject.class);
 	
@@ -108,7 +111,7 @@ public abstract class SQLObject
 	 * Records an operation.
 	 * @param operation a database operation
 	 */
-	public synchronized final void record(Operation operation)
+	protected synchronized final void record(Operation operation)
 	{
 		this.operationList.add(operation);
 	}
@@ -124,47 +127,163 @@ public abstract class SQLObject
 	}
 
 	/**
-	 * Helper method that call the appropriate execute method on the database cluster.
-	 * @param operation a database operation
-	 * @return the result of the operation
-	 * @throws java.sql.SQLException if operation execution fails
-	 */
-	public final Object executeReadFromDatabase(Operation operation) throws java.sql.SQLException
-	{
-		return this.databaseCluster.executeReadFromDatabase(this, operation);
-	}
-
-	/**
-	 * Helper method that call the appropriate execute method on the database cluster.
+	 * Executes the specified read operation on a single database in the cluster.
+	 * It is assumed that these types of operation will <em>not</em> require access to the database.
 	 * @param operation a database operation
 	 * @return the result of the operation
 	 * @throws java.sql.SQLException if operation execution fails
 	 */
 	public final Object executeReadFromDriver(Operation operation) throws java.sql.SQLException
 	{
-		return this.databaseCluster.executeReadFromDriver(this, operation);
+		try
+		{
+			Database database = this.databaseCluster.getBalancer().first();
+			Object object = this.getObject(database);
+			
+			return operation.execute(database, object);
+		}
+		catch (NoSuchElementException e)
+		{
+			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this.databaseCluster));
+		}
 	}
 
 	/**
-	 * Helper method that call the appropriate execute method on the database cluster.
+	 * Executes the specified read operation on a single database in the cluster.
+	 * It is assumed that these types of operation will require access to the database.
+	 * @param operation a database operation
+	 * @return the result of the operation
+	 * @throws java.sql.SQLException if operation execution fails
+	 */
+	public final Object executeReadFromDatabase(Operation operation) throws java.sql.SQLException
+	{
+		Balancer balancer = this.databaseCluster.getBalancer();
+		
+		try
+		{
+			while (true)
+			{
+				Database database = balancer.next();
+				Object object = this.getObject(database);
+	
+				try
+				{
+					balancer.beforeOperation(database);
+					
+					return operation.execute(database, object);
+				}
+				catch (Throwable e)
+				{
+					this.databaseCluster.handleFailure(database, e);
+				}
+				finally
+				{
+					balancer.afterOperation(database);
+				}
+			}
+		}
+		catch (NoSuchElementException e)
+		{
+			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this.databaseCluster));
+		}
+	}
+
+	/**
+	 * Executes the specified write operation on every database in the cluster in parallel.
+	 * It is assumed that these types of operation will require access to the database.
 	 * @param operation a database operation
 	 * @return the result of the operation
 	 * @throws java.sql.SQLException if operation execution fails
 	 */
 	public final Map executeWriteToDatabase(Operation operation) throws java.sql.SQLException
 	{
-		return this.databaseCluster.executeWriteToDatabase(this, operation);
+		Database[] databases = this.getDatabases();
+		Thread[] threads = new Thread[databases.length];
+		
+		Map returnValueMap = new HashMap(databases.length);
+		Map exceptionMap = new HashMap(databases.length);
+
+		for (int i = 0; i < databases.length; ++i)
+		{
+			Database database = databases[i];
+			Object object = this.getObject(database);
+			
+			threads[i] = new Thread(new OperationExecutor(this.databaseCluster, operation, database, object, returnValueMap, exceptionMap));
+			threads[i].start();
+		}
+		
+		// Wait until all threads have completed
+		for (int i = 0; i < threads.length; ++i)
+		{
+			Thread thread = threads[i];
+			
+			if ((thread != null) && thread.isAlive())
+			{
+				try
+				{
+					thread.join();
+				}
+				catch (InterruptedException e)
+				{
+					// Ignore
+				}
+			}
+		}
+		
+		this.deactivateNewDatabases(databases);
+		
+		// If no databases returned successfully, return an exception back to the caller
+		if (returnValueMap.isEmpty())
+		{
+			if (exceptionMap.isEmpty())
+			{
+				throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this.databaseCluster));
+			}
+			
+			throw new SQLException((Throwable) exceptionMap.get(databases[0]));
+		}
+		
+		// If any databases failed, while others succeeded, deactivate them
+		if (!exceptionMap.isEmpty())
+		{
+			this.handleExceptions(exceptionMap);
+		}
+		
+		// Return results from successful operations
+		return returnValueMap;
 	}
 
 	/**
-	 * Helper method that call the appropriate execute method on the database cluster.
+	 * Executes the specified write operation on every database in the cluster.
+	 * It is assumed that these types of operation will <em>not</em> require access to the database.
 	 * @param operation a database operation
 	 * @return the result of the operation
 	 * @throws java.sql.SQLException if operation execution fails
 	 */
 	public final Map executeWriteToDriver(Operation operation) throws java.sql.SQLException
 	{
-		return this.databaseCluster.executeWriteToDriver(this, operation);
+		Database[] databases = this.databaseCluster.getBalancer().toArray();
+		
+		if (databases.length == 0)
+		{
+			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this.databaseCluster));
+		}
+		
+		Map returnValueMap = new HashMap(databases.length);
+
+		for (int i = 0; i < databases.length; ++i)
+		{
+			Database database = databases[i];
+			Object object = this.getObject(database);
+			
+			returnValueMap.put(database, operation.execute(database, object));
+		}
+		
+		this.deactivateNewDatabases(databases);
+		
+		this.record(operation);
+		
+		return returnValueMap;
 	}
 	
 	/**
@@ -176,7 +295,11 @@ public abstract class SQLObject
 		return this.databaseCluster;
 	}
 	
-	public void handleExceptions(Map exceptionMap) throws SQLException
+	/**
+	 * @param exceptionMap
+	 * @throws java.sql.SQLException
+	 */
+	public void handleExceptions(Map exceptionMap) throws java.sql.SQLException
 	{
 		Iterator exceptionMapEntries = exceptionMap.entrySet().iterator();
 		
@@ -191,5 +314,39 @@ public abstract class SQLObject
 				log.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, new Object[] { database, this.databaseCluster }), exception);
 			}
 		}
+	}
+
+	private void deactivateNewDatabases(Database[] databases)
+	{
+		Set databaseSet = new HashSet(Arrays.asList(this.databaseCluster.getBalancer().toArray()));
+		
+		for (int i = 0; i < databases.length; ++i)
+		{
+			databaseSet.remove(databases[i]);
+		}
+		
+		if (!databaseSet.isEmpty())
+		{
+			Iterator newDatabases = databaseSet.iterator();
+			
+			while (newDatabases.hasNext())
+			{
+				Database newDatabase = (Database) newDatabases.next();
+				
+				this.databaseCluster.deactivate(newDatabase);
+			}
+		}
+	}
+	
+	private Database[] getDatabases() throws SQLException
+	{
+		Database[] databases = this.databaseCluster.getBalancer().toArray();
+		
+		if (databases.length == 0)
+		{
+			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this.databaseCluster));
+		}
+		
+		return databases;
 	}
 }

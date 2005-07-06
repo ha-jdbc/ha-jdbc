@@ -27,6 +27,7 @@ import javax.sql.ConnectionEventListener;
 import net.sf.hajdbc.ConnectionFactory;
 import net.sf.hajdbc.SQLObject;
 import net.sf.hajdbc.sql.Connection;
+import net.sf.hajdbc.sql.FileSupportImpl;
 
 /**
  * @author  Paul Ferraro
@@ -59,7 +60,7 @@ public class PooledConnection extends SQLObject implements javax.sql.PooledConne
 			}
 		};
 		
-		return new Connection(this, operation);
+		return new Connection(this, operation, new FileSupportImpl());
 	}
 
 	/**

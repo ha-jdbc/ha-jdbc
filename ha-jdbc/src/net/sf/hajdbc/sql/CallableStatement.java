@@ -918,13 +918,14 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void setAsciiStream(final String name, InputStream inputStream, final int length) throws SQLException
 	{
-		final File file = this.fileSupport.createFile(inputStream);
+		final FileSupport fileSupport = this.getFileSupport();
+		final File file = fileSupport.createFile(inputStream);
 		
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
 			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
-				statement.setAsciiStream(name, CallableStatement.this.fileSupport.getInputStream(file), length);
+				statement.setAsciiStream(name, fileSupport.getInputStream(file), length);
 				
 				return null;
 			}
@@ -956,13 +957,14 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void setBinaryStream(final String name, InputStream inputStream, final int length) throws SQLException
 	{
-		final File file = this.fileSupport.createFile(inputStream);
+		final FileSupport fileSupport = this.getFileSupport();
+		final File file = fileSupport.createFile(inputStream);
 		
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
 			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
-				statement.setBinaryStream(name, CallableStatement.this.fileSupport.getInputStream(file), length);
+				statement.setBinaryStream(name, fileSupport.getInputStream(file), length);
 				
 				return null;
 			}
@@ -1030,13 +1032,14 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void setCharacterStream(final String name, Reader reader, final int length) throws SQLException
 	{
-		final File file = this.fileSupport.createFile(reader);
+		final FileSupport fileSupport = this.getFileSupport();
+		final File file = fileSupport.createFile(reader);
 		
 		CallableStatementOperation operation = new CallableStatementOperation()
 		{
 			public Object execute(java.sql.CallableStatement statement) throws SQLException
 			{
-				statement.setCharacterStream(name, CallableStatement.this.fileSupport.getReader(file), length);
+				statement.setCharacterStream(name, fileSupport.getReader(file), length);
 				
 				return null;
 			}

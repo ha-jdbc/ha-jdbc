@@ -35,7 +35,6 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
 
-
 /**
  * @author  Paul Ferraro
  * @version $Revision$
@@ -43,8 +42,6 @@ import java.util.Calendar;
  */
 public class PreparedStatement extends Statement implements java.sql.PreparedStatement
 {
-	protected FileSupport fileSupport = new FileSupport();
-	
 	/**
 	 * Constructs a new PreparedStatementProxy.
 	 * @param connection a Connection proxy
@@ -90,16 +87,6 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 		};
 		
 		this.executeWriteToDriver(operation);
-	}
-
-	/**
-	 * @see java.sql.Statement#close()
-	 */
-	public void close() throws SQLException
-	{
-		super.close();
-		
-		this.fileSupport.close();
 	}
 
 	/**
@@ -205,13 +192,14 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setAsciiStream(final int index, InputStream inputStream, final int length) throws SQLException
 	{
-		final File file = this.fileSupport.createFile(inputStream);
+		final FileSupport fileSupport = this.getFileSupport();
+		final File file = fileSupport.createFile(inputStream);
 		
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
 			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
-				statement.setAsciiStream(index, PreparedStatement.this.fileSupport.getInputStream(file), length);
+				statement.setAsciiStream(index, fileSupport.getInputStream(file), length);
 			
 				return null;
 			}
@@ -243,13 +231,14 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setBinaryStream(final int index, InputStream inputStream, final int length) throws SQLException
 	{
-		final File file = this.fileSupport.createFile(inputStream);
+		final FileSupport fileSupport = this.getFileSupport();
+		final File file = fileSupport.createFile(inputStream);
 
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
 			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
-				statement.setBinaryStream(index, PreparedStatement.this.fileSupport.getInputStream(file), length);
+				statement.setBinaryStream(index, fileSupport.getInputStream(file), length);
 				
 				return null;
 			}
@@ -335,13 +324,14 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setCharacterStream(final int index, Reader reader, final int length) throws SQLException
 	{
-		final File file = this.fileSupport.createFile(reader);
+		final FileSupport fileSupport = this.getFileSupport();
+		final File file = fileSupport.createFile(reader);
 		
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
 			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
-				statement.setCharacterStream(index, PreparedStatement.this.fileSupport.getReader(file), length);
+				statement.setCharacterStream(index, fileSupport.getReader(file), length);
 				
 				return null;
 			}
@@ -698,13 +688,14 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setUnicodeStream(final int index, InputStream inputStream, final int length) throws SQLException
 	{
-		final File file = this.fileSupport.createFile(inputStream);
+		final FileSupport fileSupport = this.getFileSupport();
+		final File file = fileSupport.createFile(inputStream);
 
 		PreparedStatementOperation operation = new PreparedStatementOperation()
 		{
 			public Object execute(java.sql.PreparedStatement statement) throws SQLException
 			{
-				statement.setUnicodeStream(index, PreparedStatement.this.fileSupport.getInputStream(file), length);
+				statement.setUnicodeStream(index, fileSupport.getInputStream(file), length);
 				
 				return null;
 			}
@@ -729,5 +720,12 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 		};
 		
 		this.executeWriteToDriver(operation);
+	}
+	
+	protected FileSupport getFileSupport() throws SQLException
+	{
+		Connection connection = (Connection) this.getConnection();
+		
+		return connection.getFileSupport();
 	}
 }
