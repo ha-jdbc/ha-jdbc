@@ -20,9 +20,9 @@
 	<mapping class="net.sf.hajdbc.sql.AbstractDatabase" abstract="true">
 		<value name="id" field="id" style="attribute"></value>
 		<value name="weight" field="weight" style="attribute" usage="optional" default="1"></value>
+		<structure field="properties" unmarshaller="net.sf.hajdbc.util.PropertiesUnmarshaller"></structure>
 		<value name="user" field="user" usage="optional"></value>
 		<value name="password" field="password" usage="optional"></value>
-		<structure field="properties" unmarshaller="net.sf.hajdbc.util.PropertiesUnmarshaller"></structure>
 	</mapping>
 	<mapping name="database" class="net.sf.hajdbc.sql.DriverDatabase" extends="net.sf.hajdbc.sql.AbstractDatabase">
 		<value name="driver" field="driver" usage="optional"></value>
