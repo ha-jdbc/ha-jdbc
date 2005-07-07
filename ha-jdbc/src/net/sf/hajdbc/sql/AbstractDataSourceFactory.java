@@ -27,6 +27,8 @@ import javax.naming.Name;
 import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
 
+import net.sf.hajdbc.DatabaseClusterFactory;
+
 /**
  * @author  Paul Ferraro
  * @version $Revision$
@@ -67,11 +69,12 @@ public abstract class AbstractDataSourceFactory implements ObjectFactory
 		
 		AbstractDataSource dataSource = (AbstractDataSource) objectClass.newInstance();
 		
-		String clusterName = (String) reference.get(AbstractDataSource.CLUSTER_NAME).getContent();
+		String id = (String) reference.get(AbstractDataSource.NAME).getContent();
+
+		dataSource.setName(id);
+		dataSource.setConnectionFactory(DatabaseClusterFactory.getInstance().getDatabaseCluster(id).getConnectionFactory());
 		
-		dataSource.setName(clusterName);
-		
-		return object;
+		return dataSource;
 	}
 	
 	protected abstract Class getObjectClass();

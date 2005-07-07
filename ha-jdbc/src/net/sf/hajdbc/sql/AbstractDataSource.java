@@ -25,7 +25,6 @@ import javax.naming.Referenceable;
 import javax.naming.StringRefAddr;
 
 import net.sf.hajdbc.ConnectionFactory;
-import net.sf.hajdbc.DatabaseClusterFactory;
 
 
 /**
@@ -36,9 +35,26 @@ import net.sf.hajdbc.DatabaseClusterFactory;
 public abstract class AbstractDataSource implements Referenceable
 {
 	/**	Property that identifies this data source */
-	public static final String CLUSTER_NAME = "name";
+	public static final String NAME = "name";
 	
 	protected ConnectionFactory connectionFactory;
+	private String name;
+	
+	/**
+	 * @return the connectionFactory.
+	 */
+	public ConnectionFactory getConnectionFactory()
+	{
+		return this.connectionFactory;
+	}
+
+	/**
+	 * @param connectionFactory the connectionFactory to set.
+	 */
+	public void setConnectionFactory(ConnectionFactory connectionFactory)
+	{
+		this.connectionFactory = connectionFactory;
+	}
 
 	/**
 	 * Returns the name of this DataSource
@@ -46,7 +62,7 @@ public abstract class AbstractDataSource implements Referenceable
 	 */
 	public String getName()
 	{
-		return this.connectionFactory.getDatabaseCluster().getId();
+		return this.name;
 	}
 	
 	/**
@@ -56,7 +72,7 @@ public abstract class AbstractDataSource implements Referenceable
 	 */
 	public void setName(String name) throws java.sql.SQLException
 	{
-		this.connectionFactory = DatabaseClusterFactory.getInstance().getDatabaseCluster(name).getConnectionFactory();
+		this.name = name;
 	}
 	
 	/**
@@ -66,7 +82,7 @@ public abstract class AbstractDataSource implements Referenceable
 	{
         Reference ref = new Reference(this.getClass().getName(), this.getObjectFactoryClass().getName(), null);
         
-        ref.add(new StringRefAddr(CLUSTER_NAME, this.getName()));
+        ref.add(new StringRefAddr(NAME, this.getName()));
         
         return ref;
 	}
