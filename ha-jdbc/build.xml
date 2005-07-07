@@ -24,14 +24,14 @@
 	
 	<available property="junit-available" file="${ant.home}/lib/${junit.jar}"/>
 	
-	<path id="build.classpath">
+	<path id="src.classpath">
 		<dirset dir="${build.dir}"></dirset>
 		<fileset dir="${lib.dir}" includes="*.jar"></fileset>
 		<fileset dir="${lib.compile.dir}" includes="*.jar"></fileset>
 	</path>
 
 	<path id="test.classpath">
-		<path refid="build.classpath"></path>
+		<path refid="src.classpath"></path>
 		<dirset dir="${test.dir}"></dirset>
 		<fileset dir="${lib.test.dir}" includes="*.jar"></fileset>
 	</path>
@@ -63,7 +63,7 @@
 	</target>
 	
     <target name="compile" depends="init">
-        <javac srcdir="${src.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="build.classpath" source="1.4" target="1.4"></javac>
+        <javac srcdir="${src.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="src.classpath" source="1.4" target="1.4"></javac>
 		<copy todir="${build.dir}">
 			<fileset dir="${src.dir}" excludes="**/*.java"></fileset>
 		</copy>
@@ -72,7 +72,7 @@
     <target name="bind" depends="compile">
 		<bind verbose="false" load="true">
 			<bindingfileset dir="${conf.jibx.dir}" includes="*.xml"/>
-			<classpath refid="build.classpath"></classpath>
+			<classpath refid="src.classpath"></classpath>
 		</bind> 
     </target>
 
@@ -104,7 +104,7 @@
 	</target>
 	
 	<target name="javadoc">
-		<javadoc destdir="${doc.api.dir}" classpathref="classpath">
+		<javadoc destdir="${doc.api.dir}" classpathref="src.classpath">
 			<fileset dir="${src.dir}"></fileset>
 			<link href="http://java.sun.com/j2se/1.4.2/docs/api/"></link>
 			<link href="http://www.jgroups.org/javagroupsnew/docs/javadoc/"></link>
