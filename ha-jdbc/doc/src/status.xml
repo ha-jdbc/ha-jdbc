@@ -39,10 +39,10 @@
 			<action type="update" dev="PF" context="doc">
 				Updated documentation to use Forrest 0.7.
 			</action>
-			<action type="add" context="PF" dev="code">
+			<action type="add" dev="PF" context="code">
 				Added properties to database configuration to allow DataSources to define custom JNDI environment parameters and to allow Driver to define additional runtime parameters.
 			</action>
-			<action type="update" context="PF" dev="test">
+			<action type="update" dev="PF" context="test">
 				Migrated unit tests from TestNG to JUnit in order to utilize EasyMock.
 			</action>
 			<action type="add" dev="PF" context="test">
