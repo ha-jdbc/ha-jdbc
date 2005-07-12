@@ -118,9 +118,6 @@
 
 	<target name="compile-tests" depends="bind">
 		<javac srcdir="${test.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="test.classpath" source="1.4" target="1.4"></javac>
-		<copy todir="${build.dir}">
-			<fileset dir="${test.dir}" excludes="**/*.java"></fileset>
-		</copy>
 	</target>
 
 	<target name="install-junit" unless="junit-available">
