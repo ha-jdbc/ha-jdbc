@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (C) 2004 Paul Ferraro
+ * Copyright (C) 2005 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -31,10 +31,10 @@ import net.sf.hajdbc.Operation;
  * @version $Revision$
  * @since   1.0
  */
-public class TestLoadBalancer extends TestBalancer
+public class TestLoadBalancer extends AbstractTestBalancer
 {
 	/**
-	 * @see net.sf.hajdbc.balancer.TestBalancer#createBalancer()
+	 * @see net.sf.hajdbc.balancer.AbstractTestBalancer#createBalancer()
 	 */
 	protected Balancer createBalancer()
 	{
@@ -42,7 +42,7 @@ public class TestLoadBalancer extends TestBalancer
 	}
 
 	/**
-	 * @see net.sf.hajdbc.balancer.TestBalancer#testNext(net.sf.hajdbc.Balancer)
+	 * @see net.sf.hajdbc.balancer.AbstractTestBalancer#testNext(net.sf.hajdbc.Balancer)
 	 */
 	protected void testNext(Balancer balancer)
 	{
@@ -54,45 +54,45 @@ public class TestLoadBalancer extends TestBalancer
 		
 		Database next = balancer.next();
 		
-		assert next.equals(database0) : "#1: next() = " + next + ", expected " + database0;
+		assertEquals(database0, next);
 
 		balancer.add(database2);
 
 		next = balancer.next();
-		
-		assert next.equals(database2) : "#2: next() = " + next + ", expected " + database2;
+
+		assertEquals(database2, next);
 		
 		balancer.add(database1);
 
 		next = balancer.next();
 		
-		assert next.equals(database2) : "#3: next() = " + next + ", expected " + database2;
+		assertEquals(database2, next);
 		
 		// Add enough load to database2 to shift relative effective load
 		Thread[] database2Threads = new Thread[2];
 		for (int i = 0; i < 2; ++i)
 		{
-			database2Threads[i] = new OperationThread(balancer, database2);
+			database2Threads[i] = new OperationThread(balancer, new MockOperation(), database2);
 			database2Threads[i].start();
 		}
 		
 		next = balancer.next();
 		
-		assert next.equals(database1) : "#4: next() = " + next + ", expected " + database1;
+		assertEquals(database1, next);
 		
 		// Add enough load to database1 to shift relative effective load
-		Thread database1Thread = new OperationThread(balancer, database1);
+		Thread database1Thread = new OperationThread(balancer, new MockOperation(), database1);
 		database1Thread.start();
 
 		next = balancer.next();
 		
-		assert next.equals(database2) : "#5: next() = " + next + ", expected " + database2;
+		assertEquals(database2, next);
 
 		database1Thread.interrupt();
 
 		next = balancer.next();
-		
-		assert next.equals(database1) : "#6: next() = " + next + ", expected " + database1;
+
+		assertEquals(database1, next);
 		
 		for (int i = 0; i < 2; ++i)
 		{
@@ -101,24 +101,27 @@ public class TestLoadBalancer extends TestBalancer
 		
 		next = balancer.next();
 		
-		assert next.equals(database2) : "#7: next() = " + next + ", expected " + database2;
+		assertEquals(database2, next);
 	}
 	
 	private class OperationThread extends Thread
 	{
 		private Balancer balancer;
+		private Operation operation;
 		private Database database;
 		
 		/**
 		 * Constructs a new OperationThread.
 		 * @param balancer
+		 * @param operation 
 		 * @param database
 		 */
-		public OperationThread(Balancer balancer, Database database)
+		public OperationThread(Balancer balancer, Operation operation, Database database)
 		{
 			super();
 			
 			this.balancer = balancer;
+			this.operation = operation;
 			this.database = database;
 			
 			this.setDaemon(true);
@@ -129,13 +132,17 @@ public class TestLoadBalancer extends TestBalancer
 		 */
 		public void run()
 		{
+			this.balancer.beforeOperation(this.database);
+			
 			try
 			{
-				this.balancer.execute(new MockOperation(), this.database, null);
+				this.operation.execute(this.database, null);
+				
+				this.balancer.afterOperation(this.database);
 			}
 			catch (SQLException e)
 			{
-				assert false;
+				TestLoadBalancer.this.fail(e);
 			}
 		}
 
@@ -167,7 +174,7 @@ public class TestLoadBalancer extends TestBalancer
 			}
 			catch (InterruptedException e)
 			{
-				assert false;
+				TestLoadBalancer.this.fail(e);
 			}
 		}
 	}

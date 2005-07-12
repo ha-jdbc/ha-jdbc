@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (C) 2004 Paul Ferraro
+ * Copyright (C) 2005 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -28,7 +28,7 @@ import net.sf.hajdbc.Balancer;
  * @author  Paul Ferraro
  * @since   1.0
  */
-public class TestRandomBalancer extends TestBalancer
+public class TestRandomBalancer extends AbstractTestBalancer
 {
 	protected Balancer createBalancer()
 	{
@@ -49,9 +49,9 @@ public class TestRandomBalancer extends TestBalancer
 			results[balancer.next().getWeight().intValue()] += 1;
 		}
 
-		assert results[0] == count : "Expected 100, actual " + results[0];
-		assert results[1] == 0 : "Expected 0, actual " + results[1];
-		assert results[2] == 0 : "Expected 0, actual " + results[2];
+		assertTrue(results[0] == count);
+		assertTrue(results[1] == 0);
+		assertTrue(results[2] == 0);
 
 		balancer.add(new MockDatabase("1", 1));
 		
@@ -62,9 +62,9 @@ public class TestRandomBalancer extends TestBalancer
 			results[balancer.next().getWeight().intValue()] += 1;
 		}
 		
-		assert results[0] == 0 : "Expected 0, actual " + results[0];
-		assert results[1] == count : "Expected 100, actual " + results[1];
-		assert results[2] == 0 : "Expected 0, actual " + results[2];
+		assertTrue(results[0] == 0);
+		assertTrue(results[1] == count);
+		assertTrue(results[2] == 0);
 
 		balancer.add(new MockDatabase("2", 2));
 
@@ -75,8 +75,8 @@ public class TestRandomBalancer extends TestBalancer
 			results[balancer.next().getWeight().intValue()] += 1;
 		}
 
-		assert results[0] == 0 : "Expected 0, actual " + results[0];
-		assert results[1] < 50 : "Expected <50, actual " + results[1];
-		assert results[2] > 50 : "Expected >50, actual " + results[2];
+		assertTrue(results[0] == 0);
+		assertTrue(results[1] < 50);
+		assertTrue(results[2] > 50);
 	}
 }

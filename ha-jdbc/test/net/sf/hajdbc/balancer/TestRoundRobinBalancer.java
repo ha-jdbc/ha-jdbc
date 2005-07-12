@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (C) 2004 Paul Ferraro
+ * Copyright (C) 2005 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -27,7 +27,7 @@ import net.sf.hajdbc.Balancer;
  * @version $Revision$
  * @since   1.0
  */
-public class TestRoundRobinBalancer extends TestBalancer
+public class TestRoundRobinBalancer extends AbstractTestBalancer
 {
 	protected Balancer createBalancer()
 	{
@@ -44,7 +44,7 @@ public class TestRoundRobinBalancer extends TestBalancer
 		{
 			int weight = balancer.next().getWeight().intValue();
 			
-			assert weight == 0;
+			assertEquals(0, weight);
 		}
 		
 		balancer.add(new MockDatabase("1", 1));
@@ -53,7 +53,7 @@ public class TestRoundRobinBalancer extends TestBalancer
 		{
 			int weight = balancer.next().getWeight().intValue();
 			
-			assert weight == 1;
+			assertEquals(1, weight);
 		}
 		
 		balancer.add(new MockDatabase("2", 2));
@@ -64,7 +64,7 @@ public class TestRoundRobinBalancer extends TestBalancer
 		{
 			int weight = balancer.next().getWeight().intValue();
 			
-			assert weight == expected[i % 3];
+			assertEquals(expected[i % 3], weight);
 		}
 	}
 }

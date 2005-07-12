@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (C) 2004 Paul Ferraro
+ * Copyright (C) 2005 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -28,7 +28,7 @@ import net.sf.hajdbc.Balancer;
  * @author  Paul Ferraro
  * @since   1.0
  */
-public class TestSimpleBalancer extends TestBalancer
+public class TestSimpleBalancer extends AbstractTestBalancer
 {
 	protected Balancer createBalancer()
 	{

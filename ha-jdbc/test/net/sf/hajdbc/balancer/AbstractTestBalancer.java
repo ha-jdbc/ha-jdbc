@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (C) 2004 Paul Ferraro
+ * Copyright (C) 2005 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -21,19 +21,18 @@
 package net.sf.hajdbc.balancer;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.Operation;
+import net.sf.hajdbc.AbstractTestCase;
 
 /**
  * @author  Paul Ferraro
  * @since   1.0
  */
-public abstract class TestBalancer
+public abstract class AbstractTestBalancer extends AbstractTestCase
 {
 	private Balancer balancer;
 	
@@ -56,46 +55,37 @@ public abstract class TestBalancer
 		
 		boolean added = this.balancer.add(database);
 		
-		assert added;
+		assertTrue(added);
 
 		added = this.balancer.add(database);
 		
-		assert !added;
+		assertFalse(added);
 	}
 
 	/**
 	 * @testng.test
 	 */
-	public void testExecute()
+	public void testBeforeOperation()
 	{
 		Database database = new MockDatabase("db1", 1);
-		
+
 		this.balancer.add(database);
 		
-		Operation operation = new Operation()
-		{
-			public Object execute(Database database, Object object)
-			{
-				return object;
-			}
-		};
-		
-		try
-		{
-			Object result = this.balancer.execute(operation, database, null);
-			
-			assert result == null;
-			
-			result = this.balancer.execute(operation, database, new Object());
-			
-			assert result != null;
-		}
-		catch (SQLException e)
-		{
-			assert false;
-		}
+		this.balancer.beforeOperation(database);
 	}
 
+	/**
+	 * @testng.test
+	 */
+	public void testAfterOperation()
+	{
+		Database database = new MockDatabase("db1", 1);
+
+		this.balancer.add(database);
+		
+		this.balancer.afterOperation(database);
+	}
+	
 	/**
 	 * @testng.test
 	 */
@@ -103,15 +93,19 @@ public abstract class TestBalancer
 	{
 		Database database = new MockDatabase("1", 1);
 		
-		this.balancer.add(database);
-
 		boolean removed = this.balancer.remove(database);
 
-		assert removed;
+		assertFalse(removed);
+		
+		this.balancer.add(database);
+
+		removed = this.balancer.remove(database);
+
+		assertTrue(removed);
 		
 		removed = this.balancer.remove(database);
-		
-		assert !removed;
+
+		assertFalse(removed);
 	}
 
 	/**
@@ -121,36 +115,36 @@ public abstract class TestBalancer
 	{
 		Database[] databases = this.balancer.toArray();
 		
-		assert databases.length == 0;
+		assertEquals(databases.length, 0);
 		
 		Database database1 = new MockDatabase("db1", 1);
 		this.balancer.add(database1);
 		
 		databases = this.balancer.toArray();
 		
-		assert databases.length == 1;
-		assert Arrays.equals(databases, new Database[] { database1 });
+		assertEquals(databases.length, 1);
+		assertTrue(Arrays.equals(databases, new Database[] { database1 }));
 		
 		Database database2 = new MockDatabase("db2", 1);
 		this.balancer.add(database2);
 
 		databases = this.balancer.toArray();
-		
-		assert databases.length == 2;
-		assert Arrays.equals(databases, new Database[] { database1, database2 }) || Arrays.equals(databases, new Database[] { database2, database1 });
+
+		assertEquals(databases.length, 2);
+		assertTrue(Arrays.equals(databases, new Database[] { database1, database2 }) || Arrays.equals(databases, new Database[] { database2, database1 }));
 
 		this.balancer.remove(database1);
 
 		databases = this.balancer.toArray();
 		
-		assert databases.length == 1;
-		assert Arrays.equals(databases, new Database[] { database2, });
+		assertEquals(databases.length, 1);
+		assertTrue(Arrays.equals(databases, new Database[] { database2, }));
 		
 		this.balancer.remove(database2);
 		
 		databases = this.balancer.toArray();
 		
-		assert databases.length == 0;
+		assertEquals(databases.length, 0);
 	}
 
 	/**
@@ -163,8 +157,8 @@ public abstract class TestBalancer
 
 		this.balancer.add(database1);
 		
-		assert this.balancer.contains(database1);
-		assert !this.balancer.contains(database2);
+		assertTrue(this.balancer.contains(database1));
+		assertFalse(this.balancer.contains(database2));
 	}
 
 	/**
@@ -176,11 +170,11 @@ public abstract class TestBalancer
 		{
 			this.balancer.first();
 			
-			assert false;
+			fail();
 		}
 		catch (NoSuchElementException e)
 		{
-			assert true;
+			// Do nothing
 		}
 		
 		Database database = new MockDatabase("0", 0);
@@ -189,7 +183,7 @@ public abstract class TestBalancer
 		
 		Database first = this.balancer.first();
 		
-		assert database.equals(first);
+		assertEquals(database, first);
 	}
 
 	/**
@@ -201,11 +195,11 @@ public abstract class TestBalancer
 		{
 			this.balancer.next();
 			
-			assert false;
+			fail();
 		}
 		catch (NoSuchElementException e)
 		{
-			assert true;
+			// Do nothing
 		}
 		
 		testNext(this.balancer);
