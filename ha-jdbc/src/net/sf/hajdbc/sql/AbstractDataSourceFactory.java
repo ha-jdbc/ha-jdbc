@@ -24,6 +24,7 @@ import java.util.Hashtable;
 
 import javax.naming.Context;
 import javax.naming.Name;
+import javax.naming.RefAddr;
 import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
 
@@ -58,7 +59,11 @@ public abstract class AbstractDataSourceFactory implements ObjectFactory
 		
 		AbstractDataSource dataSource = (AbstractDataSource) objectClass.newInstance();
 		
-		String id = (String) reference.get(AbstractDataSource.NAME).getContent();
+		RefAddr addr = reference.get(AbstractDataSource.NAME);
+		
+		if (addr == null) return null;
+		
+		String id = (String) addr.getContent();
 
 		if (id == null) return null;
 		
