@@ -37,18 +37,15 @@ public abstract class AbstractTestBalancer extends AbstractTestCase
 	private Balancer balancer;
 	
 	/**
-	 * @testng.configuration beforeTestMethod = "true"
+	 * @see junit.framework.TestCase#setUp()
 	 */
-	public void setUp()
+	protected void setUp()
 	{
 		this.balancer = createBalancer();
 	}
 	
 	protected abstract Balancer createBalancer();
 	
-	/**
-	 * @testng.test
-	 */
 	public void testAdd()
 	{
 		Database database = new MockDatabase("1", 1);
@@ -62,9 +59,6 @@ public abstract class AbstractTestBalancer extends AbstractTestCase
 		assertFalse(added);
 	}
 
-	/**
-	 * @testng.test
-	 */
 	public void testBeforeOperation()
 	{
 		Database database = new MockDatabase("db1", 1);
@@ -74,9 +68,6 @@ public abstract class AbstractTestBalancer extends AbstractTestCase
 		this.balancer.beforeOperation(database);
 	}
 
-	/**
-	 * @testng.test
-	 */
 	public void testAfterOperation()
 	{
 		Database database = new MockDatabase("db1", 1);
@@ -86,9 +77,6 @@ public abstract class AbstractTestBalancer extends AbstractTestCase
 		this.balancer.afterOperation(database);
 	}
 	
-	/**
-	 * @testng.test
-	 */
 	public void testRemove()
 	{
 		Database database = new MockDatabase("1", 1);
@@ -108,9 +96,6 @@ public abstract class AbstractTestBalancer extends AbstractTestCase
 		assertFalse(removed);
 	}
 
-	/**
-	 * @testng.test
-	 */
 	public void testToArray()
 	{
 		Database[] databases = this.balancer.toArray();
@@ -147,9 +132,6 @@ public abstract class AbstractTestBalancer extends AbstractTestCase
 		assertEquals(databases.length, 0);
 	}
 
-	/**
-	 * @testng.test
-	 */
 	public void testContains()
 	{
 		Database database1 = new MockDatabase("db1", 1);
@@ -161,9 +143,6 @@ public abstract class AbstractTestBalancer extends AbstractTestCase
 		assertFalse(this.balancer.contains(database2));
 	}
 
-	/**
-	 * @testng.test
-	 */
 	public void testFirst()
 	{
 		try
@@ -186,9 +165,6 @@ public abstract class AbstractTestBalancer extends AbstractTestCase
 		assertEquals(database, first);
 	}
 
-	/**
-	 * @testng.test
-	 */
 	public void testNext()
 	{
 		try
@@ -212,11 +188,6 @@ public abstract class AbstractTestBalancer extends AbstractTestCase
 		private String id;
 		private Integer weight;
 		
-		/**
-		 * Constructs a new MockDatabase.
-		 * @param id
-		 * @param weight
-		 */
 		public MockDatabase(String id, int weight)
 		{
 			this.id = id;
