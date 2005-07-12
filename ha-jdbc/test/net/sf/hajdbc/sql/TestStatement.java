@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (C) 2004 Paul Ferraro
+ * Copyright (C) 2005 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -20,773 +20,1226 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.sql.DriverManager;
+import java.sql.Driver;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.util.Collections;
 
+import net.sf.hajdbc.Balancer;
+import net.sf.hajdbc.ConnectionFactory;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.DatabaseClusterFactory;
+import net.sf.hajdbc.Operation;
+import net.sf.hajdbc.SQLObject;
+import net.sf.hajdbc.AbstractTestCase;
 
-public class TestStatement
+import org.easymock.MockControl;
+
+public class TestStatement extends AbstractTestCase
 {
-	private Statement statement;
-	private java.sql.Statement statement1;
-	private java.sql.Statement statement2;
+	protected MockControl databaseClusterControl = this.createControl(DatabaseCluster.class);
+	protected DatabaseCluster databaseCluster = (DatabaseCluster) this.databaseClusterControl.getMock();
+	
+	protected MockControl sqlStatementControl = this.createControl(this.getSQLStatementClass());
+	protected java.sql.Statement sqlStatement = (java.sql.Statement) this.sqlStatementControl.getMock();
+	
+	protected MockControl databaseControl = this.createControl(Database.class);
+	protected Database database = (Database) this.databaseControl.getMock();
+	
+	protected MockControl balancerControl = this.createControl(Balancer.class);
+	protected Balancer balancer = (Balancer) this.balancerControl.getMock();
+	
+	protected MockControl fileSupportControl = this.createControl(FileSupport.class);
+	protected FileSupport fileSupport = (FileSupport) this.fileSupportControl.getMock();
+	
+	protected Connection connection;
+	protected Statement statement;
+	protected Database[] databases = new Database[] { this.database };
 	
 	/**
-	 * @testng.configuration beforeTestMethod = "true"
+	 * @see junit.framework.TestCase#setUp()
 	 */
-	public void setUp() throws Exception
+	protected void setUp() throws Exception
 	{
-		Class.forName("net.sf.hajdbc.sql.Driver");
-
-		java.sql.Connection connection = DriverManager.getConnection("jdbc:ha-jdbc:cluster", "sa", "");
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 4);
 		
-		java.sql.Statement statement = connection.createStatement();
-		statement.execute("CREATE TEMP TABLE test (id INTEGER PRIMARY KEY)");
-		statement.close();
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 4);
 		
-		this.statement = (Statement) connection.createStatement();
+		this.replay();
 		
-		DatabaseCluster databaseCluster = DatabaseClusterFactory.getInstance().getDatabaseCluster("cluster");
-		Database database1 = databaseCluster.getDatabase("database1");
-		Database database2 = databaseCluster.getDatabase("database2");
+		ConnectionFactory connectionFactory = new ConnectionFactory(this.databaseCluster, Collections.singletonMap(this.database, new Object()));
 		
-		this.statement1 = (java.sql.Statement) this.statement.getObject(database1);
-		this.statement2 = (java.sql.Statement) this.statement.getObject(database2);
-	}
-
-	/**
-	 * @testng.configuration afterTestMethod = "true"
-	 */
-	public void tearDown() throws Exception
-	{
-		this.statement.close();
-		
-		java.sql.Connection connection = this.statement.getConnection();
-		
-		if (!connection.isClosed())
+		Operation operation = new Operation()
 		{
-			connection.close();
-		}
-	}
-
-	private int countRows(java.sql.Statement statement) throws SQLException
-	{
-		java.sql.ResultSet resultSet = statement.executeQuery("SELECT count(*) FROM test");
+			public Object execute(Database database, Object sqlObject) throws SQLException
+			{
+				return MockControl.createControl(java.sql.Connection.class).getMock();
+			}
+		};
 		
-		resultSet.next();
+		this.connection = new Connection(connectionFactory, operation, this.fileSupport);
 		
-		int rows = resultSet.getInt(1);
+		ConnectionOperation connectionOperation = new ConnectionOperation()
+		{
+			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			{
+				return sqlStatement;
+			}
+		};
 		
-		resultSet.close();
+		this.statement = this.createStatement(connection, connectionOperation);
 		
-		return rows;
+		this.verify();
+		this.reset();
 	}
 	
-	/**
-	 * @testng.test
+	protected Statement createStatement(Connection connection, ConnectionOperation operation) throws SQLException
+	{
+		return new Statement(connection, operation);
+	}
+		
+	protected Class getSQLStatementClass()
+	{
+		return java.sql.Statement.class;
+	}
+	
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.addBatch(String)'
 	 */
 	public void testAddBatch()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
 		try
 		{
-			this.statement.addBatch("INSERT INTO test (id) VALUES (1)");
-			this.statement.addBatch("INSERT INTO test (id) VALUES (2)");
+			this.sqlStatement.addBatch("test");
+			this.sqlStatementControl.setVoidCallable();
 			
-			int count1 = this.countRows(this.statement1);
-			int count2 = this.countRows(this.statement2);
+			replay();
 			
-			assert count1 == 0;
-			assert count2 == 0;
+			this.statement.addBatch("test");
+			
+			verify();
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.cancel()'
 	 */
 	public void testCancel()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
 		try
 		{
+			this.sqlStatement.cancel();
+			this.sqlStatementControl.setVoidCallable();
+			
+			replay();
+			
 			this.statement.cancel();
+			
+			verify();
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.clearBatch()'
 	 */
 	public void testClearBatch()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
 		try
 		{
-			this.statement.addBatch("INSERT INTO test (id) VALUES (1)");
-			this.statement.addBatch("INSERT INTO test (id) VALUES (2)");
+			this.sqlStatement.clearBatch();
+			this.sqlStatementControl.setVoidCallable();
+			
+			replay();
+			
 			this.statement.clearBatch();
-			this.statement.addBatch("INSERT INTO test (id) VALUES (3)");
-			int[] counts = this.statement.executeBatch();
 			
-			assert counts.length == 1;
-			assert counts[0] == 1;
-			
-			int count1 = this.countRows(this.statement1);
-			int count2 = this.countRows(this.statement2);
-			
-			assert count1 == 1;
-			assert count2 == 1;
+			verify();
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.clearWarnings()'
 	 */
 	public void testClearWarnings()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
 		try
 		{
+			this.sqlStatement.clearWarnings();
+			this.sqlStatementControl.setVoidCallable();
+			
+			replay();
+			
 			this.statement.clearWarnings();
+			
+			verify();
 		}
-		catch (java.sql.SQLException e)
+		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.close()'
 	 */
 	public void testClose()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
 		try
 		{
+			this.sqlStatement.close();
+			this.sqlStatementControl.setVoidCallable();
+			
+			replay();
+			
 			this.statement.close();
+			
+			verify();
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.execute(String)'
 	 */
-	public void testExecute()
+	public void testExecuteString()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
 		try
 		{
-			this.statement.execute("INSERT INTO test (id) VALUES (1)");
+			this.sqlStatement.execute("test");
+			this.sqlStatementControl.setReturnValue(true);
 			
-			int count1 = this.countRows(this.statement1);
-			int count2 = this.countRows(this.statement2);
+			replay();
 			
-			assert count1 == 1;
-			assert count2 == 1;
+			boolean results = this.statement.execute("test");
 			
-			try
-			{
-				this.statement.execute("INSERT INTO test (id) VALUES (1)", 1);
-				
-				assert false : "HSQLDB does not support execute(String, int)";
-			}
-			catch (SQLException e)
-			{
-				assert true;
-			}
-
-			try
-			{
-				this.statement.execute("INSERT INTO test (id) VALUES (1)", new int[] { 1 });
-				
-				assert false : "HSQLDB does not support execute(String, int[])";
-			}
-			catch (SQLException e)
-			{
-				assert true;
-			}
-
-			try
-			{
-				this.statement.execute("INSERT INTO test (id) VALUES (1)", new String[] { "id" });
-				
-				assert false : "HSQLDB does not support execute(String, String[])";
-			}
-			catch (SQLException e)
-			{
-				assert true;
-			}
+			verify();
+			
+			assertTrue(results);
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.execute(String, int)'
+	 */
+	public void testExecuteStringInt()
+	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
+		try
+		{
+			this.sqlStatement.execute("SELECT ME", 1);
+			this.sqlStatementControl.setReturnValue(true);
+			
+			replay();
+			
+			boolean results = this.statement.execute("SELECT ME", 1);
+			
+			verify();
+			
+			assertTrue(results);
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.execute(String, int[])'
+	 */
+	public void testExecuteStringIntArray()
+	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
+		int[] columns = new int[] { 0 };
+		
+		try
+		{
+			this.sqlStatement.execute("SELECT ME", columns);
+			this.sqlStatementControl.setReturnValue(true);
+			
+			replay();
+			
+			boolean results = this.statement.execute("SELECT ME", columns);
+			
+			verify();
+			
+			assertTrue(results);
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			this.fail(e);
+		}
+	}
+
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.execute(String, String[])'
+	 */
+	public void testExecuteStringStringArray()
+	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
+		String[] columns = new String[] { "column" };
+		try
+		{
+			this.sqlStatement.execute("SELECT ME", columns);
+			this.sqlStatementControl.setReturnValue(true);
+			
+			replay();
+			
+			boolean results = this.statement.execute("SELECT ME", columns);
+			
+			verify();
+			
+			assertTrue(results);
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.executeBatch()'
 	 */
 	public void testExecuteBatch()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
 		try
 		{
-			this.statement.addBatch("INSERT INTO test (id) VALUES (1)");
-			this.statement.addBatch("INSERT INTO test (id) VALUES (2)");
-			int[] counts = this.statement.executeBatch();
+			int[] rows = new int[] { 100 };
 			
-			assert counts.length == 2;
-			assert counts[0] == 1;
-			assert counts[1] == 1;
+			this.sqlStatement.executeBatch();
+			this.sqlStatementControl.setReturnValue(rows);
 			
-			int count1 = this.countRows(this.statement1);
-			int count2 = this.countRows(this.statement2);
+			replay();
 			
-			assert count1 == 2;
-			assert count2 == 2;
+			int[] results = this.statement.executeBatch();
+			
+			verify();
+			
+			assertSame(rows, results);
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.executeQuery(String)'
 	 */
 	public void testExecuteQuery()
 	{
+		ResultSet resultSet = (ResultSet) this.createMock(ResultSet.class);
+
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+
 		try
 		{
-			java.sql.ResultSet resultSet = this.statement.executeQuery("SELECT count(*) FROM test");
+			this.sqlStatement.getResultSetConcurrency();
+			this.sqlStatementControl.setReturnValue(ResultSet.CONCUR_READ_ONLY);
 			
-			assert !ResultSet.class.isInstance(resultSet);
+			this.balancer.next();
+			this.balancerControl.setReturnValue(this.database);
 			
-			boolean next = resultSet.next();
+			this.balancer.beforeOperation(this.database);
+			this.balancerControl.setVoidCallable();
 			
-			assert next;
+			this.sqlStatement.executeQuery("SELECT ME");
+			this.sqlStatementControl.setReturnValue(resultSet);
 			
-			int count = resultSet.getInt(1);
+			this.balancer.afterOperation(this.database);
+			this.balancerControl.setVoidCallable();
 			
-			assert count == 0;
+			this.replay();
 			
-			next = resultSet.next();
+			ResultSet rs = this.statement.executeQuery("SELECT ME");
 			
-			assert !next;
+			this.verify();
 			
-			resultSet.close();
+			assertSame(resultSet, rs);
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.executeQuery(String)'
 	 */
-	public void testExecuteUpdate()
+	public void testUpdatableExecuteQuery()
 	{
+		ResultSet resultSet = (ResultSet) this.createMock(ResultSet.class);
+
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 3);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+
 		try
 		{
-			int count = this.statement.executeUpdate("INSERT INTO test (id) VALUES (1)");
+			this.sqlStatement.getResultSetConcurrency();
+			this.sqlStatementControl.setReturnValue(ResultSet.CONCUR_UPDATABLE);
 			
-			assert count == 1;
+			this.balancer.toArray();
+			this.balancerControl.setReturnValue(this.databases, 2);
 			
-			int count1 = this.countRows(this.statement1);
-			int count2 = this.countRows(this.statement2);
+			this.sqlStatement.executeQuery("SELECT ME");
+			this.sqlStatementControl.setReturnValue(resultSet);
 			
-			assert count1 == 1;
-			assert count2 == 1;
+			this.replay();
 			
-			try
-			{
-				this.statement.executeUpdate("INSERT INTO test (id) VALUES (1)", 1);
-				
-				assert false : "HSQLDB does not support executeUpdate(String, int)";
-			}
-			catch (SQLException e)
-			{
-				assert true;
-			}
-
-			try
-			{
-				this.statement.executeUpdate("INSERT INTO test (id) VALUES (1)", new int[] { 1 });
-				
-				assert false : "HSQLDB does not support executeUpdate(String, int[])";
-			}
-			catch (SQLException e)
-			{
-				assert true;
-			}
-
-			try
-			{
-				this.statement.executeUpdate("INSERT INTO test (id) VALUES (1)", new String[] { "id" });
-				
-				assert false : "HSQLDB does not support executeUpdate(String, String[])";
-			}
-			catch (SQLException e)
-			{
-				assert true;
-			}
+			ResultSet rs = this.statement.executeQuery("SELECT ME");
+			
+			this.verify();
+			
+			assertNotNull(rs);
+			assertTrue(SQLObject.class.isInstance(rs));			
+			assertSame(resultSet, ((SQLObject) rs).getObject(this.database));
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.executeUpdate(String)'
+	 */
+	public void testExecuteUpdateString()
+	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
+		try
+		{
+			this.sqlStatement.executeUpdate("INSERT ME");
+			this.sqlStatementControl.setReturnValue(1);
+			
+			replay();
+			
+			int result = this.statement.executeUpdate("INSERT ME");
+			
+			verify();
+			
+			assertEquals(1, result);
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.executeUpdate(String, int)'
+	 */
+	public void testExecuteUpdateStringInt()
+	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
+		try
+		{
+			this.sqlStatement.executeUpdate("INSERT ME", 1);
+			this.sqlStatementControl.setReturnValue(1);
+			
+			replay();
+			
+			int result = this.statement.executeUpdate("INSERT ME", 1);
+			
+			verify();
+			
+			assertEquals(1, result);
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.executeUpdate(String, int[])'
+	 */
+	public void testExecuteUpdateStringIntArray()
+	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
+		int[] columns = new int[] { 0 };
+		
+		try
+		{
+			this.sqlStatement.executeUpdate("INSERT ME", columns);
+			this.sqlStatementControl.setReturnValue(1);
+			
+			replay();
+			
+			int result = this.statement.executeUpdate("INSERT ME", columns);
+			
+			verify();
+			
+			assertEquals(1, result);
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.executeUpdate(String, String[])'
+	 */
+	public void testExecuteUpdateStringStringArray()
+	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
+		String[] columns = new String[] { "column" };
+		
+		try
+		{
+			this.sqlStatement.executeUpdate("INSERT ME", columns);
+			this.sqlStatementControl.setReturnValue(1);
+			
+			replay();
+			
+			int result = this.statement.executeUpdate("INSERT ME", columns);
+			
+			verify();
+			
+			assertEquals(1, result);
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.getConnection()'
 	 */
 	public void testGetConnection()
 	{
 		java.sql.Connection connection = this.statement.getConnection();
 		
-		assert Connection.class.isInstance(connection);
+		assertSame(this.connection, connection);
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.getFetchDirection()'
 	 */
 	public void testGetFetchDirection()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+		
 		try
 		{
-			int fetchDirection = this.statement.getFetchDirection();
+			this.sqlStatement.getFetchDirection();
+			this.sqlStatementControl.setReturnValue(ResultSet.FETCH_REVERSE);
 			
-			assert fetchDirection == java.sql.ResultSet.FETCH_FORWARD;
+			replay();
+			
+			int direction = this.statement.getFetchDirection();
+			
+			verify();
+			
+			assertEquals(ResultSet.FETCH_REVERSE, direction);
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.getFetchSize()'
 	 */
 	public void testGetFetchSize()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+		
 		try
 		{
-			int fetchSize = this.statement.getFetchSize();
+			this.sqlStatement.getFetchSize();
+			this.sqlStatementControl.setReturnValue(100);
 			
-			assert fetchSize == 0;
+			replay();
+			
+			int size = this.statement.getFetchSize();
+			
+			verify();
+			
+			assertEquals(100, size);
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.getGeneratedKeys()'
 	 */
 	public void testGetGeneratedKeys()
 	{
+		ResultSet resultSet = (ResultSet) this.createMock(ResultSet.class);
+		
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+		
 		try
 		{
-			this.statement.getGeneratedKeys();
+			this.sqlStatement.getGeneratedKeys();
+			this.sqlStatementControl.setReturnValue(resultSet);
 			
-			assert false : "HSQLDB does not support getGeneratedKeys()";
+			replay();
+			
+			ResultSet rs = this.statement.getGeneratedKeys();
+			
+			verify();
+			
+			assertSame(resultSet, rs);
 		}
 		catch (SQLException e)
 		{
-			assert true;
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.getMaxFieldSize()'
 	 */
 	public void testGetMaxFieldSize()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+		
 		try
 		{
+			this.sqlStatement.getMaxFieldSize();
+			this.sqlStatementControl.setReturnValue(100);
+			
+			replay();
+			
 			int size = this.statement.getMaxFieldSize();
 			
-			assert size == 0;
+			verify();
+			
+			assertEquals(100, size);
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.getMaxRows()'
 	 */
 	public void testGetMaxRows()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+		
 		try
 		{
-			int rows = this.statement.getMaxRows();
+			this.sqlStatement.getMaxRows();
+			this.sqlStatementControl.setReturnValue(100);
 			
-			assert rows == 0;
+			replay();
+			
+			int size = this.statement.getMaxRows();
+			
+			verify();
+			
+			assertEquals(100, size);
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.getMoreResults()'
 	 */
 	public void testGetMoreResults()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
 		try
 		{
-			this.statement.execute("SELECT count(*) FROM test; SELECT count(*) FROM test;");
-
-			java.sql.ResultSet resultSet = this.statement.getResultSet();
+			this.sqlStatement.getMoreResults();
+			this.sqlStatementControl.setReturnValue(true);
 			
-			boolean next = resultSet.next();
-			
-			assert next;
-			
-			int count = resultSet.getInt(1);
-			
-			assert count == 0;
+			replay();
 			
 			boolean more = this.statement.getMoreResults();
-/*			
-			assert more : "Expected more results";
-
-			resultSet = this.statement.getResultSet();
 			
-			next = resultSet.next();
+			verify();
 			
-			assert next;
-			
-			count = resultSet.getInt(1);
-			
-			assert count == 0;
-			
-			more = this.statement.getMoreResults();
-*/			
-			assert !more : "Expected no more results";
-			
-			try
-			{
-				this.statement.getMoreResults(1);
-				
-				assert false : "HSQLDB does not support getMoreResults(int)";
-			}
-			catch (SQLException e)
-			{
-				assert true;
-			}
+			assertTrue(more);
 		}
 		catch (SQLException e)
 		{
-			e.getMessage();
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.getMoreResults(int)'
+	 */
+	public void testGetMoreResultsInt()
+	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
+		try
+		{
+			this.sqlStatement.getMoreResults(1);
+			this.sqlStatementControl.setReturnValue(true);
+			
+			replay();
+			
+			boolean more = this.statement.getMoreResults(1);
+			
+			verify();
+			
+			assertTrue(more);
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.getQueryTimeout()'
 	 */
 	public void testGetQueryTimeout()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+		
 		try
 		{
+			this.sqlStatement.getQueryTimeout();
+			this.sqlStatementControl.setReturnValue(100);
+			
+			replay();
+			
 			int timeout = this.statement.getQueryTimeout();
 			
-			assert timeout == 0;
+			verify();
+			
+			assertEquals(100, timeout);
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.getResultSet()'
 	 */
 	public void testGetResultSet()
 	{
+		ResultSet resultSet = (ResultSet) this.createMock(ResultSet.class);
+		
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+		
 		try
 		{
-			this.statement.execute("SELECT count(*) FROM test");
+			this.sqlStatement.getGeneratedKeys();
+			this.sqlStatementControl.setReturnValue(resultSet);
 			
-			java.sql.ResultSet resultSet = this.statement.getResultSet();
+			replay();
 			
-			assert !ResultSet.class.isInstance(resultSet);
+			ResultSet rs = this.statement.getGeneratedKeys();
 			
-			boolean next = resultSet.next();
+			verify();
 			
-			assert next;
-			
-			int count = resultSet.getInt(1);
-			
-			assert count == 0;
-			
-			next = resultSet.next();
-			
-			assert !next;
+			assertSame(resultSet, rs);
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.getResultSetConcurrency()'
 	 */
 	public void testGetResultSetConcurrency()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+		
 		try
 		{
+			this.sqlStatement.getResultSetConcurrency();
+			this.sqlStatementControl.setReturnValue(ResultSet.CONCUR_UPDATABLE);
+			
+			replay();
+			
 			int concurrency = this.statement.getResultSetConcurrency();
 			
-			assert concurrency == java.sql.ResultSet.CONCUR_READ_ONLY;
+			verify();
+			
+			assertEquals(ResultSet.CONCUR_UPDATABLE, concurrency);
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.getResultSetHoldability()'
 	 */
 	public void testGetResultSetHoldability()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+		
 		try
 		{
-			int holdability = this.statement.getResultSetHoldability();
+			this.sqlStatement.getResultSetConcurrency();
+			this.sqlStatementControl.setReturnValue(ResultSet.HOLD_CURSORS_OVER_COMMIT);
 			
-			assert holdability == java.sql.ResultSet.HOLD_CURSORS_OVER_COMMIT;
+			replay();
+			
+			int holdability = this.statement.getResultSetConcurrency();
+			
+			verify();
+			
+			assertEquals(ResultSet.HOLD_CURSORS_OVER_COMMIT, holdability);
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.getResultSetType()'
 	 */
 	public void testGetResultSetType()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+		
 		try
 		{
+			this.sqlStatement.getResultSetType();
+			this.sqlStatementControl.setReturnValue(ResultSet.TYPE_SCROLL_SENSITIVE);
+			
+			replay();
+			
 			int type = this.statement.getResultSetType();
 			
-			assert type == java.sql.ResultSet.TYPE_FORWARD_ONLY;
+			verify();
+			
+			assertEquals(ResultSet.TYPE_SCROLL_SENSITIVE, type);
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.getUpdateCount()'
 	 */
 	public void testGetUpdateCount()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+		
 		try
 		{
-			this.statement.execute("INSERT INTO test (id) VALUES (1)");
+			this.sqlStatement.getUpdateCount();
+			this.sqlStatementControl.setReturnValue(100);
+			
+			replay();
 			
 			int count = this.statement.getUpdateCount();
 			
-			assert count == 1;
+			verify();
+			
+			assertEquals(100, count);
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.getWarnings()'
 	 */
 	public void testGetWarnings()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+		
+		SQLWarning warnings = new SQLWarning();
+		
 		try
 		{
-			SQLWarning warnings = this.statement.getWarnings();
+			this.sqlStatement.getWarnings();
+			this.sqlStatementControl.setReturnValue(warnings);
 			
-			assert warnings == null;
+			replay();
+			
+			SQLWarning warn = this.statement.getWarnings();
+			
+			verify();
+			
+			assertEquals(warnings, warn);
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.setCursorName(String)'
 	 */
 	public void testSetCursorName()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
 		try
 		{
+			this.sqlStatement.setCursorName("test");
+			this.sqlStatementControl.setVoidCallable();
+			
+			replay();
+			
 			this.statement.setCursorName("test");
+			
+			verify();
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.setEscapeProcessing(boolean)'
 	 */
 	public void testSetEscapeProcessing()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
 		try
 		{
-			this.statement.setEscapeProcessing(false);
+			this.sqlStatement.setEscapeProcessing(true);
+			this.sqlStatementControl.setVoidCallable();
+			
+			replay();
+			
+			this.statement.setEscapeProcessing(true);
+			
+			verify();
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.setFetchDirection(int)'
 	 */
 	public void testSetFetchDirection()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
 		try
 		{
-			this.statement.setFetchDirection(java.sql.ResultSet.FETCH_FORWARD);
+			this.sqlStatement.setFetchDirection(ResultSet.FETCH_REVERSE);
+			this.sqlStatementControl.setVoidCallable();
 			
-			int direction1 = this.statement1.getFetchDirection();
-			int direction2 = this.statement2.getFetchDirection();
+			replay();
 			
-			assert direction1 == java.sql.ResultSet.FETCH_FORWARD;
-			assert direction2 == java.sql.ResultSet.FETCH_FORWARD;
+			this.statement.setFetchDirection(ResultSet.FETCH_REVERSE);
 			
-			try
-			{
-				this.statement.setFetchDirection(java.sql.ResultSet.FETCH_REVERSE);
-				
-				assert false : "HSQLDB does not support FETCH_REVERSE";
-			}
-			catch (java.sql.SQLException e)
-			{
-				assert true;
-			}
-			
-			try
-			{
-				this.statement.setFetchDirection(java.sql.ResultSet.FETCH_UNKNOWN);
-				
-				assert false : "HSQLDB does not support FETCH_UNKNOWN";
-			}
-			catch (java.sql.SQLException e)
-			{
-				assert true;
-			}
+			verify();
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.setFetchSize(int)'
 	 */
 	public void testSetFetchSize()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
 		try
 		{
-			this.statement.setFetchSize(1);
+			this.sqlStatement.setFetchSize(100);
+			this.sqlStatementControl.setVoidCallable();
 			
-			int size1 = this.statement1.getFetchSize();
-			int size2 = this.statement2.getFetchSize();
+			replay();
 			
-			assert size1 == 0;
-			assert size2 == 0;
+			this.statement.setFetchSize(100);
+			
+			verify();
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.setMaxFieldSize(int)'
 	 */
 	public void testSetMaxFieldSize()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
 		try
 		{
+			this.sqlStatement.setMaxFieldSize(100);
+			this.sqlStatementControl.setVoidCallable();
+			
+			replay();
+			
 			this.statement.setMaxFieldSize(100);
 			
-			int size1 = this.statement1.getMaxFieldSize();
-			int size2 = this.statement2.getMaxFieldSize();
-			
-			assert size1 == 0;
-			assert size2 == 0;
+			verify();
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.setMaxRows(int)'
 	 */
 	public void testSetMaxRows()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
 		try
 		{
+			this.sqlStatement.setMaxRows(100);
+			this.sqlStatementControl.setVoidCallable();
+			
+			replay();
+			
 			this.statement.setMaxRows(100);
 			
-			int rows1 = this.statement1.getMaxRows();
-			int rows2 = this.statement2.getMaxRows();
-			
-			assert rows1 == 100;
-			assert rows2 == 100;
+			verify();
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.setQueryTimeout(int)'
 	 */
 	public void testSetQueryTimeout()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
 		try
 		{
+			this.sqlStatement.setQueryTimeout(100);
+			this.sqlStatementControl.setVoidCallable();
+			
+			replay();
+			
 			this.statement.setQueryTimeout(100);
 			
-			int timeout1 = this.statement1.getQueryTimeout();
-			int timeout2 = this.statement2.getQueryTimeout();
-			
-			assert timeout1 == 0;
-			assert timeout2 == 0;
+			verify();
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 }

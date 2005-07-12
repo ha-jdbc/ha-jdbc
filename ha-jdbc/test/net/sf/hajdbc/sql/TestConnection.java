@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (C) 2004 Paul Ferraro
+ * Copyright (C) 2005 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -20,778 +20,1426 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.sql.CallableStatement;
 import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
+import java.sql.Driver;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
-import java.util.prefs.Preferences;
+import java.util.Collections;
+import java.util.Map;
 
+import net.sf.hajdbc.Balancer;
+import net.sf.hajdbc.ConnectionFactory;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.DatabaseClusterFactory;
-import net.sf.hajdbc.local.LocalDatabaseCluster;
+import net.sf.hajdbc.Operation;
+import net.sf.hajdbc.SQLObject;
+import net.sf.hajdbc.AbstractTestCase;
 
-public class TestConnection
+import org.easymock.MockControl;
+
+/**
+ * Unit test for {@link Connection}
+ * @author  Paul Ferraro
+ * @since   1.0
+ */
+public class TestConnection extends AbstractTestCase
 {
-	public static void storedProcedure()
-	{
-		// Do nothing
-	}
+	private MockControl databaseClusterControl = this.createControl(DatabaseCluster.class);
+	private DatabaseCluster databaseCluster = (DatabaseCluster) this.databaseClusterControl.getMock();
+	
+	private MockControl sqlConnectionControl = this.createControl(java.sql.Connection.class);
+	private java.sql.Connection sqlConnection = (java.sql.Connection) this.sqlConnectionControl.getMock();
+	
+	private MockControl databaseControl = this.createControl(Database.class);
+	private Database database = (Database) this.databaseControl.getMock();
+	
+	private MockControl balancerControl = this.createControl(Balancer.class);
+	private Balancer balancer = (Balancer) this.balancerControl.getMock();
+	
+	private MockControl fileSupportControl = this.createControl(FileSupport.class);
+	private FileSupport fileSupport = (FileSupport) this.fileSupportControl.getMock();
 	
 	private Connection connection;
-	private java.sql.Connection connection1;
-	private java.sql.Connection connection2;
+	private Database[] databases = new Database[] { this.database };
 	
 	/**
-	 * @testng.configuration beforeTestMethod = "true"
+	 * @see junit.framework.TestCase#setUp()
 	 */
-	public void setUp() throws Exception
+	protected void setUp() throws Exception
 	{
-		Preferences.userNodeForPackage(LocalDatabaseCluster.class).remove("cluster");
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
 		
-		Class.forName("net.sf.hajdbc.sql.Driver");
-
-		this.connection = (Connection) DriverManager.getConnection("jdbc:ha-jdbc:cluster", "sa", "");
-
-		java.sql.Statement statement = this.connection.createStatement();
-		statement.execute("CREATE TEMP TABLE test (id INTEGER PRIMARY KEY)");
-		statement.close();
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
 		
-		DatabaseCluster databaseCluster = DatabaseClusterFactory.getInstance().getDatabaseCluster("cluster");
-		Database database1 = databaseCluster.getDatabase("database1");
-		Database database2 = databaseCluster.getDatabase("database2");
+		this.replay();
 		
-		this.connection1 = (java.sql.Connection) this.connection.getObject(database1);
-		this.connection2 = (java.sql.Connection) this.connection.getObject(database2);
-	}
-
-	/**
-	 * @testng.configuration afterTestMethod = "true"
-	 */
-	public void tearDown() throws Exception
-	{
-		if (!this.connection.isClosed())
+		ConnectionFactory connectionFactory = new ConnectionFactory(this.databaseCluster, Collections.singletonMap(this.database, new Object()));
+		
+		Operation operation = new Operation()
 		{
-			this.connection.close();
-		}
+			public Object execute(Database database, Object sqlObject) throws SQLException
+			{
+				return TestConnection.this.sqlConnection;
+			}
+		};
+		
+		this.connection = new Connection(connectionFactory, operation, this.fileSupport);
+
+		this.verify();
+		this.reset();
 	}
 	
-	private int countRows(java.sql.Connection connection) throws SQLException
-	{
-		Statement statement = this.connection.createStatement();
-		
-		ResultSet resultSet = statement.executeQuery("SELECT count(*) FROM test");
-		
-		resultSet.next();
-		
-		int rows = resultSet.getInt(1);
-		
-		resultSet.close();
-		statement.close();
-		
-		return rows;
-	}
-	
-	/**
-	 * @testng.test
-	 */
 	public void testClearWarnings()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
 		try
 		{
+			this.sqlConnection.clearWarnings();
+			this.sqlConnectionControl.setVoidCallable();
+			
+			replay();
+			
 			this.connection.clearWarnings();
+			
+			verify();
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
-	 */
 	public void testClose()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
 		try
 		{
-			boolean closed1 = this.connection1.isClosed();
-			boolean closed2 = this.connection2.isClosed();
-
-			assert !closed1;
-			assert !closed2;
+			this.sqlConnection.close();
+			this.sqlConnectionControl.setVoidCallable();
+			
+			this.fileSupport.close();
+			this.fileSupportControl.setVoidCallable();
+			
+			this.replay();
 			
 			this.connection.close();
 			
-			closed1 = this.connection1.isClosed();
-			closed2 = this.connection2.isClosed();
-			
-			assert closed1;
-			assert closed2;
+			this.verify();
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
-	 */
 	public void testCommit()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
 		try
 		{
-			this.connection.setAutoCommit(false);
+			this.sqlConnection.commit();
+			this.sqlConnectionControl.setVoidCallable();
 			
-			java.sql.Statement statement = this.connection.createStatement();
-			
-			statement.executeUpdate("INSERT INTO test (id) VALUES (1)");
-			statement.close();
+			this.replay();
 			
 			this.connection.commit();
 			
-			int count1 = this.countRows(this.connection1);
-			int count2 = this.countRows(this.connection2);
-			
-			assert count1 == 1;
-			assert count2 == 1;
+			this.verify();
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
-	 */
 	public void testCreateStatement()
 	{
+		Statement statement = (Statement) this.createMock(Statement.class);
+
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 3);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+
 		try
 		{
-			java.sql.Statement statement = this.connection.createStatement();
-			int type = statement.getResultSetType();
-			int concurrency = statement.getResultSetConcurrency();
-			int holdability = statement.getResultSetHoldability();
+			this.sqlConnection.isReadOnly();
+			this.sqlConnectionControl.setReturnValue(false);
 			
-			assert Statement.class.isInstance(statement);
-			assert type == ResultSet.TYPE_FORWARD_ONLY;
-			assert concurrency == ResultSet.CONCUR_READ_ONLY;
-			assert holdability == ResultSet.HOLD_CURSORS_OVER_COMMIT;
+			this.balancer.toArray();
+			this.balancerControl.setReturnValue(this.databases, 2);
 			
-			statement = this.connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-			type = statement.getResultSetType();
-			concurrency = statement.getResultSetConcurrency();
-			holdability = statement.getResultSetHoldability();
+			this.sqlConnection.createStatement();
+			this.sqlConnectionControl.setReturnValue(statement);
 			
-			assert Statement.class.isInstance(statement);
-			assert type == ResultSet.TYPE_SCROLL_INSENSITIVE;
-			assert concurrency == ResultSet.CONCUR_READ_ONLY;
-			assert holdability == ResultSet.HOLD_CURSORS_OVER_COMMIT;
+			this.replay();
 			
-			statement = this.connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-			type = statement.getResultSetType();
-			concurrency = statement.getResultSetConcurrency();
-			holdability = statement.getResultSetHoldability();
+			Statement sqlStatement = this.connection.createStatement();
 			
-			assert Statement.class.isInstance(statement);
-			assert type == ResultSet.TYPE_SCROLL_INSENSITIVE;
-			assert concurrency == ResultSet.CONCUR_READ_ONLY;
-			assert holdability == ResultSet.HOLD_CURSORS_OVER_COMMIT;
+			this.verify();
+			
+			assertNotNull(sqlStatement);
+			assertTrue(SQLObject.class.isInstance(sqlStatement));			
+			assertSame(statement, ((SQLObject) sqlStatement).getObject(this.database));
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
-	 */
+	public void testReadOnlyCreateStatement()
+	{
+		Statement sqlStatement = (Statement) this.createMock(Statement.class);
+
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database, 2);
+
+		try
+		{
+			this.sqlConnection.isReadOnly();
+			this.sqlConnectionControl.setReturnValue(true);
+			
+			this.sqlConnection.createStatement();
+			this.sqlConnectionControl.setReturnValue(sqlStatement);
+			
+			this.replay();
+			
+			Statement statement = this.connection.createStatement();
+			
+			this.verify();
+			
+			assertSame(sqlStatement, statement);
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
+	public void testCreateStatementIntInt()
+	{
+		Statement statement = (Statement) this.createMock(Statement.class);
+
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 3);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+
+		try
+		{
+			this.sqlConnection.isReadOnly();
+			this.sqlConnectionControl.setReturnValue(false);
+			
+			this.balancer.toArray();
+			this.balancerControl.setReturnValue(this.databases, 2);
+			
+			this.sqlConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			this.sqlConnectionControl.setReturnValue(statement);
+			
+			this.replay();
+			
+			Statement sqlStatement = this.connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			
+			this.verify();
+			
+			assertNotNull(sqlStatement);
+			assertTrue(SQLObject.class.isInstance(sqlStatement));			
+			assertSame(statement, ((SQLObject) sqlStatement).getObject(this.database));
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
+	public void testReadOnlyCreateStatementIntInt()
+	{
+		Statement sqlStatement = (Statement) this.createMock(Statement.class);
+
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database, 2);
+
+		try
+		{
+			this.sqlConnection.isReadOnly();
+			this.sqlConnectionControl.setReturnValue(true);
+			
+			this.sqlConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			this.sqlConnectionControl.setReturnValue(sqlStatement);
+			
+			this.replay();
+			
+			Statement statement = this.connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			
+			this.verify();
+			
+			assertSame(sqlStatement, statement);
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
+	public void testCreateStatementIntIntInt()
+	{
+		Statement statement = (Statement) this.createMock(Statement.class);
+
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 3);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+
+		try
+		{
+			this.sqlConnection.isReadOnly();
+			this.sqlConnectionControl.setReturnValue(false);
+			
+			this.balancer.toArray();
+			this.balancerControl.setReturnValue(this.databases, 2);
+			
+			this.sqlConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE);
+			this.sqlConnectionControl.setReturnValue(statement);
+			
+			this.replay();
+			
+			Statement sqlStatement = this.connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE);
+			
+			this.verify();
+			
+			assertNotNull(sqlStatement);
+			assertTrue(SQLObject.class.isInstance(sqlStatement));			
+			assertSame(statement, ((SQLObject) sqlStatement).getObject(this.database));
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
+	public void testReadOnlyCreateStatementIntIntInt()
+	{
+		Statement sqlStatement = (Statement) this.createMock(Statement.class);
+
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database, 2);
+
+		try
+		{
+			this.sqlConnection.isReadOnly();
+			this.sqlConnectionControl.setReturnValue(true);
+			
+			this.sqlConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE);
+			this.sqlConnectionControl.setReturnValue(sqlStatement);
+			
+			this.replay();
+			
+			Statement statement = this.connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE);
+			
+			this.verify();
+			
+			assertSame(sqlStatement, statement);
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
 	public void testGetAutoCommit()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 1);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+		
 		try
 		{
+			this.sqlConnection.getAutoCommit();
+			this.sqlConnectionControl.setReturnValue(true);
+			
+			this.replay();
+			
 			boolean autoCommit = this.connection.getAutoCommit();
 			
-			assert autoCommit;
+			this.verify();
+			
+			assertTrue(autoCommit);
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
-	 */
 	public void testGetCatalog()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 1);
+		
+		this.balancer.next();
+		this.balancerControl.setReturnValue(this.database);
+		
 		try
 		{
+			this.balancer.beforeOperation(this.database);
+			this.balancerControl.setVoidCallable();
+			
+			this.sqlConnection.getCatalog();
+			this.sqlConnectionControl.setReturnValue("test");
+			
+			this.balancer.afterOperation(this.database);
+			this.balancerControl.setVoidCallable();
+			
+			this.replay();
+			
 			String catalog = this.connection.getCatalog();
 			
-			assert catalog == null;
+			this.verify();
+			
+			assertEquals("test", catalog);
 		}
 		catch (SQLException e)
 		{
-			assert false;
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
-	 */
 	public void testGetHoldability()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 1);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+		
 		try
 		{
+			this.sqlConnection.getHoldability();
+			this.sqlConnectionControl.setReturnValue(ResultSet.HOLD_CURSORS_OVER_COMMIT);
+			
+			this.replay();
+			
 			int holdability = this.connection.getHoldability();
 			
-			assert holdability == ResultSet.HOLD_CURSORS_OVER_COMMIT : holdability;
+			this.verify();
+			
+			assertEquals(ResultSet.HOLD_CURSORS_OVER_COMMIT, holdability);
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
-	 */
 	public void testGetMetaData()
 	{
+		DatabaseMetaData databaseMetaData = (DatabaseMetaData) this.createMock(DatabaseMetaData.class);
+		
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 1);
+		
+		this.balancer.next();
+		this.balancerControl.setReturnValue(this.database);
+		
 		try
 		{
+			this.balancer.beforeOperation(this.database);
+			this.balancerControl.setVoidCallable();
+			
+			this.sqlConnection.getMetaData();
+			this.sqlConnectionControl.setReturnValue(databaseMetaData);
+			
+			this.balancer.afterOperation(this.database);
+			this.balancerControl.setVoidCallable();
+			
+			this.replay();
+			
 			DatabaseMetaData metaData = this.connection.getMetaData();
 			
-			assert metaData != null;
+			this.verify();
+			
+			assertSame(databaseMetaData, metaData);
 		}
 		catch (SQLException e)
 		{
-			assert false;
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
-	 */
 	public void testGetTransactionIsolation()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 1);
+		
+		this.balancer.next();
+		this.balancerControl.setReturnValue(this.database);
+		
 		try
 		{
-			int isolation = this.connection.getTransactionIsolation();
+			this.balancer.beforeOperation(this.database);
+			this.balancerControl.setVoidCallable();
 			
-			assert isolation == java.sql.Connection.TRANSACTION_READ_UNCOMMITTED : isolation;
+			this.sqlConnection.getTransactionIsolation();
+			this.sqlConnectionControl.setReturnValue(Connection.TRANSACTION_NONE);
+			
+			this.balancer.afterOperation(this.database);
+			this.balancerControl.setVoidCallable();
+			
+			this.replay();
+			
+			int transactionIsolation = this.connection.getTransactionIsolation();
+			
+			this.verify();
+			
+			assertEquals(Connection.TRANSACTION_NONE, transactionIsolation);
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
-	 */
 	public void testGetTypeMap()
 	{
+		Map typeMap = Collections.EMPTY_MAP;
+		
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 1);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+		
 		try
 		{
-			this.connection.getTypeMap();
+			this.sqlConnection.getTypeMap();
+			this.sqlConnectionControl.setReturnValue(typeMap);
 			
-			assert false : "getTypeMap() is not supported in HSQL";
+			this.replay();
+			
+			Map map = this.connection.getTypeMap();
+			
+			this.verify();
+			
+			assertSame(typeMap, map);
 		}
 		catch (SQLException e)
 		{
-			assert true;
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
-	 */
 	public void testGetWarnings()
 	{
+		SQLWarning sqlWarning = new SQLWarning();
+		
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 1);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+		
 		try
 		{
+			this.sqlConnection.getWarnings();
+			this.sqlConnectionControl.setReturnValue(sqlWarning);
+			
+			this.replay();
+			
 			SQLWarning warning = this.connection.getWarnings();
 			
-			assert warning == null;
+			this.verify();
+			
+			assertSame(sqlWarning, warning);
 		}
 		catch (SQLException e)
 		{
-			assert false;
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
-	 */
 	public void testIsClosed()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 1);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+		
 		try
 		{
+			this.sqlConnection.isClosed();
+			this.sqlConnectionControl.setReturnValue(true);
+			
+			this.replay();
+			
 			boolean closed = this.connection.isClosed();
 			
-			assert !closed;
+			this.verify();
+			
+			assertTrue(closed);
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
-	 */
 	public void testIsReadOnly()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 1);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+		
 		try
 		{
+			this.sqlConnection.isReadOnly();
+			this.sqlConnectionControl.setReturnValue(true);
+			
+			this.replay();
+			
 			boolean readOnly = this.connection.isReadOnly();
 			
-			assert !readOnly;
+			this.verify();
+			
+			assertTrue(readOnly);
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
-	 */
 	public void testNativeSQL()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 1);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+		
 		try
 		{
-			String sql = "CALL NOW()";
-			String nativeSQL = this.connection.nativeSQL(sql);
+			this.sqlConnection.nativeSQL("test");
+			this.sqlConnectionControl.setReturnValue("SELECT 'test'");
 			
-			assert nativeSQL.equals(sql);
+			this.replay();
+			
+			String nativeSQL = this.connection.nativeSQL("test");
+			
+			this.verify();
+			
+			assertEquals("SELECT 'test'", nativeSQL);
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
-	 */
-	public void testPrepareCall()
+	public void testPrepareCallString()
 	{
+		CallableStatement statement = (CallableStatement) this.createMock(CallableStatement.class);
+
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 3);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+
 		try
 		{
-			java.sql.Statement stmt = this.connection.createStatement();
-			stmt.execute("GRANT ALL ON CLASS \"" + this.getClass().getName() + "\" TO PUBLIC");
-			stmt.close();
-
-			String sql = "call storedProcedure";
-			java.sql.CallableStatement statement = this.connection.prepareCall(sql);
-			int type = statement.getResultSetType();
-			int concurrency = statement.getResultSetConcurrency();
-			int holdability = statement.getResultSetHoldability();
+			this.sqlConnection.isReadOnly();
+			this.sqlConnectionControl.setReturnValue(false);
 			
-			assert CallableStatement.class.isInstance(statement);
-			assert type == ResultSet.TYPE_FORWARD_ONLY;
-			assert concurrency == ResultSet.CONCUR_READ_ONLY;
-			assert holdability == ResultSet.HOLD_CURSORS_OVER_COMMIT;
+			this.balancer.toArray();
+			this.balancerControl.setReturnValue(this.databases, 2);
 			
-			statement = this.connection.prepareCall(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-			type = statement.getResultSetType();
-			concurrency = statement.getResultSetConcurrency();
-			holdability = statement.getResultSetHoldability();
+			this.sqlConnection.prepareCall("CALL ME");
+			this.sqlConnectionControl.setReturnValue(statement);
 			
-			assert CallableStatement.class.isInstance(statement);
-			assert type == ResultSet.TYPE_SCROLL_INSENSITIVE;
-			assert concurrency == ResultSet.CONCUR_READ_ONLY;
-			assert holdability == ResultSet.HOLD_CURSORS_OVER_COMMIT;
+			this.replay();
 			
-			statement = this.connection.prepareCall(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-			type = statement.getResultSetType();
-			concurrency = statement.getResultSetConcurrency();
-			holdability = statement.getResultSetHoldability();
+			CallableStatement callableStatement = this.connection.prepareCall("CALL ME");
 			
-			assert CallableStatement.class.isInstance(statement);
-			assert type == ResultSet.TYPE_SCROLL_INSENSITIVE;
-			assert concurrency == ResultSet.CONCUR_READ_ONLY;
-			assert holdability == ResultSet.HOLD_CURSORS_OVER_COMMIT;
+			this.verify();
+			
+			assertNotNull(callableStatement);
+			assertTrue(SQLObject.class.isInstance(callableStatement));			
+			assertSame(statement, ((SQLObject) callableStatement).getObject(this.database));
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
-	 */
-	public void testPrepareStatement()
+	public void testReadOnlyPrepareCallString()
 	{
+		CallableStatement statement = (CallableStatement) this.createMock(CallableStatement.class);
+
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+
 		try
 		{
-			String sql = "CALL NOW()";
-			java.sql.PreparedStatement statement = this.connection.prepareStatement(sql);
-			int type = statement.getResultSetType();
-			int concurrency = statement.getResultSetConcurrency();
-			int holdability = statement.getResultSetHoldability();
+			this.sqlConnection.isReadOnly();
+			this.sqlConnectionControl.setReturnValue(true);
 			
-			assert PreparedStatement.class.isInstance(statement);
-			assert type == ResultSet.TYPE_FORWARD_ONLY;
-			assert concurrency == ResultSet.CONCUR_READ_ONLY;
-			assert holdability == ResultSet.HOLD_CURSORS_OVER_COMMIT;
+			this.balancer.next();
+			this.balancerControl.setReturnValue(this.database);
+
+			this.balancer.beforeOperation(this.database);
+			this.balancerControl.setVoidCallable();
 			
-			statement = this.connection.prepareCall(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-			type = statement.getResultSetType();
-			concurrency = statement.getResultSetConcurrency();
-			holdability = statement.getResultSetHoldability();
+			this.sqlConnection.prepareCall("CALL ME");
+			this.sqlConnectionControl.setReturnValue(statement);
 			
-			assert PreparedStatement.class.isInstance(statement);
-			assert type == ResultSet.TYPE_SCROLL_INSENSITIVE;
-			assert concurrency == ResultSet.CONCUR_READ_ONLY;
-			assert holdability == ResultSet.HOLD_CURSORS_OVER_COMMIT;
+			this.balancer.afterOperation(this.database);
+			this.balancerControl.setVoidCallable();
 			
-			statement = this.connection.prepareCall(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-			type = statement.getResultSetType();
-			concurrency = statement.getResultSetConcurrency();
-			holdability = statement.getResultSetHoldability();
+			this.replay();
 			
-			assert PreparedStatement.class.isInstance(statement);
-			assert type == ResultSet.TYPE_SCROLL_INSENSITIVE;
-			assert concurrency == ResultSet.CONCUR_READ_ONLY;
-			assert holdability == ResultSet.HOLD_CURSORS_OVER_COMMIT;
+			CallableStatement callableStatement = this.connection.prepareCall("CALL ME");
+			
+			this.verify();
+			
+			assertSame(statement, callableStatement);
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
-	 */
+	public void testPrepareCallStringIntInt()
+	{
+		CallableStatement statement = (CallableStatement) this.createMock(CallableStatement.class);
+
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 3);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+
+		try
+		{
+			this.sqlConnection.isReadOnly();
+			this.sqlConnectionControl.setReturnValue(false);
+			
+			this.balancer.toArray();
+			this.balancerControl.setReturnValue(this.databases, 2);
+			
+			this.sqlConnection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			this.sqlConnectionControl.setReturnValue(statement);
+			
+			this.replay();
+			
+			CallableStatement callableStatement = this.connection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			
+			this.verify();
+			
+			assertNotNull(callableStatement);
+			assertTrue(SQLObject.class.isInstance(callableStatement));			
+			assertSame(statement, ((SQLObject) callableStatement).getObject(this.database));
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
+	public void testReadOnlyPrepareCallStringIntInt()
+	{
+		CallableStatement statement = (CallableStatement) this.createMock(CallableStatement.class);
+
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+
+		try
+		{
+			this.sqlConnection.isReadOnly();
+			this.sqlConnectionControl.setReturnValue(true);
+			
+			this.balancer.next();
+			this.balancerControl.setReturnValue(this.database);
+
+			this.balancer.beforeOperation(this.database);
+			this.balancerControl.setVoidCallable();
+			
+			this.sqlConnection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			this.sqlConnectionControl.setReturnValue(statement);
+			
+			this.balancer.afterOperation(this.database);
+			this.balancerControl.setVoidCallable();
+			
+			this.replay();
+			
+			CallableStatement callableStatement = this.connection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			
+			this.verify();
+			
+			assertSame(statement, callableStatement);
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
+	public void testPrepareCallStringIntIntInt()
+	{
+		CallableStatement statement = (CallableStatement) this.createMock(CallableStatement.class);
+
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 3);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+
+		try
+		{
+			this.sqlConnection.isReadOnly();
+			this.sqlConnectionControl.setReturnValue(false);
+			
+			this.balancer.toArray();
+			this.balancerControl.setReturnValue(this.databases, 2);
+			
+			this.sqlConnection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE);
+			this.sqlConnectionControl.setReturnValue(statement);
+			
+			this.replay();
+			
+			CallableStatement callableStatement = this.connection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE);
+			
+			this.verify();
+			
+			assertNotNull(callableStatement);
+			assertTrue(SQLObject.class.isInstance(callableStatement));			
+			assertSame(statement, ((SQLObject) callableStatement).getObject(this.database));
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
+	public void testReadOnlyPrepareCallStringIntIntInt()
+	{
+		CallableStatement statement = (CallableStatement) this.createMock(CallableStatement.class);
+
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+
+		try
+		{
+			this.sqlConnection.isReadOnly();
+			this.sqlConnectionControl.setReturnValue(true);
+			
+			this.balancer.next();
+			this.balancerControl.setReturnValue(this.database);
+
+			this.balancer.beforeOperation(this.database);
+			this.balancerControl.setVoidCallable();
+			
+			this.sqlConnection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE);
+			this.sqlConnectionControl.setReturnValue(statement);
+			
+			this.balancer.afterOperation(this.database);
+			this.balancerControl.setVoidCallable();
+			
+			this.replay();
+			
+			CallableStatement callableStatement = this.connection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE);
+			
+			this.verify();
+			
+			assertSame(statement, callableStatement);
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
+	public void testPrepareStatementString()
+	{
+		PreparedStatement statement = (PreparedStatement) this.createMock(PreparedStatement.class);
+
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 3);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+
+		try
+		{
+			this.sqlConnection.isReadOnly();
+			this.sqlConnectionControl.setReturnValue(false);
+			
+			this.balancer.toArray();
+			this.balancerControl.setReturnValue(this.databases, 2);
+			
+			this.sqlConnection.prepareStatement("SELECT ME");
+			this.sqlConnectionControl.setReturnValue(statement);
+			
+			this.replay();
+			
+			PreparedStatement preparedStatement = this.connection.prepareStatement("SELECT ME");
+			
+			this.verify();
+			
+			assertNotNull(preparedStatement);
+			assertTrue(SQLObject.class.isInstance(preparedStatement));			
+			assertSame(statement, ((SQLObject) preparedStatement).getObject(this.database));
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
+	public void testReadOnlyPrepareStatementString()
+	{
+		PreparedStatement statement = (PreparedStatement) this.createMock(PreparedStatement.class);
+
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+
+		try
+		{
+			this.sqlConnection.isReadOnly();
+			this.sqlConnectionControl.setReturnValue(true);
+			
+			this.balancer.next();
+			this.balancerControl.setReturnValue(this.database);
+
+			this.balancer.beforeOperation(this.database);
+			this.balancerControl.setVoidCallable();
+			
+			this.sqlConnection.prepareStatement("SELECT ME");
+			this.sqlConnectionControl.setReturnValue(statement);
+			
+			this.balancer.afterOperation(this.database);
+			this.balancerControl.setVoidCallable();
+			
+			this.replay();
+			
+			PreparedStatement preparedStatement = this.connection.prepareStatement("SELECT ME");
+			
+			this.verify();
+			
+			assertSame(statement, preparedStatement);
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
+	public void testPrepareStatementStringIntInt()
+	{
+		PreparedStatement statement = (PreparedStatement) this.createMock(PreparedStatement.class);
+
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 3);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+
+		try
+		{
+			this.sqlConnection.isReadOnly();
+			this.sqlConnectionControl.setReturnValue(false);
+			
+			this.balancer.toArray();
+			this.balancerControl.setReturnValue(this.databases, 2);
+			
+			this.sqlConnection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			this.sqlConnectionControl.setReturnValue(statement);
+			
+			this.replay();
+			
+			PreparedStatement preparedStatement = this.connection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			
+			this.verify();
+			
+			assertNotNull(preparedStatement);
+			assertTrue(SQLObject.class.isInstance(preparedStatement));			
+			assertSame(statement, ((SQLObject) preparedStatement).getObject(this.database));
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
+	public void testReadOnlyPrepareStatementStringIntInt()
+	{
+		PreparedStatement statement = (PreparedStatement) this.createMock(PreparedStatement.class);
+
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+
+		try
+		{
+			this.sqlConnection.isReadOnly();
+			this.sqlConnectionControl.setReturnValue(true);
+			
+			this.balancer.next();
+			this.balancerControl.setReturnValue(this.database);
+
+			this.balancer.beforeOperation(this.database);
+			this.balancerControl.setVoidCallable();
+			
+			this.sqlConnection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			this.sqlConnectionControl.setReturnValue(statement);
+			
+			this.balancer.afterOperation(this.database);
+			this.balancerControl.setVoidCallable();
+			
+			this.replay();
+			
+			PreparedStatement preparedStatement = this.connection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			
+			this.verify();
+			
+			assertSame(statement, preparedStatement);
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
+	public void testPrepareStatementStringIntIntInt()
+	{
+		PreparedStatement statement = (PreparedStatement) this.createMock(PreparedStatement.class);
+
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 3);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+
+		try
+		{
+			this.sqlConnection.isReadOnly();
+			this.sqlConnectionControl.setReturnValue(false);
+			
+			this.balancer.toArray();
+			this.balancerControl.setReturnValue(this.databases, 2);
+			
+			this.sqlConnection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE);
+			this.sqlConnectionControl.setReturnValue(statement);
+			
+			this.replay();
+			
+			PreparedStatement preparedStatement = this.connection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE);
+			
+			this.verify();
+			
+			assertNotNull(preparedStatement);
+			assertTrue(SQLObject.class.isInstance(preparedStatement));			
+			assertSame(statement, ((SQLObject) preparedStatement).getObject(this.database));
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
+	public void testReadOnlyPrepareStatementStringIntIntInt()
+	{
+		PreparedStatement statement = (PreparedStatement) this.createMock(PreparedStatement.class);
+
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+
+		try
+		{
+			this.sqlConnection.isReadOnly();
+			this.sqlConnectionControl.setReturnValue(true);
+			
+			this.balancer.next();
+			this.balancerControl.setReturnValue(this.database);
+
+			this.balancer.beforeOperation(this.database);
+			this.balancerControl.setVoidCallable();
+			
+			this.sqlConnection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE);
+			this.sqlConnectionControl.setReturnValue(statement);
+			
+			this.balancer.afterOperation(this.database);
+			this.balancerControl.setVoidCallable();
+			
+			this.replay();
+			
+			PreparedStatement preparedStatement = this.connection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE);
+			
+			this.verify();
+			
+			assertSame(statement, preparedStatement);
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
 	public void testReleaseSavepoint()
 	{
+		final java.sql.Savepoint sqlSavepoint = (java.sql.Savepoint) this.createMock(java.sql.Savepoint.class);
+		
+		ConnectionOperation operation = new ConnectionOperation()
+		{
+			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			{
+				return sqlSavepoint;
+			}
+		};
+		
 		try
 		{
-			this.connection.setAutoCommit(false);
+			this.databaseCluster.getBalancer();
+			this.databaseClusterControl.setReturnValue(this.balancer, 2);
 			
-			java.sql.Statement statement = this.connection.createStatement();
+			this.balancer.toArray();
+			this.balancerControl.setReturnValue(this.databases, 2);
 			
-			statement.executeUpdate("INSERT INTO test (id) VALUES (1)");
-
-			java.sql.Savepoint savepoint = this.connection.setSavepoint("savepoint1");
+			this.replay();
 			
-			assert Savepoint.class.isInstance(savepoint);
+			Savepoint savepoint = new Savepoint(this.connection, operation);
 			
-			statement.executeUpdate("INSERT INTO test (id) VALUES (2)");
-
-			statement.close();
+			this.verify();
+			this.reset();
+			
+			this.databaseCluster.getBalancer();
+			this.databaseClusterControl.setReturnValue(this.balancer, 2);
+			
+			this.balancer.toArray();
+			this.balancerControl.setReturnValue(this.databases, 2);
+			
+			this.sqlConnection.releaseSavepoint(sqlSavepoint);
+			this.sqlConnectionControl.setVoidCallable();
+			
+			this.replay();
 			
 			this.connection.releaseSavepoint(savepoint);
 			
-			this.connection.commit();
-			
-			int count1 = this.countRows(this.connection1);
-			int count2 = this.countRows(this.connection2);
-			
-			assert count1 == 2 : count1;
-			assert count2 == 2 : count2;
+			this.verify();
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
-	 */
 	public void testRollback()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
 		try
 		{
-			this.connection.setAutoCommit(false);
+			this.sqlConnection.rollback();
+			this.sqlConnectionControl.setVoidCallable();
 			
-			java.sql.Statement statement = this.connection.createStatement();
-			
-			statement.executeUpdate("INSERT INTO test (id) VALUES (1)");
-			statement.close();
+			this.replay();
 			
 			this.connection.rollback();
 			
-			int count1 = this.countRows(this.connection1);
-			int count2 = this.countRows(this.connection2);
-			
-			assert count1 == 0 : count1;
-			assert count2 == 0 : count2;
+			this.verify();
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
-	 */
 	public void testRollbackSavepoint()
 	{
+		final java.sql.Savepoint sqlSavepoint = (java.sql.Savepoint) this.createMock(java.sql.Savepoint.class);
+		
+		ConnectionOperation operation = new ConnectionOperation()
+		{
+			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			{
+				return sqlSavepoint;
+			}
+		};
+		
 		try
 		{
-			this.connection.setAutoCommit(false);
+			this.databaseCluster.getBalancer();
+			this.databaseClusterControl.setReturnValue(this.balancer, 2);
 			
-			java.sql.Statement statement = this.connection.createStatement();
+			this.balancer.toArray();
+			this.balancerControl.setReturnValue(this.databases, 2);
 			
-			statement.executeUpdate("INSERT INTO test (id) VALUES (1)");
-
-			java.sql.Savepoint savepoint = this.connection.setSavepoint("savepoint1");
-
-			assert Savepoint.class.isInstance(savepoint);
+			this.replay();
 			
-			statement.executeUpdate("INSERT INTO test (id) VALUES (2)");
-
-			statement.close();
+			Savepoint savepoint = new Savepoint(this.connection, operation);
+			
+			this.verify();
+			this.reset();
+			
+			this.databaseCluster.getBalancer();
+			this.databaseClusterControl.setReturnValue(this.balancer, 2);
+			
+			this.balancer.toArray();
+			this.balancerControl.setReturnValue(this.databases, 2);
+			
+			this.sqlConnection.rollback(sqlSavepoint);
+			this.sqlConnectionControl.setVoidCallable();
+			
+			this.replay();
 			
 			this.connection.rollback(savepoint);
 			
-			this.connection.commit();
-			
-			int count1 = this.countRows(this.connection1);
-			int count2 = this.countRows(this.connection2);
-			
-			assert count1 == 1;
-			assert count2 == 1;
+			this.verify();
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
-	 */
 	public void testSetAutoCommit()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
 		try
 		{
-			this.connection.setAutoCommit(false);
+			this.sqlConnection.setAutoCommit(true);
+			this.sqlConnectionControl.setVoidCallable();
 			
-			boolean autoCommit1 = this.connection1.getAutoCommit();
-			boolean autoCommit2 = this.connection2.getAutoCommit();
+			this.replay();
 			
-			assert !autoCommit1;
-			assert !autoCommit2;
-
 			this.connection.setAutoCommit(true);
 			
-			autoCommit1 = this.connection1.getAutoCommit();
-			autoCommit2 = this.connection2.getAutoCommit();
-			
-			assert autoCommit1;
-			assert autoCommit2;
+			this.verify();
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
-	 */
 	public void testSetCatalog()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
 		try
 		{
-			this.connection.setCatalog("catalog");
+			this.sqlConnection.setCatalog("test");
+			this.sqlConnectionControl.setVoidCallable();
 			
-			String catalog1 = this.connection1.getCatalog();
-			String catalog2 = this.connection2.getCatalog();
+			this.replay();
 			
-			assert catalog1 == null;
-			assert catalog2 == null;
+			this.connection.setCatalog("test");
+			
+			this.verify();
 		}
 		catch (SQLException e)
 		{
-			assert false;
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
-	 */
 	public void testSetHoldability()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
 		try
 		{
-			try
-			{
-				this.connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
-				
-				assert false : "CLOSE_CURSORS_AT_COMMIT holdability is not supported in HSQL";
-			}
-			catch (SQLException e)
-			{
-				assert true;
-			}
+			this.sqlConnection.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);
+			this.sqlConnectionControl.setVoidCallable();
+			
+			this.replay();
 			
 			this.connection.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);
 			
-			int holdability1 = this.connection1.getHoldability();
-			int holdability2 = this.connection2.getHoldability();
-			
-			assert holdability1 == ResultSet.HOLD_CURSORS_OVER_COMMIT;
-			assert holdability2 == ResultSet.HOLD_CURSORS_OVER_COMMIT;
+			this.verify();
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
-	 */
 	public void testSetReadOnly()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
 		try
 		{
+			this.sqlConnection.setReadOnly(true);
+			this.sqlConnectionControl.setVoidCallable();
+			
+			this.replay();
+			
 			this.connection.setReadOnly(true);
 			
-			boolean readOnly1 = this.connection1.isReadOnly();
-			boolean readOnly2 = this.connection2.isReadOnly();
-
-			assert readOnly1;
-			assert readOnly2;
-			
-			this.connection.setReadOnly(false);
-			
-			readOnly1 = this.connection1.isReadOnly();
-			readOnly2 = this.connection2.isReadOnly();
-
-			assert !readOnly1;
-			assert !readOnly2;
+			this.verify();
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
-	 */
 	public void testSetSavepoint()
 	{
+		java.sql.Savepoint sqlSavepoint = (java.sql.Savepoint) this.createMock(java.sql.Savepoint.class);
+		
 		try
 		{
-			this.connection.setAutoCommit(false);
-
-			try
-			{
-				this.connection.setSavepoint();
-				
-				assert false : "HSQLDB does not support setSavepoint()";
-			}
-			catch (SQLException e)
-			{
-				assert true;
-			}
+			this.databaseCluster.getBalancer();
+			this.databaseClusterControl.setReturnValue(this.balancer, 2);
 			
-			java.sql.Savepoint savepoint = this.connection.setSavepoint("savepoint1");
+			this.balancer.toArray();
+			this.balancerControl.setReturnValue(this.databases, 2);
 			
-			assert Savepoint.class.isInstance(savepoint);
+			this.sqlConnection.setSavepoint("test");
+			this.sqlConnectionControl.setReturnValue(sqlSavepoint);
+			
+			this.replay();
+			
+			java.sql.Savepoint savepoint = this.connection.setSavepoint("test");
+			
+			this.verify();
+			
+			assertNotNull(savepoint);
+			assertTrue(SQLObject.class.isInstance(savepoint));			
+			assertSame(sqlSavepoint, ((SQLObject) savepoint).getObject(this.database));
 		}
-		catch (SQLException ex)
+		catch (SQLException e)
 		{
-			assert false : ex.getMessage();
+			this.fail(e);
 		}
 	}
 
-	/**
-	 * @testng.test
-	 */
 	public void testSetTransactionIsolation()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
 		try
 		{
-			try
-			{
-				this.connection.setTransactionIsolation(java.sql.Connection.TRANSACTION_NONE);
-				
-				assert false : "HSQLDB does not support TRANSACTION_NONE";
-			}
-			catch (SQLException e)
-			{
-				assert true;
-			}
+			this.sqlConnection.setTransactionIsolation(Connection.TRANSACTION_NONE);
+			this.sqlConnectionControl.setVoidCallable();
 			
-			try
-			{
-				this.connection.setTransactionIsolation(java.sql.Connection.TRANSACTION_READ_COMMITTED);
-				
-				assert false : "HSQLDB does not support TRANSACTION_READ_COMMITTED";
-			}
-			catch (SQLException e)
-			{
-				assert true;
-			}
-
-			this.connection.setTransactionIsolation(java.sql.Connection.TRANSACTION_READ_UNCOMMITTED);
+			this.replay();
 			
-			int isolation1 = this.connection1.getTransactionIsolation();
-			int isolation2 = this.connection1.getTransactionIsolation();
+			this.connection.setTransactionIsolation(Connection.TRANSACTION_NONE);
 			
-			assert isolation1 == java.sql.Connection.TRANSACTION_READ_UNCOMMITTED;
-			assert isolation2 == java.sql.Connection.TRANSACTION_READ_UNCOMMITTED;
-			
-			try
-			{
-				this.connection.setTransactionIsolation(java.sql.Connection.TRANSACTION_REPEATABLE_READ);
-				
-				assert false : "HSQLDB does not support TRANSACTION_REPEATABLE_READ";
-			}
-			catch (SQLException e)
-			{
-				assert true;
-			}
-			
-			try
-			{
-				this.connection.setTransactionIsolation(java.sql.Connection.TRANSACTION_SERIALIZABLE);
-				
-				assert false : "HSQLDB does not support TRANSACTION_SERIALIZABLE";
-			}
-			catch (SQLException e)
-			{
-				assert true;
-			}
+			this.verify();
 		}
 		catch (SQLException e)
 		{
-			assert false : e.getMessage();
+			this.fail(e);
 		}
 	}
-	
-	/**
-	 * @testng.test
-	 */
+
 	public void testSetTypeMap()
 	{
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		
+		this.balancer.toArray();
+		this.balancerControl.setReturnValue(this.databases, 2);
+		
 		try
 		{
-			this.connection.setTypeMap(null);
+			this.sqlConnection.setTypeMap(Collections.EMPTY_MAP);
+			this.sqlConnectionControl.setVoidCallable();
 			
-			assert false : "HSQLDB does not support setTypeMap()";
+			this.replay();
+			
+			this.connection.setTypeMap(Collections.EMPTY_MAP);
+			
+			this.verify();
 		}
 		catch (SQLException e)
 		{
-			assert true;
+			this.fail(e);
 		}
 	}
 }
