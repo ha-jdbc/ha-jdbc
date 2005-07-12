@@ -27,6 +27,7 @@ import javax.naming.Name;
 import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
 
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterFactory;
 
 /**
@@ -41,38 +42,32 @@ public abstract class AbstractDataSourceFactory implements ObjectFactory
 	 */
 	public Object getObjectInstance(Object object, Name name, Context context, Hashtable environment) throws Exception
 	{
-		if (object == null)
-		{
-			return null;
-		}
+		if (object == null) return null;
 		
-		if (!Reference.class.isInstance(object))
-		{
-			return null;
-		}
+		if (!Reference.class.isInstance(object)) return null;
 		
 		Reference reference = (Reference) object;
 		
 		String className = reference.getClassName();
 		
-		if (className == null)
-		{
-			return null;
-		}
+		if (className == null) return null;
 		
 		Class objectClass = this.getObjectClass();
 		
-		if (!objectClass.getName().equals(className))
-		{
-			return null;
-		}
+		if (!objectClass.getName().equals(className)) return null;
 		
 		AbstractDataSource dataSource = (AbstractDataSource) objectClass.newInstance();
 		
 		String id = (String) reference.get(AbstractDataSource.NAME).getContent();
 
+		if (id == null) return null;
+		
+		DatabaseCluster databaseCluster = DatabaseClusterFactory.getInstance().getDatabaseCluster(id);
+		
+		if (databaseCluster == null) return null;
+		
 		dataSource.setName(id);
-		dataSource.setConnectionFactory(DatabaseClusterFactory.getInstance().getDatabaseCluster(id).getConnectionFactory());
+		dataSource.setConnectionFactory(databaseCluster.getConnectionFactory());
 		
 		return dataSource;
 	}
