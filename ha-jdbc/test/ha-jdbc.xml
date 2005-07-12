@@ -1,19 +1,46 @@
 <?xml version="1.0"?>
-<!DOCTYPE ha-jdbc SYSTEM "../doc/src/content/dtd/ha-jdbc-1.0.dtd">
+<!DOCTYPE ha-jdbc SYSTEM "../doc/src/resources/dtd/ha-jdbc-1.0.dtd">
+<!--
+ HA-JDBC: High-Availability JDBC
+ Copyright (C) 2005 Paul Ferraro
+ 
+ This library is free software; you can redistribute it and/or modify it 
+ under the terms of the GNU Lesser General Public License as published by the 
+ Free Software Foundation; either version 2.1 of the License, or (at your 
+ option) any later version.
+ 
+ This library is distributed in the hope that it will be useful, but WITHOUT
+ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this library; if not, write to the Free Software Foundation, 
+ Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ 
+ Contact: ferraro@users.sourceforge.net
+-->
 <ha-jdbc>
-	<cluster id="cluster" balancer="round-robin">
-		<database id="database1">
-			<driver>org.hsqldb.jdbcDriver</driver>
-			<url>jdbc:hsqldb:mem:database1</url>
-			<user>sa</user>
-			<password></password>
+	<cluster id="database-cluster" balancer="simple">
+		<database id="database1" weight="2">
+			<driver>net.sf.hajdbc.sql.MockDriver</driver>
+			<url>jdbc:mock:database1</url>
 		</database>
-		<database id="database2">
-			<driver>org.hsqldb.jdbcDriver</driver>
-			<url>jdbc:hsqldb:mem:database2</url>
-			<user>sa</user>
-			<password></password>
+		<database id="database2" weight="1">
+			<driver>net.sf.hajdbc.sql.MockDriver</driver>
+			<url>jdbc:mock:database2</url>
 		</database>
-		<validate-sql>CALL NOW()</validate-sql>
+		<sync-strategy id="full" class="net.sf.hajdbc.sync.FullSynchronizationStrategy"></sync-strategy>
+	</cluster>
+	<cluster id="datasource-cluster" balancer="simple">
+		<datasource id="datasource1" weight="1">
+			<name>datasource1</name>
+			<property name="java.naming.factory.initial">net.sf.hajdbc.sql.MockInitialContextFactory</property>
+		</datasource>
+		<datasource id="datasource2" weight="2">
+			<name>datasource1</name>
+			<property name="java.naming.factory.initial">net.sf.hajdbc.sql.MockInitialContextFactory</property>
+		</datasource>
+		<sync-strategy id="full" class="net.sf.hajdbc.sync.FullSynchronizationStrategy"></sync-strategy>
 	</cluster>
 </ha-jdbc>
