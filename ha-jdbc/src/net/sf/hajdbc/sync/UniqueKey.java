@@ -43,7 +43,27 @@ public class UniqueKey extends Key
 	/** SQL-92 compatible drop foreign key statement pattern */
 	public static final String DEFAULT_DROP_SQL = "ALTER TABLE {1} DROP CONSTRAINT {0}";
 	
-	private Map columnMap;
+	private Map columnMap = new TreeMap();
+	
+	/**
+	 * Constructs a new UniqueKey.
+	 * @param name
+	 * @param table
+	 * @param quote
+	 */
+	public UniqueKey(String name, String table, String quote)
+	{
+		super(name, table, quote);
+	}
+	
+	/**
+	 * @param position
+	 * @param column
+	 */
+	public void addColumn(short position, String column)
+	{
+		this.columnMap.put(new Short(position), column);
+	}
 	
 	protected String formatSQL(String pattern)
 	{
@@ -90,12 +110,7 @@ public class UniqueKey extends Key
 			
 			if (key == null)
 			{
-				key = new UniqueKey();
-				
-				key.table = table;
-				key.quote = quote;
-				key.name = name;
-				key.columnMap = new TreeMap();
+				key = new UniqueKey(name, table, quote);
 				
 				keyMap.put(name, key);
 			}
@@ -103,7 +118,7 @@ public class UniqueKey extends Key
 			short position = resultSet.getShort("ORDINAL_POSITION");
 			String column = resultSet.getString("COLUMN_NAME");
 			
-			key.columnMap.put(new Short(position), column);
+			key.addColumn(position, column);
 		}
 		
 		resultSet.close();

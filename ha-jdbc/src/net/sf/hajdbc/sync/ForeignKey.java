@@ -47,6 +47,24 @@ public class ForeignKey extends Key
 	private String foreignTable;
 	private String foreignColumn;
 	
+	/**
+	 * Constructs a new ForeignKey.
+	 * @param name
+	 * @param table
+	 * @param column
+	 * @param foreignTable
+	 * @param foreignColumn
+	 * @param quote
+	 */
+	public ForeignKey(String name, String table, String column, String foreignTable, String foreignColumn, String quote)
+	{
+		super(name, table, quote);
+		
+		this.column = column;
+		this.foreignTable = foreignTable;
+		this.foreignColumn = foreignColumn;
+	}
+	
 	protected String formatSQL(String pattern)
 	{
 		return MessageFormat.format(pattern, new Object[] { this.quote(this.name), this.table, this.column, this.quote(this.foreignTable), this.foreignColumn });
@@ -75,15 +93,13 @@ public class ForeignKey extends Key
 			
 			while (resultSet.next())
 			{
-				ForeignKey key = new ForeignKey();
-				
-				key.table = table;
-				key.quote = quote;
-				key.name = resultSet.getString("FK_NAME");
-				key.column = resultSet.getString("FKCOLUMN_NAME");
-				key.foreignTable = resultSet.getString("PKTABLE_NAME");
-				key.foreignColumn = resultSet.getString("PKCOLUMN_NAME");
+				String name = resultSet.getString("FK_NAME");
+				String column = resultSet.getString("FKCOLUMN_NAME");
+				String foreignTable = resultSet.getString("PKTABLE_NAME");
+				String foreignColumn = resultSet.getString("PKCOLUMN_NAME");
 	
+				ForeignKey key = new ForeignKey(name, table, column, foreignTable, foreignColumn, quote);
+				
 				foreignKeyList.add(key);
 			}
 			

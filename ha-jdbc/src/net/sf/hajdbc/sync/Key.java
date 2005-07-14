@@ -37,9 +37,16 @@ public abstract class Key
 {
 	private static Log log = LogFactory.getLog(Key.class);
 	
-	protected String quote;
 	protected String name;
 	protected String table;
+	protected String quote;
+	
+	protected Key(String name, String table, String quote)
+	{
+		this.name = name;
+		this.table = table;
+		this.quote = quote;
+	}
 	
 	protected abstract String formatSQL(String pattern);
 
