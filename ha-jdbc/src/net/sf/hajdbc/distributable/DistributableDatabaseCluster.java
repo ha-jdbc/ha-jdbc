@@ -70,7 +70,7 @@ public class DistributableDatabaseCluster extends DatabaseClusterDecorator imple
 		
 		if (deactivated)
 		{
-			this.notificationBus.sendNotification(new DatabaseDeactivationCommand(database.getId()));
+			this.notificationBus.sendNotification(new DatabaseDeactivationCommand(database));
 		}
 		
 		return deactivated;
@@ -85,7 +85,7 @@ public class DistributableDatabaseCluster extends DatabaseClusterDecorator imple
 		
 		if (activated)
 		{
-			this.notificationBus.sendNotification(new DatabaseActivationCommand(database.getId()));
+			this.notificationBus.sendNotification(new DatabaseActivationCommand(database));
 		}
 		
 		return activated;

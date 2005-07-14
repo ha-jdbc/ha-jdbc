@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc.distributable;
 
+import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 
 
@@ -43,11 +44,11 @@ public class DatabaseDeactivationCommand extends DatabaseCommand
 
 	/**
 	 * Constructs a new DatabaseDeactivationCommand.
-	 * @param databaseId a database identifier
+	 * @param database a database descriptor
 	 */
-	public DatabaseDeactivationCommand(String databaseId)
+	public DatabaseDeactivationCommand(Database database)
 	{
-		super(databaseId);
+		super(database);
 	}
 
 	/**

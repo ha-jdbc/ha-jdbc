@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 
 /**
@@ -47,11 +48,11 @@ public abstract class DatabaseCommand implements Externalizable
 	
 	/**
 	 * Constructs a new DatabaseCommand.
-	 * @param databaseId a database identifier
+	 * @param database a database descriptor
 	 */
-	public DatabaseCommand(String databaseId)
+	public DatabaseCommand(Database database)
 	{
-		this.databaseId = databaseId;
+		this.databaseId = database.getId();
 	}
 	
 	/**
