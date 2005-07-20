@@ -24,9 +24,9 @@ import java.util.Collection;
 
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
+import EDU.oswego.cs.dl.util.concurrent.FIFOReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
-import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
 
 /**
  * @author  Paul Ferraro
@@ -36,7 +36,7 @@ public abstract class AbstractBalancer implements Balancer
 {
 	protected abstract Collection getDatabases();
 	
-	private ReadWriteLock lock = new WriterPreferenceReadWriteLock();
+	private ReadWriteLock lock = new FIFOReadWriteLock();
 	
 	protected Sync acquireReadLock()
 	{
