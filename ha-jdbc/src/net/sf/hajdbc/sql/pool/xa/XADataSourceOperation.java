@@ -22,17 +22,17 @@ package net.sf.hajdbc.sql.pool.xa;
 
 import java.sql.SQLException;
 
-import javax.sql.ConnectionPoolDataSource;
 import javax.sql.XADataSource;
 
-import net.sf.hajdbc.sql.pool.ConnectionPoolDataSourceOperation;
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.Operation;
 
 /**
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public abstract class XADataSourceOperation extends ConnectionPoolDataSourceOperation
+public abstract class XADataSourceOperation implements Operation
 {
 	/**
 	 * Helper method that simplifies operation interface for XADataSourceProxy.
@@ -43,9 +43,9 @@ public abstract class XADataSourceOperation extends ConnectionPoolDataSourceOper
 	public abstract Object execute(XADataSource dataSource) throws SQLException;
 	
 	/**
-	 * @see net.sf.hajdbc.sql.pool.ConnectionPoolDataSourceOperation#execute(javax.sql.ConnectionPoolDataSource)
+	 * @see net.sf.hajdbc.Operation#execute(net.sf.hajdbc.Database, java.lang.Object)
 	 */
-	public final Object execute(ConnectionPoolDataSource dataSource) throws SQLException
+	public Object execute(Database database, Object dataSource) throws SQLException
 	{
 		return this.execute((XADataSource) dataSource);
 	}

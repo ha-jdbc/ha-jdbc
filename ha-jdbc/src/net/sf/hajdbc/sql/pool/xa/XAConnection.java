@@ -23,6 +23,7 @@ package net.sf.hajdbc.sql.pool.xa;
 import java.sql.SQLException;
 
 import net.sf.hajdbc.ConnectionFactory;
+import net.sf.hajdbc.Operation;
 import net.sf.hajdbc.sql.pool.PooledConnection;
 
 /**
@@ -38,7 +39,7 @@ public class XAConnection extends PooledConnection implements javax.sql.XAConnec
 	 * @param operation the operation that will create XAConnections
 	 * @throws SQLException if operation execution fails
 	 */
-	public XAConnection(ConnectionFactory dataSource, XADataSourceOperation operation) throws SQLException
+	public XAConnection(ConnectionFactory dataSource, Operation operation) throws SQLException
 	{
 		super(dataSource, operation);
 	}

@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import javax.sql.ConnectionEventListener;
 
 import net.sf.hajdbc.ConnectionFactory;
+import net.sf.hajdbc.Operation;
 import net.sf.hajdbc.SQLObject;
 import net.sf.hajdbc.sql.Connection;
 import net.sf.hajdbc.sql.FileSupportImpl;
@@ -42,7 +43,7 @@ public class PooledConnection extends SQLObject implements javax.sql.PooledConne
 	 * @param operation an operation that will create PooledConnections
 	 * @throws SQLException if operation execution fails
 	 */
-	public PooledConnection(ConnectionFactory dataSource, ConnectionPoolDataSourceOperation operation) throws SQLException
+	public PooledConnection(ConnectionFactory dataSource, Operation operation) throws SQLException
 	{
 		super(dataSource, operation);
 	}

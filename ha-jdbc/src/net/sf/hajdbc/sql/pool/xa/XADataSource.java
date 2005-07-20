@@ -20,16 +20,17 @@
  */
 package net.sf.hajdbc.sql.pool.xa;
 
+import java.io.PrintWriter;
 import java.sql.SQLException;
 
-import net.sf.hajdbc.sql.pool.ConnectionPoolDataSource;
+import net.sf.hajdbc.sql.AbstractDataSource;
 
 /**
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public class XADataSource extends ConnectionPoolDataSource implements javax.sql.XADataSource
+public class XADataSource extends AbstractDataSource implements javax.sql.XADataSource
 {
 	/**
 	 * @see javax.sql.XADataSource#getXAConnection()
@@ -62,7 +63,75 @@ public class XADataSource extends ConnectionPoolDataSource implements javax.sql.
 		
 		return new XAConnection(this.connectionFactory, operation);
 	}
+
+	/**
+	 * @see javax.sql.XADataSource#getLoginTimeout()
+	 */
+	public int getLoginTimeout() throws SQLException
+	{
+		XADataSourceOperation operation = new XADataSourceOperation()
+		{
+			public Object execute(javax.sql.XADataSource dataSource) throws SQLException
+			{
+				return new Integer(dataSource.getLoginTimeout());
+			}
+		};
+		
+		return ((Integer) this.connectionFactory.executeReadFromDriver(operation)).intValue();
+	}
 	
+	/**
+	 * @see javax.sql.XADataSource#setLoginTimeout(int)
+	 */
+	public void setLoginTimeout(final int timeout) throws SQLException
+	{
+		XADataSourceOperation operation = new XADataSourceOperation()
+		{
+			public Object execute(javax.sql.XADataSource dataSource) throws SQLException
+			{
+				dataSource.setLoginTimeout(timeout);
+				
+				return null;
+			}
+		};
+		
+		this.connectionFactory.executeWriteToDriver(operation);
+	}
+
+	/**
+	 * @see javax.sql.XADataSource#getLogWriter()
+	 */
+	public PrintWriter getLogWriter() throws SQLException
+	{
+		XADataSourceOperation operation = new XADataSourceOperation()
+		{
+			public Object execute(javax.sql.XADataSource dataSource) throws SQLException
+			{
+				return dataSource.getLogWriter();
+			}
+		};
+		
+		return (PrintWriter) this.connectionFactory.executeReadFromDriver(operation);
+	}
+
+	/**
+	 * @see javax.sql.XADataSource#setLogWriter(java.io.PrintWriter)
+	 */
+	public void setLogWriter(final PrintWriter writer) throws SQLException
+	{
+		XADataSourceOperation operation = new XADataSourceOperation()
+		{
+			public Object execute(javax.sql.XADataSource dataSource) throws SQLException
+			{
+				dataSource.setLogWriter(writer);
+				
+				return null;
+			}
+		};
+		
+		this.connectionFactory.executeWriteToDriver(operation);
+	}
+
 	/**
 	 * @see net.sf.hajdbc.sql.AbstractDataSource#getObjectFactoryClass()
 	 */

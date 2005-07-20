@@ -47,6 +47,7 @@ public abstract class ConnectionPoolDataSourceOperation implements Operation
 	 */
 	public final Object execute(Database database, Object dataSource) throws SQLException
 	{
+		System.out.println(dataSource.getClass().getName());
 		return this.execute((ConnectionPoolDataSource) dataSource);
 	}
 }
