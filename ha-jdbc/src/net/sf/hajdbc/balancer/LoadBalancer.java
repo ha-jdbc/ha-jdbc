@@ -129,7 +129,7 @@ public class LoadBalancer extends AbstractBalancer
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#beforeOperation(net.sf.hajdbc.Database)
+	 * @see net.sf.hajdbc.Balancer#beforeOperation(net.sf.hajdbc.Database)
 	 */
 	public void beforeOperation(Database database)
 	{
@@ -137,7 +137,7 @@ public class LoadBalancer extends AbstractBalancer
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#afterOperation(net.sf.hajdbc.Database)
+	 * @see net.sf.hajdbc.Balancer#afterOperation(net.sf.hajdbc.Database)
 	 */
 	public void afterOperation(Database database)
 	{
