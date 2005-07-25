@@ -1,0 +1,88 @@
+/*
+ * HA-JDBC: High-Availability JDBC
+ * Copyright (C) 2004 Paul Ferraro
+ * 
+ * This library is free software; you can redistribute it and/or modify it 
+ * under the terms of the GNU Lesser General Public License as published by the 
+ * Free Software Foundation; either version 2.1 of the License, or (at your 
+ * option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+ * for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, 
+ * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * 
+ * Contact: ferraro@users.sourceforge.net
+ */
+package net.sf.hajdbc;
+
+import java.sql.DriverManager;
+import java.util.Properties;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.Reference;
+import javax.sql.ConnectionPoolDataSource;
+import javax.sql.DataSource;
+import javax.sql.XADataSource;
+
+import net.sf.hajdbc.sql.MockDriver;
+
+/**
+ * @author  Paul Ferraro
+ * @since   1.0
+ */
+public abstract class DatabaseClusterTestCase extends EasyMockTestCase
+{
+	protected Context context;
+	
+	/**
+	 * @see junit.framework.TestCase#setUp()
+	 */
+	protected void setUp() throws Exception
+	{
+		DriverManager.registerDriver(new MockDriver());
+		
+		Properties properties = new Properties();
+		
+		properties.setProperty(Context.INITIAL_CONTEXT_FACTORY, "net.sf.hajdbc.sql.MockInitialContextFactory");
+		
+		this.context = new InitialContext(properties);
+		
+		Reference reference = new Reference(DataSource.class.toString(), "net.sf.hajdbc.sql.MockDataSourceFactory", null);
+		
+		this.context.rebind("datasource1", reference);
+		this.context.rebind("datasource2", reference);
+		
+		reference = new Reference(ConnectionPoolDataSource.class.toString(), "net.sf.hajdbc.sql.pool.MockConnectionPoolDataSourceFactory", null);
+		
+		this.context.rebind("pool-datasource1", reference);
+		this.context.rebind("pool-datasource2", reference);
+		
+		reference = new Reference(XADataSource.class.toString(), "net.sf.hajdbc.sql.pool.xa.MockXADataSourceFactory", null);
+		
+		this.context.rebind("xa-datasource1", reference);
+		this.context.rebind("xa-datasource2", reference);
+	}
+
+	/**
+	 * @see junit.framework.TestCase#tearDown()
+	 */
+	protected void tearDown() throws Exception
+	{
+		DriverManager.deregisterDriver(new MockDriver());
+		
+		this.context.unbind("datasource1");
+		this.context.unbind("datasource2");
+		this.context.unbind("pool-datasource1");
+		this.context.unbind("pool-datasource2");
+		this.context.unbind("xa-datasource1");
+		this.context.unbind("xa-datasource2");
+		
+		super.tearDown();
+	}
+}
