@@ -27,27 +27,32 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
-import net.sf.hajdbc.AbstractTestCase;
+import net.sf.hajdbc.EasyMockTestCase;
 
 import org.easymock.MockControl;
 
-public class TestForeignKey extends AbstractTestCase
+/**
+ * @author  Paul Ferraro
+ * @since   1.0
+ */
+public class TestForeignKey extends EasyMockTestCase
 {
 	MockControl connectionControl = this.createControl(Connection.class);
-	Connection connection = (Connection) connectionControl.getMock();
+	Connection connection = (Connection) this.connectionControl.getMock();
 	
 	MockControl metaDataControl = this.createControl(DatabaseMetaData.class);
-	DatabaseMetaData metaData = (DatabaseMetaData) metaDataControl.getMock();
+	DatabaseMetaData metaData = (DatabaseMetaData) this.metaDataControl.getMock();
 	
 	MockControl statementControl = this.createControl(Statement.class);
-	Statement statement = (Statement) statementControl.getMock();
+	Statement statement = (Statement) this.statementControl.getMock();
 	
 	MockControl resultSetControl = this.createControl(ResultSet.class);
-	ResultSet resultSet = (ResultSet) resultSetControl.getMock();
+	ResultSet resultSet = (ResultSet) this.resultSetControl.getMock();
 	
-	/*
-	 * Test method for 'net.sf.hajdbc.sync.ForeignKey.collect(Connection, List)'
+	/**
+	 * Test method for {@link ForeignKey#collect(Connection, List)}
 	 */
 	public void testCollect()
 	{
@@ -99,8 +104,8 @@ public class TestForeignKey extends AbstractTestCase
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sync.Key.hashCode()'
+	/**
+	 * Test method for {@link Key#hashCode()}
 	 */
 	public void testHashCode()
 	{
@@ -109,8 +114,8 @@ public class TestForeignKey extends AbstractTestCase
 		assertEquals("test".hashCode(), key.hashCode());
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sync.Key.equals(Object)'
+	/**
+	 * Test method for {@link Key#equals(Object)}
 	 */
 	public void testEqualsObject()
 	{
@@ -123,8 +128,8 @@ public class TestForeignKey extends AbstractTestCase
 		assertFalse(key2.equals(key3));
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sync.Key.executeSQL(Connection, Collection, String)'
+	/**
+	 * Test method for {@link Key#executeSQL(Connection, Collection, String)}
 	 */
 	public void testExecuteSQL()
 	{

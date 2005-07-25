@@ -26,13 +26,13 @@ import java.util.NoSuchElementException;
 
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.AbstractTestCase;
+import net.sf.hajdbc.EasyMockTestCase;
 
 /**
  * @author  Paul Ferraro
  * @since   1.0
  */
-public abstract class AbstractTestBalancer extends AbstractTestCase
+public abstract class AbstractTestBalancer extends EasyMockTestCase
 {
 	private Balancer balancer;
 	
@@ -46,6 +46,9 @@ public abstract class AbstractTestBalancer extends AbstractTestCase
 	
 	protected abstract Balancer createBalancer();
 	
+	/**
+	 * Test method for {@link Balancer#add(Database)}
+	 */
 	public void testAdd()
 	{
 		Database database = new MockDatabase("1", 1);
@@ -59,6 +62,9 @@ public abstract class AbstractTestBalancer extends AbstractTestCase
 		assertFalse(added);
 	}
 
+	/**
+	 * Test method for {@link Balancer#beforeOperation(Database)}
+	 */
 	public void testBeforeOperation()
 	{
 		Database database = new MockDatabase("db1", 1);
@@ -68,6 +74,9 @@ public abstract class AbstractTestBalancer extends AbstractTestCase
 		this.balancer.beforeOperation(database);
 	}
 
+	/**
+	 * Test method for {@link Balancer#afterOperation(Database)}
+	 */
 	public void testAfterOperation()
 	{
 		Database database = new MockDatabase("db1", 1);
@@ -77,6 +86,9 @@ public abstract class AbstractTestBalancer extends AbstractTestCase
 		this.balancer.afterOperation(database);
 	}
 	
+	/**
+	 * Test method for {@link Balancer#remove(Database)}
+	 */
 	public void testRemove()
 	{
 		Database database = new MockDatabase("1", 1);
@@ -96,6 +108,9 @@ public abstract class AbstractTestBalancer extends AbstractTestCase
 		assertFalse(removed);
 	}
 
+	/**
+	 * Test method for {@link Balancer#toArray()}
+	 */
 	public void testToArray()
 	{
 		Database[] databases = this.balancer.toArray();
@@ -132,6 +147,9 @@ public abstract class AbstractTestBalancer extends AbstractTestCase
 		assertEquals(databases.length, 0);
 	}
 
+	/**
+	 * Test method for {@link Balancer#contains(Database)}
+	 */
 	public void testContains()
 	{
 		Database database1 = new MockDatabase("db1", 1);
@@ -143,6 +161,9 @@ public abstract class AbstractTestBalancer extends AbstractTestCase
 		assertFalse(this.balancer.contains(database2));
 	}
 
+	/**
+	 * Test method for {@link Balancer#first()}
+	 */
 	public void testFirst()
 	{
 		try
@@ -165,6 +186,9 @@ public abstract class AbstractTestBalancer extends AbstractTestCase
 		assertEquals(database, first);
 	}
 
+	/**
+	 * Test method for {@link Balancer#next()}
+	 */
 	public void testNext()
 	{
 		try
@@ -188,7 +212,7 @@ public abstract class AbstractTestBalancer extends AbstractTestCase
 		private String id;
 		private Integer weight;
 		
-		public MockDatabase(String id, int weight)
+		protected MockDatabase(String id, int weight)
 		{
 			this.id = id;
 			this.weight = new Integer(weight);
