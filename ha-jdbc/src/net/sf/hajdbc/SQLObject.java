@@ -76,6 +76,11 @@ public class SQLObject
 		{
 			try
 			{
+				if (this.parent == null)
+				{
+					throw new java.sql.SQLException();
+				}
+				
 				Object parentObject = this.parent.getObject(database);
 				
 				if (parentObject == null)
