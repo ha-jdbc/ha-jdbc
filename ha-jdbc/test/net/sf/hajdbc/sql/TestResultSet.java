@@ -20,7 +20,6 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
@@ -47,12 +46,12 @@ import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.ConnectionFactory;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.EasyMockTestCase;
 import net.sf.hajdbc.Operation;
-import net.sf.hajdbc.AbstractTestCase;
 
 import org.easymock.MockControl;
 
-public class TestResultSet extends AbstractTestCase
+public class TestResultSet extends EasyMockTestCase
 {
 	private MockControl databaseClusterControl = this.createControl(DatabaseCluster.class);
 	private DatabaseCluster databaseCluster = (DatabaseCluster) this.databaseClusterControl.getMock();

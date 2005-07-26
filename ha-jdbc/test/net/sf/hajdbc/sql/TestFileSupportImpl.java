@@ -34,9 +34,9 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.zip.GZIPOutputStream;
 
-import net.sf.hajdbc.AbstractTestCase;
+import net.sf.hajdbc.EasyMockTestCase;
 
-public class TestFileSupportImpl extends AbstractTestCase
+public class TestFileSupportImpl extends EasyMockTestCase
 {
 	private FileSupport fileSupport;
 
@@ -49,7 +49,7 @@ public class TestFileSupportImpl extends AbstractTestCase
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.AbstractTestCase#tearDown()
+	 * @see net.sf.hajdbc.EasyMockTestCase#tearDown()
 	 */
 	protected void tearDown() throws Exception
 	{

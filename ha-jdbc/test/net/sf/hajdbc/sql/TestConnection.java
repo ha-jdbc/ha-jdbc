@@ -22,21 +22,21 @@ package net.sf.hajdbc.sql;
 
 import java.sql.CallableStatement;
 import java.sql.DatabaseMetaData;
-import java.sql.Driver;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.ConnectionFactory;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.EasyMockTestCase;
 import net.sf.hajdbc.Operation;
 import net.sf.hajdbc.SQLObject;
-import net.sf.hajdbc.AbstractTestCase;
 
 import org.easymock.MockControl;
 
@@ -45,7 +45,7 @@ import org.easymock.MockControl;
  * @author  Paul Ferraro
  * @since   1.0
  */
-public class TestConnection extends AbstractTestCase
+public class TestConnection extends EasyMockTestCase
 {
 	private MockControl databaseClusterControl = this.createControl(DatabaseCluster.class);
 	private DatabaseCluster databaseCluster = (DatabaseCluster) this.databaseClusterControl.getMock();
@@ -78,13 +78,13 @@ public class TestConnection extends AbstractTestCase
 		
 		this.replay();
 		
-		ConnectionFactory connectionFactory = new ConnectionFactory(this.databaseCluster, Collections.singletonMap(this.database, new Object()));
+		ConnectionFactory connectionFactory = new ConnectionFactory(this.databaseCluster, Collections.singletonMap(this.database, this.sqlConnection));
 		
 		Operation operation = new Operation()
 		{
 			public Object execute(Database database, Object sqlObject) throws SQLException
 			{
-				return TestConnection.this.sqlConnection;
+				return sqlObject;
 			}
 		};
 		
@@ -174,7 +174,7 @@ public class TestConnection extends AbstractTestCase
 
 	public void testCreateStatement()
 	{
-		Statement statement = (Statement) this.createMock(Statement.class);
+		Statement statement1 = (Statement) this.createMock(Statement.class);
 
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 3);
@@ -191,17 +191,17 @@ public class TestConnection extends AbstractTestCase
 			this.balancerControl.setReturnValue(this.databases, 2);
 			
 			this.sqlConnection.createStatement();
-			this.sqlConnectionControl.setReturnValue(statement);
+			this.sqlConnectionControl.setReturnValue(statement1);
 			
 			this.replay();
 			
-			Statement sqlStatement = this.connection.createStatement();
+			Statement statement = this.connection.createStatement();
 			
 			this.verify();
 			
-			assertNotNull(sqlStatement);
-			assertTrue(SQLObject.class.isInstance(sqlStatement));			
-			assertSame(statement, ((SQLObject) sqlStatement).getObject(this.database));
+			assertNotNull(statement);
+			assertTrue(SQLObject.class.isInstance(statement));
+			assertSame(statement1, ((SQLObject) statement).getObject(this.database));
 		}
 		catch (SQLException e)
 		{
@@ -226,7 +226,7 @@ public class TestConnection extends AbstractTestCase
 			
 			this.sqlConnection.createStatement();
 			this.sqlConnectionControl.setReturnValue(sqlStatement);
-			
+
 			this.replay();
 			
 			Statement statement = this.connection.createStatement();
@@ -243,7 +243,7 @@ public class TestConnection extends AbstractTestCase
 
 	public void testCreateStatementIntInt()
 	{
-		Statement statement = (Statement) this.createMock(Statement.class);
+		Statement statement1 = (Statement) this.createMock(Statement.class);
 
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 3);
@@ -260,7 +260,7 @@ public class TestConnection extends AbstractTestCase
 			this.balancerControl.setReturnValue(this.databases, 2);
 			
 			this.sqlConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-			this.sqlConnectionControl.setReturnValue(statement);
+			this.sqlConnectionControl.setReturnValue(statement1);
 			
 			this.replay();
 			
@@ -269,8 +269,8 @@ public class TestConnection extends AbstractTestCase
 			this.verify();
 			
 			assertNotNull(sqlStatement);
-			assertTrue(SQLObject.class.isInstance(sqlStatement));			
-			assertSame(statement, ((SQLObject) sqlStatement).getObject(this.database));
+			assertTrue(SQLObject.class.isInstance(sqlStatement));
+			assertSame(statement1, ((SQLObject) sqlStatement).getObject(this.database));
 		}
 		catch (SQLException e)
 		{
@@ -312,7 +312,7 @@ public class TestConnection extends AbstractTestCase
 
 	public void testCreateStatementIntIntInt()
 	{
-		Statement statement = (Statement) this.createMock(Statement.class);
+		Statement statement1 = (Statement) this.createMock(Statement.class);
 
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 3);
@@ -329,7 +329,7 @@ public class TestConnection extends AbstractTestCase
 			this.balancerControl.setReturnValue(this.databases, 2);
 			
 			this.sqlConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE);
-			this.sqlConnectionControl.setReturnValue(statement);
+			this.sqlConnectionControl.setReturnValue(statement1);
 			
 			this.replay();
 			
@@ -338,8 +338,8 @@ public class TestConnection extends AbstractTestCase
 			this.verify();
 			
 			assertNotNull(sqlStatement);
-			assertTrue(SQLObject.class.isInstance(sqlStatement));			
-			assertSame(statement, ((SQLObject) sqlStatement).getObject(this.database));
+			assertTrue(SQLObject.class.isInstance(sqlStatement));
+			assertSame(statement1, ((SQLObject) sqlStatement).getObject(this.database));
 		}
 		catch (SQLException e)
 		{
@@ -675,7 +675,7 @@ public class TestConnection extends AbstractTestCase
 
 	public void testPrepareCallString()
 	{
-		CallableStatement statement = (CallableStatement) this.createMock(CallableStatement.class);
+		CallableStatement statement1 = (CallableStatement) this.createMock(CallableStatement.class);
 
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 3);
@@ -692,7 +692,7 @@ public class TestConnection extends AbstractTestCase
 			this.balancerControl.setReturnValue(this.databases, 2);
 			
 			this.sqlConnection.prepareCall("CALL ME");
-			this.sqlConnectionControl.setReturnValue(statement);
+			this.sqlConnectionControl.setReturnValue(statement1);
 			
 			this.replay();
 			
@@ -701,8 +701,8 @@ public class TestConnection extends AbstractTestCase
 			this.verify();
 			
 			assertNotNull(callableStatement);
-			assertTrue(SQLObject.class.isInstance(callableStatement));			
-			assertSame(statement, ((SQLObject) callableStatement).getObject(this.database));
+			assertTrue(SQLObject.class.isInstance(callableStatement));
+			assertSame(statement1, ((SQLObject) callableStatement).getObject(this.database));
 		}
 		catch (SQLException e)
 		{
@@ -753,7 +753,7 @@ public class TestConnection extends AbstractTestCase
 
 	public void testPrepareCallStringIntInt()
 	{
-		CallableStatement statement = (CallableStatement) this.createMock(CallableStatement.class);
+		CallableStatement statement1 = (CallableStatement) this.createMock(CallableStatement.class);
 
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 3);
@@ -770,7 +770,7 @@ public class TestConnection extends AbstractTestCase
 			this.balancerControl.setReturnValue(this.databases, 2);
 			
 			this.sqlConnection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-			this.sqlConnectionControl.setReturnValue(statement);
+			this.sqlConnectionControl.setReturnValue(statement1);
 			
 			this.replay();
 			
@@ -779,8 +779,8 @@ public class TestConnection extends AbstractTestCase
 			this.verify();
 			
 			assertNotNull(callableStatement);
-			assertTrue(SQLObject.class.isInstance(callableStatement));			
-			assertSame(statement, ((SQLObject) callableStatement).getObject(this.database));
+			assertTrue(SQLObject.class.isInstance(callableStatement));
+			assertSame(statement1, ((SQLObject) callableStatement).getObject(this.database));
 		}
 		catch (SQLException e)
 		{
@@ -831,7 +831,7 @@ public class TestConnection extends AbstractTestCase
 
 	public void testPrepareCallStringIntIntInt()
 	{
-		CallableStatement statement = (CallableStatement) this.createMock(CallableStatement.class);
+		CallableStatement statement1 = (CallableStatement) this.createMock(CallableStatement.class);
 
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 3);
@@ -848,7 +848,7 @@ public class TestConnection extends AbstractTestCase
 			this.balancerControl.setReturnValue(this.databases, 2);
 			
 			this.sqlConnection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE);
-			this.sqlConnectionControl.setReturnValue(statement);
+			this.sqlConnectionControl.setReturnValue(statement1);
 			
 			this.replay();
 			
@@ -857,8 +857,8 @@ public class TestConnection extends AbstractTestCase
 			this.verify();
 			
 			assertNotNull(callableStatement);
-			assertTrue(SQLObject.class.isInstance(callableStatement));			
-			assertSame(statement, ((SQLObject) callableStatement).getObject(this.database));
+			assertTrue(SQLObject.class.isInstance(callableStatement));
+			assertSame(statement1, ((SQLObject) callableStatement).getObject(this.database));
 		}
 		catch (SQLException e)
 		{
@@ -909,7 +909,7 @@ public class TestConnection extends AbstractTestCase
 
 	public void testPrepareStatementString()
 	{
-		PreparedStatement statement = (PreparedStatement) this.createMock(PreparedStatement.class);
+		PreparedStatement statement1 = (PreparedStatement) this.createMock(PreparedStatement.class);
 
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 3);
@@ -926,7 +926,7 @@ public class TestConnection extends AbstractTestCase
 			this.balancerControl.setReturnValue(this.databases, 2);
 			
 			this.sqlConnection.prepareStatement("SELECT ME");
-			this.sqlConnectionControl.setReturnValue(statement);
+			this.sqlConnectionControl.setReturnValue(statement1);
 			
 			this.replay();
 			
@@ -935,8 +935,8 @@ public class TestConnection extends AbstractTestCase
 			this.verify();
 			
 			assertNotNull(preparedStatement);
-			assertTrue(SQLObject.class.isInstance(preparedStatement));			
-			assertSame(statement, ((SQLObject) preparedStatement).getObject(this.database));
+			assertTrue(SQLObject.class.isInstance(preparedStatement));
+			assertSame(statement1, ((SQLObject) preparedStatement).getObject(this.database));
 		}
 		catch (SQLException e)
 		{
@@ -987,7 +987,7 @@ public class TestConnection extends AbstractTestCase
 
 	public void testPrepareStatementStringIntInt()
 	{
-		PreparedStatement statement = (PreparedStatement) this.createMock(PreparedStatement.class);
+		PreparedStatement statement1 = (PreparedStatement) this.createMock(PreparedStatement.class);
 
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 3);
@@ -1004,7 +1004,7 @@ public class TestConnection extends AbstractTestCase
 			this.balancerControl.setReturnValue(this.databases, 2);
 			
 			this.sqlConnection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-			this.sqlConnectionControl.setReturnValue(statement);
+			this.sqlConnectionControl.setReturnValue(statement1);
 			
 			this.replay();
 			
@@ -1013,8 +1013,8 @@ public class TestConnection extends AbstractTestCase
 			this.verify();
 			
 			assertNotNull(preparedStatement);
-			assertTrue(SQLObject.class.isInstance(preparedStatement));			
-			assertSame(statement, ((SQLObject) preparedStatement).getObject(this.database));
+			assertTrue(SQLObject.class.isInstance(preparedStatement));
+			assertSame(statement1, ((SQLObject) preparedStatement).getObject(this.database));
 		}
 		catch (SQLException e)
 		{
@@ -1065,7 +1065,7 @@ public class TestConnection extends AbstractTestCase
 
 	public void testPrepareStatementStringIntIntInt()
 	{
-		PreparedStatement statement = (PreparedStatement) this.createMock(PreparedStatement.class);
+		PreparedStatement statement1 = (PreparedStatement) this.createMock(PreparedStatement.class);
 
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 3);
@@ -1082,7 +1082,7 @@ public class TestConnection extends AbstractTestCase
 			this.balancerControl.setReturnValue(this.databases, 2);
 			
 			this.sqlConnection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE);
-			this.sqlConnectionControl.setReturnValue(statement);
+			this.sqlConnectionControl.setReturnValue(statement1);
 			
 			this.replay();
 			
@@ -1092,7 +1092,7 @@ public class TestConnection extends AbstractTestCase
 			
 			assertNotNull(preparedStatement);
 			assertTrue(SQLObject.class.isInstance(preparedStatement));			
-			assertSame(statement, ((SQLObject) preparedStatement).getObject(this.database));
+			assertSame(statement1, ((SQLObject) preparedStatement).getObject(this.database));
 		}
 		catch (SQLException e)
 		{
@@ -1143,13 +1143,13 @@ public class TestConnection extends AbstractTestCase
 
 	public void testReleaseSavepoint()
 	{
-		final java.sql.Savepoint sqlSavepoint = (java.sql.Savepoint) this.createMock(java.sql.Savepoint.class);
+		final java.sql.Savepoint savepoint1 = (java.sql.Savepoint) this.createMock(java.sql.Savepoint.class);
 		
 		ConnectionOperation operation = new ConnectionOperation()
 		{
 			public Object execute(Database database, java.sql.Connection connection) throws SQLException
 			{
-				return sqlSavepoint;
+				return savepoint1;
 			}
 		};
 		
@@ -1174,7 +1174,7 @@ public class TestConnection extends AbstractTestCase
 			this.balancer.toArray();
 			this.balancerControl.setReturnValue(this.databases, 2);
 			
-			this.sqlConnection.releaseSavepoint(sqlSavepoint);
+			this.sqlConnection.releaseSavepoint(savepoint1);
 			this.sqlConnectionControl.setVoidCallable();
 			
 			this.replay();
@@ -1216,13 +1216,13 @@ public class TestConnection extends AbstractTestCase
 
 	public void testRollbackSavepoint()
 	{
-		final java.sql.Savepoint sqlSavepoint = (java.sql.Savepoint) this.createMock(java.sql.Savepoint.class);
+		final java.sql.Savepoint savepoint1 = (java.sql.Savepoint) this.createMock(java.sql.Savepoint.class);
 		
 		ConnectionOperation operation = new ConnectionOperation()
 		{
 			public Object execute(Database database, java.sql.Connection connection) throws SQLException
 			{
-				return sqlSavepoint;
+				return savepoint1;
 			}
 		};
 		
@@ -1247,7 +1247,7 @@ public class TestConnection extends AbstractTestCase
 			this.balancer.toArray();
 			this.balancerControl.setReturnValue(this.databases, 2);
 			
-			this.sqlConnection.rollback(sqlSavepoint);
+			this.sqlConnection.rollback(savepoint1);
 			this.sqlConnectionControl.setVoidCallable();
 			
 			this.replay();
@@ -1364,7 +1364,7 @@ public class TestConnection extends AbstractTestCase
 
 	public void testSetSavepoint()
 	{
-		java.sql.Savepoint sqlSavepoint = (java.sql.Savepoint) this.createMock(java.sql.Savepoint.class);
+		java.sql.Savepoint savepoint1 = (java.sql.Savepoint) this.createMock(java.sql.Savepoint.class);
 		
 		try
 		{
@@ -1375,7 +1375,7 @@ public class TestConnection extends AbstractTestCase
 			this.balancerControl.setReturnValue(this.databases, 2);
 			
 			this.sqlConnection.setSavepoint("test");
-			this.sqlConnectionControl.setReturnValue(sqlSavepoint);
+			this.sqlConnectionControl.setReturnValue(savepoint1);
 			
 			this.replay();
 			
@@ -1384,8 +1384,8 @@ public class TestConnection extends AbstractTestCase
 			this.verify();
 			
 			assertNotNull(savepoint);
-			assertTrue(SQLObject.class.isInstance(savepoint));			
-			assertSame(sqlSavepoint, ((SQLObject) savepoint).getObject(this.database));
+			assertTrue(SQLObject.class.isInstance(savepoint));
+			assertSame(savepoint1, ((SQLObject) savepoint).getObject(this.database));
 		}
 		catch (SQLException e)
 		{

@@ -26,7 +26,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import net.sf.hajdbc.AbstractTestCase;
+import net.sf.hajdbc.EasyMockTestCase;
 
 import org.easymock.MockControl;
 
@@ -35,7 +35,7 @@ import org.easymock.MockControl;
  * @author  Paul Ferraro
  * @since   1.0
  */
-public class TestDriverDatabase extends AbstractTestCase
+public class TestDriverDatabase extends EasyMockTestCase
 {
 	private MockControl driverControl = this.createControl(Driver.class);
 	private Driver driver = (Driver) driverControl.getMock();

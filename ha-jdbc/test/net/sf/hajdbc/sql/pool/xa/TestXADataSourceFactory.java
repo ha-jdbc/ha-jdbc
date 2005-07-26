@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (C) 2005 Paul Ferraro
+ * Copyright (C) 2004 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -18,16 +18,19 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.sql;
+package net.sf.hajdbc.sql.pool.xa;
 
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
 
 import net.sf.hajdbc.DatabaseClusterTestCase;
+import net.sf.hajdbc.sql.AbstractDataSource;
+import net.sf.hajdbc.sql.pool.ConnectionPoolDataSource;
+import net.sf.hajdbc.sql.pool.ConnectionPoolDataSourceFactory;
 
-public class TestDataSourceFactory extends DatabaseClusterTestCase
+public class TestXADataSourceFactory extends DatabaseClusterTestCase
 {
-	private DataSourceFactory factory = new DataSourceFactory();
+	private ConnectionPoolDataSourceFactory factory = new ConnectionPoolDataSourceFactory();
 	
 	/**
 	 * @see junit.framework.TestCase#setUp()
@@ -36,9 +39,9 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 	{
 		super.setUp();
 		
-		DataSource dataSource = new DataSource();
+		ConnectionPoolDataSource dataSource = new ConnectionPoolDataSource();
 		
-		dataSource.setName("datasource-cluster");
+		dataSource.setName("pool-datasource-cluster");
 		
 		this.context.bind("datasource", dataSource);
 	}
@@ -58,14 +61,14 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 	 */
 	public void testGetObjectInstance()
 	{
-		Reference reference = new Reference("net.sf.hajdbc.sql.DataSource", new StringRefAddr(AbstractDataSource.NAME, "datasource-cluster"));
+		Reference reference = new Reference("net.sf.hajdbc.sql.pool.ConnectionPoolDataSource", new StringRefAddr(AbstractDataSource.NAME, "pool-datasource-cluster"));
 		
 		try
 		{
 			Object object = this.factory.getObjectInstance(reference, null, null, null);
 			
 			assertNotNull(object);
-			assertEquals("net.sf.hajdbc.sql.DataSource", object.getClass().getName());
+			assertEquals("net.sf.hajdbc.sql.pool.ConnectionPoolDataSource", object.getClass().getName());
 		}
 		catch (Exception e)
 		{
@@ -89,7 +92,7 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 
 	public void testWrongReferenceGetObjectInstance()
 	{
-		Reference reference = new Reference("net.sf.hajdbc.sql.pool.ConnectionPoolDataSource", new StringRefAddr(AbstractDataSource.NAME, "datasource-cluster"));
+		Reference reference = new Reference("net.sf.hajdbc.sql.DataSource", new StringRefAddr(AbstractDataSource.NAME, "pool-datasource-cluster"));
 		
 		try
 		{
@@ -105,7 +108,7 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 
 	public void testMissingRefAddrReferenceGetObjectInstance()
 	{
-		Reference reference = new Reference("net.sf.hajdbc.sql.DataSource");
+		Reference reference = new Reference("net.sf.hajdbc.sql.pool.xa.XADataSource");
 		
 		try
 		{
@@ -121,7 +124,7 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 
 	public void testInvalidRefAddrReferenceGetObjectInstance()
 	{
-		Reference reference = new Reference("net.sf.hajdbc.sql.DataSource", new StringRefAddr(AbstractDataSource.NAME, "invalid-name"));
+		Reference reference = new Reference("net.sf.hajdbc.sql.pool.xa.XADataSource", new StringRefAddr(AbstractDataSource.NAME, "invalid-name"));
 		
 		try
 		{

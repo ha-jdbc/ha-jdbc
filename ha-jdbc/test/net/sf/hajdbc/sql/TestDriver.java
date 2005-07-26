@@ -28,54 +28,16 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Properties;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.Reference;
-
-import net.sf.hajdbc.AbstractTestCase;
+import net.sf.hajdbc.DatabaseClusterTestCase;
 
 /**
  * Unit test for {@link Driver}.
  * @author  Paul Ferraro
  * @since   1.0
  */
-public class TestDriver extends AbstractTestCase
+public class TestDriver extends DatabaseClusterTestCase
 {
-	private MockDriver mockDriver = new MockDriver();
 	private Driver driver = new Driver();
-	private Context context;
-	
-	/**
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	protected void setUp() throws Exception
-	{
-		DriverManager.registerDriver(this.mockDriver);
-		
-		Properties properties = new Properties();
-		
-		properties.setProperty(Context.INITIAL_CONTEXT_FACTORY, "net.sf.hajdbc.sql.MockInitialContextFactory");
-		
-		this.context = new InitialContext(properties);
-		
-		Reference reference = new Reference(DataSource.class.toString(), "net.sf.hajdbc.sql.MockDataSourceFactory", null);
-		
-		this.context.bind("datasource1", reference);
-		this.context.bind("datasource2", reference);
-	}
-
-	/**
-	 * @see net.sf.hajdbc.AbstractTestCase#tearDown()
-	 */
-	protected void tearDown() throws Exception
-	{
-		DriverManager.deregisterDriver(mockDriver);
-		
-		this.context.unbind("datasource1");
-		this.context.unbind("datasource2");
-		
-		super.tearDown();
-	}
 
 	/**
 	 * Test method for {@link Driver} static initialization.

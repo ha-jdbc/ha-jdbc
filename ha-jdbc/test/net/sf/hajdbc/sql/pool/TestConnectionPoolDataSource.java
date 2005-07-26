@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (C) 2005 Paul Ferraro
+ * Copyright (C) 2004 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -18,18 +18,18 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.sql;
+package net.sf.hajdbc.sql.pool;
 
 import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.sql.Connection;
+import java.sql.SQLException;
 
 import javax.naming.NamingException;
 import javax.naming.Reference;
+import javax.sql.PooledConnection;
 
 import net.sf.hajdbc.DatabaseClusterTestCase;
 
-public class TestDataSource extends DatabaseClusterTestCase
+public class TestConnectionPoolDataSource extends DatabaseClusterTestCase
 {
 	/**
 	 * @see junit.framework.TestCase#setUp()
@@ -38,13 +38,13 @@ public class TestDataSource extends DatabaseClusterTestCase
 	{
 		super.setUp();
 		
-		DataSource dataSource = new DataSource();
+		ConnectionPoolDataSource dataSource = new ConnectionPoolDataSource();
 		
-		dataSource.setName("datasource-cluster");
+		dataSource.setName("pool-datasource-cluster");
 		
 		this.context.bind("datasource", dataSource);
 	}
-
+	
 	/**
 	 * @see junit.framework.TestCase#tearDown()
 	 */
@@ -55,13 +55,49 @@ public class TestDataSource extends DatabaseClusterTestCase
 		super.tearDown();
 	}
 
-	private DataSource getDataSource() throws NamingException
+	private ConnectionPoolDataSource getDataSource() throws NamingException
 	{
-		return (DataSource) this.context.lookup("datasource");
+		return (ConnectionPoolDataSource) this.context.lookup("datasource");
 	}
 	
 	/*
-	 * Test method for 'net.sf.hajdbc.sql.DataSource.getLoginTimeout()'
+	 * Test method for 'net.sf.hajdbc.sql.pool.ConnectionPoolDataSource.getPooledConnection()'
+	 */
+	public void testGetPooledConnection()
+	{
+		try
+		{
+			PooledConnection connection = this.getDataSource().getPooledConnection();
+			
+			assertNotNull(connection);
+			assertEquals("net.sf.hajdbc.sql.pool.PooledConnection", connection.getClass().getName());
+		}
+		catch (Exception e)
+		{
+			this.fail(e);
+		}
+	}
+
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.pool.ConnectionPoolDataSource.getPooledConnection(String, String)'
+	 */
+	public void testGetPooledConnectionStringString()
+	{
+		try
+		{
+			PooledConnection connection = this.getDataSource().getPooledConnection("test", "test");
+			
+			assertNotNull(connection);
+			assertEquals("net.sf.hajdbc.sql.pool.PooledConnection", connection.getClass().getName());
+		}
+		catch (Exception e)
+		{
+			this.fail(e);
+		}
+	}
+
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.pool.ConnectionPoolDataSource.getLoginTimeout()'
 	 */
 	public void testGetLoginTimeout()
 	{
@@ -78,13 +114,13 @@ public class TestDataSource extends DatabaseClusterTestCase
 	}
 
 	/*
-	 * Test method for 'net.sf.hajdbc.sql.DataSource.setLoginTimeout(int)'
+	 * Test method for 'net.sf.hajdbc.sql.pool.ConnectionPoolDataSource.setLoginTimeout(int)'
 	 */
 	public void testSetLoginTimeout()
 	{
 		try
 		{
-			this.getDataSource().setLoginTimeout(1000);
+			this.getDataSource().setLoginTimeout(1);
 		}
 		catch (Exception e)
 		{
@@ -93,7 +129,7 @@ public class TestDataSource extends DatabaseClusterTestCase
 	}
 
 	/*
-	 * Test method for 'net.sf.hajdbc.sql.DataSource.getLogWriter()'
+	 * Test method for 'net.sf.hajdbc.sql.pool.ConnectionPoolDataSource.getLogWriter()'
 	 */
 	public void testGetLogWriter()
 	{
@@ -110,51 +146,13 @@ public class TestDataSource extends DatabaseClusterTestCase
 	}
 
 	/*
-	 * Test method for 'net.sf.hajdbc.sql.DataSource.setLogWriter(PrintWriter)'
+	 * Test method for 'net.sf.hajdbc.sql.pool.ConnectionPoolDataSource.setLogWriter(PrintWriter)'
 	 */
 	public void testSetLogWriter()
 	{
 		try
 		{
-			PrintWriter writer = new PrintWriter(new StringWriter());
-			
-			this.getDataSource().setLogWriter(writer);
-		}
-		catch (Exception e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.DataSource.getConnection()'
-	 */
-	public void testGetConnection()
-	{
-		try
-		{
-			Connection connection = this.getDataSource().getConnection();
-			
-			assertNotNull(connection);
-			assertEquals("net.sf.hajdbc.sql.Connection", connection.getClass().getName());
-		}
-		catch (Exception e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.DataSource.getConnection(String, String)'
-	 */
-	public void testGetConnectionStringString()
-	{
-		try
-		{
-			Connection connection = this.getDataSource().getConnection("sa", "");
-			
-			assertNotNull(connection);
-			assertEquals("net.sf.hajdbc.sql.Connection", connection.getClass().getName());
+			this.getDataSource().setLogWriter(null);
 		}
 		catch (Exception e)
 		{
@@ -171,7 +169,7 @@ public class TestDataSource extends DatabaseClusterTestCase
 		{
 			String name = this.getDataSource().getName();
 			
-			assertEquals("datasource-cluster", name);
+			assertEquals("pool-datasource-cluster", name);
 		}
 		catch (Exception e)
 		{
@@ -203,8 +201,8 @@ public class TestDataSource extends DatabaseClusterTestCase
 		{
 			Reference reference = this.getDataSource().getReference();
 			
-			assertEquals("net.sf.hajdbc.sql.DataSource", reference.getClassName());
-			assertEquals("net.sf.hajdbc.sql.DataSourceFactory", reference.getFactoryClassName());
+			assertEquals("net.sf.hajdbc.sql.pool.ConnectionPoolDataSource", reference.getClassName());
+			assertEquals("net.sf.hajdbc.sql.pool.ConnectionPoolDataSourceFactory", reference.getFactoryClassName());
 		}
 		catch (Exception e)
 		{

@@ -20,8 +20,6 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.sql.Driver;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
@@ -31,13 +29,13 @@ import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.ConnectionFactory;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.EasyMockTestCase;
 import net.sf.hajdbc.Operation;
 import net.sf.hajdbc.SQLObject;
-import net.sf.hajdbc.AbstractTestCase;
 
 import org.easymock.MockControl;
 
-public class TestStatement extends AbstractTestCase
+public class TestStatement extends EasyMockTestCase
 {
 	protected MockControl databaseClusterControl = this.createControl(DatabaseCluster.class);
 	protected DatabaseCluster databaseCluster = (DatabaseCluster) this.databaseClusterControl.getMock();

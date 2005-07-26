@@ -32,11 +32,11 @@ import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
 import javax.sql.DataSource;
 
-import net.sf.hajdbc.AbstractTestCase;
+import net.sf.hajdbc.EasyMockTestCase;
 
 import org.easymock.MockControl;
 
-public class TestDataSourceDatabase extends AbstractTestCase
+public class TestDataSourceDatabase extends EasyMockTestCase
 {
 	private MockControl dataSourceControl = this.createControl(DataSource.class);
 	private DataSource dataSource = (DataSource) dataSourceControl.getMock();
