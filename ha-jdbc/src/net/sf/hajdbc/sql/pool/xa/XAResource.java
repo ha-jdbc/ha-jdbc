@@ -25,6 +25,7 @@ import java.util.Map;
 
 import javax.transaction.xa.Xid;
 
+import net.sf.hajdbc.Database;
 import net.sf.hajdbc.SQLObject;
 
 /**
@@ -52,7 +53,7 @@ public class XAResource extends SQLObject implements javax.transaction.xa.XAReso
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
+			public Object execute(Database database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
 			{
 				return new Integer(resource.getTransactionTimeout());
 			}
@@ -68,7 +69,7 @@ public class XAResource extends SQLObject implements javax.transaction.xa.XAReso
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
+			public Object execute(Database database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
 			{
 				return Boolean.valueOf(resource.setTransactionTimeout(seconds));
 			}
@@ -84,7 +85,7 @@ public class XAResource extends SQLObject implements javax.transaction.xa.XAReso
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
+			public Object execute(Database database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
 			{
 				if (this.getClass().isInstance(xaResource))
 				{
@@ -107,7 +108,7 @@ public class XAResource extends SQLObject implements javax.transaction.xa.XAReso
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
+			public Object execute(Database database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
 			{
 				return resource.recover(flag);
 			}
@@ -123,7 +124,7 @@ public class XAResource extends SQLObject implements javax.transaction.xa.XAReso
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
+			public Object execute(Database database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
 			{
 				return new Integer(resource.prepare(id));
 			}
@@ -139,7 +140,7 @@ public class XAResource extends SQLObject implements javax.transaction.xa.XAReso
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
+			public Object execute(Database database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
 			{
 				resource.forget(id);
 				
@@ -157,7 +158,7 @@ public class XAResource extends SQLObject implements javax.transaction.xa.XAReso
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
+			public Object execute(Database database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
 			{
 				resource.rollback(id);
 				
@@ -175,7 +176,7 @@ public class XAResource extends SQLObject implements javax.transaction.xa.XAReso
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
+			public Object execute(Database database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
 			{
 				resource.end(id, flag);
 				
@@ -193,7 +194,7 @@ public class XAResource extends SQLObject implements javax.transaction.xa.XAReso
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
+			public Object execute(Database database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
 			{
 				resource.start(id, flag);
 				
@@ -211,7 +212,7 @@ public class XAResource extends SQLObject implements javax.transaction.xa.XAReso
 	{
 		XAResourceOperation operation = new XAResourceOperation()
 		{
-			public Object execute(XADataSourceDatabase database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
+			public Object execute(Database database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
 			{
 				resource.commit(id, onePhase);
 				

@@ -40,7 +40,7 @@ public abstract class XAResourceOperation implements Operation
 	 * @return the return value of the XAResource operation
 	 * @throws XAException
 	 */
-	public abstract Object execute(XADataSourceDatabase database, XAResource resource) throws XAException;
+	public abstract Object execute(Database database, XAResource resource) throws XAException;
 	
 	/**
 	 * @see net.sf.hajdbc.Operation#execute(net.sf.hajdbc.Database, java.lang.Object)
@@ -49,7 +49,7 @@ public abstract class XAResourceOperation implements Operation
 	{
 		try
 		{
-			return this.execute((XADataSourceDatabase) database, (XAResource) resource);
+			return this.execute(database, (XAResource) resource);
 		}
 		catch (XAException e)
 		{
