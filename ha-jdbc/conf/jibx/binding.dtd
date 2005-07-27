@@ -220,6 +220,7 @@ considered correct in the case of any differences.
     auto-prefix - prefix for automatic id generation, default is "id_"
     package - package for created binding factory class, default is same
       package as class for first mapping element
+    track-source - track unmarshalling source position: "true" or <"false">
 
   along with the style and linkage attributes defined above.
 -->
@@ -232,6 +233,7 @@ considered correct in the case of any differences.
     forwards    CDATA   #IMPLIED
     auto-prefix CDATA   #IMPLIED
     package     CDATA   #IMPLIED
+    track-source CDATA  #IMPLIED
     %style-attribute;
     %linkage-attributes;
   >
@@ -320,11 +322,11 @@ considered correct in the case of any differences.
   simple element value (one with only character data content).
 
   Basic attributes:
-    ref - reference to a named format in a containing scope of the binding
+    format - reference to a named format in a containing scope of the binding
       definition. If given, the named format is used as the default for this
       value binding.
-    value-style - mapping style, express value as: <"element">, "attribute",
-      "text", or "cdata".
+    style - mapping style, express value as: <"element">, "attribute", "text",
+      or "cdata".
  
   Identifier attributes:
     ident - identifier property flag: <"none">, "def" (value is a unique
@@ -337,6 +339,26 @@ considered correct in the case of any differences.
 	    must be defined directly as a child of the mapping element; it is not
 	    allowed as a child of a structure element.
   
+  Enumeration attributes:
+    enum - reference to named enumeration in a containing scope of the binding
+      definition. If given, the named enumeration is used as the default for
+      this value binding. The base value type of the enumeration must match the
+      type of this value.
+    enum-names - fully-qualified class and name of a static final array of
+      strings giving the text representations of the values allowed for this
+      enumeration. Lookups assume zero-based enumeration ranges, with the first
+      value in the array corresponding to an enumeration value of '0'. If the
+      actual value range for the enumeration starts at an offset the leading
+      values in the array can be null.
+    enum-sorts - fully-qualified class and name of a static final array of
+      strings giving the sorted text representations of the values in an
+      enumeration. These strings must be in java.lang.String comparison order.
+      If an array is specified that does not contain ordered values the results
+      are unpredictable.
+    enum-values - fully-qualified class and name of a static final array of
+      ints giving the enumeration values corresponding to the sorted text
+      representations.
+  
   as well as the style, name, property, and string attributes defined above.
   The name attribute is always required. The property attributes are required
   (either as a field name, or as get and/or set methods) unless the value is
@@ -348,6 +370,10 @@ considered correct in the case of any differences.
     format      CDATA   #IMPLIED
     ident       CDATA   #IMPLIED
     style       CDATA   #IMPLIED
+    enum        CDATA   #IMPLIED
+    enum-names  CDATA   #IMPLIED
+    enum-sorts  CDATA   #IMPLIED
+    enum-values CDATA   #IMPLIED
     %name-attributes;
     %property-attributes;
     %string-attributes;
