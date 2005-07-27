@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
-
 import net.sf.hajdbc.Database;
 
 /**
@@ -52,81 +50,54 @@ public class RandomBalancer extends AbstractBalancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#add(net.sf.hajdbc.Database)
 	 */
-	public boolean add(Database database)
+	public synchronized boolean add(Database database)
 	{
-		Sync lock = this.acquireWriteLock();
+		boolean added = this.databaseSet.add(database);
 		
-		try
+		if (added)
 		{
-			boolean added = this.databaseSet.add(database);
+			int weight = database.getWeight().intValue();
 			
-			if (added)
+			for (int i = 0; i < weight; ++i)
 			{
-				int weight = database.getWeight().intValue();
-				
-				for (int i = 0; i < weight; ++i)
-				{
-					this.databaseList.add(database);
-				}
+				this.databaseList.add(database);
 			}
-			
-			return added;
 		}
-		finally
-		{
-			lock.release();
-		}
+		
+		return added;
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.Balancer#remove(net.sf.hajdbc.Database)
 	 */
-	public boolean remove(Database database)
+	public synchronized boolean remove(Database database)
 	{
-		Sync lock = this.acquireWriteLock();
+		boolean removed = this.databaseSet.remove(database);
 		
-		try
+		int weight = database.getWeight().intValue();
+		
+		if (removed && (weight > 0))
 		{
-			boolean removed = this.databaseSet.remove(database);
+			int index = this.databaseList.indexOf(database);
 			
-			int weight = database.getWeight().intValue();
-			
-			if (removed && (weight > 0))
-			{
-				int index = this.databaseList.indexOf(database);
-				
-				this.databaseList.subList(index, index + weight).clear();
-			}
-			
-			return removed;
+			this.databaseList.subList(index, index + weight).clear();
 		}
-		finally
-		{
-			lock.release();
-		}
+		
+		return removed;
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.Balancer#next()
 	 */
-	public Database next()
+	public synchronized Database next()
 	{
-		Sync lock = this.acquireReadLock();
+		if (this.databaseList.isEmpty())
+		{
+			return this.first();
+		}
 		
-		try
-		{
-			if (this.databaseList.isEmpty())
-			{
-				return this.first();
-			}
-			
-			int index = this.random.nextInt(this.databaseList.size());
-			
-			return (Database) this.databaseList.get(index);
-		}
-		finally
-		{
-			lock.release();
-		}
+		int index = this.random.nextInt(this.databaseList.size());
+		
+		return (Database) this.databaseList.get(index);
 	}
 }

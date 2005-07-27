@@ -24,43 +24,16 @@ import java.util.Collection;
 
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
-import EDU.oswego.cs.dl.util.concurrent.FIFOReadWriteLock;
-import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
-import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
+ * Abstract balancer implementation that implements most of the Balancer interface.
+ * 
  * @author  Paul Ferraro
  * @since   1.0
  */
 public abstract class AbstractBalancer implements Balancer
 {
 	protected abstract Collection getDatabases();
-	
-	private ReadWriteLock lock = new FIFOReadWriteLock();
-	
-	protected Sync acquireReadLock()
-	{
-		return this.acquire(this.lock.readLock());
-	}
-
-	protected Sync acquireWriteLock()
-	{
-		return this.acquire(this.lock.writeLock());
-	}
-	
-	private Sync acquire(Sync lock)
-	{
-		try
-		{
-			lock.acquire();
-			
-			return lock;
-		}
-		catch (InterruptedException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
 	
 	/**
 	 * @see net.sf.hajdbc.Balancer#beforeOperation(net.sf.hajdbc.Database)
@@ -81,87 +54,42 @@ public abstract class AbstractBalancer implements Balancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#remove(net.sf.hajdbc.Database)
 	 */
-	public boolean remove(Database database)
+	public synchronized boolean remove(Database database)
 	{
-		Sync lock = this.acquireWriteLock();
-		
-		try
-		{
-			return this.getDatabases().remove(database);
-		}
-		finally
-		{
-			lock.release();
-		}
+		return this.getDatabases().remove(database);
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.Balancer#add(net.sf.hajdbc.Database)
 	 */
-	public boolean add(Database database)
+	public synchronized boolean add(Database database)
 	{
-		Sync lock = this.acquireWriteLock();
-		
-		try
-		{
-			return (this.contains(database)) ? this.getDatabases().add(database) : false;
-		}
-		finally
-		{
-			lock.release();
-		}
+		return (this.contains(database)) ? this.getDatabases().add(database) : false;
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.Balancer#toArray()
 	 */
-	public Database[] toArray()
+	public synchronized Database[] toArray()
 	{
-		Sync lock = this.acquireReadLock();
+		Collection databases = getDatabases();
 		
-		try
-		{
-			Collection databases = getDatabases();
-			
-			return (Database[]) databases.toArray(new Database[databases.size()]);
-		}
-		finally
-		{
-			lock.release();
-		}
+		return (Database[]) databases.toArray(new Database[databases.size()]);
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.Balancer#contains(net.sf.hajdbc.Database)
 	 */
-	public boolean contains(Database database)
+	public synchronized boolean contains(Database database)
 	{
-		Sync lock = this.acquireReadLock();
-		
-		try
-		{
-			return this.getDatabases().contains(database);
-		}
-		finally
-		{
-			lock.release();
-		}
+		return this.getDatabases().contains(database);
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.Balancer#first()
 	 */
-	public Database first()
+	public synchronized Database first()
 	{
-		Sync lock = this.acquireReadLock();
-		
-		try
-		{
-			return (Database) this.getDatabases().iterator().next();
-		}
-		finally
-		{
-			lock.release();
-		}
+		return (Database) this.getDatabases().iterator().next();
 	}
 }
