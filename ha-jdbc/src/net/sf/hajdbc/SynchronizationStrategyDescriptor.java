@@ -79,7 +79,7 @@ public class SynchronizationStrategyDescriptor
 				propertyDescriptorMap.put(descriptor.getName(), descriptor);
 			}
 			
-			Iterator names = properties.keySet().iterator();
+			Iterator names = this.properties.keySet().iterator();
 			
 			while (names.hasNext())
 			{
