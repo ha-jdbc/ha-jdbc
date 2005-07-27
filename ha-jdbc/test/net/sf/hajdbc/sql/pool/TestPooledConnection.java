@@ -96,6 +96,49 @@ public class TestPooledConnection extends EasyMockTestCase
 		return javax.sql.PooledConnection.class;
 	}
 	
+	public void testGetObject()
+	{
+		this.replay();
+		
+		Object connection = this.connection.getObject(this.database);
+		
+		this.verify();
+		
+		assertSame(this.sqlConnection, connection);
+	}
+
+	public void testGetDatabaseCluster()
+	{
+		this.replay();
+		
+		DatabaseCluster databaseCluster = this.connection.getDatabaseCluster();
+		
+		this.verify();
+		
+		assertSame(this.databaseCluster, databaseCluster);
+	}
+
+	public void testHandleException()
+	{
+		Exception exception = new Exception();
+		
+		try
+		{
+			this.databaseCluster.deactivate(this.database);
+			this.databaseClusterControl.setReturnValue(false);
+			
+			this.replay();
+			
+			this.connection.handleExceptions(Collections.singletonMap(this.database, exception));
+			
+			this.verify();
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+	
 	/*
 	 * Test method for 'net.sf.hajdbc.sql.pool.PooledConnection.getConnection()'
 	 */

@@ -21,8 +21,7 @@
 package net.sf.hajdbc.sql.pool.xa;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
 
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.Xid;
@@ -45,23 +44,17 @@ public class TestXAResource extends EasyMockTestCase
 	private MockControl databaseClusterControl = this.createControl(DatabaseCluster.class);
 	private DatabaseCluster databaseCluster = (DatabaseCluster) this.databaseClusterControl.getMock();
 	
-	private MockControl resource1Control = this.createControl(javax.transaction.xa.XAResource.class);
-	private javax.transaction.xa.XAResource resource1 = (javax.transaction.xa.XAResource) this.resource1Control.getMock();
+	private MockControl sqlResourceControl = this.createControl(javax.transaction.xa.XAResource.class);
+	private javax.transaction.xa.XAResource sqlResource = (javax.transaction.xa.XAResource) this.sqlResourceControl.getMock();
 	
-	private MockControl resource2Control = this.createControl(javax.transaction.xa.XAResource.class);
-	private javax.transaction.xa.XAResource resource2 = (javax.transaction.xa.XAResource) this.resource2Control.getMock();
-	
-	private MockControl database1Control = this.createControl(Database.class);
-	private Database database1 = (Database) this.database1Control.getMock();
-	
-	private MockControl database2Control = this.createControl(Database.class);
-	private Database database2 = (Database) this.database2Control.getMock();
+	private MockControl databaseControl = this.createControl(Database.class);
+	private Database database = (Database) this.databaseControl.getMock();
 	
 	private MockControl balancerControl = this.createControl(Balancer.class);
 	private Balancer balancer = (Balancer) this.balancerControl.getMock();
 	
 	private XAResource resource;
-	private Database[] databases = new Database[] { this.database1, this.database2 };
+	private Database[] databases = new Database[] { this.database };
 	
 	/**
 	 * @see junit.framework.TestCase#setUp()
@@ -76,17 +69,13 @@ public class TestXAResource extends EasyMockTestCase
 		
 		this.replay();
 
-		Map connectionMap = new HashMap(2);
-		connectionMap.put(this.database1, new MockXAConnection(this.resource1));
-		connectionMap.put(this.database2, new MockXAConnection(this.resource2));
-		
-		ConnectionFactory connectionFactory = new ConnectionFactory(this.databaseCluster, connectionMap);
+		ConnectionFactory connectionFactory = new ConnectionFactory(this.databaseCluster, Collections.singletonMap(this.database, new Object()));
 		
 		Operation operation = new Operation()
 		{
 			public Object execute(Database database, Object sqlObject) throws SQLException
 			{
-				return sqlObject;
+				return TestXAResource.this.sqlResource;
 			}
 		};
 
@@ -105,6 +94,49 @@ public class TestXAResource extends EasyMockTestCase
 		this.verify();
 		this.reset();
 	}
+	
+	public void testGetObject()
+	{
+		this.replay();
+		
+		Object resource = this.resource.getObject(this.database);
+		
+		this.verify();
+		
+		assertSame(this.sqlResource, resource);
+	}
+
+	public void testGetDatabaseCluster()
+	{
+		this.replay();
+		
+		DatabaseCluster databaseCluster = this.resource.getDatabaseCluster();
+		
+		this.verify();
+		
+		assertSame(this.databaseCluster, databaseCluster);
+	}
+
+	public void testHandleException()
+	{
+		Exception exception = new Exception();
+		
+		try
+		{
+			this.databaseCluster.deactivate(this.database);
+			this.databaseClusterControl.setReturnValue(false);
+			
+			this.replay();
+			
+			this.resource.handleExceptions(Collections.singletonMap(this.database, exception));
+			
+			this.verify();
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
 
 	/*
 	 * Test method for 'net.sf.hajdbc.sql.pool.xa.XAResource.getTransactionTimeout()'
@@ -117,10 +149,10 @@ public class TestXAResource extends EasyMockTestCase
 			this.databaseClusterControl.setReturnValue(this.balancer);
 			
 			this.balancer.first();
-			this.balancerControl.setReturnValue(this.database1);
+			this.balancerControl.setReturnValue(this.database);
 			
-			this.resource1.getTransactionTimeout();
-			this.resource1Control.setReturnValue(1);
+			this.sqlResource.getTransactionTimeout();
+			this.sqlResourceControl.setReturnValue(1);
 			
 			this.replay();
 			
@@ -149,11 +181,8 @@ public class TestXAResource extends EasyMockTestCase
 			this.balancer.toArray();
 			this.balancerControl.setReturnValue(this.databases, 2);
 			
-			this.resource1.setTransactionTimeout(1);
-			this.resource1Control.setReturnValue(true);
-			
-			this.resource2.setTransactionTimeout(1);
-			this.resource2Control.setReturnValue(true);
+			this.sqlResource.setTransactionTimeout(1);
+			this.sqlResourceControl.setReturnValue(true);
 			
 			this.replay();
 			
@@ -182,10 +211,10 @@ public class TestXAResource extends EasyMockTestCase
 			this.databaseClusterControl.setReturnValue(this.balancer);
 			
 			this.balancer.first();
-			this.balancerControl.setReturnValue(this.database1);
+			this.balancerControl.setReturnValue(this.database);
 			
-			this.resource1.isSameRM(resource);
-			this.resource1Control.setReturnValue(true);
+			this.sqlResource.isSameRM(resource);
+			this.sqlResourceControl.setReturnValue(true);
 			
 			this.replay();
 			
@@ -218,11 +247,8 @@ public class TestXAResource extends EasyMockTestCase
 			this.balancer.toArray();
 			this.balancerControl.setReturnValue(this.databases, 2);
 			
-			this.resource1.recover(1);
-			this.resource1Control.setReturnValue(ids);
-			
-			this.resource2.recover(1);
-			this.resource2Control.setReturnValue(ids);
+			this.sqlResource.recover(1);
+			this.sqlResourceControl.setReturnValue(ids);
 			
 			this.replay();
 			
@@ -253,11 +279,8 @@ public class TestXAResource extends EasyMockTestCase
 			this.balancer.toArray();
 			this.balancerControl.setReturnValue(this.databases, 2);
 			
-			this.resource1.prepare(id);
-			this.resource1Control.setReturnValue(1);
-			
-			this.resource2.prepare(id);
-			this.resource2Control.setReturnValue(1);
+			this.sqlResource.prepare(id);
+			this.sqlResourceControl.setReturnValue(1);
 			
 			this.replay();
 			
@@ -288,11 +311,8 @@ public class TestXAResource extends EasyMockTestCase
 			this.balancer.toArray();
 			this.balancerControl.setReturnValue(this.databases, 2);
 			
-			this.resource1.forget(id);
-			this.resource1Control.setVoidCallable();
-			
-			this.resource2.forget(id);
-			this.resource2Control.setVoidCallable();
+			this.sqlResource.forget(id);
+			this.sqlResourceControl.setVoidCallable();
 			
 			this.replay();
 			
@@ -321,11 +341,8 @@ public class TestXAResource extends EasyMockTestCase
 			this.balancer.toArray();
 			this.balancerControl.setReturnValue(this.databases, 2);
 			
-			this.resource1.rollback(id);
-			this.resource1Control.setVoidCallable();
-			
-			this.resource2.rollback(id);
-			this.resource2Control.setVoidCallable();
+			this.sqlResource.rollback(id);
+			this.sqlResourceControl.setVoidCallable();
 			
 			this.replay();
 			
@@ -354,11 +371,8 @@ public class TestXAResource extends EasyMockTestCase
 			this.balancer.toArray();
 			this.balancerControl.setReturnValue(this.databases, 2);
 			
-			this.resource1.end(id, 1);
-			this.resource1Control.setVoidCallable();
-			
-			this.resource2.end(id, 1);
-			this.resource2Control.setVoidCallable();
+			this.sqlResource.end(id, 1);
+			this.sqlResourceControl.setVoidCallable();
 			
 			this.replay();
 			
@@ -387,11 +401,8 @@ public class TestXAResource extends EasyMockTestCase
 			this.balancer.toArray();
 			this.balancerControl.setReturnValue(this.databases, 2);
 			
-			this.resource1.start(id, 1);
-			this.resource1Control.setVoidCallable();
-			
-			this.resource2.start(id, 1);
-			this.resource2Control.setVoidCallable();
+			this.sqlResource.start(id, 1);
+			this.sqlResourceControl.setVoidCallable();
 			
 			this.replay();
 			
@@ -420,11 +431,8 @@ public class TestXAResource extends EasyMockTestCase
 			this.balancer.toArray();
 			this.balancerControl.setReturnValue(this.databases, 2);
 			
-			this.resource1.commit(id, true);
-			this.resource1Control.setVoidCallable();
-			
-			this.resource2.commit(id, true);
-			this.resource2Control.setVoidCallable();
+			this.sqlResource.commit(id, true);
+			this.sqlResourceControl.setVoidCallable();
 			
 			this.replay();
 			

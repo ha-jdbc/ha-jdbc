@@ -27,7 +27,6 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 import net.sf.hajdbc.Balancer;
@@ -92,6 +91,47 @@ public class TestConnection extends EasyMockTestCase
 
 		this.verify();
 		this.reset();
+	}
+	
+	public void testGetObject()
+	{
+		this.replay();
+		
+		Object connection = this.connection.getObject(this.database);
+		
+		this.verify();
+		
+		assertSame(this.sqlConnection, connection);
+	}
+
+	public void testGetDatabaseCluster()
+	{
+		this.replay();
+		
+		DatabaseCluster databaseCluster = this.connection.getDatabaseCluster();
+		
+		this.verify();
+		
+		assertSame(this.databaseCluster, databaseCluster);
+	}
+
+	public void testHandleException()
+	{
+		try
+		{
+			this.databaseCluster.deactivate(this.database);
+			this.databaseClusterControl.setReturnValue(false);
+			
+			this.replay();
+			
+			this.connection.handleExceptions(Collections.singletonMap(this.database, new Exception()));
+			
+			this.verify();
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
 	}
 	
 	public void testClearWarnings()

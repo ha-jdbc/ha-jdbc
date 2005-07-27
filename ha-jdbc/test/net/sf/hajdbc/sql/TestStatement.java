@@ -40,6 +40,9 @@ public class TestStatement extends EasyMockTestCase
 	protected MockControl databaseClusterControl = this.createControl(DatabaseCluster.class);
 	protected DatabaseCluster databaseCluster = (DatabaseCluster) this.databaseClusterControl.getMock();
 	
+	protected MockControl sqlConnectionControl = this.createControl(java.sql.Connection.class);
+	protected java.sql.Connection sqlConnection = (java.sql.Connection) this.sqlConnectionControl.getMock();
+	
 	protected MockControl sqlStatementControl = this.createControl(this.getSQLStatementClass());
 	protected java.sql.Statement sqlStatement = (java.sql.Statement) this.sqlStatementControl.getMock();
 	
@@ -75,7 +78,7 @@ public class TestStatement extends EasyMockTestCase
 		{
 			public Object execute(Database database, Object sqlObject) throws SQLException
 			{
-				return MockControl.createControl(java.sql.Connection.class).getMock();
+				return TestStatement.this.sqlConnection;
 			}
 		};
 		
@@ -85,11 +88,11 @@ public class TestStatement extends EasyMockTestCase
 		{
 			public Object execute(Database database, java.sql.Connection connection) throws SQLException
 			{
-				return sqlStatement;
+				return TestStatement.this.sqlStatement;
 			}
 		};
 		
-		this.statement = this.createStatement(connection, connectionOperation);
+		this.statement = this.createStatement(this.connection, connectionOperation);
 		
 		this.verify();
 		this.reset();
@@ -103,6 +106,88 @@ public class TestStatement extends EasyMockTestCase
 	protected Class getSQLStatementClass()
 	{
 		return java.sql.Statement.class;
+	}
+	
+	public void testGetObject()
+	{
+		this.replay();
+		
+		Object statement = this.statement.getObject(this.database);
+		
+		this.verify();
+		
+		assertSame(this.sqlStatement, statement);
+	}
+
+	public void testGetDatabaseCluster()
+	{
+		this.replay();
+		
+		DatabaseCluster databaseCluster = this.statement.getDatabaseCluster();
+		
+		this.verify();
+		
+		assertSame(this.databaseCluster, databaseCluster);
+	}
+
+	public void testHandleException()
+	{
+		Exception exception = new Exception();
+		
+		try
+		{
+			this.databaseCluster.getBalancer();
+			this.databaseClusterControl.setReturnValue(this.balancer);
+			
+			this.balancer.first();
+			this.balancerControl.setReturnValue(this.database);
+			
+			this.sqlConnection.getAutoCommit();
+			this.sqlConnectionControl.setReturnValue(true);
+			
+			this.databaseCluster.deactivate(this.database);
+			this.databaseClusterControl.setReturnValue(false);
+			
+			this.replay();
+			
+			this.statement.handleExceptions(Collections.singletonMap(this.database, exception));
+			
+			this.verify();
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
+	public void testAutoCommitOffHandleException()
+	{
+		Exception exception = new Exception();
+		
+		try
+		{
+			this.databaseCluster.getBalancer();
+			this.databaseClusterControl.setReturnValue(this.balancer);
+			
+			this.balancer.first();
+			this.balancerControl.setReturnValue(this.database);
+			
+			this.sqlConnection.getAutoCommit();
+			this.sqlConnectionControl.setReturnValue(false);
+			
+			this.databaseCluster.handleFailure(this.database, exception);
+			this.databaseClusterControl.setVoidCallable();
+			
+			this.replay();
+			
+			this.statement.handleExceptions(Collections.singletonMap(this.database, exception));
+			
+			this.verify();
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
 	}
 	
 	/*

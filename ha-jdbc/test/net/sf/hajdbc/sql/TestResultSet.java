@@ -51,6 +51,10 @@ import net.sf.hajdbc.Operation;
 
 import org.easymock.MockControl;
 
+/**
+ * @author  Paul Ferraro
+ * @since   1.0
+ */
 public class TestResultSet extends EasyMockTestCase
 {
 	private MockControl databaseClusterControl = this.createControl(DatabaseCluster.class);
@@ -91,7 +95,7 @@ public class TestResultSet extends EasyMockTestCase
 		{
 			public Object execute(Database database, Object sqlObject) throws SQLException
 			{
-				return MockControl.createControl(java.sql.Connection.class).getMock();
+				return TestResultSet.this.createMock(java.sql.Connection.class);
 			}
 		};
 		
@@ -101,7 +105,7 @@ public class TestResultSet extends EasyMockTestCase
 		{
 			public Object execute(Database database, java.sql.Connection connection) throws SQLException
 			{
-				return MockControl.createControl(java.sql.Statement.class).getMock();
+				return TestResultSet.this.createMock(java.sql.Statement.class);
 			}
 		};
 		
@@ -111,7 +115,7 @@ public class TestResultSet extends EasyMockTestCase
 		{
 			public Object execute(java.sql.Statement statement) throws SQLException
 			{
-				return sqlResultSet;
+				return TestResultSet.this.sqlResultSet;
 			}
 		};
 		
@@ -119,6 +123,49 @@ public class TestResultSet extends EasyMockTestCase
 		
 		this.verify();
 		this.reset();
+	}
+	
+	public void testGetObject()
+	{
+		this.replay();
+		
+		Object resultSet = this.resultSet.getObject(this.database);
+		
+		this.verify();
+		
+		assertSame(this.sqlResultSet, resultSet);
+	}
+
+	public void testGetDatabaseCluster()
+	{
+		this.replay();
+		
+		DatabaseCluster databaseCluster = this.resultSet.getDatabaseCluster();
+		
+		this.verify();
+		
+		assertSame(this.databaseCluster, databaseCluster);
+	}
+
+	public void testHandleException()
+	{
+		Exception exception = new Exception();
+		
+		try
+		{
+			this.databaseCluster.deactivate(this.database);
+			this.databaseClusterControl.setReturnValue(false);
+			
+			this.replay();
+			
+			this.resultSet.handleExceptions(Collections.singletonMap(this.database, exception));
+			
+			this.verify();
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
 	}
 	
 	/*

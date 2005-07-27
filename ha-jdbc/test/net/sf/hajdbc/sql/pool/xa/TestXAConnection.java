@@ -38,11 +38,11 @@ import net.sf.hajdbc.sql.pool.TestPooledConnection;
  */
 public class TestXAConnection extends TestPooledConnection
 {
-	private javax.sql.XAConnection connection1 = (javax.sql.XAConnection) this.sqlConnectionControl.getMock();
+	private javax.sql.XAConnection sqlConnection = (javax.sql.XAConnection) this.sqlConnectionControl.getMock();
 
 	protected PooledConnection createConnection() throws SQLException
 	{
-		ConnectionFactory connectionFactory = new ConnectionFactory(this.databaseCluster, Collections.singletonMap(this.database, this.connection1));
+		ConnectionFactory connectionFactory = new ConnectionFactory(this.databaseCluster, Collections.singletonMap(this.database, this.sqlConnection));
 		
 		Operation operation = new Operation()
 		{
@@ -80,7 +80,7 @@ public class TestXAConnection extends TestPooledConnection
 			this.balancer.toArray();
 			this.balancerControl.setReturnValue(this.databases, 2);
 			
-			this.connection1.getXAResource();
+			this.sqlConnection.getXAResource();
 			this.sqlConnectionControl.setReturnValue(resource1);
 			
 			this.replay();
