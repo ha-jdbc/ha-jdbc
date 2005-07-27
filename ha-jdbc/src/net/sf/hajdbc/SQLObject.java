@@ -338,7 +338,10 @@ public class SQLObject
 			{
 				Database newDatabase = (Database) newDatabases.next();
 				
-				this.databaseCluster.deactivate(newDatabase);
+				if (this.databaseCluster.deactivate(newDatabase))
+				{
+					log.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, new Object[] { newDatabase, this.databaseCluster }));
+				}
 			}
 		}
 	}
