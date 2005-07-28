@@ -21,7 +21,9 @@
  Contact: ferraro@users.sourceforge.net
 -->
 <ha-jdbc>
-	<cluster id="database-cluster" balancer="simple">
+	<sync id="full" class="net.sf.hajdbc.sync.FullSynchronizationStrategy"/>
+	<sync id="diff" class="net.sf.hajdbc.sync.DifferentialSynchronizationStrategy"/>
+	<cluster id="database-cluster" balancer="simple" default-sync="full">
 		<database id="database1" weight="2">
 			<driver>net.sf.hajdbc.sql.MockDriver</driver>
 			<url>jdbc:mock:database1</url>
@@ -30,9 +32,8 @@
 			<driver>net.sf.hajdbc.sql.MockDriver</driver>
 			<url>jdbc:mock:database2</url>
 		</database>
-		<sync-strategy id="full" class="net.sf.hajdbc.sync.FullSynchronizationStrategy"></sync-strategy>
 	</cluster>
-	<cluster id="datasource-cluster" balancer="simple">
+	<cluster id="datasource-cluster" balancer="simple" default-sync="full">
 		<datasource id="datasource1" weight="1">
 			<name>datasource1</name>
 			<property name="java.naming.factory.initial">net.sf.hajdbc.sql.MockInitialContextFactory</property>
@@ -41,9 +42,8 @@
 			<name>datasource2</name>
 			<property name="java.naming.factory.initial">net.sf.hajdbc.sql.MockInitialContextFactory</property>
 		</datasource>
-		<sync-strategy id="full" class="net.sf.hajdbc.sync.FullSynchronizationStrategy"></sync-strategy>
 	</cluster>
-	<cluster id="pool-datasource-cluster" balancer="simple">
+	<cluster id="pool-datasource-cluster" balancer="simple" default-sync="full">
 		<pool-datasource id="datasource1" weight="1">
 			<name>pool-datasource1</name>
 			<property name="java.naming.factory.initial">net.sf.hajdbc.sql.MockInitialContextFactory</property>
@@ -52,9 +52,8 @@
 			<name>pool-datasource2</name>
 			<property name="java.naming.factory.initial">net.sf.hajdbc.sql.MockInitialContextFactory</property>
 		</pool-datasource>
-		<sync-strategy id="full" class="net.sf.hajdbc.sync.FullSynchronizationStrategy"></sync-strategy>
 	</cluster>
-	<cluster id="xa-datasource-cluster" balancer="simple">
+	<cluster id="xa-datasource-cluster" balancer="simple" default-sync="full">
 		<xa-datasource id="datasource1" weight="1">
 			<name>xa-datasource1</name>
 			<property name="java.naming.factory.initial">net.sf.hajdbc.sql.MockInitialContextFactory</property>
@@ -63,6 +62,5 @@
 			<name>xa-datasource2</name>
 			<property name="java.naming.factory.initial">net.sf.hajdbc.sql.MockInitialContextFactory</property>
 		</xa-datasource>
-		<sync-strategy id="full" class="net.sf.hajdbc.sync.FullSynchronizationStrategy"></sync-strategy>
 	</cluster>
 </ha-jdbc>
