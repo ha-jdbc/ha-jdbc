@@ -14,7 +14,7 @@ See http://xml.apache.org/forrest/linking.html for more info
 -->
 <site label="HA-JDBC" xmlns="http://apache.org/forrest/linkmap/1.0" href="">
 
-	<home label="HA-JDBC">
+	<home label="About">
 		<overview label="Overview" href="index.html"/>
 		<documentation label="Documentation" href="doc.html"/>
 		<performance label="Performance" href="performance.html"/>
