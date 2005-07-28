@@ -63,18 +63,16 @@ public interface DatabaseCluster extends DatabaseClusterMBean
 	public Database getDatabase(String id) throws java.sql.SQLException;
 	
 	/**
-	 * Returns the synchronization strategy identified by the specified id
-	 * @param id synchronization strategy unique identifier
-	 * @return a SynchronizationStrategy implementation
-	 * @throws java.sql.SQLException if no strategy exists with the specified identifier
-	 */
-	public SynchronizationStrategy getSynchronizationStrategy(String id) throws java.sql.SQLException;
-	
-	/**
 	 * Initializes this database cluster.
 	 * @throws java.sql.SQLException if initialization fails
 	 */
 	public void init() throws java.sql.SQLException;
+
+	/**
+	 * Returns the default synchronization strategy for this database cluster
+	 * @return a synchronization strategy identifier
+	 */
+	public String getDefaultSynchronizationStrategy();
 
 	/**
 	 * Handles a failure caused by the specified cause on the specified database.

@@ -36,8 +36,8 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 	private String id;
 	private Class balancerClass;
 	private String validateSQL;
+	private String defaultSynchronizationStrategy;
 	private List databaseList = new LinkedList();
-	private List synchronizationStrategyDescriptorList;
 	
 	/**
 	 * Returns the identifier of this database cluster.
@@ -79,9 +79,9 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 	 * Returns a map of synchronization strategies for this cluster. 
 	 * @return a Map<String, SynchronizationStrategy>
 	 */
-	public List getSynchronizationStrategyList()
+	public String getDefaultSynchronizationStrategy()
 	{
-		return this.synchronizationStrategyDescriptorList;
+		return this.defaultSynchronizationStrategy;
 	}
 	
 	/**

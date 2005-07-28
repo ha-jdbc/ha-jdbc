@@ -77,22 +77,6 @@ public abstract class DatabaseClusterDecorator extends AbstractDatabaseCluster
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseClusterMBean#getSynchronizationStrategies()
-	 */
-	public final Collection getSynchronizationStrategies()
-	{
-		return this.databaseCluster.getSynchronizationStrategies();
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getSynchronizationStrategy(java.lang.String)
-	 */
-	public final SynchronizationStrategy getSynchronizationStrategy(String id) throws java.sql.SQLException
-	{
-		return this.databaseCluster.getSynchronizationStrategy(id);
-	}
-	
-	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getBalancer()
 	 */
 	public Balancer getBalancer()
@@ -106,5 +90,13 @@ public abstract class DatabaseClusterDecorator extends AbstractDatabaseCluster
 	public ConnectionFactory getConnectionFactory()
 	{
 		return this.databaseCluster.getConnectionFactory();
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getDefaultSynchronizationStrategy()
+	 */
+	public String getDefaultSynchronizationStrategy()
+	{
+		return this.databaseCluster.getDefaultSynchronizationStrategy();
 	}
 }

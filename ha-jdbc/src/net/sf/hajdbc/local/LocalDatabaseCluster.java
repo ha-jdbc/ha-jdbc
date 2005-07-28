@@ -40,8 +40,6 @@ import net.sf.hajdbc.ConnectionFactory;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SQLException;
-import net.sf.hajdbc.SynchronizationStrategy;
-import net.sf.hajdbc.SynchronizationStrategyDescriptor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -62,7 +60,7 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	private String validateSQL;
 	private Map databaseMap;
 	private Balancer balancer;
-	private Map synchronizationStrategyMap;
+	private String defaultSynchronizationStrategy;
 	private ConnectionFactory connectionFactory;
 	
 	/**
@@ -94,21 +92,8 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 
 		this.connectionFactory = new ConnectionFactory(this, connectionFactoryMap);
 		
-		List strategyList = descriptor.getSynchronizationStrategyList();
-		
-		this.synchronizationStrategyMap = new HashMap(strategyList.size());
-		
-		Iterator strategies = strategyList.iterator();
-		
 		try
 		{
-			while (strategies.hasNext())
-			{
-				SynchronizationStrategyDescriptor strategy = (SynchronizationStrategyDescriptor) strategies.next();
-				
-				this.synchronizationStrategyMap.put(strategy.getId(), strategy.createSynchronizationStrategy());
-			}
-			
 			this.balancer = (Balancer) descriptor.getBalancerClass().newInstance();
 		}
 		catch (Exception e)
@@ -340,26 +325,11 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getSynchronizationStrategy(java.lang.String)
+	 * @see net.sf.hajdbc.DatabaseCluster#getDefaultSynchronizationStrategy()
 	 */
-	public SynchronizationStrategy getSynchronizationStrategy(String id) throws java.sql.SQLException
+	public String getDefaultSynchronizationStrategy()
 	{
-		SynchronizationStrategy strategy = (SynchronizationStrategy) this.synchronizationStrategyMap.get(id);
-		
-		if (strategy == null)
-		{
-			throw new SQLException(Messages.getMessage(Messages.INVALID_SYNC_STRATEGY, new Object[] { this, id }));
-		}
-		
-		return strategy;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getSynchronizationStrategies()
-	 */
-	public Collection getSynchronizationStrategies()
-	{
-		return this.synchronizationStrategyMap.keySet();
+		return this.defaultSynchronizationStrategy;
 	}
 	
 	/**

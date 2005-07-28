@@ -87,6 +87,7 @@ public final class DatabaseClusterFactory
 	}
 	
 	private Map databaseClusterMap;
+	private Map synchronizationStrategyMap;
 	
 	/**
 	 * Constructs a new DatabaseClusterFactory.
@@ -129,13 +130,26 @@ public final class DatabaseClusterFactory
 				server = (MBeanServer) serverList.get(0);
 			}
 			
-			List descriptorList = configuration.getDescriptorList();
-			this.databaseClusterMap = new HashMap(descriptorList.size());
-			Iterator descriptors = descriptorList.iterator();
+			List synchronizationStrategyDescriptorList = configuration.getSynchronizationStrategyDescriptorList();
+			Iterator synchronizationStrategyDescriptors = synchronizationStrategyDescriptorList.iterator();
 			
-			while (descriptors.hasNext())
+			this.synchronizationStrategyMap = new HashMap(synchronizationStrategyDescriptorList.size());
+			
+			while (synchronizationStrategyDescriptors.hasNext())
 			{
-				DatabaseClusterDescriptor descriptor = (DatabaseClusterDescriptor) descriptors.next();
+				SynchronizationStrategyDescriptor descriptor = (SynchronizationStrategyDescriptor) synchronizationStrategyDescriptors.next();
+				
+				this.synchronizationStrategyMap.put(descriptor.getId(), descriptor.createSynchronizationStrategy());
+			}
+			
+			List databaseClusterDescriptorList = configuration.getDatabaseClusterDescriptorList();
+			Iterator databaseClusterDescriptors = databaseClusterDescriptorList.iterator();
+			
+			this.databaseClusterMap = new HashMap(databaseClusterDescriptorList.size());
+			
+			while (databaseClusterDescriptors.hasNext())
+			{
+				DatabaseClusterDescriptor descriptor = (DatabaseClusterDescriptor) databaseClusterDescriptors.next();
 				
 				DatabaseCluster databaseCluster = descriptor.createDatabaseCluster();
 				DatabaseClusterDecoratorDescriptor decoratorDescriptor = configuration.getDecoratorDescriptor();
@@ -192,6 +206,24 @@ public final class DatabaseClusterFactory
 	}
 	
 	/**
+	 * Returns the synchronization strategy identified by the specified id
+	 * @param id a synchronization strategy identifier
+	 * @return a synchronization strategy
+	 * @throws java.sql.SQLException if the specified identifier is not a valid sychronization strategy
+	 */
+	public SynchronizationStrategy getSynchronizationStrategy(String id) throws java.sql.SQLException
+	{
+		SynchronizationStrategy strategy = (SynchronizationStrategy) this.synchronizationStrategyMap.get(id);
+		
+		if (strategy == null)
+		{
+			throw new SQLException(Messages.getMessage(Messages.INVALID_SYNC_STRATEGY, id));
+		}
+		
+		return strategy;
+	}
+	
+	/**
 	 * Algorithm for searching class loaders for a specified resource.
 	 * @param resourceName a resource to find
 	 * @return a URL for the resource
@@ -226,7 +258,8 @@ public final class DatabaseClusterFactory
 	private static class Configuration
 	{
 		private DatabaseClusterDecoratorDescriptor decoratorDescriptor = null;
-		private List descriptorList;
+		private List databaseClusterDescriptorList;
+		private List synchronizationStrategyDescriptorList;
 		
 		/**
 		 * Returns a descriptor of a database cluster decorator.
@@ -241,9 +274,18 @@ public final class DatabaseClusterFactory
 		 * Returns a list of database cluster descriptors
 		 * @return a List<DatabaseClusterDescriptor>
 		 */
-		public List getDescriptorList()
+		public List getDatabaseClusterDescriptorList()
 		{
-			return this.descriptorList;
+			return this.databaseClusterDescriptorList;
+		}
+		
+		/**
+		 * Returns a list of synchronization strategy descriptors
+		 * @return a List<SynchronizationStrategyDescriptor>
+		 */
+		public List getSynchronizationStrategyDescriptorList()
+		{
+			return this.synchronizationStrategyDescriptorList;
 		}
 	}
 }

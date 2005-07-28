@@ -83,21 +83,7 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 	 */
 	public final void activate(String databaseId) throws java.sql.SQLException
 	{
-		Object[] args = new Object[] { databaseId, this };
-		
-		try
-		{
-			if (this.activate(this.getDatabase(databaseId)))
-			{
-				log.info(Messages.getMessage(Messages.DATABASE_ACTIVATED, args));
-			}
-		}
-		catch (java.sql.SQLException e)
-		{
-			log.warn(Messages.getMessage(Messages.DATABASE_ACTIVATE_FAILED, args), e);
-			
-			throw e;
-		}
+		this.activate(databaseId, this.getDefaultSynchronizationStrategy());
 	}
 	
 	/**
@@ -107,9 +93,12 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 	{
 		Object[] args = new Object[] { databaseId, this };
 		
+		Database database = this.getDatabase(databaseId);
+		SynchronizationStrategy strategy = DatabaseClusterFactory.getInstance().getSynchronizationStrategy(strategyId);
+		
 		try
 		{
-			if (this.activate(this.getDatabase(databaseId), this.getSynchronizationStrategy(strategyId)))
+			if (this.activate(database, strategy))
 			{
 				log.info(Messages.getMessage(Messages.DATABASE_ACTIVATED, args));
 			}
