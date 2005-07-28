@@ -25,17 +25,20 @@
 	SYSTEM "http://ha-jdbc.sourceforge.net/dtd/ha-jdbc-1.0.dtd"
 -->
 
-<!ELEMENT ha-jdbc (distributable?, cluster+)>
+<!ELEMENT ha-jdbc (distributable?,sync+,cluster+)>
 
 <!ELEMENT distributable EMPTY>
 <!ATTLIST distributable	protocol CDATA #IMPLIED>
 
-<!ELEMENT cluster ((database+ | datasource+ | pool-datasource+ | xa-datasource+), validate-sql?, sync-strategy+)>
+<!ELEMENT sync (property*)>
+<!ATTLIST sync id ID #REQUIRED>
+<!ATTLIST sync class CDATA #REQUIRED>
+
+<!ELEMENT cluster (database+|datasource+|pool-datasource+|xa-datasource+)>
 <!ATTLIST cluster id CDATA #REQUIRED>
 <!ATTLIST cluster balancer (simple|random|round-robin|load) #REQUIRED>
-
-<!-- Used to test whether or not a database is alive -->
-<!ELEMENT validate-sql (#PCDATA)>
+<!ATTLIST cluster default-sync IDREF #REQUIRED>
+<!ATTLIST cluster validate-sql CDATA #IMPLIED>
 
 <!ENTITY % authentication-info "(user, password)?">
 <!ELEMENT user (#PCDATA)>
@@ -61,10 +64,6 @@
 <!ELEMENT xa-datasource (%jndi-info;, %authentication-info;)>
 <!ATTLIST xa-datasource id CDATA #REQUIRED>
 <!ATTLIST xa-datasource weight CDATA #IMPLIED>
-
-<!ELEMENT sync-strategy (property*)>
-<!ATTLIST sync-strategy id CDATA #REQUIRED>
-<!ATTLIST sync-strategy class CDATA #REQUIRED>
 
 <!ELEMENT property (#PCDATA)>
 <!ATTLIST property name CDATA #REQUIRED>
