@@ -250,37 +250,6 @@
 						The load of a node = <em>concurrent-requests</em> / <em>weight</em>.
 					</dd>
 				</dl>
-				<table>
-					<tr>
-						<th>Simple</th>
-						<td>
-							Requests are always sent to the node with the highest weight.
-						</td>
-					</tr>
-					<tr>
-						<th>Random</th>
-						<td>
-							Requests are sent to a random node.
-							Node weights affect the probability that a given node will be chosen.
-							The probability that a node will be chosen = <em>weight</em> / <em>total-weight</em>.
-						</td>
-					</tr>
-					<tr>
-						<th>Round-Robin</th>
-						<td>
-							Requests are sent to each node in succession.
-							A node of weight <em>n</em> will receive <em>n</em> requests before the balancer moves on to the next node.
-						</td>
-					</tr>
-					<tr>
-						<th>Load</th>
-						<td>
-							Requests are sent to the node with the smallest load.
-							Node weights affect the calcuated load of a given node.
-							The load of a node = <em>concurrent-requests</em> / <em>weight</em>.
-						</td>
-					</tr>
-				</table>
 				<note>
 					In general, a node with a weight of 0 or less will never service a request unless it is the last node in the cluster.
 				</note>
@@ -444,21 +413,21 @@ Connection connection = dataSource.getConnection("postgres", "password");
 					</p>
 				</section>
 				<section>
-					<title>JSR 114 RowSets</title>
+					<title>RowSet Implementations</title>
 					<p>
-						HA-JDBC will work with any JSR 114 implementation provided that the rowsets are driven by the HA-JDBC driver.
+						HA-JDBC will work with any RowSet implementation provided that the rowsets are driven by the HA-JDBC driver.
 					</p>
 					<p>e.g.</p>
 					<source><![CDATA[
-com.sun.rowset.CachedRowSetImpl rs = new com.sun.rowset.CachedRowSetImpl();
-rs.setCommand("SELECT * FROM TITLES WHERE TYPE = ?");
-rs.setURL("jdbc:ha-jdbc:cluster");
-rs.setUsername("postgres");
-rs.setPassword("password");
-rs.setString(1, "BIOGRAPHY");
-rs.execute();
+javax.sql.RowSet rowSet = new com.sun.rowset.CachedRowSetImpl();
+rowSet.setCommand("SELECT * FROM TITLES WHERE TYPE = ?");
+rowSet.setURL("jdbc:ha-jdbc:cluster");
+rowSet.setUsername("postgres");
+rowSet.setPassword("password");
+rowSet.setString(1, "BIOGRAPHY");
+rowSet.execute();
 // ...
-rs.close();
+rowSet.close();
 ]]></source>
 				</section>
 			</section>

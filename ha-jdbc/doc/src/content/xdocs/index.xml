@@ -15,10 +15,10 @@
 			<title>Features</title>
 			<ul>
 				<li>Supports any database accessible via JDBC.</li>
-				<li>High-availability - Database cluster can lose a node without failing transaction.</li>
+				<li>High-availability - Database cluster can lose a node without failing the current transaction.</li>
 				<li>Improves performance of concurrent read-access by distributing load across individual nodes.</li>
 				<li>Support for full JDBC 3.0 (Java 1.4) feature set.</li>
-				<li>Inherently compatible with <a href="http://www.jcp.org/en/jsr/detail?id=114">JSR 114</a> <code>javax.sql.RowSet</code> API.</li>
+				<li>Compatible with JDBC RowSet implementations found in Java 1.5.</li>
 				<li>Out-of-the-box database-independent strategies for synchronizing a failed cluster node.</li>
 				<li>Exposes JMX management interface to allow administration of database clusters.</li>
 				<li>Open source (LGPL).</li>
