@@ -1,11 +1,10 @@
 <?xml version="1.0" standalone="no"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xsl:version="1.0" xmlns:for="http://apache.org/forrest" width="250" height="55">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xsl:version="1.0" xmlns:for="http://apache.org/forrest" width="238" height="60">
 	<title>HA-JDBC logo</title>
 	<defs>
 		<linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
-			<stop style="stop-color:white" offset="0"/>
-			<stop style="stop-color:lightblue" offset="0.20"/>
-			<stop style="stop-color:darkblue" offset="0.80"/>
+			<stop style="stop-color:lightblue" offset="0"/>
+			<stop style="stop-color:darkblue" offset="0.6"/>
 			<stop style="stop-color:black" offset="1"/>
 		</linearGradient>
 		<filter id="shadowFilter"  filterUnits="objectBoundingBox">
@@ -20,7 +19,7 @@
 		</filter>
 	</defs>
 	<g filter="url(#shadowFilter)" fill="url(#gradient)">
-		<text x="1" y="45" style="font-size:40pt; font-family:'Comic Sans MS','Lucida Casual'">
+		<text x="0" y="42" style="font-size:40pt; font-family:'Palatino Linotype'">
 			<for:project-name/>
 		</text>
 	</g>
