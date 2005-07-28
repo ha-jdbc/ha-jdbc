@@ -27,6 +27,7 @@ import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterDescriptor;
 import net.sf.hajdbc.SynchronizationStrategyDescriptor;
+import net.sf.hajdbc.sql.AbstractDatabase;
 
 /**
  * @author  Paul Ferraro
@@ -94,7 +95,7 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 		return new LocalDatabaseCluster(this);
 	}
 	
-	void addDatabase(Object database)
+	void addDatabase(AbstractDatabase database)
 	{
 		this.databaseList.add(database);
 	}

@@ -26,7 +26,6 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -80,20 +79,18 @@ public final class DatabaseClusterFactory
 	{
 		if (instance == null)
 		{
-			instance = new DatabaseClusterFactory();
+			instance = createDatabaseClusterFactory();
 		}
 		
 		return instance;
 	}
 	
-	private Map databaseClusterMap;
-	private Map synchronizationStrategyMap;
-	
 	/**
-	 * Constructs a new DatabaseClusterFactory.
+	 * Creates a new DatabaseClusterFactory from a configuration file.
+	 * @return a factory for creating database clusters
 	 * @throws java.sql.SQLException if construction fails
 	 */
-	private DatabaseClusterFactory() throws java.sql.SQLException
+	private static DatabaseClusterFactory createDatabaseClusterFactory() throws java.sql.SQLException
 	{
 		String resourceName = System.getProperty(SYSTEM_PROPERTY, DEFAULT_RESOURCE);
 		
@@ -105,71 +102,15 @@ public final class DatabaseClusterFactory
 		}
 		
 		InputStream inputStream = null;
-		MBeanServer server = null;
 		
 		try
 		{
 			inputStream = resourceURL.openStream();
 			
-			IBindingFactory factory = BindingDirectory.getFactory(Configuration.class);
+			IBindingFactory factory = BindingDirectory.getFactory(DatabaseClusterFactory.class);
 			IUnmarshallingContext context = factory.createUnmarshallingContext();
 			
-			Configuration configuration = (Configuration) context.unmarshalDocument(new InputStreamReader(inputStream));
-
-			inputStream.close();
-			inputStream = null;
-			
-			List serverList = MBeanServerFactory.findMBeanServer(null);
-			
-			if (serverList.isEmpty())
-			{
-				server = MBeanServerFactory.createMBeanServer();
-			}
-			else
-			{
-				server = (MBeanServer) serverList.get(0);
-			}
-			
-			List synchronizationStrategyDescriptorList = configuration.getSynchronizationStrategyDescriptorList();
-			Iterator synchronizationStrategyDescriptors = synchronizationStrategyDescriptorList.iterator();
-			
-			this.synchronizationStrategyMap = new HashMap(synchronizationStrategyDescriptorList.size());
-			
-			while (synchronizationStrategyDescriptors.hasNext())
-			{
-				SynchronizationStrategyDescriptor descriptor = (SynchronizationStrategyDescriptor) synchronizationStrategyDescriptors.next();
-				
-				this.synchronizationStrategyMap.put(descriptor.getId(), descriptor.createSynchronizationStrategy());
-			}
-			
-			List databaseClusterDescriptorList = configuration.getDatabaseClusterDescriptorList();
-			Iterator databaseClusterDescriptors = databaseClusterDescriptorList.iterator();
-			
-			this.databaseClusterMap = new HashMap(databaseClusterDescriptorList.size());
-			
-			while (databaseClusterDescriptors.hasNext())
-			{
-				DatabaseClusterDescriptor descriptor = (DatabaseClusterDescriptor) databaseClusterDescriptors.next();
-				
-				DatabaseCluster databaseCluster = descriptor.createDatabaseCluster();
-				DatabaseClusterDecoratorDescriptor decoratorDescriptor = configuration.getDecoratorDescriptor();
-				
-				if (decoratorDescriptor != null)
-				{
-					databaseCluster = decoratorDescriptor.decorate(databaseCluster);
-				}
-				
-				databaseCluster.init();
-				
-				ObjectName name = getObjectName(databaseCluster.getId());
-				
-				if (!server.isRegistered(name))
-				{
-					server.registerMBean(new StandardMBean(databaseCluster, DatabaseClusterMBean.class), name);
-				}
-				
-				this.databaseClusterMap.put(databaseCluster.getId(), databaseCluster);
-			}
+			return (DatabaseClusterFactory) context.unmarshalDocument(new InputStreamReader(inputStream));
 		}
 		catch (Exception e)
 		{
@@ -193,34 +134,6 @@ public final class DatabaseClusterFactory
 				}
 			}
 		}
-	}
-	
-	/**
-	 * Returns the database cluster identified by the specified id
-	 * @param id a database cluster identifier
-	 * @return a database cluster
-	 */
-	public DatabaseCluster getDatabaseCluster(String id)
-	{
-		return (DatabaseCluster) this.databaseClusterMap.get(id);
-	}
-	
-	/**
-	 * Returns the synchronization strategy identified by the specified id
-	 * @param id a synchronization strategy identifier
-	 * @return a synchronization strategy
-	 * @throws java.sql.SQLException if the specified identifier is not a valid sychronization strategy
-	 */
-	public SynchronizationStrategy getSynchronizationStrategy(String id) throws java.sql.SQLException
-	{
-		SynchronizationStrategy strategy = (SynchronizationStrategy) this.synchronizationStrategyMap.get(id);
-		
-		if (strategy == null)
-		{
-			throw new SQLException(Messages.getMessage(Messages.INVALID_SYNC_STRATEGY, id));
-		}
-		
-		return strategy;
 	}
 	
 	/**
@@ -252,40 +165,76 @@ public final class DatabaseClusterFactory
 		}
 	}
 	
-	/**
-	 * Base xml binding object used by JiBX
-	 */
-	private static class Configuration
+	private Map databaseClusterMap = new HashMap();
+	private Map synchronizationStrategyMap = new HashMap();
+	private DatabaseClusterDecoratorDescriptor decoratorDescriptor;
+	private MBeanServer server;
+	
+	private DatabaseClusterFactory()
 	{
-		private DatabaseClusterDecoratorDescriptor decoratorDescriptor = null;
-		private List databaseClusterDescriptorList;
-		private List synchronizationStrategyDescriptorList;
+		List serverList = MBeanServerFactory.findMBeanServer(null);
 		
-		/**
-		 * Returns a descriptor of a database cluster decorator.
-		 * @return a DatabaseClusterDecoratorDescriptor, or null if one was not defined
-		 */
-		public DatabaseClusterDecoratorDescriptor getDecoratorDescriptor()
+		if (serverList.isEmpty())
 		{
-			return this.decoratorDescriptor;
+			this.server = MBeanServerFactory.createMBeanServer();
+		}
+		else
+		{
+			this.server = (MBeanServer) serverList.get(0);
+		}
+	}
+	
+	/**
+	 * Returns the database cluster identified by the specified id
+	 * @param id a database cluster identifier
+	 * @return a database cluster
+	 */
+	public DatabaseCluster getDatabaseCluster(String id)
+	{
+		return (DatabaseCluster) this.databaseClusterMap.get(id);
+	}
+	
+	/**
+	 * Returns the synchronization strategy identified by the specified id
+	 * @param id a synchronization strategy identifier
+	 * @return a synchronization strategy
+	 * @throws java.sql.SQLException if the specified identifier is not a valid sychronization strategy
+	 */
+	public SynchronizationStrategy getSynchronizationStrategy(String id) throws java.sql.SQLException
+	{
+		SynchronizationStrategy strategy = (SynchronizationStrategy) this.synchronizationStrategyMap.get(id);
+		
+		if (strategy == null)
+		{
+			throw new SQLException(Messages.getMessage(Messages.INVALID_SYNC_STRATEGY, id));
 		}
 		
-		/**
-		 * Returns a list of database cluster descriptors
-		 * @return a List<DatabaseClusterDescriptor>
-		 */
-		public List getDatabaseClusterDescriptorList()
+		return strategy;
+	}
+	
+	void addDatabaseCluster(DatabaseClusterDescriptor descriptor) throws Exception
+	{
+		DatabaseCluster databaseCluster = descriptor.createDatabaseCluster();
+		
+		if (this.decoratorDescriptor != null)
 		{
-			return this.databaseClusterDescriptorList;
+			databaseCluster = this.decoratorDescriptor.decorate(databaseCluster);
 		}
 		
-		/**
-		 * Returns a list of synchronization strategy descriptors
-		 * @return a List<SynchronizationStrategyDescriptor>
-		 */
-		public List getSynchronizationStrategyDescriptorList()
+		databaseCluster.init();
+
+		ObjectName name = getObjectName(databaseCluster.getId());
+		
+		if (!this.server.isRegistered(name))
 		{
-			return this.synchronizationStrategyDescriptorList;
+			this.server.registerMBean(new StandardMBean(databaseCluster, DatabaseClusterMBean.class), name);
 		}
+		
+		this.databaseClusterMap.put(databaseCluster.getId(), databaseCluster);
+	}
+	
+	void addSynchronizationStrategy(SynchronizationStrategyDescriptor descriptor) throws Exception
+	{
+		this.synchronizationStrategyMap.put(descriptor.getId(), descriptor.createSynchronizationStrategy());
 	}
 }

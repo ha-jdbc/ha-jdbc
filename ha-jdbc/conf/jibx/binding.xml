@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <!DOCTYPE binding SYSTEM "binding.dtd">
 <binding direction="input">
-	<mapping name="ha-jdbc" class="net.sf.hajdbc.DatabaseClusterFactory$Configuration">
+	<mapping name="ha-jdbc" class="net.sf.hajdbc.DatabaseClusterFactory">
 		<structure name="distributable" field="decoratorDescriptor" type="net.sf.hajdbc.distributable.DistributableDatabaseClusterDescriptor" usage="optional">
 			<value name="protocol" field="protocol" style="attribute" usage="optional" default="UDP:PING:MERGE2:FD:VERIFY_SUSPECT:pbcast.NAKACK:UNICAST:pbcast.STABLE:FRAG:pbcast.GMS"></value>
 		</structure>
-		<collection field="synchronizationStrategyDescriptorList" type="java.util.LinkedList" item-type="net.sf.hajdbc.SynchronizationStrategyDescriptor"></collection>
-		<collection field="databaseClusterDescriptorList" type="java.util.LinkedList" item-type="net.sf.hajdbc.local.LocalDatabaseClusterDescriptor"></collection>
+		<collection add-method="addSynchronizationStrategy" item-type="net.sf.hajdbc.SynchronizationStrategyDescriptor"></collection>
+		<collection add-method="addDatabaseCluster" item-type="net.sf.hajdbc.local.LocalDatabaseClusterDescriptor"></collection>
 	</mapping>
 	<mapping name="cluster" class="net.sf.hajdbc.local.LocalDatabaseClusterDescriptor">
 		<value name="id" field="id" style="attribute"></value>
