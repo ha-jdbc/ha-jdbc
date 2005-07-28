@@ -5,17 +5,18 @@
 		<structure name="distributable" field="decoratorDescriptor" type="net.sf.hajdbc.distributable.DistributableDatabaseClusterDescriptor" usage="optional">
 			<value name="protocol" field="protocol" style="attribute" usage="optional" default="UDP:PING:MERGE2:FD:VERIFY_SUSPECT:pbcast.NAKACK:UNICAST:pbcast.STABLE:FRAG:pbcast.GMS"></value>
 		</structure>
-		<collection field="descriptorList" type="java.util.LinkedList"></collection>
+		<collection field="synchronizationStrategyDescriptorList" type="java.util.LinkedList" item-type="net.sf.hajdbc.SynchronizationStrategyDescriptor"></collection>
+		<collection field="databaseClusterDescriptorList" type="java.util.LinkedList" item-type="net.sf.hajdbc.local.LocalDatabaseClusterDescriptor"></collection>
 	</mapping>
 	<mapping name="cluster" class="net.sf.hajdbc.local.LocalDatabaseClusterDescriptor">
 		<value name="id" field="id" style="attribute"></value>
 		<value name="balancer" field="balancerClass" style="attribute" deserializer="net.sf.hajdbc.balancer.BalancerEnum.getBalancerClass"></value>
+		<value name="validate-sql" field="validateSQL" style="attribute" usage="optional" default="SELECT 1"></value>
+		<value name="default-sync" field="defaultSynchronizationStrategy" style="attribute"></value>
 		<collection add-method="addDatabase" item-type="net.sf.hajdbc.sql.DriverDatabase"></collection>
 		<collection add-method="addDatabase" item-type="net.sf.hajdbc.sql.DataSourceDatabase"></collection>
 		<collection add-method="addDatabase" item-type="net.sf.hajdbc.sql.pool.ConnectionPoolDataSourceDatabase"></collection>
 		<collection add-method="addDatabase" item-type="net.sf.hajdbc.sql.pool.xa.XADataSourceDatabase"></collection>
-		<value name="validate-sql" field="validateSQL" usage="optional" default="SELECT 1"></value>
-		<collection field="synchronizationStrategyDescriptorList" item-type="net.sf.hajdbc.SynchronizationStrategyDescriptor" type="java.util.LinkedList"></collection>
 	</mapping>
 	<mapping class="net.sf.hajdbc.sql.AbstractDatabase" abstract="true">
 		<value name="id" field="id" style="attribute"></value>
@@ -41,7 +42,7 @@
 		<value name="name" field="name"></value>
 		<structure map-as="net.sf.hajdbc.sql.AbstractDatabase"></structure>
 	</mapping>
-	<mapping name="sync-strategy" class="net.sf.hajdbc.SynchronizationStrategyDescriptor">
+	<mapping name="sync" class="net.sf.hajdbc.SynchronizationStrategyDescriptor">
 		<value name="id" field="id" style="attribute"></value>
 		<value name="class" field="className" style="attribute"></value>
 		<structure field="properties" unmarshaller="net.sf.hajdbc.util.PropertiesUnmarshaller"></structure>
