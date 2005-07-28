@@ -45,8 +45,6 @@ public class PropertiesUnmarshaller implements org.jibx.runtime.IUnmarshaller
 	 */
 	public PropertiesUnmarshaller()
 	{
-		this.uri = null;
-		this.name = null;
 	}
 	
 	/**
@@ -90,7 +88,7 @@ public class PropertiesUnmarshaller implements org.jibx.runtime.IUnmarshaller
 		
 		while (context.isAt(this.uri, ELEMENT))
 		{
-			String name = (String) context.attributeText(this.uri, ATTRIBUTE, null);
+			String name = (String) context.attributeText(this.uri, ATTRIBUTE);
 			
 			context.parsePastStartTag(this.uri, ELEMENT);
 			
