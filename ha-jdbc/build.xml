@@ -10,9 +10,11 @@
 	<property name="test.dir" location="${basedir}/test"></property>
 	<property name="test.output.dir" location="${basedir}/test-output"></property>
 	<property name="doc.dir" location="${basedir}/doc"></property>
+	<property name="doc.build.dir" location="${doc.dir}/build"></property>
 	<property name="doc.api.dir" location="${doc.dir}/build/site/api"></property>
 	<property name="lib.dir" location="${basedir}/lib"></property>
 	<property name="lib.compile.dir" location="${lib.dir}/compile"></property>
+	<property name="lib.runtime.dir" location="${lib.dir}/runtime"></property>
 	<property name="lib.test.dir" location="${lib.dir}/test"></property>
 	<property name="conf.dir" location="${basedir}/conf"></property>
 	<property name="conf.jibx.dir" location="${conf.dir}/jibx"></property>
@@ -34,6 +36,7 @@
 		<path refid="src.classpath"></path>
 		<dirset dir="${test.dir}"></dirset>
 		<fileset dir="${lib.test.dir}" includes="*.jar"></fileset>
+		<fileset dir="${lib.runtime.dir}" includes="*.jar"></fileset>
 	</path>
 	
 	<taskdef name="bind" classname="org.jibx.binding.ant.CompileTask">
@@ -51,15 +54,15 @@
 	
 	<target name="clean">
 		<delete quiet="true">
-			<fileset dir="${basedir}" includes="${dist.name}-*.*"></fileset>
+			<fileset includes="${dist.name}-*.*"></fileset>
 		</delete>
-		<delete dir="build" quiet="true"></delete>
-		<delete dir="${doc.dir}/build" quiet="true"></delete>
-		<delete dir="${doc.api.dir}" quiet="true"></delete>
+		<delete dir="${build.dir}" quiet="true"></delete>
+		<delete dir="${doc.build.dir}" quiet="true"></delete>
 	</target>
 
 	<target name="init">
 		<mkdir dir="${build.dir}"/>
+		<mkdir dir="${doc.build.dir}"/>
 	</target>
 	
     <target name="compile" depends="init">
@@ -86,8 +89,9 @@
 		<tar tarfile="${dist.bin.file}" prefix="${dist.version.name}" compression="gzip">
 			<tarfileset dir="${basedir}" includes="${dist.version.name}.jar"></tarfileset>
 			<tarfileset dir="${basedir}" includes="*.txt"></tarfileset>
-			<tarfileset dir="${basedir}" includes="lib/*.jar"></tarfileset>
-			<tarfileset dir="${basedir}" includes="doc/build/site/**"></tarfileset>
+			<tarfileset dir="${basedir}" includes="{$lib.dir}/*.jar"></tarfileset>
+			<tarfileset dir="${basedir}" includes="${lib.runtime.dir}/*.jar"></tarfileset>
+			<tarfileset dir="${basedir}" includes="${doc.build.dir}/site/**"></tarfileset>
 		</tar>
 	</target>
 	
@@ -95,11 +99,11 @@
 		<tar tarfile="${dist.src.file}" prefix="${dist.version.name}" compression="gzip">
 			<tarfileset dir="${basedir}" includes="*.txt"></tarfileset>
 			<tarfileset dir="${basedir}" includes="build.*"></tarfileset>
-			<tarfileset dir="${basedir}" includes="src/**"></tarfileset>
-			<tarfileset dir="${basedir}" includes="test/**"></tarfileset>
-			<tarfileset dir="${basedir}" includes="lib/**"></tarfileset>
-			<tarfileset dir="${basedir}" includes="conf/**"></tarfileset>
-			<tarfileset dir="${basedir}" includes="doc/**" excludes="doc/build/**"></tarfileset>
+			<tarfileset dir="${basedir}" includes="${src.dir}/**"></tarfileset>
+			<tarfileset dir="${basedir}" includes="${test.dir}/**"></tarfileset>
+			<tarfileset dir="${basedir}" includes="${lib.dir}/**"></tarfileset>
+			<tarfileset dir="${basedir}" includes="${conf.dir}/**"></tarfileset>
+			<tarfileset dir="${basedir}" includes="${doc.dir}/**" excludes="${doc.build.dir}/**"></tarfileset>
 		</tar>
 	</target>
 	
