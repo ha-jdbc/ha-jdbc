@@ -43,21 +43,23 @@
 <!DOCTYPE ha-jdbc PUBLIC "-//HA-JDBC//DTD HA-JDBC 1.0//EN"
   "http://ha-jdbc.sourceforge.net/dtd/ha-jdbc-1.0.dtd">
 <ha-jdbc>
-  <cluster id="cluster" balancer="simple">
-    <database id="server1" weight="1">
+  <sync id="diff" class="net.sf.hajdbc.sync.DifferentialSynchronizationStrategy"></sync>
+  <sync id="full" class="net.sf.hajdbc.sync.FullSynchronizationStrategy"></sync>
+  <cluster id="cluster" balancer="simple" default-sync="diff">
+    <database id="database1" weight="1">
       <driver>org.postgresql.Driver</driver>
       <url>jdbc:postgresql://server1:5432/database</url>
       <user>postgres</user>
       <password>password</password>
     </database>
-    <database id="server2" weight="2">
+    <database id="database2" weight="2">
       <driver>org.postgresql.Driver</driver>
       <url>jdbc:postgresql://server2:5432/database</url>
       <user>postgres</user>
       <password>password</password>
     </database>
   </cluster>
-  <cluster id="Cluster" balancer="random">
+  <cluster id="Cluster" balancer="random" default-sync="full">
     <datasource id="database1" weight="1">
       <name>java:comp/env/jdbc/Database1</name>
     </datasource>
@@ -65,7 +67,7 @@
       <name>java:comp/env/jdbc/Database2</name>
     </datasource>
   </cluster>
-  <cluster id="PoolCluster" balancer="round-robin">
+  <cluster id="PoolCluster" balancer="round-robin" default-sync="diff">
     <pool-datasource id="database1" weight="1">
       <name>java:comp/env/jdbc/pool/Database1</name>
     </pool-datasource>
@@ -73,7 +75,7 @@
       <name>java:comp/env/jdbc/pool/Database2</name>
     </pool-datasource>
   </cluster>
-  <cluster id="XACluster" balancer="load">
+  <cluster id="XACluster" balancer="load" default-sync="full">
     <xa-datasource id="database1" weight="1">
       <name>java:comp/env/jdbc/xa/Database1</name>
     </xa-datasource>
@@ -158,9 +160,6 @@
             <New class="org.enhydra.jdbc.standard.StandardConnectionPoolDataSource">
               <Set name="DriverName">net.sf.hajdbc.sql.Driver</Set>
               <Set name="Url">jdbc:ha-jdbc:cluster</Set>
-              <Set name="TransactionIsolation">
-                <Get class="java.sql.Connection" name="TRANSACTION_READ_COMMITTED"/>
-              </Set>
             </New>
           </Arg>
           <Set name="User">postgres</Set>
@@ -186,12 +185,12 @@
     <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
   </parameter>
   <parameter>
-    <name>maxActive</name>
-    <value>100</value>
+    <name>driverClassName</name>
+    <value>net.sf.hajdbc.sql.Driver</value>
   </parameter>
   <parameter>
-    <name>maxWait</name>
-    <value>10000</value>
+    <name>url</name>
+    <value>jdbc:ha-jdbc:cluster</value>
   </parameter>
   <parameter>
     <name>username</name>
@@ -202,12 +201,12 @@
     <value>password</value>
   </parameter>
   <parameter>
-    <name>driverClassName</name>
-    <value>net.sf.hajdbc.sql.Driver</value>
+    <name>maxActive</name>
+    <value>100</value>
   </parameter>
   <parameter>
-    <name>url</name>
-    <value>jdbc:ha-jdbc:cluster</value>
+    <name>maxWait</name>
+    <value>10000</value>
   </parameter>
 </ResourceParams>
 ]]></source>
@@ -228,6 +227,29 @@
 				<p>
 					HA-JDBC supports four types of read request balancers:
 				</p>
+				<dl>
+					<dt><strong>Simple</strong></dt>
+					<dd>
+						Requests are always sent to the node with the highest weight.
+					</dd>
+					<dt><strong>Random</strong></dt>
+					<dd>
+						Requests are sent to a random node.
+						Node weights affect the probability that a given node will be chosen.
+						The probability that a node will be chosen = <em>weight</em> / <em>total-weight</em>.
+					</dd>
+					<dt><strong>Round-Robin</strong></dt>
+					<dd>
+						Requests are sent to each node in succession.
+						A node of weight <em>n</em> will receive <em>n</em> requests before the balancer moves on to the next node.
+					</dd>
+					<dt><strong>Load</strong></dt>
+					<dd>
+						Requests are sent to the node with the smallest load.
+						Node weights affect the calcuated load of a given node.
+						The load of a node = <em>concurrent-requests</em> / <em>weight</em>.
+					</dd>
+				</dl>
 				<table>
 					<tr>
 						<th>Simple</th>
@@ -273,13 +295,21 @@
 				<source><![CDATA[
 <ha-jdbc>
   <distributable/>
-  <cluster id="..." balancer="...">
+  <sync id="..." class="..."></sync>
+  <cluster id="..." balancer="..." default-sync="...">
     <!-- ... -->
   </cluster>
 </ha-jdbc>
 ]]></source>
 				<p>
-					The <![CDATA[<distributable>]]> element may contain an optional <![CDATA[protocol]]> attribute.  This lets you customize the JGroups protocol stack.
+					The <![CDATA[<distributable>]]> element may contain an optional <code>protocol</code> attribute.
+				</p>
+				<p>i.e.</p>
+				<p>
+					<code><![CDATA[<distributable protocol="..."/>]]></code>
+				</p>
+				<p>
+					This allows you to customize the JGroups protocol stack for your network.
 					If left unspecified, HA-JDBC will use the following default protocol stack:
 				</p>
 				<p>UDP:PING:MERGE2:FD:VERIFY_SUSPECT:pbcast.NAKACK:UNICAST:pbcast.STABLE:FRAG:pbcast.GMS</p>
@@ -319,7 +349,8 @@
 				<p>e.g.</p>
 				<source><![CDATA[
 <ha-jdbc>
-  <cluster id="PoolCluster" balancer="...">
+  <!-- ... -->
+  <cluster id="PoolCluster" balancer="..." default-sync="...">
     <pool-datasource id="database1">
       <name>java:comp/env/jdbc/pool/Database1</name>
       <user>postgres</user>
@@ -344,7 +375,8 @@
 				<p>e.g.</p>
 				<source><![CDATA[
 <ha-jdbc>
-  <cluster id="XACluster" balancer="...">
+  <!-- ... -->
+  <cluster id="XACluster" balancer="..." default-sync="...">
     <xa-datasource id="database1">
       <name>java:comp/env/jdbc/xa/Database1</name>
       <user>postgres</user>
@@ -434,6 +466,7 @@ rs.close();
 				<title>Failed Database Nodes</title>
 				<p>A database node may fail for any number of reasons:</p>
 				<ul>
+					<li>Network outage</li>
 					<li>Hardware failure</li>
 					<li>Operating System crash</li>
 					<li>Database application crash</li>
@@ -449,15 +482,10 @@ rs.close();
 				<p>e.g.</p>
 				<source><![CDATA[
 <ha-jdbc>
-  <cluster id="..." balancer="...">
-    <database id="..."><!-- ... --></database>
-    <database id="..."><!-- ... --></database>
-
-    <!-- Sample validation query for HSQLDB -->
-    <validate-sql>CALL NOW()</validate-sql>
-
-    <sync-strategy id="..." class="..."></sync-strategy>
-    <sync-strategy id="..." class="..."></sync-strategy>
+  <!-- ... -->
+  <!-- Sample validation query for HSQLDB -->
+  <cluster id="..." balancer="..." default-sync="..." validate-sql="CALL NOW()">
+    <!-- ... -->
   </cluster>
 </ha-jdbc>
 ]]></source>
@@ -480,8 +508,8 @@ rs.close();
 					HA-JDBC provides several out-of-the-box database independent strategies for synchronizing a failed database:
 				</p>
 				<ul>
-					<li><a href="api/net/sf/hajdbc/sync/FullSynchronizationStrategy.html"><code>Full</code></a> - Each tables is truncated and data is reinserted.  This strategy is fastest if the database is way out of sync.</li>
-					<li><a href="api/net/sf/hajdbc/sync/DifferentialSynchronizationStrategy.html"><code>Differential</code></a> - Comparison is done on each table and only changes are updated.  This strategy is fastest if the database is more in sync than not.</li>
+					<li><a href="api/net/sf/hajdbc/sync/FullSynchronizationStrategy.html"><code>Full</code></a> - Each table in the inactive database is truncated and data is reinserted from an active database.  This strategy is fastest if the database is way out of sync.</li>
+					<li><a href="api/net/sf/hajdbc/sync/DifferentialSynchronizationStrategy.html"><code>Differential</code></a> - For each table in the inactive database is compared, row by row, with an active database and only changes are updated.  This strategy is fastest if the database is more in sync than not.</li>
 				</ul>
 				<p>
 					Each synchronization strategy must be defined in the HA-JDBC configuration file.
@@ -490,18 +518,13 @@ rs.close();
 				<p>e.g.</p>
 				<source><![CDATA[
 <ha-jdbc>
-  <cluster id="..." balancer="...">
-    <database id="..."><!-- ... --></database>
-    <database id="..."><!-- ... --></database>
-	
-    <sync-strategy id="full" class="net.sf.hajdbc.sync.FullSynchronizationStrategy">
-      <property name="truncateTableSQL">TRUNCATE TABLE {0}</property>
-      <property name="maxBatchSize">100</property>
-    </sync-strategy>
-
-    <sync-strategy id="diff" class="net.sf.hajdbc.sync.DifferentialSynchronizationStrategy"></sync-strategy>
-	
-  </cluster>
+  <!-- ... -->
+  <sync id="diff" class="net.sf.hajdbc.sync.DifferentialSynchronizationStrategy"></sync>
+  <sync id="full" class="net.sf.hajdbc.sync.FullSynchronizationStrategy">
+    <property name="truncateTableSQL">TRUNCATE TABLE {0}</property>
+    <property name="maxBatchSize">100</property>
+  </sync>
+  <!-- ... -->
 </ha-jdbc>
 ]]></source>
 				<p>
@@ -512,7 +535,7 @@ rs.close();
 				</p>
 				<p>e.g.</p>
 				<source><![CDATA[
-public class FasterFullSynchronizationStrategy extends FullSynchronizationStrategy
+public class FasterFullSynchronizationStrategy extends net.sf.hajdbc.sync.FullSynchronizationStrategy
 {
     public void synchronize(Connection inactiveConnection, Connection activeConnection, List tableList)
     {
@@ -543,21 +566,24 @@ public class FasterFullSynchronizationStrategy extends FullSynchronizationStrate
 					<li>getId() - Returns the unique identifier of this cluster.</li>
 					<li>getActiveDatabases() - Returns a collection of active databases in this cluster.</li>
 					<li>getInactiveDatabases() - Returns a collection of inactive databases in this cluster.</li>
-					<li>getSynchronizationStrategies() - Returns a collection of synchronization strategies for this cluster.</li>
 					<li>isAlive(String id) - Tests whether the specified database is responding.</li>
 					<li>deactivate(String id) - Deactivates the specified database from this cluster.</li>
 					<li>activate(String id, String strategyId) - Re-activates the specified database from this cluster using the specified synchronization strategy.</li>
-					<li>activate(String id) - Re-activates the specified database <em>without</em> synchronization.</li>
+					<li>activate(String id) - Re-activates the specified database from this cluster using the default synchronization strategy for the database cluster.</li>
 				</ul>
-				<p>3rd-party JMX clients provide easy graphical interfaces for managing HA-JDBC clusters:</p>
+				<p>
+					Application servers that include JMX support typically include a web-based interface from which to perform actions on managed beans.
+					For those that do not, there exist many 3rd-party JMX clients that provide easy graphical interfaces for managing mbeans:
+				</p>
 				<ul>
 					<li><a href="http://mc4j.sourceforge.net/">MC4J</a></li>
 					<li><a href="http://ejtools.sourceforge.net/applications/jmx.browser/">EJTools JMX Browser</a></li>
 					<li><a href="http://panoptesmgmt.sourceforge.net/">Panoptes</a></li>
-					<li><a href="http://jmxview.sourceforge.net/">JMXView</a></li>
 					<li><a href="http://www.xtremej.com/">XtremeJ Management Suite</a> <em>(Standard Edition single user license is free)</em></li>
 				</ul>
-				<p>HA-JDBC database cluster may also be administered programatically:</p>
+				<p>
+					HA-JDBC database cluster may also be administered programatically:
+				</p>
 				<p>e.g.</p>
 				<source><![CDATA[
 String clusterId = "cluster1";
