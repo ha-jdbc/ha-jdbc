@@ -60,6 +60,11 @@ public class TestResultSet extends EasyMockTestCase
 	private MockControl databaseClusterControl = this.createControl(DatabaseCluster.class);
 	private DatabaseCluster databaseCluster = (DatabaseCluster) this.databaseClusterControl.getMock();
 	
+	private MockControl sqlConnectionControl = this.createControl(java.sql.Connection.class);
+	private java.sql.Connection sqlConnection = (java.sql.Connection) this.sqlConnectionControl.getMock();
+	
+	private java.sql.Statement sqlStatement = (java.sql.Statement) this.createMock(java.sql.Statement.class);
+	
 	private MockControl sqlResultSetControl = this.createControl(java.sql.ResultSet.class);
 	private java.sql.ResultSet sqlResultSet = (java.sql.ResultSet) this.sqlResultSetControl.getMock();
 	
@@ -95,7 +100,7 @@ public class TestResultSet extends EasyMockTestCase
 		{
 			public Object execute(Database database, Object sqlObject) throws SQLException
 			{
-				return TestResultSet.this.createMock(java.sql.Connection.class);
+				return TestResultSet.this.sqlConnection;
 			}
 		};
 		
@@ -105,7 +110,7 @@ public class TestResultSet extends EasyMockTestCase
 		{
 			public Object execute(Database database, java.sql.Connection connection) throws SQLException
 			{
-				return TestResultSet.this.createMock(java.sql.Statement.class);
+				return TestResultSet.this.sqlStatement;
 			}
 		};
 		
@@ -153,8 +158,47 @@ public class TestResultSet extends EasyMockTestCase
 		
 		try
 		{
+			this.databaseCluster.getBalancer();
+			this.databaseClusterControl.setReturnValue(this.balancer);
+			
+			this.balancer.first();
+			this.balancerControl.setReturnValue(this.database);
+
+			this.sqlConnection.getAutoCommit();
+			this.sqlConnectionControl.setReturnValue(true);
+			
 			this.databaseCluster.deactivate(this.database);
 			this.databaseClusterControl.setReturnValue(false);
+			
+			this.replay();
+			
+			this.resultSet.handleExceptions(Collections.singletonMap(this.database, exception));
+			
+			this.verify();
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
+	public void testAutoCommitOffHandleException()
+	{
+		Exception exception = new Exception();
+		
+		try
+		{
+			this.databaseCluster.getBalancer();
+			this.databaseClusterControl.setReturnValue(this.balancer);
+			
+			this.balancer.first();
+			this.balancerControl.setReturnValue(this.database);
+			
+			this.sqlConnection.getAutoCommit();
+			this.sqlConnectionControl.setReturnValue(false);
+			
+			this.databaseCluster.handleFailure(this.database, exception);
+			this.databaseClusterControl.setVoidCallable();
 			
 			this.replay();
 			

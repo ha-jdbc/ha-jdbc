@@ -44,6 +44,8 @@ public class TestXAResource extends EasyMockTestCase
 	private MockControl databaseClusterControl = this.createControl(DatabaseCluster.class);
 	private DatabaseCluster databaseCluster = (DatabaseCluster) this.databaseClusterControl.getMock();
 	
+	private javax.sql.XAConnection connection = (javax.sql.XAConnection) this.createMock(javax.sql.XAConnection.class);
+	
 	private MockControl sqlResourceControl = this.createControl(javax.transaction.xa.XAResource.class);
 	private javax.transaction.xa.XAResource sqlResource = (javax.transaction.xa.XAResource) this.sqlResourceControl.getMock();
 	
@@ -75,7 +77,7 @@ public class TestXAResource extends EasyMockTestCase
 		{
 			public Object execute(Database database, Object sqlObject) throws SQLException
 			{
-				return TestXAResource.this.sqlResource;
+				return TestXAResource.this.connection;
 			}
 		};
 
@@ -85,7 +87,7 @@ public class TestXAResource extends EasyMockTestCase
 		{			
 			public Object execute(javax.sql.XAConnection connection) throws SQLException
 			{
-				return connection.getXAResource();
+				return TestXAResource.this.sqlResource;
 			}
 		};
 		
