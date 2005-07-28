@@ -71,6 +71,7 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	public LocalDatabaseCluster(LocalDatabaseClusterDescriptor descriptor) throws java.sql.SQLException
 	{
 		this.id = descriptor.getId();
+		this.balancer = descriptor.getBalancer();
 		this.validateSQL = descriptor.getValidateSQL();
 		this.defaultSynchronizationStrategy = descriptor.getDefaultSynchronizationStrategy().getId();
 		
@@ -92,15 +93,6 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 		}
 
 		this.connectionFactory = new ConnectionFactory(this, connectionFactoryMap);
-		
-		try
-		{
-			this.balancer = (Balancer) descriptor.getBalancerClass().newInstance();
-		}
-		catch (Exception e)
-		{
-			throw new SQLException(e);
-		}
 	}
 
 	/**

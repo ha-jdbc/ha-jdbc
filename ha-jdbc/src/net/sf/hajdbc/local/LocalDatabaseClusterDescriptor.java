@@ -23,6 +23,7 @@ package net.sf.hajdbc.local;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterDescriptor;
 import net.sf.hajdbc.SynchronizationStrategyDescriptor;
@@ -35,7 +36,7 @@ import net.sf.hajdbc.SynchronizationStrategyDescriptor;
 public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 {
 	private String id;
-	private Class balancerClass;
+	private Balancer balancer;
 	private String validateSQL;
 	private SynchronizationStrategyDescriptor defaultSynchronizationStrategy;
 	private List databaseList = new LinkedList();
@@ -59,12 +60,12 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 	}
 	
 	/**
-	 * Returns the class of the balancer implementation
-	 * @return the class of the balancer implementation
+	 * Returns a balancer implementation
+	 * @return the balancer implementation
 	 */
-	public Class getBalancerClass()
+	public Balancer getBalancer()
 	{
-		return this.balancerClass;
+		return this.balancer;
 	}
 	
 	/**

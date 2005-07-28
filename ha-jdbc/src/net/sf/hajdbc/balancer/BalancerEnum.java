@@ -23,6 +23,7 @@ package net.sf.hajdbc.balancer;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Messages;
 
 /**
@@ -42,11 +43,11 @@ public final class BalancerEnum
 	}
 
 	/**
-	 * Returns an implementation class of Balancer
-	 * @param id an enumerated value
-	 * @return a Class that is assignable to Balancer
+	 * Creates a new instance of the Balancer implementation indentified by the specified identifier
+	 * @param id an enumerated balancer identifier
+	 * @return a new Balancer instance
 	 */
-	public static Class getBalancerClass(String id)
+	public static Balancer createBalancer(String id)
 	{
 		Class balancerClass = (Class) balancerMap.get(id);
 		
@@ -55,9 +56,16 @@ public final class BalancerEnum
 			throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_BALANCER, id));
 		}
 		
-		return (Class) balancerMap.get(id);
+		try
+		{
+			return (Balancer) balancerClass.newInstance();
+		}
+		catch (Exception e)
+		{
+			throw new IllegalArgumentException(e);
+		}
 	}
-
+	
 	private BalancerEnum()
 	{
 		// Hide constructor
