@@ -8,7 +8,7 @@
 		<context id="code" title="Changes to code"/>
 		<context id="test" title="Changes to tests"/>
 		<context id="doc" title="Changes to documentation"/>
-		<context id="build" title="Changes to build process"/>
+		<context id="lib" title="Changes to dependencies"></context>
 	</contexts>
 
 	<changes>
@@ -22,20 +22,17 @@
 			<action type="update" context="code" dev="PF">
 				Updated DifferentialSynchronizationStrategy such that primary and unique keys fetched from DatabaseMetaData are not assumed to be ordered by position.
 			</action>
-			<action type="update" context="code" dev="PF">
-				Updated JGroups to version 2.2.8.
-			</action>
-			<action type="update" context="doc" dev="PF">
-				Updated Forrest documentation to version 0.7.
-			</action>
 			<action type="add" context="code" dev="PF">
-				Added properties to database configuration to allow DataSources to define custom JNDI environment parameters and to allow Driver to define additional runtime parameters.
-			</action>
-			<action type="update" context="test" dev="PF">
-				Migrated unit tests from TestNG to JUnit in order to utilize EasyMock.
+				Added properties to cluster configuration to allow DataSources to define custom JNDI environment parameters and to allow Driver to define additional runtime parameters.
 			</action>
 			<action type="update" context="code" dev="PF">
-				DatabaseClusterMBean implementations use the javax.management.StandardMBean wrapper instead of relying on base class naming convention.
+				Refactored synchronization strategies so they can be shared across database clusters.  Each cluster defines a default synchronization strategy.
+			</action>
+			<action type="update" context="code" dev="PF">
+				activate(String) method in DatabaseClusterMBean interface will synchronize using the default synchronization strategy for the cluster.
+			</action>
+			<action type="update" context="code" dev="PF">
+				Removed getSynchronizationStrategies() from DatabaseClusterMBean interface.
 			</action>
 			<action type="fix" context="code" dev="PF">
 				Fixed ClassCastException during XADataSource initialization.
@@ -43,8 +40,17 @@
 			<action type="update" context="code" dev="PF">
 				Changed default JGroups protocol stack to use FD instead of FD_SOCK.
 			</action>
+			<action type="update" context="test" dev="PF">
+				Migrated unit tests from TestNG to JUnit in order to utilize EasyMock.
+			</action>
 			<action type="add" context="test" dev="PF">
-				Completed unit tests for net.sf.hajdbc.sql package.
+				Added unit tests for net.sf.hajdbc.sql package.
+			</action>
+			<action type="update" context="doc" dev="PF">
+				Updated Forrest documentation to version 0.7.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Updated JGroups to version 2.2.8.
 			</action>
 		</release>
 		<release version="1.0-beta-8" date="April 27, 2005">
@@ -55,7 +61,7 @@
 				Added customizable fetchSize property to each synchronization strategy to avoid out of memory errors when synchronizing large tables.
 			</action>
 			<action type="add" context="test" dev="PF">
-				Added TestNG unit tests for Driver, Connection, Statement, and each balancer implementation.  Other tests are still in progress.
+				Added TestNG unit tests for Driver, Connection, Statement, and each balancer implementation.
 			</action>
 			<action type="fix" context="code" dev="PF">
 				Fixed issue with driver returning non-distributable connections when in distributable mode.
@@ -81,7 +87,7 @@
 			<action type="update" context="code" dev="PF">
 				Refactored java.sql.* proxy classes.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="lib" dev="PF">
 				Updated JiBX to version 1.0-rc-0.
 			</action>
 		</release>
@@ -149,7 +155,7 @@
 			<action type="update" context="code" dev="PF">
 				synchronize() method of SynchronizationStrategy interface no longer uses DatabaseClusterDescriptor.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="doc" dev="PF">
 				Fixed various bugs in documentation and javadoc.
 			</action>
 		</release>
@@ -192,7 +198,7 @@
 			<action type="update" context="code" dev="PF">
 				Enhanced large object support.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="doc" dev="PF">
 				Upgraded Forrest documentation to v0.6.
 			</action>
 		</release>
@@ -209,7 +215,7 @@
 			<action type="update" context="code" dev="PF">
 				Improved consistancy of cluster when autocommit is true.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="lib" dev="PF">
 				Upgraded JGroups to v2.2.7
 			</action>
 			<action type="update" context="code" dev="PF">
@@ -220,7 +226,7 @@
 			<action type="update" context="code" dev="PF">
 				Configuration DTD is now PUBLIC
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="lib" dev="PF">
 				Upgraded JGroups to v2.2.6
 			</action>
 			<action type="fix" context="code" dev="PF">
