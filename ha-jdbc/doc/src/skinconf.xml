@@ -30,7 +30,7 @@ which will be used to configure the chosen Forrest skin.
     no search box. @domain will enable sitesearch for the specific domain with google.
     In other words google will search the @domain for the query string.
   -->
-  <search name="HA-JDBC" domain="ha-jdbc.sourceforge.net" provider="google" box-location="alt"/>
+  <search name="HA-JDBC" domain="ha-jdbc.sourceforge.net" provider="Google"/>
 
   <!-- Disable the print link? If enabled, invalid HTML 4.0.1 -->
   <disable-print-link>true</disable-print-link>  
@@ -75,20 +75,20 @@ which will be used to configure the chosen Forrest skin.
 
   <!-- optional group logo
        default skin: renders it at the top-left corner -->
-  <!--group-name>MyGroup</group-name>
-  <group-description>MyGroup Description</group-description>
-  <group-url>http://mygroup.org</group-url>
-  <group-logo>images/group.png</group-logo-->
+  <group-name>SourceForge.net</group-name>
+  <group-description></group-description>
+  <group-url>http://sourceforge.net</group-url>
+  <group-logo>http://sourceforge.net/sflogo.php?group_id=111957&amp;type=5</group-logo>
   <!-- Alternative static image:
   <group-logo>images/group-logo.gif</group-logo> -->
 
   <!-- optional host logo (e.g. sourceforge logo)
        default skin: renders it at the bottom-left corner -->
-  <host-url>http://sourceforge.net</host-url>
-  <host-logo>http://sourceforge.net/sflogo.php?group_id=111957&amp;type=1</host-logo>
+  <!--host-url>http://sourceforge.net</host-url>
+  <host-logo>http://sourceforge.net/sflogo.php?group_id=111957&amp;type=1</host-logo-->
 
   <!-- relative url of a favicon file, normally favicon.ico -->
-  <favicon-url></favicon-url>
+  <favicon-url>http://sourceforge.net/images/favicon.ico</favicon-url>
 
   <!-- The following are used to construct a copyright statement -->
   <year>2004</year>
