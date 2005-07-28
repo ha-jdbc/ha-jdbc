@@ -58,9 +58,9 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	
 	private String id;
 	private String validateSQL;
-	private Map databaseMap;
-	private Balancer balancer;
 	private String defaultSynchronizationStrategy;
+	private Balancer balancer;
+	private Map databaseMap;
 	private ConnectionFactory connectionFactory;
 	
 	/**
@@ -72,6 +72,7 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	{
 		this.id = descriptor.getId();
 		this.validateSQL = descriptor.getValidateSQL();
+		this.defaultSynchronizationStrategy = descriptor.getDefaultSynchronizationStrategy().getId();
 		
 		List databaseList = descriptor.getDatabaseList();
 		int size = databaseList.size();

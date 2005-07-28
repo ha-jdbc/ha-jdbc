@@ -25,6 +25,7 @@ import java.util.List;
 
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterDescriptor;
+import net.sf.hajdbc.SynchronizationStrategyDescriptor;
 
 /**
  * @author  Paul Ferraro
@@ -36,7 +37,7 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 	private String id;
 	private Class balancerClass;
 	private String validateSQL;
-	private String defaultSynchronizationStrategy;
+	private SynchronizationStrategyDescriptor defaultSynchronizationStrategy;
 	private List databaseList = new LinkedList();
 	
 	/**
@@ -79,7 +80,7 @@ public class LocalDatabaseClusterDescriptor implements DatabaseClusterDescriptor
 	 * Returns a map of synchronization strategies for this cluster. 
 	 * @return a Map<String, SynchronizationStrategy>
 	 */
-	public String getDefaultSynchronizationStrategy()
+	public SynchronizationStrategyDescriptor getDefaultSynchronizationStrategy()
 	{
 		return this.defaultSynchronizationStrategy;
 	}
