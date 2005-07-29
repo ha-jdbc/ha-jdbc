@@ -40,8 +40,8 @@
 					<caption>Feature comparison</caption>
 					<tr>
 						<th></th>
-						<th>HA-JDBC</th>
-						<th>C-JDBC</th>
+						<th>HA-JDBC 1.x</th>
+						<th>C-JDBC 1.x</th>
 					</tr>
 					<tr>
 						<th>Architecture</th>
