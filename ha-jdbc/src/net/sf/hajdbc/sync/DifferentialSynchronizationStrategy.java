@@ -27,6 +27,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -333,7 +334,7 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 							}
 							else
 							{
-								if (inactiveResultSet.wasNull() || !activeObject.equals(inactiveObject))
+								if (inactiveResultSet.wasNull() || !equals(activeObject, inactiveObject))
 								{
 									inactiveResultSet.updateObject(i, activeObject);
 									
@@ -394,6 +395,24 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 		Key.executeSQL(inactiveConnection, ForeignKey.collect(activeConnection, tableList), this.createForeignKeySQL);
 	}
 
+	private boolean equals(Object object1, Object object2)
+	{
+		if (byte[].class.isInstance(object1) && byte[].class.isInstance(object2))
+		{
+			byte[] bytes1 = (byte[]) object1;
+			byte[] bytes2 = (byte[]) object2;
+			
+			if (bytes1.length != bytes2.length)
+			{
+				return false;
+			}
+			
+			return Arrays.equals(bytes1, bytes2);
+		}
+		
+		return object1.equals(object2);
+	}
+	
 	/**
 	 * @return the createUniqueKeySQL.
 	 */
