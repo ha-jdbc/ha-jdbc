@@ -31,7 +31,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import net.sf.hajdbc.Messages;
-import net.sf.hajdbc.SynchronizationStrategy;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -59,16 +58,13 @@ import org.apache.commons.logging.LogFactory;
  * @version $Revision$
  * @since   1.0
  */
-public class FullSynchronizationStrategy implements SynchronizationStrategy
+public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 {
 	private static Log log = LogFactory.getLog(FullSynchronizationStrategy.class);
 
-	private String createForeignKeySQL = ForeignKey.DEFAULT_CREATE_SQL;
-	private String dropForeignKeySQL = ForeignKey.DEFAULT_DROP_SQL;
 	private String truncateTableSQL = "DELETE FROM {0}";
 	private int maxBatchSize = 100;
-	private int fetchSize = 0;
-	
+
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, java.util.List)
 	 */
@@ -207,45 +203,13 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 	}
 	
 	/**
-	 * @return the createForeignKeySQL.
-	 */
-	public String getCreateForeignKeySQL()
-	{
-		return this.createForeignKeySQL;
-	}
-	
-	/**
-	 * @param createForeignKeySQL the createForeignKeySQL to set.
-	 */
-	public void setCreateForeignKeySQL(String createForeignKeySQL)
-	{
-		this.createForeignKeySQL = createForeignKeySQL;
-	}
-	
-	/**
-	 * @return the dropForeignKeySQL.
-	 */
-	public String getDropForeignKeySQL()
-	{
-		return this.dropForeignKeySQL;
-	}
-	
-	/**
-	 * @param dropForeignKeySQL the dropForeignKeySQL to set.
-	 */
-	public void setDropForeignKeySQL(String dropForeignKeySQL)
-	{
-		this.dropForeignKeySQL = dropForeignKeySQL;
-	}
-	
-	/**
 	 * @return the maxBatchSize.
 	 */
 	public int getMaxBatchSize()
 	{
 		return this.maxBatchSize;
 	}
-	
+
 	/**
 	 * @param maxBatchSize the maxBatchSize to set.
 	 */
@@ -253,7 +217,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 	{
 		this.maxBatchSize = maxBatchSize;
 	}
-	
+
 	/**
 	 * @return the truncateTableSQL.
 	 */
@@ -261,28 +225,12 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 	{
 		return this.truncateTableSQL;
 	}
-	
+
 	/**
 	 * @param truncateTableSQL the truncateTableSQL to set.
 	 */
 	public void setTruncateTableSQL(String truncateTableSQL)
 	{
 		this.truncateTableSQL = truncateTableSQL;
-	}
-
-	/**
-	 * @return the fetchSize.
-	 */
-	public int getFetchSize()
-	{
-		return this.fetchSize;
-	}
-
-	/**
-	 * @param fetchSize the fetchSize to set.
-	 */
-	public void setFetchSize(int fetchSize)
-	{
-		this.fetchSize = fetchSize;
 	}
 }

@@ -91,10 +91,52 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 	 */
 	public final void activate(String databaseId, String strategyId) throws java.sql.SQLException
 	{
+		this.activate(databaseId, DatabaseClusterFactory.getInstance().getSynchronizationStrategy(strategyId));
+	}
+	
+	/**
+	 * Handles a failure caused by the specified cause on the specified database.
+	 * If the database is not alive, then it is deactivated, otherwise an exception is thrown back to the caller.
+	 * @param database a database descriptor
+	 * @param cause the cause of the failure
+	 * @throws SQLException if the database is alive
+	 */
+	public final void handleFailure(Database database, Throwable cause) throws SQLException
+	{
+		if (this.isAlive(database))
+		{
+			throw new SQLException(cause);
+		}
+		
+		if (this.deactivate(database))
+		{
+			log.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, new Object[] { database, this }), cause);
+		}
+	}
+	
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	public final String toString()
+	{
+		return this.getId();
+	}
+	
+	/**
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	public final boolean equals(Object object)
+	{
+		DatabaseCluster databaseCluster = (DatabaseCluster) object;
+		
+		return this.getId().equals(databaseCluster.getId());
+	}
+	
+	private void activate(String databaseId, SynchronizationStrategy strategy) throws java.sql.SQLException
+	{
 		Object[] args = new Object[] { databaseId, this };
 		
 		Database database = this.getDatabase(databaseId);
-		SynchronizationStrategy strategy = DatabaseClusterFactory.getInstance().getSynchronizationStrategy(strategyId);
 		
 		try
 		{
@@ -111,13 +153,6 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 		}
 	}
 	
-	/**
-	 * Synchronizes and activates the specified database using the specified synchronization strategy
-	 * @param inactiveDatabase an inactive database
-	 * @param strategy a synchronization strategy
-	 * @return true, if this database was activated successfully, false if it was already activate
-	 * @throws java.sql.SQLException if synchronization fails
-	 */
 	private boolean activate(Database inactiveDatabase, SynchronizationStrategy strategy) throws java.sql.SQLException
 	{
 		if (this.getBalancer().contains(inactiveDatabase))
@@ -220,34 +255,6 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 			{
 				log.warn(Messages.getMessage(Messages.CONNECTION_CLOSE_FAILED, database), e);
 			}
-		}
-	}
-	
-	/**
-	 * @see java.lang.Object#toString()
-	 */
-	public String toString()
-	{
-		return this.getId();
-	}
-	
-	/**
-	 * Handles a failure caused by the specified cause on the specified database.
-	 * If the database is not alive, then it is deactivated, otherwise an exception is thrown back to the caller.
-	 * @param database a database descriptor
-	 * @param cause the cause of the failure
-	 * @throws SQLException if the database is alive
-	 */
-	public final void handleFailure(Database database, Throwable cause) throws SQLException
-	{
-		if (this.isAlive(database))
-		{
-			throw new SQLException(cause);
-		}
-		
-		if (this.deactivate(database))
-		{
-			log.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, new Object[] { database, this }), cause);
 		}
 	}
 }

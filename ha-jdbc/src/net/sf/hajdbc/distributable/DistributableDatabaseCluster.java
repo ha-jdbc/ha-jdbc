@@ -23,10 +23,13 @@ package net.sf.hajdbc.distributable;
 import java.io.Serializable;
 import java.util.Collection;
 
+import net.sf.hajdbc.AbstractDatabaseCluster;
+import net.sf.hajdbc.Balancer;
+import net.sf.hajdbc.ConnectionFactory;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.DatabaseClusterDecorator;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.SynchronizationStrategy;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,23 +43,22 @@ import org.jgroups.blocks.NotificationBus;
  * @version $Revision$
  * @since   1.0
  */
-public class DistributableDatabaseCluster extends DatabaseClusterDecorator implements NotificationBus.Consumer
+public class DistributableDatabaseCluster extends AbstractDatabaseCluster implements NotificationBus.Consumer
 {
 	private static Log log = LogFactory.getLog(DistributableDatabaseCluster.class);
 	
 	private NotificationBus notificationBus;
+	private DatabaseCluster databaseCluster;
 	
 	/**
 	 * Constructs a new DistributableDatabaseCluster.
 	 * @param databaseCluster a database cluster to decorate
-	 * @param descriptor a descriptor of this database cluster
+	 * @param decorator a decorator for this database cluster
 	 * @throws Exception if database cluster could not be decorated
 	 */
-	public DistributableDatabaseCluster(DatabaseCluster databaseCluster, DistributableDatabaseClusterDescriptor descriptor) throws Exception
+	public DistributableDatabaseCluster(DatabaseCluster databaseCluster, DistributableDatabaseClusterDecorator decorator) throws Exception
 	{
-		super(databaseCluster);
-		
-		this.notificationBus = new NotificationBus(databaseCluster.getId(), descriptor.getProtocol());
+		this.notificationBus = new NotificationBus(databaseCluster.getId(), decorator.getProtocol());
 		this.notificationBus.setConsumer(this);
 		this.notificationBus.start();
 	}
@@ -171,5 +173,69 @@ public class DistributableDatabaseCluster extends DatabaseClusterDecorator imple
 		{
 			this.databaseCluster.init();
 		}
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#getId()
+	 */
+	public String getId()
+	{
+		return this.databaseCluster.getId();
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#isAlive(net.sf.hajdbc.Database)
+	 */
+	public boolean isAlive(Database database)
+	{
+		return this.databaseCluster.isAlive(database);
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getDatabase(java.lang.String)
+	 */
+	public Database getDatabase(String databaseId) throws java.sql.SQLException
+	{
+		return this.databaseCluster.getDatabase(databaseId);
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#getActiveDatabases()
+	 */
+	public Collection getActiveDatabases()
+	{
+		return this.databaseCluster.getActiveDatabases();
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#getInactiveDatabases()
+	 */
+	public Collection getInactiveDatabases()
+	{
+		return this.databaseCluster.getInactiveDatabases();
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getBalancer()
+	 */
+	public Balancer getBalancer()
+	{
+		return this.databaseCluster.getBalancer();
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getConnectionFactory()
+	 */
+	public ConnectionFactory getConnectionFactory()
+	{
+		return this.databaseCluster.getConnectionFactory();
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getDefaultSynchronizationStrategy()
+	 */
+	public SynchronizationStrategy getDefaultSynchronizationStrategy()
+	{
+		return this.databaseCluster.getDefaultSynchronizationStrategy();
 	}
 }

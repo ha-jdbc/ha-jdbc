@@ -18,22 +18,37 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc;
+package net.sf.hajdbc.sync;
+
+import org.jibx.runtime.IUnmarshallingContext;
+import org.jibx.runtime.impl.UnmarshallingContext;
+
+import net.sf.hajdbc.SynchronizationStrategy;
 
 /**
- * A database cluster descriptor that decorates an underlying database cluster descriptor.
- * 
  * @author  Paul Ferraro
- * @version $Revision$
  * @since   1.0
  */
-public interface DatabaseClusterDecoratorDescriptor
+public class SynchronizationStrategyFactory
 {
+	private static final String CLASS = "class";
+	
 	/**
-	 * Decorates the specified database cluster with some additional functionality.
-	 * @param databaseCluster a database cluster
-	 * @return a DatabaseCluster implementation
-	 * @throws Exception if decoration fails
+	 * Factory method for creating synchronization strategies
+	 * @param ctx the current unmarshalling context
+	 * @return a new synchronization strategy implementation
+	 * @throws Exception if unmarshalling fails
 	 */
-	public DatabaseCluster decorate(DatabaseCluster databaseCluster) throws Exception; 
+	public static SynchronizationStrategy createSynchronizationStrategy(IUnmarshallingContext ctx) throws Exception
+	{
+		UnmarshallingContext context = (UnmarshallingContext) ctx;
+		
+		String className = context.attributeText(null, CLASS);
+		
+		return (SynchronizationStrategy) Class.forName(className).newInstance();
+	}
+	
+	private SynchronizationStrategyFactory()
+	{
+	}
 }

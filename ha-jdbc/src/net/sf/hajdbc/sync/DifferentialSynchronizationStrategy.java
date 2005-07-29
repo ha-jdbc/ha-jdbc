@@ -35,7 +35,6 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import net.sf.hajdbc.Messages;
-import net.sf.hajdbc.SynchronizationStrategy;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -65,15 +64,12 @@ import org.apache.commons.logging.LogFactory;
  * @version $Revision$
  * @since   1.0
  */
-public class DifferentialSynchronizationStrategy implements SynchronizationStrategy
+public class DifferentialSynchronizationStrategy extends AbstractSynchronizationStrategy
 {
 	private static Log log = LogFactory.getLog(DifferentialSynchronizationStrategy.class);
 
-	private String createForeignKeySQL = ForeignKey.DEFAULT_CREATE_SQL;
-	private String dropForeignKeySQL = ForeignKey.DEFAULT_DROP_SQL;
 	private String createUniqueKeySQL = UniqueKey.DEFAULT_CREATE_SQL;
 	private String dropUniqueKeySQL = UniqueKey.DEFAULT_DROP_SQL;
-	private int fetchSize = 0;
 	
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, java.util.List)
@@ -397,52 +393,36 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		// Recreate foreign keys
 		Key.executeSQL(inactiveConnection, ForeignKey.collect(activeConnection, tableList), this.createForeignKeySQL);
 	}
-	
+
 	/**
-	 * @return the createForeignKeySQL.
+	 * @return the createUniqueKeySQL.
 	 */
-	public String getCreateForeignKeySQL()
+	public String getCreateUniqueKeySQL()
 	{
-		return this.createForeignKeySQL;
-	}
-	
-	/**
-	 * @param createForeignKeySQL the createForeignKeySQL to set.
-	 */
-	public void setCreateForeignKeySQL(String createForeignKeySQL)
-	{
-		this.createForeignKeySQL = createForeignKeySQL;
-	}
-	
-	/**
-	 * @return the dropForeignKeySQL.
-	 */
-	public String getDropForeignKeySQL()
-	{
-		return this.dropForeignKeySQL;
-	}
-	
-	/**
-	 * @param dropForeignKeySQL the dropForeignKeySQL to set.
-	 */
-	public void setDropForeignKeySQL(String dropForeignKeySQL)
-	{
-		this.dropForeignKeySQL = dropForeignKeySQL;
+		return this.createUniqueKeySQL;
 	}
 
 	/**
-	 * @return the fetchSize.
+	 * @param createUniqueKeySQL the createUniqueKeySQL to set.
 	 */
-	public int getFetchSize()
+	public void setCreateUniqueKeySQL(String createUniqueKeySQL)
 	{
-		return this.fetchSize;
+		this.createUniqueKeySQL = createUniqueKeySQL;
 	}
 
 	/**
-	 * @param fetchSize the fetchSize to set.
+	 * @return the dropUniqueKeySQL.
 	 */
-	public void setFetchSize(int fetchSize)
+	public String getDropUniqueKeySQL()
 	{
-		this.fetchSize = fetchSize;
+		return this.dropUniqueKeySQL;
+	}
+
+	/**
+	 * @param dropUniqueKeySQL the dropUniqueKeySQL to set.
+	 */
+	public void setDropUniqueKeySQL(String dropUniqueKeySQL)
+	{
+		this.dropUniqueKeySQL = dropUniqueKeySQL;
 	}
 }

@@ -22,6 +22,7 @@ package net.sf.hajdbc;
 
 import java.sql.Connection;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * @author  Paul Ferraro
@@ -30,6 +31,29 @@ import java.util.List;
  */
 public interface SynchronizationStrategy
 {
+	/**
+	 * Returns the identifier of this synchronization strategy
+	 * @return an identifier
+	 */
+	public String getId();
+
+	/**
+	 * @param id
+	 */
+	public void setId(String id);
+	
+	/**
+	 * @return properties
+	 * @throws Exception 
+	 */
+	public Properties getProperties() throws Exception;
+	
+	/**
+	 * @param properties
+	 * @throws Exception 
+	 */
+	public void setProperties(Properties properties) throws Exception;
+	
 	/**
 	 * Synchronizes the an inactive database with an active database using the specified connections.
 	 * Implementors must not close the specified connections.

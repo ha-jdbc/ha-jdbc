@@ -167,7 +167,7 @@ public final class DatabaseClusterFactory
 	
 	private Map databaseClusterMap = new HashMap();
 	private Map synchronizationStrategyMap = new HashMap();
-	private DatabaseClusterDecoratorDescriptor decoratorDescriptor;
+	private DatabaseClusterDecorator decorator;
 	private MBeanServer server;
 	
 	private DatabaseClusterFactory()
@@ -212,13 +212,11 @@ public final class DatabaseClusterFactory
 		return strategy;
 	}
 	
-	void addDatabaseCluster(DatabaseClusterDescriptor descriptor) throws Exception
+	void addDatabaseCluster(DatabaseCluster databaseCluster) throws Exception
 	{
-		DatabaseCluster databaseCluster = descriptor.createDatabaseCluster();
-		
-		if (this.decoratorDescriptor != null)
+		if (this.decorator != null)
 		{
-			databaseCluster = this.decoratorDescriptor.decorate(databaseCluster);
+			databaseCluster = this.decorator.decorate(databaseCluster);
 		}
 		
 		databaseCluster.init();
@@ -233,8 +231,8 @@ public final class DatabaseClusterFactory
 		this.databaseClusterMap.put(databaseCluster.getId(), databaseCluster);
 	}
 	
-	void addSynchronizationStrategy(SynchronizationStrategyDescriptor descriptor) throws Exception
+	void addSynchronizationStrategy(SynchronizationStrategy strategy) throws Exception
 	{
-		this.synchronizationStrategyMap.put(descriptor.getId(), descriptor.createSynchronizationStrategy());
+		this.synchronizationStrategyMap.put(strategy.getId(), strategy);
 	}
 }

@@ -21,7 +21,7 @@
 package net.sf.hajdbc.distributable;
 
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.DatabaseClusterDecoratorDescriptor;
+import net.sf.hajdbc.DatabaseClusterDecorator;
 
 /**
  * Describes a distributable database cluster. 
@@ -29,12 +29,12 @@ import net.sf.hajdbc.DatabaseClusterDecoratorDescriptor;
  * @version $Revision$
  * @since   1.0
  */
-public class DistributableDatabaseClusterDescriptor implements DatabaseClusterDecoratorDescriptor
+public class DistributableDatabaseClusterDecorator implements DatabaseClusterDecorator
 {
 	private String protocol;
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseClusterDecoratorDescriptor#decorate(net.sf.hajdbc.DatabaseCluster)
+	 * @see net.sf.hajdbc.DatabaseClusterDecorator#decorate(net.sf.hajdbc.DatabaseCluster)
 	 */
 	public DatabaseCluster decorate(DatabaseCluster databaseCluster) throws Exception
 	{

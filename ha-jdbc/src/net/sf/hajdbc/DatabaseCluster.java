@@ -70,9 +70,9 @@ public interface DatabaseCluster extends DatabaseClusterMBean
 
 	/**
 	 * Returns the default synchronization strategy for this database cluster
-	 * @return a synchronization strategy identifier
+	 * @return a synchronization strategy implementation
 	 */
-	public String getDefaultSynchronizationStrategy();
+	public SynchronizationStrategy getDefaultSynchronizationStrategy();
 
 	/**
 	 * Handles a failure caused by the specified cause on the specified database.

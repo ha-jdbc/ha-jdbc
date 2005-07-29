@@ -20,83 +20,20 @@
  */
 package net.sf.hajdbc;
 
-import java.util.Collection;
-
 /**
+ * A database cluster descriptor that decorates an underlying database cluster descriptor.
+ * 
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public abstract class DatabaseClusterDecorator extends AbstractDatabaseCluster
+public interface DatabaseClusterDecorator
 {
-	protected DatabaseCluster databaseCluster;
-
-	protected DatabaseClusterDecorator(DatabaseCluster databaseCluster)
-	{
-		this.databaseCluster = databaseCluster;
-	}
-	
 	/**
-	 * @see net.sf.hajdbc.DatabaseClusterMBean#getId()
+	 * Decorates the specified database cluster with some additional functionality.
+	 * @param databaseCluster a database cluster
+	 * @return a DatabaseCluster implementation
+	 * @throws Exception if decoration fails
 	 */
-	public final String getId()
-	{
-		return this.databaseCluster.getId();
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#isAlive(net.sf.hajdbc.Database)
-	 */
-	public final boolean isAlive(Database database)
-	{
-		return this.databaseCluster.isAlive(database);
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getDatabase(java.lang.String)
-	 */
-	public final Database getDatabase(String databaseId) throws java.sql.SQLException
-	{
-		return this.databaseCluster.getDatabase(databaseId);
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseClusterMBean#getActiveDatabases()
-	 */
-	public final Collection getActiveDatabases()
-	{
-		return this.databaseCluster.getActiveDatabases();
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseClusterMBean#getInactiveDatabases()
-	 */
-	public final Collection getInactiveDatabases()
-	{
-		return this.databaseCluster.getInactiveDatabases();
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getBalancer()
-	 */
-	public Balancer getBalancer()
-	{
-		return this.databaseCluster.getBalancer();
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getConnectionFactory()
-	 */
-	public ConnectionFactory getConnectionFactory()
-	{
-		return this.databaseCluster.getConnectionFactory();
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getDefaultSynchronizationStrategy()
-	 */
-	public String getDefaultSynchronizationStrategy()
-	{
-		return this.databaseCluster.getDefaultSynchronizationStrategy();
-	}
+	public DatabaseCluster decorate(DatabaseCluster databaseCluster) throws Exception; 
 }
