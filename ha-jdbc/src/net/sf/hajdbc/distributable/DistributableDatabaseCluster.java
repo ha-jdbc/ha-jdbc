@@ -58,6 +58,7 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 	 */
 	public DistributableDatabaseCluster(DatabaseCluster databaseCluster, DistributableDatabaseClusterDecorator decorator) throws Exception
 	{
+		this.databaseCluster = databaseCluster;
 		this.notificationBus = new NotificationBus(databaseCluster.getId(), decorator.getProtocol());
 		this.notificationBus.setConsumer(this);
 		this.notificationBus.start();
