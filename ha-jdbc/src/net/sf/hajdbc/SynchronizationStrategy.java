@@ -38,17 +38,20 @@ public interface SynchronizationStrategy
 	public String getId();
 
 	/**
-	 * @param id
+	 * Sets the identifier of this strategy
+	 * @param id an identifier
 	 */
 	public void setId(String id);
 	
 	/**
+	 * Returns the configurable properties of this strategy.
 	 * @return properties
 	 * @throws Exception 
 	 */
 	public Properties getProperties() throws Exception;
 	
 	/**
+	 * Configures this strategy with the specified properties.
 	 * @param properties
 	 * @throws Exception 
 	 */
