@@ -222,8 +222,6 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 	
 			this.activate(inactiveDatabase);
 			
-			log.info(Messages.getMessage(Messages.DATABASE_ACTIVATED, new Object[] { inactiveDatabase, this }));
-			
 			// Release table locks
 			for (int i = 0; i < activeConnections.length; ++i)
 			{
