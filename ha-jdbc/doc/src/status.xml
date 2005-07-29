@@ -47,10 +47,13 @@
 				Added unit tests for net.sf.hajdbc.sql package.
 			</action>
 			<action type="update" context="doc" dev="PF">
-				Updated Forrest documentation to version 0.7.
+				Upgraded Forrest documentation to version 0.7.
 			</action>
 			<action type="update" context="lib" dev="PF">
-				Updated JGroups to version 2.2.8.
+				Upgraded JGroups to version 2.2.8.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded JiBX to version 1.0-rc-1.
 			</action>
 		</release>
 		<release version="1.0-beta-8" date="April 27, 2005">
@@ -88,7 +91,7 @@
 				Refactored java.sql.* proxy classes.
 			</action>
 			<action type="update" context="lib" dev="PF">
-				Updated JiBX to version 1.0-rc-0.
+				Upgraded JiBX to version 1.0-rc-0.
 			</action>
 		</release>
 		<release version="1.0-beta-7" date="April 5, 2005">
