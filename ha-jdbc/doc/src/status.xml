@@ -14,19 +14,19 @@
 	<changes>
 		<release version="1.0-rc-1" date="Unreleased">
 			<action type="update" context="code" dev="PF">
+				Refactored HA-JDBC configuration and DTD.  Synchronization strategies are now shared across all clusters.  Each cluster defines a default synchronization strategy.
+			</action>
+			<action type="update" context="code" dev="PF">
 				Updated DifferentialSynchronizationStrategy to use PreparedStatements for inserts and deletions instead of using problematic updatable result set methods.
 			</action>
 			<action type="fix" context="code" dev="PF">
 				Fixed DifferentialSynchronizationStrategy to drop and re-create unique keys on each table to prevent possible unique constraint violations during sync.
 			</action>
 			<action type="update" context="code" dev="PF">
-				Updated DifferentialSynchronizationStrategy such that primary and unique keys fetched from DatabaseMetaData are not assumed to be ordered by position.
+				DifferentialSynchronizationStrategy now correctly compares byte[] columns.
 			</action>
 			<action type="add" context="code" dev="PF">
 				Added properties to cluster configuration to allow DataSources to define custom JNDI environment parameters and to allow Driver to define additional runtime parameters.
-			</action>
-			<action type="update" context="code" dev="PF">
-				Refactored synchronization strategies so they can be shared across database clusters.  Each cluster defines a default synchronization strategy.
 			</action>
 			<action type="update" context="code" dev="PF">
 				activate(String) method in DatabaseClusterMBean interface will synchronize using the default synchronization strategy for the cluster.
