@@ -86,24 +86,24 @@
     </target>
 
 	<target name="dist" depends="clean, jar, site">
-		<tar tarfile="${dist.bin.file}" prefix="${dist.version.name}" compression="gzip">
-			<tarfileset dir="${basedir}" includes="${dist.version.name}.jar"></tarfileset>
-			<tarfileset dir="${basedir}" includes="*.txt"></tarfileset>
-			<tarfileset dir="${basedir}" includes="{$lib.dir}/*.jar"></tarfileset>
-			<tarfileset dir="${basedir}" includes="${lib.runtime.dir}/*.jar"></tarfileset>
-			<tarfileset dir="${basedir}" includes="${doc.build.dir}/site/**"></tarfileset>
+		<tar tarfile="${dist.bin.file}" compression="gzip">
+			<tarfileset dir="${basedir}" prefix="${dist.version.name}" includes="${dist.version.name}.jar"></tarfileset>
+			<tarfileset dir="${basedir}" prefix="${dist.version.name}" includes="*.txt"></tarfileset>
+			<tarfileset dir="${basedir}" prefix="${dist.version.name}" includes="{$lib.dir}/*.jar"></tarfileset>
+			<tarfileset dir="${basedir}" prefix="${dist.version.name}" includes="${lib.runtime.dir}/*.jar"></tarfileset>
+			<tarfileset dir="${basedir}" prefix="${dist.version.name}" includes="${doc.build.dir}/site/**"></tarfileset>
 		</tar>
 	</target>
 	
 	<target name="dist-src">
-		<tar tarfile="${dist.src.file}" prefix="${dist.version.name}" compression="gzip">
-			<tarfileset dir="${basedir}" includes="*.txt"></tarfileset>
-			<tarfileset dir="${basedir}" includes="build.*"></tarfileset>
-			<tarfileset dir="${basedir}" includes="${src.dir}/**"></tarfileset>
-			<tarfileset dir="${basedir}" includes="${test.dir}/**"></tarfileset>
-			<tarfileset dir="${basedir}" includes="${lib.dir}/**"></tarfileset>
-			<tarfileset dir="${basedir}" includes="${conf.dir}/**"></tarfileset>
-			<tarfileset dir="${basedir}" includes="${doc.dir}/**" excludes="${doc.build.dir}/**"></tarfileset>
+		<tar tarfile="${dist.src.file}" compression="gzip">
+			<tarfileset dir="${basedir}" prefix="${dist.version.name}" includes="*.txt"></tarfileset>
+			<tarfileset dir="${basedir}" prefix="${dist.version.name}" includes="build.*"></tarfileset>
+			<tarfileset dir="${basedir}" prefix="${dist.version.name}" includes="${src.dir}/**"></tarfileset>
+			<tarfileset dir="${basedir}" prefix="${dist.version.name}" includes="${test.dir}/**"></tarfileset>
+			<tarfileset dir="${basedir}" prefix="${dist.version.name}" includes="${lib.dir}/**"></tarfileset>
+			<tarfileset dir="${basedir}" prefix="${dist.version.name}" includes="${conf.dir}/**"></tarfileset>
+			<tarfileset dir="${basedir}" prefix="${dist.version.name}" includes="${doc.dir}/**" excludes="${doc.build.dir}/**"></tarfileset>
 		</tar>
 	</target>
 	
