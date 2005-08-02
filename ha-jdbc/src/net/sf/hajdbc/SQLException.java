@@ -40,6 +40,29 @@ public class SQLException extends java.sql.SQLException
 	{
 		super(message);
 	}
+	
+	/**
+	 * Constructs a new SQLException.
+	 * @param cause the cause of this exception
+	 */
+	public SQLException(java.sql.SQLException cause)
+	{
+		super(cause.getMessage(), cause.getSQLState(), cause.getErrorCode());
+		
+		this.initSQLCause(cause);
+	}
+	
+	/**
+	 * Constructs a new SQLException.
+	 * @param message
+	 * @param cause
+	 */
+	public SQLException(String message, java.sql.SQLException cause)
+	{
+		super(message, cause.getSQLState(), cause.getErrorCode());
+		
+		this.initSQLCause(cause);
+	}
 
 	/**
 	 * Constructs a new SQLException.
@@ -48,12 +71,9 @@ public class SQLException extends java.sql.SQLException
 	 */
 	public SQLException(String message, Throwable cause)
 	{
-		this(message);
-		
-		if (cause != null)
-		{
-			this.initCause(cause);
-		}
+		super(message);
+
+		this.initCause(cause);
 	}
 	
 	/**
@@ -62,7 +82,9 @@ public class SQLException extends java.sql.SQLException
 	 */
 	public SQLException(Throwable cause)
 	{
-		this("", cause);
+		super();
+		
+		this.initCause(cause);
 	}
 
 	/**
