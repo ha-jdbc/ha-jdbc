@@ -167,7 +167,9 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 		{
 			for (int i = 0; i < databases.length; ++i)
 			{
-				this.databaseCluster.activate(databases[i]);
+				Database database = this.databaseCluster.getDatabase(databases[i]);
+				
+				this.databaseCluster.getBalancer().add(database);
 			}
 		}
 		else
