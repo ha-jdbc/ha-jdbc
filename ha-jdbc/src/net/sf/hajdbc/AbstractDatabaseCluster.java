@@ -99,9 +99,9 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 	 * If the database is not alive, then it is deactivated, otherwise an exception is thrown back to the caller.
 	 * @param database a database descriptor
 	 * @param cause the cause of the failure
-	 * @throws SQLException if the database is alive
+	 * @throws java.sql.SQLException if the database is alive
 	 */
-	public final void handleFailure(Database database, Throwable cause) throws SQLException
+	public final void handleFailure(Database database, Throwable cause) throws java.sql.SQLException
 	{
 		if (this.isAlive(database))
 		{
@@ -252,6 +252,40 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 			catch (java.sql.SQLException e)
 			{
 				log.warn(Messages.getMessage(Messages.CONNECTION_CLOSE_FAILED, database), e);
+			}
+		}
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#init()
+	 */
+	public void init() throws java.sql.SQLException
+	{
+		String[] databases = this.loadState();
+
+		if (databases != null)
+		{
+			for (int i = 0; i < databases.length; ++i)
+			{
+				Database database = this.getDatabase(databases[i]);
+				
+				this.activate(database);
+			}
+		}
+		else
+		{
+			Iterator ids = this.getInactiveDatabases().iterator();
+			
+			while (ids.hasNext())
+			{
+				String id = (String) ids.next();
+				
+				Database database = this.getDatabase(id);
+				
+				if (this.isAlive(database))
+				{
+					this.activate(database);
+				}
 			}
 		}
 	}

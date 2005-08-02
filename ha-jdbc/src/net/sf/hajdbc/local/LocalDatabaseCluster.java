@@ -63,43 +63,26 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	private Balancer balancer;
 	private SynchronizationStrategy defaultSynchronizationStrategy;
 	private ConnectionFactory connectionFactory;
-
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#init()
-	 */
-	public void init() throws java.sql.SQLException
-	{
-		Map connectionFactoryMap = new HashMap(this.databaseMap.size());
-		
-		Iterator databases = this.databaseMap.values().iterator();
-		
-		while (databases.hasNext())
-		{
-			Database database = (Database) databases.next();
-
-			connectionFactoryMap.put(database, database.createConnectionFactory());
-		}
-
-		this.connectionFactory = new ConnectionFactory(this, connectionFactoryMap);
-		
-		if (!this.restoreClusterState())
-		{
-			databases = this.databaseMap.values().iterator();
-			
-			while (databases.hasNext())
-			{
-				Database database = (Database) databases.next();
-				
-				if (this.isAlive(database))
-				{
-					this.balancer.add(database);
-				}
-			}
-		}
-		
-		this.persistClusterState();
-	}
 	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#loadState()
+	 */
+	public String[] loadState() throws java.sql.SQLException
+	{
+		try
+		{
+			preferences.sync();
+			
+			String state = preferences.get(this.id, null);
+			
+			return (state != null) ? state.split(DELIMITER) : null;
+		}
+		catch (BackingStoreException e)
+		{
+			throw new SQLException(Messages.getMessage(Messages.CLUSTER_STATE_LOAD_FAILED, this), e);
+		}
+	}
+
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getConnectionFactory()
 	 */
@@ -156,7 +139,7 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 		
 		if (removed)
 		{
-			this.persistClusterState();
+			this.storeState();
 		}
 		
 		return removed;
@@ -179,49 +162,13 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 		
 		if (added)
 		{
-			this.persistClusterState();
+			this.storeState();
 		}
 		
 		return added;
 	}
 	
-	private boolean restoreClusterState()
-	{
-		try
-		{
-			preferences.sync();
-			
-			String state = preferences.get(this.id, null);
-			
-			if (state == null) return false;
-			
-			String[] databases = state.split(DELIMITER);
-			
-			for (int i = 0; i < databases.length; ++i)
-			{
-				try
-				{
-					Database database = this.getDatabase(databases[i]);
-					
-					this.balancer.add(database);
-				}
-				catch (java.sql.SQLException e)
-				{
-					// Ignore - database is no longer in this cluster
-				}
-			}
-			
-			return true;
-		}
-		catch (BackingStoreException e)
-		{
-			log.warn(Messages.getMessage(Messages.CLUSTER_STATE_LOAD_FAILED, this), e);
-			
-			return false;
-		}
-	}
-	
-	private void persistClusterState()
+	private void storeState()
 	{
 		StringBuffer buffer = new StringBuffer();
 		Database[] databases = this.balancer.toArray();
@@ -318,5 +265,21 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	void addDatabase(Database database)
 	{
 		this.databaseMap.put(database.getId(), database);
+	}
+	
+	void createConnectionFactories() throws Exception
+	{
+		Map connectionFactoryMap = new HashMap(this.databaseMap.size());
+		
+		Iterator databases = this.databaseMap.values().iterator();
+		
+		while (databases.hasNext())
+		{
+			Database database = (Database) databases.next();
+
+			connectionFactoryMap.put(database, database.createConnectionFactory());
+		}
+
+		this.connectionFactory = new ConnectionFactory(this, connectionFactoryMap);
 	}
 }

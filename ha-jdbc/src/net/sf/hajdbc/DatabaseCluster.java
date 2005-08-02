@@ -20,6 +20,8 @@
  */
 package net.sf.hajdbc;
 
+import java.sql.SQLException;
+
 
 /**
  * @author  Paul Ferraro
@@ -60,7 +62,7 @@ public interface DatabaseCluster extends DatabaseClusterMBean
 	 * @return a database descriptor
 	 * @throws java.sql.SQLException if no database exists with the specified identifier
 	 */
-	public Database getDatabase(String id) throws java.sql.SQLException;
+	public Database getDatabase(String id) throws SQLException;
 	
 	/**
 	 * Initializes this database cluster.
@@ -68,6 +70,13 @@ public interface DatabaseCluster extends DatabaseClusterMBean
 	 */
 	public void init() throws java.sql.SQLException;
 
+	/**
+	 * Loads the persisted state of this database cluster
+	 * @return an array of database identifiers
+	 * @throws java.sql.SQLException if state could not be obtained
+	 */
+	public String[] loadState() throws java.sql.SQLException;
+	
 	/**
 	 * Returns the default synchronization strategy for this database cluster
 	 * @return a synchronization strategy implementation

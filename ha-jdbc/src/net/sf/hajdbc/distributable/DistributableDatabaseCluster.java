@@ -21,6 +21,7 @@
 package net.sf.hajdbc.distributable;
 
 import java.io.Serializable;
+import java.sql.SQLException;
 import java.util.Collection;
 
 import net.sf.hajdbc.AbstractDatabaseCluster;
@@ -110,7 +111,7 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 		{
 			command.execute(this.databaseCluster);
 		}
-		catch (java.sql.SQLException e)
+		catch (SQLException e)
 		{
 			log.error(Messages.getMessage(Messages.DATABASE_COMMAND_FAILED, new Object[] { command, this.databaseCluster }), e);
 		}
@@ -155,27 +156,16 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 		
 		super.finalize();
 	}
-
+	
 	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#init()
+	 * @throws SQLException 
+	 * @see net.sf.hajdbc.DatabaseCluster#loadState()
 	 */
-	public void init() throws java.sql.SQLException
+	public String[] loadState() throws SQLException
 	{
-		String[] databases = (String[]) this.notificationBus.getCacheFromCoordinator(1000, 1);
+		String[] state = (String[]) this.notificationBus.getCacheFromCoordinator(1000, 1);
 		
-		if (databases != null)
-		{
-			for (int i = 0; i < databases.length; ++i)
-			{
-				Database database = this.databaseCluster.getDatabase(databases[i]);
-				
-				this.databaseCluster.getBalancer().add(database);
-			}
-		}
-		else
-		{
-			this.databaseCluster.init();
-		}
+		return (state != null) ? state : this.databaseCluster.loadState();
 	}
 	
 	/**
