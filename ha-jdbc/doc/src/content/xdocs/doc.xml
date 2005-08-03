@@ -35,7 +35,7 @@
 				<title>Database Cluster Configuration</title>
 				<p>
 					Configuration for HA-JDBC managed database clusters is contained in a single XML file.
-					The format of the configuration file should match the DTD: <a href="http://ha-jdbc.sourceforge.net/dtd/ha-jdbc-1.0.dtd"><code>http://ha-jdbc.sourceforge.net/dtd/ha-jdbc-1.0.dtd</code></a>
+					The format of the configuration file should match the <a href="dtd/ha-jdbc-1.0.dtd">DTD</a>.
 				</p>
 				<p>Sample configuration file containing each type of deployment setup:</p>
 				<source><![CDATA[

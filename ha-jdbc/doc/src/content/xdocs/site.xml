@@ -19,7 +19,7 @@ See http://xml.apache.org/forrest/linking.html for more info
 		<documentation label="Documentation" href="doc.html"/>
 		<performance label="Performance" href="performance.html"/>
 		<faq label="FAQ" href="faq.html"/>
-		<api label="API" href="http://ha-jdbc.sourceforge.net/api"/>
+		<api label="API" href="api/index.html"/>
 		<download label="Download" href="http://sourceforge.net/project/showfiles.php?group_id=111957"/>
 		<changes label="Change Log" href="changes.html"/>
 		<todo label="To Do" href="todo.html"/>
