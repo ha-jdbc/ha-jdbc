@@ -54,7 +54,7 @@
 	
 	<target name="clean">
 		<delete quiet="true">
-			<fileset includes="${dist.name}-*.*"></fileset>
+			<fileset dir="${basedir}" includes="${dist.name}-*.*"></fileset>
 		</delete>
 		<delete dir="${build.dir}" quiet="true"></delete>
 		<delete dir="${doc.build.dir}" quiet="true"></delete>
