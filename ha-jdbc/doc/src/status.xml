@@ -12,7 +12,7 @@
 	</contexts>
 
 	<changes>
-		<release version="1.0-rc-1" date="Unreleased">
+		<release version="1.0-rc-1" date="August 2, 2005">
 			<action type="update" context="code" dev="PF">
 				Refactored HA-JDBC initialization and DTD.  Synchronization strategies are now shared across all clusters.  Each cluster defines a default synchronization strategy.
 			</action>
