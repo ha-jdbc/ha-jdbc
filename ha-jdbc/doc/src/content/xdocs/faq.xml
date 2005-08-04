@@ -30,6 +30,31 @@
 				If you use java.util.logging, configure an <a href="http://http://smtphandler.sourceforge.net/">SMTPHandler</a> for the "net.sf.hajdbc" package.
 			</answer>
 		</faq>
+		<faq>
+			<question>When I run either synchronization strategy, I get a java.lang.OutOfMemoryError.  Why?</question>
+			<answer>
+				<p>
+					If your database contains 1 or more tables with a large number of rows (e.g. more than 10,000), you will need to tune the synchronization strategies.
+					Both the differential and full synchronization strategies have a <code>fetchSize</code> property that control the number of rows that are fetched at a time.
+				</p>
+				<p>e.g.</p>
+<source><![CDATA[
+<sync id="diff" class="net.sf.hajdbc.sync.DifferentialSynchronizationStrategy">
+  <property name="fetchSize">1000</property>
+</sync>
+]]></source>
+				<p>
+					The FullSynchronization strategy has an additional <code>maxBatchSize</code> property to control the number of batched insert statements to execute at a time.
+				</p>
+				<p>e.g.</p>
+<source><![CDATA[
+<sync id="full" class="net.sf.hajdbc.sync.FullSynchronizationStrategy">
+  <property name="fetchSize">1000</property>
+  <property name="maxBatchSize">100</property>
+</sync>
+]]></source>
+			</answer>
+		</faq>
 	</faqsection>
 	<faqsection>
 		<title>About HA-JDBC</title>

@@ -488,9 +488,12 @@ rowSet.close();
 				<source><![CDATA[
 <ha-jdbc>
   <!-- ... -->
-  <sync id="diff" class="net.sf.hajdbc.sync.DifferentialSynchronizationStrategy"></sync>
+  <sync id="diff" class="net.sf.hajdbc.sync.DifferentialSynchronizationStrategy">
+    <property name="fetchSize">1000</property>
+  </sync>
   <sync id="full" class="net.sf.hajdbc.sync.FullSynchronizationStrategy">
     <property name="truncateTableSQL">TRUNCATE TABLE {0}</property>
+    <property name="fetchSize">1000</property>
     <property name="maxBatchSize">100</property>
   </sync>
   <!-- ... -->
