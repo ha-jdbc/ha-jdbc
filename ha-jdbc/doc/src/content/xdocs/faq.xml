@@ -5,24 +5,6 @@
 	<faqsection>
 		<title>Configuring HA-JDBC</title>
 		<faq>
-			<question>What does the "distributable" feature do? and when would I need it?</question>
-			<answer>
-				By indicated the "distributable" option, you are declaring that your database cluster(s) will be accessed by multiple JVMs (e.g. cluster of application servers).
-				HA-JDBC uses reliable multicast communication provided by JGroups to broadcast database activations and deactivations to each JVM.
-				If your database cluster is accessed by more than client and the "distributable" option is not specified, you run the risk of databases falling out of sync when a database is re-activated.
-			</answer>
-		</faq>
-	</faqsection>
-	<faqsection>
-		<title>Using HA-JDBC</title>
-		<faq>
-			<question>When using the "distributable" feature, I get a <code>ChannelException</code>: "unable to set up the protocol stack".</question>
-			<answer>
-				The server on which HA-JDBC is running may need additional network features installed/enabled.
-				Refer to the JGroups <a href="http://www.jgroups.org/javagroupsnew/docs/user/index.html">documentation</a> for more specifics.
-			</answer>
-		</faq>
-		<faq>
 			<question>How do I configure HA-JDBC to notify me when a database is deactivated?</question>
 			<answer>
 				Use your logging facility.  HA-JDBC will log database activations and deactivations with ERROR level.
@@ -30,11 +12,21 @@
 				If you use java.util.logging, configure an <a href="http://http://smtphandler.sourceforge.net/">SMTPHandler</a> for the "net.sf.hajdbc" package.
 			</answer>
 		</faq>
+	</faqsection>
+	<faqsection>
+		<title>Using HA-JDBC</title>
 		<faq>
-			<question>When I run either synchronization strategy, I get a java.lang.OutOfMemoryError.  Why?</question>
+			<question>When using the <code><![CDATA[<distributable/>]]></code> feature, I get an <code>org.jgroups.ChannelException</code>: "unable to set up the protocol stack".</question>
+			<answer>
+				The server on which HA-JDBC is running may need additional communcication features installed.
+				Refer to the JGroups <a href="http://www.jgroups.org/javagroupsnew/docs/user/index.html">documentation</a> for more specifics.
+			</answer>
+		</faq>
+		<faq>
+			<question>I get a java.lang.OutOfMemoryError when synchronizing a failed cluster node.  Why?</question>
 			<answer>
 				<p>
-					If your database contains 1 or more tables with a large number of rows (e.g. more than 10,000), you will need to tune the synchronization strategies.
+					This can occur if your database contains a table with more rows than can be fetched into memory at once.
 					Both the differential and full synchronization strategies have a <code>fetchSize</code> property that control the number of rows that are fetched at a time.
 				</p>
 				<p>e.g.</p>

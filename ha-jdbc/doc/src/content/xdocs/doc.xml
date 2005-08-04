@@ -257,8 +257,8 @@
 			<section>
 				<title>Distributed environment</title>
 				<p>
-					When running HA-JDBC in a distributed environment, i.e. JDBC clients in seperate JVMs are accessing the same set of databases, the <![CDATA[<distributable>]]> option should be used.
-					HA-JDBC leverages the <a href="http://www.jgroups.org">JGroups</a> project to handle communication between cluster managers.
+					If you use HA-JDBC to access the same database cluster from more than one JVM (e.g. an application server cluster), your HA-JDBC configuration must use the <![CDATA[<distributable/>]]> feature.
+					HA-JDBC leverages the <a href="http://www.jgroups.org">JGroups</a> project to handle communication between database clusters across servers.
 				</p>
 				<p>e.g.</p>
 				<source><![CDATA[
@@ -271,7 +271,7 @@
 </ha-jdbc>
 ]]></source>
 				<p>
-					The <![CDATA[<distributable>]]> element may contain an optional <code>protocol</code> attribute.
+					The <![CDATA[<distributable/>]]> element may contain an optional <code>protocol</code> attribute.
 				</p>
 				<p>i.e.</p>
 				<p>
