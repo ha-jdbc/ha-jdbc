@@ -271,19 +271,20 @@
 </ha-jdbc>
 ]]></source>
 				<p>
-					The <![CDATA[<distributable/>]]> element may contain an optional <code>protocol</code> attribute.
-				</p>
-				<p>i.e.</p>
+					The <![CDATA[<distributable/>]]> element may contain an optional <code>protocol</code> attribute which specifies one of the following:
+				</p>	
+				<ul>
+					<li>Property string representation of the JGroups protocol stack. (e.g. see below)</li>
+					<li>Name of a system resource containing the JGroups XML configuration. (e.g. default.xml - located within the JGroups jar file)</li>
+					<li>URL of the JGroups XML configuration file.</li>
+					<li>Path of the JGroups XML configuration on the local file system.</li>
+				</ul>
 				<p>
-					<code><![CDATA[<distributable protocol="..."/>]]></code>
-				</p>
-				<p>
-					This allows you to customize the JGroups protocol stack for your network.
 					If left unspecified, HA-JDBC will use the following default protocol stack:
 				</p>
-				<p>UDP:PING:MERGE2:FD:VERIFY_SUSPECT:pbcast.NAKACK:UNICAST:pbcast.STABLE:FRAG:pbcast.GMS</p>
+				<p><code>UDP:PING:MERGE2:FD:VERIFY_SUSPECT:pbcast.NAKACK:UNICAST:pbcast.STABLE:FRAG:pbcast.GMS</code></p>
 				<p>
-					See the JGroup's <a href="http://www.jgroups.org/javagroupsnew/docs/newuser/node63.html">user guide</a> for assistance customizing the protocol stack for your network.
+					See the JGroup's <a href="http://www.jboss.com/wiki/Wiki.jsp?page=JGroups">Wiki</a> for details on customizing the protocol stack.
 				</p>
 			</section>
 			<section>
