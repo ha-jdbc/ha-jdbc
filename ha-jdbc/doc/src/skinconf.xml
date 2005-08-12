@@ -425,6 +425,11 @@ which will be used to configure the chosen Forrest skin.
       <url>http://sourceforge.net/donate/index.php?group_id=111957</url>
       <image>http://images.sourceforge.net/images/project-support.jpg</image>
     </credit>
+    <credit>
+      <name>Open Source</name>
+      <url>http://www.opensource.org/</url>
+      <image>http://opensource.org/trademarks/open_source_button.png</image>
+	</credit>
     <credit box-location="alt">
       <name>java.net member</name>
       <url>http://www.java.net</url>
