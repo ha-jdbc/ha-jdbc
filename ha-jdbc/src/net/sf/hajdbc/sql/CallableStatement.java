@@ -45,11 +45,12 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 * Constructs a new CallableStatementProxy.
 	 * @param connection a Connection proxy
 	 * @param operation an operation that creates CallableStatements
+	 * @param sql an SQL statement
 	 * @throws java.sql.SQLException if operation execution fails
 	 */
-	public CallableStatement(Connection connection, ConnectionOperation operation) throws java.sql.SQLException
+	public CallableStatement(Connection connection, ConnectionOperation operation, String sql) throws java.sql.SQLException
 	{
-		super(connection, operation);
+		super(connection, operation, sql);
 	}
 	
 	/**

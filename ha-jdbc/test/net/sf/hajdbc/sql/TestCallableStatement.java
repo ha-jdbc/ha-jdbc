@@ -47,7 +47,7 @@ public class TestCallableStatement extends TestPreparedStatement
 	 */
 	protected Statement createStatement(Connection connection, ConnectionOperation operation) throws SQLException
 	{
-		return new CallableStatement(connection, operation);
+		return new CallableStatement(connection, operation, "");
 	}
 	
 	/**

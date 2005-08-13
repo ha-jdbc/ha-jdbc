@@ -42,15 +42,20 @@ import java.util.Calendar;
  */
 public class PreparedStatement extends Statement implements java.sql.PreparedStatement
 {
+	private String sql;
+	
 	/**
 	 * Constructs a new PreparedStatementProxy.
 	 * @param connection a Connection proxy
 	 * @param operation an operation that creates PreparedStatements
+	 * @param sql an SQL statement
 	 * @throws java.sql.SQLException if operation execution fails
 	 */
-	public PreparedStatement(Connection connection, ConnectionOperation operation) throws java.sql.SQLException
+	public PreparedStatement(Connection connection, ConnectionOperation operation, String sql) throws java.sql.SQLException
 	{
 		super(connection, operation);
+		
+		this.sql = sql;
 	}
 	
 	/**
@@ -118,7 +123,7 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 			}
 		};
 
-		return (this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) ? (java.sql.ResultSet) this.executeReadFromDatabase(operation) : new ResultSet(this, operation);
+		return ((this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(this.sql)) ? (java.sql.ResultSet) this.executeReadFromDatabase(operation) : new ResultSet(this, operation);
 	}
 
 	/**

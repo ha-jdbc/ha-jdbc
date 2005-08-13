@@ -90,18 +90,6 @@ public class Statement extends SQLObject implements java.sql.Statement
 			}
 		}
 	}
-
-	private boolean getAutoCommit()
-	{
-		try
-		{
-			return this.getConnection().getAutoCommit();
-		}
-		catch (SQLException e)
-		{
-			return true;
-		}
-	}
 	
 	/**
 	 * @see java.sql.Statement#addBatch(java.lang.String)
@@ -286,7 +274,7 @@ public class Statement extends SQLObject implements java.sql.Statement
 			}
 		};
 
-		return (this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) ? (java.sql.ResultSet) this.executeReadFromDatabase(operation) : new ResultSet(this, operation);
+		return ((this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(sql)) ? (java.sql.ResultSet) this.executeReadFromDatabase(operation) : new ResultSet(this, operation);
 	}
 
 	/**
@@ -713,5 +701,28 @@ public class Statement extends SQLObject implements java.sql.Statement
 		};
 		
 		this.executeWriteToDriver(operation);
+	}
+
+	private boolean getAutoCommit()
+	{
+		try
+		{
+			return this.getConnection().getAutoCommit();
+		}
+		catch (SQLException e)
+		{
+			return true;
+		}
+	}
+	
+	/**
+	 * Determines whether or not the specified query is a SELECT...FOR UPDATE query.
+	 * These queries always need to be distributed to each node in the cluster.
+	 * @param sql a SQL query
+	 * @return true if the specified query is a SELECT...FOR UPDATE query, false otherwise.
+	 */
+	protected boolean isSelectForUpdate(String sql)
+	{
+		return sql.toUpperCase().matches("FOR\\s+UPDATE");
 	}
 }

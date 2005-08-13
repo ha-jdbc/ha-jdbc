@@ -329,7 +329,7 @@ public class Connection extends SQLObject implements java.sql.Connection
 			}
 		};
 		
-		return this.isReadOnly() ? (java.sql.CallableStatement) this.executeReadFromDatabase(operation) : new CallableStatement(this, operation);
+		return this.isReadOnly() ? (java.sql.CallableStatement) this.executeReadFromDatabase(operation) : new CallableStatement(this, operation, sql);
 	}
 
 	/**
@@ -345,7 +345,7 @@ public class Connection extends SQLObject implements java.sql.Connection
 			}
 		};
 		
-		return this.isReadOnly() ? (java.sql.CallableStatement) this.executeReadFromDatabase(operation) : new CallableStatement(this, operation);
+		return this.isReadOnly() ? (java.sql.CallableStatement) this.executeReadFromDatabase(operation) : new CallableStatement(this, operation, sql);
 	}
 
 	/**
@@ -361,7 +361,7 @@ public class Connection extends SQLObject implements java.sql.Connection
 			}
 		};
 		
-		return this.isReadOnly() ? (java.sql.CallableStatement) this.executeReadFromDatabase(operation) : new CallableStatement(this, operation);
+		return this.isReadOnly() ? (java.sql.CallableStatement) this.executeReadFromDatabase(operation) : new CallableStatement(this, operation, sql);
 	}
 
 	/**
@@ -377,7 +377,7 @@ public class Connection extends SQLObject implements java.sql.Connection
 			}
 		};
 		
-		return this.isReadOnly() ? (java.sql.PreparedStatement) this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation);
+		return this.isReadOnly() ? (java.sql.PreparedStatement) this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation, sql);
 	}
 
 	/**
@@ -393,7 +393,7 @@ public class Connection extends SQLObject implements java.sql.Connection
 			}
 		};
 		
-		return this.isReadOnly() ? (java.sql.PreparedStatement) this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation);
+		return this.isReadOnly() ? (java.sql.PreparedStatement) this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation, sql);
 	}
 
 	/**
@@ -409,7 +409,7 @@ public class Connection extends SQLObject implements java.sql.Connection
 			}
 		};
 		
-		return this.isReadOnly() ? (java.sql.PreparedStatement) this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation);
+		return this.isReadOnly() ? (java.sql.PreparedStatement) this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation, sql);
 	}
 
 	/**
@@ -425,7 +425,7 @@ public class Connection extends SQLObject implements java.sql.Connection
 			}
 		};
 		
-		return this.isReadOnly() ? (java.sql.PreparedStatement) this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation);
+		return this.isReadOnly() ? (java.sql.PreparedStatement) this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation, sql);
 	}
 
 	/**
@@ -441,7 +441,7 @@ public class Connection extends SQLObject implements java.sql.Connection
 			}
 		};
 		
-		return this.isReadOnly() ? (java.sql.PreparedStatement) this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation);
+		return this.isReadOnly() ? (java.sql.PreparedStatement) this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation, sql);
 	}
 
 	/**
@@ -457,7 +457,7 @@ public class Connection extends SQLObject implements java.sql.Connection
 			}
 		};
 		
-		return this.isReadOnly() ? (java.sql.PreparedStatement) this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation);
+		return this.isReadOnly() ? (java.sql.PreparedStatement) this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation, sql);
 	}
 
 	/**

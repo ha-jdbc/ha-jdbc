@@ -50,7 +50,7 @@ public class TestPreparedStatement extends TestStatement
 	 */
 	protected Statement createStatement(Connection connection, ConnectionOperation operation) throws SQLException
 	{
-		return new PreparedStatement(connection, operation);
+		return new PreparedStatement(connection, operation, "");
 	}
 	
 	protected Class getSQLStatementClass()
