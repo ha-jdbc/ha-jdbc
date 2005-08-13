@@ -12,6 +12,11 @@
 	</contexts>
 
 	<changes>
+		<release version="1.0-rc-2" date="...">
+			<action type="fix" context="code" dev="PF">
+				SELECT...FOR UPDATE queries are now detected and distributed to each database cluster node.
+			</action>
+		</release>
 		<release version="1.0-rc-1" date="August 2, 2005">
 			<action type="update" context="code" dev="PF">
 				Refactored HA-JDBC initialization and DTD.  Synchronization strategies are now shared across all clusters.  Each cluster defines a default synchronization strategy.
@@ -279,13 +284,20 @@
 	</changes>
 
 	<todo>
+		<actions priority="high">
+			<action type="add" context="code" dev="PF">
+				Add local/distributed locking ability to enhance support for common unique identifier generation mechanisms, namely identity columns and sequences.
+			</action>
+		</actions>
 		<actions priority="medium">
 			<action type="add" context="code" dev="PF">
 				Support for modifying HA-JDBC configuration at runtime.
 				Workaround is to create "placeholder" DataSources that can be defined and activated as needed.
 			</action>
 			<action type="add" context="code" dev="PF">
-				Support for using native database replication capabilities.
+				Support for leveraging native database replication capabilities.
+				i.e. non-transactional reads go to slaves, writes go to master, database is responsible for replicating changes to slaves.
+				HA-JDBC would add high-availability to cluster through multiple master support while hiding master/slave configuration details from the application.
 			</action>
 		</actions>
 	</todo>
