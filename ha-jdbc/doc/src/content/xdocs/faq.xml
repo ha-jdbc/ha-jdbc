@@ -47,6 +47,25 @@
 ]]></source>
 			</answer>
 		</faq>
+		<faq>
+			<question>How can HA-JDBC be leveraged to improve database-driven HTTP Session failover?</question>
+			<answer>
+				<p>
+					Several session replication methods are described in an <a href="http://www.theserverside.com/articles/article.tss?l=J2EEClustering">article</a> posted to TheServerSide.com.
+					Figure 7 illustrates the database persistence approach.
+					When describing the disadvantages of this approach, the article fails to mention that the session database is a single point of failure in this design.
+					HTTP sessions will survive the failure of an application server node, but failure of the session database spells doom for the application.
+				</p>
+				<p>
+					However, this can easily remedied with redundant session databases using the HA-JDBC driver in distributable mode.
+				</p>
+				<p>e.g.</p>
+				<p>
+					For Tomcat, following the configuration instructions for setting up a Persistent Manager using a JDBC store <a href="http://jakarta.apache.org/tomcat/tomcat-5.0-doc/config/manager.html">here</a>.
+					Simply use HA-JDBC's driver and url in place or your database's JDBC driver and url for the <code>driverName</code> and <code>connectionURL</code> properties of your store configuration.
+				</p>
+			</answer>
+		</faq>
 	</faqsection>
 	<faqsection>
 		<title>About HA-JDBC</title>
