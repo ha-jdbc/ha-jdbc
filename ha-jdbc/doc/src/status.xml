@@ -291,13 +291,15 @@
 		</actions>
 		<actions priority="medium">
 			<action type="add" context="code" dev="PF">
-				Support for modifying HA-JDBC configuration at runtime.
-				Workaround is to create "placeholder" DataSources that can be defined and activated as needed.
-			</action>
-			<action type="add" context="code" dev="PF">
 				Support for leveraging native database replication capabilities.
 				i.e. non-transactional reads go to slaves, writes go to master, database is responsible for replicating changes to slaves.
 				HA-JDBC would add high-availability to cluster through multiple master support while hiding master/slave configuration details from the application.
+			</action>
+		</actions>
+		<actions priority="low">
+			<action type="add" context="code" dev="PF">
+				Support for modifying HA-JDBC configuration at runtime.
+				Workaround is to create "placeholder" DataSources that can be defined and activated as needed.
 			</action>
 		</actions>
 	</todo>
