@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import net.sf.hajdbc.SQLObject;
 import net.sf.hajdbc.Database;
@@ -35,6 +36,8 @@ import net.sf.hajdbc.Database;
  */
 public class Statement extends SQLObject implements java.sql.Statement
 {
+	private static final Pattern SELECT_FOR_UPDATE_PATTERN = Pattern.compile("SELECT\\s+.+\\s+FOR\\s+UPDATE");
+	
 	/**
 	 * Constructs a new StatementProxy.
 	 * @param connection a Connection proxy
@@ -723,6 +726,6 @@ public class Statement extends SQLObject implements java.sql.Statement
 	 */
 	protected boolean isSelectForUpdate(String sql)
 	{
-		return sql.toUpperCase().matches("FOR\\s+UPDATE");
+		return SELECT_FOR_UPDATE_PATTERN.matcher(sql.toUpperCase()).find();
 	}
 }

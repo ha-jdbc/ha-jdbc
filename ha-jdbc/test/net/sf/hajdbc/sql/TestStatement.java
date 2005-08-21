@@ -571,6 +571,46 @@ public class TestStatement extends EasyMockTestCase
 	}
 
 	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.executeQuery(String)'
+	 */
+	public void testSelectForUpdateExecuteQuery()
+	{
+		ResultSet resultSet = (ResultSet) this.createMock(ResultSet.class);
+
+		this.databaseCluster.getBalancer();
+		this.databaseClusterControl.setReturnValue(this.balancer, 3);
+		
+		this.balancer.first();
+		this.balancerControl.setReturnValue(this.database);
+
+		try
+		{
+			this.sqlStatement.getResultSetConcurrency();
+			this.sqlStatementControl.setReturnValue(ResultSet.CONCUR_READ_ONLY);
+			
+			this.balancer.toArray();
+			this.balancerControl.setReturnValue(this.databases, 2);
+			
+			this.sqlStatement.executeQuery("SELECT ME FOR UPDATE");
+			this.sqlStatementControl.setReturnValue(resultSet);
+			
+			this.replay();
+			
+			ResultSet rs = this.statement.executeQuery("SELECT ME FOR UPDATE");
+			
+			this.verify();
+			
+			assertNotNull(rs);
+			assertTrue(SQLObject.class.isInstance(rs));			
+			assertSame(resultSet, ((SQLObject) rs).getObject(this.database));
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+	
+	/*
 	 * Test method for 'net.sf.hajdbc.sql.Statement.executeUpdate(String)'
 	 */
 	public void testExecuteUpdateString()
