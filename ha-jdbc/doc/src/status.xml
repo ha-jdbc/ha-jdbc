@@ -19,6 +19,9 @@
 			<action type="fix" context="code" dev="PF" due-to="Nick Rudnick">
 				Corrected German translation of error messages.
 			</action>
+			<action type="fix" context="code" dev="PF">
+				Fixed infinite loop in AbstractSynchronizationStrategy.getProperties().
+			</action>
 		</release>
 		<release version="1.0-rc-1" date="August 2, 2005">
 			<action type="update" context="code" dev="PF">
