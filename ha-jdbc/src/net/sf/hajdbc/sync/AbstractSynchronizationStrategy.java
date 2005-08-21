@@ -110,9 +110,9 @@ public abstract class AbstractSynchronizationStrategy implements Synchronization
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#setProperties(java.util.Properties)
+	 * @see net.sf.hajdbc.SynchronizationStrategy#writeProperties(java.util.Properties)
 	 */
-	public void setProperties(Properties properties) throws Exception
+	public void writeProperties(Properties properties) throws Exception
 	{
 		if (!properties.isEmpty())
 		{
@@ -164,9 +164,9 @@ public abstract class AbstractSynchronizationStrategy implements Synchronization
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#getProperties()
+	 * @see net.sf.hajdbc.SynchronizationStrategy#readProperties()
 	 */
-	public Properties getProperties() throws Exception
+	public Properties readProperties() throws Exception
 	{
 		Properties properties = new Properties();
 		

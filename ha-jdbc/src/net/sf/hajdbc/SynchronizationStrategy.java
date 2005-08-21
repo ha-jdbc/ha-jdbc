@@ -48,14 +48,14 @@ public interface SynchronizationStrategy
 	 * @return properties
 	 * @throws Exception 
 	 */
-	public Properties getProperties() throws Exception;
+	public Properties readProperties() throws Exception;
 	
 	/**
 	 * Configures this strategy with the specified properties.
 	 * @param properties
 	 * @throws Exception 
 	 */
-	public void setProperties(Properties properties) throws Exception;
+	public void writeProperties(Properties properties) throws Exception;
 	
 	/**
 	 * Synchronizes the an inactive database with an active database using the specified connections.
