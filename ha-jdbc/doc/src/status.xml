@@ -16,6 +16,9 @@
 			<action type="fix" context="code" dev="PF">
 				SELECT...FOR UPDATE queries are now detected and distributed to each database cluster node.
 			</action>
+			<action type="fix" context="code" dev="PF" due-to="Nick Rudnick">
+				Corrected German translation of error messages.
+			</action>
 		</release>
 		<release version="1.0-rc-1" date="August 2, 2005">
 			<action type="update" context="code" dev="PF">
@@ -132,8 +135,8 @@
 			<action type="update" context="code" dev="PF">
 				Protocol parameter is now optional for distributable clusters.
 			</action>
-			<action type="add" context="code" dev="PF">
-				Added error message translations for German, Spanish, French, Italian, and Portuguese (thanks to AltaVista Babel Fish).
+			<action type="add" context="code" dev="PF" due-to="AltaVista Babel Fish">
+				Added error message translations for German, Spanish, French, Italian, and Portuguese.
 			</action>
 			<action type="add" context="code" dev="PF">
 				Added error message for tables without primary keys in DifferentialSynchronizationStrategy.
