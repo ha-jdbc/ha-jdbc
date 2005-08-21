@@ -44,6 +44,6 @@
 	</mapping>
 	<mapping name="sync" class="net.sf.hajdbc.SynchronizationStrategy" factory="net.sf.hajdbc.sync.SynchronizationStrategyFactory.createSynchronizationStrategy">
 		<value name="id" set-method="setId" get-method="getId" style="attribute" ident="def"></value>
-		<structure set-method="setProperties" get-method="getProperties" unmarshaller="net.sf.hajdbc.util.PropertiesUnmarshaller"></structure>
+		<structure set-method="writeProperties" get-method="readProperties" unmarshaller="net.sf.hajdbc.util.PropertiesUnmarshaller"></structure>
 	</mapping>
 </binding>
