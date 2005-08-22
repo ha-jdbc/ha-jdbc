@@ -102,10 +102,7 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 	{
 		DatabaseCommand command = (DatabaseCommand) object;
 		
-		if (log.isInfoEnabled())
-		{
-			log.info(Messages.getMessage(Messages.DATABASE_COMMAND_RECEIVED, command.getClass().getName()));
-		}
+		log.info(Messages.getMessage(Messages.DATABASE_COMMAND_RECEIVED, command.getClass().getName()));
 		
 		try
 		{
