@@ -22,6 +22,9 @@
 			<action type="fix" context="code" dev="PF">
 				Fixed infinite loop in AbstractSynchronizationStrategy.getProperties().
 			</action>
+			<action type="fix" context="code" dev="PF">
+				Fixed bug in LocalDatabaseCluster.loadState() when cluster is empty.
+			</action>
 		</release>
 		<release version="1.0-rc-1" date="August 2, 2005">
 			<action type="update" context="code" dev="PF">

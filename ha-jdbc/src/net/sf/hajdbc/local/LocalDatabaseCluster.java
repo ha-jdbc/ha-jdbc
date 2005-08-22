@@ -75,7 +75,7 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 			
 			String state = preferences.get(this.id, null);
 			
-			return (state != null) ? state.split(DELIMITER) : null;
+			return ((state != null) & (state.length() > 0)) ? state.split(DELIMITER) : null;
 		}
 		catch (BackingStoreException e)
 		{
