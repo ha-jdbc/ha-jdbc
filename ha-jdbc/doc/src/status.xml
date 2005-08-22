@@ -12,7 +12,7 @@
 	</contexts>
 
 	<changes>
-		<release version="1.0-rc-2" date="...">
+		<release version="1.0-rc-2" date="August 21, 2005">
 			<action type="fix" context="code" dev="PF">
 				SELECT...FOR UPDATE queries are now detected and distributed to each database cluster node.
 			</action>
