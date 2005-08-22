@@ -56,6 +56,6 @@ public class DatabaseDeactivationCommand extends DatabaseCommand
 	 */
 	public void execute(DatabaseCluster databaseCluster) throws java.sql.SQLException
 	{
-		databaseCluster.deactivate(this.databaseId);
+		databaseCluster.deactivate(databaseCluster.getDatabase(this.databaseId));
 	}
 }
