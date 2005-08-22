@@ -12,6 +12,11 @@
 	</contexts>
 
 	<changes>
+		<release version="1.0-rc-3" date="...">
+			<action type="fix" context="code" dev="PF">
+				Distributable database activation commands should not reinvoke synchronization.
+			</action>
+		</release>
 		<release version="1.0-rc-2" date="August 21, 2005">
 			<action type="fix" context="code" dev="PF">
 				SELECT...FOR UPDATE queries are now detected and distributed to each database cluster node.
