@@ -40,6 +40,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
 import org.jibx.runtime.IUnmarshallingContext;
+import org.jibx.runtime.JiBXException;
 
 /**
  * @author  Paul Ferraro
@@ -112,13 +113,13 @@ public final class DatabaseClusterFactory
 			
 			return (DatabaseClusterFactory) context.unmarshalDocument(new InputStreamReader(inputStream));
 		}
-		catch (Exception e)
+		catch (IOException e)
 		{
-			String message = Messages.getMessage(Messages.CONFIG_FAILED, resourceURL);
-			
-			log.warn(message, e);
-			
-			throw new SQLException(message, e);
+			throw new SQLException(Messages.getMessage(Messages.CONFIG_NOT_FOUND, resourceURL), e);
+		}
+		catch (JiBXException e)
+		{
+			throw new SQLException(Messages.getMessage(Messages.CONFIG_FAILED, resourceURL), e);
 		}
 		finally
 		{
