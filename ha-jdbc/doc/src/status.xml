@@ -12,6 +12,11 @@
 	</contexts>
 
 	<changes>
+		<release version="1.0-rc-4" date="...">
+			<action type="fix" context="code" dev="PF" due-to="Nick Rudnick">
+				Correct error message when connection to config url fails.
+			</action>
+		</release>
 		<release version="1.0-rc-3" date="August 23, 2005">
 			<action type="fix" context="code" dev="PF">
 				Fixed NullPointerException bug in LocalDatabaseCluster.loadState().
