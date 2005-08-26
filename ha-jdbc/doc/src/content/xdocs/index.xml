@@ -8,14 +8,15 @@
 		<section>
 			<title>Overview</title>
 			<p>
-				HA-JDBC is a JDBC driver proxy that provides light-weight, transparent clustering capability to any underlying JDBC driver.
+				HA-JDBC is a JDBC driver proxy that provides light-weight, transparent, fault tolerant clustering capability to any underlying JDBC driver.
 			</p>
 		</section>
 		<section>
 			<title>Features</title>
 			<ul>
 				<li>Supports any database accessible via JDBC.</li>
-				<li>High-availability - Database cluster can lose a node without failing the current transaction.</li>
+				<li>High-availability/Fault Tolerance - An HA-JDBC database cluster can lose a node without failing/corrupting the current transaction.</li>
+				<li>Live activation/deactivation allows for maintenance/upgrading of a database node without loss of service.</li>
 				<li>Improves performance of concurrent read-access by distributing load across individual nodes.</li>
 				<li>Support for full JDBC 3.0 (Java 1.4) feature set.</li>
 				<li>Compatible with JDBC RowSet implementations found in Java 1.5.</li>
