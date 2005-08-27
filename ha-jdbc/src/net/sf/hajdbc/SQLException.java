@@ -82,7 +82,7 @@ public class SQLException extends java.sql.SQLException
 	 */
 	public SQLException(Throwable cause)
 	{
-		super();
+		super(cause.getMessage());
 		
 		this.initCause(cause);
 	}
