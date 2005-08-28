@@ -177,7 +177,7 @@ public class SQLObject
 					
 					return operation.execute(database, object);
 				}
-				catch (Throwable e)
+				catch (java.sql.SQLException e)
 				{
 					this.databaseCluster.handleFailure(database, e);
 				}
@@ -245,7 +245,7 @@ public class SQLObject
 				throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this.databaseCluster));
 			}
 			
-			throw new SQLException((Throwable) exceptionMap.get(databases[0]));
+			throw (java.sql.SQLException) exceptionMap.values().iterator().next();
 		}
 		
 		// If any databases failed, while others succeeded, deactivate them
@@ -312,7 +312,7 @@ public class SQLObject
 		{
 			Map.Entry exceptionMapEntry = (Map.Entry) exceptionMapEntries.next();
 			Database database = (Database) exceptionMapEntry.getKey();
-			Throwable exception = (Throwable) exceptionMapEntry.getValue();
+			java.sql.SQLException exception = (java.sql.SQLException) exceptionMapEntry.getValue();
 			
 			if (this.databaseCluster.deactivate(database))
 			{

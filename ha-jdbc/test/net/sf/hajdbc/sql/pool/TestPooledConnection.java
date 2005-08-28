@@ -120,8 +120,6 @@ public class TestPooledConnection extends EasyMockTestCase
 
 	public void testHandleException()
 	{
-		Exception exception = new Exception();
-		
 		try
 		{
 			this.databaseCluster.deactivate(this.database);
@@ -129,7 +127,7 @@ public class TestPooledConnection extends EasyMockTestCase
 			
 			this.replay();
 			
-			this.connection.handleExceptions(Collections.singletonMap(this.database, exception));
+			this.connection.handleExceptions(Collections.singletonMap(this.database, new SQLException()));
 			
 			this.verify();
 		}

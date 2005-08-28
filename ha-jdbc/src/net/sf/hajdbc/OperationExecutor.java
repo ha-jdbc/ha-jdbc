@@ -41,7 +41,7 @@ public class OperationExecutor implements Runnable
 	 * @param database a database descriptor
 	 * @param object a SQL object
 	 * @param returnValueMap a Map<Database, Object> that holds the results from the operation execution
-	 * @param exceptionMap a Map<Database, SQLException> that holds the exceptions resulting from the operation execution
+	 * @param exceptionMap a Map<Database, java.sql.SQLException> that holds the exceptions resulting from the operation execution
 	 */
 	public OperationExecutor(DatabaseCluster databaseCluster, Operation operation, Database database, Object object, Map returnValueMap, Map exceptionMap)
 	{
@@ -67,18 +67,27 @@ public class OperationExecutor implements Runnable
 				this.returnValueMap.put(this.database, returnValue);
 			}
 		}
+		catch (java.sql.SQLException e)
+		{
+			this.handleFailure(e);
+		}
 		catch (Throwable e)
 		{
-			try
+			this.handleFailure(new SQLException(e));
+		}
+	}
+	
+	private void handleFailure(java.sql.SQLException exception)
+	{
+		try
+		{
+			this.databaseCluster.handleFailure(this.database, exception);
+		}
+		catch (Throwable e)
+		{
+			synchronized (this.exceptionMap)
 			{
-				this.databaseCluster.handleFailure(this.database, e);
-			}
-			catch (Throwable exception)
-			{
-				synchronized (this.exceptionMap)
-				{
-					this.exceptionMap.put(this.database, e);
-				}
+				this.exceptionMap.put(this.database, exception);
 			}
 		}
 	}

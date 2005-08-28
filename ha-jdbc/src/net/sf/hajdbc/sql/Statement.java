@@ -44,7 +44,7 @@ public class Statement extends SQLObject implements java.sql.Statement
 	 * @param operation an operation that creates Statements
 	 * @throws SQLException if operation execution fails
 	 */
-	public Statement(Connection connection, ConnectionOperation operation) throws java.sql.SQLException
+	public Statement(Connection connection, ConnectionOperation operation) throws SQLException
 	{
 		super(connection, operation);
 	}
@@ -68,7 +68,7 @@ public class Statement extends SQLObject implements java.sql.Statement
 			{
 				Map.Entry exceptionMapEntry = (Map.Entry) exceptionMapEntries.next();
 				Database database = (Database) exceptionMapEntry.getKey();
-				Throwable cause = (Throwable) exceptionMapEntry.getValue();
+				SQLException cause = (SQLException) exceptionMapEntry.getValue();
 				
 				try
 				{

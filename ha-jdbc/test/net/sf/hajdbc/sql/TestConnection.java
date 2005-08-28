@@ -124,7 +124,7 @@ public class TestConnection extends EasyMockTestCase
 			
 			this.replay();
 			
-			this.connection.handleExceptions(Collections.singletonMap(this.database, new Exception()));
+			this.connection.handleExceptions(Collections.singletonMap(this.database, new SQLException()));
 			
 			this.verify();
 		}

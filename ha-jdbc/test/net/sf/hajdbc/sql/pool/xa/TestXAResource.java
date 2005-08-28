@@ -121,8 +121,6 @@ public class TestXAResource extends EasyMockTestCase
 
 	public void testHandleException()
 	{
-		Exception exception = new Exception();
-		
 		try
 		{
 			this.databaseCluster.deactivate(this.database);
@@ -130,7 +128,7 @@ public class TestXAResource extends EasyMockTestCase
 			
 			this.replay();
 			
-			this.resource.handleExceptions(Collections.singletonMap(this.database, exception));
+			this.resource.handleExceptions(Collections.singletonMap(this.database, new SQLException()));
 			
 			this.verify();
 		}

@@ -101,11 +101,11 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 	 * @param cause the cause of the failure
 	 * @throws java.sql.SQLException if the database is alive
 	 */
-	public final void handleFailure(Database database, Throwable cause) throws java.sql.SQLException
+	public final void handleFailure(Database database, java.sql.SQLException cause) throws java.sql.SQLException
 	{
 		if (this.isAlive(database))
 		{
-			throw new SQLException(cause);
+			throw cause;
 		}
 		
 		if (this.deactivate(database))

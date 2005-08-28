@@ -154,8 +154,6 @@ public class TestResultSet extends EasyMockTestCase
 
 	public void testHandleException()
 	{
-		Exception exception = new Exception();
-		
 		try
 		{
 			this.databaseCluster.getBalancer();
@@ -172,7 +170,7 @@ public class TestResultSet extends EasyMockTestCase
 			
 			this.replay();
 			
-			this.resultSet.handleExceptions(Collections.singletonMap(this.database, exception));
+			this.resultSet.handleExceptions(Collections.singletonMap(this.database, new SQLException()));
 			
 			this.verify();
 		}
@@ -184,7 +182,7 @@ public class TestResultSet extends EasyMockTestCase
 
 	public void testAutoCommitOffHandleException()
 	{
-		Exception exception = new Exception();
+		SQLException exception = new SQLException();
 		
 		try
 		{

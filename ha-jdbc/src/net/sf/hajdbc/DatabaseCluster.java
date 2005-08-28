@@ -60,22 +60,22 @@ public interface DatabaseCluster extends DatabaseClusterMBean
 	 * Returns the database identified by the specified id
 	 * @param id a database identifier
 	 * @return a database descriptor
-	 * @throws java.sql.SQLException if no database exists with the specified identifier
+	 * @throws SQLException if no database exists with the specified identifier
 	 */
 	public Database getDatabase(String id) throws SQLException;
 	
 	/**
 	 * Initializes this database cluster.
-	 * @throws java.sql.SQLException if initialization fails
+	 * @throws SQLException if initialization fails
 	 */
-	public void init() throws java.sql.SQLException;
+	public void init() throws SQLException;
 
 	/**
 	 * Loads the persisted state of this database cluster
 	 * @return an array of database identifiers
-	 * @throws java.sql.SQLException if state could not be obtained
+	 * @throws SQLException if state could not be obtained
 	 */
-	public String[] loadState() throws java.sql.SQLException;
+	public String[] loadState() throws SQLException;
 	
 	/**
 	 * Returns the default synchronization strategy for this database cluster
@@ -90,7 +90,7 @@ public interface DatabaseCluster extends DatabaseClusterMBean
 	 * @param cause the cause of the failure
 	 * @throws SQLException if the database is alive
 	 */
-	public void handleFailure(Database database, Throwable cause) throws SQLException;
+	public void handleFailure(Database database, SQLException cause) throws SQLException;
 	
 	/**
 	 * Returns the Balancer implementation used by this database cluster.
