@@ -310,6 +310,9 @@
 
 	<todo>
 		<actions priority="high">
+			<action type="update" context="code" dev="PF">
+				Use thread pooling for OperationExecutor threads for improved efficiency and fault tolerance under high write load.
+			</action>
 			<action type="add" context="code" dev="PF">
 				Add local/distributed locking ability to enhance support for common unique identifier generation mechanisms, namely identity columns and sequences.
 			</action>
