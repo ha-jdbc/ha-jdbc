@@ -16,6 +16,9 @@
 			<action type="fix" context="code" dev="PF" due-to="Nick Rudnick">
 				Correct error message when connection to config url fails.
 			</action>
+			<action type="update" context="code" dev="PF">
+				Avoid wrapping SQLException cause when a database operation fails.
+			</action>
 		</release>
 		<release version="1.0-rc-3" date="August 23, 2005">
 			<action type="fix" context="code" dev="PF">

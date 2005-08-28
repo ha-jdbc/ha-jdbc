@@ -66,6 +66,14 @@
 				</p>
 			</answer>
 		</faq>
+		<faq>
+			<question>Can I use HA-JDBC with Tomcat 5.0?</question>
+			<answer>
+				Yes, but first you will need to upgrade the JMX implementation used by Tomcat (found in $CATALINA_HOME/bin/jmx.jar).
+				Tomcat 5.0 ships with MX4J 1.1.1 which only implements JMX 1.1.
+				Because HA-JDBC uses JMX 1.2, you will need to upgrade this file to MX4J 2.0 or greater (3.0.1 recommended).
+			</answer>
+		</faq>
 	</faqsection>
 	<faqsection>
 		<title>About HA-JDBC</title>
