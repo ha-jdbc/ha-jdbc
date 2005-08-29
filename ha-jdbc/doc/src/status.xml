@@ -12,12 +12,15 @@
 	</contexts>
 
 	<changes>
-		<release version="1.0-rc-4" date="...">
+		<release version="1.0" date="August 28, 2005">
 			<action type="fix" context="code" dev="PF" due-to="Nick Rudnick">
 				Correct error message when connection to config url fails.
 			</action>
 			<action type="update" context="code" dev="PF">
 				Avoid wrapping SQLException cause when a database operation fails.
+			</action>
+			<action type="add" context="doc" dev="PF">
+				Added FAQ section for running HA-JDBC under Tomcat 5.0.
 			</action>
 		</release>
 		<release version="1.0-rc-3" date="August 23, 2005">
