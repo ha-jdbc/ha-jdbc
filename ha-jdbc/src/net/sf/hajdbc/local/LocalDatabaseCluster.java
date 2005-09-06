@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import java.util.regex.Pattern;
 
 import net.sf.hajdbc.AbstractDatabaseCluster;
 import net.sf.hajdbc.Balancer;
@@ -52,7 +53,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class LocalDatabaseCluster extends AbstractDatabaseCluster
 {
-	private static final String DELIMITER = ",";
+	private static final String DELIMITER = Pattern.quote(",");
 	
 	private static Preferences preferences = Preferences.userNodeForPackage(LocalDatabaseCluster.class);
 	private static Log log = LogFactory.getLog(LocalDatabaseCluster.class);
@@ -75,7 +76,31 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 			
 			String state = preferences.get(this.id, null);
 			
-			return ((state != null) && (state.length() > 0)) ? state.split(DELIMITER) : null;
+			if (state == null)
+			{
+				return null;
+			}
+			
+			if (state.length() == 0)
+			{
+				return new String[0];
+			}
+			
+			String[] databases = state.split(DELIMITER);
+			
+			// Validate persisted cluster state
+			for (int i = 0; i < databases.length; ++i)
+			{
+				if (!this.databaseMap.containsKey(databases[i]))
+				{
+					// Persisted cluster state is invalid!
+					preferences.remove(this.id);
+					
+					return null;
+				}
+			}
+			
+			return databases;
 		}
 		catch (BackingStoreException e)
 		{
