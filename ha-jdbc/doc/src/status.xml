@@ -12,7 +12,7 @@
 	</contexts>
 
 	<changes>
-		<release version="1.0" date="August 28, 2005">
+		<release version="1.0-rc-4" date="September 6, 2005">
 			<action type="fix" context="code" dev="PF" due-to="Nick Rudnick">
 				Correct error message when connection to config url fails.
 			</action>
@@ -21,6 +21,15 @@
 			</action>
 			<action type="add" context="doc" dev="PF">
 				Added FAQ section for running HA-JDBC under Tomcat 5.0.
+			</action>
+			<action type="fix" context="code" dev="PF" due-to="Matthew Wooller">
+				Fixed readProperties() and writeProperties(...) methods of AbstractSynchronizationStrategy to ignore the property "class".
+			</action>
+			<action type="add" context="code" dev="PF">
+				Reintroduced PassiveSynchronizationStrategy.
+			</action>
+			<action type="fix" context="code" dev="PF">
+				Added logic to LocalDatabaseCluster.loadState() to validate locally persisted cluster state.
 			</action>
 		</release>
 		<release version="1.0-rc-3" date="August 23, 2005">
