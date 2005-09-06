@@ -79,13 +79,13 @@
 		</bind> 
     </target>
 
-    <target name="jar" depends="bind">
+    <target name="jar" depends="clean, bind">
         <jar jarfile="${jar.file}" index="true">
 			<fileset dir="${build.dir}"></fileset>
 		</jar>
     </target>
 
-	<target name="dist" depends="clean, jar, site">
+	<target name="dist" depends="jar, site">
 		<tar tarfile="${dist.bin.file}" compression="gzip">
 			<tarfileset dir="${basedir}" prefix="${dist.version.name}">
 				<include name="${dist.version.name}.jar"/>
