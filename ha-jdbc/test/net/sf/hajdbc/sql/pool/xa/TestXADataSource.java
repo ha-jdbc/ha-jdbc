@@ -37,7 +37,7 @@ public class TestXADataSource extends DatabaseClusterTestCase
 		
 		XADataSource dataSource = new XADataSource();
 		
-		dataSource.setName("xa-datasource-cluster");
+		dataSource.setName("test-xa-datasource-cluster");
 		
 		this.context.bind("datasource", dataSource);
 	}
@@ -102,7 +102,7 @@ public class TestXADataSource extends DatabaseClusterTestCase
 		{
 			String name = this.getDataSource().getName();
 			
-			assertEquals("xa-datasource-cluster", name);
+			assertEquals("test-xa-datasource-cluster", name);
 		}
 		catch (Exception e)
 		{

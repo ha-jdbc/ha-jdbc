@@ -38,7 +38,7 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 		
 		DataSource dataSource = new DataSource();
 		
-		dataSource.setName("datasource-cluster");
+		dataSource.setName("test-datasource-cluster");
 		
 		this.context.bind("datasource", dataSource);
 	}
@@ -58,7 +58,7 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 	 */
 	public void testGetObjectInstance()
 	{
-		Reference reference = new Reference("net.sf.hajdbc.sql.DataSource", new StringRefAddr(AbstractDataSource.NAME, "datasource-cluster"));
+		Reference reference = new Reference("net.sf.hajdbc.sql.DataSource", new StringRefAddr(AbstractDataSource.NAME, "test-datasource-cluster"));
 		
 		try
 		{
@@ -89,7 +89,7 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 
 	public void testWrongReferenceGetObjectInstance()
 	{
-		Reference reference = new Reference("net.sf.hajdbc.sql.pool.ConnectionPoolDataSource", new StringRefAddr(AbstractDataSource.NAME, "datasource-cluster"));
+		Reference reference = new Reference("net.sf.hajdbc.sql.pool.ConnectionPoolDataSource", new StringRefAddr(AbstractDataSource.NAME, "test-datasource-cluster"));
 		
 		try
 		{

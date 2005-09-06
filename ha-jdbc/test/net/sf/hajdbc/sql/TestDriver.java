@@ -66,7 +66,7 @@ public class TestDriver extends DatabaseClusterTestCase
 	{
 		try
 		{
-			boolean accepted = this.driver.acceptsURL("jdbc:ha-jdbc:database-cluster");
+			boolean accepted = this.driver.acceptsURL("jdbc:ha-jdbc:test-database-cluster");
 			
 			assertTrue(accepted);
 
@@ -99,7 +99,7 @@ public class TestDriver extends DatabaseClusterTestCase
 	{
 		try
 		{
-			Connection connection = this.driver.connect("jdbc:ha-jdbc:database-cluster", null);
+			Connection connection = this.driver.connect("jdbc:ha-jdbc:test-database-cluster", null);
 			
 			assertNotNull(connection);
 			assertEquals("net.sf.hajdbc.sql.Connection", connection.getClass().getName());
@@ -137,7 +137,7 @@ public class TestDriver extends DatabaseClusterTestCase
 	{
 		try
 		{
-			DriverPropertyInfo[] info = this.driver.getPropertyInfo("jdbc:ha-jdbc:database-cluster", null);
+			DriverPropertyInfo[] info = this.driver.getPropertyInfo("jdbc:ha-jdbc:test-database-cluster", null);
 			
 			assertNotNull(info);
 		}

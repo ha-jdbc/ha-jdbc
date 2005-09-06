@@ -48,7 +48,7 @@ public class TestConnectionPoolDataSourceFactory extends DatabaseClusterTestCase
 		
 		ConnectionPoolDataSource dataSource = new ConnectionPoolDataSource();
 		
-		dataSource.setName("pool-datasource-cluster");
+		dataSource.setName("test-pool-datasource-cluster");
 		
 		this.context.bind("datasource", dataSource);
 	}
@@ -68,7 +68,7 @@ public class TestConnectionPoolDataSourceFactory extends DatabaseClusterTestCase
 	 */
 	public void testGetObjectInstance()
 	{
-		Reference reference = new Reference("net.sf.hajdbc.sql.pool.ConnectionPoolDataSource", new StringRefAddr(AbstractDataSource.NAME, "pool-datasource-cluster"));
+		Reference reference = new Reference("net.sf.hajdbc.sql.pool.ConnectionPoolDataSource", new StringRefAddr(AbstractDataSource.NAME, "test-pool-datasource-cluster"));
 		
 		try
 		{
@@ -99,7 +99,7 @@ public class TestConnectionPoolDataSourceFactory extends DatabaseClusterTestCase
 
 	public void testWrongReferenceGetObjectInstance()
 	{
-		Reference reference = new Reference("net.sf.hajdbc.sql.DataSource", new StringRefAddr(AbstractDataSource.NAME, "pool-datasource-cluster"));
+		Reference reference = new Reference("net.sf.hajdbc.sql.DataSource", new StringRefAddr(AbstractDataSource.NAME, "test-pool-datasource-cluster"));
 		
 		try
 		{

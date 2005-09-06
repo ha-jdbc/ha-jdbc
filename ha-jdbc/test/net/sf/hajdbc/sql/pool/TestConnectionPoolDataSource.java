@@ -40,7 +40,7 @@ public class TestConnectionPoolDataSource extends DatabaseClusterTestCase
 		
 		ConnectionPoolDataSource dataSource = new ConnectionPoolDataSource();
 		
-		dataSource.setName("pool-datasource-cluster");
+		dataSource.setName("test-pool-datasource-cluster");
 		
 		this.context.bind("datasource", dataSource);
 	}
@@ -169,7 +169,7 @@ public class TestConnectionPoolDataSource extends DatabaseClusterTestCase
 		{
 			String name = this.getDataSource().getName();
 			
-			assertEquals("pool-datasource-cluster", name);
+			assertEquals("test-pool-datasource-cluster", name);
 		}
 		catch (Exception e)
 		{

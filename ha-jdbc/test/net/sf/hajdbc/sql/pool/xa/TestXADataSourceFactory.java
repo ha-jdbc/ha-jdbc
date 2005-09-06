@@ -25,12 +25,10 @@ import javax.naming.StringRefAddr;
 
 import net.sf.hajdbc.DatabaseClusterTestCase;
 import net.sf.hajdbc.sql.AbstractDataSource;
-import net.sf.hajdbc.sql.pool.ConnectionPoolDataSource;
-import net.sf.hajdbc.sql.pool.ConnectionPoolDataSourceFactory;
 
 public class TestXADataSourceFactory extends DatabaseClusterTestCase
 {
-	private ConnectionPoolDataSourceFactory factory = new ConnectionPoolDataSourceFactory();
+	private XADataSourceFactory factory = new XADataSourceFactory();
 	
 	/**
 	 * @see junit.framework.TestCase#setUp()
@@ -39,9 +37,9 @@ public class TestXADataSourceFactory extends DatabaseClusterTestCase
 	{
 		super.setUp();
 		
-		ConnectionPoolDataSource dataSource = new ConnectionPoolDataSource();
+		XADataSource dataSource = new XADataSource();
 		
-		dataSource.setName("pool-datasource-cluster");
+		dataSource.setName("test-xa-datasource-cluster");
 		
 		this.context.bind("datasource", dataSource);
 	}
@@ -61,14 +59,14 @@ public class TestXADataSourceFactory extends DatabaseClusterTestCase
 	 */
 	public void testGetObjectInstance()
 	{
-		Reference reference = new Reference("net.sf.hajdbc.sql.pool.ConnectionPoolDataSource", new StringRefAddr(AbstractDataSource.NAME, "pool-datasource-cluster"));
+		Reference reference = new Reference("net.sf.hajdbc.sql.pool.xa.XADataSource", new StringRefAddr(AbstractDataSource.NAME, "test-xa-datasource-cluster"));
 		
 		try
 		{
 			Object object = this.factory.getObjectInstance(reference, null, null, null);
 			
 			assertNotNull(object);
-			assertEquals("net.sf.hajdbc.sql.pool.ConnectionPoolDataSource", object.getClass().getName());
+			assertEquals("net.sf.hajdbc.sql.pool.xa.XADataSource", object.getClass().getName());
 		}
 		catch (Exception e)
 		{
@@ -92,7 +90,7 @@ public class TestXADataSourceFactory extends DatabaseClusterTestCase
 
 	public void testWrongReferenceGetObjectInstance()
 	{
-		Reference reference = new Reference("net.sf.hajdbc.sql.DataSource", new StringRefAddr(AbstractDataSource.NAME, "pool-datasource-cluster"));
+		Reference reference = new Reference("net.sf.hajdbc.sql.DataSource", new StringRefAddr(AbstractDataSource.NAME, "test-xa-datasource-cluster"));
 		
 		try
 		{
