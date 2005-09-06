@@ -480,7 +480,7 @@ rowSet.close();
 				<ul>
 					<li><a href="api/net/sf/hajdbc/sync/FullSynchronizationStrategy.html"><code>Full</code></a> - Each table in the inactive database is truncated and data is reinserted from an active database.  This strategy is fastest if the database is way out of sync.</li>
 					<li><a href="api/net/sf/hajdbc/sync/DifferentialSynchronizationStrategy.html"><code>Differential</code></a> - For each table in the inactive database is compared, row by row, with an active database and only changes are updated.  This strategy is fastest if the database is more in sync than not.</li>
-					<li><a href="api/net/sf/hajdbc/sync/PassiveSynchronizationStrategy.html"><code>Passive</code></a> - Does nothing.  Should only be used if databases are known to be in sync.
+					<li><a href="api/net/sf/hajdbc/sync/PassiveSynchronizationStrategy.html"><code>Passive</code></a> - Does nothing.  Should only be used if databases are known to be in sync.</li>
 				</ul>
 				<p>
 					Each synchronization strategy must be defined in the HA-JDBC configuration file.
