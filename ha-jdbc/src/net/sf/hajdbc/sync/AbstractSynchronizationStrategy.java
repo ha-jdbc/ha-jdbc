@@ -124,6 +124,8 @@ public abstract class AbstractSynchronizationStrategy implements Synchronization
 			{
 				PropertyDescriptor descriptor = descriptors[i];
 				
+				if (descriptor.getName().equals("class")) continue;
+				
 				propertyDescriptorMap.put(descriptor.getName(), descriptor);
 			}
 			
@@ -176,12 +178,11 @@ public abstract class AbstractSynchronizationStrategy implements Synchronization
 		{
 			PropertyDescriptor descriptor = descriptors[i];
 			
+			if (descriptor.getName().equals("class")) continue;
+			
 			PropertyEditor editor = PropertyEditorManager.findEditor(descriptor.getPropertyType());
 			
-			if (editor == null)
-			{
-				continue;
-			}
+			if (editor == null) continue;
 			
 			editor.setValue(descriptor.getReadMethod().invoke(this, null));
 			
