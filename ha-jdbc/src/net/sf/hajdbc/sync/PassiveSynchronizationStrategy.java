@@ -28,6 +28,8 @@ import java.util.Properties;
 import net.sf.hajdbc.SynchronizationStrategy;
 
 /**
+ * Trivial {@link SynchronizationStrategy} implementation with an empty {@link SynchronizationStrategy#synchronize(Connection, Connection, List)} method.
+ * 
  * @author  Paul Ferraro
  * @since   1.0
  */
