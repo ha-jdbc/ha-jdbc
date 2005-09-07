@@ -95,7 +95,7 @@
 				<exclude name="compile/**"/>
 				<exclude name="test/**"/>
 			</tarfileset>
-			<tarfileset dir="${doc.build.dir}/site" prefix="${dist.version.name}/doc" includes="site/**"></tarfileset>
+			<tarfileset dir="${doc.build.dir}/site" prefix="${dist.version.name}/doc" includes="**"></tarfileset>
 		</tar>
 	</target>
 	
