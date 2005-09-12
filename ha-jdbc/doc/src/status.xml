@@ -12,6 +12,11 @@
 	</contexts>
 
 	<changes>
+		<release version="1.0" date="...">
+			<action type="update" context="code" dev="PF">
+				If no mbean server can be found, an exception is thrown, rather than attempting to create a new one.
+			</action>
+		</release>
 		<release version="1.0-rc-4" date="September 6, 2005">
 			<action type="fix" context="code" dev="PF" due-to="Nick Rudnick">
 				Correct error message when connection to config url fails.
