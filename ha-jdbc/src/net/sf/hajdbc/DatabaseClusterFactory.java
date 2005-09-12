@@ -177,12 +177,10 @@ public final class DatabaseClusterFactory
 		
 		if (serverList.isEmpty())
 		{
-			this.server = MBeanServerFactory.createMBeanServer();
+			throw new IllegalStateException(Messages.getMessage(Messages.MBEAN_SERVER_NOT_FOUND));
 		}
-		else
-		{
-			this.server = (MBeanServer) serverList.get(0);
-		}
+		
+		this.server = (MBeanServer) serverList.get(0);
 	}
 	
 	/**
