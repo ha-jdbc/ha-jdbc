@@ -23,11 +23,11 @@
 <ha-jdbc>
 	<sync id="passive" class="net.sf.hajdbc.sync.PassiveSynchronizationStrategy"/>
 	<cluster id="test-database-cluster" balancer="simple" default-sync="passive">
-		<database id="database1" weight="2">
+		<database id="database1" weight="1">
 			<driver>net.sf.hajdbc.sql.MockDriver</driver>
 			<url>jdbc:mock:database1</url>
 		</database>
-		<database id="database2" weight="1">
+		<database id="database2" weight="2">
 			<driver>net.sf.hajdbc.sql.MockDriver</driver>
 			<url>jdbc:mock:database2</url>
 		</database>
