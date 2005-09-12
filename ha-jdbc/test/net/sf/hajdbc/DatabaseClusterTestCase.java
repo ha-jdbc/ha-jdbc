@@ -23,6 +23,8 @@ package net.sf.hajdbc;
 import java.sql.DriverManager;
 import java.util.Properties;
 
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.Reference;
@@ -39,12 +41,15 @@ import net.sf.hajdbc.sql.MockDriver;
 public abstract class DatabaseClusterTestCase extends EasyMockTestCase
 {
 	protected Context context;
+	private MBeanServer server;
 	
 	/**
 	 * @see junit.framework.TestCase#setUp()
 	 */
 	protected void setUp() throws Exception
 	{
+		this.server = MBeanServerFactory.createMBeanServer();
+		
 		DriverManager.registerDriver(new MockDriver());
 		
 		Properties properties = new Properties();
@@ -82,6 +87,8 @@ public abstract class DatabaseClusterTestCase extends EasyMockTestCase
 		this.context.unbind("pool-datasource2");
 		this.context.unbind("xa-datasource1");
 		this.context.unbind("xa-datasource2");
+		
+		MBeanServerFactory.releaseMBeanServer(this.server);
 		
 		super.tearDown();
 	}
