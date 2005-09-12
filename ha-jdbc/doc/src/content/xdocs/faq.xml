@@ -3,6 +3,13 @@
 <faqs>
 	<title>Frequently Asked Questions</title>
 	<faqsection>
+		<title>Dependency FAQs</title>
+		<faq>
+			<question>JGroups FAQ</question>
+			<answer><a href="http://www.jgroups.org/javagroupsnew/docs/faq.html">http://www.jgroups.org/javagroupsnew/docs/faq.html</a></answer>
+		</faq>
+	</faqsection>
+	<faqsection>
 		<title>Configuring HA-JDBC</title>
 		<faq>
 			<question>How do I configure HA-JDBC to notify me when a database is deactivated?</question>
@@ -15,13 +22,6 @@
 	</faqsection>
 	<faqsection>
 		<title>Using HA-JDBC</title>
-		<faq>
-			<question>When using the <code><![CDATA[<distributable/>]]></code> feature, I get an <code>org.jgroups.ChannelException</code>: "unable to set up the protocol stack".</question>
-			<answer>
-				The server on which HA-JDBC is running may need additional communcication features installed.
-				Refer to the JGroups <a href="http://www.jgroups.org/javagroupsnew/docs/user/index.html">documentation</a> for more specifics.
-			</answer>
-		</faq>
 		<faq>
 			<question>I get a java.lang.OutOfMemoryError when synchronizing a failed cluster node.  Why?</question>
 			<answer>
