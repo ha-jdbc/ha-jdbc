@@ -8,15 +8,11 @@
 		<section>
 			<title>Requirements</title>
 			<ul>
-				<li>
-					<p>Java Runtime Environment (1.4 or greater)</p>
-				</li>
-				<li>
-					<p>JDBC 3.0 compliant driver (Type IV recommended)</p>
-				</li>
-				<li>
-					<p>JMX provider (1.2 or greater) e.g.</p>
+				<li>Java Runtime Environment (1.4 or greater)</li>
+				<li>JDBC 3.0 compliant driver (Type IV recommended)</li>
+				<li>JMX provider (1.2 or greater) e.g.
 					<ul>
+						<li><a href="http://java.sun.com/j2se/1.5.0/">JDK 5.0</a></li>
 						<li><a href="http://java.sun.com/products/JavaManagement/index.jsp">Sun Reference Implemenation</a></li>
 						<li><a href="http://mx4j.sourceforge.net">MX4J</a></li>
 						<li><a href="http://www.xmojo.org/products/xmojo">XMOJO</a></li>
@@ -24,9 +20,7 @@
 						<li><a href="http://www.huihoo.org/jfox/jfoxmx/index.html">JFoxMX</a></li>
 					</ul>
 				</li>
-				<li>
-					<p>All databases in cluster must initially be in sync.</p>
-				</li>
+				<li>All databases in cluster must initially be in sync.</li>
 			</ul>
 		</section>
 		<section>
@@ -45,6 +39,7 @@
 <ha-jdbc>
   <sync id="diff" class="net.sf.hajdbc.sync.DifferentialSynchronizationStrategy"></sync>
   <sync id="full" class="net.sf.hajdbc.sync.FullSynchronizationStrategy"></sync>
+  <sync id="passive" class="net.sf.hajdbc.sync.PassiveSynchronizationStrategy"></sync>
   <cluster id="cluster" balancer="simple" default-sync="diff">
     <database id="database1" weight="1">
       <driver>org.postgresql.Driver</driver>
