@@ -546,6 +546,7 @@ public class FasterFullSynchronizationStrategy extends net.sf.hajdbc.sync.FullSy
 					For those that do not, there exist many 3rd-party JMX clients that provide easy graphical interfaces for managing mbeans:
 				</p>
 				<ul>
+					<li><a href="http://java.sun.com/j2se/1.5.0/docs/tooldocs/share/jconsole.html">JDK 5.0's jconsole</a></li>
 					<li><a href="http://mc4j.sourceforge.net/">MC4J</a></li>
 					<li><a href="http://ejtools.sourceforge.net/applications/jmx.browser/">EJTools JMX Browser</a></li>
 					<li><a href="http://panoptesmgmt.sourceforge.net/">Panoptes</a></li>
