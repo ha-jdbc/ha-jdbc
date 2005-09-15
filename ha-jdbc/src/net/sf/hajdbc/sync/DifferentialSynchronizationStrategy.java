@@ -85,6 +85,7 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 		inactiveConnection.setAutoCommit(false);
 		
 		DatabaseMetaData databaseMetaData = inactiveConnection.getMetaData();
+		String quote = databaseMetaData.getIdentifierQuoteString();
 		
 		Map primaryKeyColumnMap = new TreeMap();
 		Set primaryKeyColumnIndexSet = new LinkedHashSet();
@@ -122,13 +123,13 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 			Key.executeSQL(inactiveConnection, UniqueKey.collect(inactiveConnection, table, primaryKeyName), this.dropUniqueKeySQL);
 			
 			// Retrieve table rows in primary key order
-			StringBuffer buffer = new StringBuffer("SELECT * FROM ").append(table).append(" ORDER BY ");
+			StringBuffer buffer = new StringBuffer("SELECT * FROM ").append(quote).append(table).append(quote).append(" ORDER BY ");
 			
 			Iterator primaryKeyColumns = primaryKeyColumnMap.values().iterator();
 			
 			while (primaryKeyColumns.hasNext())
 			{
-				buffer.append(primaryKeyColumns.next());
+				buffer.append(quote).append(primaryKeyColumns.next()).append(quote);
 				
 				if (primaryKeyColumns.hasNext())
 				{
@@ -173,7 +174,7 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 			}
 			
 			// Construct DELETE SQL
-			StringBuffer deleteSQL = new StringBuffer("DELETE FROM ").append(table).append(" WHERE ");
+			StringBuffer deleteSQL = new StringBuffer("DELETE FROM ").append(quote).append(table).append(quote).append(" WHERE ");
 			
 			// Create set of primary key columns
 			primaryKeyColumns = primaryKeyColumnMap.values().iterator();
@@ -189,7 +190,7 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 					deleteSQL.append(" AND ");
 				}
 				
-				deleteSQL.append(primaryKeyColumn).append(" = ?");
+				deleteSQL.append(quote).append(primaryKeyColumn).append(quote).append(" = ?");
 			}
 
 			PreparedStatement deleteStatement = inactiveConnection.prepareStatement(deleteSQL.toString());
@@ -199,7 +200,7 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 			int[] types = new int[columns + 1];
 			
 			// Construct INSERT SQL
-			StringBuffer insertSQL = new StringBuffer("INSERT INTO ").append(table).append(" (");
+			StringBuffer insertSQL = new StringBuffer("INSERT INTO ").append(quote).append(table).append(quote).append(" (");
 			
 			for (int i = 1; i <= columns; ++i)
 			{
@@ -210,7 +211,7 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 					insertSQL.append(", ");
 				}
 				
-				insertSQL.append(resultSetMetaData.getColumnName(i));
+				insertSQL.append(quote).append(resultSetMetaData.getColumnName(i)).append(quote);
 			}
 
 			insertSQL.append(") VALUES (");

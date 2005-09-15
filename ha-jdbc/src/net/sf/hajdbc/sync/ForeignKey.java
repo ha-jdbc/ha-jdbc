@@ -60,14 +60,14 @@ public class ForeignKey extends Key
 	{
 		super(name, table, quote);
 		
-		this.column = column;
-		this.foreignTable = foreignTable;
-		this.foreignColumn = foreignColumn;
+		this.column = quote + column + quote;
+		this.foreignTable = quote + foreignTable + quote;
+		this.foreignColumn = quote + foreignColumn + quote;
 	}
 	
 	protected String formatSQL(String pattern)
 	{
-		return MessageFormat.format(pattern, new Object[] { this.quote(this.name), this.table, this.column, this.quote(this.foreignTable), this.foreignColumn });
+		return MessageFormat.format(pattern, new Object[] { this.name, this.table, this.column, this.foreignTable, this.foreignColumn });
 	}
 	
 	/**

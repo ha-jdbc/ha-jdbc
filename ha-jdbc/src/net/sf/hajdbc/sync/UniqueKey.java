@@ -59,10 +59,11 @@ public class UniqueKey extends Key
 	/**
 	 * @param position
 	 * @param column
+	 * @param quote
 	 */
-	public void addColumn(short position, String column)
+	public void addColumn(short position, String column, String quote)
 	{
-		this.columnMap.put(new Short(position), column);
+		this.columnMap.put(new Short(position), quote + column + quote);
 	}
 	
 	protected String formatSQL(String pattern)
@@ -81,7 +82,7 @@ public class UniqueKey extends Key
 			}
 		}
 		
-		return MessageFormat.format(pattern, new Object[] { this.quote(this.name), this.table, buffer.toString() });
+		return MessageFormat.format(pattern, new Object[] { this.name, this.table, buffer.toString() });
 	}
 	
 	/**
@@ -118,7 +119,7 @@ public class UniqueKey extends Key
 			short position = resultSet.getShort("ORDINAL_POSITION");
 			String column = resultSet.getString("COLUMN_NAME");
 			
-			key.addColumn(position, column);
+			key.addColumn(position, column, quote);
 		}
 		
 		resultSet.close();

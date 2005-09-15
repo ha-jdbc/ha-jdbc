@@ -39,22 +39,15 @@ public abstract class Key
 	
 	protected String name;
 	protected String table;
-	protected String quote;
 	
 	protected Key(String name, String table, String quote)
 	{
-		this.name = name;
-		this.table = table;
-		this.quote = quote;
+		this.name = quote + name + quote;
+		this.table = quote + table + quote;
 	}
 	
 	protected abstract String formatSQL(String pattern);
 
-	protected String quote(String identifier)
-	{
-		return this.quote + identifier + this.quote;
-	}
-	
 	/**
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */

@@ -177,6 +177,7 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 			List tableList = new LinkedList();
 			
 			DatabaseMetaData databaseMetaData = inactiveConnection.getMetaData();
+			String quote = databaseMetaData.getIdentifierQuoteString();
 			ResultSet resultSet = databaseMetaData.getTables(null, null, "%", new String[] { "TABLE" });
 			
 			while (resultSet.next())
@@ -208,7 +209,7 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 				{
 					String table = (String) tables.next();
 					
-					statement.execute("SELECT count(*) FROM " + table);
+					statement.execute("SELECT count(*) FROM " + quote + table + quote);
 				}
 				
 				statement.close();

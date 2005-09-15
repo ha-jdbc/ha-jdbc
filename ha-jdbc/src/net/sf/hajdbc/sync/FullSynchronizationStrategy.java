@@ -71,6 +71,7 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 	public void synchronize(Connection inactiveConnection, Connection activeConnection, List tableList) throws SQLException
 	{
 		inactiveConnection.setAutoCommit(true);
+		String quote = inactiveConnection.getMetaData().getIdentifierQuoteString();
 		
 		// Drop foreign keys
 		Key.executeSQL(inactiveConnection, ForeignKey.collect(inactiveConnection, tableList), this.dropForeignKeySQL);
@@ -84,7 +85,7 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 			String table = (String) tables.next();
 			
 			String deleteSQL = MessageFormat.format(this.truncateTableSQL, new Object[] { table });
-			String selectSQL = "SELECT * FROM " + table;
+			String selectSQL = "SELECT * FROM " + quote + table + quote;
 
 			if (log.isDebugEnabled())
 			{
@@ -117,11 +118,11 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 				throw deleteStatement.getWarnings();
 			}
 			
-			log.info(Messages.getMessage(Messages.DELETE_COUNT, new Object[] { new Integer(deletedRows), table }));
+			log.info(Messages.getMessage(Messages.DELETE_COUNT, new Object[] { new Integer(deletedRows), quote + table + quote }));
 			
 			deleteStatement.close();
 			
-			StringBuffer insertSQL = new StringBuffer("INSERT INTO ").append(table).append(" (");
+			StringBuffer insertSQL = new StringBuffer("INSERT INTO ").append(quote).append(table).append(quote).append(" (");
 
 			ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
 			
@@ -134,7 +135,7 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 					insertSQL.append(", ");
 				}
 				
-				insertSQL.append(resultSetMetaData.getColumnName(i));
+				insertSQL.append(quote).append(resultSetMetaData.getColumnName(i)).append(quote);
 			}
 			
 			insertSQL.append(") VALUES (");
