@@ -12,9 +12,12 @@
 	</contexts>
 
 	<changes>
-		<release version="1.0" date="...">
+		<release version="1.0-rc-5" date="September 15, 2005">
 			<action type="update" context="code" dev="PF">
-				If no mbean server can be found, an exception is thrown, rather than attempting to create a new one.
+				During DatabaseClusterFactory initialization, if no mbean server can be found, an exception is thrown, rather than attempting to create a new one.
+			</action>
+			<action type="fix" context="code" dev="PF">
+				Quote all identifiers used in synchronization to prevent SQL syntax errors in identifier is a reserved word.
 			</action>
 		</release>
 		<release version="1.0-rc-4" date="September 6, 2005">
