@@ -44,6 +44,7 @@ public class UniqueKey extends Key
 	public static final String DEFAULT_DROP_SQL = "ALTER TABLE {1} DROP CONSTRAINT {0}";
 	
 	private Map columnMap = new TreeMap();
+	private String quote;
 	
 	/**
 	 * Constructs a new UniqueKey.
@@ -54,16 +55,17 @@ public class UniqueKey extends Key
 	public UniqueKey(String name, String table, String quote)
 	{
 		super(name, table, quote);
+		
+		this.quote = quote;
 	}
 	
 	/**
 	 * @param position
 	 * @param column
-	 * @param quote
 	 */
-	public void addColumn(short position, String column, String quote)
+	public void addColumn(short position, String column)
 	{
-		this.columnMap.put(new Short(position), quote + column + quote);
+		this.columnMap.put(new Short(position), this.quote + column + this.quote);
 	}
 	
 	protected String formatSQL(String pattern)
@@ -119,7 +121,7 @@ public class UniqueKey extends Key
 			short position = resultSet.getShort("ORDINAL_POSITION");
 			String column = resultSet.getString("COLUMN_NAME");
 			
-			key.addColumn(position, column, quote);
+			key.addColumn(position, column);
 		}
 		
 		resultSet.close();
