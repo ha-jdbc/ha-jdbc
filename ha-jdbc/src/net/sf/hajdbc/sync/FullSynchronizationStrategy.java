@@ -84,7 +84,7 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 		{
 			String table = (String) tables.next();
 			
-			String deleteSQL = MessageFormat.format(this.truncateTableSQL, new Object[] { table });
+			String deleteSQL = MessageFormat.format(this.truncateTableSQL, new Object[] { quote + table + quote });
 			String selectSQL = "SELECT * FROM " + quote + table + quote;
 
 			if (log.isDebugEnabled())
@@ -118,7 +118,7 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 				throw deleteStatement.getWarnings();
 			}
 			
-			log.info(Messages.getMessage(Messages.DELETE_COUNT, new Object[] { new Integer(deletedRows), quote + table + quote }));
+			log.info(Messages.getMessage(Messages.DELETE_COUNT, new Object[] { new Integer(deletedRows), table }));
 			
 			deleteStatement.close();
 			
