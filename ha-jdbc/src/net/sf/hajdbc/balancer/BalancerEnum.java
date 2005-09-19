@@ -62,7 +62,7 @@ public final class BalancerEnum
 		}
 		catch (Exception e)
 		{
-			throw new IllegalArgumentException(e);
+			throw new IllegalArgumentException(e.getMessage());
 		}
 	}
 	

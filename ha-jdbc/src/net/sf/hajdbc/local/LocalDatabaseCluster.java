@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import java.util.regex.Pattern;
 
 import net.sf.hajdbc.AbstractDatabaseCluster;
 import net.sf.hajdbc.Balancer;
@@ -53,7 +52,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class LocalDatabaseCluster extends AbstractDatabaseCluster
 {
-	private static final String DELIMITER = Pattern.quote(",");
+	private static final String DELIMITER = ",";
 	
 	private static Preferences preferences = Preferences.userNodeForPackage(LocalDatabaseCluster.class);
 	private static Log log = LogFactory.getLog(LocalDatabaseCluster.class);
