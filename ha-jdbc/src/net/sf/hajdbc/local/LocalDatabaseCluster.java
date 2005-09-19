@@ -291,19 +291,29 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 		this.databaseMap.put(database.getId(), database);
 	}
 	
-	void createConnectionFactories() throws Exception
+	void createConnectionFactories() throws java.sql.SQLException
 	{
-		Map connectionFactoryMap = new HashMap(this.databaseMap.size());
-		
-		Iterator databases = this.databaseMap.values().iterator();
-		
-		while (databases.hasNext())
+		try
 		{
-			Database database = (Database) databases.next();
-
-			connectionFactoryMap.put(database, database.createConnectionFactory());
+			Map connectionFactoryMap = new HashMap(this.databaseMap.size());
+			
+			Iterator databases = this.databaseMap.values().iterator();
+			
+			while (databases.hasNext())
+			{
+				Database database = (Database) databases.next();
+	
+				connectionFactoryMap.put(database, database.createConnectionFactory());
+			}
+	
+			this.connectionFactory = new ConnectionFactory(this, connectionFactoryMap);
 		}
-
-		this.connectionFactory = new ConnectionFactory(this, connectionFactoryMap);
+		catch (java.sql.SQLException e)
+		{
+			// JiBX will mask this exception, so log it here
+			log.error(e.getMessage(), e);
+			
+			throw e;
+		}
 	}
 }

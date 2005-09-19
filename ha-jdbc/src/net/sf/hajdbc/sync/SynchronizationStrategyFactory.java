@@ -20,10 +20,12 @@
  */
 package net.sf.hajdbc.sync;
 
+import net.sf.hajdbc.SynchronizationStrategy;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jibx.runtime.IUnmarshallingContext;
 import org.jibx.runtime.impl.UnmarshallingContext;
-
-import net.sf.hajdbc.SynchronizationStrategy;
 
 /**
  * @author  Paul Ferraro
@@ -33,6 +35,8 @@ public class SynchronizationStrategyFactory
 {
 	private static final String CLASS = "class";
 	
+	private static Log log = LogFactory.getLog(SynchronizationStrategyFactory.class);
+	
 	/**
 	 * Factory method for creating synchronization strategies
 	 * @param ctx the current unmarshalling context
@@ -41,14 +45,25 @@ public class SynchronizationStrategyFactory
 	 */
 	public static SynchronizationStrategy createSynchronizationStrategy(IUnmarshallingContext ctx) throws Exception
 	{
-		UnmarshallingContext context = (UnmarshallingContext) ctx;
-		
-		String className = context.attributeText(null, CLASS);
-		
-		return (SynchronizationStrategy) Class.forName(className).newInstance();
+		try
+		{
+			UnmarshallingContext context = (UnmarshallingContext) ctx;
+			
+			String className = context.attributeText(null, CLASS);
+			
+			return (SynchronizationStrategy) Class.forName(className).newInstance();
+		}
+		catch (Exception e)
+		{
+			// JiBX will mask this exception, so log it here
+			log.error(e.getMessage(), e);
+			
+			throw e;
+		}
 	}
 	
 	private SynchronizationStrategyFactory()
 	{
+		// Do nothing
 	}
 }
