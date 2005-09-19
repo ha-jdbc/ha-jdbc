@@ -12,6 +12,14 @@
 	</contexts>
 
 	<changes>
+		<release version="1.0" date="...">
+			<action type="fix" context="code" dev="PF" due-to="Roman Kurmanowytsch">
+				Fixed JDK 1.4 source compatibility issues.
+			</action>
+			<action type="fix" context="code" dev="PF">
+				Added explicit logging to expose root causes of exception that are hidden by JiBX.
+			</action>
+		</release>
 		<release version="1.0-rc-5" date="September 15, 2005">
 			<action type="update" context="code" dev="PF">
 				During DatabaseClusterFactory initialization, if no mbean server can be found, an exception is thrown, rather than attempting to create a new one.
