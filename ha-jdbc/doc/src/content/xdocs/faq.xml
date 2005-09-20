@@ -173,10 +173,11 @@
 								No - several open source solutions already exist and can be used in conjunction with HA-JDBC:
 							</p>
 							<ul>
-								<li><a href="http://c3p0.sourceforge.net/">c3p0</a></li>
-								<li><a href="http://proxool.sourceforge.net/">Proxool</a></li>
+								<li><a href="http://c3p0.sourceforge.net">c3p0</a></li>
+								<li><a href="http://proxool.sourceforge.net">Proxool</a></li>
 								<li><a href="http://jakarta.apache.org/commons/dbcp">Commons DBCP</a></li>
-								<li><a href="http://xapool.objectweb.org/">XAPool</a></li>
+								<li><a href="http://xapool.objectweb.org">XAPool</a></li>
+								<li><a href="http://www.primrose.org.uk">Primrose</a></li>
 							</ul>
 						</td>
 						<td>
