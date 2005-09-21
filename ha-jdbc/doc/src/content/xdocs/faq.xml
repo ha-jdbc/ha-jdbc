@@ -74,6 +74,19 @@
 				Because HA-JDBC uses JMX 1.2, you will need to upgrade this file to MX4J 2.0 or greater (3.0.1 recommended).
 			</answer>
 		</faq>
+		<faq>
+			<question>HA-JDBC remembers which databases were inactive even after I restart my JVM.  Where is this state recorded and how do I clear it?</question>
+			<answer>
+				<p>
+					HA-JDBC uses the Java preferences API to persist the local database cluster state.
+					The default storage mechanism varies depending on your operating system.
+				</p>
+				<p>On Unix-based systems, the cluster state will be stored on the file system within the user's home directory:</p>
+				<p><code>~/.java/.userPrefs/net/sf/hajdbc/local/prefs.xml</code></p>
+				<p>On Windows-based systems, the cluster state will be stored in the registry:</p>
+				<p><code>HKEY_CURRENT_USER\Software\JavaSoft\Prefs\net\sf\hajdbc\local\</code><em>cluster-name</em></p>
+			</answer>
+		</faq>
 	</faqsection>
 	<faqsection>
 		<title>About HA-JDBC</title>
