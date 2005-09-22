@@ -87,6 +87,26 @@
 				<p><code>HKEY_CURRENT_USER\Software\JavaSoft\Prefs\net\sf\hajdbc\local\</code><em>cluster-name</em></p>
 			</answer>
 		</faq>
+		<faq>
+			<question>
+				Why does my application need to specify a username and password when making database connections through HA-JDBC when the necessary authentication information is already specified in its configuration file?
+			</question>
+			<answer>
+				<p>
+					The username and password set in the configuration file are only used by HA-JDBC when it needs to connect to a database independently of your application.  e.g. during synchronization, DatabaseCluster.isAlive() calls, etc.
+					When your application connects to the database, the authentication information specified is passed through to the underlying driver.
+				</p>
+				<p>
+					The purpose of this authentication pass-through is to retain the flexibility your application had without HA-JDBC to use an appropriate database user (with and appropriate set of permissions) for a given task.
+					Traditionally, applications will use a database user with select/insert/update/delete privileges only.  Often application do not need to write information to a database and use a database user with select privileges only.
+					The database user that is used by HA-JDBC should be more of a root/superuser, with specific abilities to drop and create indexes and foreign keys (used during synchronization).
+				</p>
+				<p>
+					Since the same password will be passed through to each database, the user used by your application must exist and have the same password on each database in your cluster.
+					The usernames/passwords used by HA-JDBC (as specified in the configuration file), however, do not need to be the same on each database.
+				</p>
+			</answer>
+		</faq>
 	</faqsection>
 	<faqsection>
 		<title>About HA-JDBC</title>
