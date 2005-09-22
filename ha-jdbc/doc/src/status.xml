@@ -12,7 +12,7 @@
 	</contexts>
 
 	<changes>
-		<release version="1.0" date="...">
+		<release version="1.0" date="September 22, 2005">
 			<action type="fix" context="code" dev="PF" due-to="Roman Kurmanowytsch">
 				Fixed JDK 1.4 source compatibility issues.
 			</action>
