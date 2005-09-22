@@ -22,6 +22,12 @@
 			<action type="add" context="doc" dev="PF">
 				Added FAQ section for manually deleting local cluster state.
 			</action>
+			<action type="add" context="doc" dev="PF">
+				Added FAQ section for distinguishing application database users vs. HA-JDBC database users.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded EasyMock to 1.2.
+			</action>
 		</release>
 		<release version="1.0-rc-5" date="September 15, 2005">
 			<action type="update" context="code" dev="PF">
