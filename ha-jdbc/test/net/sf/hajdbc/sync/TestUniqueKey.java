@@ -124,7 +124,7 @@ public class TestUniqueKey extends EasyMockTestCase
 	 */
 	public void testHashCode()
 	{
-		UniqueKey key = new UniqueKey("test", null, null);
+		UniqueKey key = new UniqueKey("test", null, "");
 		
 		assertEquals("test".hashCode(), key.hashCode());
 	}
@@ -134,7 +134,7 @@ public class TestUniqueKey extends EasyMockTestCase
 	 */
 	public void testEqualsObject()
 	{
-		UniqueKey key1 = new UniqueKey("test", null, null);
+		UniqueKey key1 = new UniqueKey("test", null, "");
 		UniqueKey key2 = new UniqueKey("test", "", "");
 		UniqueKey key3 = new UniqueKey("testing", "", "");
 		
@@ -153,7 +153,7 @@ public class TestUniqueKey extends EasyMockTestCase
 			this.connection.createStatement();
 			this.connectionControl.setReturnValue(this.statement);
 			
-			this.statement.execute("ALTER TABLE table ADD CONSTRAINT 'idx' UNIQUE (col1, col2)");
+			this.statement.execute("ALTER TABLE 'table' ADD CONSTRAINT 'idx' UNIQUE ('col1', 'col2')");
 			this.statementControl.setReturnValue(true);
 			
 			this.statement.close();

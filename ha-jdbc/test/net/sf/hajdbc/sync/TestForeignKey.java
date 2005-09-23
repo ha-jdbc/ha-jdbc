@@ -109,7 +109,7 @@ public class TestForeignKey extends EasyMockTestCase
 	 */
 	public void testHashCode()
 	{
-		ForeignKey key = new ForeignKey("test", null, null, null, null, null);
+		ForeignKey key = new ForeignKey("test", null, null, null, null, "");
 		
 		assertEquals("test".hashCode(), key.hashCode());
 	}
@@ -120,8 +120,8 @@ public class TestForeignKey extends EasyMockTestCase
 	public void testEqualsObject()
 	{
 		ForeignKey key1 = new ForeignKey("test", "", "", "", "", "");
-		ForeignKey key2 = new ForeignKey("test", null, null, null, null, null);
-		ForeignKey key3 = new ForeignKey("testing", null, null, null, null, null);
+		ForeignKey key2 = new ForeignKey("test", null, null, null, null, "");
+		ForeignKey key3 = new ForeignKey("testing", null, null, null, null, "");
 		
 		assertTrue(key1.equals(key2));
 		assertFalse(key1.equals(key3));
@@ -138,7 +138,7 @@ public class TestForeignKey extends EasyMockTestCase
 			this.connection.createStatement();
 			this.connectionControl.setReturnValue(this.statement);
 			
-			this.statement.execute("ALTER TABLE fk_table ADD CONSTRAINT 'fk' FOREIGN KEY (fk_col) REFERENCES 'pk_table' (pk_col)");
+			this.statement.execute("ALTER TABLE 'fk_table' ADD CONSTRAINT 'fk' FOREIGN KEY ('fk_col') REFERENCES 'pk_table' ('pk_col')");
 			this.statementControl.setReturnValue(true);
 			
 			this.statement.close();
