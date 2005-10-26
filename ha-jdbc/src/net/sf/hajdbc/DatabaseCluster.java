@@ -22,6 +22,8 @@ package net.sf.hajdbc;
 
 import java.sql.SQLException;
 
+import edu.emory.mathcs.backport.java.util.concurrent.ExecutorService;
+
 
 /**
  * @author  Paul Ferraro
@@ -97,4 +99,10 @@ public interface DatabaseCluster extends DatabaseClusterMBean
 	 * @return a Balancer implementation
 	 */
 	public Balancer getBalancer();
+	
+	/**
+	 * Returns an executor service used to asynchronously execute database writes.
+	 * @return an implementation of ExecutorService
+	 */
+	public ExecutorService getExecutor();
 }

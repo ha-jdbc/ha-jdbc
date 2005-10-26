@@ -51,6 +51,8 @@ import net.sf.hajdbc.Operation;
 
 import org.easymock.MockControl;
 
+import edu.emory.mathcs.backport.java.util.concurrent.Executors;
+
 /**
  * @author  Paul Ferraro
  * @since   1.0
@@ -86,6 +88,9 @@ public class TestResultSet extends EasyMockTestCase
 	 */
 	protected void setUp() throws Exception
 	{
+		this.databaseCluster.getExecutor();
+		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor(), 3);
+		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 6);
 		
@@ -357,6 +362,9 @@ public class TestResultSet extends EasyMockTestCase
 	 */
 	public void testClose()
 	{
+		this.databaseCluster.getExecutor();
+		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 2);
 		
@@ -385,6 +393,9 @@ public class TestResultSet extends EasyMockTestCase
 	 */
 	public void testDeleteRow()
 	{
+		this.databaseCluster.getExecutor();
+		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 2);
 		
@@ -2517,6 +2528,9 @@ public class TestResultSet extends EasyMockTestCase
 	 */
 	public void testInsertRow()
 	{
+		this.databaseCluster.getExecutor();
+		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 2);
 		
@@ -2925,6 +2939,9 @@ public class TestResultSet extends EasyMockTestCase
 	 */
 	public void testRefreshRow()
 	{
+		this.databaseCluster.getExecutor();
+		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 2);
 		
@@ -4289,6 +4306,9 @@ public class TestResultSet extends EasyMockTestCase
 	{
 		try
 		{
+			this.databaseCluster.getExecutor();
+			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+			
 			this.databaseCluster.getBalancer();
 			this.databaseClusterControl.setReturnValue(this.balancer, 2);
 			

@@ -35,6 +35,12 @@ import net.sf.hajdbc.Messages;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import edu.emory.mathcs.backport.java.util.concurrent.Callable;
+import edu.emory.mathcs.backport.java.util.concurrent.ExecutionException;
+import edu.emory.mathcs.backport.java.util.concurrent.ExecutorService;
+import edu.emory.mathcs.backport.java.util.concurrent.Executors;
+import edu.emory.mathcs.backport.java.util.concurrent.Future;
+
 /**
  * Database-independent synchronization strategy that only updates differences between two databases.
  * This strategy is best used when there are <em>many</em> differences between the active database and the inactive database (i.e. very much out of sync).
@@ -64,6 +70,7 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 
 	private String truncateTableSQL = "DELETE FROM {0}";
 	private int maxBatchSize = 100;
+	private ExecutorService executor = Executors.newSingleThreadExecutor();
 
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, java.util.List)
@@ -80,127 +87,134 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 		
 		Iterator tables = tableList.iterator();
 		
-		while (tables.hasNext())
+		try
 		{
-			String table = (String) tables.next();
-			
-			String deleteSQL = MessageFormat.format(this.truncateTableSQL, new Object[] { quote + table + quote });
-			String selectSQL = "SELECT * FROM " + quote + table + quote;
-
-			if (log.isDebugEnabled())
+			while (tables.hasNext())
 			{
-				log.debug(deleteSQL);
-			}
-			
-			Statement deleteStatement = inactiveConnection.createStatement();
-
-			Statement selectStatement = activeConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			selectStatement.setFetchSize(this.fetchSize);
-			
-			Thread deleteExecutor = new Thread(new StatementExecutor(deleteStatement, deleteSQL));
-			deleteExecutor.start();
-
-			ResultSet resultSet = selectStatement.executeQuery(selectSQL);
-			
-			try
-			{
-				deleteExecutor.join();
-			}
-			catch (InterruptedException e)
-			{
-				// Statement executor cannot be interrupted
-			}
-			
-			int deletedRows = deleteStatement.getUpdateCount();
-			
-			if (deletedRows < 0)
-			{
-				throw deleteStatement.getWarnings();
-			}
-			
-			log.info(Messages.getMessage(Messages.DELETE_COUNT, new Object[] { new Integer(deletedRows), table }));
-			
-			deleteStatement.close();
-			
-			StringBuffer insertSQL = new StringBuffer("INSERT INTO ").append(quote).append(table).append(quote).append(" (");
-
-			ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-			
-			int columns = resultSetMetaData.getColumnCount();
-			
-			for (int i = 1; i <= columns; ++i)
-			{
-				if (i > 1)
+				String table = (String) tables.next();
+				
+				final String selectSQL = "SELECT * FROM " + quote + table + quote;
+				
+				final Statement selectStatement = activeConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				selectStatement.setFetchSize(this.fetchSize);
+				
+				Callable callable = new Callable()
 				{
-					insertSQL.append(", ");
+					public Object call() throws SQLException
+					{
+						return selectStatement.executeQuery(selectSQL);
+					}
+				};
+	
+				Future future = this.executor.submit(callable);
+				
+				String deleteSQL = MessageFormat.format(this.truncateTableSQL, new Object[] { quote + table + quote });
+	
+				if (log.isDebugEnabled())
+				{
+					log.debug(deleteSQL);
 				}
 				
-				insertSQL.append(quote).append(resultSetMetaData.getColumnName(i)).append(quote);
-			}
-			
-			insertSQL.append(") VALUES (");
-			
-			for (int i = 1; i <= columns; ++i)
-			{
-				if (i > 1)
-				{
-					insertSQL.append(", ");
-				}
+				Statement deleteStatement = inactiveConnection.createStatement();
+	
+				int deletedRows = deleteStatement.getUpdateCount();
 				
-				insertSQL.append("?");
-			}
-			
-			insertSQL.append(")");
-			
-			PreparedStatement insertStatement = inactiveConnection.prepareStatement(insertSQL.toString());
-			int statementCount = 0;
-			
-			while (resultSet.next())
-			{
+				log.info(Messages.getMessage(Messages.DELETE_COUNT, new Object[] { new Integer(deletedRows), table }));
+				
+				deleteStatement.close();
+				
+				ResultSet resultSet = (ResultSet) future.get();
+				
+				StringBuffer insertSQL = new StringBuffer("INSERT INTO ").append(quote).append(table).append(quote).append(" (");
+	
+				ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+				
+				int columns = resultSetMetaData.getColumnCount();
+				
 				for (int i = 1; i <= columns; ++i)
 				{
-					Object object = resultSet.getObject(i);
-					int type = resultSetMetaData.getColumnType(i);
+					if (i > 1)
+					{
+						insertSQL.append(", ");
+					}
 					
-					if (resultSet.wasNull())
-					{
-						insertStatement.setNull(i, type);
-					}
-					else
-					{
-						insertStatement.setObject(i, object, type);
-					}
+					insertSQL.append(quote).append(resultSetMetaData.getColumnName(i)).append(quote);
 				}
 				
-				insertStatement.addBatch();
-				statementCount += 1;
+				insertSQL.append(") VALUES (");
 				
-				if ((statementCount % this.maxBatchSize) == 0)
+				for (int i = 1; i <= columns; ++i)
+				{
+					if (i > 1)
+					{
+						insertSQL.append(", ");
+					}
+					
+					insertSQL.append("?");
+				}
+				
+				insertSQL.append(")");
+				
+				PreparedStatement insertStatement = inactiveConnection.prepareStatement(insertSQL.toString());
+				int statementCount = 0;
+				
+				while (resultSet.next())
+				{
+					for (int i = 1; i <= columns; ++i)
+					{
+						Object object = resultSet.getObject(i);
+						int type = resultSetMetaData.getColumnType(i);
+						
+						if (resultSet.wasNull())
+						{
+							insertStatement.setNull(i, type);
+						}
+						else
+						{
+							insertStatement.setObject(i, object, type);
+						}
+					}
+					
+					insertStatement.addBatch();
+					statementCount += 1;
+					
+					if ((statementCount % this.maxBatchSize) == 0)
+					{
+						insertStatement.executeBatch();
+						insertStatement.clearBatch();
+					}
+					
+					insertStatement.clearParameters();
+				}
+	
+				if ((statementCount % this.maxBatchSize) > 0)
 				{
 					insertStatement.executeBatch();
-					insertStatement.clearBatch();
 				}
+	
+				log.info(Messages.getMessage(Messages.INSERT_COUNT, new Object[] { new Integer(statementCount), table }));
 				
-				insertStatement.clearParameters();
+				insertStatement.close();
+				selectStatement.close();
+				
+				inactiveConnection.commit();
 			}
-
-			if ((statementCount % this.maxBatchSize) > 0)
-			{
-				insertStatement.executeBatch();
-			}
-
-			log.info(Messages.getMessage(Messages.INSERT_COUNT, new Object[] { new Integer(statementCount), table }));
-			
-			insertStatement.close();
-			selectStatement.close();
-			
-			inactiveConnection.commit();
+	
+			inactiveConnection.setAutoCommit(true);
+	
+			// Recreate foreign keys
+			Key.executeSQL(inactiveConnection, ForeignKey.collect(activeConnection, tableList), this.createForeignKeySQL);
 		}
-
-		inactiveConnection.setAutoCommit(true);
-
-		// Recreate foreign keys
-		Key.executeSQL(inactiveConnection, ForeignKey.collect(activeConnection, tableList), this.createForeignKeySQL);
+		catch (InterruptedException e)
+		{
+			throw new net.sf.hajdbc.SQLException(e);
+		}
+		catch (ExecutionException e)
+		{
+			Throwable cause = e.getCause();
+			
+			throw SQLException.class.isInstance(cause) ? (SQLException) cause : new net.sf.hajdbc.SQLException(cause);
+		}
 	}
 	
 	/**

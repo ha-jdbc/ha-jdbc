@@ -35,6 +35,8 @@ import net.sf.hajdbc.Operation;
 
 import org.easymock.MockControl;
 
+import edu.emory.mathcs.backport.java.util.concurrent.Executors;
+
 /**
  * @author  Paul Ferraro
  * @since   1.0
@@ -63,6 +65,9 @@ public class TestXAResource extends EasyMockTestCase
 	 */
 	protected void setUp() throws Exception
 	{
+		this.databaseCluster.getExecutor();
+		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor(), 2);
+		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 4);
 		
@@ -241,6 +246,9 @@ public class TestXAResource extends EasyMockTestCase
 		
 		try
 		{
+			this.databaseCluster.getExecutor();
+			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+			
 			this.databaseCluster.getBalancer();
 			this.databaseClusterControl.setReturnValue(this.balancer, 2);
 			
@@ -273,6 +281,9 @@ public class TestXAResource extends EasyMockTestCase
 		
 		try
 		{
+			this.databaseCluster.getExecutor();
+			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+			
 			this.databaseCluster.getBalancer();
 			this.databaseClusterControl.setReturnValue(this.balancer, 2);
 			
@@ -305,6 +316,9 @@ public class TestXAResource extends EasyMockTestCase
 		
 		try
 		{
+			this.databaseCluster.getExecutor();
+			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+			
 			this.databaseCluster.getBalancer();
 			this.databaseClusterControl.setReturnValue(this.balancer, 2);
 			
@@ -335,6 +349,9 @@ public class TestXAResource extends EasyMockTestCase
 		
 		try
 		{
+			this.databaseCluster.getExecutor();
+			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+			
 			this.databaseCluster.getBalancer();
 			this.databaseClusterControl.setReturnValue(this.balancer, 2);
 			
@@ -365,6 +382,9 @@ public class TestXAResource extends EasyMockTestCase
 		
 		try
 		{
+			this.databaseCluster.getExecutor();
+			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+			
 			this.databaseCluster.getBalancer();
 			this.databaseClusterControl.setReturnValue(this.balancer, 2);
 			
@@ -395,6 +415,9 @@ public class TestXAResource extends EasyMockTestCase
 		
 		try
 		{
+			this.databaseCluster.getExecutor();
+			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+			
 			this.databaseCluster.getBalancer();
 			this.databaseClusterControl.setReturnValue(this.balancer, 2);
 			
@@ -425,6 +448,9 @@ public class TestXAResource extends EasyMockTestCase
 		
 		try
 		{
+			this.databaseCluster.getExecutor();
+			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+			
 			this.databaseCluster.getBalancer();
 			this.databaseClusterControl.setReturnValue(this.balancer, 2);
 			

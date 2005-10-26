@@ -45,6 +45,11 @@ import net.sf.hajdbc.SynchronizationStrategy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import edu.emory.mathcs.backport.java.util.concurrent.ExecutorService;
+import edu.emory.mathcs.backport.java.util.concurrent.Executors;
+import edu.emory.mathcs.backport.java.util.concurrent.ThreadPoolExecutor;
+import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
+
 /**
  * @author  Paul Ferraro
  * @version $Revision$
@@ -63,6 +68,7 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	private Balancer balancer;
 	private SynchronizationStrategy defaultSynchronizationStrategy;
 	private ConnectionFactory connectionFactory;
+	private ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
 	
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#loadState()
@@ -315,5 +321,28 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 			
 			throw e;
 		}
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getExecutor()
+	 */
+	public ExecutorService getExecutor()
+	{
+		return this.executor;
+	}
+	
+	void setMinThreads(int size)
+	{
+		this.executor.setCorePoolSize(size);
+	}
+	
+	void setMaxThreads(int size)
+	{
+		this.executor.setMaximumPoolSize(size);
+	}
+	
+	void setMaxIdle(int seconds)
+	{
+		this.executor.setKeepAliveTime(seconds, TimeUnit.SECONDS);
 	}
 }

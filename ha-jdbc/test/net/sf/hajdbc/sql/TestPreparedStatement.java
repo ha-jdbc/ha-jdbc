@@ -41,6 +41,8 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Calendar;
 
+import edu.emory.mathcs.backport.java.util.concurrent.Executors;
+
 import net.sf.hajdbc.SQLObject;
 
 public class TestPreparedStatement extends TestStatement
@@ -131,6 +133,9 @@ public class TestPreparedStatement extends TestStatement
 	{
 		try
 		{
+			this.databaseCluster.getExecutor();
+			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+			
 			this.databaseCluster.getBalancer();
 			this.databaseClusterControl.setReturnValue(this.balancer, 2);
 			
@@ -207,6 +212,9 @@ public class TestPreparedStatement extends TestStatement
 		{
 			ResultSet resultSet = (ResultSet) this.createMock(ResultSet.class);
 			
+			this.databaseCluster.getExecutor();
+			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+			
 			this.databaseCluster.getBalancer();
 			this.databaseClusterControl.setReturnValue(this.balancer, 3);
 			
@@ -245,6 +253,9 @@ public class TestPreparedStatement extends TestStatement
 	{
 		try
 		{
+			this.databaseCluster.getExecutor();
+			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+			
 			this.databaseCluster.getBalancer();
 			this.databaseClusterControl.setReturnValue(this.balancer, 2);
 			

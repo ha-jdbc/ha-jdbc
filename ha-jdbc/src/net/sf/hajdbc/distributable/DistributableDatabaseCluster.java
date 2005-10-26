@@ -37,6 +37,8 @@ import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;
 import org.jgroups.blocks.NotificationBus;
 
+import edu.emory.mathcs.backport.java.util.concurrent.ExecutorService;
+
 /**
  * Decorates an existing database cluster by providing distributable functionality.
  * Broadcasts database activations and deactivations to other cluster instances on the network.
@@ -227,5 +229,13 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 	public SynchronizationStrategy getDefaultSynchronizationStrategy()
 	{
 		return this.databaseCluster.getDefaultSynchronizationStrategy();
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getExecutor()
+	 */
+	public ExecutorService getExecutor()
+	{
+		return this.databaseCluster.getExecutor();
 	}
 }

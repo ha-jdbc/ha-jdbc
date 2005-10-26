@@ -40,6 +40,12 @@ import net.sf.hajdbc.Messages;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import edu.emory.mathcs.backport.java.util.concurrent.Callable;
+import edu.emory.mathcs.backport.java.util.concurrent.ExecutionException;
+import edu.emory.mathcs.backport.java.util.concurrent.ExecutorService;
+import edu.emory.mathcs.backport.java.util.concurrent.Executors;
+import edu.emory.mathcs.backport.java.util.concurrent.Future;
+
 /**
  * Database-independent synchronization strategy that only updates differences between two databases.
  * This strategy is best used when there are <em>few</em> differences between the active database and the inactive database (i.e. barely out of sync).
@@ -71,6 +77,7 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 
 	private String createUniqueKeySQL = UniqueKey.DEFAULT_CREATE_SQL;
 	private String dropUniqueKeySQL = UniqueKey.DEFAULT_DROP_SQL;
+	private ExecutorService executor = Executors.newSingleThreadExecutor();
 	
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, java.util.List)
@@ -91,309 +98,313 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 		Set primaryKeyColumnIndexSet = new LinkedHashSet();
 		
 		Iterator tables = tableList.iterator();
-		
-		while (tables.hasNext())
-		{	
-			String table = (String) tables.next();
-			
-			primaryKeyColumnMap.clear();
-			primaryKeyColumnIndexSet.clear();
-			
-			// Fetch primary keys of this table
-			ResultSet primaryKeyResultSet = databaseMetaData.getPrimaryKeys(null, null, table);
-			String primaryKeyName = null;
-			
-			while (primaryKeyResultSet.next())
-			{
-				String name = primaryKeyResultSet.getString("COLUMN_NAME");
-				short position = primaryKeyResultSet.getShort("KEY_SEQ");
 
-				primaryKeyColumnMap.put(new Short(position), name);
+		try
+		{
+			while (tables.hasNext())
+			{	
+				String table = (String) tables.next();
 				
-				primaryKeyName = primaryKeyResultSet.getString("PK_NAME");
-			}
-			
-			primaryKeyResultSet.close();
-			
-			if (primaryKeyColumnMap.isEmpty())
-			{
-				throw new SQLException(Messages.getMessage(Messages.PRIMARY_KEY_REQUIRED, new Object[] { this.getClass().getName(), table }));
-			}
-
-			Key.executeSQL(inactiveConnection, UniqueKey.collect(inactiveConnection, table, primaryKeyName), this.dropUniqueKeySQL);
-			
-			// Retrieve table rows in primary key order
-			StringBuffer buffer = new StringBuffer("SELECT * FROM ").append(quote).append(table).append(quote).append(" ORDER BY ");
-			
-			Iterator primaryKeyColumns = primaryKeyColumnMap.values().iterator();
-			
-			while (primaryKeyColumns.hasNext())
-			{
-				buffer.append(quote).append(primaryKeyColumns.next()).append(quote);
+				primaryKeyColumnMap.clear();
+				primaryKeyColumnIndexSet.clear();
 				
-				if (primaryKeyColumns.hasNext())
+				// Fetch primary keys of this table
+				ResultSet primaryKeyResultSet = databaseMetaData.getPrimaryKeys(null, null, table);
+				String primaryKeyName = null;
+				
+				while (primaryKeyResultSet.next())
 				{
-					buffer.append(", ");
-				}
-			}
-			
-			String sql = buffer.toString();
-			
-			Statement inactiveStatement = inactiveConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-			inactiveStatement.setFetchSize(this.fetchSize);
-
-			Statement activeStatement = activeConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			activeStatement.setFetchSize(this.fetchSize);
-			
-			if (log.isDebugEnabled())
-			{
-				log.debug(sql);
-			}
-			
-			Thread statementExecutor = new Thread(new StatementExecutor(inactiveStatement, sql));
-			statementExecutor.start();
-
-			ResultSet activeResultSet = activeStatement.executeQuery(sql);
-			
-			try
-			{
-				statementExecutor.join();
-			}
-			catch (InterruptedException e)
-			{
-				// Statement executor cannot be interrupted
-			}
-			
-			ResultSet inactiveResultSet = inactiveStatement.getResultSet();
-
-			// If query failed, result set will be null
-			if (inactiveResultSet == null)
-			{
-				// Fetch exception
-				throw inactiveStatement.getWarnings();
-			}
-			
-			// Construct DELETE SQL
-			StringBuffer deleteSQL = new StringBuffer("DELETE FROM ").append(quote).append(table).append(quote).append(" WHERE ");
-			
-			// Create set of primary key columns
-			primaryKeyColumns = primaryKeyColumnMap.values().iterator();
-			
-			while (primaryKeyColumns.hasNext())
-			{
-				String primaryKeyColumn = (String) primaryKeyColumns.next();
-				
-				primaryKeyColumnIndexSet.add(new Integer(activeResultSet.findColumn(primaryKeyColumn)));
-				
-				if (primaryKeyColumns.hasNext())
-				{
-					deleteSQL.append(" AND ");
-				}
-				
-				deleteSQL.append(quote).append(primaryKeyColumn).append(quote).append(" = ?");
-			}
-
-			PreparedStatement deleteStatement = inactiveConnection.prepareStatement(deleteSQL.toString());
-			
-			ResultSetMetaData resultSetMetaData = activeResultSet.getMetaData();
-			int columns = resultSetMetaData.getColumnCount();
-			int[] types = new int[columns + 1];
-			
-			// Construct INSERT SQL
-			StringBuffer insertSQL = new StringBuffer("INSERT INTO ").append(quote).append(table).append(quote).append(" (");
-			
-			for (int i = 1; i <= columns; ++i)
-			{
-				types[i] = resultSetMetaData.getColumnType(i);
-				
-				if (i > 1)
-				{
-					insertSQL.append(", ");
-				}
-				
-				insertSQL.append(quote).append(resultSetMetaData.getColumnName(i)).append(quote);
-			}
-
-			insertSQL.append(") VALUES (");
-
-			for (int i = 1; i <= columns; ++i)
-			{
-				if (i > 1)
-				{
-					insertSQL.append(", ");
-				}
-				
-				insertSQL.append("?");
-			}
-
-			insertSQL.append(")");
-
-			PreparedStatement insertStatement = inactiveConnection.prepareStatement(insertSQL.toString());
-			
-			boolean hasMoreActiveResults = activeResultSet.next();
-			boolean hasMoreInactiveResults = inactiveResultSet.next();
-			
-			int insertCount = 0;
-			int updateCount = 0;
-			int deleteCount = 0;
-			
-			while (hasMoreActiveResults || hasMoreInactiveResults)
-			{
-				int compare = 0;
-				
-				if (!hasMoreActiveResults)
-				{
-					compare = 1;
-				}
-				else if (!hasMoreInactiveResults)
-				{
-					compare = -1;
-				}
-				else
-				{
-					Iterator primaryKeyColumnIndexes = primaryKeyColumnIndexSet.iterator();
+					String name = primaryKeyResultSet.getString("COLUMN_NAME");
+					short position = primaryKeyResultSet.getShort("KEY_SEQ");
+	
+					primaryKeyColumnMap.put(new Short(position), name);
 					
-					while (primaryKeyColumnIndexes.hasNext())
+					primaryKeyName = primaryKeyResultSet.getString("PK_NAME");
+				}
+				
+				primaryKeyResultSet.close();
+				
+				if (primaryKeyColumnMap.isEmpty())
+				{
+					throw new SQLException(Messages.getMessage(Messages.PRIMARY_KEY_REQUIRED, new Object[] { this.getClass().getName(), table }));
+				}
+	
+				Key.executeSQL(inactiveConnection, UniqueKey.collect(inactiveConnection, table, primaryKeyName), this.dropUniqueKeySQL);
+				
+				// Retrieve table rows in primary key order
+				StringBuffer buffer = new StringBuffer("SELECT * FROM ").append(quote).append(table).append(quote).append(" ORDER BY ");
+				
+				Iterator primaryKeyColumns = primaryKeyColumnMap.values().iterator();
+				
+				while (primaryKeyColumns.hasNext())
+				{
+					buffer.append(quote).append(primaryKeyColumns.next()).append(quote);
+					
+					if (primaryKeyColumns.hasNext())
 					{
-						Integer primaryKeyColumnIndex = (Integer) primaryKeyColumnIndexes.next();
-						int column = primaryKeyColumnIndex.intValue();
-						
-						Comparable activeObject = (Comparable) activeResultSet.getObject(column);
-						Object inactiveObject = inactiveResultSet.getObject(column);
-						
-						compare = activeObject.compareTo(inactiveObject);
-						
-						if (compare != 0)
-						{
-							break;
-						}
+						buffer.append(", ");
 					}
 				}
 				
-				if (compare > 0)
+				final String sql = buffer.toString();
+				
+				final Statement inactiveStatement = inactiveConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+				inactiveStatement.setFetchSize(this.fetchSize);
+	
+				if (log.isDebugEnabled())
 				{
-					deleteStatement.clearParameters();
-					
-					Iterator primaryKeyColumnIndexes = primaryKeyColumnIndexSet.iterator();
-					int index = 1;
-					
-					while (primaryKeyColumnIndexes.hasNext())
-					{
-						Integer primaryKeyColumnIndex = (Integer) primaryKeyColumnIndexes.next();
-						int column = primaryKeyColumnIndex.intValue();
-						
-						deleteStatement.setObject(index, inactiveResultSet.getObject(column), types[column]);
-						
-						index += 1;
-					}
-					
-					deleteStatement.addBatch();
-					
-					deleteCount += 1;
+					log.debug(sql);
 				}
-				else if (compare < 0)
+				
+				Callable callable = new Callable()
 				{
-					insertStatement.clearParameters();
+					public Object call() throws java.sql.SQLException
+					{
+						return inactiveStatement.executeQuery(sql);
+					}
+				};
+	
+				Future future = this.executor.submit(callable);
+				
+				Statement activeStatement = activeConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				activeStatement.setFetchSize(this.fetchSize);
+				
+				ResultSet activeResultSet = activeStatement.executeQuery(sql);
 
-					for (int i = 1; i <= columns; ++i)
+				ResultSet inactiveResultSet =  (ResultSet) future.get();
+				
+				// Construct DELETE SQL
+				StringBuffer deleteSQL = new StringBuffer("DELETE FROM ").append(quote).append(table).append(quote).append(" WHERE ");
+				
+				// Create set of primary key columns
+				primaryKeyColumns = primaryKeyColumnMap.values().iterator();
+				
+				while (primaryKeyColumns.hasNext())
+				{
+					String primaryKeyColumn = (String) primaryKeyColumns.next();
+					
+					primaryKeyColumnIndexSet.add(new Integer(activeResultSet.findColumn(primaryKeyColumn)));
+					
+					if (primaryKeyColumns.hasNext())
 					{
-						Object object = activeResultSet.getObject(i);
+						deleteSQL.append(" AND ");
+					}
+					
+					deleteSQL.append(quote).append(primaryKeyColumn).append(quote).append(" = ?");
+				}
+	
+				PreparedStatement deleteStatement = inactiveConnection.prepareStatement(deleteSQL.toString());
+				
+				ResultSetMetaData resultSetMetaData = activeResultSet.getMetaData();
+				int columns = resultSetMetaData.getColumnCount();
+				int[] types = new int[columns + 1];
+				
+				// Construct INSERT SQL
+				StringBuffer insertSQL = new StringBuffer("INSERT INTO ").append(quote).append(table).append(quote).append(" (");
+				
+				for (int i = 1; i <= columns; ++i)
+				{
+					types[i] = resultSetMetaData.getColumnType(i);
+					
+					if (i > 1)
+					{
+						insertSQL.append(", ");
+					}
+					
+					insertSQL.append(quote).append(resultSetMetaData.getColumnName(i)).append(quote);
+				}
+	
+				insertSQL.append(") VALUES (");
+	
+				for (int i = 1; i <= columns; ++i)
+				{
+					if (i > 1)
+					{
+						insertSQL.append(", ");
+					}
+					
+					insertSQL.append("?");
+				}
+	
+				insertSQL.append(")");
+	
+				PreparedStatement insertStatement = inactiveConnection.prepareStatement(insertSQL.toString());
+				
+				boolean hasMoreActiveResults = activeResultSet.next();
+				boolean hasMoreInactiveResults = inactiveResultSet.next();
+				
+				int insertCount = 0;
+				int updateCount = 0;
+				int deleteCount = 0;
+				
+				while (hasMoreActiveResults || hasMoreInactiveResults)
+				{
+					int compare = 0;
+					
+					if (!hasMoreActiveResults)
+					{
+						compare = 1;
+					}
+					else if (!hasMoreInactiveResults)
+					{
+						compare = -1;
+					}
+					else
+					{
+						Iterator primaryKeyColumnIndexes = primaryKeyColumnIndexSet.iterator();
 						
-						if (activeResultSet.wasNull())
+						while (primaryKeyColumnIndexes.hasNext())
 						{
-							insertStatement.setNull(i, types[i]);
-						}
-						else
-						{
-							insertStatement.setObject(i, object, types[i]);
+							Integer primaryKeyColumnIndex = (Integer) primaryKeyColumnIndexes.next();
+							int column = primaryKeyColumnIndex.intValue();
+							
+							Comparable activeObject = (Comparable) activeResultSet.getObject(column);
+							Object inactiveObject = inactiveResultSet.getObject(column);
+							
+							compare = activeObject.compareTo(inactiveObject);
+							
+							if (compare != 0)
+							{
+								break;
+							}
 						}
 					}
 					
-					insertStatement.addBatch();
-					
-					insertCount += 1;
-				}
-				else // if (compare == 0)
-				{
-					boolean updated = false;
-					
-					for (int i = 1; i <= columns; ++i)
+					if (compare > 0)
 					{
-						if (!primaryKeyColumnIndexSet.contains(new Integer(i)))
+						deleteStatement.clearParameters();
+						
+						Iterator primaryKeyColumnIndexes = primaryKeyColumnIndexSet.iterator();
+						int index = 1;
+						
+						while (primaryKeyColumnIndexes.hasNext())
 						{
-							Object activeObject = activeResultSet.getObject(i);
-							Object inactiveObject = inactiveResultSet.getObject(i);
+							Integer primaryKeyColumnIndex = (Integer) primaryKeyColumnIndexes.next();
+							int column = primaryKeyColumnIndex.intValue();
+							
+							deleteStatement.setObject(index, inactiveResultSet.getObject(column), types[column]);
+							
+							index += 1;
+						}
+						
+						deleteStatement.addBatch();
+						
+						deleteCount += 1;
+					}
+					else if (compare < 0)
+					{
+						insertStatement.clearParameters();
+	
+						for (int i = 1; i <= columns; ++i)
+						{
+							Object object = activeResultSet.getObject(i);
 							
 							if (activeResultSet.wasNull())
 							{
-								if (!inactiveResultSet.wasNull())
-								{
-									inactiveResultSet.updateNull(i);
-									
-									updated = true;
-								}
+								insertStatement.setNull(i, types[i]);
 							}
 							else
 							{
-								if (inactiveResultSet.wasNull() || !equals(activeObject, inactiveObject))
+								insertStatement.setObject(i, object, types[i]);
+							}
+						}
+						
+						insertStatement.addBatch();
+						
+						insertCount += 1;
+					}
+					else // if (compare == 0)
+					{
+						boolean updated = false;
+						
+						for (int i = 1; i <= columns; ++i)
+						{
+							if (!primaryKeyColumnIndexSet.contains(new Integer(i)))
+							{
+								Object activeObject = activeResultSet.getObject(i);
+								Object inactiveObject = inactiveResultSet.getObject(i);
+								
+								if (activeResultSet.wasNull())
 								{
-									inactiveResultSet.updateObject(i, activeObject);
-									
-									updated = true;
+									if (!inactiveResultSet.wasNull())
+									{
+										inactiveResultSet.updateNull(i);
+										
+										updated = true;
+									}
+								}
+								else
+								{
+									if (inactiveResultSet.wasNull() || !equals(activeObject, inactiveObject))
+									{
+										inactiveResultSet.updateObject(i, activeObject);
+										
+										updated = true;
+									}
 								}
 							}
 						}
+						
+						if (updated)
+						{
+							inactiveResultSet.updateRow();
+							
+							updateCount += 1;
+						}
 					}
 					
-					if (updated)
+					if (hasMoreActiveResults && (compare <= 0))
 					{
-						inactiveResultSet.updateRow();
-						
-						updateCount += 1;
+						hasMoreActiveResults = activeResultSet.next();
+					}
+					
+					if (hasMoreInactiveResults && (compare >= 0))
+					{
+						hasMoreInactiveResults = inactiveResultSet.next();
 					}
 				}
 				
-				if (hasMoreActiveResults && (compare <= 0))
+				if (deleteCount > 0)
 				{
-					hasMoreActiveResults = activeResultSet.next();
+					deleteStatement.executeBatch();
 				}
 				
-				if (hasMoreInactiveResults && (compare >= 0))
+				deleteStatement.close();
+				
+				if (insertCount > 0)
 				{
-					hasMoreInactiveResults = inactiveResultSet.next();
+					insertStatement.executeBatch();
 				}
+				
+				insertStatement.close();
+				
+				inactiveStatement.close();
+				activeStatement.close();
+	
+				Key.executeSQL(inactiveConnection, UniqueKey.collect(activeConnection, table, primaryKeyName), this.createUniqueKeySQL);
+				
+				inactiveConnection.commit();
+				
+				log.info(Messages.getMessage(Messages.INSERT_COUNT, new Object[] { new Integer(insertCount), table }));
+				log.info(Messages.getMessage(Messages.UPDATE_COUNT, new Object[] { new Integer(updateCount), table }));
+				log.info(Messages.getMessage(Messages.DELETE_COUNT, new Object[] { new Integer(deleteCount), table }));			
 			}
-			
-			if (deleteCount > 0)
-			{
-				deleteStatement.executeBatch();
-			}
-			
-			deleteStatement.close();
-			
-			if (insertCount > 0)
-			{
-				insertStatement.executeBatch();
-			}
-			
-			insertStatement.close();
-			
-			inactiveStatement.close();
-			activeStatement.close();
-
-			Key.executeSQL(inactiveConnection, UniqueKey.collect(activeConnection, table, primaryKeyName), this.createUniqueKeySQL);
-			
-			inactiveConnection.commit();
-			
-			log.info(Messages.getMessage(Messages.INSERT_COUNT, new Object[] { new Integer(insertCount), table }));
-			log.info(Messages.getMessage(Messages.UPDATE_COUNT, new Object[] { new Integer(updateCount), table }));
-			log.info(Messages.getMessage(Messages.DELETE_COUNT, new Object[] { new Integer(deleteCount), table }));			
+	
+			inactiveConnection.setAutoCommit(true);
+	
+			// Recreate foreign keys
+			Key.executeSQL(inactiveConnection, ForeignKey.collect(activeConnection, tableList), this.createForeignKeySQL);
 		}
-
-		inactiveConnection.setAutoCommit(true);
-
-		// Recreate foreign keys
-		Key.executeSQL(inactiveConnection, ForeignKey.collect(activeConnection, tableList), this.createForeignKeySQL);
+		catch (ExecutionException e)
+		{
+			Throwable cause = e.getCause();
+			
+			throw SQLException.class.isInstance(cause) ? (SQLException) cause : new net.sf.hajdbc.SQLException(cause);
+		}
+		catch (InterruptedException e)
+		{
+			throw new net.sf.hajdbc.SQLException(e);
+		}
 	}
 
 	private boolean equals(Object object1, Object object2)

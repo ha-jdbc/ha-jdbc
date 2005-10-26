@@ -25,6 +25,8 @@ import java.util.Collections;
 
 import javax.transaction.xa.XAResource;
 
+import edu.emory.mathcs.backport.java.util.concurrent.Executors;
+
 import net.sf.hajdbc.ConnectionFactory;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Operation;
@@ -72,6 +74,9 @@ public class TestXAConnection extends TestPooledConnection
 	{
 		XAResource resource1 = (XAResource) this.createMock(XAResource.class);
 
+		this.databaseCluster.getExecutor();
+		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 2);
 		

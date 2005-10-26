@@ -39,6 +39,9 @@ import net.sf.hajdbc.SQLObject;
 
 import org.easymock.MockControl;
 
+import edu.emory.mathcs.backport.java.util.concurrent.ExecutorService;
+import edu.emory.mathcs.backport.java.util.concurrent.Executors;
+
 /**
  * Unit test for {@link Connection}
  * @author  Paul Ferraro
@@ -69,6 +72,9 @@ public class TestConnection extends EasyMockTestCase
 	 */
 	protected void setUp() throws Exception
 	{
+		this.databaseCluster.getExecutor();
+		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 2);
 		
@@ -161,6 +167,9 @@ public class TestConnection extends EasyMockTestCase
 
 	public void testClose()
 	{
+		this.databaseCluster.getExecutor();
+		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 2);
 		
@@ -189,6 +198,9 @@ public class TestConnection extends EasyMockTestCase
 
 	public void testCommit()
 	{
+		this.databaseCluster.getExecutor();
+		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 2);
 		
@@ -216,6 +228,9 @@ public class TestConnection extends EasyMockTestCase
 	{
 		Statement statement1 = (Statement) this.createMock(Statement.class);
 
+		this.databaseCluster.getExecutor();
+		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 3);
 		
@@ -285,6 +300,9 @@ public class TestConnection extends EasyMockTestCase
 	{
 		Statement statement1 = (Statement) this.createMock(Statement.class);
 
+		this.databaseCluster.getExecutor();
+		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 3);
 		
@@ -354,6 +372,9 @@ public class TestConnection extends EasyMockTestCase
 	{
 		Statement statement1 = (Statement) this.createMock(Statement.class);
 
+		this.databaseCluster.getExecutor();
+		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 3);
 		
@@ -717,6 +738,9 @@ public class TestConnection extends EasyMockTestCase
 	{
 		CallableStatement statement1 = (CallableStatement) this.createMock(CallableStatement.class);
 
+		this.databaseCluster.getExecutor();
+		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 3);
 		
@@ -795,6 +819,9 @@ public class TestConnection extends EasyMockTestCase
 	{
 		CallableStatement statement1 = (CallableStatement) this.createMock(CallableStatement.class);
 
+		this.databaseCluster.getExecutor();
+		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 3);
 		
@@ -873,6 +900,9 @@ public class TestConnection extends EasyMockTestCase
 	{
 		CallableStatement statement1 = (CallableStatement) this.createMock(CallableStatement.class);
 
+		this.databaseCluster.getExecutor();
+		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 3);
 		
@@ -951,6 +981,9 @@ public class TestConnection extends EasyMockTestCase
 	{
 		PreparedStatement statement1 = (PreparedStatement) this.createMock(PreparedStatement.class);
 
+		this.databaseCluster.getExecutor();
+		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 3);
 		
@@ -1029,6 +1062,9 @@ public class TestConnection extends EasyMockTestCase
 	{
 		PreparedStatement statement1 = (PreparedStatement) this.createMock(PreparedStatement.class);
 
+		this.databaseCluster.getExecutor();
+		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 3);
 		
@@ -1107,6 +1143,9 @@ public class TestConnection extends EasyMockTestCase
 	{
 		PreparedStatement statement1 = (PreparedStatement) this.createMock(PreparedStatement.class);
 
+		this.databaseCluster.getExecutor();
+		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 3);
 		
@@ -1195,6 +1234,9 @@ public class TestConnection extends EasyMockTestCase
 		
 		try
 		{
+			this.databaseCluster.getExecutor();
+			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+			
 			this.databaseCluster.getBalancer();
 			this.databaseClusterControl.setReturnValue(this.balancer, 2);
 			
@@ -1207,6 +1249,9 @@ public class TestConnection extends EasyMockTestCase
 			
 			this.verify();
 			this.reset();
+			
+			this.databaseCluster.getExecutor();
+			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
 			
 			this.databaseCluster.getBalancer();
 			this.databaseClusterControl.setReturnValue(this.balancer, 2);
@@ -1231,6 +1276,9 @@ public class TestConnection extends EasyMockTestCase
 
 	public void testRollback()
 	{
+		this.databaseCluster.getExecutor();
+		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 2);
 		
@@ -1268,6 +1316,9 @@ public class TestConnection extends EasyMockTestCase
 		
 		try
 		{
+			this.databaseCluster.getExecutor();
+			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+			
 			this.databaseCluster.getBalancer();
 			this.databaseClusterControl.setReturnValue(this.balancer, 2);
 			
@@ -1280,6 +1331,9 @@ public class TestConnection extends EasyMockTestCase
 			
 			this.verify();
 			this.reset();
+			
+			this.databaseCluster.getExecutor();
+			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
 			
 			this.databaseCluster.getBalancer();
 			this.databaseClusterControl.setReturnValue(this.balancer, 2);
@@ -1304,6 +1358,9 @@ public class TestConnection extends EasyMockTestCase
 
 	public void testSetAutoCommit()
 	{
+		this.databaseCluster.getExecutor();
+		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 2);
 		
@@ -1329,6 +1386,9 @@ public class TestConnection extends EasyMockTestCase
 
 	public void testSetCatalog()
 	{
+		this.databaseCluster.getExecutor();
+		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 2);
 		
@@ -1408,6 +1468,9 @@ public class TestConnection extends EasyMockTestCase
 		
 		try
 		{
+			this.databaseCluster.getExecutor();
+			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+			
 			this.databaseCluster.getBalancer();
 			this.databaseClusterControl.setReturnValue(this.balancer, 2);
 			
@@ -1435,6 +1498,9 @@ public class TestConnection extends EasyMockTestCase
 
 	public void testSetTransactionIsolation()
 	{
+		this.databaseCluster.getExecutor();
+		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 2);
 		

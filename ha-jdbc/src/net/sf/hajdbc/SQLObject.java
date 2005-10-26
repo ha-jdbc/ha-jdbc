@@ -33,6 +33,11 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import edu.emory.mathcs.backport.java.util.concurrent.Callable;
+import edu.emory.mathcs.backport.java.util.concurrent.ExecutionException;
+import edu.emory.mathcs.backport.java.util.concurrent.ExecutorService;
+import edu.emory.mathcs.backport.java.util.concurrent.Future;
+
 /**
  * @author  Paul Ferraro
  * @since   1.0
@@ -200,38 +205,59 @@ public class SQLObject
 	 * @return the result of the operation
 	 * @throws java.sql.SQLException if operation execution fails
 	 */
-	public final Map executeWriteToDatabase(Operation operation) throws java.sql.SQLException
+	public final Map executeWriteToDatabase(final Operation operation) throws java.sql.SQLException
 	{
+		ExecutorService executor = this.databaseCluster.getExecutor();
 		Database[] databases = this.getDatabases();
-		Thread[] threads = new Thread[databases.length];
+		Map futureMap = new HashMap();
 		
-		Map returnValueMap = new HashMap(databases.length);
-		Map exceptionMap = new HashMap(databases.length);
+		for (int i = 0; i < databases.length; ++i)
+		{
+			final Database database = databases[i];
+			final Object object = this.getObject(database);
+			
+			Callable callable = new Callable()
+			{
+				public Object call() throws java.sql.SQLException
+				{
+					return operation.execute(database, object);
+				}
+			};
 
+			futureMap.put(database, executor.submit(callable));
+		}
+
+		Map returnValueMap = new HashMap();
+		Map exceptionMap = new HashMap();
+		
 		for (int i = 0; i < databases.length; ++i)
 		{
 			Database database = databases[i];
-			Object object = this.getObject(database);
 			
-			threads[i] = new Thread(new OperationExecutor(this.databaseCluster, operation, database, object, returnValueMap, exceptionMap));
-			threads[i].start();
-		}
-		
-		// Wait until all threads have completed
-		for (int i = 0; i < threads.length; ++i)
-		{
-			Thread thread = threads[i];
+			Future future = (Future) futureMap.get(databases[i]);
 			
-			if ((thread != null) && thread.isAlive())
+			try
 			{
+				returnValueMap.put(database, future.get());
+			}
+			catch (ExecutionException e)
+			{
+				Throwable cause = e.getCause();
+				
+				java.sql.SQLException sqlCause = java.sql.SQLException.class.isInstance(cause) ? (java.sql.SQLException) cause : new SQLException(cause);
+
 				try
 				{
-					thread.join();
+					this.databaseCluster.handleFailure(database, sqlCause);
 				}
-				catch (InterruptedException e)
+				catch (java.sql.SQLException sqle)
 				{
-					// Ignore
+					exceptionMap.put(database, sqle);
 				}
+			}
+			catch (InterruptedException e)
+			{
+				throw new SQLException(e);
 			}
 		}
 		
@@ -274,7 +300,7 @@ public class SQLObject
 			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this.databaseCluster));
 		}
 		
-		Map returnValueMap = new HashMap(databases.length);
+		Map returnValueMap = new HashMap();
 
 		for (int i = 0; i < databases.length; ++i)
 		{
