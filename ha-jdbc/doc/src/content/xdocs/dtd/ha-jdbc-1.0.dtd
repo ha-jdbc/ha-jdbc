@@ -39,9 +39,6 @@
 <!ATTLIST cluster balancer (simple|random|round-robin|load) #REQUIRED>
 <!ATTLIST cluster default-sync IDREF #REQUIRED>
 <!ATTLIST cluster validate-sql CDATA #IMPLIED>
-<!ATTLIST cluster min-threads CDATA #IMPLIED>
-<!ATTLIST cluster max-threads CDATA #IMPLIED>
-<!ATTLIST cluster max-idle CDATA #IMPLIED>
 
 <!ENTITY % authentication-info "(user, password)?">
 <!ELEMENT user (#PCDATA)>
