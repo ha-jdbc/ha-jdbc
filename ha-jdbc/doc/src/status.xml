@@ -13,11 +13,14 @@
 
 	<changes>
 		<release version="1.1-beta-1" date="">
+			<action type="add" context="code" dev="PF">
+				Added distributable locking support required for using sequences and auto-incrementing columns as primary key generation mechanisms.
+			</action>
 			<action type="update" context="code" dev="PF">
-				Use configurable thread pooling for asynchronously executed write operations for improved efficiency and fault tolerance under high load.
+				Uses configurable thread pooling for asynchronously executed write operations for improved efficiency and fault tolerance under high load.
 			</action>
 			<action type="add" context="lib" dev="PF">
-				New dependency on backport of java.util.concurrent package.
+				New dependency on Java 1.4 backport of Java 1.5 java.util.concurrent package.
 			</action>
 		</release>
 		<release version="1.0" date="September 22, 2005">
