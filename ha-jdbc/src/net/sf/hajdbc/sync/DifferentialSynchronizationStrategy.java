@@ -36,6 +36,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -77,7 +78,7 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 
 	private String createUniqueKeySQL = UniqueKey.DEFAULT_CREATE_SQL;
 	private String dropUniqueKeySQL = UniqueKey.DEFAULT_DROP_SQL;
-	private ExecutorService executor = Executors.newSingleThreadExecutor();
+	private ExecutorService executor = Executors.newSingleThreadExecutor(new DaemonThreadFactory());
 	
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, java.util.List)

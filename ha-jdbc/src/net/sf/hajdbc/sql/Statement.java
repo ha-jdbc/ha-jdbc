@@ -22,12 +22,15 @@ package net.sf.hajdbc.sql;
 
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.sf.hajdbc.SQLObject;
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.SQLObject;
 
 /**
  * @author  Paul Ferraro
@@ -37,6 +40,8 @@ import net.sf.hajdbc.Database;
 public class Statement extends SQLObject implements java.sql.Statement
 {
 	private static final Pattern SELECT_FOR_UPDATE_PATTERN = Pattern.compile("SELECT\\s+.+\\s+FOR\\s+UPDATE");
+
+	protected Set mutexObjectSet = new HashSet();
 	
 	/**
 	 * Constructs a new StatementProxy.
@@ -110,6 +115,13 @@ public class Statement extends SQLObject implements java.sql.Statement
 		};
 		
 		this.executeWriteToDriver(operation);
+		
+		String object = this.extractMutexObject(sql);
+		
+		if (object != null)
+		{
+			this.mutexObjectSet.add(object);
+		}
 	}
 
 	/**
@@ -146,6 +158,7 @@ public class Statement extends SQLObject implements java.sql.Statement
 		};
 		
 		this.executeWriteToDriver(operation);
+		this.mutexObjectSet.clear();
 	}
 
 	/**
@@ -197,7 +210,7 @@ public class Statement extends SQLObject implements java.sql.Statement
 			}
 		};
 		
-		return ((Boolean) this.firstValue(this.executeWriteToDatabase(operation))).booleanValue();
+		return ((Boolean) this.firstValue(this.executeWriteToDatabase(operation, this.extractMutexObject(sql)))).booleanValue();
 	}
 
 	/**
@@ -213,7 +226,7 @@ public class Statement extends SQLObject implements java.sql.Statement
 			}
 		};
 		
-		return ((Boolean) this.firstValue(this.executeWriteToDatabase(operation))).booleanValue();
+		return ((Boolean) this.firstValue(this.executeWriteToDatabase(operation, this.extractMutexObject(sql)))).booleanValue();
 	}
 
 	/**
@@ -229,7 +242,7 @@ public class Statement extends SQLObject implements java.sql.Statement
 			}
 		};
 		
-		return ((Boolean) this.firstValue(this.executeWriteToDatabase(operation))).booleanValue();
+		return ((Boolean) this.firstValue(this.executeWriteToDatabase(operation, this.extractMutexObject(sql)))).booleanValue();
 	}
 
 	/**
@@ -245,7 +258,7 @@ public class Statement extends SQLObject implements java.sql.Statement
 			}
 		};
 		
-		return ((Boolean) this.firstValue(this.executeWriteToDatabase(operation))).booleanValue();
+		return ((Boolean) this.firstValue(this.executeWriteToDatabase(operation, this.extractMutexObject(sql)))).booleanValue();
 	}
 
 	/**
@@ -261,7 +274,7 @@ public class Statement extends SQLObject implements java.sql.Statement
 			}
 		};
 		
-		return (int[]) this.firstValue(this.executeWriteToDatabase(operation));
+		return (int[]) this.firstValue(this.executeWriteToDatabase(operation, this.mutexObjectSet));
 	}
 
 	/**
@@ -277,7 +290,9 @@ public class Statement extends SQLObject implements java.sql.Statement
 			}
 		};
 
-		return ((this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(sql)) ? (java.sql.ResultSet) this.executeReadFromDatabase(operation) : new ResultSet(this, operation);
+		String object = this.extractMutexObject(sql);
+		
+		return ((object == null) && (this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(sql)) ? (java.sql.ResultSet) this.executeReadFromDatabase(operation) : new ResultSet(this, operation, object);
 	}
 
 	/**
@@ -293,7 +308,7 @@ public class Statement extends SQLObject implements java.sql.Statement
 			}
 		};
 		
-		return ((Integer) this.firstValue(this.executeWriteToDatabase(operation))).intValue();
+		return ((Integer) this.firstValue(this.executeWriteToDatabase(operation, this.extractMutexObject(sql)))).intValue();
 	}
 
 	/**
@@ -309,7 +324,7 @@ public class Statement extends SQLObject implements java.sql.Statement
 			}
 		};
 		
-		return ((Integer) this.firstValue(this.executeWriteToDatabase(operation))).intValue();
+		return ((Integer) this.firstValue(this.executeWriteToDatabase(operation, this.extractMutexObject(sql)))).intValue();
 	}
 
 	/**
@@ -325,7 +340,7 @@ public class Statement extends SQLObject implements java.sql.Statement
 			}
 		};
 		
-		return ((Integer) this.firstValue(this.executeWriteToDatabase(operation))).intValue();
+		return ((Integer) this.firstValue(this.executeWriteToDatabase(operation, this.extractMutexObject(sql)))).intValue();
 	}
 
 	/**
@@ -341,7 +356,7 @@ public class Statement extends SQLObject implements java.sql.Statement
 			}
 		};
 		
-		return ((Integer) this.firstValue(this.executeWriteToDatabase(operation))).intValue();
+		return ((Integer) this.firstValue(this.executeWriteToDatabase(operation, this.extractMutexObject(sql)))).intValue();
 	}
 
 	/**
@@ -493,7 +508,7 @@ public class Statement extends SQLObject implements java.sql.Statement
 			}
 		};
 
-		return (this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) ? (java.sql.ResultSet) this.executeReadFromDriver(operation) : new ResultSet(this, operation);
+		return (this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) ? (java.sql.ResultSet) this.executeReadFromDriver(operation) : new ResultSet(this, operation, null);
 	}
 
 	/**
@@ -727,5 +742,16 @@ public class Statement extends SQLObject implements java.sql.Statement
 	protected boolean isSelectForUpdate(String sql)
 	{
 		return SELECT_FOR_UPDATE_PATTERN.matcher(sql.toUpperCase()).find();
+	}
+	
+	protected String extractMutexObject(String sql)
+	{
+		Pattern pattern = this.getDatabaseCluster().getMutexPattern();
+		
+		if (pattern == null) return null;
+
+		Matcher matcher = pattern.matcher(sql.toUpperCase());
+		
+		return matcher.find() ? matcher.group(1) : null;
 	}
 }

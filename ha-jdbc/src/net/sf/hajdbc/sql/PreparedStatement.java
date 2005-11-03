@@ -74,6 +74,13 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 		};
 		
 		this.executeWriteToDriver(operation);
+		
+		String object = this.extractMutexObject(this.sql);
+		
+		if (object != null)
+		{
+			this.mutexObjectSet.add(object);
+		}
 	}
 
 	/**
@@ -107,7 +114,7 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 			}
 		};
 		
-		return ((Boolean) this.firstValue(this.executeWriteToDatabase(operation))).booleanValue();
+		return ((Boolean) this.firstValue(this.executeWriteToDatabase(operation, this.extractMutexObject(this.sql)))).booleanValue();
 	}
 
 	/**
@@ -123,7 +130,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 			}
 		};
 
-		return ((this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(this.sql)) ? (java.sql.ResultSet) this.executeReadFromDatabase(operation) : new ResultSet(this, operation);
+		String object = this.extractMutexObject(this.sql);
+		
+		return ((object == null) && (this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(this.sql)) ? (java.sql.ResultSet) this.executeReadFromDatabase(operation) : new ResultSet(this, operation, object);
 	}
 
 	/**
@@ -139,7 +148,7 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 			}
 		};
 		
-		return ((Integer) this.firstValue(this.executeWriteToDatabase(operation))).intValue();
+		return ((Integer) this.firstValue(this.executeWriteToDatabase(operation, this.extractMutexObject(this.sql)))).intValue();
 	}
 
 	/**

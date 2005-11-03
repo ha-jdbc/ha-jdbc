@@ -21,8 +21,8 @@
 package net.sf.hajdbc.distributable;
 
 import java.io.Serializable;
-import java.sql.SQLException;
 import java.util.Collection;
+import java.util.regex.Pattern;
 
 import net.sf.hajdbc.AbstractDatabaseCluster;
 import net.sf.hajdbc.Balancer;
@@ -30,12 +30,16 @@ import net.sf.hajdbc.ConnectionFactory;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.SQLException;
 import net.sf.hajdbc.SynchronizationStrategy;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;
+import org.jgroups.blocks.DistributedLockManager;
+import org.jgroups.blocks.LockManager;
 import org.jgroups.blocks.NotificationBus;
+import org.jgroups.blocks.VotingAdapter;
 
 import edu.emory.mathcs.backport.java.util.concurrent.ExecutorService;
 
@@ -50,6 +54,7 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 {
 	private static Log log = LogFactory.getLog(DistributableDatabaseCluster.class);
 	
+	private LockManager lockManager;
 	private NotificationBus notificationBus;
 	private DatabaseCluster databaseCluster;
 	
@@ -62,9 +67,12 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 	public DistributableDatabaseCluster(DatabaseCluster databaseCluster, DistributableDatabaseClusterDecorator decorator) throws Exception
 	{
 		this.databaseCluster = databaseCluster;
+
 		this.notificationBus = new NotificationBus(databaseCluster.getId(), decorator.getProtocol());
 		this.notificationBus.setConsumer(this);
 		this.notificationBus.start();
+		
+		this.lockManager = new DistributedLockManager(new VotingAdapter(this.notificationBus.getChannel()), databaseCluster.getId());
 	}
 
 	/**
@@ -110,7 +118,7 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 		{
 			command.execute(this.databaseCluster);
 		}
-		catch (SQLException e)
+		catch (java.sql.SQLException e)
 		{
 			log.error(Messages.getMessage(Messages.DATABASE_COMMAND_FAILED, new Object[] { command, this.databaseCluster }), e);
 		}
@@ -157,10 +165,9 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 	}
 	
 	/**
-	 * @throws SQLException 
 	 * @see net.sf.hajdbc.DatabaseCluster#loadState()
 	 */
-	public String[] loadState() throws SQLException
+	public String[] loadState() throws java.sql.SQLException
 	{
 		String[] state = (String[]) this.notificationBus.getCacheFromCoordinator(1000, 1);
 		
@@ -237,5 +244,51 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 	public ExecutorService getExecutor()
 	{
 		return this.databaseCluster.getExecutor();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#acquireLock(Object)
+	 */
+	public void acquireLock(Object object) throws java.sql.SQLException
+	{
+		try
+		{
+			this.lockManager.lock(object, this.getId(), 1000);
+			
+			log.info("Acquired distributed lock on " + object);
+			
+			this.databaseCluster.acquireLock(object);
+		}
+		catch (Exception e)
+		{
+			throw new SQLException(e);
+		}
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#releaseLock(Object)
+	 */
+	public void releaseLock(Object object) throws java.sql.SQLException
+	{
+		try
+		{
+			this.lockManager.unlock(object, this.getId());
+			
+			log.info("Released distributed lock on " + object);
+			
+			this.databaseCluster.releaseLock(object);
+		}
+		catch (Exception e)
+		{
+			throw new SQLException(e);
+		}
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getMutexPattern()
+	 */
+	public Pattern getMutexPattern()
+	{
+		return this.databaseCluster.getMutexPattern();
 	}
 }

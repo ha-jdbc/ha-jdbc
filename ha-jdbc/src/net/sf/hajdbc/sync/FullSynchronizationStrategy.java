@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -70,7 +71,7 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 
 	private String truncateTableSQL = "DELETE FROM {0}";
 	private int maxBatchSize = 100;
-	private ExecutorService executor = Executors.newSingleThreadExecutor();
+	private ExecutorService executor = Executors.newSingleThreadExecutor(new DaemonThreadFactory());
 
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, java.util.List)

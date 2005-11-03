@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import java.util.regex.Pattern;
 
 import net.sf.hajdbc.AbstractDatabaseCluster;
 import net.sf.hajdbc.Balancer;
@@ -41,6 +42,7 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SQLException;
 import net.sf.hajdbc.SynchronizationStrategy;
+import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,6 +51,8 @@ import edu.emory.mathcs.backport.java.util.concurrent.ExecutorService;
 import edu.emory.mathcs.backport.java.util.concurrent.Executors;
 import edu.emory.mathcs.backport.java.util.concurrent.ThreadPoolExecutor;
 import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
+import edu.emory.mathcs.backport.java.util.concurrent.locks.Lock;
+import edu.emory.mathcs.backport.java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author  Paul Ferraro
@@ -62,13 +66,35 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	private static Preferences preferences = Preferences.userNodeForPackage(LocalDatabaseCluster.class);
 	private static Log log = LogFactory.getLog(LocalDatabaseCluster.class);
 	
+	/**
+	 * Factory method for getting a mutex pattern
+	 * @param id a string identifying a regex pattern
+	 * @return a regex Pattern
+	 * @since 1.1
+	 */
+	public static Pattern getMutexPattern(String id)
+	{
+		Map map = new HashMap();
+		
+		map.put("auto-increment", "INSERT\\s+(?:INTO)?\\s+\\W?(\\w+)\\W?");
+		map.put("sequence-PostgreSQL", "NEXTVAL\\s*\\(\\s*\\W(\\w+)\\W\\s*\\)");
+		map.put("sequence-SAPDB", "(\\w+)\\W?\\.NEXTVAL");
+		map.put("sequence-Firebird", "GEN_ID\\(\\s*\\W(\\w+)\\W\\s*\\,\\s*\\d+\\s*\\)");
+
+		String pattern = (String) map.get(id);
+		
+		return (pattern != null) ? Pattern.compile(pattern) : null;
+	}
+	
 	private String id;
 	private String validateSQL;
 	private Map databaseMap = new HashMap();
 	private Balancer balancer;
 	private SynchronizationStrategy defaultSynchronizationStrategy;
 	private ConnectionFactory connectionFactory;
-	private ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+	private ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool(new DaemonThreadFactory());
+	private Map lockMap = new HashMap();
+	private Pattern mutexPattern = null;
 	
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#loadState()
@@ -344,5 +370,56 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	void setMaxIdle(int seconds)
 	{
 		this.executor.setKeepAliveTime(seconds, TimeUnit.SECONDS);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#acquireLock(Object)
+	 */
+	public void acquireLock(Object object)
+	{
+		Lock lock = null;
+		
+		synchronized (this.lockMap)
+		{
+			lock = (Lock) this.lockMap.get(object);
+			
+			if (lock == null)
+			{
+				lock = new ReentrantLock(true);
+				
+				this.lockMap.put(object, lock);
+			}
+		}
+		
+		lock.lock();
+		
+		log.info("Acquired local lock on " + object);
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#releaseLock(Object)
+	 */
+	public void releaseLock(Object object)
+	{
+		Lock lock = null;
+		
+		synchronized (this.lockMap)
+		{
+			lock = (Lock) this.lockMap.get(object);
+		}
+		
+		if (lock == null) return;
+		
+		lock.unlock();
+		
+		log.info("Released local lock on " + object);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getMutexPattern()
+	 */
+	public Pattern getMutexPattern()
+	{
+		return this.mutexPattern;
 	}
 }
