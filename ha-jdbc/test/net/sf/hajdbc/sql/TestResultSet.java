@@ -129,7 +129,7 @@ public class TestResultSet extends EasyMockTestCase
 			}
 		};
 		
-		this.resultSet = new ResultSet(this.statement, statementOperation);
+		this.resultSet = new ResultSet(this.statement, statementOperation, null);
 		
 		this.verify();
 		this.reset();

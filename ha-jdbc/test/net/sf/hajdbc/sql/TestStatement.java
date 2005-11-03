@@ -24,6 +24,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.util.Collections;
+import java.util.regex.Pattern;
 
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.ConnectionFactory;
@@ -32,6 +33,7 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.EasyMockTestCase;
 import net.sf.hajdbc.Operation;
 import net.sf.hajdbc.SQLObject;
+import net.sf.hajdbc.local.LocalDatabaseCluster;
 
 import org.easymock.MockControl;
 
@@ -198,6 +200,9 @@ public class TestStatement extends EasyMockTestCase
 	 */
 	public void testAddBatch()
 	{
+		this.databaseCluster.getMutexPattern();
+		this.databaseClusterControl.setReturnValue(null);
+		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 2);
 		
@@ -344,6 +349,9 @@ public class TestStatement extends EasyMockTestCase
 	 */
 	public void testExecuteString()
 	{
+		this.databaseCluster.getMutexPattern();
+		this.databaseClusterControl.setReturnValue(null);
+		
 		this.databaseCluster.getExecutor();
 		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
 		
@@ -377,6 +385,9 @@ public class TestStatement extends EasyMockTestCase
 	 */
 	public void testExecuteStringInt()
 	{
+		this.databaseCluster.getMutexPattern();
+		this.databaseClusterControl.setReturnValue(null);
+		
 		this.databaseCluster.getExecutor();
 		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
 		
@@ -410,6 +421,9 @@ public class TestStatement extends EasyMockTestCase
 	 */
 	public void testExecuteStringIntArray()
 	{
+		this.databaseCluster.getMutexPattern();
+		this.databaseClusterControl.setReturnValue(null);
+		
 		this.databaseCluster.getExecutor();
 		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
 		
@@ -446,6 +460,9 @@ public class TestStatement extends EasyMockTestCase
 	 */
 	public void testExecuteStringStringArray()
 	{
+		this.databaseCluster.getMutexPattern();
+		this.databaseClusterControl.setReturnValue(null);
+		
 		this.databaseCluster.getExecutor();
 		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
 		
@@ -517,6 +534,9 @@ public class TestStatement extends EasyMockTestCase
 	{
 		ResultSet resultSet = (ResultSet) this.createMock(ResultSet.class);
 
+		this.databaseCluster.getMutexPattern();
+		this.databaseClusterControl.setReturnValue(null);
+		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 2);
 		
@@ -561,6 +581,9 @@ public class TestStatement extends EasyMockTestCase
 	{
 		ResultSet resultSet = (ResultSet) this.createMock(ResultSet.class);
 
+		this.databaseCluster.getMutexPattern();
+		this.databaseClusterControl.setReturnValue(null);
+		
 		this.databaseCluster.getExecutor();
 		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
 		
@@ -604,6 +627,9 @@ public class TestStatement extends EasyMockTestCase
 	{
 		ResultSet resultSet = (ResultSet) this.createMock(ResultSet.class);
 
+		this.databaseCluster.getMutexPattern();
+		this.databaseClusterControl.setReturnValue(null);
+		
 		this.databaseCluster.getExecutor();
 		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
 		
@@ -639,12 +665,153 @@ public class TestStatement extends EasyMockTestCase
 			this.fail(e);
 		}
 	}
+
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.executeQuery(String)'
+	 */
+	public void testPostgreSQLSequenceExecuteQuery()
+	{
+		ResultSet resultSet = (ResultSet) this.createMock(ResultSet.class);
+
+		this.databaseCluster.getMutexPattern();
+		this.databaseClusterControl.setReturnValue(LocalDatabaseCluster.getMutexPattern("sequence-PostgreSQL"));
+		
+		try
+		{
+			this.databaseCluster.acquireLock("SEQUENCE1");
+			this.databaseClusterControl.setVoidCallable();
+			
+			this.databaseCluster.getExecutor();
+			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+			
+			this.databaseCluster.getBalancer();
+			this.databaseClusterControl.setReturnValue(this.balancer, 2);
+			
+			this.balancer.toArray();
+			this.balancerControl.setReturnValue(this.databases, 2);
+			
+			this.sqlStatement.executeQuery("SELECT nextval('sequence1')");
+			this.sqlStatementControl.setReturnValue(resultSet);
+			
+			this.databaseCluster.releaseLock("SEQUENCE1");
+			this.databaseClusterControl.setVoidCallable();
+			
+			this.replay();
+			
+			ResultSet rs = this.statement.executeQuery("SELECT nextval('sequence1')");
+			
+			this.verify();
+			
+			assertNotNull(rs);
+			assertTrue(SQLObject.class.isInstance(rs));			
+			assertSame(resultSet, ((SQLObject) rs).getObject(this.database));
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.executeQuery(String)'
+	 */
+	public void testSAPDBSequenceExecuteQuery()
+	{
+		ResultSet resultSet = (ResultSet) this.createMock(ResultSet.class);
+
+		this.databaseCluster.getMutexPattern();
+		this.databaseClusterControl.setReturnValue(LocalDatabaseCluster.getMutexPattern("sequence-SAPDB"));
+		
+		try
+		{
+			this.databaseCluster.acquireLock("SEQUENCE1");
+			this.databaseClusterControl.setVoidCallable();
+			
+			this.databaseCluster.getExecutor();
+			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+			
+			this.databaseCluster.getBalancer();
+			this.databaseClusterControl.setReturnValue(this.balancer, 2);
+			
+			this.balancer.toArray();
+			this.balancerControl.setReturnValue(this.databases, 2);
+			
+			this.sqlStatement.executeQuery("SELECT sequence1.nextval");
+			this.sqlStatementControl.setReturnValue(resultSet);
+			
+			this.databaseCluster.releaseLock("SEQUENCE1");
+			this.databaseClusterControl.setVoidCallable();
+			
+			this.replay();
+			
+			ResultSet rs = this.statement.executeQuery("SELECT sequence1.nextval");
+			
+			this.verify();
+			
+			assertNotNull(rs);
+			assertTrue(SQLObject.class.isInstance(rs));			
+			assertSame(resultSet, ((SQLObject) rs).getObject(this.database));
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
+	/*
+	 * Test method for 'net.sf.hajdbc.sql.Statement.executeQuery(String)'
+	 */
+	public void testFirebirdSequenceExecuteQuery()
+	{
+		ResultSet resultSet = (ResultSet) this.createMock(ResultSet.class);
+
+		this.databaseCluster.getMutexPattern();
+		this.databaseClusterControl.setReturnValue(LocalDatabaseCluster.getMutexPattern("sequence-Firebird"));
+		
+		try
+		{
+			this.databaseCluster.acquireLock("SEQUENCE1");
+			this.databaseClusterControl.setVoidCallable();
+			
+			this.databaseCluster.getExecutor();
+			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+			
+			this.databaseCluster.getBalancer();
+			this.databaseClusterControl.setReturnValue(this.balancer, 2);
+			
+			this.balancer.toArray();
+			this.balancerControl.setReturnValue(this.databases, 2);
+			
+			this.sqlStatement.executeQuery("SELECT gen_id('sequence1', 1)");
+			this.sqlStatementControl.setReturnValue(resultSet);
+			
+			this.databaseCluster.releaseLock("SEQUENCE1");
+			this.databaseClusterControl.setVoidCallable();
+			
+			this.replay();
+			
+			ResultSet rs = this.statement.executeQuery("SELECT gen_id('sequence1', 1)");
+			
+			this.verify();
+			
+			assertNotNull(rs);
+			assertTrue(SQLObject.class.isInstance(rs));			
+			assertSame(resultSet, ((SQLObject) rs).getObject(this.database));
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
 	
 	/*
 	 * Test method for 'net.sf.hajdbc.sql.Statement.executeUpdate(String)'
 	 */
 	public void testExecuteUpdateString()
 	{
+		this.databaseCluster.getMutexPattern();
+		this.databaseClusterControl.setReturnValue(null);
+		
 		this.databaseCluster.getExecutor();
 		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
 		
@@ -678,23 +845,32 @@ public class TestStatement extends EasyMockTestCase
 	 */
 	public void testExecuteUpdateStringInt()
 	{
-		this.databaseCluster.getExecutor();
-		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
-		
-		this.databaseCluster.getBalancer();
-		this.databaseClusterControl.setReturnValue(this.balancer, 2);
-		
-		this.balancer.toArray();
-		this.balancerControl.setReturnValue(this.databases, 2);
-		
 		try
 		{
-			this.sqlStatement.executeUpdate("INSERT ME", 1);
+			this.databaseCluster.getMutexPattern();
+			this.databaseClusterControl.setReturnValue(LocalDatabaseCluster.getMutexPattern("auto-increment"));
+
+			this.databaseCluster.acquireLock("TABLE1");
+			this.databaseClusterControl.setVoidCallable();
+			
+			this.databaseCluster.getExecutor();
+			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+			
+			this.databaseCluster.getBalancer();
+			this.databaseClusterControl.setReturnValue(this.balancer, 2);
+			
+			this.balancer.toArray();
+			this.balancerControl.setReturnValue(this.databases, 2);
+			
+			this.sqlStatement.executeUpdate("INSERT INTO table1 (col) VALUES (2)", 1);
 			this.sqlStatementControl.setReturnValue(1);
+
+			this.databaseCluster.releaseLock("TABLE1");
+			this.databaseClusterControl.setVoidCallable();
 			
 			replay();
 			
-			int result = this.statement.executeUpdate("INSERT ME", 1);
+			int result = this.statement.executeUpdate("INSERT INTO table1 (col) VALUES (2)", 1);
 			
 			verify();
 			
@@ -711,25 +887,34 @@ public class TestStatement extends EasyMockTestCase
 	 */
 	public void testExecuteUpdateStringIntArray()
 	{
-		this.databaseCluster.getExecutor();
-		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
-		
-		this.databaseCluster.getBalancer();
-		this.databaseClusterControl.setReturnValue(this.balancer, 2);
-		
-		this.balancer.toArray();
-		this.balancerControl.setReturnValue(this.databases, 2);
-		
 		int[] columns = new int[] { 0 };
 		
 		try
 		{
-			this.sqlStatement.executeUpdate("INSERT ME", columns);
+			this.databaseCluster.getMutexPattern();
+			this.databaseClusterControl.setReturnValue(LocalDatabaseCluster.getMutexPattern("auto-increment"));
+
+			this.databaseCluster.acquireLock("TABLE1");
+			this.databaseClusterControl.setVoidCallable();
+			
+			this.databaseCluster.getExecutor();
+			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+			
+			this.databaseCluster.getBalancer();
+			this.databaseClusterControl.setReturnValue(this.balancer, 2);
+			
+			this.balancer.toArray();
+			this.balancerControl.setReturnValue(this.databases, 2);
+			
+			this.sqlStatement.executeUpdate("INSERT INTO table1 (col) VALUES (2)", columns);
 			this.sqlStatementControl.setReturnValue(1);
+			
+			this.databaseCluster.releaseLock("TABLE1");
+			this.databaseClusterControl.setVoidCallable();
 			
 			replay();
 			
-			int result = this.statement.executeUpdate("INSERT ME", columns);
+			int result = this.statement.executeUpdate("INSERT INTO table1 (col) VALUES (2)", columns);
 			
 			verify();
 			
@@ -746,25 +931,34 @@ public class TestStatement extends EasyMockTestCase
 	 */
 	public void testExecuteUpdateStringStringArray()
 	{
-		this.databaseCluster.getExecutor();
-		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
-		
-		this.databaseCluster.getBalancer();
-		this.databaseClusterControl.setReturnValue(this.balancer, 2);
-		
-		this.balancer.toArray();
-		this.balancerControl.setReturnValue(this.databases, 2);
-		
 		String[] columns = new String[] { "column" };
 		
 		try
 		{
-			this.sqlStatement.executeUpdate("INSERT ME", columns);
+			this.databaseCluster.getMutexPattern();
+			this.databaseClusterControl.setReturnValue(LocalDatabaseCluster.getMutexPattern("auto-increment"));
+
+			this.databaseCluster.acquireLock("TABLE1");
+			this.databaseClusterControl.setVoidCallable();
+			
+			this.databaseCluster.getExecutor();
+			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+			
+			this.databaseCluster.getBalancer();
+			this.databaseClusterControl.setReturnValue(this.balancer, 2);
+			
+			this.balancer.toArray();
+			this.balancerControl.setReturnValue(this.databases, 2);
+			
+			this.sqlStatement.executeUpdate("INSERT INTO table1 (col) VALUES (2)", columns);
 			this.sqlStatementControl.setReturnValue(1);
+			
+			this.databaseCluster.releaseLock("TABLE1");
+			this.databaseClusterControl.setVoidCallable();
 			
 			replay();
 			
-			int result = this.statement.executeUpdate("INSERT ME", columns);
+			int result = this.statement.executeUpdate("INSERT INTO table1 (col) VALUES (2)", columns);
 			
 			verify();
 			
