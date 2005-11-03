@@ -28,20 +28,10 @@ import net.sf.hajdbc.Messages;
 
 /**
  * @author  Paul Ferraro
- * @since   1.0
+ * @since   1.1
  */
-public final class BalancerEnum
+public final class BalancerFactory
 {
-	private static Map balancerMap = new HashMap(4);
-	
-	static
-	{
-		balancerMap.put("simple", SimpleBalancer.class);
-		balancerMap.put("random", RandomBalancer.class);
-		balancerMap.put("round-robin", RoundRobinBalancer.class);
-		balancerMap.put("load", LoadBalancer.class);
-	}
-
 	/**
 	 * Creates a new instance of the Balancer implementation indentified by the specified identifier
 	 * @param id an enumerated balancer identifier
@@ -49,7 +39,14 @@ public final class BalancerEnum
 	 */
 	public static Balancer createBalancer(String id)
 	{
-		Class balancerClass = (Class) balancerMap.get(id);
+		Map map = new HashMap();
+		
+		map.put("simple", SimpleBalancer.class);
+		map.put("random", RandomBalancer.class);
+		map.put("round-robin", RoundRobinBalancer.class);
+		map.put("load", LoadBalancer.class);
+
+		Class balancerClass = (Class) map.get(id);
 		
 		if (balancerClass == null)
 		{
@@ -66,7 +63,7 @@ public final class BalancerEnum
 		}
 	}
 	
-	private BalancerEnum()
+	private BalancerFactory()
 	{
 		// Hide constructor
 	}
