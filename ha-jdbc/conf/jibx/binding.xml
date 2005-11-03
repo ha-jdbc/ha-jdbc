@@ -10,9 +10,10 @@
 	</mapping>
 	<mapping name="cluster" class="net.sf.hajdbc.local.LocalDatabaseCluster" post-set="createConnectionFactories">
 		<value name="id" field="id" style="attribute"></value>
-		<value name="balancer" field="balancer" style="attribute" deserializer="net.sf.hajdbc.balancer.BalancerEnum.createBalancer"></value>
+		<value name="balancer" field="balancer" style="attribute" deserializer="net.sf.hajdbc.balancer.BalancerFactory.createBalancer"></value>
 		<value name="validate-sql" field="validateSQL" style="attribute" usage="optional" default="SELECT 1"></value>
 		<value name="default-sync" field="defaultSynchronizationStrategy" style="attribute" ident="ref"></value>
+		<value name="primary-keys" field="mutexPattern" style="attribute" deserializer="net.sf.hajdbc.local.LocalDatabaseCluster.getMutexPattern"></value>
 		<value name="min-threads" set-method="setMinThreads" style="attribute" usage="optional" default="0"></value>
 		<value name="max-threads" set-method="setMaxThreads" style="attribute" usage="optional" default="100"></value>
 		<value name="max-idle" set-method="setMaxIdle" style="attribute" usage="optional" default="60"></value>
