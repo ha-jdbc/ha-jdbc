@@ -39,7 +39,7 @@ import net.sf.hajdbc.SQLObject;
  */
 public class Statement extends SQLObject implements java.sql.Statement
 {
-	private static final Pattern SELECT_FOR_UPDATE_PATTERN = Pattern.compile("SELECT\\s+.+\\s+FOR\\s+UPDATE");
+	private static final Pattern SELECT_FOR_UPDATE_PATTERN = Pattern.compile("[sS][eE][lL][eE][cC][tT]\\s+.+\\s+[fF][oO][rR]\\s+[uU][pP][dD][aA][tT][eE]");
 
 	protected Set mutexObjectSet = new HashSet();
 	
@@ -741,7 +741,7 @@ public class Statement extends SQLObject implements java.sql.Statement
 	 */
 	protected boolean isSelectForUpdate(String sql)
 	{
-		return SELECT_FOR_UPDATE_PATTERN.matcher(sql.toUpperCase()).find();
+		return SELECT_FOR_UPDATE_PATTERN.matcher(sql).find();
 	}
 	
 	protected String extractMutexObject(String sql)
@@ -750,8 +750,8 @@ public class Statement extends SQLObject implements java.sql.Statement
 		
 		if (pattern == null) return null;
 
-		Matcher matcher = pattern.matcher(sql.toUpperCase());
+		Matcher matcher = pattern.matcher(sql);
 		
-		return matcher.find() ? matcher.group(1) : null;
+		return matcher.find() ? matcher.group(1).toLowerCase() : null;
 	}
 }

@@ -76,10 +76,12 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	{
 		Map map = new HashMap();
 		
-		map.put("auto-increment", "INSERT\\s+(?:INTO)?\\s+\\W?(\\w+)\\W?");
-		map.put("sequence-PostgreSQL", "NEXTVAL\\s*\\(\\s*\\W(\\w+)\\W\\s*\\)");
-		map.put("sequence-SAPDB", "(\\w+)\\W?\\.NEXTVAL");
-		map.put("sequence-Firebird", "GEN_ID\\(\\s*\\W(\\w+)\\W\\s*\\,\\s*\\d+\\s*\\)");
+		map.put("identity", "[iI][nN][sS][eE][rR][tT]\\s+(?:[iI][nN][tT][oO])?\\s+\\W?(\\w+)\\W?");
+		map.put("sequence-SQL:2003", "[nN][eE][xX][tT]\\s+[vV][aA][lL][uU][eE]\\s+[fF][oO][rR]\\s+\\W?(\\w+)\\W?");
+		map.put("sequence-PostgreSQL", "[nN][eE][xX][tT][vV][aA][lL]\\s*\\(\\s*\\W(\\w+)\\W\\s*\\)");
+		map.put("sequence-MaxDB", "(\\w+)\\W?\\.[nN][eE][xX][tT][vV][aA][lL]");
+		map.put("sequence-Firebird", "[gG][eE][nN]_[iI][dD]\\(\\s*\\W(\\w+)\\W\\s*\\,\\s*\\d+\\s*\\)");
+		map.put("sequence-DB2", "[nN][eE][xX][tT][vV][aA][lL]\\s+[fF][oO][rR]\\s+\\W?(\\w+)\\W?");
 
 		String pattern = (String) map.get(id);
 		
