@@ -39,7 +39,7 @@
 <!ATTLIST cluster balancer (simple|random|round-robin|load) #REQUIRED>
 <!ATTLIST cluster default-sync IDREF #REQUIRED>
 <!ATTLIST cluster validate-sql CDATA #IMPLIED>
-<!ATTLIST cluster primary-keys (auto-increment|sequence-PostgreSQL|sequence-SAPDB|sequence-Firebird|other) #REQUIRED>
+<!ATTLIST cluster primary-keys (identity|sequence-SQL:2003|sequence-PostgreSQL|sequence-MaxDB|sequence-Firebird|sequence-DB2|other) #REQUIRED>
 <!ATTLIST cluster min-threads CDATA #IMPLIED>
 <!ATTLIST cluster max-threads CDATA #IMPLIED>
 <!ATTLIST cluster max-idle CDATA #IMPLIED>
