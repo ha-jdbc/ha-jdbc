@@ -395,7 +395,7 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 		
 		lock.lock();
 		
-		log.info("Acquired local lock on " + object);
+		log.info(Messages.getMessage(Messages.LOCK_ACQUIRED_LOCAL, object));
 	}
 	
 	/**
@@ -414,7 +414,7 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 		
 		lock.unlock();
 		
-		log.info("Released local lock on " + object);
+		log.info(Messages.getMessage(Messages.LOCK_RELEASED_LOCAL, object));
 	}
 
 	/**

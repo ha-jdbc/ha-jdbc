@@ -255,7 +255,7 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 		{
 			this.lockManager.lock(object, this.getId(), 1000);
 			
-			log.info("Acquired distributed lock on " + object);
+			log.info(Messages.getMessage(Messages.LOCK_ACQUIRED_DISTRIBUTED, object));
 			
 			this.databaseCluster.acquireLock(object);
 		}
@@ -274,7 +274,7 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 		{
 			this.lockManager.unlock(object, this.getId());
 			
-			log.info("Released distributed lock on " + object);
+			log.info(Messages.getMessage(Messages.LOCK_RELEASED_DISTRIBUTED, object));
 			
 			this.databaseCluster.releaseLock(object);
 		}
