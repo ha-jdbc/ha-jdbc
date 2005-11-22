@@ -131,7 +131,7 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 					
 					Statement deleteStatement = inactiveConnection.createStatement();
 		
-					int deletedRows = deleteStatement.getUpdateCount();
+					int deletedRows = deleteStatement.executeUpdate(deleteSQL);
 					
 					log.info(Messages.getMessage(Messages.DELETE_COUNT, new Object[] { new Integer(deletedRows), tableName }));
 					
@@ -226,9 +226,7 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 		}
 		catch (ExecutionException e)
 		{
-			Throwable cause = e.getCause();
-			
-			throw SQLException.class.isInstance(cause) ? (SQLException) cause : new net.sf.hajdbc.SQLException(cause);
+			throw new net.sf.hajdbc.SQLException(e.getCause());
 		}
 	}
 	

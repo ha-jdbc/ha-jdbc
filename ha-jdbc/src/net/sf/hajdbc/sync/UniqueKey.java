@@ -85,7 +85,7 @@ public class UniqueKey extends Key
 			}
 		}
 		
-		return MessageFormat.format(pattern, new Object[] { this.name, this.tablePrefix + this.table, buffer.toString() });
+		return MessageFormat.format(pattern, new Object[] { this.name, this.table, buffer.toString() });
 	}
 	
 	/**

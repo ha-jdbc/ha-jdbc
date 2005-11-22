@@ -38,14 +38,20 @@ public abstract class Key
 	private static Log log = LogFactory.getLog(Key.class);
 	
 	protected String name;
-	protected String tablePrefix;
 	protected String table;
 	
 	protected Key(String name, String schema, String table, String quote)
 	{
 		this.name = quote + name + quote;
-		this.tablePrefix = (schema != null) ? quote + schema + quote + "." : "";
-		this.table = quote + table + quote;
+		
+		StringBuffer buffer = new StringBuffer();
+		
+		if (schema != null)
+		{
+			buffer.append(quote).append(schema).append(quote).append(".");
+		}
+		
+		this.table = buffer.append(quote).append(table).append(quote).toString();
 	}
 	
 	protected abstract String formatSQL(String pattern);

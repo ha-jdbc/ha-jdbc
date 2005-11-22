@@ -54,22 +54,31 @@ public class ForeignKey extends Key
 	 * @param schema
 	 * @param table
 	 * @param column
+	 * @param foreignSchema
 	 * @param foreignTable
 	 * @param foreignColumn
 	 * @param quote
 	 */
-	public ForeignKey(String name, String schema, String table, String column, String foreignTable, String foreignColumn, String quote)
+	public ForeignKey(String name, String schema, String table, String column, String foreignSchema, String foreignTable, String foreignColumn, String quote)
 	{
 		super(name, schema, table, quote);
 		
 		this.column = quote + column + quote;
-		this.foreignTable = quote + foreignTable + quote;
+
+		StringBuffer buffer = new StringBuffer();
+		
+		if (foreignSchema != null)
+		{
+			buffer.append(quote).append(foreignSchema).append(quote).append(".");
+		}
+		
+		this.foreignTable = buffer.append(quote).append(foreignTable).append(quote).toString();
 		this.foreignColumn = quote + foreignColumn + quote;
 	}
 	
 	protected String formatSQL(String pattern)
 	{
-		return MessageFormat.format(pattern, new Object[] { this.name, this.tablePrefix + this.table, this.column, this.tablePrefix + this.foreignTable, this.foreignColumn });
+		return MessageFormat.format(pattern, new Object[] { this.name, this.table, this.column, this.foreignTable, this.foreignColumn });
 	}
 	
 	/**
@@ -105,10 +114,11 @@ public class ForeignKey extends Key
 				{
 					String name = resultSet.getString("FK_NAME");
 					String column = resultSet.getString("FKCOLUMN_NAME");
+					String foreignSchema = resultSet.getString("PKTABLE_SCHEM");
 					String foreignTable = resultSet.getString("PKTABLE_NAME");
 					String foreignColumn = resultSet.getString("PKCOLUMN_NAME");
 		
-					ForeignKey key = new ForeignKey(name, schema, table, column, foreignTable, foreignColumn, quote);
+					ForeignKey key = new ForeignKey(name, schema, table, column, foreignSchema, foreignTable, foreignColumn, quote);
 					
 					foreignKeyList.add(key);
 				}
