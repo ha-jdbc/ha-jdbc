@@ -50,11 +50,78 @@ public class TestUniqueKey extends EasyMockTestCase
 	MockControl resultSetControl = this.createControl(ResultSet.class);
 	ResultSet resultSet = (ResultSet) this.resultSetControl.getMock();
 	
-
 	/**
-	 * Test method for {@link UniqueKey#collect(Connection, String, String)}
+	 * Test method for {@link UniqueKey#collect(Connection, String, String, String)}
 	 */
 	public void testCollect()
+	{
+		try
+		{
+			this.connection.getMetaData();
+			this.connectionControl.setReturnValue(this.metaData);
+			
+			this.metaData.getIdentifierQuoteString();
+			this.metaDataControl.setReturnValue("'");
+
+			this.metaData.getIndexInfo(null, "schema", "table", true, false);
+			this.metaDataControl.setReturnValue(this.resultSet);
+			
+			this.resultSet.next();
+			this.resultSetControl.setReturnValue(true);
+			
+			this.resultSet.getString("INDEX_NAME");
+			this.resultSetControl.setReturnValue("pk");
+			
+			this.resultSet.next();
+			this.resultSetControl.setReturnValue(true);
+
+			this.resultSet.getString("INDEX_NAME");
+			this.resultSetControl.setReturnValue("idx");
+			
+			this.resultSet.getShort("ORDINAL_POSITION");
+			this.resultSetControl.setReturnValue(1);
+			
+			this.resultSet.getString("COLUMN_NAME");
+			this.resultSetControl.setReturnValue("col1");
+			
+			this.resultSet.next();
+			this.resultSetControl.setReturnValue(true);
+
+			this.resultSet.getString("INDEX_NAME");
+			this.resultSetControl.setReturnValue("idx");
+			
+			this.resultSet.getShort("ORDINAL_POSITION");
+			this.resultSetControl.setReturnValue(2);
+			
+			this.resultSet.getString("COLUMN_NAME");
+			this.resultSetControl.setReturnValue("col2");
+
+			this.resultSet.next();
+			this.resultSetControl.setReturnValue(false);
+			
+			this.resultSet.close();
+			this.resultSetControl.setVoidCallable();
+			
+			this.replay();
+			
+			Collection collection = UniqueKey.collect(this.connection, "schema", "table", "pk");
+			
+			this.verify();
+			
+			assertNotNull(collection);
+			assertEquals(1, collection.size());
+			assertEquals(new UniqueKey("idx", "schema", "table", "'"), collection.iterator().next());
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+	
+	/**
+	 * Test method for {@link UniqueKey#collect(Connection, String, String, String)}
+	 */
+	public void testCollectNoSchema()
 	{
 		try
 		{
@@ -105,13 +172,13 @@ public class TestUniqueKey extends EasyMockTestCase
 			
 			this.replay();
 			
-			Collection collection = UniqueKey.collect(this.connection, "table", "pk");
+			Collection collection = UniqueKey.collect(this.connection, null, "table", "pk");
 			
 			this.verify();
 			
 			assertNotNull(collection);
 			assertEquals(1, collection.size());
-			assertEquals(new UniqueKey("idx", "table", "'"), collection.iterator().next());
+			assertEquals(new UniqueKey("idx", null, "table", "'"), collection.iterator().next());
 		}
 		catch (SQLException e)
 		{
@@ -124,7 +191,7 @@ public class TestUniqueKey extends EasyMockTestCase
 	 */
 	public void testHashCode()
 	{
-		UniqueKey key = new UniqueKey("test", null, "");
+		UniqueKey key = new UniqueKey("test", null, null, "");
 		
 		assertEquals("test".hashCode(), key.hashCode());
 	}
@@ -134,9 +201,9 @@ public class TestUniqueKey extends EasyMockTestCase
 	 */
 	public void testEqualsObject()
 	{
-		UniqueKey key1 = new UniqueKey("test", null, "");
-		UniqueKey key2 = new UniqueKey("test", "", "");
-		UniqueKey key3 = new UniqueKey("testing", "", "");
+		UniqueKey key1 = new UniqueKey("test", null, null, "");
+		UniqueKey key2 = new UniqueKey("test", "", "", "");
+		UniqueKey key3 = new UniqueKey("testing", "", "", "");
 		
 		assertTrue(key1.equals(key2));
 		assertFalse(key1.equals(key3));
@@ -153,6 +220,38 @@ public class TestUniqueKey extends EasyMockTestCase
 			this.connection.createStatement();
 			this.connectionControl.setReturnValue(this.statement);
 			
+			this.statement.execute("ALTER TABLE 'schema'.'table' ADD CONSTRAINT 'idx' UNIQUE ('col1', 'col2')");
+			this.statementControl.setReturnValue(true);
+			
+			this.statement.close();
+			this.statementControl.setVoidCallable();
+			
+			this.replay();
+			
+			UniqueKey key = new UniqueKey("idx", "schema", "table", "'");
+			key.addColumn((short) 2, "col2");
+			key.addColumn((short) 1, "col1");
+			
+			UniqueKey.executeSQL(this.connection, Collections.singleton(key), UniqueKey.DEFAULT_CREATE_SQL);
+			
+			this.verify();
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link Key#executeSQL(Connection, Collection, String)}
+	 */
+	public void testExecuteSQLNoSchema()
+	{
+		try
+		{
+			this.connection.createStatement();
+			this.connectionControl.setReturnValue(this.statement);
+			
 			this.statement.execute("ALTER TABLE 'table' ADD CONSTRAINT 'idx' UNIQUE ('col1', 'col2')");
 			this.statementControl.setReturnValue(true);
 			
@@ -161,7 +260,7 @@ public class TestUniqueKey extends EasyMockTestCase
 			
 			this.replay();
 			
-			UniqueKey key = new UniqueKey("idx", "table", "'");
+			UniqueKey key = new UniqueKey("idx", null, "table", "'");
 			key.addColumn((short) 2, "col2");
 			key.addColumn((short) 1, "col1");
 			

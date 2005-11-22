@@ -27,7 +27,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.Map;
 
 import net.sf.hajdbc.EasyMockTestCase;
 
@@ -52,9 +52,65 @@ public class TestForeignKey extends EasyMockTestCase
 	ResultSet resultSet = (ResultSet) this.resultSetControl.getMock();
 	
 	/**
-	 * Test method for {@link ForeignKey#collect(Connection, List)}
+	 * Test method for {@link ForeignKey#collect(Connection, Map)}
 	 */
 	public void testCollect()
+	{
+		try
+		{
+			this.connection.getMetaData();
+			this.connectionControl.setReturnValue(this.metaData);
+			
+			this.metaData.getIdentifierQuoteString();
+			this.metaDataControl.setReturnValue("'");
+
+			this.metaData.getImportedKeys(null, "fk_schema", "fk_table");
+			this.metaDataControl.setReturnValue(this.resultSet);
+			
+			this.resultSet.next();
+			this.resultSetControl.setReturnValue(true);
+			
+			this.resultSet.getString("FK_NAME");
+			this.resultSetControl.setReturnValue("fk");
+			
+			this.resultSet.getString("FKCOLUMN_NAME");
+			this.resultSetControl.setReturnValue("fk_col");
+			
+			this.resultSet.getString("PKTABLE_SCHEM");
+			this.resultSetControl.setReturnValue("pk_schema");
+			
+			this.resultSet.getString("PKTABLE_NAME");
+			this.resultSetControl.setReturnValue("pk_table");
+
+			this.resultSet.getString("PKCOLUMN_NAME");
+			this.resultSetControl.setReturnValue("pk_col");
+
+			this.resultSet.next();
+			this.resultSetControl.setReturnValue(false);
+			
+			this.resultSet.close();
+			this.resultSetControl.setVoidCallable();
+			
+			this.replay();
+			
+			Collection collection = ForeignKey.collect(this.connection, Collections.singletonMap("fk_schema", Collections.singletonList("fk_table")));
+			
+			this.verify();
+			
+			assertNotNull(collection);
+			assertEquals(1, collection.size());
+			assertEquals(new ForeignKey("fk", "fk_schema", "fk_table", "fk_col", "pk_schema", "pk_table", "pk_col", "'"), collection.iterator().next());
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+	
+	/**
+	 * Test method for {@link ForeignKey#collect(Connection, Map)}
+	 */
+	public void testCollectNoSchema()
 	{
 		try
 		{
@@ -76,6 +132,9 @@ public class TestForeignKey extends EasyMockTestCase
 			this.resultSet.getString("FKCOLUMN_NAME");
 			this.resultSetControl.setReturnValue("fk_col");
 			
+			this.resultSet.getString("PKTABLE_SCHEM");
+			this.resultSetControl.setReturnValue(null);
+			
 			this.resultSet.getString("PKTABLE_NAME");
 			this.resultSetControl.setReturnValue("pk_table");
 
@@ -90,13 +149,13 @@ public class TestForeignKey extends EasyMockTestCase
 			
 			this.replay();
 			
-			Collection collection = ForeignKey.collect(this.connection, Collections.singletonList("fk_table"));
+			Collection collection = ForeignKey.collect(this.connection, Collections.singletonMap(null, Collections.singletonList("fk_table")));
 			
 			this.verify();
 			
 			assertNotNull(collection);
 			assertEquals(1, collection.size());
-			assertEquals(new ForeignKey("fk", "fk_table", "fk_col", "pk_table", "pk_col", "'"), collection.iterator().next());
+			assertEquals(new ForeignKey("fk", null, "fk_table", "fk_col", "pk_schema", "pk_table", "pk_col", "'"), collection.iterator().next());
 		}
 		catch (SQLException e)
 		{
@@ -109,7 +168,7 @@ public class TestForeignKey extends EasyMockTestCase
 	 */
 	public void testHashCode()
 	{
-		ForeignKey key = new ForeignKey("test", null, null, null, null, "");
+		ForeignKey key = new ForeignKey("test", null, null, null, null, null, null, "");
 		
 		assertEquals("test".hashCode(), key.hashCode());
 	}
@@ -119,9 +178,9 @@ public class TestForeignKey extends EasyMockTestCase
 	 */
 	public void testEqualsObject()
 	{
-		ForeignKey key1 = new ForeignKey("test", "", "", "", "", "");
-		ForeignKey key2 = new ForeignKey("test", null, null, null, null, "");
-		ForeignKey key3 = new ForeignKey("testing", null, null, null, null, "");
+		ForeignKey key1 = new ForeignKey("test", "", "", "", "", "", "", "");
+		ForeignKey key2 = new ForeignKey("test", null, null, null, null, null, null, "");
+		ForeignKey key3 = new ForeignKey("testing", null, null, null, null, null, null, "");
 		
 		assertTrue(key1.equals(key2));
 		assertFalse(key1.equals(key3));
@@ -138,6 +197,36 @@ public class TestForeignKey extends EasyMockTestCase
 			this.connection.createStatement();
 			this.connectionControl.setReturnValue(this.statement);
 			
+			this.statement.execute("ALTER TABLE 'fk_schema'.'fk_table' ADD CONSTRAINT 'fk' FOREIGN KEY ('fk_col') REFERENCES 'pk_schema'.'pk_table' ('pk_col')");
+			this.statementControl.setReturnValue(true);
+			
+			this.statement.close();
+			this.statementControl.setVoidCallable();
+			
+			this.replay();
+			
+			ForeignKey key = new ForeignKey("fk", "fk_schema", "fk_table", "fk_col", "pk_schema", "pk_table", "pk_col", "'");
+			
+			ForeignKey.executeSQL(this.connection, Collections.singleton(key), ForeignKey.DEFAULT_CREATE_SQL);
+			
+			this.verify();
+		}
+		catch (SQLException e)
+		{
+			this.fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link Key#executeSQL(Connection, Collection, String)}
+	 */
+	public void testExecuteSQLNoSchema()
+	{
+		try
+		{
+			this.connection.createStatement();
+			this.connectionControl.setReturnValue(this.statement);
+			
 			this.statement.execute("ALTER TABLE 'fk_table' ADD CONSTRAINT 'fk' FOREIGN KEY ('fk_col') REFERENCES 'pk_table' ('pk_col')");
 			this.statementControl.setReturnValue(true);
 			
@@ -146,7 +235,7 @@ public class TestForeignKey extends EasyMockTestCase
 			
 			this.replay();
 			
-			ForeignKey key = new ForeignKey("fk", "fk_table", "fk_col", "pk_table", "pk_col", "'");
+			ForeignKey key = new ForeignKey("fk", null, "fk_table", "fk_col", null, "pk_table", "pk_col", "'");
 			
 			ForeignKey.executeSQL(this.connection, Collections.singleton(key), ForeignKey.DEFAULT_CREATE_SQL);
 			
