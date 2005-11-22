@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author  Paul Ferraro
@@ -50,15 +51,16 @@ public class ForeignKey extends Key
 	/**
 	 * Constructs a new ForeignKey.
 	 * @param name
+	 * @param schema
 	 * @param table
 	 * @param column
 	 * @param foreignTable
 	 * @param foreignColumn
 	 * @param quote
 	 */
-	public ForeignKey(String name, String table, String column, String foreignTable, String foreignColumn, String quote)
+	public ForeignKey(String name, String schema, String table, String column, String foreignTable, String foreignColumn, String quote)
 	{
-		super(name, table, quote);
+		super(name, schema, table, quote);
 		
 		this.column = quote + column + quote;
 		this.foreignTable = quote + foreignTable + quote;
@@ -67,43 +69,52 @@ public class ForeignKey extends Key
 	
 	protected String formatSQL(String pattern)
 	{
-		return MessageFormat.format(pattern, new Object[] { this.name, this.table, this.column, this.foreignTable, this.foreignColumn });
+		return MessageFormat.format(pattern, new Object[] { this.name, this.tablePrefix + this.table, this.column, this.tablePrefix + this.foreignTable, this.foreignColumn });
 	}
 	
 	/**
 	 * Collects all foreign keys from the specified tables using the specified connection. 
 	 * @param connection a database connection
-	 * @param tableList a list of table names
+	 * @param schemaMap a map of schema name to list of table names
 	 * @return a Collection<ForeignKey>.
 	 * @throws SQLException if a database error occurs
 	 */
-	public static Collection collect(Connection connection, List tableList) throws SQLException
+	public static Collection collect(Connection connection, Map schemaMap) throws SQLException
 	{
 		List foreignKeyList = new LinkedList();
 		DatabaseMetaData metaData = connection.getMetaData();
 		String quote = metaData.getIdentifierQuoteString();
 		
-		Iterator tables = tableList.iterator();
+		Iterator schemaMapEntries = schemaMap.entrySet().iterator();
 		
-		while (tables.hasNext())
+		while (schemaMapEntries.hasNext())
 		{
-			String table = (String) tables.next();
+			Map.Entry schemaMapEntry = (Map.Entry) schemaMapEntries.next();
+			String schema = (String) schemaMapEntry.getKey();
+			List tableList = (List) schemaMapEntry.getValue();
 			
-			ResultSet resultSet = metaData.getImportedKeys(null, null, table);
+			Iterator tables = tableList.iterator();
 			
-			while (resultSet.next())
+			while (tables.hasNext())
 			{
-				String name = resultSet.getString("FK_NAME");
-				String column = resultSet.getString("FKCOLUMN_NAME");
-				String foreignTable = resultSet.getString("PKTABLE_NAME");
-				String foreignColumn = resultSet.getString("PKCOLUMN_NAME");
-	
-				ForeignKey key = new ForeignKey(name, table, column, foreignTable, foreignColumn, quote);
+				String table = (String) tables.next();
 				
-				foreignKeyList.add(key);
+				ResultSet resultSet = metaData.getImportedKeys(null, schema, table);
+				
+				while (resultSet.next())
+				{
+					String name = resultSet.getString("FK_NAME");
+					String column = resultSet.getString("FKCOLUMN_NAME");
+					String foreignTable = resultSet.getString("PKTABLE_NAME");
+					String foreignColumn = resultSet.getString("PKCOLUMN_NAME");
+		
+					ForeignKey key = new ForeignKey(name, schema, table, column, foreignTable, foreignColumn, quote);
+					
+					foreignKeyList.add(key);
+				}
+				
+				resultSet.close();
 			}
-			
-			resultSet.close();
 		}
 		
 		return foreignKeyList;

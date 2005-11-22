@@ -24,9 +24,11 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -174,7 +176,7 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 		{
 			inactiveConnection = inactiveDatabase.connect(this.getConnectionFactory().getObject(inactiveDatabase));
 			
-			List tableList = new LinkedList();
+			Map schemaMap = new HashMap();
 			
 			DatabaseMetaData databaseMetaData = inactiveConnection.getMetaData();
 			String quote = databaseMetaData.getIdentifierQuoteString();
@@ -183,6 +185,17 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 			while (resultSet.next())
 			{
 				String table = resultSet.getString("TABLE_NAME");
+				String schema = resultSet.getString("TABLE_SCHEM");
+
+				List tableList = (List) schemaMap.get(schema);
+				
+				if (tableList == null)
+				{
+					tableList = new LinkedList();
+					
+					schemaMap.put(schema, tableList);
+				}
+				
 				tableList.add(table);
 			}
 			
@@ -203,13 +216,24 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 				activeConnections[i].setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 				
 				Statement statement = activeConnections[i].createStatement();
-				Iterator tables = tableList.iterator();
+				Iterator schemaMapEntries = schemaMap.entrySet().iterator();
 				
-				while (tables.hasNext())
+				while (schemaMapEntries.hasNext())
 				{
-					String table = (String) tables.next();
+					Map.Entry schemaMapEntry = (Map.Entry) schemaMapEntries.next();
+					String schema = (String) schemaMapEntry.getKey();
+					List tableList = (List) schemaMapEntry.getValue();
 					
-					statement.execute("SELECT count(*) FROM " + quote + table + quote);
+					String tablePrefix = (schema != null) ? quote + schema + quote + "." : "";
+					
+					Iterator tables = tableList.iterator();
+					
+					while (tables.hasNext())
+					{
+						String table = (String) tables.next();
+						
+						statement.execute("SELECT count(*) FROM " + tablePrefix + quote + table + quote);
+					}
 				}
 				
 				statement.close();
@@ -217,7 +241,7 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 			
 			log.info(Messages.getMessage(Messages.DATABASE_SYNC_START, inactiveDatabase));
 
-			strategy.synchronize(inactiveConnection, activeConnections[0], tableList);
+			strategy.synchronize(inactiveConnection, activeConnections[0], schemaMap);
 			
 			log.info(Messages.getMessage(Messages.DATABASE_SYNC_END, inactiveDatabase));
 	

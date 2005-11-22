@@ -49,12 +49,13 @@ public class UniqueKey extends Key
 	/**
 	 * Constructs a new UniqueKey.
 	 * @param name
+	 * @param schema
 	 * @param table
 	 * @param quote
 	 */
-	public UniqueKey(String name, String table, String quote)
+	public UniqueKey(String name, String schema, String table, String quote)
 	{
-		super(name, table, quote);
+		super(name, schema, table, quote);
 		
 		this.quote = quote;
 	}
@@ -84,24 +85,25 @@ public class UniqueKey extends Key
 			}
 		}
 		
-		return MessageFormat.format(pattern, new Object[] { this.name, this.table, buffer.toString() });
+		return MessageFormat.format(pattern, new Object[] { this.name, this.tablePrefix + this.table, buffer.toString() });
 	}
 	
 	/**
 	 * Collects all foreign keys from the specified tables using the specified connection. 
 	 * @param connection a database connection
+	 * @param schema a schema name
 	 * @param table a table name
 	 * @param primaryKeyName the name of the primary key of this table
 	 * @return a Collection<ForeignKey>.
 	 * @throws SQLException if a database error occurs
 	 */
-	public static Collection collect(Connection connection, String table, String primaryKeyName) throws SQLException
+	public static Collection collect(Connection connection, String schema, String table, String primaryKeyName) throws SQLException
 	{
 		Map keyMap = new HashMap();
 		DatabaseMetaData metaData = connection.getMetaData();
 		String quote = metaData.getIdentifierQuoteString();
 		
-		ResultSet resultSet = metaData.getIndexInfo(null, null, table, true, false);
+		ResultSet resultSet = metaData.getIndexInfo(null, schema, table, true, false);
 		
 		while (resultSet.next())
 		{
@@ -113,7 +115,7 @@ public class UniqueKey extends Key
 			
 			if (key == null)
 			{
-				key = new UniqueKey(name, table, quote);
+				key = new UniqueKey(name, schema, table, quote);
 				
 				keyMap.put(name, key);
 			}

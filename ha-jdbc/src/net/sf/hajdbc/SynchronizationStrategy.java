@@ -21,7 +21,7 @@
 package net.sf.hajdbc;
 
 import java.sql.Connection;
-import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -62,8 +62,8 @@ public interface SynchronizationStrategy
 	 * Implementors must not close the specified connections.
 	 * @param inactiveConnection a connection to the inactive database
 	 * @param activeConnection a connection to the active database
-	 * @param tableList a list of every table in the database
+	 * @param schemaMap a map of schema name to list of table names
 	 * @throws java.sql.SQLException if synchronization fails
 	 */
-	public void synchronize(Connection inactiveConnection, Connection activeConnection, List tableList) throws java.sql.SQLException;
+	public void synchronize(Connection inactiveConnection, Connection activeConnection, Map schemaMap) throws java.sql.SQLException;
 }

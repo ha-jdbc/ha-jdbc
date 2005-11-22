@@ -22,13 +22,13 @@ package net.sf.hajdbc.sync;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import net.sf.hajdbc.SynchronizationStrategy;
 
 /**
- * Trivial {@link SynchronizationStrategy} implementation with an empty {@link SynchronizationStrategy#synchronize(Connection, Connection, List)} method.
+ * Trivial {@link SynchronizationStrategy} implementation with an empty {@link SynchronizationStrategy#synchronize(Connection, Connection, Map)} method.
  * 
  * @author  Paul Ferraro
  * @since   1.0
@@ -70,9 +70,9 @@ public class PassiveSynchronizationStrategy implements SynchronizationStrategy
 	}
 
 	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, java.util.List)
+	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, java.util.Map)
 	 */
-	public void synchronize(Connection inactiveConnection, Connection activeConnection, List tableList) throws SQLException
+	public void synchronize(Connection inactiveConnection, Connection activeConnection, Map tableMap) throws SQLException
 	{
 		// Do nothing
 	}

@@ -38,11 +38,13 @@ public abstract class Key
 	private static Log log = LogFactory.getLog(Key.class);
 	
 	protected String name;
+	protected String tablePrefix;
 	protected String table;
 	
-	protected Key(String name, String table, String quote)
+	protected Key(String name, String schema, String table, String quote)
 	{
 		this.name = quote + name + quote;
+		this.tablePrefix = (schema != null) ? quote + schema + quote + "." : "";
 		this.table = quote + table + quote;
 	}
 	

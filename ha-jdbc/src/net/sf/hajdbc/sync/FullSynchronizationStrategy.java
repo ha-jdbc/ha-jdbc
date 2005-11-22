@@ -29,6 +29,7 @@ import java.sql.Statement;
 import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
@@ -74,137 +75,150 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 	private ExecutorService executor = Executors.newSingleThreadExecutor(new DaemonThreadFactory());
 
 	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, java.util.List)
+	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, java.util.Map)
 	 */
-	public void synchronize(Connection inactiveConnection, Connection activeConnection, List tableList) throws SQLException
+	public void synchronize(Connection inactiveConnection, Connection activeConnection, Map schemaMap) throws SQLException
 	{
 		inactiveConnection.setAutoCommit(true);
 		String quote = inactiveConnection.getMetaData().getIdentifierQuoteString();
 		
 		// Drop foreign keys
-		Key.executeSQL(inactiveConnection, ForeignKey.collect(inactiveConnection, tableList), this.dropForeignKeySQL);
+		Key.executeSQL(inactiveConnection, ForeignKey.collect(inactiveConnection, schemaMap), this.dropForeignKeySQL);
 		
 		inactiveConnection.setAutoCommit(false);
 		
-		Iterator tables = tableList.iterator();
-		
 		try
 		{
-			while (tables.hasNext())
+			Iterator schemaMapEntries = schemaMap.entrySet().iterator();
+
+			while (schemaMapEntries.hasNext())
 			{
-				String table = (String) tables.next();
+				Map.Entry schemaMapEntry = (Map.Entry) schemaMapEntries.next();
+				String schema = (String) schemaMapEntry.getKey();
+				List tableList = (List) schemaMapEntry.getValue();
 				
-				final String selectSQL = "SELECT * FROM " + quote + table + quote;
+				String tablePrefix = (schema != null) ? quote + schema + quote + "." : "";
 				
-				final Statement selectStatement = activeConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-				selectStatement.setFetchSize(this.fetchSize);
+				Iterator tables = tableList.iterator();
 				
-				Callable callable = new Callable()
-				{
-					public Object call() throws SQLException
+				while (tables.hasNext())
+				{	
+					String table = (String) tables.next();
+					
+					String tableName = tablePrefix + quote + table + quote;
+				
+					final String selectSQL = "SELECT * FROM " + tableName;
+					
+					final Statement selectStatement = activeConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+					selectStatement.setFetchSize(this.fetchSize);
+					
+					Callable callable = new Callable()
 					{
-						return selectStatement.executeQuery(selectSQL);
-					}
-				};
-	
-				Future future = this.executor.submit(callable);
-				
-				String deleteSQL = MessageFormat.format(this.truncateTableSQL, new Object[] { quote + table + quote });
-	
-				if (log.isDebugEnabled())
-				{
-					log.debug(deleteSQL);
-				}
-				
-				Statement deleteStatement = inactiveConnection.createStatement();
-	
-				int deletedRows = deleteStatement.getUpdateCount();
-				
-				log.info(Messages.getMessage(Messages.DELETE_COUNT, new Object[] { new Integer(deletedRows), table }));
-				
-				deleteStatement.close();
-				
-				ResultSet resultSet = (ResultSet) future.get();
-				
-				StringBuffer insertSQL = new StringBuffer("INSERT INTO ").append(quote).append(table).append(quote).append(" (");
-	
-				ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-				
-				int columns = resultSetMetaData.getColumnCount();
-				
-				for (int i = 1; i <= columns; ++i)
-				{
-					if (i > 1)
+						public Object call() throws SQLException
+						{
+							return selectStatement.executeQuery(selectSQL);
+						}
+					};
+		
+					Future future = this.executor.submit(callable);
+					
+					String deleteSQL = MessageFormat.format(this.truncateTableSQL, new Object[] { tableName });
+		
+					if (log.isDebugEnabled())
 					{
-						insertSQL.append(", ");
+						log.debug(deleteSQL);
 					}
 					
-					insertSQL.append(quote).append(resultSetMetaData.getColumnName(i)).append(quote);
-				}
-				
-				insertSQL.append(") VALUES (");
-				
-				for (int i = 1; i <= columns; ++i)
-				{
-					if (i > 1)
-					{
-						insertSQL.append(", ");
-					}
+					Statement deleteStatement = inactiveConnection.createStatement();
+		
+					int deletedRows = deleteStatement.getUpdateCount();
 					
-					insertSQL.append("?");
-				}
-				
-				insertSQL.append(")");
-				
-				PreparedStatement insertStatement = inactiveConnection.prepareStatement(insertSQL.toString());
-				int statementCount = 0;
-				
-				while (resultSet.next())
-				{
+					log.info(Messages.getMessage(Messages.DELETE_COUNT, new Object[] { new Integer(deletedRows), tableName }));
+					
+					deleteStatement.close();
+					
+					ResultSet resultSet = (ResultSet) future.get();
+					
+					StringBuffer insertSQL = new StringBuffer("INSERT INTO ").append(tableName).append(" (");
+		
+					ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+					
+					int columns = resultSetMetaData.getColumnCount();
+					
 					for (int i = 1; i <= columns; ++i)
 					{
-						Object object = resultSet.getObject(i);
-						int type = resultSetMetaData.getColumnType(i);
+						if (i > 1)
+						{
+							insertSQL.append(", ");
+						}
 						
-						if (resultSet.wasNull())
-						{
-							insertStatement.setNull(i, type);
-						}
-						else
-						{
-							insertStatement.setObject(i, object, type);
-						}
+						insertSQL.append(quote).append(resultSetMetaData.getColumnName(i)).append(quote);
 					}
 					
-					insertStatement.addBatch();
-					statementCount += 1;
+					insertSQL.append(") VALUES (");
 					
-					if ((statementCount % this.maxBatchSize) == 0)
+					for (int i = 1; i <= columns; ++i)
+					{
+						if (i > 1)
+						{
+							insertSQL.append(", ");
+						}
+						
+						insertSQL.append("?");
+					}
+					
+					insertSQL.append(")");
+					
+					PreparedStatement insertStatement = inactiveConnection.prepareStatement(insertSQL.toString());
+					int statementCount = 0;
+					
+					while (resultSet.next())
+					{
+						for (int i = 1; i <= columns; ++i)
+						{
+							Object object = resultSet.getObject(i);
+							int type = resultSetMetaData.getColumnType(i);
+							
+							if (resultSet.wasNull())
+							{
+								insertStatement.setNull(i, type);
+							}
+							else
+							{
+								insertStatement.setObject(i, object, type);
+							}
+						}
+						
+						insertStatement.addBatch();
+						statementCount += 1;
+						
+						if ((statementCount % this.maxBatchSize) == 0)
+						{
+							insertStatement.executeBatch();
+							insertStatement.clearBatch();
+						}
+						
+						insertStatement.clearParameters();
+					}
+		
+					if ((statementCount % this.maxBatchSize) > 0)
 					{
 						insertStatement.executeBatch();
-						insertStatement.clearBatch();
 					}
+		
+					log.info(Messages.getMessage(Messages.INSERT_COUNT, new Object[] { new Integer(statementCount), tableName }));
 					
-					insertStatement.clearParameters();
+					insertStatement.close();
+					selectStatement.close();
+					
+					inactiveConnection.commit();
 				}
-	
-				if ((statementCount % this.maxBatchSize) > 0)
-				{
-					insertStatement.executeBatch();
-				}
-	
-				log.info(Messages.getMessage(Messages.INSERT_COUNT, new Object[] { new Integer(statementCount), table }));
-				
-				insertStatement.close();
-				selectStatement.close();
-				
-				inactiveConnection.commit();
 			}
-	
+			
 			inactiveConnection.setAutoCommit(true);
 	
 			// Recreate foreign keys
-			Key.executeSQL(inactiveConnection, ForeignKey.collect(activeConnection, tableList), this.createForeignKeySQL);
+			Key.executeSQL(inactiveConnection, ForeignKey.collect(activeConnection, schemaMap), this.createForeignKeySQL);
 		}
 		catch (InterruptedException e)
 		{
