@@ -43,29 +43,6 @@ public class SQLException extends java.sql.SQLException
 	
 	/**
 	 * Constructs a new SQLException.
-	 * @param cause the cause of this exception
-	 */
-	public SQLException(java.sql.SQLException cause)
-	{
-		super(cause.getMessage(), cause.getSQLState(), cause.getErrorCode());
-		
-		this.initSQLCause(cause);
-	}
-	
-	/**
-	 * Constructs a new SQLException.
-	 * @param message
-	 * @param cause
-	 */
-	public SQLException(String message, java.sql.SQLException cause)
-	{
-		super(message, cause.getSQLState(), cause.getErrorCode());
-		
-		this.initSQLCause(cause);
-	}
-
-	/**
-	 * Constructs a new SQLException.
 	 * @param message the description of this exception
 	 * @param cause the cause of this exception
 	 */
@@ -117,5 +94,56 @@ public class SQLException extends java.sql.SQLException
 			
 			this.initSQLCause(nextException);
 		}
+	}
+
+	/**
+	 * @see java.sql.SQLException#getErrorCode()
+	 */
+	public int getErrorCode()
+	{
+		Throwable cause = this.getCause();
+		
+		if ((cause != null) && java.sql.SQLException.class.isInstance(cause))
+		{
+			java.sql.SQLException exception = (java.sql.SQLException) cause;
+			
+			return exception.getErrorCode();
+		}
+		
+		return super.getErrorCode();
+	}
+
+	/**
+	 * @see java.sql.SQLException#getNextException()
+	 */
+	public java.sql.SQLException getNextException()
+	{
+		Throwable cause = this.getCause();
+		
+		if ((cause != null) && java.sql.SQLException.class.isInstance(cause))
+		{
+			java.sql.SQLException exception = (java.sql.SQLException) cause;
+			
+			return exception.getNextException();
+		}
+		
+		return super.getNextException();
+	}
+
+	/**
+	 * @see java.sql.SQLException#getSQLState()
+	 */
+	public String getSQLState()
+	{
+		Throwable cause = this.getCause();
+		
+		if ((cause != null) && java.sql.SQLException.class.isInstance(cause))
+		{
+			java.sql.SQLException exception = (java.sql.SQLException) cause;
+			
+			return exception.getSQLState();
+		}
+		
+		return super.getSQLState();
 	}
 }
