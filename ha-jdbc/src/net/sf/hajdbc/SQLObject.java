@@ -248,13 +248,11 @@ public class SQLObject
 			}
 			catch (ExecutionException e)
 			{
-				Throwable cause = e.getCause();
-				
-				java.sql.SQLException sqlCause = java.sql.SQLException.class.isInstance(cause) ? (java.sql.SQLException) cause : new SQLException(cause);
+				SQLException cause = new SQLException(e.getCause());
 
 				try
 				{
-					this.databaseCluster.handleFailure(database, sqlCause);
+					this.databaseCluster.handleFailure(database, cause);
 				}
 				catch (java.sql.SQLException sqle)
 				{
