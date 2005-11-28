@@ -21,7 +21,6 @@
 package net.sf.hajdbc;
 
 import java.sql.SQLException;
-import java.util.regex.Pattern;
 
 import edu.emory.mathcs.backport.java.util.concurrent.ExecutorService;
 
@@ -107,27 +106,4 @@ public interface DatabaseCluster extends DatabaseClusterMBean
 	 * @since 1.1
 	 */
 	public ExecutorService getExecutor();
-	
-	/**
-	 * Acquires a lock on the specified database object.
-	 * @param object a database object
-	 * @throws SQLException 
-	 * @since 1.1
-	 */
-	public void acquireLock(Object object) throws SQLException;
-	
-	/**
-	 * Releases the lock on the specified database object
-	 * @param object a database object
-	 * @throws SQLException 
-	 * @since 1.1
-	 */
-	public void releaseLock(Object object) throws SQLException;
-	
-	/**
-	 * Returns a regular expression pattern for sql statements that require mutually exclusive execution.
-	 * @return a regex pattern
-	 * @since 1.1
-	 */
-	public Pattern getMutexPattern();
 }

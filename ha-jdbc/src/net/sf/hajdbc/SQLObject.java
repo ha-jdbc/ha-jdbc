@@ -21,7 +21,6 @@
 package net.sf.hajdbc;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -55,12 +54,7 @@ public class SQLObject
 	
 	protected SQLObject(SQLObject parent, Operation operation) throws java.sql.SQLException
 	{
-		this(parent, operation, null);
-	}
-	
-	protected SQLObject(SQLObject parent, Operation operation, String object) throws java.sql.SQLException
-	{
-		this(parent.getDatabaseCluster(), parent.executeWriteToDatabase(operation, object));
+		this(parent.getDatabaseCluster(), parent.executeWriteToDatabase(operation));
 		
 		this.parent = parent;
 		this.parentOperation = operation;
@@ -286,59 +280,6 @@ public class SQLObject
 		
 		// Return results from successful operations
 		return returnValueMap;
-	}
-
-	/**
-	 * Acquires a lock on the specified object, then executes the specified write operation on every database in the cluster in parallel.
-	 * It is assumed that these types of operation will require access to the database.
-	 * @param operation a database operation
-	 * @param objectSet a set of database object names
-	 * @return the result of the operation
-	 * @throws java.sql.SQLException if operation execution fails
-	 * @since 1.1
-	 */
-	protected final Map executeWriteToDatabase(final Operation operation, final Set objectSet) throws java.sql.SQLException
-	{
-		try
-		{
-			if (objectSet != null)
-			{
-				Iterator objects = objectSet.iterator();
-				
-				while (objects.hasNext())
-				{
-					this.databaseCluster.acquireLock((String) objects.next());
-				}
-			}
-			
-			return this.executeWriteToDatabase(operation);
-		}
-		finally
-		{
-			if (objectSet != null)
-			{
-				Iterator objects = objectSet.iterator();
-				
-				while (objects.hasNext())
-				{
-					this.databaseCluster.releaseLock((String) objects.next());
-				}
-			}
-		}
-	}
-
-	/**
-	 * Acquires a lock on the specified object, then executes the specified write operation on every database in the cluster in parallel.
-	 * It is assumed that these types of operation will require access to the database.
-	 * @param operation a database operation
-	 * @param object a database object name
-	 * @return the result of the operation
-	 * @throws java.sql.SQLException if operation execution fails
-	 * @since 1.1
-	 */
-	protected final Map executeWriteToDatabase(final Operation operation, final String object) throws java.sql.SQLException
-	{
-		return this.executeWriteToDatabase(operation, (object != null) ? Collections.singleton(object) : Collections.EMPTY_SET);
 	}
 	
 	/**
