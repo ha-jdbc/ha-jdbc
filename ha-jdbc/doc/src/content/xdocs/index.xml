@@ -31,19 +31,20 @@
 				<li><a href="http://www.jgroups.org">JGroups</a> - reliable multicast communication framework</li>
 				<li><a href="http://www.jibx.org">JiBX</a> - an XML binding framework</li>
 				<li><a href="http://jakarta.apache.org/commons/logging/">Commons-Logging</a> - an ultra-thin bridge between different logging libraries</li>
+				<li><a href="http://www.mathcs.emory.edu/dcl/util/backport-util-concurrent/">Java 1.4 backport of java.util.concurrent</a></li>
 			</ul>
 		</section>
 		<section>
 			<title>Related Software</title>
 			<ul>
-				<li><a href="http://c-jdbc.objectweb.org">C-JDBC: Clustered JDBC</a></li>
-				<li><a href="http://www.daffodildb.com/replicator.html">Daffodil Replicator</a></li>
+				<li><a href="http://forge.continuent.org/projects/sequoia/">Sequoia</a> - (f.k.a. C-JDBC) Database-independent clustering middleware</li>
 				<li><a href="http://dev.mysql.com/doc/mysql/en/Replication.html">MySQL</a> - Contains built-in replication capability</li>
 				<li><a href="http://www.mysql.com/products/cluster/">MySQL Cluster</a> - Fault tolerant database architecture using NDB Cluster storage engine</li>
 				<li><a href="http://gborg.postgresql.org/project/slony1/">Slony-1</a> - A single-master/multi-slave replication system for PostgreSQL with cascading and slave promotion</li>
 				<li><a href="http://gborg.postgresql.org/project/erserver/">eRServer</a> - Trigger-based single-master/multi-slave asynchronous replication system for PostgreSQL</li>
 				<li><a href="http://pgfoundry.org/projects/pgcluster/">PGCluster</a> - Multi-master synchronous replication system for PostgreSQL</li>
 				<li><a href="http://www.meta.com.au/index.php?option=content&amp;task=view&amp;id=23&amp;Itemid=33">FBReplicator</a> - Replicator server for Firebird</li>
+				<li><a href="http://www.daffodildb.com/replicator.html">Daffodil Replicator</a> - Replicator server for Daffodil/One$DB</li>
 			</ul>
 		</section>
 	</body>
