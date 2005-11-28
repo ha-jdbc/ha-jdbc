@@ -49,12 +49,11 @@ public class ResultSet extends SQLObject implements java.sql.ResultSet
 	 * Constructs a new ResultSetProxy.
 	 * @param statement a Statement proxy
 	 * @param operation an operation that creates ResultSets
-	 * @param object a database object to lock
 	 * @throws SQLException if operation execution fails
 	 */
-	public ResultSet(Statement statement, StatementOperation operation, String object) throws SQLException
+	public ResultSet(Statement statement, StatementOperation operation) throws SQLException
 	{
-		super(statement, operation, object);
+		super(statement, operation);
 	}
 	
 	/**
