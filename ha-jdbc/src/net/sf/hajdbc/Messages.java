@@ -61,10 +61,6 @@ public class Messages
 	public static final String INVALID_SYNC_STRATEGY = "invalid-sync-strategy";
 	public static final String JDBC_URL_REJECTED = "jdbc-url-rejected";
 	public static final String JNDI_LOOKUP_FAILED = "jndi-lookup-failed";
-	public static final String LOCK_ACQUIRED_DISTRIBUTED = "lock-acquired-distributed";
-	public static final String LOCK_ACQUIRED_LOCAL = "lock-acquired-local";
-	public static final String LOCK_RELEASED_DISTRIBUTED = "lock-released-distributed";
-	public static final String LOCK_RELEASED_LOCAL = "lock-released-local";
 	public static final String MBEAN_SERVER_NOT_FOUND = "mbean-server-not-found";
 	public static final String NO_ACTIVE_DATABASES = "no-active-databases";
 	public static final String NOT_INSTANCE_OF = "not-instance-of";
