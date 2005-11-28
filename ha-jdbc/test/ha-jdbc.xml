@@ -22,7 +22,7 @@
 -->
 <ha-jdbc>
 	<sync id="passive" class="net.sf.hajdbc.sync.PassiveSynchronizationStrategy"/>
-	<cluster id="test-database-cluster" balancer="simple" default-sync="passive" primary-keys="other">
+	<cluster id="test-database-cluster" balancer="simple" default-sync="passive">
 		<database id="database1" weight="1">
 			<driver>net.sf.hajdbc.sql.MockDriver</driver>
 			<url>jdbc:mock:database1</url>
@@ -32,7 +32,7 @@
 			<url>jdbc:mock:database2</url>
 		</database>
 	</cluster>
-	<cluster id="test-datasource-cluster" balancer="simple" default-sync="passive" primary-keys="other">
+	<cluster id="test-datasource-cluster" balancer="simple" default-sync="passive">
 		<datasource id="datasource1" weight="1">
 			<name>datasource1</name>
 			<property name="java.naming.factory.initial">net.sf.hajdbc.sql.MockInitialContextFactory</property>
@@ -42,7 +42,7 @@
 			<property name="java.naming.factory.initial">net.sf.hajdbc.sql.MockInitialContextFactory</property>
 		</datasource>
 	</cluster>
-	<cluster id="test-pool-datasource-cluster" balancer="simple" default-sync="passive" primary-keys="other">
+	<cluster id="test-pool-datasource-cluster" balancer="simple" default-sync="passive">
 		<pool-datasource id="datasource1" weight="1">
 			<name>pool-datasource1</name>
 			<property name="java.naming.factory.initial">net.sf.hajdbc.sql.MockInitialContextFactory</property>
@@ -52,7 +52,7 @@
 			<property name="java.naming.factory.initial">net.sf.hajdbc.sql.MockInitialContextFactory</property>
 		</pool-datasource>
 	</cluster>
-	<cluster id="test-xa-datasource-cluster" balancer="simple" default-sync="passive" primary-keys="other">
+	<cluster id="test-xa-datasource-cluster" balancer="simple" default-sync="passive">
 		<xa-datasource id="datasource1" weight="1">
 			<name>xa-datasource1</name>
 			<property name="java.naming.factory.initial">net.sf.hajdbc.sql.MockInitialContextFactory</property>

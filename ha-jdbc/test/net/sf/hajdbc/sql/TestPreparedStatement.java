@@ -77,9 +77,6 @@ public class TestPreparedStatement extends TestStatement
 	{
 		try
 		{
-			this.databaseCluster.getMutexPattern();
-			this.databaseClusterControl.setReturnValue(null);
-			
 			this.databaseCluster.getBalancer();
 			this.databaseClusterControl.setReturnValue(this.balancer, 2);
 			
@@ -136,9 +133,6 @@ public class TestPreparedStatement extends TestStatement
 	{
 		try
 		{
-			this.databaseCluster.getMutexPattern();
-			this.databaseClusterControl.setReturnValue(null);
-			
 			this.databaseCluster.getExecutor();
 			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
 			
@@ -173,9 +167,6 @@ public class TestPreparedStatement extends TestStatement
 		try
 		{
 			ResultSet resultSet = (ResultSet) this.createMock(ResultSet.class);
-			
-			this.databaseCluster.getMutexPattern();
-			this.databaseClusterControl.setReturnValue(null);
 			
 			this.databaseCluster.getBalancer();
 			this.databaseClusterControl.setReturnValue(this.balancer, 2);
@@ -221,9 +212,6 @@ public class TestPreparedStatement extends TestStatement
 		{
 			ResultSet resultSet = (ResultSet) this.createMock(ResultSet.class);
 			
-			this.databaseCluster.getMutexPattern();
-			this.databaseClusterControl.setReturnValue(null);
-			
 			this.databaseCluster.getExecutor();
 			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
 			
@@ -265,9 +253,6 @@ public class TestPreparedStatement extends TestStatement
 	{
 		try
 		{
-			this.databaseCluster.getMutexPattern();
-			this.databaseClusterControl.setReturnValue(null);
-			
 			this.databaseCluster.getExecutor();
 			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
 			

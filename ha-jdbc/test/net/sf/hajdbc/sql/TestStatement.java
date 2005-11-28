@@ -199,9 +199,6 @@ public class TestStatement extends EasyMockTestCase
 	 */
 	public void testAddBatch()
 	{
-		this.databaseCluster.getMutexPattern();
-		this.databaseClusterControl.setReturnValue(null);
-		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 2);
 		
@@ -348,9 +345,6 @@ public class TestStatement extends EasyMockTestCase
 	 */
 	public void testExecuteString()
 	{
-		this.databaseCluster.getMutexPattern();
-		this.databaseClusterControl.setReturnValue(null);
-		
 		this.databaseCluster.getExecutor();
 		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
 		
@@ -384,9 +378,6 @@ public class TestStatement extends EasyMockTestCase
 	 */
 	public void testExecuteStringInt()
 	{
-		this.databaseCluster.getMutexPattern();
-		this.databaseClusterControl.setReturnValue(null);
-		
 		this.databaseCluster.getExecutor();
 		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
 		
@@ -420,9 +411,6 @@ public class TestStatement extends EasyMockTestCase
 	 */
 	public void testExecuteStringIntArray()
 	{
-		this.databaseCluster.getMutexPattern();
-		this.databaseClusterControl.setReturnValue(null);
-		
 		this.databaseCluster.getExecutor();
 		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
 		
@@ -459,9 +447,6 @@ public class TestStatement extends EasyMockTestCase
 	 */
 	public void testExecuteStringStringArray()
 	{
-		this.databaseCluster.getMutexPattern();
-		this.databaseClusterControl.setReturnValue(null);
-		
 		this.databaseCluster.getExecutor();
 		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
 		
@@ -533,9 +518,6 @@ public class TestStatement extends EasyMockTestCase
 	{
 		ResultSet resultSet = (ResultSet) this.createMock(ResultSet.class);
 
-		this.databaseCluster.getMutexPattern();
-		this.databaseClusterControl.setReturnValue(null);
-		
 		this.databaseCluster.getBalancer();
 		this.databaseClusterControl.setReturnValue(this.balancer, 2);
 		
@@ -580,9 +562,6 @@ public class TestStatement extends EasyMockTestCase
 	{
 		ResultSet resultSet = (ResultSet) this.createMock(ResultSet.class);
 
-		this.databaseCluster.getMutexPattern();
-		this.databaseClusterControl.setReturnValue(null);
-		
 		this.databaseCluster.getExecutor();
 		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
 		
@@ -626,9 +605,6 @@ public class TestStatement extends EasyMockTestCase
 	{
 		ResultSet resultSet = (ResultSet) this.createMock(ResultSet.class);
 
-		this.databaseCluster.getMutexPattern();
-		this.databaseClusterControl.setReturnValue(null);
-		
 		this.databaseCluster.getExecutor();
 		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
 		
@@ -667,14 +643,11 @@ public class TestStatement extends EasyMockTestCase
 
 	/*
 	 * Test method for 'net.sf.hajdbc.sql.Statement.executeQuery(String)'
-	 */
+	 * 
 	public void testPostgreSQLSequenceExecuteQuery()
 	{
 		ResultSet resultSet = (ResultSet) this.createMock(ResultSet.class);
 
-		this.databaseCluster.getMutexPattern();
-		this.databaseClusterControl.setReturnValue(LocalDatabaseCluster.getMutexPattern("sequence-PostgreSQL"));
-		
 		try
 		{
 			this.databaseCluster.acquireLock("my_sequence");
@@ -711,9 +684,9 @@ public class TestStatement extends EasyMockTestCase
 		}
 	}
 
-	/*
+	 *
 	 * Test method for 'net.sf.hajdbc.sql.Statement.executeQuery(String)'
-	 */
+	 * 
 	public void testSQL2003SequenceExecuteQuery()
 	{
 		ResultSet resultSet = (ResultSet) this.createMock(ResultSet.class);
@@ -757,9 +730,9 @@ public class TestStatement extends EasyMockTestCase
 		}
 	}
 
-	/*
+	 *
 	 * Test method for 'net.sf.hajdbc.sql.Statement.executeQuery(String)'
-	 */
+	 *
 	public void testMaxDBSequenceExecuteQuery()
 	{
 		ResultSet resultSet = (ResultSet) this.createMock(ResultSet.class);
@@ -803,9 +776,9 @@ public class TestStatement extends EasyMockTestCase
 		}
 	}
 
-	/*
+	 *
 	 * Test method for 'net.sf.hajdbc.sql.Statement.executeQuery(String)'
-	 */
+	 *
 	public void testFirebirdSequenceExecuteQuery()
 	{
 		ResultSet resultSet = (ResultSet) this.createMock(ResultSet.class);
@@ -849,9 +822,9 @@ public class TestStatement extends EasyMockTestCase
 		}
 	}
 	
-	/*
+	 *
 	 * Test method for 'net.sf.hajdbc.sql.Statement.executeQuery(String)'
-	 */
+	 *
 	public void testDB2SequenceExecuteQuery()
 	{
 		ResultSet resultSet = (ResultSet) this.createMock(ResultSet.class);
@@ -894,15 +867,12 @@ public class TestStatement extends EasyMockTestCase
 			this.fail(e);
 		}
 	}
-	
+*/	
 	/*
 	 * Test method for 'net.sf.hajdbc.sql.Statement.executeUpdate(String)'
 	 */
 	public void testExecuteUpdateString()
 	{
-		this.databaseCluster.getMutexPattern();
-		this.databaseClusterControl.setReturnValue(null);
-		
 		this.databaseCluster.getExecutor();
 		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
 		
@@ -938,12 +908,6 @@ public class TestStatement extends EasyMockTestCase
 	{
 		try
 		{
-			this.databaseCluster.getMutexPattern();
-			this.databaseClusterControl.setReturnValue(LocalDatabaseCluster.getMutexPattern("identity"));
-
-			this.databaseCluster.acquireLock("my_table");
-			this.databaseClusterControl.setVoidCallable();
-			
 			this.databaseCluster.getExecutor();
 			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
 			
@@ -955,9 +919,6 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.sqlStatement.executeUpdate("INSERT INTO my_table (my_col) VALUES ('my_value')", 1);
 			this.sqlStatementControl.setReturnValue(1);
-
-			this.databaseCluster.releaseLock("my_table");
-			this.databaseClusterControl.setVoidCallable();
 			
 			replay();
 			
@@ -982,12 +943,6 @@ public class TestStatement extends EasyMockTestCase
 		
 		try
 		{
-			this.databaseCluster.getMutexPattern();
-			this.databaseClusterControl.setReturnValue(LocalDatabaseCluster.getMutexPattern("identity"));
-
-			this.databaseCluster.acquireLock("my_table");
-			this.databaseClusterControl.setVoidCallable();
-			
 			this.databaseCluster.getExecutor();
 			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
 			
@@ -999,9 +954,6 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.sqlStatement.executeUpdate("INSERT INTO my_table (my_col) VALUES ('my_value')", columns);
 			this.sqlStatementControl.setReturnValue(1);
-			
-			this.databaseCluster.releaseLock("my_table");
-			this.databaseClusterControl.setVoidCallable();
 			
 			replay();
 			
@@ -1026,12 +978,6 @@ public class TestStatement extends EasyMockTestCase
 		
 		try
 		{
-			this.databaseCluster.getMutexPattern();
-			this.databaseClusterControl.setReturnValue(LocalDatabaseCluster.getMutexPattern("identity"));
-
-			this.databaseCluster.acquireLock("my_table");
-			this.databaseClusterControl.setVoidCallable();
-			
 			this.databaseCluster.getExecutor();
 			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
 			
@@ -1043,9 +989,6 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.sqlStatement.executeUpdate("INSERT INTO my_table (my_col) VALUES ('my_value')", columns);
 			this.sqlStatementControl.setReturnValue(1);
-			
-			this.databaseCluster.releaseLock("my_table");
-			this.databaseClusterControl.setVoidCallable();
 			
 			replay();
 			
