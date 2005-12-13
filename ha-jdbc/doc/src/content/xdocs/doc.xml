@@ -275,16 +275,35 @@
 					<li>Path of the JGroups XML configuration on the local file system.</li>
 				</ul>
 				<p>
-					If left unspecified, HA-JDBC will use the following default protocol stack:
+					If left unspecified, HA-JDBC will use the protocol stack specified in <em>default-minimalthreads.xml</em> contained within the JGroups distribution.
 				</p>
-				<p><code>UDP:PING:MERGE2:FD:VERIFY_SUSPECT:pbcast.NAKACK:UNICAST:pbcast.STABLE:FRAG:pbcast.GMS</code></p>
 				<p>
-					See the JGroup's <a href="http://www.jboss.com/wiki/Wiki.jsp?page=JGroups">Wiki</a> for details on customizing the protocol stack.
+					See the JGroup's <a href="http://www.jboss.com/wiki/Wiki.jsp?page=JGroups">Wiki</a> for assistance with customizing the protocol stack.
 				</p>
 			</section>
 			<section>
 				<title>Unique identifier generation</title>
+				<p>The following traditional mechanisms for generating unique identifiers are problematic for clustered database environments:</p>
+				<ul>
+					<li>Identity columns (only supported by MySQL, HSQLDB, DB2, MS SQL Server, Sybase, etc.) fetched using the JDBC 3.0 <code>ResultSet.getGeneratedKeys()</code> method</li>
+					<li>Sequences (only supported by PostgreSQL, MySQL MaxDB (fka SAP DB), Firebird (fka Interbase), Mckoi, Oracle, DB2, etc.)</li>
+				</ul>
 				<p>
+					In general, for unique identifier generation to function correctly, each database node within a cluster needs to independently generate the same sets of identifiers.
+					Because of the distributed nature of HA-JDBC, the execution order of 2 simulaneous requests for a new unique identifier cannot be guananteed to be the same on each database.
+					In other words, HA-JDBC cannot guarantee that the same identifier will be generated for each database in the cluster.
+					Another reason not to use either of these mechanisms is that they are not supported by every DBMS.
+				</p>
+				<p>The following alternative unique identifier generation methods are certain to function properly with HA-JDBC for any database:</p>
+				<ul>
+					<li>High-Low algorithm (often implemented using a Stateless Session EJB)</li>
+					<li>UUID algorithms</li>
+					<li>Others?</li>
+				</ul>
+				<p>
+					Object-relation mapping (ORM) frameworks (e.g. Hibernate, OJB, Cayanne) typically include implementations of these mechanisms.
+				</p>
+				<!--p>
 					As of version 1.1, HA-JDBC supports those unique identifier generation mechanisms that were problematic in version 1.0 (i.e. identity columns and sequences).
 					To support identity columns and sequences, HA-JDBC will acquire a distributable lock on the specific table or sequence before executing the appropriate statements.
 					
@@ -348,9 +367,7 @@
 					<p>e.g.</p>
 					<source><![CDATA[
 	<ha-jdbc>
-	  <!-- ... -->
 	  <cluster id="..." balancer="..." default-sync="..." primary-keys="other">
-		<!-- ... -->
 	  </cluster>
 	</ha-jdbc>
 	]]></source>
@@ -366,7 +383,7 @@
 						For best performance, HA-JDBC recommends using a high-low or UUID algorithm so that statement parsing and locking costs can be avoided.
 						Object-relation mapping (ORM) frameworks (e.g. Hibernate, OJB, Cayanne) typically include implementations of these mechanisms.
 					</p>
-				</section>
+				</section-->
 			</section>
 			<section>
 				<title>Connection Pooling</title>
