@@ -241,7 +241,7 @@
 					<dt><strong>Load</strong></dt>
 					<dd>
 						Requests are sent to the node with the smallest load.
-						Node weights affect the calcuated load of a given node.
+						Node weights affect the calculated load of a given node.
 						The load of a node = <em>concurrent-requests</em> / <em>weight</em>.
 					</dd>
 				</dl>
