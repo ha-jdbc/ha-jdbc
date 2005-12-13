@@ -65,6 +65,9 @@ public class TestXAResource extends EasyMockTestCase
 	 */
 	protected void setUp() throws Exception
 	{
+		this.databaseCluster.getConnectionFactoryMap();
+		this.databaseClusterControl.setReturnValue(Collections.singletonMap(this.database, new Object()));
+		
 		this.databaseCluster.getExecutor();
 		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor(), 2);
 		
@@ -76,7 +79,7 @@ public class TestXAResource extends EasyMockTestCase
 		
 		this.replay();
 
-		ConnectionFactory connectionFactory = new ConnectionFactory(this.databaseCluster, Collections.singletonMap(this.database, new Object()));
+		ConnectionFactory connectionFactory = new ConnectionFactory(this.databaseCluster);
 		
 		Operation operation = new Operation()
 		{

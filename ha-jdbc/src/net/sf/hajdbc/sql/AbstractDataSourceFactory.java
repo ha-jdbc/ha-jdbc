@@ -28,6 +28,7 @@ import javax.naming.RefAddr;
 import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
 
+import net.sf.hajdbc.ConnectionFactory;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterFactory;
 
@@ -72,7 +73,7 @@ public abstract class AbstractDataSourceFactory implements ObjectFactory
 		if (databaseCluster == null) return null;
 		
 		dataSource.setName(id);
-		dataSource.setConnectionFactory(databaseCluster.getConnectionFactory());
+		dataSource.setConnectionFactory(new ConnectionFactory(databaseCluster));
 		
 		return dataSource;
 	}

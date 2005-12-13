@@ -20,8 +20,6 @@
  */
 package net.sf.hajdbc;
 
-import java.util.Map;
-
 /**
  * @author  Paul Ferraro
  * @version $Revision$
@@ -32,10 +30,9 @@ public class ConnectionFactory extends SQLObject
 	/**
 	 * Constructs a new ConnectionFactory.
 	 * @param databaseCluster a database cluster
-	 * @param connectionFactoryMap a Map<Database, Object>
 	 */
-	public ConnectionFactory(DatabaseCluster databaseCluster, Map connectionFactoryMap)
+	public ConnectionFactory(DatabaseCluster databaseCluster)
 	{
-		super(databaseCluster, connectionFactoryMap);
+		super(databaseCluster, databaseCluster.getConnectionFactoryMap());
 	}
 }

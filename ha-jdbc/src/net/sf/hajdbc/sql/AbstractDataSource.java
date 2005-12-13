@@ -39,14 +39,6 @@ public abstract class AbstractDataSource implements Referenceable
 	
 	protected ConnectionFactory connectionFactory;
 	private String name;
-	
-	/**
-	 * @return the connectionFactory.
-	 */
-	public ConnectionFactory getConnectionFactory()
-	{
-		return this.connectionFactory;
-	}
 
 	/**
 	 * @param connectionFactory the connectionFactory to set.

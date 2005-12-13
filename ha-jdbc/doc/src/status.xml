@@ -12,15 +12,24 @@
 	</contexts>
 
 	<changes>
-		<release version="1.1-beta-1" date="">
-			<action type="add" context="code" dev="PF">
-				Added distributable locking support required for using sequences and auto-incrementing columns as primary key generation mechanisms.
+		<release version="1.1" date="...">
+			<action type="add" context="lib" dev="PF">
+				New dependency on JDK 1.4 backport of JDK 1.5 java.util.concurrent package.
 			</action>
 			<action type="update" context="code" dev="PF">
 				Uses configurable thread pooling for asynchronously executed write operations for improved efficiency and fault tolerance under high load.
 			</action>
-			<action type="add" context="lib" dev="PF">
-				New dependency on Java 1.4 backport of Java 1.5 java.util.concurrent package.
+			<action type="update" context="code" dev="PF">
+				Uses default-minimalthreads.xml from JGroups distribution as default distributable protocol.
+			</action>
+			<action type="fix" context="code" dev="PF">
+				Synchronization strategies now use schema qualified table names when appropriate.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded JGroups to version 2.2.9.
+			</action>
+			<action type="fix" context="code" dev="PF">
+				Fixed problematic co-dependency between DatabaseCluster and ConnectionFactory.
 			</action>
 		</release>
 		<release version="1.0" date="September 22, 2005">
@@ -37,7 +46,7 @@
 				Added FAQ section for distinguishing application database users vs. HA-JDBC database users.
 			</action>
 			<action type="update" context="lib" dev="PF">
-				Upgraded EasyMock to 1.2.
+				Upgraded EasyMock to version 1.2.
 			</action>
 		</release>
 		<release version="1.0-rc-5" date="September 15, 2005">

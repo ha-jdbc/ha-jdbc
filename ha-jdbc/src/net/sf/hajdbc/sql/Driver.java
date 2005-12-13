@@ -83,8 +83,6 @@ public final class Driver implements java.sql.Driver
 			return null;
 		}
 		
-		ConnectionFactory connectionFactory = databaseCluster.getConnectionFactory();
-		
 		DriverOperation operation = new DriverOperation()
 		{
 			public Object execute(DriverDatabase database, java.sql.Driver driver) throws SQLException
@@ -93,7 +91,7 @@ public final class Driver implements java.sql.Driver
 			}
 		};
 		
-		return new Connection(connectionFactory, operation, new FileSupportImpl());
+		return new Connection(new ConnectionFactory(databaseCluster), operation, new FileSupportImpl());
 	}
 	
 	/**
@@ -124,8 +122,6 @@ public final class Driver implements java.sql.Driver
 			return null;
 		}
 		
-		ConnectionFactory connectionFactory = databaseCluster.getConnectionFactory();
-		
 		DriverOperation operation = new DriverOperation()
 		{
 			public Object execute(DriverDatabase database, java.sql.Driver driver) throws SQLException
@@ -134,7 +130,7 @@ public final class Driver implements java.sql.Driver
 			}
 		};
 		
-		return (DriverPropertyInfo[]) connectionFactory.executeReadFromDriver(operation);
+		return (DriverPropertyInfo[]) new ConnectionFactory(databaseCluster).executeReadFromDriver(operation);
 	}
 	
 	/**

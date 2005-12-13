@@ -10,10 +10,10 @@
 			<ul>
 				<li>Java Runtime Environment (1.4 or greater)</li>
 				<li>JDBC 3.0 compliant driver (Type IV recommended)</li>
-				<li>JMX provider (1.2 or greater) e.g.
+				<li>JMX 1.2+ mbean server
 					<ul>
 						<li><a href="http://java.sun.com/j2se/1.5.0/">JDK 5.0</a></li>
-						<li><a href="http://java.sun.com/products/JavaManagement/index.jsp">Sun Reference Implemenation</a></li>
+						<li><a href="http://java.sun.com/products/JavaManagement/index.jsp">Sun's JMX Reference Implemenation</a></li>
 						<li><a href="http://mx4j.sourceforge.net">MX4J</a></li>
 						<li><a href="http://www.xmojo.org/products/xmojo">XMOJO</a></li>
 						<li><a href="http://www.jboss.org/developers/projects/jboss/jbossmx">JBossMX</a></li>
@@ -40,7 +40,7 @@
   <sync id="diff" class="net.sf.hajdbc.sync.DifferentialSynchronizationStrategy"></sync>
   <sync id="full" class="net.sf.hajdbc.sync.FullSynchronizationStrategy"></sync>
   <sync id="passive" class="net.sf.hajdbc.sync.PassiveSynchronizationStrategy"></sync>
-  <cluster id="cluster" balancer="simple" default-sync="diff" primary-keys="other">
+  <cluster id="cluster" balancer="simple" default-sync="diff">
     <database id="database1" weight="1">
       <driver>org.postgresql.Driver</driver>
       <url>jdbc:postgresql://server1:5432/database</url>
@@ -54,7 +54,7 @@
       <password>password</password>
     </database>
   </cluster>
-  <cluster id="Cluster" balancer="random" default-sync="full" primary-keys="identity">
+  <cluster id="Cluster" balancer="random" default-sync="full">
     <datasource id="database1" weight="1">
       <name>java:comp/env/jdbc/Database1</name>
     </datasource>
@@ -62,7 +62,7 @@
       <name>java:comp/env/jdbc/Database2</name>
     </datasource>
   </cluster>
-  <cluster id="PoolCluster" balancer="round-robin" default-sync="diff" primary-keys="sequence-MaxDB">
+  <cluster id="PoolCluster" balancer="round-robin" default-sync="diff">
     <pool-datasource id="database1" weight="1">
       <name>java:comp/env/jdbc/pool/Database1</name>
     </pool-datasource>
@@ -70,7 +70,7 @@
       <name>java:comp/env/jdbc/pool/Database2</name>
     </pool-datasource>
   </cluster>
-  <cluster id="XACluster" balancer="load" default-sync="full" primary-keys="sequence-Firebird">
+  <cluster id="XACluster" balancer="load" default-sync="full">
     <xa-datasource id="database1" weight="1">
       <name>java:comp/env/jdbc/xa/Database1</name>
     </xa-datasource>
@@ -260,7 +260,7 @@
 <ha-jdbc>
   <distributable/>
   <sync id="..." class="..."></sync>
-  <cluster id="..." balancer="..." default-sync="..." primary-keys="...">
+  <cluster id="..." balancer="..." default-sync="...">
     <!-- ... -->
   </cluster>
 </ha-jdbc>
@@ -378,7 +378,7 @@
 				<source><![CDATA[
 <ha-jdbc>
   <!-- ... -->
-  <cluster id="PoolCluster" balancer="..." default-sync="..." primary-keys="...">
+  <cluster id="PoolCluster" balancer="..." default-sync="...">
     <pool-datasource id="database1">
       <name>java:comp/env/jdbc/pool/Database1</name>
       <user>postgres</user>
@@ -404,7 +404,7 @@
 				<source><![CDATA[
 <ha-jdbc>
   <!-- ... -->
-  <cluster id="XACluster" balancer="..." default-sync="..." primary-keys="...">
+  <cluster id="XACluster" balancer="..." default-sync="...">
     <xa-datasource id="database1">
       <name>java:comp/env/jdbc/xa/Database1</name>
       <user>postgres</user>
@@ -512,7 +512,7 @@ rowSet.close();
 <ha-jdbc>
   <!-- ... -->
   <!-- Sample validation query for HSQLDB -->
-  <cluster id="..." balancer="..." default-sync="..." primary-keys="..." validate-sql="CALL NOW()">
+  <cluster id="..." balancer="..." default-sync="..." validate-sql="CALL NOW()">
     <!-- ... -->
   </cluster>
 </ha-jdbc>
@@ -611,6 +611,7 @@ public class FasterFullSynchronizationStrategy extends net.sf.hajdbc.sync.FullSy
 				<ul>
 					<li><a href="http://java.sun.com/j2se/1.5.0/docs/tooldocs/share/jconsole.html">JDK 5.0's jconsole</a></li>
 					<li><a href="http://mc4j.sourceforge.net/">MC4J</a></li>
+					<li><a href="http://www.jmanage.org/">jManage</a></li>
 					<li><a href="http://ejtools.sourceforge.net/applications/jmx.browser/">EJTools JMX Browser</a></li>
 					<li><a href="http://panoptesmgmt.sourceforge.net/">Panoptes</a></li>
 					<li><a href="http://www.hta-bi.bfh.ch/Projects/ejbplug/">EJAM - Environment for Java Application Management</a></li>
@@ -625,7 +626,7 @@ String clusterId = "cluster1";
 String databaseId = "database1";
 
 MBeanServer server = (MBeanServer) MBeanServerFactory.findMBeanServer(null).get(0);
-ObjectName name = net.sf.hajdbc.DatabaseCluster.getObjectName(clusterId);
+ObjectName name = net.sf.hajdbc.DatabaseClusterFactory.getObjectName(clusterId);
 
 // There are 2 ways to programatically invoke methods on an mbean:
 

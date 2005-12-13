@@ -23,10 +23,10 @@ package net.sf.hajdbc.distributable;
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Map;
 
 import net.sf.hajdbc.AbstractDatabaseCluster;
 import net.sf.hajdbc.Balancer;
-import net.sf.hajdbc.ConnectionFactory;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Messages;
@@ -216,11 +216,11 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getConnectionFactory()
+	 * @see net.sf.hajdbc.DatabaseCluster#getConnectionFactoryMap()
 	 */
-	public ConnectionFactory getConnectionFactory()
+	public Map getConnectionFactoryMap()
 	{
-		return this.databaseCluster.getConnectionFactory();
+		return this.databaseCluster.getConnectionFactoryMap();
 	}
 	
 	/**

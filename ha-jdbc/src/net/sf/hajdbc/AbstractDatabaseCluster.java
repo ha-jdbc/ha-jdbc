@@ -174,7 +174,7 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 		
 		try
 		{
-			inactiveConnection = inactiveDatabase.connect(this.getConnectionFactory().getObject(inactiveDatabase));
+			inactiveConnection = inactiveDatabase.connect(this.getConnectionFactoryMap().get(inactiveDatabase));
 			
 			Map schemaMap = new HashMap();
 			
@@ -206,7 +206,7 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 			{
 				Database activeDatabase = databases[i];
 				
-				activeConnections[i] = activeDatabase.connect(this.getConnectionFactory().getObject(activeDatabase));
+				activeConnections[i] = activeDatabase.connect(this.getConnectionFactoryMap().get(activeDatabase));
 			}
 			
 			// Lock all tables on all active databases

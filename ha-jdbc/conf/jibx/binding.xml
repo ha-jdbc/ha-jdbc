@@ -8,6 +8,10 @@
 		<collection add-method="addSynchronizationStrategy" item-type="net.sf.hajdbc.SynchronizationStrategy"></collection>
 		<collection add-method="addDatabaseCluster" item-type="net.sf.hajdbc.local.LocalDatabaseCluster"></collection>
 	</mapping>
+	<mapping name="sync" class="net.sf.hajdbc.SynchronizationStrategy" factory="net.sf.hajdbc.sync.SynchronizationStrategyFactory.createSynchronizationStrategy">
+		<value name="id" set-method="setId" get-method="getId" style="attribute" ident="def"></value>
+		<structure set-method="writeProperties" get-method="readProperties" unmarshaller="net.sf.hajdbc.util.PropertiesUnmarshaller"></structure>
+	</mapping>
 	<mapping name="cluster" class="net.sf.hajdbc.local.LocalDatabaseCluster" post-set="createConnectionFactories">
 		<value name="id" field="id" style="attribute"></value>
 		<value name="balancer" field="balancer" style="attribute" deserializer="net.sf.hajdbc.balancer.BalancerFactory.createBalancer"></value>
@@ -44,9 +48,5 @@
 	<mapping name="xa-datasource" class="net.sf.hajdbc.sql.pool.xa.XADataSourceDatabase" extends="net.sf.hajdbc.sql.AbstractDatabase">
 		<value name="name" field="name"></value>
 		<structure map-as="net.sf.hajdbc.sql.AbstractDatabase"></structure>
-	</mapping>
-	<mapping name="sync" class="net.sf.hajdbc.SynchronizationStrategy" factory="net.sf.hajdbc.sync.SynchronizationStrategyFactory.createSynchronizationStrategy">
-		<value name="id" set-method="setId" get-method="getId" style="attribute" ident="def"></value>
-		<structure set-method="writeProperties" get-method="readProperties" unmarshaller="net.sf.hajdbc.util.PropertiesUnmarshaller"></structure>
 	</mapping>
 </binding>

@@ -14,7 +14,7 @@
 		<faq>
 			<question>How do I configure HA-JDBC to notify me when a database is deactivated?</question>
 			<answer>
-				Use your logging facility.  HA-JDBC will log database activations and deactivations with ERROR level.
+				Use your logging facility.  HA-JDBC generates an ERROR level log message when it automatically deactivates a database.
 				If you use Log4J, configure an SMTP appender for the "net.sf.hajdbc" logger.<br/>
 				If you use java.util.logging, configure an <a href="http://http://smtphandler.sourceforge.net/">SMTPHandler</a> for the "net.sf.hajdbc" package.
 			</answer>
@@ -71,7 +71,7 @@
 			<answer>
 				Yes, but first you will need to upgrade the JMX implementation used by Tomcat (found in $CATALINA_HOME/bin/jmx.jar).
 				Tomcat 5.0 ships with MX4J 1.1.1 which only implements JMX 1.1.
-				Because HA-JDBC uses JMX 1.2, you will need to upgrade this file to MX4J 2.0 or greater (3.0.1 recommended).
+				Because HA-JDBC requires JMX 1.2, you will need to upgrade this file to MX4J 2.0 or greater.
 			</answer>
 		</faq>
 		<faq>
@@ -81,9 +81,9 @@
 					HA-JDBC uses the Java preferences API to persist the local database cluster state.
 					The default storage mechanism varies depending on your operating system.
 				</p>
-				<p>On Unix-based systems, the cluster state will be stored on the file system within the user's home directory:</p>
+				<p>On Unix-like systems, the cluster state will be stored on the file system within the user's home directory:</p>
 				<p><code>~/.java/.userPrefs/net/sf/hajdbc/local/prefs.xml</code></p>
-				<p>On Windows-based systems, the cluster state will be stored in the registry:</p>
+				<p>On Windows systems, the cluster state will be stored in the registry:</p>
 				<p><code>HKEY_CURRENT_USER\Software\JavaSoft\Prefs\net\sf\hajdbc\local\</code><em>cluster-name</em></p>
 			</answer>
 		</faq>
@@ -111,14 +111,14 @@
 	<faqsection>
 		<title>About HA-JDBC</title>
 		<faq>
-			<question>How does HA-JDBC compare to <a href="http://c-jdbc.objectweb.org">C-JDBC</a>, an ObjectWeb project with similiar goals?</question>
+			<question>How does HA-JDBC compare to <a href="http://http://sequoia.continuent.org">Sequoia</a> (formerly C-JDBC)?</question>
 			<answer>
 				<table>
 					<caption>Feature comparison</caption>
 					<tr>
 						<th></th>
-						<th>HA-JDBC 1.x</th>
-						<th>C-JDBC 1.x</th>
+						<th>HA-JDBC</th>
+						<th>Sequoia</th>
 					</tr>
 					<tr>
 						<th>Architecture</th>
@@ -127,15 +127,15 @@
 								<li>HA-JDBC driver delegates JDBC methods directly to the underlying drivers.</li>
 								<li>Cluster details are stored in distributed cache on client.</li>
 								<li>Leverages underlying database for request scheduling.</li>
-								<li>High-availability is inherent in design.</li>
+								<li>High-availability is inherent in symmetric design.</li>
 							</ol>
 						</td>
 						<td>
 							<ol>
-								<li>C-JDBC driver interprets JDBC API and delegates parsed SQL queries to remote controller process, which, in turn, delegates query execution to the underlying drivers.</li>
+								<li>C-JDBC driver delegates query execution to a separate controller process.  Controller then send queries to the underlying drivers.</li>
 								<li>Cluster details are known only to controller.</li>
 								<li>The controller's request scheduler strategy is responsible for serializing execution order.</li>
-								<li>High-availability is achieved by setting up failover controller process.</li>
+								<li>Controller introduces new single point-of-failure.  Workaround is to set up a failover controller process.  Details <a href="http://c-jdbc.objectweb.org/current/doc/C-JDBC_horizontal_scalability.pdf">here</a>.</li>
 							</ol>
 						</td>
 					</tr>
@@ -180,7 +180,7 @@
 						</td>
 						<td>
 							<p>
-								Estimates from users place C-JDBC (without ResultSet caching) 4x slower on average than standard JDBC access.
+								Qualitatively slower than HA-JDBC since each request requires an additional network hop (i.e. driver to controller, controller to database).  Details <a href="http://c-jdbc.objectweb.org/current/doc/RR-C-JDBC.pdf">here</a>.
 							</p>
 						</td>
 					</tr>
@@ -252,7 +252,12 @@
 					<tr>
 						<th>JDBC 3.0 feature support</th>
 						<td>
-							<p>Full support</p>
+							<p>
+								Lacks support for:
+							</p>
+							<ul>
+								<li>Updatable BLOBs and CLOBs (via setXXX(...) and truncate(long) methods)</li>
+							</ul>
 						</td>
 						<td>
 							<p>
@@ -266,6 +271,7 @@
 								<li><code>ParameterMetaData</code></li>
 								<li><code>ResultSet</code> holdability support</li>
 								<li>Queries/Store procedures that return multiple <code>ResultSet</code>s</li>
+								<li>Updatable BLOBs and CLOBs (via setXXX(...) and truncate(long) methods)</li>
 							</ul>
 						</td>
 					</tr>

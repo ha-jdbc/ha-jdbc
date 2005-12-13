@@ -64,6 +64,9 @@ public class TestPooledConnection extends EasyMockTestCase
 	 */
 	protected void setUp() throws Exception
 	{
+		this.databaseCluster.getConnectionFactoryMap();
+		this.databaseClusterControl.setReturnValue(Collections.singletonMap(this.database, this.sqlConnection));
+		
 		this.databaseCluster.getExecutor();
 		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
 		
@@ -83,7 +86,7 @@ public class TestPooledConnection extends EasyMockTestCase
 
 	protected PooledConnection createConnection() throws SQLException
 	{
-		ConnectionFactory connectionFactory = new ConnectionFactory(this.databaseCluster, Collections.singletonMap(this.database, this.sqlConnection));
+		ConnectionFactory connectionFactory = new ConnectionFactory(this.databaseCluster);
 		
 		Operation operation = new Operation()
 		{

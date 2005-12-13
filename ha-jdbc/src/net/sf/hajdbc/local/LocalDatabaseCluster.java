@@ -36,7 +36,6 @@ import java.util.prefs.Preferences;
 
 import net.sf.hajdbc.AbstractDatabaseCluster;
 import net.sf.hajdbc.Balancer;
-import net.sf.hajdbc.ConnectionFactory;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SQLException;
@@ -68,7 +67,7 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	private Map databaseMap = new HashMap();
 	private Balancer balancer;
 	private SynchronizationStrategy defaultSynchronizationStrategy;
-	private ConnectionFactory connectionFactory;
+	private Map connectionFactoryMap = new HashMap();
 	private ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool(new DaemonThreadFactory());
 	
 	/**
@@ -115,11 +114,11 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getConnectionFactory()
+	 * @see net.sf.hajdbc.DatabaseCluster#getConnectionFactoryMap()
 	 */
-	public ConnectionFactory getConnectionFactory()
+	public Map getConnectionFactoryMap()
 	{
-		return this.connectionFactory;
+		return this.connectionFactoryMap;
 	}
 	
 	/**
@@ -131,7 +130,7 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 		
 		try
 		{
-			connection = database.connect(this.connectionFactory.getObject(database));
+			connection = database.connect(this.connectionFactoryMap.get(database));
 			
 			Statement statement = connection.createStatement();
 			
@@ -302,18 +301,14 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	{
 		try
 		{
-			Map connectionFactoryMap = new HashMap(this.databaseMap.size());
-			
 			Iterator databases = this.databaseMap.values().iterator();
 			
 			while (databases.hasNext())
 			{
 				Database database = (Database) databases.next();
 	
-				connectionFactoryMap.put(database, database.createConnectionFactory());
+				this.connectionFactoryMap.put(database, database.createConnectionFactory());
 			}
-	
-			this.connectionFactory = new ConnectionFactory(this, connectionFactoryMap);
 		}
 		catch (java.sql.SQLException e)
 		{

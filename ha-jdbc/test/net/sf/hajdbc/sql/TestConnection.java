@@ -39,7 +39,6 @@ import net.sf.hajdbc.SQLObject;
 
 import org.easymock.MockControl;
 
-import edu.emory.mathcs.backport.java.util.concurrent.ExecutorService;
 import edu.emory.mathcs.backport.java.util.concurrent.Executors;
 
 /**
@@ -72,6 +71,9 @@ public class TestConnection extends EasyMockTestCase
 	 */
 	protected void setUp() throws Exception
 	{
+		this.databaseCluster.getConnectionFactoryMap();
+		this.databaseClusterControl.setReturnValue(Collections.singletonMap(this.database, this.sqlConnection));
+		
 		this.databaseCluster.getExecutor();
 		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
 		
@@ -83,7 +85,7 @@ public class TestConnection extends EasyMockTestCase
 		
 		this.replay();
 		
-		ConnectionFactory connectionFactory = new ConnectionFactory(this.databaseCluster, Collections.singletonMap(this.database, this.sqlConnection));
+		ConnectionFactory connectionFactory = new ConnectionFactory(this.databaseCluster);
 		
 		Operation operation = new Operation()
 		{

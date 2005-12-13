@@ -44,7 +44,7 @@ public class TestXAConnection extends TestPooledConnection
 
 	protected PooledConnection createConnection() throws SQLException
 	{
-		ConnectionFactory connectionFactory = new ConnectionFactory(this.databaseCluster, Collections.singletonMap(this.database, this.sqlConnection));
+		ConnectionFactory connectionFactory = new ConnectionFactory(this.databaseCluster);
 		
 		Operation operation = new Operation()
 		{
