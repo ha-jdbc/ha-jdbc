@@ -22,7 +22,6 @@ package net.sf.hajdbc;
 
 /**
  * Wrapper for java.sql.SQLException that handles nested exceptions.
- * For convenience, this wrapper also initializes SQLException chains using the Java 1.4 nested exception model.
  * 
  * @author  Paul Ferraro
  * @version $Revision$
@@ -65,44 +64,12 @@ public class SQLException extends java.sql.SQLException
 	}
 
 	/**
-	 * @see java.lang.Throwable#initCause(java.lang.Throwable)
-	 */
-	public synchronized Throwable initCause(Throwable cause)
-	{
-		if (java.sql.SQLException.class.isInstance(cause))
-		{
-			this.initSQLCause((java.sql.SQLException) cause);
-		}
-		
-		return super.initCause(cause);
-	}
-	
-	/**
-	 * Initializes the SQLException chain using Java 1.4 nested exceptions.
-	 * @param exception an exception in the chain
-	 */
-	private void initSQLCause(java.sql.SQLException exception)
-	{
-		java.sql.SQLException nextException = exception.getNextException();
-		
-		if (nextException != null)
-		{
-			if (exception.getCause() == null)
-			{
-				exception.initCause(nextException);
-			}
-			
-			this.initSQLCause(nextException);
-		}
-	}
-
-	/**
 	 * @see java.sql.SQLException#getErrorCode()
 	 */
 	public int getErrorCode()
 	{
 		Throwable cause = this.getCause();
-		
+
 		if ((cause != null) && java.sql.SQLException.class.isInstance(cause))
 		{
 			java.sql.SQLException exception = (java.sql.SQLException) cause;
