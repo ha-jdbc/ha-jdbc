@@ -12,6 +12,11 @@
 	</contexts>
 
 	<changes>
+		<release version="1.1-beta-2" date="">
+			<action type="update" context="lib" dev="PF">
+				Upgraded JiBX to version 1.0-rc-2.
+			</action>
+		</release>
 		<release version="1.1-beta-1" date="December 13, 2005">
 			<action type="add" context="lib" dev="PF">
 				New dependency on JDK 1.4 backport of JDK 1.5 java.util.concurrent package.
