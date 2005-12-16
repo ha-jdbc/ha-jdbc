@@ -16,7 +16,7 @@
 			<action type="update" context="lib" dev="PF">
 				Upgraded JiBX to version 1.0-rc-2.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="code" dev="PF" due-to="Ilkka Lassila">
 				Recorded Operations are stored in a Map keyed by class instead of a List to prevent unnecessary boundless growth.
 			</action>
 		</release>
