@@ -24,8 +24,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -50,7 +48,7 @@ public class SQLObject
 	private DatabaseCluster databaseCluster;
 	private Operation parentOperation;
 	private Map objectMap;
-	private List operationList = new LinkedList();
+	private Map operationMap = new HashMap();
 	
 	protected SQLObject(SQLObject parent, Operation operation) throws java.sql.SQLException
 	{
@@ -95,7 +93,7 @@ public class SQLObject
 				
 				object = this.parentOperation.execute(database, parentObject);
 				
-				Iterator operations = this.operationList.iterator();
+				Iterator operations = this.operationMap.values().iterator();
 				
 				while (operations.hasNext())
 				{
@@ -123,7 +121,7 @@ public class SQLObject
 	 */
 	protected synchronized final void record(Operation operation)
 	{
-		this.operationList.add(operation);
+		this.operationMap.put(operation.getClass().toString(), operation);
 	}
 	
 	/**
