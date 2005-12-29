@@ -16,6 +16,9 @@
 			<action type="update" context="lib" dev="PF">
 				Upgraded JiBX to version 1.0.
 			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded JGroups to version 2.2.9.1.
+			</action>
 			<action type="fix" context="code" dev="PF" due-to="Ilkka Lassila">
 				Recorded Operations are stored in a Map keyed by class instead of a List to prevent unnecessary boundless growth.
 			</action>
