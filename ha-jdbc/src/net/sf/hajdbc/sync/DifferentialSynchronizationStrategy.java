@@ -198,12 +198,12 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 						
 						primaryKeyColumnIndexSet.add(new Integer(activeResultSet.findColumn(primaryKeyColumn)));
 						
+						deleteSQL.append(quote).append(primaryKeyColumn).append(quote).append(" = ?");
+						
 						if (primaryKeyColumns.hasNext())
 						{
 							deleteSQL.append(" AND ");
 						}
-						
-						deleteSQL.append(quote).append(primaryKeyColumn).append(quote).append(" = ?");
 					}
 		
 					PreparedStatement deleteStatement = inactiveConnection.prepareStatement(deleteSQL.toString());
