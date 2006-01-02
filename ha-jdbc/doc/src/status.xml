@@ -14,13 +14,19 @@
 	<changes>
 		<release version="1.1-beta-2" date="">
 			<action type="update" context="lib" dev="PF">
-				Upgraded JiBX to version 1.0.
+				Upgraded JiBX to version 1.0.1.
 			</action>
 			<action type="update" context="lib" dev="PF">
 				Upgraded JGroups to version 2.2.9.1.
 			</action>
 			<action type="fix" context="code" dev="PF" due-to="Ilkka Lassila">
 				Recorded Operations are stored in a Map keyed by class instead of a List to prevent unnecessary boundless growth.
+			</action>
+			<action type="fix" context="code" dev="PF" due-to="Kurt Huwig">
+				DifferentialSynchronizationStrategy generates bad DELETE statements when table has multiple primary keys.
+			</action>
+			<action type="fix" context="code" dev="PF" due-to="Kurt Huwig">
+				Fixes german error message translations.
 			</action>
 		</release>
 		<release version="1.1-beta-1" date="December 13, 2005">
