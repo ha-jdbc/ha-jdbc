@@ -74,9 +74,8 @@ public final class DatabaseClusterFactory
 	/**
 	 * Provides access to the singleton instance of this factory object.
 	 * @return a factory for creating database clusters
-	 * @throws java.sql.SQLException if factory instantiation fails
 	 */
-	public static synchronized DatabaseClusterFactory getInstance() throws java.sql.SQLException
+	public static synchronized DatabaseClusterFactory getInstance()
 	{
 		if (instance == null)
 		{
@@ -89,9 +88,8 @@ public final class DatabaseClusterFactory
 	/**
 	 * Creates a new DatabaseClusterFactory from a configuration file.
 	 * @return a factory for creating database clusters
-	 * @throws java.sql.SQLException if construction fails
 	 */
-	private static DatabaseClusterFactory createDatabaseClusterFactory() throws java.sql.SQLException
+	private static DatabaseClusterFactory createDatabaseClusterFactory()
 	{
 		String resourceName = System.getProperty(SYSTEM_PROPERTY, DEFAULT_RESOURCE);
 		
@@ -99,7 +97,7 @@ public final class DatabaseClusterFactory
 		
 		if (resourceURL == null)
 		{
-			throw new SQLException(Messages.getMessage(Messages.CONFIG_NOT_FOUND, resourceName));
+			throw new RuntimeException(Messages.getMessage(Messages.CONFIG_NOT_FOUND, resourceName));
 		}
 		
 		InputStream inputStream = null;
@@ -115,11 +113,11 @@ public final class DatabaseClusterFactory
 		}
 		catch (IOException e)
 		{
-			throw new SQLException(Messages.getMessage(Messages.CONFIG_NOT_FOUND, resourceURL), e);
+			throw new RuntimeException(Messages.getMessage(Messages.CONFIG_NOT_FOUND, resourceURL), e);
 		}
 		catch (JiBXException e)
 		{
-			throw new SQLException(Messages.getMessage(Messages.CONFIG_FAILED, resourceURL), e);
+			throw new RuntimeException(Messages.getMessage(Messages.CONFIG_FAILED, resourceURL), e);
 		}
 		finally
 		{
