@@ -31,8 +31,17 @@ import javax.naming.Name;
 import javax.naming.spi.ObjectFactory;
 import javax.sql.DataSource;
 
+/**
+ * Mock data source factory that creates a mock data source that references a mock connection.
+ * 
+ * @author  Paul Ferraro
+ * @since   1.1
+ */
 public class MockDataSourceFactory implements ObjectFactory
 {
+	/**
+	 * @see javax.naming.spi.ObjectFactory#getObjectInstance(java.lang.Object, javax.naming.Name, javax.naming.Context, java.util.Hashtable)
+	 */
 	public Object getObjectInstance(Object arg0, Name arg1, Context arg2, Hashtable arg3) throws Exception
 	{
 		return new MockDataSource();
@@ -40,29 +49,47 @@ public class MockDataSourceFactory implements ObjectFactory
 	
 	private class MockDataSource implements DataSource
 	{
+		/**
+		 * @see javax.sql.DataSource#getConnection()
+		 */
 		public Connection getConnection() throws SQLException
 		{
 			return new MockConnection();
 		}
 
+		/**
+		 * @see javax.sql.DataSource#getConnection(java.lang.String, java.lang.String)
+		 */
 		public Connection getConnection(String arg0, String arg1) throws SQLException
 		{
 			return this.getConnection();
 		}
 
+		/**
+		 * @see javax.sql.DataSource#getLogWriter()
+		 */
 		public PrintWriter getLogWriter() throws SQLException
 		{
 			return new PrintWriter(new StringWriter());
 		}
 
+		/**
+		 * @see javax.sql.DataSource#setLogWriter(java.io.PrintWriter)
+		 */
 		public void setLogWriter(PrintWriter writer) throws SQLException
 		{
 		}
 
+		/**
+		 * @see javax.sql.DataSource#setLoginTimeout(int)
+		 */
 		public void setLoginTimeout(int timeout) throws SQLException
 		{
 		}
 
+		/**
+		 * @see javax.sql.DataSource#getLoginTimeout()
+		 */
 		public int getLoginTimeout() throws SQLException
 		{
 			return 0;

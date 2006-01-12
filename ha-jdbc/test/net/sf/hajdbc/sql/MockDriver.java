@@ -20,49 +20,62 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.sql.CallableStatement;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.Driver;
 import java.sql.DriverPropertyInfo;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.SQLWarning;
-import java.sql.Savepoint;
-import java.sql.Statement;
-import java.util.Map;
 import java.util.Properties;
 
-import org.easymock.MockControl;
-
+/**
+ * Mock driver that creates mock connections
+ * @author  Paul Ferraro
+ * @since   1.1
+ */
 public class MockDriver implements Driver
 {
+	/**
+	 * @see java.sql.Driver#connect(java.lang.String, java.util.Properties)
+	 */
 	public Connection connect(String url, Properties properties) throws SQLException
 	{
 		return new MockConnection();
 	}
 
+	/**
+	 * @see java.sql.Driver#acceptsURL(java.lang.String)
+	 */
 	public boolean acceptsURL(String url) throws SQLException
 	{
 		return url.startsWith("jdbc:mock:");
 	}
 
+	/**
+	 * @see java.sql.Driver#getPropertyInfo(java.lang.String, java.util.Properties)
+	 */
 	public DriverPropertyInfo[] getPropertyInfo(String url, Properties properties) throws SQLException
 	{
 		return new DriverPropertyInfo[0];
 	}
 
+	/**
+	 * @see java.sql.Driver#getMajorVersion()
+	 */
 	public int getMajorVersion()
 	{
 		return 0;
 	}
 
+	/**
+	 * @see java.sql.Driver#getMinorVersion()
+	 */
 	public int getMinorVersion()
 	{
 		return 0;
 	}
 
+	/**
+	 * @see java.sql.Driver#jdbcCompliant()
+	 */
 	public boolean jdbcCompliant()
 	{
 		return false;
