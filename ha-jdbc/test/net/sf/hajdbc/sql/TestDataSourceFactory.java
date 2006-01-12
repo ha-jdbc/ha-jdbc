@@ -20,11 +20,21 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.util.Hashtable;
+
+import javax.naming.Context;
+import javax.naming.Name;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
 
 import net.sf.hajdbc.DatabaseClusterTestCase;
 
+/**
+ * Unit test for {@link DataSourceFactory}.
+ * 
+ * @author  Paul Ferraro
+ * @since   1.1
+ */
 public class TestDataSourceFactory extends DatabaseClusterTestCase
 {
 	private DataSourceFactory factory = new DataSourceFactory();
@@ -53,8 +63,8 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 		super.tearDown();
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.AbstractDataSourceFactory.getObjectInstance(Object, Name, Context, Hashtable)'
+	/**
+	 * Test method for {@link AbstractDataSourceFactory#getObjectInstance(Object, Name, Context, Hashtable)}
 	 */
 	public void testGetObjectInstance()
 	{
@@ -69,10 +79,13 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 		}
 		catch (Exception e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
+	/**
+	 * Test method for {@link AbstractDataSourceFactory#getObjectInstance(Object, Name, Context, Hashtable)}
+	 */
 	public void testNullReferenceGetObjectInstance()
 	{
 		try
@@ -83,10 +96,13 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 		}
 		catch (Exception e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
+	/**
+	 * Test method for {@link AbstractDataSourceFactory#getObjectInstance(Object, Name, Context, Hashtable)}
+	 */
 	public void testWrongReferenceGetObjectInstance()
 	{
 		Reference reference = new Reference("net.sf.hajdbc.sql.pool.ConnectionPoolDataSource", new StringRefAddr(AbstractDataSource.NAME, "test-datasource-cluster"));
@@ -99,10 +115,13 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 		}
 		catch (Exception e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
+	/**
+	 * Test method for {@link AbstractDataSourceFactory#getObjectInstance(Object, Name, Context, Hashtable)}
+	 */
 	public void testMissingRefAddrReferenceGetObjectInstance()
 	{
 		Reference reference = new Reference("net.sf.hajdbc.sql.DataSource");
@@ -115,10 +134,13 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 		}
 		catch (Exception e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
+	/**
+	 * Test method for {@link AbstractDataSourceFactory#getObjectInstance(Object, Name, Context, Hashtable)}
+	 */
 	public void testInvalidRefAddrReferenceGetObjectInstance()
 	{
 		Reference reference = new Reference("net.sf.hajdbc.sql.DataSource", new StringRefAddr(AbstractDataSource.NAME, "invalid-name"));
@@ -131,7 +153,7 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 		}
 		catch (Exception e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 }

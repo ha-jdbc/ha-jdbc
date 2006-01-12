@@ -25,7 +25,6 @@ import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Properties;
 
 import net.sf.hajdbc.DatabaseClusterTestCase;
@@ -44,13 +43,11 @@ public class TestDriver extends DatabaseClusterTestCase
 	 */
 	public void testRegister()
 	{
-		Iterator drivers = Collections.list(DriverManager.getDrivers()).iterator();
-		
 		boolean registered = false;
 		
-		while (drivers.hasNext())
+		for (java.sql.Driver driver: Collections.list(DriverManager.getDrivers()))
 		{
-			if (Driver.class.isInstance(drivers.next()))
+			if (Driver.class.isInstance(driver))
 			{
 				registered = true;
 			}
@@ -88,7 +85,7 @@ public class TestDriver extends DatabaseClusterTestCase
 		}
 		catch (SQLException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
@@ -106,7 +103,7 @@ public class TestDriver extends DatabaseClusterTestCase
 		}
 		catch (SQLException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
@@ -143,7 +140,7 @@ public class TestDriver extends DatabaseClusterTestCase
 		}
 		catch (SQLException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 

@@ -1,4 +1,4 @@
-/*
+/**
  * HA-JDBC: High-Availability JDBC
  * Copyright (C) 2005 Paul Ferraro
  * 
@@ -29,6 +29,11 @@ import javax.naming.Reference;
 
 import net.sf.hajdbc.DatabaseClusterTestCase;
 
+/**
+ * Unit test for {@link TestDataSource}.
+ * @author  Paul Ferraro
+ * @since   1.1
+ */
 public class TestDataSource extends DatabaseClusterTestCase
 {
 	/**
@@ -60,8 +65,8 @@ public class TestDataSource extends DatabaseClusterTestCase
 		return (DataSource) this.context.lookup("datasource");
 	}
 	
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.DataSource.getLoginTimeout()'
+	/**
+	 * Test method for {@link DataSource#getLoginTimeout()}
 	 */
 	public void testGetLoginTimeout()
 	{
@@ -73,12 +78,12 @@ public class TestDataSource extends DatabaseClusterTestCase
 		}
 		catch (Exception e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.DataSource.setLoginTimeout(int)'
+	/**
+	 * Test method for {@link DataSource#setLoginTimeout(int)}
 	 */
 	public void testSetLoginTimeout()
 	{
@@ -88,12 +93,12 @@ public class TestDataSource extends DatabaseClusterTestCase
 		}
 		catch (Exception e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.DataSource.getLogWriter()'
+	/**
+	 * Test method for {@link DataSource#getLogWriter()}
 	 */
 	public void testGetLogWriter()
 	{
@@ -105,12 +110,12 @@ public class TestDataSource extends DatabaseClusterTestCase
 		}
 		catch (Exception e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.DataSource.setLogWriter(PrintWriter)'
+	/**
+	 * Test method for {@link DataSource#setLogWriter(PrintWriter)}
 	 */
 	public void testSetLogWriter()
 	{
@@ -122,12 +127,12 @@ public class TestDataSource extends DatabaseClusterTestCase
 		}
 		catch (Exception e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.DataSource.getConnection()'
+	/**
+	 * Test method for {@link DataSource#getConnection()}
 	 */
 	public void testGetConnection()
 	{
@@ -140,12 +145,12 @@ public class TestDataSource extends DatabaseClusterTestCase
 		}
 		catch (Exception e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.DataSource.getConnection(String, String)'
+	/**
+	 * Test method for {@link DataSource#getConnection(String, String)}
 	 */
 	public void testGetConnectionStringString()
 	{
@@ -158,12 +163,12 @@ public class TestDataSource extends DatabaseClusterTestCase
 		}
 		catch (Exception e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.AbstractDataSource.getName()'
+	/**
+	 * Test method for {@link AbstractDataSource#getName()}
 	 */
 	public void testGetName()
 	{
@@ -175,12 +180,12 @@ public class TestDataSource extends DatabaseClusterTestCase
 		}
 		catch (Exception e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.AbstractDataSource.setName(String)'
+	/**
+	 * Test method for {@link AbstractDataSource#setName(String)}
 	 */
 	public void testSetName()
 	{
@@ -190,12 +195,12 @@ public class TestDataSource extends DatabaseClusterTestCase
 		}
 		catch (Exception e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.AbstractDataSource.getReference()'
+	/**
+	 * Test method for {@link AbstractDataSource#getReference()}
 	 */
 	public void testGetReference()
 	{
@@ -208,7 +213,7 @@ public class TestDataSource extends DatabaseClusterTestCase
 		}
 		catch (Exception e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 }

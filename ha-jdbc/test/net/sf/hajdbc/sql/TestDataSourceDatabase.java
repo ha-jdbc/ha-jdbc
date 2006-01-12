@@ -1,4 +1,4 @@
-/*
+/**
  * HA-JDBC: High-Availability JDBC
  * Copyright (C) 2005 Paul Ferraro
  * 
@@ -32,45 +32,48 @@ import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
 import javax.sql.DataSource;
 
+import org.easymock.EasyMock;
+
 import net.sf.hajdbc.EasyMockTestCase;
 
-import org.easymock.MockControl;
-
+/**
+ * Unit test for {@link DataSourceDatabase}.
+ * @author  Paul Ferraro
+ * @since   1.1
+ */
 public class TestDataSourceDatabase extends EasyMockTestCase
 {
-	private MockControl dataSourceControl = this.createControl(DataSource.class);
-	private DataSource dataSource = (DataSource) dataSourceControl.getMock();
+	private DataSource dataSource = this.control.createMock(DataSource.class);
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.DataSourceDatabase.connect(Object)'
+	/**
+	 * Test method for 'net.sf.hajdbc.sql.DataSourceDatabase.connect(Object)}
 	 */
 	public void testConnect()
 	{
 		DataSourceDatabase database = new DataSourceDatabase();
 		
-		Connection connection = (Connection) this.createMock(Connection.class);
+		Connection connection = EasyMock.createMock(Connection.class);
 
 		try
 		{
-			this.dataSource.getConnection();
-			this.dataSourceControl.setReturnValue(connection);
+			EasyMock.expect(this.dataSource.getConnection()).andReturn(connection);
 			
-			this.replay();
+			this.control.replay();
 			
 			Connection conn = database.connect(this.dataSource);
 			
-			this.verify();
+			this.control.verify();
 			
 			assertSame(connection, conn);
 		}
 		catch (SQLException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.DataSourceDatabase.connect(Object)'
+	/**
+	 * Test method for 'net.sf.hajdbc.sql.DataSourceDatabase.connect(Object)}
 	 */
 	public void testConnectAsUser()
 	{
@@ -78,29 +81,28 @@ public class TestDataSourceDatabase extends EasyMockTestCase
 		database.setUser("test-user");
 		database.setPassword("test-password");
 		
-		Connection connection = (Connection) MockControl.createControl(Connection.class).getMock();
+		Connection connection = EasyMock.createMock(Connection.class);
 
 		try
 		{
-			this.dataSource.getConnection("test-user", "test-password");
-			this.dataSourceControl.setReturnValue(connection);
+			EasyMock.expect(this.dataSource.getConnection("test-user", "test-password")).andReturn(connection);
 			
-			this.replay();
+			this.control.replay();
 			
 			Connection conn = database.connect(this.dataSource);
 			
-			this.verify();
+			this.control.verify();
 			
 			assertSame(connection, conn);
 		}
 		catch (SQLException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.DataSourceDatabase.createConnectionFactory()'
+	/**
+	 * Test method for 'net.sf.hajdbc.sql.DataSourceDatabase.createConnectionFactory()}
 	 */
 	public void testCreateConnectionFactory()
 	{
@@ -126,7 +128,7 @@ public class TestDataSourceDatabase extends EasyMockTestCase
 		}
 		catch (Exception e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
@@ -148,8 +150,8 @@ public class TestDataSourceDatabase extends EasyMockTestCase
 		assertFalse(database1.equals(database2));
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.AbstractDatabase.hashCode()'
+	/**
+	 * Test method for {@link AbstractDatabase#hashCode()}
 	 */
 	public void testHashCode()
 	{
@@ -161,14 +163,14 @@ public class TestDataSourceDatabase extends EasyMockTestCase
 		assertEquals("test".hashCode(), hashCode);
 	}
 	
-	public static class DataSourceFactory implements ObjectFactory
+	private static class DataSourceFactory implements ObjectFactory
 	{
 		/**
 		 * @see javax.naming.spi.ObjectFactory#getObjectInstance(java.lang.Object, javax.naming.Name, javax.naming.Context, java.util.Hashtable)
 		 */
 		public Object getObjectInstance(Object object, Name name, Context context, Hashtable environment) throws Exception
 		{
-			return MockControl.createControl(DataSource.class).getMock();
+			return EasyMock.createMock(DataSource.class);
 		}
 	}
 }

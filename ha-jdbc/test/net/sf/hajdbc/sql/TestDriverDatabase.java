@@ -26,9 +26,9 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import net.sf.hajdbc.EasyMockTestCase;
+import org.easymock.EasyMock;
 
-import org.easymock.MockControl;
+import net.sf.hajdbc.EasyMockTestCase;
 
 /**
  * Unit test for {@link DriverDatabase}
@@ -37,44 +37,42 @@ import org.easymock.MockControl;
  */
 public class TestDriverDatabase extends EasyMockTestCase
 {
-	private MockControl driverControl = this.createControl(Driver.class);
-	private Driver driver = (Driver) driverControl.getMock();
+	private Driver driver = this.control.createMock(Driver.class);
 
 	/**
-	 * Test method for {@link DriverDatabase#connect(Object)}
+	 * Test method for {@link DriverDatabase#connect(Driver)}
 	 */
 	public void testConnect()
 	{
 		DriverDatabase database = new DriverDatabase();
 		
-		Connection connection = (Connection) MockControl.createControl(Connection.class).getMock();
+		Connection connection = EasyMock.createMock(Connection.class);
 
 		String url = "jdbc:test";
 		
-		database.setDriver(driver.getClass().getName());
+		database.setDriver(this.driver.getClass().getName());
 		database.setUrl(url);
 		
 		try
 		{
-			this.driver.connect(url, new Properties());
-			this.driverControl.setReturnValue(connection);
+			EasyMock.expect(this.driver.connect(url, new Properties())).andReturn(connection);
 			
-			this.replay();
+			this.control.replay();
 			
 			Connection conn = database.connect(this.driver);
 			
-			this.verify();
+			this.control.verify();
 			
 			assertSame(connection, conn);
 		}
 		catch (SQLException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
 	/**
-	 * Test method for {@link DriverDatabase#connect(Object)}
+	 * Test method for {@link DriverDatabase#connect(Driver)}
 	 */
 	public void testUnacceptedConnect()
 	{
@@ -82,25 +80,24 @@ public class TestDriverDatabase extends EasyMockTestCase
 		
 		String url = "jdbc:test";
 		
-		database.setDriver(driver.getClass().getName());
+		database.setDriver(this.driver.getClass().getName());
 		database.setUrl(url);
 		
 		try
 		{
-			this.driver.connect(url, new Properties());
-			this.driverControl.setReturnValue(null);
+			EasyMock.expect(this.driver.connect(url, new Properties())).andReturn(null);
 			
-			this.replay();
+			this.control.replay();
 			
 			Connection connection = database.connect(this.driver);
 			
-			this.verify();
+			this.control.verify();
 			
 			assertNull(connection);
 		}
 		catch (SQLException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 	
@@ -119,16 +116,15 @@ public class TestDriverDatabase extends EasyMockTestCase
 		{
 			DriverManager.registerDriver(this.driver);
 			
-			this.driver.acceptsURL(url);
-			this.driverControl.setReturnValue(true);
+			EasyMock.expect(this.driver.acceptsURL(url)).andReturn(true);
 			
-			replay();
+			this.control.replay();
 			
 			Object connectionFactory = database.createConnectionFactory();
 			
-			verify();
+			this.control.verify();
 			
-			assertSame(driver, connectionFactory);
+			assertSame(this.driver, connectionFactory);
 		}
 		catch (SQLException e)
 		{
@@ -154,8 +150,8 @@ public class TestDriverDatabase extends EasyMockTestCase
 		assertFalse(database1.equals(database2));
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.AbstractDatabase.hashCode()'
+	/**
+	 * Test method for {@link net.sf.hajdbc.sql.AbstractDatabase#hashCode()}
 	 */
 	public void testHashCode()
 	{

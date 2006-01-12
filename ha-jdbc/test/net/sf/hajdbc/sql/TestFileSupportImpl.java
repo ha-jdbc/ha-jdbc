@@ -36,6 +36,12 @@ import java.util.zip.GZIPOutputStream;
 
 import net.sf.hajdbc.EasyMockTestCase;
 
+/**
+ * Unit test for {@link FileSupportImpl}.
+ *
+ * @author  Paul Ferraro
+ * @since   1.1
+ */
 public class TestFileSupportImpl extends EasyMockTestCase
 {
 	private FileSupport fileSupport;
@@ -58,8 +64,8 @@ public class TestFileSupportImpl extends EasyMockTestCase
 		super.tearDown();
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.FileSupportImpl.createFile(InputStream)'
+	/**
+	 * Test method for {@link FileSupportImpl#createFile(InputStream)}
 	 */
 	public void testCreateFileInputStream()
 	{
@@ -76,12 +82,12 @@ public class TestFileSupportImpl extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.FileSupportImpl.createFile(Reader)'
+	/**
+	 * Test method for {@link FileSupportImpl#createFile(Reader)}
 	 */
 	public void testCreateFileReader()
 	{
@@ -98,12 +104,12 @@ public class TestFileSupportImpl extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.FileSupportImpl.getReader(File)'
+	/**
+	 * Test method for {@link FileSupportImpl#getReader(File)}
 	 */
 	public void testGetReader()
 	{
@@ -126,16 +132,16 @@ public class TestFileSupportImpl extends EasyMockTestCase
 		}
 		catch (IOException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 		catch (SQLException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.FileSupportImpl.getInputStream(File)'
+	/**
+	 * Test method for {@link FileSupportImpl#getInputStream(File)}
 	 */
 	public void testGetInputStream()
 	{
@@ -158,16 +164,16 @@ public class TestFileSupportImpl extends EasyMockTestCase
 		}
 		catch (IOException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 		catch (SQLException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.FileSupportImpl.close()'
+	/**
+	 * Test method for {@link FileSupportImpl#close()}
 	 */
 	public void testClose()
 	{
@@ -185,7 +191,7 @@ public class TestFileSupportImpl extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 }
