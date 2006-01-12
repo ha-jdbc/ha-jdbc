@@ -24,8 +24,8 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -63,18 +63,16 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 	 */
 	public final void deactivate(String databaseId) throws java.sql.SQLException
 	{
-		Object[] args = new Object[] { databaseId, this };
-		
 		try
 		{
 			if (this.deactivate(this.getDatabase(databaseId)))
 			{
-				log.info(Messages.getMessage(Messages.DATABASE_DEACTIVATED, args));
+				log.info(Messages.getMessage(Messages.DATABASE_DEACTIVATED, databaseId, this));
 			}
 		}
 		catch (java.sql.SQLException e)
 		{
-			log.warn(Messages.getMessage(Messages.DATABASE_DEACTIVATE_FAILED, args), e);
+			log.warn(Messages.getMessage(Messages.DATABASE_DEACTIVATE_FAILED, databaseId, this), e);
 			
 			throw e;
 		}
@@ -112,7 +110,7 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 		
 		if (this.deactivate(database))
 		{
-			log.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, new Object[] { database, this }), cause);
+			log.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this), cause);
 		}
 	}
 	
@@ -136,20 +134,18 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 	
 	private void activate(String databaseId, SynchronizationStrategy strategy) throws java.sql.SQLException
 	{
-		Object[] args = new Object[] { databaseId, this };
-		
 		Database database = this.getDatabase(databaseId);
 		
 		try
 		{
 			if (this.activate(database, strategy))
 			{
-				log.info(Messages.getMessage(Messages.DATABASE_ACTIVATED, args));
+				log.info(Messages.getMessage(Messages.DATABASE_ACTIVATED, databaseId, this));
 			}
 		}
 		catch (java.sql.SQLException e)
 		{
-			log.warn(Messages.getMessage(Messages.DATABASE_ACTIVATE_FAILED, args), e);
+			log.warn(Messages.getMessage(Messages.DATABASE_ACTIVATE_FAILED, databaseId, this), e);
 			
 			throw e;
 		}
@@ -162,21 +158,21 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 			return false;
 		}
 		
-		Database[] databases = this.getBalancer().toArray();
+		Collection<Database> databases = this.getBalancer().getDatabases();
 		
-		if (databases.length == 0)
+		if (databases.isEmpty())
 		{
 			return this.activate(inactiveDatabase);
 		}
 		
 		Connection inactiveConnection = null;
-		Connection[] activeConnections = new Connection[databases.length];
+		Map<Database, Connection> connectionMap = new HashMap<Database, Connection>();
 		
 		try
 		{
 			inactiveConnection = inactiveDatabase.connect(this.getConnectionFactoryMap().get(inactiveDatabase));
 			
-			Map schemaMap = new HashMap();
+			Map<String, List<String>> schemaMap = new HashMap<String, List<String>>();
 			
 			DatabaseMetaData databaseMetaData = inactiveConnection.getMetaData();
 			String quote = databaseMetaData.getIdentifierQuoteString();
@@ -187,7 +183,7 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 				String table = resultSet.getString("TABLE_NAME");
 				String schema = resultSet.getString("TABLE_SCHEM");
 
-				List tableList = (List) schemaMap.get(schema);
+				List<String> tableList = schemaMap.get(schema);
 				
 				if (tableList == null)
 				{
@@ -202,36 +198,28 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 			resultSet.close();
 
 			// Open connections to all active databases
-			for (int i = 0; i < databases.length; ++i)
+			for (Database database: databases)
 			{
-				Database activeDatabase = databases[i];
-				
-				activeConnections[i] = activeDatabase.connect(this.getConnectionFactoryMap().get(activeDatabase));
+				connectionMap.put(database, database.connect(this.getConnectionFactoryMap().get(database)));
 			}
 			
 			// Lock all tables on all active databases
-			for (int i = 0; i < activeConnections.length; ++i)
+			for (Connection connection: connectionMap.values())
 			{
-				activeConnections[i].setAutoCommit(false);
-				activeConnections[i].setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+				connection.setAutoCommit(false);
+				connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 				
-				Statement statement = activeConnections[i].createStatement();
-				Iterator schemaMapEntries = schemaMap.entrySet().iterator();
+				Statement statement = connection.createStatement();
 				
-				while (schemaMapEntries.hasNext())
+				for (Map.Entry<String, List<String>> schemaMapEntry: schemaMap.entrySet())
 				{
-					Map.Entry schemaMapEntry = (Map.Entry) schemaMapEntries.next();
-					String schema = (String) schemaMapEntry.getKey();
-					List tableList = (List) schemaMapEntry.getValue();
+					String schema = schemaMapEntry.getKey();
+					List<String> tableList = schemaMapEntry.getValue();
 					
 					String tablePrefix = (schema != null) ? quote + schema + quote + "." : "";
 					
-					Iterator tables = tableList.iterator();
-					
-					while (tables.hasNext())
+					for (String table: tableList)
 					{
-						String table = (String) tables.next();
-						
 						statement.execute("SELECT count(*) FROM " + tablePrefix + quote + table + quote);
 					}
 				}
@@ -241,16 +229,16 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 			
 			log.info(Messages.getMessage(Messages.DATABASE_SYNC_START, inactiveDatabase));
 
-			strategy.synchronize(inactiveConnection, activeConnections[0], schemaMap);
+			strategy.synchronize(inactiveConnection, connectionMap.values().iterator().next(), schemaMap);
 			
 			log.info(Messages.getMessage(Messages.DATABASE_SYNC_END, inactiveDatabase));
 	
 			this.activate(inactiveDatabase);
 			
 			// Release table locks
-			for (int i = 0; i < activeConnections.length; ++i)
+			for (Connection connection: connectionMap.values())
 			{
-				activeConnections[i].rollback();
+				connection.rollback();
 			}
 			
 			return true;
@@ -259,9 +247,9 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 		{
 			this.close(inactiveConnection, inactiveDatabase);
 			
-			for (int i = 0; i < activeConnections.length; ++i)
+			for (Map.Entry<Database, Connection> connectionMapEntry: connectionMap.entrySet())
 			{
-				this.close(activeConnections[i], databases[i]);
+				this.close(connectionMapEntry.getValue(), connectionMapEntry.getKey());
 			}
 		}
 	}
@@ -290,21 +278,17 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 
 		if (databases != null)
 		{
-			for (int i = 0; i < databases.length; ++i)
+			for (String id: databases)
 			{
-				Database database = this.getDatabase(databases[i]);
+				Database database = this.getDatabase(id);
 				
 				this.activate(database);
 			}
 		}
 		else
 		{
-			Iterator ids = this.getInactiveDatabases().iterator();
-			
-			while (ids.hasNext())
+			for (String id: this.getInactiveDatabases())
 			{
-				String id = (String) ids.next();
-				
 				Database database = this.getDatabase(id);
 				
 				if (this.isAlive(database))

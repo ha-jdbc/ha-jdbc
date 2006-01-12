@@ -33,7 +33,7 @@ import net.sf.hajdbc.SQLException;
  * @version $Revision$
  * @since   1.0
  */
-public class DriverDatabase extends AbstractDatabase
+public class DriverDatabase extends AbstractDatabase<Driver>
 {
 	private static final String USER = "user";
 	private static final String PASSWORD = "password";
@@ -78,11 +78,10 @@ public class DriverDatabase extends AbstractDatabase
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
+	 * @see net.sf.hajdbc.Database#connect(T)
 	 */
-	public Connection connect(Object connectionFactory) throws java.sql.SQLException
+	public Connection connect(Driver driver) throws java.sql.SQLException
 	{
-		Driver driver = (Driver) connectionFactory;
 		Properties properties = new Properties(this.getProperties());
 		
 		if (this.user != null)
@@ -97,11 +96,11 @@ public class DriverDatabase extends AbstractDatabase
 		
 		return driver.connect(this.url, properties);
 	}
-	
+
 	/**
 	 * @see net.sf.hajdbc.Database#createConnectionFactory()
 	 */
-	public Object createConnectionFactory() throws java.sql.SQLException
+	public Driver createConnectionFactory() throws java.sql.SQLException
 	{
 		if (this.driver != null)
 		{
@@ -111,7 +110,7 @@ public class DriverDatabase extends AbstractDatabase
 				
 				if (!Driver.class.isAssignableFrom(driverClass))
 				{
-					throw new SQLException(Messages.getMessage(Messages.NOT_INSTANCE_OF, new Object[] { this.driver, Driver.class.getName() }));
+					throw new SQLException(Messages.getMessage(Messages.NOT_INSTANCE_OF, this.driver, Driver.class.getName()));
 				}
 			}
 			catch (ClassNotFoundException e)
@@ -126,7 +125,7 @@ public class DriverDatabase extends AbstractDatabase
 		}
 		catch (java.sql.SQLException e)
 		{
-			throw new SQLException(Messages.getMessage(Messages.JDBC_URL_REJECTED, new Object[] { this.url }), e);
+			throw new SQLException(Messages.getMessage(Messages.JDBC_URL_REJECTED, this.url), e);
 		}
 	}
 }

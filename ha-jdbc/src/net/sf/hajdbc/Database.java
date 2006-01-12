@@ -26,9 +26,10 @@ import java.sql.SQLException;
 /**
  * @author  Paul Ferraro
  * @version $Revision$
+ * @param <T> 
  * @since   1.0
  */
-public interface Database
+public interface Database<T>
 {
 	/**
 	 * Returns the unique idenfier for this database
@@ -42,14 +43,14 @@ public interface Database
 	 * @return a database connection
 	 * @throws SQLException if connection fails
 	 */
-	public Connection connect(Object connectionFactory) throws SQLException;
+	public Connection connect(T connectionFactory) throws SQLException;
 	
 	/**
 	 * Factory method for creating a connection factory object for this database.
 	 * @return a connection factory object
 	 * @throws SQLException if connection factory could not be created
 	 */
-	public Object createConnectionFactory() throws SQLException;
+	public T createConnectionFactory() throws SQLException;
 	
 	/**
 	 * Returns the relative "weight" of this cluster node.

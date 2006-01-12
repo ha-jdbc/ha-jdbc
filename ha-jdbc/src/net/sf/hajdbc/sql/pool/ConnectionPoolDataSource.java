@@ -23,7 +23,10 @@ package net.sf.hajdbc.sql.pool;
 import java.io.PrintWriter;
 import java.sql.SQLException;
 
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.Operation;
 import net.sf.hajdbc.sql.AbstractDataSource;
+import net.sf.hajdbc.sql.AbstractDataSourceFactory;
 
 /**
  * @author  Paul Ferraro
@@ -37,15 +40,15 @@ public class ConnectionPoolDataSource extends AbstractDataSource implements java
 	 */
 	public javax.sql.PooledConnection getPooledConnection() throws SQLException
 	{
-		ConnectionPoolDataSourceOperation operation = new ConnectionPoolDataSourceOperation()
+		Operation<javax.sql.ConnectionPoolDataSource, javax.sql.PooledConnection> operation = new Operation<javax.sql.ConnectionPoolDataSource, javax.sql.PooledConnection>()
 		{
-			public Object execute(javax.sql.ConnectionPoolDataSource dataSource) throws SQLException
+			public javax.sql.PooledConnection execute(Database database, javax.sql.ConnectionPoolDataSource dataSource) throws SQLException
 			{
 				return dataSource.getPooledConnection();
 			}
 		};
 		
-		return new PooledConnection(this.connectionFactory, operation);
+		return new PooledConnection<javax.sql.PooledConnection, javax.sql.ConnectionPoolDataSource>(this.connectionFactory, operation);
 	}
 
 	/**
@@ -53,15 +56,15 @@ public class ConnectionPoolDataSource extends AbstractDataSource implements java
 	 */
 	public javax.sql.PooledConnection getPooledConnection(final String user, final String password) throws SQLException
 	{
-		ConnectionPoolDataSourceOperation operation = new ConnectionPoolDataSourceOperation()
+		Operation<javax.sql.ConnectionPoolDataSource, javax.sql.PooledConnection> operation = new Operation<javax.sql.ConnectionPoolDataSource, javax.sql.PooledConnection>()
 		{
-			public Object execute(javax.sql.ConnectionPoolDataSource dataSource) throws SQLException
+			public javax.sql.PooledConnection execute(Database database, javax.sql.ConnectionPoolDataSource dataSource) throws SQLException
 			{
 				return dataSource.getPooledConnection(user, password);
 			}
 		};
 		
-		return new PooledConnection(this.connectionFactory, operation);
+		return new PooledConnection<javax.sql.PooledConnection, javax.sql.ConnectionPoolDataSource>(this.connectionFactory, operation);
 	}
 
 	/**
@@ -69,15 +72,15 @@ public class ConnectionPoolDataSource extends AbstractDataSource implements java
 	 */
 	public int getLoginTimeout() throws SQLException
 	{
-		ConnectionPoolDataSourceOperation operation = new ConnectionPoolDataSourceOperation()
+		Operation<javax.sql.ConnectionPoolDataSource, Integer> operation = new Operation<javax.sql.ConnectionPoolDataSource, Integer>()
 		{
-			public Object execute(javax.sql.ConnectionPoolDataSource dataSource) throws SQLException
+			public Integer execute(Database database, javax.sql.ConnectionPoolDataSource dataSource) throws SQLException
 			{
-				return new Integer(dataSource.getLoginTimeout());
+				return dataSource.getLoginTimeout();
 			}
 		};
 		
-		return ((Integer) this.connectionFactory.executeReadFromDriver(operation)).intValue();
+		return (Integer) this.connectionFactory.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -85,9 +88,9 @@ public class ConnectionPoolDataSource extends AbstractDataSource implements java
 	 */
 	public void setLoginTimeout(final int seconds) throws SQLException
 	{
-		ConnectionPoolDataSourceOperation operation = new ConnectionPoolDataSourceOperation()
+		Operation<javax.sql.ConnectionPoolDataSource, Void> operation = new Operation<javax.sql.ConnectionPoolDataSource, Void>()
 		{
-			public Object execute(javax.sql.ConnectionPoolDataSource dataSource) throws SQLException
+			public Void execute(Database database, javax.sql.ConnectionPoolDataSource dataSource) throws SQLException
 			{
 				dataSource.setLoginTimeout(seconds);
 				
@@ -103,9 +106,9 @@ public class ConnectionPoolDataSource extends AbstractDataSource implements java
 	 */
 	public PrintWriter getLogWriter() throws SQLException
 	{
-		ConnectionPoolDataSourceOperation operation = new ConnectionPoolDataSourceOperation()
+		Operation<javax.sql.ConnectionPoolDataSource, PrintWriter> operation = new Operation<javax.sql.ConnectionPoolDataSource, PrintWriter>()
 		{
-			public Object execute(javax.sql.ConnectionPoolDataSource dataSource) throws SQLException
+			public PrintWriter execute(Database database, javax.sql.ConnectionPoolDataSource dataSource) throws SQLException
 			{
 				return dataSource.getLogWriter();
 			}
@@ -119,9 +122,9 @@ public class ConnectionPoolDataSource extends AbstractDataSource implements java
 	 */
 	public void setLogWriter(final PrintWriter writer) throws SQLException
 	{
-		ConnectionPoolDataSourceOperation operation = new ConnectionPoolDataSourceOperation()
+		Operation<javax.sql.ConnectionPoolDataSource, Void> operation = new Operation<javax.sql.ConnectionPoolDataSource, Void>()
 		{
-			public Object execute(javax.sql.ConnectionPoolDataSource dataSource) throws SQLException
+			public Void execute(Database database, javax.sql.ConnectionPoolDataSource dataSource) throws SQLException
 			{
 				dataSource.setLogWriter(writer);
 				
@@ -135,7 +138,7 @@ public class ConnectionPoolDataSource extends AbstractDataSource implements java
 	/**
 	 * @see net.sf.hajdbc.sql.AbstractDataSource#getObjectFactoryClass()
 	 */
-	protected Class getObjectFactoryClass()
+	protected Class<? extends AbstractDataSourceFactory> getObjectFactoryClass()
 	{
 		return ConnectionPoolDataSourceFactory.class;
 	}

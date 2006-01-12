@@ -36,13 +36,13 @@ import net.sf.hajdbc.Database;
 public class RandomBalancer extends AbstractBalancer
 {
 	private Random random = new Random();
-	private Set databaseSet = new HashSet();
-	private List databaseList = new ArrayList();
+	private Set<Database> databaseSet = new HashSet<Database>();
+	private List<Database> databaseList = new ArrayList<Database>();
 	
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
+	 * @see net.sf.hajdbc.Balancer#getDatabases()
 	 */
-	protected Collection getDatabases()
+	public Collection<Database> getDatabases()
 	{
 		return this.databaseSet;
 	}
@@ -56,7 +56,7 @@ public class RandomBalancer extends AbstractBalancer
 		
 		if (added)
 		{
-			int weight = database.getWeight().intValue();
+			int weight = database.getWeight();
 			
 			for (int i = 0; i < weight; ++i)
 			{
@@ -74,7 +74,7 @@ public class RandomBalancer extends AbstractBalancer
 	{
 		boolean removed = this.databaseSet.remove(database);
 		
-		int weight = database.getWeight().intValue();
+		int weight = database.getWeight();
 		
 		if (removed && (weight > 0))
 		{
@@ -98,6 +98,6 @@ public class RandomBalancer extends AbstractBalancer
 		
 		int index = this.random.nextInt(this.databaseList.size());
 		
-		return (Database) this.databaseList.get(index);
+		return this.databaseList.get(index);
 	}
 }

@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc.sql.pool.xa;
 
+import net.sf.hajdbc.sql.AbstractDataSource;
 import net.sf.hajdbc.sql.AbstractDataSourceFactory;
 
 /**
@@ -27,12 +28,12 @@ import net.sf.hajdbc.sql.AbstractDataSourceFactory;
  * @version $Revision$
  * @since   1.0
  */
-public class XADataSourceFactory extends AbstractDataSourceFactory
+public class XADataSourceFactory extends AbstractDataSourceFactory<javax.sql.XADataSource>
 {
 	/**
 	 * @see net.sf.hajdbc.sql.AbstractDataSourceFactory#getObjectClass()
 	 */
-	protected Class getObjectClass()
+	protected Class<? extends AbstractDataSource> getObjectClass()
 	{
 		return XADataSource.class;
 	}

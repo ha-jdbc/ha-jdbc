@@ -20,12 +20,11 @@
  */
 package net.sf.hajdbc.sql.pool.xa;
 
-import java.sql.SQLException;
-import java.util.Map;
-
 import javax.transaction.xa.Xid;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.Operation;
+import net.sf.hajdbc.SQLException;
 import net.sf.hajdbc.SQLObject;
 
 /**
@@ -33,15 +32,15 @@ import net.sf.hajdbc.SQLObject;
  * @version $Revision$
  * @since   1.0
  */
-public class XAResource extends SQLObject implements javax.transaction.xa.XAResource
+public class XAResource extends SQLObject<javax.transaction.xa.XAResource, javax.sql.XAConnection> implements javax.transaction.xa.XAResource
 {
 	/**
 	 * Constructs a new XAResourceProxy.
 	 * @param connection a proxy for XAConnections
 	 * @param operation an operation that creates XAResources
-	 * @throws SQLException if operation execution fails
+	 * @throws java.sql.SQLException if operation execution fails
 	 */
-	public XAResource(XAConnection connection, XAConnectionOperation operation) throws SQLException
+	public XAResource(XAConnection connection, Operation<javax.sql.XAConnection, javax.transaction.xa.XAResource> operation) throws java.sql.SQLException
 	{
 		super(connection, operation);
 	}
@@ -49,213 +48,362 @@ public class XAResource extends SQLObject implements javax.transaction.xa.XAReso
 	/**
 	 * @see javax.transaction.xa.XAResource#getTransactionTimeout()
 	 */
-	public int getTransactionTimeout() throws XAException
+	public int getTransactionTimeout() throws javax.transaction.xa.XAException
 	{
-		XAResourceOperation operation = new XAResourceOperation()
+		Operation<javax.transaction.xa.XAResource, Integer> operation = new Operation<javax.transaction.xa.XAResource, Integer>()
 		{
-			public Object execute(Database database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
+			public Integer execute(Database database, javax.transaction.xa.XAResource resource) throws java.sql.SQLException
 			{
-				return new Integer(resource.getTransactionTimeout());
+				try
+				{
+					return resource.getTransactionTimeout();
+				}
+				catch (javax.transaction.xa.XAException e)
+				{
+					throw new SQLException(e);
+				}
 			}
 		};
 		
-		return ((Integer) this.executeGet(operation)).intValue();
+		try
+		{
+			return this.executeReadFromDriver(operation);
+		}
+		catch (java.sql.SQLException e)
+		{
+			throw this.translate(e);
+		}
 	}
 
 	/**
 	 * @see javax.transaction.xa.XAResource#setTransactionTimeout(int)
 	 */
-	public boolean setTransactionTimeout(final int seconds) throws XAException
+	public boolean setTransactionTimeout(final int seconds) throws javax.transaction.xa.XAException
 	{
-		XAResourceOperation operation = new XAResourceOperation()
+		Operation<javax.transaction.xa.XAResource, Boolean> operation = new Operation<javax.transaction.xa.XAResource, Boolean>()
 		{
-			public Object execute(Database database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
+			public Boolean execute(Database database, javax.transaction.xa.XAResource resource) throws java.sql.SQLException
 			{
-				return Boolean.valueOf(resource.setTransactionTimeout(seconds));
+				try
+				{
+					return resource.setTransactionTimeout(seconds);
+				}
+				catch (javax.transaction.xa.XAException e)
+				{
+					throw new SQLException(e);
+				}
 			}
 		};
 		
-		return ((Boolean) this.firstValue(this.executeSet(operation))).booleanValue();
+		try
+		{
+			return this.firstValue(this.executeWriteToDriver(operation));
+		}
+		catch (java.sql.SQLException e)
+		{
+			throw this.translate(e);
+		}
 	}
 
 	/**
 	 * @see javax.transaction.xa.XAResource#isSameRM(javax.transaction.xa.XAResource)
 	 */
-	public boolean isSameRM(final javax.transaction.xa.XAResource xaResource) throws XAException
+	public boolean isSameRM(final javax.transaction.xa.XAResource xaResource) throws javax.transaction.xa.XAException
 	{
-		XAResourceOperation operation = new XAResourceOperation()
+		Operation<javax.transaction.xa.XAResource, Boolean> operation = new Operation<javax.transaction.xa.XAResource, Boolean>()
 		{
-			public Object execute(Database database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
+			public Boolean execute(Database database, javax.transaction.xa.XAResource resource) throws java.sql.SQLException
 			{
-				if (this.getClass().isInstance(xaResource))
+				try
 				{
-					XAResource proxy = (XAResource) xaResource;
-					
-					return Boolean.valueOf(resource.isSameRM((XAResource) proxy.getObject(database)));
-				}
+					if (this.getClass().isInstance(xaResource))
+					{
+						XAResource proxy = (XAResource) xaResource;
+						
+						return resource.isSameRM(proxy.getObject(database));
+					}
 
-				return Boolean.valueOf(resource.isSameRM(xaResource));
+					return Boolean.valueOf(resource.isSameRM(xaResource));
+				}
+				catch (javax.transaction.xa.XAException e)
+				{
+					throw new SQLException(e);
+				}
 			}
 		};
 		
-		return ((Boolean) this.executeGet(operation)).booleanValue();
+		try
+		{
+			return this.executeReadFromDriver(operation);
+		}
+		catch (java.sql.SQLException e)
+		{
+			throw this.translate(e);
+		}
 	}
 
 	/**
 	 * @see javax.transaction.xa.XAResource#recover(int)
 	 */
-	public Xid[] recover(final int flag) throws XAException
+	public Xid[] recover(final int flag) throws javax.transaction.xa.XAException
 	{
-		XAResourceOperation operation = new XAResourceOperation()
+		Operation<javax.transaction.xa.XAResource, Xid[]> operation = new Operation<javax.transaction.xa.XAResource, Xid[]>()
 		{
-			public Object execute(Database database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
+			public Xid[] execute(Database database, javax.transaction.xa.XAResource resource) throws java.sql.SQLException
 			{
-				return resource.recover(flag);
+				try
+				{
+					return resource.recover(flag);
+				}
+				catch (javax.transaction.xa.XAException e)
+				{
+					throw new SQLException(e);
+				}
 			}
 		};
-
-		return (Xid[]) this.firstValue(this.executeWrite(operation));
+		
+		try
+		{
+			return this.firstValue(this.executeWriteToDatabase(operation));
+		}
+		catch (java.sql.SQLException e)
+		{
+			throw this.translate(e);
+		}
 	}
 
 	/**
 	 * @see javax.transaction.xa.XAResource#prepare(javax.transaction.xa.Xid)
 	 */
-	public int prepare(final Xid id) throws XAException
+	public int prepare(final Xid id) throws javax.transaction.xa.XAException
 	{
-		XAResourceOperation operation = new XAResourceOperation()
+		Operation<javax.transaction.xa.XAResource, Integer> operation = new Operation<javax.transaction.xa.XAResource, Integer>()
 		{
-			public Object execute(Database database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
+			public Integer execute(Database database, javax.transaction.xa.XAResource resource) throws java.sql.SQLException
 			{
-				return new Integer(resource.prepare(id));
+				try
+				{
+					return resource.prepare(id);
+				}
+				catch (javax.transaction.xa.XAException e)
+				{
+					throw new SQLException(e);
+				}
 			}
 		};
 		
-		return ((Integer) this.firstValue(this.executeWrite(operation))).intValue();
+		try
+		{
+			return this.firstValue(this.executeWriteToDatabase(operation));
+		}
+		catch (java.sql.SQLException e)
+		{
+			throw this.translate(e);
+		}
 	}
 
 	/**
 	 * @see javax.transaction.xa.XAResource#forget(javax.transaction.xa.Xid)
 	 */
-	public void forget(final Xid id) throws XAException
+	public void forget(final Xid id) throws javax.transaction.xa.XAException
 	{
-		XAResourceOperation operation = new XAResourceOperation()
+		Operation<javax.transaction.xa.XAResource, Void> operation = new Operation<javax.transaction.xa.XAResource, Void>()
 		{
-			public Object execute(Database database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
+			public Void execute(Database database, javax.transaction.xa.XAResource resource) throws java.sql.SQLException
 			{
-				resource.forget(id);
-				
-				return null;
+				try
+				{
+					resource.forget(id);
+					
+					return null;
+				}
+				catch (javax.transaction.xa.XAException e)
+				{
+					throw new SQLException(e);
+				}
 			}
 		};
 		
-		this.executeWrite(operation);
+		try
+		{
+			this.executeWriteToDatabase(operation);
+		}
+		catch (java.sql.SQLException e)
+		{
+			throw this.translate(e);
+		}
 	}
 
 	/**
 	 * @see javax.transaction.xa.XAResource#rollback(javax.transaction.xa.Xid)
 	 */
-	public void rollback(final Xid id) throws XAException
+	public void rollback(final Xid id) throws javax.transaction.xa.XAException
 	{
-		XAResourceOperation operation = new XAResourceOperation()
+		Operation<javax.transaction.xa.XAResource, Void> operation = new Operation<javax.transaction.xa.XAResource, Void>()
 		{
-			public Object execute(Database database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
+			public Void execute(Database database, javax.transaction.xa.XAResource resource) throws java.sql.SQLException
 			{
-				resource.rollback(id);
-				
-				return null;
+				try
+				{
+					resource.rollback(id);
+					
+					return null;
+				}
+				catch (javax.transaction.xa.XAException e)
+				{
+					throw new SQLException(e);
+				}
 			}
 		};
 		
-		this.executeWrite(operation);
+		try
+		{
+			this.executeWriteToDatabase(operation);
+		}
+		catch (java.sql.SQLException e)
+		{
+			throw this.translate(e);
+		}
 	}
 
 	/**
 	 * @see javax.transaction.xa.XAResource#end(javax.transaction.xa.Xid, int)
 	 */
-	public void end(final Xid id, final int flag) throws XAException
+	public void end(final Xid id, final int flag) throws javax.transaction.xa.XAException
 	{
-		XAResourceOperation operation = new XAResourceOperation()
+		Operation<javax.transaction.xa.XAResource, Void> operation = new Operation<javax.transaction.xa.XAResource, Void>()
 		{
-			public Object execute(Database database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
+			public Void execute(Database database, javax.transaction.xa.XAResource resource) throws java.sql.SQLException
 			{
-				resource.end(id, flag);
-				
-				return null;
+				try
+				{
+					resource.end(id, flag);
+					
+					return null;
+				}
+				catch (javax.transaction.xa.XAException e)
+				{
+					throw new SQLException(e);
+				}
 			}
 		};
 		
-		this.executeWrite(operation);
+		try
+		{
+			this.executeWriteToDatabase(operation);
+		}
+		catch (java.sql.SQLException e)
+		{
+			throw this.translate(e);
+		}
 	}
 
 	/**
 	 * @see javax.transaction.xa.XAResource#start(javax.transaction.xa.Xid, int)
 	 */
-	public void start(final Xid id, final int flag) throws XAException
+	public void start(final Xid id, final int flag) throws javax.transaction.xa.XAException
 	{
-		XAResourceOperation operation = new XAResourceOperation()
+		Operation<javax.transaction.xa.XAResource, Void> operation = new Operation<javax.transaction.xa.XAResource, Void>()
 		{
-			public Object execute(Database database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
+			public Void execute(Database database, javax.transaction.xa.XAResource resource) throws java.sql.SQLException
 			{
-				resource.start(id, flag);
-				
-				return null;
+				try
+				{
+					resource.start(id, flag);
+					
+					return null;
+				}
+				catch (javax.transaction.xa.XAException e)
+				{
+					throw new SQLException(e);
+				}
 			}
 		};
 		
-		this.executeWrite(operation);
+		try
+		{
+			this.executeWriteToDatabase(operation);
+		}
+		catch (java.sql.SQLException e)
+		{
+			throw this.translate(e);
+		}
 	}
 
 	/**
 	 * @see javax.transaction.xa.XAResource#commit(javax.transaction.xa.Xid, boolean)
 	 */
-	public void commit(final Xid id, final boolean onePhase) throws XAException
+	public void commit(final Xid id, final boolean onePhase) throws javax.transaction.xa.XAException
 	{
-		XAResourceOperation operation = new XAResourceOperation()
+		Operation<javax.transaction.xa.XAResource, Void> operation = new Operation<javax.transaction.xa.XAResource, Void>()
 		{
-			public Object execute(Database database, javax.transaction.xa.XAResource resource) throws javax.transaction.xa.XAException
+			public Void execute(Database database, javax.transaction.xa.XAResource resource) throws java.sql.SQLException
 			{
-				resource.commit(id, onePhase);
-				
-				return null;
+				try
+				{
+					resource.commit(id, onePhase);
+					
+					return null;
+				}
+				catch (javax.transaction.xa.XAException e)
+				{
+					throw new SQLException(e);
+				}
 			}
 		};
 		
-		this.executeWrite(operation);
+		try
+		{
+			this.executeWriteToDatabase(operation);
+		}
+		catch (java.sql.SQLException e)
+		{
+			throw this.translate(e);
+		}
 	}
 	
-	private Map executeWrite(XAResourceOperation operation) throws XAException
+	private javax.transaction.xa.XAException translate(java.sql.SQLException e)
 	{
-		try
+		if (javax.transaction.xa.XAException.class.isInstance(e.getCause()))
 		{
-			return super.executeWriteToDatabase(operation);
+			return (javax.transaction.xa.XAException) e.getCause();
 		}
-		catch (SQLException e)
-		{
-			throw new XAException(e);
-		}
-	}
 
-	private Map executeSet(XAResourceOperation operation) throws XAException
-	{
-		try
-		{
-			return super.executeWriteToDriver(operation);
-		}
-		catch (SQLException e)
-		{
-			throw new XAException(e);
-		}
+		return new XAException(e);
 	}
-
-	private Object executeGet(XAResourceOperation operation) throws XAException
+	
+	private class XAException extends javax.transaction.xa.XAException
 	{
-		try
+		private static final long serialVersionUID = 3833460721462950199L;
+
+		/**
+		 * Constructs a new XAException.
+		 * @param message
+		 */
+		public XAException(String message)
 		{
-			return super.executeReadFromDriver(operation);
+			super(message);
 		}
-		catch (SQLException e)
+
+		/**
+		 * Constructs a new XAException.
+		 * @param message
+		 * @param cause 
+		 */
+		public XAException(String message, Throwable cause)
 		{
-			throw new XAException(e);
+			super(message);
+			this.initCause(cause);
+		}
+
+		/**
+		 * Constructs a new XAException.
+		 * @param cause
+		 */
+		public XAException(Throwable cause)
+		{
+			super();
+			this.initCause(cause);
 		}
 	}
 }

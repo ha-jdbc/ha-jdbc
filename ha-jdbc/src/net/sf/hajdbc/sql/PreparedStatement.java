@@ -26,6 +26,8 @@ import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.Array;
+import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.Date;
 import java.sql.ParameterMetaData;
 import java.sql.Ref;
@@ -35,12 +37,16 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
 
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.Operation;
+
 /**
  * @author  Paul Ferraro
  * @version $Revision$
+ * @param <T> 
  * @since   1.0
  */
-public class PreparedStatement extends Statement implements java.sql.PreparedStatement
+public class PreparedStatement<T extends java.sql.PreparedStatement> extends Statement<T> implements java.sql.PreparedStatement
 {
 	private String sql;
 	
@@ -51,7 +57,7 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 * @param sql an SQL statement
 	 * @throws java.sql.SQLException if operation execution fails
 	 */
-	public PreparedStatement(Connection connection, ConnectionOperation operation, String sql) throws java.sql.SQLException
+	public PreparedStatement(Connection<?> connection, Operation<java.sql.Connection, T> operation, String sql) throws java.sql.SQLException
 	{
 		super(connection, operation);
 		
@@ -63,9 +69,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void addBatch() throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.addBatch();
 				
@@ -81,9 +87,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void clearParameters() throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.clearParameters();
 				
@@ -99,15 +105,15 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public boolean execute() throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Boolean> operation = new Operation<T, Boolean>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Boolean execute(Database database, T statement) throws SQLException
 			{
-				return new Boolean(statement.execute());
+				return statement.execute();
 			}
 		};
 		
-		return ((Boolean) this.firstValue(this.executeWriteToDatabase(operation))).booleanValue();
+		return this.firstValue(this.executeWriteToDatabase(operation));
 	}
 
 	/**
@@ -115,15 +121,15 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public java.sql.ResultSet executeQuery() throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, java.sql.ResultSet> operation = new Operation<T, java.sql.ResultSet>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public java.sql.ResultSet execute(Database database, T statement) throws SQLException
 			{
 				return statement.executeQuery();
 			}
 		};
 
-		return ((this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(this.sql)) ? (java.sql.ResultSet) this.executeReadFromDatabase(operation) : new ResultSet(this, operation);
+		return ((this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(this.sql)) ? this.executeReadFromDatabase(operation) : new ResultSet<T>(this, operation);
 	}
 
 	/**
@@ -131,15 +137,15 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public int executeUpdate() throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Integer> operation = new Operation<T, Integer>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Integer execute(Database database, T statement) throws SQLException
 			{
-				return new Integer(statement.executeUpdate());
+				return statement.executeUpdate();
 			}
 		};
 		
-		return ((Integer) this.firstValue(this.executeWriteToDatabase(operation))).intValue();
+		return this.firstValue(this.executeWriteToDatabase(operation));
 	}
 
 	/**
@@ -147,15 +153,15 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public ResultSetMetaData getMetaData() throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, ResultSetMetaData> operation = new Operation<T, ResultSetMetaData>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public ResultSetMetaData execute(Database database, T statement) throws SQLException
 			{
 				return statement.getMetaData();
 			}
 		};
 		
-		return (ResultSetMetaData) this.executeReadFromDatabase(operation);
+		return this.executeReadFromDatabase(operation);
 	}
 
 	/**
@@ -163,15 +169,15 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public ParameterMetaData getParameterMetaData() throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, ParameterMetaData> operation = new Operation<T, ParameterMetaData>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public ParameterMetaData execute(Database database, T statement) throws SQLException
 			{
 				return statement.getParameterMetaData();
 			}
 		};
 		
-		return (ParameterMetaData) this.executeReadFromDatabase(operation);
+		return this.executeReadFromDatabase(operation);
 	}
 
 	/**
@@ -179,9 +185,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setArray(final int index, final Array value) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setArray(index, value);
 				
@@ -200,12 +206,12 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 		final FileSupport fileSupport = this.getFileSupport();
 		final File file = fileSupport.createFile(inputStream);
 		
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setAsciiStream(index, fileSupport.getInputStream(file), length);
-			
+				
 				return null;
 			}
 		};
@@ -218,9 +224,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setBigDecimal(final int index, final BigDecimal value) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setBigDecimal(index, value);
 				
@@ -239,9 +245,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 		final FileSupport fileSupport = this.getFileSupport();
 		final File file = fileSupport.createFile(inputStream);
 
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setBinaryStream(index, fileSupport.getInputStream(file), length);
 				
@@ -255,11 +261,11 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	/**
 	 * @see java.sql.PreparedStatement#setBlob(int, java.sql.Blob)
 	 */
-	public void setBlob(final int index, final java.sql.Blob value) throws SQLException
+	public void setBlob(final int index, final Blob value) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setBlob(index, value);
 				
@@ -275,9 +281,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setBoolean(final int index, final boolean value) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setBoolean(index, value);
 				
@@ -293,9 +299,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setByte(final int index, final byte value) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setByte(index, value);
 				
@@ -311,9 +317,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setBytes(final int index, final byte[] value) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setBytes(index, value);
 				
@@ -332,9 +338,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 		final FileSupport fileSupport = this.getFileSupport();
 		final File file = fileSupport.createFile(reader);
 		
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setCharacterStream(index, fileSupport.getReader(file), length);
 				
@@ -348,11 +354,11 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	/**
 	 * @see java.sql.PreparedStatement#setClob(int, java.sql.Clob)
 	 */
-	public void setClob(final int index, final java.sql.Clob value) throws SQLException
+	public void setClob(final int index, final Clob value) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setClob(index, value);
 				
@@ -368,9 +374,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setDate(final int index, final Date value) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setDate(index, value);
 				
@@ -386,9 +392,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setDate(final int index, final Date value, final Calendar calendar) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setDate(index, value, calendar);
 				
@@ -404,9 +410,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setDouble(final int index, final double value) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setDouble(index, value);
 				
@@ -422,9 +428,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setFloat(final int index, final float value) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setFloat(index, value);
 				
@@ -440,9 +446,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setInt(final int index, final int value) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setInt(index, value);
 				
@@ -458,9 +464,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setLong(final int index, final long value) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setLong(index, value);
 				
@@ -476,9 +482,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setNull(final int index, final int sqlType) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setNull(index, sqlType);
 				
@@ -494,9 +500,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setNull(final int index, final int sqlType, final String typeName) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setNull(index, sqlType, typeName);
 				
@@ -512,9 +518,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setObject(final int index, final Object value) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setObject(index, value);
 				
@@ -530,9 +536,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setObject(final int index, final Object value, final int sqlType) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setObject(index, value, sqlType);
 				
@@ -548,9 +554,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setObject(final int index, final Object value, final int sqlType, final int scale) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setObject(index, value, sqlType, scale);
 				
@@ -566,9 +572,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setRef(final int index, final Ref value) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setRef(index, value);
 				
@@ -584,9 +590,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setShort(final int index, final short value) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setShort(index, value);
 				
@@ -602,9 +608,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setString(final int index, final String value) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setString(index, value);
 				
@@ -620,9 +626,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setTime(final int index, final Time value) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setTime(index, value);
 				
@@ -638,9 +644,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setTime(final int index, final Time value, final Calendar calendar) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setTime(index, value, calendar);
 				
@@ -656,9 +662,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setTimestamp(final int index, final Timestamp value) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setTimestamp(index, value);
 				
@@ -674,9 +680,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setTimestamp(final int index, final Timestamp value, final Calendar calendar) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setTimestamp(index, value, calendar);
 				
@@ -696,9 +702,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 		final FileSupport fileSupport = this.getFileSupport();
 		final File file = fileSupport.createFile(inputStream);
 
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setUnicodeStream(index, fileSupport.getInputStream(file), length);
 				
@@ -714,9 +720,9 @@ public class PreparedStatement extends Statement implements java.sql.PreparedSta
 	 */
 	public void setURL(final int index, final URL value) throws SQLException
 	{
-		PreparedStatementOperation operation = new PreparedStatementOperation()
+		Operation<T, Void> operation = new Operation<T, Void>()
 		{
-			public Object execute(java.sql.PreparedStatement statement) throws SQLException
+			public Void execute(Database database, T statement) throws SQLException
 			{
 				statement.setURL(index, value);
 				

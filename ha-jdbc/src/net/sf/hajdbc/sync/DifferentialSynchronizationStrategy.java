@@ -41,11 +41,11 @@ import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import edu.emory.mathcs.backport.java.util.concurrent.Callable;
-import edu.emory.mathcs.backport.java.util.concurrent.ExecutionException;
-import edu.emory.mathcs.backport.java.util.concurrent.ExecutorService;
-import edu.emory.mathcs.backport.java.util.concurrent.Executors;
-import edu.emory.mathcs.backport.java.util.concurrent.Future;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Database-independent synchronization strategy that only updates differences between two databases.
@@ -83,7 +83,7 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, java.util.Map)
 	 */
-	public void synchronize(Connection inactiveConnection, Connection activeConnection, Map schemaMap) throws SQLException
+	public void synchronize(Connection inactiveConnection, Connection activeConnection, Map<String, List<String>> schemaMap) throws SQLException
 	{
 		inactiveConnection.setAutoCommit(true);
 		
@@ -95,27 +95,20 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 		DatabaseMetaData databaseMetaData = inactiveConnection.getMetaData();
 		String quote = databaseMetaData.getIdentifierQuoteString();
 		
-		Map primaryKeyColumnMap = new TreeMap();
-		Set primaryKeyColumnIndexSet = new LinkedHashSet();
+		Map<Short, String> primaryKeyColumnMap = new TreeMap<Short, String>();
+		Set<Integer> primaryKeyColumnIndexSet = new LinkedHashSet<Integer>();
 		
 		try
 		{
-			Iterator schemaMapEntries = schemaMap.entrySet().iterator();
-
-			while (schemaMapEntries.hasNext())
+			for (Map.Entry<String, List<String>> schemaMapEntry: schemaMap.entrySet())
 			{
-				Map.Entry schemaMapEntry = (Map.Entry) schemaMapEntries.next();
-				String schema = (String) schemaMapEntry.getKey();
-				List tableList = (List) schemaMapEntry.getValue();
+				String schema = schemaMapEntry.getKey();
+				List<String> tableList = schemaMapEntry.getValue();
 				
 				String tablePrefix = (schema != null) ? quote + schema + quote + "." : "";
 				
-				Iterator tables = tableList.iterator();
-				
-				while (tables.hasNext())
+				for (String table: tableList)
 				{	
-					String table = (String) tables.next();
-					
 					String tableName = tablePrefix + quote + table + quote;
 
 					primaryKeyColumnMap.clear();
@@ -130,7 +123,7 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 						String name = primaryKeyResultSet.getString("COLUMN_NAME");
 						short position = primaryKeyResultSet.getShort("KEY_SEQ");
 		
-						primaryKeyColumnMap.put(new Short(position), name);
+						primaryKeyColumnMap.put(Short.valueOf(position), name);
 						
 						primaryKeyName = primaryKeyResultSet.getString("PK_NAME");
 					}
@@ -139,27 +132,27 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 					
 					if (primaryKeyColumnMap.isEmpty())
 					{
-						throw new SQLException(Messages.getMessage(Messages.PRIMARY_KEY_REQUIRED, new Object[] { this.getClass().getName(), table }));
+						throw new SQLException(Messages.getMessage(Messages.PRIMARY_KEY_REQUIRED, this.getClass().getName(), table));
 					}
 		
 					Key.executeSQL(inactiveConnection, UniqueKey.collect(inactiveConnection, schema, table, primaryKeyName), this.dropUniqueKeySQL);
 					
 					// Retrieve table rows in primary key order
-					StringBuffer buffer = new StringBuffer("SELECT * FROM ").append(tableName).append(" ORDER BY ");
+					StringBuilder builder = new StringBuilder("SELECT * FROM ").append(tableName).append(" ORDER BY ");
 					
-					Iterator primaryKeyColumns = primaryKeyColumnMap.values().iterator();
+					Iterator<String> primaryKeyColumns = primaryKeyColumnMap.values().iterator();
 					
 					while (primaryKeyColumns.hasNext())
 					{
-						buffer.append(quote).append(primaryKeyColumns.next()).append(quote);
+						builder.append(quote).append(primaryKeyColumns.next()).append(quote);
 						
 						if (primaryKeyColumns.hasNext())
 						{
-							buffer.append(", ");
+							builder.append(", ");
 						}
 					}
 					
-					final String sql = buffer.toString();
+					final String sql = builder.toString();
 					
 					final Statement inactiveStatement = inactiveConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 					inactiveStatement.setFetchSize(this.fetchSize);
@@ -169,34 +162,34 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 						log.debug(sql);
 					}
 					
-					Callable callable = new Callable()
+					Callable<ResultSet> callable = new Callable<ResultSet>()
 					{
-						public Object call() throws java.sql.SQLException
+						public ResultSet call() throws java.sql.SQLException
 						{
 							return inactiveStatement.executeQuery(sql);
 						}
 					};
 		
-					Future future = this.executor.submit(callable);
+					Future<ResultSet> future = this.executor.submit(callable);
 					
 					Statement activeStatement = activeConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 					activeStatement.setFetchSize(this.fetchSize);
 					
 					ResultSet activeResultSet = activeStatement.executeQuery(sql);
 
-					ResultSet inactiveResultSet =  (ResultSet) future.get();
+					ResultSet inactiveResultSet = future.get();
 					
 					// Construct DELETE SQL
-					StringBuffer deleteSQL = new StringBuffer("DELETE FROM ").append(tableName).append(" WHERE ");
+					StringBuilder deleteSQL = new StringBuilder("DELETE FROM ").append(tableName).append(" WHERE ");
 					
 					// Create set of primary key columns
 					primaryKeyColumns = primaryKeyColumnMap.values().iterator();
 					
 					while (primaryKeyColumns.hasNext())
 					{
-						String primaryKeyColumn = (String) primaryKeyColumns.next();
+						String primaryKeyColumn = primaryKeyColumns.next();
 						
-						primaryKeyColumnIndexSet.add(new Integer(activeResultSet.findColumn(primaryKeyColumn)));
+						primaryKeyColumnIndexSet.add(Integer.valueOf(activeResultSet.findColumn(primaryKeyColumn)));
 						
 						deleteSQL.append(quote).append(primaryKeyColumn).append(quote).append(" = ?");
 						
@@ -213,7 +206,7 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 					int[] types = new int[columns + 1];
 					
 					// Construct INSERT SQL
-					StringBuffer insertSQL = new StringBuffer("INSERT INTO ").append(tableName).append(" (");
+					StringBuilder insertSQL = new StringBuilder("INSERT INTO ").append(tableName).append(" (");
 					
 					for (int i = 1; i <= columns; ++i)
 					{
@@ -264,13 +257,8 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 						}
 						else
 						{
-							Iterator primaryKeyColumnIndexes = primaryKeyColumnIndexSet.iterator();
-							
-							while (primaryKeyColumnIndexes.hasNext())
+							for (int column: primaryKeyColumnIndexSet)
 							{
-								Integer primaryKeyColumnIndex = (Integer) primaryKeyColumnIndexes.next();
-								int column = primaryKeyColumnIndex.intValue();
-								
 								Comparable activeObject = (Comparable) activeResultSet.getObject(column);
 								Object inactiveObject = inactiveResultSet.getObject(column);
 								
@@ -287,14 +275,10 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 						{
 							deleteStatement.clearParameters();
 							
-							Iterator primaryKeyColumnIndexes = primaryKeyColumnIndexSet.iterator();
 							int index = 1;
 							
-							while (primaryKeyColumnIndexes.hasNext())
+							for (int column: primaryKeyColumnIndexSet)
 							{
-								Integer primaryKeyColumnIndex = (Integer) primaryKeyColumnIndexes.next();
-								int column = primaryKeyColumnIndex.intValue();
-								
 								deleteStatement.setObject(index, inactiveResultSet.getObject(column), types[column]);
 								
 								index += 1;
@@ -332,7 +316,7 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 							
 							for (int i = 1; i <= columns; ++i)
 							{
-								if (!primaryKeyColumnIndexSet.contains(new Integer(i)))
+								if (!primaryKeyColumnIndexSet.contains(i))
 								{
 									Object activeObject = activeResultSet.getObject(i);
 									Object inactiveObject = inactiveResultSet.getObject(i);
@@ -398,9 +382,9 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 					
 					inactiveConnection.commit();
 					
-					log.info(Messages.getMessage(Messages.INSERT_COUNT, new Object[] { new Integer(insertCount), tableName }));
-					log.info(Messages.getMessage(Messages.UPDATE_COUNT, new Object[] { new Integer(updateCount), tableName }));
-					log.info(Messages.getMessage(Messages.DELETE_COUNT, new Object[] { new Integer(deleteCount), tableName }));			
+					log.info(Messages.getMessage(Messages.INSERT_COUNT, insertCount, tableName));
+					log.info(Messages.getMessage(Messages.UPDATE_COUNT, updateCount, tableName));
+					log.info(Messages.getMessage(Messages.DELETE_COUNT, deleteCount, tableName));			
 				}
 			}
 	
@@ -411,9 +395,7 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 		}
 		catch (ExecutionException e)
 		{
-			Throwable cause = e.getCause();
-			
-			throw SQLException.class.isInstance(cause) ? (SQLException) cause : new net.sf.hajdbc.SQLException(cause);
+			throw new net.sf.hajdbc.SQLException(e.getCause());
 		}
 		catch (InterruptedException e)
 		{

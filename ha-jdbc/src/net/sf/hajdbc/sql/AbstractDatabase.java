@@ -27,9 +27,10 @@ import net.sf.hajdbc.Database;
 /**
  * @author  Paul Ferraro
  * @version $Revision$
+ * @param <T> 
  * @since   1.0
  */
-public abstract class AbstractDatabase implements Database
+public abstract class AbstractDatabase<T> implements Database<T>
 {
 	protected String id;
 	protected String user;

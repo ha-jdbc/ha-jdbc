@@ -37,7 +37,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;
 import org.jgroups.blocks.NotificationBus;
 
-import edu.emory.mathcs.backport.java.util.concurrent.ExecutorService;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Decorates an existing database cluster by providing distributable functionality.
@@ -113,7 +113,7 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 		}
 		catch (SQLException e)
 		{
-			log.error(Messages.getMessage(Messages.DATABASE_COMMAND_FAILED, new Object[] { command, this.databaseCluster }), e);
+			log.error(Messages.getMessage(Messages.DATABASE_COMMAND_FAILED, command, this.databaseCluster), e);
 		}
 	}
 
@@ -122,9 +122,9 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 	 */
 	public Serializable getCache()
 	{
-		Collection databases = this.databaseCluster.getActiveDatabases();
+		Collection<String> databases = this.databaseCluster.getActiveDatabases();
 		
-		return (String[]) this.databaseCluster.getActiveDatabases().toArray(new String[databases.size()]);
+		return this.databaseCluster.getActiveDatabases().toArray(new String[databases.size()]);
 	}
 
 	/**
@@ -134,7 +134,7 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 	{
 		String channel = this.notificationBus.getChannel().getChannelName();
 		
-		log.info(Messages.getMessage(Messages.GROUP_MEMBER_JOINED, new Object[] { address, channel }));
+		log.info(Messages.getMessage(Messages.GROUP_MEMBER_JOINED, address, channel));
 	}
 
 	/**
@@ -144,7 +144,7 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 	{
 		String channel = this.notificationBus.getChannel().getChannelName();
 		
-		log.info(Messages.getMessage(Messages.GROUP_MEMBER_LEFT, new Object[] { address, channel }));
+		log.info(Messages.getMessage(Messages.GROUP_MEMBER_LEFT, address, channel));
 	}
 	
 	/**
@@ -194,7 +194,7 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#getActiveDatabases()
 	 */
-	public Collection getActiveDatabases()
+	public Collection<String> getActiveDatabases()
 	{
 		return this.databaseCluster.getActiveDatabases();
 	}
@@ -202,7 +202,7 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#getInactiveDatabases()
 	 */
-	public Collection getInactiveDatabases()
+	public Collection<String> getInactiveDatabases()
 	{
 		return this.databaseCluster.getInactiveDatabases();
 	}
@@ -218,7 +218,7 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getConnectionFactoryMap()
 	 */
-	public Map getConnectionFactoryMap()
+	public Map<Database, ?> getConnectionFactoryMap()
 	{
 		return this.databaseCluster.getConnectionFactoryMap();
 	}

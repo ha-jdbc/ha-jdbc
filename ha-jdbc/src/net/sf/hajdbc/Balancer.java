@@ -20,6 +20,8 @@
  */
 package net.sf.hajdbc;
 
+import java.util.Collection;
+
 /**
  * @author  Paul Ferraro
  * @since   1.0
@@ -54,9 +56,9 @@ public interface Balancer
 
 	/**
 	 * Returns the databases known to this balancer
-	 * @return an array of database descriptors
+	 * @return a collection of database descriptors
 	 */
-	public Database[] toArray();
+	public Collection<Database> getDatabases();
 
 	/**
 	 * Check whether the specified database is known to this balancer

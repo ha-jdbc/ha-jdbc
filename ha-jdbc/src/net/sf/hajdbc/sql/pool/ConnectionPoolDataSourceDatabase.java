@@ -26,26 +26,23 @@ import java.sql.SQLException;
 import javax.sql.ConnectionPoolDataSource;
 import javax.sql.PooledConnection;
 
-import net.sf.hajdbc.sql.DataSourceDatabase;
+import net.sf.hajdbc.sql.AbstractDataSourceDatabase;
 
 /**
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public class ConnectionPoolDataSourceDatabase extends DataSourceDatabase
+public class ConnectionPoolDataSourceDatabase extends AbstractDataSourceDatabase<ConnectionPoolDataSource>
 {
 	/**
-	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
+	 * @see net.sf.hajdbc.Database#connect(T)
 	 */
-	public Connection connect(Object connectionFactory) throws java.sql.SQLException
+	public Connection connect(ConnectionPoolDataSource dataSource) throws SQLException
 	{
-		ConnectionPoolDataSource dataSource = (ConnectionPoolDataSource) connectionFactory;
-		PooledConnection connection = this.getPooledConnection(dataSource);
-		
-		return this.getConnection(connection);
+		return this.getPooledConnection(dataSource).getConnection();
 	}
-	
+
 	/**
 	 * Returns a pooled connection from the specified connection pool data source.
 	 * @param dataSource a connection pool data source
@@ -58,20 +55,9 @@ public class ConnectionPoolDataSourceDatabase extends DataSourceDatabase
 	}
 	
 	/**
-	 * Returns a database connection from the specified pool.
-	 * @param connection
-	 * @return a database connection
-	 * @throws SQLException if a connection could not be obtained from the specified pool.
+	 * @see net.sf.hajdbc.sql.AbstractDataSourceDatabase#getDataSourceClass()
 	 */
-	protected Connection getConnection(PooledConnection connection) throws SQLException
-	{
-		return connection.getConnection();
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.sql.DataSourceDatabase#getDataSourceClass()
-	 */
-	protected Class getDataSourceClass()
+	protected Class<ConnectionPoolDataSource> getDataSourceClass()
 	{
 		return ConnectionPoolDataSource.class;
 	}

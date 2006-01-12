@@ -28,21 +28,21 @@ import javax.naming.RefAddr;
 import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
 
-import net.sf.hajdbc.ConnectionFactory;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterFactory;
 
 /**
  * @author  Paul Ferraro
  * @version $Revision$
+ * @param <T> 
  * @since   1.0
  */
-public abstract class AbstractDataSourceFactory implements ObjectFactory
+public abstract class AbstractDataSourceFactory<T> implements ObjectFactory
 {
 	/**
 	 * @see javax.naming.spi.ObjectFactory#getObjectInstance(java.lang.Object, javax.naming.Name, javax.naming.Context, java.util.Hashtable)
 	 */
-	public Object getObjectInstance(Object object, Name name, Context context, Hashtable environment) throws Exception
+	public Object getObjectInstance(Object object, Name name, Context context, Hashtable<?,?> environment) throws Exception
 	{
 		if (object == null) return null;
 		
@@ -54,11 +54,9 @@ public abstract class AbstractDataSourceFactory implements ObjectFactory
 		
 		if (className == null) return null;
 		
-		Class objectClass = this.getObjectClass();
+		if (!this.getObjectClass().getName().equals(className)) return null;
 		
-		if (!objectClass.getName().equals(className)) return null;
-		
-		AbstractDataSource dataSource = (AbstractDataSource) objectClass.newInstance();
+		AbstractDataSource dataSource = this.getObjectClass().newInstance();
 		
 		RefAddr addr = reference.get(AbstractDataSource.NAME);
 		
@@ -78,5 +76,5 @@ public abstract class AbstractDataSourceFactory implements ObjectFactory
 		return dataSource;
 	}
 	
-	protected abstract Class getObjectClass();
+	protected abstract Class<? extends AbstractDataSource> getObjectClass();
 }

@@ -35,13 +35,10 @@ import net.sf.hajdbc.Database;
  */
 public class SimpleBalancer extends AbstractBalancer
 {
-	private static Comparator comparator = new Comparator()
+	private static Comparator<Database> comparator = new Comparator<Database>()
 	{
-		public int compare(Object object1, Object object2)
+		public int compare(Database database1, Database database2)
 		{
-			Database database1 = (Database) object1;
-			Database database2 = (Database) object2;
-			
 			return database2.getWeight().compareTo(database1.getWeight());
 		}
 	};
@@ -49,9 +46,9 @@ public class SimpleBalancer extends AbstractBalancer
 	private List databaseList = new LinkedList();
 
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
+	 * @see net.sf.hajdbc.Balancer#getDatabases()
 	 */
-	protected Collection getDatabases()
+	public Collection<Database> getDatabases()
 	{
 		return this.databaseList;
 	}

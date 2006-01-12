@@ -36,21 +36,18 @@ import net.sf.hajdbc.Database;
  */
 public class LoadBalancer extends AbstractBalancer
 {
-	private static Comparator comparator = new Comparator()
+	private static Comparator<Map.Entry<Database, Integer>> comparator = new Comparator<Map.Entry<Database, Integer>>()
 	{
-		public int compare(Object object1, Object object2)
+		public int compare(Map.Entry<Database, Integer> mapEntry1, Map.Entry<Database, Integer> mapEntry2)
 		{
-			Map.Entry databaseMapEntry1 = (Map.Entry) object1;
-			Map.Entry databaseMapEntry2 = (Map.Entry) object2;
-			
-			Database database1 = (Database) databaseMapEntry1.getKey();
-			Database database2 = (Database) databaseMapEntry2.getKey();
+			Database database1 = mapEntry1.getKey();
+			Database database2 = mapEntry2.getKey();
 
-			Integer load1 = (Integer) databaseMapEntry1.getValue();
-			Integer load2 = (Integer) databaseMapEntry2.getValue();
+			Integer load1 = mapEntry1.getValue();
+			Integer load2 = mapEntry2.getValue();
 			
-			int weight1 = database1.getWeight().intValue();
-			int weight2 = database2.getWeight().intValue();
+			int weight1 = database1.getWeight();
+			int weight2 = database2.getWeight();
 			
 			if (weight1 == weight2)
 			{
@@ -64,12 +61,12 @@ public class LoadBalancer extends AbstractBalancer
 		}
 	};
 	
-	private Map databaseMap = new HashMap();
+	private Map<Database, Integer> databaseMap = new HashMap<Database, Integer>();
 	
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
+	 * @see net.sf.hajdbc.Balancer#getDatabases()
 	 */
-	protected Collection getDatabases()
+	public Collection<Database> getDatabases()
 	{
 		return this.databaseMap.keySet();
 	}
@@ -83,7 +80,7 @@ public class LoadBalancer extends AbstractBalancer
 		
 		if (!exists)
 		{
-			this.databaseMap.put(database, new Integer(1));
+			this.databaseMap.put(database, 1);
 		}
 		
 		return !exists;
@@ -99,13 +96,13 @@ public class LoadBalancer extends AbstractBalancer
 			return this.first();
 		}
 		
-		List databaseMapEntryList = new ArrayList(this.databaseMap.entrySet());
+		List<Map.Entry<Database, Integer>> databaseMapEntryList = new ArrayList<Map.Entry<Database, Integer>>(this.databaseMap.entrySet());
 		
 		Collections.sort(databaseMapEntryList, comparator);
 		
-		Map.Entry mapEntry = (Map.Entry) databaseMapEntryList.get(0);
+		Map.Entry<Database, Integer> mapEntry = databaseMapEntryList.get(0);
 		
-		return (Database) mapEntry.getKey();
+		return mapEntry.getKey();
 	}
 	
 	/**
@@ -126,8 +123,11 @@ public class LoadBalancer extends AbstractBalancer
 	
 	private synchronized void incrementLoad(Database database, int increment)
 	{
-		Integer load = (Integer) this.databaseMap.remove(database);
+		Integer load = this.databaseMap.remove(database);
 
-		this.databaseMap.put(database, new Integer(load.intValue() + increment));
+		if (load != null)
+		{
+			this.databaseMap.put(database, load + increment);
+		}
 	}
 }

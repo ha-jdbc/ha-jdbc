@@ -23,6 +23,9 @@ package net.sf.hajdbc.sql;
 import java.io.PrintWriter;
 import java.sql.SQLException;
 
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.Operation;
+
 
 /**
  * @author Paul Ferraro
@@ -35,15 +38,15 @@ public class DataSource extends AbstractDataSource implements javax.sql.DataSour
 	 */
 	public int getLoginTimeout() throws SQLException
 	{
-		DataSourceOperation operation = new DataSourceOperation()
+		Operation<javax.sql.DataSource, Integer> operation = new Operation<javax.sql.DataSource, Integer>()
 		{
-			public Object execute(javax.sql.DataSource dataSource) throws SQLException
+			public Integer execute(Database database, javax.sql.DataSource dataSource) throws SQLException
 			{
-				return new Integer(dataSource.getLoginTimeout());
+				return dataSource.getLoginTimeout();
 			}
 		};
 		
-		return ((Integer) this.connectionFactory.executeReadFromDriver(operation)).intValue();
+		return (Integer) this.connectionFactory.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -51,9 +54,9 @@ public class DataSource extends AbstractDataSource implements javax.sql.DataSour
 	 */
 	public void setLoginTimeout(final int seconds) throws SQLException
 	{
-		DataSourceOperation operation = new DataSourceOperation()
+		Operation<javax.sql.DataSource, Void> operation = new Operation<javax.sql.DataSource, Void>()
 		{
-			public Object execute(javax.sql.DataSource dataSource) throws SQLException
+			public Void execute(Database database, javax.sql.DataSource dataSource) throws SQLException
 			{
 				dataSource.setLoginTimeout(seconds);
 				
@@ -69,9 +72,9 @@ public class DataSource extends AbstractDataSource implements javax.sql.DataSour
 	 */
 	public PrintWriter getLogWriter() throws SQLException
 	{
-		DataSourceOperation operation = new DataSourceOperation()
+		Operation<javax.sql.DataSource, PrintWriter> operation = new Operation<javax.sql.DataSource, PrintWriter>()
 		{
-			public Object execute(javax.sql.DataSource dataSource) throws SQLException
+			public PrintWriter execute(Database database, javax.sql.DataSource dataSource) throws SQLException
 			{
 				return dataSource.getLogWriter();
 			}
@@ -85,9 +88,9 @@ public class DataSource extends AbstractDataSource implements javax.sql.DataSour
 	 */
 	public void setLogWriter(final PrintWriter writer) throws SQLException
 	{
-		DataSourceOperation operation = new DataSourceOperation()
+		Operation<javax.sql.DataSource, Void> operation = new Operation<javax.sql.DataSource, Void>()
 		{
-			public Object execute(javax.sql.DataSource dataSource) throws SQLException
+			public Void execute(Database database, javax.sql.DataSource dataSource) throws SQLException
 			{
 				dataSource.setLogWriter(writer);
 				
@@ -103,15 +106,15 @@ public class DataSource extends AbstractDataSource implements javax.sql.DataSour
 	 */
 	public java.sql.Connection getConnection() throws SQLException
 	{
-		DataSourceOperation operation = new DataSourceOperation()
+		Operation<javax.sql.DataSource, java.sql.Connection> operation = new Operation<javax.sql.DataSource, java.sql.Connection>()
 		{
-			public Object execute(javax.sql.DataSource dataSource) throws SQLException
+			public java.sql.Connection execute(Database database, javax.sql.DataSource dataSource) throws SQLException
 			{
 				return dataSource.getConnection();
 			}
 		};
 		
-		return new Connection(this.connectionFactory, operation, new FileSupportImpl());
+		return new Connection<javax.sql.DataSource>(this.connectionFactory, operation, new FileSupportImpl());
 	}
 
 	/**
@@ -119,21 +122,21 @@ public class DataSource extends AbstractDataSource implements javax.sql.DataSour
 	 */
 	public java.sql.Connection getConnection(final String user, final String password) throws SQLException
 	{
-		DataSourceOperation operation = new DataSourceOperation()
+		Operation<javax.sql.DataSource, java.sql.Connection> operation = new Operation<javax.sql.DataSource, java.sql.Connection>()
 		{
-			public Object execute(javax.sql.DataSource dataSource) throws SQLException
+			public java.sql.Connection execute(Database database, javax.sql.DataSource dataSource) throws SQLException
 			{
 				return dataSource.getConnection(user, password);
 			}
 		};
 		
-		return new Connection(this.connectionFactory, operation, new FileSupportImpl());
+		return new Connection<javax.sql.DataSource>(this.connectionFactory, operation, new FileSupportImpl());
 	}
 
 	/**
 	 * @see net.sf.hajdbc.sql.AbstractDataSource#getObjectFactoryClass()
 	 */
-	protected Class getObjectFactoryClass()
+	protected Class<? extends AbstractDataSourceFactory> getObjectFactoryClass()
 	{
 		return DataSourceFactory.class;
 	}

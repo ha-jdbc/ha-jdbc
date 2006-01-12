@@ -24,7 +24,6 @@ import javax.naming.Reference;
 import javax.naming.Referenceable;
 import javax.naming.StringRefAddr;
 
-import net.sf.hajdbc.ConnectionFactory;
 
 
 /**
@@ -83,5 +82,5 @@ public abstract class AbstractDataSource implements Referenceable
 	 * Returns the implementation class for the factory that will create DataSources
 	 * @return a class that implements javax.naming.spi.ObjectFactory
 	 */
-	protected abstract Class getObjectFactoryClass();
+	protected abstract Class<? extends AbstractDataSourceFactory> getObjectFactoryClass();
 }

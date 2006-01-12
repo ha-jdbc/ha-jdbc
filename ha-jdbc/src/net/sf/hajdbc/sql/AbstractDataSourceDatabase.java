@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (C) 2004 Paul Ferraro
+ * Copyright (C) 2006 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -20,35 +20,44 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.sql.Connection;
-
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.sql.DataSource;
 
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SQLException;
 
 /**
  * @author  Paul Ferraro
- * @version $Revision$
- * @since   1.0
+ * @param <T> 
+ * @since   1.1
  */
-public class DataSourceDatabase extends AbstractDataSourceDatabase<DataSource>
+public abstract class AbstractDataSourceDatabase<T> extends AbstractDatabase<T>
 {
+	protected String name;
+	
 	/**
-	 * @see net.sf.hajdbc.Database#connect(T)
+	 * Return the JNDI name of this DataSource
+	 * @return a JNDI name
 	 */
-	public Connection connect(DataSource dataSource) throws java.sql.SQLException
+	public String getName()
 	{
-		return (this.user != null) ? dataSource.getConnection(this.user, this.password) : dataSource.getConnection();
+		return this.name;
+	}
+	
+	/**
+	 * Sets the JNDI name of this DataSource
+	 * @param name a JNDI name
+	 */
+	public void setName(String name)
+	{
+		this.name = name;
 	}
 
 	/**
 	 * @see net.sf.hajdbc.Database#createConnectionFactory()
 	 */
-	public DataSource createConnectionFactory() throws java.sql.SQLException
+	public T createConnectionFactory() throws java.sql.SQLException
 	{
 		try
 		{
@@ -61,7 +70,7 @@ public class DataSourceDatabase extends AbstractDataSourceDatabase<DataSource>
 				throw new SQLException(Messages.getMessage(Messages.NOT_INSTANCE_OF, this.name, this.getDataSourceClass().getName()));
 			}
 			
-			return (DataSource) object;
+			return (T) object;
 		}
 		catch (NamingException e)
 		{
@@ -69,12 +78,5 @@ public class DataSourceDatabase extends AbstractDataSourceDatabase<DataSource>
 		}
 	}
 	
-	/**
-	 * Returns the implementation class for this DataSource
-	 * @return a DataSource implementation class
-	 */
-	protected Class<DataSource> getDataSourceClass()
-	{
-		return DataSource.class;
-	}
+	protected abstract Class<T> getDataSourceClass();
 }

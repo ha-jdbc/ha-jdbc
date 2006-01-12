@@ -69,11 +69,11 @@ public interface DatabaseClusterMBean
 	 * Returns a collection of active databases in this cluster.
 	 * @return a list of database identifiers
 	 */
-	public Collection getActiveDatabases();
+	public Collection<String> getActiveDatabases();
 	
 	/**
 	 * Returns a collection of inactive databases in this cluster.
 	 * @return a collection of database identifiers
 	 */
-	public Collection getInactiveDatabases();
+	public Collection<String> getInactiveDatabases();
 }

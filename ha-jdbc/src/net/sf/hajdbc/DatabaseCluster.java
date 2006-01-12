@@ -23,7 +23,7 @@ package net.sf.hajdbc;
 import java.sql.SQLException;
 import java.util.Map;
 
-import edu.emory.mathcs.backport.java.util.concurrent.ExecutorService;
+import java.util.concurrent.ExecutorService;
 
 
 /**
@@ -50,7 +50,7 @@ public interface DatabaseCluster extends DatabaseClusterMBean
 	 * Returns a map of database to connection factory for this obtaining connections to databases in this cluster.
 	 * @return a connection factory map
 	 */
-	public Map getConnectionFactoryMap();
+	public Map<Database, ?> getConnectionFactoryMap();
 	
 	/**
 	 * Determines whether or not the specified database is responding

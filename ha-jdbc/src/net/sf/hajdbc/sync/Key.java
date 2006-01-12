@@ -24,7 +24,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collection;
-import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,14 +43,14 @@ public abstract class Key
 	{
 		this.name = quote + name + quote;
 		
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder builder = new StringBuilder();
 		
 		if (schema != null)
 		{
-			buffer.append(quote).append(schema).append(quote).append(".");
+			builder.append(quote).append(schema).append(quote).append(".");
 		}
 		
-		this.table = buffer.append(quote).append(table).append(quote).toString();
+		this.table = builder.append(quote).append(table).append(quote).toString();
 	}
 	
 	protected abstract String formatSQL(String pattern);
@@ -77,20 +76,16 @@ public abstract class Key
 	/**
 	 * For each foreign key in the specified collection, generates and executes sql statements using the specified pattern and the specified connection.
 	 * @param connection a database connection
-	 * @param keyCollection a Collection<ForeignKey>
+	 * @param keys a Collection of Key objects
 	 * @param sqlPattern a sql pattern
 	 * @throws SQLException if a database error occurs
 	 */
-	public static void executeSQL(Connection connection, Collection keyCollection, String sqlPattern) throws SQLException
+	public static void executeSQL(Connection connection, Collection<? extends Key> keys, String sqlPattern) throws SQLException
 	{
 		Statement statement = connection.createStatement();
 		
-		Iterator keys = keyCollection.iterator();
-		
-		while (keys.hasNext())
+		for (Key key: keys)
 		{
-			Key key = (Key) keys.next();
-			
 			String sql = key.formatSQL(sqlPattern);
 			
 			if (log.isDebugEnabled())

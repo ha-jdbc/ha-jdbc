@@ -35,13 +35,13 @@ import net.sf.hajdbc.Database;
  */
 public class RoundRobinBalancer extends AbstractBalancer
 {
-	private Set databaseSet = new HashSet();
-	private List databaseList = new ArrayList();
+	private Set<Database> databaseSet = new HashSet();
+	private List<Database> databaseList = new ArrayList();
 	
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
+	 * @see net.sf.hajdbc.Balancer#getDatabases()
 	 */
-	protected Collection getDatabases()
+	public Collection<Database> getDatabases()
 	{
 		return this.databaseSet;
 	}
@@ -96,7 +96,7 @@ public class RoundRobinBalancer extends AbstractBalancer
 			return this.first();
 		}
 		
-		Database database = (Database) this.databaseList.get(0);
+		Database database = this.databaseList.get(0);
 		
 		if (this.databaseList.size() > 1)
 		{

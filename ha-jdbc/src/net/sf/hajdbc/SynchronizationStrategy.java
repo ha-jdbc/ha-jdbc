@@ -21,6 +21,7 @@
 package net.sf.hajdbc;
 
 import java.sql.Connection;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -65,5 +66,5 @@ public interface SynchronizationStrategy
 	 * @param schemaMap a map of schema name to list of table names
 	 * @throws java.sql.SQLException if synchronization fails
 	 */
-	public void synchronize(Connection inactiveConnection, Connection activeConnection, Map schemaMap) throws java.sql.SQLException;
+	public void synchronize(Connection inactiveConnection, Connection activeConnection, Map<String, List<String>> schemaMap) throws java.sql.SQLException;
 }

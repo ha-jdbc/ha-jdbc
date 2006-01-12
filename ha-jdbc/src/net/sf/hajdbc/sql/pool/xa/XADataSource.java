@@ -23,7 +23,10 @@ package net.sf.hajdbc.sql.pool.xa;
 import java.io.PrintWriter;
 import java.sql.SQLException;
 
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.Operation;
 import net.sf.hajdbc.sql.AbstractDataSource;
+import net.sf.hajdbc.sql.AbstractDataSourceFactory;
 
 /**
  * @author  Paul Ferraro
@@ -37,9 +40,9 @@ public class XADataSource extends AbstractDataSource implements javax.sql.XAData
 	 */
 	public javax.sql.XAConnection getXAConnection() throws SQLException
 	{
-		XADataSourceOperation operation = new XADataSourceOperation()
+		Operation<javax.sql.XADataSource, javax.sql.XAConnection> operation = new Operation<javax.sql.XADataSource, javax.sql.XAConnection>()
 		{
-			public Object execute(javax.sql.XADataSource dataSource) throws SQLException
+			public javax.sql.XAConnection execute(Database database, javax.sql.XADataSource dataSource) throws SQLException
 			{
 				return dataSource.getXAConnection();
 			}
@@ -53,9 +56,9 @@ public class XADataSource extends AbstractDataSource implements javax.sql.XAData
 	 */
 	public javax.sql.XAConnection getXAConnection(final String user, final String password) throws SQLException
 	{
-		XADataSourceOperation operation = new XADataSourceOperation()
+		Operation<javax.sql.XADataSource, javax.sql.XAConnection> operation = new Operation<javax.sql.XADataSource, javax.sql.XAConnection>()
 		{
-			public Object execute(javax.sql.XADataSource dataSource) throws SQLException
+			public javax.sql.XAConnection execute(Database database, javax.sql.XADataSource dataSource) throws SQLException
 			{
 				return dataSource.getXAConnection(user, password);
 			}
@@ -69,27 +72,27 @@ public class XADataSource extends AbstractDataSource implements javax.sql.XAData
 	 */
 	public int getLoginTimeout() throws SQLException
 	{
-		XADataSourceOperation operation = new XADataSourceOperation()
+		Operation<javax.sql.XADataSource, Integer> operation = new Operation<javax.sql.XADataSource, Integer>()
 		{
-			public Object execute(javax.sql.XADataSource dataSource) throws SQLException
+			public Integer execute(Database database, javax.sql.XADataSource dataSource) throws SQLException
 			{
-				return new Integer(dataSource.getLoginTimeout());
+				return dataSource.getLoginTimeout();
 			}
 		};
 		
-		return ((Integer) this.connectionFactory.executeReadFromDriver(operation)).intValue();
+		return (Integer) this.connectionFactory.executeReadFromDriver(operation);
 	}
 	
 	/**
 	 * @see javax.sql.XADataSource#setLoginTimeout(int)
 	 */
-	public void setLoginTimeout(final int timeout) throws SQLException
+	public void setLoginTimeout(final int seconds) throws SQLException
 	{
-		XADataSourceOperation operation = new XADataSourceOperation()
+		Operation<javax.sql.XADataSource, Integer> operation = new Operation<javax.sql.XADataSource, Integer>()
 		{
-			public Object execute(javax.sql.XADataSource dataSource) throws SQLException
+			public Integer execute(Database database, javax.sql.XADataSource dataSource) throws SQLException
 			{
-				dataSource.setLoginTimeout(timeout);
+				dataSource.setLoginTimeout(seconds);
 				
 				return null;
 			}
@@ -103,9 +106,9 @@ public class XADataSource extends AbstractDataSource implements javax.sql.XAData
 	 */
 	public PrintWriter getLogWriter() throws SQLException
 	{
-		XADataSourceOperation operation = new XADataSourceOperation()
+		Operation<javax.sql.XADataSource, PrintWriter> operation = new Operation<javax.sql.XADataSource, PrintWriter>()
 		{
-			public Object execute(javax.sql.XADataSource dataSource) throws SQLException
+			public PrintWriter execute(Database database, javax.sql.XADataSource dataSource) throws SQLException
 			{
 				return dataSource.getLogWriter();
 			}
@@ -119,9 +122,9 @@ public class XADataSource extends AbstractDataSource implements javax.sql.XAData
 	 */
 	public void setLogWriter(final PrintWriter writer) throws SQLException
 	{
-		XADataSourceOperation operation = new XADataSourceOperation()
+		Operation<javax.sql.XADataSource, Integer> operation = new Operation<javax.sql.XADataSource, Integer>()
 		{
-			public Object execute(javax.sql.XADataSource dataSource) throws SQLException
+			public Integer execute(Database database, javax.sql.XADataSource dataSource) throws SQLException
 			{
 				dataSource.setLogWriter(writer);
 				
@@ -135,7 +138,7 @@ public class XADataSource extends AbstractDataSource implements javax.sql.XAData
 	/**
 	 * @see net.sf.hajdbc.sql.AbstractDataSource#getObjectFactoryClass()
 	 */
-	protected Class getObjectFactoryClass()
+	protected Class<? extends AbstractDataSourceFactory> getObjectFactoryClass()
 	{
 		return XADataSourceFactory.class;
 	}

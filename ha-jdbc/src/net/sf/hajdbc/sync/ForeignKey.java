@@ -26,7 +26,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -65,49 +64,42 @@ public class ForeignKey extends Key
 		
 		this.column = quote + column + quote;
 
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder builder = new StringBuilder();
 		
 		if (foreignSchema != null)
 		{
-			buffer.append(quote).append(foreignSchema).append(quote).append(".");
+			builder.append(quote).append(foreignSchema).append(quote).append(".");
 		}
 		
-		this.foreignTable = buffer.append(quote).append(foreignTable).append(quote).toString();
+		this.foreignTable = builder.append(quote).append(foreignTable).append(quote).toString();
 		this.foreignColumn = quote + foreignColumn + quote;
 	}
 	
 	protected String formatSQL(String pattern)
 	{
-		return MessageFormat.format(pattern, new Object[] { this.name, this.table, this.column, this.foreignTable, this.foreignColumn });
+		return MessageFormat.format(pattern, this.name, this.table, this.column, this.foreignTable, this.foreignColumn);
 	}
 	
 	/**
 	 * Collects all foreign keys from the specified tables using the specified connection. 
 	 * @param connection a database connection
 	 * @param schemaMap a map of schema name to list of table names
-	 * @return a Collection<ForeignKey>.
+	 * @return a Collection of ForeignKey objects.
 	 * @throws SQLException if a database error occurs
 	 */
-	public static Collection collect(Connection connection, Map schemaMap) throws SQLException
+	public static Collection collect(Connection connection, Map<String, List<String>> schemaMap) throws SQLException
 	{
-		List foreignKeyList = new LinkedList();
+		List<ForeignKey> foreignKeyList = new LinkedList<ForeignKey>();
 		DatabaseMetaData metaData = connection.getMetaData();
 		String quote = metaData.getIdentifierQuoteString();
 		
-		Iterator schemaMapEntries = schemaMap.entrySet().iterator();
-		
-		while (schemaMapEntries.hasNext())
+		for (Map.Entry<String, List<String>> schemaMapEntry: schemaMap.entrySet())
 		{
-			Map.Entry schemaMapEntry = (Map.Entry) schemaMapEntries.next();
-			String schema = (String) schemaMapEntry.getKey();
-			List tableList = (List) schemaMapEntry.getValue();
+			String schema = schemaMapEntry.getKey();
+			List<String> tableList = schemaMapEntry.getValue();
 			
-			Iterator tables = tableList.iterator();
-			
-			while (tables.hasNext())
+			for (String table: tableList)
 			{
-				String table = (String) tables.next();
-				
 				ResultSet resultSet = metaData.getImportedKeys(null, schema, table);
 				
 				while (resultSet.next())

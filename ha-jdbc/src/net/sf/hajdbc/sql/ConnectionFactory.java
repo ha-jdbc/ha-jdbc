@@ -18,35 +18,24 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.sql.pool.xa;
+package net.sf.hajdbc.sql;
 
-import java.sql.SQLException;
-
-import javax.sql.XADataSource;
-
-import net.sf.hajdbc.Database;
-import net.sf.hajdbc.Operation;
+import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.SQLObject;
 
 /**
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public abstract class XADataSourceOperation implements Operation
+public class ConnectionFactory extends SQLObject
 {
 	/**
-	 * Helper method that simplifies operation interface for XADataSourceProxy.
-	 * @param dataSource a JTA-aware data source
-	 * @return the result from executing this operation
-	 * @throws SQLException if execution fails
+	 * Constructs a new ConnectionFactory.
+	 * @param databaseCluster a database cluster
 	 */
-	public abstract Object execute(XADataSource dataSource) throws SQLException;
-	
-	/**
-	 * @see net.sf.hajdbc.Operation#execute(net.sf.hajdbc.Database, java.lang.Object)
-	 */
-	public Object execute(Database database, Object dataSource) throws SQLException
+	public ConnectionFactory(DatabaseCluster databaseCluster)
 	{
-		return this.execute((XADataSource) dataSource);
+		super(databaseCluster, databaseCluster.getConnectionFactoryMap());
 	}
 }

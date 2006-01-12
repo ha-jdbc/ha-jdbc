@@ -43,7 +43,7 @@ public class UniqueKey extends Key
 	/** SQL-92 compatible drop foreign key statement pattern */
 	public static final String DEFAULT_DROP_SQL = "ALTER TABLE {1} DROP CONSTRAINT {0}";
 	
-	private Map columnMap = new TreeMap();
+	private Map<Short, String> columnMap = new TreeMap<Short, String>();
 	private String quote;
 	
 	/**
@@ -66,26 +66,26 @@ public class UniqueKey extends Key
 	 */
 	public void addColumn(short position, String column)
 	{
-		this.columnMap.put(new Short(position), this.quote + column + this.quote);
+		this.columnMap.put(Short.valueOf(position), this.quote + column + this.quote);
 	}
 	
 	protected String formatSQL(String pattern)
 	{
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder builder = new StringBuilder();
 		
-		Iterator columns = this.columnMap.values().iterator();
+		Iterator<String> columns = this.columnMap.values().iterator();
 		
 		while (columns.hasNext())
 		{
-			buffer.append(columns.next());
+			builder.append(columns.next());
 			
 			if (columns.hasNext())
 			{
-				buffer.append(", ");
+				builder.append(", ");
 			}
 		}
 		
-		return MessageFormat.format(pattern, new Object[] { this.name, this.table, buffer.toString() });
+		return MessageFormat.format(pattern, this.name, this.table, builder.toString());
 	}
 	
 	/**
@@ -94,12 +94,12 @@ public class UniqueKey extends Key
 	 * @param schema a schema name
 	 * @param table a table name
 	 * @param primaryKeyName the name of the primary key of this table
-	 * @return a Collection<ForeignKey>.
+	 * @return a Collection of ForeignKey objects.
 	 * @throws SQLException if a database error occurs
 	 */
-	public static Collection collect(Connection connection, String schema, String table, String primaryKeyName) throws SQLException
+	public static Collection<UniqueKey> collect(Connection connection, String schema, String table, String primaryKeyName) throws SQLException
 	{
-		Map keyMap = new HashMap();
+		Map<String, UniqueKey> keyMap = new HashMap<String, UniqueKey>();
 		DatabaseMetaData metaData = connection.getMetaData();
 		String quote = metaData.getIdentifierQuoteString();
 		
@@ -111,7 +111,7 @@ public class UniqueKey extends Key
 			
 			if ((name == null) || name.equals(primaryKeyName)) continue;
 			
-			UniqueKey key = (UniqueKey) keyMap.get(name);
+			UniqueKey key = keyMap.get(name);
 			
 			if (key == null)
 			{

@@ -20,8 +20,6 @@
  */
 package net.sf.hajdbc.balancer;
 
-import java.util.Collection;
-
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
 
@@ -33,8 +31,6 @@ import net.sf.hajdbc.Database;
  */
 public abstract class AbstractBalancer implements Balancer
 {
-	protected abstract Collection getDatabases();
-	
 	/**
 	 * @see net.sf.hajdbc.Balancer#beforeOperation(net.sf.hajdbc.Database)
 	 */
@@ -68,16 +64,6 @@ public abstract class AbstractBalancer implements Balancer
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Balancer#toArray()
-	 */
-	public synchronized Database[] toArray()
-	{
-		Collection databases = getDatabases();
-		
-		return (Database[]) databases.toArray(new Database[databases.size()]);
-	}
-	
-	/**
 	 * @see net.sf.hajdbc.Balancer#contains(net.sf.hajdbc.Database)
 	 */
 	public synchronized boolean contains(Database database)
@@ -90,6 +76,6 @@ public abstract class AbstractBalancer implements Balancer
 	 */
 	public synchronized Database first()
 	{
-		return (Database) this.getDatabases().iterator().next();
+		return this.getDatabases().iterator().next();
 	}
 }

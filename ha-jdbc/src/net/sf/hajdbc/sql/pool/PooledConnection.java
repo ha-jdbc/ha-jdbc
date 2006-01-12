@@ -24,18 +24,21 @@ import java.sql.SQLException;
 
 import javax.sql.ConnectionEventListener;
 
-import net.sf.hajdbc.ConnectionFactory;
+import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Operation;
 import net.sf.hajdbc.SQLObject;
 import net.sf.hajdbc.sql.Connection;
+import net.sf.hajdbc.sql.ConnectionFactory;
 import net.sf.hajdbc.sql.FileSupportImpl;
 
 /**
  * @author  Paul Ferraro
  * @version $Revision$
+ * @param <E> 
+ * @param <P> 
  * @since   1.0
  */
-public class PooledConnection extends SQLObject implements javax.sql.PooledConnection
+public class PooledConnection<E extends javax.sql.PooledConnection, P> extends SQLObject<E, P> implements javax.sql.PooledConnection
 {
 	/**
 	 * Constructs a new PooledConnectionProxy.
@@ -43,7 +46,7 @@ public class PooledConnection extends SQLObject implements javax.sql.PooledConne
 	 * @param operation an operation that will create PooledConnections
 	 * @throws SQLException if operation execution fails
 	 */
-	public PooledConnection(ConnectionFactory dataSource, Operation operation) throws SQLException
+	public PooledConnection(ConnectionFactory dataSource, Operation<P, E> operation) throws SQLException
 	{
 		super(dataSource, operation);
 	}
@@ -53,15 +56,15 @@ public class PooledConnection extends SQLObject implements javax.sql.PooledConne
 	 */
 	public java.sql.Connection getConnection() throws SQLException
 	{
-		PooledConnectionOperation operation = new PooledConnectionOperation()
+		Operation<E, java.sql.Connection> operation = new Operation<E, java.sql.Connection>()
 		{
-			public Object execute(javax.sql.PooledConnection connection) throws SQLException
+			public java.sql.Connection execute(Database database, E connection) throws SQLException
 			{
 				return connection.getConnection();
 			}
 		};
 		
-		return new Connection(this, operation, new FileSupportImpl());
+		return new Connection<E>(this, operation, new FileSupportImpl());
 	}
 
 	/**
@@ -69,9 +72,9 @@ public class PooledConnection extends SQLObject implements javax.sql.PooledConne
 	 */
 	public void close() throws SQLException
 	{
-		PooledConnectionOperation operation = new PooledConnectionOperation()
+		Operation<E, Void> operation = new Operation<E, Void>()
 		{
-			public Object execute(javax.sql.PooledConnection connection) throws SQLException
+			public Void execute(Database database, E connection) throws SQLException
 			{
 				connection.close();
 				
@@ -87,9 +90,9 @@ public class PooledConnection extends SQLObject implements javax.sql.PooledConne
 	 */
 	public void addConnectionEventListener(final ConnectionEventListener listener)
 	{
-		PooledConnectionOperation operation = new PooledConnectionOperation()
+		Operation<E, Void> operation = new Operation<E, Void>()
 		{
-			public Object execute(javax.sql.PooledConnection connection)
+			public Void execute(Database database, E connection) throws SQLException
 			{
 				connection.addConnectionEventListener(listener);
 				
@@ -112,9 +115,9 @@ public class PooledConnection extends SQLObject implements javax.sql.PooledConne
 	 */
 	public void removeConnectionEventListener(final ConnectionEventListener listener)
 	{
-		PooledConnectionOperation operation = new PooledConnectionOperation()
+		Operation<E, Void> operation = new Operation<E, Void>()
 		{
-			public Object execute(javax.sql.PooledConnection connection)
+			public Void execute(Database database, E connection) throws SQLException
 			{
 				connection.removeConnectionEventListener(listener);
 				

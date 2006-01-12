@@ -26,6 +26,8 @@ import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.Array;
+import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.Date;
 import java.sql.Ref;
 import java.sql.SQLException;
@@ -34,12 +36,15 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Map;
 
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.Operation;
+
 /**
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public class CallableStatement extends PreparedStatement implements java.sql.CallableStatement
+public class CallableStatement extends PreparedStatement<java.sql.CallableStatement> implements java.sql.CallableStatement
 {
 	/**
 	 * Constructs a new CallableStatementProxy.
@@ -48,7 +53,7 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 * @param sql an SQL statement
 	 * @throws java.sql.SQLException if operation execution fails
 	 */
-	public CallableStatement(Connection connection, ConnectionOperation operation, String sql) throws java.sql.SQLException
+	public CallableStatement(Connection<?> connection, Operation<java.sql.Connection, java.sql.CallableStatement> operation, String sql) throws java.sql.SQLException
 	{
 		super(connection, operation, sql);
 	}
@@ -58,15 +63,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public Array getArray(final int index) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Array> operation = new Operation<java.sql.CallableStatement, Array>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Array execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getArray(index);
 			}
 		};
 		
-		return (Array) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -74,15 +79,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public Array getArray(final String name) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Array> operation = new Operation<java.sql.CallableStatement, Array>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Array execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getArray(name);
 			}
 		};
 		
-		return (Array) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -90,15 +95,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public BigDecimal getBigDecimal(final int index) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, BigDecimal> operation = new Operation<java.sql.CallableStatement, BigDecimal>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public BigDecimal execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getBigDecimal(index);
 			}
 		};
 		
-		return (BigDecimal) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -107,15 +112,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public BigDecimal getBigDecimal(final int index, final int scale) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, BigDecimal> operation = new Operation<java.sql.CallableStatement, BigDecimal>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public BigDecimal execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getBigDecimal(index, scale);
 			}
 		};
 		
-		return (BigDecimal) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -123,47 +128,47 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public BigDecimal getBigDecimal(final String name) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, BigDecimal> operation = new Operation<java.sql.CallableStatement, BigDecimal>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public BigDecimal execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getBigDecimal(name);
 			}
 		};
 		
-		return (BigDecimal) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
 	 * @see java.sql.CallableStatement#getBlob(int)
 	 */
-	public java.sql.Blob getBlob(final int index) throws SQLException
+	public Blob getBlob(final int index) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, java.sql.Blob> operation = new Operation<java.sql.CallableStatement, Blob>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Blob execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getBlob(index);
 			}
 		};
 		
-		return (java.sql.Blob) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
 	 * @see java.sql.CallableStatement#getBlob(java.lang.String)
 	 */
-	public java.sql.Blob getBlob(final String name) throws SQLException
+	public Blob getBlob(final String name) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, java.sql.Blob> operation = new Operation<java.sql.CallableStatement, Blob>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Blob execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getBlob(name);
 			}
 		};
 		
-		return (java.sql.Blob) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -171,15 +176,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public boolean getBoolean(final int index) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Boolean> operation = new Operation<java.sql.CallableStatement, Boolean>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Boolean execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
-				return new Boolean(statement.getBoolean(index));
+				return statement.getBoolean(index);
 			}
 		};
 		
-		return ((Boolean) this.executeReadFromDriver(operation)).booleanValue();
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -187,15 +192,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public boolean getBoolean(final String name) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Boolean> operation = new Operation<java.sql.CallableStatement, Boolean>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Boolean execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
-				return new Boolean(statement.getBoolean(name));
+				return statement.getBoolean(name);
 			}
 		};
 		
-		return ((Boolean) this.executeReadFromDriver(operation)).booleanValue();
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -203,15 +208,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public byte getByte(final int index) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Byte> operation = new Operation<java.sql.CallableStatement, Byte>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Byte execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
-				return new Byte(statement.getByte(index));
+				return statement.getByte(index);
 			}
 		};
 		
-		return ((Byte) this.executeReadFromDriver(operation)).byteValue();
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -219,15 +224,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public byte getByte(final String name) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Byte> operation = new Operation<java.sql.CallableStatement, Byte>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Byte execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
-				return new Byte(statement.getByte(name));
+				return statement.getByte(name);
 			}
 		};
 		
-		return ((Byte) this.executeReadFromDriver(operation)).byteValue();
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -235,15 +240,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public byte[] getBytes(final int index) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, byte[]> operation = new Operation<java.sql.CallableStatement, byte[]>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public byte[] execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getBytes(index);
 			}
 		};
-		
-		return (byte[]) this.executeReadFromDriver(operation);
+
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -251,47 +256,47 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public byte[] getBytes(final String name) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, byte[]> operation = new Operation<java.sql.CallableStatement, byte[]>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public byte[] execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getBytes(name);
 			}
 		};
 		
-		return (byte[]) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
 	 * @see java.sql.CallableStatement#getClob(int)
 	 */
-	public java.sql.Clob getClob(final int index) throws SQLException
+	public Clob getClob(final int index) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, java.sql.Clob> operation = new Operation<java.sql.CallableStatement, Clob>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Clob execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getClob(index);
 			}
 		};
 		
-		return (java.sql.Clob) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
 	 * @see java.sql.CallableStatement#getClob(java.lang.String)
 	 */
-	public java.sql.Clob getClob(final String name) throws SQLException
+	public Clob getClob(final String name) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, java.sql.Clob> operation = new Operation<java.sql.CallableStatement, Clob>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Clob execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getClob(name);
 			}
 		};
 		
-		return (java.sql.Clob) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -299,15 +304,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public Date getDate(final int index) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Date> operation = new Operation<java.sql.CallableStatement, Date>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Date execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getDate(index);
 			}
 		};
 		
-		return (Date) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -315,15 +320,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public Date getDate(final int index, final Calendar calendar) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Date> operation = new Operation<java.sql.CallableStatement, Date>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Date execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getDate(index, calendar);
 			}
 		};
 		
-		return (Date) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -331,15 +336,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public Date getDate(final String name) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Date> operation = new Operation<java.sql.CallableStatement, Date>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Date execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getDate(name);
 			}
 		};
 		
-		return (Date) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -347,15 +352,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public Date getDate(final String name, final Calendar calendar) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Date> operation = new Operation<java.sql.CallableStatement, Date>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Date execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getDate(name, calendar);
 			}
 		};
 		
-		return (Date) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -363,15 +368,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public double getDouble(final int index) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Double> operation = new Operation<java.sql.CallableStatement, Double>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Double execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
-				return new Double(statement.getDouble(index));
+				return statement.getDouble(index);
 			}
 		};
 		
-		return ((Double) this.executeReadFromDriver(operation)).doubleValue();
+		return  this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -379,15 +384,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public double getDouble(final String name) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Double> operation = new Operation<java.sql.CallableStatement, Double>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Double execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
-				return new Double(statement.getDouble(name));
+				return statement.getDouble(name);
 			}
 		};
 		
-		return ((Double) this.executeReadFromDriver(operation)).doubleValue();
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -395,15 +400,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public float getFloat(final int index) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Float> operation = new Operation<java.sql.CallableStatement, Float>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Float execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
-				return new Float(statement.getFloat(index));
+				return statement.getFloat(index);
 			}
 		};
 		
-		return ((Float) this.executeReadFromDriver(operation)).floatValue();
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -411,15 +416,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public float getFloat(final String name) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Float> operation = new Operation<java.sql.CallableStatement, Float>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Float execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
-				return new Float(statement.getFloat(name));
+				return statement.getFloat(name);
 			}
 		};
 		
-		return ((Float) this.executeReadFromDriver(operation)).floatValue();
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -427,15 +432,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public int getInt(final int index) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Integer> operation = new Operation<java.sql.CallableStatement, Integer>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Integer execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
-				return new Integer(statement.getInt(index));
+				return statement.getInt(index);
 			}
 		};
 		
-		return ((Integer) this.executeReadFromDriver(operation)).intValue();
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -443,15 +448,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public int getInt(final String name) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Integer> operation = new Operation<java.sql.CallableStatement, Integer>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Integer execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
-				return new Integer(statement.getInt(name));
+				return statement.getInt(name);
 			}
 		};
 		
-		return ((Integer) this.executeReadFromDriver(operation)).intValue();
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -459,15 +464,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public long getLong(final int index) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Long> operation = new Operation<java.sql.CallableStatement, Long>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Long execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
-				return new Long(statement.getLong(index));
+				return statement.getLong(index);
 			}
 		};
 		
-		return ((Long) this.executeReadFromDriver(operation)).longValue();
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -475,15 +480,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public long getLong(final String name) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Long> operation = new Operation<java.sql.CallableStatement, Long>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Long execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
-				return new Long(statement.getLong(name));
+				return statement.getLong(name);
 			}
 		};
 		
-		return ((Long) this.executeReadFromDriver(operation)).longValue();
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -491,9 +496,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public Object getObject(final int index) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Object> operation = new Operation<java.sql.CallableStatement, Object>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Object execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getObject(index);
 			}
@@ -507,9 +512,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public Object getObject(final int index, final Map typeMap) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Object> operation = new Operation<java.sql.CallableStatement, Object>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Object execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getObject(index, typeMap);
 			}
@@ -523,9 +528,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public Object getObject(final String name) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Object> operation = new Operation<java.sql.CallableStatement, Object>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Object execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getObject(name);
 			}
@@ -539,9 +544,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public Object getObject(final String name, final Map typeMap) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Object> operation = new Operation<java.sql.CallableStatement, Object>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Object execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getObject(name, typeMap);
 			}
@@ -555,15 +560,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public Ref getRef(final int index) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Ref> operation = new Operation<java.sql.CallableStatement, Ref>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Ref execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getRef(index);
 			}
 		};
 		
-		return (Ref) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -571,15 +576,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public Ref getRef(final String name) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Ref> operation = new Operation<java.sql.CallableStatement, Ref>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Ref execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getRef(name);
 			}
 		};
 		
-		return (Ref) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -587,15 +592,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public short getShort(final int index) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Short> operation = new Operation<java.sql.CallableStatement, Short>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Short execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
-				return new Short(statement.getShort(index));
+				return statement.getShort(index);
 			}
 		};
 		
-		return ((Short) this.executeReadFromDriver(operation)).shortValue();
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -603,15 +608,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public short getShort(final String name) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Short> operation = new Operation<java.sql.CallableStatement, Short>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Short execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
-				return new Short(statement.getShort(name));
+				return statement.getShort(name);
 			}
 		};
 		
-		return ((Short) this.executeReadFromDriver(operation)).shortValue();
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -619,15 +624,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public String getString(final int index) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, String> operation = new Operation<java.sql.CallableStatement, String>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public String execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getString(index);
 			}
 		};
 		
-		return (String) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -635,15 +640,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public String getString(final String name) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, String> operation = new Operation<java.sql.CallableStatement, String>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public String execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getString(name);
 			}
 		};
 		
-		return (String) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -651,15 +656,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public Time getTime(final int index) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Time> operation = new Operation<java.sql.CallableStatement, Time>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Time execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getTime(index);
 			}
 		};
 		
-		return (Time) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -667,15 +672,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public Time getTime(final int index, final Calendar calendar) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Time> operation = new Operation<java.sql.CallableStatement, Time>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Time execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getTime(index, calendar);
 			}
 		};
 		
-		return (Time) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -683,15 +688,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public Time getTime(final String name) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Time> operation = new Operation<java.sql.CallableStatement, Time>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Time execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getTime(name);
 			}
 		};
 		
-		return (Time) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -699,15 +704,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public Time getTime(final String name, final Calendar calendar) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Time> operation = new Operation<java.sql.CallableStatement, Time>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Time execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getTime(name, calendar);
 			}
 		};
 		
-		return (Time) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -715,15 +720,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public Timestamp getTimestamp(final int index) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Timestamp> operation = new Operation<java.sql.CallableStatement, Timestamp>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Timestamp execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getTimestamp(index);
 			}
 		};
 		
-		return (Timestamp) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -731,15 +736,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public Timestamp getTimestamp(final int index, final Calendar calendar) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Timestamp> operation = new Operation<java.sql.CallableStatement, Timestamp>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Timestamp execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getTimestamp(index, calendar);
 			}
 		};
 		
-		return (Timestamp) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -747,15 +752,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public Timestamp getTimestamp(final String name) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Timestamp> operation = new Operation<java.sql.CallableStatement, Timestamp>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Timestamp execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getTimestamp(name);
 			}
 		};
 		
-		return (Timestamp) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -763,15 +768,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public Timestamp getTimestamp(final String name, final Calendar calendar) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Timestamp> operation = new Operation<java.sql.CallableStatement, Timestamp>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Timestamp execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getTimestamp(name, calendar);
 			}
 		};
 		
-		return (Timestamp) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -779,15 +784,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public URL getURL(final int index) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, URL> operation = new Operation<java.sql.CallableStatement, URL>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public URL execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getURL(index);
 			}
 		};
 		
-		return (URL) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -795,15 +800,15 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public URL getURL(final String name) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, URL> operation = new Operation<java.sql.CallableStatement, URL>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public URL execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getURL(name);
 			}
 		};
 		
-		return (URL) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -811,16 +816,16 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void registerOutParameter(final int index, final int sqlType) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.registerOutParameter(index, sqlType);
 				
 				return null;
 			}
 		};
-		
+				
 		this.executeWriteToDriver(operation);
 	}
 
@@ -829,9 +834,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void registerOutParameter(final int index, final int sqlType, final int scale) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.registerOutParameter(index, sqlType, scale);
 				
@@ -847,9 +852,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void registerOutParameter(final int index, final int sqlType, final String typeName) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.registerOutParameter(index, sqlType, typeName);
 				
@@ -865,9 +870,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void registerOutParameter(final String name, final int sqlType) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.registerOutParameter(name, sqlType);
 				
@@ -883,9 +888,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void registerOutParameter(final String name, final int sqlType, final int scale) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.registerOutParameter(name, sqlType, scale);
 				
@@ -901,9 +906,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void registerOutParameter(final String name, final int sqlType, final String typeName) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.registerOutParameter(name, sqlType, typeName);
 				
@@ -922,9 +927,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 		final FileSupport fileSupport = this.getFileSupport();
 		final File file = fileSupport.createFile(inputStream);
 		
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setAsciiStream(name, fileSupport.getInputStream(file), length);
 				
@@ -940,9 +945,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void setBigDecimal(final String name, final BigDecimal value) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setBigDecimal(name, value);
 				
@@ -961,9 +966,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 		final FileSupport fileSupport = this.getFileSupport();
 		final File file = fileSupport.createFile(inputStream);
 		
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setBinaryStream(name, fileSupport.getInputStream(file), length);
 				
@@ -979,9 +984,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void setBoolean(final String name, final boolean value) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setBoolean(name, value);
 				
@@ -997,9 +1002,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void setByte(final String name, final byte value) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setByte(name, value);
 				
@@ -1015,9 +1020,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void setBytes(final String name, final byte[] value) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setBytes(name, value);
 				
@@ -1036,9 +1041,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 		final FileSupport fileSupport = this.getFileSupport();
 		final File file = fileSupport.createFile(reader);
 		
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setCharacterStream(name, fileSupport.getReader(file), length);
 				
@@ -1054,9 +1059,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void setDate(final String name, final Date value) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setDate(name, value);
 				
@@ -1072,9 +1077,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void setDate(final String name, final Date value, final Calendar calendar) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setDate(name, value, calendar);
 				
@@ -1090,9 +1095,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void setDouble(final String name, final double value) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setDouble(name, value);
 				
@@ -1108,9 +1113,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void setFloat(final String name, final float value) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setFloat(name, value);
 				
@@ -1126,9 +1131,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void setInt(final String name, final int value) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setInt(name, value);
 				
@@ -1144,9 +1149,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void setLong(final String name, final long value) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setLong(name, value);
 				
@@ -1162,9 +1167,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void setNull(final String name, final int sqlType) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setNull(name, sqlType);
 				
@@ -1180,9 +1185,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void setNull(final String name, final int sqlType, final String typeName) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setNull(name, sqlType, typeName);
 				
@@ -1198,9 +1203,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void setObject(final String name, final Object value) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setObject(name, value);
 				
@@ -1216,9 +1221,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void setObject(final String name, final Object value, final int sqlType) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setObject(name, value, sqlType);
 				
@@ -1234,16 +1239,16 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void setObject(final String name, final Object value, final int sqlType, final int scale) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setObject(name, value, sqlType, scale);
 				
 				return null;
 			}
 		};
-		
+
 		this.executeWriteToDriver(operation);
 	}
 
@@ -1252,9 +1257,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void setShort(final String name, final short value) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setShort(name, value);
 				
@@ -1270,9 +1275,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void setString(final String name, final String value) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setString(name, value);
 				
@@ -1288,9 +1293,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void setTime(final String name, final Time value) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setTime(name, value);
 				
@@ -1306,16 +1311,16 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void setTime(final String name, final Time value, final Calendar calendar) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setTime(name, value, calendar);
 				
 				return null;
 			}
 		};
-		
+
 		this.executeWriteToDriver(operation);
 	}
 
@@ -1324,9 +1329,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void setTimestamp(final String name, final Timestamp value) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setTimestamp(name, value);
 				
@@ -1342,9 +1347,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void setTimestamp(final String name, final Timestamp value, final Calendar calendar) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setTimestamp(name, value, calendar);
 				
@@ -1360,9 +1365,9 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public void setURL(final String name, final URL value) throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setURL(name, value);
 				
@@ -1378,14 +1383,14 @@ public class CallableStatement extends PreparedStatement implements java.sql.Cal
 	 */
 	public boolean wasNull() throws SQLException
 	{
-		CallableStatementOperation operation = new CallableStatementOperation()
+		Operation<java.sql.CallableStatement, Boolean> operation = new Operation<java.sql.CallableStatement, Boolean>()
 		{
-			public Object execute(java.sql.CallableStatement statement) throws SQLException
+			public Boolean execute(Database database, java.sql.CallableStatement statement) throws SQLException
 			{
-				return new Boolean(statement.wasNull());
+				return statement.wasNull();
 			}
 		};
 		
-		return ((Boolean) this.executeReadFromDriver(operation)).booleanValue();
+		return this.executeReadFromDriver(operation);
 	}
 }

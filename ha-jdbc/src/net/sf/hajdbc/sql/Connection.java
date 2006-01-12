@@ -32,9 +32,10 @@ import net.sf.hajdbc.SQLObject;
 /**
  * @author  Paul Ferraro
  * @version $Revision$
+ * @param <P> 
  * @since   1.0
  */
-public class Connection extends SQLObject implements java.sql.Connection
+public class Connection<P> extends SQLObject<java.sql.Connection, P> implements java.sql.Connection
 {
 	private FileSupport fileSupport;
 	
@@ -45,7 +46,7 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 * @param fileSupport a file support object
 	 * @throws java.sql.SQLException if operation execution fails
 	 */
-	public Connection(SQLObject object, Operation operation, FileSupport fileSupport) throws java.sql.SQLException
+	public Connection(SQLObject<P, ?> object, Operation<P, java.sql.Connection> operation, FileSupport fileSupport) throws java.sql.SQLException
 	{
 		super(object, operation);
 		
@@ -57,14 +58,14 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public void clearWarnings() throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, Void> operation = new Operation<java.sql.Connection, Void>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public Void execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				connection.clearWarnings();
 				
 				return null;
-			}
+			}	
 		};
 		
 		this.executeWriteToDriver(operation);
@@ -75,9 +76,9 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public void close() throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, Void> operation = new Operation<java.sql.Connection, Void>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public Void execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				connection.close();
 				
@@ -95,14 +96,14 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public void commit() throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, Void> operation = new Operation<java.sql.Connection, Void>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public Void execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				connection.commit();
 				
 				return null;
-			}
+			}	
 		};
 		
 		this.executeWriteToDatabase(operation);
@@ -113,15 +114,15 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public java.sql.Statement createStatement() throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, java.sql.Statement> operation = new Operation<java.sql.Connection, java.sql.Statement>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public java.sql.Statement execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				return connection.createStatement();
-			}
+			}	
 		};
 		
-		return this.isReadOnly() ? (java.sql.Statement) this.executeReadFromDriver(operation) : new Statement(this, operation);
+		return this.isReadOnly() ? this.executeReadFromDriver(operation) : new Statement<java.sql.Statement>(this, operation);
 	}
 
 	/**
@@ -129,15 +130,15 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public java.sql.Statement createStatement(final int resultSetType, final int resultSetConcurrency) throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, java.sql.Statement> operation = new Operation<java.sql.Connection, java.sql.Statement>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public java.sql.Statement execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				return connection.createStatement(resultSetType, resultSetConcurrency);
-			}
+			}	
 		};
 		
-		return this.isReadOnly() ? (java.sql.Statement) this.executeReadFromDriver(operation) : new Statement(this, operation);
+		return this.isReadOnly() ? this.executeReadFromDriver(operation) : new Statement<java.sql.Statement>(this, operation);
 	}
 
 	/**
@@ -145,15 +146,15 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public java.sql.Statement createStatement(final int resultSetType, final int resultSetConcurrency, final int resultSetHoldability) throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, java.sql.Statement> operation = new Operation<java.sql.Connection, java.sql.Statement>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public java.sql.Statement execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				return connection.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability);
-			}
+			}	
 		};
 		
-		return this.isReadOnly() ? (java.sql.Statement) this.executeReadFromDriver(operation) : new Statement(this, operation);
+		return this.isReadOnly() ? this.executeReadFromDriver(operation) : new Statement<java.sql.Statement>(this, operation);
 	}
 
 	/**
@@ -161,15 +162,15 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public boolean getAutoCommit() throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, Boolean> operation = new Operation<java.sql.Connection, Boolean>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public Boolean execute(Database database, java.sql.Connection connection) throws SQLException
 			{
-				return new Boolean(connection.getAutoCommit());
-			}
+				return connection.getAutoCommit();
+			}	
 		};
 		
-		return ((Boolean) this.executeReadFromDriver(operation)).booleanValue();
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -177,15 +178,15 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public String getCatalog() throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, String> operation = new Operation<java.sql.Connection, String>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public String execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				return connection.getCatalog();
-			}
+			}	
 		};
 		
-		return (String) this.executeReadFromDatabase(operation);
+		return this.executeReadFromDatabase(operation);
 	}
 
 	/**
@@ -193,15 +194,15 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public int getHoldability() throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, Integer> operation = new Operation<java.sql.Connection, Integer>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public Integer execute(Database database, java.sql.Connection connection) throws SQLException
 			{
-				return new Integer(connection.getHoldability());
-			}
+				return connection.getHoldability();
+			}	
 		};
 		
-		return ((Integer) this.executeReadFromDriver(operation)).intValue();
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -209,15 +210,15 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public DatabaseMetaData getMetaData() throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, DatabaseMetaData> operation = new Operation<java.sql.Connection, DatabaseMetaData>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public DatabaseMetaData execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				return connection.getMetaData();
-			}
+			}	
 		};
 		
-		return (DatabaseMetaData) this.executeReadFromDatabase(operation);
+		return this.executeReadFromDatabase(operation);
 	}
 
 	/**
@@ -225,15 +226,15 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public int getTransactionIsolation() throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, Integer> operation = new Operation<java.sql.Connection, Integer>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public Integer execute(Database database, java.sql.Connection connection) throws SQLException
 			{
-				return new Integer(connection.getTransactionIsolation());
-			}
+				return connection.getTransactionIsolation();
+			}	
 		};
 		
-		return ((Integer) this.executeReadFromDatabase(operation)).intValue();
+		return this.executeReadFromDatabase(operation);
 	}
 
 	/**
@@ -241,15 +242,15 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public Map getTypeMap() throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, Map> operation = new Operation<java.sql.Connection, Map>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public Map execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				return connection.getTypeMap();
-			}
+			}	
 		};
 		
-		return (Map) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -257,15 +258,15 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public SQLWarning getWarnings() throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, SQLWarning> operation = new Operation<java.sql.Connection, SQLWarning>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public SQLWarning execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				return connection.getWarnings();
-			}
+			}	
 		};
 		
-		return (SQLWarning) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -273,15 +274,15 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public boolean isClosed() throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, Boolean> operation = new Operation<java.sql.Connection, Boolean>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public Boolean execute(Database database, java.sql.Connection connection) throws SQLException
 			{
-				return new Boolean(connection.isClosed());
+				return connection.isClosed();
 			}
 		};
 		
-		return ((Boolean) this.executeReadFromDriver(operation)).booleanValue();
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -289,15 +290,15 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public boolean isReadOnly() throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, Boolean> operation = new Operation<java.sql.Connection, Boolean>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public Boolean execute(Database database, java.sql.Connection connection) throws SQLException
 			{
-				return new Boolean(connection.isReadOnly());
+				return connection.isReadOnly();
 			}
 		};
 		
-		return ((Boolean) this.executeReadFromDriver(operation)).booleanValue();
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -305,15 +306,15 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public String nativeSQL(final String sql) throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, String> operation = new Operation<java.sql.Connection, String>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public String execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				return connection.nativeSQL(sql);
 			}
 		};
 		
-		return (String) this.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -321,15 +322,15 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public java.sql.CallableStatement prepareCall(final String sql) throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, java.sql.CallableStatement> operation = new Operation<java.sql.Connection, java.sql.CallableStatement>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public java.sql.CallableStatement execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				return connection.prepareCall(sql);
 			}
 		};
 		
-		return this.isReadOnly() ? (java.sql.CallableStatement) this.executeReadFromDatabase(operation) : new CallableStatement(this, operation, sql);
+		return this.isReadOnly() ? this.executeReadFromDatabase(operation) : new CallableStatement(this, operation, sql);
 	}
 
 	/**
@@ -337,15 +338,15 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public java.sql.CallableStatement prepareCall(final String sql, final int resultSetType, final int resultSetConcurrency) throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, java.sql.CallableStatement> operation = new Operation<java.sql.Connection, java.sql.CallableStatement>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public java.sql.CallableStatement execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				return connection.prepareCall(sql, resultSetType, resultSetConcurrency);
 			}
 		};
 		
-		return this.isReadOnly() ? (java.sql.CallableStatement) this.executeReadFromDatabase(operation) : new CallableStatement(this, operation, sql);
+		return this.isReadOnly() ? this.executeReadFromDatabase(operation) : new CallableStatement(this, operation, sql);
 	}
 
 	/**
@@ -353,15 +354,15 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public java.sql.CallableStatement prepareCall(final String sql, final int resultSetType, final int resultSetConcurrency, final int resultSetHoldability) throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, java.sql.CallableStatement> operation = new Operation<java.sql.Connection, java.sql.CallableStatement>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public java.sql.CallableStatement execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				return connection.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
 			}
 		};
 		
-		return this.isReadOnly() ? (java.sql.CallableStatement) this.executeReadFromDatabase(operation) : new CallableStatement(this, operation, sql);
+		return this.isReadOnly() ? this.executeReadFromDatabase(operation) : new CallableStatement(this, operation, sql);
 	}
 
 	/**
@@ -369,15 +370,15 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public java.sql.PreparedStatement prepareStatement(final String sql) throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, java.sql.PreparedStatement> operation = new Operation<java.sql.Connection, java.sql.PreparedStatement>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public java.sql.PreparedStatement execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				return connection.prepareStatement(sql);
 			}
 		};
 		
-		return this.isReadOnly() ? (java.sql.PreparedStatement) this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation, sql);
+		return this.isReadOnly() ? this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation, sql);
 	}
 
 	/**
@@ -385,15 +386,15 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public java.sql.PreparedStatement prepareStatement(final String sql, final int autoGeneratedKeys) throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, java.sql.PreparedStatement> operation = new Operation<java.sql.Connection, java.sql.PreparedStatement>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public java.sql.PreparedStatement execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				return connection.prepareStatement(sql, autoGeneratedKeys);
 			}
 		};
 		
-		return this.isReadOnly() ? (java.sql.PreparedStatement) this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation, sql);
+		return this.isReadOnly() ? this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation, sql);
 	}
 
 	/**
@@ -401,15 +402,15 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public java.sql.PreparedStatement prepareStatement(final String sql, final int resultSetType, final int resultSetConcurrency) throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, java.sql.PreparedStatement> operation = new Operation<java.sql.Connection, java.sql.PreparedStatement>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public java.sql.PreparedStatement execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				return connection.prepareStatement(sql, resultSetType, resultSetConcurrency);
 			}
 		};
 		
-		return this.isReadOnly() ? (java.sql.PreparedStatement) this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation, sql);
+		return this.isReadOnly() ? this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation, sql);
 	}
 
 	/**
@@ -417,15 +418,15 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public java.sql.PreparedStatement prepareStatement(final String sql, final int resultSetType, final int resultSetConcurrency, final int resultSetHoldability) throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, java.sql.PreparedStatement> operation = new Operation<java.sql.Connection, java.sql.PreparedStatement>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public java.sql.PreparedStatement execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				return connection.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
 			}
 		};
 		
-		return this.isReadOnly() ? (java.sql.PreparedStatement) this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation, sql);
+		return this.isReadOnly() ? this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation, sql);
 	}
 
 	/**
@@ -433,15 +434,15 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public java.sql.PreparedStatement prepareStatement(final String sql, final int[] columnIndexes) throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, java.sql.PreparedStatement> operation = new Operation<java.sql.Connection, java.sql.PreparedStatement>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public java.sql.PreparedStatement execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				return connection.prepareStatement(sql, columnIndexes);
 			}
 		};
 		
-		return this.isReadOnly() ? (java.sql.PreparedStatement) this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation, sql);
+		return this.isReadOnly() ? this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation, sql);
 	}
 
 	/**
@@ -449,15 +450,15 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public java.sql.PreparedStatement prepareStatement(final String sql, final String[] columnNames) throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, java.sql.PreparedStatement> operation = new Operation<java.sql.Connection, java.sql.PreparedStatement>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public java.sql.PreparedStatement execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				return connection.prepareStatement(sql, columnNames);
 			}
 		};
 		
-		return this.isReadOnly() ? (java.sql.PreparedStatement) this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation, sql);
+		return this.isReadOnly() ? this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation, sql);
 	}
 
 	/**
@@ -465,15 +466,13 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public void releaseSavepoint(java.sql.Savepoint savepoint) throws SQLException
 	{
-		final Savepoint savepointProxy = (Savepoint) savepoint;
+		final Savepoint proxy = (Savepoint) savepoint;
 		
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, Void> operation = new Operation<java.sql.Connection, Void>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public Void execute(Database database, java.sql.Connection connection) throws SQLException
 			{
-				java.sql.Savepoint savepoint = (java.sql.Savepoint) savepointProxy.getObject(database);
-				
-				connection.releaseSavepoint(savepoint);
+				connection.releaseSavepoint(proxy);
 				
 				return null;
 			}
@@ -487,9 +486,9 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public void rollback() throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, Void> operation = new Operation<java.sql.Connection, Void>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public Void execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				connection.rollback();
 				
@@ -507,13 +506,11 @@ public class Connection extends SQLObject implements java.sql.Connection
 	{
 		final Savepoint proxy = (Savepoint) savepoint;
 		
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, Void> operation = new Operation<java.sql.Connection, Void>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public Void execute(Database database, java.sql.Connection connection) throws SQLException
 			{
-				java.sql.Savepoint savepoint = (java.sql.Savepoint) proxy.getObject(database);
-				
-				connection.rollback(savepoint);
+				connection.rollback(proxy);
 				
 				return null;
 			}
@@ -527,9 +524,9 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public void setAutoCommit(final boolean autoCommit) throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, Void> operation = new Operation<java.sql.Connection, Void>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public Void execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				connection.setAutoCommit(autoCommit);
 				
@@ -547,9 +544,9 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public void setCatalog(final String catalog) throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, Void> operation = new Operation<java.sql.Connection, Void>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public Void execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				connection.setCatalog(catalog);
 				
@@ -567,9 +564,9 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public void setHoldability(final int holdability) throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, Void> operation = new Operation<java.sql.Connection, Void>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public Void execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				connection.setHoldability(holdability);
 				
@@ -585,9 +582,9 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public void setReadOnly(final boolean readOnly) throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, Void> operation = new Operation<java.sql.Connection, Void>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public Void execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				connection.setReadOnly(readOnly);
 				
@@ -603,9 +600,9 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public java.sql.Savepoint setSavepoint() throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, java.sql.Savepoint> operation = new Operation<java.sql.Connection, java.sql.Savepoint>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public java.sql.Savepoint execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				return connection.setSavepoint();
 			}
@@ -619,9 +616,9 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public java.sql.Savepoint setSavepoint(final String name) throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, java.sql.Savepoint> operation = new Operation<java.sql.Connection, java.sql.Savepoint>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public java.sql.Savepoint execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				return connection.setSavepoint(name);
 			}
@@ -635,9 +632,9 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public void setTransactionIsolation(final int transactionIsolation) throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, Void> operation = new Operation<java.sql.Connection, Void>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public Void execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				connection.setTransactionIsolation(transactionIsolation);
 				
@@ -655,9 +652,9 @@ public class Connection extends SQLObject implements java.sql.Connection
 	 */
 	public void setTypeMap(final Map map) throws SQLException
 	{
-		ConnectionOperation operation = new ConnectionOperation()
+		Operation<java.sql.Connection, Void> operation = new Operation<java.sql.Connection, Void>()
 		{
-			public Object execute(Database database, java.sql.Connection connection) throws SQLException
+			public Void execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				connection.setTypeMap(map);
 				

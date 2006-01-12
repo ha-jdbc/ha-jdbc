@@ -118,12 +118,10 @@ public abstract class AbstractSynchronizationStrategy implements Synchronization
 		{
 			PropertyDescriptor[] descriptors = Introspector.getBeanInfo(this.getClass()).getPropertyDescriptors();
 			
-			Map propertyDescriptorMap = new HashMap(descriptors.length);
+			Map<String, PropertyDescriptor> propertyDescriptorMap = new HashMap<String, PropertyDescriptor>();
 			
-			for (int i = 0; i < descriptors.length; ++i)
+			for (PropertyDescriptor descriptor: descriptors)
 			{
-				PropertyDescriptor descriptor = descriptors[i];
-				
 				if (descriptor.getName().equals("class")) continue;
 				
 				propertyDescriptorMap.put(descriptor.getName(), descriptor);
@@ -135,11 +133,11 @@ public abstract class AbstractSynchronizationStrategy implements Synchronization
 			{
 				String name = (String) names.next();
 				
-				PropertyDescriptor descriptor = (PropertyDescriptor) propertyDescriptorMap.get(name);
+				PropertyDescriptor descriptor = propertyDescriptorMap.get(name);
 				
 				if (descriptor == null)
 				{
-					throw new SQLException(Messages.getMessage(Messages.INVALID_PROPERTY, new Object[] { name, this }));
+					throw new SQLException(Messages.getMessage(Messages.INVALID_PROPERTY, name, this));
 				}
 				
 				PropertyEditor editor = PropertyEditorManager.findEditor(descriptor.getPropertyType());
@@ -157,10 +155,10 @@ public abstract class AbstractSynchronizationStrategy implements Synchronization
 				}
 				catch (IllegalArgumentException e)
 				{
-					throw new SQLException(Messages.getMessage(Messages.INVALID_PROPERTY_VALUE, new Object[] { textValue, name, this }));
+					throw new SQLException(Messages.getMessage(Messages.INVALID_PROPERTY_VALUE, textValue, name, this));
 				}
 				
-				descriptor.getWriteMethod().invoke(this, new Object[] { editor.getValue() });
+				descriptor.getWriteMethod().invoke(this, editor.getValue());
 			}
 		}
 	}
@@ -174,17 +172,15 @@ public abstract class AbstractSynchronizationStrategy implements Synchronization
 		
 		PropertyDescriptor[] descriptors = Introspector.getBeanInfo(this.getClass()).getPropertyDescriptors();
 		
-		for (int i = 0; i < descriptors.length; ++i)
+		for (PropertyDescriptor descriptor: descriptors)
 		{
-			PropertyDescriptor descriptor = descriptors[i];
-			
 			if (descriptor.getName().equals("class")) continue;
 			
 			PropertyEditor editor = PropertyEditorManager.findEditor(descriptor.getPropertyType());
 			
 			if (editor == null) continue;
 			
-			editor.setValue(descriptor.getReadMethod().invoke(this, null));
+			editor.setValue(descriptor.getReadMethod().invoke(this));
 			
 			properties.setProperty(descriptor.getName(), editor.getAsText());
 		}

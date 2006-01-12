@@ -22,6 +22,8 @@ package net.sf.hajdbc.sql;
 
 import java.sql.SQLException;
 
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.Operation;
 import net.sf.hajdbc.SQLObject;
 
 /**
@@ -29,7 +31,7 @@ import net.sf.hajdbc.SQLObject;
  * @version $Revision$
  * @since   1.0
  */
-public class Savepoint extends SQLObject implements java.sql.Savepoint
+public class Savepoint extends SQLObject<java.sql.Savepoint, java.sql.Connection> implements java.sql.Savepoint
 {
 	/**
 	 * Constructs a new SavepointProxy.
@@ -37,7 +39,7 @@ public class Savepoint extends SQLObject implements java.sql.Savepoint
 	 * @param operation
 	 * @throws SQLException
 	 */
-	public Savepoint(Connection connection, ConnectionOperation operation) throws SQLException
+	public Savepoint(Connection<?> connection, Operation<java.sql.Connection, java.sql.Savepoint> operation) throws SQLException
 	{
 		super(connection, operation);
 	}
@@ -47,15 +49,15 @@ public class Savepoint extends SQLObject implements java.sql.Savepoint
 	 */
 	public int getSavepointId() throws SQLException
 	{
-		SavepointOperation operation = new SavepointOperation()
+		Operation<java.sql.Savepoint, Integer> operation = new Operation<java.sql.Savepoint, Integer>()
 		{
-			public Object execute(java.sql.Savepoint savepoint) throws SQLException
+			public Integer execute(Database database, java.sql.Savepoint savepoint) throws SQLException
 			{
-				return new Integer(savepoint.getSavepointId());
+				return savepoint.getSavepointId();
 			}
 		};
 		
-		return ((Integer) super.executeReadFromDriver(operation)).intValue();
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -63,14 +65,14 @@ public class Savepoint extends SQLObject implements java.sql.Savepoint
 	 */
 	public String getSavepointName() throws SQLException
 	{
-		SavepointOperation operation = new SavepointOperation()
+		Operation<java.sql.Savepoint, String> operation = new Operation<java.sql.Savepoint, String>()
 		{
-			public Object execute(java.sql.Savepoint savepoint) throws SQLException
+			public String execute(Database database, java.sql.Savepoint savepoint) throws SQLException
 			{
 				return savepoint.getSavepointName();
 			}
 		};
 		
-		return (String) super.executeReadFromDriver(operation);
+		return this.executeReadFromDriver(operation);
 	}
 }

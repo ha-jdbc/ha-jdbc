@@ -20,7 +20,7 @@
  */
 package net.sf.hajdbc.util.concurrent;
 
-import edu.emory.mathcs.backport.java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * ThreadFactory implementation that creates daemon threads.
@@ -31,7 +31,7 @@ import edu.emory.mathcs.backport.java.util.concurrent.ThreadFactory;
 public class DaemonThreadFactory implements ThreadFactory
 {
 	/**
-	 * @see edu.emory.mathcs.backport.java.util.concurrent.ThreadFactory#newThread(java.lang.Runnable)
+	 * @see java.util.concurrent.ThreadFactory#newThread(java.lang.Runnable)
 	 */
 	public Thread newThread(Runnable runnable)
 	{

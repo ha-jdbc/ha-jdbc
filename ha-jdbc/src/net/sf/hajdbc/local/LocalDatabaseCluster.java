@@ -23,7 +23,6 @@ package net.sf.hajdbc.local;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,10 +44,10 @@ import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import edu.emory.mathcs.backport.java.util.concurrent.ExecutorService;
-import edu.emory.mathcs.backport.java.util.concurrent.Executors;
-import edu.emory.mathcs.backport.java.util.concurrent.ThreadPoolExecutor;
-import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author  Paul Ferraro
@@ -64,10 +63,10 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	
 	private String id;
 	private String validateSQL;
-	private Map databaseMap = new HashMap();
+	private Map<String, Database> databaseMap = new HashMap<String, Database>();
 	private Balancer balancer;
 	private SynchronizationStrategy defaultSynchronizationStrategy;
-	private Map connectionFactoryMap = new HashMap();
+	private Map<Database, Object> connectionFactoryMap = new HashMap<Database, Object>();
 	private ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool(new DaemonThreadFactory());
 	
 	/**
@@ -94,12 +93,13 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 			String[] databases = state.split(DELIMITER);
 			
 			// Validate persisted cluster state
-			for (int i = 0; i < databases.length; ++i)
+			for (String id: databases)
 			{
-				if (!this.databaseMap.containsKey(databases[i]))
+				if (!this.databaseMap.containsKey(id))
 				{
 					// Persisted cluster state is invalid!
-					preferences.remove(this.id);
+					preferences.remove(this.id);					
+					preferences.flush();
 					
 					return null;
 				}
@@ -116,7 +116,7 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getConnectionFactoryMap()
 	 */
-	public Map getConnectionFactoryMap()
+	public Map<Database, ?> getConnectionFactoryMap()
 	{
 		return this.connectionFactoryMap;
 	}
@@ -200,20 +200,21 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	
 	private void storeState()
 	{
-		StringBuffer buffer = new StringBuffer();
-		Database[] databases = this.balancer.toArray();
+		StringBuilder builder = new StringBuilder();
 		
-		for (int i = 0; i < databases.length; ++i)
+		Iterator<Database> databases = this.balancer.getDatabases().iterator();
+		
+		while (databases.hasNext())
 		{
-			if (i > 0)
-			{
-				buffer.append(DELIMITER);
-			}
+			builder.append(databases.next().getId());
 			
-			buffer.append(databases[i].getId());
+			if (databases.hasNext())
+			{
+				builder.append(DELIMITER);
+			}
 		}
 		
-		preferences.put(this.id, buffer.toString());
+		preferences.put(this.id, builder.toString());
 		
 		try
 		{
@@ -228,33 +229,29 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#getActiveDatabases()
 	 */
-	public Collection getActiveDatabases()
+	public Collection<String> getActiveDatabases()
 	{
-		return this.getDatabaseIds(Arrays.asList(this.balancer.toArray()));
+		return this.getDatabaseIds(this.balancer.getDatabases());
 	}
 
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#getInactiveDatabases()
 	 */
-	public Collection getInactiveDatabases()
+	public Collection<String> getInactiveDatabases()
 	{
-		Set databaseSet = new HashSet(this.databaseMap.values());
+		Set<Database> databaseSet = new HashSet<Database>(this.databaseMap.values());
 
-		databaseSet.removeAll(Arrays.asList(this.balancer.toArray()));
+		databaseSet.removeAll(this.balancer.getDatabases());
 
 		return this.getDatabaseIds(databaseSet);
 	}
 	
-	private List getDatabaseIds(Collection databaseCollection)
+	private List<String> getDatabaseIds(Collection<Database> databases)
 	{
-		List databaseList = new ArrayList(databaseCollection.size());
+		List<String> databaseList = new ArrayList<String>(databases.size());
 		
-		Iterator databases = databaseCollection.iterator();
-		
-		while (databases.hasNext())
+		for (Database database: databases)
 		{
-			Database database = (Database) databases.next();
-			
 			databaseList.add(database.getId());
 		}
 		
@@ -266,11 +263,11 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	 */
 	public Database getDatabase(String databaseId) throws java.sql.SQLException
 	{
-		Database database = (Database) this.databaseMap.get(databaseId);
+		Database database = this.databaseMap.get(databaseId);
 		
 		if (database == null)
 		{
-			throw new SQLException(Messages.getMessage(Messages.INVALID_DATABASE, new Object[] { databaseId, this }));
+			throw new SQLException(Messages.getMessage(Messages.INVALID_DATABASE, databaseId, this));
 		}
 		
 		return database;
@@ -301,12 +298,8 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	{
 		try
 		{
-			Iterator databases = this.databaseMap.values().iterator();
-			
-			while (databases.hasNext())
+			for (Database database: this.databaseMap.values())
 			{
-				Database database = (Database) databases.next();
-	
 				this.connectionFactoryMap.put(database, database.createConnectionFactory());
 			}
 		}

@@ -73,34 +73,13 @@ public class Messages
 	private static ResourceBundle resource = ResourceBundle.getBundle(Messages.class.getName());
 	
 	/**
-	 * Returns the localized message using the specified resource key.
+	 * Returns the localized message using the specified resource key and potential arguments.
 	 * @param key a resource key
+	 * @param args a variable number of arguments
 	 * @return a localized message
 	 */
-	public static String getMessage(String key)
+	public static String getMessage(String key, Object... args)
 	{
-		return resource.getString(key);
-	}
-	
-	/**
-	 * Convenience method for single argument messages.
-	 * @param key a resource key
-	 * @param arg a message argument
-	 * @return a localized message
-	 */
-	public static String getMessage(String key, Object arg)
-	{
-		return getMessage(key, new Object[] { arg });
-	}
-	
-	/**
-	 * Returns the localized message using the specified resource key and arguments.
-	 * @param key a resource key
-	 * @param args an array of arguments
-	 * @return a formatted localized message
-	 */
-	public static String getMessage(String key, Object[] args)
-	{
-		return MessageFormat.format(getMessage(key), args);
+		return MessageFormat.format(resource.getString(key), args);
 	}
 }

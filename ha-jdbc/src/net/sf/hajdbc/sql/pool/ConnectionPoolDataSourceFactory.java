@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc.sql.pool;
 
+import net.sf.hajdbc.sql.AbstractDataSource;
 import net.sf.hajdbc.sql.AbstractDataSourceFactory;
 
 /**
@@ -27,12 +28,9 @@ import net.sf.hajdbc.sql.AbstractDataSourceFactory;
  * @version $Revision$
  * @since   1.0
  */
-public class ConnectionPoolDataSourceFactory extends AbstractDataSourceFactory
+public class ConnectionPoolDataSourceFactory extends AbstractDataSourceFactory<javax.sql.ConnectionPoolDataSource>
 {
-	/**
-	 * @see net.sf.hajdbc.sql.AbstractDataSourceFactory#getObjectClass()
-	 */
-	protected Class getObjectClass()
+	protected Class< ? extends AbstractDataSource> getObjectClass()
 	{
 		return ConnectionPoolDataSource.class;
 	}

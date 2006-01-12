@@ -27,10 +27,11 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.sf.hajdbc.ConnectionFactory;
+import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.Operation;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -83,15 +84,15 @@ public final class Driver implements java.sql.Driver
 			return null;
 		}
 		
-		DriverOperation operation = new DriverOperation()
+		Operation<java.sql.Driver, java.sql.Connection> operation = new Operation<java.sql.Driver, java.sql.Connection>()
 		{
-			public Object execute(DriverDatabase database, java.sql.Driver driver) throws SQLException
+			public java.sql.Connection execute(Database database, java.sql.Driver driver) throws SQLException
 			{
-				return driver.connect(database.getUrl(), properties);
-			}
+				return driver.connect(((DriverDatabase) database).getUrl(), properties);
+			}	
 		};
 		
-		return new Connection(new ConnectionFactory(databaseCluster), operation, new FileSupportImpl());
+		return new Connection<java.sql.Driver>(new ConnectionFactory(databaseCluster), operation, new FileSupportImpl());
 	}
 	
 	/**
@@ -122,12 +123,12 @@ public final class Driver implements java.sql.Driver
 			return null;
 		}
 		
-		DriverOperation operation = new DriverOperation()
+		Operation<java.sql.Driver, DriverPropertyInfo[]> operation = new Operation<java.sql.Driver, DriverPropertyInfo[]>()
 		{
-			public Object execute(DriverDatabase database, java.sql.Driver driver) throws SQLException
+			public DriverPropertyInfo[] execute(Database database, java.sql.Driver driver) throws SQLException
 			{
-				return driver.getPropertyInfo(database.getUrl(), properties);
-			}
+				return driver.getPropertyInfo(((DriverDatabase) database).getUrl(), properties);
+			}	
 		};
 		
 		return (DriverPropertyInfo[]) new ConnectionFactory(databaseCluster).executeReadFromDriver(operation);

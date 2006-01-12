@@ -26,24 +26,21 @@ import java.sql.SQLException;
 import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 
-import net.sf.hajdbc.sql.pool.ConnectionPoolDataSourceDatabase;
+import net.sf.hajdbc.sql.AbstractDataSourceDatabase;
 
 /**
  * @author  Paul Ferraro
  * @version $Revision$
  * @since   1.0
  */
-public class XADataSourceDatabase extends ConnectionPoolDataSourceDatabase
+public class XADataSourceDatabase extends AbstractDataSourceDatabase<XADataSource>
 {
 	/**
-	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
+	 * @see net.sf.hajdbc.Database#connect(T)
 	 */
-	public Connection connect(Object connectionFactory) throws SQLException
+	public Connection connect(XADataSource dataSource) throws SQLException
 	{
-		XADataSource dataSource = (XADataSource) connectionFactory;
-		XAConnection connection = this.getXAConnection(dataSource);
-		
-		return this.getConnection(connection);
+		return this.getXAConnection(dataSource).getConnection();
 	}
 	
 	/**
@@ -58,9 +55,9 @@ public class XADataSourceDatabase extends ConnectionPoolDataSourceDatabase
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.sql.DataSourceDatabase#getDataSourceClass()
+	 * @see net.sf.hajdbc.sql.AbstractDataSourceDatabase#getDataSourceClass()
 	 */
-	protected Class getDataSourceClass()
+	protected Class<XADataSource> getDataSourceClass()
 	{
 		return XADataSource.class;
 	}

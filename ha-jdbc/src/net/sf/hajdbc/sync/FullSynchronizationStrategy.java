@@ -27,7 +27,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -37,11 +36,11 @@ import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import edu.emory.mathcs.backport.java.util.concurrent.Callable;
-import edu.emory.mathcs.backport.java.util.concurrent.ExecutionException;
-import edu.emory.mathcs.backport.java.util.concurrent.ExecutorService;
-import edu.emory.mathcs.backport.java.util.concurrent.Executors;
-import edu.emory.mathcs.backport.java.util.concurrent.Future;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Database-independent synchronization strategy that only updates differences between two databases.
@@ -77,7 +76,7 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, java.util.Map)
 	 */
-	public void synchronize(Connection inactiveConnection, Connection activeConnection, Map schemaMap) throws SQLException
+	public void synchronize(Connection inactiveConnection, Connection activeConnection, Map<String, List<String>> schemaMap) throws SQLException
 	{
 		inactiveConnection.setAutoCommit(true);
 		String quote = inactiveConnection.getMetaData().getIdentifierQuoteString();
@@ -89,22 +88,15 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 		
 		try
 		{
-			Iterator schemaMapEntries = schemaMap.entrySet().iterator();
-
-			while (schemaMapEntries.hasNext())
+			for (Map.Entry<String, List<String>> schemaMapEntry: schemaMap.entrySet())
 			{
-				Map.Entry schemaMapEntry = (Map.Entry) schemaMapEntries.next();
-				String schema = (String) schemaMapEntry.getKey();
-				List tableList = (List) schemaMapEntry.getValue();
+				String schema = schemaMapEntry.getKey();
+				List<String> tableList = schemaMapEntry.getValue();
 				
 				String tablePrefix = (schema != null) ? quote + schema + quote + "." : "";
 				
-				Iterator tables = tableList.iterator();
-				
-				while (tables.hasNext())
-				{	
-					String table = (String) tables.next();
-					
+				for (String table: tableList)
+				{
 					String tableName = tablePrefix + quote + table + quote;
 				
 					final String selectSQL = "SELECT * FROM " + tableName;
@@ -112,17 +104,17 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 					final Statement selectStatement = activeConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 					selectStatement.setFetchSize(this.fetchSize);
 					
-					Callable callable = new Callable()
+					Callable<ResultSet> callable = new Callable<ResultSet>()
 					{
-						public Object call() throws SQLException
+						public ResultSet call() throws SQLException
 						{
 							return selectStatement.executeQuery(selectSQL);
 						}
 					};
 		
-					Future future = this.executor.submit(callable);
+					Future<ResultSet> future = this.executor.submit(callable);
 					
-					String deleteSQL = MessageFormat.format(this.truncateTableSQL, new Object[] { tableName });
+					String deleteSQL = MessageFormat.format(this.truncateTableSQL, tableName);
 		
 					if (log.isDebugEnabled())
 					{
@@ -133,13 +125,13 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 		
 					int deletedRows = deleteStatement.executeUpdate(deleteSQL);
 					
-					log.info(Messages.getMessage(Messages.DELETE_COUNT, new Object[] { new Integer(deletedRows), tableName }));
+					log.info(Messages.getMessage(Messages.DELETE_COUNT, deletedRows, tableName));
 					
 					deleteStatement.close();
 					
-					ResultSet resultSet = (ResultSet) future.get();
+					ResultSet resultSet = future.get();
 					
-					StringBuffer insertSQL = new StringBuffer("INSERT INTO ").append(tableName).append(" (");
+					StringBuilder insertSQL = new StringBuilder("INSERT INTO ").append(tableName).append(" (");
 		
 					ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
 					
@@ -206,7 +198,7 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 						insertStatement.executeBatch();
 					}
 		
-					log.info(Messages.getMessage(Messages.INSERT_COUNT, new Object[] { new Integer(statementCount), tableName }));
+					log.info(Messages.getMessage(Messages.INSERT_COUNT, statementCount, tableName));
 					
 					insertStatement.close();
 					selectStatement.close();

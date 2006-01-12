@@ -27,9 +27,11 @@ import java.sql.SQLException;
  * 
  * @author  Paul Ferraro
  * @version $Revision$
+ * @param <S>
+ * @param <T> 
  * @since   1.0
  */
-public interface Operation
+public interface Operation<T, S>
 {
 	/**
 	 * Executes this operation of the specified SQL object for the specified database.
@@ -38,5 +40,5 @@ public interface Operation
 	 * @return the result of this operation
 	 * @throws SQLException if execution fails
 	 */
-	public Object execute(Database database, Object sqlObject) throws SQLException;
+	public S execute(Database database, T sqlObject) throws SQLException;
 }
