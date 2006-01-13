@@ -55,7 +55,7 @@ public interface Balancer
 	public Database next();
 
 	/**
-	 * Returns the databases known to this balancer
+	 * Returns an unmodifiable collection of databases known to this balancer
 	 * @return a collection of database descriptors
 	 */
 	public Collection<Database> getDatabases();
