@@ -40,9 +40,9 @@ public class RandomBalancer extends AbstractBalancer
 	private List<Database> databaseList = new ArrayList<Database>();
 	
 	/**
-	 * @see net.sf.hajdbc.Balancer#getDatabases()
+	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
 	 */
-	public Collection<Database> getDatabases()
+	protected Collection<Database> getDatabases()
 	{
 		return this.databaseSet;
 	}

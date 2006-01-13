@@ -46,9 +46,9 @@ public class SimpleBalancer extends AbstractBalancer
 	private List databaseList = new LinkedList();
 
 	/**
-	 * @see net.sf.hajdbc.Balancer#getDatabases()
+	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
 	 */
-	public Collection<Database> getDatabases()
+	protected Collection<Database> getDatabases()
 	{
 		return this.databaseList;
 	}

@@ -64,9 +64,9 @@ public class LoadBalancer extends AbstractBalancer
 	private Map<Database, Integer> databaseMap = new HashMap<Database, Integer>();
 	
 	/**
-	 * @see net.sf.hajdbc.Balancer#getDatabases()
+	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
 	 */
-	public Collection<Database> getDatabases()
+	protected Collection<Database> getDatabases()
 	{
 		return this.databaseMap.keySet();
 	}

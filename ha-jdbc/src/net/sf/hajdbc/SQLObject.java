@@ -23,6 +23,7 @@ package net.sf.hajdbc;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -221,7 +222,7 @@ public class SQLObject<E, P>
 	public final <T> Map<Database, T> executeWriteToDatabase(final Operation<E, T> operation) throws java.sql.SQLException
 	{
 		ExecutorService executor = this.databaseCluster.getExecutor();
-		Collection<Database> databases = this.getDatabases();
+		List<Database> databases = this.getDatabaseList();
 		Map<Database, Future<T>> futureMap = new HashMap<Database, Future<T>>();
 		
 		for (final Database database: databases)
@@ -302,7 +303,7 @@ public class SQLObject<E, P>
 	 */
 	public final <T> Map<Database, T> executeWriteToDriver(Operation<E, T> operation) throws java.sql.SQLException
 	{
-		Collection<Database> databases = this.getDatabases();
+		List<Database> databases = this.getDatabaseList();
 		
 		Map<Database, T> returnValueMap = new HashMap<Database, T>();
 
@@ -349,7 +350,7 @@ public class SQLObject<E, P>
 
 	private void deactivateNewDatabases(Collection<Database> databases)
 	{
-		Set<Database> databaseSet = new HashSet<Database>(this.databaseCluster.getBalancer().getDatabases());
+		Set<Database> databaseSet = new HashSet<Database>(this.databaseCluster.getBalancer().list());
 		
 		for (Database database: databases)
 		{
@@ -365,15 +366,15 @@ public class SQLObject<E, P>
 		}
 	}
 	
-	private Collection<Database> getDatabases() throws SQLException
+	private List<Database> getDatabaseList() throws SQLException
 	{
-		Collection<Database> databases = this.databaseCluster.getBalancer().getDatabases();
+		List<Database> databaseList = this.databaseCluster.getBalancer().list();
 		
-		if (databases.isEmpty())
+		if (databaseList.isEmpty())
 		{
 			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this.databaseCluster));
 		}
 		
-		return databases;
+		return databaseList;
 	}
 }

@@ -158,7 +158,7 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 			return false;
 		}
 		
-		Collection<Database> databases = this.getBalancer().getDatabases();
+		Collection<Database> databases = this.getBalancer().list();
 		
 		if (databases.isEmpty())
 		{

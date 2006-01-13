@@ -202,7 +202,7 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		Iterator<Database> databases = this.balancer.getDatabases().iterator();
+		Iterator<Database> databases = this.balancer.list().iterator();
 		
 		while (databases.hasNext())
 		{
@@ -231,7 +231,7 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	 */
 	public Collection<String> getActiveDatabases()
 	{
-		return this.getDatabaseIds(this.balancer.getDatabases());
+		return this.getDatabaseIds(this.balancer.list());
 	}
 
 	/**
@@ -241,7 +241,7 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	{
 		Set<Database> databaseSet = new HashSet<Database>(this.databaseMap.values());
 
-		databaseSet.removeAll(this.balancer.getDatabases());
+		databaseSet.removeAll(this.balancer.list());
 
 		return this.getDatabaseIds(databaseSet);
 	}

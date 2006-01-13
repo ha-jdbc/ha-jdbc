@@ -37,11 +37,11 @@ public class RoundRobinBalancer extends AbstractBalancer
 {
 	private Set<Database> databaseSet = new HashSet();
 	private List<Database> databaseList = new ArrayList();
-	
+
 	/**
-	 * @see net.sf.hajdbc.Balancer#getDatabases()
+	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
 	 */
-	public Collection<Database> getDatabases()
+	protected Collection<Database> getDatabases()
 	{
 		return this.databaseSet;
 	}
