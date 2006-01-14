@@ -24,7 +24,6 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -158,9 +157,9 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 			return false;
 		}
 		
-		Collection<Database> databases = this.getBalancer().list();
+		List<Database> databaseList = this.getBalancer().list();
 		
-		if (databases.isEmpty())
+		if (databaseList.isEmpty())
 		{
 			return this.activate(inactiveDatabase);
 		}
@@ -198,7 +197,7 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 			resultSet.close();
 
 			// Open connections to all active databases
-			for (Database database: databases)
+			for (Database database: databaseList)
 			{
 				connectionMap.put(database, database.connect(this.getConnectionFactoryMap().get(database)));
 			}
