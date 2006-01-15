@@ -28,8 +28,9 @@ import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * @author  Paul Ferraro
@@ -43,7 +44,7 @@ public class UniqueKey extends Key
 	/** SQL-92 compatible drop foreign key statement pattern */
 	public static final String DEFAULT_DROP_SQL = "ALTER TABLE {1} DROP CONSTRAINT {0}";
 	
-	private Map<Short, String> columnMap = new TreeMap<Short, String>();
+	private List<String> columnList = new LinkedList<String>();
 	private String quote;
 	
 	/**
@@ -61,19 +62,18 @@ public class UniqueKey extends Key
 	}
 	
 	/**
-	 * @param position
 	 * @param column
 	 */
-	public void addColumn(short position, String column)
+	public void addColumn(String column)
 	{
-		this.columnMap.put(Short.valueOf(position), this.quote + column + this.quote);
+		this.columnList.add(this.quote + column + this.quote);
 	}
 	
 	protected String formatSQL(String pattern)
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		Iterator<String> columns = this.columnMap.values().iterator();
+		Iterator<String> columns = this.columnList.iterator();
 		
 		while (columns.hasNext())
 		{
@@ -120,10 +120,9 @@ public class UniqueKey extends Key
 				keyMap.put(name, key);
 			}
 			
-			short position = resultSet.getShort("ORDINAL_POSITION");
 			String column = resultSet.getString("COLUMN_NAME");
 			
-			key.addColumn(position, column);
+			key.addColumn(column);
 		}
 		
 		resultSet.close();
