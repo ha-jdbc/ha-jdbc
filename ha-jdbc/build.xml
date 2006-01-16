@@ -4,8 +4,9 @@
 	<property file="${basedir}/build.properties"></property>
 
 	<property name="junit.jar" value="junit-3.8.1.jar"></property>
-		
+	
 	<property name="build.dir" location="${basedir}/build"></property>
+	<property name="build-1.4.dir" location="${basedir}/build-1.4"></property>
 	<property name="src.dir" location="${basedir}/src"></property>
 	<property name="test.dir" location="${basedir}/test"></property>
 	<property name="test.output.dir" location="${basedir}/test-output"></property>
@@ -15,17 +16,20 @@
 	<property name="lib.dir" location="${basedir}/lib"></property>
 	<property name="lib.compile.dir" location="${lib.dir}/compile"></property>
 	<property name="lib.runtime.dir" location="${lib.dir}/runtime"></property>
+	<property name="lib.compile-1.4.dir" location="${lib.dir}/compile-1.4"></property>
+	<property name="lib.runtime-1.4.dir" location="${lib.dir}/runtime-1.4"></property>
 	<property name="lib.test.dir" location="${lib.dir}/test"></property>
 	<property name="conf.dir" location="${basedir}/conf"></property>
 	<property name="conf.jibx.dir" location="${conf.dir}/jibx"></property>
 	<property name="dist.name" value="${ant.project.name}"></property>
 	<property name="dist.version.name" value="${dist.name}-${dist.version}"></property>
 	<property name="jar.file" location="${basedir}/${dist.version.name}.jar"></property>
+	<property name="jar-1.4.file" location="${basedir}/${dist.version.name}-jdk1.4.jar"></property>
 	<property name="dist.bin.file" location="${basedir}/${dist.version.name}-bin.tar.gz"></property>
 	<property name="dist.src.file" location="${basedir}/${dist.version.name}-src.tar.gz"></property>
 	
 	<available property="junit-available" file="${ant.home}/lib/${junit.jar}"/>
-	
+
 	<path id="src.classpath">
 		<dirset dir="${build.dir}"></dirset>
 		<fileset dir="${lib.dir}" includes="*.jar"></fileset>
@@ -52,6 +56,18 @@
 		</classpath>
 	</taskdef>
 	
+	<taskdef name="retrotranslate" classname="net.sf.retrotranslator.transformer.RetrotranslatorTask">
+		<classpath>
+			<fileset dir="${lib.compile-1.4.dir}">
+				<include name="retrotranslator-transformer-*.jar"/>
+			</fileset>
+			<fileset dir="${lib.runtime-1.4.dir}">
+				<include name="backport-util-concurrent-*.jar"/>
+				<include name="retrotranslator-runtime-*.jar"/>
+			</fileset>
+		</classpath>
+	</taskdef>
+	
 	<target name="clean">
 		<delete quiet="true">
 			<fileset dir="${basedir}" includes="${dist.name}-**"></fileset>
@@ -63,15 +79,16 @@
 
 	<target name="init">
 		<mkdir dir="${build.dir}"/>
+		<mkdir dir="${build-1.4.dir}"/>
 	</target>
 	
     <target name="compile" depends="init">
-        <javac srcdir="${src.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="src.classpath" source="1.4" target="1.4"></javac>
+        <javac srcdir="${src.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="src.classpath" source="1.5" target="1.5"></javac>
 		<copy todir="${build.dir}">
 			<fileset dir="${src.dir}" excludes="**/*.java"></fileset>
 		</copy>
     </target>
-
+	
     <target name="bind" depends="compile">
 		<bind verbose="false" load="true">
 			<bindingfileset dir="${conf.jibx.dir}" includes="*.xml"/>
@@ -85,6 +102,16 @@
 		</jar>
     </target>
 
+	<target name="compile-1.4" depends="bind">
+		<retrotranslate srcdir="${build.dir}" destdir="${build-1.4.dir}" classpathref="src.classpath"></retrotranslate>
+	</target>
+
+	<target name="jar-1.4" depends="compile-1.4">
+        <jar jarfile="${jar-1.4.file}" index="true">
+			<fileset dir="${build-1.4.dir}"></fileset>
+		</jar>
+	</target>
+	
 	<target name="dist" depends="jar, site">
 		<tar tarfile="${dist.bin.file}" compression="gzip">
 			<tarfileset dir="${basedir}" prefix="${dist.version.name}">
@@ -130,7 +157,7 @@
 	</target>
 
 	<target name="compile-tests" depends="bind">
-		<javac srcdir="${test.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="test.classpath" source="1.4" target="1.4"></javac>
+		<javac srcdir="${test.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="test.classpath" source="1.5" target="1.5"></javac>
 	</target>
 
 	<target name="install-junit" unless="junit-available">
