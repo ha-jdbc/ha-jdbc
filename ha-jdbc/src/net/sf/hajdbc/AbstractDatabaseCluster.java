@@ -24,7 +24,9 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -164,18 +166,26 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 			return this.activate(inactiveDatabase);
 		}
 		
+		Database activeDatabase = databaseList.get(0);
+		
 		Connection inactiveConnection = null;
-		Map<Database, Connection> connectionMap = new HashMap<Database, Connection>();
+		Connection activeConnection = null;
+
+		List<Connection> connectionList = new ArrayList<Connection>(databaseList.size());
 		
 		try
 		{
-			inactiveConnection = inactiveDatabase.connect(this.getConnectionFactoryMap().get(inactiveDatabase));
+			Map<Database, ?> connectionFactoryMap = this.getConnectionFactoryMap();
+			
+			inactiveConnection = inactiveDatabase.connect(connectionFactoryMap.get(inactiveDatabase));
 			
 			Map<String, List<String>> schemaMap = new HashMap<String, List<String>>();
 			
-			DatabaseMetaData databaseMetaData = inactiveConnection.getMetaData();
-			String quote = databaseMetaData.getIdentifierQuoteString();
-			ResultSet resultSet = databaseMetaData.getTables(null, null, "%", new String[] { "TABLE" });
+			DatabaseMetaData metaData = inactiveConnection.getMetaData();
+
+			String quote = metaData.getIdentifierQuoteString();
+			
+			ResultSet resultSet = metaData.getTables(null, null, "%", new String[] { "TABLE" });
 			
 			while (resultSet.next())
 			{
@@ -196,59 +206,99 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 			
 			resultSet.close();
 
-			// Open connections to all active databases
-			for (Database database: databaseList)
-			{
-				connectionMap.put(database, database.connect(this.getConnectionFactoryMap().get(database)));
-			}
+			activeConnection = activeDatabase.connect(connectionFactoryMap.get(activeDatabase));
 			
-			// Lock all tables on all active databases
-			for (Connection connection: connectionMap.values())
+			if (strategy.requiresTableLocking())
 			{
-				connection.setAutoCommit(false);
-				connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-				
-				Statement statement = connection.createStatement();
-				
-				for (Map.Entry<String, List<String>> schemaMapEntry: schemaMap.entrySet())
+				// Lock all tables on all active databases
+				for (Database database: databaseList)
 				{
-					String schema = schemaMapEntry.getKey();
-					List<String> tableList = schemaMapEntry.getValue();
+					Connection connection = database.equals(activeDatabase) ? activeConnection : database.connect(connectionFactoryMap.get(database));
 					
-					String tablePrefix = (schema != null) ? quote + schema + quote + "." : "";
+					connectionList.add(connection);
 					
-					for (String table: tableList)
+					connection.setAutoCommit(false);
+					connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+					
+					Statement statement = connection.createStatement();
+					
+					for (Map.Entry<String, List<String>> schemaMapEntry: schemaMap.entrySet())
 					{
-						statement.execute("SELECT count(*) FROM " + tablePrefix + quote + table + quote);
+						String schema = schemaMapEntry.getKey();
+						List<String> tableList = schemaMapEntry.getValue();
+						
+						// Lock tables by executing innocuous update statement within open transaction
+						for (String table: tableList)
+						{
+							StringBuilder builder = new StringBuilder("UPDATE ");
+							
+							if (schema != null)
+							{
+								builder.append(quote).append(schema).append(quote).append('.');
+							}
+							
+							builder.append(quote).append(table).append(quote).append(" SET ");
+							
+							List<String> columnList = new LinkedList<String>();
+							
+							resultSet = metaData.getColumns(null, schema, table, "%");
+							
+							while (resultSet.next())
+							{
+								columnList.add(resultSet.getString("COLUMN_NAME"));
+							}
+							
+							resultSet.close();
+
+							Iterator<String> columns = columnList.iterator();
+							
+							while (columns.hasNext())
+							{
+								String column = columns.next();
+								
+								builder.append(quote).append(column).append(quote).append(" = ").append(quote).append(column).append(quote);
+								
+								if (columns.hasNext())
+								{
+									builder.append(", ");
+								}
+							}
+
+							statement.executeUpdate(builder.toString());
+						}
 					}
+					
+					statement.close();
 				}
-				
-				statement.close();
 			}
 			
 			log.info(Messages.getMessage(Messages.DATABASE_SYNC_START, inactiveDatabase));
 
-			strategy.synchronize(inactiveConnection, connectionMap.values().iterator().next(), schemaMap);
+			strategy.synchronize(inactiveConnection, activeConnection, schemaMap);
 			
 			log.info(Messages.getMessage(Messages.DATABASE_SYNC_END, inactiveDatabase));
 	
 			this.activate(inactiveDatabase);
 			
-			// Release table locks
-			for (Connection connection: connectionMap.values())
+			if (strategy.requiresTableLocking())
 			{
-				connection.rollback();
+				// Release table locks
+				for (Connection connection: connectionList)
+				{
+					connection.rollback();
+				}
 			}
 			
 			return true;
 		}
 		finally
 		{
+			this.close(activeConnection, activeDatabase);
 			this.close(inactiveConnection, inactiveDatabase);
 			
-			for (Map.Entry<Database, Connection> connectionMapEntry: connectionMap.entrySet())
+			for (int i = 0; i < databaseList.size(); ++i)
 			{
-				this.close(connectionMapEntry.getValue(), connectionMapEntry.getKey());
+				this.close(connectionList.get(i), databaseList.get(i));
 			}
 		}
 	}
@@ -259,7 +309,10 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 		{
 			try
 			{
-				connection.close();
+				if (!connection.isClosed())
+				{
+					connection.close();
+				}
 			}
 			catch (java.sql.SQLException e)
 			{
