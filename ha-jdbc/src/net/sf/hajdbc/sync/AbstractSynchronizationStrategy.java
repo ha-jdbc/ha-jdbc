@@ -205,4 +205,12 @@ public abstract class AbstractSynchronizationStrategy implements Synchronization
 		
 		return this.id.equals(strategy.getId());
 	}
+
+	/**
+	 * @see net.sf.hajdbc.SynchronizationStrategy#requiresTableLocking()
+	 */
+	public boolean requiresTableLocking()
+	{
+		return true;
+	}
 }

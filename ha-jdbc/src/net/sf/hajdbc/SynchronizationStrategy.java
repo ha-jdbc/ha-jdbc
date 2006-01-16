@@ -67,4 +67,10 @@ public interface SynchronizationStrategy
 	 * @throws java.sql.SQLException if synchronization fails
 	 */
 	public void synchronize(Connection inactiveConnection, Connection activeConnection, Map<String, List<String>> schemaMap) throws java.sql.SQLException;
+	
+	/**
+	 * Indicates whether this strategy requires table locking on active databases.
+	 * @return <code>true</code>, if table locking is required, <code>false</code> otherwise.
+	 */
+	public boolean requiresTableLocking();
 }

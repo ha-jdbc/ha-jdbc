@@ -76,4 +76,12 @@ public class PassiveSynchronizationStrategy implements SynchronizationStrategy
 	{
 		// Do nothing
 	}
+
+	/**
+	 * @see net.sf.hajdbc.SynchronizationStrategy#requiresTableLocking()
+	 */
+	public boolean requiresTableLocking()
+	{
+		return false;
+	}
 }
