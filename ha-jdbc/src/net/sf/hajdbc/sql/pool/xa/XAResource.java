@@ -123,7 +123,7 @@ public class XAResource extends SQLObject<javax.transaction.xa.XAResource, javax
 						return resource.isSameRM(proxy.getObject(database));
 					}
 
-					return Boolean.valueOf(resource.isSameRM(xaResource));
+					return resource.isSameRM(xaResource);
 				}
 				catch (javax.transaction.xa.XAException e)
 				{
