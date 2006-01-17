@@ -123,7 +123,7 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 						String name = primaryKeyResultSet.getString("COLUMN_NAME");
 						short position = primaryKeyResultSet.getShort("KEY_SEQ");
 		
-						primaryKeyColumnMap.put(Short.valueOf(position), name);
+						primaryKeyColumnMap.put(position, name);
 						
 						primaryKeyName = primaryKeyResultSet.getString("PK_NAME");
 					}
