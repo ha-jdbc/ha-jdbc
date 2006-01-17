@@ -189,7 +189,7 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 					{
 						String primaryKeyColumn = primaryKeyColumns.next();
 						
-						primaryKeyColumnIndexSet.add(Integer.valueOf(activeResultSet.findColumn(primaryKeyColumn)));
+						primaryKeyColumnIndexSet.add(activeResultSet.findColumn(primaryKeyColumn));
 						
 						deleteSQL.append(quote).append(primaryKeyColumn).append(quote).append(" = ?");
 						
