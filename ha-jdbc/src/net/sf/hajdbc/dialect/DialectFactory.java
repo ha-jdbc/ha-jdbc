@@ -49,7 +49,7 @@ public class DialectFactory
 		map.put("db2", DB2Dialect.class);
 		map.put("derby", DerbyDialect.class);
 		map.put("firebird", DefaultDialect.class);
-		map.put("hsqldb", DefaultDialect.class);
+		map.put("hsqldb", HSQLDBDialect.class);
 		map.put("ingres", DefaultDialect.class);
 		map.put("maxdb", MaxDBDialect.class);
 		map.put("mckoi", DefaultDialect.class);
