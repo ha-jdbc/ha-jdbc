@@ -36,9 +36,9 @@
 
 <!ELEMENT cluster (database+|datasource+|pool-datasource+|xa-datasource+)>
 <!ATTLIST cluster id CDATA #REQUIRED>
+<!ATTLIST cluster dialect CDATA #IMPLIED>
 <!ATTLIST cluster balancer (simple|random|round-robin|load) #REQUIRED>
 <!ATTLIST cluster default-sync IDREF #REQUIRED>
-<!ATTLIST cluster validate-sql CDATA #IMPLIED>
 <!ATTLIST cluster min-threads CDATA #IMPLIED>
 <!ATTLIST cluster max-threads CDATA #IMPLIED>
 <!ATTLIST cluster max-idle CDATA #IMPLIED>

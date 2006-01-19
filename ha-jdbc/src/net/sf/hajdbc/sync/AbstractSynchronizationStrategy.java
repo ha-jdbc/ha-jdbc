@@ -33,14 +33,17 @@ import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SQLException;
 import net.sf.hajdbc.SynchronizationStrategy;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * @author  Paul Ferraro
  * @since   1.0
  */
 public abstract class AbstractSynchronizationStrategy implements SynchronizationStrategy
 {
-	protected String createForeignKeySQL = ForeignKey.DEFAULT_CREATE_SQL;
-	protected String dropForeignKeySQL = ForeignKey.DEFAULT_DROP_SQL;
+	private static Log log = LogFactory.getLog(AbstractSynchronizationStrategy.class);
+	
 	protected int fetchSize = 0;
 	protected String id;
 	
@@ -59,38 +62,6 @@ public abstract class AbstractSynchronizationStrategy implements Synchronization
 	public void setId(String id)
 	{
 		this.id = id;
-	}
-	
-	/**
-	 * @return the createForeignKeySQL.
-	 */
-	public String getCreateForeignKeySQL()
-	{
-		return this.createForeignKeySQL;
-	}
-	
-	/**
-	 * @param createForeignKeySQL the createForeignKeySQL to set.
-	 */
-	public void setCreateForeignKeySQL(String createForeignKeySQL)
-	{
-		this.createForeignKeySQL = createForeignKeySQL;
-	}
-	
-	/**
-	 * @return the dropForeignKeySQL.
-	 */
-	public String getDropForeignKeySQL()
-	{
-		return this.dropForeignKeySQL;
-	}
-	
-	/**
-	 * @param dropForeignKeySQL the dropForeignKeySQL to set.
-	 */
-	public void setDropForeignKeySQL(String dropForeignKeySQL)
-	{
-		this.dropForeignKeySQL = dropForeignKeySQL;
 	}
 
 	/**
@@ -116,49 +87,59 @@ public abstract class AbstractSynchronizationStrategy implements Synchronization
 	{
 		if (!properties.isEmpty())
 		{
-			PropertyDescriptor[] descriptors = Introspector.getBeanInfo(this.getClass()).getPropertyDescriptors();
-			
-			Map<String, PropertyDescriptor> propertyDescriptorMap = new HashMap<String, PropertyDescriptor>();
-			
-			for (PropertyDescriptor descriptor: descriptors)
+			try
 			{
-				if (descriptor.getName().equals("class")) continue;
+				PropertyDescriptor[] descriptors = Introspector.getBeanInfo(this.getClass()).getPropertyDescriptors();
 				
-				propertyDescriptorMap.put(descriptor.getName(), descriptor);
-			}
-			
-			Iterator names = properties.keySet().iterator();
-			
-			while (names.hasNext())
-			{
-				String name = (String) names.next();
+				Map<String, PropertyDescriptor> propertyDescriptorMap = new HashMap<String, PropertyDescriptor>();
 				
-				PropertyDescriptor descriptor = propertyDescriptorMap.get(name);
-				
-				if (descriptor == null)
+				for (PropertyDescriptor descriptor: descriptors)
 				{
-					throw new SQLException(Messages.getMessage(Messages.INVALID_PROPERTY, name, this));
+					if (descriptor.getName().equals("class")) continue;
+					
+					propertyDescriptorMap.put(descriptor.getName(), descriptor);
 				}
 				
-				PropertyEditor editor = PropertyEditorManager.findEditor(descriptor.getPropertyType());
+				Iterator names = properties.keySet().iterator();
 				
-				String textValue = properties.getProperty(name);
-				
-				try
+				while (names.hasNext())
 				{
-					if (editor == null)
+					String name = (String) names.next();
+					
+					PropertyDescriptor descriptor = propertyDescriptorMap.get(name);
+					
+					if (descriptor == null)
 					{
-						throw new IllegalArgumentException();
+						throw new SQLException(Messages.getMessage(Messages.INVALID_PROPERTY, name, this.getClass().getName()));
 					}
-
-					editor.setAsText(textValue);
+					
+					PropertyEditor editor = PropertyEditorManager.findEditor(descriptor.getPropertyType());
+					
+					String textValue = properties.getProperty(name);
+					
+					try
+					{
+						if (editor == null)
+						{
+							throw new IllegalArgumentException();
+						}
+	
+						editor.setAsText(textValue);
+					}
+					catch (IllegalArgumentException e)
+					{
+						throw new SQLException(Messages.getMessage(Messages.INVALID_PROPERTY_VALUE, textValue, name, this.getClass().getName()));
+					}
+					
+					descriptor.getWriteMethod().invoke(this, editor.getValue());
 				}
-				catch (IllegalArgumentException e)
-				{
-					throw new SQLException(Messages.getMessage(Messages.INVALID_PROPERTY_VALUE, textValue, name, this));
-				}
+			}
+			catch (Exception e)
+			{
+				// JiBX will mask this exception, so log it here.
+				log.error(e.getMessage(), e);
 				
-				descriptor.getWriteMethod().invoke(this, editor.getValue());
+				throw e;
 			}
 		}
 	}
@@ -170,22 +151,32 @@ public abstract class AbstractSynchronizationStrategy implements Synchronization
 	{
 		Properties properties = new Properties();
 		
-		PropertyDescriptor[] descriptors = Introspector.getBeanInfo(this.getClass()).getPropertyDescriptors();
-		
-		for (PropertyDescriptor descriptor: descriptors)
+		try
 		{
-			if (descriptor.getName().equals("class")) continue;
+			PropertyDescriptor[] descriptors = Introspector.getBeanInfo(this.getClass()).getPropertyDescriptors();
 			
-			PropertyEditor editor = PropertyEditorManager.findEditor(descriptor.getPropertyType());
+			for (PropertyDescriptor descriptor: descriptors)
+			{
+				if (descriptor.getName().equals("class")) continue;
+				
+				PropertyEditor editor = PropertyEditorManager.findEditor(descriptor.getPropertyType());
+				
+				if (editor == null) continue;
+				
+				editor.setValue(descriptor.getReadMethod().invoke(this));
+				
+				properties.setProperty(descriptor.getName(), editor.getAsText());
+			}
 			
-			if (editor == null) continue;
-			
-			editor.setValue(descriptor.getReadMethod().invoke(this));
-			
-			properties.setProperty(descriptor.getName(), editor.getAsText());
+			return properties;
 		}
-		
-		return properties;
+		catch (Exception e)
+		{
+			// JiBX will mask this exception, so log it here.
+			log.error(e.getMessage(), e);
+			
+			throw e;
+		}
 	}
 	
 	/**

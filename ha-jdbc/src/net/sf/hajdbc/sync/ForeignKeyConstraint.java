@@ -24,7 +24,6 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,10 +31,9 @@ import java.util.Map;
 
 /**
  * @author  Paul Ferraro
- * @version $Revision$
  * @since   1.0
  */
-public class ForeignKey extends Key
+public class ForeignKeyConstraint extends Constraint
 {
 	/** SQL-92 compatible create foreign key statement pattern */
 	public static final String DEFAULT_CREATE_SQL = "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4})";
@@ -44,6 +42,7 @@ public class ForeignKey extends Key
 	public static final String DEFAULT_DROP_SQL = "ALTER TABLE {1} DROP CONSTRAINT {0}";
 	
 	private String column;
+	private String foreignSchema;
 	private String foreignTable;
 	private String foreignColumn;
 	
@@ -56,28 +55,47 @@ public class ForeignKey extends Key
 	 * @param foreignSchema
 	 * @param foreignTable
 	 * @param foreignColumn
-	 * @param quote
 	 */
-	public ForeignKey(String name, String schema, String table, String column, String foreignSchema, String foreignTable, String foreignColumn, String quote)
+	public ForeignKeyConstraint(String name, String schema, String table, String column, String foreignSchema, String foreignTable, String foreignColumn)
 	{
-		super(name, schema, table, quote);
+		super(name, schema, table);
 		
-		this.column = quote + column + quote;
-
-		StringBuilder builder = new StringBuilder();
-		
-		if (foreignSchema != null)
-		{
-			builder.append(quote).append(foreignSchema).append(quote).append(".");
-		}
-		
-		this.foreignTable = builder.append(quote).append(foreignTable).append(quote).toString();
-		this.foreignColumn = quote + foreignColumn + quote;
+		this.column = column;
+		this.foreignSchema = foreignSchema;
+		this.foreignTable = foreignTable;
+		this.foreignColumn = foreignColumn;
 	}
 	
-	protected String formatSQL(String pattern)
+	/**
+	 * @return the column of this foreign key
+	 */
+	public String getColumn()
 	{
-		return MessageFormat.format(pattern, this.name, this.table, this.column, this.foreignTable, this.foreignColumn);
+		return this.column;
+	}
+	
+	/**
+	 * @return the foreign table of this foreign key
+	 */
+	public String getForeignTable()
+	{
+		return this.foreignTable;
+	}
+	
+	/**
+	 * @return the foreign schema of this foreign key
+	 */
+	public String getForeignSchema()
+	{
+		return this.foreignSchema;
+	}
+	
+	/**
+	 * @return the foreign column of this foreign key
+	 */
+	public String getForeignColumn()
+	{
+		return this.foreignColumn;
 	}
 	
 	/**
@@ -87,11 +105,10 @@ public class ForeignKey extends Key
 	 * @return a Collection of ForeignKey objects.
 	 * @throws SQLException if a database error occurs
 	 */
-	public static Collection collect(Connection connection, Map<String, List<String>> schemaMap) throws SQLException
+	public static Collection<ForeignKeyConstraint> collect(Connection connection, Map<String, List<String>> schemaMap) throws SQLException
 	{
-		List<ForeignKey> foreignKeyList = new LinkedList<ForeignKey>();
+		List<ForeignKeyConstraint> foreignKeyList = new LinkedList<ForeignKeyConstraint>();
 		DatabaseMetaData metaData = connection.getMetaData();
-		String quote = metaData.getIdentifierQuoteString();
 		
 		for (Map.Entry<String, List<String>> schemaMapEntry: schemaMap.entrySet())
 		{
@@ -110,7 +127,7 @@ public class ForeignKey extends Key
 					String foreignTable = resultSet.getString("PKTABLE_NAME");
 					String foreignColumn = resultSet.getString("PKCOLUMN_NAME");
 		
-					ForeignKey key = new ForeignKey(name, schema, table, column, foreignSchema, foreignTable, foreignColumn, quote);
+					ForeignKeyConstraint key = new ForeignKeyConstraint(name, schema, table, column, foreignSchema, foreignTable, foreignColumn);
 					
 					foreignKeyList.add(key);
 				}

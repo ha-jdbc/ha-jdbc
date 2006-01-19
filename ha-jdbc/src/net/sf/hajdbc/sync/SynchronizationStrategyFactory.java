@@ -51,7 +51,7 @@ public class SynchronizationStrategyFactory
 			
 			String className = context.attributeText(null, CLASS);
 			
-			return (SynchronizationStrategy) Class.forName(className).newInstance();
+			return Class.forName(className).asSubclass(SynchronizationStrategy.class).newInstance();
 		}
 		catch (Exception e)
 		{

@@ -26,7 +26,6 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -183,8 +182,6 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 			
 			DatabaseMetaData metaData = inactiveConnection.getMetaData();
 
-			String quote = metaData.getIdentifierQuoteString();
-			
 			ResultSet resultSet = metaData.getTables(null, null, "%", new String[] { "TABLE" });
 			
 			while (resultSet.next())
@@ -206,6 +203,8 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 			
 			resultSet.close();
 
+			Dialect dialect = this.getDialect();
+			
 			activeConnection = activeDatabase.connect(connectionFactoryMap.get(activeDatabase));
 			
 			if (strategy.requiresTableLocking())
@@ -225,46 +224,10 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 					for (Map.Entry<String, List<String>> schemaMapEntry: schemaMap.entrySet())
 					{
 						String schema = schemaMapEntry.getKey();
-						List<String> tableList = schemaMapEntry.getValue();
 						
-						// Lock tables by executing innocuous update statement within open transaction
-						for (String table: tableList)
+						for (String table: schemaMapEntry.getValue())
 						{
-							StringBuilder builder = new StringBuilder("UPDATE ");
-							
-							if (schema != null)
-							{
-								builder.append(quote).append(schema).append(quote).append('.');
-							}
-							
-							builder.append(quote).append(table).append(quote).append(" SET ");
-							
-							List<String> columnList = new LinkedList<String>();
-							
-							resultSet = metaData.getColumns(null, schema, table, "%");
-							
-							while (resultSet.next())
-							{
-								columnList.add(resultSet.getString("COLUMN_NAME"));
-							}
-							
-							resultSet.close();
-
-							Iterator<String> columns = columnList.iterator();
-							
-							while (columns.hasNext())
-							{
-								String column = columns.next();
-								
-								builder.append(quote).append(column).append(quote).append(" = ").append(quote).append(column).append(quote);
-								
-								if (columns.hasNext())
-								{
-									builder.append(", ");
-								}
-							}
-
-							statement.executeUpdate(builder.toString());
+							statement.executeUpdate(dialect.getLockTableSQL(metaData, schema, table));
 						}
 					}
 					
@@ -274,7 +237,7 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 			
 			log.info(Messages.getMessage(Messages.DATABASE_SYNC_START, inactiveDatabase));
 
-			strategy.synchronize(inactiveConnection, activeConnection, schemaMap);
+			strategy.synchronize(inactiveConnection, activeConnection, schemaMap, dialect);
 			
 			log.info(Messages.getMessage(Messages.DATABASE_SYNC_END, inactiveDatabase));
 	

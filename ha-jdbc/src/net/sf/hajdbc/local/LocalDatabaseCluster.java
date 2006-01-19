@@ -36,6 +36,7 @@ import java.util.prefs.Preferences;
 import net.sf.hajdbc.AbstractDatabaseCluster;
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SQLException;
 import net.sf.hajdbc.SynchronizationStrategy;
@@ -62,12 +63,12 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	private static Log log = LogFactory.getLog(LocalDatabaseCluster.class);
 	
 	private String id;
-	private String validateSQL;
 	private Map<String, Database> databaseMap = new HashMap<String, Database>();
 	private Balancer balancer;
 	private SynchronizationStrategy defaultSynchronizationStrategy;
 	private Map<Database, Object> connectionFactoryMap = new HashMap<Database, Object>();
 	private ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool(new DaemonThreadFactory());
+	private Dialect dialect;
 	
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#loadState()
@@ -134,7 +135,7 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 			
 			Statement statement = connection.createStatement();
 			
-			statement.execute(this.validateSQL);
+			statement.execute(this.dialect.getSimpleSQL());
 
 			statement.close();
 			
@@ -288,6 +289,22 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	{
 		return this.balancer;
 	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getExecutor()
+	 */
+	public ExecutorService getExecutor()
+	{
+		return this.executor;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getDialect()
+	 */
+	public Dialect getDialect()
+	{
+		return this.dialect;
+	}
 	
 	void addDatabase(Database database)
 	{
@@ -310,14 +327,6 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 			
 			throw e;
 		}
-	}
-
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getExecutor()
-	 */
-	public ExecutorService getExecutor()
-	{
-		return this.executor;
 	}
 	
 	void setMinThreads(int size)

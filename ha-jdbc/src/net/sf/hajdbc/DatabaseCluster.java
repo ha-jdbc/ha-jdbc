@@ -97,14 +97,21 @@ public interface DatabaseCluster extends DatabaseClusterMBean
 	
 	/**
 	 * Returns the Balancer implementation used by this database cluster.
-	 * @return a Balancer implementation
+	 * @return an implementation of <code>Balancer</code>
 	 */
 	public Balancer getBalancer();
 	
 	/**
 	 * Returns an executor service used to asynchronously execute database writes.
-	 * @return an implementation of ExecutorService
+	 * @return an implementation of <code>ExecutorService</code>
 	 * @since 1.1
 	 */
 	public ExecutorService getExecutor();
+	
+	/**
+	 * Returns a dialect capable of returning database vendor specific values.
+	 * @return an implementation of <code>Dialect</code>
+	 * @since 1.1
+	 */
+	public Dialect getDialect();
 }

@@ -21,15 +21,16 @@
 package net.sf.hajdbc.sync;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
 
@@ -69,20 +70,28 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 {
 	private static Log log = LogFactory.getLog(FullSynchronizationStrategy.class);
 
-	private String truncateTableSQL = "DELETE FROM {0}";
 	private int maxBatchSize = 100;
 	private ExecutorService executor = Executors.newSingleThreadExecutor(new DaemonThreadFactory());
 
 	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, java.util.Map)
+	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(Connection, Connection, Map, Dialect)
 	 */
-	public void synchronize(Connection inactiveConnection, Connection activeConnection, Map<String, List<String>> schemaMap) throws SQLException
+	public void synchronize(Connection inactiveConnection, Connection activeConnection, Map<String, List<String>> schemaMap, Dialect dialect) throws SQLException
 	{
 		inactiveConnection.setAutoCommit(true);
-		String quote = inactiveConnection.getMetaData().getIdentifierQuoteString();
 		
-		// Drop foreign keys
-		Key.executeSQL(inactiveConnection, ForeignKey.collect(inactiveConnection, schemaMap), this.dropForeignKeySQL);
+		DatabaseMetaData metaData = inactiveConnection.getMetaData();
+		
+		Statement statement = inactiveConnection.createStatement();
+		
+		// Drop foreign keys from the inactive database
+		for (ForeignKeyConstraint key: ForeignKeyConstraint.collect(inactiveConnection, schemaMap))
+		{
+			statement.addBatch(dialect.getDropForeignKeyConstraintSQL(metaData, key.getName(), key.getSchema(), key.getTable()));
+		}
+		
+		statement.executeBatch();
+		statement.clearBatch();
 		
 		inactiveConnection.setAutoCommit(false);
 		
@@ -91,15 +100,12 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 			for (Map.Entry<String, List<String>> schemaMapEntry: schemaMap.entrySet())
 			{
 				String schema = schemaMapEntry.getKey();
-				List<String> tableList = schemaMapEntry.getValue();
 				
-				String tablePrefix = (schema != null) ? quote + schema + quote + "." : "";
-				
-				for (String table: tableList)
+				for (String table: schemaMapEntry.getValue())
 				{
-					String tableName = tablePrefix + quote + table + quote;
+					String qualifiedTable = dialect.qualifyTable(metaData, schema, table);
 				
-					final String selectSQL = "SELECT * FROM " + tableName;
+					final String selectSQL = "SELECT * FROM " + qualifiedTable;
 					
 					final Statement selectStatement = activeConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 					selectStatement.setFetchSize(this.fetchSize);
@@ -114,7 +120,7 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 		
 					Future<ResultSet> future = this.executor.submit(callable);
 					
-					String deleteSQL = MessageFormat.format(this.truncateTableSQL, tableName);
+					String deleteSQL = dialect.getTruncateTableSQL(metaData, schema, table);
 		
 					if (log.isDebugEnabled())
 					{
@@ -125,13 +131,13 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 		
 					int deletedRows = deleteStatement.executeUpdate(deleteSQL);
 					
-					log.info(Messages.getMessage(Messages.DELETE_COUNT, deletedRows, tableName));
+					log.info(Messages.getMessage(Messages.DELETE_COUNT, deletedRows, qualifiedTable));
 					
 					deleteStatement.close();
 					
 					ResultSet resultSet = future.get();
 					
-					StringBuilder insertSQL = new StringBuilder("INSERT INTO ").append(tableName).append(" (");
+					StringBuilder insertSQL = new StringBuilder("INSERT INTO ").append(qualifiedTable).append(" (");
 		
 					ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
 					
@@ -144,7 +150,7 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 							insertSQL.append(", ");
 						}
 						
-						insertSQL.append(quote).append(resultSetMetaData.getColumnName(i)).append(quote);
+						insertSQL.append(dialect.quote(metaData, resultSetMetaData.getColumnName(i)));
 					}
 					
 					insertSQL.append(") VALUES (");
@@ -198,7 +204,7 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 						insertStatement.executeBatch();
 					}
 		
-					log.info(Messages.getMessage(Messages.INSERT_COUNT, statementCount, tableName));
+					log.info(Messages.getMessage(Messages.INSERT_COUNT, statementCount, qualifiedTable));
 					
 					insertStatement.close();
 					selectStatement.close();
@@ -209,8 +215,14 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 			
 			inactiveConnection.setAutoCommit(true);
 	
-			// Recreate foreign keys
-			Key.executeSQL(inactiveConnection, ForeignKey.collect(activeConnection, schemaMap), this.createForeignKeySQL);
+			// Collect foreign keys from active database and create them on inactive database
+			for (ForeignKeyConstraint key: ForeignKeyConstraint.collect(activeConnection, schemaMap))
+			{
+				statement.addBatch(dialect.getCreateForeignKeyConstraintSQL(metaData, key.getName(), key.getSchema(), key.getTable(), key.getColumn(), key.getForeignSchema(), key.getForeignTable(), key.getForeignColumn()));
+			}
+			
+			statement.executeBatch();
+			statement.close();
 		}
 		catch (InterruptedException e)
 		{
@@ -236,21 +248,5 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 	public void setMaxBatchSize(int maxBatchSize)
 	{
 		this.maxBatchSize = maxBatchSize;
-	}
-
-	/**
-	 * @return the truncateTableSQL.
-	 */
-	public String getTruncateTableSQL()
-	{
-		return this.truncateTableSQL;
-	}
-
-	/**
-	 * @param truncateTableSQL the truncateTableSQL to set.
-	 */
-	public void setTruncateTableSQL(String truncateTableSQL)
-	{
-		this.truncateTableSQL = truncateTableSQL;
 	}
 }

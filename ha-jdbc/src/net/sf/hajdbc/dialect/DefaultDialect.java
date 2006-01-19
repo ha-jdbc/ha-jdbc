@@ -1,0 +1,180 @@
+/*
+ * HA-JDBC: High-Availability JDBC
+ * Copyright (c) 2004-2006 Paul Ferraro
+ * 
+ * This library is free software; you can redistribute it and/or modify it 
+ * under the terms of the GNU Lesser General Public License as published by the 
+ * Free Software Foundation; either version 2.1 of the License, or (at your 
+ * option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+ * for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, 
+ * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * 
+ * Contact: ferraro@users.sourceforge.net
+ */
+package net.sf.hajdbc.dialect;
+
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
+import net.sf.hajdbc.Dialect;
+
+/**
+ * @author  Paul Ferraro
+ * @since   1.1
+ */
+public class DefaultDialect implements Dialect
+{
+	/**
+	 * @see net.sf.hajdbc.Dialect#getSimpleSQL()
+	 */
+	public String getSimpleSQL()
+	{
+		return "SELECT 1";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#getLockTableSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String)
+	 */
+	public String getLockTableSQL(DatabaseMetaData metaData, String schema, String table) throws SQLException
+	{
+		StringBuilder builder = new StringBuilder("UPDATE ").append(this.qualifyTable(metaData, schema, table)).append(" SET ");
+		
+		List<String> columnList = new LinkedList<String>();
+		
+		ResultSet resultSet = metaData.getPrimaryKeys(null, schema, table);
+		
+		while (resultSet.next())
+		{
+			columnList.add(resultSet.getString("COLUMN_NAME"));
+		}
+		
+		resultSet.close();
+
+		Iterator<String> columns = columnList.iterator();
+		
+		while (columns.hasNext())
+		{
+			String column = this.quote(metaData, columns.next());
+			
+			builder.append(column).append(" = ").append(column);
+			
+			if (columns.hasNext())
+			{
+				builder.append(", ");
+			}
+		}
+		
+		return builder.toString();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#getTruncateTableSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String)
+	 */
+	public String getTruncateTableSQL(DatabaseMetaData metaData, String schema, String table) throws SQLException
+	{
+		return MessageFormat.format(this.truncateTablePattern(), this.qualifyTable(metaData, schema, table));
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.Dialect#qualifyTable(java.sql.DatabaseMetaData, java.lang.String, java.lang.String)
+	 */
+	public String qualifyTable(DatabaseMetaData metaData, String schema, String table) throws SQLException
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		if (schema != null)
+		{
+			builder.append(this.quote(metaData, schema)).append('.');
+		}
+		
+		return builder.append(this.quote(metaData, table)).toString();
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.Dialect#quote(java.sql.DatabaseMetaData, java.lang.String)
+	 */
+	public String quote(DatabaseMetaData metaData, String identifier) throws SQLException
+	{
+		String quote = metaData.getIdentifierQuoteString();
+		
+		return quote + identifier + quote;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.Dialect#getCreateForeignKeyConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 */
+	public String getCreateForeignKeyConstraintSQL(DatabaseMetaData metaData, String name, String schema, String table, String column, String foreignSchema, String foreignTable, String foreignColumn) throws SQLException
+	{
+		return MessageFormat.format(this.createForeignKeyPattern(), name, this.qualifyTable(metaData, schema, table), this.quote(metaData, column), this.qualifyTable(metaData, foreignSchema, foreignTable), this.quote(metaData, foreignColumn));
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.Dialect#getDropForeignKeyConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String)
+	 */
+	public String getDropForeignKeyConstraintSQL(DatabaseMetaData metaData, String name, String schema, String table) throws SQLException
+	{
+		return MessageFormat.format(this.dropConstraintPattern(), name, this.qualifyTable(metaData, schema, table));
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.Dialect#getCreateUniqueConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String, java.util.List)
+	 */
+	public String getCreateUniqueConstraintSQL(DatabaseMetaData metaData, String name, String schema, String table, List<String> columnList) throws SQLException
+	{
+		StringBuilder builder = new StringBuilder();
+
+		Iterator<String> columns = columnList.iterator();
+		
+		while (columns.hasNext())
+		{
+			builder.append(this.quote(metaData, columns.next()));
+			
+			if (columns.hasNext())
+			{
+				builder.append(", ");
+			}
+		}
+		
+		return MessageFormat.format(this.createUnqiueKeyPattern(), name, this.qualifyTable(metaData, schema, table), builder.toString());
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.Dialect#getDropUniqueConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String)
+	 */
+	public String getDropUniqueConstraintSQL(DatabaseMetaData metaData, String name, String schema, String table) throws SQLException
+	{
+		return MessageFormat.format(this.dropConstraintPattern(), name, this.qualifyTable(metaData, schema, table));
+	}
+	
+	protected String truncateTablePattern()
+	{
+		return "DELETE FROM {0}";
+	}
+	
+	protected String createForeignKeyPattern()
+	{
+		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4})";
+	}
+	
+	protected String createUnqiueKeyPattern()
+	{
+		return "ALTER TABLE {1} ADD CONSTRAINT {0} UNIQUE ({2})";
+	}
+	
+	protected String dropConstraintPattern()
+	{
+		return "ALTER TABLE {1} DROP CONSTRAINT {0}";
+	}
+}

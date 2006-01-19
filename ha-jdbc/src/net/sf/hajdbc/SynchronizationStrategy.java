@@ -64,9 +64,10 @@ public interface SynchronizationStrategy
 	 * @param inactiveConnection a connection to the inactive database
 	 * @param activeConnection a connection to the active database
 	 * @param schemaMap a map of schema name to list of table names
+	 * @param dialect a Dialect instance
 	 * @throws java.sql.SQLException if synchronization fails
 	 */
-	public void synchronize(Connection inactiveConnection, Connection activeConnection, Map<String, List<String>> schemaMap) throws java.sql.SQLException;
+	public void synchronize(Connection inactiveConnection, Connection activeConnection, Map<String, List<String>> schemaMap, Dialect dialect) throws java.sql.SQLException;
 	
 	/**
 	 * Indicates whether this strategy requires table locking on active databases.

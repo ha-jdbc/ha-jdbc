@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
 
@@ -55,6 +56,7 @@ import java.util.concurrent.Future;
  *  <li>Drop the foreign keys on the inactive database (to avoid integrity constraint violations)</li>
  *  <li>For each database table:
  *   <ol>
+ *    <li>Drop the unique constraints on the table (to avoid integrity constraint violations)</li>
  *    <li>Find the primary key(s) of the table</li>
  *    <li>Query all rows in the inactive database table, sorting by the primary key(s)</li>
  *    <li>Query all rows on the active database table</li>
@@ -64,6 +66,7 @@ import java.util.concurrent.Future;
  *      <li>Otherwise, determine whether row should be deleted, or a new row is to be inserted</li>
  *     </ol>
  *    </li>
+ *    <li>Re-create the unique constraints on the table (to avoid integrity constraint violations)</li>
  *   </ol>
  *  </li>
  *  <li>Re-create the foreign keys on the inactive database</li>
@@ -76,24 +79,30 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 {
 	private static Log log = LogFactory.getLog(DifferentialSynchronizationStrategy.class);
 
-	private String createUniqueKeySQL = UniqueKey.DEFAULT_CREATE_SQL;
-	private String dropUniqueKeySQL = UniqueKey.DEFAULT_DROP_SQL;
 	private ExecutorService executor = Executors.newSingleThreadExecutor(new DaemonThreadFactory());
 	
 	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, java.util.Map)
+	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(Connection, Connection, Map, Dialect)
 	 */
-	public void synchronize(Connection inactiveConnection, Connection activeConnection, Map<String, List<String>> schemaMap) throws SQLException
+	public void synchronize(Connection inactiveConnection, Connection activeConnection, Map<String, List<String>> schemaMap, Dialect dialect) throws SQLException
 	{
 		inactiveConnection.setAutoCommit(true);
 		
-		// Drop foreign keys
-		Key.executeSQL(inactiveConnection, ForeignKey.collect(inactiveConnection, schemaMap), this.dropForeignKeySQL);
+		DatabaseMetaData metaData = inactiveConnection.getMetaData();
+		Statement statement = inactiveConnection.createStatement();
+		
+		// Drop foreign key constraints on the inactive database
+		for (ForeignKeyConstraint key: ForeignKeyConstraint.collect(inactiveConnection, schemaMap))
+		{
+			statement.addBatch(dialect.getDropForeignKeyConstraintSQL(metaData, key.getName(), key.getSchema(), key.getTable()));
+		}
+
+		statement.executeBatch();
+		statement.clearBatch();
 		
 		inactiveConnection.setAutoCommit(false);
 		
 		DatabaseMetaData databaseMetaData = inactiveConnection.getMetaData();
-		String quote = databaseMetaData.getIdentifierQuoteString();
 		
 		Map<Short, String> primaryKeyColumnMap = new TreeMap<Short, String>();
 		Set<Integer> primaryKeyColumnIndexSet = new LinkedHashSet<Integer>();
@@ -103,13 +112,10 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 			for (Map.Entry<String, List<String>> schemaMapEntry: schemaMap.entrySet())
 			{
 				String schema = schemaMapEntry.getKey();
-				List<String> tableList = schemaMapEntry.getValue();
 				
-				String tablePrefix = (schema != null) ? quote + schema + quote + "." : "";
-				
-				for (String table: tableList)
-				{	
-					String tableName = tablePrefix + quote + table + quote;
+				for (String table: schemaMapEntry.getValue())
+				{
+					String qualifiedTable = dialect.qualifyTable(metaData, schema, table);
 
 					primaryKeyColumnMap.clear();
 					primaryKeyColumnIndexSet.clear();
@@ -134,17 +140,24 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 					{
 						throw new SQLException(Messages.getMessage(Messages.PRIMARY_KEY_REQUIRED, this.getClass().getName(), table));
 					}
-		
-					Key.executeSQL(inactiveConnection, UniqueKey.collect(inactiveConnection, schema, table, primaryKeyName), this.dropUniqueKeySQL);
+					
+					// Drop unique constraints on the current table
+					for (UniqueConstraint constraint: UniqueConstraint.collect(inactiveConnection, schema, table, primaryKeyName))
+					{
+						statement.addBatch(dialect.getDropUniqueConstraintSQL(metaData, constraint.getName(), constraint.getSchema(), constraint.getTable()));
+					}
+					
+					statement.executeBatch();
+					statement.clearBatch();
 					
 					// Retrieve table rows in primary key order
-					StringBuilder builder = new StringBuilder("SELECT * FROM ").append(tableName).append(" ORDER BY ");
+					StringBuilder builder = new StringBuilder("SELECT * FROM ").append(qualifiedTable).append(" ORDER BY ");
 					
 					Iterator<String> primaryKeyColumns = primaryKeyColumnMap.values().iterator();
 					
 					while (primaryKeyColumns.hasNext())
 					{
-						builder.append(quote).append(primaryKeyColumns.next()).append(quote);
+						builder.append(dialect.quote(metaData, primaryKeyColumns.next()));
 						
 						if (primaryKeyColumns.hasNext())
 						{
@@ -180,7 +193,7 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 					ResultSet inactiveResultSet = future.get();
 					
 					// Construct DELETE SQL
-					StringBuilder deleteSQL = new StringBuilder("DELETE FROM ").append(tableName).append(" WHERE ");
+					StringBuilder deleteSQL = new StringBuilder("DELETE FROM ").append(qualifiedTable).append(" WHERE ");
 					
 					// Create set of primary key columns
 					primaryKeyColumns = primaryKeyColumnMap.values().iterator();
@@ -191,7 +204,7 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 						
 						primaryKeyColumnIndexSet.add(activeResultSet.findColumn(primaryKeyColumn));
 						
-						deleteSQL.append(quote).append(primaryKeyColumn).append(quote).append(" = ?");
+						deleteSQL.append(dialect.quote(metaData, primaryKeyColumn)).append(" = ?");
 						
 						if (primaryKeyColumns.hasNext())
 						{
@@ -206,7 +219,7 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 					int[] types = new int[columns + 1];
 					
 					// Construct INSERT SQL
-					StringBuilder insertSQL = new StringBuilder("INSERT INTO ").append(tableName).append(" (");
+					StringBuilder insertSQL = new StringBuilder("INSERT INTO ").append(qualifiedTable).append(" (");
 					
 					for (int i = 1; i <= columns; ++i)
 					{
@@ -217,7 +230,7 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 							insertSQL.append(", ");
 						}
 						
-						insertSQL.append(quote).append(resultSetMetaData.getColumnName(i)).append(quote);
+						insertSQL.append(dialect.quote(metaData, resultSetMetaData.getColumnName(i)));
 					}
 		
 					insertSQL.append(") VALUES (");
@@ -377,21 +390,34 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 					
 					inactiveStatement.close();
 					activeStatement.close();
-		
-					Key.executeSQL(inactiveConnection, UniqueKey.collect(activeConnection, schema, table, primaryKeyName), this.createUniqueKeySQL);
+					
+					// Collect unique constraints on this table from the active database and re-create them on the inactive database
+					for (UniqueConstraint constraint: UniqueConstraint.collect(activeConnection, schema, table, primaryKeyName))
+					{
+						statement.addBatch(dialect.getCreateUniqueConstraintSQL(metaData, constraint.getName(), constraint.getSchema(), constraint.getTable(), constraint.getColumnList()));
+					}
+					
+					statement.executeBatch();
+					statement.clearBatch();
 					
 					inactiveConnection.commit();
 					
-					log.info(Messages.getMessage(Messages.INSERT_COUNT, insertCount, tableName));
-					log.info(Messages.getMessage(Messages.UPDATE_COUNT, updateCount, tableName));
-					log.info(Messages.getMessage(Messages.DELETE_COUNT, deleteCount, tableName));			
+					log.info(Messages.getMessage(Messages.INSERT_COUNT, insertCount, qualifiedTable));
+					log.info(Messages.getMessage(Messages.UPDATE_COUNT, updateCount, qualifiedTable));
+					log.info(Messages.getMessage(Messages.DELETE_COUNT, deleteCount, qualifiedTable));			
 				}
 			}
 	
 			inactiveConnection.setAutoCommit(true);
-	
-			// Recreate foreign keys
-			Key.executeSQL(inactiveConnection, ForeignKey.collect(activeConnection, schemaMap), this.createForeignKeySQL);
+
+			// Collect foreign key constraints from the active database and create them on the inactive database
+			for (ForeignKeyConstraint key: ForeignKeyConstraint.collect(activeConnection, schemaMap))
+			{
+				statement.addBatch(dialect.getCreateForeignKeyConstraintSQL(metaData, key.getName(), key.getSchema(), key.getTable(), key.getColumn(), key.getForeignSchema(), key.getForeignTable(), key.getForeignColumn()));
+			}
+			
+			statement.executeBatch();
+			statement.close();
 		}
 		catch (ExecutionException e)
 		{
@@ -419,37 +445,5 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 		}
 		
 		return object1.equals(object2);
-	}
-	
-	/**
-	 * @return the createUniqueKeySQL.
-	 */
-	public String getCreateUniqueKeySQL()
-	{
-		return this.createUniqueKeySQL;
-	}
-
-	/**
-	 * @param createUniqueKeySQL the createUniqueKeySQL to set.
-	 */
-	public void setCreateUniqueKeySQL(String createUniqueKeySQL)
-	{
-		this.createUniqueKeySQL = createUniqueKeySQL;
-	}
-
-	/**
-	 * @return the dropUniqueKeySQL.
-	 */
-	public String getDropUniqueKeySQL()
-	{
-		return this.dropUniqueKeySQL;
-	}
-
-	/**
-	 * @param dropUniqueKeySQL the dropUniqueKeySQL to set.
-	 */
-	public void setDropUniqueKeySQL(String dropUniqueKeySQL)
-	{
-		this.dropUniqueKeySQL = dropUniqueKeySQL;
 	}
 }

@@ -29,6 +29,7 @@ import net.sf.hajdbc.AbstractDatabaseCluster;
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationStrategy;
 
@@ -237,5 +238,13 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 	public ExecutorService getExecutor()
 	{
 		return this.databaseCluster.getExecutor();
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getDialect()
+	 */
+	public Dialect getDialect()
+	{
+		return this.databaseCluster.getDialect();
 	}
 }

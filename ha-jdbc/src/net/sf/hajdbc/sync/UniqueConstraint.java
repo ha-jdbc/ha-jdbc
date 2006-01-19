@@ -21,13 +21,10 @@
 package net.sf.hajdbc.sync;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -36,56 +33,35 @@ import java.util.Map;
  * @author  Paul Ferraro
  * @since   1.0
  */
-public class UniqueKey extends Key
+public class UniqueConstraint extends Constraint
 {
-	/** SQL-92 compatible create foreign key statement pattern */
-	public static final String DEFAULT_CREATE_SQL = "ALTER TABLE {1} ADD CONSTRAINT {0} UNIQUE ({2})";
-
-	/** SQL-92 compatible drop foreign key statement pattern */
-	public static final String DEFAULT_DROP_SQL = "ALTER TABLE {1} DROP CONSTRAINT {0}";
-	
 	private List<String> columnList = new LinkedList<String>();
-	private String quote;
 	
 	/**
-	 * Constructs a new UniqueKey.
+	 * Constructs a new UniqueConstraint.
 	 * @param name
 	 * @param schema
 	 * @param table
-	 * @param quote
 	 */
-	public UniqueKey(String name, String schema, String table, String quote)
+	public UniqueConstraint(String name, String schema, String table)
 	{
-		super(name, schema, table, quote);
-		
-		this.quote = quote;
+		super(name, schema, table);
 	}
 	
 	/**
 	 * @param column
 	 */
-	public void addColumn(String column)
+	void addColumn(String column)
 	{
-		this.columnList.add(this.quote + column + this.quote);
+		this.columnList.add(column);
 	}
 	
-	protected String formatSQL(String pattern)
+	/**
+	 * @return the list of columns in this unique constraint
+	 */
+	public List<String> getColumnList()
 	{
-		StringBuilder builder = new StringBuilder();
-		
-		Iterator<String> columns = this.columnList.iterator();
-		
-		while (columns.hasNext())
-		{
-			builder.append(columns.next());
-			
-			if (columns.hasNext())
-			{
-				builder.append(", ");
-			}
-		}
-		
-		return MessageFormat.format(pattern, this.name, this.table, builder.toString());
+		return this.columnList;
 	}
 	
 	/**
@@ -97,13 +73,11 @@ public class UniqueKey extends Key
 	 * @return a Collection of ForeignKey objects.
 	 * @throws SQLException if a database error occurs
 	 */
-	public static Collection<UniqueKey> collect(Connection connection, String schema, String table, String primaryKeyName) throws SQLException
+	public static Collection<UniqueConstraint> collect(Connection connection, String schema, String table, String primaryKeyName) throws SQLException
 	{
-		Map<String, UniqueKey> keyMap = new HashMap<String, UniqueKey>();
-		DatabaseMetaData metaData = connection.getMetaData();
-		String quote = metaData.getIdentifierQuoteString();
+		Map<String, UniqueConstraint> keyMap = new HashMap<String, UniqueConstraint>();
 		
-		ResultSet resultSet = metaData.getIndexInfo(null, schema, table, true, false);
+		ResultSet resultSet = connection.getMetaData().getIndexInfo(null, schema, table, true, false);
 		
 		while (resultSet.next())
 		{
@@ -111,11 +85,11 @@ public class UniqueKey extends Key
 			
 			if ((name == null) || name.equals(primaryKeyName)) continue;
 			
-			UniqueKey key = keyMap.get(name);
+			UniqueConstraint key = keyMap.get(name);
 			
 			if (key == null)
 			{
-				key = new UniqueKey(name, schema, table, quote);
+				key = new UniqueConstraint(name, schema, table);
 				
 				keyMap.put(name, key);
 			}
