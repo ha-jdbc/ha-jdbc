@@ -37,9 +37,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 /**
+ * Base class for all HA-JDBC proxy objects.
  * @author  Paul Ferraro
- * @param <E> 
- * @param <P> 
+ * @param <E> elements proxied by this object
+ * @param <P> parent object that created the elements proxied by this object
  * @since   1.0
  */
 public class SQLObject<E, P>
