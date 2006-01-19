@@ -36,9 +36,15 @@ import net.sf.hajdbc.SynchronizationStrategy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;
+import org.jgroups.JChannel;
 import org.jgroups.blocks.NotificationBus;
+import org.jgroups.jmx.JmxConfigurator;
 
 import java.util.concurrent.ExecutorService;
+
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+import javax.management.ObjectName;
 
 /**
  * Decorates an existing database cluster by providing distributable functionality.
@@ -67,6 +73,14 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 		this.notificationBus = new NotificationBus(databaseCluster.getId(), decorator.getProtocol());
 		this.notificationBus.setConsumer(this);
 		this.notificationBus.start();
+		
+		MBeanServer server = MBeanServer.class.cast(MBeanServerFactory.findMBeanServer(null).get(0));
+		ObjectName name = ObjectName.getInstance("org.jgroups", "channel", ObjectName.quote(databaseCluster.getId()));
+		
+		if (!server.isRegistered(name))
+		{
+			JmxConfigurator.registerChannel(JChannel.class.cast(this.notificationBus.getChannel()), server, name.getCanonicalName(), true);
+		}
 	}
 
 	/**

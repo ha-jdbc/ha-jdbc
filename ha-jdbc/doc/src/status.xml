@@ -69,6 +69,9 @@
 			<action type="fix" context="code" dev="PF" due-to="Kurt Huwig">
 				Added missing rollback to exception handling in diff and full synchronization strategies.
 			</action>
+			<action type="add" context="code" dev="PF">
+				In distributable mode, JGroups channel and protocols are registed with the mbean server.
+			</action>
 		</release>
 		<release version="1.1-beta-1" date="December 13, 2005">
 			<action type="add" context="lib" dev="PF">

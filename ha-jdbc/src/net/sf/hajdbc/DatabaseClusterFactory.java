@@ -209,6 +209,15 @@ public final class DatabaseClusterFactory
 		return strategy;
 	}
 	
+	/**
+	 * Returns the mbean server to which the database clusters will be registered.
+	 * @return an mbean server instance
+	 */
+	public MBeanServer getMBeanServer()
+	{
+		return this.server;
+	}
+	
 	void addDatabaseCluster(DatabaseCluster databaseCluster) throws Exception
 	{
 		if (this.decorator != null)

@@ -67,7 +67,7 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	private Balancer balancer;
 	private SynchronizationStrategy defaultSynchronizationStrategy;
 	private Map<Database, Object> connectionFactoryMap = new HashMap<Database, Object>();
-	private ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool(new DaemonThreadFactory());
+	private ThreadPoolExecutor executor = ThreadPoolExecutor.class.cast(Executors.newCachedThreadPool(new DaemonThreadFactory()));
 	private Dialect dialect;
 	
 	/**
