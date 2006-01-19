@@ -31,6 +31,39 @@
 			<action type="fix" context="code" dev="PF">
 				DatabaseClusterFactory.createDatabaseClusterFactory() throws RuntimeException instead of SQLException to prevent java.sql.DriverManager from masking root cause of HA-JDBC configuration failures.
 			</action>
+			<action type="fix" context="code" dev="PF">
+				Fixes potential NullPointerException if database is deactivated as a result of a read operation.
+			</action>
+			<action type="update" context="code" dev="PF">
+				Migrated code base to Java 1.5.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Retrotranslator (http://retrotranslator.sf.net) leveraged for JDK 1.4 compatibility.  Build script generates separate 1.4 jar and includes additional dependencies.
+			</action>
+			<action type="update" context="code" dev="PF">
+				Replaced Balancer.toArray() : Database[] with Balancer.list() : List<![CDATA[<Database>]]>
+			</action>
+			<action type="update" context="test" dev="PF">
+				Unit tests now use EasyMock 2.0.
+			</action>
+			<action type="add" context="code" dev="PF">
+				Added requiredTableLocking() method to SynchronizationStrategy interface.
+			</action>
+			<action type="update" context="code" dev="PF">
+				During database activation, table locking is only performed if required by synchronization strategy.
+			</action>
+			<action type="add" context="code" dev="PF">
+				All vendor specific customizations to HA-JDBC are now encompassed in the Dialect attribute of a cluster.  The validate-sql attribute has been removed.
+			</action>
+			<action type="add" context="code" dev="PF">
+				Created dialects for PostgreSQL, MaxDB, Derby, and a default dialect.
+			</action>
+			<action type="fix" context="code" dev="PF">
+				Changed default table locking query used during synchronization to use an innocuous UPDATE statement.
+			</action>
+			<action type="fix" context="code" dev="PF">
+				Added more explicit logging for exceptions thrown during HA-JDBC initialization that end up getting masked by JiBX.
+			</action>
 		</release>
 		<release version="1.1-beta-1" date="December 13, 2005">
 			<action type="add" context="lib" dev="PF">
