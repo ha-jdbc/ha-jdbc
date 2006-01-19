@@ -36,7 +36,6 @@ public class Messages
 	public static final String CLUSTER_STATE_STORE_FAILED = "cluster-state-store-failed";
 	public static final String CONFIG_FAILED = "config-failed";
 	public static final String CONFIG_NOT_FOUND = "config-not-found";
-	public static final String CONNECTION_CLOSE_FAILED = "connection-close-failed";
 	public static final String DATABASE_ACTIVATE_FAILED = "database-activate-failed";
 	public static final String DATABASE_ACTIVATED = "database-activated";
 	public static final String DATABASE_COMMAND_RECEIVED = "database-command-received";
