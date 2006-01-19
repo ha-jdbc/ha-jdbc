@@ -86,11 +86,12 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 	 */
 	public void synchronize(Connection inactiveConnection, Connection activeConnection, Map<String, List<String>> schemaMap, Dialect dialect) throws SQLException
 	{
+		DatabaseMetaData metaData = inactiveConnection.getMetaData();		
+		
 		inactiveConnection.setAutoCommit(true);
 		
-		DatabaseMetaData metaData = inactiveConnection.getMetaData();
 		Statement statement = inactiveConnection.createStatement();
-		
+
 		// Drop foreign key constraints on the inactive database
 		for (ForeignKeyConstraint key: ForeignKeyConstraint.collect(inactiveConnection, schemaMap))
 		{
@@ -100,12 +101,10 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 		statement.executeBatch();
 		statement.clearBatch();
 		
-		inactiveConnection.setAutoCommit(false);
-		
-		DatabaseMetaData databaseMetaData = inactiveConnection.getMetaData();
-		
 		Map<Short, String> primaryKeyColumnMap = new TreeMap<Short, String>();
 		Set<Integer> primaryKeyColumnIndexSet = new LinkedHashSet<Integer>();
+		
+		inactiveConnection.setAutoCommit(false);
 		
 		try
 		{
@@ -121,7 +120,7 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 					primaryKeyColumnIndexSet.clear();
 					
 					// Fetch primary keys of this table
-					ResultSet primaryKeyResultSet = databaseMetaData.getPrimaryKeys(null, schema, table);
+					ResultSet primaryKeyResultSet = metaData.getPrimaryKeys(null, schema, table);
 					String primaryKeyName = null;
 					
 					while (primaryKeyResultSet.next())
@@ -407,26 +406,36 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 					log.info(Messages.getMessage(Messages.DELETE_COUNT, deleteCount, qualifiedTable));			
 				}
 			}
-	
-			inactiveConnection.setAutoCommit(true);
-
-			// Collect foreign key constraints from the active database and create them on the inactive database
-			for (ForeignKeyConstraint key: ForeignKeyConstraint.collect(activeConnection, schemaMap))
-			{
-				statement.addBatch(dialect.getCreateForeignKeyConstraintSQL(metaData, key.getName(), key.getSchema(), key.getTable(), key.getColumn(), key.getForeignSchema(), key.getForeignTable(), key.getForeignColumn()));
-			}
-			
-			statement.executeBatch();
-			statement.close();
 		}
 		catch (ExecutionException e)
 		{
+			this.rollback(inactiveConnection);
+			
 			throw new net.sf.hajdbc.SQLException(e.getCause());
 		}
 		catch (InterruptedException e)
 		{
+			this.rollback(inactiveConnection);
+			
 			throw new net.sf.hajdbc.SQLException(e);
 		}
+		catch (SQLException e)
+		{
+			this.rollback(inactiveConnection);
+			
+			throw e;
+		}
+		
+		inactiveConnection.setAutoCommit(true);
+
+		// Collect foreign key constraints from the active database and create them on the inactive database
+		for (ForeignKeyConstraint key: ForeignKeyConstraint.collect(activeConnection, schemaMap))
+		{
+			statement.addBatch(dialect.getCreateForeignKeyConstraintSQL(metaData, key.getName(), key.getSchema(), key.getTable(), key.getColumn(), key.getForeignSchema(), key.getForeignTable(), key.getForeignColumn()));
+		}
+		
+		statement.executeBatch();
+		statement.close();
 	}
 
 	private boolean equals(Object object1, Object object2)

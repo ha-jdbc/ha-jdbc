@@ -249,6 +249,7 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 				for (Connection connection: connectionList)
 				{
 					connection.rollback();
+					connection.setAutoCommit(true);
 				}
 			}
 			
@@ -279,7 +280,7 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 			}
 			catch (java.sql.SQLException e)
 			{
-				log.warn(Messages.getMessage(Messages.CONNECTION_CLOSE_FAILED, database), e);
+				log.warn(e.getMessage(), e);
 			}
 		}
 	}

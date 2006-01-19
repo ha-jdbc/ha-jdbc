@@ -212,26 +212,36 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 					inactiveConnection.commit();
 				}
 			}
-			
-			inactiveConnection.setAutoCommit(true);
-	
-			// Collect foreign keys from active database and create them on inactive database
-			for (ForeignKeyConstraint key: ForeignKeyConstraint.collect(activeConnection, schemaMap))
-			{
-				statement.addBatch(dialect.getCreateForeignKeyConstraintSQL(metaData, key.getName(), key.getSchema(), key.getTable(), key.getColumn(), key.getForeignSchema(), key.getForeignTable(), key.getForeignColumn()));
-			}
-			
-			statement.executeBatch();
-			statement.close();
 		}
 		catch (InterruptedException e)
 		{
+			this.rollback(inactiveConnection);
+
 			throw new net.sf.hajdbc.SQLException(e);
 		}
 		catch (ExecutionException e)
 		{
+			this.rollback(inactiveConnection);
+
 			throw new net.sf.hajdbc.SQLException(e.getCause());
 		}
+		catch (SQLException e)
+		{
+			this.rollback(inactiveConnection);
+			
+			throw e;
+		}
+		
+		inactiveConnection.setAutoCommit(true);
+
+		// Collect foreign keys from active database and create them on inactive database
+		for (ForeignKeyConstraint key: ForeignKeyConstraint.collect(activeConnection, schemaMap))
+		{
+			statement.addBatch(dialect.getCreateForeignKeyConstraintSQL(metaData, key.getName(), key.getSchema(), key.getTable(), key.getColumn(), key.getForeignSchema(), key.getForeignTable(), key.getForeignColumn()));
+		}
+		
+		statement.executeBatch();
+		statement.close();
 	}
 	
 	/**

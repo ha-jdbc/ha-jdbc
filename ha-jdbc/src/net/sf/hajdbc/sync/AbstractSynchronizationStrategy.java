@@ -24,6 +24,7 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
+import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -203,5 +204,18 @@ public abstract class AbstractSynchronizationStrategy implements Synchronization
 	public boolean requiresTableLocking()
 	{
 		return true;
+	}
+	
+	protected void rollback(Connection connection)
+	{
+		try
+		{
+			connection.rollback();
+			connection.setAutoCommit(true);
+		}
+		catch (java.sql.SQLException e)
+		{
+			log.warn(e.getMessage(), e);
+		}
 	}
 }
