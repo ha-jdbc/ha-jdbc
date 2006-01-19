@@ -21,10 +21,12 @@
 package net.sf.hajdbc.sync;
 
 /**
+ * Abstract base class for constraints.
+ * 
  * @author  Paul Ferraro
- * @since   1.0
+ * @since   1.1
  */
-public class Constraint
+public abstract class Constraint
 {
 	protected String name;
 	protected String schema;

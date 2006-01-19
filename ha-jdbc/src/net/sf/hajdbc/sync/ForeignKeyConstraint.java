@@ -30,8 +30,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Represents a foreign key constraint on a table.
+ * 
  * @author  Paul Ferraro
- * @since   1.0
+ * @since   1.1
  */
 public class ForeignKeyConstraint extends Constraint
 {
