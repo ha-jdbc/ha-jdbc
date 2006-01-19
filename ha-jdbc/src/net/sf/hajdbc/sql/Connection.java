@@ -464,15 +464,13 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 	/**
 	 * @see java.sql.Connection#releaseSavepoint(java.sql.Savepoint)
 	 */
-	public void releaseSavepoint(java.sql.Savepoint savepoint) throws SQLException
+	public void releaseSavepoint(final java.sql.Savepoint savepoint) throws SQLException
 	{
-		final Savepoint proxy = (Savepoint) savepoint;
-		
 		Operation<java.sql.Connection, Void> operation = new Operation<java.sql.Connection, Void>()
 		{
 			public Void execute(Database database, java.sql.Connection connection) throws SQLException
 			{
-				connection.releaseSavepoint(proxy);
+				connection.releaseSavepoint(Savepoint.class.cast(savepoint));
 				
 				return null;
 			}
@@ -502,15 +500,13 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 	/**
 	 * @see java.sql.Connection#rollback(java.sql.Savepoint)
 	 */
-	public void rollback(java.sql.Savepoint savepoint) throws SQLException
+	public void rollback(final java.sql.Savepoint savepoint) throws SQLException
 	{
-		final Savepoint proxy = (Savepoint) savepoint;
-		
 		Operation<java.sql.Connection, Void> operation = new Operation<java.sql.Connection, Void>()
 		{
 			public Void execute(Database database, java.sql.Connection connection) throws SQLException
 			{
-				connection.rollback(proxy);
+				connection.rollback(Savepoint.class.cast(savepoint));
 				
 				return null;
 			}

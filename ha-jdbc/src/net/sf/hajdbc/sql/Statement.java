@@ -348,7 +348,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 	 */
 	public java.sql.Connection getConnection()
 	{
-		return (Connection) this.parent;
+		return Connection.class.cast(this.parent);
 	}
 
 	/**

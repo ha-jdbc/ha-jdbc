@@ -116,14 +116,12 @@ public class XAResource extends SQLObject<javax.transaction.xa.XAResource, javax
 			{
 				try
 				{
-					if (this.getClass().isInstance(xaResource))
+					if (XAResource.class.isInstance(resource))
 					{
-						XAResource proxy = (XAResource) xaResource;
-						
-						return resource.isSameRM(proxy.getObject(database));
+						return resource.isSameRM(XAResource.class.cast(resource).getObject(database));
 					}
-
-					return resource.isSameRM(xaResource);
+					
+					return resource.isSameRM(resource);
 				}
 				catch (javax.transaction.xa.XAException e)
 				{
@@ -366,7 +364,7 @@ public class XAResource extends SQLObject<javax.transaction.xa.XAResource, javax
 	{
 		if (javax.transaction.xa.XAException.class.isInstance(e.getCause()))
 		{
-			return (javax.transaction.xa.XAException) e.getCause();
+			return javax.transaction.xa.XAException.class.cast(e.getCause());
 		}
 
 		return new XAException(e);

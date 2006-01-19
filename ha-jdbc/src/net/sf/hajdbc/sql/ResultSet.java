@@ -1000,7 +1000,7 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public java.sql.Statement getStatement()
 	{
-		return (Statement) this.parent;
+		return Statement.class.cast(this.parent);
 	}
 
 	/**
