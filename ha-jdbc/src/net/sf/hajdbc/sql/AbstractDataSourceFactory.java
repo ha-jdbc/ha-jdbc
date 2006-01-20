@@ -71,7 +71,7 @@ public abstract class AbstractDataSourceFactory<T> implements ObjectFactory
 		if (databaseCluster == null) return null;
 		
 		dataSource.setName(id);
-		dataSource.setConnectionFactory(new ConnectionFactory(databaseCluster));
+		dataSource.setDatabaseCluster(databaseCluster);
 		
 		return dataSource;
 	}

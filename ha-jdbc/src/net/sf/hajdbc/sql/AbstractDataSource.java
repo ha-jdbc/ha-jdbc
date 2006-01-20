@@ -24,6 +24,8 @@ import javax.naming.Reference;
 import javax.naming.Referenceable;
 import javax.naming.StringRefAddr;
 
+import net.sf.hajdbc.DatabaseCluster;
+
 
 
 /**
@@ -36,16 +38,7 @@ public abstract class AbstractDataSource implements Referenceable
 	/**	Property that identifies this data source */
 	public static final String NAME = "name";
 	
-	protected ConnectionFactory connectionFactory;
 	private String name;
-
-	/**
-	 * @param connectionFactory the connectionFactory to set.
-	 */
-	public void setConnectionFactory(ConnectionFactory connectionFactory)
-	{
-		this.connectionFactory = connectionFactory;
-	}
 
 	/**
 	 * Returns the name of this DataSource
@@ -65,6 +58,11 @@ public abstract class AbstractDataSource implements Referenceable
 	{
 		this.name = name;
 	}
+	
+	/**
+	 * @param databaseCluster
+	 */
+	public abstract void setDatabaseCluster(DatabaseCluster databaseCluster);
 	
 	/**
 	 * @see javax.naming.Referenceable#getReference()

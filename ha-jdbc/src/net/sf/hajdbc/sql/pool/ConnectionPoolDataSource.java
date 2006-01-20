@@ -24,9 +24,11 @@ import java.io.PrintWriter;
 import java.sql.SQLException;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Operation;
 import net.sf.hajdbc.sql.AbstractDataSource;
 import net.sf.hajdbc.sql.AbstractDataSourceFactory;
+import net.sf.hajdbc.sql.ConnectionFactory;
 
 /**
  * @author  Paul Ferraro
@@ -35,6 +37,16 @@ import net.sf.hajdbc.sql.AbstractDataSourceFactory;
  */
 public class ConnectionPoolDataSource extends AbstractDataSource implements javax.sql.ConnectionPoolDataSource
 {
+	private ConnectionFactory<javax.sql.ConnectionPoolDataSource> connectionFactory = null;
+	
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractDataSource#setDatabaseCluster(net.sf.hajdbc.DatabaseCluster)
+	 */
+	public void setDatabaseCluster(DatabaseCluster databaseCluster)
+	{
+		this.connectionFactory = new ConnectionFactory<javax.sql.ConnectionPoolDataSource>(databaseCluster, javax.sql.ConnectionPoolDataSource.class);
+	}
+	
 	/**
 	 * @see javax.sql.ConnectionPoolDataSource#getPooledConnection()
 	 */
@@ -80,7 +92,7 @@ public class ConnectionPoolDataSource extends AbstractDataSource implements java
 			}
 		};
 		
-		return (Integer) this.connectionFactory.executeReadFromDriver(operation);
+		return this.connectionFactory.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -114,7 +126,7 @@ public class ConnectionPoolDataSource extends AbstractDataSource implements java
 			}
 		};
 		
-		return (PrintWriter) this.connectionFactory.executeReadFromDriver(operation);
+		return this.connectionFactory.executeReadFromDriver(operation);
 	}
 
 	/**

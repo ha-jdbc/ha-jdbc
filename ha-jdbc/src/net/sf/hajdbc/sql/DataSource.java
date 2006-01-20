@@ -24,6 +24,7 @@ import java.io.PrintWriter;
 import java.sql.SQLException;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Operation;
 
 
@@ -33,6 +34,16 @@ import net.sf.hajdbc.Operation;
  */
 public class DataSource extends AbstractDataSource implements javax.sql.DataSource
 {
+	private ConnectionFactory<javax.sql.DataSource> connectionFactory = null;
+	
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractDataSource#setDatabaseCluster(net.sf.hajdbc.DatabaseCluster)
+	 */
+	public void setDatabaseCluster(DatabaseCluster databaseCluster)
+	{
+		this.connectionFactory = new ConnectionFactory<javax.sql.DataSource>(databaseCluster, javax.sql.DataSource.class);
+	}
+	
 	/**
 	 * @see javax.sql.DataSource#getLoginTimeout()
 	 */
@@ -46,7 +57,7 @@ public class DataSource extends AbstractDataSource implements javax.sql.DataSour
 			}
 		};
 		
-		return (Integer) this.connectionFactory.executeReadFromDriver(operation);
+		return this.connectionFactory.executeReadFromDriver(operation);
 	}
 
 	/**
@@ -80,7 +91,7 @@ public class DataSource extends AbstractDataSource implements javax.sql.DataSour
 			}
 		};
 		
-		return (PrintWriter) this.connectionFactory.executeReadFromDriver(operation);
+		return this.connectionFactory.executeReadFromDriver(operation);
 	}
 
 	/**

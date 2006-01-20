@@ -92,7 +92,7 @@ public final class Driver implements java.sql.Driver
 			}	
 		};
 		
-		return new Connection<java.sql.Driver>(new ConnectionFactory(databaseCluster), operation, new FileSupportImpl());
+		return new Connection<java.sql.Driver>(this.getConnectionFactory(databaseCluster), operation, new FileSupportImpl());
 	}
 	
 	/**
@@ -131,7 +131,7 @@ public final class Driver implements java.sql.Driver
 			}	
 		};
 		
-		return (DriverPropertyInfo[]) new ConnectionFactory(databaseCluster).executeReadFromDriver(operation);
+		return this.getConnectionFactory(databaseCluster).executeReadFromDriver(operation);
 	}
 	
 	/**
@@ -154,5 +154,10 @@ public final class Driver implements java.sql.Driver
 		String name = matcher.group(1);
 		
 		return DatabaseClusterFactory.getInstance().getDatabaseCluster(name);
+	}
+	
+	private ConnectionFactory<java.sql.Driver> getConnectionFactory(DatabaseCluster databaseCluster)
+	{
+		return new ConnectionFactory<java.sql.Driver>(databaseCluster, java.sql.Driver.class);
 	}
 }

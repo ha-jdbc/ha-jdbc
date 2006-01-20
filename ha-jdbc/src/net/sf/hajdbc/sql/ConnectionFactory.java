@@ -20,22 +20,26 @@
  */
 package net.sf.hajdbc.sql;
 
+import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.SQLObject;
+import net.sf.hajdbc.util.Collections;
 
 /**
  * @author  Paul Ferraro
  * @version $Revision$
+ * @param <E> 
  * @since   1.0
  */
-public class ConnectionFactory extends SQLObject
+public class ConnectionFactory<E> extends SQLObject<E, Void>
 {
 	/**
 	 * Constructs a new ConnectionFactory.
 	 * @param databaseCluster a database cluster
+	 * @param targetClass target class of 
 	 */
-	public ConnectionFactory(DatabaseCluster databaseCluster)
+	public ConnectionFactory(DatabaseCluster databaseCluster, Class<E> targetClass)
 	{
-		super(databaseCluster, databaseCluster.getConnectionFactoryMap());
+		super(databaseCluster, Collections.cast(databaseCluster.getConnectionFactoryMap(), Database.class, targetClass));
 	}
 }
