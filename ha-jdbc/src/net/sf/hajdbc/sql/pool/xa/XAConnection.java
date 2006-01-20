@@ -40,7 +40,7 @@ public class XAConnection extends PooledConnection<javax.sql.XAConnection, javax
 	 * @param operation the operation that will create XAConnections
 	 * @throws SQLException if operation execution fails
 	 */
-	public XAConnection(ConnectionFactory dataSource, Operation<javax.sql.XADataSource, javax.sql.XAConnection> operation) throws SQLException
+	public XAConnection(ConnectionFactory<javax.sql.XADataSource> dataSource, Operation<javax.sql.XADataSource, javax.sql.XAConnection> operation) throws SQLException
 	{
 		super(dataSource, operation);
 	}

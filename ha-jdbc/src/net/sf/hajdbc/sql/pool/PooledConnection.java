@@ -46,7 +46,7 @@ public class PooledConnection<E extends javax.sql.PooledConnection, P> extends S
 	 * @param operation an operation that will create PooledConnections
 	 * @throws SQLException if operation execution fails
 	 */
-	public PooledConnection(ConnectionFactory dataSource, Operation<P, E> operation) throws SQLException
+	public PooledConnection(ConnectionFactory<P> dataSource, Operation<P, E> operation) throws SQLException
 	{
 		super(dataSource, operation);
 	}
