@@ -22,8 +22,6 @@
 		<value name="max-idle" set-method="setMaxIdle" style="attribute" usage="optional" default="60"></value>
 		<collection add-method="addDatabase" item-type="net.sf.hajdbc.sql.DriverDatabase"></collection>
 		<collection add-method="addDatabase" item-type="net.sf.hajdbc.sql.DataSourceDatabase"></collection>
-		<collection add-method="addDatabase" item-type="net.sf.hajdbc.sql.pool.ConnectionPoolDataSourceDatabase"></collection>
-		<collection add-method="addDatabase" item-type="net.sf.hajdbc.sql.pool.xa.XADataSourceDatabase"></collection>
 	</mapping>
 	<mapping class="net.sf.hajdbc.sql.AbstractDatabase" abstract="true">
 		<value name="id" field="id" style="attribute"></value>
