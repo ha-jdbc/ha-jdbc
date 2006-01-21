@@ -20,18 +20,58 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.util.Hashtable;
+
+import javax.naming.Context;
+import javax.naming.Name;
+import javax.naming.RefAddr;
+import javax.naming.Reference;
+import javax.naming.spi.ObjectFactory;
+
+import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.DatabaseClusterFactory;
+
 
 /**
  * @author  Paul Ferraro
  * @version $Revision$
  */
-public class DataSourceFactory extends AbstractDataSourceFactory<javax.sql.DataSource>
+public class DataSourceFactory implements ObjectFactory
 {
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractDataSourceFactory#getObjectClass()
+	 * @see javax.naming.spi.ObjectFactory#getObjectInstance(java.lang.Object, javax.naming.Name, javax.naming.Context, java.util.Hashtable)
 	 */
-	protected Class getObjectClass()
+	public Object getObjectInstance(Object object, Name name, Context context, Hashtable<?,?> environment) throws Exception
 	{
-		return DataSource.class;
+		if (object == null) return null;
+		
+		if (!Reference.class.isInstance(object)) return null;
+		
+		Reference reference = Reference.class.cast(object);
+		
+		String className = reference.getClassName();
+		
+		if (className == null) return null;
+		
+		if (!DataSource.class.getName().equals(className)) return null;
+		
+		DataSource dataSource = new DataSource();
+		
+		RefAddr addr = reference.get(DataSource.NAME);
+		
+		if (addr == null) return null;
+		
+		String id = (String) addr.getContent();
+
+		if (id == null) return null;
+		
+		DatabaseCluster databaseCluster = DatabaseClusterFactory.getInstance().getDatabaseCluster(id);
+		
+		if (databaseCluster == null) return null;
+		
+		dataSource.setName(id);
+		dataSource.setConnectionFactory(new ConnectionFactory<javax.sql.DataSource>(databaseCluster, javax.sql.DataSource.class));
+		
+		return dataSource;
 	}
 }

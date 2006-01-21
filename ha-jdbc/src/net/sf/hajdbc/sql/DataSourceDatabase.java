@@ -35,8 +35,28 @@ import net.sf.hajdbc.SQLException;
  * @version $Revision$
  * @since   1.0
  */
-public class DataSourceDatabase extends AbstractDataSourceDatabase<DataSource>
+public class DataSourceDatabase extends AbstractDatabase<DataSource>
 {
+	protected String name;
+	
+	/**
+	 * Return the JNDI name of this DataSource
+	 * @return a JNDI name
+	 */
+	public String getName()
+	{
+		return this.name;
+	}
+	
+	/**
+	 * Sets the JNDI name of this DataSource
+	 * @param name a JNDI name
+	 */
+	public void setName(String name)
+	{
+		this.name = name;
+	}
+	
 	/**
 	 * @see net.sf.hajdbc.Database#connect(T)
 	 */
@@ -56,25 +76,15 @@ public class DataSourceDatabase extends AbstractDataSourceDatabase<DataSource>
 	
 			Object object = context.lookup(this.name);
 			
-			if (!this.getDataSourceClass().isInstance(object))
-			{
-				throw new SQLException(Messages.getMessage(Messages.NOT_INSTANCE_OF, this.name, this.getDataSourceClass().getName()));
-			}
-			
-			return (DataSource) object;
+			return DataSource.class.cast(object);
+		}
+		catch (ClassCastException e)
+		{
+			throw new SQLException(Messages.getMessage(Messages.NOT_INSTANCE_OF, this.name, DataSource.class.getName()), e);
 		}
 		catch (NamingException e)
 		{
 			throw new SQLException(Messages.getMessage(Messages.JNDI_LOOKUP_FAILED, this.name), e);
 		}
-	}
-	
-	/**
-	 * Returns the implementation class for this DataSource
-	 * @return a DataSource implementation class
-	 */
-	protected Class<DataSource> getDataSourceClass()
-	{
-		return DataSource.class;
 	}
 }

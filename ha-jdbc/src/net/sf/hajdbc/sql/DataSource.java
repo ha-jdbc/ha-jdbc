@@ -23,8 +23,11 @@ package net.sf.hajdbc.sql;
 import java.io.PrintWriter;
 import java.sql.SQLException;
 
+import javax.naming.Reference;
+import javax.naming.Referenceable;
+import javax.naming.StringRefAddr;
+
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Operation;
 
 
@@ -32,16 +35,52 @@ import net.sf.hajdbc.Operation;
  * @author Paul Ferraro
  * @version $Revision$
  */
-public class DataSource extends AbstractDataSource implements javax.sql.DataSource
+public class DataSource implements javax.sql.DataSource, Referenceable
 {
-	private ConnectionFactory<javax.sql.DataSource> connectionFactory = null;
+	/**	Property that identifies this data source */
+	public static final String NAME = "name";
+	
+	private String name;
+	private ConnectionFactory<javax.sql.DataSource> connectionFactory;
+
+	/**
+	 * Returns the name of this DataSource
+	 * @return the name of this DataSource
+	 */
+	public String getName()
+	{
+		return this.name;
+	}
 	
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractDataSource#setDatabaseCluster(net.sf.hajdbc.DatabaseCluster)
+	 * Sets the name of this DataSource
+	 * @param name the name of this DataSource
+	 * @throws java.sql.SQLException
 	 */
-	public void setDatabaseCluster(DatabaseCluster databaseCluster)
+	public void setName(String name) throws java.sql.SQLException
 	{
-		this.connectionFactory = new ConnectionFactory<javax.sql.DataSource>(databaseCluster, javax.sql.DataSource.class);
+		this.name = name;
+	}
+	
+	/**
+	 * @see javax.naming.Referenceable#getReference()
+	 */
+	public final Reference getReference()
+	{
+        Reference ref = new Reference(this.getClass().getName(), DataSourceFactory.class.getName(), null);
+        
+        ref.add(new StringRefAddr(NAME, this.getName()));
+        
+        return ref;
+	}
+	
+	/**
+	 * Set the connection factory for this datasource.
+	 * @param connectionFactory a factory for creating database connections
+	 */
+	public void setConnectionFactory(ConnectionFactory<javax.sql.DataSource> connectionFactory)
+	{
+		this.connectionFactory = connectionFactory;
 	}
 	
 	/**
@@ -142,13 +181,5 @@ public class DataSource extends AbstractDataSource implements javax.sql.DataSour
 		};
 		
 		return new Connection<javax.sql.DataSource>(this.connectionFactory, operation, new FileSupportImpl());
-	}
-
-	/**
-	 * @see net.sf.hajdbc.sql.AbstractDataSource#getObjectFactoryClass()
-	 */
-	protected Class<? extends AbstractDataSourceFactory> getObjectFactoryClass()
-	{
-		return DataSourceFactory.class;
 	}
 }
