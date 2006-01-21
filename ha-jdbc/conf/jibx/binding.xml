@@ -41,12 +41,4 @@
 		<value name="name" field="name"></value>
 		<structure map-as="net.sf.hajdbc.sql.AbstractDatabase"></structure>
 	</mapping>
-	<mapping name="pool-datasource" class="net.sf.hajdbc.sql.pool.ConnectionPoolDataSourceDatabase" extends="net.sf.hajdbc.sql.AbstractDatabase">
-		<value name="name" field="name"></value>
-		<structure map-as="net.sf.hajdbc.sql.AbstractDatabase"></structure>
-	</mapping>
-	<mapping name="xa-datasource" class="net.sf.hajdbc.sql.pool.xa.XADataSourceDatabase" extends="net.sf.hajdbc.sql.AbstractDatabase">
-		<value name="name" field="name"></value>
-		<structure map-as="net.sf.hajdbc.sql.AbstractDatabase"></structure>
-	</mapping>
 </binding>
