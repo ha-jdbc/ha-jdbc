@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (C) 2004 Paul Ferraro
+ * Copyright (c) 2004-2006 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -22,20 +22,23 @@ package net.sf.hajdbc.sql.pool.xa;
 
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.Xid;
 
 import net.sf.hajdbc.Balancer;
-import net.sf.hajdbc.ConnectionFactory;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.EasyMockTestCase;
 import net.sf.hajdbc.Operation;
+import net.sf.hajdbc.SQLObject;
+import net.sf.hajdbc.sql.ConnectionFactory;
 
-import org.easymock.MockControl;
+import org.easymock.EasyMock;
 
-import edu.emory.mathcs.backport.java.util.concurrent.Executors;
+import java.util.concurrent.Executors;
 
 /**
  * @author  Paul Ferraro
@@ -43,43 +46,34 @@ import edu.emory.mathcs.backport.java.util.concurrent.Executors;
  */
 public class TestXAResource extends EasyMockTestCase
 {
-	private MockControl databaseClusterControl = this.createControl(DatabaseCluster.class);
-	private DatabaseCluster databaseCluster = (DatabaseCluster) this.databaseClusterControl.getMock();
+	private DatabaseCluster databaseCluster = this.control.createMock(DatabaseCluster.class);
 	
-	private javax.sql.XAConnection connection = (javax.sql.XAConnection) this.createMock(javax.sql.XAConnection.class);
+	private javax.sql.XAConnection connection = this.control.createMock(javax.sql.XAConnection.class);
 	
-	private MockControl sqlResourceControl = this.createControl(javax.transaction.xa.XAResource.class);
-	private javax.transaction.xa.XAResource sqlResource = (javax.transaction.xa.XAResource) this.sqlResourceControl.getMock();
+	private javax.transaction.xa.XAResource sqlResource = this.control.createMock(javax.transaction.xa.XAResource.class);
 	
-	private MockControl databaseControl = this.createControl(Database.class);
-	private Database database = (Database) this.databaseControl.getMock();
+	private Database database = this.control.createMock(Database.class);
 	
-	private MockControl balancerControl = this.createControl(Balancer.class);
-	private Balancer balancer = (Balancer) this.balancerControl.getMock();
+	private Balancer balancer = this.control.createMock(Balancer.class);
 	
 	private XAResource resource;
-	private Database[] databases = new Database[] { this.database };
+	private List<Database> databaseList = Collections.singletonList(this.database);
 	
 	/**
 	 * @see junit.framework.TestCase#setUp()
 	 */
 	protected void setUp() throws Exception
 	{
-		this.databaseCluster.getConnectionFactoryMap();
-		this.databaseClusterControl.setReturnValue(Collections.singletonMap(this.database, new Object()));
+		Map map = Collections.singletonMap(this.database, new Object());
+		EasyMock.expect(this.databaseCluster.getConnectionFactoryMap()).andReturn(map);
 		
-		this.databaseCluster.getExecutor();
-		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor(), 2);
+		EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(Executors.newSingleThreadExecutor()).times(2);
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer).times(4);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList).times(4);
 		
-		this.databaseCluster.getBalancer();
-		this.databaseClusterControl.setReturnValue(this.balancer, 4);
-		
-		this.balancer.toArray();
-		this.balancerControl.setReturnValue(this.databases, 4);
-		
-		this.replay();
+		this.control.replay();
 
-		ConnectionFactory connectionFactory = new ConnectionFactory(this.databaseCluster);
+		ConnectionFactory connectionFactory = new ConnectionFactory(this.databaseCluster, Object.class);
 		
 		Operation operation = new Operation()
 		{
@@ -91,9 +85,9 @@ public class TestXAResource extends EasyMockTestCase
 
 		XAConnection connection = new XAConnection(connectionFactory, operation);
 		
-		XAConnectionOperation connectionOperation = new XAConnectionOperation()
-		{			
-			public Object execute(javax.sql.XAConnection connection) throws SQLException
+		Operation connectionOperation = new Operation()
+		{
+			public Object execute(Database database, Object sqlObject) throws SQLException
 			{
 				return TestXAResource.this.sqlResource;
 			}
@@ -101,186 +95,182 @@ public class TestXAResource extends EasyMockTestCase
 		
 		this.resource = new XAResource(connection, connectionOperation);
 
-		this.verify();
-		this.reset();
+		this.control.verify();
+		this.control.reset();
 	}
 	
+	/**
+	 * Test method for {@link SQLObject#getObject(Database)}
+	 */
 	public void testGetObject()
 	{
-		this.replay();
+		this.control.replay();
 		
 		Object resource = this.resource.getObject(this.database);
 		
-		this.verify();
+		this.control.verify();
 		
 		assertSame(this.sqlResource, resource);
 	}
 
+	/**
+	 * Test method for {@link SQLObject#getDatabaseCluster()}
+	 */
 	public void testGetDatabaseCluster()
 	{
-		this.replay();
+		this.control.replay();
 		
 		DatabaseCluster databaseCluster = this.resource.getDatabaseCluster();
 		
-		this.verify();
+		this.control.verify();
 		
 		assertSame(this.databaseCluster, databaseCluster);
 	}
 
+	/**
+	 * Test method for {@link SQLObject#handleExceptions(Map)}
+	 */
 	public void testHandleException()
 	{
 		try
 		{
-			this.databaseCluster.deactivate(this.database);
-			this.databaseClusterControl.setReturnValue(false);
+			EasyMock.expect(this.databaseCluster.deactivate(this.database)).andReturn(false);
 			
-			this.replay();
+			this.control.replay();
 			
 			this.resource.handleExceptions(Collections.singletonMap(this.database, new SQLException()));
 			
-			this.verify();
+			this.control.verify();
 		}
 		catch (SQLException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.pool.xa.XAResource.getTransactionTimeout()'
+	/**
+	 * Test method for {@link XAResource#getTransactionTimeout()}
 	 */
 	public void testGetTransactionTimeout()
 	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		
 		try
 		{
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer);
+			EasyMock.expect(this.sqlResource.getTransactionTimeout()).andReturn(1);
 			
-			this.balancer.first();
-			this.balancerControl.setReturnValue(this.database);
-			
-			this.sqlResource.getTransactionTimeout();
-			this.sqlResourceControl.setReturnValue(1);
-			
-			this.replay();
+			this.control.replay();
 			
 			int timeout = this.resource.getTransactionTimeout();
 			
-			this.verify();
+			this.control.verify();
 			
 			assertEquals(1, timeout);
 		}
 		catch (XAException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.pool.xa.XAResource.setTransactionTimeout(int)'
+	/**
+	 * Test method for {@link XAResource#setTransactionTimeout(int)}
 	 */
 	public void testSetTransactionTimeout()
 	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
 		try
 		{
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
+			EasyMock.expect(this.sqlResource.setTransactionTimeout(1)).andReturn(true);
 			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 			
-			this.sqlResource.setTransactionTimeout(1);
-			this.sqlResourceControl.setReturnValue(true);
-			
-			this.replay();
+			this.control.replay();
 			
 			boolean value = this.resource.setTransactionTimeout(1);
 			
-			this.verify();
+			this.control.verify();
 			
 			assertEquals(true, value);
 		}
 		catch (XAException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.pool.xa.XAResource.isSameRM(XAResource)'
+	/**
+	 * Test method for {@link XAResource#isSameRM(XAResource)}
 	 */
 	public void testIsSameRM()
 	{
-		javax.transaction.xa.XAResource resource = (javax.transaction.xa.XAResource) this.createMock(javax.transaction.xa.XAResource.class);
+		javax.transaction.xa.XAResource resource = EasyMock.createMock(javax.transaction.xa.XAResource.class);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.first()).andReturn(this.database);
 		
 		try
 		{
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer);
+			EasyMock.expect(this.sqlResource.isSameRM(resource)).andReturn(true);
 			
-			this.balancer.first();
-			this.balancerControl.setReturnValue(this.database);
-			
-			this.sqlResource.isSameRM(resource);
-			this.sqlResourceControl.setReturnValue(true);
-			
-			this.replay();
+			this.control.replay();
 			
 			boolean same = this.resource.isSameRM(resource);
 			
-			this.verify();
+			this.control.verify();
 			
 			assertEquals(true, same);
 		}
 		catch (XAException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.pool.xa.XAResource.recover(int)'
+	/**
+	 * Test method for {@link XAResource#recover(int)}
 	 */
 	public void testRecover()
 	{
-		Xid id = (Xid) this.createMock(Xid.class);
+		Xid id = EasyMock.createMock(Xid.class);
 		
 		Xid[] ids = new Xid[] { id };
 		
+		EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(Executors.newSingleThreadExecutor());
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
 		try
 		{
-			this.databaseCluster.getExecutor();
-			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+			EasyMock.expect(this.sqlResource.recover(1)).andReturn(ids);
 			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.sqlResource.recover(1);
-			this.sqlResourceControl.setReturnValue(ids);
-			
-			this.replay();
+			this.control.replay();
 			
 			Xid[] value = this.resource.recover(1);
 			
-			this.verify();
+			this.control.verify();
 			
 			assertSame(ids, value);
 		}
 		catch (XAException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.pool.xa.XAResource.prepare(Xid)'
+	/**
+	 * Test method for {@link XAResource#prepare(Xid)}
 	 */
 	public void testPrepare()
 	{
-		Xid id = (Xid) this.createMock(Xid.class);
+		Xid id = EasyMock.createMock(Xid.class);
 		
 		try
 		{
@@ -296,26 +286,26 @@ public class TestXAResource extends EasyMockTestCase
 			this.sqlResource.prepare(id);
 			this.sqlResourceControl.setReturnValue(1);
 			
-			this.replay();
+			this.control.replay();
 			
 			int value = this.resource.prepare(id);
 			
-			this.verify();
+			this.control.verify();
 			
 			assertEquals(1, value);
 		}
 		catch (XAException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.pool.xa.XAResource.forget(Xid)'
+	/**
+	 * Test method for {@link XAResource#forget(Xid)}
 	 */
 	public void testForget()
 	{
-		Xid id = (Xid) this.createMock(Xid.class);
+		Xid id = EasyMock.createMock(Xid.class);
 		
 		try
 		{
@@ -331,24 +321,24 @@ public class TestXAResource extends EasyMockTestCase
 			this.sqlResource.forget(id);
 			this.sqlResourceControl.setVoidCallable();
 			
-			this.replay();
+			this.control.replay();
 			
 			this.resource.forget(id);
 			
-			this.verify();
+			this.control.verify();
 		}
 		catch (XAException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.pool.xa.XAResource.rollback(Xid)'
+	/**
+	 * Test method for {@link XAResource#rollback(Xid)}
 	 */
 	public void testRollback()
 	{
-		Xid id = (Xid) this.createMock(Xid.class);
+		Xid id = EasyMock.createMock(Xid.class);
 		
 		try
 		{
@@ -364,24 +354,24 @@ public class TestXAResource extends EasyMockTestCase
 			this.sqlResource.rollback(id);
 			this.sqlResourceControl.setVoidCallable();
 			
-			this.replay();
+			this.control.replay();
 			
 			this.resource.rollback(id);
 			
-			this.verify();
+			this.control.verify();
 		}
 		catch (XAException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.pool.xa.XAResource.end(Xid, int)'
+	/**
+	 * Test method for {@link XAResource#end(Xid, int)}
 	 */
 	public void testEnd()
 	{
-		Xid id = (Xid) this.createMock(Xid.class);
+		Xid id = EasyMock.createMock(Xid.class);
 		
 		try
 		{
@@ -397,24 +387,24 @@ public class TestXAResource extends EasyMockTestCase
 			this.sqlResource.end(id, 1);
 			this.sqlResourceControl.setVoidCallable();
 			
-			this.replay();
+			this.control.replay();
 			
 			this.resource.end(id, 1);
 			
-			this.verify();
+			this.control.verify();
 		}
 		catch (XAException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.pool.xa.XAResource.start(Xid, int)'
+	/**
+	 * Test method for {@link XAResource#start(Xid, int)}
 	 */
 	public void testStart()
 	{
-		Xid id = (Xid) this.createMock(Xid.class);
+		Xid id = EasyMock.createMock(Xid.class);
 		
 		try
 		{
@@ -430,24 +420,24 @@ public class TestXAResource extends EasyMockTestCase
 			this.sqlResource.start(id, 1);
 			this.sqlResourceControl.setVoidCallable();
 			
-			this.replay();
+			this.control.replay();
 			
 			this.resource.start(id, 1);
 			
-			this.verify();
+			this.control.verify();
 		}
 		catch (XAException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.pool.xa.XAResource.commit(Xid, boolean)'
+	/**
+	 * Test method for {@link XAResource#commit(Xid, boolean)}
 	 */
 	public void testCommit()
 	{
-		Xid id = (Xid) this.createMock(Xid.class);
+		Xid id = EasyMock.createMock(Xid.class);
 		
 		try
 		{
@@ -463,15 +453,15 @@ public class TestXAResource extends EasyMockTestCase
 			this.sqlResource.commit(id, true);
 			this.sqlResourceControl.setVoidCallable();
 			
-			this.replay();
+			this.control.replay();
 			
 			this.resource.commit(id, true);
 			
-			this.verify();
+			this.control.verify();
 		}
 		catch (XAException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 }

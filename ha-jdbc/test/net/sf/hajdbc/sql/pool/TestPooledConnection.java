@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (C) 2004 Paul Ferraro
+ * Copyright (c) 2004-2006 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -23,20 +23,22 @@ package net.sf.hajdbc.sql.pool;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import javax.sql.ConnectionEventListener;
 
+import org.easymock.EasyMock;
+
 import net.sf.hajdbc.Balancer;
-import net.sf.hajdbc.ConnectionFactory;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.EasyMockTestCase;
 import net.sf.hajdbc.Operation;
 import net.sf.hajdbc.SQLObject;
+import net.sf.hajdbc.sql.ConnectionFactory;
 
-import org.easymock.MockControl;
-
-import edu.emory.mathcs.backport.java.util.concurrent.Executors;
+import java.util.concurrent.Executors;
 
 /**
  * @author  Paul Ferraro
@@ -44,218 +46,210 @@ import edu.emory.mathcs.backport.java.util.concurrent.Executors;
  */
 public class TestPooledConnection extends EasyMockTestCase
 {
-	protected MockControl databaseClusterControl = this.createControl(DatabaseCluster.class);
-	protected DatabaseCluster databaseCluster = (DatabaseCluster) this.databaseClusterControl.getMock();
+	protected DatabaseCluster databaseCluster = this.control.createMock(DatabaseCluster.class);
 	
-	protected MockControl sqlConnectionControl = this.createControl(this.getConnectionClass());
-	private javax.sql.PooledConnection sqlConnection = (javax.sql.PooledConnection) this.sqlConnectionControl.getMock();
+	protected javax.sql.PooledConnection sqlConnection = this.control.createMock(this.getConnectionClass());
 	
-	protected MockControl databaseControl = this.createControl(Database.class);
-	protected Database database = (Database) this.databaseControl.getMock();
+	protected Database database = this.control.createMock(Database.class);
 	
-	protected MockControl balancerControl = this.createControl(Balancer.class);
-	protected Balancer balancer = (Balancer) this.balancerControl.getMock();
+	protected Balancer balancer = this.control.createMock(Balancer.class);
 	
 	protected PooledConnection connection;
-	protected Database[] databases = new Database[] { this.database };
+	protected List<Database> databaseList = Collections.singletonList(this.database);
+	
+	protected Class<? extends javax.sql.PooledConnection> getConnectionClass()
+	{
+		return javax.sql.PooledConnection.class;
+	}
 	
 	/**
 	 * @see junit.framework.TestCase#setUp()
 	 */
 	protected void setUp() throws Exception
 	{
-		this.databaseCluster.getConnectionFactoryMap();
-		this.databaseClusterControl.setReturnValue(Collections.singletonMap(this.database, this.sqlConnection));
+		Map map = Collections.singletonMap(this.database, this.sqlConnection);
 		
-		this.databaseCluster.getExecutor();
-		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+		EasyMock.expect(this.databaseCluster.getConnectionFactoryMap()).andReturn(map);
 		
-		this.databaseCluster.getBalancer();
-		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(Executors.newSingleThreadExecutor());
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer).times(2);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList).times(2);
 		
-		this.balancer.toArray();
-		this.balancerControl.setReturnValue(this.databases, 2);
-		
-		this.replay();
+		this.control.replay();
 		
 		this.connection = this.createConnection();
 
-		this.verify();
-		this.reset();
+		this.control.verify();
+		this.control.reset();
 	}
-
+	
 	protected PooledConnection createConnection() throws SQLException
 	{
-		ConnectionFactory connectionFactory = new ConnectionFactory(this.databaseCluster);
+		ConnectionFactory<javax.sql.PooledConnection> connectionFactory = new ConnectionFactory<javax.sql.PooledConnection>(this.databaseCluster, javax.sql.PooledConnection.class);
 		
-		Operation operation = new Operation()
+		Operation<javax.sql.PooledConnection, javax.sql.PooledConnection> operation = new Operation<javax.sql.PooledConnection, javax.sql.PooledConnection>()
 		{
-			public Object execute(Database database, Object sqlObject) throws SQLException
+			public javax.sql.PooledConnection execute(Database database, javax.sql.PooledConnection connection) throws SQLException
 			{
-				return sqlObject;
+				return connection;
 			}
 		};
 		
 		return new PooledConnection(connectionFactory, operation);
 	}
 	
-	protected Class getConnectionClass()
-	{
-		return javax.sql.PooledConnection.class;
-	}
-	
+	/**
+	 * Test method for {@link SQLObject#getObject(Database)}
+	 */
 	public void testGetObject()
 	{
-		this.replay();
+		this.control.replay();
 		
 		Object connection = this.connection.getObject(this.database);
 		
-		this.verify();
+		this.control.verify();
 		
 		assertSame(this.sqlConnection, connection);
 	}
 
+	/**
+	 * Test method for {@link SQLObject#getDatabaseCluster()}
+	 */
 	public void testGetDatabaseCluster()
 	{
-		this.replay();
+		this.control.replay();
 		
 		DatabaseCluster databaseCluster = this.connection.getDatabaseCluster();
 		
-		this.verify();
+		this.control.verify();
 		
 		assertSame(this.databaseCluster, databaseCluster);
 	}
 
+	/**
+	 * Test method for {@link SQLObject#handleExceptions(Map)}
+	 */
 	public void testHandleException()
 	{
 		try
 		{
-			this.databaseCluster.deactivate(this.database);
-			this.databaseClusterControl.setReturnValue(false);
+			EasyMock.expect(this.databaseCluster.deactivate(this.database)).andReturn(false);
 			
-			this.replay();
+			this.control.replay();
 			
 			this.connection.handleExceptions(Collections.singletonMap(this.database, new SQLException()));
 			
-			this.verify();
+			this.control.verify();
 		}
 		catch (SQLException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 	
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.pool.PooledConnection.getConnection()'
+	/**
+	 * Test method for {@link PooledConnection#getConnection()}
 	 */
 	public void testGetConnection()
 	{
-		Connection connection1 = (Connection) this.createMock(Connection.class);
+		Connection sqlConnection = EasyMock.createMock(Connection.class);
 
-		this.databaseCluster.getExecutor();
-		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
-		
-		this.databaseCluster.getBalancer();
-		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(Executors.newSingleThreadExecutor());
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
 		try
 		{
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
+			EasyMock.expect(this.sqlConnection.getConnection()).andReturn(sqlConnection);
 			
-			this.sqlConnection.getConnection();
-			this.sqlConnectionControl.setReturnValue(connection1);
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 			
-			this.replay();
+			this.control.replay();
 			
 			Connection connection = this.connection.getConnection();
 			
-			this.verify();
+			this.control.verify();
 			
 			assertNotNull(connection);
 			assertTrue(SQLObject.class.isInstance(connection));
-			assertSame(connection1, ((SQLObject) connection).getObject(this.database));
+			assertSame(sqlConnection, SQLObject.class.cast(connection).getObject(this.database));
 		}
 		catch (SQLException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.pool.PooledConnection.close()'
+	/**
+	 * Test method for {@link PooledConnection#close()}
 	 */
 	public void testClose()
 	{
-		this.databaseCluster.getExecutor();
-		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
-		
-		this.databaseCluster.getBalancer();
-		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(Executors.newSingleThreadExecutor());
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
 		try
 		{
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
 			this.sqlConnection.close();
-			this.sqlConnectionControl.setVoidCallable();
 			
-			this.replay();
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
 			
 			this.connection.close();
 			
-			this.verify();
+			this.control.verify();
 		}
 		catch (SQLException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.pool.PooledConnection.addConnectionEventListener(ConnectionEventListener)'
+	/**
+	 * Test method for {@link PooledConnection#addConnectionEventListener(ConnectionEventListener)}
 	 */
 	public void testAddConnectionEventListener()
 	{
-		ConnectionEventListener listener = (ConnectionEventListener) this.createMock(ConnectionEventListener.class);
+		ConnectionEventListener listener = EasyMock.createMock(ConnectionEventListener.class);
 
-		this.databaseCluster.getBalancer();
-		this.databaseClusterControl.setReturnValue(this.balancer, 2);
-		
-		this.balancer.toArray();
-		this.balancerControl.setReturnValue(this.databases, 2);
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
 		this.sqlConnection.addConnectionEventListener(listener);
-		this.sqlConnectionControl.setVoidCallable();
 		
-		this.replay();
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		this.control.replay();
 		
 		this.connection.addConnectionEventListener(listener);
 		
-		this.verify();
+		this.control.verify();
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.pool.PooledConnection.removeConnectionEventListener(ConnectionEventListener)'
+	/**
+	 * Test method for {@link PooledConnection#removeConnectionEventListener(ConnectionEventListener)}
 	 */
 	public void testRemoveConnectionEventListener()
 	{
-		ConnectionEventListener listener = (ConnectionEventListener) this.createMock(ConnectionEventListener.class);
+		ConnectionEventListener listener = EasyMock.createMock(ConnectionEventListener.class);
 
-		this.databaseCluster.getBalancer();
-		this.databaseClusterControl.setReturnValue(this.balancer, 2);
-		
-		this.balancer.toArray();
-		this.balancerControl.setReturnValue(this.databases, 2);
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
 		this.sqlConnection.removeConnectionEventListener(listener);
-		this.sqlConnectionControl.setVoidCallable();
 		
-		this.replay();
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		this.control.replay();
 		
 		this.connection.removeConnectionEventListener(listener);
 		
-		this.verify();
+		this.control.verify();
 	}
 }

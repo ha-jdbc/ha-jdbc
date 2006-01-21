@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (C) 2004 Paul Ferraro
+ * Copyright (c) 2004-2006 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -21,18 +21,18 @@
 package net.sf.hajdbc.sql.pool.xa;
 
 import java.sql.SQLException;
-import java.util.Collections;
+import java.util.concurrent.Executors;
 
 import javax.transaction.xa.XAResource;
 
-import edu.emory.mathcs.backport.java.util.concurrent.Executors;
-
-import net.sf.hajdbc.ConnectionFactory;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Operation;
 import net.sf.hajdbc.SQLObject;
+import net.sf.hajdbc.sql.ConnectionFactory;
 import net.sf.hajdbc.sql.pool.PooledConnection;
 import net.sf.hajdbc.sql.pool.TestPooledConnection;
+
+import org.easymock.EasyMock;
 
 /**
  * @author  Paul Ferraro
@@ -40,31 +40,34 @@ import net.sf.hajdbc.sql.pool.TestPooledConnection;
  */
 public class TestXAConnection extends TestPooledConnection
 {
-	private javax.sql.XAConnection sqlConnection = (javax.sql.XAConnection) this.sqlConnectionControl.getMock();
-
 	protected PooledConnection createConnection() throws SQLException
 	{
-		ConnectionFactory connectionFactory = new ConnectionFactory(this.databaseCluster);
+		ConnectionFactory<javax.sql.XADataSource> connectionFactory = new ConnectionFactory<javax.sql.XADataSource>(this.databaseCluster, javax.sql.XADataSource.class);
 		
-		Operation operation = new Operation()
+		Operation<javax.sql.XADataSource, javax.sql.XAConnection> operation = new Operation<javax.sql.XADataSource, javax.sql.XAConnection>()
 		{
-			public Object execute(Database database, Object sqlObject) throws SQLException
+			public javax.sql.XAConnection execute(Database database, javax.sql.XADataSource dataSource) throws SQLException
 			{
-				return sqlObject;
+				return TestXAConnection.this.getSQLConnection();
 			}
 		};
 		
 		return new XAConnection(connectionFactory, operation);
 	}
 	
-	protected Class getConnectionClass()
+	protected Class<? extends javax.sql.PooledConnection> getConnectionClass()
 	{
 		return javax.sql.XAConnection.class;
+	}
+	
+	protected javax.sql.XAConnection getSQLConnection()
+	{
+		return javax.sql.XAConnection.class.cast(this.sqlConnection);
 	}
 
 	protected XAConnection getConnection()
 	{
-		return (XAConnection) this.connection;
+		return XAConnection.class.cast(this.connection);
 	}
 	
 	/**
@@ -72,35 +75,32 @@ public class TestXAConnection extends TestPooledConnection
 	 */
 	public void testGetXAResource()
 	{
-		XAResource resource1 = (XAResource) this.createMock(XAResource.class);
+		XAResource sqlResource = EasyMock.createMock(XAResource.class);
 
-		this.databaseCluster.getExecutor();
-		this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
-		
-		this.databaseCluster.getBalancer();
-		this.databaseClusterControl.setReturnValue(this.balancer, 2);
+		EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(Executors.newSingleThreadExecutor());
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
 		try
 		{
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
+			EasyMock.expect(this.getSQLConnection().getXAResource()).andReturn(sqlResource);
 			
-			this.sqlConnection.getXAResource();
-			this.sqlConnectionControl.setReturnValue(resource1);
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 			
-			this.replay();
+			this.control.replay();
 			
-			XAResource sqlResource = this.getConnection().getXAResource();
+			XAResource resource = this.getConnection().getXAResource();
 			
-			this.verify();
+			this.control.verify();
 			
 			assertNotNull(sqlResource);
-			assertTrue(SQLObject.class.isInstance(sqlResource));
-			assertSame(resource1, ((SQLObject) sqlResource).getObject(this.database));
+			assertTrue(SQLObject.class.isInstance(resource));
+			assertSame(sqlResource, SQLObject.class.cast(resource).getObject(this.database));
 		}
 		catch (SQLException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 }
