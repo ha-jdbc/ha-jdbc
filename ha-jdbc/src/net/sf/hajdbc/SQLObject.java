@@ -223,10 +223,10 @@ public class SQLObject<E, P>
 	public final <T> Map<Database, T> executeWriteToDatabase(final Operation<E, T> operation) throws java.sql.SQLException
 	{
 		ExecutorService executor = this.databaseCluster.getExecutor();
-		List<Database> databases = this.getDatabaseList();
+		List<Database> databaseList = this.getDatabaseList();
 		Map<Database, Future<T>> futureMap = new HashMap<Database, Future<T>>();
 		
-		for (final Database database: databases)
+		for (final Database database: databaseList)
 		{
 			final E object = this.getObject(database);
 			
@@ -244,7 +244,7 @@ public class SQLObject<E, P>
 		Map<Database, T> returnValueMap = new HashMap<Database, T>();
 		Map<Database, java.sql.SQLException> exceptionMap = new HashMap<Database, java.sql.SQLException>();
 		
-		for (Database database: databases)
+		for (Database database: databaseList)
 		{
 			Future<T> future = futureMap.get(database);
 			
@@ -271,7 +271,7 @@ public class SQLObject<E, P>
 			}
 		}
 		
-		this.deactivateNewDatabases(databases);
+		this.deactivateNewDatabases(databaseList);
 		
 		// If no databases returned successfully, return an exception back to the caller
 		if (returnValueMap.isEmpty())
@@ -304,18 +304,18 @@ public class SQLObject<E, P>
 	 */
 	public final <T> Map<Database, T> executeWriteToDriver(Operation<E, T> operation) throws java.sql.SQLException
 	{
-		List<Database> databases = this.getDatabaseList();
+		List<Database> databaseList = this.getDatabaseList();
 		
 		Map<Database, T> returnValueMap = new HashMap<Database, T>();
 
-		for (Database database: databases)
+		for (Database database: databaseList)
 		{
 			E object = this.getObject(database);
 			
 			returnValueMap.put(database, operation.execute(database, object));
 		}
 		
-		this.deactivateNewDatabases(databases);
+		this.deactivateNewDatabases(databaseList);
 		
 		this.record(operation);
 		
