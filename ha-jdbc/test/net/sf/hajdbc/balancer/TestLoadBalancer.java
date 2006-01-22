@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (C) 2005 Paul Ferraro
+ * Copyright (c) 2004-2006 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -142,7 +142,9 @@ public class TestLoadBalancer extends AbstractTestBalancer
 			}
 			catch (SQLException e)
 			{
-				TestLoadBalancer.this.fail(e);
+				e.printStackTrace(System.err);
+				
+				TestLoadBalancer.fail(e.toString());
 			}
 		}
 
@@ -174,7 +176,9 @@ public class TestLoadBalancer extends AbstractTestBalancer
 			}
 			catch (InterruptedException e)
 			{
-				TestLoadBalancer.this.fail(e);
+				e.printStackTrace(System.err);
+				
+				TestLoadBalancer.fail(e.toString());
 			}
 		}
 	}

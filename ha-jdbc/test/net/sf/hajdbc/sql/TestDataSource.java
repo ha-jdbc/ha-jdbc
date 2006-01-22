@@ -1,6 +1,6 @@
 /**
  * HA-JDBC: High-Availability JDBC
- * Copyright (C) 2005 Paul Ferraro
+ * Copyright (c) 2004-2006 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -168,7 +168,7 @@ public class TestDataSource extends DatabaseClusterTestCase
 	}
 
 	/**
-	 * Test method for {@link AbstractDataSource#getName()}
+	 * Test method for {@link DataSource#getName()}
 	 */
 	public void testGetName()
 	{
@@ -185,7 +185,7 @@ public class TestDataSource extends DatabaseClusterTestCase
 	}
 
 	/**
-	 * Test method for {@link AbstractDataSource#setName(String)}
+	 * Test method for {@link DataSource#setName(String)}
 	 */
 	public void testSetName()
 	{
@@ -200,7 +200,7 @@ public class TestDataSource extends DatabaseClusterTestCase
 	}
 
 	/**
-	 * Test method for {@link AbstractDataSource#getReference()}
+	 * Test method for {@link DataSource#getReference()}
 	 */
 	public void testGetReference()
 	{

@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (C) 2005 Paul Ferraro
+ * Copyright (c) 2004-2006 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -20,11 +20,8 @@
  */
 package net.sf.hajdbc;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-
-import org.easymock.MockControl;
+import org.easymock.EasyMock;
+import org.easymock.IMocksControl;
 
 /**
  * @author  Paul Ferraro
@@ -32,67 +29,9 @@ import org.easymock.MockControl;
  */
 public abstract class EasyMockTestCase extends junit.framework.TestCase
 {
-	private List controlList = new LinkedList();
-
-	/**
-	 * @see junit.framework.TestCase#tearDown()
-	 */
-	protected void tearDown() throws Exception
-	{
-		this.reset();
-	}
+	protected IMocksControl control = EasyMock.createControl();
 	
-	protected void reset()
-	{
-		Iterator controls = this.controlList.iterator();
-		
-		while (controls.hasNext())
-		{
-			MockControl control = (MockControl) controls.next();
-			
-			control.reset();
-		}
-	}
-	
-	protected void replay()
-	{
-		Iterator controls = this.controlList.iterator();
-		
-		while (controls.hasNext())
-		{
-			MockControl control = (MockControl) controls.next();
-			
-			control.replay();
-		}
-	}
-	
-	protected void verify()
-	{
-		Iterator controls = this.controlList.iterator();
-		
-		while (controls.hasNext())
-		{
-			MockControl control = (MockControl) controls.next();
-			
-			control.verify();
-		}
-	}
-	
-	protected MockControl createControl(Class targetClass)
-	{
-		MockControl control = MockControl.createControl(targetClass);
-		
-		this.controlList.add(control);
-		
-		return control;
-	}
-	
-	protected Object createMock(Class targetClass)
-	{
-		return this.createControl(targetClass).getMock();
-	}
-	
-	protected void fail(Throwable e)
+	protected static void fail(Throwable e)
 	{
 		e.printStackTrace(System.err);
 		

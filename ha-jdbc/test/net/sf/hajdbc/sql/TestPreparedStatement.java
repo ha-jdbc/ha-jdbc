@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (C) 2005 Paul Ferraro
+ * Copyright (c) 2004-2006 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -41,200 +41,201 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Calendar;
 
-import edu.emory.mathcs.backport.java.util.concurrent.Executors;
+import java.util.concurrent.Executors;
 
+import org.easymock.EasyMock;
+
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.Operation;
 import net.sf.hajdbc.SQLObject;
 
+/**
+ * Unit test for {@link PreparedStatement}
+ * @author  Paul Ferraro
+ * @since   1.1
+ */
 public class TestPreparedStatement extends TestStatement
 {
 	/**
-	 * @see net.sf.hajdbc.sql.TestStatement#createStatement(net.sf.hajdbc.sql.Connection, net.sf.hajdbc.sql.ConnectionOperation)
+	 * @see net.sf.hajdbc.sql.TestStatement#createStatement(net.sf.hajdbc.sql.Connection)
 	 */
-	protected Statement createStatement(Connection connection, ConnectionOperation operation) throws SQLException
+	protected Statement createStatement(Connection connection) throws SQLException
 	{
+		Operation<java.sql.Connection, java.sql.PreparedStatement> operation = new Operation<java.sql.Connection, java.sql.PreparedStatement>()
+		{
+			public java.sql.PreparedStatement execute(Database database, java.sql.Connection connection) throws SQLException
+			{
+				return TestPreparedStatement.this.getSQLStatement();
+			}
+		};
+		
 		return new PreparedStatement(connection, operation, "");
 	}
 	
-	protected Class getSQLStatementClass()
-	{
-		return java.sql.PreparedStatement.class;
-	}
-
 	private PreparedStatement getStatement()
 	{
-		return (PreparedStatement) this.statement;
+		return PreparedStatement.class.cast(this.statement);
 	}
 
 	private java.sql.PreparedStatement getSQLStatement()
 	{
-		return (java.sql.PreparedStatement) this.sqlStatement;
+		return java.sql.PreparedStatement.class.cast(this.sqlStatement);
+	}
+
+	protected Class<? extends java.sql.Statement> getStatementClass()
+	{
+		return java.sql.PreparedStatement.class;
 	}
 	
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.addBatch()'
+	/**
+	 * Test method for {@link PreparedStatement#addBatch()}
 	 */
 	public void testAddBatch()
 	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
 		try
 		{
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
 			this.getSQLStatement().addBatch("test");
-			this.sqlStatementControl.setVoidCallable();
 			
-			replay();
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
 			
 			this.getStatement().addBatch("test");
 			
-			verify();
+			this.control.verify();
 		}
 		catch (SQLException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.clearParameters()'
+	/**
+	 * Test method for {@link PreparedStatement#clearParameters()}
 	 */
 	public void testClearParameters()
 	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
 		try
 		{
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
 			this.getSQLStatement().clearParameters();
-			this.sqlStatementControl.setVoidCallable();
 			
-			replay();
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
 			
 			this.getStatement().clearParameters();
 			
-			verify();
+			this.control.verify();
 		}
 		catch (SQLException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.execute()'
+	/**
+	 * Test method for {@link PreparedStatement#execute()}
 	 */
 	public void testExecute()
 	{
+		EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(Executors.newSingleThreadExecutor());
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
 		try
 		{
-			this.databaseCluster.getExecutor();
-			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+			EasyMock.expect(this.getSQLStatement().execute()).andReturn(true);
 			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().execute();
-			this.sqlStatementControl.setReturnValue(true);
-			
-			replay();
+			this.control.replay();
 			
 			boolean success = this.getStatement().execute();
 			
-			verify();
+			this.control.verify();
 			
 			assertTrue(success);
 		}
 		catch (SQLException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.executeQuery()'
+	/**
+	 * Test method for {@link PreparedStatement#executeQuery()}
 	 */
 	public void testExecuteQuery()
 	{
+		ResultSet resultSet = EasyMock.createMock(ResultSet.class);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		
 		try
 		{
-			ResultSet resultSet = (ResultSet) this.createMock(ResultSet.class);
-			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.first();
-			this.balancerControl.setReturnValue(this.database);
-			
-			this.getSQLStatement().getResultSetConcurrency();
-			this.sqlStatementControl.setReturnValue(ResultSet.CONCUR_READ_ONLY);
-			
-			this.balancer.next();
-			this.balancerControl.setReturnValue(this.database);
+			EasyMock.expect(this.getSQLStatement().getResultSetConcurrency()).andReturn(ResultSet.CONCUR_READ_ONLY);
+
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.next()).andReturn(this.database);
 			
 			this.balancer.beforeOperation(this.database);
-			this.balancerControl.setVoidCallable();
 			
-			this.getSQLStatement().executeQuery();
-			this.sqlStatementControl.setReturnValue(resultSet);
+			EasyMock.expect(this.getSQLStatement().executeQuery()).andReturn(resultSet);
 			
 			this.balancer.afterOperation(this.database);
-			this.balancerControl.setVoidCallable();
 			
-			replay();
+			this.control.replay();
 			
 			ResultSet rs = this.getStatement().executeQuery();
 			
-			verify();
+			this.control.verify();
 			
 			assertSame(resultSet, rs);
 		}
 		catch (SQLException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.executeQuery()'
+	/**
+	 * Test method for {@link PreparedStatement#executeQuery()}
 	 */
 	public void testUpdatableExecuteQuery()
 	{
+		ResultSet resultSet = EasyMock.createMock(ResultSet.class);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		
 		try
 		{
-			ResultSet resultSet = (ResultSet) this.createMock(ResultSet.class);
+			EasyMock.expect(this.getSQLStatement().getResultSetConcurrency()).andReturn(ResultSet.CONCUR_UPDATABLE);
 			
-			this.databaseCluster.getExecutor();
-			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+			EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(Executors.newSingleThreadExecutor());
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 3);
+			EasyMock.expect(this.getSQLStatement().executeQuery()).andReturn(resultSet);
 			
-			this.balancer.first();
-			this.balancerControl.setReturnValue(this.database);
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 			
-			this.getSQLStatement().getResultSetConcurrency();
-			this.sqlStatementControl.setReturnValue(ResultSet.CONCUR_UPDATABLE);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().executeQuery();
-			this.sqlStatementControl.setReturnValue(resultSet);
-			
-			replay();
+			this.control.replay();
 			
 			ResultSet rs = this.getStatement().executeQuery();
 			
-			verify();
+			this.control.verify();
 			
 			assertNotNull(rs);
 			assertTrue(SQLObject.class.isInstance(rs));			
@@ -242,1030 +243,973 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.executeUpdate()'
+	/**
+	 * Test method for {@link PreparedStatement#executeUpdate()}
 	 */
 	public void testExecuteUpdate()
 	{
+		EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(Executors.newSingleThreadExecutor());
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
 		try
 		{
-			this.databaseCluster.getExecutor();
-			this.databaseClusterControl.setReturnValue(Executors.newSingleThreadExecutor());
+			EasyMock.expect(this.getSQLStatement().executeUpdate()).andReturn(1);
 			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().executeUpdate();
-			this.sqlStatementControl.setReturnValue(1);
-			
-			replay();
+			this.control.replay();
 			
 			int result = this.getStatement().executeUpdate();
 			
-			verify();
+			this.control.verify();
 			
 			assertEquals(1, result);
 		}
 		catch (SQLException e)
 		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.getMetaData()'
-	 */
-	public void testGetMetaData()
-	{
-		try
-		{
-			ResultSetMetaData metaData = (ResultSetMetaData) this.createMock(ResultSetMetaData.class);
-			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer);
-			
-			this.balancer.next();
-			this.balancerControl.setReturnValue(this.database);
-			
-			this.balancer.beforeOperation(this.database);
-			this.balancerControl.setVoidCallable();
-			
-			this.getSQLStatement().getMetaData();
-			this.sqlStatementControl.setReturnValue(metaData);
-			
-			this.balancer.afterOperation(this.database);
-			this.balancerControl.setVoidCallable();
-			
-			replay();
-			
-			ResultSetMetaData result = this.getStatement().getMetaData();
-			
-			verify();
-			
-			assertSame(metaData, result);
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.getParameterMetaData()'
-	 */
-	public void testGetParameterMetaData()
-	{
-		try
-		{
-			ParameterMetaData metaData = (ParameterMetaData) this.createMock(ParameterMetaData.class);
-			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer);
-			
-			this.balancer.next();
-			this.balancerControl.setReturnValue(this.database);
-			
-			this.balancer.beforeOperation(this.database);
-			this.balancerControl.setVoidCallable();
-			
-			this.getSQLStatement().getParameterMetaData();
-			this.sqlStatementControl.setReturnValue(metaData);
-			
-			this.balancer.afterOperation(this.database);
-			this.balancerControl.setVoidCallable();
-			
-			replay();
-			
-			ParameterMetaData result = this.getStatement().getParameterMetaData();
-			
-			verify();
-			
-			assertSame(metaData, result);
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setArray(int, Array)'
-	 */
-	public void testSetArray()
-	{
-		try
-		{
-			Array array = (Array) this.createMock(Array.class);
-			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().setArray(1, array);
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setArray(1, array);
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setAsciiStream(int, InputStream, int)'
-	 */
-	public void testSetAsciiStream()
-	{
-		try
-		{
-			InputStream inputStream = new ByteArrayInputStream(new byte[] { 1 });
-			File file = new File("");
-			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.fileSupport.createFile(inputStream);
-			this.fileSupportControl.setReturnValue(file);
-			
-			this.fileSupport.getInputStream(file);
-			this.fileSupportControl.setReturnValue(inputStream);
-			
-			this.getSQLStatement().setAsciiStream(1, inputStream, 10);
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setAsciiStream(1, inputStream, 10);
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setBigDecimal(int, BigDecimal)'
-	 */
-	public void testSetBigDecimal()
-	{
-		try
-		{
-			BigDecimal decimal = new BigDecimal(1.0);
-			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().setBigDecimal(1, decimal);
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setBigDecimal(1, decimal);
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setBinaryStream(int, InputStream, int)'
-	 */
-	public void testSetBinaryStream()
-	{
-		try
-		{
-			InputStream inputStream = new ByteArrayInputStream(new byte[] { 1 });
-			File file = new File("");
-			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.fileSupport.createFile(inputStream);
-			this.fileSupportControl.setReturnValue(file);
-			
-			this.fileSupport.getInputStream(file);
-			this.fileSupportControl.setReturnValue(inputStream);
-			
-			this.getSQLStatement().setBinaryStream(1, inputStream, 10);
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setBinaryStream(1, inputStream, 10);
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setBlob(int, Blob)'
-	 */
-	public void testSetBlob()
-	{
-		try
-		{
-			Blob blob = (Blob) this.createMock(Blob.class);
-			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().setBlob(1, blob);
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setBlob(1, blob);
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setBoolean(int, boolean)'
-	 */
-	public void testSetBoolean()
-	{
-		try
-		{
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().setBoolean(1, true);
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setBoolean(1, true);
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setByte(int, byte)'
-	 */
-	public void testSetByte()
-	{
-		try
-		{
-			byte value = 1;
-			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().setByte(1, value);
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setByte(1, value);
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setBytes(int, byte[])'
-	 */
-	public void testSetBytes()
-	{
-		try
-		{
-			byte[] bytes = new byte[] { 1 };
-			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().setBytes(1, bytes);
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setBytes(1, bytes);
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setCharacterStream(int, Reader, int)'
-	 */
-	public void testSetCharacterStream()
-	{
-		try
-		{
-			Reader reader = new StringReader("test");
-			File file = new File("");
-			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.fileSupport.createFile(reader);
-			this.fileSupportControl.setReturnValue(file);
-			
-			this.fileSupport.getReader(file);
-			this.fileSupportControl.setReturnValue(reader);
-			
-			this.getSQLStatement().setCharacterStream(1, reader, 10);
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setCharacterStream(1, reader, 10);
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setClob(int, Clob)'
-	 */
-	public void testSetClob()
-	{
-		try
-		{
-			Clob clob = (Clob) this.createMock(Clob.class);
-			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().setClob(1, clob);
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setClob(1, clob);
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setDate(int, Date)'
-	 */
-	public void testSetDateIntDate()
-	{
-		try
-		{
-			Date date = new Date(System.currentTimeMillis());
-			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().setDate(1, date);
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setDate(1, date);
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setDate(int, Date, Calendar)'
-	 */
-	public void testSetDateIntDateCalendar()
-	{
-		try
-		{
-			Date date = new Date(System.currentTimeMillis());
-			Calendar calendar = Calendar.getInstance();
-			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().setDate(1, date, calendar);
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setDate(1, date, calendar);
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setDouble(int, double)'
-	 */
-	public void testSetDouble()
-	{
-		try
-		{
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().setDouble(1, 1.0);
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setDouble(1, 1.0);
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setFloat(int, float)'
-	 */
-	public void testSetFloat()
-	{
-		try
-		{
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().setFloat(1, 1.0f);
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setFloat(1, 1.0f);
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setInt(int, int)'
-	 */
-	public void testSetInt()
-	{
-		try
-		{
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().setInt(1, 1);
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setInt(1, 1);
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setLong(int, long)'
-	 */
-	public void testSetLong()
-	{
-		try
-		{
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().setLong(1, 1);
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setLong(1, 1);
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setNull(int, int)'
-	 */
-	public void testSetNullIntInt()
-	{
-		try
-		{
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().setNull(1, Types.ARRAY);
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setNull(1, Types.ARRAY);
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setNull(int, int, String)'
-	 */
-	public void testSetNullIntIntString()
-	{
-		try
-		{
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().setNull(1, Types.JAVA_OBJECT, "test");
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setNull(1, Types.JAVA_OBJECT, "test");
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setObject(int, Object)'
-	 */
-	public void testSetObjectIntObject()
-	{
-		try
-		{
-			Object object = new Object();
-			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().setObject(1, object);
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setObject(1, object);
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setObject(int, Object, int)'
-	 */
-	public void testSetObjectIntObjectInt()
-	{
-		try
-		{
-			Object object = new Object();
-			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().setObject(1, object, Types.ARRAY);
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setObject(1, object, Types.ARRAY);
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setObject(int, Object, int, int)'
-	 */
-	public void testSetObjectIntObjectIntInt()
-	{
-		try
-		{
-			Object object = new Object();
-			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().setObject(1, object, Types.NUMERIC, 10);
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setObject(1, object, Types.NUMERIC, 10);
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setRef(int, Ref)'
-	 */
-	public void testSetRef()
-	{
-		try
-		{
-			Ref ref = (Ref) this.createMock(Ref.class);
-			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().setRef(1, ref);
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setRef(1, ref);
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setShort(int, short)'
-	 */
-	public void testSetShort()
-	{
-		try
-		{
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().setShort(1, (short) 1);
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setShort(1, (short) 1);
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setString(int, String)'
-	 */
-	public void testSetString()
-	{
-		try
-		{
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().setString(1, "test");
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setString(1, "test");
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setTime(int, Time)'
-	 */
-	public void testSetTimeIntTime()
-	{
-		try
-		{
-			Time time = new Time(System.currentTimeMillis());
-			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().setTime(1, time);
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setTime(1, time);
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setTime(int, Time, Calendar)'
-	 */
-	public void testSetTimeIntTimeCalendar()
-	{
-		try
-		{
-			Time time = new Time(System.currentTimeMillis());
-			Calendar calendar = Calendar.getInstance();
-			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().setTime(1, time, calendar);
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setTime(1, time, calendar);
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setTimestamp(int, Timestamp)'
-	 */
-	public void testSetTimestampIntTimestamp()
-	{
-		try
-		{
-			Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().setTimestamp(1, timestamp);
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setTimestamp(1, timestamp);
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
-		}
-	}
-
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setTimestamp(int, Timestamp, Calendar)'
-	 */
-	public void testSetTimestampIntTimestampCalendar()
-	{
-		try
-		{
-			Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-			Calendar calendar = Calendar.getInstance();
-			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.getSQLStatement().setTimestamp(1, timestamp, calendar);
-			this.sqlStatementControl.setVoidCallable();
-			
-			replay();
-			
-			this.getStatement().setTimestamp(1, timestamp, calendar);
-			
-			verify();
-		}
-		catch (SQLException e)
-		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
 	/**
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setUnicodeStream(int, InputStream, int)'
+	 * Test method for {@link PreparedStatement#getMetaData()}
+	 */
+	public void testGetMetaData()
+	{
+		ResultSetMetaData metaData = EasyMock.createMock(ResultSetMetaData.class);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.next()).andReturn(this.database);
+		
+		this.balancer.beforeOperation(this.database);
+		
+		try
+		{
+			EasyMock.expect(this.getSQLStatement().getMetaData()).andReturn(metaData);
+			
+			this.balancer.afterOperation(this.database);
+			
+			this.control.replay();
+			
+			ResultSetMetaData result = this.getStatement().getMetaData();
+			
+			this.control.verify();
+			
+			assertSame(metaData, result);
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#getParameterMetaData()}
+	 */
+	public void testGetParameterMetaData()
+	{
+		ParameterMetaData metaData = EasyMock.createMock(ParameterMetaData.class);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.next()).andReturn(this.database);
+		
+		this.balancer.beforeOperation(this.database);
+		
+		try
+		{
+			EasyMock.expect(this.getSQLStatement().getParameterMetaData()).andReturn(metaData);
+			
+			this.balancer.afterOperation(this.database);
+			
+			this.control.replay();
+			
+			ParameterMetaData result = this.getStatement().getParameterMetaData();
+			
+			this.control.verify();
+			
+			assertSame(metaData, result);
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setArray(int, Array)}
+	 */
+	public void testSetArray()
+	{
+		Array array = EasyMock.createMock(Array.class);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			this.getSQLStatement().setArray(1, array);
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setArray(1, array);
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setAsciiStream(int, InputStream, int)}
+	 */
+	public void testSetAsciiStream()
+	{
+		InputStream inputStream = new ByteArrayInputStream(new byte[] { 1 });
+		File file = new File("");
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			EasyMock.expect(this.fileSupport.createFile(inputStream)).andReturn(file);
+			EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(inputStream);
+			
+			this.getSQLStatement().setAsciiStream(1, inputStream, 10);
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setAsciiStream(1, inputStream, 10);
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setBigDecimal(int, BigDecimal)}
+	 */
+	public void testSetBigDecimal()
+	{
+		BigDecimal decimal = new BigDecimal(1.0);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			this.getSQLStatement().setBigDecimal(1, decimal);
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setBigDecimal(1, decimal);
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setBinaryStream(int, InputStream, int)}
+	 */
+	public void testSetBinaryStream()
+	{
+		InputStream inputStream = new ByteArrayInputStream(new byte[] { 1 });
+		File file = new File("");
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			EasyMock.expect(this.fileSupport.createFile(inputStream)).andReturn(file);
+			EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(inputStream);
+			
+			this.getSQLStatement().setBinaryStream(1, inputStream, 10);
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setBinaryStream(1, inputStream, 10);
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setBlob(int, Blob)}
+	 */
+	public void testSetBlob()
+	{
+		Blob blob = EasyMock.createMock(Blob.class);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			this.getSQLStatement().setBlob(1, blob);
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setBlob(1, blob);
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setBoolean(int, boolean)}
+	 */
+	public void testSetBoolean()
+	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			this.getSQLStatement().setBoolean(1, true);
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setBoolean(1, true);
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setByte(int, byte)}
+	 */
+	public void testSetByte()
+	{
+		byte value = 1;
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			this.getSQLStatement().setByte(1, value);
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setByte(1, value);
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setBytes(int, byte[])}
+	 */
+	public void testSetBytes()
+	{
+		byte[] bytes = new byte[] { 1 };
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			this.getSQLStatement().setBytes(1, bytes);
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setBytes(1, bytes);
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setCharacterStream(int, Reader, int)}
+	 */
+	public void testSetCharacterStream()
+	{
+		Reader reader = new StringReader("test");
+		File file = new File("");
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			EasyMock.expect(this.fileSupport.createFile(reader)).andReturn(file);
+			EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader);
+			
+			this.getSQLStatement().setCharacterStream(1, reader, 10);
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setCharacterStream(1, reader, 10);
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setClob(int, Clob)}
+	 */
+	public void testSetClob()
+	{
+		Clob clob = EasyMock.createMock(Clob.class);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			this.getSQLStatement().setClob(1, clob);
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setClob(1, clob);
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setDate(int, Date)}
+	 */
+	public void testSetDateIntDate()
+	{
+		Date date = new Date(System.currentTimeMillis());
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			this.getSQLStatement().setDate(1, date);
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setDate(1, date);
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setDate(int, Date, Calendar)}
+	 */
+	public void testSetDateIntDateCalendar()
+	{
+		Date date = new Date(System.currentTimeMillis());
+		Calendar calendar = Calendar.getInstance();
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			this.getSQLStatement().setDate(1, date, calendar);
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setDate(1, date, calendar);
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setDouble(int, double)}
+	 */
+	public void testSetDouble()
+	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			this.getSQLStatement().setDouble(1, 1.0);
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setDouble(1, 1.0);
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setFloat(int, float)}
+	 */
+	public void testSetFloat()
+	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			this.getSQLStatement().setFloat(1, 1.0f);
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setFloat(1, 1.0f);
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setInt(int, int)}
+	 */
+	public void testSetInt()
+	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			this.getSQLStatement().setInt(1, 1);
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setInt(1, 1);
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setLong(int, long)}
+	 */
+	public void testSetLong()
+	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			this.getSQLStatement().setLong(1, 1);
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setLong(1, 1);
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setNull(int, int)}
+	 */
+	public void testSetNullIntInt()
+	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			this.getSQLStatement().setNull(1, Types.ARRAY);
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setNull(1, Types.ARRAY);
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setNull(int, int, String)}
+	 */
+	public void testSetNullIntIntString()
+	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			this.getSQLStatement().setNull(1, Types.JAVA_OBJECT, "test");
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setNull(1, Types.JAVA_OBJECT, "test");
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setObject(int, Object)}
+	 */
+	public void testSetObjectIntObject()
+	{
+		Object object = new Object();
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			this.getSQLStatement().setObject(1, object);
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setObject(1, object);
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setObject(int, Object, int)}
+	 */
+	public void testSetObjectIntObjectInt()
+	{
+		Object object = new Object();
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			this.getSQLStatement().setObject(1, object, Types.ARRAY);
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setObject(1, object, Types.ARRAY);
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setObject(int, Object, int, int)}
+	 */
+	public void testSetObjectIntObjectIntInt()
+	{
+		Object object = new Object();
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			this.getSQLStatement().setObject(1, object, Types.NUMERIC, 10);
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setObject(1, object, Types.NUMERIC, 10);
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setRef(int, Ref)}
+	 */
+	public void testSetRef()
+	{
+		Ref ref = EasyMock.createMock(Ref.class);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			this.getSQLStatement().setRef(1, ref);
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setRef(1, ref);
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setShort(int, short)}
+	 */
+	public void testSetShort()
+	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			this.getSQLStatement().setShort(1, (short) 1);
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setShort(1, (short) 1);
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setString(int, String)}
+	 */
+	public void testSetString()
+	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			this.getSQLStatement().setString(1, "test");
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setString(1, "test");
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setTime(int, Time)}
+	 */
+	public void testSetTimeIntTime()
+	{
+		Time time = new Time(System.currentTimeMillis());
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			this.getSQLStatement().setTime(1, time);
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setTime(1, time);
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setTime(int, Time, Calendar)}
+	 */
+	public void testSetTimeIntTimeCalendar()
+	{
+		Time time = new Time(System.currentTimeMillis());
+		Calendar calendar = Calendar.getInstance();
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			this.getSQLStatement().setTime(1, time, calendar);
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setTime(1, time, calendar);
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setTimestamp(int, Timestamp)}
+	 */
+	public void testSetTimestampIntTimestamp()
+	{
+		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			this.getSQLStatement().setTimestamp(1, timestamp);
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setTimestamp(1, timestamp);
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setTimestamp(int, Timestamp, Calendar)}
+	 */
+	public void testSetTimestampIntTimestampCalendar()
+	{
+		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+		Calendar calendar = Calendar.getInstance();
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		try
+		{
+			this.getSQLStatement().setTimestamp(1, timestamp, calendar);
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
+			
+			this.getStatement().setTimestamp(1, timestamp, calendar);
+			
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			fail(e);
+		}
+	}
+
+	/**
+	 * Test method for {@link PreparedStatement#setUnicodeStream(int, InputStream, int)}
 	 * @deprecated
 	 */
 	public void testSetUnicodeStream()
 	{
+		InputStream inputStream = new ByteArrayInputStream(new byte[] { 1 });
+		File file = new File("");
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
 		try
 		{
-			InputStream inputStream = new ByteArrayInputStream(new byte[] { 1 });
-			File file = new File("");
-			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
-			this.fileSupport.createFile(inputStream);
-			this.fileSupportControl.setReturnValue(file);
-			
-			this.fileSupport.getInputStream(file);
-			this.fileSupportControl.setReturnValue(inputStream);
+			EasyMock.expect(this.fileSupport.createFile(inputStream)).andReturn(file);
+			EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(inputStream);
 			
 			this.getSQLStatement().setUnicodeStream(1, inputStream, 100);
-			this.sqlStatementControl.setVoidCallable();
 			
-			replay();
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
 			
 			this.getStatement().setUnicodeStream(1, inputStream, 100);
 			
-			verify();
+			this.control.verify();
 		}
 		catch (SQLException e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 
-	/*
-	 * Test method for 'net.sf.hajdbc.sql.PreparedStatement.setURL(int, URL)'
+	/**
+	 * Test method for {@link PreparedStatement#setURL(int, URL)}
 	 */
 	public void testSetURL()
 	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
 		try
 		{
 			URL url = new URL("http://www.google.com");
 			
-			this.databaseCluster.getBalancer();
-			this.databaseClusterControl.setReturnValue(this.balancer, 2);
-			
-			this.balancer.toArray();
-			this.balancerControl.setReturnValue(this.databases, 2);
-			
 			this.getSQLStatement().setURL(1, url);
-			this.sqlStatementControl.setVoidCallable();
 			
-			replay();
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			
+			this.control.replay();
 			
 			this.getStatement().setURL(1, url);
 			
-			verify();
+			this.control.verify();
 		}
 		catch (Exception e)
 		{
-			this.fail(e);
+			fail(e);
 		}
 	}
 }

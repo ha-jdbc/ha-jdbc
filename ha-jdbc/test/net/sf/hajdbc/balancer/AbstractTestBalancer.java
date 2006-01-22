@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (C) 2005 Paul Ferraro
+ * Copyright (c) 2004-2006 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -22,17 +22,17 @@ package net.sf.hajdbc.balancer;
 
 import java.sql.Connection;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.NoSuchElementException;
 
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.EasyMockTestCase;
 
 /**
  * @author  Paul Ferraro
  * @since   1.0
  */
-public abstract class AbstractTestBalancer extends EasyMockTestCase
+public abstract class AbstractTestBalancer extends junit.framework.TestCase
 {
 	private Balancer balancer;
 	
@@ -109,42 +109,42 @@ public abstract class AbstractTestBalancer extends EasyMockTestCase
 	}
 
 	/**
-	 * Test method for {@link Balancer#toArray()}
+	 * Test method for {@link Balancer#list()}
 	 */
-	public void testToArray()
+	public void testGetDatabases()
 	{
-		Database[] databases = this.balancer.toArray();
+		Collection<Database> databases = this.balancer.list();
 		
-		assertEquals(databases.length, 0);
+		assertEquals(databases.size(), 0);
 		
 		Database database1 = new MockDatabase("db1", 1);
 		this.balancer.add(database1);
 		
-		databases = this.balancer.toArray();
+		databases = this.balancer.list();
 		
-		assertEquals(databases.length, 1);
-		assertTrue(Arrays.equals(databases, new Database[] { database1 }));
+		assertEquals(databases.size(), 1);
+		assertTrue(Arrays.equals(databases.toArray(), new Database[] { database1 }));
 		
 		Database database2 = new MockDatabase("db2", 1);
 		this.balancer.add(database2);
 
-		databases = this.balancer.toArray();
+		databases = this.balancer.list();
 
-		assertEquals(databases.length, 2);
-		assertTrue(Arrays.equals(databases, new Database[] { database1, database2 }) || Arrays.equals(databases, new Database[] { database2, database1 }));
+		assertEquals(databases.size(), 2);
+		assertTrue(Arrays.equals(databases.toArray(), new Database[] { database1, database2 }) || Arrays.equals(databases.toArray(), new Database[] { database2, database1 }));
 
 		this.balancer.remove(database1);
 
-		databases = this.balancer.toArray();
+		databases = this.balancer.list();
 		
-		assertEquals(databases.length, 1);
-		assertTrue(Arrays.equals(databases, new Database[] { database2, }));
+		assertEquals(databases.size(), 1);
+		assertTrue(Arrays.equals(databases.toArray(), new Database[] { database2, }));
 		
 		this.balancer.remove(database2);
 		
-		databases = this.balancer.toArray();
+		databases = this.balancer.list();
 		
-		assertEquals(databases.length, 0);
+		assertEquals(databases.size(), 0);
 	}
 
 	/**
@@ -215,7 +215,7 @@ public abstract class AbstractTestBalancer extends EasyMockTestCase
 		protected MockDatabase(String id, int weight)
 		{
 			this.id = id;
-			this.weight = new Integer(weight);
+			this.weight = weight;
 		}
 		
 		/**

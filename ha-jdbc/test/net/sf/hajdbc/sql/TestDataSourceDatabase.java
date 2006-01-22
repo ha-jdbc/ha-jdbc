@@ -1,6 +1,6 @@
 /**
  * HA-JDBC: High-Availability JDBC
- * Copyright (C) 2005 Paul Ferraro
+ * Copyright (c) 2004-2006 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -163,7 +163,10 @@ public class TestDataSourceDatabase extends EasyMockTestCase
 		assertEquals("test".hashCode(), hashCode);
 	}
 	
-	private static class DataSourceFactory implements ObjectFactory
+	/**
+	 * Object factory that returns mock DataSource objects.
+	 */
+	public static class DataSourceFactory implements ObjectFactory
 	{
 		/**
 		 * @see javax.naming.spi.ObjectFactory#getObjectInstance(java.lang.Object, javax.naming.Name, javax.naming.Context, java.util.Hashtable)

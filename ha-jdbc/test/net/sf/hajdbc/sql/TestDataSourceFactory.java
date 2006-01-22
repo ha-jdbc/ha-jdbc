@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (C) 2005 Paul Ferraro
+ * Copyright (c) 2004-2006 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -64,11 +64,11 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 	}
 
 	/**
-	 * Test method for {@link AbstractDataSourceFactory#getObjectInstance(Object, Name, Context, Hashtable)}
+	 * Test method for {@link DataSourceFactory#getObjectInstance(Object, Name, Context, Hashtable)}
 	 */
 	public void testGetObjectInstance()
 	{
-		Reference reference = new Reference("net.sf.hajdbc.sql.DataSource", new StringRefAddr(AbstractDataSource.NAME, "test-datasource-cluster"));
+		Reference reference = new Reference("net.sf.hajdbc.sql.DataSource", new StringRefAddr(DataSource.NAME, "test-datasource-cluster"));
 		
 		try
 		{
@@ -84,7 +84,7 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 	}
 
 	/**
-	 * Test method for {@link AbstractDataSourceFactory#getObjectInstance(Object, Name, Context, Hashtable)}
+	 * Test method for {@link DataSourceFactory#getObjectInstance(Object, Name, Context, Hashtable)}
 	 */
 	public void testNullReferenceGetObjectInstance()
 	{
@@ -101,11 +101,11 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 	}
 
 	/**
-	 * Test method for {@link AbstractDataSourceFactory#getObjectInstance(Object, Name, Context, Hashtable)}
+	 * Test method for {@link DataSourceFactory#getObjectInstance(Object, Name, Context, Hashtable)}
 	 */
 	public void testWrongReferenceGetObjectInstance()
 	{
-		Reference reference = new Reference("net.sf.hajdbc.sql.pool.ConnectionPoolDataSource", new StringRefAddr(AbstractDataSource.NAME, "test-datasource-cluster"));
+		Reference reference = new Reference("net.sf.hajdbc.sql.Driver", new StringRefAddr(DataSource.NAME, "test-datasource-cluster"));
 		
 		try
 		{
@@ -120,7 +120,7 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 	}
 
 	/**
-	 * Test method for {@link AbstractDataSourceFactory#getObjectInstance(Object, Name, Context, Hashtable)}
+	 * Test method for {@link DataSourceFactory#getObjectInstance(Object, Name, Context, Hashtable)}
 	 */
 	public void testMissingRefAddrReferenceGetObjectInstance()
 	{
@@ -139,11 +139,11 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 	}
 
 	/**
-	 * Test method for {@link AbstractDataSourceFactory#getObjectInstance(Object, Name, Context, Hashtable)}
+	 * Test method for {@link DataSourceFactory#getObjectInstance(Object, Name, Context, Hashtable)}
 	 */
 	public void testInvalidRefAddrReferenceGetObjectInstance()
 	{
-		Reference reference = new Reference("net.sf.hajdbc.sql.DataSource", new StringRefAddr(AbstractDataSource.NAME, "invalid-name"));
+		Reference reference = new Reference("net.sf.hajdbc.sql.DataSource", new StringRefAddr(DataSource.NAME, "invalid-name"));
 		
 		try
 		{
