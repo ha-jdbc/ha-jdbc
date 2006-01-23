@@ -20,37 +20,38 @@
 			</answer>
 		</faq>
 		<faq>
-			<question>My JDBC driver expects additional parameters.  How can I specify these in my HA-JDBC configuration?</question>
+			<question>I need to pass additional parameters to my JDBC driver.  How can I specify these in my HA-JDBC configuration?</question>
 			<answer>
-				The <code>database</code> element may contain any number of <code>property</code> elements.
-				HA-JDBC will pass these properties through to the Driver.connect(String url, Properties info) method of the underlying JDBC driver.
-				User name and password may be 
+				<p>
+					The <code>database</code> element may contain any number of <code>property</code> elements.
+					HA-JDBC will pass these properties through to the Driver.connect(String url, Properties info) method of the underlying JDBC driver.
+				</p>
 				<p>e.g.</p>
 				<source><![CDATA[
 <cluster id="..." balancer="..." default-sync="...">
-	<database id="...">
-		<driver>org.postgresql.Driver</driver>
-		<url>jdbc:postgresql:database</url>
-		<property name="ssl">true</property>
-		<user>postgres</user>
-		<password>XXXX</password>
-	</database>
+  <database id="...">
+    <driver>org.postgresql.Driver</driver>
+    <url>jdbc:postgresql:database</url>
+    <property name="ssl">true</property>
+    <user>postgres</user>
+    <password>XXXX</password>
+  </database>
 </cluster>
 ]]></source>
 				<p>
 				</p>
 				<p>
-					Alternatively, many JDBC drivers accept properties appended to the url.
+					Alternatively, many JDBC drivers accept properties appended directly to the url.
 				</p>
 				<p>e.g.</p>
 				<source><![CDATA[
 <cluster id="..." balancer="..." default-sync="...">
-	<database id="...">
-		<driver>org.postgresql.Driver</driver>
-		<url>jdbc:postgresql:database?ssl=true</url>
-		<user>postgres</user>
-		<password>XXXX</password>
-	</database>
+  <database id="...">
+    <driver>org.postgresql.Driver</driver>
+    <url>jdbc:postgresql:database?ssl=true</url>
+    <user>postgres</user>
+    <password>XXXX</password>
+  </database>
 </cluster>
 ]]></source>
 			</answer>
@@ -58,20 +59,22 @@
 		<faq>
 			<question>How can I specify JNDI environment properties to my HA-JDBC DataSource configuration?</question>
 			<answer>
-				The <code>datasource</code> element may contain any number of <code>property</code> elements.
-				HA-JDBC will pass these properties into the InitialContext(Hashtable env) constructor.
+				<p>
+					The <code>datasource</code> element may contain any number of <code>property</code> elements.
+					HA-JDBC will pass these properties into the InitialContext(Hashtable env) constructor.
+				</p>
 				<p>e.g.</p>
 				<source><![CDATA[
 <cluster id="..." balancer="..." default-sync="...">
-	<datasource id="...">
-		<name>jdbc/database</name>
-		<property name="java.naming.factory.initial">org.jnp.interfaces.NamingContextFactory</property>
-		<property name="java.naming.factory.url.pkgs">org.jboss.naming:org.jnp.interfaces</property>
-	</datasource>
+  <datasource id="...">
+    <name>jdbc/database</name>
+    <property name="java.naming.factory.initial">org.jnp.interfaces.NamingContextFactory</property>
+    <property name="java.naming.factory.url.pkgs">org.jboss.naming:org.jnp.interfaces</property>
+  </datasource>
 </cluster>
 ]]></source>
 				<p>
-					Alternatively, these properties may be specified in an jndi.properties resource file.
+					Alternatively, these properties may be specified in an jndi.properties application resource file.
 					Detail <a href="http://java.sun.com/j2se/1.5.0/docs/api/javax/naming/InitialContext.html">here</a>.
 				</p>
 			</answer>

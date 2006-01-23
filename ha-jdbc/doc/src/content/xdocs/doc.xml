@@ -8,18 +8,8 @@
 		<section>
 			<title>Requirements</title>
 			<ul>
-				<li>Java Runtime Environment 1.5 or 1.4<a href="#Java1.4">*</a></li>
+				<li>Java Runtime Environment 1.5 (Java 1.4 also supported<a href="#Java1.4">*</a>)</li>
 				<li>JDBC 3.0 compliant driver (Type IV recommended)</li>
-				<li>JMX 1.2+ mbean server
-					<ul>
-						<li><a href="http://java.sun.com/j2se/1.5.0/">JDK 5.0</a></li>
-						<li><a href="http://java.sun.com/products/JavaManagement/index.jsp">Sun's JMX Reference Implemenation</a></li>
-						<li><a href="http://mx4j.sourceforge.net">MX4J</a></li>
-						<li><a href="http://www.xmojo.org/products/xmojo">XMOJO</a></li>
-						<li><a href="http://www.jboss.org/developers/projects/jboss/jbossmx">JBossMX</a></li>
-						<li><a href="http://www.huihoo.org/jfox/jfoxmx/index.html">JFoxMX</a></li>
-					</ul>
-				</li>
 				<li>All databases in cluster must initially be in sync.</li>
 			</ul>
 			<section id="Java1.4">
@@ -27,8 +17,21 @@
 				<p>
 					As of version 1.1, HA-JDBC ships 2 binary distributions.  The default binary requires Java 1.5.
 					A Java 1.4 compatible binary is generated using <a href="http://retrotranslator.sourceforge.net">Retrotranslator</a>.
-					Consequently, this binary has additional runtime dependencies, contained in the <code>/lib/runtime-1.4</code> directory of the distribution.
+					Consequently, this binary has a couple of additional runtime dependencies, contained in the <code>/lib/runtime-1.4</code> directory of the distribution.
 				</p>
+				<p>
+					HA-JDBC requires a running JMX 1.2+ mbean server.
+					While Java 1.5 includes Sun's JMX reference implementation, Java 1.4 does not.
+					Therefore, if your application server or servlet container does not include a JMX 1.2 implementation, it is up to you to supply one.
+					Below is a list of popular and free JMX implementations available to you:
+				</p>
+				<ul>
+					<li><a href="http://java.sun.com/products/JavaManagement/index.jsp">Sun's JMX Reference Implemenation</a></li>
+					<li><a href="http://mx4j.sourceforge.net">MX4J</a></li>
+					<li><a href="http://www.xmojo.org/products/xmojo">XMOJO</a></li>
+					<li><a href="http://www.jboss.org/developers/projects/jboss/jbossmx">JBossMX</a></li>
+					<li><a href="http://www.huihoo.org/jfox/jfoxmx/index.html">JFoxMX</a></li>
+				</ul>
 			</section>
 		</section>
 		<section>
@@ -51,13 +54,13 @@
   <cluster id="cluster1" dialect="PostgreSQL" balancer="simple" default-sync="diff">
     <database id="database1" weight="1">
       <driver>org.postgresql.Driver</driver>
-      <url>jdbc:postgresql://server1:5432/database</url>
+      <url>jdbc:postgresql://server1/database</url>
       <user>postgres</user>
       <password>password</password>
     </database>
     <database id="database2" weight="2">
       <driver>org.postgresql.Driver</driver>
-      <url>jdbc:postgresql://server2:5432/database</url>
+      <url>jdbc:postgresql://server2/database</url>
       <user>postgres</user>
       <password>password</password>
     </database>
@@ -214,14 +217,14 @@
 				<p>e.g.</p>
 				<source><![CDATA[
 <cluster id="..." balancer="..." default-sync="...">
-	<!-- Uses default dialect -->
+  <!-- Uses default dialect -->
 </cluster>
 <cluster id="..." dialect="net.sf.hajdbc.dialect.PostgreSQLDialect" balancer="..." default-sync="...">
-	<!-- Uses PostgreSQL dialect -->
+  <!-- Uses PostgreSQL dialect -->
 </cluster>
 <cluster id="..." dialect="PostgreSQL" balancer="..." default-sync="...">
-	<!-- Uses PostgreSQL dialect -->
-	<!-- Aliases are not case sensitive -->
+  <!-- Uses PostgreSQL dialect -->
+  <!-- Aliases are not case sensitive -->
 </cluster>
 ]]></source>
 				<p>
@@ -464,12 +467,12 @@
 					</li>
 				</ul>
 				<p>
-					The URL specified in subsequent calls to <code>DriverManager.connect(...)</code> follow the pattern:
+					The URL specified in subsequent calls to <code>DriverManager.getConnection(...)</code> follow the pattern:
 				</p>
 				<p><code>jdbc:ha-jdbc:</code><em>cluster-id</em></p>
 				<p>e.g.</p>
 				<source><![CDATA[
-Connection connection = DriverManager.connect("jdbc:ha-jdbc:cluster", "postgres", "password");
+Connection connection = DriverManager.getConnection("jdbc:ha-jdbc:cluster", "postgres", "password");
 ]]></source>
 			</section>
 			<section>
@@ -613,11 +616,12 @@ public class FasterFullSynchronizationStrategy extends net.sf.hajdbc.sync.FullSy
 					<li>activate(String id, String strategyId) - Re-activates the specified database from this cluster using the specified synchronization strategy.</li>
 				</ul>
 				<p>
-					Application servers that include JMX support typically include a web-based interface from which to perform actions on managed beans.
-					For those that do not, there exist many 3rd-party JMX clients that provide easy graphical interfaces for managing mbeans:
+					JMX operations can be executed from the <a href="http://java.sun.com/j2se/1.5.0/docs/guide/management/jconsole.html">JConsole</a> interface packaged with JDK 1.5.
+				</p>
+				<p>
+					As an alternative to JConsole (or for Java 1.4 deployments), many 3rd-party JMX client exist:
 				</p>
 				<ul>
-					<li><a href="http://java.sun.com/j2se/1.5.0/docs/tooldocs/share/jconsole.html">JDK 5.0's jconsole</a></li>
 					<li><a href="http://mc4j.sourceforge.net/">MC4J</a></li>
 					<li><a href="http://www.jmanage.org/">jManage</a></li>
 					<li><a href="http://ejtools.sourceforge.net/applications/jmx.browser/">EJTools JMX Browser</a></li>
