@@ -48,7 +48,7 @@
 				Unit tests now use EasyMock 2.0.
 			</action>
 			<action type="add" context="code" dev="PF">
-				Added requiredTableLocking() method to SynchronizationStrategy interface.
+				Added requiresTableLocking() method to SynchronizationStrategy interface.
 			</action>
 			<action type="update" context="code" dev="PF">
 				During database activation, table locking is only performed if required by synchronization strategy.
@@ -71,6 +71,9 @@
 			</action>
 			<action type="add" context="code" dev="PF">
 				In distributable mode, JGroups channel and protocols are registed with the mbean server.
+			</action>
+			<action type="remove" context="code" dev="PF">
+				Removed obsolete net.sf.hajdbc.sql.pool.xa and net.sf.hajdbc.sql.pool packages.
 			</action>
 		</release>
 		<release version="1.1-beta-1" date="December 13, 2005">

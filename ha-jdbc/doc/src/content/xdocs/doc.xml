@@ -8,7 +8,7 @@
 		<section>
 			<title>Requirements</title>
 			<ul>
-				<li>Java Runtime Environment (1.4 or greater)</li>
+				<li>Java Runtime Environment 1.5 or 1.4<a href="#Java1.4">*</a></li>
 				<li>JDBC 3.0 compliant driver (Type IV recommended)</li>
 				<li>JMX 1.2+ mbean server
 					<ul>
@@ -22,6 +22,14 @@
 				</li>
 				<li>All databases in cluster must initially be in sync.</li>
 			</ul>
+			<section id="Java1.4">
+				<title>Using Java 1.4</title>
+				<p>
+					As of version 1.1, HA-JDBC ships 2 binary distributions.  The default binary requires Java 1.5.
+					A Java 1.4 compatible binary is generated using <a href="http://retrotranslator.sourceforge.net">Retrotranslator</a>.
+					Consequently, this binary has additional runtime dependencies, contained in the <code>/lib/runtime-1.4</code> directory of the distribution.
+				</p>
+			</section>
 		</section>
 		<section>
 			<title>Configuration</title>
@@ -31,7 +39,7 @@
 					Configuration for HA-JDBC managed database clusters is contained in a single XML file.
 					The format of the configuration file should match the <a href="dtd/ha-jdbc-1.0.dtd">DTD</a>.
 				</p>
-				<p>Sample configuration file containing each type of deployment setup:</p>
+				<p>Sample configuration file containing both types of deployment setups:</p>
 				<source><![CDATA[
 <?xml version="1.0"?>
 <!DOCTYPE ha-jdbc PUBLIC "-//HA-JDBC//DTD HA-JDBC 1.1//EN"
@@ -40,7 +48,7 @@
   <sync id="diff" class="net.sf.hajdbc.sync.DifferentialSynchronizationStrategy"></sync>
   <sync id="full" class="net.sf.hajdbc.sync.FullSynchronizationStrategy"></sync>
   <sync id="passive" class="net.sf.hajdbc.sync.PassiveSynchronizationStrategy"></sync>
-  <cluster id="cluster" balancer="simple" default-sync="diff">
+  <cluster id="cluster1" dialect="PostgreSQL" balancer="simple" default-sync="diff">
     <database id="database1" weight="1">
       <driver>org.postgresql.Driver</driver>
       <url>jdbc:postgresql://server1:5432/database</url>
@@ -54,29 +62,13 @@
       <password>password</password>
     </database>
   </cluster>
-  <cluster id="Cluster" balancer="random" default-sync="full">
+  <cluster id="cluster2" dialect="MySQL" balancer="random" default-sync="full">
     <datasource id="database1" weight="1">
       <name>java:comp/env/jdbc/Database1</name>
     </datasource>
     <datasource id="database2" weight="2">
       <name>java:comp/env/jdbc/Database2</name>
     </datasource>
-  </cluster>
-  <cluster id="PoolCluster" balancer="round-robin" default-sync="diff">
-    <pool-datasource id="database1" weight="1">
-      <name>java:comp/env/jdbc/pool/Database1</name>
-    </pool-datasource>
-    <pool-datasource id="database2" weight="2">
-      <name>java:comp/env/jdbc/pool/Database2</name>
-    </pool-datasource>
-  </cluster>
-  <cluster id="XACluster" balancer="load" default-sync="full">
-    <xa-datasource id="database1" weight="1">
-      <name>java:comp/env/jdbc/xa/Database1</name>
-    </xa-datasource>
-    <xa-datasource id="database2" weight="2">
-      <name>java:comp/env/jdbc/xa/Database2</name>
-    </xa-datasource>
   </cluster>
 </ha-jdbc>
 ]]></source>
@@ -124,7 +116,7 @@
           <Arg>
             <New class="com.mchange.v2.c3p0.ComboPooledDataSource">
               <Set name="DriverClass">net.sf.hajdbc.sql.Driver</Set>
-              <Set name="JdbcUrl">jdbc:ha-jdbc:cluster</Set>
+              <Set name="JdbcUrl">jdbc:ha-jdbc:cluster1</Set>
               <Set name="User">postgres</Set>
               <Set name="Password">password</Set>
               <Set name="MinPoolSize">5</Set>
@@ -154,7 +146,7 @@
           <Arg>
             <New class="org.enhydra.jdbc.standard.StandardConnectionPoolDataSource">
               <Set name="DriverName">net.sf.hajdbc.sql.Driver</Set>
-              <Set name="Url">jdbc:ha-jdbc:cluster</Set>
+              <Set name="Url">jdbc:ha-jdbc:cluster1</Set>
             </New>
           </Arg>
           <Set name="User">postgres</Set>
@@ -211,6 +203,67 @@
 						</li>
 					</ul>
 				</section>
+			</section>
+			<section id="dialect">
+				<title>Dialect</title>
+				<p>
+					The <code>dialect</code> attribute of a cluster determines the SQL syntax used for a given task.
+					The value specified for this attribute is either the name of a class that implements <a href="api/net/sf/hajdbc/Dialect.html">net.sf.hajdbc.Dialect</a> (custom implementations are allowed), or, more conveniently, a pre-defined alias.
+					If the dialect attribute is omitted, then <a href="api/net/sf/hajdbc/dialect/DefaultDialect.html">net.sf.hajdbc.dialect.DefaultDialect</a> will be used.
+				</p>
+				<p>e.g.</p>
+				<source><![CDATA[
+<cluster id="..." balancer="..." default-sync="...">
+	<!-- Uses default dialect -->
+</cluster>
+<cluster id="..." dialect="net.sf.hajdbc.dialect.PostgreSQLDialect" balancer="..." default-sync="...">
+	<!-- Uses PostgreSQL dialect -->
+</cluster>
+<cluster id="..." dialect="PostgreSQL" balancer="..." default-sync="...">
+	<!-- Uses PostgreSQL dialect -->
+	<!-- Aliases are not case sensitive -->
+</cluster>
+]]></source>
+				<p>
+					HA-JDBC ships with the following dialect implemenations:
+				</p>
+				<table>
+					<tr>
+						<th>Vendor</th>
+						<th>Dialect</th>
+						<th>Aliases</th>
+					</tr>
+					<tr>
+						<td>PostgreSQL</td>
+						<td><a href="api/net/sf/hajdbc/dialect/PostgreSQLDialect.html">net.sf.hajdbc.dialect.PostgreSQLDialect</a></td>
+						<td>postgresql</td>
+					</tr>
+					<tr>
+						<td>MySQL MaxDB, Oracle</td>
+						<td><a href="api/net/sf/hajdbc/dialect/MaxDBDialect.html">net.sf.hajdbc.dialect.MaxDBDialect</a></td>
+						<td>maxdb, oracle</td>
+					</tr>
+					<tr>
+						<td>Apache Derby</td>
+						<td><a href="api/net/sf/hajdbc/dialect/DerbyDialect.html">net.sf.hajdbc.dialect.DerbyDialect</a></td>
+						<td>derby</td>
+					</tr>
+					<tr>
+						<td>HSQLDB</td>
+						<td><a href="api/net/sf/hajdbc/dialect/HSQLDBDialect.html">net.sf.hajdbc.dialect.HSQLDBDialect</a></td>
+						<td>hsqldb</td>
+					</tr>
+					<tr>
+						<td>IBM DB2</td>
+						<td><a href="api/net/sf/hajdbc/dialect/DB2Dialect.html">net.sf.hajdbc.dialect.DB2Dialect</a></td>
+						<td>db2</td>
+					</tr>
+					<tr>
+						<td>Default (SQL standard)</td>
+						<td><a href="api/net/sf/hajdbc/dialect/DefaultDialect.html">net.sf.hajdbc.dialect.DefaultDialect</a></td>
+						<td>mysql, firebird, ingres, mckoi</td>
+					</tr>
+				</table>
 			</section>
 			<section>
 				<title>Cluster Balancer</title>
@@ -385,57 +438,6 @@
 					</p>
 				</section-->
 			</section>
-			<section>
-				<title>Connection Pooling</title>
-				<p>
-					HA-JDBC is designed to integrate with your existing connection pooling mechanism.
-					If you are leveraging your JDBC driver's <code>javax.sql.ConnectionPoolDataSource</code> implementation for connection pooling, you will need to configure HA-JDBC accordingly.
-				</p>
-				<p>e.g.</p>
-				<source><![CDATA[
-<ha-jdbc>
-  <!-- ... -->
-  <cluster id="PoolCluster" balancer="..." default-sync="...">
-    <pool-datasource id="database1">
-      <name>java:comp/env/jdbc/pool/Database1</name>
-      <user>postgres</user>
-      <password>password</password>
-    </pool-datasource>
-    <pool-datasource id="database2">
-      <name>java:comp/env/jdbc/pool/Database2</name>
-      <user>postgres</user>
-      <password>password</password>
-    </pool-datasource>
-  </cluster>
-</ha-jdbc>
-]]></source>
-			</section>
-			<section>
-				<title>Transactions</title>
-				<p>
-					HA-JDBC supports both traditional JDBC transactions and JTA (e.g. EJB bean-managed transactions).
-					HA-JDBC integration does not require you to change your existing transaction semantics.
-					If you are leveraging your JDBC driver's <code>javax.sql.XADataSource</code> implementation for JTA integration, you will need to configure HA-JDBC accordingly.
-				</p>
-				<p>e.g.</p>
-				<source><![CDATA[
-<ha-jdbc>
-  <!-- ... -->
-  <cluster id="XACluster" balancer="..." default-sync="...">
-    <xa-datasource id="database1">
-      <name>java:comp/env/jdbc/xa/Database1</name>
-      <user>postgres</user>
-      <password>password</password>
-    </xa-datasource>
-    <xa-datasource id="database2">
-      <name>java:comp/env/jdbc/xa/Database2</name>
-      <user>postgres</user>
-      <password>password</password>
-    </xa-datasource>
-  </cluster>
-</ha-jdbc>
-]]></source>
-			</section>
 		</section>
 		<section>
 			<title>Using HA-JDBC</title>
@@ -522,18 +524,8 @@ rowSet.close();
 				<p>
 					Failed database nodes are detected after an SQLException is thrown when executing a given database operation.
 					A database is determined to have failed if it fails to respond to a trivial query (e.g. SELECT 1).
-					The query used to validate that a database is responding can be configured via the HA-JDBC configuration file.
+					The query used to validate that a database is alive is defined by the configured <a href="#dialect">dialect</a>.
 				</p>
-				<p>e.g.</p>
-				<source><![CDATA[
-<ha-jdbc>
-  <!-- ... -->
-  <!-- Sample validation query for HSQLDB -->
-  <cluster id="..." balancer="..." default-sync="..." validate-sql="CALL NOW()">
-    <!-- ... -->
-  </cluster>
-</ha-jdbc>
-]]></source>
 				<p>If HA-JDBC determines that a given database has failed:</p>
 				<ol>
 					<li>An ERROR message is logged.</li>
@@ -541,7 +533,7 @@ rowSet.close();
 					<li>If the cluster was configured to be "distributable", other servers are notified of the failure.</li>
 				</ol>
 				<p>
-					Databases may also be manually deactivated via the <a href="#JMX">JMX management interface</a>.
+					Databases may also be manually deactivated via the <a href="#jmx">JMX management interface</a>.
 				</p>
 			</section>
 			<section>
@@ -569,7 +561,6 @@ rowSet.close();
     <property name="fetchSize">1000</property>
   </sync>
   <sync id="full" class="net.sf.hajdbc.sync.FullSynchronizationStrategy">
-    <property name="truncateTableSQL">TRUNCATE TABLE {0}</property>
     <property name="fetchSize">1000</property>
     <property name="maxBatchSize">100</property>
   </sync>
@@ -604,7 +595,7 @@ public class FasterFullSynchronizationStrategy extends net.sf.hajdbc.sync.FullSy
 					Database activation is triggered manually via the <a href="#JMX">JMX management interface</a>.
 				</p>
 			</section>
-			<section id="JMX">
+			<section id="jmx">
 				<title>Database Cluster Administration</title>
 				<p>
 					HA-JDBC database clusters are administered via a JMX management interface: <a href="api/net/sf/hajdbc/DatabaseClusterMBean.html">DatabaseClusterMBean</a>

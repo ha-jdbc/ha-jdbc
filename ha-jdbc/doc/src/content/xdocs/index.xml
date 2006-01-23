@@ -31,7 +31,6 @@
 				<li><a href="http://www.jgroups.org">JGroups</a> - reliable multicast communication framework</li>
 				<li><a href="http://www.jibx.org">JiBX</a> - an XML binding framework</li>
 				<li><a href="http://jakarta.apache.org/commons/logging/">Commons-Logging</a> - an ultra-thin bridge between different logging libraries</li>
-				<li><a href="http://www.mathcs.emory.edu/dcl/util/backport-util-concurrent/">Java 1.4 backport of java.util.concurrent</a></li>
 			</ul>
 		</section>
 		<section>
