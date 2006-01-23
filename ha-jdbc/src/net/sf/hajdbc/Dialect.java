@@ -57,6 +57,7 @@ public interface Dialect
 	public String getTruncateTableSQL(DatabaseMetaData metaData, String schema, String table) throws SQLException;
 	
 	/**
+	 * Returns a SQL statement used to create a foreign key constraint.
 	 * @param metaData a <code>DatabaseMetaData</code> object for a given database.
 	 * @param name the name of a foreign key constraint
 	 * @param schema the name of a database schema, or null, if this database does not support schemas.
@@ -71,6 +72,7 @@ public interface Dialect
 	public String getCreateForeignKeyConstraintSQL(DatabaseMetaData metaData, String name, String schema, String table, String column, String foreignSchema, String foreignTable, String foreignColumn) throws SQLException;
 
 	/**
+	 * Returns a SQL statement used to drop a foreign key constraint.
 	 * @param metaData a <code>DatabaseMetaData</code> object for a given database.
 	 * @param name the name of the foreign key constraint
 	 * @param schema the name of a database schema, or null, if this database does not support schemas.
@@ -81,6 +83,7 @@ public interface Dialect
 	public String getDropForeignKeyConstraintSQL(DatabaseMetaData metaData, String name, String schema, String table) throws SQLException;
 
 	/**
+	 * Returns a SQL statement used to create a unique constraint.
 	 * @param metaData a <code>DatabaseMetaData</code> object for a given database.
 	 * @param name the name of a unique key constraint
 	 * @param schema the name of a database schema, or null, if this database does not support schemas.
@@ -92,6 +95,7 @@ public interface Dialect
 	public String getCreateUniqueConstraintSQL(DatabaseMetaData metaData, String name, String schema, String table, List<String> columnList) throws SQLException;
 
 	/**
+	 * Returns a SQL statement used to drop a unique constraint.
 	 * @param metaData a <code>DatabaseMetaData</code> object for a given database.
 	 * @param name the name of a unique key constraint
 	 * @param schema the name of a database schema, or null, if this database does not support schemas.
