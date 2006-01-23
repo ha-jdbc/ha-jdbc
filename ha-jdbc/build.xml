@@ -24,9 +24,11 @@
 	<property name="dist.name" value="${ant.project.name}"></property>
 	<property name="dist.version.name" value="${dist.name}-${dist.version}"></property>
 	<property name="jar.file" location="${basedir}/${dist.version.name}.jar"></property>
-	<property name="jar-1.4.file" location="${basedir}/${dist.version.name}-jdk1.4.jar"></property>
 	<property name="dist.bin.file" location="${basedir}/${dist.version.name}-bin.tar.gz"></property>
 	<property name="dist.src.file" location="${basedir}/${dist.version.name}-src.tar.gz"></property>
+	<property name="dist-1.4.version.name" value="${dist.version.name}-jdk1.4"></property>
+	<property name="jar-1.4.file" location="${basedir}/${dist-1.4.version.name}.jar"></property>
+	<property name="dist-1.4.bin.file" location="${basedir}/${dist-1.4.version.name}-bin.tar.gz"></property>
 	
 	<available property="junit-available" file="${ant.home}/lib/${junit.jar}"/>
 
@@ -101,6 +103,21 @@
 			<fileset dir="${build.dir}"></fileset>
 		</jar>
     </target>
+	
+	<target name="dist" depends="jar, site">
+		<tar tarfile="${dist.bin.file}" compression="gzip">
+			<tarfileset dir="${basedir}" prefix="${dist.version.name}">
+				<include name="${dist.version.name}.jar"/>
+				<include name="*.txt"/>
+			</tarfileset>
+			<tarfileset dir="${lib.dir}" prefix="${dist.version.name}/lib" includes="**">
+				<exclude name="compile/**"/>
+				<exclude name="test/**"/>
+				<exclude name="*-1.4"/>
+			</tarfileset>
+			<tarfileset dir="${doc.build.dir}/site" prefix="${dist.version.name}/doc" includes="**"></tarfileset>
+		</tar>
+	</target>
 
 	<target name="compile-1.4" depends="bind">
 		<retrotranslate srcdir="${build.dir}" destdir="${build-1.4.dir}" classpathref="src.classpath"></retrotranslate>
@@ -112,17 +129,17 @@
 		</jar>
 	</target>
 	
-	<target name="dist" depends="jar, site">
+	<target name="dist-1.4" depends="jar-1.4, site">
 		<tar tarfile="${dist.bin.file}" compression="gzip">
 			<tarfileset dir="${basedir}" prefix="${dist.version.name}">
-				<include name="${dist.version.name}.jar"/>
+				<include name="${dist-1.4.version.name}.jar"/>
 				<include name="*.txt"/>
 			</tarfileset>
-			<tarfileset dir="${lib.dir}" prefix="${dist.version.name}/lib" includes="**">
+			<tarfileset dir="${lib.dir}" prefix="${dist-1.4.version.name}/lib" includes="**">
 				<exclude name="compile/**"/>
 				<exclude name="test/**"/>
 			</tarfileset>
-			<tarfileset dir="${doc.build.dir}/site" prefix="${dist.version.name}/doc" includes="**"></tarfileset>
+			<tarfileset dir="${doc.build.dir}/site" prefix="${dist-1.4.version.name}/doc" includes="**"></tarfileset>
 		</tar>
 	</target>
 	
