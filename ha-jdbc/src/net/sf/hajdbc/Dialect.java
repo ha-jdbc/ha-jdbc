@@ -25,6 +25,8 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
+ * Encapsulates database vendor specific SQL syntax.  
+ * 
  * @author  Paul Ferraro
  * @since   1.1
  */
