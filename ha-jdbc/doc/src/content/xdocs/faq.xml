@@ -19,6 +19,63 @@
 				If you use java.util.logging, configure an <a href="http://http://smtphandler.sourceforge.net/">SMTPHandler</a> for the "net.sf.hajdbc" package.
 			</answer>
 		</faq>
+		<faq>
+			<question>My JDBC driver expects additional parameters.  How can I specify these in my HA-JDBC configuration?</question>
+			<answer>
+				The <code>database</code> element may contain any number of <code>property</code> elements.
+				HA-JDBC will pass these properties through to the Driver.connect(String url, Properties info) method of the underlying JDBC driver.
+				User name and password may be 
+				<p>e.g.</p>
+				<source><![CDATA[
+<cluster id="..." balancer="..." default-sync="...">
+	<database id="...">
+		<driver>org.postgresql.Driver</driver>
+		<url>jdbc:postgresql:database</url>
+		<property name="ssl">true</property>
+		<user>postgres</user>
+		<password>XXXX</password>
+	</database>
+</cluster>
+]]></source>
+				<p>
+				</p>
+				<p>
+					Alternatively, many JDBC drivers accept properties appended to the url.
+				</p>
+				<p>e.g.</p>
+				<source><![CDATA[
+<cluster id="..." balancer="..." default-sync="...">
+	<database id="...">
+		<driver>org.postgresql.Driver</driver>
+		<url>jdbc:postgresql:database?ssl=true</url>
+		<user>postgres</user>
+		<password>XXXX</password>
+	</database>
+</cluster>
+]]></source>
+			</answer>
+		</faq>
+		<faq>
+			<question>How can I specify JNDI environment properties to my HA-JDBC DataSource configuration?</question>
+			<answer>
+				The <code>datasource</code> element may contain any number of <code>property</code> elements.
+				HA-JDBC will pass these properties into the InitialContext(Hashtable env) constructor.
+				<p>e.g.</p>
+				<source><![CDATA[
+<cluster id="..." balancer="..." default-sync="...">
+	<datasource id="...">
+		<name>jdbc/database</name>
+		<property name="java.naming.factory.initial">org.jnp.interfaces.NamingContextFactory</property>
+		<property name="java.naming.factory.url.pkgs">org.jboss.naming:org.jnp.interfaces</property>
+	</datasource>
+</cluster>
+]]></source>
+				<p>
+					Alternatively, these properties may be specified in an jndi.properties resource file.
+					Detail <a href="http://java.sun.com/j2se/1.5.0/docs/api/javax/naming/InitialContext.html">here</a>.
+				</p>
+			</answer>
+		</faq>
 	</faqsection>
 	<faqsection>
 		<title>Using HA-JDBC</title>
@@ -188,13 +245,13 @@
 						<th>Cluster administration</th>
 						<td>
 							<ol>
-								<li>Relies on a JMX management console provided by 3rd party JMX provider.</li>
+								<li>Leverages JConsole from JDK 1.5 or other 3rd party JMX console for cluster administration.</li>
 								<li>Only supports activating databases that were part of the cluster at startup.</li>
 							</ol>
 						</td>
 						<td>
 							<ol>
-								<li>Provides easy-to-use JMX-based administration console</li>
+								<li>Provides easy-to-use custom JMX-based administration console</li>
 								<li>Includes the ability to add new databases to a cluster on the fly.</li>
 							</ol>
 						</td>
