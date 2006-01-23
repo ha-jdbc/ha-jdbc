@@ -58,7 +58,10 @@ public class DataSourceDatabase extends AbstractDatabase<DataSource>
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Database#connect(T)
+	 * @param dataSource A DataSource
+	 * @return a database connection
+	 * @throws java.sql.SQLException if a database connection could not be made
+	 * @see net.sf.hajdbc.Database#connect(Object)
 	 */
 	public Connection connect(DataSource dataSource) throws java.sql.SQLException
 	{

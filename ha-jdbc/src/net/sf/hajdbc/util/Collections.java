@@ -80,7 +80,7 @@ public final class Collections
 	 */
 	public static <T> List<T> cast(List list, Class<T> targetClass)
 	{
-		return null;
+		return new TypedList(list, targetClass);
 	}
 	
 	private Collections()
@@ -146,7 +146,9 @@ public final class Collections
 		}
 		
 		/**
-		 * @see java.util.Collection#add(E)
+		 * @param element
+		 * @return boolean 
+		 * @see java.util.Collection#add(Object)
 		 */
 		public boolean add(E element)
 		{
@@ -242,7 +244,10 @@ public final class Collections
 		}
 
 		/**
-		 * @see java.util.Collection#toArray(T[])
+		 * @param array 
+		 * @param <T> 
+		 * @return array
+		 * @see java.util.Collection#toArray(Object[])
 		 */
 		public <T> T[] toArray(T[] array)
 		{
@@ -296,7 +301,10 @@ public final class Collections
 		}
 
 		/**
-		 * @see java.util.List#set(int, E)
+		 * @param index 
+		 * @param value 
+		 * @return old value
+		 * @see java.util.List#set(int, Object)
 		 */
 		public E set(int index, E value)
 		{
@@ -304,7 +312,9 @@ public final class Collections
 		}
 
 		/**
-		 * @see java.util.List#add(int, E)
+		 * @param index 
+		 * @param value 
+		 * @see java.util.List#add(int, Object)
 		 */
 		public void add(int index, E value)
 		{
@@ -407,7 +417,8 @@ public final class Collections
 			}
 
 			/**
-			 * @see java.util.ListIterator#set(E)
+			 * @param element 
+			 * @see java.util.ListIterator#set(Object)
 			 */
 			public void set(E element)
 			{
@@ -415,7 +426,8 @@ public final class Collections
 			}
 
 			/**
-			 * @see java.util.ListIterator#add(E)
+			 * @param element 
+			 * @see java.util.ListIterator#add(Object)
 			 */
 			public void add(E element)
 			{
@@ -484,7 +496,10 @@ public final class Collections
 		}
 
 		/**
-		 * @see java.util.Map#put(K, V)
+		 * @param key 
+		 * @param value 
+		 * @return old value
+		 * @see java.util.Map#put(Object, Object)
 		 */
 		public V put(K key, V value)
 		{

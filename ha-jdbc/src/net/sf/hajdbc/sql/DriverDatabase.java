@@ -78,7 +78,10 @@ public class DriverDatabase extends AbstractDatabase<Driver>
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Database#connect(T)
+	 * @param driver a JDBC driver
+	 * @return a database connection
+	 * @throws java.sql.SQLException if a database connection could not be made
+	 * @see net.sf.hajdbc.Database#connect(Object)
 	 */
 	public Connection connect(Driver driver) throws java.sql.SQLException
 	{
