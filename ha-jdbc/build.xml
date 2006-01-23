@@ -111,9 +111,9 @@
 				<include name="*.txt"/>
 			</tarfileset>
 			<tarfileset dir="${lib.dir}" prefix="${dist.version.name}/lib" includes="**">
-				<exclude name="compile/**"/>
+				<exclude name="compile*/**"/>
 				<exclude name="test/**"/>
-				<exclude name="*-1.4"/>
+				<exclude name="runtime-1.4/**"/>
 			</tarfileset>
 			<tarfileset dir="${doc.build.dir}/site" prefix="${dist.version.name}/doc" includes="**"></tarfileset>
 		</tar>
@@ -135,11 +135,11 @@
 				<include name="${dist-1.4.version.name}.jar"/>
 				<include name="*.txt"/>
 			</tarfileset>
-			<tarfileset dir="${lib.dir}" prefix="${dist-1.4.version.name}/lib" includes="**">
-				<exclude name="compile/**"/>
+			<tarfileset dir="${lib.dir}" prefix="${dist.version.name}/lib" includes="**">
+				<exclude name="compile*/**"/>
 				<exclude name="test/**"/>
 			</tarfileset>
-			<tarfileset dir="${doc.build.dir}/site" prefix="${dist-1.4.version.name}/doc" includes="**"></tarfileset>
+			<tarfileset dir="${doc.build.dir}/site" prefix="${dist.version.name}/doc" includes="**"></tarfileset>
 		</tar>
 	</target>
 	
