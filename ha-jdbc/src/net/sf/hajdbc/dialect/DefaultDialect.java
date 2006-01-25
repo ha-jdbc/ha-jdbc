@@ -27,6 +27,7 @@ import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import net.sf.hajdbc.Dialect;
 
@@ -36,6 +37,8 @@ import net.sf.hajdbc.Dialect;
  */
 public class DefaultDialect implements Dialect
 {
+	private Pattern selectForUpdatePattern = Pattern.compile(this.selectForUpdatePattern());
+
 	/**
 	 * @see net.sf.hajdbc.Dialect#getSimpleSQL()
 	 */
@@ -158,6 +161,14 @@ public class DefaultDialect implements Dialect
 		return MessageFormat.format(this.dropConstraintPattern(), name, this.qualifyTable(metaData, schema, table));
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.Dialect#getSelectForUpdatePattern()
+	 */
+	public Pattern getSelectForUpdatePattern()
+	{
+		return this.selectForUpdatePattern;
+	}
+	
 	protected String truncateTablePattern()
 	{
 		return "DELETE FROM {0}";
@@ -176,5 +187,10 @@ public class DefaultDialect implements Dialect
 	protected String dropConstraintPattern()
 	{
 		return "ALTER TABLE {1} DROP CONSTRAINT {0}";
+	}
+	
+	protected String selectForUpdatePattern()
+	{
+		return "[sS][eE][lL][eE][cC][tT]\\s+.+\\s+[fF][oO][rR]\\s+[uU][pP][dD][aA][tT][eE]";
 	}
 }

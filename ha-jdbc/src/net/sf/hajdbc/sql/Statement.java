@@ -37,8 +37,6 @@ import net.sf.hajdbc.SQLObject;
  */
 public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.sql.Connection> implements java.sql.Statement
 {
-	private static final Pattern SELECT_FOR_UPDATE_PATTERN = Pattern.compile("[sS][eE][lL][eE][cC][tT]\\s+.+\\s+[fF][oO][rR]\\s+[uU][pP][dD][aA][tT][eE]");
-
 	/**
 	 * Constructs a new StatementProxy.
 	 * @param connection a Connection proxy
@@ -725,6 +723,8 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 	 */
 	protected boolean isSelectForUpdate(String sql)
 	{
-		return SELECT_FOR_UPDATE_PATTERN.matcher(sql).find();
+		Pattern pattern = this.getDatabaseCluster().getDialect().getSelectForUpdatePattern();
+		
+		return (pattern != null) ? pattern.matcher(sql).find() : false;
 	}
 }
