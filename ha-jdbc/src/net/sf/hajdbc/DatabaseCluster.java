@@ -63,9 +63,9 @@ public interface DatabaseCluster extends DatabaseClusterMBean
 	 * Returns the database identified by the specified id
 	 * @param id a database identifier
 	 * @return a database descriptor
-	 * @throws SQLException if no database exists with the specified identifier
+	 * @throws IllegalArgumentException if no database exists with the specified identifier
 	 */
-	public Database getDatabase(String id) throws SQLException;
+	public Database getDatabase(String id);
 	
 	/**
 	 * Initializes this database cluster.
@@ -114,4 +114,20 @@ public interface DatabaseCluster extends DatabaseClusterMBean
 	 * @since 1.1
 	 */
 	public Dialect getDialect();
+	
+	/**
+	 * @param object a lockable object
+	 */
+	public void lock(Object object);
+	
+	/**
+	 * @param object a lockable object
+	 * @return true, if lock acquired, false otherwise
+	 */
+	public boolean tryLock(Object object);
+	
+	/**
+	 * @param object a lockable object
+	 */
+	public void unlock(Object object);
 }

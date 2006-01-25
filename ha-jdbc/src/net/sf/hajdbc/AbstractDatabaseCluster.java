@@ -39,23 +39,16 @@ import org.apache.commons.logging.LogFactory;
  */
 public abstract class AbstractDatabaseCluster implements DatabaseCluster
 {
+	private static final String SYNC_LOCK_HANDLE = "";
+	
 	private static Log log = LogFactory.getLog(AbstractDatabaseCluster.class);
 	
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#isAlive(java.lang.String)
 	 */
-	public final boolean isAlive(String databaseId) throws java.sql.SQLException
+	public final boolean isAlive(String id)
 	{
-		try
-		{
-			return this.isAlive(this.getDatabase(databaseId));
-		}
-		catch (java.sql.SQLException e)
-		{
-			log.warn(Messages.getMessage(Messages.DATABASE_VALIDATE_FAILED, databaseId), e);
-			
-			throw e;
-		}
+		return this.isAlive(this.getDatabase(id));
 	}
 
 	/**
@@ -63,18 +56,9 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 	 */
 	public final void deactivate(String databaseId) throws java.sql.SQLException
 	{
-		try
+		if (this.deactivate(this.getDatabase(databaseId)))
 		{
-			if (this.deactivate(this.getDatabase(databaseId)))
-			{
-				log.info(Messages.getMessage(Messages.DATABASE_DEACTIVATED, databaseId, this));
-			}
-		}
-		catch (java.sql.SQLException e)
-		{
-			log.warn(Messages.getMessage(Messages.DATABASE_DEACTIVATE_FAILED, databaseId, this), e);
-			
-			throw e;
+			log.info(Messages.getMessage(Messages.DATABASE_DEACTIVATED, databaseId, this));
 		}
 	}
 
@@ -134,11 +118,9 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 	
 	private void activate(String databaseId, SynchronizationStrategy strategy) throws java.sql.SQLException
 	{
-		Database database = this.getDatabase(databaseId);
-		
 		try
 		{
-			if (this.activate(database, strategy))
+			if (this.activate(this.getDatabase(databaseId), strategy))
 			{
 				log.info(Messages.getMessage(Messages.DATABASE_ACTIVATED, databaseId, this));
 			}
@@ -163,6 +145,11 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 		if (databaseList.isEmpty())
 		{
 			return this.activate(inactiveDatabase);
+		}
+		
+		if (!this.tryLock(SYNC_LOCK_HANDLE))
+		{
+			throw new IllegalStateException(Messages.getMessage(Messages.DATABASE_ACTIVATION_ALREADY_RUNNING, inactiveDatabase, this));
 		}
 		
 		Database activeDatabase = databaseList.get(0);
@@ -260,10 +247,12 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 			this.close(activeConnection, activeDatabase);
 			this.close(inactiveConnection, inactiveDatabase);
 			
-			for (int i = 0; i < databaseList.size(); ++i)
+			for (int i = 0; i < connectionList.size(); ++i)
 			{
 				this.close(connectionList.get(i), databaseList.get(i));
 			}
+			
+			this.unlock(SYNC_LOCK_HANDLE);
 		}
 	}
 	

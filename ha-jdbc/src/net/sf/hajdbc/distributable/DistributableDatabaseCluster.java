@@ -21,9 +21,13 @@
 package net.sf.hajdbc.distributable;
 
 import java.io.Serializable;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+import javax.management.ObjectName;
 
 import net.sf.hajdbc.AbstractDatabaseCluster;
 import net.sf.hajdbc.Balancer;
@@ -36,15 +40,15 @@ import net.sf.hajdbc.SynchronizationStrategy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;
+import org.jgroups.ChannelException;
 import org.jgroups.JChannel;
+import org.jgroups.blocks.LockManager;
+import org.jgroups.blocks.LockNotGrantedException;
+import org.jgroups.blocks.LockNotReleasedException;
 import org.jgroups.blocks.NotificationBus;
+import org.jgroups.blocks.TwoPhaseVotingAdapter;
+import org.jgroups.blocks.VotingAdapter;
 import org.jgroups.jmx.JmxConfigurator;
-
-import java.util.concurrent.ExecutorService;
-
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
-import javax.management.ObjectName;
 
 /**
  * Decorates an existing database cluster by providing distributable functionality.
@@ -57,8 +61,10 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 {
 	private static Log log = LogFactory.getLog(DistributableDatabaseCluster.class);
 	
-	private NotificationBus notificationBus;
 	private DatabaseCluster databaseCluster;
+	private NotificationBus notificationBus;
+	private LockManager lockManager;
+	private int timeout;
 	
 	/**
 	 * Constructs a new DistributableDatabaseCluster.
@@ -69,12 +75,16 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 	public DistributableDatabaseCluster(DatabaseCluster databaseCluster, DistributableDatabaseClusterDecorator decorator) throws Exception
 	{
 		this.databaseCluster = databaseCluster;
-
+		this.timeout = decorator.getTimeout();
+		
 		this.notificationBus = new NotificationBus(databaseCluster.getId(), decorator.getProtocol());
 		this.notificationBus.setConsumer(this);
 		this.notificationBus.start();
 		
+		this.lockManager = new org.jgroups.blocks.DistributedLockManager(new TwoPhaseVotingAdapter(new VotingAdapter(this.notificationBus.getChannel())), databaseCluster.getId());
+		
 		MBeanServer server = MBeanServer.class.cast(MBeanServerFactory.findMBeanServer(null).get(0));
+		
 		ObjectName name = ObjectName.getInstance("org.jgroups", "channel", ObjectName.quote(databaseCluster.getId()));
 		
 		if (!server.isRegistered(name))
@@ -126,7 +136,7 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 		{
 			command.execute(this.databaseCluster);
 		}
-		catch (SQLException e)
+		catch (java.sql.SQLException e)
 		{
 			log.error(Messages.getMessage(Messages.DATABASE_COMMAND_FAILED, command, this.databaseCluster), e);
 		}
@@ -175,9 +185,9 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#loadState()
 	 */
-	public String[] loadState() throws SQLException
+	public String[] loadState() throws java.sql.SQLException
 	{
-		String[] state = (String[]) this.notificationBus.getCacheFromCoordinator(1000, 1);
+		String[] state = (String[]) this.notificationBus.getCacheFromCoordinator(this.timeout, 1);
 		
 		return (state != null) ? state : this.databaseCluster.loadState();
 	}
@@ -201,7 +211,7 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getDatabase(java.lang.String)
 	 */
-	public Database getDatabase(String databaseId) throws java.sql.SQLException
+	public Database getDatabase(String databaseId)
 	{
 		return this.databaseCluster.getDatabase(databaseId);
 	}
@@ -260,5 +270,91 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 	public Dialect getDialect()
 	{
 		return this.databaseCluster.getDialect();
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#lock(Object)
+	 */
+	public void lock(Object object)
+	{
+		try
+		{
+			this.lockManager.lock(object, this.getId(), 0);
+			
+			this.databaseCluster.lock(object);
+		}
+		catch (LockNotGrantedException e)
+		{
+			throw new IllegalStateException(e);
+		}
+		catch (ClassCastException e)
+		{
+			throw new IllegalStateException(e);
+		}
+		catch (ChannelException e)
+		{
+			throw new IllegalStateException(e);
+		}		
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#unlock(Object)
+	 */
+	public void unlock(Object object)
+	{
+		try
+		{
+			this.lockManager.unlock(object, this.getId());
+			
+			this.databaseCluster.unlock(object);
+		}
+		catch (ClassCastException e)
+		{
+			throw new IllegalStateException(e);
+		}
+		catch (ChannelException e)
+		{
+			throw new IllegalStateException(e);
+		}
+		catch (LockNotReleasedException e)
+		{
+			throw new IllegalStateException(e);
+		}		
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#tryLock(Object)
+	 */
+	public boolean tryLock(Object object)
+	{
+		try
+		{
+			this.lockManager.lock(object, this.getId(), this.timeout);
+			
+			boolean success = this.databaseCluster.tryLock(object);
+			
+			if (!success)
+			{
+				this.lockManager.unlock(object, this.getId());
+			}
+			
+			return success;
+		}
+		catch (LockNotGrantedException e)
+		{
+			return false;
+		}
+		catch (ClassCastException e)
+		{
+			throw new IllegalStateException(e);
+		}
+		catch (ChannelException e)
+		{
+			throw new IllegalStateException(e);
+		}		
+		catch (LockNotReleasedException e)
+		{
+			throw new IllegalStateException(e);
+		}		
 	}
 }

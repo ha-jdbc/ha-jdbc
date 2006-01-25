@@ -38,15 +38,14 @@ public class Messages
 	public static final String CONFIG_NOT_FOUND = "config-not-found";
 	public static final String DATABASE_ACTIVATE_FAILED = "database-activate-failed";
 	public static final String DATABASE_ACTIVATED = "database-activated";
+	public static final String DATABASE_ACTIVATION_ALREADY_RUNNING = "database-activation-already-running";
 	public static final String DATABASE_COMMAND_RECEIVED = "database-command-received";
 	public static final String DATABASE_COMMAND_FAILED = "database-command-failed";
-	public static final String DATABASE_DEACTIVATE_FAILED = "database-deactivate-failed";
 	public static final String DATABASE_DEACTIVATED = "database-deactivated";
 	public static final String DATABASE_INACTIVE = "database-inactive";
 	public static final String DATABASE_NOT_ACTIVE = "database-not-active";
 	public static final String DATABASE_SYNC_END = "database-sync-end";
 	public static final String DATABASE_SYNC_START = "database-sync-start";
-	public static final String DATABASE_VALIDATE_FAILED = "database-validate-failed";
 	public static final String DELETE_COUNT = "delete-count";
 	public static final String DRIVER_NOT_FOUND = "driver-not-found";
 	public static final String DRIVER_REGISTER_FAILED = "driver-register-failed";

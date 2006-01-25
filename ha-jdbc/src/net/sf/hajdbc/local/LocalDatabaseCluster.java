@@ -49,6 +49,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author  Paul Ferraro
@@ -69,6 +71,7 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	private Map<Database, Object> connectionFactoryMap = new HashMap<Database, Object>();
 	private ThreadPoolExecutor executor = ThreadPoolExecutor.class.cast(Executors.newCachedThreadPool(new DaemonThreadFactory()));
 	private Dialect dialect;
+	private Map<Object, Lock> lockMap = new HashMap<Object, Lock>();
 	
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#loadState()
@@ -262,13 +265,13 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getDatabase(java.lang.String)
 	 */
-	public Database getDatabase(String databaseId) throws java.sql.SQLException
+	public Database getDatabase(String id)
 	{
-		Database database = this.databaseMap.get(databaseId);
+		Database database = this.databaseMap.get(id);
 		
 		if (database == null)
 		{
-			throw new SQLException(Messages.getMessage(Messages.INVALID_DATABASE, databaseId, this));
+			throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_DATABASE, id, this));
 		}
 		
 		return database;
@@ -304,6 +307,47 @@ public class LocalDatabaseCluster extends AbstractDatabaseCluster
 	public Dialect getDialect()
 	{
 		return this.dialect;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#lock(Object)
+	 */
+	public void lock(Object object)
+	{
+		this.getLock(object).lock();
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#tryLock(Object)
+	 */
+	public boolean tryLock(Object object)
+	{
+		return this.getLock(object).tryLock();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#unlock(Object)
+	 */
+	public void unlock(Object object)
+	{
+		this.getLock(object).unlock();
+	}
+	
+	private Lock getLock(Object object)
+	{
+		synchronized (this.lockMap)
+		{
+			Lock lock = this.lockMap.get(object);
+			
+			if (lock == null)
+			{
+				lock = new ReentrantLock();
+				
+				this.lockMap.put(object, lock);
+			}
+			
+			return lock;
+		}
 	}
 	
 	void addDatabase(Database database)

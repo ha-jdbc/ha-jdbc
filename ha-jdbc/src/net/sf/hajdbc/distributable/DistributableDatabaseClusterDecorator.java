@@ -32,6 +32,7 @@ import net.sf.hajdbc.DatabaseClusterDecorator;
 public class DistributableDatabaseClusterDecorator implements DatabaseClusterDecorator
 {
 	private String protocol;
+	private int timeout;
 	
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterDecorator#decorate(net.sf.hajdbc.DatabaseCluster)
@@ -48,5 +49,14 @@ public class DistributableDatabaseClusterDecorator implements DatabaseClusterDec
 	public String getProtocol()
 	{
 		return this.protocol;
+	}
+	
+	/**
+	 * Returns the number of milliseconds to allow for jgroups cluster operations
+	 * @return a number of milliseconds
+	 */
+	public int getTimeout()
+	{
+		return this.timeout;
 	}
 }
