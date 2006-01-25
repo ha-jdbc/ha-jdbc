@@ -4,6 +4,7 @@
 	<mapping name="ha-jdbc" class="net.sf.hajdbc.DatabaseClusterFactory">
 		<structure name="distributable" field="decorator" type="net.sf.hajdbc.distributable.DistributableDatabaseClusterDecorator" usage="optional">
 			<value name="protocol" field="protocol" style="attribute" usage="optional" default="default-minimalthreads.xml"></value>
+			<value name="timeout" field="timeout" style="attribute" usage="optional" default="1000"></value>
 		</structure>
 		<collection add-method="addSynchronizationStrategy" item-type="net.sf.hajdbc.SynchronizationStrategy"></collection>
 		<collection add-method="addDatabaseCluster" item-type="net.sf.hajdbc.local.LocalDatabaseCluster"></collection>

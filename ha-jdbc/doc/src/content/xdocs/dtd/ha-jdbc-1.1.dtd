@@ -29,6 +29,7 @@
 
 <!ELEMENT distributable EMPTY>
 <!ATTLIST distributable	protocol CDATA #IMPLIED>
+<!ATTLIST distributable timeout CDATA #IMPLIED>
 
 <!ELEMENT sync (property*)>
 <!ATTLIST sync id ID #REQUIRED>
