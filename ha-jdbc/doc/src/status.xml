@@ -2,7 +2,7 @@
 <!DOCTYPE status PUBLIC "-//APACHE//DTD Status V1.3//EN" "http://forrest.apache.org/dtd/status-v13.dtd">
 <status>
 	<developers>
-		<person name="Paul Ferraro" email="ferraro@users.sourceforge.net" id="PF"/>
+		<person id="PF" name="Paul Ferraro" email="ferraro@users.sourceforge.net"/>
 	</developers>
 	<contexts>
 		<context id="code" title="Changes to code"/>
@@ -12,6 +12,20 @@
 	</contexts>
 
 	<changes>
+		<release version="1.1-beta-3" date="???">
+			<action type="update" context="code" dev="PF">
+				Changed exceptions thrown by DatabaseClusterMBean methods to built-in Java exceptions so that they can be interpretted by a remote JMX client.
+			</action>
+			<action type="add" context="code" dev="PF">
+				Added distributable locking to prevent multiple simulataneous synchronizations on the same cluster.
+			</action>
+			<action type="add" context="code" dev="PF">
+				Added configurable timeout attribute to DTD for distributable operations.
+			</action>
+			<action type="update" context="code" dev="PF">
+				Moved SELECT ... FOR UPDATE pattern definition to dialect.
+			</action>
+		</release>
 		<release version="1.1-beta-2" date="January 23, 2006">
 			<action type="update" context="lib" dev="PF">
 				Upgraded JiBX to version 1.0.1.
