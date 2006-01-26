@@ -39,16 +39,14 @@ public interface DatabaseClusterMBean
 	 * Determines whether or not the specified database is responsive
 	 * @param databaseId a database identifier
 	 * @return true, if the database is alive, false otherwise
-	 * @throws java.sql.SQLException if there is no such database in the cluster
 	 */
-	public boolean isAlive(String databaseId) throws java.sql.SQLException;
+	public boolean isAlive(String databaseId);
 	
 	/**
 	 * Deactivates the specified database.
 	 * @param databaseId a database identifier
-	 * @throws java.sql.SQLException if there is no such database in the cluster
 	 */
-	public void deactivate(String databaseId) throws java.sql.SQLException;
+	public void deactivate(String databaseId);
 
 	/**
 	 * Synchronizes, using the default strategy, and reactivates the specified database.

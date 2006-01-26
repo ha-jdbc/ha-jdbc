@@ -54,7 +54,7 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#deactivate(java.lang.String)
 	 */
-	public final void deactivate(String databaseId) throws java.sql.SQLException
+	public final void deactivate(String databaseId)
 	{
 		if (this.deactivate(this.getDatabase(databaseId)))
 		{
