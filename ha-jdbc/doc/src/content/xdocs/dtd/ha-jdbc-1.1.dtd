@@ -35,7 +35,7 @@
 <!ATTLIST sync id ID #REQUIRED>
 <!ATTLIST sync class CDATA #REQUIRED>
 
-<!ELEMENT cluster (database+|datasource+|pool-datasource+|xa-datasource+)>
+<!ELEMENT cluster (database+|datasource+)>
 <!ATTLIST cluster id CDATA #REQUIRED>
 <!ATTLIST cluster dialect CDATA #IMPLIED>
 <!ATTLIST cluster balancer (simple|random|round-robin|load) #REQUIRED>
