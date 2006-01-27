@@ -149,7 +149,7 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 	{
 		Collection<String> databases = this.databaseCluster.getActiveDatabases();
 		
-		return this.databaseCluster.getActiveDatabases().toArray(new String[databases.size()]);
+		return databases.toArray(new String[databases.size()]);
 	}
 
 	/**
@@ -187,7 +187,7 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 	 */
 	public String[] loadState() throws java.sql.SQLException
 	{
-		String[] state = (String[]) this.notificationBus.getCacheFromCoordinator(this.timeout, 1);
+		String[] state = String[].class.cast(this.notificationBus.getCacheFromCoordinator(this.timeout, 1));
 		
 		return (state != null) ? state : this.databaseCluster.loadState();
 	}
