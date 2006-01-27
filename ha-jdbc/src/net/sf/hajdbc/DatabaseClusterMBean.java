@@ -51,17 +51,17 @@ public interface DatabaseClusterMBean
 	/**
 	 * Synchronizes, using the default strategy, and reactivates the specified database.
 	 * @param databaseId a database identifier
-	 * @throws java.sql.SQLException if there is no such database in the cluster, or if activation fails
+	 * @throws Exception if activation fails
 	 */
-	public void activate(String databaseId) throws java.sql.SQLException;
+	public void activate(String databaseId) throws Exception;
 
 	/**
 	 * Synchronizes, using the specified strategy, and reactivates the specified database.
 	 * @param databaseId a database identifier
 	 * @param syncId the class name of a synchronization strategy
-	 * @throws java.sql.SQLException if there is no such database in the cluster, or if activation fails
+	 * @throws Exception if activation fails
 	 */
-	public void activate(String databaseId, String syncId) throws java.sql.SQLException;
+	public void activate(String databaseId, String syncId) throws Exception;
 	
 	/**
 	 * Returns a collection of active databases in this cluster.

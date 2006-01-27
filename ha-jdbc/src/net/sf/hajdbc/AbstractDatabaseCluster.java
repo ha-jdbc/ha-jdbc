@@ -65,7 +65,7 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#activate(java.lang.String)
 	 */
-	public final void activate(String databaseId) throws java.sql.SQLException
+	public final void activate(String databaseId) throws Exception
 	{
 		this.activate(databaseId, this.getDefaultSynchronizationStrategy());
 	}
@@ -73,7 +73,7 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#activate(java.lang.String, java.lang.String)
 	 */
-	public final void activate(String databaseId, String strategyId) throws java.sql.SQLException
+	public final void activate(String databaseId, String strategyId) throws Exception
 	{
 		this.activate(databaseId, DatabaseClusterFactory.getInstance().getSynchronizationStrategy(strategyId));
 	}
@@ -116,7 +116,7 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 		return this.getId().equals(databaseCluster.getId());
 	}
 	
-	private void activate(String databaseId, SynchronizationStrategy strategy) throws java.sql.SQLException
+	private void activate(String databaseId, SynchronizationStrategy strategy) throws Exception
 	{
 		try
 		{
@@ -127,9 +127,11 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 		}
 		catch (java.sql.SQLException e)
 		{
-			log.warn(Messages.getMessage(Messages.DATABASE_ACTIVATE_FAILED, databaseId, this), e);
+			String message = Messages.getMessage(Messages.DATABASE_ACTIVATE_FAILED, databaseId, this);
 			
-			throw e;
+			log.error(message, e);
+			
+			throw new Exception(message);
 		}
 	}
 	
