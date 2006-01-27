@@ -6,7 +6,6 @@
 	<property name="junit.jar" value="junit-3.8.1.jar"></property>
 	
 	<property name="build.dir" location="${basedir}/build"></property>
-	<property name="build-1.4.dir" location="${basedir}/build-1.4"></property>
 	<property name="src.dir" location="${basedir}/src"></property>
 	<property name="test.dir" location="${basedir}/test"></property>
 	<property name="test.output.dir" location="${basedir}/test-output"></property>
@@ -120,12 +119,12 @@
 	</target>
 
 	<target name="compile-1.4" depends="bind">
-		<retrotranslate srcdir="${build.dir}" destdir="${build-1.4.dir}" classpathref="src.classpath"></retrotranslate>
+		<retrotranslate srcdir="${build.dir}" classpathref="src.classpath"></retrotranslate>
 	</target>
 
-	<target name="jar-1.4" depends="compile-1.4">
+	<target name="jar-1.4" depends="clean, compile-1.4">
         <jar jarfile="${jar-1.4.file}" index="true">
-			<fileset dir="${build-1.4.dir}"></fileset>
+			<fileset dir="${build.dir}"></fileset>
 		</jar>
 	</target>
 	
