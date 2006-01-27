@@ -57,7 +57,7 @@
 
 <!ELEMENT datasource (name, property*, %authentication-info;)>
 <!ATTLIST datasource id CDATA #REQUIRED>
-<!ATTLIST datasource weight CDATA "0">
+<!ATTLIST datasource weight CDATA "1">
 <!ELEMENT name (#PCDATA)>
 
 <!ELEMENT property (#PCDATA)>
