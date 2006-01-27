@@ -126,15 +126,13 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 	/**
 	 * @see org.jgroups.blocks.NotificationBus.Consumer#handleNotification(java.io.Serializable)
 	 */
-	public void handleNotification(Serializable object)
+	public void handleNotification(Serializable command)
 	{
-		DatabaseCommand command = (DatabaseCommand) object;
-		
 		log.info(Messages.getMessage(Messages.DATABASE_COMMAND_RECEIVED, command.getClass().getName()));
 		
 		try
 		{
-			command.execute(this.databaseCluster);
+			DatabaseCommand.class.cast(command).execute(this.databaseCluster);
 		}
 		catch (java.sql.SQLException e)
 		{
