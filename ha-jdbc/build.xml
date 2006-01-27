@@ -121,7 +121,7 @@
 		<retrotranslate srcdir="${build.dir}" classpathref="src.classpath"></retrotranslate>
 	</target>
 
-	<target name="jar-1.4" depends="clean, compile-1.4">
+	<target name="jar-1.4" depends="compile-1.4">
         <jar jarfile="${jar-1.4.file}" index="true">
 			<fileset dir="${build.dir}"></fileset>
 		</jar>
