@@ -12,7 +12,7 @@
 	</contexts>
 
 	<changes>
-		<release version="1.1-beta-3" date="???">
+		<release version="1.1-beta-3" date="January 27, 2006">
 			<action type="update" context="code" dev="PF">
 				Changed exceptions thrown by DatabaseClusterMBean methods to built-in Java exceptions so that they can be interpretted by a remote JMX client.
 			</action>
