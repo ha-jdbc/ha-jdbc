@@ -80,7 +80,6 @@
 
 	<target name="init">
 		<mkdir dir="${build.dir}"/>
-		<mkdir dir="${build-1.4.dir}"/>
 	</target>
 	
     <target name="compile" depends="init">
