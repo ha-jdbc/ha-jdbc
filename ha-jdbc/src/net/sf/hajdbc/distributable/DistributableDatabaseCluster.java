@@ -40,8 +40,10 @@ import net.sf.hajdbc.SynchronizationStrategy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;
+import org.jgroups.Channel;
 import org.jgroups.ChannelException;
 import org.jgroups.JChannel;
+import org.jgroups.blocks.DistributedLockManager;
 import org.jgroups.blocks.LockManager;
 import org.jgroups.blocks.LockNotGrantedException;
 import org.jgroups.blocks.LockNotReleasedException;
@@ -63,6 +65,7 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 	
 	private DatabaseCluster databaseCluster;
 	private NotificationBus notificationBus;
+	private JChannel lockManagerChannel;
 	private LockManager lockManager;
 	private int timeout;
 	
@@ -77,22 +80,31 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 		this.databaseCluster = databaseCluster;
 		this.timeout = decorator.getTimeout();
 		
-		this.notificationBus = new NotificationBus(databaseCluster.getId(), decorator.getProtocol());
+		this.notificationBus = new NotificationBus(databaseCluster.getId() + "_bus", decorator.getProtocol());
 		this.notificationBus.setConsumer(this);
 		this.notificationBus.start();
 		
-		this.lockManager = new org.jgroups.blocks.DistributedLockManager(new TwoPhaseVotingAdapter(new VotingAdapter(this.notificationBus.getChannel())), databaseCluster.getId());
+		this.register(this.notificationBus.getChannel());
 		
+		this.lockManagerChannel = new JChannel(decorator.getProtocol());
+		this.lockManagerChannel.connect(databaseCluster.getId() + "_lock");
+		this.lockManager = new DistributedLockManager(new TwoPhaseVotingAdapter(new VotingAdapter(this.lockManagerChannel)), databaseCluster.getId());
+		
+		this.register(this.lockManagerChannel);
+	}
+
+	private void register(Channel channel) throws Exception
+	{
 		MBeanServer server = MBeanServer.class.cast(MBeanServerFactory.findMBeanServer(null).get(0));
-		
-		ObjectName name = ObjectName.getInstance("org.jgroups", "channel", ObjectName.quote(databaseCluster.getId()));
+
+		ObjectName name = ObjectName.getInstance("org.jgroups", "channel", ObjectName.quote(channel.getChannelName()));
 		
 		if (!server.isRegistered(name))
 		{
-			JmxConfigurator.registerChannel(JChannel.class.cast(this.notificationBus.getChannel()), server, name.getCanonicalName(), true);
+			JmxConfigurator.registerChannel(JChannel.class.cast(channel), server, name.getCanonicalName(), true);
 		}
 	}
-
+	
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#deactivate(net.sf.hajdbc.Database)
 	 */
@@ -176,6 +188,9 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 	protected void finalize() throws Throwable
 	{
 		this.notificationBus.stop();
+
+		this.lockManagerChannel.disconnect();
+		this.lockManagerChannel.close();
 		
 		super.finalize();
 	}
