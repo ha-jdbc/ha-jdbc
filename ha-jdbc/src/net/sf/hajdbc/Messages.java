@@ -51,6 +51,7 @@ public class Messages
 	public static final String DRIVER_REGISTER_FAILED = "driver-register-failed";
 	public static final String GROUP_MEMBER_JOINED = "group-member-joined";
 	public static final String GROUP_MEMBER_LEFT = "group-member-left";
+	public static final String HA_JDBC_INIT = "ha-jdbc-init";
 	public static final String INSERT_COUNT = "insert-count";
 	public static final String INVALID_BALANCER = "invalid-balancer";
 	public static final String INVALID_DATABASE = "invalid-database";

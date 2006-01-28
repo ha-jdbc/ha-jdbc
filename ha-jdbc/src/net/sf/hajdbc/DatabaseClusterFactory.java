@@ -100,6 +100,8 @@ public final class DatabaseClusterFactory
 			throw new RuntimeException(Messages.getMessage(Messages.CONFIG_NOT_FOUND, resourceName));
 		}
 		
+		log.info(Messages.getMessage(Messages.HA_JDBC_INIT, resourceURL));
+		
 		InputStream inputStream = null;
 		
 		try
