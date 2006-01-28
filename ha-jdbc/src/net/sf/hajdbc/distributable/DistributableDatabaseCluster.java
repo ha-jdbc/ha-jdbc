@@ -80,14 +80,14 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 		this.databaseCluster = databaseCluster;
 		this.timeout = decorator.getTimeout();
 		
-		this.notificationBus = new NotificationBus(databaseCluster.getId() + "_bus", decorator.getProtocol());
+		this.notificationBus = new NotificationBus(databaseCluster.getId(), decorator.getProtocol());
 		this.notificationBus.setConsumer(this);
 		this.notificationBus.start();
 		
 		this.register(this.notificationBus.getChannel());
 		
 		this.lockManagerChannel = new JChannel(decorator.getProtocol());
-		this.lockManagerChannel.connect(databaseCluster.getId() + "_lock");
+		this.lockManagerChannel.connect(databaseCluster.getId() + "__lock");
 		this.lockManager = new DistributedLockManager(new TwoPhaseVotingAdapter(new VotingAdapter(this.lockManagerChannel)), databaseCluster.getId());
 		
 		this.register(this.lockManagerChannel);
