@@ -1,18 +1,19 @@
 <?xml version="1.0"?>
 <project name="ha-jdbc" default="jar" basedir=".">
 
-	<property file="${basedir}/build.properties"></property>
-
 	<property name="junit.jar" value="junit-3.8.1.jar"></property>
 	
 	<property name="build.dir" location="${basedir}/build"></property>
 	<property name="src.dir" location="${basedir}/src"></property>
 	<property name="test.dir" location="${basedir}/test"></property>
-	<property name="test.output.dir" location="${basedir}/test-output"></property>
 	<property name="doc.dir" location="${basedir}/doc"></property>
+	<property name="lib.dir" location="${basedir}/lib"></property>
+	
+	<property file="${src.dir}/net/sf/hajdbc/DatabaseClusterFactory.properties"></property>
+	
+	<property name="test.output.dir" location="${basedir}/test-output"></property>
 	<property name="doc.build.dir" location="${doc.dir}/build"></property>
 	<property name="doc.api.dir" location="${doc.dir}/src/content/api"></property>
-	<property name="lib.dir" location="${basedir}/lib"></property>
 	<property name="lib.compile.dir" location="${lib.dir}/compile"></property>
 	<property name="lib.runtime.dir" location="${lib.dir}/runtime"></property>
 	<property name="lib.compile-1.4.dir" location="${lib.dir}/compile-1.4"></property>
@@ -21,7 +22,7 @@
 	<property name="conf.dir" location="${basedir}/conf"></property>
 	<property name="conf.jibx.dir" location="${conf.dir}/jibx"></property>
 	<property name="dist.name" value="${ant.project.name}"></property>
-	<property name="dist.version.name" value="${dist.name}-${dist.version}"></property>
+	<property name="dist.version.name" value="${dist.name}-${version}"></property>
 	<property name="jar.file" location="${basedir}/${dist.version.name}.jar"></property>
 	<property name="dist.bin.file" location="${basedir}/${dist.version.name}-bin.tar.gz"></property>
 	<property name="dist.src.file" location="${basedir}/${dist.version.name}-src.tar.gz"></property>

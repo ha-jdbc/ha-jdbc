@@ -42,10 +42,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public final class Driver implements java.sql.Driver
 {
-	private static final boolean JDBC_COMPLIANT = true;
-	private static final int MAJOR_VERSION = 1;
-	private static final int MINOR_VERSION = 0;
-	
 	private static final Pattern URL_PATTERN = Pattern.compile("^jdbc:ha-jdbc:(.*)$");
 	
 	private static Log log = LogFactory.getLog(Driver.class);
@@ -100,7 +96,7 @@ public final class Driver implements java.sql.Driver
 	 */
 	public int getMajorVersion()
 	{
-		return MAJOR_VERSION;
+		return Integer.parseInt(DatabaseClusterFactory.getVersion().split(Pattern.quote("."))[0]);
 	}
 	
 	/**
@@ -108,7 +104,7 @@ public final class Driver implements java.sql.Driver
 	 */
 	public int getMinorVersion()
 	{
-		return MINOR_VERSION;
+		return Integer.parseInt(DatabaseClusterFactory.getVersion().split(Pattern.quote("."))[1].split("-")[0]);
 	}
 	
 	/**
@@ -139,7 +135,7 @@ public final class Driver implements java.sql.Driver
 	 */
 	public boolean jdbcCompliant()
 	{
-		return JDBC_COMPLIANT;
+		return true;
 	}
 	
 	private DatabaseCluster getDatabaseCluster(String url) throws SQLException
