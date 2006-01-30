@@ -74,4 +74,10 @@ public interface DatabaseClusterMBean
 	 * @return a collection of database identifiers
 	 */
 	public Collection<String> getInactiveDatabases();
+	
+	/**
+	 * Return the current HA-JDBC version
+	 * @return the current version
+	 */
+	public String getVersion();
 }

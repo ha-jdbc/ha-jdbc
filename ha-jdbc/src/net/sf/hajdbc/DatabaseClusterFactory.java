@@ -28,6 +28,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
@@ -58,7 +59,8 @@ public final class DatabaseClusterFactory
 	private static Log log = LogFactory.getLog(DatabaseClusterFactory.class);
 	
 	private static DatabaseClusterFactory instance = null;
-	
+	private static ResourceBundle resource = ResourceBundle.getBundle(DatabaseClusterFactory.class.getName());
+		
 	/**
 	 * Convenience method for constructing an mbean ObjectName for this cluster.
 	 * The ObjectName is constructed using {@link #MBEAN_DOMAIN} and {@link #MBEAN_KEY} and the quoted cluster identifier.
@@ -69,6 +71,15 @@ public final class DatabaseClusterFactory
 	public static ObjectName getObjectName(String databaseClusterId) throws MalformedObjectNameException
 	{
 		return ObjectName.getInstance(MBEAN_DOMAIN, MBEAN_KEY, ObjectName.quote(databaseClusterId));
+	}
+	
+	/**
+	 * Returns the current HA-JDBC version.
+	 * @return a version label
+	 */
+	public static String getVersion()
+	{
+		return resource.getString("version");
 	}
 	
 	/**
@@ -100,7 +111,7 @@ public final class DatabaseClusterFactory
 			throw new RuntimeException(Messages.getMessage(Messages.CONFIG_NOT_FOUND, resourceName));
 		}
 		
-		log.info(Messages.getMessage(Messages.HA_JDBC_INIT, resourceURL));
+		log.info(Messages.getMessage(Messages.HA_JDBC_INIT, getVersion(), resourceURL));
 		
 		InputStream inputStream = null;
 		

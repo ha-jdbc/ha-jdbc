@@ -79,6 +79,14 @@ public abstract class AbstractDatabaseCluster implements DatabaseCluster
 	}
 	
 	/**
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#getVersion()
+	 */
+	public String getVersion()
+	{
+		return DatabaseClusterFactory.getVersion();
+	}
+
+	/**
 	 * Handles a failure caused by the specified cause on the specified database.
 	 * If the database is not alive, then it is deactivated, otherwise an exception is thrown back to the caller.
 	 * @param database a database descriptor
