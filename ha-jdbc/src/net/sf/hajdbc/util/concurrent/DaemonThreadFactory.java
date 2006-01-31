@@ -30,6 +30,17 @@ import java.util.concurrent.ThreadFactory;
  */
 public class DaemonThreadFactory implements ThreadFactory
 {
+	private static ThreadFactory instance = new DaemonThreadFactory();
+	
+	/**
+	 * Returns single shared instance
+	 * @return a ThreadFactory instance
+	 */
+	public static ThreadFactory getInstance()
+	{
+		return instance;
+	}
+	
 	/**
 	 * @see java.util.concurrent.ThreadFactory#newThread(java.lang.Runnable)
 	 */
