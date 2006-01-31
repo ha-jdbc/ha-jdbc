@@ -177,8 +177,8 @@ public final class DatabaseClusterFactory
 		}
 	}
 	
-	private Map databaseClusterMap = new HashMap();
-	private Map synchronizationStrategyMap = new HashMap();
+	private Map<String, DatabaseCluster> databaseClusterMap = new HashMap<String, DatabaseCluster>();
+	private Map<String, SynchronizationStrategy> synchronizationStrategyMap = new HashMap<String, SynchronizationStrategy>();
 	private DatabaseClusterDecorator decorator;
 	private MBeanServer server;
 	
@@ -191,7 +191,7 @@ public final class DatabaseClusterFactory
 			throw new IllegalStateException(Messages.getMessage(Messages.MBEAN_SERVER_NOT_FOUND));
 		}
 		
-		this.server = (MBeanServer) serverList.get(0);
+		this.server = MBeanServer.class.cast(serverList.get(0));
 	}
 	
 	/**
@@ -201,22 +201,29 @@ public final class DatabaseClusterFactory
 	 */
 	public DatabaseCluster getDatabaseCluster(String id)
 	{
-		return (DatabaseCluster) this.databaseClusterMap.get(id);
+		DatabaseCluster databaseCluster = this.databaseClusterMap.get(id);
+		
+		if (databaseCluster == null)
+		{
+			throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_DATABASE_CLUSTER, id));
+		}
+		
+		return databaseCluster;
 	}
 	
 	/**
 	 * Returns the synchronization strategy identified by the specified id
 	 * @param id a synchronization strategy identifier
 	 * @return a synchronization strategy
-	 * @throws java.sql.SQLException if the specified identifier is not a valid sychronization strategy
+	 * @throws IllegalArgumentException if the specified identifier is not a valid sychronization strategy
 	 */
-	public SynchronizationStrategy getSynchronizationStrategy(String id) throws java.sql.SQLException
+	public SynchronizationStrategy getSynchronizationStrategy(String id)
 	{
-		SynchronizationStrategy strategy = (SynchronizationStrategy) this.synchronizationStrategyMap.get(id);
+		SynchronizationStrategy strategy = this.synchronizationStrategyMap.get(id);
 		
 		if (strategy == null)
 		{
-			throw new SQLException(Messages.getMessage(Messages.INVALID_SYNC_STRATEGY, id));
+			throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_SYNC_STRATEGY, id));
 		}
 		
 		return strategy;
@@ -233,24 +240,33 @@ public final class DatabaseClusterFactory
 	
 	void addDatabaseCluster(DatabaseCluster databaseCluster) throws Exception
 	{
-		if (this.decorator != null)
+		try
 		{
-			databaseCluster = this.decorator.decorate(databaseCluster);
+			if (this.decorator != null)
+			{
+				databaseCluster = this.decorator.decorate(databaseCluster);
+			}
+			
+			databaseCluster.init();
+	
+			ObjectName name = getObjectName(databaseCluster.getId());
+			
+			if (!this.server.isRegistered(name))
+			{
+				this.server.registerMBean(new StandardMBean(databaseCluster, DatabaseClusterMBean.class), name);
+			}
+			
+			this.databaseClusterMap.put(databaseCluster.getId(), databaseCluster);
 		}
-		
-		databaseCluster.init();
-
-		ObjectName name = getObjectName(databaseCluster.getId());
-		
-		if (!this.server.isRegistered(name))
+		catch (Exception e)
 		{
-			this.server.registerMBean(new StandardMBean(databaseCluster, DatabaseClusterMBean.class), name);
+			// Log exception here, since it will be masked by JiBX
+			log.error(e.getMessage(), e);
+			throw e;
 		}
-		
-		this.databaseClusterMap.put(databaseCluster.getId(), databaseCluster);
 	}
 	
-	void addSynchronizationStrategy(SynchronizationStrategy strategy) throws Exception
+	void addSynchronizationStrategy(SynchronizationStrategy strategy)
 	{
 		this.synchronizationStrategyMap.put(strategy.getId(), strategy);
 	}
