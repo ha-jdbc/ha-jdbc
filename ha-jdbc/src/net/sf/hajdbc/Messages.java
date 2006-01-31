@@ -55,6 +55,7 @@ public class Messages
 	public static final String INSERT_COUNT = "insert-count";
 	public static final String INVALID_BALANCER = "invalid-balancer";
 	public static final String INVALID_DATABASE = "invalid-database";
+	public static final String INVALID_DATABASE_CLUSTER = "invalid-database-cluster";
 	public static final String INVALID_PROPERTY = "invalid-property";
 	public static final String INVALID_PROPERTY_VALUE = "invalid-property-value";
 	public static final String INVALID_SYNC_STRATEGY = "invalid-sync-strategy";
