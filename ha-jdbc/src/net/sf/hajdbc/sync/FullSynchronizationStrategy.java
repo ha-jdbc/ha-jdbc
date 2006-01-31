@@ -71,7 +71,7 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 	private static Log log = LogFactory.getLog(FullSynchronizationStrategy.class);
 
 	private int maxBatchSize = 100;
-	private ExecutorService executor = Executors.newSingleThreadExecutor(new DaemonThreadFactory());
+	private ExecutorService executor = Executors.newSingleThreadExecutor(DaemonThreadFactory.getInstance());
 
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(Connection, Connection, Map, Dialect)

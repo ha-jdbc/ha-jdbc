@@ -79,7 +79,7 @@ public class DifferentialSynchronizationStrategy extends AbstractSynchronization
 {
 	private static Log log = LogFactory.getLog(DifferentialSynchronizationStrategy.class);
 
-	private ExecutorService executor = Executors.newSingleThreadExecutor(new DaemonThreadFactory());
+	private ExecutorService executor = Executors.newSingleThreadExecutor(DaemonThreadFactory.getInstance());
 	
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(Connection, Connection, Map, Dialect)
