@@ -39,12 +39,14 @@ public interface DatabaseClusterMBean
 	 * Determines whether or not the specified database is responsive
 	 * @param databaseId a database identifier
 	 * @return true, if the database is alive, false otherwise
+	 * @throws IllegalArgumentException if no database exists with the specified identifier.
 	 */
 	public boolean isAlive(String databaseId);
 	
 	/**
 	 * Deactivates the specified database.
 	 * @param databaseId a database identifier
+	 * @throws IllegalArgumentException if no database exists with the specified identifier.
 	 */
 	public void deactivate(String databaseId);
 
@@ -52,6 +54,7 @@ public interface DatabaseClusterMBean
 	 * Synchronizes, using the default strategy, and reactivates the specified database.
 	 * @param databaseId a database identifier
 	 * @throws Exception if activation fails
+	 * @throws IllegalArgumentException if no database exists with the specified identifier.
 	 */
 	public void activate(String databaseId) throws Exception;
 
@@ -60,6 +63,7 @@ public interface DatabaseClusterMBean
 	 * @param databaseId a database identifier
 	 * @param syncId the class name of a synchronization strategy
 	 * @throws Exception if activation fails
+	 * @throws IllegalArgumentException if no database exists with the specified identifier, or no synchronization strategy exists with the specified identifier.
 	 */
 	public void activate(String databaseId, String syncId) throws Exception;
 	
