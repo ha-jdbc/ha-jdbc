@@ -35,13 +35,12 @@ import net.sf.hajdbc.SQLException;
  * @version $Revision$
  * @since   1.0
  */
-public class DataSourceDatabase extends AbstractDatabase<DataSource>
+public class DataSourceDatabase extends AbstractDatabase<DataSource> implements DataSourceDatabaseMBean
 {
 	protected String name;
 	
 	/**
-	 * Return the JNDI name of this DataSource
-	 * @return a JNDI name
+	 * @see net.sf.hajdbc.sql.DataSourceDatabaseMBean#getName()
 	 */
 	public String getName()
 	{

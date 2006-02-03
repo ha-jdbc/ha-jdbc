@@ -33,7 +33,7 @@ import net.sf.hajdbc.SQLException;
  * @version $Revision$
  * @since   1.0
  */
-public class DriverDatabase extends AbstractDatabase<Driver>
+public class DriverDatabase extends AbstractDatabase<Driver> implements DriverDatabaseMBean
 {
 	private static final String USER = "user";
 	private static final String PASSWORD = "password";
@@ -42,8 +42,7 @@ public class DriverDatabase extends AbstractDatabase<Driver>
 	private String driver;
 	
 	/**
-	 * Returns the url for this database
-	 * @return a database url
+	 * @see net.sf.hajdbc.sql.DriverDatabaseMBean#getUrl()
 	 */
 	public String getUrl()
 	{
@@ -60,8 +59,7 @@ public class DriverDatabase extends AbstractDatabase<Driver>
 	}
 	
 	/**
-	 * Returns the driver class name for this database.
-	 * @return a driver class name
+	 * @see net.sf.hajdbc.sql.DriverDatabaseMBean#getDriver()
 	 */
 	public String getDriver()
 	{

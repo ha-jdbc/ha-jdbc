@@ -39,7 +39,7 @@ public abstract class AbstractDatabase<T> implements Database<T>
 	protected Integer weight;
 
 	/**
-	 * @see net.sf.hajdbc.Database#getId()
+	 * @see net.sf.hajdbc.DatabaseMBean#getId()
 	 */
 	public String getId()
 	{
@@ -55,7 +55,7 @@ public abstract class AbstractDatabase<T> implements Database<T>
 	}
 	
 	/**
-	 * @return the database user
+	 * @see net.sf.hajdbc.DatabaseMBean#getUser()
 	 */
 	public String getUser()
 	{
@@ -71,7 +71,7 @@ public abstract class AbstractDatabase<T> implements Database<T>
 	}
 	
 	/**
-	 * @return the password of the database user
+	 * @see net.sf.hajdbc.DatabaseMBean#getPassword()
 	 */
 	public String getPassword()
 	{
@@ -87,7 +87,7 @@ public abstract class AbstractDatabase<T> implements Database<T>
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Database#getWeight()
+	 * @see net.sf.hajdbc.DatabaseMBean#getWeight()
 	 */
 	public Integer getWeight()
 	{
@@ -134,8 +134,7 @@ public abstract class AbstractDatabase<T> implements Database<T>
 	}
 	
 	/**
-	 * Returns a collection of additional properties of this database.
-	 * @return additional properties of this database
+	 * @see net.sf.hajdbc.DatabaseMBean#getProperties()
 	 */
 	public Properties getProperties()
 	{
