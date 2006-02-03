@@ -29,14 +29,8 @@ import java.sql.SQLException;
  * @param <T> 
  * @since   1.0
  */
-public interface Database<T>
+public interface Database<T> extends DatabaseMBean
 {
-	/**
-	 * Returns the unique idenfier for this database
-	 * @return a unique identifier
-	 */
-	public String getId();
-	
 	/**
 	 * Connects to the database using the specified connection factory.
 	 * @param connectionFactory a factory object for creating connections
@@ -51,13 +45,4 @@ public interface Database<T>
 	 * @throws SQLException if connection factory could not be created
 	 */
 	public T createConnectionFactory() throws SQLException;
-	
-	/**
-	 * Returns the relative "weight" of this cluster node.
-	 * In general, when choosing a node to service read requests, a cluster will favor the node with the highest weight.
-	 * A weight of 0 is somewhat special, depending on the type of balancer used by the cluster.
-	 * In most cases, a weight of 0 means that this node will never service read requests unless it is the only node in the cluster.
-	 * @return a positive integer
-	 */
-	public Integer getWeight();
 }
