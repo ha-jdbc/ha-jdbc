@@ -72,9 +72,7 @@ public class SQLException extends java.sql.SQLException
 
 		if ((cause != null) && java.sql.SQLException.class.isInstance(cause))
 		{
-			java.sql.SQLException exception = (java.sql.SQLException) cause;
-			
-			return exception.getErrorCode();
+			return java.sql.SQLException.class.cast(cause).getErrorCode();
 		}
 		
 		return super.getErrorCode();
@@ -89,9 +87,7 @@ public class SQLException extends java.sql.SQLException
 		
 		if ((cause != null) && java.sql.SQLException.class.isInstance(cause))
 		{
-			java.sql.SQLException exception = (java.sql.SQLException) cause;
-			
-			return exception.getNextException();
+			return java.sql.SQLException.class.cast(cause).getNextException();
 		}
 		
 		return super.getNextException();
@@ -106,9 +102,7 @@ public class SQLException extends java.sql.SQLException
 		
 		if ((cause != null) && java.sql.SQLException.class.isInstance(cause))
 		{
-			java.sql.SQLException exception = (java.sql.SQLException) cause;
-			
-			return exception.getSQLState();
+			return java.sql.SQLException.class.cast(cause).getSQLState();
 		}
 		
 		return super.getSQLState();
