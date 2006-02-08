@@ -37,6 +37,23 @@ public final class BalancerFactory
 {
 	private static Log log = LogFactory.getLog(BalancerFactory.class);
 	
+	private static Map<String, Class<? extends Balancer>> balancerClassMap = new HashMap<String, Class<? extends Balancer>>();
+	private static Map<Class<? extends Balancer>, String> balancerIdMap = new HashMap<Class<? extends Balancer>, String>();
+	
+	static
+	{
+		addBalancer("simple", SimpleBalancer.class);
+		addBalancer("random", RandomBalancer.class);
+		addBalancer("round-robin", RoundRobinBalancer.class);
+		addBalancer("load", LoadBalancer.class);
+	}
+	
+	private static void addBalancer(String id, Class<? extends Balancer> targetClass)
+	{
+		balancerClassMap.put(id, targetClass);
+		balancerIdMap.put(targetClass, id);
+	}
+	
 	/**
 	 * Creates a new instance of the Balancer implementation indentified by the specified identifier
 	 * @param id an enumerated balancer identifier
@@ -45,14 +62,7 @@ public final class BalancerFactory
 	 */
 	public static Balancer createBalancer(String id) throws Exception
 	{
-		Map<String, Class<? extends Balancer>> map = new HashMap<String, Class<? extends Balancer>>();
-		
-		map.put("simple", SimpleBalancer.class);
-		map.put("random", RandomBalancer.class);
-		map.put("round-robin", RoundRobinBalancer.class);
-		map.put("load", LoadBalancer.class);
-
-		Class<? extends Balancer> balancerClass = map.get(id);
+		Class<? extends Balancer> balancerClass = balancerClassMap.get(id);
 		
 		try
 		{
@@ -69,6 +79,23 @@ public final class BalancerFactory
 			
 			throw e;
 		}
+	}
+	
+	/**
+	 * Return the identifier of the specified Balancer.
+	 * @param balancer a Dialect implementation
+	 * @return the class name of this dialect
+	 */
+	public static String getBalancerId(Balancer balancer)
+	{
+		String id = balancerIdMap.get(balancer.getClass());
+		
+		if (id == null)
+		{
+			throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_BALANCER, balancer.getClass()));
+		}
+		
+		return id;
 	}
 	
 	private BalancerFactory()

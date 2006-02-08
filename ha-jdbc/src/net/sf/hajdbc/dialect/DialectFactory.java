@@ -77,6 +77,16 @@ public class DialectFactory
 		}
 	}
 	
+	/**
+	 * Return a String representation that identifies the specified Dialect.
+	 * @param dialect a Dialect implementation
+	 * @return the class name of this dialect
+	 */
+	public static String getDialectId(Dialect dialect)
+	{
+		return dialect.getClass().getName();
+	}
+	
 	private DialectFactory()
 	{
 		// Hide constructor
