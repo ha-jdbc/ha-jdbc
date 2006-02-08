@@ -71,11 +71,11 @@ public class DefaultDialect implements Dialect
 		{
 			String column = this.quote(metaData, columns.next());
 			
-			builder.append(column).append(" = ").append(column);
+			builder.append(column).append('=').append(column);
 			
 			if (columns.hasNext())
 			{
-				builder.append(", ");
+				builder.append(',');
 			}
 		}
 		
@@ -146,7 +146,7 @@ public class DefaultDialect implements Dialect
 			
 			if (columns.hasNext())
 			{
-				builder.append(", ");
+				builder.append(',');
 			}
 		}
 		

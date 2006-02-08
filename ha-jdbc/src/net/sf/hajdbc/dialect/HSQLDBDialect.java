@@ -32,6 +32,7 @@ public class HSQLDBDialect extends DefaultDialect
 	/**
 	 * @see net.sf.hajdbc.dialect.DefaultDialect#getSimpleSQL()
 	 */
+	@Override
 	public String getSimpleSQL()
 	{
 		return "CALL NOW()";

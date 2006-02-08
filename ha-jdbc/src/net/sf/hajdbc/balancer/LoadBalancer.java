@@ -66,6 +66,7 @@ public class LoadBalancer extends AbstractBalancer
 	/**
 	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
 	 */
+	@Override
 	protected Collection<Database> getDatabases()
 	{
 		return this.databaseMap.keySet();
@@ -74,6 +75,7 @@ public class LoadBalancer extends AbstractBalancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#add(net.sf.hajdbc.Database)
 	 */
+	@Override
 	public synchronized boolean add(Database database)
 	{
 		boolean exists = this.databaseMap.containsKey(database);
@@ -108,6 +110,7 @@ public class LoadBalancer extends AbstractBalancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#beforeOperation(net.sf.hajdbc.Database)
 	 */
+	@Override
 	public void beforeOperation(Database database)
 	{
 		this.incrementLoad(database, 1);
@@ -116,6 +119,7 @@ public class LoadBalancer extends AbstractBalancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#afterOperation(net.sf.hajdbc.Database)
 	 */
+	@Override
 	public void afterOperation(Database database)
 	{
 		this.incrementLoad(database, -1);

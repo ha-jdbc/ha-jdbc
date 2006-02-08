@@ -48,6 +48,7 @@ public class SimpleBalancer extends AbstractBalancer
 	/**
 	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
 	 */
+	@Override
 	protected Collection<Database> getDatabases()
 	{
 		return this.databaseList;
@@ -56,6 +57,7 @@ public class SimpleBalancer extends AbstractBalancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#add(net.sf.hajdbc.Database)
 	 */
+	@Override
 	public synchronized boolean add(Database database)
 	{
 		boolean exists = this.databaseList.contains(database);
@@ -73,6 +75,7 @@ public class SimpleBalancer extends AbstractBalancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#first()
 	 */
+	@Override
 	public synchronized Database first()
 	{
 		if (this.databaseList.isEmpty())

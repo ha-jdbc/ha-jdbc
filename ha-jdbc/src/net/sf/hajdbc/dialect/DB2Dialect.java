@@ -30,6 +30,7 @@ public class DB2Dialect extends DefaultDialect
 	/**
 	 * @see net.sf.hajdbc.dialect.DefaultDialect#getSimpleSQL()
 	 */
+	@Override
 	public String getSimpleSQL()
 	{
 		return "SELECT 1 FROM SYSIBM.SYSDUMMY";

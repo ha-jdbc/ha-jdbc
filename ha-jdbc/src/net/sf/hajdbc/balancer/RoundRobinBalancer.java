@@ -41,6 +41,7 @@ public class RoundRobinBalancer extends AbstractBalancer
 	/**
 	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
 	 */
+	@Override
 	protected Collection<Database> getDatabases()
 	{
 		return this.databaseSet;
@@ -49,6 +50,7 @@ public class RoundRobinBalancer extends AbstractBalancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#add(net.sf.hajdbc.Database)
 	 */
+	@Override
 	public synchronized boolean add(Database database)
 	{
 		boolean added = this.databaseSet.add(database);
@@ -69,6 +71,7 @@ public class RoundRobinBalancer extends AbstractBalancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#remove(net.sf.hajdbc.Database)
 	 */
+	@Override
 	public synchronized boolean remove(Database database)
 	{
 		boolean removed = this.databaseSet.remove(database);

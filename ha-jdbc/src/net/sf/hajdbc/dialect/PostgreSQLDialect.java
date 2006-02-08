@@ -39,6 +39,7 @@ public class PostgreSQLDialect extends DefaultDialect
 	 * This protects the transaction from viewing inconsistent data that could be caused by (other) concurrent transaction updates on the same data rows, providing transaction isolation for each database session.	 * 
 	 * @see net.sf.hajdbc.dialect.DefaultDialect#getLockTableSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String)
 	 */
+	@Override
 	public String getLockTableSQL(DatabaseMetaData metaData, String schema, String table) throws SQLException
 	{
 		return MessageFormat.format("LOCK TABLE {0} IN EXCLUSIVE MODE; SELECT 1 FROM {0}", this.qualifyTable(metaData, schema, table));
@@ -47,6 +48,7 @@ public class PostgreSQLDialect extends DefaultDialect
 	/**
 	 * @see net.sf.hajdbc.dialect.DefaultDialect#truncateTablePattern()
 	 */
+	@Override
 	protected String truncateTablePattern()
 	{
 		return "TRUNCATE TABLE {0}";

@@ -30,6 +30,7 @@ public class MaxDBDialect extends DefaultDialect
 	/**
 	 * @see net.sf.hajdbc.dialect.DefaultDialect#getSimpleSQL()
 	 */
+	@Override
 	public String getSimpleSQL()
 	{
 		return "SELECT 1 FROM DUAL";
@@ -38,6 +39,7 @@ public class MaxDBDialect extends DefaultDialect
 	/**
 	 * @see net.sf.hajdbc.dialect.DefaultDialect#truncateTablePattern()
 	 */
+	@Override
 	protected String truncateTablePattern()
 	{
 		return "TRUNCATE TABLE {0}";

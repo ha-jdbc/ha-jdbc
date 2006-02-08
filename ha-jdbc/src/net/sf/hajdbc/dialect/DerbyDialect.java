@@ -20,6 +20,10 @@
  */
 package net.sf.hajdbc.dialect;
 
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+
 /**
  * Dialect for Apache Derby (open-source).
  * <p><a href="http://db.apache.org/derby">http://db.apache.org/derby</a></p>
@@ -34,6 +38,14 @@ public class DerbyDialect extends DefaultDialect
 	 */
 	public String getSimpleSQL()
 	{
-		return "VALUES CURRENT_TIMESTAMP";
+		return "VALUES 1";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#getLockTableSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String)
+	 */
+	public String getLockTableSQL(DatabaseMetaData metaData, String schema, String table) throws SQLException
+	{
+		return MessageFormat.format("LOCK TABLE {0} IN SHARE MODE", this.qualifyTable(metaData, schema, table));
 	}
 }
