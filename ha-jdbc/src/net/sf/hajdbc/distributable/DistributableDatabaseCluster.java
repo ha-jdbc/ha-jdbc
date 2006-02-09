@@ -22,34 +22,23 @@ package net.sf.hajdbc.distributable;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.locks.Lock;
 
 import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
 
-import net.sf.hajdbc.AbstractDatabaseCluster;
-import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.Messages;
-import net.sf.hajdbc.SynchronizationStrategy;
+import net.sf.hajdbc.SQLException;
+import net.sf.hajdbc.local.LocalDatabaseCluster;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;
 import org.jgroups.Channel;
-import org.jgroups.ChannelException;
 import org.jgroups.JChannel;
-import org.jgroups.blocks.DistributedLockManager;
-import org.jgroups.blocks.LockManager;
-import org.jgroups.blocks.LockNotGrantedException;
-import org.jgroups.blocks.LockNotReleasedException;
 import org.jgroups.blocks.NotificationBus;
-import org.jgroups.blocks.TwoPhaseVotingAdapter;
-import org.jgroups.blocks.VotingAdapter;
 import org.jgroups.jmx.JmxConfigurator;
 
 /**
@@ -59,58 +48,30 @@ import org.jgroups.jmx.JmxConfigurator;
  * @version $Revision$
  * @since   1.0
  */
-public class DistributableDatabaseCluster extends AbstractDatabaseCluster implements NotificationBus.Consumer
+public class DistributableDatabaseCluster extends LocalDatabaseCluster implements NotificationBus.Consumer
 {
-	private static Log log = LogFactory.getLog(DistributableDatabaseCluster.class);
+	static Log log = LogFactory.getLog(DistributableDatabaseCluster.class);
 	
-	private DatabaseCluster databaseCluster;
 	private NotificationBus notificationBus;
-	private JChannel lockManagerChannel;
-	private LockManager lockManager;
-	private int timeout;
+	private DistributableLock lock;
+	private DistributableDatabaseClusterBuilder builder;
 	
 	/**
 	 * Constructs a new DistributableDatabaseCluster.
-	 * @param databaseCluster a database cluster to decorate
-	 * @param decorator a decorator for this database cluster
-	 * @throws Exception if database cluster could not be decorated
+	 * @param builder a builder for this database cluster
 	 */
-	public DistributableDatabaseCluster(DatabaseCluster databaseCluster, DistributableDatabaseClusterDecorator decorator) throws Exception
+	public DistributableDatabaseCluster(DistributableDatabaseClusterBuilder builder)
 	{
-		this.databaseCluster = databaseCluster;
-		this.timeout = decorator.getTimeout();
-		
-		this.notificationBus = new NotificationBus(databaseCluster.getId(), decorator.getProtocol());
-		this.notificationBus.setConsumer(this);
-		this.notificationBus.start();
-		
-		this.register(this.notificationBus.getChannel());
-		
-		this.lockManagerChannel = new JChannel(decorator.getProtocol());
-		this.lockManagerChannel.connect(databaseCluster.getId() + "-lock");
-		this.lockManager = new DistributedLockManager(new TwoPhaseVotingAdapter(new VotingAdapter(this.lockManagerChannel)), databaseCluster.getId());
-		
-		this.register(this.lockManagerChannel);
-	}
-
-	private void register(Channel channel) throws Exception
-	{
-		MBeanServer server = MBeanServer.class.cast(MBeanServerFactory.findMBeanServer(null).get(0));
-
-		ObjectName name = ObjectName.getInstance("org.jgroups", "channel", ObjectName.quote(channel.getChannelName()));
-		
-		if (!server.isRegistered(name))
-		{
-			JmxConfigurator.registerChannel(JChannel.class.cast(channel), server, name.getCanonicalName(), true);
-		}
+		this.builder = builder;
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#deactivate(net.sf.hajdbc.Database)
 	 */
+	@Override
 	public boolean deactivate(Database database)
 	{
-		boolean deactivated = this.databaseCluster.deactivate(database);
+		boolean deactivated = super.deactivate(database);
 		
 		if (deactivated)
 		{
@@ -123,9 +84,10 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#activate(net.sf.hajdbc.Database)
 	 */
+	@Override
 	public boolean activate(Database database)
 	{
-		boolean activated = this.databaseCluster.activate(database);
+		boolean activated = super.activate(database);
 		
 		if (activated)
 		{
@@ -144,11 +106,11 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 		
 		try
 		{
-			DatabaseCommand.class.cast(command).execute(this.databaseCluster);
+			DatabaseCommand.class.cast(command).execute(this);
 		}
 		catch (java.sql.SQLException e)
 		{
-			log.error(Messages.getMessage(Messages.DATABASE_COMMAND_FAILED, command, this.databaseCluster), e);
+			log.error(Messages.getMessage(Messages.DATABASE_COMMAND_FAILED, command, this), e);
 		}
 	}
 
@@ -157,7 +119,7 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 	 */
 	public Serializable getCache()
 	{
-		Collection<String> databases = this.databaseCluster.getActiveDatabases();
+		Collection<String> databases = super.getActiveDatabases();
 		
 		return databases.toArray(new String[databases.size()]);
 	}
@@ -183,191 +145,72 @@ public class DistributableDatabaseCluster extends AbstractDatabaseCluster implem
 	}
 	
 	/**
-	 * @see java.lang.Object#finalize()
-	 */
-	protected void finalize() throws Throwable
-	{
-		this.notificationBus.stop();
-
-		this.lockManagerChannel.disconnect();
-		this.lockManagerChannel.close();
-		
-		super.finalize();
-	}
-	
-	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#loadState()
 	 */
+	@Override
 	public String[] loadState() throws java.sql.SQLException
 	{
-		String[] state = String[].class.cast(this.notificationBus.getCacheFromCoordinator(this.timeout, 1));
+		String[] state = String[].class.cast(this.notificationBus.getCacheFromCoordinator(this.builder.getTimeout(), 1));
 		
-		return (state != null) ? state : this.databaseCluster.loadState();
+		return (state != null) ? state : super.loadState();
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseClusterMBean#getId()
+	 * @see net.sf.hajdbc.DatabaseCluster#start()
 	 */
-	public String getId()
-	{
-		return this.databaseCluster.getId();
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#isAlive(net.sf.hajdbc.Database)
-	 */
-	public boolean isAlive(Database database)
-	{
-		return this.databaseCluster.isAlive(database);
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getDatabase(java.lang.String)
-	 */
-	public Database getDatabase(String databaseId)
-	{
-		return this.databaseCluster.getDatabase(databaseId);
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseClusterMBean#getActiveDatabases()
-	 */
-	public Collection<String> getActiveDatabases()
-	{
-		return this.databaseCluster.getActiveDatabases();
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseClusterMBean#getInactiveDatabases()
-	 */
-	public Collection<String> getInactiveDatabases()
-	{
-		return this.databaseCluster.getInactiveDatabases();
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getBalancer()
-	 */
-	public Balancer getBalancer()
-	{
-		return this.databaseCluster.getBalancer();
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getConnectionFactoryMap()
-	 */
-	public Map<Database, ?> getConnectionFactoryMap()
-	{
-		return this.databaseCluster.getConnectionFactoryMap();
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getDefaultSynchronizationStrategy()
-	 */
-	public SynchronizationStrategy getDefaultSynchronizationStrategy()
-	{
-		return this.databaseCluster.getDefaultSynchronizationStrategy();
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getExecutor()
-	 */
-	public ExecutorService getExecutor()
-	{
-		return this.databaseCluster.getExecutor();
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getDialect()
-	 */
-	public Dialect getDialect()
-	{
-		return this.databaseCluster.getDialect();
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#lock(Object)
-	 */
-	public void lock(Object object)
+	@Override
+	public void start() throws java.sql.SQLException
 	{
 		try
 		{
-			this.lockManager.lock(object, this.getId(), 0);
+			this.notificationBus = new NotificationBus(this.getId(), this.builder.getProtocol());
+			this.notificationBus.setConsumer(this);
+			this.notificationBus.start();
 			
-			this.databaseCluster.lock(object);
-		}
-		catch (LockNotGrantedException e)
-		{
-			throw new IllegalStateException(e);
-		}
-		catch (ClassCastException e)
-		{
-			throw new IllegalStateException(e);
-		}
-		catch (ChannelException e)
-		{
-			throw new IllegalStateException(e);
-		}		
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#unlock(Object)
-	 */
-	public void unlock(Object object)
-	{
-		try
-		{
-			this.lockManager.unlock(object, this.getId());
+			this.lock = new DistributableLock(this.getId() + "-lock", this.builder.getProtocol(), this.builder.getTimeout(), super.writeLock());
 			
-			this.databaseCluster.unlock(object);
+			this.register(this.notificationBus.getChannel());
+			this.register(this.lock.getChannel());
+
+			super.start();
 		}
-		catch (ClassCastException e)
+		catch (Exception e)
 		{
-			throw new IllegalStateException(e);
+			throw new SQLException(e.getMessage(), e);
 		}
-		catch (ChannelException e)
-		{
-			throw new IllegalStateException(e);
-		}
-		catch (LockNotReleasedException e)
-		{
-			throw new IllegalStateException(e);
-		}		
 	}
 
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#tryLock(Object)
-	 */
-	public boolean tryLock(Object object)
+	private void register(Channel channel) throws Exception
 	{
-		try
+		MBeanServer server = DatabaseClusterFactory.getMBeanServer();
+
+		ObjectName name = ObjectName.getInstance("org.jgroups", "channel", ObjectName.quote(channel.getChannelName()));
+		
+		if (!server.isRegistered(name))
 		{
-			this.lockManager.lock(object, this.getId(), this.timeout);
-			
-			boolean success = this.databaseCluster.tryLock(object);
-			
-			if (!success)
-			{
-				this.lockManager.unlock(object, this.getId());
-			}
-			
-			return success;
+			JmxConfigurator.registerChannel(JChannel.class.cast(channel), server, name.getCanonicalName(), true);
 		}
-		catch (LockNotGrantedException e)
-		{
-			return false;
-		}
-		catch (ClassCastException e)
-		{
-			throw new IllegalStateException(e);
-		}
-		catch (ChannelException e)
-		{
-			throw new IllegalStateException(e);
-		}		
-		catch (LockNotReleasedException e)
-		{
-			throw new IllegalStateException(e);
-		}		
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#stop()
+	 */
+	@Override
+	public void stop()
+	{
+		this.lock.getChannel().close();
+		
+		this.notificationBus.stop();
+		
+		super.stop();
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.local.LocalDatabaseCluster#writeLock()
+	 */
+	@Override
+	public Lock writeLock()
+	{
+		return this.lock;
 	}
 }
