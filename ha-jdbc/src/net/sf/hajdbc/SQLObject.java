@@ -20,21 +20,17 @@
  */
 package net.sf.hajdbc;
 
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Set;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Base class for all HA-JDBC proxy objects.
@@ -223,55 +219,68 @@ public class SQLObject<E, P>
 	public final <T> Map<Database, T> executeWriteToDatabase(final Operation<E, T> operation) throws java.sql.SQLException
 	{
 		ExecutorService executor = this.databaseCluster.getExecutor();
-		List<Database> databaseList = this.getDatabaseList();
-		Map<Database, Future<T>> futureMap = new HashMap<Database, Future<T>>();
 		
-		for (final Database database: databaseList)
-		{
-			final E object = this.getObject(database);
-			
-			Callable<T> callable = new Callable<T>()
-			{
-				public T call() throws java.sql.SQLException
-				{
-					return operation.execute(database, object);
-				}
-			};
-
-			futureMap.put(database, executor.submit(callable));
-		}
-
+		Map<Database, Future<T>> futureMap = new HashMap<Database, Future<T>>();
 		Map<Database, T> returnValueMap = new HashMap<Database, T>();
 		Map<Database, java.sql.SQLException> exceptionMap = new HashMap<Database, java.sql.SQLException>();
 		
-		for (Database database: databaseList)
+		this.databaseCluster.readLock().lock();
+		
+		try
 		{
-			Future<T> future = futureMap.get(database);
+			List<Database> databaseList = this.databaseCluster.getBalancer().list();
 			
-			try
+			if (databaseList.isEmpty())
 			{
-				returnValueMap.put(database, future.get());
+				throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this.databaseCluster));
 			}
-			catch (ExecutionException e)
+			
+			for (final Database database: databaseList)
 			{
-				SQLException cause = new SQLException(e.getCause());
-
+				final E object = this.getObject(database);
+				
+				Callable<T> callable = new Callable<T>()
+				{
+					public T call() throws java.sql.SQLException
+					{
+						return operation.execute(database, object);
+					}
+				};
+	
+				futureMap.put(database, executor.submit(callable));
+			}
+			
+			for (Database database: databaseList)
+			{
+				Future<T> future = futureMap.get(database);
+				
 				try
 				{
-					this.databaseCluster.handleFailure(database, cause);
+					returnValueMap.put(database, future.get());
 				}
-				catch (java.sql.SQLException sqle)
+				catch (ExecutionException e)
 				{
-					exceptionMap.put(database, sqle);
+					SQLException cause = new SQLException(e.getCause());
+	
+					try
+					{
+						this.databaseCluster.handleFailure(database, cause);
+					}
+					catch (java.sql.SQLException sqle)
+					{
+						exceptionMap.put(database, sqle);
+					}
 				}
-			}
-			catch (InterruptedException e)
-			{
-				throw new SQLException(e);
+				catch (InterruptedException e)
+				{
+					throw new SQLException(e);
+				}
 			}
 		}
-		
-		this.deactivateNewDatabases(databaseList);
+		finally
+		{
+			this.databaseCluster.readLock().unlock();
+		}
 		
 		// If no databases returned successfully, return an exception back to the caller
 		if (returnValueMap.isEmpty())
@@ -304,18 +313,30 @@ public class SQLObject<E, P>
 	 */
 	public final <T> Map<Database, T> executeWriteToDriver(Operation<E, T> operation) throws java.sql.SQLException
 	{
-		List<Database> databaseList = this.getDatabaseList();
-		
 		Map<Database, T> returnValueMap = new HashMap<Database, T>();
 
-		for (Database database: databaseList)
-		{
-			E object = this.getObject(database);
-			
-			returnValueMap.put(database, operation.execute(database, object));
-		}
+		this.databaseCluster.readLock().lock();
 		
-		this.deactivateNewDatabases(databaseList);
+		try
+		{
+			List<Database> databaseList = this.databaseCluster.getBalancer().list();
+			
+			if (databaseList.isEmpty())
+			{
+				throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this.databaseCluster));
+			}
+
+			for (Database database: databaseList)
+			{
+				E object = this.getObject(database);
+				
+				returnValueMap.put(database, operation.execute(database, object));
+			}
+		}
+		finally
+		{
+			this.databaseCluster.readLock().unlock();
+		}
 		
 		this.record(operation);
 		
@@ -347,35 +368,5 @@ public class SQLObject<E, P>
 				log.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this.databaseCluster), exception);
 			}
 		}
-	}
-
-	private void deactivateNewDatabases(Collection<Database> databases)
-	{
-		Set<Database> databaseSet = new HashSet<Database>(this.databaseCluster.getBalancer().list());
-		
-		for (Database database: databases)
-		{
-			databaseSet.remove(database);
-		}
-		
-		for (Database database: databaseSet)
-		{
-			if (this.databaseCluster.deactivate(database))
-			{
-				log.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this.databaseCluster));
-			}
-		}
-	}
-	
-	private List<Database> getDatabaseList() throws SQLException
-	{
-		List<Database> databaseList = this.databaseCluster.getBalancer().list();
-		
-		if (databaseList.isEmpty())
-		{
-			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this.databaseCluster));
-		}
-		
-		return databaseList;
 	}
 }
