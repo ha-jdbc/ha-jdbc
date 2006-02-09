@@ -38,7 +38,6 @@ public class Messages
 	public static final String CONFIG_NOT_FOUND = "config-not-found";
 	public static final String DATABASE_ACTIVATE_FAILED = "database-activate-failed";
 	public static final String DATABASE_ACTIVATED = "database-activated";
-	public static final String DATABASE_ACTIVATION_ALREADY_RUNNING = "database-activation-already-running";
 	public static final String DATABASE_COMMAND_RECEIVED = "database-command-received";
 	public static final String DATABASE_COMMAND_FAILED = "database-command-failed";
 	public static final String DATABASE_DEACTIVATED = "database-deactivated";
@@ -69,6 +68,7 @@ public class Messages
 	public static final String STATEMENT_FAILED = "statement-failed";
 	public static final String STREAM_CLOSE_FAILED = "stream-close-failed";
 	public static final String UPDATE_COUNT = "update-count";
+	public static final String WRITE_LOCK_FAILED = "write-lock-failed";
 	
 	private static ResourceBundle resource = ResourceBundle.getBundle(Messages.class.getName());
 	
