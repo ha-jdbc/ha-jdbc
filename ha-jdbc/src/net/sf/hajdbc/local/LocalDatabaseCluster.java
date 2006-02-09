@@ -58,6 +58,7 @@ import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SQLException;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.SynchronizationStrategyBuilder;
+import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -81,7 +82,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	private Map<Database, Object> connectionFactoryMap = new HashMap<Database, Object>();
 	private ThreadPoolExecutor executor = ThreadPoolExecutor.class.cast(Executors.newCachedThreadPool());
 	private Dialect dialect;
-	private ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1);
+	private ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1, new DaemonThreadFactory(Thread.MIN_PRIORITY));
 	private int failureDetectionPeriod;
 	private ReadWriteLock lock = new ReentrantReadWriteLock(true);
 		
@@ -579,7 +580,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	 */
 	public void stop()
 	{
-		this.scheduledExecutor.shutdown();
+		this.scheduledExecutor.shutdownNow();
 		this.executor.shutdown();
 	}
 	
