@@ -149,4 +149,21 @@ public abstract class AbstractDatabase<T> implements Database<T>
 	{
 		this.properties = properties;
 	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseMBean#removeProperty(java.lang.String)
+	 */
+/*	public void removeProperty(String name)
+	{
+		this.properties.remove(name);
+	}
+*/
+	/**
+	 * @see net.sf.hajdbc.DatabaseMBean#setProperty(java.lang.String, java.lang.String)
+	 */
+/*	public void setProperty(String name, String value)
+	{
+		this.properties.setProperty(name, value);
+	}
+*/
 }

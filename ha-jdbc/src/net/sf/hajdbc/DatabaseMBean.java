@@ -58,4 +58,14 @@ public interface DatabaseMBean
 	 * @return additional properties of this database
 	 */
 	public Properties getProperties();
+	
+//	public void setWeight(Integer weight);
+	
+//	public void setUser(String user);
+	
+//	public void setPassword(String password);
+	
+//	public void setProperty(String name, String value);
+	
+//	public void removeProperty(String name);
 }
