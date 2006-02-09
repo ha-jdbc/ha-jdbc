@@ -45,4 +45,9 @@ public interface Database<T> extends DatabaseMBean
 	 * @throws SQLException if connection factory could not be created
 	 */
 	public T createConnectionFactory() throws SQLException;
+	
+	/**
+	 * @return the class implemented by connection factory objects for this database.
+	 */
+	public Class<T> getConnectionFactoryClass();
 }

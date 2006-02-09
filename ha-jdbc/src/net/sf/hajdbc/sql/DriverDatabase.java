@@ -129,4 +129,12 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements DriverDa
 			throw new SQLException(Messages.getMessage(Messages.JDBC_URL_REJECTED, this.url), e);
 		}
 	}
+
+	/**
+	 * @see net.sf.hajdbc.Database#getConnectionFactoryClass()
+	 */
+	public Class<Driver> getConnectionFactoryClass()
+	{
+		return Driver.class;
+	}
 }

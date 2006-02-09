@@ -89,4 +89,12 @@ public class DataSourceDatabase extends AbstractDatabase<DataSource> implements 
 			throw new SQLException(Messages.getMessage(Messages.JNDI_LOOKUP_FAILED, this.name), e);
 		}
 	}
+
+	/**
+	 * @see net.sf.hajdbc.Database#getConnectionFactoryClass()
+	 */
+	public Class<DataSource> getConnectionFactoryClass()
+	{
+		return null;
+	}
 }
