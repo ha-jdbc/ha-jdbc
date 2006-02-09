@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import java.util.Map;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.locks.Lock;
 
 
 /**
@@ -68,12 +69,6 @@ public interface DatabaseCluster extends DatabaseClusterMBean
 	public Database getDatabase(String id);
 	
 	/**
-	 * Initializes this database cluster.
-	 * @throws SQLException if initialization fails
-	 */
-	public void init() throws SQLException;
-
-	/**
 	 * Loads the persisted state of this database cluster
 	 * @return an array of database identifiers
 	 * @throws SQLException if state could not be obtained
@@ -116,18 +111,29 @@ public interface DatabaseCluster extends DatabaseClusterMBean
 	public Dialect getDialect();
 	
 	/**
-	 * @param object a lockable object
+	 * Returns a Lock that can acquire a read lock on this database cluster.
+	 * @return a read lock
+	 * @since 1.1
 	 */
-	public void lock(Object object);
+	public Lock readLock();
 	
 	/**
-	 * @param object a lockable object
-	 * @return true, if lock acquired, false otherwise
+	 * Returns a Lock that can acquire a write lock on this database cluster.
+	 * @return a write lock
+	 * @since 1.1
 	 */
-	public boolean tryLock(Object object);
+	public Lock writeLock();
 	
 	/**
-	 * @param object a lockable object
+	 * Starts this database cluster.
+	 * @throws SQLException if database cluster fails to start
+	 * @since 1.1
 	 */
-	public void unlock(Object object);
+	public void start() throws SQLException;
+	
+	/**
+	 * Stops this database cluster.
+	 * @since 1.1
+	 */
+	public void stop();
 }
