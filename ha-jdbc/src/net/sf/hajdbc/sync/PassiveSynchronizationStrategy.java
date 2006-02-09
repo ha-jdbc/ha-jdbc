@@ -24,7 +24,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.SynchronizationStrategy;
@@ -37,40 +36,6 @@ import net.sf.hajdbc.SynchronizationStrategy;
  */
 public class PassiveSynchronizationStrategy implements SynchronizationStrategy
 {
-	private String id;
-	
-	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#getId()
-	 */
-	public String getId()
-	{
-		return this.id;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#setId(String)
-	 */
-	public void setId(String id)
-	{
-		this.id = id;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#readProperties()
-	 */
-	public Properties readProperties() throws Exception
-	{
-		return new Properties();
-	}
-
-	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#writeProperties(Properties)
-	 */
-	public void writeProperties(Properties properties) throws Exception
-	{
-		// Do nothing
-	}
-
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(Connection, Connection, Map, Dialect)
 	 */

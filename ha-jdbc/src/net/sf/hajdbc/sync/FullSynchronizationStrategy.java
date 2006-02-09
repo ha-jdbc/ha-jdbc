@@ -29,19 +29,19 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
-
-import net.sf.hajdbc.Dialect;
-import net.sf.hajdbc.Messages;
-import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+
+import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.SynchronizationStrategy;
+import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Database-independent synchronization strategy that only updates differences between two databases.
@@ -66,13 +66,14 @@ import java.util.concurrent.Future;
  * @version $Revision$
  * @since   1.0
  */
-public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
+public class FullSynchronizationStrategy implements SynchronizationStrategy
 {
 	private static Log log = LogFactory.getLog(FullSynchronizationStrategy.class);
 
-	private int maxBatchSize = 100;
 	private ExecutorService executor = Executors.newSingleThreadExecutor(DaemonThreadFactory.getInstance());
-
+	private int maxBatchSize = 100;
+	private int fetchSize = 0;
+	
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(Connection, Connection, Map, Dialect)
 	 */
@@ -242,6 +243,43 @@ public class FullSynchronizationStrategy extends AbstractSynchronizationStrategy
 		
 		statement.executeBatch();
 		statement.close();
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.SynchronizationStrategy#requiresTableLocking()
+	 */
+	public boolean requiresTableLocking()
+	{
+		return true;
+	}
+	
+	private void rollback(Connection connection)
+	{
+		try
+		{
+			connection.rollback();
+			connection.setAutoCommit(true);
+		}
+		catch (java.sql.SQLException e)
+		{
+			log.warn(e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * @return the fetchSize.
+	 */
+	public int getFetchSize()
+	{
+		return this.fetchSize;
+	}
+
+	/**
+	 * @param fetchSize the fetchSize to set.
+	 */
+	public void setFetchSize(int fetchSize)
+	{
+		this.fetchSize = fetchSize;
 	}
 	
 	/**
