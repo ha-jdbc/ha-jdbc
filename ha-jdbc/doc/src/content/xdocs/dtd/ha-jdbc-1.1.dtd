@@ -25,7 +25,6 @@
 	SYSTEM "http://ha-jdbc.sourceforge.net/dtd/ha-jdbc-1.1.dtd"
 -->
 
-<!-- Defines a set of HA-JDBC clusters. -->
 <!ELEMENT ha-jdbc (distributable?,sync+,cluster+)>
 
 <!ELEMENT distributable EMPTY>
@@ -44,6 +43,7 @@
 <!ATTLIST cluster min-threads CDATA "0">
 <!ATTLIST cluster max-threads CDATA "100">
 <!ATTLIST cluster max-idle CDATA "60">
+<!ATTLIST cluster failure-detect-period CDATA "0">
 
 <!ENTITY % authentication-info "(user, password)?">
 <!ELEMENT user (#PCDATA)>
