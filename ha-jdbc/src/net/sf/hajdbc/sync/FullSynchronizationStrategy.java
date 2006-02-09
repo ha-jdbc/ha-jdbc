@@ -88,7 +88,11 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		// Drop foreign keys from the inactive database
 		for (ForeignKeyConstraint key: ForeignKeyConstraint.collect(inactiveConnection, schemaMap))
 		{
-			statement.addBatch(dialect.getDropForeignKeyConstraintSQL(metaData, key.getName(), key.getSchema(), key.getTable()));
+			String sql = dialect.getDropForeignKeyConstraintSQL(metaData, key.getName(), key.getSchema(), key.getTable());
+			
+			log.debug(sql);
+			
+			statement.addBatch(sql);
 		}
 		
 		statement.executeBatch();
@@ -123,10 +127,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 					
 					String deleteSQL = dialect.getTruncateTableSQL(metaData, schema, table);
 		
-					if (log.isDebugEnabled())
-					{
-						log.debug(deleteSQL);
-					}
+					log.debug(deleteSQL);
 					
 					Statement deleteStatement = inactiveConnection.createStatement();
 		
@@ -167,6 +168,8 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 					}
 					
 					insertSQL.append(")");
+					
+					log.debug(insertSQL);
 					
 					PreparedStatement insertStatement = inactiveConnection.prepareStatement(insertSQL.toString());
 					int statementCount = 0;
@@ -238,7 +241,11 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		// Collect foreign keys from active database and create them on inactive database
 		for (ForeignKeyConstraint key: ForeignKeyConstraint.collect(activeConnection, schemaMap))
 		{
-			statement.addBatch(dialect.getCreateForeignKeyConstraintSQL(metaData, key.getName(), key.getSchema(), key.getTable(), key.getColumn(), key.getForeignSchema(), key.getForeignTable(), key.getForeignColumn()));
+			String sql = dialect.getCreateForeignKeyConstraintSQL(metaData, key.getName(), key.getSchema(), key.getTable(), key.getColumn(), key.getForeignSchema(), key.getForeignTable(), key.getForeignColumn());
+			
+			log.debug(sql);
+			
+			statement.addBatch(sql);
 		}
 		
 		statement.executeBatch();

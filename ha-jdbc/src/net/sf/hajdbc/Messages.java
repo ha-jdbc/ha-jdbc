@@ -67,6 +67,8 @@ public class Messages
 	public static final String SQL_OBJECT_INIT_FAILED = "sql-object-init-failed";
 	public static final String STATEMENT_FAILED = "statement-failed";
 	public static final String STREAM_CLOSE_FAILED = "stream-close-failed";
+	public static final String TABLE_LOCK_ACQUIRE = "table-lock-acquire";
+	public static final String TABLE_LOCK_RELEASE = "table-lock-release";
 	public static final String UPDATE_COUNT = "update-count";
 	public static final String WRITE_LOCK_FAILED = "write-lock-failed";
 	

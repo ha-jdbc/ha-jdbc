@@ -96,7 +96,11 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		// Drop foreign key constraints on the inactive database
 		for (ForeignKeyConstraint key: ForeignKeyConstraint.collect(inactiveConnection, schemaMap))
 		{
-			statement.addBatch(dialect.getDropForeignKeyConstraintSQL(metaData, key.getName(), key.getSchema(), key.getTable()));
+			String sql = dialect.getDropForeignKeyConstraintSQL(metaData, key.getName(), key.getSchema(), key.getTable());
+			
+			log.debug(sql);
+			
+			statement.addBatch(sql);
 		}
 
 		statement.executeBatch();
@@ -144,7 +148,11 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 					// Drop unique constraints on the current table
 					for (UniqueConstraint constraint: UniqueConstraint.collect(inactiveConnection, schema, table, primaryKeyName))
 					{
-						statement.addBatch(dialect.getDropUniqueConstraintSQL(metaData, constraint.getName(), constraint.getSchema(), constraint.getTable()));
+						String sql = dialect.getDropUniqueConstraintSQL(metaData, constraint.getName(), constraint.getSchema(), constraint.getTable());
+						
+						log.debug(sql);
+						
+						statement.addBatch(sql);
 					}
 					
 					statement.executeBatch();
@@ -165,21 +173,18 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 						}
 					}
 					
-					final String sql = builder.toString();
+					final String selectSQL = builder.toString();
 					
 					final Statement inactiveStatement = inactiveConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 					inactiveStatement.setFetchSize(this.fetchSize);
 		
-					if (log.isDebugEnabled())
-					{
-						log.debug(sql);
-					}
+					log.debug(selectSQL);
 					
 					Callable<ResultSet> callable = new Callable<ResultSet>()
 					{
 						public ResultSet call() throws java.sql.SQLException
 						{
-							return inactiveStatement.executeQuery(sql);
+							return inactiveStatement.executeQuery(selectSQL);
 						}
 					};
 		
@@ -188,7 +193,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 					Statement activeStatement = activeConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 					activeStatement.setFetchSize(this.fetchSize);
 					
-					ResultSet activeResultSet = activeStatement.executeQuery(sql);
+					ResultSet activeResultSet = activeStatement.executeQuery(selectSQL);
 
 					ResultSet inactiveResultSet = future.get();
 					
@@ -211,7 +216,9 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 							deleteSQL.append(" AND ");
 						}
 					}
-		
+					
+					log.debug(deleteSQL);
+					
 					PreparedStatement deleteStatement = inactiveConnection.prepareStatement(deleteSQL.toString());
 					
 					ResultSetMetaData resultSetMetaData = activeResultSet.getMetaData();
@@ -246,7 +253,9 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 					}
 		
 					insertSQL.append(")");
-		
+					
+					log.debug(insertSQL);
+					
 					PreparedStatement insertStatement = inactiveConnection.prepareStatement(insertSQL.toString());
 					
 					boolean hasMoreActiveResults = activeResultSet.next();

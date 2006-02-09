@@ -704,6 +704,8 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			
 			if (strategy.requiresTableLocking())
 			{
+				log.info(Messages.getMessage(Messages.TABLE_LOCK_ACQUIRE));
+				
 				Map<String, Map<String, String>> lockTableSQLMap = new HashMap<String, Map<String, String>>();
 				
 				// Lock all tables on all active databases
@@ -739,6 +741,8 @@ public class LocalDatabaseCluster implements DatabaseCluster
 							{
 								sql = dialect.getLockTableSQL(metaData, schema, table);
 								
+								log.debug(sql);
+								
 								map.put(table, sql);
 							}
 							
@@ -763,6 +767,8 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			
 			if (strategy.requiresTableLocking())
 			{
+				log.info(Messages.getMessage(Messages.TABLE_LOCK_ACQUIRE));
+				
 				// Release table locks
 				this.rollback(connectionList);
 			}
