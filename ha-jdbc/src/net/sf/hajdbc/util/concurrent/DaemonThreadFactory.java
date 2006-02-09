@@ -30,7 +30,9 @@ import java.util.concurrent.ThreadFactory;
  */
 public class DaemonThreadFactory implements ThreadFactory
 {
-	private static ThreadFactory instance = new DaemonThreadFactory();
+	private static ThreadFactory instance = new DaemonThreadFactory(Thread.NORM_PRIORITY);
+	
+	private int priority;
 	
 	/**
 	 * Returns single shared instance
@@ -42,6 +44,15 @@ public class DaemonThreadFactory implements ThreadFactory
 	}
 	
 	/**
+	 * Constructs a new DaemonThreadFactory.
+	 * @param priority
+	 */
+	public DaemonThreadFactory(int priority)
+	{
+		this.priority = priority;
+	}
+	
+	/**
 	 * @see java.util.concurrent.ThreadFactory#newThread(java.lang.Runnable)
 	 */
 	public Thread newThread(Runnable runnable)
@@ -49,6 +60,7 @@ public class DaemonThreadFactory implements ThreadFactory
 		Thread thread = new Thread(runnable);
 		
 		thread.setDaemon(true);
+		thread.setPriority(this.priority);
 
 		return thread;
 	}
