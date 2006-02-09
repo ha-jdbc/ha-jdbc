@@ -22,37 +22,6 @@ considered correct in the case of any differences.
   >
 
 <!--
-  Linkage attributes. These define how links are generated between fields of
-  an object and XML attributes or elements. The values are inherited, so they
-  can be set at any level of the binding definition hierarchy that contains
-  object to XML binding definitions.
-
-  Basic attributes:
-    auto-link - by default link values defined by <"fields">, "methods"
-      (JavaBean-style access methods), or "none". All the other attributes
-      in this group are ignored if this value is "none".
-    access-level - level of fields or methods to be implicitly mapped:
-      <"private">, "package", "protected" or "public".
-    strip-prefix - prefix to be stripped in generating element names from
-      field or method names. In the case of auto-link="methods" this applies
-      after the leading "get"/"set" is stripped.
-    strip-suffix - suffix to be stripped in generating element names from
-      field or method names.
-    name-style - generate names for fields or JavaBean properties using either
-      <"hyphens"> or "mixed-case".
-  
-  NOTE: This group of attributes is not currently supported.
--->
-
-<!ENTITY % linkage-attributes "
-    auto-link   CDATA   #IMPLIED
-    access-level CDATA  #IMPLIED
-    strip-prefix CDATA  #IMPLIED
-    strip-suffix CDATA  #IMPLIED
-    name-style  CDATA   #IMPLIED"
-  >
-
-<!--
   Attributes for a name definition. These attributes are used when defining
   an element or attribute name.
 
@@ -197,12 +166,15 @@ considered correct in the case of any differences.
   Component ordering:
     ordered - ordered content flag: <"true"> (child binding components define
       ordered content) or "false" (unordered child content)
+    choice - choice of content flag: "true" (choice between child binding
+      components) or <"false"> (multiple child binding components allowed)
 -->
 
 <!ENTITY % structure-attributes "
     label       CDATA   #IMPLIED
     using       CDATA   #IMPLIED
-    ordered     CDATA   #IMPLIED"
+    ordered     CDATA   #IMPLIED
+    choice      CDATA   #IMPLIED"
   >
 
 <!--
@@ -211,31 +183,40 @@ considered correct in the case of any differences.
   Basic attributes:
     name - binding name (default is same as file name, without suffix)
     direction - usage of this binding: "input", "output", or <"both">
-    global-ids - global or type-specific ids: <"true"> (global) or "false"
-      (generated ids are specific to the object type and may be duplicated
-      for different types)
     forwards - allow forward references on ids in unmarshalling: <"true">
       (forward references handled) or "false" (all ids must be defined in XML
       before first reference)
-    auto-prefix - prefix for automatic id generation, default is "id_"
     package - package for created binding factory class, default is same
       package as class for first mapping element
     track-source - track unmarshalling source position: "true" or <"false">
+    force-classes - force class generation for top-level abstract mappings:
+      "true" or <"false">
 
-  along with the style and linkage attributes defined above.
+  along with the style attributes defined above.
 -->
 
-<!ELEMENT binding (namespace*, format*, mapping+)>
+<!ELEMENT binding (include*, namespace*, format*, mapping+)>
   <!ATTLIST binding
     name        CDATA   #IMPLIED
     direction   CDATA   #IMPLIED
-    global-ids  CDATA   #IMPLIED
     forwards    CDATA   #IMPLIED
-    auto-prefix CDATA   #IMPLIED
     package     CDATA   #IMPLIED
     track-source CDATA  #IMPLIED
+    force-classes CDATA  #IMPLIED
     %style-attribute;
-    %linkage-attributes;
+  >
+
+<!--
+  Included binding definition. This can only be used at the top level of a
+  binding.
+
+  Basic attributes:
+    path - included binding path
+-->
+
+<!ELEMENT include EMPTY>
+  <!ATTLIST namespace
+    path        CDATA   #REQUIRED
   >
 
 <!--
@@ -299,8 +280,9 @@ considered correct in the case of any differences.
       (abstract definition) or <"false"> (concrete definition used directly).
     extends - fully qualified class name of base class with defined abstract
       mapping being extended by subclass.
+    type-name - optional type name for an abstract binding.
 
-  along with all the style, linkage, name, and object attributes defined above.
+  along with all the style, name, and object attributes defined above.
   The name attribute is required unless either abstract="true" is specified or
   a marshaller or unmarshaller is supplied using the object attributes.
 -->
@@ -310,10 +292,10 @@ considered correct in the case of any differences.
     class       CDATA   #REQUIRED
     abstract    CDATA   #IMPLIED
     extends     CDATA   #IMPLIED
+    type-name   CDATA   #IMPLIED
     %style-attribute;
     %name-attributes;
     %object-attributes;
-    %linkage-attributes;
     %structure-attributes;
   >
 
@@ -327,6 +309,8 @@ considered correct in the case of any differences.
       value binding.
     style - mapping style, express value as: <"element">, "attribute", "text",
       or "cdata".
+    constant - contant value always used when marshalling, checked when
+      unmarshalling.
  
   Identifier attributes:
     ident - identifier property flag: <"none">, "def" (value is a unique
@@ -339,26 +323,6 @@ considered correct in the case of any differences.
 	    must be defined directly as a child of the mapping element; it is not
 	    allowed as a child of a structure element.
   
-  Enumeration attributes:
-    enum - reference to named enumeration in a containing scope of the binding
-      definition. If given, the named enumeration is used as the default for
-      this value binding. The base value type of the enumeration must match the
-      type of this value.
-    enum-names - fully-qualified class and name of a static final array of
-      strings giving the text representations of the values allowed for this
-      enumeration. Lookups assume zero-based enumeration ranges, with the first
-      value in the array corresponding to an enumeration value of '0'. If the
-      actual value range for the enumeration starts at an offset the leading
-      values in the array can be null.
-    enum-sorts - fully-qualified class and name of a static final array of
-      strings giving the sorted text representations of the values in an
-      enumeration. These strings must be in java.lang.String comparison order.
-      If an array is specified that does not contain ordered values the results
-      are unpredictable.
-    enum-values - fully-qualified class and name of a static final array of
-      ints giving the enumeration values corresponding to the sorted text
-      representations.
-  
   as well as the style, name, property, and string attributes defined above.
   The name attribute is always required. The property attributes are required
   (either as a field name, or as get and/or set methods) unless the value is
@@ -367,13 +331,10 @@ considered correct in the case of any differences.
 
 <!ELEMENT value EMPTY>
   <!ATTLIST value
+    constant    CDATA   #IMPLIED
     format      CDATA   #IMPLIED
     ident       CDATA   #IMPLIED
     style       CDATA   #IMPLIED
-    enum        CDATA   #IMPLIED
-    enum-names  CDATA   #IMPLIED
-    enum-sorts  CDATA   #IMPLIED
-    enum-values CDATA   #IMPLIED
     %name-attributes;
     %property-attributes;
     %string-attributes;
@@ -392,7 +353,7 @@ considered correct in the case of any differences.
       defined within an enclosing context. This attribute implies
       mapping="true".
 
-  along with all the style, linkage, name, label, property, and object
+  along with all the style, name, label, property, and object
   attributes defined above. The name attributes are optional; if not supplied, a
   property definition must be present and all contained bindings apply to fields
   of the referenced object. The object attributes are only allowed in
@@ -406,7 +367,6 @@ considered correct in the case of any differences.
     %name-attributes;
     %object-attributes;
     %property-attributes;
-    %linkage-attributes;
     %structure-attributes;
 >
   
@@ -438,7 +398,7 @@ considered correct in the case of any differences.
       element with no field attribute must be supplied for a collection-valued
       property.
 
-  along with all the style, linkage, name, label, and property attributes
+  along with all the style, name, label, and property attributes
   defined above. The name attributes are optional, but a property definition is
   always required. The collection handling attributes are not needed when the
   property definition is for a standard collection class (java.util.Vector,
@@ -460,6 +420,5 @@ considered correct in the case of any differences.
     %style-attribute;
     %name-attributes;
     %property-attributes;
-    %linkage-attributes;
     %structure-attributes;
   >
