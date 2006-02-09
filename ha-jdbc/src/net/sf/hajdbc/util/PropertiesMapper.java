@@ -22,8 +22,13 @@ package net.sf.hajdbc.util;
 
 import java.util.Properties;
 
+import org.jibx.runtime.IAliasable;
+import org.jibx.runtime.IMarshaller;
+import org.jibx.runtime.IMarshallingContext;
+import org.jibx.runtime.IUnmarshaller;
 import org.jibx.runtime.IUnmarshallingContext;
 import org.jibx.runtime.JiBXException;
+import org.jibx.runtime.impl.MarshallingContext;
 import org.jibx.runtime.impl.UnmarshallingContext;
 
 /**
@@ -32,30 +37,32 @@ import org.jibx.runtime.impl.UnmarshallingContext;
  * @author  Paul Ferraro
  * @since   1.0
  */
-public class PropertiesUnmarshaller implements org.jibx.runtime.IUnmarshaller
+public class PropertiesMapper implements IUnmarshaller, IMarshaller, IAliasable
 {
 	private static final String ELEMENT = "property";
 	private static final String ATTRIBUTE = "name";
 	
 	private String uri;
 	private String name;
-
+	private int index;
+	
 	/**
-	 * Constructs a new PropertiesUnmarshaller.
+	 * Constructs a new PropertiesMapper.
 	 */
-	public PropertiesUnmarshaller()
+	public PropertiesMapper()
 	{
 	}
 	
 	/**
-	 * Constructs a new PropertiesUnmarshaller.
+	 * Constructs a new PropertiesMapper.
 	 * @param uri
 	 * @param index 
 	 * @param name
 	 */
-	public PropertiesUnmarshaller(String uri, int index, String name)
+	public PropertiesMapper(String uri, int index, String name)
 	{
 		this.uri = uri;
+		this.index = index;
 		this.name = name;
 	}
     
@@ -72,9 +79,9 @@ public class PropertiesUnmarshaller implements org.jibx.runtime.IUnmarshaller
 	 */
 	public Object unmarshal(Object object, IUnmarshallingContext ctx) throws JiBXException
 	{
-		UnmarshallingContext context = (UnmarshallingContext) ctx;
+		UnmarshallingContext context = UnmarshallingContext.class.cast(ctx);
 		
-		Properties properties = (Properties) object;
+		Properties properties = Properties.class.cast(object);
 		
 		if (properties == null)
 		{
@@ -105,5 +112,41 @@ public class PropertiesUnmarshaller implements org.jibx.runtime.IUnmarshaller
 		}
 		
 		return properties;
+	}
+
+	/**
+	 * @see org.jibx.runtime.IMarshaller#isExtension(int)
+	 */
+	public boolean isExtension(int index)
+	{
+		return false;
+	}
+
+	/**
+	 * @see org.jibx.runtime.IMarshaller#marshal(java.lang.Object, org.jibx.runtime.IMarshallingContext)
+	 */
+	public void marshal(Object object, IMarshallingContext ctx) throws JiBXException
+	{
+		Properties properties = Properties.class.cast(object);
+		
+		if (properties != null)
+		{
+			MarshallingContext context = MarshallingContext.class.cast(ctx);
+			
+			if (this.name != null)
+			{
+				context.startTag(this.index, this.name);
+			}
+			
+			for (String name: Collections.cast(properties.keySet(), String.class))
+			{
+				context.startTagAttributes(this.index, ELEMENT).attribute(this.index, ATTRIBUTE, name).closeStartContent().content(properties.getProperty(name)).endTag(this.index, ELEMENT);
+			}
+
+			if (this.name != null)
+			{
+				context.endTag(this.index, this.name);
+			}
+		}
 	}
 }
