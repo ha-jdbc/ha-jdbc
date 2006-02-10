@@ -529,6 +529,9 @@ rowSet.close();
 					A database is determined to have failed if it fails to respond to a trivial query (e.g. SELECT 1).
 					The query used to validate that a database is alive is defined by the configured <a href="#dialect">dialect</a>.
 				</p>
+				<p>
+					This query may be executed manually, via the <code>isAlive(String)</code> method on the management interface.
+				</p>
 				<p>If HA-JDBC determines that a given database has failed:</p>
 				<ol>
 					<li>An ERROR message is logged.</li>
@@ -538,6 +541,19 @@ rowSet.close();
 				<p>
 					Databases may also be manually deactivated via the <a href="#jmx">JMX management interface</a>.
 				</p>
+				<p>
+					Optionally, you can configure HA-JDBC to proactively detect database failures via the <code>failure-detect-period</code> attribute.
+					The value of this attribute indicates the frequency, in <em>seconds</em>, at which a database cluster will detect failed databases and deactivate them.
+				</p>
+				<p>e.g.</p>
+				<source><![CDATA[
+<ha-jdbc>
+  <!-- ... -->
+  <cluster id="..." balancer="..." default-sync="..." failure-detect-period="60">
+    <!-- ... -->
+  </cluster>
+</ha-jdbc>
+]]></source>
 			</section>
 			<section>
 				<title>Restoring a Database Node</title>
@@ -607,13 +623,14 @@ public class FasterFullSynchronizationStrategy extends net.sf.hajdbc.sync.FullSy
 					The MBean exposes the following methods:
 				</p>
 				<ul>
-					<li>getId() - Returns the unique identifier of this cluster.</li>
-					<li>getActiveDatabases() - Returns a collection of active databases in this cluster.</li>
-					<li>getInactiveDatabases() - Returns a collection of inactive databases in this cluster.</li>
-					<li>isAlive(String id) - Tests whether the specified database is responding.</li>
-					<li>deactivate(String id) - Deactivates the specified database from this cluster.</li>
-					<li>activate(String id) - Re-activates the specified database from this cluster using the default synchronization strategy for the database cluster.</li>
-					<li>activate(String id, String strategyId) - Re-activates the specified database from this cluster using the specified synchronization strategy.</li>
+					<li><code>getId()</code> - Returns the unique identifier of this cluster.</li>
+					<li><code>getVersion()</code> - Returns the HA-JDBC version number.</li>
+					<li><code>getActiveDatabases()</code> - Returns a collection of active databases in this cluster.</li>
+					<li><code>getInactiveDatabases()</code> - Returns a collection of inactive databases in this cluster.</li>
+					<li><code>isAlive(String id)</code> - Tests whether the specified database is responding.</li>
+					<li><code>deactivate(String id)</code> - Deactivates the specified database from this cluster.</li>
+					<li><code>activate(String id)</code> - Re-activates the specified database from this cluster using the default synchronization strategy for the database cluster.</li>
+					<li><code>activate(String id, String strategyId)</code> - Re-activates the specified database from this cluster using the specified synchronization strategy.</li>
 				</ul>
 				<p>
 					JMX operations can be executed from the <a href="http://java.sun.com/j2se/1.5.0/docs/guide/management/jconsole.html">JConsole</a> interface packaged with JDK 1.5.
