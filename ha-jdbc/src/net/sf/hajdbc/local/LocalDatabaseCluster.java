@@ -591,7 +591,6 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		 */
 		public void run()
 		{
-			log.info("Running failure detection...");
 			for (Database database: LocalDatabaseCluster.this.getBalancer().list())
 			{
 				if (!LocalDatabaseCluster.this.isAlive(database))
