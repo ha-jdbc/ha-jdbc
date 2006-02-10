@@ -778,15 +778,6 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		{
 			this.rollback(connectionList);
 			
-			java.sql.SQLException exception = e;
-			
-			while (exception != null)
-			{
-				log.error(exception.toString(), e);
-				
-				exception = exception.getNextException();
-			}
-			
 			throw e;
 		}
 		finally
