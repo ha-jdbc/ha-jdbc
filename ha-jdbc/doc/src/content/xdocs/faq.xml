@@ -8,6 +8,10 @@
 			<question>JGroups FAQ</question>
 			<answer><a href="http://www.jgroups.org/javagroupsnew/docs/faq.html">http://www.jgroups.org/javagroupsnew/docs/faq.html</a></answer>
 		</faq>
+		<faq>
+			<question>Commons-Logging FAQ</question>
+			<answer><a href="http://wiki.apache.org/jakarta-commons/Logging/FrequentlyAskedQuestions">http://wiki.apache.org/jakarta-commons/Logging/FrequentlyAskedQuestions</a></answer>
+		</faq>
 	</faqsection>
 	<faqsection>
 		<title>Configuring HA-JDBC</title>
@@ -122,7 +126,7 @@
 				<p>e.g.</p>
 				<p>
 					For Tomcat, following the configuration instructions for setting up a Persistent Manager using a JDBC store <a href="http://jakarta.apache.org/tomcat/tomcat-5.0-doc/config/manager.html">here</a>.
-					Simply use HA-JDBC's driver and url in place or your database's JDBC driver and url for the <code>driverName</code> and <code>connectionURL</code> properties of your store configuration.
+					Simply use HA-JDBC's driver and url in place of your database's JDBC driver and url for the <code>driverName</code> and <code>connectionURL</code> properties of your store configuration.
 				</p>
 			</answer>
 		</faq>
@@ -157,8 +161,9 @@
 					When your application connects to the database, the authentication information specified is passed through to the underlying driver.
 				</p>
 				<p>
-					The purpose of this authentication pass-through is to retain the flexibility your application had without HA-JDBC to use an appropriate database user (with and appropriate set of permissions) for a given task.
-					Traditionally, applications will use a database user with select/insert/update/delete privileges only.  Often application do not need to write information to a database and use a database user with select privileges only.
+					The purpose of this authentication pass-through is to retain the flexibility your application had without HA-JDBC to use an appropriate database user (with an appropriate set of permissions) for a given task.
+					Traditionally, applications will use a database user with select/insert/update/delete privileges only.
+					Some application may not need to write information to a database and can use a database user with select privileges only.
 					The database user that is used by HA-JDBC should be more of a root/superuser, with specific abilities to drop and create indexes and foreign keys (used during synchronization).
 				</p>
 				<p>
@@ -184,7 +189,7 @@
 						<th>Architecture</th>
 						<td>
 							<ol>
-								<li>HA-JDBC driver delegates JDBC methods directly to the underlying drivers.</li>
+								<li>HA-JDBC driver delegates JDBC methods directly to the underlying JDBC drivers.</li>
 								<li>Cluster details are stored in distributed cache on client.</li>
 								<li>Leverages underlying database for request scheduling.</li>
 								<li>High-availability is inherent in symmetric design.</li>
@@ -192,7 +197,7 @@
 						</td>
 						<td>
 							<ol>
-								<li>C-JDBC driver delegates query execution to a separate controller process.  Controller then send queries to the underlying drivers.</li>
+								<li>Sequoia's JDBC driver delegates query execution to a remote controller process.  Controller then delegates queries to the underlying JDBC driver.</li>
 								<li>Cluster details are known only to controller.</li>
 								<li>The controller's request scheduler strategy is responsible for serializing execution order.</li>
 								<li>Controller introduces new single point-of-failure.  Workaround is to set up a failover controller process.  Details <a href="http://c-jdbc.objectweb.org/current/doc/C-JDBC_horizontal_scalability.pdf">here</a>.</li>
@@ -204,7 +209,7 @@
 						<td>
 							<ol>
 								<li>Databases within a cluster must be homogenous.</li>
-								<li>Supports mirroring only.</li>
+								<li>Supports "mirroring" only.</li>
 							</ol>
 						</td>
 						<td>
