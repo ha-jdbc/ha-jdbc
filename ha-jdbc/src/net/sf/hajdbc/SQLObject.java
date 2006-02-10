@@ -219,9 +219,6 @@ public class SQLObject<E, P>
 	 */
 	public final <T> Map<Database, T> executeWriteToDatabase(final Operation<E, T> operation) throws java.sql.SQLException
 	{
-		ExecutorService executor = this.databaseCluster.getExecutor();
-		
-		Map<Database, Future<T>> futureMap = new HashMap<Database, Future<T>>();
 		Map<Database, T> returnValueMap = new HashMap<Database, T>();
 		Map<Database, java.sql.SQLException> exceptionMap = new HashMap<Database, java.sql.SQLException>();
 		
@@ -237,6 +234,10 @@ public class SQLObject<E, P>
 			{
 				throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this.databaseCluster));
 			}
+			
+			Map<Database, Future<T>> futureMap = new HashMap<Database, Future<T>>();
+			
+			ExecutorService executor = this.databaseCluster.getExecutor();
 			
 			for (final Database database: databaseList)
 			{
