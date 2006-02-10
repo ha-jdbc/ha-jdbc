@@ -634,7 +634,9 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			return false;
 		}
 		
-		if (!this.writeLock().tryLock())
+		Lock lock = this.writeLock();
+		
+		if (!lock.tryLock())
 		{
 			throw new IllegalStateException(Messages.getMessage(Messages.WRITE_LOCK_FAILED, this));
 		}
@@ -654,7 +656,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		}
 		finally
 		{
-			this.writeLock().unlock();
+			lock.unlock();
 		}
 	}
 	

@@ -28,6 +28,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.locks.Lock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -224,7 +225,9 @@ public class SQLObject<E, P>
 		Map<Database, T> returnValueMap = new HashMap<Database, T>();
 		Map<Database, java.sql.SQLException> exceptionMap = new HashMap<Database, java.sql.SQLException>();
 		
-		this.databaseCluster.readLock().lock();
+		Lock lock = this.databaseCluster.readLock();
+		
+		lock.lock();
 		
 		try
 		{
@@ -279,7 +282,7 @@ public class SQLObject<E, P>
 		}
 		finally
 		{
-			this.databaseCluster.readLock().unlock();
+			lock.unlock();
 		}
 		
 		// If no databases returned successfully, return an exception back to the caller
@@ -315,7 +318,9 @@ public class SQLObject<E, P>
 	{
 		Map<Database, T> returnValueMap = new HashMap<Database, T>();
 
-		this.databaseCluster.readLock().lock();
+		Lock lock = this.databaseCluster.readLock();
+
+		lock.lock();
 		
 		try
 		{
@@ -335,7 +340,7 @@ public class SQLObject<E, P>
 		}
 		finally
 		{
-			this.databaseCluster.readLock().unlock();
+			lock.unlock();
 		}
 		
 		this.record(operation);
