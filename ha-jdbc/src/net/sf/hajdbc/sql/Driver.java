@@ -63,7 +63,7 @@ public final class Driver implements java.sql.Driver
 	/**
 	 * @see java.sql.Driver#acceptsURL(java.lang.String)
 	 */
-	public boolean acceptsURL(String url) throws SQLException
+	public boolean acceptsURL(String url)
 	{
 		return (this.getDatabaseCluster(url) != null);
 	}
@@ -138,7 +138,7 @@ public final class Driver implements java.sql.Driver
 		return true;
 	}
 	
-	private DatabaseCluster getDatabaseCluster(String url) throws SQLException
+	private DatabaseCluster getDatabaseCluster(String url)
 	{
 		Matcher matcher = URL_PATTERN.matcher(url);
 		
