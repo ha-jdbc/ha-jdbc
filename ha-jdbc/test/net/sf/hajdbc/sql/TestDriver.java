@@ -61,32 +61,37 @@ public class TestDriver extends DatabaseClusterTestCase
 	 */
 	public void testAcceptsURL()
 	{
+		boolean accepted = this.driver.acceptsURL("jdbc:ha-jdbc:test-database-cluster");
+		
+		assertTrue(accepted);
+
 		try
 		{
-			boolean accepted = this.driver.acceptsURL("jdbc:ha-jdbc:test-database-cluster");
-			
-			assertTrue(accepted);
+			this.driver.acceptsURL("jdbc:ha-jdbc:no-such-cluster");
 
-			accepted = this.driver.acceptsURL("jdbc:ha-jdbc:no-such-cluster");
-
-			assertFalse(accepted);
-
-			accepted = this.driver.acceptsURL("jdbc:ha-jdbc:");
-			
-			assertFalse(accepted);
-
-			accepted = this.driver.acceptsURL("jdbc:ha-jdbc");
-			
-			assertFalse(accepted);
-
-			accepted = this.driver.acceptsURL("jdbc:test:database1");
-			
-			assertFalse(accepted);
+			fail();
 		}
-		catch (SQLException e)
+		catch (IllegalArgumentException e)
 		{
-			fail(e);
 		}
+		
+		try
+		{
+			this.driver.acceptsURL("jdbc:ha-jdbc:");
+
+			fail();
+		}
+		catch (IllegalArgumentException e)
+		{
+		}
+		
+		accepted = this.driver.acceptsURL("jdbc:ha-jdbc");
+		
+		assertFalse(accepted);
+
+		accepted = this.driver.acceptsURL("jdbc:test:database1");
+		
+		assertFalse(accepted);
 	}
 
 	/**
@@ -105,26 +110,6 @@ public class TestDriver extends DatabaseClusterTestCase
 		{
 			fail(e);
 		}
-	}
-
-	/**
-	 * Test method for {@link Driver#getMajorVersion()}
-	 */
-	public void testGetMajorVersion()
-	{
-		int major = this.driver.getMajorVersion();
-		
-		assertEquals(1, major);
-	}
-
-	/**
-	 * Test method for {@link Driver#getMinorVersion()}
-	 */
-	public void testGetMinorVersion()
-	{
-		int minor = this.driver.getMinorVersion();
-		
-		assertEquals(0, minor);
 	}
 
 	/**

@@ -24,6 +24,7 @@ import java.sql.Connection;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.NoSuchElementException;
+import java.util.Properties;
 
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
@@ -266,6 +267,38 @@ public abstract class AbstractTestBalancer extends junit.framework.TestCase
 		public String toString()
 		{
 			return this.id;
+		}
+
+		/**
+		 * @see net.sf.hajdbc.Database#getConnectionFactoryClass()
+		 */
+		public Class getConnectionFactoryClass()
+		{
+			return null;
+		}
+
+		/**
+		 * @see net.sf.hajdbc.DatabaseMBean#getUser()
+		 */
+		public String getUser()
+		{
+			return null;
+		}
+
+		/**
+		 * @see net.sf.hajdbc.DatabaseMBean#getPassword()
+		 */
+		public String getPassword()
+		{
+			return null;
+		}
+
+		/**
+		 * @see net.sf.hajdbc.DatabaseMBean#getProperties()
+		 */
+		public Properties getProperties()
+		{
+			return null;
 		}
 	}
 }

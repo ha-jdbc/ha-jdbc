@@ -147,13 +147,13 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 		
 		try
 		{
-			Object object = this.factory.getObjectInstance(reference, null, null, null);
+			this.factory.getObjectInstance(reference, null, null, null);
 			
-			assertNull(object);
+			fail();
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			// Expect
 		}
 	}
 }
