@@ -102,8 +102,18 @@
 			<fileset dir="${build.dir}"></fileset>
 		</jar>
     </target>
+
+	<target name="compile-1.4" depends="bind">
+		<retrotranslate srcdir="${build.dir}" classpathref="src.classpath"></retrotranslate>
+	</target>
+
+	<target name="jar-1.4" depends="compile-1.4">
+        <jar jarfile="${jar-1.4.file}" index="true">
+			<fileset dir="${build.dir}"></fileset>
+		</jar>
+	</target>
 	
-	<target name="dist" depends="jar, site">
+	<target name="dist-bin" depends="jar, jar-1.4, site">
 		<tar tarfile="${dist.bin.file}" compression="gzip">
 			<tarfileset dir="${basedir}" prefix="${dist.version.name}">
 				<include name="${dist.version.name}.jar"/>
@@ -116,19 +126,6 @@
 			</tarfileset>
 			<tarfileset dir="${doc.build.dir}/site" prefix="${dist.version.name}/doc" includes="**"></tarfileset>
 		</tar>
-	</target>
-
-	<target name="compile-1.4" depends="bind">
-		<retrotranslate srcdir="${build.dir}" classpathref="src.classpath"></retrotranslate>
-	</target>
-
-	<target name="jar-1.4" depends="compile-1.4">
-        <jar jarfile="${jar-1.4.file}" index="true">
-			<fileset dir="${build.dir}"></fileset>
-		</jar>
-	</target>
-	
-	<target name="dist-1.4" depends="jar-1.4, site">
 		<tar tarfile="${dist-1.4.bin.file}" compression="gzip">
 			<tarfileset dir="${basedir}" prefix="${dist.version.name}">
 				<include name="${dist-1.4.version.name}.jar"/>
