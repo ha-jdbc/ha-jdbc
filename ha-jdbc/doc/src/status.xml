@@ -12,6 +12,14 @@
 	</contexts>
 
 	<changes>
+		<release version="1.1-beta-5" date="February 13, 2006">
+			<action type="fix" context="code" dev="PF">
+				Database activation uses Lock.lockInterruptibly() instead of Lock.tryLock() to prevent activation from failing due to concurrent writes.
+			</action>
+			<action type="fix" context="code" dev="PF">
+				Fixed getLockTableSQL() from PostgreSQL dialect so that it can be executed within a batch.
+			</action>
+		</release>
 		<release version="1.1-beta-4" date="February 10, 2006">
 			<action type="update" context="lib" dev="PF">
 				Upgraded Retrotranslator to version 0.9.8.
