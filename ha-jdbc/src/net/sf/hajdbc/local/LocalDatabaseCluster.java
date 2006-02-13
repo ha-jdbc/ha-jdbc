@@ -627,7 +627,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		}
 	}
 	
-	private boolean activate(Database database, SynchronizationStrategy strategy) throws java.sql.SQLException
+	private boolean activate(Database database, SynchronizationStrategy strategy) throws java.sql.SQLException, InterruptedException
 	{
 		if (this.getBalancer().contains(database))
 		{
@@ -636,10 +636,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		
 		Lock lock = this.writeLock();
 		
-		if (!lock.tryLock())
-		{
-			throw new IllegalStateException(Messages.getMessage(Messages.WRITE_LOCK_FAILED, this));
-		}
+		lock.lockInterruptibly();
 		
 		try
 		{
