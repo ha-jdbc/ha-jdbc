@@ -761,11 +761,8 @@ public class LocalDatabaseCluster implements DatabaseCluster
 								map.put(table, sql);
 							}
 							
-							statement.addBatch(sql);
+							statement.execute(sql);
 						}
-						
-						statement.executeBatch();
-						statement.clearBatch();
 					}
 					
 					statement.close();
