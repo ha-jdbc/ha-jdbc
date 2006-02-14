@@ -84,8 +84,24 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	private Dialect dialect;
 	private ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1, new DaemonThreadFactory(Thread.MIN_PRIORITY));
 	private int failureDetectionPeriod;
-	private ReadWriteLock lock = new ReentrantReadWriteLock(true);
-		
+	private ReadWriteLock lock = this.createReadWriteLock();
+	
+	/**
+	 * Work around for missing constructor in backport-util-concurrent package.
+	 * @return ReadWriteLock implementation
+	 */
+	private ReadWriteLock createReadWriteLock()
+	{
+		try
+		{
+			return new ReentrantReadWriteLock(true);
+		}
+		catch (NoSuchMethodError e)
+		{
+			return new ReentrantReadWriteLock();
+		}
+	}
+	
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#loadState()
 	 */
