@@ -45,6 +45,12 @@
 		<fileset dir="${lib.runtime.dir}" includes="*.jar"></fileset>
 	</path>
 	
+	<path id="retrotranslate.classpath">
+		<path refid="src.classpath"></path>
+		<fileset dir="${java.home}/lib" includes="rt.jar"></fileset>
+		<fileset dir="${lib.runtime-1.4.dir}" includes="*.jar"></fileset>
+	</path>
+	
 	<taskdef name="bind" classname="org.jibx.binding.ant.CompileTask">
 		<classpath>
 			<fileset dir="${lib.dir}">
@@ -79,7 +85,7 @@
 		<delete dir="${doc.api.dir}" quiet="true"></delete>
 	</target>
 
-	<target name="init">
+	<target name="init" depends="clean">
 		<mkdir dir="${build.dir}"/>
 	</target>
 	
@@ -104,7 +110,7 @@
     </target>
 
 	<target name="compile-1.4" depends="bind">
-		<retrotranslate srcdir="${build.dir}" classpathref="src.classpath"></retrotranslate>
+		<retrotranslate srcdir="${build.dir}" classpathref="retrotranslate.classpath" verify="on"></retrotranslate>
 	</target>
 
 	<target name="jar-1.4" depends="compile-1.4">
