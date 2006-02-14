@@ -12,6 +12,14 @@
 	</contexts>
 
 	<changes>
+		<release version="1.1-beta-6" date="...">
+			<action type="fix" context="code" dev="PF">
+				Added workaround for missing ReentrantReadWriteLock(boolean) constructor in backport-util-concurrent package.
+			</action>
+			<action type="update" context="code" dev="PF">
+				Added verify flag to retrotranslator compilation to catch future Java 1.4 compatibility issues.
+			</action>
+		</release>
 		<release version="1.1-beta-5" date="February 13, 2006">
 			<action type="fix" context="code" dev="PF">
 				Database activation uses Lock.lockInterruptibly() instead of Lock.tryLock() to prevent activation from failing due to concurrent writes.
