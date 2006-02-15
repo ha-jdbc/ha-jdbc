@@ -12,12 +12,16 @@
 	</contexts>
 
 	<changes>
-		<release version="1.1-beta-6" date="...">
+		<release version="1.1-beta-6" date="February 15, 2006">
 			<action type="fix" context="code" dev="PF">
 				Added workaround for missing ReentrantReadWriteLock(boolean) constructor in backport-util-concurrent package.
 			</action>
 			<action type="update" context="code" dev="PF">
 				Added verify flag to retrotranslator compilation to catch future Java 1.4 compatibility issues.
+			</action>
+			<action type="update" context="code" dev="PF">
+				Rollback change to PostgreSQL dialect.
+				Removed batching of lock table commands.
 			</action>
 		</release>
 		<release version="1.1-beta-5" date="February 13, 2006">
