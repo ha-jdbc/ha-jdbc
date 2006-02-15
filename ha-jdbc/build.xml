@@ -110,7 +110,7 @@
     </target>
 
 	<target name="compile-1.4" depends="bind">
-		<retrotranslate srcdir="${build.dir}" classpathref="retrotranslate.classpath" verify="on"></retrotranslate>
+		<retrotranslate srcdir="${build.dir}" classpathref="retrotranslate.classpath" verify="on" failonwarning="no"></retrotranslate>
 	</target>
 
 	<target name="jar-1.4" depends="compile-1.4">
