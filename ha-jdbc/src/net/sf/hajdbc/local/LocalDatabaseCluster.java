@@ -84,6 +84,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	private Dialect dialect;
 	private ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1, new DaemonThreadFactory(Thread.MIN_PRIORITY));
 	private int failureDetectionPeriod;
+	private int autoActivationPeriod;
 	private ReadWriteLock lock = this.createReadWriteLock();
 	
 	/**
@@ -264,7 +265,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	 */
 	public Collection<String> getActiveDatabases()
 	{
-		return this.getDatabaseIds(this.balancer.list());
+		return this.extractIdentifiers(this.balancer.list());
 	}
 
 	/**
@@ -272,14 +273,19 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	 */
 	public Collection<String> getInactiveDatabases()
 	{
+		return this.extractIdentifiers(this.getInactiveDatabaseSet());
+	}
+	
+	protected Set<Database> getInactiveDatabaseSet()
+	{
 		Set<Database> databaseSet = new HashSet<Database>(this.databaseMap.values());
 
 		databaseSet.removeAll(this.balancer.list());
-
-		return this.getDatabaseIds(databaseSet);
+		
+		return databaseSet;
 	}
 	
-	private List<String> getDatabaseIds(Collection<Database> databases)
+	private List<String> extractIdentifiers(Collection<Database> databases)
 	{
 		List<String> databaseList = new ArrayList<String>(databases.size());
 		
@@ -551,6 +557,16 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		return this.failureDetectionPeriod;
 	}
 	
+	void setAutoActivationPeriod(int seconds)
+	{
+		this.autoActivationPeriod = seconds;
+	}
+	
+	int getAutoActivationPeriod()
+	{
+		return this.autoActivationPeriod;
+	}
+	
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#start()
 	 */
@@ -589,6 +605,11 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		{
 			this.scheduledExecutor.scheduleWithFixedDelay(new FailureDetectionTask(), this.failureDetectionPeriod, this.failureDetectionPeriod, TimeUnit.SECONDS);
 		}
+		
+		if (this.autoActivationPeriod > 0)
+		{
+			this.scheduledExecutor.scheduleWithFixedDelay(new AutoActivationTask(), this.autoActivationPeriod, this.autoActivationPeriod, TimeUnit.SECONDS);
+		}
 	}
 	
 	/**
@@ -619,6 +640,30 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		}
 	}	
 	
+	private class AutoActivationTask implements Runnable
+	{
+		/**
+		 * @see java.lang.Runnable#run()
+		 */
+		public void run()
+		{
+			for (Database database: LocalDatabaseCluster.this.getInactiveDatabaseSet())
+			{
+				if (LocalDatabaseCluster.this.isAlive(database))
+				{
+					try
+					{
+						LocalDatabaseCluster.this.activate(database, LocalDatabaseCluster.this.getDefaultSynchronizationStrategy());
+					}
+					catch (Throwable e)
+					{
+						log.warn(e.getMessage(), e);
+					}
+				}
+			}
+		}
+	}
+	
 	private void activate(String databaseId, SynchronizationStrategy strategy) throws Exception
 	{
 		try
@@ -643,7 +688,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		}
 	}
 	
-	private boolean activate(Database database, SynchronizationStrategy strategy) throws java.sql.SQLException, InterruptedException
+	boolean activate(Database database, SynchronizationStrategy strategy) throws java.sql.SQLException, InterruptedException
 	{
 		if (this.getBalancer().contains(database))
 		{

@@ -23,6 +23,7 @@
 		<value name="max-threads" get-method="getMaxThreads" set-method="setMaxThreads" usage="optional" default="100"/>
 		<value name="max-idle" get-method="getMaxIdle" set-method="setMaxIdle" style="attribute" usage="optional" default="60"/>
 		<value name="failure-detect-period" field="failureDetectionPeriod" style="attribute" usage="optional" default="0"/>
+		<value name="auto-activate-period" field="autoActivationPeriod" style="attribute" usage="optional" default="0"/>
 		<collection add-method="addDatabase" iter-method="getDriverDatabases" item-type="net.sf.hajdbc.sql.DriverDatabase"></collection>
 		<collection add-method="addDatabase" iter-method="getDataSourceDatabases" item-type="net.sf.hajdbc.sql.DataSourceDatabase"></collection>
 	</mapping>
