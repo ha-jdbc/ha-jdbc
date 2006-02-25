@@ -20,9 +20,15 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.Properties;
+import java.util.Set;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.util.Collections;
 
 /**
  * @author  Paul Ferraro
@@ -30,7 +36,7 @@ import net.sf.hajdbc.Database;
  * @param <T> 
  * @since   1.0
  */
-public abstract class AbstractDatabase<T> implements Database<T>
+public abstract class AbstractDatabase<T> implements Database<T>, Externalizable
 {
 	protected String id;
 	protected String user;
@@ -148,6 +154,47 @@ public abstract class AbstractDatabase<T> implements Database<T>
 	public void setProperties(Properties properties)
 	{
 		this.properties = properties;
+	}
+
+	/**
+	 * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
+	 */
+	public void readExternal(ObjectInput input) throws IOException, ClassNotFoundException
+	{
+		this.id = input.readUTF();
+		this.weight = input.readInt();
+		this.user = input.readUTF();
+		this.password = input.readUTF();
+		
+		int count = input.readInt();
+		
+		this.properties = new Properties();
+		
+		for (int i = 0; i < count; ++i)
+		{
+			this.properties.setProperty(input.readUTF(), input.readUTF());
+		}
+	}
+
+	/**
+	 * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
+	 */
+	public void writeExternal(ObjectOutput output) throws IOException
+	{
+		output.writeUTF(this.id);
+		output.writeInt(this.weight);
+		output.writeUTF(this.user);
+		output.writeUTF(this.password);
+		
+		output.writeInt(this.properties.size());
+		
+		Set<String> propertySet = Collections.cast(this.properties.keySet(), String.class);
+		
+		for (String property: propertySet)
+		{
+			output.writeUTF(property);
+			output.writeUTF(this.properties.getProperty(property));
+		}
 	}
 
 	/**

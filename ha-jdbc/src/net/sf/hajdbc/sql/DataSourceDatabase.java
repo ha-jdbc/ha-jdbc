@@ -20,6 +20,9 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.sql.Connection;
 
 import javax.naming.Context;
@@ -37,6 +40,8 @@ import net.sf.hajdbc.SQLException;
  */
 public class DataSourceDatabase extends AbstractDatabase<DataSource> implements DataSourceDatabaseMBean
 {
+	private static final long serialVersionUID = 9001027983710488108L;
+	
 	protected String name;
 	
 	/**
@@ -96,5 +101,27 @@ public class DataSourceDatabase extends AbstractDatabase<DataSource> implements 
 	public Class<DataSource> getConnectionFactoryClass()
 	{
 		return null;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractDatabase#readExternal(java.io.ObjectInput)
+	 */
+	@Override
+	public void readExternal(ObjectInput input) throws IOException, ClassNotFoundException
+	{
+		super.readExternal(input);
+		
+		this.name = input.readUTF();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractDatabase#writeExternal(java.io.ObjectOutput)
+	 */
+	@Override
+	public void writeExternal(ObjectOutput output) throws IOException
+	{
+		super.writeExternal(output);
+		
+		output.writeUTF(this.name);
 	}
 }
