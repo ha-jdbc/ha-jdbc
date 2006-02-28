@@ -12,6 +12,24 @@
 	</contexts>
 
 	<changes>
+		<release version="1.1-beta-7" date="...">
+			<action type="add" context="lib" dev="PF">
+				New dependency on Quartz (http://www.opensymphony.com/quartz/).
+			</action>
+			<action type="add" context="code" dev="PF">
+				Created CronThreadPoolExecutor, a java.util.concurrent.ThreadPoolExecutor that leverages a Quartz CronTrigger to calculate future execution times of a scheduled task.
+			</action>
+			<action type="update" context="code" dev="PF">
+				Enhanced failure detection to use a cron schedule, instead of a simple fixed-delay period.
+				Renamed failure-detect-period to failure-detect-schedule in DTD.
+			</action>
+			<action type="add" context="code" dev="PF">
+				Added auto-activation-schedule option to cluster.
+			</action>
+			<action type="update" context="code" dev="PF">
+				Migrated repository to Subversion.
+			</action>
+		</release>
 		<release version="1.1-beta-6" date="February 15, 2006">
 			<action type="fix" context="code" dev="PF">
 				Added workaround for missing ReentrantReadWriteLock(boolean) constructor in backport-util-concurrent package.

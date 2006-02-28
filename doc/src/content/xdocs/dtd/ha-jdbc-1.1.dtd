@@ -43,7 +43,8 @@
 <!ATTLIST cluster min-threads CDATA "0">
 <!ATTLIST cluster max-threads CDATA "100">
 <!ATTLIST cluster max-idle CDATA "60">
-<!ATTLIST cluster failure-detect-period CDATA "0">
+<!ATTLIST cluster failure-detect-schedule CDATA #IMPLIED>
+<!ATTLIST cluster auto-activate-schedule CDATA #IMPLIED>
 
 <!ENTITY % authentication-info "(user, password)?">
 <!ELEMENT user (#PCDATA)>

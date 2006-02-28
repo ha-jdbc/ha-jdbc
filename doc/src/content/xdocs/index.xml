@@ -29,6 +29,7 @@
 			<title>Dependent Libraries</title>
 			<ul>
 				<li><a href="http://www.jgroups.org">JGroups</a> - reliable multicast communication framework</li>
+				<li><a href="http://www.opensymphony.com/quartz/">Quartz</a> - enterprise job scheduler</li>
 				<li><a href="http://www.jibx.org">JiBX</a> - an XML binding framework</li>
 				<li><a href="http://jakarta.apache.org/commons/logging/">Commons-Logging</a> - an ultra-thin bridge between different logging libraries</li>
 			</ul>

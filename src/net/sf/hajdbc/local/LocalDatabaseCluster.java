@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -58,7 +57,8 @@ import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SQLException;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.SynchronizationStrategyBuilder;
-import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
+import net.sf.hajdbc.util.concurrent.CronExecutorService;
+import net.sf.hajdbc.util.concurrent.CronThreadPoolExecutor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -78,13 +78,13 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	private String id;
 	private Map<String, Database> databaseMap = new HashMap<String, Database>();
 	private Balancer balancer;
+	private Dialect dialect;
 	private String defaultSynchronizationStrategyId;
 	private Map<Database, Object> connectionFactoryMap = new HashMap<Database, Object>();
 	private ThreadPoolExecutor executor = ThreadPoolExecutor.class.cast(Executors.newCachedThreadPool());
-	private Dialect dialect;
-	private ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1, new DaemonThreadFactory(Thread.MIN_PRIORITY));
-	private int failureDetectionPeriod;
-	private int autoActivationPeriod;
+	private CronExecutorService cronExecutor = new CronThreadPoolExecutor(1);
+	private String failureDetectionSchedule;
+	private String autoActivationSchedule;
 	private ReadWriteLock lock = this.createReadWriteLock();
 	
 	/**
@@ -547,24 +547,24 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		return Long.valueOf(this.executor.getKeepAliveTime(TimeUnit.SECONDS)).intValue();
 	}
 	
-	void setFailureDetectionPeriod(int seconds)
+	void setFailureDetectionSchedule(String schedule)
 	{
-		this.failureDetectionPeriod = seconds;
+		this.failureDetectionSchedule = schedule;
 	}
 	
-	int getFailureDetectionPeriod()
+	String getFailureDetectionSchedule()
 	{
-		return this.failureDetectionPeriod;
+		return this.failureDetectionSchedule;
 	}
 	
-	void setAutoActivationPeriod(int seconds)
+	void setAutoActivationPeriod(String schedule)
 	{
-		this.autoActivationPeriod = seconds;
+		this.autoActivationSchedule = schedule;
 	}
 	
-	int getAutoActivationPeriod()
+	String getAutoActivationSchedule()
 	{
-		return this.autoActivationPeriod;
+		return this.autoActivationSchedule;
 	}
 	
 	/**
@@ -601,14 +601,14 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			}
 		}
 		
-		if (this.failureDetectionPeriod > 0)
+		if (this.failureDetectionSchedule != null)
 		{
-			this.scheduledExecutor.scheduleWithFixedDelay(new FailureDetectionTask(), this.failureDetectionPeriod, this.failureDetectionPeriod, TimeUnit.SECONDS);
+			this.cronExecutor.schedule(new FailureDetectionTask(), this.failureDetectionSchedule);
 		}
 		
-		if (this.autoActivationPeriod > 0)
+		if (this.autoActivationSchedule != null)
 		{
-			this.scheduledExecutor.scheduleWithFixedDelay(new AutoActivationTask(), this.autoActivationPeriod, this.autoActivationPeriod, TimeUnit.SECONDS);
+			this.cronExecutor.schedule(new AutoActivationTask(), this.autoActivationSchedule);
 		}
 	}
 	
@@ -617,51 +617,8 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	 */
 	public void stop()
 	{
-		this.scheduledExecutor.shutdownNow();
+		this.cronExecutor.shutdownNow();
 		this.executor.shutdown();
-	}
-	
-	private class FailureDetectionTask implements Runnable
-	{
-		/**
-		 * @see java.lang.Runnable#run()
-		 */
-		public void run()
-		{
-			for (Database database: LocalDatabaseCluster.this.getBalancer().list())
-			{
-				if (!LocalDatabaseCluster.this.isAlive(database))
-				{
-					log.warn(Messages.getMessage(Messages.DATABASE_NOT_ALIVE, database, this));
-					
-					LocalDatabaseCluster.this.deactivate(database);
-				}
-			}
-		}
-	}	
-	
-	private class AutoActivationTask implements Runnable
-	{
-		/**
-		 * @see java.lang.Runnable#run()
-		 */
-		public void run()
-		{
-			for (Database database: LocalDatabaseCluster.this.getInactiveDatabaseSet())
-			{
-				if (LocalDatabaseCluster.this.isAlive(database))
-				{
-					try
-					{
-						LocalDatabaseCluster.this.activate(database, LocalDatabaseCluster.this.getDefaultSynchronizationStrategy());
-					}
-					catch (Throwable e)
-					{
-						log.warn(e.getMessage(), e);
-					}
-				}
-			}
-		}
 	}
 	
 	private void activate(String databaseId, SynchronizationStrategy strategy) throws Exception
@@ -878,6 +835,49 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			catch (java.sql.SQLException e)
 			{
 				log.warn(e.getMessage(), e);
+			}
+		}
+	}
+	
+	private class FailureDetectionTask implements Runnable
+	{
+		/**
+		 * @see java.lang.Runnable#run()
+		 */
+		public void run()
+		{
+			for (Database database: LocalDatabaseCluster.this.getBalancer().list())
+			{
+				if (!LocalDatabaseCluster.this.isAlive(database))
+				{
+					log.warn(Messages.getMessage(Messages.DATABASE_NOT_ALIVE, database, this));
+					
+					LocalDatabaseCluster.this.deactivate(database);
+				}
+			}
+		}
+	}	
+	
+	private class AutoActivationTask implements Runnable
+	{
+		/**
+		 * @see java.lang.Runnable#run()
+		 */
+		public void run()
+		{
+			for (Database database: LocalDatabaseCluster.this.getInactiveDatabaseSet())
+			{
+				if (LocalDatabaseCluster.this.isAlive(database))
+				{
+					try
+					{
+						LocalDatabaseCluster.this.activate(database, LocalDatabaseCluster.this.getDefaultSynchronizationStrategy());
+					}
+					catch (Throwable e)
+					{
+						log.warn(e.getMessage(), e);
+					}
+				}
 			}
 		}
 	}
