@@ -7,10 +7,16 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
 /**
+ * Executor service that schedules a runnable task for execution via a cron expression.
+ * 
  * @author Paul Ferraro
- *
  */
 public interface CronExecutorService extends Executor, ExecutorService
 {
-	public void schedule(Runnable runnable, String expression);
+	/**
+	 * Schedules the specified task to execute according to the specified cron expression.
+	 * @param task
+	 * @param expression
+	 */
+	public void schedule(Runnable task, String expression);
 }

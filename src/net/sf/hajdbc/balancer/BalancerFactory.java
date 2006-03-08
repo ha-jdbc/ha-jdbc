@@ -26,8 +26,8 @@ import java.util.Map;
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Messages;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author  Paul Ferraro
@@ -35,7 +35,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public final class BalancerFactory
 {
-	private static Log log = LogFactory.getLog(BalancerFactory.class);
+	private static Logger logger = LoggerFactory.getLogger(BalancerFactory.class);
 	
 	private static Map<String, Class<? extends Balancer>> balancerClassMap = new HashMap<String, Class<? extends Balancer>>();
 	private static Map<Class<? extends Balancer>, String> balancerIdMap = new HashMap<Class<? extends Balancer>, String>();
@@ -75,7 +75,7 @@ public final class BalancerFactory
 		}
 		catch (Exception e)
 		{
-			log.fatal(e.getMessage(), e);
+			logger.error(e.getMessage(), e);
 			
 			throw e;
 		}

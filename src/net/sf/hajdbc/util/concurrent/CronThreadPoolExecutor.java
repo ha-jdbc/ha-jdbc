@@ -30,18 +30,19 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.quartz.CronTrigger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Scheduled thread-pool executor service implementation that leverages a Quartz cron trigger to calculate future execution times for scheduled tasks.
+ * Scheduled thread-pool executor implementation that leverages a Quartz cron trigger to calculate future execution times for scheduled tasks.
+ *
  * @author  Paul Ferraro
  * @since   1.1
  */
 public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implements CronExecutorService
 {
-	protected static Log log = LogFactory.getLog(CronThreadPoolExecutor.class);
+	protected static Logger logger = LoggerFactory.getLogger(CronThreadPoolExecutor.class);
 	
 	/**
 	 * Constructs a new CronThreadPoolExecutor.
@@ -88,9 +89,9 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 	 * @param runnable
 	 * @param expression
 	 */
-	public void schedule(final Runnable runnable, String expression)
+	public void schedule(final Runnable task, String expression)
 	{
-		if (runnable == null) throw new NullPointerException();
+		if (task == null) throw new NullPointerException();
 		
 		final CronTrigger trigger = new CronTrigger();
 		
@@ -103,7 +104,7 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 			throw new RejectedExecutionException(e);
 		}
 		
-		Runnable task = new Runnable()
+		Runnable scheduleTask = new Runnable()
 		{
 			/**
 			 * @see java.lang.Runnable#run()
@@ -116,13 +117,15 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 				{
 					try
 					{
-						CronThreadPoolExecutor.this.schedule(runnable, Math.max(fireTime.getTime() - System.currentTimeMillis(), 0), TimeUnit.MILLISECONDS).get();
+						long delay = Math.max(fireTime.getTime() - System.currentTimeMillis(), 0);
+						
+						CronThreadPoolExecutor.this.schedule(task, delay, TimeUnit.MILLISECONDS).get();
 						
 						fireTime = trigger.getFireTimeAfter(new Date());
 					}
 					catch (ExecutionException e)
 					{
-						log.warn(e.getMessage(), e.getCause());
+						logger.warn(e.getMessage(), e.getCause());
 					}
 					catch (RejectedExecutionException e)
 					{
@@ -140,6 +143,6 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 			}
 		};
 		
-		this.execute(task);
+		this.execute(scheduleTask);
 	}
 }

@@ -41,8 +41,8 @@ public abstract class AbstractDatabase<T> implements Database<T>, Externalizable
 	protected String id;
 	protected String user;
 	protected String password;
-	protected Properties properties;
-	protected Integer weight;
+	protected Properties properties = new Properties();
+	protected int weight = 1;
 
 	/**
 	 * @see net.sf.hajdbc.DatabaseMBean#getId()
@@ -95,7 +95,7 @@ public abstract class AbstractDatabase<T> implements Database<T>, Externalizable
 	/**
 	 * @see net.sf.hajdbc.DatabaseMBean#getWeight()
 	 */
-	public Integer getWeight()
+	public int getWeight()
 	{
 		return this.weight;
 	}
@@ -103,7 +103,7 @@ public abstract class AbstractDatabase<T> implements Database<T>, Externalizable
 	/**
 	 * @param weight The weight to set.
 	 */
-	public void setWeight(Integer weight)
+	public void setWeight(int weight)
 	{
 		this.weight = weight;
 	}
@@ -200,17 +200,16 @@ public abstract class AbstractDatabase<T> implements Database<T>, Externalizable
 	/**
 	 * @see net.sf.hajdbc.DatabaseMBean#removeProperty(java.lang.String)
 	 */
-/*	public void removeProperty(String name)
+	public void removeProperty(String name)
 	{
 		this.properties.remove(name);
 	}
-*/
+
 	/**
 	 * @see net.sf.hajdbc.DatabaseMBean#setProperty(java.lang.String, java.lang.String)
 	 */
-/*	public void setProperty(String name, String value)
+	public void setProperty(String name, String value)
 	{
 		this.properties.setProperty(name, value);
 	}
-*/
 }

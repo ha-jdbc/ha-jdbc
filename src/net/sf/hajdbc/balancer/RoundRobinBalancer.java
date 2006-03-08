@@ -57,7 +57,7 @@ public class RoundRobinBalancer extends AbstractBalancer
 		
 		if (added)
 		{
-			int weight = database.getWeight().intValue();
+			int weight = database.getWeight();
 			
 			for (int i = 0; i < weight; ++i)
 			{
@@ -78,7 +78,7 @@ public class RoundRobinBalancer extends AbstractBalancer
 
 		if (removed)
 		{
-			int weight = database.getWeight().intValue();
+			int weight = database.getWeight();
 
 			for (int i = 0; i < weight; ++i)
 			{

@@ -41,7 +41,7 @@ public interface DatabaseMBean
 	 * In most cases, a weight of 0 means that this node will never service read requests unless it is the only node in the cluster.
 	 * @return a positive integer
 	 */
-	public Integer getWeight();
+	public int getWeight();
 	
 	/**
 	 * @return the database user
@@ -59,13 +59,34 @@ public interface DatabaseMBean
 	 */
 	public Properties getProperties();
 	
-//	public void setWeight(Integer weight);
+	/**
+	 * Set the weight for this database
+	 * @param weight a weight
+	 */
+	public void setWeight(int weight);
 	
-//	public void setUser(String user);
+	/**
+	 * Set the user for this database.
+	 * @param user a user
+	 */
+	public void setUser(String user);
 	
-//	public void setPassword(String password);
+	/**
+	 * Set the password for this database
+	 * @param password a password
+	 */
+	public void setPassword(String password);
 	
-//	public void setProperty(String name, String value);
+	/**
+	 * Set the value of the specified property.
+	 * @param name a property name
+	 * @param value a property value
+	 */
+	public void setProperty(String name, String value);
 	
-//	public void removeProperty(String name);
+	/**
+	 * Removes the specified property.
+	 * @param name a property name
+	 */
+	public void removeProperty(String name);
 }

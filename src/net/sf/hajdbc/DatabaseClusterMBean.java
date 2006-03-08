@@ -84,4 +84,10 @@ public interface DatabaseClusterMBean
 	 * @return the current version
 	 */
 	public String getVersion();
+	
+	public void addDatabase(String id, String url, String driver);
+	
+	public void addDatabase(String id, String name);
+	
+	public void removeDatabase(String id);
 }

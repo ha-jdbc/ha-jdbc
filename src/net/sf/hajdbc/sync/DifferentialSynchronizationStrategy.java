@@ -45,8 +45,8 @@ import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Database-independent synchronization strategy that only updates differences between two databases.
@@ -77,7 +77,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class DifferentialSynchronizationStrategy implements SynchronizationStrategy
 {
-	private static Log log = LogFactory.getLog(DifferentialSynchronizationStrategy.class);
+	private static Logger logger = LoggerFactory.getLogger(DifferentialSynchronizationStrategy.class);
 
 	private ExecutorService executor = Executors.newSingleThreadExecutor(DaemonThreadFactory.getInstance());
 	private int fetchSize = 0;
@@ -98,7 +98,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		{
 			String sql = dialect.getDropForeignKeyConstraintSQL(metaData, key.getName(), key.getSchema(), key.getTable());
 			
-			log.debug(sql);
+			logger.debug(sql);
 			
 			statement.addBatch(sql);
 		}
@@ -150,7 +150,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 					{
 						String sql = dialect.getDropUniqueConstraintSQL(metaData, constraint.getName(), constraint.getSchema(), constraint.getTable());
 						
-						log.debug(sql);
+						logger.debug(sql);
 						
 						statement.addBatch(sql);
 					}
@@ -178,7 +178,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 					final Statement inactiveStatement = inactiveConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 					inactiveStatement.setFetchSize(this.fetchSize);
 		
-					log.debug(selectSQL);
+					logger.debug(selectSQL);
 					
 					Callable<ResultSet> callable = new Callable<ResultSet>()
 					{
@@ -198,7 +198,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 					ResultSet inactiveResultSet = future.get();
 					
 					// Construct DELETE SQL
-					StringBuilder deleteSQL = new StringBuilder("DELETE FROM ").append(qualifiedTable).append(" WHERE ");
+					builder = new StringBuilder("DELETE FROM ").append(qualifiedTable).append(" WHERE ");
 					
 					// Create set of primary key columns
 					primaryKeyColumns = primaryKeyColumnMap.values().iterator();
@@ -209,24 +209,26 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 						
 						primaryKeyColumnIndexSet.add(activeResultSet.findColumn(primaryKeyColumn));
 						
-						deleteSQL.append(dialect.quote(metaData, primaryKeyColumn)).append(" = ?");
+						builder.append(dialect.quote(metaData, primaryKeyColumn)).append(" = ?");
 						
 						if (primaryKeyColumns.hasNext())
 						{
-							deleteSQL.append(" AND ");
+							builder.append(" AND ");
 						}
 					}
 					
-					log.debug(deleteSQL);
+					String deleteSQL = builder.toString();
 					
-					PreparedStatement deleteStatement = inactiveConnection.prepareStatement(deleteSQL.toString());
+					logger.debug(deleteSQL.toString());
+					
+					PreparedStatement deleteStatement = inactiveConnection.prepareStatement(deleteSQL);
 					
 					ResultSetMetaData resultSetMetaData = activeResultSet.getMetaData();
 					int columns = resultSetMetaData.getColumnCount();
 					int[] types = new int[columns + 1];
 					
 					// Construct INSERT SQL
-					StringBuilder insertSQL = new StringBuilder("INSERT INTO ").append(qualifiedTable).append(" (");
+					builder = new StringBuilder("INSERT INTO ").append(qualifiedTable).append(" (");
 					
 					for (int i = 1; i <= columns; ++i)
 					{
@@ -234,29 +236,29 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 						
 						if (i > 1)
 						{
-							insertSQL.append(", ");
+							builder.append(", ");
 						}
 						
-						insertSQL.append(dialect.quote(metaData, resultSetMetaData.getColumnName(i)));
+						builder.append(dialect.quote(metaData, resultSetMetaData.getColumnName(i)));
 					}
 		
-					insertSQL.append(") VALUES (");
+					builder.append(") VALUES (");
 		
 					for (int i = 1; i <= columns; ++i)
 					{
 						if (i > 1)
 						{
-							insertSQL.append(", ");
+							builder.append(", ");
 						}
 						
-						insertSQL.append("?");
+						builder.append("?");
 					}
 		
-					insertSQL.append(")");
+					String insertSQL = builder.append(")").toString();
 					
-					log.debug(insertSQL);
+					logger.debug(insertSQL);
 					
-					PreparedStatement insertStatement = inactiveConnection.prepareStatement(insertSQL.toString());
+					PreparedStatement insertStatement = inactiveConnection.prepareStatement(insertSQL);
 					
 					boolean hasMoreActiveResults = activeResultSet.next();
 					boolean hasMoreInactiveResults = inactiveResultSet.next();
@@ -411,9 +413,9 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 					
 					inactiveConnection.commit();
 					
-					log.info(Messages.getMessage(Messages.INSERT_COUNT, insertCount, qualifiedTable));
-					log.info(Messages.getMessage(Messages.UPDATE_COUNT, updateCount, qualifiedTable));
-					log.info(Messages.getMessage(Messages.DELETE_COUNT, deleteCount, qualifiedTable));			
+					logger.info(Messages.getMessage(Messages.INSERT_COUNT, insertCount, qualifiedTable));
+					logger.info(Messages.getMessage(Messages.UPDATE_COUNT, updateCount, qualifiedTable));
+					logger.info(Messages.getMessage(Messages.DELETE_COUNT, deleteCount, qualifiedTable));			
 				}
 			}
 		}
@@ -483,7 +485,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		}
 		catch (java.sql.SQLException e)
 		{
-			log.warn(e.getMessage(), e);
+			logger.warn(e.getMessage(), e);
 		}
 	}
 

@@ -25,8 +25,8 @@ import java.util.Map;
 
 import net.sf.hajdbc.Dialect;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author  Paul Ferraro
@@ -34,7 +34,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class DialectFactory
 {
-	private static Log log = LogFactory.getLog(DialectFactory.class);
+	private static Logger logger = LoggerFactory.getLogger(DialectFactory.class);
 	
 	/**
 	 * Creates a new instance of the Dialect implementation from the specified class name.
@@ -70,8 +70,8 @@ public class DialectFactory
 		}
 		catch (Exception e)
 		{
-			// JiBX will mask this exception, so log it here
-			log.fatal(e.getMessage(), e);
+			// JiBX will mask this exception, so logger it here
+			logger.error(e.getMessage(), e);
 			
 			throw e;
 		}

@@ -40,8 +40,8 @@ import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Database-independent synchronization strategy that only updates differences between two databases.
@@ -68,7 +68,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class FullSynchronizationStrategy implements SynchronizationStrategy
 {
-	private static Log log = LogFactory.getLog(FullSynchronizationStrategy.class);
+	private static Logger logger = LoggerFactory.getLogger(FullSynchronizationStrategy.class);
 
 	private ExecutorService executor = Executors.newSingleThreadExecutor(DaemonThreadFactory.getInstance());
 	private int maxBatchSize = 100;
@@ -90,7 +90,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		{
 			String sql = dialect.getDropForeignKeyConstraintSQL(metaData, key.getName(), key.getSchema(), key.getTable());
 			
-			log.debug(sql);
+			logger.debug(sql);
 			
 			statement.addBatch(sql);
 		}
@@ -127,19 +127,19 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 					
 					String deleteSQL = dialect.getTruncateTableSQL(metaData, schema, table);
 		
-					log.debug(deleteSQL);
+					logger.debug(deleteSQL);
 					
 					Statement deleteStatement = inactiveConnection.createStatement();
 		
 					int deletedRows = deleteStatement.executeUpdate(deleteSQL);
 					
-					log.info(Messages.getMessage(Messages.DELETE_COUNT, deletedRows, qualifiedTable));
+					logger.info(Messages.getMessage(Messages.DELETE_COUNT, deletedRows, qualifiedTable));
 					
 					deleteStatement.close();
 					
 					ResultSet resultSet = future.get();
 					
-					StringBuilder insertSQL = new StringBuilder("INSERT INTO ").append(qualifiedTable).append(" (");
+					StringBuilder builder = new StringBuilder("INSERT INTO ").append(qualifiedTable).append(" (");
 		
 					ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
 					
@@ -149,29 +149,29 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 					{
 						if (i > 1)
 						{
-							insertSQL.append(", ");
+							builder.append(", ");
 						}
 						
-						insertSQL.append(dialect.quote(metaData, resultSetMetaData.getColumnName(i)));
+						builder.append(dialect.quote(metaData, resultSetMetaData.getColumnName(i)));
 					}
 					
-					insertSQL.append(") VALUES (");
+					builder.append(") VALUES (");
 					
 					for (int i = 1; i <= columns; ++i)
 					{
 						if (i > 1)
 						{
-							insertSQL.append(", ");
+							builder.append(", ");
 						}
 						
-						insertSQL.append("?");
+						builder.append("?");
 					}
 					
-					insertSQL.append(")");
+					String insertSQL = builder.append(")").toString();
 					
-					log.debug(insertSQL);
+					logger.debug(insertSQL);
 					
-					PreparedStatement insertStatement = inactiveConnection.prepareStatement(insertSQL.toString());
+					PreparedStatement insertStatement = inactiveConnection.prepareStatement(insertSQL);
 					int statementCount = 0;
 					
 					while (resultSet.next())
@@ -208,7 +208,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 						insertStatement.executeBatch();
 					}
 		
-					log.info(Messages.getMessage(Messages.INSERT_COUNT, statementCount, qualifiedTable));
+					logger.info(Messages.getMessage(Messages.INSERT_COUNT, statementCount, qualifiedTable));
 					
 					insertStatement.close();
 					selectStatement.close();
@@ -243,7 +243,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		{
 			String sql = dialect.getCreateForeignKeyConstraintSQL(metaData, key.getName(), key.getSchema(), key.getTable(), key.getColumn(), key.getForeignSchema(), key.getForeignTable(), key.getForeignColumn());
 			
-			log.debug(sql);
+			logger.debug(sql);
 			
 			statement.addBatch(sql);
 		}
@@ -269,7 +269,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		}
 		catch (java.sql.SQLException e)
 		{
-			log.warn(e.getMessage(), e);
+			logger.warn(e.getMessage(), e);
 		}
 	}
 

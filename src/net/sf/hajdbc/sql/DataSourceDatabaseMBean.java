@@ -33,4 +33,10 @@ public interface DataSourceDatabaseMBean extends DatabaseMBean
 	 * @return a JNDI name
 	 */
 	public String getName();
+	
+	/**
+	 * Sets the JNDI name of this DataSource
+	 * @param name a JNDI name
+	 */
+	public void setName(String name);
 }

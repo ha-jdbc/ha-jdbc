@@ -20,6 +20,8 @@
  */
 package net.sf.hajdbc;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -43,12 +45,12 @@ import javax.management.StandardMBean;
 
 import net.sf.hajdbc.local.LocalDatabaseCluster;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IMarshallingContext;
 import org.jibx.runtime.IUnmarshallingContext;
 import org.jibx.runtime.JiBXException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author  Paul Ferraro
@@ -57,14 +59,16 @@ import org.jibx.runtime.JiBXException;
  */
 public final class DatabaseClusterFactory
 {
-	private static final String SYSTEM_PROPERTY = "ha-jdbc.configuration";
+	private static final String JMX_AGENT_PROPERTY = "ha-jdbc.jmx-agent";
+	private static final String CONFIGURATION_PROPERTY = "ha-jdbc.configuration";
+	
 	private static final String DEFAULT_RESOURCE = "ha-jdbc.xml";
 	
 	private static final String MBEAN_DOMAIN = "net.sf.hajdbc";
 	private static final String MBEAN_CLUSTER_KEY = "cluster";
 	private static final String MBEAN_DATABASE_KEY = "database";
 	
-	private static Log log = LogFactory.getLog(DatabaseClusterFactory.class);
+	private static Logger logger = LoggerFactory.getLogger(DatabaseClusterFactory.class);
 	
 	private static DatabaseClusterFactory instance = null;
 	private static ResourceBundle resource = ResourceBundle.getBundle(DatabaseClusterFactory.class.getName());
@@ -131,10 +135,13 @@ public final class DatabaseClusterFactory
 	 */
 	public static MBeanServer getMBeanServer()
 	{
-		List serverList = MBeanServerFactory.findMBeanServer(null);
+		String agent = System.getProperty(JMX_AGENT_PROPERTY);
+		
+		List serverList = MBeanServerFactory.findMBeanServer(agent);
 		
 		if (serverList.isEmpty())
 		{
+			MBeanServerFactory.createMBeanServer(agent);
 			throw new IllegalStateException(Messages.getMessage(Messages.MBEAN_SERVER_NOT_FOUND));
 		}
 		
@@ -147,23 +154,23 @@ public final class DatabaseClusterFactory
 	 */
 	private static DatabaseClusterFactory createDatabaseClusterFactory()
 	{
-		String resource = System.getProperty(SYSTEM_PROPERTY, DEFAULT_RESOURCE);
+		String resource = System.getProperty(CONFIGURATION_PROPERTY, DEFAULT_RESOURCE);
 		
-		URL resourceURL = getResourceURL(resource);
+		URL url = getResourceURL(resource);
 		
-		log.info(Messages.getMessage(Messages.HA_JDBC_INIT, getVersion(), resourceURL));
+		logger.info(Messages.getMessage(Messages.HA_JDBC_INIT, getVersion(), url));
 		
 		InputStream inputStream = null;
 		
 		try
 		{
-			inputStream = resourceURL.openStream();
+			inputStream = url.openStream();
 			
 			IUnmarshallingContext context = BindingDirectory.getFactory(DatabaseClusterFactory.class).createUnmarshallingContext();
 			
 			DatabaseClusterFactory factory = DatabaseClusterFactory.class.cast(context.unmarshalDocument(new InputStreamReader(inputStream)));
 
-			factory.resourceURL = resourceURL;
+			factory.url = url;
 			
 			Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook(factory)));
 			
@@ -171,11 +178,11 @@ public final class DatabaseClusterFactory
 		}
 		catch (IOException e)
 		{
-			throw new RuntimeException(Messages.getMessage(Messages.CONFIG_NOT_FOUND, resourceURL), e);
+			throw new RuntimeException(Messages.getMessage(Messages.CONFIG_NOT_FOUND, url), e);
 		}
 		catch (JiBXException e)
 		{
-			throw new RuntimeException(Messages.getMessage(Messages.CONFIG_FAILED, resourceURL), e);
+			throw new RuntimeException(Messages.getMessage(Messages.CONFIG_FAILED, url), e);
 		}
 		finally
 		{
@@ -187,7 +194,7 @@ public final class DatabaseClusterFactory
 				}
 				catch (IOException e)
 				{
-					log.warn(Messages.getMessage(Messages.STREAM_CLOSE_FAILED, resourceURL), e);
+					logger.warn(Messages.getMessage(Messages.STREAM_CLOSE_FAILED, url), e);
 				}
 			}
 		}
@@ -237,7 +244,7 @@ public final class DatabaseClusterFactory
 	private Map<String, DatabaseCluster> databaseClusterMap = new HashMap<String, DatabaseCluster>();
 	private Map<String, SynchronizationStrategy> synchronizationStrategyMap = new HashMap<String, SynchronizationStrategy>();
 	private DatabaseClusterBuilder builder;
-	private URL resourceURL;
+	private URL url;
 	
 	private DatabaseClusterFactory()
 	{
@@ -288,23 +295,35 @@ public final class DatabaseClusterFactory
 		
 		try
 		{
-			URLConnection connection = this.resourceURL.openConnection();
-			
-			connection.connect();
-			
-			outputStream = connection.getOutputStream();
+			// We cannot use URLConnection for files becuase Sun's implementation does not support output.
+			if (this.url.getProtocol().equals("file"))
+			{
+				outputStream = new FileOutputStream(new File(this.url.getPath()));
+			}
+			else
+			{
+				URLConnection connection = this.url.openConnection();
+				
+				connection.connect();
+				
+				outputStream = connection.getOutputStream();
+			}
 			
 			IMarshallingContext context = BindingDirectory.getFactory(DatabaseClusterFactory.class).createMarshallingContext();
+
+			context.setIndent(1, System.getProperty("line.separator"), '\t');
 			
 			context.marshalDocument(this, null, null, outputStream);
 		}
 		catch (IOException e)
 		{
-			throw new RuntimeException(Messages.getMessage(Messages.CONFIG_NOT_FOUND, this.resourceURL), e);
+			logger.warn(e.getMessage(), e);
+			throw new RuntimeException(Messages.getMessage(Messages.CONFIG_NOT_FOUND, this.url), e);
 		}
 		catch (JiBXException e)
 		{
-			throw new RuntimeException(Messages.getMessage(Messages.CONFIG_FAILED, this.resourceURL), e);
+			logger.warn(e.getMessage(), e);
+			throw new RuntimeException(Messages.getMessage(Messages.CONFIG_FAILED, this.url), e);
 		}
 		finally
 		{
@@ -316,7 +335,7 @@ public final class DatabaseClusterFactory
 				}
 				catch (IOException e)
 				{
-					log.warn(Messages.getMessage(Messages.STREAM_CLOSE_FAILED, this.resourceURL), e);
+					logger.warn(Messages.getMessage(Messages.STREAM_CLOSE_FAILED, this.url), e);
 				}
 			}
 		}
@@ -342,7 +361,7 @@ public final class DatabaseClusterFactory
 		catch (Exception e)
 		{
 			// Log exception here, since it will be masked by JiBX
-			log.error(e.getMessage(), e);
+			logger.error(e.getMessage(), e);
 			throw e;
 		}
 	}

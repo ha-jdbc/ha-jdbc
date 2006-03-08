@@ -57,11 +57,13 @@ import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SQLException;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.SynchronizationStrategyBuilder;
+import net.sf.hajdbc.sql.DataSourceDatabase;
+import net.sf.hajdbc.sql.DriverDatabase;
 import net.sf.hajdbc.util.concurrent.CronExecutorService;
 import net.sf.hajdbc.util.concurrent.CronThreadPoolExecutor;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author  Paul Ferraro
@@ -73,7 +75,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	private static final String STATE_DELIMITER = ",";
 	
 	private static Preferences preferences = Preferences.userNodeForPackage(LocalDatabaseCluster.class);
-	static Log log = LogFactory.getLog(LocalDatabaseCluster.class);
+	static Logger logger = LoggerFactory.getLogger(LocalDatabaseCluster.class);
 	
 	private String id;
 	private Map<String, Database> databaseMap = new HashMap<String, Database>();
@@ -256,7 +258,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		}
 		catch (BackingStoreException e)
 		{
-			log.warn(Messages.getMessage(Messages.CLUSTER_STATE_STORE_FAILED, this), e);
+			logger.warn(Messages.getMessage(Messages.CLUSTER_STATE_STORE_FAILED, this), e);
 		}
 	}
 	
@@ -375,7 +377,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	{
 		if (this.deactivate(this.getDatabase(databaseId)))
 		{
-			log.info(Messages.getMessage(Messages.DATABASE_DEACTIVATED, databaseId, this));
+			logger.info(Messages.getMessage(Messages.DATABASE_DEACTIVATED, databaseId, this));
 		}
 	}
 
@@ -417,9 +419,86 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			throw cause;
 		}
 		
-		log.warn(Messages.getMessage(Messages.DATABASE_NOT_ALIVE, database, this), cause);
+		logger.warn(Messages.getMessage(Messages.DATABASE_NOT_ALIVE, database, this), cause);
 		
 		this.deactivate(database);
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#addDatabase(java.lang.String)
+	 */
+	public void addDatabase(String id, String url, String driver)
+	{
+		DriverDatabase database = new DriverDatabase();
+		
+		database.setId(id);
+		database.setUrl(url);
+		database.setDriver(driver);
+		
+		try
+		{
+			this.addDatabase(database);
+			
+			DatabaseClusterFactory.getInstance().export();
+		}
+		catch (Exception e)
+		{
+			throw new IllegalArgumentException(e.getMessage());
+		}
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#addDataSource(java.lang.String)
+	 */
+	public void addDatabase(String id, String name)
+	{
+		DataSourceDatabase database = new DataSourceDatabase();
+		
+		database.setId(id);
+		database.setName(name);
+		
+		try
+		{
+			this.addDatabase(database);
+			
+			DatabaseClusterFactory.getInstance().export();
+		}
+		catch (Exception e)
+		{
+			throw new IllegalArgumentException(e.getMessage());
+		}
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#removeDatabase(java.lang.String)
+	 */
+	public void removeDatabase(String id)
+	{
+		Database database = this.databaseMap.remove(id);
+		
+		if (database != null)
+		{
+			this.balancer.remove(database);
+
+			MBeanServer server = DatabaseClusterFactory.getMBeanServer();
+
+			try
+			{
+				ObjectName name = DatabaseClusterFactory.getObjectName(this.id, database.getId());
+				
+				if (server.isRegistered(name))
+				{
+					server.unregisterMBean(name);
+				}
+			}
+			catch (Exception e)
+			{
+				logger.error(e.getMessage(), e);
+				throw new RuntimeException(e);
+			}
+			
+			DatabaseClusterFactory.getInstance().export();
+		}
 	}
 	
 	/**
@@ -470,25 +549,18 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		this.executor = executor;
 	}
 	
-	void addDatabase(Database database)
+	void addDatabase(Database database) throws Exception
 	{
+		this.connectionFactoryMap.put(database, database.createConnectionFactory());
 		this.databaseMap.put(database.getId(), database);
 		
 		MBeanServer server = DatabaseClusterFactory.getMBeanServer();
 
-		try
+		ObjectName name = DatabaseClusterFactory.getObjectName(this.id, database.getId());
+		
+		if (!server.isRegistered(name))
 		{
-			ObjectName name = DatabaseClusterFactory.getObjectName(this.id, database.getId());
-			
-			if (!server.isRegistered(name))
-			{
-				server.registerMBean(database, name);
-			}
-		}
-		catch (Exception e)
-		{
-			log.error(e.getMessage(), e);
-			throw new RuntimeException(e);
+			server.registerMBean(database, name);
 		}
 	}
 	
@@ -572,11 +644,6 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	 */
 	public void start() throws java.sql.SQLException
 	{
-		for (Database database: this.databaseMap.values())
-		{
-			this.connectionFactoryMap.put(database, database.createConnectionFactory());
-		}
-		
 		String[] databases = this.loadState();
 
 		if (databases != null)
@@ -617,8 +684,8 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	 */
 	public void stop()
 	{
+		this.executor.shutdownNow();
 		this.cronExecutor.shutdownNow();
-		this.executor.shutdown();
 	}
 	
 	private void activate(String databaseId, SynchronizationStrategy strategy) throws Exception
@@ -627,7 +694,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		{
 			if (this.activate(this.getDatabase(databaseId), strategy))
 			{
-				log.info(Messages.getMessage(Messages.DATABASE_ACTIVATED, databaseId, this));
+				logger.info(Messages.getMessage(Messages.DATABASE_ACTIVATED, databaseId, this));
 			}
 		}
 		catch (java.sql.SQLException e)
@@ -636,7 +703,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			
 			while (exception != null)
 			{
-				log.error(exception.toString(), e);
+				logger.error(exception.toString(), e);
 				
 				exception = exception.getNextException();
 			}
@@ -721,7 +788,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			
 			if (strategy.requiresTableLocking())
 			{
-				log.info(Messages.getMessage(Messages.TABLE_LOCK_ACQUIRE));
+				logger.info(Messages.getMessage(Messages.TABLE_LOCK_ACQUIRE));
 				
 				Map<String, Map<String, String>> lockTableSQLMap = new HashMap<String, Map<String, String>>();
 				
@@ -758,7 +825,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 							{
 								sql = dialect.getLockTableSQL(metaData, schema, table);
 								
-								log.debug(sql);
+								logger.debug(sql);
 								
 								map.put(table, sql);
 							}
@@ -771,17 +838,17 @@ public class LocalDatabaseCluster implements DatabaseCluster
 				}
 			}
 			
-			log.info(Messages.getMessage(Messages.DATABASE_SYNC_START, inactiveDatabase, this));
+			logger.info(Messages.getMessage(Messages.DATABASE_SYNC_START, inactiveDatabase, this));
 
 			strategy.synchronize(inactiveConnection, activeConnection, schemaMap, dialect);
 			
-			log.info(Messages.getMessage(Messages.DATABASE_SYNC_END, inactiveDatabase, this));
+			logger.info(Messages.getMessage(Messages.DATABASE_SYNC_END, inactiveDatabase, this));
 	
 			this.activate(inactiveDatabase);
 			
 			if (strategy.requiresTableLocking())
 			{
-				log.info(Messages.getMessage(Messages.TABLE_LOCK_ACQUIRE));
+				logger.info(Messages.getMessage(Messages.TABLE_LOCK_ACQUIRE));
 				
 				// Release table locks
 				this.rollback(connectionList);
@@ -816,7 +883,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			}
 			catch (java.sql.SQLException e)
 			{
-				log.warn(e.getMessage(), e);
+				logger.warn(e.getMessage(), e);
 			}
 		}
 	}
@@ -834,7 +901,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			}
 			catch (java.sql.SQLException e)
 			{
-				log.warn(e.getMessage(), e);
+				logger.warn(e.getMessage(), e);
 			}
 		}
 	}
@@ -850,7 +917,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			{
 				if (!LocalDatabaseCluster.this.isAlive(database))
 				{
-					log.warn(Messages.getMessage(Messages.DATABASE_NOT_ALIVE, database, this));
+					logger.warn(Messages.getMessage(Messages.DATABASE_NOT_ALIVE, database, this));
 					
 					LocalDatabaseCluster.this.deactivate(database);
 				}
@@ -875,7 +942,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 					}
 					catch (Throwable e)
 					{
-						log.warn(e.getMessage(), e);
+						logger.warn(e.getMessage(), e);
 					}
 				}
 			}

@@ -33,8 +33,8 @@ import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.Operation;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author  Paul Ferraro
@@ -44,7 +44,7 @@ public final class Driver implements java.sql.Driver
 {
 	private static final Pattern URL_PATTERN = Pattern.compile("^jdbc:ha-jdbc:(.*)$");
 	
-	private static Log log = LogFactory.getLog(Driver.class);
+	private static Logger logger = LoggerFactory.getLogger(Driver.class);
 	
 	static
 	{
@@ -56,7 +56,7 @@ public final class Driver implements java.sql.Driver
 		}
 		catch (SQLException e)
 		{
-			log.fatal(Messages.getMessage(Messages.DRIVER_REGISTER_FAILED, driver.getClass().getName()), e);
+			logger.error(Messages.getMessage(Messages.DRIVER_REGISTER_FAILED, driver.getClass().getName()), e);
 		}
 	}
 	

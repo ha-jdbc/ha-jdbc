@@ -33,13 +33,13 @@ import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SQLException;
 import net.sf.hajdbc.local.LocalDatabaseCluster;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.JChannel;
 import org.jgroups.blocks.NotificationBus;
 import org.jgroups.jmx.JmxConfigurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Decorates an existing database cluster by providing distributable functionality.
@@ -50,7 +50,7 @@ import org.jgroups.jmx.JmxConfigurator;
  */
 public class DistributableDatabaseCluster extends LocalDatabaseCluster implements NotificationBus.Consumer
 {
-	static Log log = LogFactory.getLog(DistributableDatabaseCluster.class);
+	static Logger logger = LoggerFactory.getLogger(DistributableDatabaseCluster.class);
 	
 	private NotificationBus notificationBus;
 	private DistributableLock lock;
@@ -102,7 +102,7 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 	 */
 	public void handleNotification(Serializable command)
 	{
-		log.info(Messages.getMessage(Messages.DATABASE_COMMAND_RECEIVED, command.getClass().getName()));
+		logger.info(Messages.getMessage(Messages.DATABASE_COMMAND_RECEIVED, command.getClass().getName()));
 		
 		try
 		{
@@ -110,7 +110,7 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 		}
 		catch (java.sql.SQLException e)
 		{
-			log.error(Messages.getMessage(Messages.DATABASE_COMMAND_FAILED, command, this), e);
+			logger.error(Messages.getMessage(Messages.DATABASE_COMMAND_FAILED, command, this), e);
 		}
 	}
 
@@ -131,7 +131,7 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 	{
 		String channel = this.notificationBus.getChannel().getChannelName();
 		
-		log.info(Messages.getMessage(Messages.GROUP_MEMBER_JOINED, address, channel));
+		logger.info(Messages.getMessage(Messages.GROUP_MEMBER_JOINED, address, channel));
 	}
 
 	/**
@@ -141,7 +141,7 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 	{
 		String channel = this.notificationBus.getChannel().getChannelName();
 		
-		log.info(Messages.getMessage(Messages.GROUP_MEMBER_LEFT, address, channel));
+		logger.info(Messages.getMessage(Messages.GROUP_MEMBER_LEFT, address, channel));
 	}
 	
 	/**

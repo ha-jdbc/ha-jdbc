@@ -30,8 +30,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.Lock;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Base class for all HA-JDBC proxy objects.
@@ -42,7 +42,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class SQLObject<E, P>
 {
-	private static Log log = LogFactory.getLog(SQLObject.class);
+	private static Logger logger = LoggerFactory.getLogger(SQLObject.class);
 	
 	private DatabaseCluster databaseCluster;
 	protected SQLObject<P, ?> parent;
@@ -116,7 +116,7 @@ public class SQLObject<E, P>
 			}
 			catch (java.sql.SQLException e)
 			{
-				log.warn(Messages.getMessage(Messages.SQL_OBJECT_INIT_FAILED, this.getClass().getName(), database), e);
+				logger.warn(Messages.getMessage(Messages.SQL_OBJECT_INIT_FAILED, this.getClass().getName(), database), e);
 				
 				this.databaseCluster.deactivate(database);
 			}
@@ -371,7 +371,7 @@ public class SQLObject<E, P>
 			
 			if (this.databaseCluster.deactivate(database))
 			{
-				log.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this.databaseCluster), exception);
+				logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this.databaseCluster), exception);
 			}
 		}
 	}

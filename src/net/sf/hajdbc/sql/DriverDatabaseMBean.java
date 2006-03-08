@@ -33,10 +33,22 @@ public interface DriverDatabaseMBean extends DatabaseMBean
 	 * @return a database url
 	 */
 	public String getUrl();
+
+	/**
+	 * Set the url for this database
+	 * @param url a database url
+	 */
+	public void setUrl(String url);
 	
 	/**
 	 * Returns the driver class name for this database.
 	 * @return a driver class name
 	 */
 	public String getDriver();
+	
+	/**
+	 * Set the driver for this database
+	 * @param driver the driver class name
+	 */
+	public void setDriver(String driver);
 }
