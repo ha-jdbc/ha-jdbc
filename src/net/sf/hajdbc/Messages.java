@@ -43,6 +43,7 @@ public class Messages
 	public static final String DATABASE_DEACTIVATED = "database-deactivated";
 	public static final String DATABASE_NOT_ACTIVE = "database-not-active";
 	public static final String DATABASE_NOT_ALIVE = "database-not-alive";
+	public static final String DATABASE_REMOVE_FAILED = "database-remove-failed";
 	public static final String DATABASE_SYNC_END = "database-sync-end";
 	public static final String DATABASE_SYNC_START = "database-sync-start";
 	public static final String DELETE_COUNT = "delete-count";
@@ -64,6 +65,7 @@ public class Messages
 	public static final String NO_ACTIVE_DATABASES = "no-active-databases";
 	public static final String NOT_INSTANCE_OF = "not-instance-of";
 	public static final String PRIMARY_KEY_REQUIRED = "primary-key-required";
+	public static final String SHUT_DOWN = "shut-down";
 	public static final String SQL_OBJECT_INIT_FAILED = "sql-object-init-failed";
 	public static final String STATEMENT_FAILED = "statement-failed";
 	public static final String STREAM_CLOSE_FAILED = "stream-close-failed";
