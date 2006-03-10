@@ -20,8 +20,8 @@
  */
 package net.sf.hajdbc;
 
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.Callable;
@@ -228,9 +228,9 @@ public class SQLObject<E, P>
 		
 		try
 		{
-			List<Database> databaseList = this.databaseCluster.getBalancer().list();
+			Collection<Database> databases = this.databaseCluster.getBalancer().all();
 			
-			if (databaseList.isEmpty())
+			if (databases.isEmpty())
 			{
 				throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this.databaseCluster));
 			}
@@ -239,7 +239,7 @@ public class SQLObject<E, P>
 			
 			ExecutorService executor = this.databaseCluster.getExecutor();
 			
-			for (final Database database: databaseList)
+			for (final Database database: databases)
 			{
 				final E object = this.getObject(database);
 				
@@ -254,7 +254,7 @@ public class SQLObject<E, P>
 				futureMap.put(database, executor.submit(callable));
 			}
 			
-			for (Database database: databaseList)
+			for (Database database: databases)
 			{
 				Future<T> future = futureMap.get(database);
 				
@@ -325,14 +325,14 @@ public class SQLObject<E, P>
 		
 		try
 		{
-			List<Database> databaseList = this.databaseCluster.getBalancer().list();
+			Collection<Database> databases = this.databaseCluster.getBalancer().all();
 			
-			if (databaseList.isEmpty())
+			if (databases.isEmpty())
 			{
 				throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this.databaseCluster));
 			}
 
-			for (Database database: databaseList)
+			for (Database database: databases)
 			{
 				E object = this.getObject(database);
 				
