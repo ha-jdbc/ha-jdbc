@@ -26,8 +26,7 @@ import java.io.Reader;
 import java.sql.SQLException;
 
 /**
- * Provides temp file support for serializing data for large objects.
- * Data is GZIPed for disk optimization and simple obfuscation.
+ * Provides temp file support for serializing data for large objects and streams.
  * Any files created by this object are deleted when {@link #close()} is called.
  * 
  * @author  Paul Ferraro
