@@ -9,8 +9,12 @@
 			<answer><a href="http://www.jgroups.org/javagroupsnew/docs/faq.html">http://www.jgroups.org/javagroupsnew/docs/faq.html</a></answer>
 		</faq>
 		<faq>
-			<question>Commons-Logging FAQ</question>
-			<answer><a href="http://wiki.apache.org/jakarta-commons/Logging/FrequentlyAskedQuestions">http://wiki.apache.org/jakarta-commons/Logging/FrequentlyAskedQuestions</a></answer>
+			<question>SLF4J FAQ</question>
+			<answer><a href="http://slf4j.org/faq.html">http://slf4j.org/faq.html</a></answer>
+		</faq>
+		<faq>
+			<question>Quartz FAQ</question>
+			<answer><a href="http://www.opensymphony.com/quartz/wikidocs/FAQ.htmll">http://www.opensymphony.com/quartz/wikidocs/FAQ.html</a></answer>
 		</faq>
 	</faqsection>
 	<faqsection>
@@ -226,6 +230,7 @@
 								<li>No recovery log is maintained.</li>
 								<li>Synchronization achieved through various brute force strategies.</li>
 								<li>Inefficient hot synchronization capability tolerated at the savings of performance during normal usage.</li>
+								<li>Includes the ability to automatically reactivate failed database nodes according to a schedule.</li>
 							</ol>
 						</td>
 						<td>
@@ -233,6 +238,7 @@
 								<li>Controller uses internal database recovery log to restore state of a reactivated database.</li>
 								<li>Synchronization is done by executing SQL statements since last checkpoint.</li>
 								<li>Efficient hot synchronization capability achieved at the cost of recovery log overhead.</li>
+								<li>Failed database nodes can only be re-activated manually.</li>
 							</ol>
 						</td>
 					</tr>
@@ -240,28 +246,24 @@
 						<th>Performance</th>
 						<td>
 							<p>
-								Faster reads under load, slightly slower writes than standard JDBC.  Details <a href="performance.html">here</a>.
+								Faster reads under load, slightly slower writes than standard JDBC.
+								Details <a href="performance.html">here</a>.
 							</p>
 						</td>
 						<td>
 							<p>
-								Qualitatively slower than HA-JDBC since each request requires an additional network hop (i.e. driver to controller, controller to database).  Details <a href="http://c-jdbc.objectweb.org/current/doc/RR-C-JDBC.pdf">here</a>.
+								Qualitatively slower than HA-JDBC since each request requires an additional network hop (i.e. driver to controller, controller to database).
+								Details <a href="http://c-jdbc.objectweb.org/current/doc/RR-C-JDBC.pdf">here</a>.
 							</p>
 						</td>
 					</tr>
 					<tr>
 						<th>Cluster administration</th>
 						<td>
-							<ol>
-								<li>Leverages JConsole from JDK 1.5 or other 3rd party JMX console for cluster administration.</li>
-								<li>Only supports activating databases that were part of the cluster at startup.</li>
-							</ol>
+							<p>Leverages JConsole from JDK 1.5 or other 3rd party JMX console for cluster administration.</p>
 						</td>
 						<td>
-							<ol>
-								<li>Provides easy-to-use custom JMX-based administration console</li>
-								<li>Includes the ability to add new databases to a cluster on the fly.</li>
-							</ol>
+							<p>Provides custom JMX-based command-line administration console.</p>
 						</td>
 					</tr>
 					<tr>
