@@ -30,6 +30,8 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import net.sf.hajdbc.ActiveDatabaseMBean;
+import net.sf.hajdbc.InactiveDatabaseMBean;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SQLException;
 
@@ -38,7 +40,7 @@ import net.sf.hajdbc.SQLException;
  * @version $Revision$
  * @since   1.0
  */
-public class DataSourceDatabase extends AbstractDatabase<DataSource> implements DataSourceDatabaseMBean
+public class DataSourceDatabase extends AbstractDatabase<DataSource> implements InactiveDataSourceDatabaseMBean
 {
 	private static final long serialVersionUID = 9001027983710488108L;
 	
@@ -58,6 +60,7 @@ public class DataSourceDatabase extends AbstractDatabase<DataSource> implements 
 	 */
 	public void setName(String name)
 	{
+		this.checkDirty(this.name, name);
 		this.name = name;
 	}
 	
@@ -123,5 +126,21 @@ public class DataSourceDatabase extends AbstractDatabase<DataSource> implements 
 		super.writeExternal(output);
 		
 		output.writeUTF(this.name);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Database#getActiveMBeanClass()
+	 */
+	public Class<? extends ActiveDatabaseMBean> getActiveMBeanClass()
+	{
+		return ActiveDataSourceDatabaseMBean.class;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Database#getInactiveMBeanClass()
+	 */
+	public Class<? extends InactiveDatabaseMBean> getInactiveMBeanClass()
+	{
+		return InactiveDataSourceDatabaseMBean.class;
 	}
 }

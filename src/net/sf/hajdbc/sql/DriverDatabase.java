@@ -28,6 +28,8 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.util.Properties;
 
+import net.sf.hajdbc.ActiveDatabaseMBean;
+import net.sf.hajdbc.InactiveDatabaseMBean;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SQLException;
 
@@ -36,7 +38,7 @@ import net.sf.hajdbc.SQLException;
  * @version $Revision$
  * @since   1.0
  */
-public class DriverDatabase extends AbstractDatabase<Driver> implements DriverDatabaseMBean
+public class DriverDatabase extends AbstractDatabase<Driver> implements InactiveDriverDatabaseMBean
 {
 	private static final long serialVersionUID = 1634021282765583995L;
 	
@@ -60,7 +62,8 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements DriverDa
 	 */
 	public void setUrl(String url)
 	{
-		this.url = url;
+		this.checkDirty(this.url, url);
+		this.dirty = true;
 	}
 	
 	/**
@@ -77,7 +80,8 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements DriverDa
 	 */
 	public void setDriver(String driver)
 	{
-		this.driver = driver;
+		this.checkDirty(this.driver, driver);
+		this.dirty = true;
 	}
 	
 	/**
@@ -165,5 +169,21 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements DriverDa
 		
 		output.writeUTF(this.driver);
 		output.writeUTF(this.url);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Database#getActiveMBeanClass()
+	 */
+	public Class<? extends ActiveDatabaseMBean> getActiveMBeanClass()
+	{
+		return ActiveDriverDatabaseMBean.class;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Database#getInactiveMBeanClass()
+	 */
+	public Class<? extends InactiveDatabaseMBean> getInactiveMBeanClass()
+	{
+		return InactiveDriverDatabaseMBean.class;
 	}
 }

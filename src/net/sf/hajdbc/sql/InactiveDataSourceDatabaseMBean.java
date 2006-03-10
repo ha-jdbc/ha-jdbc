@@ -20,35 +20,17 @@
  */
 package net.sf.hajdbc.sql;
 
-import net.sf.hajdbc.DatabaseMBean;
+import net.sf.hajdbc.InactiveDatabaseMBean;
 
 /**
  * @author  Paul Ferraro
  * @since   1.1
  */
-public interface DriverDatabaseMBean extends DatabaseMBean
+public interface InactiveDataSourceDatabaseMBean extends ActiveDataSourceDatabaseMBean, InactiveDatabaseMBean
 {
 	/**
-	 * Returns the url for this database
-	 * @return a database url
+	 * Sets the JNDI name of this DataSource
+	 * @param name a JNDI name
 	 */
-	public String getUrl();
-
-	/**
-	 * Set the url for this database
-	 * @param url a database url
-	 */
-	public void setUrl(String url);
-	
-	/**
-	 * Returns the driver class name for this database.
-	 * @return a driver class name
-	 */
-	public String getDriver();
-	
-	/**
-	 * Set the driver for this database
-	 * @param driver the driver class name
-	 */
-	public void setDriver(String driver);
+	public void setName(String name);
 }

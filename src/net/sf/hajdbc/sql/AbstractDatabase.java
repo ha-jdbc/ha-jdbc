@@ -43,6 +43,7 @@ public abstract class AbstractDatabase<T> implements Database<T>, Externalizable
 	protected String password;
 	protected Properties properties = new Properties();
 	protected int weight = 1;
+	protected boolean dirty = false;
 
 	/**
 	 * @see net.sf.hajdbc.DatabaseMBean#getId()
@@ -57,6 +58,7 @@ public abstract class AbstractDatabase<T> implements Database<T>, Externalizable
 	 */
 	public void setId(String id)
 	{
+		this.checkDirty(this.id, id);
 		this.id = id;
 	}
 	
@@ -73,6 +75,7 @@ public abstract class AbstractDatabase<T> implements Database<T>, Externalizable
 	 */
 	public void setUser(String user)
 	{
+		this.checkDirty(this.user, user);
 		this.user = user;
 	}
 	
@@ -89,6 +92,7 @@ public abstract class AbstractDatabase<T> implements Database<T>, Externalizable
 	 */
 	public void setPassword(String password)
 	{
+		this.checkDirty(this.password, password);
 		this.password = password;
 	}
 
@@ -105,6 +109,7 @@ public abstract class AbstractDatabase<T> implements Database<T>, Externalizable
 	 */
 	public void setWeight(int weight)
 	{
+		this.checkDirty(this.weight, weight);
 		this.weight = weight;
 	}
 	
@@ -153,6 +158,7 @@ public abstract class AbstractDatabase<T> implements Database<T>, Externalizable
 	 */
 	public void setProperties(Properties properties)
 	{
+		this.dirty = true;
 		this.properties = properties;
 	}
 
@@ -202,6 +208,7 @@ public abstract class AbstractDatabase<T> implements Database<T>, Externalizable
 	 */
 	public void removeProperty(String name)
 	{
+		this.dirty |= this.properties.containsKey(name);
 		this.properties.remove(name);
 	}
 
@@ -210,6 +217,33 @@ public abstract class AbstractDatabase<T> implements Database<T>, Externalizable
 	 */
 	public void setProperty(String name, String value)
 	{
+		this.checkDirty(this.properties.getProperty(name), value);
 		this.properties.setProperty(name, value);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Database#clean()
+	 */
+	public void clean()
+	{
+		this.dirty = false;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Database#isDirty()
+	 */
+	public boolean isDirty()
+	{
+		return this.dirty;
+	}
+	
+	protected void checkDirty(Object oldValue, Object newValue)
+	{
+		this.dirty |= equal(oldValue, newValue);
+	}
+	
+	private static boolean equal(Object oldValue, Object newValue)
+	{
+		return ((oldValue != null) && (newValue != null)) ? oldValue.equals(newValue) : (oldValue == newValue);
 	}
 }
