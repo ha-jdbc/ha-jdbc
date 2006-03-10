@@ -29,7 +29,7 @@ import java.sql.SQLException;
  * @param <T> 
  * @since   1.0
  */
-public interface Database<T> extends DatabaseMBean
+public interface Database<T> extends InactiveDatabaseMBean
 {
 	/**
 	 * Connects to the database using the specified connection factory.
@@ -50,4 +50,12 @@ public interface Database<T> extends DatabaseMBean
 	 * @return the class implemented by connection factory objects for this database.
 	 */
 	public Class<T> getConnectionFactoryClass();
+	
+	public Class<? extends ActiveDatabaseMBean> getActiveMBeanClass();
+	
+	public Class<? extends InactiveDatabaseMBean> getInactiveMBeanClass();
+	
+	public boolean isDirty();
+	
+	public void clean();
 }
