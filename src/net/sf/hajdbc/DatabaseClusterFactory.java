@@ -20,15 +20,20 @@
  */
 package net.sf.hajdbc;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -68,7 +73,7 @@ public final class DatabaseClusterFactory
 	private static final String MBEAN_CLUSTER_KEY = "cluster";
 	private static final String MBEAN_DATABASE_KEY = "database";
 	
-	private static Logger logger = LoggerFactory.getLogger(DatabaseClusterFactory.class);
+	static Logger logger = LoggerFactory.getLogger(DatabaseClusterFactory.class);
 	
 	private static DatabaseClusterFactory instance = null;
 	private static ResourceBundle resource = ResourceBundle.getBundle(DatabaseClusterFactory.class.getName());
@@ -141,7 +146,6 @@ public final class DatabaseClusterFactory
 		
 		if (serverList.isEmpty())
 		{
-			MBeanServerFactory.createMBeanServer(agent);
 			throw new IllegalStateException(Messages.getMessage(Messages.MBEAN_SERVER_NOT_FOUND));
 		}
 		
@@ -168,7 +172,7 @@ public final class DatabaseClusterFactory
 			
 			IUnmarshallingContext context = BindingDirectory.getFactory(DatabaseClusterFactory.class).createUnmarshallingContext();
 			
-			DatabaseClusterFactory factory = DatabaseClusterFactory.class.cast(context.unmarshalDocument(new InputStreamReader(inputStream)));
+			DatabaseClusterFactory factory = DatabaseClusterFactory.class.cast(context.unmarshalDocument(inputStream, null));
 
 			factory.url = url;
 			
@@ -182,7 +186,7 @@ public final class DatabaseClusterFactory
 		}
 		catch (JiBXException e)
 		{
-			throw new RuntimeException(Messages.getMessage(Messages.CONFIG_FAILED, url), e);
+			throw new RuntimeException(Messages.getMessage(Messages.CONFIG_LOAD_FAILED, url), e);
 		}
 		finally
 		{
@@ -194,7 +198,7 @@ public final class DatabaseClusterFactory
 				}
 				catch (IOException e)
 				{
-					logger.warn(Messages.getMessage(Messages.STREAM_CLOSE_FAILED, url), e);
+					logger.warn(e.getMessage(), e);
 				}
 			}
 		}
@@ -289,16 +293,18 @@ public final class DatabaseClusterFactory
 	/**
 	 * Exports the current HA-JDBC configuration.
 	 */
-	public synchronized void export()
+	public synchronized void exportConfiguration()
 	{
-		OutputStream outputStream = null;
+		File file = null;
+		WritableByteChannel outputChannel = null;
+		FileChannel fileChannel = null;
 		
 		try
 		{
 			// We cannot use URLConnection for files becuase Sun's implementation does not support output.
 			if (this.url.getProtocol().equals("file"))
 			{
-				outputStream = new FileOutputStream(new File(this.url.getPath()));
+				outputChannel = new FileOutputStream(new File(this.url.getPath())).getChannel();
 			}
 			else
 			{
@@ -306,39 +312,68 @@ public final class DatabaseClusterFactory
 				
 				connection.connect();
 				
-				outputStream = connection.getOutputStream();
+				outputChannel = Channels.newChannel(connection.getOutputStream());
 			}
 			
-			IMarshallingContext context = BindingDirectory.getFactory(DatabaseClusterFactory.class).createMarshallingContext();
-
-			context.setIndent(1, System.getProperty("line.separator"), '\t');
+			file = this.exportToFile();
 			
-			context.marshalDocument(this, null, null, outputStream);
+			fileChannel = new FileInputStream(file).getChannel();
+			
+			fileChannel.transferTo(0, file.length(), outputChannel);
 		}
-		catch (IOException e)
+		catch (Exception e)
 		{
-			logger.warn(e.getMessage(), e);
-			throw new RuntimeException(Messages.getMessage(Messages.CONFIG_NOT_FOUND, this.url), e);
-		}
-		catch (JiBXException e)
-		{
-			logger.warn(e.getMessage(), e);
-			throw new RuntimeException(Messages.getMessage(Messages.CONFIG_FAILED, this.url), e);
+			logger.warn(Messages.getMessage(Messages.CONFIG_STORE_FAILED, this.url), e);
 		}
 		finally
 		{
-			if (outputStream != null)
+			if (fileChannel != null)
 			{
 				try
 				{
-					outputStream.close();
+					fileChannel.close();
 				}
 				catch (IOException e)
 				{
-					logger.warn(Messages.getMessage(Messages.STREAM_CLOSE_FAILED, this.url), e);
+					logger.warn(e.getMessage(), e);
 				}
 			}
+			
+			if (outputChannel != null)
+			{
+				try
+				{
+					outputChannel.close();
+				}
+				catch (IOException e)
+				{
+					logger.warn(e.getMessage(), e);
+				}
+			}
+			
+			if (file != null)
+			{
+				file.delete();
+			}
 		}
+	}
+	
+	private File exportToFile() throws Exception
+	{
+		File file = File.createTempFile("ha-jdbc", ".xml");
+		
+		Writer writer = new BufferedWriter(new FileWriter(file));
+		
+		IMarshallingContext context = BindingDirectory.getFactory(DatabaseClusterFactory.class).createMarshallingContext();
+	
+		context.setIndent(1, System.getProperty("line.separator"), '\t');
+		
+		context.marshalDocument(this, null, null, writer);
+		
+		writer.flush();
+		writer.close();
+		
+		return file;
 	}
 	
 	void addDatabaseCluster(DatabaseCluster databaseCluster) throws Exception
@@ -406,6 +441,8 @@ public final class DatabaseClusterFactory
 		 */
 		public void run()
 		{
+			logger.info(Messages.getMessage(Messages.SHUT_DOWN));
+			
 			Iterator<DatabaseCluster> databaseClusters = this.factory.getDatabaseClusters();
 			
 			while (databaseClusters.hasNext())
