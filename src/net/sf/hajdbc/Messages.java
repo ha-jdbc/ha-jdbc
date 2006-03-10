@@ -34,16 +34,18 @@ public class Messages
 {
 	public static final String CLUSTER_STATE_LOAD_FAILED = "cluster-state-load-failed";
 	public static final String CLUSTER_STATE_STORE_FAILED = "cluster-state-store-failed";
-	public static final String CONFIG_FAILED = "config-failed";
+	public static final String CONFIG_LOAD_FAILED = "config-load-failed";
+	public static final String CONFIG_STORE_FAILED = "config-store-failed";
 	public static final String CONFIG_NOT_FOUND = "config-not-found";
 	public static final String DATABASE_ACTIVATE_FAILED = "database-activate-failed";
 	public static final String DATABASE_ACTIVATED = "database-activated";
+	public static final String DATABASE_ALREADY_EXISTS = "database-already-exists";
 	public static final String DATABASE_COMMAND_RECEIVED = "database-command-received";
 	public static final String DATABASE_COMMAND_FAILED = "database-command-failed";
 	public static final String DATABASE_DEACTIVATED = "database-deactivated";
 	public static final String DATABASE_NOT_ACTIVE = "database-not-active";
 	public static final String DATABASE_NOT_ALIVE = "database-not-alive";
-	public static final String DATABASE_REMOVE_FAILED = "database-remove-failed";
+	public static final String DATABASE_STILL_ACTIVE = "database-remove-failed";
 	public static final String DATABASE_SYNC_END = "database-sync-end";
 	public static final String DATABASE_SYNC_START = "database-sync-start";
 	public static final String DELETE_COUNT = "delete-count";
@@ -68,7 +70,6 @@ public class Messages
 	public static final String SHUT_DOWN = "shut-down";
 	public static final String SQL_OBJECT_INIT_FAILED = "sql-object-init-failed";
 	public static final String STATEMENT_FAILED = "statement-failed";
-	public static final String STREAM_CLOSE_FAILED = "stream-close-failed";
 	public static final String TABLE_LOCK_ACQUIRE = "table-lock-acquire";
 	public static final String TABLE_LOCK_RELEASE = "table-lock-release";
 	public static final String UPDATE_COUNT = "update-count";
