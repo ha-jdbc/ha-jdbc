@@ -20,23 +20,23 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 import net.sf.hajdbc.SQLException;
 
@@ -50,29 +50,32 @@ public class FileSupportImpl implements FileSupport
 	private static final String TEMP_FILE_SUFFIX = ".lob";
 	private static final int BUFFER_SIZE = 8192;
 	
-	private List fileList = new LinkedList();
+	private List<File> fileList = new LinkedList<File>();
 	
 	/**
 	 * @see net.sf.hajdbc.sql.FileSupport#createFile(java.io.InputStream)
 	 */
 	public File createFile(InputStream inputStream) throws java.sql.SQLException
 	{
-		File file = this.createTempFile();;
+		File file = this.createTempFile();
 		
 		try
 		{
-			OutputStream outputStream = new BufferedOutputStream(new GZIPOutputStream(new FileOutputStream(file), BUFFER_SIZE));
-			byte[] chunk = new byte[BUFFER_SIZE];
-			int byteCount = inputStream.read(chunk);
+			FileChannel fileChannel = new FileOutputStream(file).getChannel();
+			ReadableByteChannel inputChannel = Channels.newChannel(inputStream);
 			
-			while (byteCount >= 0)
+			ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
+			
+			while (inputChannel.read(buffer) > 0)
 			{
-				outputStream.write(chunk, 0, byteCount);
-				byteCount = inputStream.read(chunk);
+				buffer.flip();
+				
+				fileChannel.write(buffer);
+				
+				buffer.compact();
 			}
 			
-			outputStream.flush();
-			outputStream.close();
+			fileChannel.close();
 			
 			return file;
 		}
@@ -87,21 +90,23 @@ public class FileSupportImpl implements FileSupport
 	 */
 	public File createFile(Reader reader) throws java.sql.SQLException
 	{
-		File file = this.createTempFile();;
+		File file = this.createTempFile();
 		
 		try
 		{
-			Writer writer = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(file))), BUFFER_SIZE);
-			char[] chunk = new char[BUFFER_SIZE];
-			int byteCount = reader.read(chunk);
+			Writer writer = new FileWriter(file);
 			
-			while (byteCount >= 0)
+			CharBuffer buffer = CharBuffer.allocate(BUFFER_SIZE);
+			
+			while (reader.read(buffer) > 0)
 			{
-				writer.write(chunk, 0, byteCount);
-				byteCount = reader.read(chunk);
+				buffer.flip();
+				
+				writer.append(buffer);
+				
+				buffer.clear();
 			}
-			
-			writer.flush();
+
 			writer.close();
 			
 			return file;
@@ -117,7 +122,14 @@ public class FileSupportImpl implements FileSupport
 	 */
 	public Reader getReader(File file) throws java.sql.SQLException
 	{
-		return new InputStreamReader(this.getInputStream(file));
+		try
+		{
+			return new BufferedReader(new FileReader(file), BUFFER_SIZE);
+		}
+		catch (IOException e)
+		{
+			throw new SQLException(e);
+		}
 	}
 	
 	/**
@@ -127,7 +139,7 @@ public class FileSupportImpl implements FileSupport
 	{
 		try
 		{
-			return new BufferedInputStream(new GZIPInputStream(new FileInputStream(file)), BUFFER_SIZE);
+			return Channels.newInputStream(new FileInputStream(file).getChannel());
 		}
 		catch (IOException e)
 		{
@@ -161,10 +173,8 @@ public class FileSupportImpl implements FileSupport
 	 */
 	public void close()
 	{
-		while (!this.fileList.isEmpty())
+		for (File file: this.fileList)
 		{
-			File file = (File) this.fileList.remove(0);
-			
 			file.delete();
 		}
 	}
