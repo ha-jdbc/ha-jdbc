@@ -23,9 +23,9 @@ package net.sf.hajdbc.balancer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import net.sf.hajdbc.Database;
 
@@ -43,7 +43,7 @@ public class SimpleBalancer extends AbstractBalancer
 		}
 	};
 		
-	private List databaseList = new LinkedList();
+	private List databaseList = new CopyOnWriteArrayList();
 
 	/**
 	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
@@ -58,7 +58,7 @@ public class SimpleBalancer extends AbstractBalancer
 	 * @see net.sf.hajdbc.Balancer#add(net.sf.hajdbc.Database)
 	 */
 	@Override
-	public synchronized boolean add(Database database)
+	public boolean add(Database database)
 	{
 		boolean exists = this.databaseList.contains(database);
 		
@@ -76,7 +76,7 @@ public class SimpleBalancer extends AbstractBalancer
 	 * @see net.sf.hajdbc.Balancer#first()
 	 */
 	@Override
-	public synchronized Database first()
+	public Database first()
 	{
 		if (this.databaseList.isEmpty())
 		{
@@ -89,7 +89,7 @@ public class SimpleBalancer extends AbstractBalancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#next()
 	 */
-	public synchronized Database next()
+	public Database next()
 	{
 		return this.first();
 	}

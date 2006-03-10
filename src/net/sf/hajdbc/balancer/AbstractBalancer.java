@@ -20,10 +20,8 @@
  */
 package net.sf.hajdbc.balancer;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
@@ -55,7 +53,7 @@ public abstract class AbstractBalancer implements Balancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#remove(net.sf.hajdbc.Database)
 	 */
-	public synchronized boolean remove(Database database)
+	public boolean remove(Database database)
 	{
 		return this.getDatabases().remove(database);
 	}
@@ -63,7 +61,7 @@ public abstract class AbstractBalancer implements Balancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#add(net.sf.hajdbc.Database)
 	 */
-	public synchronized boolean add(Database database)
+	public boolean add(Database database)
 	{
 		return (this.contains(database)) ? this.getDatabases().add(database) : false;
 	}
@@ -71,7 +69,7 @@ public abstract class AbstractBalancer implements Balancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#contains(net.sf.hajdbc.Database)
 	 */
-	public synchronized boolean contains(Database database)
+	public boolean contains(Database database)
 	{
 		return this.getDatabases().contains(database);
 	}
@@ -79,18 +77,15 @@ public abstract class AbstractBalancer implements Balancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#first()
 	 */
-	public synchronized Database first()
+	public Database first()
 	{
-		return this.getDatabases().iterator().next();
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.Balancer#list()
-	 */
-	public synchronized final List<Database> list()
-	{
-		return Collections.unmodifiableList(new ArrayList(this.getDatabases()));
+		return this.all().iterator().next();
 	}
 	
 	protected abstract Collection<Database> getDatabases();
+	
+	public final Collection<Database> all()
+	{
+		return Collections.unmodifiableCollection(this.getDatabases());
+	}
 }

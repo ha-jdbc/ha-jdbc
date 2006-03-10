@@ -108,4 +108,22 @@ public class RoundRobinBalancer extends AbstractBalancer
 
 		return database;
 	}
+
+	/**
+	 * @see net.sf.hajdbc.balancer.AbstractBalancer#contains(net.sf.hajdbc.Database)
+	 */
+	@Override
+	public synchronized boolean contains(Database database)
+	{
+		return super.contains(database);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.balancer.AbstractBalancer#first()
+	 */
+	@Override
+	public synchronized Database first()
+	{
+		return super.first();
+	}
 }
