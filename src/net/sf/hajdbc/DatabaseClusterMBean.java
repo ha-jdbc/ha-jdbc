@@ -56,7 +56,7 @@ public interface DatabaseClusterMBean
 	 * @throws Exception if activation fails
 	 * @throws IllegalArgumentException if no database exists with the specified identifier.
 	 */
-	public void activate(String databaseId) throws Exception;
+	public void activate(String databaseId);
 
 	/**
 	 * Synchronizes, using the specified strategy, and reactivates the specified database.
@@ -65,7 +65,7 @@ public interface DatabaseClusterMBean
 	 * @throws Exception if activation fails
 	 * @throws IllegalArgumentException if no database exists with the specified identifier, or no synchronization strategy exists with the specified identifier.
 	 */
-	public void activate(String databaseId, String syncId) throws Exception;
+	public void activate(String databaseId, String syncId);
 	
 	/**
 	 * Returns a collection of active databases in this cluster.
