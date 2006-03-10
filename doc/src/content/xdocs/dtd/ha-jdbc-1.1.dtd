@@ -28,38 +28,50 @@
 <!ELEMENT ha-jdbc (distributable?,sync+,cluster+)>
 
 <!ELEMENT distributable EMPTY>
-<!ATTLIST distributable	protocol CDATA "default-minimalthreads.xml">
-<!ATTLIST distributable timeout CDATA "1000">
+<!ATTLIST distributable
+	protocol CDATA "default-minimalthreads.xml"
+	timeout CDATA "1000"
+>
 
 <!ELEMENT sync (property*)>
-<!ATTLIST sync id ID #REQUIRED>
-<!ATTLIST sync class CDATA #REQUIRED>
+<!ATTLIST sync
+	id ID #REQUIRED
+	class CDATA #REQUIRED
+>
 
 <!ELEMENT cluster (database+|datasource+)>
-<!ATTLIST cluster id CDATA #REQUIRED>
-<!ATTLIST cluster balancer (simple|random|round-robin|load) #REQUIRED>
-<!ATTLIST cluster default-sync IDREF #REQUIRED>
-<!ATTLIST cluster dialect CDATA "net.sf.hajdbc.dialect.DefaultDialect">
-<!ATTLIST cluster min-threads CDATA "0">
-<!ATTLIST cluster max-threads CDATA "100">
-<!ATTLIST cluster max-idle CDATA "60">
-<!ATTLIST cluster failure-detect-schedule CDATA #IMPLIED>
-<!ATTLIST cluster auto-activate-schedule CDATA #IMPLIED>
+<!ATTLIST cluster
+	id CDATA #REQUIRED
+	balancer (simple|random|round-robin|load) #REQUIRED
+	default-sync IDREF #REQUIRED
+	dialect CDATA "net.sf.hajdbc.dialect.DefaultDialect"
+	min-threads CDATA "0"
+	max-threads CDATA "100"
+	max-idle CDATA "60"
+	failure-detect-schedule CDATA #IMPLIED
+	auto-activate-schedule CDATA #IMPLIED
+>
 
 <!ENTITY % authentication-info "(user, password)?">
 <!ELEMENT user (#PCDATA)>
 <!ELEMENT password (#PCDATA)>
 
 <!ELEMENT database (driver?, url, property*, %authentication-info;)>
-<!ATTLIST database id CDATA #REQUIRED>
-<!ATTLIST database weight CDATA "1">
+<!ATTLIST database
+	id CDATA #REQUIRED
+	weight CDATA "1"
+>
 <!ELEMENT url (#PCDATA)>
 <!ELEMENT driver (#PCDATA)>
 
 <!ELEMENT datasource (name, property*, %authentication-info;)>
-<!ATTLIST datasource id CDATA #REQUIRED>
-<!ATTLIST datasource weight CDATA "1">
+<!ATTLIST datasource
+	id CDATA #REQUIRED
+	weight CDATA "1"
+>
 <!ELEMENT name (#PCDATA)>
 
 <!ELEMENT property (#PCDATA)>
-<!ATTLIST property name CDATA #REQUIRED>
+<!ATTLIST property
+	name CDATA #REQUIRED
+>
