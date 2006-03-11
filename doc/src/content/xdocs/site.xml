@@ -19,7 +19,8 @@ See http://xml.apache.org/forrest/linking.html for more info
 		<documentation label="Documentation" href="doc.html"/>
 		<performance label="Performance" href="performance.html"/>
 		<faq label="FAQ" href="faq.html"/>
-		<api label="API" href="api/index.html"/>
+		<api label="JavaDoc" href="api/index.html"/>
+		<dtd label="DTD" href="dtd/ha-jdbc-1.1.dtd"/>
 		<download label="Download" href="http://sourceforge.net/project/showfiles.php?group_id=111957"/>
 		<changes label="Change Log" href="changes.html"/>
 		<todo label="To Do" href="todo.html"/>
@@ -33,7 +34,7 @@ See http://xml.apache.org/forrest/linking.html for more info
 		<support label="Support Requests" href="http://sourceforge.net/tracker/?group_id=111957&amp;atid=660862"/>
 		<patches label="Patches" href="http://sourceforge.net/tracker/?group_id=111957&amp;atid=660863"/>
 		<features label="Feature Requests" href="http://sourceforge.net/tracker/?group_id=111957&amp;atid=660864"/>
-		<cvs label="CVS Access" href="http://sourceforge.net/cvs/?group_id=111957"/>
+		<svn label="SVN Access" href="http://sourceforge.net/svn/?group_id=111957"/>
 	</project>
 	
 	<all>
