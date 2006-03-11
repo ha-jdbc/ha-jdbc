@@ -82,10 +82,13 @@ public abstract class AbstractBalancer implements Balancer
 		return this.all().iterator().next();
 	}
 	
-	protected abstract Collection<Database> getDatabases();
-	
+	/**
+	 * @see net.sf.hajdbc.Balancer#all()
+	 */
 	public final Collection<Database> all()
 	{
 		return Collections.unmodifiableCollection(this.getDatabases());
 	}
+	
+	protected abstract Collection<Database> getDatabases();
 }
