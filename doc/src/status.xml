@@ -14,7 +14,7 @@
 	<changes>
 		<release version="1.1-beta-7" date="...">
 			<action type="add" context="lib" dev="PF">
-				New dependency on Quartz (http://www.opensymphony.com/quartz/).
+				New dependency on Quartz (http://opensymphony.com/quartz/).
 			</action>
 			<action type="add" context="code" dev="PF">
 				Created CronThreadPoolExecutor, a java.util.concurrent.ThreadPoolExecutor that leverages a Quartz CronTrigger to calculate future execution times of a scheduled task.
@@ -28,6 +28,30 @@
 			</action>
 			<action type="update" context="code" dev="PF">
 				Migrated repository to Subversion.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded Retrotranslator to version 1.0.0.
+			</action>
+			<action type="update" context="code" dev="PF">
+				Migrated logging from JCL to SLF4J.
+			</action>
+			<action type="add" context="lib" dev="PF">
+				New dependency on SLF4J (http://slf4j.org).
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Updated commons-logging library to jcl104-over-slf4j.jar from slf4j distribution.
+			</action>
+			<action type="add" context="code" dev="PF">
+				Added management interface methods for adding and removing databases from a cluster.
+			</action>
+			<action type="update" context="code" dev="PF">
+				Separated DatabaseMBean interface into InactiveDatabaseMBean (read-write) and ActiveDatabaseMBean (read-only).
+			</action>
+			<action type="add" context="code" dev="PF">
+				Added dirty flag logic for Database attributes.  If a database is dirty when it is activated, then the HA-JDBC configuration is exported.
+			</action>
+			<action type="update" context="code" dev="PF">
+				Leverage java.util.concurrent collections to improve performance of balancers.
 			</action>
 		</release>
 		<release version="1.1-beta-6" date="February 15, 2006">
@@ -525,13 +549,6 @@
 			</action>
 		</actions>
 		<actions priority="medium">
-			<action type="add" context="code" dev="PF">
-				Support for modifying HA-JDBC configuration at runtime.
-				Workaround is to create "placeholder" DataSources that can be defined and activated as needed.
-			</action>
-			<action type="update" context="code" dev="PF">
-				Migrate logging API from commons-logging to SLF4J once 1.0 final is released.
-			</action>
 			<action type="update" context="test" dev="PF">
 				Migrate unit test suite to TestNG now that EasyMock no longer depends on JUnit.
 			</action>
