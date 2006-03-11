@@ -21,7 +21,9 @@
 				<li>Support for full JDBC 3.0 (Java 1.4) feature set.</li>
 				<li>Compatible with JDBC RowSet implementations found in Java 1.5.</li>
 				<li>Out-of-the-box database-independent strategies for synchronizing a failed cluster node.</li>
-				<li>Exposes JMX management interface to allow administration of database clusters.</li>
+				<li>Exposes JMX management interface to allow administration of databases and clusters.</li>
+				<li>Ability to add database nodes to a cluster at runtime.</li>
+				<li>Can be scheduled to auto-activate failed database nodes at off-peak times.</li>
 				<li>Open source (LGPL).</li>
 			</ul>
 		</section>
@@ -31,7 +33,7 @@
 				<li><a href="http://www.jgroups.org">JGroups</a> - reliable multicast communication framework</li>
 				<li><a href="http://www.opensymphony.com/quartz/">Quartz</a> - enterprise job scheduler</li>
 				<li><a href="http://www.jibx.org">JiBX</a> - an XML binding framework</li>
-				<li><a href="http://jakarta.apache.org/commons/logging/">Commons-Logging</a> - an ultra-thin bridge between different logging libraries</li>
+				<li><a href="http://www.slf4j.org">SLF4J</a> - a simple facade for various logging APIs.</li>
 			</ul>
 		</section>
 		<section>
