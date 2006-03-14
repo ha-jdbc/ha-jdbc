@@ -114,14 +114,14 @@ public abstract class AbstractTestBalancer extends junit.framework.TestCase
 	 */
 	public void testGetDatabases()
 	{
-		Collection<Database> databases = this.balancer.list();
+		Collection<Database> databases = this.balancer.all();
 		
 		assertEquals(databases.size(), 0);
 		
 		Database database1 = new MockDatabase("db1", 1);
 		this.balancer.add(database1);
 		
-		databases = this.balancer.list();
+		databases = this.balancer.all();
 		
 		assertEquals(databases.size(), 1);
 		assertTrue(Arrays.equals(databases.toArray(), new Database[] { database1 }));
@@ -129,21 +129,21 @@ public abstract class AbstractTestBalancer extends junit.framework.TestCase
 		Database database2 = new MockDatabase("db2", 1);
 		this.balancer.add(database2);
 
-		databases = this.balancer.list();
+		databases = this.balancer.all();
 
 		assertEquals(databases.size(), 2);
 		assertTrue(Arrays.equals(databases.toArray(), new Database[] { database1, database2 }) || Arrays.equals(databases.toArray(), new Database[] { database2, database1 }));
 
 		this.balancer.remove(database1);
 
-		databases = this.balancer.list();
+		databases = this.balancer.all();
 		
 		assertEquals(databases.size(), 1);
 		assertTrue(Arrays.equals(databases.toArray(), new Database[] { database2, }));
 		
 		this.balancer.remove(database2);
 		
-		databases = this.balancer.list();
+		databases = this.balancer.all();
 		
 		assertEquals(databases.size(), 0);
 	}
@@ -211,7 +211,7 @@ public abstract class AbstractTestBalancer extends junit.framework.TestCase
 	protected class MockDatabase implements Database
 	{
 		private String id;
-		private Integer weight;
+		private int weight;
 		
 		protected MockDatabase(String id, int weight)
 		{
@@ -246,7 +246,7 @@ public abstract class AbstractTestBalancer extends junit.framework.TestCase
 		/**
 		 * @see net.sf.hajdbc.Database#getWeight()
 		 */
-		public Integer getWeight()
+		public int getWeight()
 		{
 			return this.weight;
 		}
@@ -299,6 +299,72 @@ public abstract class AbstractTestBalancer extends junit.framework.TestCase
 		public Properties getProperties()
 		{
 			return null;
+		}
+
+		/**
+		 * @see net.sf.hajdbc.Database#getActiveMBeanClass()
+		 */
+		public Class getActiveMBeanClass()
+		{
+			return null;
+		}
+
+		/**
+		 * @see net.sf.hajdbc.Database#getInactiveMBeanClass()
+		 */
+		public Class getInactiveMBeanClass()
+		{
+			return null;
+		}
+
+		/**
+		 * @see net.sf.hajdbc.Database#isDirty()
+		 */
+		public boolean isDirty()
+		{
+			return false;
+		}
+
+		/**
+		 * @see net.sf.hajdbc.Database#clean()
+		 */
+		public void clean()
+		{
+		}
+
+		/**
+		 * @see net.sf.hajdbc.InactiveDatabaseMBean#setWeight(int)
+		 */
+		public void setWeight(int weight)
+		{
+		}
+
+		/**
+		 * @see net.sf.hajdbc.InactiveDatabaseMBean#setUser(java.lang.String)
+		 */
+		public void setUser(String user)
+		{
+		}
+
+		/**
+		 * @see net.sf.hajdbc.InactiveDatabaseMBean#setPassword(java.lang.String)
+		 */
+		public void setPassword(String password)
+		{
+		}
+
+		/**
+		 * @see net.sf.hajdbc.InactiveDatabaseMBean#setProperty(java.lang.String, java.lang.String)
+		 */
+		public void setProperty(String name, String value)
+		{
+		}
+
+		/**
+		 * @see net.sf.hajdbc.InactiveDatabaseMBean#removeProperty(java.lang.String)
+		 */
+		public void removeProperty(String name)
+		{
 		}
 	}
 }

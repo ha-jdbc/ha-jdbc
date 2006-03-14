@@ -46,7 +46,7 @@ public class TestRandomBalancer extends AbstractTestBalancer
 		
 		for (int i = 0; i < count; ++i)
 		{
-			results[balancer.next().getWeight().intValue()] += 1;
+			results[balancer.next().getWeight()] += 1;
 		}
 
 		assertTrue(results[0] == count);
@@ -59,7 +59,7 @@ public class TestRandomBalancer extends AbstractTestBalancer
 		
 		for (int i = 0; i < count; ++i)
 		{
-			results[balancer.next().getWeight().intValue()] += 1;
+			results[balancer.next().getWeight()] += 1;
 		}
 		
 		assertTrue(results[0] == 0);
@@ -72,7 +72,7 @@ public class TestRandomBalancer extends AbstractTestBalancer
 		
 		for (int i = 0; i < count; ++i)
 		{
-			results[balancer.next().getWeight().intValue()] += 1;
+			results[balancer.next().getWeight()] += 1;
 		}
 
 		assertTrue(results[0] == 0);

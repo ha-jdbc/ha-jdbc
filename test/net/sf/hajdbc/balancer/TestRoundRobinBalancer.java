@@ -42,7 +42,7 @@ public class TestRoundRobinBalancer extends AbstractTestBalancer
 		
 		for (int i = 0; i < count; ++i)
 		{
-			int weight = balancer.next().getWeight().intValue();
+			int weight = balancer.next().getWeight();
 			
 			assertEquals(0, weight);
 		}
@@ -51,7 +51,7 @@ public class TestRoundRobinBalancer extends AbstractTestBalancer
 		
 		for (int i = 0; i < count; ++i)
 		{
-			int weight = balancer.next().getWeight().intValue();
+			int weight = balancer.next().getWeight();
 			
 			assertEquals(1, weight);
 		}
@@ -62,7 +62,7 @@ public class TestRoundRobinBalancer extends AbstractTestBalancer
 		
 		for (int i = 0; i < count; ++i)
 		{
-			int weight = balancer.next().getWeight().intValue();
+			int weight = balancer.next().getWeight();
 			
 			assertEquals(expected[i % 3], weight);
 		}
