@@ -85,9 +85,7 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 	}
 	
 	/**
-	 * Schedules the specified task for execution using the specified cron expression
-	 * @param runnable
-	 * @param expression
+	 * @see net.sf.hajdbc.util.concurrent.CronExecutorService#schedule(java.lang.Runnable, java.lang.String)
 	 */
 	public void schedule(final Runnable task, String expression)
 	{

@@ -36,6 +36,16 @@ import net.sf.hajdbc.util.Collections;
  * @param <T> 
  * @since   1.0
  */
+/**
+ * @author Paul Ferraro
+ *
+ * @param <T>
+ */
+/**
+ * @author Paul Ferraro
+ *
+ * @param <T>
+ */
 public abstract class AbstractDatabase<T> implements Database<T>, Externalizable
 {
 	protected String id;
@@ -46,7 +56,7 @@ public abstract class AbstractDatabase<T> implements Database<T>, Externalizable
 	protected boolean dirty = false;
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseMBean#getId()
+	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getId()
 	 */
 	public String getId()
 	{
@@ -63,7 +73,7 @@ public abstract class AbstractDatabase<T> implements Database<T>, Externalizable
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseMBean#getUser()
+	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getUser()
 	 */
 	public String getUser()
 	{
@@ -71,7 +81,7 @@ public abstract class AbstractDatabase<T> implements Database<T>, Externalizable
 	}
 	
 	/**
-	 * @param user
+	 * @see net.sf.hajdbc.InactiveDatabaseMBean#setUser(java.lang.String)
 	 */
 	public void setUser(String user)
 	{
@@ -80,7 +90,7 @@ public abstract class AbstractDatabase<T> implements Database<T>, Externalizable
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseMBean#getPassword()
+	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getPassword()
 	 */
 	public String getPassword()
 	{
@@ -88,7 +98,7 @@ public abstract class AbstractDatabase<T> implements Database<T>, Externalizable
 	}
 	
 	/**
-	 * @param password
+	 * @see net.sf.hajdbc.InactiveDatabaseMBean#setPassword(java.lang.String)
 	 */
 	public void setPassword(String password)
 	{
@@ -97,7 +107,7 @@ public abstract class AbstractDatabase<T> implements Database<T>, Externalizable
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseMBean#getWeight()
+	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getWeight()
 	 */
 	public int getWeight()
 	{
@@ -105,7 +115,7 @@ public abstract class AbstractDatabase<T> implements Database<T>, Externalizable
 	}
 	
 	/**
-	 * @param weight The weight to set.
+	 * @see net.sf.hajdbc.InactiveDatabaseMBean#setWeight(int)
 	 */
 	public void setWeight(int weight)
 	{
@@ -145,7 +155,7 @@ public abstract class AbstractDatabase<T> implements Database<T>, Externalizable
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseMBean#getProperties()
+	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getProperties()
 	 */
 	public Properties getProperties()
 	{
@@ -153,7 +163,6 @@ public abstract class AbstractDatabase<T> implements Database<T>, Externalizable
 	}
 	
 	/**
-	 * Sets a collection of additional properties for this database.
 	 * @param properties
 	 */
 	public void setProperties(Properties properties)
@@ -204,7 +213,7 @@ public abstract class AbstractDatabase<T> implements Database<T>, Externalizable
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseMBean#removeProperty(java.lang.String)
+	 * @see net.sf.hajdbc.InactiveDatabaseMBean#removeProperty(java.lang.String)
 	 */
 	public void removeProperty(String name)
 	{
@@ -213,7 +222,7 @@ public abstract class AbstractDatabase<T> implements Database<T>, Externalizable
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseMBean#setProperty(java.lang.String, java.lang.String)
+	 * @see net.sf.hajdbc.InactiveDatabaseMBean#setProperty(java.lang.String, java.lang.String)
 	 */
 	public void setProperty(String name, String value)
 	{
@@ -237,13 +246,13 @@ public abstract class AbstractDatabase<T> implements Database<T>, Externalizable
 		return this.dirty;
 	}
 	
+	/**
+	 * Set the dirty flag if the new value differs from the old value.
+	 * @param oldValue
+	 * @param newValue
+	 */
 	protected void checkDirty(Object oldValue, Object newValue)
 	{
-		this.dirty |= equal(oldValue, newValue);
-	}
-	
-	private static boolean equal(Object oldValue, Object newValue)
-	{
-		return ((oldValue != null) && (newValue != null)) ? oldValue.equals(newValue) : (oldValue == newValue);
+		this.dirty |= ((oldValue != null) && (newValue != null)) ? !oldValue.equals(newValue) : (oldValue != newValue);
 	}
 }

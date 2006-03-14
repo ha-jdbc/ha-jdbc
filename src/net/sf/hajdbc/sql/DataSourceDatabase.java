@@ -47,7 +47,7 @@ public class DataSourceDatabase extends AbstractDatabase<DataSource> implements 
 	protected String name;
 	
 	/**
-	 * @see net.sf.hajdbc.sql.DataSourceDatabaseMBean#getName()
+	 * @see net.sf.hajdbc.sql.ActiveDataSourceDatabaseMBean#getName()
 	 */
 	public String getName()
 	{
@@ -55,8 +55,7 @@ public class DataSourceDatabase extends AbstractDatabase<DataSource> implements 
 	}
 	
 	/**
-	 * Sets the JNDI name of this DataSource
-	 * @param name a JNDI name
+	 * @see net.sf.hajdbc.sql.InactiveDataSourceDatabaseMBean#setName(java.lang.String)
 	 */
 	public void setName(String name)
 	{

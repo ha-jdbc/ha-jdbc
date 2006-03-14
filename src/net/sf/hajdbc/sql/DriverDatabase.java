@@ -49,7 +49,7 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	private String driver;
 	
 	/**
-	 * @see net.sf.hajdbc.sql.DriverDatabaseMBean#getUrl()
+	 * @see net.sf.hajdbc.sql.ActiveDriverDatabaseMBean#getUrl()
 	 */
 	public String getUrl()
 	{
@@ -57,8 +57,7 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	}
 	
 	/**
-	 * Set the url for this database
-	 * @param url a database url
+	 * @see net.sf.hajdbc.sql.InactiveDriverDatabaseMBean#setUrl(java.lang.String)
 	 */
 	public void setUrl(String url)
 	{
@@ -67,7 +66,7 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.sql.DriverDatabaseMBean#getDriver()
+	 * @see net.sf.hajdbc.sql.ActiveDriverDatabaseMBean#getDriver()
 	 */
 	public String getDriver()
 	{
@@ -75,8 +74,7 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	}
 	
 	/**
-	 * Sets the driver class name for this database.
-	 * @param driver a driver class name
+	 * @see net.sf.hajdbc.sql.InactiveDriverDatabaseMBean#setDriver(java.lang.String)
 	 */
 	public void setDriver(String driver)
 	{

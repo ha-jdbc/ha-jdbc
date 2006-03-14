@@ -15,8 +15,9 @@ public interface CronExecutorService extends Executor, ExecutorService
 {
 	/**
 	 * Schedules the specified task to execute according to the specified cron expression.
-	 * @param task
-	 * @param expression
+	 * @see org.quartz.CronTrigger
+	 * @param task the Runnable task to schedule
+	 * @param expression a cron expression
 	 */
 	public void schedule(Runnable task, String expression);
 }
