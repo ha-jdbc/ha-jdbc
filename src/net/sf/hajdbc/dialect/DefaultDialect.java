@@ -37,7 +37,7 @@ import net.sf.hajdbc.Dialect;
  */
 public class DefaultDialect implements Dialect
 {
-	private Pattern selectForUpdatePattern = Pattern.compile(this.selectForUpdatePattern());
+	private Pattern selectForUpdatePattern = Pattern.compile(this.selectForUpdatePattern(), Pattern.CASE_INSENSITIVE);
 
 	/**
 	 * @see net.sf.hajdbc.Dialect#getSimpleSQL()
@@ -191,6 +191,6 @@ public class DefaultDialect implements Dialect
 	
 	protected String selectForUpdatePattern()
 	{
-		return "[sS][eE][lL][eE][cC][tT]\\s+.+\\s+[fF][oO][rR]\\s+[uU][pP][dD][aA][tT][eE]";
+		return "SELECT\\s+.+\\s+FOR\\s+UPDATE";
 	}
 }
