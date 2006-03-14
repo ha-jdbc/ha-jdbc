@@ -81,11 +81,9 @@
 			<fileset dir="${basedir}" includes="${dist.name}-**"></fileset>
 		</delete>
 		<delete dir="${build.dir}" quiet="true"></delete>
-		<delete dir="${doc.build.dir}" quiet="true"></delete>
-		<delete dir="${doc.api.dir}" quiet="true"></delete>
 	</target>
 
-	<target name="init" depends="clean">
+	<target name="init">
 		<mkdir dir="${build.dir}"/>
 	</target>
 	
@@ -162,7 +160,8 @@
 		</tar>
 	</target>
 	
-	<target name="javadoc" depends="init">
+	<target name="javadoc">
+		<delete dir="${doc.api.dir}" quiet="true"></delete>
 		<javadoc destdir="${doc.api.dir}" classpathref="src.classpath" windowtitle="HA-JDBC ${version} API">
 			<fileset dir="${src.dir}"></fileset>
 			<link href="http://java.sun.com/j2se/1.4.2/docs/api/"></link>
@@ -171,6 +170,7 @@
 	</target>
 	
 	<target name="site" depends="javadoc">
+		<delete dir="${doc.build.dir}" quiet="true"></delete>
 		<!-- requires Apache Forrest 0.7 -->
 		<ant dir="${doc.dir}" inheritall="false"></ant>
 	</target>
