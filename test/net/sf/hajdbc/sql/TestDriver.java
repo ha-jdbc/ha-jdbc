@@ -25,7 +25,6 @@ import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.util.Collections;
-import java.util.Properties;
 
 import net.sf.hajdbc.DatabaseClusterTestCase;
 

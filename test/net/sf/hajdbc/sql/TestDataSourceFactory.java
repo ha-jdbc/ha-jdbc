@@ -20,10 +20,6 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.util.Hashtable;
-
-import javax.naming.Context;
-import javax.naming.Name;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
 

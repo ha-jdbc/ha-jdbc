@@ -71,7 +71,7 @@ public class TestConnection extends EasyMockTestCase
 		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
 		this.lock.lock();
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 		EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 		this.lock.unlock();
 		
@@ -152,7 +152,7 @@ public class TestConnection extends EasyMockTestCase
 		this.lock.lock();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 		
 		try
 		{
@@ -182,7 +182,7 @@ public class TestConnection extends EasyMockTestCase
 		this.lock.lock();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 		EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 		
 		try
@@ -215,7 +215,7 @@ public class TestConnection extends EasyMockTestCase
 		this.lock.lock();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 		EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 		
 		try
@@ -255,7 +255,7 @@ public class TestConnection extends EasyMockTestCase
 			EasyMock.expect(this.sqlConnection.isReadOnly()).andReturn(Boolean.FALSE);
 			
 			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 			EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);		
 			
 			EasyMock.expect(this.sqlConnection.createStatement()).andReturn(statement1);
@@ -331,7 +331,7 @@ public class TestConnection extends EasyMockTestCase
 			
 			EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 			
 			EasyMock.expect(this.sqlConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE)).andReturn(statement1);
 			
@@ -405,7 +405,7 @@ public class TestConnection extends EasyMockTestCase
 			this.lock.lock();
 			
 			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 			EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 			
 			EasyMock.expect(this.sqlConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE)).andReturn(statement1);
@@ -758,7 +758,7 @@ public class TestConnection extends EasyMockTestCase
 			this.lock.lock();
 			
 			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 			EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 			
 			EasyMock.expect(this.sqlConnection.prepareCall("CALL ME")).andReturn(statement1);
@@ -837,7 +837,7 @@ public class TestConnection extends EasyMockTestCase
 			this.lock.lock();
 			
 			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 			EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 						
 			EasyMock.expect(this.sqlConnection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE)).andReturn(statement);
@@ -916,7 +916,7 @@ public class TestConnection extends EasyMockTestCase
 			this.lock.lock();
 			
 			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 			EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 			
 			EasyMock.expect(this.sqlConnection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE)).andReturn(statement);
@@ -995,7 +995,7 @@ public class TestConnection extends EasyMockTestCase
 			this.lock.lock();
 			
 			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 			EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 						
 			EasyMock.expect(this.sqlConnection.prepareStatement("SELECT ME")).andReturn(statement);
@@ -1074,7 +1074,7 @@ public class TestConnection extends EasyMockTestCase
 			this.lock.lock();
 			
 			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 			EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 			
 			EasyMock.expect(this.sqlConnection.prepareStatement("SELECT ME")).andReturn(statement);
@@ -1153,7 +1153,7 @@ public class TestConnection extends EasyMockTestCase
 			this.lock.lock();
 			
 			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);		
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 			EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 			
 			EasyMock.expect(this.sqlConnection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE)).andReturn(statement);
@@ -1232,7 +1232,7 @@ public class TestConnection extends EasyMockTestCase
 			this.lock.lock();
 			
 			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 			EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 			
 			EasyMock.expect(this.sqlConnection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE)).andReturn(statement);
@@ -1312,7 +1312,7 @@ public class TestConnection extends EasyMockTestCase
 		this.lock.lock();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 		EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 
 		this.lock.unlock();
@@ -1332,7 +1332,7 @@ public class TestConnection extends EasyMockTestCase
 			
 			EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);			
 			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 			
 			this.sqlConnection.releaseSavepoint(savepoint);
 			
@@ -1360,7 +1360,7 @@ public class TestConnection extends EasyMockTestCase
 		this.lock.lock();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 		EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 		
 		try
@@ -1401,7 +1401,7 @@ public class TestConnection extends EasyMockTestCase
 		this.lock.lock();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 		EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 		
 		this.lock.unlock();
@@ -1420,7 +1420,7 @@ public class TestConnection extends EasyMockTestCase
 			this.lock.lock();
 			
 			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+			EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 			EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 			
 			this.sqlConnection.rollback(savepoint);
@@ -1449,7 +1449,7 @@ public class TestConnection extends EasyMockTestCase
 		this.lock.lock();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 		EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 		
 		try
@@ -1480,7 +1480,7 @@ public class TestConnection extends EasyMockTestCase
 		this.lock.lock();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 		EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 		
 		try
@@ -1511,7 +1511,7 @@ public class TestConnection extends EasyMockTestCase
 		this.lock.lock();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 		
 		try
 		{
@@ -1541,7 +1541,7 @@ public class TestConnection extends EasyMockTestCase
 		this.lock.lock();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 		
 		try
 		{
@@ -1573,7 +1573,7 @@ public class TestConnection extends EasyMockTestCase
 		this.lock.lock();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 		EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 		
 		try
@@ -1610,7 +1610,7 @@ public class TestConnection extends EasyMockTestCase
 		this.lock.lock();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 		EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 		
 		try
@@ -1645,7 +1645,7 @@ public class TestConnection extends EasyMockTestCase
 		this.lock.lock();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 		EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);		
 		
 		try
@@ -1676,7 +1676,7 @@ public class TestConnection extends EasyMockTestCase
 		this.lock.lock();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 		
 		try
 		{
