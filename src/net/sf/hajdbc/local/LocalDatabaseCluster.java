@@ -473,7 +473,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseClusterMBean#addDatabase(java.lang.String)
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#addDatabase(java.lang.String, java.lang.String, java.lang.String)
 	 */
 	public void addDatabase(String id, String url, String driver)
 	{
@@ -487,7 +487,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseClusterMBean#addDataSource(java.lang.String)
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#addDatabase(java.lang.String, java.lang.String)
 	 */
 	public void addDatabase(String id, String name)
 	{
