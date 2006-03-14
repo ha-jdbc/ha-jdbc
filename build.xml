@@ -164,8 +164,9 @@
 		<delete dir="${doc.api.dir}" quiet="true"></delete>
 		<javadoc destdir="${doc.api.dir}" classpathref="src.classpath" windowtitle="HA-JDBC ${version} API">
 			<fileset dir="${src.dir}"></fileset>
-			<link href="http://java.sun.com/j2se/1.4.2/docs/api/"></link>
-			<link href="http://www.jgroups.org/javagroupsnew/docs/javadoc/"></link>
+			<link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
+			<link href="http://www.jgroups.org/javagroupsnew/docs/javadoc/"/>
+			<link href="http://www.slf4j.org/api/"/>
 		</javadoc>
 	</target>
 	
