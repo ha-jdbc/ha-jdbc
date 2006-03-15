@@ -22,6 +22,8 @@ package net.sf.hajdbc.balancer;
 
 import java.sql.SQLException;
 
+import org.testng.annotations.Test;
+
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Operation;
@@ -31,6 +33,7 @@ import net.sf.hajdbc.Operation;
  * @version $Revision$
  * @since   1.0
  */
+@Test
 public class TestLoadBalancer extends AbstractTestBalancer
 {
 	/**
@@ -54,19 +57,19 @@ public class TestLoadBalancer extends AbstractTestBalancer
 		
 		Database next = balancer.next();
 		
-		assertEquals(database0, next);
+		assert database0.equals(next) : next;
 
 		balancer.add(database2);
 
 		next = balancer.next();
 
-		assertEquals(database2, next);
+		assert database2.equals(next) : next;
 		
 		balancer.add(database1);
 
 		next = balancer.next();
-		
-		assertEquals(database2, next);
+
+		assert database2.equals(next) : next;
 		
 		// Add enough load to database2 to shift relative effective load
 		Thread[] database2Threads = new Thread[2];
@@ -78,7 +81,7 @@ public class TestLoadBalancer extends AbstractTestBalancer
 		
 		next = balancer.next();
 		
-		assertEquals(database1, next);
+		assert database1.equals(next) : next;
 		
 		// Add enough load to database1 to shift relative effective load
 		Thread database1Thread = new OperationThread(balancer, new MockOperation(), database1);
@@ -86,13 +89,13 @@ public class TestLoadBalancer extends AbstractTestBalancer
 
 		next = balancer.next();
 		
-		assertEquals(database2, next);
+		assert database2.equals(next) : next;
 
 		database1Thread.interrupt();
 
 		next = balancer.next();
 
-		assertEquals(database1, next);
+		assert database1.equals(next) : next;
 		
 		for (int i = 0; i < 2; ++i)
 		{
@@ -101,7 +104,7 @@ public class TestLoadBalancer extends AbstractTestBalancer
 		
 		next = balancer.next();
 		
-		assertEquals(database2, next);
+		assert database2.equals(next) : next;
 	}
 	
 	private class OperationThread extends Thread
@@ -142,9 +145,7 @@ public class TestLoadBalancer extends AbstractTestBalancer
 			}
 			catch (SQLException e)
 			{
-				e.printStackTrace(System.err);
-				
-				TestLoadBalancer.fail(e.toString());
+				assert false : e;
 			}
 		}
 
@@ -176,19 +177,17 @@ public class TestLoadBalancer extends AbstractTestBalancer
 			}
 			catch (InterruptedException e)
 			{
-				e.printStackTrace(System.err);
-				
-				TestLoadBalancer.fail(e.toString());
+				assert false : e;
 			}
 		}
 	}
 	
-	private class MockOperation implements Operation
+	private class MockOperation implements Operation<Void, Void>
 	{
 		/**
 		 * @see net.sf.hajdbc.Operation#execute(net.sf.hajdbc.Database, java.lang.Object)
 		 */
-		public Object execute(Database database, Object sqlObject)
+		public Void execute(Database database, Void object)
 		{
 			// Simulate a long operation
 			try

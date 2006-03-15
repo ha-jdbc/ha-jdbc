@@ -20,6 +20,8 @@
  */
 package net.sf.hajdbc.balancer;
 
+import org.testng.annotations.Test;
+
 import net.sf.hajdbc.Balancer;
 
 /**
@@ -27,6 +29,7 @@ import net.sf.hajdbc.Balancer;
  * @version $Revision$
  * @since   1.0
  */
+@Test
 public class TestRoundRobinBalancer extends AbstractTestBalancer
 {
 	protected Balancer createBalancer()
@@ -44,7 +47,7 @@ public class TestRoundRobinBalancer extends AbstractTestBalancer
 		{
 			int weight = balancer.next().getWeight();
 			
-			assertEquals(0, weight);
+			assert weight == 0 : weight;
 		}
 		
 		balancer.add(new MockDatabase("1", 1));
@@ -53,7 +56,7 @@ public class TestRoundRobinBalancer extends AbstractTestBalancer
 		{
 			int weight = balancer.next().getWeight();
 			
-			assertEquals(1, weight);
+			assert weight == 1 : weight;
 		}
 		
 		balancer.add(new MockDatabase("2", 2));
@@ -64,7 +67,7 @@ public class TestRoundRobinBalancer extends AbstractTestBalancer
 		{
 			int weight = balancer.next().getWeight();
 			
-			assertEquals(expected[i % 3], weight);
+			assert expected[i % 3] == weight : weight;
 		}
 	}
 }

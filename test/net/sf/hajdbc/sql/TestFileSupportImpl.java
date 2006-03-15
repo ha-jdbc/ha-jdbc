@@ -23,18 +23,18 @@ package net.sf.hajdbc.sql;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.zip.GZIPOutputStream;
 
-import net.sf.hajdbc.EasyMockTestCase;
+import org.testng.annotations.Configuration;
+import org.testng.annotations.Test;
 
 /**
  * Unit test for {@link FileSupportImpl}.
@@ -42,26 +42,15 @@ import net.sf.hajdbc.EasyMockTestCase;
  * @author  Paul Ferraro
  * @since   1.1
  */
-public class TestFileSupportImpl extends EasyMockTestCase
+@Test
+public class TestFileSupportImpl
 {
-	private FileSupport fileSupport;
-
-	/**
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	protected void setUp() throws Exception
-	{
-		this.fileSupport = new FileSupportImpl();
-	}
+	private FileSupport fileSupport = new FileSupportImpl();
 	
-	/**
-	 * @see net.sf.hajdbc.EasyMockTestCase#tearDown()
-	 */
-	protected void tearDown() throws Exception
+	@Configuration(afterTestClass = true)
+	public void tearDown() throws Exception
 	{
 		this.fileSupport.close();
-
-		super.tearDown();
 	}
 
 	/**
@@ -75,14 +64,14 @@ public class TestFileSupportImpl extends EasyMockTestCase
 		{
 			File file = this.fileSupport.createFile(inputStream);
 			
-			assertNotNull(file);
-			assertTrue(file.exists());
-			assertTrue(file.getName().startsWith("ha-jdbc-"));
-			assertTrue(file.getName().endsWith(".lob"));
+			assert file != null;
+			assert file.exists();
+			assert file.getName().startsWith("ha-jdbc-");
+			assert file.getName().endsWith(".lob");
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -97,14 +86,14 @@ public class TestFileSupportImpl extends EasyMockTestCase
 		{
 			File file = this.fileSupport.createFile(reader);
 			
-			assertNotNull(file);
-			assertTrue(file.exists());
-			assertTrue(file.getName().startsWith("ha-jdbc-"));
-			assertTrue(file.getName().endsWith(".lob"));
+			assert file != null;
+			assert file.exists();
+			assert file.getName().startsWith("ha-jdbc-");
+			assert file.getName().endsWith(".lob");
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -116,7 +105,7 @@ public class TestFileSupportImpl extends EasyMockTestCase
 		try
 		{
 			File file = File.createTempFile("test", ".test");
-			Writer writer = new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(file)));
+			Writer writer = new FileWriter(file);
 			writer.write("test");
 			writer.flush();
 			writer.close();
@@ -125,18 +114,18 @@ public class TestFileSupportImpl extends EasyMockTestCase
 			
 			char[] buffer = new char[4];
 			
-			assertNotNull(reader);
-			assertEquals(4, reader.read(buffer));
-			assertEquals("test", new String(buffer));
-			assertEquals(-1, reader.read(buffer));
+			assert reader != null;
+			assert reader.read(buffer) == 4;
+			assert new String(buffer).equals("test");
+			assert reader.read(buffer) < 0;
 		}
 		catch (IOException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -148,7 +137,7 @@ public class TestFileSupportImpl extends EasyMockTestCase
 		try
 		{
 			File file = File.createTempFile("test", ".test");
-			OutputStream outputStream = new GZIPOutputStream(new FileOutputStream(file));
+			OutputStream outputStream = new FileOutputStream(file);
 			outputStream.write(new byte[] { 1, 2, 3, 4 });
 			outputStream.flush();
 			outputStream.close();
@@ -157,18 +146,18 @@ public class TestFileSupportImpl extends EasyMockTestCase
 			
 			byte[] buffer = new byte[4];
 			
-			assertNotNull(inputStream);
-			assertEquals(4, inputStream.read(buffer));
-			assertTrue(Arrays.equals(new byte[] { 1, 2, 3, 4 }, buffer));
-			assertEquals(-1, inputStream.read(buffer));
+			assert inputStream != null;
+			assert inputStream.read(buffer) == 4;
+			assert Arrays.equals(new byte[] { 1, 2, 3, 4 }, buffer);
+			assert inputStream.read(buffer) < 0;
 		}
 		catch (IOException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -183,15 +172,15 @@ public class TestFileSupportImpl extends EasyMockTestCase
 		{
 			File file = this.fileSupport.createFile(reader);
 			
-			assertTrue(file.exists());
+			assert file.exists();
 			
 			this.fileSupport.close();
-			
-			assertFalse(file.exists());
+
+			assert !file.exists();
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 }

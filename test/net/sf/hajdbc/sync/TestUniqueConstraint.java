@@ -27,19 +27,28 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 
-import net.sf.hajdbc.EasyMockTestCase;
-
 import org.easymock.EasyMock;
+import org.easymock.IMocksControl;
+import org.testng.annotations.Configuration;
+import org.testng.annotations.Test;
 
 /**
  * @author  Paul Ferraro
  * @since   1.0
  */
-public class TestUniqueConstraint extends EasyMockTestCase
+@Test
+public class TestUniqueConstraint
 {
+	private IMocksControl control = EasyMock.createControl();
 	private Connection connection = this.control.createMock(Connection.class);
 	private DatabaseMetaData metaData = this.control.createMock(DatabaseMetaData.class);
 	private ResultSet resultSet = this.control.createMock(ResultSet.class);
+	
+	@Configuration(afterTestMethod = true)
+	public void reset()
+	{
+		this.control.reset();
+	}
 	
 	/**
 	 * Test method for {@link UniqueConstraint#collect(Connection, String, String, String)}
@@ -78,25 +87,25 @@ public class TestUniqueConstraint extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertNotNull(collection);
-			assertEquals(1, collection.size());
+			assert collection != null;
+			assert collection.size() == 1 : collection.size();
 			
 			UniqueConstraint constraint = collection.iterator().next();
 			
-			assertEquals("idx", constraint.getName());
-			assertEquals("schema", constraint.getSchema());
-			assertEquals("table", constraint.getTable());
+			assert constraint.getName().equals("idx") : constraint.getName();
+			assert constraint.getSchema().equals("schema") : constraint.getSchema();
+			assert constraint.getTable().equals("table") : constraint.getTable();
 			
 			List<String> columnList = constraint.getColumnList();
 			
-			assertNotNull(columnList);
-			assertEquals(2, columnList.size());
-			assertEquals("col1", columnList.get(0));
-			assertEquals("col2", columnList.get(1));
+			assert columnList != null;
+			assert columnList.size() == 2 : columnList.size();
+			assert columnList.get(0).equals("col1");
+			assert columnList.get(1).equals("col2");
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 	
@@ -137,25 +146,25 @@ public class TestUniqueConstraint extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertNotNull(collection);
-			assertEquals(1, collection.size());
-
+			assert collection != null;
+			assert collection.size() == 1 : collection.size();
+			
 			UniqueConstraint constraint = collection.iterator().next();
 			
-			assertEquals("idx", constraint.getName());
-			assertNull(constraint.getSchema());
-			assertEquals("table", constraint.getTable());
+			assert constraint.getName().equals("idx") : constraint.getName();
+			assert constraint.getSchema() == null : constraint.getSchema();
+			assert constraint.getTable().equals("table") : constraint.getTable();
 			
 			List<String> columnList = constraint.getColumnList();
 			
-			assertNotNull(columnList);
-			assertEquals(2, columnList.size());
-			assertEquals("col1", columnList.get(0));
-			assertEquals("col2", columnList.get(1));
+			assert columnList != null;
+			assert columnList.size() == 2 : columnList.size();
+			assert columnList.get(0).equals("col1");
+			assert columnList.get(1).equals("col2");
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -166,7 +175,7 @@ public class TestUniqueConstraint extends EasyMockTestCase
 	{
 		UniqueConstraint key = new UniqueConstraint("test", null, null);
 		
-		assertEquals("test".hashCode(), key.hashCode());
+		assert "test".hashCode() == key.hashCode();
 	}
 
 	/**
@@ -178,8 +187,8 @@ public class TestUniqueConstraint extends EasyMockTestCase
 		UniqueConstraint key2 = new UniqueConstraint("test", "", "");
 		UniqueConstraint key3 = new UniqueConstraint("testing", "", "");
 		
-		assertTrue(key1.equals(key2));
-		assertFalse(key1.equals(key3));
-		assertFalse(key2.equals(key3));
+		assert key1.equals(key2);
+		assert !key1.equals(key3);
+		assert !key2.equals(key3);
 	}
 }

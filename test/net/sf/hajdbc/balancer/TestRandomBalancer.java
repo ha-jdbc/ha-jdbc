@@ -22,12 +22,15 @@ package net.sf.hajdbc.balancer;
 
 import java.util.Arrays;
 
+import org.testng.annotations.Test;
+
 import net.sf.hajdbc.Balancer;
 
 /**
  * @author  Paul Ferraro
  * @since   1.0
  */
+@Test
 public class TestRandomBalancer extends AbstractTestBalancer
 {
 	protected Balancer createBalancer()
@@ -49,9 +52,9 @@ public class TestRandomBalancer extends AbstractTestBalancer
 			results[balancer.next().getWeight()] += 1;
 		}
 
-		assertTrue(results[0] == count);
-		assertTrue(results[1] == 0);
-		assertTrue(results[2] == 0);
+		assert results[0] == count : results[0];
+		assert results[1] == 0 : results[1];
+		assert results[2] == 0 : results[2];
 
 		balancer.add(new MockDatabase("1", 1));
 		
@@ -62,9 +65,9 @@ public class TestRandomBalancer extends AbstractTestBalancer
 			results[balancer.next().getWeight()] += 1;
 		}
 		
-		assertTrue(results[0] == 0);
-		assertTrue(results[1] == count);
-		assertTrue(results[2] == 0);
+		assert results[0] == 0 : results[0];
+		assert results[1] == count : results[1];
+		assert results[2] == 0 : results[2];
 
 		balancer.add(new MockDatabase("2", 2));
 
@@ -75,8 +78,8 @@ public class TestRandomBalancer extends AbstractTestBalancer
 			results[balancer.next().getWeight()] += 1;
 		}
 
-		assertTrue(results[0] == 0);
-		assertTrue(results[1] < 50);
-		assertTrue(results[2] > 50);
+		assert results[0] == 0 : results[0];
+		assert results[1] < 50 : results[1];
+		assert results[2] > 50 : results[2];
 	}
 }

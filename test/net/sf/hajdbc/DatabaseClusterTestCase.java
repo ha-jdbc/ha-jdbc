@@ -32,21 +32,24 @@ import javax.sql.ConnectionPoolDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
+import org.easymock.EasyMock;
+import org.easymock.IMocksControl;
+import org.testng.annotations.Configuration;
+
 import net.sf.hajdbc.sql.MockDriver;
 
 /**
  * @author  Paul Ferraro
  * @since   1.0
  */
-public abstract class DatabaseClusterTestCase extends EasyMockTestCase
+public abstract class DatabaseClusterTestCase
 {
+	protected IMocksControl control = EasyMock.createControl();
 	protected Context context;
 	private MBeanServer server;
 	
-	/**
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	protected void setUp() throws Exception
+	@Configuration(beforeTestClass = true)
+	public void setUp() throws Exception
 	{
 		this.server = MBeanServerFactory.createMBeanServer();
 		
@@ -74,10 +77,8 @@ public abstract class DatabaseClusterTestCase extends EasyMockTestCase
 		this.context.rebind("xa-datasource2", reference);
 	}
 
-	/**
-	 * @see junit.framework.TestCase#tearDown()
-	 */
-	protected void tearDown() throws Exception
+	@Configuration(afterTestClass = true)
+	public void tearDown() throws Exception
 	{
 		DriverManager.deregisterDriver(new MockDriver());
 		
@@ -89,7 +90,11 @@ public abstract class DatabaseClusterTestCase extends EasyMockTestCase
 		this.context.unbind("xa-datasource2");
 		
 		MBeanServerFactory.releaseMBeanServer(this.server);
-		
-		super.tearDown();
+	}
+	
+	@Configuration(afterTestMethod = true)
+	public void reset()
+	{
+		this.control.reset();
 	}
 }

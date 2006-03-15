@@ -31,11 +31,12 @@ import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Dialect;
-import net.sf.hajdbc.EasyMockTestCase;
 import net.sf.hajdbc.Operation;
-import net.sf.hajdbc.SQLObject;
 
 import org.easymock.EasyMock;
+import org.easymock.IMocksControl;
+import org.testng.annotations.Configuration;
+import org.testng.annotations.Test;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -47,8 +48,11 @@ import java.util.regex.Pattern;
  * @author  Paul Ferraro
  * @since   1.1
  */
-public class TestStatement extends EasyMockTestCase
+@Test
+public class TestStatement
 {
+	protected IMocksControl control = EasyMock.createControl();
+	
 	protected DatabaseCluster databaseCluster = this.control.createMock(DatabaseCluster.class);
 	
 	protected java.sql.Connection sqlConnection = this.control.createMock(java.sql.Connection.class);
@@ -75,9 +79,7 @@ public class TestStatement extends EasyMockTestCase
 		return java.sql.Statement.class;
 	}
 	
-	/**
-	 * @see junit.framework.TestCase#setUp()
-	 */
+	@Configuration(beforeTestClass = true)
 	protected void setUp() throws Exception
 	{
 		Map map = Collections.singletonMap(this.database, new Object());
@@ -118,6 +120,12 @@ public class TestStatement extends EasyMockTestCase
 		this.control.reset();
 	}
 	
+	@Configuration(afterTestMethod = true)
+	public void reset()
+	{
+		this.control.reset();
+	}
+	
 	protected Statement createStatement(Connection connection) throws SQLException
 	{
 		Operation<java.sql.Connection, java.sql.Statement> operation = new Operation<java.sql.Connection, java.sql.Statement>()
@@ -142,7 +150,7 @@ public class TestStatement extends EasyMockTestCase
 		
 		this.control.verify();
 		
-		assertSame(this.sqlStatement, statement);
+		assert this.sqlStatement == statement;
 	}
 
 	/**
@@ -156,7 +164,7 @@ public class TestStatement extends EasyMockTestCase
 		
 		this.control.verify();
 		
-		assertSame(this.databaseCluster, databaseCluster);
+		assert this.databaseCluster == databaseCluster;
 	}
 
 	/**
@@ -181,7 +189,7 @@ public class TestStatement extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -209,7 +217,7 @@ public class TestStatement extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 	
@@ -239,7 +247,7 @@ public class TestStatement extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -270,7 +278,7 @@ public class TestStatement extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -300,7 +308,7 @@ public class TestStatement extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -330,7 +338,7 @@ public class TestStatement extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -361,7 +369,7 @@ public class TestStatement extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -390,11 +398,11 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertTrue(results);
+			assert results;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -423,11 +431,11 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertTrue(results);
+			assert results;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -458,12 +466,12 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertTrue(results);
+			assert results;
 		}
 		catch (SQLException e)
 		{
 			e.printStackTrace();
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -494,11 +502,11 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertTrue(results);
+			assert results;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -529,11 +537,11 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertSame(rows, results);
+			assert rows == results;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -569,11 +577,11 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertSame(resultSet, rs);
+			assert resultSet == rs;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -609,13 +617,11 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertNotNull(rs);
-			assertTrue(SQLObject.class.isInstance(rs));			
-			assertSame(resultSet, ((SQLObject) rs).getObject(this.database));
+			assert net.sf.hajdbc.sql.ResultSet.class.cast(rs).getObject(this.database) == resultSet;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -654,13 +660,11 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertNotNull(rs);
-			assertTrue(SQLObject.class.isInstance(rs));			
-			assertSame(resultSet, ((SQLObject) rs).getObject(this.database));
+			assert net.sf.hajdbc.sql.ResultSet.class.cast(rs).getObject(this.database) == resultSet;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -689,11 +693,11 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertEquals(1, result);
+			assert result == 1 : result;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -722,11 +726,11 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertEquals(1, result);
+			assert result == 1 : result;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -757,11 +761,11 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertEquals(1, result);
+			assert result == 1 : result;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -792,11 +796,11 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertEquals(1, result);
+			assert result == 1 : result;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -807,7 +811,7 @@ public class TestStatement extends EasyMockTestCase
 	{
 		java.sql.Connection connection = this.statement.getConnection();
 		
-		assertSame(this.connection, connection);
+		assert this.connection == connection;
 	}
 
 	/**
@@ -828,11 +832,11 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertEquals(ResultSet.FETCH_REVERSE, direction);
+			assert direction == ResultSet.FETCH_REVERSE : direction;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -854,11 +858,11 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertEquals(100, size);
+			assert size == 100 : size;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -882,11 +886,11 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertSame(resultSet, rs);
+			assert rs == resultSet;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -908,11 +912,11 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertEquals(100, size);
+			assert size == 100 : size;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -934,11 +938,11 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertEquals(100, size);
+			assert size == 100 : size;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -967,11 +971,11 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertTrue(more);
+			assert more;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1000,11 +1004,11 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertTrue(more);
+			assert more;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1032,11 +1036,11 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertTrue(more);
+			assert more;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1058,11 +1062,11 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertEquals(100, timeout);
+			assert timeout == 100 : timeout;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1086,11 +1090,11 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertSame(resultSet, rs);
+			assert rs == resultSet;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1112,11 +1116,11 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertEquals(ResultSet.CONCUR_UPDATABLE, concurrency);
+			assert concurrency == ResultSet.CONCUR_UPDATABLE : concurrency;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1138,11 +1142,11 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertEquals(ResultSet.HOLD_CURSORS_OVER_COMMIT, holdability);
+			assert holdability == ResultSet.HOLD_CURSORS_OVER_COMMIT : holdability;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1164,11 +1168,11 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertEquals(ResultSet.TYPE_SCROLL_SENSITIVE, type);
+			assert type == ResultSet.TYPE_SCROLL_SENSITIVE : type;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1190,11 +1194,11 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertEquals(100, count);
+			assert count == 100;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1218,11 +1222,11 @@ public class TestStatement extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertEquals(warnings, warn);
+			assert warn == warnings;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1253,7 +1257,7 @@ public class TestStatement extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1283,7 +1287,7 @@ public class TestStatement extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1313,7 +1317,7 @@ public class TestStatement extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1343,7 +1347,7 @@ public class TestStatement extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1373,7 +1377,7 @@ public class TestStatement extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1404,7 +1408,7 @@ public class TestStatement extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1434,7 +1438,7 @@ public class TestStatement extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 }

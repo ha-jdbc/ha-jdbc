@@ -21,51 +21,60 @@
 package net.sf.hajdbc.balancer;
 
 import java.sql.Connection;
-import java.util.Arrays;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.NoSuchElementException;
-import java.util.Properties;
 
+import net.sf.hajdbc.ActiveDatabaseMBean;
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.InactiveDatabaseMBean;
+import net.sf.hajdbc.sql.AbstractDatabase;
+
+import org.testng.annotations.Configuration;
+import org.testng.annotations.Test;
 
 /**
  * @author  Paul Ferraro
  * @since   1.0
  */
-public abstract class AbstractTestBalancer extends junit.framework.TestCase
+public abstract class AbstractTestBalancer
 {
-	private Balancer balancer;
-	
-	/**
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	protected void setUp()
-	{
-		this.balancer = createBalancer();
-	}
+	private Balancer balancer = createBalancer();
 	
 	protected abstract Balancer createBalancer();
+
+	@Configuration(afterTestMethod = true)
+	protected void tearDown()
+	{
+		for (Database database: new ArrayList<Database>(this.balancer.all()))
+		{
+			this.balancer.remove(database);
+		}
+	}
 	
 	/**
 	 * Test method for {@link Balancer#add(Database)}
 	 */
+	@Test
 	public void testAdd()
 	{
 		Database database = new MockDatabase("1", 1);
 		
 		boolean added = this.balancer.add(database);
 		
-		assertTrue(added);
+		assert added;
 
 		added = this.balancer.add(database);
-		
-		assertFalse(added);
+
+		assert !added;
 	}
 
 	/**
 	 * Test method for {@link Balancer#beforeOperation(Database)}
 	 */
+	@Test
 	public void testBeforeOperation()
 	{
 		Database database = new MockDatabase("db1", 1);
@@ -78,6 +87,7 @@ public abstract class AbstractTestBalancer extends junit.framework.TestCase
 	/**
 	 * Test method for {@link Balancer#afterOperation(Database)}
 	 */
+	@Test
 	public void testAfterOperation()
 	{
 		Database database = new MockDatabase("db1", 1);
@@ -90,67 +100,70 @@ public abstract class AbstractTestBalancer extends junit.framework.TestCase
 	/**
 	 * Test method for {@link Balancer#remove(Database)}
 	 */
+	@Test
 	public void testRemove()
 	{
 		Database database = new MockDatabase("1", 1);
 		
 		boolean removed = this.balancer.remove(database);
 
-		assertFalse(removed);
+		assert !removed;
 		
 		this.balancer.add(database);
 
 		removed = this.balancer.remove(database);
 
-		assertTrue(removed);
+		assert removed;
 		
 		removed = this.balancer.remove(database);
 
-		assertFalse(removed);
+		assert !removed;
 	}
 
 	/**
-	 * Test method for {@link Balancer#list()}
+	 * Test method for {@link Balancer#contains(Database)}
 	 */
+	@Test
 	public void testGetDatabases()
 	{
 		Collection<Database> databases = this.balancer.all();
 		
-		assertEquals(databases.size(), 0);
+		assert databases.isEmpty() : databases.size();
 		
 		Database database1 = new MockDatabase("db1", 1);
 		this.balancer.add(database1);
 		
 		databases = this.balancer.all();
 		
-		assertEquals(databases.size(), 1);
-		assertTrue(Arrays.equals(databases.toArray(), new Database[] { database1 }));
+		assert databases.size() == 1 : databases.size();
+		assert databases.contains(database1);
 		
 		Database database2 = new MockDatabase("db2", 1);
 		this.balancer.add(database2);
 
 		databases = this.balancer.all();
 
-		assertEquals(databases.size(), 2);
-		assertTrue(Arrays.equals(databases.toArray(), new Database[] { database1, database2 }) || Arrays.equals(databases.toArray(), new Database[] { database2, database1 }));
+		assert databases.size() == 2 : databases.size();
+		assert databases.contains(database1) && databases.contains(database2);
 
 		this.balancer.remove(database1);
 
 		databases = this.balancer.all();
 		
-		assertEquals(databases.size(), 1);
-		assertTrue(Arrays.equals(databases.toArray(), new Database[] { database2, }));
+		assert databases.size() == 1 : databases.size();
+		assert databases.contains(database2);
 		
 		this.balancer.remove(database2);
 		
 		databases = this.balancer.all();
 		
-		assertEquals(databases.size(), 0);
+		assert databases.isEmpty() : databases.size();
 	}
 
 	/**
 	 * Test method for {@link Balancer#contains(Database)}
 	 */
+	@Test
 	public void testContains()
 	{
 		Database database1 = new MockDatabase("db1", 1);
@@ -158,24 +171,25 @@ public abstract class AbstractTestBalancer extends junit.framework.TestCase
 
 		this.balancer.add(database1);
 		
-		assertTrue(this.balancer.contains(database1));
-		assertFalse(this.balancer.contains(database2));
+		assert this.balancer.contains(database1);
+		assert !this.balancer.contains(database2);
 	}
 
 	/**
 	 * Test method for {@link Balancer#first()}
 	 */
+	@Test
 	public void testFirst()
 	{
 		try
 		{
 			this.balancer.first();
 			
-			fail();
+			assert false;
 		}
 		catch (NoSuchElementException e)
 		{
-			// Do nothing
+			assert true;
 		}
 		
 		Database database = new MockDatabase("0", 0);
@@ -183,24 +197,25 @@ public abstract class AbstractTestBalancer extends junit.framework.TestCase
 		this.balancer.add(database);
 		
 		Database first = this.balancer.first();
-		
-		assertEquals(database, first);
+
+		assert database.equals(first) : database;
 	}
 
 	/**
 	 * Test method for {@link Balancer#next()}
 	 */
+	@Test
 	public void testNext()
 	{
 		try
 		{
-			this.balancer.next();
+			Database database = this.balancer.next();
 			
-			fail();
+			assert false : database.getId();
 		}
 		catch (NoSuchElementException e)
 		{
-			// Do nothing
+			assert true;
 		}
 		
 		testNext(this.balancer);
@@ -208,29 +223,18 @@ public abstract class AbstractTestBalancer extends junit.framework.TestCase
 	
 	protected abstract void testNext(Balancer balancer);
 	
-	protected class MockDatabase implements Database
+	protected class MockDatabase extends AbstractDatabase<Void>
 	{
-		private String id;
-		private int weight;
-		
 		protected MockDatabase(String id, int weight)
 		{
 			this.id = id;
 			this.weight = weight;
 		}
-		
-		/**
-		 * @see net.sf.hajdbc.Database#getId()
-		 */
-		public String getId()
-		{
-			return this.id;
-		}
 
 		/**
-		 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
+		 * @see net.sf.hajdbc.Database#connect(T)
 		 */
-		public Connection connect(Object connectionFactory)
+		public Connection connect(Void connectionFactory) throws SQLException
 		{
 			return null;
 		}
@@ -238,65 +242,15 @@ public abstract class AbstractTestBalancer extends junit.framework.TestCase
 		/**
 		 * @see net.sf.hajdbc.Database#createConnectionFactory()
 		 */
-		public Object createConnectionFactory()
+		public Void createConnectionFactory() throws SQLException
 		{
 			return null;
-		}
-
-		/**
-		 * @see net.sf.hajdbc.Database#getWeight()
-		 */
-		public int getWeight()
-		{
-			return this.weight;
-		}
-		
-		/**
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
-		public boolean equals(Object object)
-		{
-			Database database = (Database) object;
-			
-			return this.id.equals(database.getId());
-		}
-		
-		/**
-		 * @see java.lang.Object#toString()
-		 */
-		public String toString()
-		{
-			return this.id;
 		}
 
 		/**
 		 * @see net.sf.hajdbc.Database#getConnectionFactoryClass()
 		 */
-		public Class getConnectionFactoryClass()
-		{
-			return null;
-		}
-
-		/**
-		 * @see net.sf.hajdbc.DatabaseMBean#getUser()
-		 */
-		public String getUser()
-		{
-			return null;
-		}
-
-		/**
-		 * @see net.sf.hajdbc.DatabaseMBean#getPassword()
-		 */
-		public String getPassword()
-		{
-			return null;
-		}
-
-		/**
-		 * @see net.sf.hajdbc.DatabaseMBean#getProperties()
-		 */
-		public Properties getProperties()
+		public Class<Void> getConnectionFactoryClass()
 		{
 			return null;
 		}
@@ -304,7 +258,7 @@ public abstract class AbstractTestBalancer extends junit.framework.TestCase
 		/**
 		 * @see net.sf.hajdbc.Database#getActiveMBeanClass()
 		 */
-		public Class getActiveMBeanClass()
+		public Class<? extends ActiveDatabaseMBean> getActiveMBeanClass()
 		{
 			return null;
 		}
@@ -312,59 +266,9 @@ public abstract class AbstractTestBalancer extends junit.framework.TestCase
 		/**
 		 * @see net.sf.hajdbc.Database#getInactiveMBeanClass()
 		 */
-		public Class getInactiveMBeanClass()
+		public Class<? extends InactiveDatabaseMBean> getInactiveMBeanClass()
 		{
 			return null;
-		}
-
-		/**
-		 * @see net.sf.hajdbc.Database#isDirty()
-		 */
-		public boolean isDirty()
-		{
-			return false;
-		}
-
-		/**
-		 * @see net.sf.hajdbc.Database#clean()
-		 */
-		public void clean()
-		{
-		}
-
-		/**
-		 * @see net.sf.hajdbc.InactiveDatabaseMBean#setWeight(int)
-		 */
-		public void setWeight(int weight)
-		{
-		}
-
-		/**
-		 * @see net.sf.hajdbc.InactiveDatabaseMBean#setUser(java.lang.String)
-		 */
-		public void setUser(String user)
-		{
-		}
-
-		/**
-		 * @see net.sf.hajdbc.InactiveDatabaseMBean#setPassword(java.lang.String)
-		 */
-		public void setPassword(String password)
-		{
-		}
-
-		/**
-		 * @see net.sf.hajdbc.InactiveDatabaseMBean#setProperty(java.lang.String, java.lang.String)
-		 */
-		public void setProperty(String name, String value)
-		{
-		}
-
-		/**
-		 * @see net.sf.hajdbc.InactiveDatabaseMBean#removeProperty(java.lang.String)
-		 */
-		public void removeProperty(String name)
-		{
 		}
 	}
 }

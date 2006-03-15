@@ -27,6 +27,9 @@ import java.sql.Connection;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 
+import org.testng.annotations.Configuration;
+import org.testng.annotations.Test;
+
 import net.sf.hajdbc.DatabaseClusterTestCase;
 
 /**
@@ -34,12 +37,11 @@ import net.sf.hajdbc.DatabaseClusterTestCase;
  * @author  Paul Ferraro
  * @since   1.1
  */
+@Test
 public class TestDataSource extends DatabaseClusterTestCase
 {
-	/**
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	protected void setUp() throws Exception
+	@Configuration(beforeTestClass = true)
+	public void setUp() throws Exception
 	{
 		super.setUp();
 		
@@ -50,10 +52,8 @@ public class TestDataSource extends DatabaseClusterTestCase
 		this.context.bind("datasource", dataSource);
 	}
 
-	/**
-	 * @see junit.framework.TestCase#tearDown()
-	 */
-	protected void tearDown() throws Exception
+	@Configuration(afterTestClass = true)
+	public void tearDown() throws Exception
 	{
 		this.context.unbind("datasource");
 		
@@ -74,11 +74,11 @@ public class TestDataSource extends DatabaseClusterTestCase
 		{
 			int timeout = this.getDataSource().getLoginTimeout();
 			
-			assertEquals(0, timeout);
+			assert timeout == 0 : timeout;
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -93,7 +93,7 @@ public class TestDataSource extends DatabaseClusterTestCase
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -106,11 +106,11 @@ public class TestDataSource extends DatabaseClusterTestCase
 		{
 			PrintWriter writer = this.getDataSource().getLogWriter();
 			
-			assertNotNull(writer);
+			assert writer != null;
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -127,7 +127,7 @@ public class TestDataSource extends DatabaseClusterTestCase
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -140,12 +140,12 @@ public class TestDataSource extends DatabaseClusterTestCase
 		{
 			Connection connection = this.getDataSource().getConnection();
 			
-			assertNotNull(connection);
-			assertEquals("net.sf.hajdbc.sql.Connection", connection.getClass().getName());
+			assert connection != null;
+			assert net.sf.hajdbc.sql.Connection.class.equals(connection.getClass()) : connection.getClass().getName();
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -158,12 +158,12 @@ public class TestDataSource extends DatabaseClusterTestCase
 		{
 			Connection connection = this.getDataSource().getConnection("sa", "");
 			
-			assertNotNull(connection);
-			assertEquals("net.sf.hajdbc.sql.Connection", connection.getClass().getName());
+			assert connection != null;
+			assert net.sf.hajdbc.sql.Connection.class.equals(connection.getClass()) : connection.getClass().getName();
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -176,11 +176,11 @@ public class TestDataSource extends DatabaseClusterTestCase
 		{
 			String name = this.getDataSource().getName();
 			
-			assertEquals("test-datasource-cluster", name);
+			assert name.equals("test-datasource-cluster");
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -195,7 +195,7 @@ public class TestDataSource extends DatabaseClusterTestCase
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -208,12 +208,12 @@ public class TestDataSource extends DatabaseClusterTestCase
 		{
 			Reference reference = this.getDataSource().getReference();
 			
-			assertEquals("net.sf.hajdbc.sql.DataSource", reference.getClassName());
-			assertEquals("net.sf.hajdbc.sql.DataSourceFactory", reference.getFactoryClassName());
+			assert reference.getClassName().equals("net.sf.hajdbc.sql.DataSource");
+			assert reference.getFactoryClassName().equals("net.sf.hajdbc.sql.DataSourceFactory");
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 }

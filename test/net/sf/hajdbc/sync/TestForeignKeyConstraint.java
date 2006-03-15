@@ -27,19 +27,28 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
 
-import net.sf.hajdbc.EasyMockTestCase;
-
 import org.easymock.EasyMock;
+import org.easymock.IMocksControl;
+import org.testng.annotations.Configuration;
+import org.testng.annotations.Test;
 
 /**
  * @author  Paul Ferraro
  * @since   1.0
  */
-public class TestForeignKeyConstraint extends EasyMockTestCase
+@Test
+public class TestForeignKeyConstraint
 {
+	private IMocksControl control = EasyMock.createControl();
 	private Connection connection = this.control.createMock(Connection.class);
 	private DatabaseMetaData metaData = this.control.createMock(DatabaseMetaData.class);
 	private ResultSet resultSet = this.control.createMock(ResultSet.class);
+	
+	@Configuration(afterTestMethod = true)
+	public void reset()
+	{
+		this.control.reset();
+	}
 	
 	/**
 	 * Test method for {@link ForeignKeyConstraint#collect(Connection, Map)}
@@ -74,22 +83,22 @@ public class TestForeignKeyConstraint extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertNotNull(collection);
-			assertEquals(1, collection.size());
+			assert collection != null;
+			assert collection.size() == 1 : collection.size();
 			
 			ForeignKeyConstraint constraint = collection.iterator().next();
 			
-			assertEquals("fk", constraint.getName());
-			assertEquals("fk_schema", constraint.getSchema());
-			assertEquals("fk_table", constraint.getTable());
-			assertEquals("fk_column", constraint.getColumn());
-			assertEquals("pk_schema", constraint.getForeignSchema());
-			assertEquals("pk_table", constraint.getForeignTable());
-			assertEquals("pk_column", constraint.getForeignColumn());
+			assert constraint.getName().equals("fk") : constraint.getName();
+			assert constraint.getSchema().equals("fk_schema") : constraint.getSchema();
+			assert constraint.getTable().equals("fk_table") : constraint.getTable();
+			assert constraint.getColumn().equals("fk_column") : constraint.getColumn();
+			assert constraint.getForeignSchema().equals("pk_schema") : constraint.getForeignSchema();
+			assert constraint.getForeignTable().equals("pk_table") : constraint.getForeignTable();
+			assert constraint.getForeignColumn().equals("pk_column") : constraint.getForeignColumn();
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 	
@@ -126,22 +135,22 @@ public class TestForeignKeyConstraint extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertNotNull(collection);
-			assertEquals(1, collection.size());
+			assert collection != null;
+			assert collection.size() == 1 : collection.size();
 			
 			ForeignKeyConstraint constraint = collection.iterator().next();
 			
-			assertEquals("fk", constraint.getName());
-			assertNull(constraint.getSchema());
-			assertEquals("fk_table", constraint.getTable());
-			assertEquals("fk_column", constraint.getColumn());
-			assertNull(constraint.getForeignSchema());
-			assertEquals("pk_table", constraint.getForeignTable());
-			assertEquals("pk_column", constraint.getForeignColumn());
+			assert constraint.getName().equals("fk") : constraint.getName();
+			assert constraint.getSchema() == null : constraint.getSchema();
+			assert constraint.getTable().equals("fk_table") : constraint.getTable();
+			assert constraint.getColumn().equals("fk_column") : constraint.getColumn();
+			assert constraint.getForeignSchema().equals("pk_schema") : constraint.getForeignSchema();
+			assert constraint.getForeignTable().equals("pk_table") : constraint.getForeignTable();
+			assert constraint.getForeignColumn().equals("pk_column") : constraint.getForeignColumn();
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -152,7 +161,7 @@ public class TestForeignKeyConstraint extends EasyMockTestCase
 	{
 		ForeignKeyConstraint key = new ForeignKeyConstraint("test", null, null, null, null, null, null);
 		
-		assertEquals("test".hashCode(), key.hashCode());
+		assert "test".hashCode() == key.hashCode();
 	}
 
 	/**
@@ -164,8 +173,8 @@ public class TestForeignKeyConstraint extends EasyMockTestCase
 		ForeignKeyConstraint key2 = new ForeignKeyConstraint("test", null, null, null, null, null, null);
 		ForeignKeyConstraint key3 = new ForeignKeyConstraint("testing", null, null, null, null, null, null);
 		
-		assertTrue(key1.equals(key2));
-		assertFalse(key1.equals(key3));
-		assertFalse(key2.equals(key3));
+		assert key1.equals(key2);
+		assert !key1.equals(key3);
+		assert !key2.equals(key3);
 	}
 }

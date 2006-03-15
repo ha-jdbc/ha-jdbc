@@ -26,6 +26,8 @@ import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.util.Collections;
 
+import org.testng.annotations.Test;
+
 import net.sf.hajdbc.DatabaseClusterTestCase;
 
 /**
@@ -33,6 +35,7 @@ import net.sf.hajdbc.DatabaseClusterTestCase;
  * @author  Paul Ferraro
  * @since   1.0
  */
+@Test
 public class TestDriver extends DatabaseClusterTestCase
 {
 	private Driver driver = new Driver();
@@ -52,7 +55,7 @@ public class TestDriver extends DatabaseClusterTestCase
 			}
 		}
 		
-		assertTrue(registered);
+		assert registered;
 	}
 
 	/**
@@ -62,35 +65,37 @@ public class TestDriver extends DatabaseClusterTestCase
 	{
 		boolean accepted = this.driver.acceptsURL("jdbc:ha-jdbc:test-database-cluster");
 		
-		assertTrue(accepted);
+		assert accepted;
 
 		try
 		{
 			this.driver.acceptsURL("jdbc:ha-jdbc:no-such-cluster");
 
-			fail();
+			assert false;
 		}
 		catch (IllegalArgumentException e)
 		{
+			assert true;
 		}
 		
 		try
 		{
 			this.driver.acceptsURL("jdbc:ha-jdbc:");
 
-			fail();
+			assert false;
 		}
 		catch (IllegalArgumentException e)
 		{
+			assert true;
 		}
 		
 		accepted = this.driver.acceptsURL("jdbc:ha-jdbc");
 		
-		assertFalse(accepted);
+		assert !accepted;
 
 		accepted = this.driver.acceptsURL("jdbc:test:database1");
 		
-		assertFalse(accepted);
+		assert !accepted;
 	}
 
 	/**
@@ -102,12 +107,13 @@ public class TestDriver extends DatabaseClusterTestCase
 		{
 			Connection connection = this.driver.connect("jdbc:ha-jdbc:test-database-cluster", null);
 			
-			assertNotNull(connection);
-			assertEquals("net.sf.hajdbc.sql.Connection", connection.getClass().getName());
+			assert connection != null;
+			
+			assert net.sf.hajdbc.sql.Connection.class.equals(connection.getClass()) : connection.getClass().getName();
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -120,11 +126,11 @@ public class TestDriver extends DatabaseClusterTestCase
 		{
 			DriverPropertyInfo[] info = this.driver.getPropertyInfo("jdbc:ha-jdbc:test-database-cluster", null);
 			
-			assertNotNull(info);
+			assert info != null;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -135,6 +141,6 @@ public class TestDriver extends DatabaseClusterTestCase
 	{
 		boolean compliant = this.driver.jdbcCompliant();
 		
-		assertTrue(compliant);
+		assert compliant;
 	}
 }

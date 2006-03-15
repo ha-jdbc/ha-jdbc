@@ -22,12 +22,15 @@ package net.sf.hajdbc.balancer;
 
 import java.util.Arrays;
 
+import org.testng.annotations.Test;
+
 import net.sf.hajdbc.Balancer;
 
 /**
  * @author  Paul Ferraro
  * @since   1.0
  */
+@Test
 public class TestSimpleBalancer extends AbstractTestBalancer
 {
 	protected Balancer createBalancer()

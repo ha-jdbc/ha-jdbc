@@ -41,6 +41,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.easymock.EasyMock;
+import org.testng.annotations.Test;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Operation;
@@ -51,6 +52,7 @@ import net.sf.hajdbc.Operation;
  * @author  Paul Ferraro
  * @since   1.1
  */
+@Test
 public class TestCallableStatement extends TestPreparedStatement
 {
 	/**
@@ -107,11 +109,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(array, value);
+			assert value == array;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -135,11 +137,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(array, value);
+			assert value == array;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -163,11 +165,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(decimal, value);
+			assert value == decimal;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -192,11 +194,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(decimal, value);
+			assert value == decimal;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -220,11 +222,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(decimal, value);
+			assert value == decimal;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -248,11 +250,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(blob, value);
+			assert value == blob;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -276,11 +278,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(blob, value);
+			assert value == blob;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -302,11 +304,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertTrue(value);
+			assert value;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -328,11 +330,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertTrue(value);
+			assert value;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -356,11 +358,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertEquals(b, value);
+			assert value == b;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -384,11 +386,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertEquals(b, value);
+			assert value == b;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -412,11 +414,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(bytes, value);
+			assert value == bytes;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -440,11 +442,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(bytes, value);
+			assert value == bytes;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -468,11 +470,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(clob, value);
+			assert value == clob;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -496,11 +498,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(clob, value);
+			assert value == clob;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -524,11 +526,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(date, value);
+			assert value == date;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -553,11 +555,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(date, value);
+			assert value == date;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -581,11 +583,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(date, value);
+			assert value == date;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -610,11 +612,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(date, value);
+			assert value == date;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -636,11 +638,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertEquals(1.1, value, 0);
+			assert value == 1.1;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -662,11 +664,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertEquals(1.1, value, 0);
+			assert value == 1.1;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -688,11 +690,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertEquals(1.1f, value, 0);
+			assert value == 1.1f;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -714,11 +716,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertEquals(1.1f, value, 0);
+			assert value == 1.1f;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -740,11 +742,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertEquals(10, value);
+			assert value == 10;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -766,11 +768,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertEquals(10, value);
+			assert value == 10;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -792,11 +794,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertEquals(10L, value);
+			assert value == 10L;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -818,11 +820,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertEquals(10L, value);
+			assert value == 10L;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -846,11 +848,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(object, value);
+			assert value == object;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -875,11 +877,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(object, value);
+			assert value == object;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -903,11 +905,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(object, value);
+			assert value == object;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -932,11 +934,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(object, value);
+			assert value == object;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -960,11 +962,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(ref, value);
+			assert value == ref;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -988,11 +990,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(ref, value);
+			assert value == ref;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1016,11 +1018,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertEquals(s, value);
+			assert value == s;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1044,11 +1046,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertEquals(s, value);
+			assert value == s;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1070,11 +1072,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertEquals("test", value);
+			assert value == "test";
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1096,11 +1098,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertEquals("test", value);
+			assert value == "test";
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1124,11 +1126,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(time, value);
+			assert value == time;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1153,11 +1155,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(time, value);
+			assert value == time;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1181,11 +1183,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(time, value);
+			assert value == time;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1210,11 +1212,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(time, value);
+			assert value == time;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1238,11 +1240,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(timestamp, value);
+			assert value == timestamp;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1267,11 +1269,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(timestamp, value);
+			assert value == timestamp;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1295,11 +1297,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(timestamp, value);
+			assert value == timestamp;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1324,11 +1326,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(timestamp, value);
+			assert value == timestamp;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1352,11 +1354,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(url, value);
+			assert value == url;
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1380,11 +1382,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertSame(url, value);
+			assert value == url;
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1414,7 +1416,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1444,7 +1446,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1474,7 +1476,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1504,7 +1506,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1534,7 +1536,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1564,7 +1566,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1601,7 +1603,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1633,7 +1635,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1670,7 +1672,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1700,7 +1702,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1730,7 +1732,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1762,7 +1764,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1799,7 +1801,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1831,7 +1833,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1864,7 +1866,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1894,7 +1896,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1924,7 +1926,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1954,7 +1956,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1984,7 +1986,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -2014,7 +2016,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -2044,7 +2046,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -2076,7 +2078,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -2108,7 +2110,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -2140,7 +2142,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -2170,7 +2172,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -2200,7 +2202,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -2232,7 +2234,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -2265,7 +2267,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -2297,7 +2299,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -2330,7 +2332,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -2362,7 +2364,7 @@ public class TestCallableStatement extends TestPreparedStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -2384,11 +2386,11 @@ public class TestCallableStatement extends TestPreparedStatement
 			
 			this.control.verify();
 			
-			assertTrue(wasNull);
+			assert wasNull;
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 }

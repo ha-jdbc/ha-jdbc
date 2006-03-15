@@ -33,20 +33,22 @@ import javax.naming.spi.ObjectFactory;
 import javax.sql.DataSource;
 
 import org.easymock.EasyMock;
+import org.testng.annotations.Test;
 
-import net.sf.hajdbc.EasyMockTestCase;
+import net.sf.hajdbc.Database;
 
 /**
  * Unit test for {@link DataSourceDatabase}.
  * @author  Paul Ferraro
  * @since   1.1
  */
-public class TestDataSourceDatabase extends EasyMockTestCase
+@Test
+public class TestDataSourceDatabase extends AbstractTestDatabase
 {
 	private DataSource dataSource = this.control.createMock(DataSource.class);
 
 	/**
-	 * Test method for 'net.sf.hajdbc.sql.DataSourceDatabase.connect(Object)}
+	 * Test method for {@link net.sf.hajdbc.sql.DataSourceDatabase.connect(Object)}
 	 */
 	public void testConnect()
 	{
@@ -64,16 +66,16 @@ public class TestDataSourceDatabase extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertSame(connection, conn);
+			assert connection == conn;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
 	/**
-	 * Test method for 'net.sf.hajdbc.sql.DataSourceDatabase.connect(Object)}
+	 * Test method for {@link net.sf.hajdbc.sql.DataSourceDatabase.connect(Object)}
 	 */
 	public void testConnectAsUser()
 	{
@@ -93,16 +95,16 @@ public class TestDataSourceDatabase extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertSame(connection, conn);
+			assert connection == conn;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
 	/**
-	 * Test method for 'net.sf.hajdbc.sql.DataSourceDatabase.createConnectionFactory()}
+	 * Test method for {@link net.sf.hajdbc.sql.DataSourceDatabase.createConnectionFactory()}
 	 */
 	public void testCreateConnectionFactory()
 	{
@@ -119,48 +121,59 @@ public class TestDataSourceDatabase extends EasyMockTestCase
 			
 			context.rebind("test", reference);
 			
-			Object connectionFactory = database.createConnectionFactory();
+			DataSource dataSource = database.createConnectionFactory();
 			
-			assertNotNull(connectionFactory);
-			assertTrue(DataSource.class.isInstance(connectionFactory));
+			assert dataSource != null;
+			assert DataSource.class.isInstance(dataSource);
 			
 			context.unbind("test");
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
-
+	
 	/**
-	 * Test method for {@link net.sf.hajdbc.sql.AbstractDatabase#equals(Object)}
+	 * Test method for {@link net.sf.hajdbc.sql.DataSourceDatabase.createConnectionFactory()}
 	 */
-	public void testEqualsObject()
+	public void testSetName()
 	{
-		DriverDatabase database1 = new DriverDatabase();
-		database1.setId("test1");
+		DataSourceDatabase database = new DataSourceDatabase();
 		
-		DriverDatabase database2 = new DriverDatabase();
-		database2.setId("test1");
+		assert !database.isDirty();
 		
-		assertTrue(database1.equals(database2));
+		database.setName(null);
 		
-		database2.setId("test2");
+		assert !database.isDirty();
 		
-		assertFalse(database1.equals(database2));
-	}
+		database.setName("test");
+		
+		assert database.isDirty();
 
-	/**
-	 * Test method for {@link AbstractDatabase#hashCode()}
-	 */
-	public void testHashCode()
-	{
-		DriverDatabase database = new DriverDatabase();
-		database.setId("test");
+		database.setName("test");
 		
-		int hashCode = database.hashCode();
+		assert database.isDirty();
+
+		database.clean();
 		
-		assertEquals("test".hashCode(), hashCode);
+		assert !database.isDirty();
+		
+		database.setName(null);
+		
+		assert database.isDirty();
+		
+		database.setName("test");
+		
+		assert database.isDirty();
+		
+		database.clean();
+		
+		assert !database.isDirty();
+		
+		database.setName("different");
+		
+		assert database.isDirty();
 	}
 	
 	/**
@@ -175,5 +188,18 @@ public class TestDataSourceDatabase extends EasyMockTestCase
 		{
 			return EasyMock.createMock(DataSource.class);
 		}
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractTestDatabase#createDatabase(java.lang.String)
+	 */
+	@Override
+	protected Database createDatabase(String id)
+	{
+		DataSourceDatabase database = new DataSourceDatabase();
+		
+		database.setId(id);
+		
+		return database;
 	}
 }

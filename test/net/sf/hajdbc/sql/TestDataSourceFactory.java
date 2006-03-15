@@ -25,20 +25,22 @@ import javax.naming.StringRefAddr;
 
 import net.sf.hajdbc.DatabaseClusterTestCase;
 
+import org.testng.annotations.Configuration;
+import org.testng.annotations.Test;
+
 /**
  * Unit test for {@link DataSourceFactory}.
  * 
  * @author  Paul Ferraro
  * @since   1.1
  */
+@Test
 public class TestDataSourceFactory extends DatabaseClusterTestCase
 {
 	private DataSourceFactory factory = new DataSourceFactory();
 	
-	/**
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	protected void setUp() throws Exception
+	@Configuration(beforeTestClass = true)
+	public void setUp() throws Exception
 	{
 		super.setUp();
 		
@@ -49,10 +51,8 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 		this.context.bind("datasource", dataSource);
 	}
 
-	/**
-	 * @see junit.framework.TestCase#tearDown()
-	 */
-	protected void tearDown() throws Exception
+	@Configuration(afterTestClass = true)
+	public void tearDown() throws Exception
 	{
 		this.context.unbind("datasource");
 		
@@ -70,12 +70,12 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 		{
 			Object object = this.factory.getObjectInstance(reference, null, null, null);
 			
-			assertNotNull(object);
-			assertEquals("net.sf.hajdbc.sql.DataSource", object.getClass().getName());
+			assert object != null;
+			assert net.sf.hajdbc.sql.DataSource.class.equals(object.getClass());
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -88,11 +88,11 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 		{
 			Object object = this.factory.getObjectInstance(null, null, null, null);
 			
-			assertNull(object);
+			assert object == null;
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -107,11 +107,11 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 		{
 			Object object = this.factory.getObjectInstance(reference, null, null, null);
 			
-			assertNull(object);
+			assert object == null;
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -126,11 +126,11 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 		{
 			Object object = this.factory.getObjectInstance(reference, null, null, null);
 			
-			assertNull(object);
+			assert object == null;
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -145,11 +145,11 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 		{
 			this.factory.getObjectInstance(reference, null, null, null);
 			
-			fail();
+			assert false;
 		}
 		catch (Exception e)
 		{
-			// Expect
+			assert true;
 		}
 	}
 }

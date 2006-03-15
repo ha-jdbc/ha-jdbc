@@ -40,20 +40,20 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Calendar;
-
 import java.util.regex.Pattern;
-
-import org.easymock.EasyMock;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Operation;
-import net.sf.hajdbc.SQLObject;
+
+import org.easymock.EasyMock;
+import org.testng.annotations.Test;
 
 /**
  * Unit test for {@link PreparedStatement}
  * @author  Paul Ferraro
  * @since   1.1
  */
+@Test
 public class TestPreparedStatement extends TestStatement
 {
 	/**
@@ -113,7 +113,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -143,7 +143,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -172,11 +172,11 @@ public class TestPreparedStatement extends TestStatement
 			
 			this.control.verify();
 			
-			assertTrue(success);
+			assert success;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -212,11 +212,11 @@ public class TestPreparedStatement extends TestStatement
 			
 			this.control.verify();
 			
-			assertSame(resultSet, rs);
+			assert rs == resultSet;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -252,13 +252,11 @@ public class TestPreparedStatement extends TestStatement
 			
 			this.control.verify();
 			
-			assertNotNull(rs);
-			assertTrue(SQLObject.class.isInstance(rs));			
-			assertSame(resultSet, ((SQLObject) rs).getObject(this.database));
+			assert net.sf.hajdbc.sql.ResultSet.class.cast(rs).getObject(this.database) == resultSet;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -287,11 +285,11 @@ public class TestPreparedStatement extends TestStatement
 			
 			this.control.verify();
 			
-			assertEquals(1, result);
+			assert result == 1 : result;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -319,11 +317,11 @@ public class TestPreparedStatement extends TestStatement
 			
 			this.control.verify();
 			
-			assertSame(metaData, result);
+			assert result == metaData;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -351,11 +349,11 @@ public class TestPreparedStatement extends TestStatement
 			
 			this.control.verify();
 			
-			assertSame(metaData, result);
+			assert result == metaData;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -387,7 +385,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -423,7 +421,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -455,7 +453,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -491,7 +489,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -523,7 +521,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -553,7 +551,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -585,7 +583,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -617,7 +615,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -653,7 +651,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -685,7 +683,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -717,7 +715,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -750,7 +748,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -780,7 +778,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -810,7 +808,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -840,7 +838,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -870,7 +868,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -900,7 +898,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -930,7 +928,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -962,7 +960,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -994,7 +992,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1026,7 +1024,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1058,7 +1056,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1088,7 +1086,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1118,7 +1116,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1150,7 +1148,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1183,7 +1181,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1215,7 +1213,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1248,7 +1246,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1285,7 +1283,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1317,7 +1315,7 @@ public class TestPreparedStatement extends TestStatement
 		}
 		catch (Exception e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 }

@@ -33,23 +33,26 @@ import java.util.Map;
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.EasyMockTestCase;
 import net.sf.hajdbc.Operation;
-import net.sf.hajdbc.SQLObject;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 
 import org.easymock.EasyMock;
+import org.easymock.IMocksControl;
+import org.testng.annotations.Configuration;
+import org.testng.annotations.Test;
 
 /**
  * Unit test for {@link Connection}
  * @author  Paul Ferraro
  * @since   1.0
  */
-public class TestConnection extends EasyMockTestCase
+@Test
+public class TestConnection
 {
+	private IMocksControl control = EasyMock.createControl();
 	private DatabaseCluster databaseCluster = this.control.createMock(DatabaseCluster.class);
 	private java.sql.Connection sqlConnection = this.control.createMock(java.sql.Connection.class);
 	private Database database = this.control.createMock(Database.class);
@@ -60,10 +63,8 @@ public class TestConnection extends EasyMockTestCase
 	private List<Database> databaseList = Collections.singletonList(this.database);
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
 	
-	/**
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	protected void setUp() throws Exception
+	@Configuration(beforeTestClass = true)
+	public void init() throws Exception
 	{
 		Map map = Collections.singletonMap(this.database, this.sqlConnection);
 		
@@ -92,6 +93,12 @@ public class TestConnection extends EasyMockTestCase
 		this.control.verify();
 		this.control.reset();
 	}
+
+	@Configuration(afterTestMethod = true)
+	public void reset()
+	{
+		this.control.reset();
+	}
 	
 	/**
 	 * Test method for {@link Connection#getObject(Database)}
@@ -104,7 +111,7 @@ public class TestConnection extends EasyMockTestCase
 		
 		this.control.verify();
 		
-		assertSame(this.sqlConnection, connection);
+		assert this.sqlConnection == connection;
 	}
 
 	/**
@@ -118,7 +125,7 @@ public class TestConnection extends EasyMockTestCase
 		
 		this.control.verify();
 		
-		assertSame(this.databaseCluster, databaseCluster);
+		assert this.databaseCluster == databaseCluster;
 	}
 
 	/**
@@ -138,7 +145,7 @@ public class TestConnection extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 	
@@ -168,7 +175,7 @@ public class TestConnection extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -201,7 +208,7 @@ public class TestConnection extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -232,7 +239,7 @@ public class TestConnection extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -241,7 +248,7 @@ public class TestConnection extends EasyMockTestCase
 	 */
 	public void testCreateStatement()
 	{
-		Statement statement1 = EasyMock.createMock(Statement.class);
+		Statement sqlStatement = EasyMock.createMock(Statement.class);
 
 		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
 		
@@ -258,7 +265,7 @@ public class TestConnection extends EasyMockTestCase
 			EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 			EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);		
 			
-			EasyMock.expect(this.sqlConnection.createStatement()).andReturn(statement1);
+			EasyMock.expect(this.sqlConnection.createStatement()).andReturn(sqlStatement);
 			
 			this.lock.unlock();
 			
@@ -268,13 +275,11 @@ public class TestConnection extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertNotNull(statement);
-			assertTrue(SQLObject.class.isInstance(statement));
-			assertSame(statement1, ((SQLObject) statement).getObject(this.database));
+			assert net.sf.hajdbc.sql.Statement.class.cast(statement).getObject(this.database) == sqlStatement;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -303,11 +308,11 @@ public class TestConnection extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertSame(sqlStatement, statement);
+			assert sqlStatement == statement;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -316,7 +321,7 @@ public class TestConnection extends EasyMockTestCase
 	 */
 	public void testCreateStatementIntInt()
 	{
-		Statement statement1 = EasyMock.createMock(Statement.class);
+		Statement sqlStatement = EasyMock.createMock(Statement.class);
 
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
@@ -333,23 +338,21 @@ public class TestConnection extends EasyMockTestCase
 			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 			EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 			
-			EasyMock.expect(this.sqlConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE)).andReturn(statement1);
+			EasyMock.expect(this.sqlConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE)).andReturn(sqlStatement);
 			
 			this.lock.unlock();
 			
 			this.control.replay();
 			
-			Statement sqlStatement = this.connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			Statement statement = this.connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
 			
 			this.control.verify();
 			
-			assertNotNull(sqlStatement);
-			assertTrue(SQLObject.class.isInstance(sqlStatement));
-			assertSame(statement1, ((SQLObject) sqlStatement).getObject(this.database));
+			assert net.sf.hajdbc.sql.Statement.class.cast(statement).getObject(this.database) == sqlStatement;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -378,11 +381,11 @@ public class TestConnection extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertSame(sqlStatement, statement);
+			assert sqlStatement == statement;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -391,7 +394,7 @@ public class TestConnection extends EasyMockTestCase
 	 */
 	public void testCreateStatementIntIntInt()
 	{
-		Statement statement1 = EasyMock.createMock(Statement.class);
+		Statement sqlStatement = EasyMock.createMock(Statement.class);
 
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
@@ -408,23 +411,21 @@ public class TestConnection extends EasyMockTestCase
 			EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 			EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 			
-			EasyMock.expect(this.sqlConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE)).andReturn(statement1);
+			EasyMock.expect(this.sqlConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE)).andReturn(sqlStatement);
 			
 			this.lock.unlock();
 			
 			this.control.replay();
 			
-			Statement sqlStatement = this.connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE);
+			Statement statement = this.connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE);
 			
 			this.control.verify();
 			
-			assertNotNull(sqlStatement);
-			assertTrue(SQLObject.class.isInstance(sqlStatement));
-			assertSame(statement1, ((SQLObject) sqlStatement).getObject(this.database));
+			assert net.sf.hajdbc.sql.Statement.class.cast(statement).getObject(this.database) == sqlStatement;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -453,11 +454,11 @@ public class TestConnection extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertSame(sqlStatement, statement);
+			assert sqlStatement == statement;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -479,11 +480,11 @@ public class TestConnection extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertTrue(autoCommit);
+			assert autoCommit;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -509,11 +510,11 @@ public class TestConnection extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertEquals("test", catalog);
+			assert catalog.equals("test") : catalog;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -535,11 +536,11 @@ public class TestConnection extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertEquals(ResultSet.HOLD_CURSORS_OVER_COMMIT, holdability);
+			assert holdability == ResultSet.HOLD_CURSORS_OVER_COMMIT : holdability;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -567,11 +568,11 @@ public class TestConnection extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertSame(databaseMetaData, metaData);
+			assert databaseMetaData == metaData;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -597,11 +598,11 @@ public class TestConnection extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertEquals(Connection.TRANSACTION_NONE, transactionIsolation);
+			assert transactionIsolation == Connection.TRANSACTION_NONE : transactionIsolation;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -625,11 +626,11 @@ public class TestConnection extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertSame(typeMap, map);
+			assert map == typeMap;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -653,11 +654,11 @@ public class TestConnection extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertSame(sqlWarning, warning);
+			assert warning == sqlWarning;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -679,11 +680,11 @@ public class TestConnection extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertTrue(closed);
+			assert closed;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -705,11 +706,11 @@ public class TestConnection extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertTrue(readOnly);
+			assert readOnly;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -731,11 +732,11 @@ public class TestConnection extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertEquals("SELECT 'test'", nativeSQL);
+			assert nativeSQL.equals("SELECT 'test'") : nativeSQL;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -744,7 +745,7 @@ public class TestConnection extends EasyMockTestCase
 	 */
 	public void testPrepareCallString()
 	{
-		CallableStatement statement1 = EasyMock.createMock(CallableStatement.class);
+		CallableStatement sqlStatement = EasyMock.createMock(CallableStatement.class);
 
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
@@ -761,23 +762,21 @@ public class TestConnection extends EasyMockTestCase
 			EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 			EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 			
-			EasyMock.expect(this.sqlConnection.prepareCall("CALL ME")).andReturn(statement1);
+			EasyMock.expect(this.sqlConnection.prepareCall("CALL ME")).andReturn(sqlStatement);
 			
 			this.lock.unlock();
 			
 			this.control.replay();
 			
-			CallableStatement callableStatement = this.connection.prepareCall("CALL ME");
+			CallableStatement statement = this.connection.prepareCall("CALL ME");
 			
 			this.control.verify();
 			
-			assertNotNull(callableStatement);
-			assertTrue(SQLObject.class.isInstance(callableStatement));
-			assertSame(statement1, ((SQLObject) callableStatement).getObject(this.database));
+			assert net.sf.hajdbc.sql.CallableStatement.class.cast(statement).getObject(this.database) == sqlStatement;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -786,7 +785,7 @@ public class TestConnection extends EasyMockTestCase
 	 */
 	public void testReadOnlyPrepareCallString()
 	{
-		CallableStatement statement = EasyMock.createMock(CallableStatement.class);
+		CallableStatement sqlStatement = EasyMock.createMock(CallableStatement.class);
 
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);		
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
@@ -800,21 +799,21 @@ public class TestConnection extends EasyMockTestCase
 
 			this.balancer.beforeOperation(this.database);
 			
-			EasyMock.expect(this.sqlConnection.prepareCall("CALL ME")).andReturn(statement);
+			EasyMock.expect(this.sqlConnection.prepareCall("CALL ME")).andReturn(sqlStatement);
 			
 			this.balancer.afterOperation(this.database);
 			
 			this.control.replay();
 			
-			CallableStatement callableStatement = this.connection.prepareCall("CALL ME");
+			CallableStatement statement = this.connection.prepareCall("CALL ME");
 			
 			this.control.verify();
 			
-			assertSame(statement, callableStatement);
+			assert sqlStatement == statement;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -823,7 +822,7 @@ public class TestConnection extends EasyMockTestCase
 	 */
 	public void testPrepareCallStringIntInt()
 	{
-		CallableStatement statement = EasyMock.createMock(CallableStatement.class);
+		CallableStatement sqlStatement = EasyMock.createMock(CallableStatement.class);
 
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);		
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
@@ -840,23 +839,21 @@ public class TestConnection extends EasyMockTestCase
 			EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 			EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 						
-			EasyMock.expect(this.sqlConnection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE)).andReturn(statement);
+			EasyMock.expect(this.sqlConnection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE)).andReturn(sqlStatement);
 			
 			this.lock.unlock();
 			
 			this.control.replay();
 			
-			CallableStatement callableStatement = this.connection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			CallableStatement statement = this.connection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
 			
 			this.control.verify();
 			
-			assertNotNull(callableStatement);
-			assertTrue(SQLObject.class.isInstance(callableStatement));
-			assertSame(statement, SQLObject.class.cast(callableStatement).getObject(this.database));
+			assert net.sf.hajdbc.sql.CallableStatement.class.cast(statement).getObject(this.database) == sqlStatement;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -865,7 +862,7 @@ public class TestConnection extends EasyMockTestCase
 	 */
 	public void testReadOnlyPrepareCallStringIntInt()
 	{
-		CallableStatement statement = EasyMock.createMock(CallableStatement.class);
+		CallableStatement sqlStatement = EasyMock.createMock(CallableStatement.class);
 
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
@@ -879,21 +876,21 @@ public class TestConnection extends EasyMockTestCase
 
 			this.balancer.beforeOperation(this.database);
 			
-			EasyMock.expect(this.sqlConnection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE)).andReturn(statement);
+			EasyMock.expect(this.sqlConnection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE)).andReturn(sqlStatement);
 			
 			this.balancer.afterOperation(this.database);
 			
 			this.control.replay();
 			
-			CallableStatement callableStatement = this.connection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			CallableStatement statement = this.connection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
 			
 			this.control.verify();
 			
-			assertSame(statement, callableStatement);
+			assert statement == sqlStatement;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -902,7 +899,7 @@ public class TestConnection extends EasyMockTestCase
 	 */
 	public void testPrepareCallStringIntIntInt()
 	{
-		CallableStatement statement = EasyMock.createMock(CallableStatement.class);
+		CallableStatement sqlStatement = EasyMock.createMock(CallableStatement.class);
 
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
@@ -919,23 +916,21 @@ public class TestConnection extends EasyMockTestCase
 			EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 			EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 			
-			EasyMock.expect(this.sqlConnection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE)).andReturn(statement);
+			EasyMock.expect(this.sqlConnection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE)).andReturn(sqlStatement);
 			
 			this.lock.unlock();
 			
 			this.control.replay();
 			
-			CallableStatement callableStatement = this.connection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE);
+			CallableStatement statement = this.connection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE);
 			
 			this.control.verify();
 			
-			assertNotNull(callableStatement);
-			assertTrue(SQLObject.class.isInstance(callableStatement));
-			assertSame(statement, SQLObject.class.cast(callableStatement).getObject(this.database));
+			assert net.sf.hajdbc.sql.CallableStatement.class.cast(statement).getObject(this.database) == sqlStatement;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -944,7 +939,7 @@ public class TestConnection extends EasyMockTestCase
 	 */
 	public void testReadOnlyPrepareCallStringIntIntInt()
 	{
-		CallableStatement statement = EasyMock.createMock(CallableStatement.class);
+		CallableStatement sqlStatement = EasyMock.createMock(CallableStatement.class);
 
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
@@ -958,21 +953,21 @@ public class TestConnection extends EasyMockTestCase
 
 			this.balancer.beforeOperation(this.database);
 			
-			EasyMock.expect(this.sqlConnection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE)).andReturn(statement);
+			EasyMock.expect(this.sqlConnection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE)).andReturn(sqlStatement);
 			
 			this.balancer.afterOperation(this.database);
 			
 			this.control.replay();
 			
-			CallableStatement callableStatement = this.connection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE);
+			CallableStatement statement = this.connection.prepareCall("CALL ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE);
 			
 			this.control.verify();
 			
-			assertSame(statement, callableStatement);
+			assert sqlStatement == statement;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -981,7 +976,7 @@ public class TestConnection extends EasyMockTestCase
 	 */
 	public void testPrepareStatementString()
 	{
-		PreparedStatement statement = EasyMock.createMock(PreparedStatement.class);
+		PreparedStatement sqlStatement = EasyMock.createMock(PreparedStatement.class);
 
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
@@ -998,23 +993,21 @@ public class TestConnection extends EasyMockTestCase
 			EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 			EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 						
-			EasyMock.expect(this.sqlConnection.prepareStatement("SELECT ME")).andReturn(statement);
+			EasyMock.expect(this.sqlConnection.prepareStatement("SELECT ME")).andReturn(sqlStatement);
 			
 			this.lock.unlock();
 			
 			this.control.replay();
 			
-			PreparedStatement preparedStatement = this.connection.prepareStatement("SELECT ME");
+			PreparedStatement statement = this.connection.prepareStatement("SELECT ME");
 			
 			this.control.verify();
 			
-			assertNotNull(preparedStatement);
-			assertTrue(SQLObject.class.isInstance(preparedStatement));
-			assertSame(statement, SQLObject.class.cast(preparedStatement).getObject(this.database));
+			assert net.sf.hajdbc.sql.PreparedStatement.class.cast(statement).getObject(this.database) == sqlStatement;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1023,7 +1016,7 @@ public class TestConnection extends EasyMockTestCase
 	 */
 	public void testReadOnlyPrepareStatementString()
 	{
-		PreparedStatement statement = EasyMock.createMock(PreparedStatement.class);
+		PreparedStatement sqlStatement = EasyMock.createMock(PreparedStatement.class);
 
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
@@ -1037,21 +1030,21 @@ public class TestConnection extends EasyMockTestCase
 
 			this.balancer.beforeOperation(this.database);
 			
-			EasyMock.expect(this.sqlConnection.prepareStatement("SELECT ME")).andReturn(statement);
+			EasyMock.expect(this.sqlConnection.prepareStatement("SELECT ME")).andReturn(sqlStatement);
 			
 			this.balancer.afterOperation(this.database);
 			
 			this.control.replay();
 			
-			PreparedStatement preparedStatement = this.connection.prepareStatement("SELECT ME");
+			PreparedStatement statement = this.connection.prepareStatement("SELECT ME");
 			
 			this.control.verify();
 			
-			assertSame(statement, preparedStatement);
+			assert statement == sqlStatement;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1060,7 +1053,7 @@ public class TestConnection extends EasyMockTestCase
 	 */
 	public void testPrepareStatementStringInt()
 	{
-		PreparedStatement statement = EasyMock.createMock(PreparedStatement.class);
+		PreparedStatement sqlStatement = EasyMock.createMock(PreparedStatement.class);
 
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
@@ -1077,23 +1070,21 @@ public class TestConnection extends EasyMockTestCase
 			EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 			EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 			
-			EasyMock.expect(this.sqlConnection.prepareStatement("SELECT ME")).andReturn(statement);
+			EasyMock.expect(this.sqlConnection.prepareStatement("SELECT ME")).andReturn(sqlStatement);
 			
 			this.lock.unlock();
 			
 			this.control.replay();
 			
-			PreparedStatement preparedStatement = this.connection.prepareStatement("SELECT ME");
+			PreparedStatement statement = this.connection.prepareStatement("SELECT ME");
 			
 			this.control.verify();
 			
-			assertNotNull(preparedStatement);
-			assertTrue(SQLObject.class.isInstance(preparedStatement));
-			assertSame(statement, SQLObject.class.cast(preparedStatement).getObject(this.database));
+			assert net.sf.hajdbc.sql.PreparedStatement.class.cast(statement).getObject(this.database) == sqlStatement;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1102,7 +1093,7 @@ public class TestConnection extends EasyMockTestCase
 	 */
 	public void testReadOnlyPrepareStatementStringInt()
 	{
-		PreparedStatement statement = EasyMock.createMock(PreparedStatement.class);
+		PreparedStatement sqlStatement = EasyMock.createMock(PreparedStatement.class);
 
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
@@ -1116,21 +1107,21 @@ public class TestConnection extends EasyMockTestCase
 
 			this.balancer.beforeOperation(this.database);
 			
-			EasyMock.expect(this.sqlConnection.prepareStatement("SELECT ME")).andReturn(statement);
+			EasyMock.expect(this.sqlConnection.prepareStatement("SELECT ME")).andReturn(sqlStatement);
 			
 			this.balancer.afterOperation(this.database);
 			
 			this.control.replay();
 			
-			PreparedStatement preparedStatement = this.connection.prepareStatement("SELECT ME");
+			PreparedStatement statement = this.connection.prepareStatement("SELECT ME");
 			
 			this.control.verify();
 			
-			assertSame(statement, preparedStatement);
+			assert statement == sqlStatement;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1139,7 +1130,7 @@ public class TestConnection extends EasyMockTestCase
 	 */
 	public void testPrepareStatementStringIntInt()
 	{
-		PreparedStatement statement = EasyMock.createMock(PreparedStatement.class);
+		PreparedStatement sqlStatement = EasyMock.createMock(PreparedStatement.class);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);		
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
@@ -1156,23 +1147,21 @@ public class TestConnection extends EasyMockTestCase
 			EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 			EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 			
-			EasyMock.expect(this.sqlConnection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE)).andReturn(statement);
+			EasyMock.expect(this.sqlConnection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE)).andReturn(sqlStatement);
 			
 			this.lock.unlock();
 			
 			this.control.replay();
 			
-			PreparedStatement preparedStatement = this.connection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			PreparedStatement statement = this.connection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
 			
 			this.control.verify();
 			
-			assertNotNull(preparedStatement);
-			assertTrue(SQLObject.class.isInstance(preparedStatement));
-			assertSame(statement, SQLObject.class.cast(preparedStatement).getObject(this.database));
+			assert net.sf.hajdbc.sql.PreparedStatement.class.cast(statement).getObject(this.database) == sqlStatement;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1181,7 +1170,7 @@ public class TestConnection extends EasyMockTestCase
 	 */
 	public void testReadOnlyPrepareStatementStringIntInt()
 	{
-		PreparedStatement statement = EasyMock.createMock(PreparedStatement.class);
+		PreparedStatement sqlStatement = EasyMock.createMock(PreparedStatement.class);
 
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
@@ -1195,21 +1184,21 @@ public class TestConnection extends EasyMockTestCase
 
 			this.balancer.beforeOperation(this.database);
 			
-			EasyMock.expect(this.sqlConnection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE)).andReturn(statement);
+			EasyMock.expect(this.sqlConnection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE)).andReturn(sqlStatement);
 			
 			this.balancer.afterOperation(this.database);
 			
 			this.control.replay();
 			
-			PreparedStatement preparedStatement = this.connection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			PreparedStatement statement = this.connection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
 			
 			this.control.verify();
 			
-			assertSame(statement, preparedStatement);
+			assert statement == sqlStatement;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1218,7 +1207,7 @@ public class TestConnection extends EasyMockTestCase
 	 */
 	public void testPrepareStatementStringIntIntInt()
 	{
-		PreparedStatement statement = EasyMock.createMock(PreparedStatement.class);
+		PreparedStatement sqlStatement = EasyMock.createMock(PreparedStatement.class);
 
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
@@ -1235,23 +1224,21 @@ public class TestConnection extends EasyMockTestCase
 			EasyMock.expect(this.balancer.all()).andReturn(this.databaseList);
 			EasyMock.expect(this.databaseCluster.getExecutor()).andReturn(this.executor);
 			
-			EasyMock.expect(this.sqlConnection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE)).andReturn(statement);
+			EasyMock.expect(this.sqlConnection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE)).andReturn(sqlStatement);
 			
 			this.lock.unlock();
 			
 			this.control.replay();
 			
-			PreparedStatement preparedStatement = this.connection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE);
+			PreparedStatement statement = this.connection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE);
 			
 			this.control.verify();
 			
-			assertNotNull(preparedStatement);
-			assertTrue(SQLObject.class.isInstance(preparedStatement));			
-			assertSame(statement, SQLObject.class.cast(preparedStatement).getObject(this.database));
+			assert net.sf.hajdbc.sql.PreparedStatement.class.cast(statement).getObject(this.database) == sqlStatement;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1260,7 +1247,7 @@ public class TestConnection extends EasyMockTestCase
 	 */
 	public void testReadOnlyPrepareStatementStringIntIntInt()
 	{
-		PreparedStatement statement = EasyMock.createMock(PreparedStatement.class);
+		PreparedStatement sqlStatement = EasyMock.createMock(PreparedStatement.class);
 
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
@@ -1274,21 +1261,21 @@ public class TestConnection extends EasyMockTestCase
 
 			this.balancer.beforeOperation(this.database);
 			
-			EasyMock.expect(this.sqlConnection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE)).andReturn(statement);
+			EasyMock.expect(this.sqlConnection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE)).andReturn(sqlStatement);
 			
 			this.balancer.afterOperation(this.database);
 			
 			this.control.replay();
 			
-			PreparedStatement preparedStatement = this.connection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE);
+			PreparedStatement statement = this.connection.prepareStatement("SELECT ME", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.FETCH_REVERSE);
 			
 			this.control.verify();
 			
-			assertSame(statement, preparedStatement);
+			assert statement == sqlStatement;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1346,7 +1333,7 @@ public class TestConnection extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1377,7 +1364,7 @@ public class TestConnection extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1435,7 +1422,7 @@ public class TestConnection extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1466,7 +1453,7 @@ public class TestConnection extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1497,7 +1484,7 @@ public class TestConnection extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1527,7 +1514,7 @@ public class TestConnection extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1557,7 +1544,7 @@ public class TestConnection extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1588,13 +1575,11 @@ public class TestConnection extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertNotNull(savepoint);
-			assertTrue(SQLObject.class.isInstance(savepoint));
-			assertSame(sqlSavepoint, SQLObject.class.cast(savepoint).getObject(this.database));
+			assert net.sf.hajdbc.sql.Savepoint.class.cast(savepoint).getObject(this.database) == sqlSavepoint;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1625,13 +1610,11 @@ public class TestConnection extends EasyMockTestCase
 			
 			this.control.verify();
 			
-			assertNotNull(savepoint);
-			assertTrue(SQLObject.class.isInstance(savepoint));
-			assertSame(sqlSavepoint, SQLObject.class.cast(savepoint).getObject(this.database));
+			assert net.sf.hajdbc.sql.Savepoint.class.cast(savepoint).getObject(this.database) == sqlSavepoint;
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1662,7 +1645,7 @@ public class TestConnection extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 
@@ -1692,7 +1675,7 @@ public class TestConnection extends EasyMockTestCase
 		}
 		catch (SQLException e)
 		{
-			fail(e);
+			assert false : e;
 		}
 	}
 }
