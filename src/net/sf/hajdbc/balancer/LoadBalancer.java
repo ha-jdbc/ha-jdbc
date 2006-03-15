@@ -24,9 +24,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import net.sf.hajdbc.Database;
 
@@ -38,6 +38,9 @@ public class LoadBalancer extends AbstractBalancer
 {
 	private static Comparator<Map.Entry<Database, Integer>> comparator = new Comparator<Map.Entry<Database, Integer>>()
 	{
+		/**
+		 * @see java.lang.Comparator#compare(T, T)
+		 */
 		public int compare(Map.Entry<Database, Integer> mapEntry1, Map.Entry<Database, Integer> mapEntry2)
 		{
 			Database database1 = mapEntry1.getKey();
@@ -61,11 +64,12 @@ public class LoadBalancer extends AbstractBalancer
 		}
 	};
 	
-	private Map<Database, Integer> databaseMap = new ConcurrentHashMap<Database, Integer>();
+	private Map<Database, Integer> databaseMap = new HashMap<Database, Integer>();
 	
 	/**
 	 * @see net.sf.hajdbc.Balancer#all()
 	 */
+	@Override
 	protected Collection<Database> getDatabases()
 	{
 		return this.databaseMap.keySet();
@@ -75,7 +79,7 @@ public class LoadBalancer extends AbstractBalancer
 	 * @see net.sf.hajdbc.Balancer#add(net.sf.hajdbc.Database)
 	 */
 	@Override
-	public boolean add(Database database)
+	public synchronized boolean add(Database database)
 	{
 		boolean exists = this.databaseMap.containsKey(database);
 		
@@ -90,7 +94,7 @@ public class LoadBalancer extends AbstractBalancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#next()
 	 */
-	public Database next()
+	public synchronized Database next()
 	{
 		if (this.databaseMap.size() <= 1)
 		{
@@ -124,7 +128,7 @@ public class LoadBalancer extends AbstractBalancer
 		this.incrementLoad(database, -1);
 	}
 	
-	private void incrementLoad(Database database, int increment)
+	private synchronized void incrementLoad(Database database, int increment)
 	{
 		Integer load = this.databaseMap.remove(database);
 

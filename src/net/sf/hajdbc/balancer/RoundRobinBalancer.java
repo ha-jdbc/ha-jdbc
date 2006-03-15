@@ -20,11 +20,10 @@
  */
 package net.sf.hajdbc.balancer;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Set;
 
 import net.sf.hajdbc.Database;
@@ -36,7 +35,7 @@ import net.sf.hajdbc.Database;
 public class RoundRobinBalancer extends AbstractBalancer
 {
 	private Set<Database> databaseSet = new HashSet();
-	private List<Database> databaseList = new ArrayList();
+	private Queue<Database> databaseQueue = new LinkedList();
 
 	/**
 	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
@@ -61,7 +60,7 @@ public class RoundRobinBalancer extends AbstractBalancer
 			
 			for (int i = 0; i < weight; ++i)
 			{
-				this.databaseList.add(database);
+				this.databaseQueue.add(database);
 			}
 		}
 		
@@ -82,7 +81,7 @@ public class RoundRobinBalancer extends AbstractBalancer
 
 			for (int i = 0; i < weight; ++i)
 			{
-				this.databaseList.remove(database);
+				this.databaseQueue.remove(database);
 			}
 		}
 		
@@ -90,40 +89,28 @@ public class RoundRobinBalancer extends AbstractBalancer
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Balancer#next()
-	 */
-	public synchronized Database next()
-	{
-		if (this.databaseList.isEmpty())
-		{
-			return this.first();
-		}
-		
-		Database database = this.databaseList.get(0);
-		
-		if (this.databaseList.size() > 1)
-		{
-			Collections.rotate(this.databaseList, -1);
-		}
-
-		return database;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#contains(net.sf.hajdbc.Database)
-	 */
-	@Override
-	public synchronized boolean contains(Database database)
-	{
-		return super.contains(database);
-	}
-
-	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#first()
+	 * @see net.sf.hajdbc.Balancer#first()
 	 */
 	@Override
 	public synchronized Database first()
 	{
-		return super.first();
+		return (this.databaseQueue.isEmpty()) ? super.first() : this.databaseQueue.element();
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.Balancer#next()
+	 */
+	public synchronized Database next()
+	{
+		if (this.databaseQueue.isEmpty())
+		{
+			return super.first();
+		}
+		
+		Database database = this.databaseQueue.remove();
+		
+		this.databaseQueue.add(database);
+		
+		return database;
 	}
 }

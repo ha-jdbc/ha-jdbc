@@ -42,6 +42,7 @@ public class RandomBalancer extends AbstractBalancer
 	/**
 	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
 	 */
+	@Override
 	protected Collection<Database> getDatabases()
 	{
 		return this.databaseSet;
@@ -101,23 +102,5 @@ public class RandomBalancer extends AbstractBalancer
 		int index = this.random.nextInt(this.databaseList.size());
 		
 		return this.databaseList.get(index);
-	}
-
-	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#contains(net.sf.hajdbc.Database)
-	 */
-	@Override
-	public synchronized boolean contains(Database database)
-	{
-		return super.contains(database);
-	}
-
-	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#first()
-	 */
-	@Override
-	public synchronized Database first()
-	{
-		return super.first();
 	}
 }

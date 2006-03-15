@@ -21,11 +21,8 @@
 package net.sf.hajdbc.balancer;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.PriorityQueue;
+import java.util.Queue;
 
 import net.sf.hajdbc.Database;
 
@@ -35,15 +32,7 @@ import net.sf.hajdbc.Database;
  */
 public class SimpleBalancer extends AbstractBalancer
 {
-	private static Comparator<Database> comparator = new Comparator<Database>()
-	{
-		public int compare(Database database1, Database database2)
-		{
-			return Integer.valueOf(database2.getWeight()).compareTo(database1.getWeight());
-		}
-	};
-		
-	private List databaseList = new CopyOnWriteArrayList();
+	private Queue<Database> databaseQueue = new PriorityQueue<Database>();
 
 	/**
 	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
@@ -51,45 +40,22 @@ public class SimpleBalancer extends AbstractBalancer
 	@Override
 	protected Collection<Database> getDatabases()
 	{
-		return this.databaseList;
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.Balancer#add(net.sf.hajdbc.Database)
-	 */
-	@Override
-	public boolean add(Database database)
-	{
-		boolean exists = this.databaseList.contains(database);
-		
-		if (!exists)
-		{
-			this.databaseList.add(database);
-			
-			Collections.sort(this.databaseList, comparator);
-		}
-		
-		return !exists;
+		return this.databaseQueue;
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.Balancer#first()
 	 */
 	@Override
-	public Database first()
+	public synchronized Database first()
 	{
-		if (this.databaseList.isEmpty())
-		{
-			throw new NoSuchElementException();
-		}
-		
-		return (Database) this.databaseList.get(0);
+		return this.databaseQueue.element();
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.Balancer#next()
 	 */
-	public Database next()
+	public synchronized Database next()
 	{
 		return this.first();
 	}
