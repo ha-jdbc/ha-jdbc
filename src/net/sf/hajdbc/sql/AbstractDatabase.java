@@ -161,7 +161,7 @@ public abstract class AbstractDatabase<T> implements Database<T>
 	 */
 	public void setProperties(Properties properties)
 	{
-		this.dirty = true;
+		this.checkDirty(this.properties, properties);
 		this.properties = properties;
 	}
 
