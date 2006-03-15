@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class Driver implements java.sql.Driver
 {
-	private static final Pattern URL_PATTERN = Pattern.compile("^jdbc:ha-jdbc:(.*)$");
+	private static final Pattern URL_PATTERN = Pattern.compile("jdbc:ha-jdbc:(.+)");
 	
 	private static Logger logger = LoggerFactory.getLogger(Driver.class);
 	
@@ -84,7 +84,7 @@ public final class Driver implements java.sql.Driver
 		{
 			public java.sql.Connection execute(Database database, java.sql.Driver driver) throws SQLException
 			{
-				return driver.connect(((DriverDatabase) database).getUrl(), properties);
+				return driver.connect(DriverDatabase.class.cast(database).getUrl(), properties);
 			}	
 		};
 		
@@ -123,7 +123,7 @@ public final class Driver implements java.sql.Driver
 		{
 			public DriverPropertyInfo[] execute(Database database, java.sql.Driver driver) throws SQLException
 			{
-				return driver.getPropertyInfo(((DriverDatabase) database).getUrl(), properties);
+				return driver.getPropertyInfo(DriverDatabase.class.cast(database).getUrl(), properties);
 			}	
 		};
 		
