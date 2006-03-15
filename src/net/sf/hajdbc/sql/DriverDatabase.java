@@ -20,9 +20,6 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -40,8 +37,6 @@ import net.sf.hajdbc.SQLException;
  */
 public class DriverDatabase extends AbstractDatabase<Driver> implements InactiveDriverDatabaseMBean
 {
-	private static final long serialVersionUID = 1634021282765583995L;
-	
 	private static final String USER = "user";
 	private static final String PASSWORD = "password";
 	
@@ -143,30 +138,6 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	public Class<Driver> getConnectionFactoryClass()
 	{
 		return Driver.class;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.sql.AbstractDatabase#readExternal(java.io.ObjectInput)
-	 */
-	@Override
-	public void readExternal(ObjectInput input) throws IOException, ClassNotFoundException
-	{
-		super.readExternal(input);
-		
-		this.driver = input.readUTF();
-		this.url = input.readUTF();
-	}
-
-	/**
-	 * @see net.sf.hajdbc.sql.AbstractDatabase#writeExternal(java.io.ObjectOutput)
-	 */
-	@Override
-	public void writeExternal(ObjectOutput output) throws IOException
-	{
-		super.writeExternal(output);
-		
-		output.writeUTF(this.driver);
-		output.writeUTF(this.url);
 	}
 
 	/**
