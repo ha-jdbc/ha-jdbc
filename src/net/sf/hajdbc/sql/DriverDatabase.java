@@ -57,7 +57,7 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	public void setUrl(String url)
 	{
 		this.checkDirty(this.url, url);
-		this.dirty = true;
+		this.url = url;
 	}
 	
 	/**
@@ -74,7 +74,7 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	public void setDriver(String driver)
 	{
 		this.checkDirty(this.driver, driver);
-		this.dirty = true;
+		this.driver = driver;
 	}
 	
 	/**
