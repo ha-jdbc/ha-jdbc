@@ -20,10 +20,13 @@
  */
 package net.sf.hajdbc.balancer;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import net.sf.hajdbc.Database;
 
@@ -33,10 +36,35 @@ import net.sf.hajdbc.Database;
  */
 public class LoadBalancer extends AbstractBalancer
 {
-	protected SortedMap<Database, Integer> databaseMap = new TreeMap<Database, Integer>(new LoadComparator());
+	private static Comparator<Map.Entry<Database, Integer>> comparator = new Comparator<Map.Entry<Database, Integer>>()
+	{
+		public int compare(Map.Entry<Database, Integer> mapEntry1, Map.Entry<Database, Integer> mapEntry2)
+		{
+			Database database1 = mapEntry1.getKey();
+			Database database2 = mapEntry2.getKey();
+
+			Integer load1 = mapEntry1.getValue();
+			Integer load2 = mapEntry2.getValue();
+			
+			int weight1 = database1.getWeight();
+			int weight2 = database2.getWeight();
+			
+			if (weight1 == weight2)
+			{
+				return load1.compareTo(load2);
+			}
+			
+			float weightedLoad1 = (weight1 != 0) ? (load1.floatValue() / weight1) : Float.POSITIVE_INFINITY;
+			float weightedLoad2 = (weight2 != 0) ? (load2.floatValue() / weight2) : Float.POSITIVE_INFINITY;
+			
+			return Float.compare(weightedLoad1, weightedLoad2);
+		}
+	};
+	
+	private Map<Database, Integer> databaseMap = new HashMap<Database, Integer>();
 	
 	/**
-	 * @see net.sf.hajdbc.Balancer#all()
+	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
 	 */
 	@Override
 	protected Collection<Database> getDatabases()
@@ -65,16 +93,18 @@ public class LoadBalancer extends AbstractBalancer
 	 */
 	public synchronized Database next()
 	{
-		return this.first();
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.Balancer#first()
-	 */
-	@Override
-	public synchronized Database first()
-	{
-		return this.databaseMap.firstKey();
+		if (this.databaseMap.size() <= 1)
+		{
+			return this.first();
+		}
+		
+		List<Map.Entry<Database, Integer>> databaseMapEntryList = new ArrayList<Map.Entry<Database, Integer>>(this.databaseMap.entrySet());
+		
+		Collections.sort(databaseMapEntryList, comparator);
+		
+		Map.Entry<Database, Integer> mapEntry = databaseMapEntryList.get(0);
+		
+		return mapEntry.getKey();
 	}
 	
 	/**
@@ -102,31 +132,6 @@ public class LoadBalancer extends AbstractBalancer
 		if (load != null)
 		{
 			this.databaseMap.put(database, load + increment);
-		}
-	}
-	
-	private class LoadComparator implements Comparator<Database>
-	{
-		/**
-		 * @see java.util.Comparator#compare(T, T)
-		 */
-		public int compare(Database database1, Database database2)
-		{
-			Integer load1 = LoadBalancer.this.databaseMap.get(database1);
-			Integer load2 = LoadBalancer.this.databaseMap.get(database1);
-			
-			int weight1 = database1.getWeight();
-			int weight2 = database2.getWeight();
-			
-			if (weight1 == weight2)
-			{
-				return load1.compareTo(load2);
-			}
-			
-			float weightedLoad1 = (weight1 != 0) ? (load1.floatValue() / weight1) : Float.POSITIVE_INFINITY;
-			float weightedLoad2 = (weight2 != 0) ? (load2.floatValue() / weight2) : Float.POSITIVE_INFINITY;
-			
-			return Float.compare(weightedLoad1, weightedLoad2);
 		}
 	}
 }
