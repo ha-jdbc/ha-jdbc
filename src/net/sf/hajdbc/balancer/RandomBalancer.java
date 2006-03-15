@@ -54,7 +54,7 @@ public class RandomBalancer extends AbstractBalancer
 	@Override
 	public synchronized boolean add(Database database)
 	{
-		boolean added = this.databaseSet.add(database);
+		boolean added = super.add(database);
 		
 		if (added)
 		{
@@ -75,7 +75,7 @@ public class RandomBalancer extends AbstractBalancer
 	@Override
 	public synchronized boolean remove(Database database)
 	{
-		boolean removed = this.databaseSet.remove(database);
+		boolean removed = super.remove(database);
 		
 		int weight = database.getWeight();
 		
