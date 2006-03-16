@@ -85,6 +85,8 @@ public class Messages
 	 */
 	public static String getMessage(String key, Object... args)
 	{
-		return MessageFormat.format(resource.getString(key), args);
+		String message = resource.getString(key);
+		
+		return (args.length == 0) ? message : MessageFormat.format(message, args);
 	}
 }
