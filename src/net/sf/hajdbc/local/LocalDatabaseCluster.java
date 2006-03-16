@@ -775,6 +775,11 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			return false;
 		}
 		
+		if (!this.isAlive(database))
+		{
+			return false;
+		}
+		
 		Lock lock = this.writeLock();
 		
 		lock.lockInterruptibly();
@@ -990,16 +995,29 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		{
 			for (Database database: LocalDatabaseCluster.this.getInactiveDatabaseSet())
 			{
-				if (LocalDatabaseCluster.this.isAlive(database))
+				try
 				{
-					try
+					if (LocalDatabaseCluster.this.activate(database, LocalDatabaseCluster.this.getDefaultSynchronizationStrategy()))
 					{
-						LocalDatabaseCluster.this.activate(database, LocalDatabaseCluster.this.getDefaultSynchronizationStrategy());
+						logger.info(Messages.getMessage(Messages.DATABASE_ACTIVATED, database.getId(), this));
 					}
-					catch (Throwable e)
+				}
+				catch (java.sql.SQLException e)
+				{
+					logger.warn(Messages.getMessage(Messages.DATABASE_ACTIVATE_FAILED, database, LocalDatabaseCluster.this), e);
+
+					java.sql.SQLException exception = e.getNextException();
+					
+					while (exception != null)
 					{
-						logger.warn(e.getMessage(), e);
+						logger.warn(exception.getMessage(), e);
+						
+						exception = exception.getNextException();
 					}
+				}
+				catch (InterruptedException e)
+				{
+					break;
 				}
 			}
 		}
