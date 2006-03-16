@@ -20,7 +20,7 @@ See http://xml.apache.org/forrest/linking.html for more info
 		<performance label="Performance" href="performance.html"/>
 		<faq label="FAQ" href="faq.html"/>
 		<api label="JavaDoc" href="api/index.html"/>
-		<dtd label="DTD" href="dtd/ha-jdbc-1.1.dtd"/>
+		<dtd label="DTD" href="dtd.html"/>
 		<download label="Download" href="http://sourceforge.net/project/showfiles.php?group_id=111957"/>
 		<changes label="Change Log" href="changes.html"/>
 		<todo label="To Do" href="todo.html"/>
