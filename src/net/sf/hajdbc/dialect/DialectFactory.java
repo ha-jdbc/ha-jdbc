@@ -36,6 +36,22 @@ public class DialectFactory
 {
 	private static Logger logger = LoggerFactory.getLogger(DialectFactory.class);
 	
+	private static Map<String, Class<? extends Dialect>> dialectMap = new HashMap<String, Class<? extends Dialect>>();
+	
+	static
+	{
+		dialectMap.put("db2", DB2Dialect.class);
+		dialectMap.put("derby", DerbyDialect.class);
+		dialectMap.put("firebird", DefaultDialect.class);
+		dialectMap.put("hsqldb", HSQLDBDialect.class);
+		dialectMap.put("ingres", DefaultDialect.class);
+		dialectMap.put("maxdb", MaxDBDialect.class);
+		dialectMap.put("mckoi", DefaultDialect.class);
+		dialectMap.put("mysql", DefaultDialect.class);
+		dialectMap.put("oracle", MaxDBDialect.class);
+		dialectMap.put("postgresql", PostgreSQLDialect.class);
+	}
+	
 	/**
 	 * Creates a new instance of the Dialect implementation from the specified class name.
 	 * @param id the class name of a Dialect instance.
@@ -44,22 +60,9 @@ public class DialectFactory
 	 */
 	public static Dialect createDialect(String id) throws Exception
 	{
-		Map<String, Class<? extends Dialect>> map = new HashMap<String, Class<? extends Dialect>>();
-		
-		map.put("db2", DB2Dialect.class);
-		map.put("derby", DerbyDialect.class);
-		map.put("firebird", DefaultDialect.class);
-		map.put("hsqldb", HSQLDBDialect.class);
-		map.put("ingres", DefaultDialect.class);
-		map.put("maxdb", MaxDBDialect.class);
-		map.put("mckoi", DefaultDialect.class);
-		map.put("mysql", DefaultDialect.class);
-		map.put("oracle", MaxDBDialect.class);
-		map.put("postgresql", PostgreSQLDialect.class);
-		
 		try
 		{
-			Class<? extends Dialect> targetClass = map.get(id.toLowerCase());
+			Class<? extends Dialect> targetClass = dialectMap.get(id.toLowerCase());
 			
 			if (targetClass == null)
 			{
