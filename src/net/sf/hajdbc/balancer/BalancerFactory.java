@@ -37,21 +37,14 @@ public final class BalancerFactory
 {
 	private static Logger logger = LoggerFactory.getLogger(BalancerFactory.class);
 	
-	private static Map<String, Class<? extends Balancer>> balancerClassMap = new HashMap<String, Class<? extends Balancer>>();
-	private static Map<Class<? extends Balancer>, String> balancerIdMap = new HashMap<Class<? extends Balancer>, String>();
+	private static Map<String, Class<? extends Balancer>> balancerMap = new HashMap<String, Class<? extends Balancer>>();
 	
 	static
 	{
-		addBalancer("simple", SimpleBalancer.class);
-		addBalancer("random", RandomBalancer.class);
-		addBalancer("round-robin", RoundRobinBalancer.class);
-		addBalancer("load", LoadBalancer.class);
-	}
-	
-	private static void addBalancer(String id, Class<? extends Balancer> targetClass)
-	{
-		balancerClassMap.put(id, targetClass);
-		balancerIdMap.put(targetClass, id);
+		balancerMap.put("simple", SimpleBalancer.class);
+		balancerMap.put("random", RandomBalancer.class);
+		balancerMap.put("round-robin", RoundRobinBalancer.class);
+		balancerMap.put("load", LoadBalancer.class);
 	}
 	
 	/**
@@ -62,7 +55,7 @@ public final class BalancerFactory
 	 */
 	public static Balancer createBalancer(String id) throws Exception
 	{
-		Class<? extends Balancer> balancerClass = balancerClassMap.get(id);
+		Class<? extends Balancer> balancerClass = balancerMap.get(id);
 		
 		try
 		{
@@ -88,14 +81,15 @@ public final class BalancerFactory
 	 */
 	public static String getBalancerId(Balancer balancer)
 	{
-		String id = balancerIdMap.get(balancer.getClass());
-		
-		if (id == null)
+		for (Map.Entry<String, Class<? extends Balancer>> balancerMapEntry: balancerMap.entrySet())
 		{
-			throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_BALANCER, balancer.getClass()));
+			if (balancerMapEntry.getValue().isInstance(balancer))
+			{
+				return balancerMapEntry.getKey();
+			}
 		}
 		
-		return id;
+		throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_BALANCER, balancer.getClass()));
 	}
 	
 	private BalancerFactory()
