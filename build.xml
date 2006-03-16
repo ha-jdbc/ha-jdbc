@@ -40,7 +40,7 @@
 
 	<path id="test.classpath">
 		<path refid="src.classpath"></path>
-		<dirset dir="${test.dir}"></dirset>
+		<!--dirset dir="${test.dir}"></dirset-->
 		<fileset dir="${lib.test.dir}" includes="*.jar"></fileset>
 		<fileset dir="${lib.runtime.dir}" includes="*.jar"></fileset>
 	</path>
@@ -49,37 +49,34 @@
 		<path refid="src.classpath"></path>
 		<fileset dir="${java.home}/lib" includes="rt.jar"></fileset>
 		<fileset dir="${lib.runtime-1.4.dir}" includes="*.jar"></fileset>
+		<fileset dir="${lib.compile-1.4.dir}">
+			<include name="retrotranslator-transformer-*.jar"/>
+		</fileset>
+		<fileset dir="${lib.runtime-1.4.dir}">
+			<include name="backport-util-concurrent-*.jar"/>
+			<include name="retrotranslator-runtime-*.jar"/>
+		</fileset>
+	</path>
+
+	<path id="bind.classpath">
+		<fileset dir="${lib.dir}">
+			<include name="jibx-run-*.jar"/>
+			<include name="xpp3-*.jar"/>
+		</fileset>
+		<fileset dir="${lib.compile.dir}">
+			<include name="jibx-bind-*.jar"/>
+			<include name="bcel-*.jar"/>
+		</fileset>
 	</path>
 	
-	<taskdef name="bind" classname="org.jibx.binding.ant.CompileTask">
-		<classpath>
-			<fileset dir="${lib.dir}">
-				<include name="jibx-run-*.jar"/>
-				<include name="xpp3-*.jar"/>
-			</fileset>
-			<fileset dir="${lib.compile.dir}">
-				<include name="jibx-bind-*.jar"/>
-				<include name="bcel-*.jar"/>
-			</fileset>
-		</classpath>
-	</taskdef>
-	
-	<taskdef name="retrotranslate" classname="net.sf.retrotranslator.transformer.RetrotranslatorTask">
-		<classpath>
-			<fileset dir="${lib.compile-1.4.dir}">
-				<include name="retrotranslator-transformer-*.jar"/>
-			</fileset>
-			<fileset dir="${lib.runtime-1.4.dir}">
-				<include name="backport-util-concurrent-*.jar"/>
-				<include name="retrotranslator-runtime-*.jar"/>
-			</fileset>
-		</classpath>
-	</taskdef>
+	<taskdef name="testng" classname="org.testng.TestNGAntTask" classpathref="test.classpath"></taskdef>
+	<taskdef name="bind" classname="org.jibx.binding.ant.CompileTask" classpathref="bind.classpath"></taskdef>
+	<taskdef name="retrotranslate" classname="net.sf.retrotranslator.transformer.RetrotranslatorTask" classpathref="retrotranslate.classpath"></taskdef>
 	
 	<target name="clean">
-		<delete quiet="true">
+		<!--delete quiet="true">
 			<fileset dir="${basedir}" includes="${dist.name}-**"></fileset>
-		</delete>
+		</delete-->
 		<delete dir="${build.dir}" quiet="true"></delete>
 	</target>
 
@@ -117,7 +114,7 @@
 		</jar>
 	</target>
 	
-	<target name="dist-bin" depends="jar, jar-1.4, site">
+	<target name="dist-bin" depends="clean, jar, jar-1.4, site">
 		<tar tarfile="${dist.bin.file}" compression="gzip">
 			<tarfileset dir="${basedir}" prefix="${dist.version.name}">
 				<include name="${dist.version.name}.jar"/>
@@ -180,20 +177,10 @@
 		<javac srcdir="${test.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="test.classpath" source="1.5" target="1.5"></javac>
 	</target>
 
-	<target name="install-junit" unless="junit-available">
-		<copy file="${lib.test.dir}/${junit.jar}" todir="${ant.home}/lib"/>
-		<echo message="${junit.jar} has been installed in ${ant.home}/lib."></echo>
-		<fail message="You must restart the build to continue."/>
+	<target name="run-tests" depends="compile-tests">
+		<testng classpathref="test.classpath">
+			<xmlfileset dir="${test.dir}" includes="testng.xml"/>
+		</testng>
 	</target>
-	
-	<target name="run-tests" depends="install-junit, compile-tests">
-		<junit fork="yes" haltonfailure="off">
-			<classpath refid="test.classpath"></classpath>
-			<formatter type="brief" usefile="false"/>
-			<batchtest>
-				<fileset dir="${test.dir}" includes="**/Test*.java"></fileset>
-			</batchtest>
-		</junit>
-	</target>
-	
+
 </project>
