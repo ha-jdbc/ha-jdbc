@@ -144,7 +144,7 @@ public class TestForeignKeyConstraint
 			assert constraint.getSchema() == null : constraint.getSchema();
 			assert constraint.getTable().equals("fk_table") : constraint.getTable();
 			assert constraint.getColumn().equals("fk_column") : constraint.getColumn();
-			assert constraint.getForeignSchema().equals("pk_schema") : constraint.getForeignSchema();
+			assert constraint.getForeignSchema() == null : constraint.getForeignSchema();
 			assert constraint.getForeignTable().equals("pk_table") : constraint.getForeignTable();
 			assert constraint.getForeignColumn().equals("pk_column") : constraint.getForeignColumn();
 		}

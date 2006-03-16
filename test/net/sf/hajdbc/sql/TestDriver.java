@@ -69,25 +69,18 @@ public class TestDriver extends DatabaseClusterTestCase
 
 		try
 		{
-			this.driver.acceptsURL("jdbc:ha-jdbc:no-such-cluster");
+			accepted = this.driver.acceptsURL("jdbc:ha-jdbc:no-such-cluster");
 
-			assert false;
+			assert false : accepted;
 		}
 		catch (IllegalArgumentException e)
 		{
 			assert true;
 		}
 		
-		try
-		{
-			this.driver.acceptsURL("jdbc:ha-jdbc:");
+		accepted = this.driver.acceptsURL("jdbc:ha-jdbc:");
 
-			assert false;
-		}
-		catch (IllegalArgumentException e)
-		{
-			assert true;
-		}
+		assert !accepted;
 		
 		accepted = this.driver.acceptsURL("jdbc:ha-jdbc");
 		
