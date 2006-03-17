@@ -65,7 +65,6 @@ public class Messages
 	public static final String JNDI_LOOKUP_FAILED = "jndi-lookup-failed";
 	public static final String MBEAN_SERVER_NOT_FOUND = "mbean-server-not-found";
 	public static final String NO_ACTIVE_DATABASES = "no-active-databases";
-	public static final String NOT_INSTANCE_OF = "not-instance-of";
 	public static final String PRIMARY_KEY_REQUIRED = "primary-key-required";
 	public static final String SHUT_DOWN = "shut-down";
 	public static final String SQL_OBJECT_INIT_FAILED = "sql-object-init-failed";
