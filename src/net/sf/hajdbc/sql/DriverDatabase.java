@@ -57,7 +57,8 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.sql.InactiveDriverDatabaseMBean#setUrl(java.lang.String)
+	 * Set the url for this database
+	 * @param url a database url
 	 */
 	public void setUrl(String url)
 	{
@@ -74,7 +75,9 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.sql.InactiveDriverDatabaseMBean#setDriver(java.lang.String)
+	 * Set the driver class for this database.
+	 * @param driver the driver class name
+	 * @throws IllegalArgumentException if driver class could not be found or does not implement <code>java.sql.Driver</code>
 	 */
 	public void setDriver(String driver)
 	{

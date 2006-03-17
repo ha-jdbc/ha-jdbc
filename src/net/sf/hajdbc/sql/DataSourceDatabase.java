@@ -50,7 +50,8 @@ public class DataSourceDatabase extends AbstractDatabase<DataSource> implements 
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.sql.InactiveDataSourceDatabaseMBean#setName(java.lang.String)
+	 * Sets the JNDI name of this DataSource
+	 * @param name a JNDI name
 	 */
 	public void setName(String name)
 	{

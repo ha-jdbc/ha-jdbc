@@ -28,15 +28,4 @@ import net.sf.hajdbc.InactiveDatabaseMBean;
  */
 public interface InactiveDriverDatabaseMBean extends ActiveDriverDatabaseMBean, InactiveDatabaseMBean
 {
-	/**
-	 * Set the url for this database
-	 * @param url a database url
-	 */
-	public void setUrl(String url);
-	
-	/**
-	 * Set the driver for this database
-	 * @param driver the driver class name
-	 */
-	public void setDriver(String driver);
 }

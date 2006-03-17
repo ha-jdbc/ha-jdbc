@@ -28,9 +28,4 @@ import net.sf.hajdbc.InactiveDatabaseMBean;
  */
 public interface InactiveDataSourceDatabaseMBean extends ActiveDataSourceDatabaseMBean, InactiveDatabaseMBean
 {
-	/**
-	 * Sets the JNDI name of this DataSource
-	 * @param name a JNDI name
-	 */
-	public void setName(String name);
 }
