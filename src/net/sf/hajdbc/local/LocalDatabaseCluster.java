@@ -278,7 +278,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		}
 		catch (JMException e)
 		{
-			throw new IllegalStateException(e.toString(), e);
+			throw new IllegalStateException(e);
 		}
 	}
 	
@@ -475,13 +475,13 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#addDatabase(java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public void addDatabase(String id, String url, String driver)
+	public void addDatabase(String id, String driver, String url)
 	{
 		DriverDatabase database = new DriverDatabase();
 		
 		database.setId(id);
-		database.setUrl(url);
 		database.setDriver(driver);
+		database.setUrl(url);
 		
 		this.addDatabase(database);
 	}
@@ -508,7 +508,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		
 		if (this.balancer.contains(database))
 		{
-			throw new IllegalArgumentException(Messages.getMessage(Messages.DATABASE_STILL_ACTIVE, id, this));
+			throw new IllegalStateException(Messages.getMessage(Messages.DATABASE_STILL_ACTIVE, id, this));
 		}
 
 		MBeanServer server = DatabaseClusterFactory.getMBeanServer();
@@ -527,7 +527,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		catch (JMException e)
 		{
 			logger.error(e.toString(), e);
-			throw new IllegalStateException(e.toString());
+			throw new IllegalStateException(e);
 		}
 	}
 	
@@ -609,7 +609,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		catch (JMException e)
 		{
 			logger.error(e.toString(), e);
-			throw new IllegalStateException(e.toString());
+			throw new IllegalStateException(e);
 		}
 	}
 	
