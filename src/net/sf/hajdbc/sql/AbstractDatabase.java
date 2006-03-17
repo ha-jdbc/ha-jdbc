@@ -215,7 +215,7 @@ public abstract class AbstractDatabase<T> implements Database<T>
 	}
 
 	/**
-	 * @see java.lang.Comparable#compareTo(T)
+	 * @see java.lang.Comparable#compareTo(Object)
 	 */
 	public int compareTo(Database database)
 	{
