@@ -238,11 +238,16 @@ public class TestDriverDatabase extends AbstractTestDatabase
 		
 		assert !database.isDirty();
 		
-		database.setDriver("test");
+		database.setDriver("");
+		
+		assert database.getDriver() == null : database.getDriver();
+		assert !database.isDirty();
+
+		database.setDriver("net.sf.hajdbc.sql.Driver");
 		
 		assert database.isDirty();
 
-		database.setDriver("test");
+		database.setDriver("net.sf.hajdbc.sql.Driver");
 		
 		assert database.isDirty();
 
@@ -254,7 +259,7 @@ public class TestDriverDatabase extends AbstractTestDatabase
 		
 		assert database.isDirty();
 		
-		database.setDriver("test");
+		database.setDriver("net.sf.hajdbc.sql.Driver");
 		
 		assert database.isDirty();
 		
@@ -262,8 +267,30 @@ public class TestDriverDatabase extends AbstractTestDatabase
 		
 		assert !database.isDirty();
 		
-		database.setDriver("different");
+		database.setDriver("java.sql.Driver");
 		
 		assert database.isDirty();
+		
+		try
+		{
+			database.setDriver("java.lang.Class");
+			
+			assert false;
+		}
+		catch (IllegalArgumentException e)
+		{
+			assert true;
+		}
+		
+		try
+		{
+			database.setDriver("not.a.valid.Class");
+			
+			assert false;
+		}
+		catch (IllegalArgumentException e)
+		{
+			assert true;
+		}
 	}
 }

@@ -47,7 +47,7 @@ public class TestDataSource extends DatabaseClusterTestCase
 		
 		DataSource dataSource = new DataSource();
 		
-		dataSource.setName("test-datasource-cluster");
+		dataSource.setCluster("test-datasource-cluster");
 		
 		this.context.bind("datasource", dataSource);
 	}
@@ -170,11 +170,11 @@ public class TestDataSource extends DatabaseClusterTestCase
 	/**
 	 * Test method for {@link DataSource#getName()}
 	 */
-	public void testGetName()
+	public void testGetCluster()
 	{
 		try
 		{
-			String name = this.getDataSource().getName();
+			String name = this.getDataSource().getCluster();
 			
 			assert name.equals("test-datasource-cluster");
 		}
@@ -191,7 +191,7 @@ public class TestDataSource extends DatabaseClusterTestCase
 	{
 		try
 		{
-			this.getDataSource().setName("test");
+			this.getDataSource().setCluster("test");
 		}
 		catch (Exception e)
 		{

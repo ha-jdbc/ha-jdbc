@@ -46,7 +46,7 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 		
 		DataSource dataSource = new DataSource();
 		
-		dataSource.setName("test-datasource-cluster");
+		dataSource.setCluster("test-datasource-cluster");
 		
 		this.context.bind("datasource", dataSource);
 	}
@@ -64,7 +64,7 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 	 */
 	public void testGetObjectInstance()
 	{
-		Reference reference = new Reference("net.sf.hajdbc.sql.DataSource", new StringRefAddr(DataSource.NAME, "test-datasource-cluster"));
+		Reference reference = new Reference("net.sf.hajdbc.sql.DataSource", new StringRefAddr(DataSource.DATABASE_CLUSTER, "test-datasource-cluster"));
 		
 		try
 		{
@@ -101,7 +101,7 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 	 */
 	public void testWrongReferenceGetObjectInstance()
 	{
-		Reference reference = new Reference("net.sf.hajdbc.sql.Driver", new StringRefAddr(DataSource.NAME, "test-datasource-cluster"));
+		Reference reference = new Reference("net.sf.hajdbc.sql.Driver", new StringRefAddr(DataSource.DATABASE_CLUSTER, "test-datasource-cluster"));
 		
 		try
 		{
@@ -139,7 +139,7 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 	 */
 	public void testInvalidRefAddrReferenceGetObjectInstance()
 	{
-		Reference reference = new Reference("net.sf.hajdbc.sql.DataSource", new StringRefAddr(DataSource.NAME, "invalid-name"));
+		Reference reference = new Reference("net.sf.hajdbc.sql.DataSource", new StringRefAddr(DataSource.DATABASE_CLUSTER, "invalid-name"));
 		
 		try
 		{
