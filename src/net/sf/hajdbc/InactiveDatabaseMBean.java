@@ -29,6 +29,7 @@ public interface InactiveDatabaseMBean extends ActiveDatabaseMBean
 	/**
 	 * Set the weight for this database
 	 * @param weight a weight
+	 * @exception IllegalArgumentException if weight is less than 0
 	 */
 	public void setWeight(int weight);
 	
