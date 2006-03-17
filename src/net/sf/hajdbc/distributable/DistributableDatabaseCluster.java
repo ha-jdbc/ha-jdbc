@@ -176,7 +176,7 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 		}
 		catch (Exception e)
 		{
-			throw new SQLException(e.getMessage(), e);
+			throw new SQLException(e.toString(), e);
 		}
 	}
 

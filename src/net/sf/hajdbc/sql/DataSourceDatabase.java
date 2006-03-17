@@ -84,7 +84,7 @@ public class DataSourceDatabase extends AbstractDatabase<DataSource> implements 
 		}
 		catch (ClassCastException e)
 		{
-			throw new SQLException(Messages.getMessage(Messages.NOT_INSTANCE_OF, this.name, DataSource.class.getName()), e);
+			throw new SQLException(e.toString(), e);
 		}
 		catch (NamingException e)
 		{

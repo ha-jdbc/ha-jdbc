@@ -198,7 +198,7 @@ public final class DatabaseClusterFactory
 				}
 				catch (IOException e)
 				{
-					logger.warn(e.getMessage(), e);
+					logger.warn(e.toString(), e);
 				}
 			}
 		}
@@ -335,7 +335,7 @@ public final class DatabaseClusterFactory
 				}
 				catch (IOException e)
 				{
-					logger.warn(e.getMessage(), e);
+					logger.warn(e.toString(), e);
 				}
 			}
 			
@@ -347,7 +347,7 @@ public final class DatabaseClusterFactory
 				}
 				catch (IOException e)
 				{
-					logger.warn(e.getMessage(), e);
+					logger.warn(e.toString(), e);
 				}
 			}
 			
@@ -396,7 +396,7 @@ public final class DatabaseClusterFactory
 		catch (Exception e)
 		{
 			// Log exception here, since it will be masked by JiBX
-			logger.error(e.getMessage(), e);
+			logger.error(e.toString(), e);
 			throw e;
 		}
 	}

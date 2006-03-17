@@ -68,7 +68,7 @@ public final class BalancerFactory
 		}
 		catch (Exception e)
 		{
-			logger.error(e.getMessage(), e);
+			logger.error(e.toString(), e);
 			
 			throw e;
 		}

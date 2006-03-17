@@ -41,7 +41,12 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	private static final String PASSWORD = "password";
 	
 	private String url;
-	private String driver;
+	private Class<? extends Driver> driverClass;
+	
+	static String getClassName(Class targetClass)
+	{
+		return targetClass.getName();
+	}
 	
 	/**
 	 * @see net.sf.hajdbc.sql.ActiveDriverDatabaseMBean#getUrl()
@@ -65,7 +70,7 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	 */
 	public String getDriver()
 	{
-		return this.driver;
+		return (this.driverClass != null) ? this.driverClass.getName() : null;
 	}
 	
 	/**
@@ -73,8 +78,21 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	 */
 	public void setDriver(String driver)
 	{
-		this.checkDirty(this.driver, driver);
-		this.driver = driver;
+		try
+		{
+			Class<? extends Driver> targetClass = ((driver != null) && (driver.length() > 0)) ? Class.forName(driver).asSubclass(Driver.class) : null;
+			
+			this.checkDirty(this.driverClass, targetClass);
+			this.driverClass = targetClass;
+		}
+		catch (ClassNotFoundException e)
+		{
+			throw new IllegalArgumentException(e);
+		}
+		catch (ClassCastException e)
+		{
+			throw new IllegalArgumentException(e);
+		}
 	}
 	
 	/**
@@ -105,23 +123,6 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	 */
 	public Driver createConnectionFactory() throws java.sql.SQLException
 	{
-		if (this.driver != null)
-		{
-			try
-			{
-				Class driverClass = Class.forName(this.driver);
-				
-				if (!Driver.class.isAssignableFrom(driverClass))
-				{
-					throw new SQLException(Messages.getMessage(Messages.NOT_INSTANCE_OF, this.driver, Driver.class.getName()));
-				}
-			}
-			catch (ClassNotFoundException e)
-			{
-				throw new SQLException(Messages.getMessage(Messages.DRIVER_NOT_FOUND, this.driver), e);
-			}
-		}
-		
 		try
 		{
 			return DriverManager.getDriver(this.url);

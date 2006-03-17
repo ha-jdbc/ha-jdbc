@@ -113,6 +113,11 @@ public abstract class AbstractDatabase<T> implements Database<T>
 	 */
 	public void setWeight(int weight)
 	{
+		if (weight < 0)
+		{
+			throw new IllegalArgumentException();
+		}
+		
 		this.checkDirty(this.weight, weight);
 		this.weight = weight;
 	}

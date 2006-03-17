@@ -123,7 +123,7 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 					}
 					catch (ExecutionException e)
 					{
-						logger.warn(e.getMessage(), e.getCause());
+						logger.warn(e.toString(), e.getCause());
 					}
 					catch (RejectedExecutionException e)
 					{

@@ -74,7 +74,7 @@ public class DialectFactory
 		catch (Exception e)
 		{
 			// JiBX will mask this exception, so logger it here
-			logger.error(e.getMessage(), e);
+			logger.error(e.toString(), e);
 			
 			throw e;
 		}

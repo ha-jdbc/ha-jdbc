@@ -58,7 +58,7 @@ public class SQLException extends java.sql.SQLException
 	 */
 	public SQLException(Throwable cause)
 	{
-		super(cause.getMessage());
+		super(cause.toString());
 		
 		this.initCause(cause);
 	}

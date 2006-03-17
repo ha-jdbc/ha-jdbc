@@ -485,7 +485,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		}
 		catch (java.sql.SQLException e)
 		{
-			logger.warn(e.getMessage(), e);
+			logger.warn(e.toString(), e);
 		}
 	}
 

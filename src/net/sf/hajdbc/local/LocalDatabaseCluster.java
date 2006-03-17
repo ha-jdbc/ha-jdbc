@@ -193,7 +193,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 				}
 				catch (java.sql.SQLException e)
 				{
-					logger.warn(e.getMessage(), e);
+					logger.warn(e.toString(), e);
 				}
 			}
 		}
@@ -220,7 +220,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		}
 		catch (JMException e)
 		{
-			throw new IllegalStateException(e.getMessage(), e);
+			throw new IllegalStateException(e.toString(), e);
 		}
 		
 		boolean removed = this.balancer.remove(database);
@@ -278,7 +278,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		}
 		catch (JMException e)
 		{
-			throw new IllegalStateException(e.getMessage(), e);
+			throw new IllegalStateException(e.toString(), e);
 		}
 	}
 	
@@ -526,8 +526,8 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		}
 		catch (JMException e)
 		{
-			logger.error(e.getMessage(), e);
-			throw new IllegalStateException(e.getMessage());
+			logger.error(e.toString(), e);
+			throw new IllegalStateException(e.toString());
 		}
 	}
 	
@@ -603,13 +603,13 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		}
 		catch (java.sql.SQLException e)
 		{
-			logger.warn(e.getMessage(), e);
-			throw new IllegalArgumentException(e.getMessage());
+			logger.warn(e.toString(), e);
+			throw new IllegalArgumentException(e.toString());
 		}
 		catch (JMException e)
 		{
-			logger.error(e.getMessage(), e);
-			throw new IllegalStateException(e.getMessage());
+			logger.error(e.toString(), e);
+			throw new IllegalStateException(e.toString());
 		}
 	}
 	
@@ -759,12 +759,12 @@ public class LocalDatabaseCluster implements DatabaseCluster
 				exception = exception.getNextException();
 			}
 
-			throw new IllegalStateException(e.getMessage());
+			throw new IllegalStateException(e.toString());
 		}
 		catch (InterruptedException e)
 		{
-			logger.warn(e.getMessage(), e);
-			throw new IllegalMonitorStateException(e.getMessage());
+			logger.warn(e.toString(), e);
+			throw new IllegalMonitorStateException(e.toString());
 		}
 	}
 	
@@ -944,7 +944,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			}
 			catch (java.sql.SQLException e)
 			{
-				logger.warn(e.getMessage(), e);
+				logger.warn(e.toString(), e);
 			}
 		}
 	}
@@ -962,7 +962,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			}
 			catch (java.sql.SQLException e)
 			{
-				logger.warn(e.getMessage(), e);
+				logger.warn(e.toString(), e);
 			}
 		}
 	}
