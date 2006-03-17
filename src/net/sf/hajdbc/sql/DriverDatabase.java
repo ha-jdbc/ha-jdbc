@@ -80,10 +80,15 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	{
 		try
 		{
-			Class<? extends Driver> targetClass = ((driver != null) && (driver.length() > 0)) ? Class.forName(driver).asSubclass(Driver.class) : null;
+			Class<? extends Driver> driverClass = null;
 			
-			this.checkDirty(this.driverClass, targetClass);
-			this.driverClass = targetClass;
+			if ((driver != null) && (driver.length() > 0))
+			{
+				driverClass = Class.forName(driver).asSubclass(Driver.class);
+			}
+			
+			this.checkDirty(this.driverClass, driverClass);
+			this.driverClass = driverClass;
 		}
 		catch (ClassNotFoundException e)
 		{
