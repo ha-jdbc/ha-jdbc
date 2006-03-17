@@ -38,28 +38,27 @@ import net.sf.hajdbc.Operation;
 public class DataSource implements javax.sql.DataSource, Referenceable
 {
 	/**	Property that identifies this data source */
-	public static final String NAME = "name";
+	public static final String DATABASE_CLUSTER = "cluster";
 	
-	private String name;
+	private String cluster;
 	private ConnectionFactory<javax.sql.DataSource> connectionFactory;
 
 	/**
-	 * Returns the name of this DataSource
-	 * @return the name of this DataSource
+	 * Returns the identifier of the database cluster represented by this DataSource
+	 * @return a database cluster identifier
 	 */
-	public String getName()
+	public String getCluster()
 	{
-		return this.name;
+		return this.cluster;
 	}
 	
 	/**
-	 * Sets the name of this DataSource
-	 * @param name the name of this DataSource
-	 * @throws java.sql.SQLException
+	 * Sets the identifier of the database cluster represented by this DataSource
+	 * @param cluster a database cluster identifier
 	 */
-	public void setName(String name) throws java.sql.SQLException
+	public void setCluster(String cluster)
 	{
-		this.name = name;
+		this.cluster = cluster;
 	}
 	
 	/**
@@ -69,7 +68,7 @@ public class DataSource implements javax.sql.DataSource, Referenceable
 	{
         Reference ref = new Reference(this.getClass().getName(), DataSourceFactory.class.getName(), null);
         
-        ref.add(new StringRefAddr(NAME, this.getName()));
+        ref.add(new StringRefAddr(DATABASE_CLUSTER, this.cluster));
         
         return ref;
 	}

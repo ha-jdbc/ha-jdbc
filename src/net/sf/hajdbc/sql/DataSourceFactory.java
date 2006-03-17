@@ -57,11 +57,11 @@ public class DataSourceFactory implements ObjectFactory
 		
 		DataSource dataSource = new DataSource();
 		
-		RefAddr addr = reference.get(DataSource.NAME);
+		RefAddr addr = reference.get(DataSource.DATABASE_CLUSTER);
 		
 		if (addr == null) return null;
 		
-		String id = (String) addr.getContent();
+		String id = String.class.cast(addr.getContent());
 
 		if (id == null) return null;
 		
@@ -69,7 +69,7 @@ public class DataSourceFactory implements ObjectFactory
 		
 		if (databaseCluster == null) return null;
 		
-		dataSource.setName(id);
+		dataSource.setCluster(id);
 		dataSource.setConnectionFactory(new ConnectionFactory<javax.sql.DataSource>(databaseCluster, javax.sql.DataSource.class));
 		
 		return dataSource;
