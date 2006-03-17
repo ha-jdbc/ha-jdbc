@@ -83,7 +83,7 @@
 ]]></source>
 				<p>
 					Alternatively, these properties may be specified in an jndi.properties application resource file.
-					Detail <a href="http://java.sun.com/j2se/1.5.0/docs/api/javax/naming/InitialContext.html">here</a>.
+					Details <a href="http://java.sun.com/j2se/1.5.0/docs/api/javax/naming/InitialContext.html">here</a>.
 				</p>
 			</answer>
 		</faq>
@@ -110,7 +110,7 @@
 <source><![CDATA[
 <sync id="full" class="net.sf.hajdbc.sync.FullSynchronizationStrategy">
   <property name="fetchSize">1000</property>
-  <property name="maxBatchSize">100</property>
+  <property name="maxBatchSize">50</property>
 </sync>
 ]]></source>
 			</answer>
@@ -176,12 +176,28 @@
 				</p>
 			</answer>
 		</faq>
+		<faq>
+			<question>
+				JBoss throws a javax.management.MalformedObjectNameException when I try to execute any HA-JDBC mbean method via the JBoss jmx-console.
+				What is wrong here?
+			</question>
+			<answer>
+				<p>This is a known issue with JBoss 4.0.X.</p>
+				<p><a href="http://jira.jboss.com/jira/browse/JBAS-2037">http://jira.jboss.com/jira/browse/JBAS-2037</a></p>
+				<p>
+					JBoss users should use Sun's JConsole or <a href="doc.html#Java1.4">other</a> 3rd-party JMX administration console instead.
+				</p>
+			</answer>
+		</faq>
 	</faqsection>
 	<faqsection>
 		<title>About HA-JDBC</title>
 		<faq>
 			<question>How does HA-JDBC compare to <a href="http://http://sequoia.continuent.org">Sequoia</a> (formerly C-JDBC)?</question>
 			<answer>
+				<p>
+					HA-JDBC and Sequoia are both attempts at solving the same problem (i.e. eliminating the database as a single point of failure), but have different approaches.
+				</p>
 				<table>
 					<caption>Feature comparison</caption>
 					<tr>
@@ -203,7 +219,7 @@
 							<ol>
 								<li>Sequoia's JDBC driver delegates query execution to a remote controller process.  Controller then delegates queries to the underlying JDBC driver.</li>
 								<li>Cluster details are known only to controller.</li>
-								<li>The controller's request scheduler strategy is responsible for serializing execution order.</li>
+								<li>The controller's request scheduler strategy is responsible for determining execution order.</li>
 								<li>Controller introduces new single point-of-failure.  Workaround is to set up a failover controller process.  Details <a href="http://c-jdbc.objectweb.org/current/doc/C-JDBC_horizontal_scalability.pdf">here</a>.</li>
 							</ol>
 						</td>
@@ -270,7 +286,7 @@
 						<th>Provides connection pooling</th>
 						<td>
 							<p>
-								No - several open source solutions already exist and can be used in conjunction with HA-JDBC:
+								No - many open source solutions already exist and can be used in conjunction with HA-JDBC:
 							</p>
 							<ul>
 								<li><a href="http://c3p0.sourceforge.net">c3p0</a></li>
