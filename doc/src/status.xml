@@ -13,6 +13,9 @@
 
 	<changes>
 		<release version="1.1-beta-7" date="...">
+			<action type="add" context="code" dev="PF" due-to="Tapan Paul">
+				Added auto-activate-period cluster option that will auto-activate failed database nodes at a configurable interval.
+			</action>
 			<action type="add" context="lib" dev="PF">
 				New dependency on Quartz (http://opensymphony.com/quartz/).
 			</action>
@@ -20,23 +23,23 @@
 				Created CronThreadPoolExecutor, a java.util.concurrent.ThreadPoolExecutor that leverages a Quartz CronTrigger to calculate future execution times of a scheduled task.
 			</action>
 			<action type="update" context="code" dev="PF">
-				Enhanced failure detection to use a cron schedule, instead of a simple fixed-delay period.
-				Renamed failure-detect-period to failure-detect-schedule in DTD.
-			</action>
-			<action type="add" context="code" dev="PF">
-				Added auto-activation-schedule option to cluster.
+				Enhanced auto-activation and failure detection to use a cron schedule, instead of a simple fixed-delay period.
+				Renamed failure-detect-period to failure-detect-schedule and auto-activate-period to auto-activate-schedule in DTD.
 			</action>
 			<action type="update" context="code" dev="PF">
 				Migrated repository to Subversion.
 			</action>
-			<action type="update" context="lib" dev="PF">
-				Upgraded Retrotranslator to version 1.0.0.
+			<action type="update" context="test" dev="PF">
+				Migrated test suite to TestNG.
 			</action>
 			<action type="update" context="code" dev="PF">
 				Migrated logging from JCL to SLF4J.
 			</action>
 			<action type="add" context="lib" dev="PF">
 				New dependency on SLF4J (http://slf4j.org).
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded Retrotranslator to version 1.0.1.
 			</action>
 			<action type="update" context="lib" dev="PF">
 				Updated commons-logging library to jcl104-over-slf4j.jar from slf4j distribution.
@@ -47,11 +50,17 @@
 			<action type="update" context="code" dev="PF">
 				Separated DatabaseMBean interface into InactiveDatabaseMBean (read-write) and ActiveDatabaseMBean (read-only).
 			</action>
+			<action type="update" context="code" dev="PF">
+				Activating/Deactivating database reregisters the database using the appropriate active/inactive mbean interface.
+			</action>
 			<action type="add" context="code" dev="PF">
 				Added dirty flag logic for Database attributes.  If a database is dirty when it is activated, then the HA-JDBC configuration is exported.
 			</action>
 			<action type="update" context="code" dev="PF">
-				Leverage java.util.concurrent collections to improve performance of balancers.
+				Renamed "name" property of DataSource to "cluster", since "name" cannot be set by the BeanFactory from Tomcat's server.xml file.
+			</action>
+			<action type="update" context="doc" dev="PF">
+				Revamped documentation.
 			</action>
 		</release>
 		<release version="1.1-beta-6" date="February 15, 2006">
@@ -546,6 +555,9 @@
 		<actions priority="high">
 			<action type="add" context="code" dev="PF">
 				Add support for common unique identifier generation mechanisms, namely identity columns and sequences.
+			</action>
+			<action type="add" context="doc" dev="PF">
+				Generate performance graphs for HA-JDBC 1.1.
 			</action>
 		</actions>
 		<actions priority="medium">
