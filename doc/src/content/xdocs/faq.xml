@@ -185,7 +185,7 @@
 				<p>This is a known issue with JBoss 4.0.X.</p>
 				<p><a href="http://jira.jboss.com/jira/browse/JBAS-2037">http://jira.jboss.com/jira/browse/JBAS-2037</a></p>
 				<p>
-					JBoss users should use Sun's JConsole or <a href="doc.html#Java1.4">other</a> 3rd-party JMX administration console instead.
+					JBoss users should use Sun's JConsole or <a href="doc.html#jmx">other</a> 3rd-party JMX administration console instead.
 				</p>
 			</answer>
 		</faq>
