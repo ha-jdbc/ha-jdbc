@@ -47,14 +47,15 @@ public interface DatabaseClusterMBean
 	 * Deactivates the specified database.
 	 * @param databaseId a database identifier
 	 * @throws IllegalArgumentException if no database exists with the specified identifier.
+	 * @throws IllegalStateException if mbean could not be re-registered using inactive database interface.
 	 */
 	public void deactivate(String databaseId);
 
 	/**
 	 * Synchronizes, using the default strategy, and reactivates the specified database.
 	 * @param databaseId a database identifier
-	 * @throws Exception if activation fails
 	 * @throws IllegalArgumentException if no database exists with the specified identifier.
+	 * @throws IllegalStateException if synchronization fails, or if mbean could not be re-registered using active database interface.
 	 */
 	public void activate(String databaseId);
 
@@ -62,8 +63,8 @@ public interface DatabaseClusterMBean
 	 * Synchronizes, using the specified strategy, and reactivates the specified database.
 	 * @param databaseId a database identifier
 	 * @param syncId the class name of a synchronization strategy
-	 * @throws Exception if activation fails
 	 * @throws IllegalArgumentException if no database exists with the specified identifier, or no synchronization strategy exists with the specified identifier.
+	 * @throws IllegalStateException if synchronization fails, or if mbean could not be re-registered using active database interface.
 	 */
 	public void activate(String databaseId, String syncId);
 	
@@ -85,9 +86,29 @@ public interface DatabaseClusterMBean
 	 */
 	public String getVersion();
 	
-	public void addDatabase(String id, String url, String driver);
+	/**
+	 * Adds a new database to this cluster using the specified identifier, url, and driver.
+	 * @param id a database identifier
+	 * @param url a JDBC url
+	 * @param driver a JDBC driver class name
+	 * @throws IllegalArgumentException if this database already exists, if the specified driver is invalid, or if the specified url is invalid.
+	 * @throws IllegalStateException if mbean registration fails.
+	 */
+	public void addDatabase(String id, String driver, String url);
 	
+	/**
+	 * Adds a new DataSource to this cluster using the specified identifier and JNDI name.
+	 * @param id a database identifier
+	 * @param name the JNDI name use to lookup the DataSource
+	 * @throws IllegalArgumentException if this database already exists, or no DataSource was found using the specified name.
+	 * @throws IllegalStateException if mbean registration fails.
+	 */
 	public void addDatabase(String id, String name);
 	
+	/**
+	 * Removes the specified database/DataSource from the cluster.
+	 * @param id a database identifier
+	 * @throws IllegalStateException if database is still active, or if mbean unregistration fails.
+	 */
 	public void removeDatabase(String id);
 }
