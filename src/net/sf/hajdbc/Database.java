@@ -42,9 +42,9 @@ public interface Database<T> extends InactiveDatabaseMBean, Comparable<Database>
 	/**
 	 * Factory method for creating a connection factory object for this database.
 	 * @return a connection factory object
-	 * @throws SQLException if connection factory could not be created
+	 * @throws IllegalArgumentException if connection factory could not be created
 	 */
-	public T createConnectionFactory() throws SQLException;
+	public T createConnectionFactory();
 	
 	/**
 	 * @return the class implemented by connection factory objects for this database.
