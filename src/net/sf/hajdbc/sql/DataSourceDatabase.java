@@ -30,7 +30,6 @@ import javax.sql.DataSource;
 import net.sf.hajdbc.ActiveDatabaseMBean;
 import net.sf.hajdbc.InactiveDatabaseMBean;
 import net.sf.hajdbc.Messages;
-import net.sf.hajdbc.SQLException;
 
 /**
  * @author  Paul Ferraro
@@ -73,7 +72,7 @@ public class DataSourceDatabase extends AbstractDatabase<DataSource> implements 
 	/**
 	 * @see net.sf.hajdbc.Database#createConnectionFactory()
 	 */
-	public DataSource createConnectionFactory() throws java.sql.SQLException
+	public DataSource createConnectionFactory()
 	{
 		try
 		{
@@ -85,11 +84,11 @@ public class DataSourceDatabase extends AbstractDatabase<DataSource> implements 
 		}
 		catch (ClassCastException e)
 		{
-			throw new SQLException(e.toString(), e);
+			throw new IllegalArgumentException(e.toString(), e);
 		}
 		catch (NamingException e)
 		{
-			throw new SQLException(Messages.getMessage(Messages.JNDI_LOOKUP_FAILED, this.name), e);
+			throw new IllegalArgumentException(Messages.getMessage(Messages.JNDI_LOOKUP_FAILED, this.name), e);
 		}
 	}
 

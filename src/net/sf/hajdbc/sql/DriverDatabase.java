@@ -28,7 +28,6 @@ import java.util.Properties;
 import net.sf.hajdbc.ActiveDatabaseMBean;
 import net.sf.hajdbc.InactiveDatabaseMBean;
 import net.sf.hajdbc.Messages;
-import net.sf.hajdbc.SQLException;
 
 /**
  * @author  Paul Ferraro
@@ -62,6 +61,7 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	 */
 	public void setUrl(String url)
 	{
+		this.getDriver(url);
 		this.checkDirty(this.url, url);
 		this.url = url;
 	}
@@ -129,18 +129,23 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	/**
 	 * @see net.sf.hajdbc.Database#createConnectionFactory()
 	 */
-	public Driver createConnectionFactory() throws java.sql.SQLException
+	public Driver createConnectionFactory()
+	{
+		return this.getDriver(this.url);
+	}
+
+	private Driver getDriver(String url)
 	{
 		try
 		{
-			return DriverManager.getDriver(this.url);
+			return DriverManager.getDriver(url);
 		}
 		catch (java.sql.SQLException e)
 		{
-			throw new SQLException(Messages.getMessage(Messages.JDBC_URL_REJECTED, this.url), e);
+			throw new IllegalArgumentException(Messages.getMessage(Messages.JDBC_URL_REJECTED, url), e);
 		}
 	}
-
+	
 	/**
 	 * @see net.sf.hajdbc.Database#getConnectionFactoryClass()
 	 */
