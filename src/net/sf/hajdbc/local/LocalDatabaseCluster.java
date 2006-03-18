@@ -588,10 +588,10 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			throw new IllegalArgumentException(Messages.getMessage(Messages.DATABASE_ALREADY_EXISTS, id, this));
 		}
 		
+		Object connectionFactory = database.createConnectionFactory();
+		
 		try
 		{
-			Object connectionFactory = database.createConnectionFactory();
-			
 			MBeanServer server = DatabaseClusterFactory.getMBeanServer();
 
 			ObjectName name = DatabaseClusterFactory.getObjectName(this.id, id);
@@ -600,11 +600,6 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			
 			this.connectionFactoryMap.put(database, connectionFactory);
 			this.databaseMap.put(id, database);
-		}
-		catch (java.sql.SQLException e)
-		{
-			logger.warn(e.toString(), e);
-			throw new IllegalArgumentException(e.toString());
 		}
 		catch (JMException e)
 		{
