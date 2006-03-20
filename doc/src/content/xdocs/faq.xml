@@ -178,6 +178,22 @@
 		</faq>
 		<faq>
 			<question>
+				When I use distributable mode, my log file is flooded with messages like:<br/>
+				<code>[timestamp] [org.jgroups.protocols.UDP] WARN: discarded message from different group "XXX" (our group is "YYY"). Sender was[ip-address]:[port]</code><br/>
+				Is this normal?
+			</question>
+			<answer>
+				Yes, this is normal, albeit annoying.
+				<p>
+					These messages occur when you have 2 or more JGroups channels listening on the same address and port.
+					HA-JDBC uses two channels using the same jgroups configuration (thus the same address and port) for each database cluster.
+					I'm not entirely sure why JGroups uses a WARN log level here - they should probably use debug/fine level instead.
+					You can suppress these log messages by specifying a threshold of ERROR in your logging configuration for the "org.jgroups" logger/category.
+				</p>
+			</answer>
+		</faq>
+		<faq>
+			<question>
 				JBoss throws a javax.management.MalformedObjectNameException when I try to execute any HA-JDBC mbean method via the JBoss jmx-console.
 				What is wrong here?
 			</question>
@@ -323,7 +339,7 @@
 							<ul>
 								<li>Database-compiled <code>PreparedStatement</code>s</li>
 								<li><code>CallableStatement</code>s with OUT parameters</li>
-								<li>True large object support - BLOB and CLOB are simulated with encoded <code>byte[]</code> and <code>String</code>, respectively</li>
+								<li>True large object support - Blob and Clob are simulated with encoded <code>byte[]</code> and <code>String</code>, respectively</li>
 								<li>True binary/character stream support - simulated with encoded <code>byte[]</code> and <code>String</code>, respectively</li>
 								<li>Array and Ref types</li>
 								<li>Custom type mapping</li>
@@ -339,7 +355,7 @@
 								Lacks support for:
 							</p>
 							<ul>
-								<li>Updatable BLOBs and CLOBs (via setXXX(...) and truncate(long) methods)</li>
+								<li>Updatable Blobs and Clobs</li>
 							</ul>
 						</td>
 						<td>
@@ -354,7 +370,7 @@
 								<li><code>ParameterMetaData</code></li>
 								<li><code>ResultSet</code> holdability support</li>
 								<li>Queries/Store procedures that return multiple <code>ResultSet</code>s</li>
-								<li>Updatable BLOBs and CLOBs (via setXXX(...) and truncate(long) methods)</li>
+								<li>Updatable Blobs and Clobs</li>
 							</ul>
 						</td>
 					</tr>
