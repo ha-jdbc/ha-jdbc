@@ -12,7 +12,7 @@
 	</contexts>
 
 	<changes>
-		<release version="1.1-beta-7" date="...">
+		<release version="1.1-beta-7" date="March 20, 2006">
 			<action type="add" context="code" dev="PF" due-to="Tapan Paul">
 				Added auto-activate-period cluster option that will auto-activate failed database nodes at a configurable interval.
 			</action>
