@@ -44,7 +44,6 @@
 
 	<path id="test.classpath">
 		<path refid="build.classpath"></path>
-		<!--dirset dir="${test.dir}"></dirset-->
 		<fileset dir="${lib.test.dir}" includes="*.jar"></fileset>
 		<fileset dir="${lib.runtime.dir}" includes="*.jar"></fileset>
 	</path>
@@ -185,6 +184,9 @@
 
 	<target name="compile-tests" depends="bind">
 		<javac srcdir="${test.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="test.classpath" source="1.5" target="1.5"></javac>
+		<copy todir="${build.dir}">
+			<fileset dir="${test.dir}" excludes="**/*.java"></fileset>
+		</copy>
 	</target>
 
 	<target name="run-tests" depends="compile-tests">
