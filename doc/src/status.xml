@@ -8,7 +8,7 @@
 		<context id="code" title="Changes to code"/>
 		<context id="test" title="Changes to tests"/>
 		<context id="doc" title="Changes to documentation"/>
-		<context id="lib" title="Changes to dependencies"></context>
+		<context id="lib" title="Changes to dependencies"/>
 	</contexts>
 
 	<changes>
