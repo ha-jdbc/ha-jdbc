@@ -33,7 +33,7 @@
 				Migrated test suite to TestNG.
 			</action>
 			<action type="update" context="code" dev="PF">
-				Migrated logging from JCL to SLF4J.
+				Migrated logging facade from commons-logging to SLF4J.
 			</action>
 			<action type="add" context="lib" dev="PF">
 				New dependency on SLF4J (http://slf4j.org).
@@ -42,7 +42,7 @@
 				Upgraded Retrotranslator to version 1.0.1.
 			</action>
 			<action type="update" context="lib" dev="PF">
-				Replaced commons-logging-1.0.4.jar with jcl104-over-slf4j.jar from slf4j distribution.
+				Replaced commons-logging-1.0.4.jar with jcl104-over-slf4j.jar from SLF4J distribution.
 			</action>
 			<action type="add" context="code" dev="PF">
 				Added management interface methods for adding and removing databases from a cluster.
@@ -60,7 +60,7 @@
 				Renamed "name" property of DataSource to "cluster", since "name" cannot be set by the BeanFactory from Tomcat's server.xml file.
 			</action>
 			<action type="update" context="doc" dev="PF">
-				Revamped documentation.
+				Revised main documentation.  Added more FAQs.
 			</action>
 		</release>
 		<release version="1.1-beta-6" date="February 15, 2006">
