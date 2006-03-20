@@ -8,17 +8,17 @@
 		<section>
 			<title>Requirements</title>
 			<ul>
-				<li>Java Runtime Environment 1.5 (Java 1.4 supported via Retrotranslator)<a href="#Java1.4">*</a></li>
-				<li>Type IV <acronym title="Java Database Connectivity">JDBC</acronym> 3.0 compliant driver</li>
+				<li>Java Runtime Environment 1.5+ (Java 1.4 supported via Retrotranslator)<a href="#Java1.4">*</a></li>
+				<li>Type IV <acronym title="Java Database Connectivity">JDBC</acronym> 3.0 driver</li>
 				<li>A <acronym title="Java Management Extensions">JMX</acronym> 1.2 compliant MBean server<a href="#MBeanServer">*</a></li>
 				<li>All databases in a cluster must initially be in sync.</li>
 			</ul>
 			<section id="Java1.4">
 				<title>Using Java 1.4</title>
 				<p>
-					As of version 1.1, HA-JDBC ships 2 binary distributions.  The default binary requires Java 1.5.
-					A Java 1.4 compatible binary is generated using <a href="http://retrotranslator.sourceforge.net">Retrotranslator</a>.
-					Consequently, this binary has some additional runtime dependencies, contained in the <code>/lib/runtime-1.4</code> directory of the distribution.
+					As of version 1.1, the HA-JDBC codebase requires the Java 1.5 compiler.
+					However, a Java 1.4 compatible distribution is generated using <a href="http://retrotranslator.sourceforge.net">Retrotranslator</a>.
+					Consequently, this distribution has some additional runtime dependencies, defined <a href="#dependencies">here</a>.
 				</p>
 				<p>
 					HA-JDBC requires a <acronym title="Java Management Extensions">JMX</acronym> 1.2+ MBean server.
@@ -43,10 +43,10 @@
 				<source>javax.management.MBeanServerFactory.createMBeanServer();</source>
 			</section>
 		</section>
-		<section>
+		<section id="dependencies">
 			<title>Dependencies</title>
 			<p>
-				HA-JDBC depencency libraries are contained in the /lib directory of the distribution.
+				HA-JDBC depencency libraries are contained in the /lib directory of the distribution:
 			</p>
 			<dl>
 				<dt>/lib : Libraries used both for compiling and during runtime</dt>
@@ -57,12 +57,12 @@
 						<dt>jibx-run-XXX.jar : <a href="http://jibx.sourceforge.net">JiBX</a> runtime</dt>
 						<dd>Required.</dd>
 						<dt>quartz-XXX.jar : <a href="http://www.opensymphony.com/quartz">Quartz</a></dt>
-						<dd>Optional.  Required only if auto-activate-schedule or failure-detect-schedule cluster options are used.</dd>
+						<dd>Optional.  Required only if auto-activate-schedule and/or failure-detect-schedule cluster options are used.</dd>
 						<dt>xpp3-XXX.jar : <a href="http://www.extreme.indiana.edu/xgws/xsoap/xpp/mxp1">XML Pull Parser</a></dt>
 						<dd>Required.</dd>
 					</dl>
 				</dd>
-				<dt>/lib/compile : Libraries only used for compiling</dt>
+				<dt>/lib/compile : Libraries used only for compiling</dt>
 				<dd>
 					<dl>
 						<dt>bcel-XXX.jar : <a href="http://jakarta.apache.org/bcel">BCEL</a></dt>
@@ -73,14 +73,14 @@
 						<dd>Required.</dd>
 					</dl>
 				</dd>
-				<dt>/lib/compile-1.4 : Additional libraries only used for compiling for JDK 1.4 support</dt>
+				<dt>/lib/compile-1.4 : Additional libraries used only for compiling for JDK 1.4 support</dt>
 				<dd>
 					<dl>
 						<dt>retrotranslator-transformer-XXX.jar : <a href="http://retrotranslator.sourceforge.net">Retrotranslator</a> compiler</dt>
 						<dd>Required.</dd>
 					</dl>
 				</dd>
-				<dt>/lib/runtime : Libraries only used during runtime</dt>
+				<dt>/lib/runtime : Libraries used only during runtime</dt>
 				<dd>
 					<dl>
 						<dt>concurrent-XXX.jar : Doug Lea's <a href="http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent/intro.html">util.concurrent</a> package</dt>
@@ -99,7 +99,7 @@
 						<dd>Optional.  Required if Simple-Log is the base logging provider.</dd>
 					</dl>
 				</dd>
-				<dt>/lib/runtime-1.4 : Additional libraries only used during runtime for JDK 1.4 support</dt>
+				<dt>/lib/runtime-1.4 : Additional libraries used only during runtime for JDK 1.4 support</dt>
 				<dd>
 					<dl>
 						<dt>backport-util-concurrent-XXX.jar : JDK 1.4 <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent">backport of java.util.concurrent</a> package</dt>
@@ -108,7 +108,7 @@
 						<dd>Required.</dd>
 					</dl>
 				</dd>
-				<dt>/lib/test : Libraries only used for compiling and running test suite.</dt>
+				<dt>/lib/test : Libraries used only for compiling and running test suite.</dt>
 				<dd>
 					<dl>
 						<dt>easymock-XXX.jar : <a href="http://easymock.org">EasyMock</a></dt>
@@ -175,7 +175,7 @@
 					</dd>
 					<dt>timeout</dt>
 					<dd>
-						Indicates the number of seconds allowed for JGroups operations.
+						Indicates the number of milliseconds allowed for JGroups operations.
 					</dd>
 				</dl>
 			</section>
@@ -463,18 +463,30 @@
 				</note>
 			</section>
 			<section id="sync-strategies">
-				<title>Synchronization Strategies</title>
+				<title>Synchronization Strategy</title>
 				<p>
 					Synchronization is performed before a database node is activated.
 				</p>
 				<p>
 					HA-JDBC provides several out-of-the-box database independent strategies for synchronizing a failed database:
 				</p>
-				<ul>
-					<li><a href="api/net/sf/hajdbc/sync/FullSynchronizationStrategy.html"><code>net.sf.hajdbc.sync.FullSynchronizationStrategy</code></a> - Each table in the inactive database is truncated and data is reinserted from an active database.  This strategy is fastest if the database is way out of sync.</li>
-					<li><a href="api/net/sf/hajdbc/sync/DifferentialSynchronizationStrategy.html"><code>net.sf.hajdbc.sync.DifferentialSynchronizationStrategy</code></a> - For each table in the inactive database is compared, row by row, with an active database and only changes are updated.  This strategy is fastest if the database is more in sync than not.</li>
-					<li><a href="api/net/sf/hajdbc/sync/PassiveSynchronizationStrategy.html"><code>net.sf.hajdbc.sync.PassiveSynchronizationStrategy</code></a> - Does nothing.  Should only be used if databases are known to be in sync.</li>
-				</ul>
+				<dl>
+					<dt><a href="api/net/sf/hajdbc/sync/FullSynchronizationStrategy.html"><code>net.sf.hajdbc.sync.FullSynchronizationStrategy</code></a></dt>
+					<dd>
+						Each table in the inactive database is truncated and data is reinserted from an active database.
+						This strategy is fastest if the database is way out of sync.
+					</dd>
+					<dt><a href="api/net/sf/hajdbc/sync/DifferentialSynchronizationStrategy.html"><code>net.sf.hajdbc.sync.DifferentialSynchronizationStrategy</code></a></dt>
+					<dd>
+						For each table in the inactive database is compared, row by row, with an active database and only changes are updated.
+						This strategy is fastest if the database is more in sync than not.
+					</dd>
+					<dt><a href="api/net/sf/hajdbc/sync/PassiveSynchronizationStrategy.html"><code>net.sf.hajdbc.sync.PassiveSynchronizationStrategy</code></a></dt>
+					<dd>
+						Does nothing.
+						Should only be used if databases are known to be in sync.
+					</dd>
+				</dl>
 				<p>
 					Each synchronization strategy must be defined in the HA-JDBC configuration file.
 					A strategy may contain any number of JavaBean properties that can be set in the config file.
@@ -550,7 +562,7 @@ public class FasterFullSynchronizationStrategy extends net.sf.hajdbc.sync.FullSy
 				<source><![CDATA[
 <ha-jdbc>
   <!-- ... -->
-  <cluster id="cluster1" balancer="load" dialect="PostgreSQL" default-sync="...">
+  <cluster id="cluster1" balancer="..." dialect="PostgreSQL" default-sync="...">
     <database id="database1">
       <driver>org.postgresql.Driver</driver>
       <url>jdbc:postgresql://server1/database</url>
@@ -582,7 +594,7 @@ Connection connection = DriverManager.getConnection("jdbc:ha-jdbc:cluster1", "po
 <Context>
   <!-- ... -->
   <Resource name="jdbc/cluster" type="javax.sql.DataSource"
-            username="postgres" password="password" driverClassName="org.postgresql.Driver"
+            username="postgres" password="password" driverClassName="net.sf.hajdbc.sql.Driver"
             url="jdbc:ha-jdbc:cluster1"/>
   <!-- ... -->
 </Context>
@@ -599,7 +611,7 @@ Connection connection = DriverManager.getConnection("jdbc:ha-jdbc:cluster1", "po
 </web-app>
 ]]></source>
 				<p>
-					Pooled connections are now available via a DataSource at <code>java:comp/env/jdbc/cluster</code>.
+					Pooled connections to the HA-JDBC cluster are now available via a DataSource at <code>java:comp/env/jdbc/cluster</code>.
 				</p>
 			</section>
 			<section>
@@ -614,7 +626,7 @@ Connection connection = DriverManager.getConnection("jdbc:ha-jdbc:cluster1", "po
 				<source><![CDATA[
 <ha-jdbc>
   <!-- ... -->
-  <cluster id="cluster2" balancer="load" dialect="PostgreSQL" default-sync="...">
+  <cluster id="cluster2" balancer="..." dialect="PostgreSQL" default-sync="...">
     <datasource id="database1">
       <name>java:comp/env/jdbc/database1</name>
     </datasource>
@@ -777,28 +789,10 @@ Connection connection = dataSource.getConnection();
 			<section>
 				<title>Advanced <acronym title="Java Database Connectivity">JDBC</acronym> Features</title>
 				<section>
-					<title>RowSet Implementations</title>
-					<p>
-						HA-JDBC will work with any RowSet implementation provided that the rowsets are driven by the HA-JDBC driver.
-					</p>
-					<p>e.g.</p>
-					<source><![CDATA[
-javax.sql.RowSet rowSet = new com.sun.rowset.CachedRowSetImpl();
-rowSet.setCommand("SELECT * FROM TITLES WHERE TYPE = ?");
-rowSet.setURL("jdbc:ha-jdbc:cluster");
-rowSet.setUsername("postgres");
-rowSet.setPassword("password");
-rowSet.setString(1, "BIOGRAPHY");
-rowSet.execute();
-// ...
-rowSet.close();
-]]></source>
-				</section>
-				<section>
 					<title>Large Objects</title>
 					<p>
 						HA-JDBC's support for Blob and Clob objects has some limitations.
-						JDBC 3.0 introduced support for mutable Blob and Clob objects via the methods:
+						Java 1.4 (<acronym title="Java Database Connectivity">JDBC</acronym> 3.0) introduced support for mutable Blob and Clob objects via the methods:
 					</p>
 					<p><code>java.sql.Blob</code>:</p>
 					<ul>
@@ -819,6 +813,24 @@ rowSet.close();
 						As of version 1.1, HA-JDBC does not support these methods.
 					</p>
 				</section>
+				<section>
+					<title>RowSet Implementations</title>
+					<p>
+						HA-JDBC will work with any <code>javax.sql.RowSet</code> implementation provided that the rowsets use by the HA-JDBC driver.
+					</p>
+					<p>e.g.</p>
+					<source><![CDATA[
+String sql = "...";
+javax.sql.RowSet rowSet = new com.sun.rowset.CachedRowSetImpl();
+rowSet.setCommand(sql);
+rowSet.setURL("jdbc:ha-jdbc:cluster");
+rowSet.setUsername("...");
+rowSet.setPassword("...");
+rowSet.execute();
+// ...
+rowSet.close();
+]]></source>
+				</section>
 			</section>
 			<section>
 				<title>Failed Database Nodes</title>
@@ -838,7 +850,7 @@ rowSet.close();
 					The query used to validate that a database is alive is defined by the configured <a href="#dialect">dialect</a>.
 				</p>
 				<p>
-					This query may be executed manually, via the <code>isAlive(String)</code> method on the management interface.
+					This query may be executed manually, via the <a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#isAlive(java.lang.String)"><code>isAlive(String)</code></a> method on the management interface.
 				</p>
 				<p>If HA-JDBC determines that a given database has failed:</p>
 				<ol>
@@ -858,7 +870,7 @@ rowSet.close();
 <ha-jdbc>
   <!-- ... -->
   <!-- Failure detection will run every minute -->
-  <cluster id="..." balancer="..." default-sync="..." failure-detect-schedule="0 0 * ? * *">
+  <cluster id="..." balancer="..." default-sync="..." failure-detect-schedule="0 * * ? * *">
     <!-- ... -->
   </cluster>
 </ha-jdbc>
@@ -917,9 +929,9 @@ cluster.activate(databaseId);
 						Database nodes are activated by executing one of the following methods on the database cluster mbean:
 					</p>
 					<dl>
-						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#activate(String)"><code>activate(String databaseId)</code></a></dt>
+						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#activate(java.lang.String)"><code>activate(String databaseId)</code></a></dt>
 						<dd>Synchronizes, using the default synchronization strategy, and activates the specified database.</dd>
-						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#activate(String, String)"><code>activate(String databaseId, String sync)</code></a></dt>
+						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#activate(java.lang.String, java.lang.String)"><code>activate(String databaseId, String sync)</code></a></dt>
 						<dd>Synchronizes, using the specified synchronization strategy, and activates the specified database.</dd>
 					</dl>
 					<p>
@@ -942,7 +954,7 @@ cluster.activate(databaseId);
 </ha-jdbc>
 ]]></source>
 					<note>
-						If in distributable mode, activated databases are automatically propogated to other members of the group.
+						In distributable mode, listening servers are automatically notified of any activated databases.
 					</note>
 				</section>
 				<section>
@@ -952,11 +964,11 @@ cluster.activate(databaseId);
 						Database nodes are deactivated by executing the following method on the database cluster mbean:
 					</p>
 					<dl>
-						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#deactivate(String)"><code>deactivate(String databaseId)</code></a></dt>
+						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#deactivate(java.lang.String)"><code>deactivate(String databaseId)</code></a></dt>
 						<dd>Deactivates the specified database.</dd>
 					</dl>
 					<note>
-						If in distributable mode, deactivated databases are automatically propogated to other members of the group.
+						In distributable mode, listening servers are automatically notified of any deactivated databases.
 					</note>
 				</section>
 				<section>
@@ -965,14 +977,14 @@ cluster.activate(databaseId);
 						In HA-JDBC 1.0, the database nodes in a cluster were static.  They could not be changed while the application/server was running.
 					</p>
 					<p>
-						As of HA-JDBC 1.1, database nodes can be added, update, or removed during runtime.  The cluster's JMX interface includes the following methods:
+						As of HA-JDBC 1.1, database nodes can be added, updated, or removed during runtime.  The cluster's JMX interface includes the following methods:
 					</p>
 					<dl>
-						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#add(String, String, String)"><code>add(String databaseId, String driver, String url)</code></a></dt>
+						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#add(java.lang.String, java.lang.String, java.lang.String)"><code>add(String databaseId, String driver, String url)</code></a></dt>
 						<dd>Adds a new JDBC url-based database to the cluster.</dd>
-						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#add(String, String)"><code>add(String databaseId, String name)</code></a></dt>
+						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#add(java.lang.String, java.lang.String)"><code>add(String databaseId, String name)</code></a></dt>
 						<dd>Adds a new DataSource-based database cluster.</dd>
-						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#remove(String)"><code>remove(String databaseId)</code></a></dt>
+						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#remove(java.lang.String)"><code>remove(String databaseId)</code></a></dt>
 						<dd>Removes a database node from the cluster.</dd>
 					</dl>
 					<p>
@@ -1003,7 +1015,8 @@ cluster.activate(databaseId);
 						When a database node is activated and it's configuration has changed, or when a database node is removed, the configuration is saved to it's original URL.
 					</p>
 					<warning>
-						In distributed environments, database node additions, updates, and removals are <em>not</em> automatically propagated to other members of the group.
+						In distributable mode, listening servers are <em>not</em> notified of database node additions, updates, and removals.
+						These cluster modifications must be made on each server.
 					</warning>
 				</section>
 			</section>
