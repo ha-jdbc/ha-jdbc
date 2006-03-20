@@ -10,7 +10,7 @@
 			<ul>
 				<li>Java Runtime Environment 1.5 (Java 1.4 supported via Retrotranslator)<a href="#Java1.4">*</a></li>
 				<li>Type IV <acronym title="Java Database Connectivity">JDBC</acronym> 3.0 compliant driver</li>
-				<li>An MBean server<a href="#MBeanServer">*</a></li>
+				<li>A <acronym title="Java Management Extensions">JMX</acronym> 1.2 compliant MBean server<a href="#MBeanServer">*</a></li>
 				<li>All databases in a cluster must initially be in sync.</li>
 			</ul>
 			<section id="Java1.4">
@@ -42,6 +42,82 @@
 				</p>
 				<source>javax.management.MBeanServerFactory.createMBeanServer();</source>
 			</section>
+		</section>
+		<section>
+			<title>Dependencies</title>
+			<p>
+				HA-JDBC depencency libraries are contained in the /lib directory of the distribution.
+			</p>
+			<dl>
+				<dt>/lib : Libraries used both for compiling and during runtime</dt>
+				<dd>
+					<dl>
+						<dt>jgroups-XXX.jar : <a href="http://jgroups.org">JGroups</a></dt>
+						<dd>Optional.  Required only for distributable mode.</dd>
+						<dt>jibx-run-XXX.jar : <a href="http://jibx.sourceforge.net">JiBX</a> runtime</dt>
+						<dd>Required.</dd>
+						<dt>quartz-XXX.jar : <a href="http://www.opensymphony.com/quartz">Quartz</a></dt>
+						<dd>Optional.  Required only if auto-activate-schedule or failure-detect-schedule cluster options are used.</dd>
+						<dt>xpp3-XXX.jar : <a href="http://www.extreme.indiana.edu/xgws/xsoap/xpp/mxp1">XML Pull Parser</a></dt>
+						<dd>Required.</dd>
+					</dl>
+				</dd>
+				<dt>/lib/compile : Libraries only used for compiling</dt>
+				<dd>
+					<dl>
+						<dt>bcel-XXX.jar : <a href="http://jakarta.apache.org/bcel">BCEL</a></dt>
+						<dd>Required.  Dependency of JiBX binding compiler.</dd>
+						<dt>jibx-bind-XXX.jar : <a href="http://jibx.sourceforge.net">JiBX</a> binding compiler</dt>
+						<dd>Required.</dd>
+						<dt>slf4j-XXX-nop.jar : No-op implementation of <a href="http://slf4j.org">SLF4J</a></dt>
+						<dd>Required.</dd>
+					</dl>
+				</dd>
+				<dt>/lib/compile-1.4 : Additional libraries only used for compiling for JDK 1.4 support</dt>
+				<dd>
+					<dl>
+						<dt>retrotranslator-transformer-XXX.jar : <a href="http://retrotranslator.sourceforge.net">Retrotranslator</a> compiler</dt>
+						<dd>Required.</dd>
+					</dl>
+				</dd>
+				<dt>/lib/runtime : Libraries only used during runtime</dt>
+				<dd>
+					<dl>
+						<dt>concurrent-XXX.jar : Doug Lea's <a href="http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent/intro.html">util.concurrent</a> package</dt>
+						<dd>Optional.  Required dependency of JGroups.</dd>
+						<dt>jcl104-over-slf4j.jar : <a href="http://slf4j.org">SLF4J</a> drop-in replacement for commons-logging-1.0.4.jar</dt>
+						<dd>Optional.  Provided for <a href="http://www.slf4j.org/manual.html#gradual">gradual migration</a> from commons-logging to SLF4J.  Commons-logging is a required runtime dependency of both JGroups and Quartz.</dd>
+						<dt>slf4j-XXX-jcl.jar : Commons-logging provider for <a href="http://slf4j.org">SLF4J</a>.</dt>
+						<dd>Optional.  Used only if jcl104-over-slf4j.jar is not used.</dd>
+						<dt>slf4j-XXX-jdk14.jar : java.util.logging provider for <a href="http://slf4j.org">SLF4J</a>.</dt>
+						<dd>Optional.  Required if java.util.logging is the base logging provider.</dd>
+						<dt>slf4j-XXX-log4j12.jar : Log4J 1.2.X provider for <a href="http://slf4j.org">SLF4J</a>.</dt>
+						<dd>Optional.  Required if Log4J 1.2.X is the base logging provider.</dd>
+						<dt>slf4j-XXX-log4j13.jar : Log4J 1.3.X provider for <a href="http://slf4j.org">SLF4J</a>.</dt>
+						<dd>Optional.  Required if Log4J 1.3.X is the base logging provider.</dd>
+						<dt>slf4j-XXX-simple.jar : Simple-Log provider for <a href="http://slf4j.org">SLF4J</a>.</dt>
+						<dd>Optional.  Required if Simple-Log is the base logging provider.</dd>
+					</dl>
+				</dd>
+				<dt>/lib/runtime-1.4 : Additional libraries only used during runtime for JDK 1.4 support</dt>
+				<dd>
+					<dl>
+						<dt>backport-util-concurrent-XXX.jar : JDK 1.4 <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent">backport of java.util.concurrent</a> package</dt>
+						<dd>Required.  Runtime dependency of Retrotranslator.</dd>
+						<dt>retrotranslator-runtime-XXX.jar : <a href="http://retrotranslator.sourceforge.net">Retrotranslator</a></dt>
+						<dd>Required.</dd>
+					</dl>
+				</dd>
+				<dt>/lib/test : Libraries only used for compiling and running test suite.</dt>
+				<dd>
+					<dl>
+						<dt>easymock-XXX.jar : <a href="http://easymock.org">EasyMock</a></dt>
+						<dd>Required.</dd>
+						<dt>testng-XXX.jar : <a href="http://testng.org">TestNG</a></dt>
+						<dd>Required.</dd>
+					</dl>
+				</dd>
+			</dl>
 		</section>
 		<section>
 			<title>Configuration</title>
@@ -76,7 +152,7 @@
 				<title>distributable</title>
 				<p>
 					Indicates that database clusters defined in this file will be accessed by multiple JVMs.
-					HA-JDBC leverages the <a href="http://www.jgroups.org">JGroups</a> project to handle communication between database clusters across servers.
+					HA-JDBC leverages <a href="http://www.jgroups.org">JGroups</a> to handle communication between database clusters across servers.
 				</p>
 				<source><![CDATA[
 <!ELEMENT distributable EMPTY>
@@ -124,12 +200,7 @@
 					<dt>class</dt>
 					<dd>
 						Class name of an implementation of the <a href="api/net/sf/hajdbc/SynchronizationStrategy.html">net.sf.hajdbc.SynchronizationStrategy</a> interface.
-						HA-JDBC provides several out-of-the-box database independent strategies for synchronizing a failed database: 
-						<ul>
-							<li><a href="api/net/sf/hajdbc/sync/FullSynchronizationStrategy.html">Full</a> - Each table in the inactive database is truncated and data is reinserted from an active database.  This strategy is fastest if the database is way out of sync.</li>
-							<li><a href="api/net/sf/hajdbc/sync/DifferentialSynchronizationStrategy.html">Differential</a> - For each table in the inactive database is compared, row by row, with an active database and only changes are updated.  This strategy is fastest if the database is more in sync than not.</li>
-							<li><a href="api/net/sf/hajdbc/sync/PassiveSynchronizationStrategy.html">Passive</a> - Does nothing.  Should only be used if databases are known to be in sync.</li>
-						</ul>
+						Details <a href="#sync-strategies">here</a>.
 					</dd>
 				</dl>
 				<section id="property">
@@ -196,16 +267,12 @@
 					<dt>failure-detect-schedule</dt>
 					<dd>
 						Defines a cron schedule for an asynchronous task that will proactively detect failed database nodes and deactivate them.
-						Value should be defined in accordance with the documentation for Quartz <a href="http://www.opensymphony.com/quartz/api/org/quartz/CronTrigger.html">CronTrigger</a>.
-						<br/>
-						e.g. <code>"0 0/5 * ? * *"</code> will execute every 5 minutes.
+						Schedule should be defined in accordance with the documentation for Quartz <a href="http://www.opensymphony.com/quartz/api/org/quartz/CronTrigger.html">CronTrigger</a>.
 					</dd>
 					<dt>auto-activate-schedule</dt>
 					<dd>
 						Defines a cron schedule for an asynchronous task that will automatically activate any database nodes that are alive, but inactive.
-						Value should be defined in accordance with the documentation for Quartz <a href="http://www.opensymphony.com/quartz/api/org/quartz/CronTrigger.html">CronTrigger</a>.
-						<br/>
-						e.g. <code>"0 0 2 ? * *"</code> will execute every day at 2 AM.
+						Schedule should be defined in accordance with the documentation for Quartz <a href="http://www.opensymphony.com/quartz/api/org/quartz/CronTrigger.html">CronTrigger</a>.
 					</dd>
 					<dt>min-threads</dt>
 					<dd>
@@ -394,6 +461,62 @@
 				<note>
 					In general, a node with a weight of 0 will never service a request unless it is the last node in the cluster.
 				</note>
+			</section>
+			<section id="sync-strategies">
+				<title>Synchronization Strategies</title>
+				<p>
+					Synchronization is performed before a database node is activated.
+				</p>
+				<p>
+					HA-JDBC provides several out-of-the-box database independent strategies for synchronizing a failed database:
+				</p>
+				<ul>
+					<li><a href="api/net/sf/hajdbc/sync/FullSynchronizationStrategy.html"><code>net.sf.hajdbc.sync.FullSynchronizationStrategy</code></a> - Each table in the inactive database is truncated and data is reinserted from an active database.  This strategy is fastest if the database is way out of sync.</li>
+					<li><a href="api/net/sf/hajdbc/sync/DifferentialSynchronizationStrategy.html"><code>net.sf.hajdbc.sync.DifferentialSynchronizationStrategy</code></a> - For each table in the inactive database is compared, row by row, with an active database and only changes are updated.  This strategy is fastest if the database is more in sync than not.</li>
+					<li><a href="api/net/sf/hajdbc/sync/PassiveSynchronizationStrategy.html"><code>net.sf.hajdbc.sync.PassiveSynchronizationStrategy</code></a> - Does nothing.  Should only be used if databases are known to be in sync.</li>
+				</ul>
+				<p>
+					Each synchronization strategy must be defined in the HA-JDBC configuration file.
+					A strategy may contain any number of JavaBean properties that can be set in the config file.
+				</p>
+				<p>e.g.</p>
+				<source><![CDATA[
+<ha-jdbc>
+  <!-- ... -->
+  <sync id="diff" class="net.sf.hajdbc.sync.DifferentialSynchronizationStrategy">
+    <property name="fetchSize">1000</property>
+  </sync>
+  <sync id="full" class="net.sf.hajdbc.sync.FullSynchronizationStrategy">
+    <property name="fetchSize">1000</property>
+    <property name="maxBatchSize">100</property>
+  </sync>
+  <sync id="passive" class="net.sf.hajdbc.sync.PassiveSynchronizationStrategy"></sync>
+  <!-- ... -->
+</ha-jdbc>
+]]></source>
+				<p>
+					Although the build-in strategies should be sufficient for most small databases, they are probably not feasible for large databases.
+					Synchronizing a large database will typically require vendor specific functionality.
+					Custom synchronization strategies may be written by implementing the <a href="api/net/sf/hajdbc/SynchronizationStrategy.html"><code>net.sf.hajdbc.SynchronizationStrategy</code></a> interface or by extending the functionality of one of the existing strategies.
+					For example, I may want to improve the efficiency of the <code>FullSynchronizationStrategy</code> by dropping and re-creating indexes on my database tables.
+				</p>
+				<p>e.g.</p>
+				<source><![CDATA[
+public class FasterFullSynchronizationStrategy extends net.sf.hajdbc.sync.FullSynchronizationStrategy
+{
+    public void synchronize(Connection inactiveConnection, Connection activeConnection, List tableList)
+    {
+        // For each table, drop all indexes
+
+        super.synchronize(inactiveConnection, activeConnection, tableList);
+
+        // For each table, recreate all indexes
+    }
+}
+]]></source>
+				<p>
+					Any custom strategies that you plan to use should also be defined in the configuration file.
+				</p>
 			</section>
 		</section>
 		<section>
@@ -671,6 +794,31 @@ rowSet.execute();
 rowSet.close();
 ]]></source>
 				</section>
+				<section>
+					<title>Large Objects</title>
+					<p>
+						HA-JDBC's support for Blob and Clob objects has some limitations.
+						JDBC 3.0 introduced support for mutable Blob and Clob objects via the methods:
+					</p>
+					<p><code>java.sql.Blob</code>:</p>
+					<ul>
+						<li><code>OutputStream setOutputStream(long)</code></li>
+						<li><code>int setBytes(long, byte[])</code></li>
+						<li><code>int setBytes(long, byte[], int, int)</code></li>
+						<li><code>void truncate(long)</code></li>
+					</ul>
+					<p><code>java.sql.Clob</code>:</p>
+					<ul>
+						<li><code>OutputStream setAsciiStream(long)</code></li>
+						<li><code>Writer setCharacterStream(long)</code></li>
+						<li><code>int setString(long, String)</code></li>
+						<li><code>int setString(long, String, int, int)</code></li>
+						<li><code>void truncate(long)</code></li>
+					</ul>
+					<p>
+						As of version 1.1, HA-JDBC does not support these methods.
+					</p>
+				</section>
 			</section>
 			<section>
 				<title>Failed Database Nodes</title>
@@ -709,97 +857,29 @@ rowSet.close();
 				<source><![CDATA[
 <ha-jdbc>
   <!-- ... -->
-  <cluster id="..." balancer="..." default-sync="..." failure-detect-period="0 * * * * ?">
+  <!-- Failure detection will run every minute -->
+  <cluster id="..." balancer="..." default-sync="..." failure-detect-schedule="0 0 * ? * *">
     <!-- ... -->
   </cluster>
 </ha-jdbc>
 ]]></source>
 			</section>
-			<section>
-				<title>Restoring a Database Node</title>
-				<p>
-					Before a database node can be reintroduced into a cluster, may first need to be synchronized.
-				</p>
-				<p>
-					HA-JDBC provides several out-of-the-box database independent strategies for synchronizing a failed database:
-				</p>
-				<ul>
-					<li><a href="api/net/sf/hajdbc/sync/FullSynchronizationStrategy.html"><code>Full</code></a> - Each table in the inactive database is truncated and data is reinserted from an active database.  This strategy is fastest if the database is way out of sync.</li>
-					<li><a href="api/net/sf/hajdbc/sync/DifferentialSynchronizationStrategy.html"><code>Differential</code></a> - For each table in the inactive database is compared, row by row, with an active database and only changes are updated.  This strategy is fastest if the database is more in sync than not.</li>
-					<li><a href="api/net/sf/hajdbc/sync/PassiveSynchronizationStrategy.html"><code>Passive</code></a> - Does nothing.  Should only be used if databases are known to be in sync.</li>
-				</ul>
-				<p>
-					Each synchronization strategy must be defined in the HA-JDBC configuration file.
-					A strategy may contain any number of JavaBean properties that can be set in the config file.
-				</p>
-				<p>e.g.</p>
-				<source><![CDATA[
-<ha-jdbc>
-  <!-- ... -->
-  <sync id="diff" class="net.sf.hajdbc.sync.DifferentialSynchronizationStrategy">
-    <property name="fetchSize">1000</property>
-  </sync>
-  <sync id="full" class="net.sf.hajdbc.sync.FullSynchronizationStrategy">
-    <property name="fetchSize">1000</property>
-    <property name="maxBatchSize">100</property>
-  </sync>
-  <sync id="passive" class="net.sf.hajdbc.sync.PassiveSynchronizationStrategy"></sync>
-  <!-- ... -->
-</ha-jdbc>
-]]></source>
-				<p>
-					Although the build-in strategies should be sufficient for most small databases, they are probably not feasible for large databases.
-					Synchronizing a large database will typically require vendor specific functionality.
-					Custom synchronization strategies may be written by implementing the <a href="api/net/sf/hajdbc/SynchronizationStrategy.html"><code>SynchronizationStrategy</code></a> interface or by extending the functionality of one of the existing strategies.
-					For example, I may want to improve the efficiency of the <code>FullSynchronizationStrategy</code> by dropping and re-creating indexes on my database tables.
-				</p>
-				<p>e.g.</p>
-				<source><![CDATA[
-public class FasterFullSynchronizationStrategy extends net.sf.hajdbc.sync.FullSynchronizationStrategy
-{
-    public void synchronize(Connection inactiveConnection, Connection activeConnection, List tableList)
-    {
-        // For each table, drop all indexes
-
-        super.synchronize(inactiveConnection, activeConnection, tableList);
-
-        // For each table, recreate all indexes
-    }
-}
-]]></source>
-				<p>
-					Any custom strategies should also be defined in the configuration file.
-				</p>
-				<p>
-					Database activation is triggered manually via the <a href="#jmx"><acronym title="Java Management Extensions">JMX</acronym> management interface</a>.
-				</p>
-			</section>
 			<section id="jmx">
 				<title>Database Cluster Administration</title>
 				<p>
-					HA-JDBC database clusters are administered via a <acronym title="Java Management Extensions">JMX</acronym> management interface: <a href="api/net/sf/hajdbc/DatabaseClusterMBean.html">net.sf.hajdbc.DatabaseClusterMBean</a>
+					HA-JDBC database clusters are administered via a <acronym title="Java Management Extensions">JMX</acronym> interface: <a href="api/net/sf/hajdbc/DatabaseClusterMBean.html">net.sf.hajdbc.DatabaseClusterMBean</a>
 				</p>
 				<p>
-					The MBean exposes the following methods:
+					A database cluster mbean is registered using the following object-name:
 				</p>
-				<ul>
-					<li><code>getId()</code> - Returns the unique identifier of this cluster.</li>
-					<li><code>getVersion()</code> - Returns the HA-JDBC version number.</li>
-					<li><code>getActiveDatabases()</code> - Returns a collection of active databases in this cluster.</li>
-					<li><code>getInactiveDatabases()</code> - Returns a collection of inactive databases in this cluster.</li>
-					<li><code>isAlive(String id)</code> - Tests whether the specified database is responding.</li>
-					<li><code>deactivate(String id)</code> - Deactivates the specified database from this cluster.</li>
-					<li><code>activate(String id)</code> - Re-activates the specified database from this cluster using the default synchronization strategy for the database cluster.</li>
-					<li><code>activate(String id, String strategyId)</code> - Re-activates the specified database from this cluster using the specified synchronization strategy.</li>
-					<li><code>addDatabase(String id, String driver, String url)</code> - Adds a new Driver-based database node to this cluster.</li>
-					<li><code>addDatabase(String id, String name)</code> - Adds a new DataSource node to this cluster.</li>
-					<li><code>removeDatabase(String id)</code> - Removes the specified database node from this cluster.</li>
-				</ul>
+				<p>
+					net.sf.ha-jdbc:cluster="<em>database-cluster-id</em>"
+				</p>
 				<p>
 					<acronym title="Java Management Extensions">JMX</acronym> operations can be executed from the <a href="http://java.sun.com/j2se/1.5.0/docs/guide/management/jconsole.html">JConsole</a> interface packaged with JDK 1.5.
 				</p>
 				<p>
-					As an alternative to JConsole (or for Java 1.4 deployments), many 3rd-party <acronym title="Java Management Extensions">JMX</acronym> clients exist:
+					As an alternative to JConsole (or for Java 1.4 deployments), you can use any of several 3rd-party <acronym title="Java Management Extensions">JMX</acronym> clients:
 				</p>
 				<ul>
 					<li><a href="http://mc4j.org/">MC4J</a></li>
@@ -809,7 +889,7 @@ public class FasterFullSynchronizationStrategy extends net.sf.hajdbc.sync.FullSy
 					<li><a href="http://www.hta-bi.bfh.ch/Projects/ejbplug/">EJAM - Environment for Java Application Management</a></li>
 				</ul>
 				<p>
-					HA-JDBC database cluster may also be administered programatically:
+					HA-JDBC database clusters may also be administered programatically:
 				</p>
 				<p>e.g.</p>
 				<source><![CDATA[
@@ -824,15 +904,108 @@ ObjectName name = net.sf.hajdbc.DatabaseClusterFactory.getObjectName(clusterId);
 // 1. Generic invoke
 Object[] parameterValues = new Object[] { databaseId };
 String[] parameterTypes = new String[] { databaseId.getClass().getName() };
-server.invoke(name, "deactivate", parameterValues, parameterTypes);
 server.invoke(name, "activate", parameterValues, parameterTypes);
 
 // 2. Dynamic proxy
 Object object = MBeanServerInvocationHandler.newProxyInstance(server, name, DatabaseClusterMBean.class, false);
 DatabaseClusterMBean cluster = (DatabaseClusterMBean) object;
-cluster.deactivate(databaseId);
 cluster.activate(databaseId);
 ]]></source>
+				<section>
+					<title>Activating a Database</title>
+					<p>
+						Database nodes are activated by executing one of the following methods on the database cluster mbean:
+					</p>
+					<dl>
+						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#activate(String)"><code>activate(String databaseId)</code></a></dt>
+						<dd>Synchronizes, using the default synchronization strategy, and activates the specified database.</dd>
+						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#activate(String, String)"><code>activate(String databaseId, String sync)</code></a></dt>
+						<dd>Synchronizes, using the specified synchronization strategy, and activates the specified database.</dd>
+					</dl>
+					<p>
+						Database synchronization is an intensive and intrusive task.
+						To maintain database consistency, each database node in the cluster is read locked (i.e. writes are blocked) until synchronization completes.
+						Since synchronization may take anywhere from seconds to hours (depending on the size of your database and synchronization strategy employed), if your database cluster is used in a high write volume environment, it is recommended that activation is only performed during off-peak hours.
+					</p>
+					<p>
+						As of version 1.1, HA-JDBC includes a useful database cluster option: "auto-activate-schedule".
+						If specified, HA-JDBC will automatically attempt to activate database nodes that are inactive, but alive, according to the specified cron schedule.
+					</p>
+					<p>e.g.</p>
+					<source><![CDATA[
+<ha-jdbc>
+  <!-- ... -->
+  <!-- Auto-activation will run every day at 2:00 AM -->
+  <cluster id="..." balancer="..." default-sync="..." auto-activate-schedule="0 0 2 ? * *">
+    <!-- ... -->
+  </cluster>
+</ha-jdbc>
+]]></source>
+					<note>
+						If in distributable mode, activated databases are automatically propogated to other members of the group.
+					</note>
+				</section>
+				<section>
+					<title>Deactivating a Database</title>
+					<p>
+						There are a number of reasons why you might want to deactivate a database node manually - most commonly to perform some maintenance on the database or the machine itself.
+						Database nodes are deactivated by executing the following method on the database cluster mbean:
+					</p>
+					<dl>
+						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#deactivate(String)"><code>deactivate(String databaseId)</code></a></dt>
+						<dd>Deactivates the specified database.</dd>
+					</dl>
+					<note>
+						If in distributable mode, deactivated databases are automatically propogated to other members of the group.
+					</note>
+				</section>
+				<section>
+					<title>Adding a Database</title>
+					<p>
+						In HA-JDBC 1.0, the database nodes in a cluster were static.  They could not be changed while the application/server was running.
+					</p>
+					<p>
+						As of HA-JDBC 1.1, database nodes can be added, update, or removed during runtime.  The cluster's JMX interface includes the following methods:
+					</p>
+					<dl>
+						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#add(String, String, String)"><code>add(String databaseId, String driver, String url)</code></a></dt>
+						<dd>Adds a new JDBC url-based database to the cluster.</dd>
+						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#add(String, String)"><code>add(String databaseId, String name)</code></a></dt>
+						<dd>Adds a new DataSource-based database cluster.</dd>
+						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#remove(String)"><code>remove(String databaseId)</code></a></dt>
+						<dd>Removes a database node from the cluster.</dd>
+					</dl>
+					<p>
+						When a new database is added, it is initially inactive.
+						Database nodes may also be removed from the cluster.
+						A database node must first by inactive before it can be removed.
+					</p>
+					<p>
+						HA-JDBC 1.1 also adds mbean interfaces for individual database nodes:
+					</p>
+					<ul>
+						<li><a href="api/net/sf/hajdbc/sql/InactiveDriverDatabaseMBean.html"><code>net.sf.hajdbc.sql.InactiveDriverDatabaseMBean</code></a></li>
+						<li><a href="api/net/sf/hajdbc/sql/InactiveDataSourceDatabaseMBean.html"><code>net.sf.hajdbc.sql.InactiveDataSourceDatabaseMBean</code></a></li>
+						<li><a href="api/net/sf/hajdbc/sql/ActiveDriverDatabaseMBean.html"><code>net.sf.hajdbc.sql.ActiveDriverDatabaseMBean</code></a></li>
+						<li><a href="api/net/sf/hajdbc/sql/ActiveDataSourceDatabaseMBean.html"><code>net.sf.hajdbc.sql.InactiveDataSourceDatabaseMBean</code></a></li>
+					</ul>
+					<p>
+						Database mbeans are registered using the following object-name:
+					</p>
+					<p>
+						net.sf.ha-jdbc:cluster="<em>cluster-id</em>",database="<em>database-id</em>"
+					</p>
+					<p>
+						While inactive, a database node's connection properties (e.g. user, password, etc.) may be modified.
+						When active, a database node's connection properties are read-only.
+					</p>
+					<p>
+						When a database node is activated and it's configuration has changed, or when a database node is removed, the configuration is saved to it's original URL.
+					</p>
+					<warning>
+						In distributed environments, database node additions, updates, and removals are <em>not</em> automatically propagated to other members of the group.
+					</warning>
+				</section>
 			</section>
 		</section>
 	</body>
