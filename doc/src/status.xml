@@ -42,7 +42,7 @@
 				Upgraded Retrotranslator to version 1.0.1.
 			</action>
 			<action type="update" context="lib" dev="PF">
-				Updated commons-logging library to jcl104-over-slf4j.jar from slf4j distribution.
+				Replaced commons-logging-1.0.4.jar with jcl104-over-slf4j.jar from slf4j distribution.
 			</action>
 			<action type="add" context="code" dev="PF">
 				Added management interface methods for adding and removing databases from a cluster.
