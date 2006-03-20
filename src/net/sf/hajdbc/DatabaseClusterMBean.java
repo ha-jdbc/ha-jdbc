@@ -88,27 +88,27 @@ public interface DatabaseClusterMBean
 	
 	/**
 	 * Adds a new database to this cluster using the specified identifier, url, and driver.
-	 * @param id a database identifier
+	 * @param databaseId a database identifier
 	 * @param url a JDBC url
 	 * @param driver a JDBC driver class name
 	 * @throws IllegalArgumentException if this database already exists, if the specified driver is invalid, or if the specified url is invalid.
 	 * @throws IllegalStateException if mbean registration fails.
 	 */
-	public void addDatabase(String id, String driver, String url);
+	public void add(String databaseId, String driver, String url);
 	
 	/**
 	 * Adds a new DataSource to this cluster using the specified identifier and JNDI name.
-	 * @param id a database identifier
+	 * @param databaseId a database identifier
 	 * @param name the JNDI name use to lookup the DataSource
 	 * @throws IllegalArgumentException if this database already exists, or no DataSource was found using the specified name.
 	 * @throws IllegalStateException if mbean registration fails.
 	 */
-	public void addDatabase(String id, String name);
+	public void add(String databaseId, String name);
 	
 	/**
 	 * Removes the specified database/DataSource from the cluster.
-	 * @param id a database identifier
+	 * @param databaseId a database identifier
 	 * @throws IllegalStateException if database is still active, or if mbean unregistration fails.
 	 */
-	public void removeDatabase(String id);
+	public void remove(String databaseId);
 }

@@ -24,8 +24,8 @@
 		<value name="max-idle" get-method="getMaxIdle" set-method="setMaxIdle" style="attribute" usage="optional" default="60"/>
 		<value name="failure-detect-schedule" field="failureDetectionSchedule" style="attribute" usage="optional"/>
 		<value name="auto-activate-schedule" field="autoActivationSchedule" style="attribute" usage="optional"/>
-		<collection add-method="addDatabase" iter-method="getDriverDatabases" item-type="net.sf.hajdbc.sql.DriverDatabase"></collection>
-		<collection add-method="addDatabase" iter-method="getDataSourceDatabases" item-type="net.sf.hajdbc.sql.DataSourceDatabase"></collection>
+		<collection add-method="add" iter-method="getDriverDatabases" item-type="net.sf.hajdbc.sql.DriverDatabase"></collection>
+		<collection add-method="add" iter-method="getDataSourceDatabases" item-type="net.sf.hajdbc.sql.DataSourceDatabase"></collection>
 	</mapping>
 	<mapping class="net.sf.hajdbc.sql.AbstractDatabase" abstract="true">
 		<value name="id" field="id" style="attribute"/>

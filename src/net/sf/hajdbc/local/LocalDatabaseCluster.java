@@ -475,7 +475,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#addDatabase(java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public void addDatabase(String id, String driver, String url)
+	public void add(String id, String driver, String url)
 	{
 		DriverDatabase database = new DriverDatabase();
 		
@@ -483,26 +483,26 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		database.setDriver(driver);
 		database.setUrl(url);
 		
-		this.addDatabase(database);
+		this.add(database);
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#addDatabase(java.lang.String, java.lang.String)
 	 */
-	public void addDatabase(String id, String name)
+	public void add(String id, String name)
 	{
 		DataSourceDatabase database = new DataSourceDatabase();
 		
 		database.setId(id);
 		database.setName(name);
 		
-		this.addDatabase(database);
+		this.add(database);
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#removeDatabase(java.lang.String)
 	 */
-	public synchronized void removeDatabase(String id)
+	public synchronized void remove(String id)
 	{
 		Database database = this.getDatabase(id);
 		
@@ -579,7 +579,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		this.executor = executor;
 	}
 	
-	synchronized void addDatabase(Database database)
+	synchronized void add(Database database)
 	{
 		String id = database.getId();
 		
