@@ -33,20 +33,34 @@
 	<available property="junit-available" file="${ant.home}/lib/${junit.jar}"/>
 
 	<path id="src.classpath">
-		<dirset dir="${build.dir}"></dirset>
 		<fileset dir="${lib.dir}" includes="*.jar"></fileset>
 		<fileset dir="${lib.compile.dir}" includes="*.jar"></fileset>
 	</path>
 
-	<path id="test.classpath">
+	<path id="build.classpath">
 		<path refid="src.classpath"></path>
+		<dirset dir="${build.dir}"></dirset>
+	</path>
+
+	<path id="test.classpath">
+		<path refid="build.classpath"></path>
 		<!--dirset dir="${test.dir}"></dirset-->
 		<fileset dir="${lib.test.dir}" includes="*.jar"></fileset>
 		<fileset dir="${lib.runtime.dir}" includes="*.jar"></fileset>
 	</path>
 	
+	<path id="bind.classpath">
+		<fileset dir="${lib.dir}">
+			<include name="jibx-run-*.jar"/>
+			<include name="xpp3-*.jar"/>
+		</fileset>
+		<fileset dir="${lib.compile.dir}">
+			<include name="jibx-bind-*.jar"/>
+			<include name="bcel-*.jar"/>
+		</fileset>
+	</path>
+	
 	<path id="retrotranslate.classpath">
-		<path refid="src.classpath"></path>
 		<fileset dir="${java.home}/lib" includes="rt.jar"></fileset>
 		<fileset dir="${lib.runtime-1.4.dir}" includes="*.jar"></fileset>
 		<fileset dir="${lib.compile-1.4.dir}">
@@ -58,15 +72,9 @@
 		</fileset>
 	</path>
 
-	<path id="bind.classpath">
-		<fileset dir="${lib.dir}">
-			<include name="jibx-run-*.jar"/>
-			<include name="xpp3-*.jar"/>
-		</fileset>
-		<fileset dir="${lib.compile.dir}">
-			<include name="jibx-bind-*.jar"/>
-			<include name="bcel-*.jar"/>
-		</fileset>
+	<path id="retrotranslate.build.classpath">
+		<path refid="retrotranslate.classpath"></path>
+		<path refid="build.classpath"></path>
 	</path>
 	
 	<taskdef name="testng" classname="org.testng.TestNGAntTask" classpathref="test.classpath"></taskdef>
@@ -85,27 +93,29 @@
 	</target>
 	
     <target name="compile" depends="init">
-        <javac srcdir="${src.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="src.classpath" source="1.5" target="1.5"></javac>
+        <javac srcdir="${src.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="build.classpath" source="1.5" target="1.5"></javac>
 		<copy todir="${build.dir}">
 			<fileset dir="${src.dir}" excludes="**/*.java"></fileset>
 		</copy>
     </target>
 	
-    <target name="bind" depends="compile">
+    <target name="bind" depends="clean, compile">
 		<bind verbose="false" load="true">
 			<bindingfileset dir="${conf.jibx.dir}" includes="*.xml"/>
-			<classpath refid="src.classpath"></classpath>
+			<classpath refid="build.classpath"></classpath>
 		</bind> 
     </target>
 
-    <target name="jar" depends="clean, bind">
+    <target name="jar" depends="bind">
         <jar jarfile="${jar.file}" index="true">
 			<fileset dir="${build.dir}"></fileset>
 		</jar>
     </target>
 
 	<target name="compile-1.4" depends="bind">
-		<retrotranslate srcdir="${build.dir}" classpathref="retrotranslate.classpath" verify="on" failonwarning="no"></retrotranslate>
+		<echo>The following verification warning should be ignored:</echo>
+		<echo>Constructor not found: edu.emory.mathcs.backport.java.util.concurrent.locks.ReentrantReadWriteLock(boolean)</echo>
+		<retrotranslate srcdir="${build.dir}" classpathref="retrotranslate.build.classpath" verify="on" failonwarning="no"></retrotranslate>
 	</target>
 
 	<target name="jar-1.4" depends="compile-1.4">
