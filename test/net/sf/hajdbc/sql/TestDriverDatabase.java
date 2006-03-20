@@ -29,6 +29,7 @@ import java.util.Properties;
 import net.sf.hajdbc.Database;
 
 import org.easymock.EasyMock;
+import org.testng.annotations.Configuration;
 import org.testng.annotations.Test;
 
 
@@ -41,7 +42,20 @@ import org.testng.annotations.Test;
 public class TestDriverDatabase extends AbstractTestDatabase
 {
 	private Driver driver = this.control.createMock(Driver.class);
-
+	
+	@Configuration(beforeTestClass = true)
+	protected void setup()
+	{
+		try
+		{
+			DriverManager.registerDriver(this.driver);
+		}
+		catch (SQLException e)
+		{
+			assert false : e;;
+		}
+	}
+	
 	protected Database createDatabase(String id)
 	{
 		DriverDatabase database = new DriverDatabase();
@@ -51,6 +65,33 @@ public class TestDriverDatabase extends AbstractTestDatabase
 		return database;
 	}
 	
+	private void setUrl(DriverDatabase database, String url, boolean accepted)
+	{
+		try
+		{
+			EasyMock.expect(this.driver.acceptsURL(url)).andReturn(accepted);
+			
+			this.control.replay();
+			
+			database.setUrl(url);
+
+			this.control.verify();
+		}
+		catch (SQLException e)
+		{
+			assert false : e;
+		}
+		finally
+		{
+			this.control.reset();
+		}
+	}
+	
+	private void setUrl(DriverDatabase database, String url)
+	{
+		this.setUrl(database, url, true);
+	}
+	
 	/**
 	 * Test method for {@link DriverDatabase#connect(Driver)}
 	 */
@@ -58,10 +99,10 @@ public class TestDriverDatabase extends AbstractTestDatabase
 	{
 		Connection connection = EasyMock.createMock(Connection.class);
 
+		DriverDatabase database = new DriverDatabase();
 		String url = "jdbc:test";
 		
-		DriverDatabase database = new DriverDatabase();		
-		database.setUrl(url);
+		this.setUrl(database, url);
 		
 		try
 		{
@@ -74,8 +115,6 @@ public class TestDriverDatabase extends AbstractTestDatabase
 			this.control.verify();
 			
 			assert connection == conn;
-			
-			this.control.reset();
 		}
 		catch (SQLException e)
 		{
@@ -88,16 +127,16 @@ public class TestDriverDatabase extends AbstractTestDatabase
 	 */
 	public void testConnectWithAuthentication()
 	{
-		DriverDatabase database = new DriverDatabase();
-		
 		Connection connection = EasyMock.createMock(Connection.class);
 
+		DriverDatabase database = new DriverDatabase();
 		String url = "jdbc:test";
 		
-		database.setUrl(url);
+		this.setUrl(database, url);
+		
 		database.setUser("user");
 		database.setPassword("password");
-
+		
 		Properties properties = new Properties();
 		properties.setProperty("user", database.getUser());
 		properties.setProperty("password", database.getPassword());
@@ -113,8 +152,6 @@ public class TestDriverDatabase extends AbstractTestDatabase
 			this.control.verify();
 			
 			assert connection == conn;
-			
-			this.control.reset();
 		}
 		catch (SQLException e)
 		{
@@ -128,11 +165,9 @@ public class TestDriverDatabase extends AbstractTestDatabase
 	public void testUnacceptedConnect()
 	{
 		DriverDatabase database = new DriverDatabase();
-		
 		String url = "jdbc:test";
 		
-		database.setDriver(this.driver.getClass().getName());
-		database.setUrl(url);
+		this.setUrl(database, url);
 		
 		try
 		{
@@ -157,16 +192,13 @@ public class TestDriverDatabase extends AbstractTestDatabase
 	 */
 	public void testCreateConnectionFactory()
 	{
-		String url = "jdbc:test";
 		DriverDatabase database = new DriverDatabase();
+		String url = "jdbc:test";
 		
-		database.setDriver(this.driver.getClass().getName());
-		database.setUrl(url);
+		this.setUrl(database, url);
 		
 		try
 		{
-			DriverManager.registerDriver(this.driver);
-			
 			EasyMock.expect(this.driver.acceptsURL(url)).andReturn(true);
 			
 			this.control.replay();
@@ -191,16 +223,25 @@ public class TestDriverDatabase extends AbstractTestDatabase
 		DriverDatabase database = new DriverDatabase();
 		
 		assert !database.isDirty();
-		
-		database.setUrl(null);
+
+		try
+		{
+			this.setUrl(database, "bad", false);
+			
+			assert false;
+		}
+		catch (IllegalArgumentException e)
+		{
+			assert true;
+		}
 		
 		assert !database.isDirty();
 		
-		database.setUrl("test");
+		this.setUrl(database, "good");
 		
 		assert database.isDirty();
 
-		database.setUrl("test");
+		this.setUrl(database, "test");
 		
 		assert database.isDirty();
 
@@ -208,19 +249,7 @@ public class TestDriverDatabase extends AbstractTestDatabase
 		
 		assert !database.isDirty();
 		
-		database.setUrl(null);
-		
-		assert database.isDirty();
-		
-		database.setUrl("test");
-		
-		assert database.isDirty();
-		
-		database.clean();
-		
-		assert !database.isDirty();
-		
-		database.setUrl("different");
+		this.setUrl(database, "different");
 		
 		assert database.isDirty();
 	}
@@ -243,11 +272,11 @@ public class TestDriverDatabase extends AbstractTestDatabase
 		assert database.getDriver() == null : database.getDriver();
 		assert !database.isDirty();
 
-		database.setDriver("net.sf.hajdbc.sql.Driver");
+		database.setDriver("net.sf.hajdbc.sql.MockDriver");
 		
 		assert database.isDirty();
 
-		database.setDriver("net.sf.hajdbc.sql.Driver");
+		database.setDriver("net.sf.hajdbc.sql.MockDriver");
 		
 		assert database.isDirty();
 
@@ -259,7 +288,7 @@ public class TestDriverDatabase extends AbstractTestDatabase
 		
 		assert database.isDirty();
 		
-		database.setDriver("net.sf.hajdbc.sql.Driver");
+		database.setDriver("net.sf.hajdbc.sql.MockDriver");
 		
 		assert database.isDirty();
 		
