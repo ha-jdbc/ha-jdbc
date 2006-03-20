@@ -473,7 +473,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseClusterMBean#addDatabase(java.lang.String, java.lang.String, java.lang.String)
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#add(java.lang.String, java.lang.String, java.lang.String)
 	 */
 	public void add(String id, String driver, String url)
 	{
@@ -487,7 +487,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseClusterMBean#addDatabase(java.lang.String, java.lang.String)
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#add(java.lang.String, java.lang.String)
 	 */
 	public void add(String id, String name)
 	{
@@ -500,7 +500,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseClusterMBean#removeDatabase(java.lang.String)
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#remove(java.lang.String)
 	 */
 	public synchronized void remove(String id)
 	{
