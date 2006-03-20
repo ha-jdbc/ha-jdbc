@@ -56,8 +56,7 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	}
 	
 	/**
-	 * Set the url for this database
-	 * @param url a database url
+	 * @see net.sf.hajdbc.sql.InactiveDriverDatabaseMBean#setUrl(java.lang.String)
 	 */
 	public void setUrl(String url)
 	{

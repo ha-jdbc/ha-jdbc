@@ -31,6 +31,7 @@ public interface InactiveDriverDatabaseMBean extends ActiveDriverDatabaseMBean, 
 	/**
 	 * Set the url for this database
 	 * @param url a database url
+	 * @throws IllegalArgumentException if url is not accepted by any driver
 	 */
 	public void setUrl(String url);
 }
