@@ -242,7 +242,7 @@ public abstract class AbstractTestBalancer
 		/**
 		 * @see net.sf.hajdbc.Database#createConnectionFactory()
 		 */
-		public Void createConnectionFactory() throws SQLException
+		public Void createConnectionFactory()
 		{
 			return null;
 		}
