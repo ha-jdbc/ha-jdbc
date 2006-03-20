@@ -20,14 +20,12 @@
  */
 package net.sf.hajdbc;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -362,16 +360,12 @@ public final class DatabaseClusterFactory
 	{
 		File file = File.createTempFile("ha-jdbc", ".xml");
 		
-		Writer writer = new BufferedWriter(new FileWriter(file));
-		
 		IMarshallingContext context = BindingDirectory.getFactory(DatabaseClusterFactory.class).createMarshallingContext();
 	
 		context.setIndent(1, System.getProperty("line.separator"), '\t');
 		
-		context.marshalDocument(this, null, null, writer);
-		
-		writer.flush();
-		writer.close();
+		// This method closes the writer
+		context.marshalDocument(this, null, null, new FileWriter(file));
 		
 		return file;
 	}
