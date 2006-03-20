@@ -299,6 +299,10 @@ public final class DatabaseClusterFactory
 		
 		try
 		{
+			file = this.exportToFile();
+			
+			fileChannel = new FileInputStream(file).getChannel();
+			
 			// We cannot use URLConnection for files becuase Sun's implementation does not support output.
 			if (this.url.getProtocol().equals("file"))
 			{
@@ -313,10 +317,6 @@ public final class DatabaseClusterFactory
 				outputChannel = Channels.newChannel(connection.getOutputStream());
 			}
 			
-			file = this.exportToFile();
-			
-			fileChannel = new FileInputStream(file).getChannel();
-			
 			fileChannel.transferTo(0, file.length(), outputChannel);
 		}
 		catch (Exception e)
@@ -325,11 +325,11 @@ public final class DatabaseClusterFactory
 		}
 		finally
 		{
-			if (fileChannel != null)
+			if (outputChannel != null)
 			{
 				try
 				{
-					fileChannel.close();
+					outputChannel.close();
 				}
 				catch (IOException e)
 				{
@@ -337,11 +337,11 @@ public final class DatabaseClusterFactory
 				}
 			}
 			
-			if (outputChannel != null)
+			if (fileChannel != null)
 			{
 				try
 				{
-					outputChannel.close();
+					fileChannel.close();
 				}
 				catch (IOException e)
 				{
