@@ -58,8 +58,6 @@
 						<dd>Required.</dd>
 						<dt>quartz-XXX.jar : <a href="http://www.opensymphony.com/quartz">Quartz</a></dt>
 						<dd>Optional.  Required only if auto-activate-schedule and/or failure-detect-schedule cluster options are used.</dd>
-						<dt>xpp3-XXX.jar : <a href="http://www.extreme.indiana.edu/xgws/xsoap/xpp/mxp1">XML Pull Parser</a></dt>
-						<dd>Required.</dd>
 					</dl>
 				</dd>
 				<dt>/lib/compile : Libraries used only for compiling</dt>
@@ -86,17 +84,19 @@
 						<dt>concurrent-XXX.jar : Doug Lea's <a href="http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent/intro.html">util.concurrent</a> package</dt>
 						<dd>Optional.  Required dependency of JGroups.</dd>
 						<dt>jcl104-over-slf4j.jar : <a href="http://slf4j.org">SLF4J</a> drop-in replacement for commons-logging-1.0.4.jar</dt>
-						<dd>Optional.  Provided for <a href="http://www.slf4j.org/manual.html#gradual">gradual migration</a> from commons-logging to SLF4J.  Commons-logging is a required runtime dependency of both JGroups and Quartz.</dd>
+						<dd>Optional.  Required if JGroups and Quartz are used.  Provided for <a href="http://www.slf4j.org/manual.html#gradual">gradual migration</a> from Commons-Logging to SLF4J.</dd>
 						<dt>slf4j-XXX-jcl.jar : Commons-logging provider for <a href="http://slf4j.org">SLF4J</a>.</dt>
-						<dd>Optional.  Used only if jcl104-over-slf4j.jar is not used.</dd>
+						<dd>Optional.  Required if you insist on using commons-logging (i.e. not jcl104-over-slf4j.jar).</dd>
 						<dt>slf4j-XXX-jdk14.jar : java.util.logging provider for <a href="http://slf4j.org">SLF4J</a>.</dt>
-						<dd>Optional.  Required if java.util.logging is the base logging provider.</dd>
+						<dd>Optional.  Required if java.util.logging is your logging provider.</dd>
 						<dt>slf4j-XXX-log4j12.jar : Log4J 1.2.X provider for <a href="http://slf4j.org">SLF4J</a>.</dt>
-						<dd>Optional.  Required if Log4J 1.2.X is the base logging provider.</dd>
+						<dd>Optional.  Required if Log4J 1.2.X is your logging provider.</dd>
 						<dt>slf4j-XXX-log4j13.jar : Log4J 1.3.X provider for <a href="http://slf4j.org">SLF4J</a>.</dt>
-						<dd>Optional.  Required if Log4J 1.3.X is the base logging provider.</dd>
+						<dd>Optional.  Required if Log4J 1.3.X is your logging provider.</dd>
 						<dt>slf4j-XXX-simple.jar : Simple-Log provider for <a href="http://slf4j.org">SLF4J</a>.</dt>
-						<dd>Optional.  Required if Simple-Log is the base logging provider.</dd>
+						<dd>Optional.  Required if Simple-Log is your logging provider.</dd>
+						<dt>xpp3-XXX.jar : <a href="http://www.extreme.indiana.edu/xgws/xsoap/xpp/mxp1">XML Pull Parser</a></dt>
+						<dd>Required.  Dependency of JiBX.</dd>
 					</dl>
 				</dd>
 				<dt>/lib/runtime-1.4 : Additional libraries used only during runtime for JDK 1.4 support</dt>
