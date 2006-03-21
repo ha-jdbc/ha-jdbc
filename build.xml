@@ -1,8 +1,6 @@
 <?xml version="1.0"?>
 <project name="ha-jdbc" default="jar" basedir=".">
 
-	<property name="junit.jar" value="junit-3.8.1.jar"></property>
-	
 	<property name="build.dir" location="${basedir}/build"></property>
 	<property name="src.dir" location="${basedir}/src"></property>
 	<property name="test.dir" location="${basedir}/test"></property>
@@ -30,8 +28,6 @@
 	<property name="jar-1.4.file" location="${basedir}/${dist-1.4.version.name}.jar"></property>
 	<property name="dist-1.4.bin.file" location="${basedir}/${dist-1.4.version.name}-bin.tar.gz"></property>
 	
-	<available property="junit-available" file="${ant.home}/lib/${junit.jar}"/>
-
 	<path id="src.classpath">
 		<fileset dir="${lib.dir}" includes="*.jar"></fileset>
 		<fileset dir="${lib.compile.dir}" includes="*.jar"></fileset>
