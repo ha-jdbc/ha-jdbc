@@ -51,27 +51,23 @@
 	<path id="bind.classpath">
 		<fileset dir="${lib.dir}">
 			<include name="jibx-run-*.jar"/>
-			<include name="xpp3-*.jar"/>
 		</fileset>
 		<fileset dir="${lib.compile.dir}">
 			<include name="jibx-bind-*.jar"/>
 			<include name="bcel-*.jar"/>
 		</fileset>
+		<fileset dir="${lib.runtime.dir}">
+			<include name="xpp3-*.jar"/>
+		</fileset>
 	</path>
 	
 	<path id="retrotranslate.classpath">
-		<fileset dir="${java.home}/lib" includes="rt.jar"></fileset>
-		<fileset dir="${lib.runtime-1.4.dir}" includes="*.jar"></fileset>
-		<fileset dir="${lib.compile-1.4.dir}">
-			<include name="retrotranslator-transformer-*.jar"/>
-		</fileset>
-		<fileset dir="${lib.runtime-1.4.dir}">
-			<include name="backport-util-concurrent-*.jar"/>
-			<include name="retrotranslator-runtime-*.jar"/>
-		</fileset>
+		<fileset dir="${lib.runtime-1.4.dir}"></fileset>
+		<fileset dir="${lib.compile-1.4.dir}"></fileset>
 	</path>
 
 	<path id="retrotranslate.build.classpath">
+		<fileset dir="${java.home}/lib" includes="rt.jar"></fileset>
 		<path refid="retrotranslate.classpath"></path>
 		<path refid="build.classpath"></path>
 	</path>
