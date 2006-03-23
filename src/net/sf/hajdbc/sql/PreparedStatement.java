@@ -263,11 +263,14 @@ public class PreparedStatement<T extends java.sql.PreparedStatement> extends Sta
 	 */
 	public void setBlob(final int index, final Blob value) throws SQLException
 	{
+		final FileSupport fileSupport = this.getFileSupport();
+		final File file = fileSupport.createFile(value);
+		
 		Operation<T, Void> operation = new Operation<T, Void>()
 		{
 			public Void execute(Database database, T statement) throws SQLException
 			{
-				statement.setBlob(index, value);
+				statement.setBlob(index, fileSupport.getBlob(file));
 				
 				return null;
 			}
@@ -356,11 +359,14 @@ public class PreparedStatement<T extends java.sql.PreparedStatement> extends Sta
 	 */
 	public void setClob(final int index, final Clob value) throws SQLException
 	{
+		final FileSupport fileSupport = this.getFileSupport();
+		final File file = fileSupport.createFile(value);
+		
 		Operation<T, Void> operation = new Operation<T, Void>()
 		{
 			public Void execute(Database database, T statement) throws SQLException
 			{
-				statement.setClob(index, value);
+				statement.setClob(index, fileSupport.getClob(file));
 				
 				return null;
 			}

@@ -1720,11 +1720,14 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateBlob(final int index, final java.sql.Blob value) throws SQLException
 	{
+		final FileSupport fileSupport = this.getFileSupport();
+		final File file = fileSupport.createFile(value);
+		
 		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
 		{
 			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
 			{
-				resultSet.updateBlob(index, value);
+				resultSet.updateBlob(index, fileSupport.getBlob(file));
 				
 				return null;
 			}
@@ -1738,11 +1741,14 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateBlob(final String name, final java.sql.Blob value) throws SQLException
 	{
+		final FileSupport fileSupport = this.getFileSupport();
+		final File file = fileSupport.createFile(value);
+		
 		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
 		{
 			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
 			{
-				resultSet.updateBlob(name, value);
+				resultSet.updateBlob(name, fileSupport.getBlob(file));
 				
 				return null;
 			}
@@ -1906,11 +1912,14 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateClob(final int index, final java.sql.Clob value) throws SQLException
 	{
+		final FileSupport fileSupport = this.getFileSupport();
+		final File file = fileSupport.createFile(value);
+		
 		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
 		{
 			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
 			{
-				resultSet.updateClob(index, value);
+				resultSet.updateClob(index, fileSupport.getClob(file));
 				
 				return null;
 			}
@@ -1924,11 +1933,14 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateClob(final String name, final java.sql.Clob value) throws SQLException
 	{
+		final FileSupport fileSupport = this.getFileSupport();
+		final File file = fileSupport.createFile(value);
+		
 		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
 		{
 			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
 			{
-				resultSet.updateClob(name, value);
+				resultSet.updateClob(name, fileSupport.getClob(file));
 				
 				return null;
 			}

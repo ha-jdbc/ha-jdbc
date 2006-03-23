@@ -23,6 +23,8 @@ package net.sf.hajdbc.sql;
 import java.io.File;
 import java.io.InputStream;
 import java.io.Reader;
+import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.SQLException;
 
 /**
@@ -52,6 +54,22 @@ public interface FileSupport
 	public File createFile(Reader reader) throws SQLException;
 
 	/**
+	 * Create a file from the specified Blob.
+	 * @param blob a binary large object
+	 * @return a temporary file
+	 * @throws java.sql.SQLException if an IO error occurs
+	 */
+	public File createFile(Blob blob) throws SQLException;
+	
+	/**
+	 * Create a file from the specified Clob.
+	 * @param clob a character large object
+	 * @return a temporary file
+	 * @throws java.sql.SQLException if an IO error occurs
+	 */
+	public File createFile(Clob clob) throws SQLException;
+	
+	/**
 	 * Returns a reader for the specified file.
 	 * @param file a temp file
 	 * @return a reader
@@ -66,6 +84,22 @@ public interface FileSupport
 	 * @throws java.sql.SQLException if IO error occurs
 	 */
 	public InputStream getInputStream(File file) throws SQLException;
+	
+	/**
+	 * Returns an Blob that reads from the specified file.
+	 * @param file a temp file
+	 * @return a Blob object
+	 * @throws java.sql.SQLException if IO error occurs
+	 */
+	public Blob getBlob(File file) throws SQLException;
+	
+	/**
+	 * Returns an Clob that reads from the specified file.
+	 * @param file a temp file
+	 * @return a Clob object
+	 * @throws java.sql.SQLException if IO error occurs
+	 */
+	public Clob getClob(File file) throws SQLException;
 	
 	/**
 	 * Deletes any files created by this object.

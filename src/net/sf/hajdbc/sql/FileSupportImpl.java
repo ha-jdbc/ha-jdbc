@@ -28,6 +28,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.ByteBuffer;
@@ -35,6 +36,9 @@ import java.nio.CharBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.Charset;
+import java.sql.Blob;
+import java.sql.Clob;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -118,6 +122,22 @@ public class FileSupportImpl implements FileSupport
 	}
 	
 	/**
+	 * @see net.sf.hajdbc.sql.FileSupport#createFile(java.sql.Blob)
+	 */
+	public File createFile(Blob blob) throws java.sql.SQLException
+	{
+		return this.createFile(blob.getBinaryStream());
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.FileSupport#createFile(java.sql.Clob)
+	 */
+	public File createFile(Clob clob) throws java.sql.SQLException
+	{
+		return this.createFile(clob.getCharacterStream());
+	}
+
+	/**
 	 * @see net.sf.hajdbc.sql.FileSupport#getReader(java.io.File)
 	 */
 	public Reader getReader(File file) throws java.sql.SQLException
@@ -187,5 +207,244 @@ public class FileSupportImpl implements FileSupport
 		this.close();
 		
 		super.finalize();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.FileSupport#getBlob(java.io.File)
+	 */
+	public Blob getBlob(File file) throws java.sql.SQLException
+	{
+		try
+		{
+			final FileChannel channel = new FileInputStream(file).getChannel();
+		
+			return new Blob()
+			{
+				public long length() throws java.sql.SQLException
+				{
+					try
+					{
+						return channel.size();
+					}
+					catch (IOException e)
+					{
+						throw new SQLException(e);
+					}
+				}
+	
+				public byte[] getBytes(long position, int length) throws java.sql.SQLException
+				{
+					ByteBuffer buffer = ByteBuffer.allocate(length);
+					
+					try
+					{
+						channel.read(buffer, position);
+					}
+					catch (IOException e)
+					{
+						throw new SQLException(e);
+					}
+					
+					buffer.compact();
+					
+					return buffer.array();
+				}
+	
+				public InputStream getBinaryStream() throws java.sql.SQLException
+				{
+					return Channels.newInputStream(channel);
+				}
+	
+				public long position(byte[] pattern, long start) throws java.sql.SQLException
+				{
+					throw new UnsupportedOperationException();
+				}
+	
+				public long position(Blob pattern, long start) throws java.sql.SQLException
+				{
+					throw new UnsupportedOperationException();
+				}
+	
+				public int setBytes(long position, byte[] bytes) throws java.sql.SQLException
+				{
+					return this.writeBuffer(position, ByteBuffer.wrap(bytes));
+				}
+	
+				public int setBytes(long position, byte[] bytes, int offset, int length) throws java.sql.SQLException
+				{
+					return this.writeBuffer(position, ByteBuffer.wrap(bytes, offset, length));
+				}
+
+				private int writeBuffer(long position, ByteBuffer buffer) throws java.sql.SQLException
+				{
+					try
+					{
+						return channel.write(buffer, position);
+					}
+					catch (IOException e)
+					{
+						throw new SQLException(e);
+					}
+				}
+				
+				public OutputStream setBinaryStream(long position) throws java.sql.SQLException
+				{
+					try
+					{
+						return Channels.newOutputStream(channel.position(position));
+					}
+					catch (IOException e)
+					{
+						throw new SQLException(e);
+					}
+				}
+	
+				public void truncate(long length) throws java.sql.SQLException
+				{
+					try
+					{
+						channel.truncate(length);
+					}
+					catch (IOException e)
+					{
+						throw new SQLException(e);
+					}
+				}
+			};
+		}
+		catch (IOException e)
+		{
+			throw new SQLException(e);
+		}
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.FileSupport#getClob(java.io.File)
+	 */
+	public Clob getClob(File file) throws java.sql.SQLException
+	{
+		try
+		{
+			final FileChannel channel = new FileInputStream(file).getChannel();
+			
+			return new Clob()
+			{
+				public long length() throws java.sql.SQLException
+				{
+					try
+					{
+						return channel.size();
+					}
+					catch (IOException e)
+					{
+						throw new SQLException(e);
+					}
+				}
+
+				public String getSubString(long position, int length) throws java.sql.SQLException
+				{
+					ByteBuffer buffer = ByteBuffer.allocate(length);
+					
+					try
+					{
+						channel.read(buffer, position);
+					}
+					catch (IOException e)
+					{
+						throw new SQLException(e);
+					}
+					
+					buffer.compact();
+					
+					return String.valueOf(buffer.asCharBuffer().array());
+				}
+
+				public Reader getCharacterStream() throws java.sql.SQLException
+				{
+					return Channels.newReader(channel, Charset.defaultCharset().newDecoder(), -1);
+				}
+
+				public InputStream getAsciiStream() throws java.sql.SQLException
+				{
+					return Channels.newInputStream(channel);
+				}
+
+				public long position(String pattern, long position) throws java.sql.SQLException
+				{
+					throw new UnsupportedOperationException();
+				}
+
+				public long position(Clob pattern, long position) throws java.sql.SQLException
+				{
+					throw new UnsupportedOperationException();
+				}
+
+				public int setString(long position, String value) throws java.sql.SQLException
+				{
+					CharBuffer buffer = CharBuffer.wrap(value);
+					
+					return writeBuffer(position, buffer);
+				}
+
+				public int setString(long position, String value, int offset, int length) throws java.sql.SQLException
+				{
+					CharBuffer buffer = CharBuffer.wrap(value, offset, length);
+					
+					return writeBuffer(position, buffer);
+				}
+
+				private int writeBuffer(long position, CharBuffer buffer) throws java.sql.SQLException
+				{
+					try
+					{
+						return channel.write(ByteBuffer.wrap(buffer.toString().getBytes()), position);
+					}
+					catch (IOException e)
+					{
+						throw new SQLException(e);
+					}
+				}
+
+				public OutputStream setAsciiStream(long position) throws java.sql.SQLException
+				{
+					try
+					{
+						return Channels.newOutputStream(channel.position(position));
+					}
+					catch (IOException e)
+					{
+						throw new SQLException(e);
+					}
+				}
+
+				public Writer setCharacterStream(long position) throws java.sql.SQLException
+				{
+					try
+					{
+						return Channels.newWriter(channel.position(position), Charset.defaultCharset().newEncoder(), -1);
+					}
+					catch (IOException e)
+					{
+						throw new SQLException(e);
+					}
+				}
+
+				public void truncate(long length) throws java.sql.SQLException
+				{
+					try
+					{
+						channel.truncate(length);
+					}
+					catch (IOException e)
+					{
+						throw new SQLException(e);
+					}
+				}
+			};
+		}
+		catch (IOException e)
+		{
+			throw new SQLException(e);
+		}
 	}
 }
