@@ -499,6 +499,7 @@ public class TestPreparedStatement extends TestStatement
 	public void testSetBlob()
 	{
 		Blob blob = EasyMock.createMock(Blob.class);
+		File file = new File("");
 		
 		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
 		
@@ -509,6 +510,9 @@ public class TestPreparedStatement extends TestStatement
 		
 		try
 		{
+			EasyMock.expect(this.fileSupport.createFile(blob)).andReturn(file);
+			EasyMock.expect(this.fileSupport.getBlob(file)).andReturn(blob);
+			
 			this.getSQLStatement().setBlob(1, blob);
 			
 			this.lock.unlock();
@@ -661,6 +665,7 @@ public class TestPreparedStatement extends TestStatement
 	public void testSetClob()
 	{
 		Clob clob = EasyMock.createMock(Clob.class);
+		File file = new File("");
 		
 		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
 		
@@ -671,6 +676,9 @@ public class TestPreparedStatement extends TestStatement
 		
 		try
 		{
+			EasyMock.expect(this.fileSupport.createFile(clob)).andReturn(file);
+			EasyMock.expect(this.fileSupport.getClob(file)).andReturn(clob);
+			
 			this.getSQLStatement().setClob(1, clob);
 			
 			this.lock.unlock();
