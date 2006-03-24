@@ -143,7 +143,7 @@
 			</p>
 			<source id="ha-jdbc">&lt;!ELEMENT ha-jdbc (<a href="#distributable">distributable</a>?,<a href="#sync">sync</a>+,<a href="#cluster">cluster</a>+)&gt;</source>
 			<section id="distributable">
-				<title>distributable</title>
+				<title>&lt;distributable&gt;</title>
 				<p>
 					Indicates that database clusters defined in this file will be accessed by multiple JVMs.
 					HA-JDBC leverages <a href="http://www.jgroups.org">JGroups</a> to handle communication between database clusters across servers.
@@ -174,7 +174,7 @@
 				</dl>
 			</section>
 			<section id="sync">
-				<title>sync</title>
+				<title>&lt;sync&gt;</title>
 				<p>
 					Defines a strategy for synchronizing a database before activation.
 					If the strategy contains JavaBean properties, you can override their default values.
@@ -198,7 +198,7 @@
 					</dd>
 				</dl>
 				<section id="property">
-					<title>property</title>
+					<title>&lt;property&gt;</title>
 					<source><![CDATA[
 <!ELEMENT property (#PCDATA)>
 <!ATTLIST property
@@ -215,7 +215,7 @@
 				</section>
 			</section>
 			<section id="cluster">
-				<title>cluster</title>
+				<title>&lt;cluster&gt;</title>
 				<p>
 					Defines the nodes and behavior of a database cluster.
 				</p>
@@ -282,7 +282,7 @@
 					</dd>
 				</dl>
 				<section id="database">
-					<title>database</title>
+					<title>&lt;database&gt;</title>
 					<p>
 						Defines the databases in this cluster that will be referenced via the java.sql.DriverManager facility.
 					</p>
@@ -328,7 +328,7 @@
 					</dl>
 				</section>
 				<section id="datasource">
-					<title>datasource</title>
+					<title>&lt;datasource&gt;</title>
 					<p>
 						Defines the databases in this cluster that will be referenced via javax.sql.DataSource.
 					</p>
@@ -993,7 +993,7 @@ cluster.activate(databaseId);
 						<li><a href="api/net/sf/hajdbc/sql/InactiveDriverDatabaseMBean.html"><code>net.sf.hajdbc.sql.InactiveDriverDatabaseMBean</code></a></li>
 						<li><a href="api/net/sf/hajdbc/sql/InactiveDataSourceDatabaseMBean.html"><code>net.sf.hajdbc.sql.InactiveDataSourceDatabaseMBean</code></a></li>
 						<li><a href="api/net/sf/hajdbc/sql/ActiveDriverDatabaseMBean.html"><code>net.sf.hajdbc.sql.ActiveDriverDatabaseMBean</code></a></li>
-						<li><a href="api/net/sf/hajdbc/sql/ActiveDataSourceDatabaseMBean.html"><code>net.sf.hajdbc.sql.InactiveDataSourceDatabaseMBean</code></a></li>
+						<li><a href="api/net/sf/hajdbc/sql/ActiveDataSourceDatabaseMBean.html"><code>net.sf.hajdbc.sql.ActiveDataSourceDatabaseMBean</code></a></li>
 					</ul>
 					<p>
 						Database mbeans are registered using the following object-name:
