@@ -97,7 +97,7 @@ public class DefaultDialect implements Dialect
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		if (schema != null)
+		if ((schema != null) && metaData.supportsSchemasInDataManipulation())
 		{
 			builder.append(this.quote(metaData, schema)).append('.');
 		}

@@ -16,6 +16,12 @@
 			<action type="update" context="code" dev="PF">
 				Upgraded Retrotranslator to version 1.0.2.
 			</action>
+			<action type="fix" context="code" dev="PF">
+				Fixed Blob/Clob handling in PreparedStatement.setBlob(..)/setBlob(...) and ResultSet.updateBlob(...)/updateClob(...) methods.
+			</action>
+			<action type="fix" context="code" dev="PF">
+				Fixed bug in DefaultDialect.qualifyTable(...) for databases that do not support schemas.
+			</action>
 		</release>
 		<release version="1.1-beta-7" date="March 20, 2006">
 			<action type="add" context="code" dev="PF" due-to="Tapan Paul">
