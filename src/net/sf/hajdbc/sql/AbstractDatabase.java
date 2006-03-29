@@ -219,6 +219,6 @@ public abstract class AbstractDatabase<T> implements Database<T>
 	 */
 	public int compareTo(Database database)
 	{
-		return Integer.valueOf(database.getWeight()).compareTo(this.weight);
+		return this.id.compareTo(database.getId());
 	}
 }
