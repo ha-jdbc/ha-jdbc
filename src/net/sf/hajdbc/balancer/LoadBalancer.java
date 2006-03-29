@@ -36,31 +36,6 @@ import net.sf.hajdbc.Database;
  */
 public class LoadBalancer extends AbstractBalancer
 {
-	private static Comparator<Map.Entry<Database, Integer>> comparator = new Comparator<Map.Entry<Database, Integer>>()
-	{
-		public int compare(Map.Entry<Database, Integer> mapEntry1, Map.Entry<Database, Integer> mapEntry2)
-		{
-			Database database1 = mapEntry1.getKey();
-			Database database2 = mapEntry2.getKey();
-
-			Integer load1 = mapEntry1.getValue();
-			Integer load2 = mapEntry2.getValue();
-			
-			int weight1 = database1.getWeight();
-			int weight2 = database2.getWeight();
-			
-			if (weight1 == weight2)
-			{
-				return load1.compareTo(load2);
-			}
-			
-			float weightedLoad1 = (weight1 != 0) ? (load1.floatValue() / weight1) : Float.POSITIVE_INFINITY;
-			float weightedLoad2 = (weight2 != 0) ? (load2.floatValue() / weight2) : Float.POSITIVE_INFINITY;
-			
-			return Float.compare(weightedLoad1, weightedLoad2);
-		}
-	};
-	
 	private Map<Database, Integer> databaseMap = new HashMap<Database, Integer>();
 	
 	/**
@@ -134,4 +109,29 @@ public class LoadBalancer extends AbstractBalancer
 			this.databaseMap.put(database, load + increment);
 		}
 	}
+	
+	private static Comparator<Map.Entry<Database, Integer>> comparator = new Comparator<Map.Entry<Database, Integer>>()
+	{
+		public int compare(Map.Entry<Database, Integer> mapEntry1, Map.Entry<Database, Integer> mapEntry2)
+		{
+			Database database1 = mapEntry1.getKey();
+			Database database2 = mapEntry2.getKey();
+
+			Integer load1 = mapEntry1.getValue();
+			Integer load2 = mapEntry2.getValue();
+			
+			int weight1 = database1.getWeight();
+			int weight2 = database2.getWeight();
+			
+			if (weight1 == weight2)
+			{
+				return load1.compareTo(load2);
+			}
+			
+			float weightedLoad1 = (weight1 != 0) ? (load1.floatValue() / weight1) : Float.POSITIVE_INFINITY;
+			float weightedLoad2 = (weight2 != 0) ? (load2.floatValue() / weight2) : Float.POSITIVE_INFINITY;
+			
+			return Float.compare(weightedLoad1, weightedLoad2);
+		}
+	};
 }
