@@ -21,6 +21,7 @@
 package net.sf.hajdbc.balancer;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
@@ -32,7 +33,7 @@ import net.sf.hajdbc.Database;
  */
 public class SimpleBalancer extends AbstractBalancer
 {
-	private Queue<Database> databaseQueue = new PriorityQueue<Database>();
+	private Queue<Database> databaseQueue = new PriorityQueue<Database>(2, new WeightComparator());
 
 	/**
 	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
@@ -58,5 +59,16 @@ public class SimpleBalancer extends AbstractBalancer
 	public synchronized Database next()
 	{
 		return this.first();
+	}
+	
+	private static class WeightComparator implements Comparator<Database>
+	{
+		/**
+		 * @see java.util.Comparator#compare(T, T)
+		 */
+		public int compare(Database database1, Database database2)
+		{
+			return database1.getWeight() - database2.getWeight();
+		}
 	}
 }
