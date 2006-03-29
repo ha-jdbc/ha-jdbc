@@ -23,6 +23,7 @@ package net.sf.hajdbc.balancer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
@@ -88,11 +89,15 @@ public abstract class AbstractBalancer implements Balancer
 	 */
 	public synchronized Collection<Database> all()
 	{
-		return Collections.unmodifiableList(new ArrayList<Database>(this.getDatabases()));
+		List<Database> list = new ArrayList<Database>(this.getDatabases());
+		
+		Collections.sort(list);
+		
+		return Collections.unmodifiableList(list);
 	}
 	
 	/**
-	 * Exposes a view of the underlying Collection of Databases.
+	 * Exposes a view of the underlying collection of Databases.
 	 * @return a Collection of databases
 	 */
 	protected abstract Collection<Database> getDatabases();
