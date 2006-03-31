@@ -104,7 +104,7 @@
     </target>
 
 	<target name="compile-1.4" depends="bind">
-		<echo>The following verification warning should be ignored:</echo>
+		<echo>The following verification warning is expected and should be ignored:</echo>
 		<echo>Constructor not found: edu.emory.mathcs.backport.java.util.concurrent.locks.ReentrantReadWriteLock(boolean)</echo>
 		<retrotranslate srcdir="${build.dir}" classpathref="retrotranslate.build.classpath" verify="on" failonwarning="no"></retrotranslate>
 	</target>
