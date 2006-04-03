@@ -51,7 +51,7 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 	 */
 	public CronThreadPoolExecutor(int corePoolSize, RejectedExecutionHandler handler)
 	{
-		super(corePoolSize + 1, handler);
+		super(corePoolSize, handler);
 	}
 
 	/**
@@ -62,7 +62,7 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 	 */
 	public CronThreadPoolExecutor(int corePoolSize, ThreadFactory factory, RejectedExecutionHandler handler)
 	{
-		super(corePoolSize + 1, factory, handler);
+		super(corePoolSize, factory, handler);
 	}
 
 	/**
@@ -72,7 +72,7 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 	 */
 	public CronThreadPoolExecutor(int corePoolSize, ThreadFactory factory)
 	{
-		super(corePoolSize + 1, factory);
+		super(corePoolSize, factory);
 	}
 
 	/**
@@ -81,7 +81,7 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 	 */
 	public CronThreadPoolExecutor(int corePoolSize)
 	{
-		super(corePoolSize + 1);
+		super(corePoolSize);
 	}
 	
 	/**
@@ -101,6 +101,8 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 		{
 			throw new RejectedExecutionException(e);
 		}
+		
+		this.setCorePoolSize(this.getCorePoolSize() + 1);
 		
 		Runnable scheduleTask = new Runnable()
 		{
