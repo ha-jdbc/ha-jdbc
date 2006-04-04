@@ -53,7 +53,7 @@ public final class BalancerFactory
 	 * @return a new Balancer instance
 	 * @throws Exception if specified balancer identifier is invalid
 	 */
-	public static Balancer createBalancer(String id) throws Exception
+	public static Balancer deserialize(String id) throws Exception
 	{
 		Class<? extends Balancer> balancerClass = balancerMap.get(id);
 		
@@ -79,7 +79,7 @@ public final class BalancerFactory
 	 * @param balancer a Dialect implementation
 	 * @return the class name of this dialect
 	 */
-	public static String getBalancerId(Balancer balancer)
+	public static String serialize(Balancer balancer)
 	{
 		for (Map.Entry<String, Class<? extends Balancer>> balancerMapEntry: balancerMap.entrySet())
 		{

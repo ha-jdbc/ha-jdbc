@@ -58,7 +58,7 @@ public class DialectFactory
 	 * @return a new Dialect instance
 	 * @throws Exception if a Dialect instance could not be instantiated from the specified class name.
 	 */
-	public static Dialect createDialect(String id) throws Exception
+	public static Dialect deserialize(String id) throws Exception
 	{
 		try
 		{
@@ -85,7 +85,7 @@ public class DialectFactory
 	 * @param dialect a Dialect implementation
 	 * @return the class name of this dialect
 	 */
-	public static String getDialectId(Dialect dialect)
+	public static String serialize(Dialect dialect)
 	{
 		return dialect.getClass().getName();
 	}
