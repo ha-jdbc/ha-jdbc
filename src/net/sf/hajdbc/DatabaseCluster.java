@@ -97,11 +97,18 @@ public interface DatabaseCluster extends DatabaseClusterMBean
 	public Balancer getBalancer();
 	
 	/**
-	 * Returns an executor service used to asynchronously execute database writes.
+	 * Returns an executor service used to execute transactional database writes.
 	 * @return an implementation of <code>ExecutorService</code>
 	 * @since 1.1
 	 */
-	public ExecutorService getExecutor();
+	public ExecutorService getTransactionalExecutor();
+	
+	/**
+	 * Returns an executor service used to execute non-transactional database writes.
+	 * @return an implementation of <code>ExecutorService</code>
+	 * @since 1.1
+	 */
+	public ExecutorService getNonTransactionalExecutor();
 	
 	/**
 	 * Returns a dialect capable of returning database vendor specific values.
