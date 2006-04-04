@@ -28,15 +28,15 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -62,7 +62,6 @@ import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.SynchronizationStrategyBuilder;
 import net.sf.hajdbc.sql.DataSourceDatabase;
 import net.sf.hajdbc.sql.DriverDatabase;
-import net.sf.hajdbc.util.concurrent.CronExecutorService;
 import net.sf.hajdbc.util.concurrent.CronThreadPoolExecutor;
 
 import org.slf4j.Logger;
@@ -81,15 +80,21 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	static Logger logger = LoggerFactory.getLogger(LocalDatabaseCluster.class);
 	
 	private String id;
-	private Map<String, Database> databaseMap = new ConcurrentHashMap<String, Database>();
 	private Balancer balancer;
 	private Dialect dialect;
 	private String defaultSynchronizationStrategyId;
 	private String failureDetectionSchedule;
 	private String autoActivationSchedule;
+	private int minThreads;
+	private int maxThreads;
+	private int maxIdle;
+	private Transaction transaction;
+	
+	private Map<String, Database> databaseMap = new ConcurrentHashMap<String, Database>();
 	private Map<Database, Object> connectionFactoryMap = new ConcurrentHashMap<Database, Object>();
-	private ThreadPoolExecutor executor = ThreadPoolExecutor.class.cast(Executors.newCachedThreadPool());
-	private CronExecutorService cronExecutor = new CronThreadPoolExecutor(2);
+	private ExecutorService transactionalExecutor;
+	private ExecutorService nonTransactionalExecutor;
+	private CronThreadPoolExecutor cronExecutor = new CronThreadPoolExecutor(2);
 	private ReadWriteLock lock = createReadWriteLock();
 	
 	/**
@@ -286,7 +291,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		Iterator<Database> databases = this.balancer.all().iterator();
+		Iterator<Database> databases = this.balancer.list().iterator();
 		
 		while (databases.hasNext())
 		{
@@ -315,7 +320,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	 */
 	public Collection<String> getActiveDatabases()
 	{
-		return this.extractIdentifiers(this.balancer.all());
+		return this.extractIdentifiers(this.balancer.list());
 	}
 
 	/**
@@ -328,9 +333,9 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	
 	protected Set<Database> getInactiveDatabaseSet()
 	{
-		Set<Database> databaseSet = new HashSet<Database>(this.databaseMap.values());
+		Set<Database> databaseSet = new TreeSet<Database>(this.databaseMap.values());
 
-		databaseSet.removeAll(this.balancer.all());
+		databaseSet.removeAll(this.balancer.list());
 		
 		return databaseSet;
 	}
@@ -379,13 +384,21 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getExecutor()
+	 * @see net.sf.hajdbc.DatabaseCluster#getTransactionalExecutor()
 	 */
-	public ExecutorService getExecutor()
+	public ExecutorService getTransactionalExecutor()
 	{
-		return this.executor;
+		return this.transactionalExecutor;
 	}
 
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getNonTransactionalExecutor()
+	 */
+	public ExecutorService getNonTransactionalExecutor()
+	{
+		return this.nonTransactionalExecutor;
+	}
+	
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getDialect()
 	 */
@@ -530,6 +543,60 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			throw new IllegalStateException(e);
 		}
 	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#start()
+	 */
+	public void start() throws java.sql.SQLException
+	{
+		String[] databases = this.loadState();
+
+		if (databases != null)
+		{
+			for (String id: databases)
+			{
+				Database database = this.getDatabase(id);
+				
+				this.activate(database);
+			}
+		}
+		else
+		{
+			for (String id: this.getInactiveDatabases())
+			{
+				Database database = this.getDatabase(id);
+				
+				if (this.isAlive(database))
+				{
+					this.activate(database);
+				}
+			}
+		}
+
+		this.nonTransactionalExecutor = new ThreadPoolExecutor(this.minThreads, this.maxThreads, this.maxIdle, TimeUnit.SECONDS, new SynchronousQueue(), new ThreadPoolExecutor.CallerRunsPolicy());
+		
+		this.transactionalExecutor = this.transaction.equals(Transaction.XA) ? new ThreadPoolExecutor(0, 0, 0, TimeUnit.SECONDS, new SynchronousQueue(), new ThreadPoolExecutor.CallerRunsPolicy()) : this.nonTransactionalExecutor;
+		
+		if (this.failureDetectionSchedule != null)
+		{
+			this.cronExecutor.schedule(new FailureDetectionTask(), this.failureDetectionSchedule);
+		}
+		
+		if (this.autoActivationSchedule != null)
+		{
+			this.cronExecutor.schedule(new AutoActivationTask(), this.autoActivationSchedule);
+		}
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#stop()
+	 */
+	public void stop()
+	{
+		this.nonTransactionalExecutor.shutdownNow();
+		this.transactionalExecutor.shutdownNow();
+		this.cronExecutor.shutdownNow();
+	}
 	
 	/**
 	 * @see java.lang.Object#toString()
@@ -549,21 +616,6 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		return this.getId().equals(databaseCluster.getId());
 	}
 	
-	void setId(String id)
-	{
-		this.id = id;
-	}
-
-	void setDialect(Dialect dialect)
-	{
-		this.dialect = dialect;
-	}
-	
-	void setBalancer(Balancer balancer)
-	{
-		this.balancer = balancer;
-	}
-	
 	SynchronizationStrategyBuilder getDefaultSynchronizationStrategyBuilder()
 	{
 		return new SynchronizationStrategyBuilder(this.defaultSynchronizationStrategyId);
@@ -572,11 +624,6 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	void setDefaultSynchronizationStrategyBuilder(SynchronizationStrategyBuilder builder)
 	{
 		this.defaultSynchronizationStrategyId = builder.getId();
-	}
-
-	void setExecutor(ThreadPoolExecutor executor)
-	{
-		this.executor = executor;
 	}
 	
 	synchronized void add(Database database)
@@ -633,105 +680,6 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		return databaseList.iterator();
 	}
 	
-	void setMinThreads(int threads)
-	{
-		this.executor.setCorePoolSize(threads);
-	}
-	
-	int getMinThreads()
-	{
-		return this.executor.getCorePoolSize();
-	}
-	
-	void setMaxThreads(int threads)
-	{
-		this.executor.setMaximumPoolSize(threads);
-	}
-	
-	int getMaxThreads()
-	{
-		return this.executor.getMaximumPoolSize();
-	}
-	
-	void setMaxIdle(int seconds)
-	{
-		this.executor.setKeepAliveTime(seconds, TimeUnit.SECONDS);
-	}
-
-	int getMaxIdle()
-	{
-		return Long.valueOf(this.executor.getKeepAliveTime(TimeUnit.SECONDS)).intValue();
-	}
-	
-	void setFailureDetectionSchedule(String schedule)
-	{
-		this.failureDetectionSchedule = schedule;
-	}
-	
-	String getFailureDetectionSchedule()
-	{
-		return this.failureDetectionSchedule;
-	}
-	
-	void setAutoActivationPeriod(String schedule)
-	{
-		this.autoActivationSchedule = schedule;
-	}
-	
-	String getAutoActivationSchedule()
-	{
-		return this.autoActivationSchedule;
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#start()
-	 */
-	public void start() throws java.sql.SQLException
-	{
-		String[] databases = this.loadState();
-
-		if (databases != null)
-		{
-			for (String id: databases)
-			{
-				Database database = this.getDatabase(id);
-				
-				this.activate(database);
-			}
-		}
-		else
-		{
-			for (String id: this.getInactiveDatabases())
-			{
-				Database database = this.getDatabase(id);
-				
-				if (this.isAlive(database))
-				{
-					this.activate(database);
-				}
-			}
-		}
-		
-		if (this.failureDetectionSchedule != null)
-		{
-			this.cronExecutor.schedule(new FailureDetectionTask(), this.failureDetectionSchedule);
-		}
-		
-		if (this.autoActivationSchedule != null)
-		{
-			this.cronExecutor.schedule(new AutoActivationTask(), this.autoActivationSchedule);
-		}
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#stop()
-	 */
-	public void stop()
-	{
-		this.executor.shutdownNow();
-		this.cronExecutor.shutdownNow();
-	}
-	
 	private void activate(String databaseId, SynchronizationStrategy strategy)
 	{
 		try
@@ -781,14 +729,14 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		
 		try
 		{
-			Collection<Database> databases = this.getBalancer().all();
+			List<Database> databaseList = this.getBalancer().list();
 			
-			if (databases.isEmpty())
+			if (databaseList.isEmpty())
 			{
 				return this.activate(database);
 			}
 			
-			this.activate(database, databases, strategy);
+			this.activate(database, databaseList, strategy);
 			
 			return true;
 		}
@@ -798,14 +746,14 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		}
 	}
 	
-	private void activate(Database inactiveDatabase, Collection<Database> activeDatabases, SynchronizationStrategy strategy) throws java.sql.SQLException
+	private void activate(Database inactiveDatabase, List<Database> activeDatabaseList, SynchronizationStrategy strategy) throws java.sql.SQLException
 	{
 		Database activeDatabase = this.getBalancer().next();
 		
 		Connection inactiveConnection = null;
 		Connection activeConnection = null;
 
-		List<Connection> connectionList = new ArrayList<Connection>(activeDatabases.size());
+		List<Connection> connectionList = new ArrayList<Connection>(activeDatabaseList.size());
 		
 		try
 		{
@@ -849,7 +797,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 				Map<String, Map<String, String>> lockTableSQLMap = new HashMap<String, Map<String, String>>();
 				
 				// Lock all tables on all active databases
-				for (Database database: activeDatabases)
+				for (Database database: activeDatabaseList)
 				{
 					Connection connection = database.equals(activeDatabase) ? activeConnection : database.connect(connectionFactoryMap.get(database));
 					
@@ -969,7 +917,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		 */
 		public void run()
 		{
-			for (Database database: LocalDatabaseCluster.this.getBalancer().all())
+			for (Database database: LocalDatabaseCluster.this.getBalancer().list())
 			{
 				if (!LocalDatabaseCluster.this.isAlive(database))
 				{
