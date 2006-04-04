@@ -65,6 +65,19 @@ public class DefaultDialect implements Dialect
 		
 		resultSet.close();
 
+		// If table contains no primary keys, use all columns in table instead
+		if (columnList.isEmpty())
+		{
+			resultSet = metaData.getColumns(null, schema, table, "%");
+			
+			while (resultSet.next())
+			{
+				columnList.add(resultSet.getString("COLUMN_NAME"));
+			}
+			
+			resultSet.close();
+		}
+		
 		Iterator<String> columns = columnList.iterator();
 		
 		while (columns.hasNext())
@@ -160,13 +173,13 @@ public class DefaultDialect implements Dialect
 	{
 		return MessageFormat.format(this.dropConstraintPattern(), name, this.qualifyTable(metaData, schema, table));
 	}
-	
+
 	/**
-	 * @see net.sf.hajdbc.Dialect#getSelectForUpdatePattern()
+	 * @see net.sf.hajdbc.Dialect#isSelectForUpdate(java.lang.String)
 	 */
-	public Pattern getSelectForUpdatePattern()
+	public boolean isSelectForUpdate(DatabaseMetaData metaData, String sql) throws SQLException
 	{
-		return this.selectForUpdatePattern;
+		return metaData.supportsSelectForUpdate() ? this.selectForUpdatePattern.matcher(sql).find() : false;
 	}
 	
 	protected String truncateTablePattern()

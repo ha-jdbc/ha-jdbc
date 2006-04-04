@@ -23,7 +23,6 @@ package net.sf.hajdbc;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * Encapsulates database vendor specific SQL syntax.  
@@ -128,8 +127,8 @@ public interface Dialect
 	public String quote(DatabaseMetaData metaData, String identifier) throws SQLException;
 	
 	/**
-	 * Returns a regular expression pattern for SELECT ... FOR UPDATE statements
-	 * @return a regex Pattern, or null if SELECT ... FOR UPDATE statements are supported by this dialect
+	 * Determines whether the specified SQL is a SELECT ... FOR UPDATE statement
+	 * @return true if this is a SELECT ... FOR UPDATE statement, false if it is not or if SELECT...FOR UPDATE is not supported
 	 */
-	public Pattern getSelectForUpdatePattern();
+	public boolean isSelectForUpdate(DatabaseMetaData metaData, String sql) throws SQLException;
 }
