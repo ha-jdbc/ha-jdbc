@@ -45,11 +45,12 @@
 	balancer (simple|random|round-robin|load) #REQUIRED
 	default-sync IDREF #REQUIRED
 	dialect CDATA "net.sf.hajdbc.dialect.DefaultDialect"
+	transactions (local|xa) #REQUIRED
+	auto-activate-schedule CDATA #IMPLIED
+	failure-detect-schedule CDATA #IMPLIED
 	min-threads CDATA "0"
 	max-threads CDATA "100"
 	max-idle CDATA "60"
-	failure-detect-schedule CDATA #IMPLIED
-	auto-activate-schedule CDATA #IMPLIED
 >
 
 <!ENTITY % authentication-info "(user, password)?">

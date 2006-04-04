@@ -114,7 +114,7 @@
 			</dl>
 		</section>
 		<section>
-			<title>Configuration</title>
+			<title>&lt;ha-jdbc&gt; Configuration</title>
 			<p>
 				Configuration for HA-JDBC managed database clusters is contained in a single XML file.
 				The algorithm used to locate the configuration file resource at runtime is as follows:
@@ -229,11 +229,12 @@
   balancer                (simple|random|round-robin|load) #REQUIRED
   default-sync            IDREF                            #REQUIRED
   dialect                 CDATA                            "net.sf.hajdbc.dialect.DefaultDialect"
+  transactions            (local|xa)                       #REQUIRED
+  auto-activate-schedule  CDATA                            #IMPLIED
+  failure-detect-schedule CDATA                            #IMPLIED
   min-threads             CDATA                            "0"
   max-threads             CDATA                            "100"
   max-idle                CDATA                            "60"
-  failure-detect-schedule CDATA                            #IMPLIED
-  auto-activate-schedule  CDATA                            #IMPLIED
 >
 ]]></source>
 				<dl>
@@ -258,14 +259,20 @@
 						</ul>
 						HA-JDBC references the configured dialect for any vendor specific SQL.
 					</dd>
-					<dt>failure-detect-schedule</dt>
+					<dt>transactions</dt>
 					<dd>
-						Defines a cron schedule for an asynchronous task that will proactively detect failed database nodes and deactivate them.
-						Schedule should be defined in accordance with the documentation for Quartz <a href="http://www.opensymphony.com/quartz/api/org/quartz/CronTrigger.html">CronTrigger</a>.
+						Indicates whether transactions are assumed to be single database <acronym title="Java Database Connectivity">JDBC</acronym> transactions, or distributed transactions coordinated via a transaction manager (typically provided by an application server) using the X/Open XA protocol.
+						If in "local" mode, database writes are executed concurrently, for effiency.
+						If in "xa" mode, database writes are executed synchronously, for preventing deadlocks by maintainingn predictable execution order across databases.
 					</dd>
 					<dt>auto-activate-schedule</dt>
 					<dd>
 						Defines a cron schedule for an asynchronous task that will automatically activate any database nodes that are alive, but inactive.
+						Schedule should be defined in accordance with the documentation for Quartz <a href="http://www.opensymphony.com/quartz/api/org/quartz/CronTrigger.html">CronTrigger</a>.
+					</dd>
+					<dt>failure-detect-schedule</dt>
+					<dd>
+						Defines a cron schedule for an asynchronous task that will proactively detect failed database nodes and deactivate them.
 						Schedule should be defined in accordance with the documentation for Quartz <a href="http://www.opensymphony.com/quartz/api/org/quartz/CronTrigger.html">CronTrigger</a>.
 					</dd>
 					<dt>min-threads</dt>
@@ -611,7 +618,7 @@ Connection connection = DriverManager.getConnection("jdbc:ha-jdbc:cluster1", "po
 			<section>
 				<title>DataSource-based Access</title>
 				<p>
-					HA-JDBC cluster can also wrap one or more DataSources.
+					An HA-JDBC cluster can also wrap one or more DataSources.
 				</p>
 				<p>e.g.</p>
 				<p>
