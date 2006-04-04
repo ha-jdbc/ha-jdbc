@@ -85,9 +85,9 @@ public abstract class AbstractBalancer implements Balancer
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Balancer#all()
+	 * @see net.sf.hajdbc.Balancer#list()
 	 */
-	public synchronized Collection<Database> all()
+	public synchronized List<Database> list()
 	{
 		List<Database> list = new ArrayList<Database>(this.getDatabases());
 		
