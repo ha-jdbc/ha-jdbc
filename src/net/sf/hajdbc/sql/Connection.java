@@ -32,7 +32,7 @@ import net.sf.hajdbc.SQLObject;
 /**
  * @author  Paul Ferraro
  * @version $Revision$
- * @param <P> 
+ * @param <P> SQL object that created this connection - either java.sql.Driver or javax.sql.DataSource
  * @since   1.0
  */
 public class Connection<P> extends SQLObject<java.sql.Connection, P> implements java.sql.Connection
@@ -48,7 +48,7 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 	 */
 	public Connection(SQLObject<P, ?> object, Operation<P, java.sql.Connection> operation, FileSupport fileSupport) throws java.sql.SQLException
 	{
-		super(object, operation);
+		super(object, operation, object.getDatabaseCluster().getNonTransactionalExecutor());
 		
 		this.fileSupport = fileSupport;
 	}
@@ -86,7 +86,7 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 			}
 		};
 		
-		this.executeWriteToDatabase(operation);
+		this.executeNonTransactionalWriteToDatabase(operation);
 		
 		this.fileSupport.close();
 	}
@@ -106,7 +106,7 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 			}	
 		};
 		
-		this.executeWriteToDatabase(operation);
+		this.executeNonTransactionalWriteToDatabase(operation);
 	}
 
 	/**
@@ -476,7 +476,7 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 			}
 		};
 		
-		this.executeWriteToDatabase(operation);
+		this.executeNonTransactionalWriteToDatabase(operation);
 	}
 
 	/**
@@ -494,7 +494,7 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 			}
 		};
 		
-		this.executeWriteToDatabase(operation);
+		this.executeNonTransactionalWriteToDatabase(operation);
 	}
 
 	/**
@@ -512,7 +512,7 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 			}
 		};
 		
-		this.executeWriteToDatabase(operation);
+		this.executeNonTransactionalWriteToDatabase(operation);
 	}
 
 	/**
@@ -530,7 +530,7 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 			}
 		};
 		
-		this.executeWriteToDatabase(operation);
+		this.executeNonTransactionalWriteToDatabase(operation);
 
 		this.record(operation);
 	}
@@ -550,7 +550,7 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 			}
 		};
 		
-		this.executeWriteToDatabase(operation);
+		this.executeNonTransactionalWriteToDatabase(operation);
 		
 		this.record(operation);
 	}
@@ -638,7 +638,7 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 			}
 		};
 		
-		this.executeWriteToDatabase(operation);
+		this.executeNonTransactionalWriteToDatabase(operation);
 		
 		this.record(operation);
 	}

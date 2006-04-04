@@ -23,7 +23,6 @@ package net.sf.hajdbc.sql;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Operation;
@@ -45,7 +44,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 	 */
 	public Statement(Connection<?> connection, Operation<java.sql.Connection, T> operation) throws SQLException
 	{
-		super(connection, operation);
+		super(connection, operation, connection.getDatabaseCluster().getNonTransactionalExecutor());
 	}
 
 	/**
@@ -124,7 +123,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		this.executeWriteToDatabase(operation);
+		this.executeNonTransactionalWriteToDatabase(operation);
 	}
 
 	/**
@@ -178,7 +177,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		this.executeWriteToDatabase(operation);
+		this.executeNonTransactionalWriteToDatabase(operation);
 	}
 
 	/**
@@ -194,7 +193,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeWriteToDatabase(operation));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation));
 	}
 
 	/**
@@ -210,7 +209,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeWriteToDatabase(operation));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation));
 	}
 
 	/**
@@ -226,7 +225,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeWriteToDatabase(operation));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation));
 	}
 
 	/**
@@ -242,7 +241,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeWriteToDatabase(operation));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation));
 	}
 
 	/**
@@ -258,7 +257,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeWriteToDatabase(operation));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation));
 	}
 
 	/**
@@ -290,7 +289,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeWriteToDatabase(operation));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation));
 	}
 
 	/**
@@ -306,7 +305,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeWriteToDatabase(operation));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation));
 	}
 
 	/**
@@ -322,7 +321,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeWriteToDatabase(operation));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation));
 	}
 
 	/**
@@ -338,7 +337,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeWriteToDatabase(operation));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation));
 	}
 
 	/**
@@ -442,7 +441,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeWriteToDatabase(operation));
+		return this.firstValue(this.executeNonTransactionalWriteToDatabase(operation));
 	}
 
 	/**
@@ -458,7 +457,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue((current == Statement.KEEP_CURRENT_RESULT) ? this.executeWriteToDriver(operation) : this.executeWriteToDatabase(operation));
+		return this.firstValue((current == Statement.KEEP_CURRENT_RESULT) ? this.executeWriteToDriver(operation) : this.executeNonTransactionalWriteToDatabase(operation));
 	}
 
 	/**
@@ -588,7 +587,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		this.executeWriteToDatabase(operation);
+		this.executeNonTransactionalWriteToDatabase(operation);
 		
 		this.record(operation);
 	}
@@ -680,7 +679,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		this.executeWriteToDatabase(operation);
+		this.executeNonTransactionalWriteToDatabase(operation);
 		
 		this.record(operation);
 	}
@@ -715,16 +714,8 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 		}
 	}
 	
-	/**
-	 * Determines whether or not the specified query is a SELECT...FOR UPDATE query.
-	 * These queries always need to be distributed to each node in the cluster.
-	 * @param sql a SQL query
-	 * @return true if the specified query is a SELECT...FOR UPDATE query, false otherwise.
-	 */
-	protected boolean isSelectForUpdate(String sql)
+	protected boolean isSelectForUpdate(String sql) throws SQLException
 	{
-		Pattern pattern = this.getDatabaseCluster().getDialect().getSelectForUpdatePattern();
-		
-		return (pattern != null) ? pattern.matcher(sql).find() : false;
+		return this.getDatabaseCluster().getDialect().isSelectForUpdate(this.getConnection().getMetaData(), sql);
 	}
 }

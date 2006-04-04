@@ -58,7 +58,7 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public ResultSet(Statement<T> statement, Operation<T, java.sql.ResultSet> operation) throws SQLException
 	{
-		super(statement, operation);
+		super(statement, operation, statement.getDatabaseCluster().getTransactionalExecutor());
 	}
 	
 	/**
@@ -172,7 +172,7 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 			}
 		};
 		
-		this.executeWriteToDatabase(operation);
+		this.executeNonTransactionalWriteToDatabase(operation);
 	}
 
 	/**
@@ -190,7 +190,7 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 			}
 		};
 		
-		this.executeWriteToDatabase(operation);
+		this.executeTransactionalWriteToDatabase(operation);
 	}
 
 	/**
@@ -222,7 +222,7 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 			}
 		};
 		
-		return this.firstValue((this.getType() == java.sql.ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWriteToDatabase(operation) : this.executeWriteToDriver(operation));
+		return this.firstValue((this.getType() == java.sql.ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeNonTransactionalWriteToDatabase(operation) : this.executeWriteToDriver(operation));
 	}
 
 	/**
@@ -1276,7 +1276,7 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 			}
 		};
 		
-		this.executeWriteToDatabase(operation);
+		this.executeTransactionalWriteToDatabase(operation);
 	}
 
 	/**
@@ -1356,7 +1356,7 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 			}
 		};
 		
-		return this.firstValue((this.getType() == java.sql.ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWriteToDatabase(operation) : this.executeWriteToDriver(operation));
+		return this.firstValue((this.getType() == java.sql.ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeNonTransactionalWriteToDatabase(operation) : this.executeWriteToDriver(operation));
 	}
 
 	/**
@@ -1376,7 +1376,7 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 		
 		if (this.getType() == java.sql.ResultSet.TYPE_SCROLL_SENSITIVE)
 		{
-			this.executeWriteToDatabase(operation);
+			this.executeNonTransactionalWriteToDatabase(operation);
 		}
 		else
 		{
@@ -1415,7 +1415,7 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 			}
 		};
 		
-		return this.firstValue((this.getType() == java.sql.ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWriteToDatabase(operation) : this.executeWriteToDriver(operation));
+		return this.firstValue((this.getType() == java.sql.ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeNonTransactionalWriteToDatabase(operation) : this.executeWriteToDriver(operation));
 	}
 
 	/**
@@ -1431,7 +1431,7 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 			}
 		};
 		
-		return this.firstValue((this.getType() == java.sql.ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeWriteToDatabase(operation) : this.executeWriteToDriver(operation));
+		return this.firstValue((this.getType() == java.sql.ResultSet.TYPE_SCROLL_SENSITIVE) ? this.executeNonTransactionalWriteToDatabase(operation) : this.executeWriteToDriver(operation));
 	}
 
 	/**
@@ -1449,7 +1449,7 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 			}
 		};
 		
-		this.executeWriteToDatabase(operation);
+		this.executeNonTransactionalWriteToDatabase(operation);
 	}
 
 	/**
@@ -2288,7 +2288,7 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 			}
 		};
 		
-		this.executeWriteToDatabase(operation);
+		this.executeTransactionalWriteToDatabase(operation);
 	}
 
 	/**

@@ -113,7 +113,7 @@ public class PreparedStatement<T extends java.sql.PreparedStatement> extends Sta
 			}
 		};
 		
-		return this.firstValue(this.executeWriteToDatabase(operation));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation));
 	}
 
 	/**
@@ -145,7 +145,7 @@ public class PreparedStatement<T extends java.sql.PreparedStatement> extends Sta
 			}
 		};
 		
-		return this.firstValue(this.executeWriteToDatabase(operation));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation));
 	}
 
 	/**
