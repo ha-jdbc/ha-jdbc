@@ -15,15 +15,16 @@
 		<structure field="properties" unmarshaller="net.sf.hajdbc.util.PropertiesMapper" marshaller="net.sf.hajdbc.util.PropertiesMapper"></structure>
 	</mapping>
 	<mapping name="cluster" class="net.sf.hajdbc.local.LocalDatabaseCluster" factory="net.sf.hajdbc.DatabaseClusterFactory.createDatabaseCluster">
-		<value name="id" get-method="getId" set-method="setId" style="attribute"/>
-		<value name="balancer" get-method="getBalancer" set-method="setBalancer" style="attribute" deserializer="net.sf.hajdbc.balancer.BalancerFactory.createBalancer" serializer="net.sf.hajdbc.balancer.BalancerFactory.getBalancerId"/>
+		<value name="id" field="id" style="attribute"/>
+		<value name="balancer" field="balancer" style="attribute" deserializer="net.sf.hajdbc.balancer.BalancerFactory.deserialize" serializer="net.sf.hajdbc.balancer.BalancerFactory.serialize"/>
 		<value name="default-sync" get-method="getDefaultSynchronizationStrategyBuilder" set-method="setDefaultSynchronizationStrategyBuilder" style="attribute" ident="ref"/>
-		<value name="dialect" get-method="getDialect" set-method="setDialect" style="attribute" deserializer="net.sf.hajdbc.dialect.DialectFactory.createDialect" serializer="net.sf.hajdbc.dialect.DialectFactory.getDialectId" usage="optional" default="net.sf.hajdbc.dialect.DefaultDialect"/>
-		<value name="min-threads" get-method="getMinThreads" set-method="setMinThreads" usage="optional" default="0"/>
-		<value name="max-threads" get-method="getMaxThreads" set-method="setMaxThreads" usage="optional" default="100"/>
-		<value name="max-idle" get-method="getMaxIdle" set-method="setMaxIdle" style="attribute" usage="optional" default="60"/>
-		<value name="failure-detect-schedule" field="failureDetectionSchedule" style="attribute" usage="optional"/>
+		<value name="dialect" field="dialect" style="attribute" deserializer="net.sf.hajdbc.dialect.DialectFactory.deserialize" serializer="net.sf.hajdbc.dialect.DialectFactory.serialize" usage="optional" default="net.sf.hajdbc.dialect.DefaultDialect"/>
+		<value name="transactions" field="transaction" style="attribute" deserializer="net.sf.hajdbc.local.Transaction.deserialize" serializer="net.sf.hajdbc.local.Transaction.serialize"/>
 		<value name="auto-activate-schedule" field="autoActivationSchedule" style="attribute" usage="optional"/>
+		<value name="failure-detect-schedule" field="failureDetectionSchedule" style="attribute" usage="optional"/>
+		<value name="min-threads" field="minThreads" usage="optional" default="0"/>
+		<value name="max-threads" field="maxThreads" usage="optional" default="100"/>
+		<value name="max-idle" field="maxIdle" style="attribute" usage="optional" default="60"/>
 		<collection add-method="add" iter-method="getDriverDatabases" item-type="net.sf.hajdbc.sql.DriverDatabase"></collection>
 		<collection add-method="add" iter-method="getDataSourceDatabases" item-type="net.sf.hajdbc.sql.DataSourceDatabase"></collection>
 	</mapping>
