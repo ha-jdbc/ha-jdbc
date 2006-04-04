@@ -68,7 +68,7 @@ public class SimpleBalancer extends AbstractBalancer
 		 */
 		public int compare(Database database1, Database database2)
 		{
-			return database1.getWeight() - database2.getWeight();
+			return database2.getWeight() - database1.getWeight();
 		}
 	}
 }
