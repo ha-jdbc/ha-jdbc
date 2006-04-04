@@ -22,11 +22,12 @@ package net.sf.hajdbc.balancer;
 
 import java.sql.SQLException;
 
-import org.testng.annotations.Test;
-
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.MockDatabase;
 import net.sf.hajdbc.Operation;
+
+import org.testng.annotations.Test;
 
 /**
  * @author  Paul Ferraro

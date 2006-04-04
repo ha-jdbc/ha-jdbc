@@ -62,26 +62,26 @@ public abstract class AbstractTestDatabase
 	@Test
 	public void testCompareTo()
 	{
-		Database database1 = this.createDatabase("1");
-		database1.setWeight(1);
-		Database database2 = this.createDatabase("2");
-		database2.setWeight(1);
+		Database database1 = this.createDatabase("a");
+		Database database2 = this.createDatabase("b");
 		
 		int result = database1.compareTo(database2);
 		
-		assert result == 0 : result;
+		assert result < 0 : result;
 		
-		database1.setWeight(0);
-
-		result = database1.compareTo(database2);
+		result = database2.compareTo(database1);
 		
 		assert result > 0 : result;
 		
-		database1.setWeight(2);
-
+		database2 = this.createDatabase("a");
+		
 		result = database1.compareTo(database2);
 		
-		assert result < 0 : result;
+		assert result == 0 : result;
+		
+		result = database2.compareTo(database1);
+		
+		assert result == 0 : result;
 	}
 	
 	/**

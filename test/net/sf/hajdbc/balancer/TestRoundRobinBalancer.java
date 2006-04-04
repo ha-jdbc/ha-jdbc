@@ -23,6 +23,7 @@ package net.sf.hajdbc.balancer;
 import org.testng.annotations.Test;
 
 import net.sf.hajdbc.Balancer;
+import net.sf.hajdbc.MockDatabase;
 
 /**
  * @author  Paul Ferraro

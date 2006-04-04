@@ -44,7 +44,7 @@ import net.sf.hajdbc.sql.MockDriver;
  */
 public abstract class DatabaseClusterTestCase
 {
-	protected IMocksControl control = EasyMock.createControl();
+	protected IMocksControl control = EasyMock.createStrictControl();
 	protected Context context;
 	private MBeanServer server;
 	

@@ -20,17 +20,12 @@
  */
 package net.sf.hajdbc.balancer;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 import java.util.NoSuchElementException;
 
-import net.sf.hajdbc.ActiveDatabaseMBean;
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.InactiveDatabaseMBean;
-import net.sf.hajdbc.sql.AbstractDatabase;
+import net.sf.hajdbc.MockDatabase;
 
 import org.testng.annotations.Configuration;
 import org.testng.annotations.Test;
@@ -48,7 +43,7 @@ public abstract class AbstractTestBalancer
 	@Configuration(afterTestMethod = true)
 	protected void tearDown()
 	{
-		for (Database database: new ArrayList<Database>(this.balancer.all()))
+		for (Database database: this.balancer.list())
 		{
 			this.balancer.remove(database);
 		}
@@ -126,14 +121,14 @@ public abstract class AbstractTestBalancer
 	@Test
 	public void testGetDatabases()
 	{
-		Collection<Database> databases = this.balancer.all();
+		List<Database> databases = this.balancer.list();
 		
 		assert databases.isEmpty() : databases.size();
 		
 		Database database1 = new MockDatabase("db1", 1);
 		this.balancer.add(database1);
 		
-		databases = this.balancer.all();
+		databases = this.balancer.list();
 		
 		assert databases.size() == 1 : databases.size();
 		assert databases.contains(database1);
@@ -141,21 +136,21 @@ public abstract class AbstractTestBalancer
 		Database database2 = new MockDatabase("db2", 1);
 		this.balancer.add(database2);
 
-		databases = this.balancer.all();
+		databases = this.balancer.list();
 
 		assert databases.size() == 2 : databases.size();
 		assert databases.contains(database1) && databases.contains(database2);
 
 		this.balancer.remove(database1);
 
-		databases = this.balancer.all();
+		databases = this.balancer.list();
 		
 		assert databases.size() == 1 : databases.size();
 		assert databases.contains(database2);
 		
 		this.balancer.remove(database2);
 		
-		databases = this.balancer.all();
+		databases = this.balancer.list();
 		
 		assert databases.isEmpty() : databases.size();
 	}
@@ -222,53 +217,4 @@ public abstract class AbstractTestBalancer
 	}
 	
 	protected abstract void testNext(Balancer balancer);
-	
-	protected class MockDatabase extends AbstractDatabase<Void>
-	{
-		protected MockDatabase(String id, int weight)
-		{
-			this.id = id;
-			this.weight = weight;
-		}
-
-		/**
-		 * @see net.sf.hajdbc.Database#connect(T)
-		 */
-		public Connection connect(Void connectionFactory) throws SQLException
-		{
-			return null;
-		}
-
-		/**
-		 * @see net.sf.hajdbc.Database#createConnectionFactory()
-		 */
-		public Void createConnectionFactory()
-		{
-			return null;
-		}
-
-		/**
-		 * @see net.sf.hajdbc.Database#getConnectionFactoryClass()
-		 */
-		public Class<Void> getConnectionFactoryClass()
-		{
-			return null;
-		}
-
-		/**
-		 * @see net.sf.hajdbc.Database#getActiveMBeanClass()
-		 */
-		public Class<? extends ActiveDatabaseMBean> getActiveMBeanClass()
-		{
-			return null;
-		}
-
-		/**
-		 * @see net.sf.hajdbc.Database#getInactiveMBeanClass()
-		 */
-		public Class<? extends InactiveDatabaseMBean> getInactiveMBeanClass()
-		{
-			return null;
-		}
-	}
 }

@@ -25,6 +25,7 @@ import java.util.Arrays;
 import org.testng.annotations.Test;
 
 import net.sf.hajdbc.Balancer;
+import net.sf.hajdbc.MockDatabase;
 
 /**
  * @author  Paul Ferraro
@@ -53,7 +54,7 @@ public class TestSimpleBalancer extends AbstractTestBalancer
 		
 		Arrays.fill(expected, "0");
 
-		assert Arrays.equals(results, expected);
+		assert Arrays.equals(results, expected) : Arrays.asList(results);
 
 		balancer.add(new MockDatabase("2", 2));
 		
@@ -64,7 +65,7 @@ public class TestSimpleBalancer extends AbstractTestBalancer
 		
 		Arrays.fill(expected, "2");
 		
-		assert Arrays.equals(results, expected);
+		assert Arrays.equals(results, expected) : Arrays.asList(results);
 
 		balancer.add(new MockDatabase("1", 1));
 		
@@ -73,6 +74,6 @@ public class TestSimpleBalancer extends AbstractTestBalancer
 			results[i] = balancer.next().getId();
 		}
 
-		assert Arrays.equals(results, expected);
+		assert Arrays.equals(results, expected) : Arrays.asList(results);
 	}
 }
