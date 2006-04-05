@@ -12,15 +12,27 @@
 	</contexts>
 
 	<changes>
-		<release version="" date="">
+		<release version="1.1-rc-1" date="">
 			<action type="update" context="code" dev="PF">
-				Upgraded Retrotranslator to version 1.0.2.
+				Upgraded Retrotranslator to version 1.0.3.
 			</action>
 			<action type="fix" context="code" dev="PF">
-				Fixed Blob/Clob handling in PreparedStatement.setBlob(..)/setBlob(...) and ResultSet.updateBlob(...)/updateClob(...) methods.
+				Fixed Blob/Clob handling in PreparedStatement.setBlob(...)/setBlob(...) and ResultSet.updateBlob(...)/updateClob(...) methods.
 			</action>
 			<action type="fix" context="code" dev="PF">
 				Fixed bug in DefaultDialect.qualifyTable(...) for databases that do not support schemas.
+			</action>
+			<action type="add" context="code" dev="PF">
+				Added new required transactions="local|xa" option to cluster.
+				When in local mode, database writes are performed concurrently.
+				When in xa mode, database writes are performed synchronously to ensure a predictable execution order and prevent deadlocks.
+			</action>
+			<action type="fix" context="code" dev="PF">
+				Added fault tolerance measures to cluster thread pool under high load.
+				If pool size reaches max-threads threshold, database writes will be executed in the caller thread using java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy.
+			</action>
+			<action type="update" context="test" dev="PF">
+				Upgraded TestNG to 4.7.
 			</action>
 		</release>
 		<release version="1.1-beta-7" date="March 20, 2006">
@@ -564,6 +576,10 @@
 
 	<todo>
 		<actions priority="high">
+			<action type="add" context="code" dev="PF">
+				Add cache-meta-data="none|lazy|eager" option to cluster.
+				Add database cluster mbean method to flush cache.
+			</action>
 			<action type="add" context="code" dev="PF">
 				Add support for common unique identifier generation mechanisms, namely identity columns and sequences.
 			</action>
