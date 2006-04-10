@@ -175,7 +175,7 @@ public class DefaultDialect implements Dialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#isSelectForUpdate(java.lang.String)
+	 * @see net.sf.hajdbc.Dialect#isSelectForUpdate(java.sql.DatabaseMetaData, java.lang.String)
 	 */
 	public boolean isSelectForUpdate(DatabaseMetaData metaData, String sql) throws SQLException
 	{
