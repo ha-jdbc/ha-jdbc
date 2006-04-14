@@ -33,7 +33,6 @@ import org.jgroups.blocks.LockNotGrantedException;
 import org.jgroups.blocks.LockNotReleasedException;
 import org.jgroups.blocks.TwoPhaseVotingAdapter;
 import org.jgroups.blocks.TwoPhaseVotingListener;
-import org.jgroups.blocks.VoteException;
 import org.jgroups.blocks.VotingAdapter;
 
 /**
@@ -168,7 +167,7 @@ public class DistributableLock implements Lock, TwoPhaseVotingListener
 	/**
 	 * @see org.jgroups.blocks.TwoPhaseVotingListener#prepare(java.lang.Object)
 	 */
-	public boolean prepare(Object decree) throws VoteException
+	public boolean prepare(Object decree)
 	{
 		if (DistributedLockManager.AcquireLockDecree.class.isInstance(decree))
 		{
@@ -181,7 +180,7 @@ public class DistributableLock implements Lock, TwoPhaseVotingListener
 	/**
 	 * @see org.jgroups.blocks.TwoPhaseVotingListener#commit(java.lang.Object)
 	 */
-	public boolean commit(Object decree) throws VoteException
+	public boolean commit(Object decree)
 	{
 		if (DistributedLockManager.ReleaseLockDecree.class.isInstance(decree))
 		{
@@ -194,7 +193,7 @@ public class DistributableLock implements Lock, TwoPhaseVotingListener
 	/**
 	 * @see org.jgroups.blocks.TwoPhaseVotingListener#abort(java.lang.Object)
 	 */
-	public void abort(Object decree) throws VoteException
+	public void abort(Object decree)
 	{
 		if (DistributedLockManager.AcquireLockDecree.class.isInstance(decree))
 		{

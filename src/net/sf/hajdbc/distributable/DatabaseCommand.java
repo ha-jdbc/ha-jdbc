@@ -76,5 +76,5 @@ public abstract class DatabaseCommand implements Externalizable
 	 * @param databaseCluster a database cluster
 	 * @throws java.sql.SQLException if command failed to execute
 	 */
-	public abstract void execute(DatabaseCluster databaseCluster) throws java.sql.SQLException;
+	public abstract void execute(DatabaseCluster databaseCluster);
 }

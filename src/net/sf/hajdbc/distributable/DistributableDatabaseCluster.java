@@ -104,14 +104,7 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 	{
 		logger.info(Messages.getMessage(Messages.DATABASE_COMMAND_RECEIVED, command.getClass().getName()));
 		
-		try
-		{
-			DatabaseCommand.class.cast(command).execute(this);
-		}
-		catch (java.sql.SQLException e)
-		{
-			logger.error(Messages.getMessage(Messages.DATABASE_COMMAND_FAILED, command, this), e);
-		}
+		DatabaseCommand.class.cast(command).execute(this);
 	}
 
 	/**

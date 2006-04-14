@@ -54,7 +54,8 @@ public class DatabaseDeactivationCommand extends DatabaseCommand
 	/**
 	 * @see net.sf.hajdbc.distributable.DatabaseCommand#execute(net.sf.hajdbc.DatabaseCluster)
 	 */
-	public void execute(DatabaseCluster databaseCluster) throws java.sql.SQLException
+	@Override
+	public void execute(DatabaseCluster databaseCluster)
 	{
 		databaseCluster.deactivate(databaseCluster.getDatabase(this.databaseId));
 	}
