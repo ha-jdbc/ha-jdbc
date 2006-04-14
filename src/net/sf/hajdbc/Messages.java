@@ -41,7 +41,6 @@ public class Messages
 	public static final String DATABASE_ACTIVATED = "database-activated";
 	public static final String DATABASE_ALREADY_EXISTS = "database-already-exists";
 	public static final String DATABASE_COMMAND_RECEIVED = "database-command-received";
-	public static final String DATABASE_COMMAND_FAILED = "database-command-failed";
 	public static final String DATABASE_DEACTIVATED = "database-deactivated";
 	public static final String DATABASE_NOT_ACTIVE = "database-not-active";
 	public static final String DATABASE_NOT_ALIVE = "database-not-alive";
