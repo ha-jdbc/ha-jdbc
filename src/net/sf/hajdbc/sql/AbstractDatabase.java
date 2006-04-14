@@ -125,6 +125,7 @@ public abstract class AbstractDatabase<T> implements Database<T>
 	/**
 	 * @see java.lang.Object#hashCode()
 	 */
+	@Override
 	public int hashCode()
 	{
 		return this.id.hashCode();
@@ -133,6 +134,7 @@ public abstract class AbstractDatabase<T> implements Database<T>
 	/**
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
+	@Override
 	public boolean equals(Object object)
 	{
 		if ((object == null) || !Database.class.isInstance(object))
@@ -148,6 +150,7 @@ public abstract class AbstractDatabase<T> implements Database<T>
 	/**
 	 * @see java.lang.Object#toString()
 	 */
+	@Override
 	public String toString()
 	{
 		return this.id;

@@ -240,11 +240,11 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 	/**
 	 * @see java.sql.Connection#getTypeMap()
 	 */
-	public Map getTypeMap() throws SQLException
+	public Map<String, Class<?>> getTypeMap() throws SQLException
 	{
-		Operation<java.sql.Connection, Map> operation = new Operation<java.sql.Connection, Map>()
+		Operation<java.sql.Connection, Map<String, Class<?>>> operation = new Operation<java.sql.Connection, Map<String, Class<?>>>()
 		{
-			public Map execute(Database database, java.sql.Connection connection) throws SQLException
+			public Map<String, Class<?>> execute(Database database, java.sql.Connection connection) throws SQLException
 			{
 				return connection.getTypeMap();
 			}	
@@ -378,7 +378,7 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 			}
 		};
 		
-		return this.isReadOnly() ? this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation, sql);
+		return this.isReadOnly() ? this.executeReadFromDatabase(operation) : new PreparedStatement<java.sql.PreparedStatement>(this, operation, sql);
 	}
 
 	/**
@@ -394,7 +394,7 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 			}
 		};
 		
-		return this.isReadOnly() ? this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation, sql);
+		return this.isReadOnly() ? this.executeReadFromDatabase(operation) : new PreparedStatement<java.sql.PreparedStatement>(this, operation, sql);
 	}
 
 	/**
@@ -410,7 +410,7 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 			}
 		};
 		
-		return this.isReadOnly() ? this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation, sql);
+		return this.isReadOnly() ? this.executeReadFromDatabase(operation) : new PreparedStatement<java.sql.PreparedStatement>(this, operation, sql);
 	}
 
 	/**
@@ -426,7 +426,7 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 			}
 		};
 		
-		return this.isReadOnly() ? this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation, sql);
+		return this.isReadOnly() ? this.executeReadFromDatabase(operation) : new PreparedStatement<java.sql.PreparedStatement>(this, operation, sql);
 	}
 
 	/**
@@ -442,7 +442,7 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 			}
 		};
 		
-		return this.isReadOnly() ? this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation, sql);
+		return this.isReadOnly() ? this.executeReadFromDatabase(operation) : new PreparedStatement<java.sql.PreparedStatement>(this, operation, sql);
 	}
 
 	/**
@@ -458,7 +458,7 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 			}
 		};
 		
-		return this.isReadOnly() ? this.executeReadFromDatabase(operation) : new PreparedStatement(this, operation, sql);
+		return this.isReadOnly() ? this.executeReadFromDatabase(operation) : new PreparedStatement<java.sql.PreparedStatement>(this, operation, sql);
 	}
 
 	/**
@@ -646,7 +646,7 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 	/**
 	 * @see java.sql.Connection#setTypeMap(java.util.Map)
 	 */
-	public void setTypeMap(final Map map) throws SQLException
+	public void setTypeMap(final Map<String, Class<?>> map) throws SQLException
 	{
 		Operation<java.sql.Connection, Void> operation = new Operation<java.sql.Connection, Void>()
 		{

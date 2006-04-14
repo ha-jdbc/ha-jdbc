@@ -110,6 +110,7 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 * @see java.sql.CallableStatement#getBigDecimal(int, int)
 	 * @deprecated
 	 */
+	@Deprecated
 	public BigDecimal getBigDecimal(final int index, final int scale) throws SQLException
 	{
 		Operation<java.sql.CallableStatement, BigDecimal> operation = new Operation<java.sql.CallableStatement, BigDecimal>()
@@ -510,7 +511,7 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	/**
 	 * @see java.sql.CallableStatement#getObject(int, java.util.Map)
 	 */
-	public Object getObject(final int index, final Map typeMap) throws SQLException
+	public Object getObject(final int index, final Map<String, Class<?>> typeMap) throws SQLException
 	{
 		Operation<java.sql.CallableStatement, Object> operation = new Operation<java.sql.CallableStatement, Object>()
 		{
@@ -542,7 +543,7 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	/**
 	 * @see java.sql.CallableStatement#getObject(java.lang.String, java.util.Map)
 	 */
-	public Object getObject(final String name, final Map typeMap) throws SQLException
+	public Object getObject(final String name, final Map<String, Class<?>> typeMap) throws SQLException
 	{
 		Operation<java.sql.CallableStatement, Object> operation = new Operation<java.sql.CallableStatement, Object>()
 		{

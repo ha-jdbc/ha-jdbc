@@ -703,6 +703,7 @@ public class PreparedStatement<T extends java.sql.PreparedStatement> extends Sta
 	 * @see java.sql.PreparedStatement#setUnicodeStream(int, java.io.InputStream, int)
 	 * @deprecated
 	 */
+	@Deprecated
 	public void setUnicodeStream(final int index, InputStream inputStream, final int length) throws SQLException
 	{
 		final FileSupport fileSupport = this.getFileSupport();
@@ -739,7 +740,7 @@ public class PreparedStatement<T extends java.sql.PreparedStatement> extends Sta
 		this.executeWriteToDriver(operation);
 	}
 	
-	protected FileSupport getFileSupport() throws SQLException
+	protected FileSupport getFileSupport()
 	{
 		Connection connection = (Connection) this.getConnection();
 		

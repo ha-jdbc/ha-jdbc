@@ -202,6 +202,7 @@ public class FileSupportImpl implements FileSupport
 	/**
 	 * @see java.lang.Object#finalize()
 	 */
+	@Override
 	protected void finalize() throws Throwable
 	{
 		this.close();
@@ -250,17 +251,17 @@ public class FileSupportImpl implements FileSupport
 					return buffer.array();
 				}
 	
-				public InputStream getBinaryStream() throws java.sql.SQLException
+				public InputStream getBinaryStream()
 				{
 					return Channels.newInputStream(channel);
 				}
 	
-				public long position(byte[] pattern, long start) throws java.sql.SQLException
+				public long position(byte[] pattern, long start)
 				{
 					throw new UnsupportedOperationException();
 				}
 	
-				public long position(Blob pattern, long start) throws java.sql.SQLException
+				public long position(Blob pattern, long start)
 				{
 					throw new UnsupportedOperationException();
 				}
@@ -359,22 +360,22 @@ public class FileSupportImpl implements FileSupport
 					return String.valueOf(buffer.asCharBuffer().array());
 				}
 
-				public Reader getCharacterStream() throws java.sql.SQLException
+				public Reader getCharacterStream()
 				{
 					return Channels.newReader(channel, Charset.defaultCharset().newDecoder(), -1);
 				}
 
-				public InputStream getAsciiStream() throws java.sql.SQLException
+				public InputStream getAsciiStream()
 				{
 					return Channels.newInputStream(channel);
 				}
 
-				public long position(String pattern, long position) throws java.sql.SQLException
+				public long position(String pattern, long position)
 				{
 					throw new UnsupportedOperationException();
 				}
 
-				public long position(Clob pattern, long position) throws java.sql.SQLException
+				public long position(Clob pattern, long position)
 				{
 					throw new UnsupportedOperationException();
 				}

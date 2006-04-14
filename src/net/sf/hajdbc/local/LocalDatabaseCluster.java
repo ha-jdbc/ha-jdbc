@@ -602,6 +602,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	/**
 	 * @see java.lang.Object#toString()
 	 */
+	@Override
 	public final String toString()
 	{
 		return this.getId();
@@ -610,6 +611,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	/**
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
+	@Override
 	public final boolean equals(Object object)
 	{
 		DatabaseCluster databaseCluster = (DatabaseCluster) object;
@@ -777,7 +779,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 				
 				if (tableList == null)
 				{
-					tableList = new LinkedList();
+					tableList = new LinkedList<String>();
 					
 					schemaMap.put(schema, tableList);
 				}

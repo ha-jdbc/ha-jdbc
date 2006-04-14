@@ -50,6 +50,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 	/**
 	 * @see net.sf.hajdbc.SQLObject#handleExceptions(java.util.Map)
 	 */
+	@Override
 	public void handleExceptions(Map<Database, SQLException> exceptionMap) throws SQLException
 	{
 		if (this.getAutoCommit())
@@ -457,7 +458,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue((current == Statement.KEEP_CURRENT_RESULT) ? this.executeWriteToDriver(operation) : this.executeNonTransactionalWriteToDatabase(operation));
+		return this.firstValue((current == KEEP_CURRENT_RESULT) ? this.executeWriteToDriver(operation) : this.executeNonTransactionalWriteToDatabase(operation));
 	}
 
 	/**

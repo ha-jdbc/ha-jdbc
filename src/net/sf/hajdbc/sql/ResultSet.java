@@ -64,7 +64,8 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	/**
 	 * @see net.sf.hajdbc.SQLObject#handleExceptions(java.util.Map)
 	 */
-	public void handleExceptions(Map exceptionMap) throws SQLException
+	@Override
+	public void handleExceptions(Map<Database, SQLException> exceptionMap) throws SQLException
 	{
 		this.parent.handleExceptions(exceptionMap);
 	}
@@ -309,6 +310,7 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 * @see java.sql.ResultSet#getBigDecimal(int, int)
 	 * @deprecated
 	 */
+	@Deprecated
 	public BigDecimal getBigDecimal(final int index, final int scale) throws SQLException
 	{
 		Operation<java.sql.ResultSet, BigDecimal> operation = new Operation<java.sql.ResultSet, BigDecimal>()
@@ -342,6 +344,7 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 * @see java.sql.ResultSet#getBigDecimal(java.lang.String, int)
 	 * @deprecated
 	 */
+	@Deprecated
 	public BigDecimal getBigDecimal(final String name, final int scale) throws SQLException
 	{
 		Operation<java.sql.ResultSet, BigDecimal> operation = new Operation<java.sql.ResultSet, BigDecimal>()
@@ -870,7 +873,7 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	/**
 	 * @see java.sql.ResultSet#getObject(int, java.util.Map)
 	 */
-	public Object getObject(final int index, final Map typeMap) throws SQLException
+	public Object getObject(final int index, final Map<String, Class<?>> typeMap) throws SQLException
 	{
 		Operation<java.sql.ResultSet, Object> operation = new Operation<java.sql.ResultSet, Object>()
 		{
@@ -902,7 +905,7 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	/**
 	 * @see java.sql.ResultSet#getObject(java.lang.String, java.util.Map)
 	 */
-	public Object getObject(final String name, final Map typeMap) throws SQLException
+	public Object getObject(final String name, final Map<String, Class<?>> typeMap) throws SQLException
 	{
 		Operation<java.sql.ResultSet, Object> operation = new Operation<java.sql.ResultSet, Object>()
 		{
@@ -1183,6 +1186,7 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 * @see java.sql.ResultSet#getUnicodeStream(int)
 	 * @deprecated
 	 */
+	@Deprecated
 	public InputStream getUnicodeStream(final int index) throws SQLException
 	{
 		Operation<java.sql.ResultSet, InputStream> operation = new Operation<java.sql.ResultSet, InputStream>()
@@ -1200,6 +1204,7 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 * @see java.sql.ResultSet#getUnicodeStream(java.lang.String)
 	 * @deprecated
 	 */
+	@Deprecated
 	public InputStream getUnicodeStream(final String name) throws SQLException
 	{
 		Operation<java.sql.ResultSet, InputStream> operation = new Operation<java.sql.ResultSet, InputStream>()
