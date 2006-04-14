@@ -36,6 +36,7 @@ public class DerbyDialect extends DefaultDialect
 	/**
 	 * @see net.sf.hajdbc.dialect.DefaultDialect#getSimpleSQL()
 	 */
+	@Override
 	public String getSimpleSQL()
 	{
 		return "VALUES 1";
@@ -44,6 +45,7 @@ public class DerbyDialect extends DefaultDialect
 	/**
 	 * @see net.sf.hajdbc.dialect.DefaultDialect#getLockTableSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String)
 	 */
+	@Override
 	public String getLockTableSQL(DatabaseMetaData metaData, String schema, String table) throws SQLException
 	{
 		return MessageFormat.format("LOCK TABLE {0} IN SHARE MODE", this.qualifyTable(metaData, schema, table));
