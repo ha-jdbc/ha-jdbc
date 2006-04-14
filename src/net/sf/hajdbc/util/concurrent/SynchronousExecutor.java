@@ -31,7 +31,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Executor service implementation that executes tasks in the caller thread.
+ * Executor service that executes tasks in the caller thread.
+ * 
  * @author Paul Ferraro
  */
 public class SynchronousExecutor implements ExecutorService

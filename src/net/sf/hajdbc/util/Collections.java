@@ -44,7 +44,7 @@ public final class Collections
 	 */
 	public static <K, V> Map<K, V> cast(Map map, Class<K> targetKeyClass, Class<V> targetValueClass)
 	{
-		return new TypedMap(map, targetKeyClass, targetValueClass);
+		return new TypedMap<K, V>(map, targetKeyClass, targetValueClass);
 	}
 	
 	/**
@@ -56,7 +56,7 @@ public final class Collections
 	 */
 	public static <T> Collection<T> cast(Collection collection, Class<T> targetClass)
 	{
-		return new TypedCollection(collection, targetClass);
+		return new TypedCollection<T>(collection, targetClass);
 	}
 	
 	/**
@@ -68,7 +68,7 @@ public final class Collections
 	 */
 	public static <T> Set<T> cast(Set set, Class<T> targetClass)
 	{
-		return new TypedSet(set, targetClass);
+		return new TypedSet<T>(set, targetClass);
 	}
 	
 	/**
@@ -80,7 +80,7 @@ public final class Collections
 	 */
 	public static <T> List<T> cast(List list, Class<T> targetClass)
 	{
-		return new TypedList(list, targetClass);
+		return new TypedList<T>(list, targetClass);
 	}
 	
 	private Collections()
@@ -262,9 +262,9 @@ public final class Collections
 		 * @param collection
 		 * @param targetClass
 		 */
-		public TypedSet(Collection collection, Class<E> targetClass)
+		public TypedSet(Set set, Class<E> targetClass)
 		{
-			super(collection, targetClass);
+			super(set, targetClass);
 		}
 	}
 
@@ -277,7 +277,7 @@ public final class Collections
 		 * @param list
 		 * @param targetClass
 		 */
-		public TypedList(List<Object> list, Class<E> targetClass)
+		public TypedList(List list, Class<E> targetClass)
 		{
 			super(list, targetClass);
 			
