@@ -34,8 +34,8 @@ import net.sf.hajdbc.Database;
  */
 public class RoundRobinBalancer extends AbstractBalancer
 {
-	private Set<Database> databaseSet = new HashSet();
-	private Queue<Database> databaseQueue = new LinkedList();
+	private Set<Database> databaseSet = new HashSet<Database>();
+	private Queue<Database> databaseQueue = new LinkedList<Database>();
 
 	/**
 	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
