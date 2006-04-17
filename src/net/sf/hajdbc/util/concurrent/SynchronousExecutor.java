@@ -168,8 +168,8 @@ public class SynchronousExecutor implements ExecutorService
 	
 	private class SynchronousFuture<T> implements Future<T>
 	{
-		private T result;
-		private Throwable exception;
+		private T result = null;
+		private Throwable exception = null;
 
 		public SynchronousFuture(Callable<T> task)
 		{
@@ -212,7 +212,7 @@ public class SynchronousExecutor implements ExecutorService
 		 */
 		public T get() throws ExecutionException
 		{
-			if (exception != null)
+			if (this.exception != null)
 			{
 				throw new ExecutionException(this.exception);
 			}

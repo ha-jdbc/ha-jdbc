@@ -42,11 +42,6 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	private String url;
 	private Class<? extends Driver> driverClass;
 	
-	static String getClassName(Class targetClass)
-	{
-		return targetClass.getName();
-	}
-	
 	/**
 	 * @see net.sf.hajdbc.sql.ActiveDriverDatabaseMBean#getUrl()
 	 */
@@ -167,5 +162,15 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	public Class<? extends InactiveDatabaseMBean> getInactiveMBeanClass()
 	{
 		return InactiveDriverDatabaseMBean.class;
+	}
+	
+	static String getClassName(Class targetClass)
+	{
+		return targetClass.getName();
+	}
+	
+	static Class forName(String className) throws ClassNotFoundException
+	{
+		return (className != null) ? Class.forName(className) : null;
 	}
 }

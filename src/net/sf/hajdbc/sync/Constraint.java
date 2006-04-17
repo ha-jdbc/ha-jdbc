@@ -66,6 +66,7 @@ public abstract class Constraint
 	/**
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
+	@Override
 	public boolean equals(Object object)
 	{
 		Constraint key = (Constraint) object;
@@ -76,6 +77,7 @@ public abstract class Constraint
 	/**
 	 * @see java.lang.Object#hashCode()
 	 */
+	@Override
 	public int hashCode()
 	{
 		return this.name.hashCode();

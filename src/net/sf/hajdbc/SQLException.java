@@ -66,6 +66,7 @@ public class SQLException extends java.sql.SQLException
 	/**
 	 * @see java.sql.SQLException#getErrorCode()
 	 */
+	@Override
 	public int getErrorCode()
 	{
 		Throwable cause = this.getCause();
@@ -81,6 +82,7 @@ public class SQLException extends java.sql.SQLException
 	/**
 	 * @see java.sql.SQLException#getNextException()
 	 */
+	@Override
 	public java.sql.SQLException getNextException()
 	{
 		Throwable cause = this.getCause();
@@ -96,6 +98,7 @@ public class SQLException extends java.sql.SQLException
 	/**
 	 * @see java.sql.SQLException#getSQLState()
 	 */
+	@Override
 	public String getSQLState()
 	{
 		Throwable cause = this.getCause();

@@ -109,7 +109,7 @@ public class SQLObject<E, P>
 				
 				object = this.parentOperation.execute(database, parentObject);
 				
-				for (Operation operation: this.operationMap.values())
+				for (Operation<E, ?> operation: this.operationMap.values())
 				{
 					operation.execute(database, object);
 				}

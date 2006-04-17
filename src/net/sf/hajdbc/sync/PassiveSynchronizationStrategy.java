@@ -21,7 +21,6 @@
 package net.sf.hajdbc.sync;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -39,7 +38,7 @@ public class PassiveSynchronizationStrategy implements SynchronizationStrategy
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(Connection, Connection, Map, Dialect)
 	 */
-	public void synchronize(Connection inactiveConnection, Connection activeConnection, Map<String, List<String>> tableMap, Dialect dialect) throws SQLException
+	public void synchronize(Connection inactiveConnection, Connection activeConnection, Map<String, List<String>> tableMap, Dialect dialect)
 	{
 		// Do nothing
 	}
