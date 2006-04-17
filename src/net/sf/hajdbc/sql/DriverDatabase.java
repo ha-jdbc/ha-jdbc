@@ -164,12 +164,12 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 		return InactiveDriverDatabaseMBean.class;
 	}
 	
-	static String getClassName(Class targetClass)
+	static String getClassName(Class<?> targetClass)
 	{
 		return targetClass.getName();
 	}
 	
-	static Class forName(String className) throws ClassNotFoundException
+	static Class<?> forName(String className) throws ClassNotFoundException
 	{
 		return (className != null) ? Class.forName(className) : null;
 	}
