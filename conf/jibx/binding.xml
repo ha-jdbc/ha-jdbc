@@ -36,7 +36,7 @@
 		<value name="password" field="password" usage="optional"/>
 	</mapping>
 	<mapping name="database" class="net.sf.hajdbc.sql.DriverDatabase" extends="net.sf.hajdbc.sql.AbstractDatabase">
-		<value name="driver" field="driverClass" usage="optional" serializer="net.sf.hajdbc.sql.DriverDatabase.getClassName" deserializer="java.lang.Class.forName"/>
+		<value name="driver" field="driverClass" usage="optional" serializer="net.sf.hajdbc.sql.DriverDatabase.getClassName" deserializer="net.sf.hajdbc.sql.DriverDatabase.forName"/>
 		<value name="url" field="url"/>
 		<structure map-as="net.sf.hajdbc.sql.AbstractDatabase"></structure>
 	</mapping>
