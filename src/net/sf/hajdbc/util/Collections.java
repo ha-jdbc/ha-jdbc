@@ -253,7 +253,7 @@ public final class Collections
 		 */
 		public <T> T[] toArray(T[] array)
 		{
-			return T[].class.cast(this.collection.toArray(array));
+			return (T[]) this.collection.toArray(array);
 		}
 	}
 
