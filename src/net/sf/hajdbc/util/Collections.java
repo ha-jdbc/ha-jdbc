@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * Utility class for casting untyped collections into typed collections.
+ * 
  * @author  Paul Ferraro
  * @since   1.1
  */
@@ -131,7 +133,7 @@ public final class Collections
 	
 	private static class TypedCollection<E> implements Collection<E>
 	{
-		private Collection<Object> collection;
+		private Collection collection;
 		protected Class<E> targetClass;
 		
 		/**
@@ -251,7 +253,7 @@ public final class Collections
 		 */
 		public <T> T[] toArray(T[] array)
 		{
-			return this.collection.toArray(array);
+			return T[].class.cast(this.collection.toArray(array));
 		}
 	}
 
