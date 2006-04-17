@@ -283,10 +283,10 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 						{
 							for (int column: primaryKeyColumnIndexSet)
 							{
-								Comparable activeObject = (Comparable) activeResultSet.getObject(column);
+								Object activeObject = activeResultSet.getObject(column);
 								Object inactiveObject = inactiveResultSet.getObject(column);
 								
-								compare = activeObject.compareTo(inactiveObject);
+								compare = Comparable.class.cast(activeObject).compareTo(inactiveObject);
 								
 								if (compare != 0)
 								{
