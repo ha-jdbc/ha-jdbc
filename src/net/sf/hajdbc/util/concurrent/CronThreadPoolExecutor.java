@@ -27,7 +27,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.quartz.CronTrigger;
@@ -51,28 +50,7 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 	 */
 	public CronThreadPoolExecutor(int corePoolSize, RejectedExecutionHandler handler)
 	{
-		super(corePoolSize, handler);
-	}
-
-	/**
-	 * Constructs a new CronThreadPoolExecutor.
-	 * @param corePoolSize
-	 * @param factory
-	 * @param handler
-	 */
-	public CronThreadPoolExecutor(int corePoolSize, ThreadFactory factory, RejectedExecutionHandler handler)
-	{
-		super(corePoolSize, factory, handler);
-	}
-
-	/**
-	 * Constructs a new CronThreadPoolExecutor.
-	 * @param corePoolSize
-	 * @param factory
-	 */
-	public CronThreadPoolExecutor(int corePoolSize, ThreadFactory factory)
-	{
-		super(corePoolSize, factory);
+		super(corePoolSize, DaemonThreadFactory.getInstance(), handler);
 	}
 
 	/**
@@ -81,7 +59,7 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 	 */
 	public CronThreadPoolExecutor(int corePoolSize)
 	{
-		super(corePoolSize);
+		super(corePoolSize, DaemonThreadFactory.getInstance());
 	}
 	
 	/**
@@ -113,32 +91,35 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 			{
 				Date fireTime = trigger.getFireTimeAfter(new Date());
 			
-				while (fireTime != null)
+				try
 				{
-					try
+					while (fireTime != null)
 					{
 						long delay = Math.max(fireTime.getTime() - System.currentTimeMillis(), 0);
 						
-						CronThreadPoolExecutor.this.schedule(task, delay, TimeUnit.MILLISECONDS).get();
-						
-						fireTime = trigger.getFireTimeAfter(new Date());
+						try
+						{
+							CronThreadPoolExecutor.this.schedule(task, delay, TimeUnit.MILLISECONDS).get();
+							
+							fireTime = trigger.getFireTimeAfter(new Date());
+						}
+						catch (ExecutionException e)
+						{
+							logger.warn(e.toString(), e.getCause());
+						}
 					}
-					catch (ExecutionException e)
-					{
-						logger.warn(e.toString(), e.getCause());
-					}
-					catch (RejectedExecutionException e)
-					{
-						break;
-					}
-					catch (CancellationException e)
-					{
-						break;
-					}
-					catch (InterruptedException e)
-					{
-						break;
-					}
+				}
+				catch (RejectedExecutionException e)
+				{
+					// Occurs if executor was already shutdown when schedule() is called
+				}
+				catch (CancellationException e)
+				{
+					// Occurs when scheduled, but not yet executed tasks are cancelled during shutdown
+				}
+				catch (InterruptedException e)
+				{
+					// Occurs when executing tasks are interrupted during shutdownNow()
 				}
 			}
 		};
