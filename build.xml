@@ -38,10 +38,14 @@
 		<dirset dir="${build.dir}"></dirset>
 	</path>
 
-	<path id="test.classpath">
-		<path refid="build.classpath"></path>
+	<path id="testng.classpath">
 		<fileset dir="${lib.test.dir}" includes="*.jar"></fileset>
 		<fileset dir="${lib.runtime.dir}" includes="*.jar"></fileset>
+	</path>
+
+	<path id="test.classpath">
+		<path refid="build.classpath"></path>
+		<path refid="testng.classpath"></path>
 	</path>
 	
 	<path id="bind.classpath">
@@ -68,7 +72,7 @@
 		<path refid="build.classpath"></path>
 	</path>
 	
-	<taskdef name="testng" classname="org.testng.TestNGAntTask" classpathref="test.classpath"></taskdef>
+	<taskdef name="testng" classname="org.testng.TestNGAntTask" classpathref="testng.classpath"></taskdef>
 	<taskdef name="bind" classname="org.jibx.binding.ant.CompileTask" classpathref="bind.classpath"></taskdef>
 	<taskdef name="retrotranslate" classname="net.sf.retrotranslator.transformer.RetrotranslatorTask" classpathref="retrotranslate.classpath"></taskdef>
 	
