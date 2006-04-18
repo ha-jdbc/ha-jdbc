@@ -180,11 +180,31 @@ public final class DatabaseClusterFactory
 		}
 		catch (IOException e)
 		{
-			throw new RuntimeException(Messages.getMessage(Messages.CONFIG_NOT_FOUND, url), e);
+			String message = Messages.getMessage(Messages.CONFIG_NOT_FOUND, url);
+			
+			logger.error(message, e);
+			
+			throw new RuntimeException(message, e);
 		}
 		catch (JiBXException e)
 		{
-			throw new RuntimeException(Messages.getMessage(Messages.CONFIG_LOAD_FAILED, url), e);
+			String message = Messages.getMessage(Messages.CONFIG_LOAD_FAILED, url);
+			
+			logger.error(message, e);
+			
+			throw new RuntimeException(message, e);
+		}
+		catch (RuntimeException e)
+		{
+			logger.error(e.getMessage(), e);
+			
+			throw e;
+		}
+		catch (Error e)
+		{
+			logger.error(e.getMessage(), e);
+			
+			throw e;
 		}
 		finally
 		{
