@@ -551,14 +551,12 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	public void start() throws java.sql.SQLException
 	{
 		String[] databases = this.loadState();
-
+		
 		if (databases != null)
 		{
 			for (String id: databases)
 			{
-				Database database = this.getDatabase(id);
-				
-				this.activate(database);
+				this.activate(this.getDatabase(id));
 			}
 		}
 		else
@@ -573,7 +571,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 				}
 			}
 		}
-
+		
 		this.nonTransactionalExecutor = new ThreadPoolExecutor(this.minThreads, this.maxThreads, this.maxIdle, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new ThreadPoolExecutor.CallerRunsPolicy());
 		
 		this.transactionalExecutor = this.transaction.equals(Transaction.XA) ? new SynchronousExecutor() : this.nonTransactionalExecutor;
@@ -594,9 +592,9 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	 */
 	public void stop()
 	{
+		this.cronExecutor.shutdownNow();
 		this.nonTransactionalExecutor.shutdownNow();
 		this.transactionalExecutor.shutdownNow();
-		this.cronExecutor.shutdownNow();
 	}
 	
 	/**
