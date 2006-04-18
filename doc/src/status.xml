@@ -12,6 +12,17 @@
 	</contexts>
 
 	<changes>
+		<release version="1.1-rc-2" date="April 18, 2006">
+			<action type="fix" context="code" dev="PF">
+				Fixed IllegalArgumentException during startup when using transactions="xa".
+			</action>
+			<action type="fix" context="code" dev="PF">
+				Fixed NullPointerException during startup when database does not define a driver.
+			</action>
+			<action type="fix" context="code" dev="PF">
+				Fixed CronExecutorService to use daemon threads so that it doesn't prevent the shutdown hook from firing.
+			</action>
+		</release>
 		<release version="1.1-rc-1" date="April 9, 2006">
 			<action type="update" context="lib" dev="PF">
 				Upgraded Retrotranslator to version 1.0.3.
