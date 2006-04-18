@@ -90,7 +90,7 @@ public class SynchronousExecutor implements ExecutorService
 	}
 
 	/**
-	 * @see java.util.concurrent.ExecutorService#submit(java.lang.Runnable, T)
+	 * @see java.util.concurrent.ExecutorService#submit(java.lang.Runnable, Object)
 	 */
 	public <T> Future<T> submit(Runnable task, T result)
 	{
