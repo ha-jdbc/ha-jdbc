@@ -12,6 +12,11 @@
 	</contexts>
 
 	<changes>
+		<release version="1.1" date="April 21, 2006">
+			<action type="update" context="code" dev="PF">
+				Ensure that causes of initialization failures are logged.
+			</action>
+		</release>
 		<release version="1.1-rc-2" date="April 18, 2006">
 			<action type="fix" context="code" dev="PF">
 				Fixed IllegalArgumentException during startup when using transactions="xa".
