@@ -263,7 +263,7 @@
 					<dd>
 						Indicates whether transactions are assumed to be single database <acronym title="Java Database Connectivity">JDBC</acronym> transactions, or distributed transactions coordinated via a transaction manager (typically provided by an application server) using the X/Open XA protocol.
 						If in "local" mode, database writes are executed concurrently, for effiency.
-						If in "xa" mode, database writes are executed synchronously, for preventing deadlocks by maintainingn predictable execution order across databases.
+						If in "xa" mode, database writes are executed synchronously, for preventing deadlocks by maintaining predictable execution order across databases.
 					</dd>
 					<dt>auto-activate-schedule</dt>
 					<dd>
