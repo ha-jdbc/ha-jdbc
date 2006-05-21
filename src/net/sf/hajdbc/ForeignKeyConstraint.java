@@ -44,6 +44,7 @@ public class ForeignKeyConstraint extends UniqueConstraint
 	private List<String> foreignColumnList = new LinkedList<String>();
 	private int updateRule;
 	private int deleteRule;
+	private int deferrability;
 	
 	/**
 	 * Constructs a new ForeignKey.
@@ -101,6 +102,14 @@ public class ForeignKeyConstraint extends UniqueConstraint
 	}
 
 	/**
+	 * @return Returns the deferrability.
+	 */
+	public int getDeferrability()
+	{
+		return this.deferrability;
+	}
+
+	/**
 	 * Collects all foreign keys from the specified tables using the specified connection. 
 	 * @param connection a database connection
 	 * @param schemaMap a map of schema name to list of table names
@@ -133,8 +142,9 @@ public class ForeignKeyConstraint extends UniqueConstraint
 						
 						foreignKey.foreignSchema = resultSet.getString("PKTABLE_SCHEM");
 						foreignKey.foreignTable = resultSet.getString("PKTABLE_NAME");
-						foreignKey.updateRule = resultSet.getInt("UPDATE_RULE");
 						foreignKey.deleteRule = resultSet.getInt("DELETE_RULE");
+						foreignKey.updateRule = resultSet.getInt("UPDATE_RULE");
+						foreignKey.deferrability = resultSet.getInt("DEFERRABILITY");
 					}
 					
 					String column = resultSet.getString("FKCOLUMN_NAME");

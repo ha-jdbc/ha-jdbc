@@ -135,7 +135,7 @@ public class DefaultDialect implements Dialect
 	 */
 	public String getCreateForeignKeyConstraintSQL(DatabaseMetaData metaData, ForeignKeyConstraint key) throws SQLException
 	{
-		return MessageFormat.format(this.createForeignKeyPattern(), this.quote(metaData, key.getName()), this.qualifyTable(metaData, key.getSchema(), key.getTable()), this.joinColumns(metaData, key.getColumnList()), this.qualifyTable(metaData, key.getForeignSchema(), key.getForeignTable()), this.joinColumns(metaData, key.getForeignColumnList()));
+		return MessageFormat.format(this.createForeignKeyPattern(), this.quote(metaData, key.getName()), this.qualifyTable(metaData, key.getSchema(), key.getTable()), this.joinColumns(metaData, key.getColumnList()), this.qualifyTable(metaData, key.getForeignSchema(), key.getForeignTable()), this.joinColumns(metaData, key.getForeignColumnList()), key.getDeleteRule(), key.getUpdateRule(), key.getDeferrability());
 	}
 	
 	/**
@@ -196,7 +196,7 @@ public class DefaultDialect implements Dialect
 	
 	protected String createForeignKeyPattern()
 	{
-		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4})";
+		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} ON UPDATE {6,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} {7,choice,5#DEFERRABLE INITIALLY DEFERRED|6#DEFERRABLE INITIALLY IMMEDIATE|7#NOT DEFERRABLE}";
 	}
 	
 	protected String createUnqiueKeyPattern()
