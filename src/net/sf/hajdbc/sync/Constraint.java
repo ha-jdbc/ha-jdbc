@@ -26,7 +26,7 @@ package net.sf.hajdbc.sync;
  * @author  Paul Ferraro
  * @since   1.1
  */
-public abstract class Constraint
+public abstract class Constraint implements Comparable<Constraint>
 {
 	protected String name;
 	protected String schema;
@@ -81,5 +81,13 @@ public abstract class Constraint
 	public int hashCode()
 	{
 		return this.name.hashCode();
+	}
+
+	/**
+	 * @see java.lang.Comparable#compareTo(T)
+	 */
+	public int compareTo(Constraint constraint)
+	{
+		return this.name.compareTo(constraint.name);
 	}
 }

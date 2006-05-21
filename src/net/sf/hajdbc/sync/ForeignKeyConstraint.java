@@ -25,9 +25,10 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Represents a foreign key constraint on a table.
@@ -109,7 +110,7 @@ public class ForeignKeyConstraint extends Constraint
 	 */
 	public static Collection<ForeignKeyConstraint> collect(Connection connection, Map<String, List<String>> schemaMap) throws SQLException
 	{
-		List<ForeignKeyConstraint> foreignKeyList = new LinkedList<ForeignKeyConstraint>();
+		Set<ForeignKeyConstraint> foreignKeySet = new TreeSet<ForeignKeyConstraint>();
 		DatabaseMetaData metaData = connection.getMetaData();
 		
 		for (Map.Entry<String, List<String>> schemaMapEntry: schemaMap.entrySet())
@@ -131,13 +132,13 @@ public class ForeignKeyConstraint extends Constraint
 		
 					ForeignKeyConstraint key = new ForeignKeyConstraint(name, schema, table, column, foreignSchema, foreignTable, foreignColumn);
 					
-					foreignKeyList.add(key);
+					foreignKeySet.add(key);
 				}
 				
 				resultSet.close();
 			}
 		}
 		
-		return foreignKeyList;
+		return foreignKeySet;
 	}
 }
