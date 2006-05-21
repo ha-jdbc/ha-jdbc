@@ -34,19 +34,25 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.ResourceBundle;
 
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistration;
+import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
+import javax.management.MBeanServerInvocationHandler;
 import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 import javax.management.StandardMBean;
 
 import net.sf.hajdbc.local.LocalDatabaseCluster;
+import net.sf.hajdbc.util.LinkedHashtable;
 
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IMarshallingContext;
@@ -60,53 +66,84 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$
  * @since   1.0
  */
-public final class DatabaseClusterFactory
+public final class DatabaseClusterFactory implements MBeanRegistration, DatabaseClusterFactoryMBean
 {
 	private static final String JMX_AGENT_PROPERTY = "ha-jdbc.jmx-agent";
-	private static final String CONFIGURATION_PROPERTY = "ha-jdbc.configuration";
 	
-	private static final String DEFAULT_RESOURCE = "ha-jdbc.xml";
+	private static final String RESOURCE = System.getProperty("ha-jdbc.configuration", "ha-jdbc.xml");
 	
 	private static final String MBEAN_DOMAIN = "net.sf.hajdbc";
+	private static final String MBEAN_TYPE_KEY = "type";
 	private static final String MBEAN_CLUSTER_KEY = "cluster";
 	private static final String MBEAN_DATABASE_KEY = "database";
+	private static final String MBEAN_CLUSTER_TYPE = "Clusters";
+	private static final String MBEAN_FACTORY_TYPE = "Factory";
 	
 	static Logger logger = LoggerFactory.getLogger(DatabaseClusterFactory.class);
 	
-	private static DatabaseClusterFactory instance = null;
 	private static ResourceBundle resource = ResourceBundle.getBundle(DatabaseClusterFactory.class.getName());
-		
+
 	/**
-	 * Convenience method for constructing a standardized mbean ObjectName for this cluster.
+	 * Convenience method for constructing a standardized mbean ObjectName for the database cluster factory.
+	 * @return an ObjectName for this cluster factory
+	 * @throws MalformedObjectNameException if the ObjectName could not be constructed
+	 */
+	public static ObjectName getObjectName()
+	{
+		Hashtable<String, String> properties = new Hashtable<String, String>();
+		
+		properties.put(MBEAN_TYPE_KEY, MBEAN_FACTORY_TYPE);
+		
+		return getObjectName(properties);
+	}
+	
+	/**
+	 * Convenience method for constructing a standardized mbean ObjectName for the specified cluster.
 	 * @param databaseClusterId a cluster identifier
 	 * @return an ObjectName for this cluster
 	 * @throws MalformedObjectNameException if the ObjectName could not be constructed
 	 */
-	public static ObjectName getObjectName(String databaseClusterId) throws MalformedObjectNameException
+	public static ObjectName getObjectName(String databaseClusterId)
 	{
-		return getObjectName(databaseClusterId, new Properties());
+		return getObjectName(createClusterProperties(databaseClusterId));
 	}
 
 	/**
-	 * Convenience method for constructing a standardized mbean ObjectName for this database.
+	 * Convenience method for constructing a standardized mbean ObjectName for the specified database.
 	 * @param databaseClusterId a cluster identifier
 	 * @param databaseId a database identifier
 	 * @return an ObjectName for this cluster
 	 * @throws MalformedObjectNameException if the ObjectName could not be constructed
 	 */
-	public static ObjectName getObjectName(String databaseClusterId, String databaseId) throws MalformedObjectNameException
+	public static ObjectName getObjectName(String databaseClusterId, String databaseId)
 	{
-		Properties properties = new Properties();
-		properties.setProperty(MBEAN_DATABASE_KEY, ObjectName.quote(databaseId));
+		Hashtable<String, String> properties = createClusterProperties(databaseClusterId);
 		
-		return getObjectName(databaseClusterId, properties);
+		properties.put(MBEAN_DATABASE_KEY, ObjectName.quote(databaseId));
+		
+		return getObjectName(properties);
+	}
+
+	private static ObjectName getObjectName(Hashtable<String, String> properties)
+	{
+		try
+		{
+			return ObjectName.getInstance(MBEAN_DOMAIN, properties);
+		}
+		catch (MalformedObjectNameException e)
+		{
+			throw new IllegalArgumentException(properties.toString());
+		}
 	}
 	
-	private static ObjectName getObjectName(String databaseClusterId, Properties properties) throws MalformedObjectNameException
+	private static Hashtable<String, String> createClusterProperties(String databaseClusterId)
 	{
-		properties.setProperty(MBEAN_CLUSTER_KEY, ObjectName.quote(databaseClusterId));
+		Hashtable<String, String> properties = new LinkedHashtable<String, String>();
 		
-		return ObjectName.getInstance(MBEAN_DOMAIN, properties);
+		properties.put(MBEAN_TYPE_KEY, MBEAN_CLUSTER_TYPE);
+		properties.put(MBEAN_CLUSTER_KEY, ObjectName.quote(databaseClusterId));
+		
+		return properties;
 	}
 	
 	/**
@@ -122,14 +159,36 @@ public final class DatabaseClusterFactory
 	 * Provides access to the singleton instance of this factory object.
 	 * @return a factory for creating database clusters
 	 */
-	public static synchronized DatabaseClusterFactory getInstance()
+	public static synchronized DatabaseClusterFactoryMBean getInstance()
 	{
-		if (instance == null)
+		try
 		{
-			instance = createDatabaseClusterFactory();
+			ObjectName name = getObjectName();
+			MBeanServer server = getMBeanServer();
+			
+			if (server.isRegistered(name))
+			{
+				return (DatabaseClusterFactoryMBean) MBeanServerInvocationHandler.newProxyInstance(server, name, DatabaseClusterFactoryMBean.class, false);
+			}
+			
+			DatabaseClusterFactory factory = createDatabaseClusterFactory();
+			
+			server.registerMBean(new StandardMBean(factory, DatabaseClusterFactoryMBean.class), name);
+			
+			return factory;
 		}
-		
-		return instance;
+		catch (InstanceAlreadyExistsException e)
+		{
+			throw new IllegalStateException(e);
+		}
+		catch (MBeanRegistrationException e)
+		{
+			throw new IllegalStateException(e);
+		}
+		catch (NotCompliantMBeanException e)
+		{
+			throw new IllegalStateException(e);
+		}
 	}
 	
 	/**
@@ -156,9 +215,7 @@ public final class DatabaseClusterFactory
 	 */
 	private static DatabaseClusterFactory createDatabaseClusterFactory()
 	{
-		String resource = System.getProperty(CONFIGURATION_PROPERTY, DEFAULT_RESOURCE);
-		
-		URL url = getResourceURL(resource);
+		URL url = getResourceURL();
 		
 		logger.info(Messages.getMessage(Messages.HA_JDBC_INIT, getVersion(), url));
 		
@@ -170,13 +227,7 @@ public final class DatabaseClusterFactory
 			
 			IUnmarshallingContext context = BindingDirectory.getFactory(DatabaseClusterFactory.class).createUnmarshallingContext();
 			
-			DatabaseClusterFactory factory = DatabaseClusterFactory.class.cast(context.unmarshalDocument(inputStream, null));
-
-			factory.url = url;
-			
-			Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook(factory)));
-			
-			return factory;
+			return DatabaseClusterFactory.class.cast(context.unmarshalDocument(inputStream, null));
 		}
 		catch (IOException e)
 		{
@@ -227,29 +278,29 @@ public final class DatabaseClusterFactory
 	 * @param resource a resource name
 	 * @return a URL for the HA-JDBC configuration resource
 	 */
-	private static URL getResourceURL(String resource)
+	private static URL getResourceURL()
 	{
 		try
 		{
-			return new URL(resource);
+			return new URL(RESOURCE);
 		}
 		catch (MalformedURLException e)
 		{
-			URL url = Thread.currentThread().getContextClassLoader().getResource(resource);
+			URL url = Thread.currentThread().getContextClassLoader().getResource(RESOURCE);
 			
 			if (url == null)
 			{
-				url = DatabaseClusterFactory.class.getClassLoader().getResource(resource);
+				url = DatabaseClusterFactory.class.getClassLoader().getResource(RESOURCE);
 			}
 
 			if (url == null)
 			{
-				url = ClassLoader.getSystemResource(resource);
+				url = ClassLoader.getSystemResource(RESOURCE);
 			}
 			
 			if (url == null)
 			{
-				throw new RuntimeException(Messages.getMessage(Messages.CONFIG_NOT_FOUND, resource));
+				throw new IllegalArgumentException(Messages.getMessage(Messages.CONFIG_NOT_FOUND, RESOURCE));
 			}
 			
 			return url;
@@ -266,12 +317,6 @@ public final class DatabaseClusterFactory
 	private Map<String, DatabaseCluster> databaseClusterMap = new HashMap<String, DatabaseCluster>();
 	private Map<String, SynchronizationStrategy> synchronizationStrategyMap = new HashMap<String, SynchronizationStrategy>();
 	private DatabaseClusterBuilder builder;
-	private URL url;
-	
-	private DatabaseClusterFactory()
-	{
-		// Do nothing
-	}
 	
 	/**
 	 * Returns the database cluster identified by the specified id
@@ -317,20 +362,22 @@ public final class DatabaseClusterFactory
 		WritableByteChannel outputChannel = null;
 		FileChannel fileChannel = null;
 		
+		URL url = getResourceURL();
+		
 		try
 		{
 			file = this.exportToFile();
 			
 			fileChannel = new FileInputStream(file).getChannel();
-			
+
 			// We cannot use URLConnection for files becuase Sun's implementation does not support output.
-			if (this.url.getProtocol().equals("file"))
+			if (url.getProtocol().equals("file"))
 			{
-				outputChannel = new FileOutputStream(new File(this.url.getPath())).getChannel();
+				outputChannel = new FileOutputStream(new File(url.getPath())).getChannel();
 			}
 			else
 			{
-				URLConnection connection = this.url.openConnection();
+				URLConnection connection = url.openConnection();
 				
 				connection.connect();
 				
@@ -341,7 +388,7 @@ public final class DatabaseClusterFactory
 		}
 		catch (Exception e)
 		{
-			logger.warn(Messages.getMessage(Messages.CONFIG_STORE_FAILED, this.url), e);
+			logger.warn(Messages.getMessage(Messages.CONFIG_STORE_FAILED, url), e);
 		}
 		finally
 		{
@@ -436,33 +483,43 @@ public final class DatabaseClusterFactory
 	{
 		return this.databaseClusterMap.values().iterator();
 	}
-	
-	private static class ShutdownHook implements Runnable
+
+	/**
+	 * @see javax.management.MBeanRegistration#preRegister(javax.management.MBeanServer, javax.management.ObjectName)
+	 */
+	public ObjectName preRegister(MBeanServer server, ObjectName name) throws Exception
 	{
-		private DatabaseClusterFactory factory;
+		return name;
+	}
+
+	/**
+	 * @see javax.management.MBeanRegistration#postRegister(java.lang.Boolean)
+	 */
+	public void postRegister(Boolean registrationDone)
+	{
+		// Do nothing
+	}
+
+	/**
+	 * @see javax.management.MBeanRegistration#preDeregister()
+	 */
+	public void preDeregister() throws Exception
+	{
+		logger.info(Messages.getMessage(Messages.SHUT_DOWN));
 		
-		/**
-		 * Constructs a new ShutdownHook.
-		 * @param factory
-		 */
-		public ShutdownHook(DatabaseClusterFactory factory)
+		Iterator<DatabaseCluster> databaseClusters = this.getDatabaseClusters();
+		
+		while (databaseClusters.hasNext())
 		{
-			this.factory = factory;
+			databaseClusters.next().stop();
 		}
-		
-		/**
-		 * @see java.lang.Runnable#run()
-		 */
-		public void run()
-		{
-			logger.info(Messages.getMessage(Messages.SHUT_DOWN));
-			
-			Iterator<DatabaseCluster> databaseClusters = this.factory.getDatabaseClusters();
-			
-			while (databaseClusters.hasNext())
-			{
-				databaseClusters.next().stop();
-			}
-		}	
+	}
+
+	/**
+	 * @see javax.management.MBeanRegistration#postDeregister()
+	 */
+	public void postDeregister()
+	{
+		// Do nothing
 	}
 }

@@ -18,17 +18,18 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.sync;
+package net.sf.hajdbc;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+
 
 /**
  * Represents a foreign key constraint on a table.
@@ -36,18 +37,13 @@ import java.util.TreeSet;
  * @author  Paul Ferraro
  * @since   1.1
  */
-public class ForeignKeyConstraint extends Constraint
+public class ForeignKeyConstraint extends UniqueConstraint
 {
-	/** SQL-92 compatible create foreign key statement pattern */
-	public static final String DEFAULT_CREATE_SQL = "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4})";
-
-	/** SQL-92 compatible drop foreign key statement pattern */
-	public static final String DEFAULT_DROP_SQL = "ALTER TABLE {1} DROP CONSTRAINT {0}";
-	
-	private String column;
 	private String foreignSchema;
 	private String foreignTable;
-	private String foreignColumn;
+	private List<String> foreignColumnList = new LinkedList<String>();
+	private int updateRule;
+	private int deleteRule;
 	
 	/**
 	 * Constructs a new ForeignKey.
@@ -59,22 +55,9 @@ public class ForeignKeyConstraint extends Constraint
 	 * @param foreignTable
 	 * @param foreignColumn
 	 */
-	public ForeignKeyConstraint(String name, String schema, String table, String column, String foreignSchema, String foreignTable, String foreignColumn)
+	public ForeignKeyConstraint(String name, String schema, String table)
 	{
 		super(name, schema, table);
-		
-		this.column = column;
-		this.foreignSchema = foreignSchema;
-		this.foreignTable = foreignTable;
-		this.foreignColumn = foreignColumn;
-	}
-	
-	/**
-	 * @return the column of this foreign key
-	 */
-	public String getColumn()
-	{
-		return this.column;
 	}
 	
 	/**
@@ -96,11 +79,27 @@ public class ForeignKeyConstraint extends Constraint
 	/**
 	 * @return the foreign column of this foreign key
 	 */
-	public String getForeignColumn()
+	public List<String> getForeignColumnList()
 	{
-		return this.foreignColumn;
+		return this.foreignColumnList;
 	}
 	
+	/**
+	 * @return Returns the deleteRule.
+	 */
+	public int getDeleteRule()
+	{
+		return this.deleteRule;
+	}
+
+	/**
+	 * @return Returns the updateRule.
+	 */
+	public int getUpdateRule()
+	{
+		return this.updateRule;
+	}
+
 	/**
 	 * Collects all foreign keys from the specified tables using the specified connection. 
 	 * @param connection a database connection
@@ -110,7 +109,7 @@ public class ForeignKeyConstraint extends Constraint
 	 */
 	public static Collection<ForeignKeyConstraint> collect(Connection connection, Map<String, List<String>> schemaMap) throws SQLException
 	{
-		Set<ForeignKeyConstraint> foreignKeySet = new TreeSet<ForeignKeyConstraint>();
+		Map<String, ForeignKeyConstraint> foreignKeyMap = new HashMap<String, ForeignKeyConstraint>();
 		DatabaseMetaData metaData = connection.getMetaData();
 		
 		for (Map.Entry<String, List<String>> schemaMapEntry: schemaMap.entrySet())
@@ -125,20 +124,30 @@ public class ForeignKeyConstraint extends Constraint
 				while (resultSet.next())
 				{
 					String name = resultSet.getString("FK_NAME");
+					
+					ForeignKeyConstraint foreignKey = foreignKeyMap.get(name);
+					
+					if (foreignKey == null)
+					{
+						foreignKey = new ForeignKeyConstraint(name, schema, table);
+						
+						foreignKey.foreignSchema = resultSet.getString("PKTABLE_SCHEM");
+						foreignKey.foreignTable = resultSet.getString("PKTABLE_NAME");
+						foreignKey.updateRule = resultSet.getInt("UPDATE_RULE");
+						foreignKey.deleteRule = resultSet.getInt("DELETE_RULE");
+					}
+					
 					String column = resultSet.getString("FKCOLUMN_NAME");
-					String foreignSchema = resultSet.getString("PKTABLE_SCHEM");
-					String foreignTable = resultSet.getString("PKTABLE_NAME");
 					String foreignColumn = resultSet.getString("PKCOLUMN_NAME");
 		
-					ForeignKeyConstraint key = new ForeignKeyConstraint(name, schema, table, column, foreignSchema, foreignTable, foreignColumn);
-					
-					foreignKeySet.add(key);
+					foreignKey.getColumnList().add(column);
+					foreignKey.getForeignColumnList().add(foreignColumn);
 				}
 				
 				resultSet.close();
 			}
 		}
 		
-		return foreignKeySet;
+		return foreignKeyMap.values();
 	}
 }

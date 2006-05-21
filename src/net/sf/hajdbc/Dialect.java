@@ -22,7 +22,7 @@ package net.sf.hajdbc;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.List;
+
 
 /**
  * Encapsulates database vendor specific SQL syntax.  
@@ -71,7 +71,7 @@ public interface Dialect
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
-	public String getCreateForeignKeyConstraintSQL(DatabaseMetaData metaData, String name, String schema, String table, String column, String foreignSchema, String foreignTable, String foreignColumn) throws SQLException;
+	public String getCreateForeignKeyConstraintSQL(DatabaseMetaData metaData, ForeignKeyConstraint foreignKeyConstraint) throws SQLException;
 
 	/**
 	 * Returns a SQL statement used to drop a foreign key constraint.
@@ -82,7 +82,7 @@ public interface Dialect
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
-	public String getDropForeignKeyConstraintSQL(DatabaseMetaData metaData, String name, String schema, String table) throws SQLException;
+	public String getDropForeignKeyConstraintSQL(DatabaseMetaData metaData, ForeignKeyConstraint constraint) throws SQLException;
 
 	/**
 	 * Returns a SQL statement used to create a unique constraint.
@@ -94,7 +94,7 @@ public interface Dialect
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
-	public String getCreateUniqueConstraintSQL(DatabaseMetaData metaData, String name, String schema, String table, List<String> columnList) throws SQLException;
+	public String getCreateUniqueConstraintSQL(DatabaseMetaData metaData, UniqueConstraint constraint) throws SQLException;
 
 	/**
 	 * Returns a SQL statement used to drop a unique constraint.
@@ -105,7 +105,7 @@ public interface Dialect
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
-	public String getDropUniqueConstraintSQL(DatabaseMetaData metaData, String name, String schema, String table) throws SQLException;
+	public String getDropUniqueConstraintSQL(DatabaseMetaData metaData, UniqueConstraint constraint) throws SQLException;
 	
 	/**
 	 * Returns the quoted name of the specified table qualified with the specified schema.

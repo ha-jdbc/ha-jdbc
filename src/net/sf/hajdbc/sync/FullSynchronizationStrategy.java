@@ -36,6 +36,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
@@ -88,7 +89,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		// Drop foreign keys from the inactive database
 		for (ForeignKeyConstraint key: ForeignKeyConstraint.collect(inactiveConnection, schemaMap))
 		{
-			String sql = dialect.getDropForeignKeyConstraintSQL(metaData, key.getName(), key.getSchema(), key.getTable());
+			String sql = dialect.getDropForeignKeyConstraintSQL(metaData, key);
 			
 			logger.debug(sql);
 			
@@ -241,7 +242,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		// Collect foreign keys from active database and create them on inactive database
 		for (ForeignKeyConstraint key: ForeignKeyConstraint.collect(activeConnection, schemaMap))
 		{
-			String sql = dialect.getCreateForeignKeyConstraintSQL(metaData, key.getName(), key.getSchema(), key.getTable(), key.getColumn(), key.getForeignSchema(), key.getForeignTable(), key.getForeignColumn());
+			String sql = dialect.getCreateForeignKeyConstraintSQL(metaData, key);
 			
 			logger.debug(sql);
 			

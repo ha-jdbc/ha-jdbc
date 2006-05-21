@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.ForeignKeyConstraint;
+import net.sf.hajdbc.UniqueConstraint;
 
 /**
  * @author  Paul Ferraro
@@ -131,23 +133,44 @@ public class DefaultDialect implements Dialect
 	/**
 	 * @see net.sf.hajdbc.Dialect#getCreateForeignKeyConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public String getCreateForeignKeyConstraintSQL(DatabaseMetaData metaData, String name, String schema, String table, String column, String foreignSchema, String foreignTable, String foreignColumn) throws SQLException
+	public String getCreateForeignKeyConstraintSQL(DatabaseMetaData metaData, ForeignKeyConstraint key) throws SQLException
 	{
-		return MessageFormat.format(this.createForeignKeyPattern(), this.quote(metaData, name), this.qualifyTable(metaData, schema, table), this.quote(metaData, column), this.qualifyTable(metaData, foreignSchema, foreignTable), this.quote(metaData, foreignColumn));
+		return MessageFormat.format(this.createForeignKeyPattern(), this.quote(metaData, key.getName()), this.qualifyTable(metaData, key.getSchema(), key.getTable()), this.joinColumns(metaData, key.getColumnList()), this.qualifyTable(metaData, key.getForeignSchema(), key.getForeignTable()), this.joinColumns(metaData, key.getForeignColumnList()));
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.Dialect#getDropForeignKeyConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public String getDropForeignKeyConstraintSQL(DatabaseMetaData metaData, String name, String schema, String table) throws SQLException
+	public String getDropForeignKeyConstraintSQL(DatabaseMetaData metaData, ForeignKeyConstraint key) throws SQLException
 	{
-		return MessageFormat.format(this.dropConstraintPattern(), this.quote(metaData, name), this.qualifyTable(metaData, schema, table));
+		return MessageFormat.format(this.dropConstraintPattern(), this.quote(metaData, key.getName()), this.qualifyTable(metaData, key.getSchema(), key.getTable()));
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.Dialect#getCreateUniqueConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String, java.util.List)
 	 */
-	public String getCreateUniqueConstraintSQL(DatabaseMetaData metaData, String name, String schema, String table, List<String> columnList) throws SQLException
+	public String getCreateUniqueConstraintSQL(DatabaseMetaData metaData, UniqueConstraint constraint) throws SQLException
+	{
+		return MessageFormat.format(this.createUnqiueKeyPattern(), this.quote(metaData, constraint.getName()), this.qualifyTable(metaData, constraint.getSchema(), constraint.getTable()), this.joinColumns(metaData, constraint.getColumnList()));
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.Dialect#getDropUniqueConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String)
+	 */
+	public String getDropUniqueConstraintSQL(DatabaseMetaData metaData, UniqueConstraint constraint) throws SQLException
+	{
+		return MessageFormat.format(this.dropConstraintPattern(), this.quote(metaData, constraint.getName()), this.qualifyTable(metaData, constraint.getSchema(), constraint.getTable()));
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#isSelectForUpdate(java.sql.DatabaseMetaData, java.lang.String)
+	 */
+	public boolean isSelectForUpdate(DatabaseMetaData metaData, String sql) throws SQLException
+	{
+		return metaData.supportsSelectForUpdate() ? this.selectForUpdatePattern.matcher(sql).find() : false;
+	}
+	
+	protected String joinColumns(DatabaseMetaData metaData, List<String> columnList) throws SQLException
 	{
 		StringBuilder builder = new StringBuilder();
 
@@ -163,23 +186,7 @@ public class DefaultDialect implements Dialect
 			}
 		}
 		
-		return MessageFormat.format(this.createUnqiueKeyPattern(), this.quote(metaData, name), this.qualifyTable(metaData, schema, table), builder.toString());
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.Dialect#getDropUniqueConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String)
-	 */
-	public String getDropUniqueConstraintSQL(DatabaseMetaData metaData, String name, String schema, String table) throws SQLException
-	{
-		return MessageFormat.format(this.dropConstraintPattern(), this.quote(metaData, name), this.qualifyTable(metaData, schema, table));
-	}
-
-	/**
-	 * @see net.sf.hajdbc.Dialect#isSelectForUpdate(java.sql.DatabaseMetaData, java.lang.String)
-	 */
-	public boolean isSelectForUpdate(DatabaseMetaData metaData, String sql) throws SQLException
-	{
-		return metaData.supportsSelectForUpdate() ? this.selectForUpdatePattern.matcher(sql).find() : false;
+		return builder.toString();
 	}
 	
 	protected String truncateTablePattern()

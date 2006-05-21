@@ -18,7 +18,7 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.sync;
+package net.sf.hajdbc;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -35,10 +35,13 @@ import java.util.Map;
  * @author  Paul Ferraro
  * @since   1.1
  */
-public class UniqueConstraint extends Constraint
+public class UniqueConstraint implements Comparable<UniqueConstraint>
 {
+	private String name;
+	private String schema;
+	private String table;
 	private List<String> columnList = new LinkedList<String>();
-	
+		
 	/**
 	 * Constructs a new UniqueConstraint.
 	 * @param name
@@ -47,15 +50,9 @@ public class UniqueConstraint extends Constraint
 	 */
 	public UniqueConstraint(String name, String schema, String table)
 	{
-		super(name, schema, table);
-	}
-	
-	/**
-	 * @param column
-	 */
-	void addColumn(String column)
-	{
-		this.columnList.add(column);
+		this.name = name;
+		this.schema = schema;
+		this.table = table;
 	}
 	
 	/**
@@ -64,6 +61,58 @@ public class UniqueConstraint extends Constraint
 	public List<String> getColumnList()
 	{
 		return this.columnList;
+	}
+	
+	/**
+	 * @return the name of this constraint
+	 */
+	public String getName()
+	{
+		return this.name;
+	}
+	
+	/**
+	 * @return the schema of this constraint
+	 */
+	public String getSchema()
+	{
+		return this.schema;
+	}
+	
+	/**
+	 * @return the table of this constraint
+	 */
+	public String getTable()
+	{
+		return this.table;
+	}
+	
+	/**
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object object)
+	{
+		UniqueConstraint key = (UniqueConstraint) object;
+		
+		return (key != null) && (key.name != null) && key.name.equals(this.name);
+	}
+	
+	/**
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode()
+	{
+		return this.name.hashCode();
+	}
+
+	/**
+	 * @see java.lang.Comparable#compareTo(T)
+	 */
+	public int compareTo(UniqueConstraint constraint)
+	{
+		return this.name.compareTo(constraint.name);
 	}
 	
 	/**
@@ -98,7 +147,7 @@ public class UniqueConstraint extends Constraint
 			
 			String column = resultSet.getString("COLUMN_NAME");
 			
-			key.addColumn(column);
+			key.getColumnList().add(column);
 		}
 		
 		resultSet.close();

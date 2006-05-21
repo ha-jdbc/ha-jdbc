@@ -41,8 +41,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationStrategy;
+import net.sf.hajdbc.UniqueConstraint;
 import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
 
 import org.slf4j.Logger;
@@ -96,7 +98,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		// Drop foreign key constraints on the inactive database
 		for (ForeignKeyConstraint key: ForeignKeyConstraint.collect(inactiveConnection, schemaMap))
 		{
-			String sql = dialect.getDropForeignKeyConstraintSQL(metaData, key.getName(), key.getSchema(), key.getTable());
+			String sql = dialect.getDropForeignKeyConstraintSQL(metaData, key);
 			
 			logger.debug(sql);
 			
@@ -148,7 +150,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 					// Drop unique constraints on the current table
 					for (UniqueConstraint constraint: UniqueConstraint.collect(inactiveConnection, schema, table, primaryKeyName))
 					{
-						String sql = dialect.getDropUniqueConstraintSQL(metaData, constraint.getName(), constraint.getSchema(), constraint.getTable());
+						String sql = dialect.getDropUniqueConstraintSQL(metaData, constraint);
 						
 						logger.debug(sql);
 						
@@ -405,7 +407,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 					// Collect unique constraints on this table from the active database and re-create them on the inactive database
 					for (UniqueConstraint constraint: UniqueConstraint.collect(activeConnection, schema, table, primaryKeyName))
 					{
-						statement.addBatch(dialect.getCreateUniqueConstraintSQL(metaData, constraint.getName(), constraint.getSchema(), constraint.getTable(), constraint.getColumnList()));
+						statement.addBatch(dialect.getCreateUniqueConstraintSQL(metaData, constraint));
 					}
 					
 					statement.executeBatch();
@@ -443,7 +445,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		// Collect foreign key constraints from the active database and create them on the inactive database
 		for (ForeignKeyConstraint key: ForeignKeyConstraint.collect(activeConnection, schemaMap))
 		{
-			statement.addBatch(dialect.getCreateForeignKeyConstraintSQL(metaData, key.getName(), key.getSchema(), key.getTable(), key.getColumn(), key.getForeignSchema(), key.getForeignTable(), key.getForeignColumn()));
+			statement.addBatch(dialect.getCreateForeignKeyConstraintSQL(metaData, key));
 		}
 		
 		statement.executeBatch();
