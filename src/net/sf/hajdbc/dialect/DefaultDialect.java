@@ -125,7 +125,7 @@ public class DefaultDialect implements Dialect
 	{
 		String quote = metaData.getIdentifierQuoteString();
 		
-		return quote + identifier + quote;
+		return identifier.startsWith(quote) ? identifier : quote + identifier + quote;
 	}
 	
 	/**
@@ -133,7 +133,7 @@ public class DefaultDialect implements Dialect
 	 */
 	public String getCreateForeignKeyConstraintSQL(DatabaseMetaData metaData, String name, String schema, String table, String column, String foreignSchema, String foreignTable, String foreignColumn) throws SQLException
 	{
-		return MessageFormat.format(this.createForeignKeyPattern(), name, this.qualifyTable(metaData, schema, table), this.quote(metaData, column), this.qualifyTable(metaData, foreignSchema, foreignTable), this.quote(metaData, foreignColumn));
+		return MessageFormat.format(this.createForeignKeyPattern(), this.quote(metaData, name), this.qualifyTable(metaData, schema, table), this.quote(metaData, column), this.qualifyTable(metaData, foreignSchema, foreignTable), this.quote(metaData, foreignColumn));
 	}
 	
 	/**
@@ -141,7 +141,7 @@ public class DefaultDialect implements Dialect
 	 */
 	public String getDropForeignKeyConstraintSQL(DatabaseMetaData metaData, String name, String schema, String table) throws SQLException
 	{
-		return MessageFormat.format(this.dropConstraintPattern(), name, this.qualifyTable(metaData, schema, table));
+		return MessageFormat.format(this.dropConstraintPattern(), this.quote(metaData, name), this.qualifyTable(metaData, schema, table));
 	}
 	
 	/**
@@ -163,7 +163,7 @@ public class DefaultDialect implements Dialect
 			}
 		}
 		
-		return MessageFormat.format(this.createUnqiueKeyPattern(), name, this.qualifyTable(metaData, schema, table), builder.toString());
+		return MessageFormat.format(this.createUnqiueKeyPattern(), this.quote(metaData, name), this.qualifyTable(metaData, schema, table), builder.toString());
 	}
 	
 	/**
@@ -171,7 +171,7 @@ public class DefaultDialect implements Dialect
 	 */
 	public String getDropUniqueConstraintSQL(DatabaseMetaData metaData, String name, String schema, String table) throws SQLException
 	{
-		return MessageFormat.format(this.dropConstraintPattern(), name, this.qualifyTable(metaData, schema, table));
+		return MessageFormat.format(this.dropConstraintPattern(), this.quote(metaData, name), this.qualifyTable(metaData, schema, table));
 	}
 
 	/**
