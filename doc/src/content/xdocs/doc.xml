@@ -692,7 +692,7 @@ Connection connection = dataSource.getConnection();
 				</ul>
 				<p>
 					In general, for unique identifier generation to function correctly, each database node within a cluster needs to independently generate the same sets of identifiers.
-					Because of the distributed nature of HA-JDBC, the execution order of 2 simulaneous requests for a new unique identifier cannot be guaranteed to be the same on each database.
+					Because of the distributed nature of HA-JDBC, the execution order of 2 simultaneous requests for a new unique identifier cannot be guaranteed to be the same on each database.
 					In other words, HA-JDBC cannot guarantee that the same identifier will be generated for each database in the cluster.
 					Another reason not to use either of these mechanisms is that they are not supported by every DBMS.
 				</p>
