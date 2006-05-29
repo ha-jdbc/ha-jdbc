@@ -31,7 +31,7 @@ import java.text.MessageFormat;
 public class PostgreSQLDialect extends DefaultDialect
 {
 	/**
-	 * Default implementation does not block INSERT statements.
+	 * Default implementation will not block INSERT statements.
 	 * Requires explicit exclusive mode table lock.
 	 * <p><em>From PostgreSQL documentation</em></p>
 	 * Unlike traditional database systems which use locks for concurrency control, PostgreSQL maintains data consistency by using a multiversion model (Multiversion Concurrency Control, MVCC).

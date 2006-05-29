@@ -44,4 +44,14 @@ public class MaxDBDialect extends DefaultDialect
 	{
 		return "TRUNCATE TABLE {0}";
 	}
+	
+	/**
+	 * ON UPDATE and deferrability clauses are not supported.
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#createForeignKeyPattern()
+	 */
+	@Override
+	protected String createForeignKeyPattern()
+	{
+		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT}}";
+	}
 }

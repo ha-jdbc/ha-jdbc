@@ -43,6 +43,16 @@ public class DerbyDialect extends DefaultDialect
 	}
 
 	/**
+	 * Deferrability clause is not supported.
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#createForeignKeyPattern()
+	 */
+	@Override
+	protected String createForeignKeyPattern()
+	{
+		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} ON UPDATE {6,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT}";
+	}
+
+	/**
 	 * @see net.sf.hajdbc.dialect.DefaultDialect#getLockTableSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String)
 	 */
 	@Override
