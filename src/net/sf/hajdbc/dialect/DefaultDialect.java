@@ -151,7 +151,7 @@ public class DefaultDialect implements Dialect
 	 */
 	public String getCreateUniqueConstraintSQL(DatabaseMetaData metaData, UniqueConstraint constraint) throws SQLException
 	{
-		return MessageFormat.format(this.createUnqiueKeyPattern(), this.quote(metaData, constraint.getName()), this.qualifyTable(metaData, constraint.getSchema(), constraint.getTable()), this.joinColumns(metaData, constraint.getColumnList()));
+		return MessageFormat.format(this.createUniqueKeyPattern(), this.quote(metaData, constraint.getName()), this.qualifyTable(metaData, constraint.getSchema(), constraint.getTable()), this.joinColumns(metaData, constraint.getColumnList()));
 	}
 	
 	/**
@@ -189,26 +189,46 @@ public class DefaultDialect implements Dialect
 		return builder.toString();
 	}
 	
+	/**
+	 * SQL-92 compatible DELETE statement
+	 * @return a <code>java.text.MessageFormat</code> pattern.
+	 */
 	protected String truncateTablePattern()
 	{
 		return "DELETE FROM {0}";
 	}
 	
+	/**
+	 * Returns a SQL-92 compatible create foreign key constraint statement pattern.
+	 * @return a <code>java.text.MessageFormat</code> pattern.
+	 */
 	protected String createForeignKeyPattern()
 	{
 		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} ON UPDATE {6,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} {7,choice,5#DEFERRABLE INITIALLY DEFERRED|6#DEFERRABLE INITIALLY IMMEDIATE|7#NOT DEFERRABLE}";
 	}
 	
-	protected String createUnqiueKeyPattern()
+	/**
+	 * Returns a SQL-92 compatible create unique constraint statement pattern.
+	 * @return a <code>java.text.MessageFormat</code> pattern.
+	 */
+	protected String createUniqueKeyPattern()
 	{
 		return "ALTER TABLE {1} ADD CONSTRAINT {0} UNIQUE ({2})";
 	}
 	
+	/**
+	 * Returns a SQL-92 compatible DROP CONSTRAINT statement pattern.
+	 * @return a <code>java.text.MessageFormat</code> pattern.
+	 */
 	protected String dropConstraintPattern()
 	{
 		return "ALTER TABLE {1} DROP CONSTRAINT {0}";
 	}
 	
+	/**
+	 * Returns a SQL-92 compatible SELECT...FOR UPDATE statement pattern.
+	 * @return a regular expression pattern.
+	 */
 	protected String selectForUpdatePattern()
 	{
 		return "SELECT\\s+.+\\s+FOR\\s+UPDATE";
