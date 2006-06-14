@@ -21,6 +21,7 @@
 package net.sf.hajdbc;
 
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 
@@ -131,4 +132,13 @@ public interface Dialect
 	 * @return true if this is a SELECT ... FOR UPDATE statement, false if it is not or if SELECT...FOR UPDATE is not supported
 	 */
 	public boolean isSelectForUpdate(DatabaseMetaData metaData, String sql) throws SQLException;
+	
+	/**
+	 * Returns the JDBC type of the specified column.
+	 * @param metaData a <code>ResultSetMetaData</code> object for a given database.
+	 * @param column a column index
+	 * @return a JDBC type
+	 * @throws SQLException if there was an error accessing meta data
+	 */
+	public int getColumnType(ResultSetMetaData metaData, int column) throws SQLException;
 }

@@ -21,7 +21,9 @@
 package net.sf.hajdbc.dialect;
 
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.text.MessageFormat;
 
 /**
@@ -43,6 +45,16 @@ public class PostgreSQLDialect extends DefaultDialect
 	public String getLockTableSQL(DatabaseMetaData metaData, String schema, String table) throws SQLException
 	{
 		return MessageFormat.format("LOCK TABLE {0} IN EXCLUSIVE MODE; SELECT 1 FROM {0}", this.qualifyTable(metaData, schema, table));
+	}
+
+	/**
+	 * PostgreSQL uses the native type OID for BLOBs.  However the driver interprets them as INTEGERs.  OID columns should really be interpretted as BLOBs.
+	 * @see net.sf.hajdbc.Dialect#getColumnType(java.sql.ResultSetMetaData, int)
+	 */
+	@Override
+	public int getColumnType(ResultSetMetaData metaData, int column) throws SQLException
+	{
+		return metaData.getColumnTypeName(column).equals("oid") ? Types.BLOB : super.getColumnType(metaData, column);
 	}
 
 	/**

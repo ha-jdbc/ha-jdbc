@@ -22,6 +22,7 @@ package net.sf.hajdbc.dialect;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Iterator;
@@ -170,6 +171,14 @@ public class DefaultDialect implements Dialect
 		return metaData.supportsSelectForUpdate() ? this.selectForUpdatePattern.matcher(sql).find() : false;
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.Dialect#getColumnType(java.sql.ResultSetMetaData, int)
+	 */
+	public int getColumnType(ResultSetMetaData metaData, int column) throws SQLException
+	{
+		return metaData.getColumnType(column);
+	}
+
 	protected String joinColumns(DatabaseMetaData metaData, List<String> columnList) throws SQLException
 	{
 		StringBuilder builder = new StringBuilder();
