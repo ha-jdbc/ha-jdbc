@@ -21,9 +21,8 @@
 package net.sf.hajdbc.sync;
 
 import java.sql.Connection;
-import java.util.List;
-import java.util.Map;
 
+import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.SynchronizationStrategy;
 
@@ -38,7 +37,7 @@ public class PassiveSynchronizationStrategy implements SynchronizationStrategy
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(Connection, Connection, Map, Dialect)
 	 */
-	public void synchronize(Connection inactiveConnection, Connection activeConnection, Map<String, List<String>> tableMap, Dialect dialect)
+	public void synchronize(Connection inactiveConnection, Connection activeConnection, DatabaseMetaDataCache metaData, Dialect dialect)
 	{
 		// Do nothing
 	}

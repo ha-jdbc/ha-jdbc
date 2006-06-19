@@ -21,24 +21,26 @@
 package net.sf.hajdbc.sync;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationStrategy;
+import net.sf.hajdbc.util.Strings;
 import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
 
 import org.slf4j.Logger;
@@ -78,22 +80,30 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(Connection, Connection, Map, Dialect)
 	 */
-	public void synchronize(Connection inactiveConnection, Connection activeConnection, Map<String, List<String>> schemaMap, Dialect dialect) throws SQLException
+	public void synchronize(Connection inactiveConnection, Connection activeConnection, DatabaseMetaDataCache metaData, Dialect dialect) throws SQLException
 	{
 		inactiveConnection.setAutoCommit(true);
 		
-		DatabaseMetaData metaData = inactiveConnection.getMetaData();
-		
 		Statement statement = inactiveConnection.createStatement();
 		
-		// Drop foreign keys from the inactive database
-		for (ForeignKeyConstraint key: ForeignKeyConstraint.collect(inactiveConnection, schemaMap))
+		Map<String, Collection<String>> schemaMap = metaData.getTables();
+		
+		// Drop foreign key constraints on the inactive database
+		for (Map.Entry<String, Collection<String>> schemaMapEntry: schemaMap.entrySet())
 		{
-			String sql = dialect.getDropForeignKeyConstraintSQL(metaData, key);
+			String schema = schemaMapEntry.getKey();
 			
-			logger.debug(sql);
-			
-			statement.addBatch(sql);
+			for (String table: schemaMapEntry.getValue())
+			{
+				for (ForeignKeyConstraint constraint: metaData.getForeignKeyConstraints(schema, table))
+				{
+					String sql = dialect.getDropForeignKeyConstraintSQL(metaData, constraint);
+					
+					logger.debug(sql);
+					
+					statement.addBatch(sql);
+				}
+			}
 		}
 		
 		statement.executeBatch();
@@ -103,15 +113,19 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		
 		try
 		{
-			for (Map.Entry<String, List<String>> schemaMapEntry: schemaMap.entrySet())
+			for (Map.Entry<String, Collection<String>> schemaMapEntry: schemaMap.entrySet())
 			{
 				String schema = schemaMapEntry.getKey();
 				
 				for (String table: schemaMapEntry.getValue())
 				{
-					String qualifiedTable = dialect.qualifyTable(metaData, schema, table);
-				
-					final String selectSQL = "SELECT * FROM " + qualifiedTable;
+					String qualifiedTable = metaData.getQualifiedTableForDML(schema, table);
+
+					Set<String> columnSet = metaData.getColumns(schema, table).keySet();
+					
+					String commaDelimitedColumns = Strings.join(columnSet, ",");
+					
+					final String selectSQL = "SELECT " + commaDelimitedColumns + " FROM " + qualifiedTable;
 					
 					final Statement selectStatement = activeConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 					selectStatement.setFetchSize(this.fetchSize);
@@ -140,35 +154,10 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 					
 					ResultSet resultSet = future.get();
 					
-					StringBuilder builder = new StringBuilder("INSERT INTO ").append(qualifiedTable).append(" (");
-		
-					ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+					String[] parameters = new String[columnSet.size()];
+					Arrays.fill(parameters, "?");
 					
-					int columns = resultSetMetaData.getColumnCount();
-					
-					for (int i = 1; i <= columns; ++i)
-					{
-						if (i > 1)
-						{
-							builder.append(", ");
-						}
-						
-						builder.append(dialect.quote(metaData, resultSetMetaData.getColumnName(i)));
-					}
-					
-					builder.append(") VALUES (");
-					
-					for (int i = 1; i <= columns; ++i)
-					{
-						if (i > 1)
-						{
-							builder.append(", ");
-						}
-						
-						builder.append("?");
-					}
-					
-					String insertSQL = builder.append(")").toString();
+					String insertSQL = "INSERT INTO " + qualifiedTable + " (" + commaDelimitedColumns + ") VALUES (" + Strings.join(Arrays.asList(parameters), ",") + ")";
 					
 					logger.debug(insertSQL);
 					
@@ -177,18 +166,23 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 					
 					while (resultSet.next())
 					{
-						for (int i = 1; i <= columns; ++i)
+						int index = 0;
+						
+						for (String column: columnSet)
 						{
-							Object object = resultSet.getObject(i);
-							int type = resultSetMetaData.getColumnType(i);
+							index += 1;
+							
+							Object object = resultSet.getObject(index);
+							
+							int type = dialect.getColumnType(metaData, schema, table, column);
 							
 							if (resultSet.wasNull())
 							{
-								insertStatement.setNull(i, type);
+								insertStatement.setNull(index, type);
 							}
 							else
 							{
-								insertStatement.setObject(i, object, type);
+								insertStatement.setObject(index, object, type);
 							}
 						}
 						
@@ -239,14 +233,22 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		
 		inactiveConnection.setAutoCommit(true);
 
-		// Collect foreign keys from active database and create them on inactive database
-		for (ForeignKeyConstraint key: ForeignKeyConstraint.collect(activeConnection, schemaMap))
+		// Collect foreign key constraints from the active database and create them on the inactive database
+		for (Map.Entry<String, Collection<String>> schemaMapEntry: schemaMap.entrySet())
 		{
-			String sql = dialect.getCreateForeignKeyConstraintSQL(metaData, key);
+			String schema = schemaMapEntry.getKey();
 			
-			logger.debug(sql);
-			
-			statement.addBatch(sql);
+			for (String table: schemaMapEntry.getValue())
+			{
+				for (ForeignKeyConstraint constraint: metaData.getForeignKeyConstraints(schema, table))
+				{
+					String sql = dialect.getCreateForeignKeyConstraintSQL(metaData, constraint);
+					
+					logger.debug(sql);
+					
+					statement.addBatch(sql);
+				}
+			}
 		}
 		
 		statement.executeBatch();

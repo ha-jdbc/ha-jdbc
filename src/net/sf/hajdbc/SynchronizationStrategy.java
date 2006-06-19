@@ -21,8 +21,6 @@
 package net.sf.hajdbc;
 
 import java.sql.Connection;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author  Paul Ferraro
@@ -40,7 +38,7 @@ public interface SynchronizationStrategy
 	 * @param dialect a Dialect instance
 	 * @throws java.sql.SQLException if synchronization fails
 	 */
-	public void synchronize(Connection inactiveConnection, Connection activeConnection, Map<String, List<String>> schemaMap, Dialect dialect) throws java.sql.SQLException;
+	public void synchronize(Connection inactiveConnection, Connection activeConnection, DatabaseMetaDataCache metaData, Dialect dialect) throws java.sql.SQLException;
 	
 	/**
 	 * Indicates whether this strategy requires table locking on active databases.
