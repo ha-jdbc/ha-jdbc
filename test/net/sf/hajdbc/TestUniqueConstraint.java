@@ -18,7 +18,7 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.sync;
+package net.sf.hajdbc;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -26,6 +26,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
+
+import net.sf.hajdbc.UniqueConstraint;
 
 import org.easymock.EasyMock;
 import org.easymock.IMocksControl;

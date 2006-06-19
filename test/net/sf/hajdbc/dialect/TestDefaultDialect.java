@@ -23,10 +23,10 @@ package net.sf.hajdbc.dialect;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.List;
 
 import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.ForeignKeyConstraint;
+import net.sf.hajdbc.UniqueConstraint;
 
 import org.easymock.EasyMock;
 import org.easymock.IMocksControl;
@@ -136,13 +136,17 @@ public class TestDefaultDialect
 	 */
 	public void testGetCreateForeignKeyConstraintSQL()
 	{
-		String name = "fk_name";
-		String schema = "schema";
-		String table = "table";
-		String column = "column";
-		String foreignSchema = "other_schema";
-		String foreignTable = "other_table";
-		String foreignColumn = "other_column";
+		ForeignKeyConstraint constraint = new ForeignKeyConstraint("fk_name", "schema", "table");
+		constraint.getColumnList().add("column1");
+		constraint.getColumnList().add("column2");
+		constraint.setForeignSchema("other_schema");
+		constraint.setForeignTable("other_table");
+		constraint.getForeignColumnList().add("other_column1");
+		constraint.getForeignColumnList().add("other_column2");
+		constraint.setUpdateRule(DatabaseMetaData.importedKeyNoAction);
+		constraint.setDeleteRule(DatabaseMetaData.importedKeyNoAction);
+		constraint.setDeferrability(DatabaseMetaData.importedKeyNotDeferrable);
+
 		String quote = "'";
 		
 		try
@@ -154,11 +158,11 @@ public class TestDefaultDialect
 			
 			this.control.replay();
 			
-			String sql = this.dialect.getCreateForeignKeyConstraintSQL(this.metaData, name, schema, table, column, foreignSchema, foreignTable, foreignColumn);
+			String sql = this.dialect.getCreateForeignKeyConstraintSQL(this.metaData, constraint);
 			
 			this.control.verify();
 			
-			assert sql.equals("ALTER TABLE 'schema'.'table' ADD CONSTRAINT fk_name FOREIGN KEY ('column') REFERENCES 'other_schema'.'other_table' ('other_column')") : sql;
+			assert sql.equals("ALTER TABLE 'schema'.'table' ADD CONSTRAINT fk_name FOREIGN KEY ('column1','column2') REFERENCES 'other_schema'.'other_table' ('other_column1','other_column2') ON DELETE NO ACTION ON UPDATE NO ACTION NOT DEFERRED") : sql;
 		}
 		catch (SQLException e)
 		{
@@ -171,9 +175,7 @@ public class TestDefaultDialect
 	 */
 	public void testGetDropForeignKeyConstraintSQL()
 	{
-		String name = "fk_name";
-		String schema = "schema";
-		String table = "table";
+		ForeignKeyConstraint constraint = new ForeignKeyConstraint("fk_name", "schema", "table");
 		String quote = "'";
 		
 		try
@@ -183,7 +185,7 @@ public class TestDefaultDialect
 			
 			this.control.replay();
 			
-			String sql = this.dialect.getDropForeignKeyConstraintSQL(this.metaData, name, schema, table);
+			String sql = this.dialect.getDropForeignKeyConstraintSQL(this.metaData, constraint);
 			
 			this.control.verify();
 			
@@ -200,10 +202,9 @@ public class TestDefaultDialect
 	 */
 	public void testGetCreateUniqueConstraintSQL()
 	{
-		String name = "uk_name";
-		String schema = "schema";
-		String table = "table";
-		List<String> columnList = Arrays.asList(new String[] {"column1", "column2"});
+		UniqueConstraint constraint = new UniqueConstraint("uk_name", "schema", "table");
+		constraint.getColumnList().add("column1");
+		constraint.getColumnList().add("column2");
 		String quote = "'";
 		
 		try
@@ -214,7 +215,7 @@ public class TestDefaultDialect
 			
 			this.control.replay();
 			
-			String sql = this.dialect.getCreateUniqueConstraintSQL(this.metaData, name, schema, table, columnList);
+			String sql = this.dialect.getCreateUniqueConstraintSQL(this.metaData, constraint);
 			
 			this.control.verify();
 			
@@ -231,9 +232,7 @@ public class TestDefaultDialect
 	 */
 	public void testGetDropUniqueConstraintSQL()
 	{
-		String name = "uk_name";
-		String schema = "schema";
-		String table = "table";
+		UniqueConstraint constraint = new UniqueConstraint("uk_name", "schema", "table");
 		String quote = "'";
 		
 		try
@@ -243,7 +242,7 @@ public class TestDefaultDialect
 			
 			this.control.replay();
 			
-			String sql = this.dialect.getDropForeignKeyConstraintSQL(this.metaData, name, schema, table);
+			String sql = this.dialect.getDropUniqueConstraintSQL(this.metaData, constraint);
 			
 			this.control.verify();
 			

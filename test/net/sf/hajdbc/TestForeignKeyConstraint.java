@@ -18,7 +18,7 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.sync;
+package net.sf.hajdbc;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -26,6 +26,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
+
+import net.sf.hajdbc.ForeignKeyConstraint;
 
 import org.easymock.EasyMock;
 import org.easymock.IMocksControl;
@@ -65,13 +67,25 @@ public class TestForeignKeyConstraint
 			
 			EasyMock.expect(this.resultSet.getString("FK_NAME")).andReturn("fk");
 			
-			EasyMock.expect(this.resultSet.getString("FKCOLUMN_NAME")).andReturn("fk_column");
+			EasyMock.expect(this.resultSet.getString("FKCOLUMN_NAME")).andReturn("fk_column1");
 			
 			EasyMock.expect(this.resultSet.getString("PKTABLE_SCHEM")).andReturn("pk_schema");
 			
 			EasyMock.expect(this.resultSet.getString("PKTABLE_NAME")).andReturn("pk_table");
 
-			EasyMock.expect(this.resultSet.getString("PKCOLUMN_NAME")).andReturn("pk_column");
+			EasyMock.expect(this.resultSet.getString("PKCOLUMN_NAME")).andReturn("pk_column1");
+
+			EasyMock.expect(this.resultSet.next()).andReturn(true);
+			
+			EasyMock.expect(this.resultSet.getString("FK_NAME")).andReturn("fk");
+			
+			EasyMock.expect(this.resultSet.getString("FKCOLUMN_NAME")).andReturn("fk_column2");
+			
+			EasyMock.expect(this.resultSet.getString("PKTABLE_SCHEM")).andReturn("pk_schema");
+			
+			EasyMock.expect(this.resultSet.getString("PKTABLE_NAME")).andReturn("pk_table");
+
+			EasyMock.expect(this.resultSet.getString("PKCOLUMN_NAME")).andReturn("pk_column2");
 
 			EasyMock.expect(this.resultSet.next()).andReturn(false);
 			
@@ -91,10 +105,14 @@ public class TestForeignKeyConstraint
 			assert constraint.getName().equals("fk") : constraint.getName();
 			assert constraint.getSchema().equals("fk_schema") : constraint.getSchema();
 			assert constraint.getTable().equals("fk_table") : constraint.getTable();
-			assert constraint.getColumn().equals("fk_column") : constraint.getColumn();
+			assert constraint.getColumnList().size() == 2 : constraint.getColumnList().size();
+			assert constraint.getColumnList().get(0).equals("fk_column1") : constraint.getColumnList().get(0);
+			assert constraint.getColumnList().get(1).equals("fk_column2") : constraint.getColumnList().get(1);
 			assert constraint.getForeignSchema().equals("pk_schema") : constraint.getForeignSchema();
 			assert constraint.getForeignTable().equals("pk_table") : constraint.getForeignTable();
-			assert constraint.getForeignColumn().equals("pk_column") : constraint.getForeignColumn();
+			assert constraint.getForeignColumnList().size() == 2 : constraint.getForeignColumnList().size();
+			assert constraint.getForeignColumnList().get(0).equals("pk_column1") : constraint.getForeignColumnList().get(0);
+			assert constraint.getForeignColumnList().get(1).equals("pk_column2") : constraint.getForeignColumnList().get(1);
 		}
 		catch (SQLException e)
 		{
@@ -117,13 +135,25 @@ public class TestForeignKeyConstraint
 			
 			EasyMock.expect(this.resultSet.getString("FK_NAME")).andReturn("fk");
 			
-			EasyMock.expect(this.resultSet.getString("FKCOLUMN_NAME")).andReturn("fk_column");
+			EasyMock.expect(this.resultSet.getString("FKCOLUMN_NAME")).andReturn("fk_column1");
 			
 			EasyMock.expect(this.resultSet.getString("PKTABLE_SCHEM")).andReturn(null);
 			
 			EasyMock.expect(this.resultSet.getString("PKTABLE_NAME")).andReturn("pk_table");
 
-			EasyMock.expect(this.resultSet.getString("PKCOLUMN_NAME")).andReturn("pk_column");
+			EasyMock.expect(this.resultSet.getString("PKCOLUMN_NAME")).andReturn("pk_column1");
+
+			EasyMock.expect(this.resultSet.next()).andReturn(true);
+			
+			EasyMock.expect(this.resultSet.getString("FK_NAME")).andReturn("fk");
+			
+			EasyMock.expect(this.resultSet.getString("FKCOLUMN_NAME")).andReturn("fk_column2");
+			
+			EasyMock.expect(this.resultSet.getString("PKTABLE_SCHEM")).andReturn(null);
+			
+			EasyMock.expect(this.resultSet.getString("PKTABLE_NAME")).andReturn("pk_table");
+
+			EasyMock.expect(this.resultSet.getString("PKCOLUMN_NAME")).andReturn("pk_column2");
 
 			EasyMock.expect(this.resultSet.next()).andReturn(false);
 			
@@ -143,10 +173,14 @@ public class TestForeignKeyConstraint
 			assert constraint.getName().equals("fk") : constraint.getName();
 			assert constraint.getSchema() == null : constraint.getSchema();
 			assert constraint.getTable().equals("fk_table") : constraint.getTable();
-			assert constraint.getColumn().equals("fk_column") : constraint.getColumn();
+			assert constraint.getColumnList().size() == 2 : constraint.getColumnList().size();
+			assert constraint.getColumnList().get(0).equals("fk_column1") : constraint.getColumnList().get(0);
+			assert constraint.getColumnList().get(1).equals("fk_column2") : constraint.getColumnList().get(1);
 			assert constraint.getForeignSchema() == null : constraint.getForeignSchema();
 			assert constraint.getForeignTable().equals("pk_table") : constraint.getForeignTable();
-			assert constraint.getForeignColumn().equals("pk_column") : constraint.getForeignColumn();
+			assert constraint.getForeignColumnList().size() == 2 : constraint.getForeignColumnList().size();
+			assert constraint.getForeignColumnList().get(0).equals("pk_column1") : constraint.getForeignColumnList().get(0);
+			assert constraint.getForeignColumnList().get(1).equals("pk_column2") : constraint.getForeignColumnList().get(1);
 		}
 		catch (SQLException e)
 		{
@@ -159,7 +193,7 @@ public class TestForeignKeyConstraint
 	 */
 	public void testHashCode()
 	{
-		ForeignKeyConstraint key = new ForeignKeyConstraint("test", null, null, null, null, null, null);
+		ForeignKeyConstraint key = new ForeignKeyConstraint("test", null, null);
 		
 		assert "test".hashCode() == key.hashCode();
 	}
@@ -169,9 +203,9 @@ public class TestForeignKeyConstraint
 	 */
 	public void testEqualsObject()
 	{
-		ForeignKeyConstraint key1 = new ForeignKeyConstraint("test", "", "", "", "", "", "");
-		ForeignKeyConstraint key2 = new ForeignKeyConstraint("test", null, null, null, null, null, null);
-		ForeignKeyConstraint key3 = new ForeignKeyConstraint("testing", null, null, null, null, null, null);
+		ForeignKeyConstraint key1 = new ForeignKeyConstraint("test", "", "");
+		ForeignKeyConstraint key2 = new ForeignKeyConstraint("test", null, null);
+		ForeignKeyConstraint key3 = new ForeignKeyConstraint("testing", null, null);
 		
 		assert key1.equals(key2);
 		assert !key1.equals(key3);
