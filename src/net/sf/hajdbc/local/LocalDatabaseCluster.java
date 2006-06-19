@@ -21,15 +21,12 @@
 package net.sf.hajdbc.local;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.Driver;
-import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,8 +37,6 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -55,7 +50,9 @@ import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterFactory;
+import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.LockManager;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SQLException;
 import net.sf.hajdbc.SynchronizationStrategy;
@@ -83,6 +80,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	private String id;
 	private Balancer balancer;
 	private Dialect dialect;
+	private DatabaseMetaDataCache databaseMetaDataCache;
 	private String defaultSynchronizationStrategyId;
 	private String failureDetectionSchedule;
 	private String autoActivationSchedule;
@@ -96,23 +94,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	private ExecutorService transactionalExecutor;
 	private ExecutorService nonTransactionalExecutor;
 	private CronThreadPoolExecutor cronExecutor = new CronThreadPoolExecutor(2);
-	private ReadWriteLock lock = createReadWriteLock();
-	
-	/**
-	 * Work around for missing constructor in backport-util-concurrent package.
-	 * @return ReadWriteLock implementation
-	 */
-	private static ReadWriteLock createReadWriteLock()
-	{
-		try
-		{
-			return new ReentrantReadWriteLock(true);
-		}
-		catch (NoSuchMethodError e)
-		{
-			return new ReentrantReadWriteLock();
-		}
-	}
+	private LockManager lockManager = new LocalLockManager();
 	
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#loadState()
@@ -409,19 +391,21 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#readLock()
+	 * @see net.sf.hajdbc.DatabaseCluster#getDatabaseMetaDataCache(java.sql.Connection)
 	 */
-	public Lock readLock()
+	public DatabaseMetaDataCache getDatabaseMetaDataCache(Connection connection)
 	{
-		return this.lock.readLock();
+		this.databaseMetaDataCache.setConnection(connection);
+		
+		return this.databaseMetaDataCache;
 	}
-	
+
 	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#writeLock()
+	 * @see net.sf.hajdbc.DatabaseCluster#getLockManager()
 	 */
-	public Lock writeLock()
+	public LockManager getLockManager()
 	{
-		return this.lock.writeLock();
+		return this.lockManager;
 	}
 	
 	/**
@@ -572,6 +556,8 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			}
 		}
 		
+		this.flushMetaDataCache();
+		
 		this.nonTransactionalExecutor = new ThreadPoolExecutor(this.minThreads, this.maxThreads, this.maxIdle, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new ThreadPoolExecutor.CallerRunsPolicy());
 		
 		this.transactionalExecutor = this.transaction.equals(Transaction.XA) ? new SynchronousExecutor() : this.nonTransactionalExecutor;
@@ -597,6 +583,40 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		this.transactionalExecutor.shutdownNow();
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#flushMetaDataCache()
+	 */
+	public void flushMetaDataCache()
+	{
+		Connection connection = null;
+		
+		Database database = this.balancer.next();
+		
+		try
+		{
+			connection = database.connect(this.connectionFactoryMap.get(database));
+			
+			this.databaseMetaDataCache.setConnection(connection);
+			
+			this.databaseMetaDataCache.flush();
+		}
+		catch (java.sql.SQLException e)
+		{
+			throw new IllegalStateException(e.toString(), e);
+		}
+		finally
+		{
+			try
+			{
+				connection.close();
+			}
+			catch (java.sql.SQLException e)
+			{
+				logger.warn(e.toString(), e);
+			}
+		}
+	}
+
 	/**
 	 * @see java.lang.Object#toString()
 	 */
@@ -724,7 +744,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			return false;
 		}
 		
-		Lock lock = this.writeLock();
+		Lock lock = this.lockManager.writeLock(LockManager.GLOBAL);
 		
 		lock.lockInterruptibly();
 		
@@ -761,34 +781,12 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			Map<Database, ?> connectionFactoryMap = this.getConnectionFactoryMap();
 			
 			inactiveConnection = inactiveDatabase.connect(connectionFactoryMap.get(inactiveDatabase));
-			
-			Map<String, List<String>> schemaMap = new HashMap<String, List<String>>();
-			
-			DatabaseMetaData metaData = inactiveConnection.getMetaData();
-
-			ResultSet resultSet = metaData.getTables(null, null, "%", new String[] { "TABLE" });
-			
-			while (resultSet.next())
-			{
-				String table = resultSet.getString("TABLE_NAME");
-				String schema = resultSet.getString("TABLE_SCHEM");
-
-				List<String> tableList = schemaMap.get(schema);
-				
-				if (tableList == null)
-				{
-					tableList = new LinkedList<String>();
-					
-					schemaMap.put(schema, tableList);
-				}
-				
-				tableList.add(table);
-			}
-			
-			resultSet.close();
-
 			activeConnection = activeDatabase.connect(connectionFactoryMap.get(activeDatabase));
 
+			DatabaseMetaDataCache metaData = this.getDatabaseMetaDataCache(activeConnection);
+
+			Map<String, Collection<String>> schemaMap = metaData.getTables();
+			
 			Dialect dialect = this.getDialect();
 			
 			if (strategy.requiresTableLocking())
@@ -809,7 +807,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 					
 					Statement statement = connection.createStatement();
 					
-					for (Map.Entry<String, List<String>> schemaMapEntry: schemaMap.entrySet())
+					for (Map.Entry<String, Collection<String>> schemaMapEntry: schemaMap.entrySet())
 					{
 						String schema = schemaMapEntry.getKey();
 						
@@ -845,7 +843,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			
 			logger.info(Messages.getMessage(Messages.DATABASE_SYNC_START, inactiveDatabase, this));
 
-			strategy.synchronize(inactiveConnection, activeConnection, schemaMap, dialect);
+			strategy.synchronize(inactiveConnection, activeConnection, metaData, dialect);
 			
 			logger.info(Messages.getMessage(Messages.DATABASE_SYNC_END, inactiveDatabase, this));
 	
@@ -853,7 +851,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			
 			if (strategy.requiresTableLocking())
 			{
-				logger.info(Messages.getMessage(Messages.TABLE_LOCK_ACQUIRE));
+				logger.info(Messages.getMessage(Messages.TABLE_LOCK_RELEASE));
 				
 				// Release table locks
 				this.rollback(connectionList);

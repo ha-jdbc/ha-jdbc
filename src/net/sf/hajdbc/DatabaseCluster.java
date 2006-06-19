@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 
@@ -118,18 +119,11 @@ public interface DatabaseCluster extends DatabaseClusterMBean
 	public Dialect getDialect();
 	
 	/**
-	 * Returns a Lock that can acquire a read lock on this database cluster.
-	 * @return a read lock
-	 * @since 1.1
+	 * Returns a LockManager capable of acquiring named read/write locks on the specific objects in this database cluster.
+	 * @return a LockManager implementation
+	 * @since 1.2
 	 */
-	public Lock readLock();
-	
-	/**
-	 * Returns a Lock that can acquire a write lock on this database cluster.
-	 * @return a write lock
-	 * @since 1.1
-	 */
-	public Lock writeLock();
+	public LockManager getLockManager();
 	
 	/**
 	 * Starts this database cluster.
@@ -143,4 +137,12 @@ public interface DatabaseCluster extends DatabaseClusterMBean
 	 * @since 1.1
 	 */
 	public void stop();
+	
+	/**
+	 * 
+	 * @param connection
+	 * @return
+	 * @since 1.2
+	 */
+	public DatabaseMetaDataCache getDatabaseMetaDataCache(Connection connection);
 }
