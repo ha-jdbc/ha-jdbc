@@ -26,6 +26,7 @@ import java.util.Iterator;
 /**
  * A set of String utilities.
  * @author Paul Ferraro
+ * @since 1.2
  */
 public final class Strings
 {
