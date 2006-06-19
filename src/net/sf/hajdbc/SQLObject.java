@@ -242,7 +242,7 @@ public class SQLObject<E, P>
 		Map<Database, T> resultMap = new TreeMap<Database, T>();
 		SortedMap<Database, java.sql.SQLException> exceptionMap = new TreeMap<Database, java.sql.SQLException>();
 		
-		Lock lock = this.databaseCluster.readLock();
+		Lock lock = this.databaseCluster.getLockManager().readLock(LockManager.GLOBAL);
 		
 		lock.lock();
 		
@@ -337,7 +337,7 @@ public class SQLObject<E, P>
 	{
 		Map<Database, T> resultMap = new TreeMap<Database, T>();
 
-		Lock lock = this.databaseCluster.readLock();
+		Lock lock = this.databaseCluster.getLockManager().readLock(LockManager.GLOBAL);
 
 		lock.lock();
 		
