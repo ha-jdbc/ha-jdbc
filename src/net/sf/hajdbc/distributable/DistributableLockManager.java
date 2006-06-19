@@ -32,6 +32,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 
 import net.sf.hajdbc.LockManager;
+import net.sf.hajdbc.Messages;
 
 import org.jgroups.Channel;
 import org.jgroups.ChannelException;
@@ -130,7 +131,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 			
 			if (!response.wasReceived())
 			{
-				throw new ChannelException("No response received from " + response.getSender());
+				throw new ChannelException(Messages.getMessage(Messages.VOTE_NO_RESPONSE, response.getSender()));
 			}
 			
 			Object value = response.getValue();
@@ -139,12 +140,12 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 
 			if (Throwable.class.isInstance(value))
 			{
-				throw new ChannelException("Faulty response received from " + response.getSender(), Throwable.class.cast(value));
+				throw new ChannelException(Messages.getMessage(Messages.VOTE_ERROR_RESPONSE, response.getSender()), Throwable.class.cast(value));
 			}
 			
 			if (!VoteResult.class.isInstance(value))
 			{
-				throw new ChannelException("Unexpected response [" + value.getClass().getName() + "] received from " + response.getSender());
+				throw new ChannelException(Messages.getMessage(Messages.VOTE_INVALID_RESPONSE, response.getSender(), value.getClass().getName()));
 			}
 			
 			VoteResult result = VoteResult.class.cast(value);
