@@ -110,6 +110,46 @@ public class ForeignKeyConstraint extends UniqueConstraint
 	}
 
 	/**
+	 * @param deferrability The deferrability to set.
+	 */
+	public void setDeferrability(int deferrability)
+	{
+		this.deferrability = deferrability;
+	}
+
+	/**
+	 * @param deleteRule The deleteRule to set.
+	 */
+	public void setDeleteRule(int deleteRule)
+	{
+		this.deleteRule = deleteRule;
+	}
+
+	/**
+	 * @param foreignSchema The foreignSchema to set.
+	 */
+	public void setForeignSchema(String foreignSchema)
+	{
+		this.foreignSchema = foreignSchema;
+	}
+
+	/**
+	 * @param foreignTable The foreignTable to set.
+	 */
+	public void setForeignTable(String foreignTable)
+	{
+		this.foreignTable = foreignTable;
+	}
+
+	/**
+	 * @param updateRule The updateRule to set.
+	 */
+	public void setUpdateRule(int updateRule)
+	{
+		this.updateRule = updateRule;
+	}
+
+	/**
 	 * Collects all foreign keys from the specified tables using the specified connection. 
 	 * @param connection a database connection
 	 * @param schemaMap a map of schema name to list of table names
