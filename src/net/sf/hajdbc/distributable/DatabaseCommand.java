@@ -77,4 +77,13 @@ public abstract class DatabaseCommand implements Externalizable
 	 * @throws java.sql.SQLException if command failed to execute
 	 */
 	public abstract void execute(DatabaseCluster databaseCluster);
+	
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString()
+	{
+		return this.getClass().getName() + " [" + this.databaseId + "]";
+	}
 }
