@@ -22,13 +22,13 @@ package net.sf.hajdbc.distributable;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.concurrent.locks.Lock;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseClusterFactory;
+import net.sf.hajdbc.LockManager;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SQLException;
 import net.sf.hajdbc.local.LocalDatabaseCluster;
@@ -53,7 +53,7 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 	static Logger logger = LoggerFactory.getLogger(DistributableDatabaseCluster.class);
 	
 	private NotificationBus notificationBus;
-	private DistributableLock lock;
+	private DistributableLockManager lockManager;
 	private DistributableDatabaseClusterBuilder builder;
 	
 	/**
@@ -102,7 +102,7 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 	 */
 	public void handleNotification(Serializable command)
 	{
-		logger.info(Messages.getMessage(Messages.DATABASE_COMMAND_RECEIVED, command.getClass().getName()));
+		logger.info(Messages.getMessage(Messages.DATABASE_COMMAND_RECEIVED, command));
 		
 		DatabaseCommand.class.cast(command).execute(this);
 	}
@@ -160,10 +160,10 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 			this.notificationBus.setConsumer(this);
 			this.notificationBus.start();
 			
-			this.lock = new DistributableLock(this.getId() + "-lock", this.builder.getProtocol(), this.builder.getTimeout(), super.writeLock());
+			this.lockManager = new DistributableLockManager(this.getId() + "-lock", this.builder.getProtocol(), this.builder.getTimeout(), super.getLockManager());
 			
 			this.register(this.notificationBus.getChannel());
-			this.register(this.lock.getChannel());
+			this.register(this.lockManager.getChannel());
 
 			super.start();
 		}
@@ -191,7 +191,7 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 	@Override
 	public void stop()
 	{
-		this.lock.getChannel().close();
+		this.lockManager.stop();
 		
 		this.notificationBus.stop();
 		
@@ -199,11 +199,11 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.local.LocalDatabaseCluster#writeLock()
+	 * @see net.sf.hajdbc.local.LocalDatabaseCluster#getLockManager()
 	 */
 	@Override
-	public Lock writeLock()
+	public LockManager getLockManager()
 	{
-		return this.lock;
+		return this.lockManager;
 	}
 }
