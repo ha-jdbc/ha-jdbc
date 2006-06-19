@@ -180,7 +180,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 						for (int i = 1; i <= columns; ++i)
 						{
 							Object object = resultSet.getObject(i);
-							int type = resultSetMetaData.getColumnType(i);
+							int type = dialect.getColumnType(resultSetMetaData, i);
 							
 							if (resultSet.wasNull())
 							{

@@ -161,23 +161,28 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 					statement.clearBatch();
 					
 					// Retrieve table rows in primary key order
-					StringBuilder builder = new StringBuilder("SELECT * FROM ").append(qualifiedTable).append(" ORDER BY ");
+					StringBuilder selectSQLBuilder = new StringBuilder("SELECT * FROM ").append(qualifiedTable).append(" ORDER BY ");
+					StringBuilder whereClauseBuilder = new StringBuilder(" WHERE ");
 					
 					Iterator<String> primaryKeyColumns = primaryKeyColumnMap.values().iterator();
 					
 					while (primaryKeyColumns.hasNext())
 					{
-						builder.append(dialect.quote(metaData, primaryKeyColumns.next()));
+						String column = dialect.quote(metaData, primaryKeyColumns.next());
+						
+						selectSQLBuilder.append(column);
+						whereClauseBuilder.append(column).append(" = ?");
 						
 						if (primaryKeyColumns.hasNext())
 						{
-							builder.append(", ");
+							selectSQLBuilder.append(", ");
+							whereClauseBuilder.append(" AND ");
 						}
 					}
 					
-					final String selectSQL = builder.toString();
+					final String selectSQL = selectSQLBuilder.toString();
 					
-					final Statement inactiveStatement = inactiveConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+					final Statement inactiveStatement = inactiveConnection.createStatement();
 					inactiveStatement.setFetchSize(this.fetchSize);
 		
 					logger.debug(selectSQL);
@@ -199,29 +204,16 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 
 					ResultSet inactiveResultSet = future.get();
 					
-					// Construct DELETE SQL
-					builder = new StringBuilder("DELETE FROM ").append(qualifiedTable).append(" WHERE ");
-					
 					// Create set of primary key columns
-					primaryKeyColumns = primaryKeyColumnMap.values().iterator();
-					
-					while (primaryKeyColumns.hasNext())
+					for (String primaryKeyColumn: primaryKeyColumnMap.values())
 					{
-						String primaryKeyColumn = primaryKeyColumns.next();
-						
 						primaryKeyColumnIndexSet.add(activeResultSet.findColumn(primaryKeyColumn));
-						
-						builder.append(dialect.quote(metaData, primaryKeyColumn)).append(" = ?");
-						
-						if (primaryKeyColumns.hasNext())
-						{
-							builder.append(" AND ");
-						}
 					}
 					
-					String deleteSQL = builder.toString();
+					// Construct DELETE SQL
+					String deleteSQL = "DELETE FROM " + qualifiedTable + whereClauseBuilder;
 					
-					logger.debug(deleteSQL.toString());
+					logger.debug(deleteSQL);
 					
 					PreparedStatement deleteStatement = inactiveConnection.prepareStatement(deleteSQL);
 					
@@ -230,37 +222,51 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 					int[] types = new int[columns + 1];
 					
 					// Construct INSERT SQL
-					builder = new StringBuilder("INSERT INTO ").append(qualifiedTable).append(" (");
+					StringBuilder insertSQLBuilder = new StringBuilder("INSERT INTO ").append(qualifiedTable).append(" (");
+					StringBuilder updateSQLBuilder = new StringBuilder("UPDATE ").append(qualifiedTable).append(" SET");
 					
 					for (int i = 1; i <= columns; ++i)
 					{
-						types[i] = resultSetMetaData.getColumnType(i);
+						types[i] = dialect.getColumnType(resultSetMetaData, i);
+
+						String column = dialect.quote(metaData, resultSetMetaData.getColumnName(i));
 						
 						if (i > 1)
 						{
-							builder.append(", ");
+							insertSQLBuilder.append(", ");
 						}
 						
-						builder.append(dialect.quote(metaData, resultSetMetaData.getColumnName(i)));
+						insertSQLBuilder.append(column);
+						
+						if (!primaryKeyColumnIndexSet.contains(i))
+						{
+							updateSQLBuilder.append(' ').append(column).append(" = ?,");
+						}
 					}
-		
-					builder.append(") VALUES (");
+					
+					insertSQLBuilder.append(") VALUES (");
 		
 					for (int i = 1; i <= columns; ++i)
 					{
 						if (i > 1)
 						{
-							builder.append(", ");
+							insertSQLBuilder.append(", ");
 						}
 						
-						builder.append("?");
+						insertSQLBuilder.append("?");
 					}
 		
-					String insertSQL = builder.append(")").toString();
+					String insertSQL = insertSQLBuilder.append(")").toString();
 					
 					logger.debug(insertSQL);
 					
 					PreparedStatement insertStatement = inactiveConnection.prepareStatement(insertSQL);
+
+					String updateSQL = updateSQLBuilder.deleteCharAt(updateSQLBuilder.length() - 1).append(whereClauseBuilder).toString();
+					
+					logger.debug(updateSQL);
+					
+					PreparedStatement updateStatement = inactiveConnection.prepareStatement(updateSQL);
 					
 					boolean hasMoreActiveResults = activeResultSet.next();
 					boolean hasMoreInactiveResults = inactiveResultSet.next();
@@ -338,39 +344,39 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 						}
 						else // if (compare == 0)
 						{
+							updateStatement.clearParameters();
+							
+							int index = 0;
 							boolean updated = false;
 							
 							for (int i = 1; i <= columns; ++i)
 							{
 								if (!primaryKeyColumnIndexSet.contains(i))
 								{
+									index += 1;
+									
 									Object activeObject = activeResultSet.getObject(i);
 									Object inactiveObject = inactiveResultSet.getObject(i);
 									
 									if (activeResultSet.wasNull())
 									{
-										if (!inactiveResultSet.wasNull())
-										{
-											inactiveResultSet.updateNull(i);
-											
-											updated = true;
-										}
+										updateStatement.setNull(index, types[i]);
+										
+										updated |= !inactiveResultSet.wasNull();
 									}
 									else
 									{
-										if (inactiveResultSet.wasNull() || !equals(activeObject, inactiveObject))
-										{
-											inactiveResultSet.updateObject(i, activeObject);
-											
-											updated = true;
-										}
+										updateStatement.setObject(index, activeObject, types[i]);
+										
+										updated |= inactiveResultSet.wasNull();
+										updated |= !equals(activeObject, inactiveObject);
 									}
 								}
 							}
 							
 							if (updated)
 							{
-								inactiveResultSet.updateRow();
+								updateStatement.addBatch();
 								
 								updateCount += 1;
 							}
@@ -400,6 +406,13 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 					}
 					
 					insertStatement.close();
+					
+					if (updateCount > 0)
+					{
+						updateStatement.executeBatch();
+					}
+					
+					updateStatement.close();
 					
 					inactiveStatement.close();
 					activeStatement.close();
