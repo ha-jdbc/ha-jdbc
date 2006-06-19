@@ -111,4 +111,9 @@ public interface DatabaseClusterMBean
 	 * @throws IllegalStateException if database is still active, or if mbean unregistration fails.
 	 */
 	public void remove(String databaseId);
+	
+	/**
+	 * Flushes this cluster's cache of DatabaseMetaData.
+	 */
+	public void flushMetaDataCache();
 }
