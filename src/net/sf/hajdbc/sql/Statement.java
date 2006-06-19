@@ -25,6 +25,7 @@ import java.sql.SQLWarning;
 import java.util.Map;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Operation;
 import net.sf.hajdbc.SQLObject;
 
@@ -717,6 +718,8 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 	
 	protected boolean isSelectForUpdate(String sql) throws SQLException
 	{
-		return this.getDatabaseCluster().getDialect().isSelectForUpdate(this.getConnection().getMetaData(), sql);
+		DatabaseCluster databaseCluster = this.getDatabaseCluster();
+		
+		return databaseCluster.getDialect().isSelectForUpdate(databaseCluster.getDatabaseMetaDataCache(this.getConnection()), sql);
 	}
 }
