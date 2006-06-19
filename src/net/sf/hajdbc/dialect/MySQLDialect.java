@@ -21,27 +21,28 @@
 package net.sf.hajdbc.dialect;
 
 /**
- * Dialect for DB2 (commercial).
- * @author  Paul Ferraro
- * @since   1.1
+ * Dialect for <a href="http://www.mysql.com/products/database/mysql/">MySQL</a>
+ * @author Paul Ferraro
  */
-public class DB2Dialect extends DefaultDialect
+public class MySQLDialect extends DefaultDialect
 {
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#getSimpleSQL()
+	 * MySQL does not support sequences.
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#parseSequence(java.lang.String)
 	 */
 	@Override
-	public String getSimpleSQL()
+	public String parseSequence(String sql)
 	{
-		return "SELECT 1 FROM SYSIBM.SYSDUMMY";
+		return null;
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#sequencePattern()
+	 * Deferrability clause is not supported.
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#createForeignKeyFormat()
 	 */
 	@Override
-	protected String sequencePattern()
+	protected String createForeignKeyFormat()
 	{
-		return "(?:(?:NEXT)|(?:PREV))VAL\\s+FOR\\s+(\\S+)";
+		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} ON UPDATE {6,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT}";
 	}
 }

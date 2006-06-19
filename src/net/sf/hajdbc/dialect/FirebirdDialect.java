@@ -21,27 +21,17 @@
 package net.sf.hajdbc.dialect;
 
 /**
- * Dialect for DB2 (commercial).
- * @author  Paul Ferraro
- * @since   1.1
+ * Dialect for <a href="firebird.sourceforge.net">Firebird</a>.
+ * @author Paul Ferraro
  */
-public class DB2Dialect extends DefaultDialect
+public class FirebirdDialect extends DefaultDialect
 {
-	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#getSimpleSQL()
-	 */
-	@Override
-	public String getSimpleSQL()
-	{
-		return "SELECT 1 FROM SYSIBM.SYSDUMMY";
-	}
-
 	/**
 	 * @see net.sf.hajdbc.dialect.DefaultDialect#sequencePattern()
 	 */
 	@Override
 	protected String sequencePattern()
 	{
-		return "(?:(?:NEXT)|(?:PREV))VAL\\s+FOR\\s+(\\S+)";
+		return "GEN_ID\\s*\\(\\s*(\\S+)\\s*,\\s*\\d+\\s*\\)";
 	}
 }

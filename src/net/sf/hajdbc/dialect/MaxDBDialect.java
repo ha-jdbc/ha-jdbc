@@ -21,7 +21,7 @@
 package net.sf.hajdbc.dialect;
 
 /**
- * Dialect for Oracle (commercial).
+ * Dialect for <a href="http://www.mysql.com/products/database/maxdb/">MySQL MaxDB</a>.
  * @author  Paul Ferraro
  * @since   1.1
  */
@@ -37,11 +37,30 @@ public class MaxDBDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#truncateTablePattern()
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#truncateTableFormat()
 	 */
 	@Override
-	protected String truncateTablePattern()
+	protected String truncateTableFormat()
 	{
 		return "TRUNCATE TABLE {0}";
+	}
+	
+	/**
+	 * ON UPDATE and deferrability clauses are not supported.
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#createForeignKeyFormat()
+	 */
+	@Override
+	protected String createForeignKeyFormat()
+	{
+		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT}}";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#sequencePattern()
+	 */
+	@Override
+	protected String sequencePattern()
+	{
+		return "(\\S+\\)\\.(?:(?:CURR)|(?:NEXT))VAL";
 	}
 }

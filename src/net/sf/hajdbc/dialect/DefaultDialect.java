@@ -20,18 +20,18 @@
  */
 package net.sf.hajdbc.dialect;
 
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.UniqueConstraint;
+import net.sf.hajdbc.util.Strings;
 
 /**
  * @author  Paul Ferraro
@@ -40,7 +40,9 @@ import net.sf.hajdbc.UniqueConstraint;
 public class DefaultDialect implements Dialect
 {
 	private Pattern selectForUpdatePattern = Pattern.compile(this.selectForUpdatePattern(), Pattern.CASE_INSENSITIVE);
-
+	private Pattern insertIntoTablePattern = Pattern.compile(this.insertIntoTablePattern(), Pattern.CASE_INSENSITIVE);
+	private Pattern sequencePattern = Pattern.compile(this.sequencePattern(), Pattern.CASE_INSENSITIVE);
+	
 	/**
 	 * @see net.sf.hajdbc.Dialect#getSimpleSQL()
 	 */
@@ -52,39 +54,19 @@ public class DefaultDialect implements Dialect
 	/**
 	 * @see net.sf.hajdbc.Dialect#getLockTableSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String)
 	 */
-	public String getLockTableSQL(DatabaseMetaData metaData, String schema, String table) throws SQLException
+	public String getLockTableSQL(DatabaseMetaDataCache metaData, String schema, String table) throws SQLException
 	{
-		StringBuilder builder = new StringBuilder("UPDATE ").append(this.qualifyTable(metaData, schema, table)).append(" SET ");
+		StringBuilder builder = new StringBuilder("UPDATE ").append(metaData.getQualifiedTableForDML(schema, table)).append(" SET ");
 		
-		List<String> columnList = new LinkedList<String>();
+		UniqueConstraint primaryKey = metaData.getPrimaryKey(schema, table);
 		
-		ResultSet resultSet = metaData.getPrimaryKeys(null, schema, table);
-		
-		while (resultSet.next())
-		{
-			columnList.add(resultSet.getString("COLUMN_NAME"));
-		}
-		
-		resultSet.close();
+		Collection<String> columnList = (primaryKey != null) ? primaryKey.getColumnList() : metaData.getColumns(schema, table).keySet();
 
-		// If table contains no primary keys, use all columns in table instead
-		if (columnList.isEmpty())
-		{
-			resultSet = metaData.getColumns(null, schema, table, "%");
-			
-			while (resultSet.next())
-			{
-				columnList.add(resultSet.getString("COLUMN_NAME"));
-			}
-			
-			resultSet.close();
-		}
-		
 		Iterator<String> columns = columnList.iterator();
 		
 		while (columns.hasNext())
 		{
-			String column = this.quote(metaData, columns.next());
+			String column = columns.next();
 			
 			builder.append(column).append('=').append(column);
 			
@@ -100,111 +82,116 @@ public class DefaultDialect implements Dialect
 	/**
 	 * @see net.sf.hajdbc.Dialect#getTruncateTableSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String)
 	 */
-	public String getTruncateTableSQL(DatabaseMetaData metaData, String schema, String table) throws SQLException
+	public String getTruncateTableSQL(DatabaseMetaDataCache metaData, String schema, String table) throws SQLException
 	{
-		return MessageFormat.format(this.truncateTablePattern(), this.qualifyTable(metaData, schema, table));
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.Dialect#qualifyTable(java.sql.DatabaseMetaData, java.lang.String, java.lang.String)
-	 */
-	public String qualifyTable(DatabaseMetaData metaData, String schema, String table) throws SQLException
-	{
-		StringBuilder builder = new StringBuilder();
-		
-		if ((schema != null) && metaData.supportsSchemasInDataManipulation())
-		{
-			builder.append(this.quote(metaData, schema)).append('.');
-		}
-		
-		return builder.append(this.quote(metaData, table)).toString();
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.Dialect#quote(java.sql.DatabaseMetaData, java.lang.String)
-	 */
-	public String quote(DatabaseMetaData metaData, String identifier) throws SQLException
-	{
-		String quote = metaData.getIdentifierQuoteString();
-		
-		return identifier.startsWith(quote) ? identifier : quote + identifier + quote;
+		return MessageFormat.format(this.truncateTableFormat(), metaData.getQualifiedTableForDML(schema, table));
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.Dialect#getCreateForeignKeyConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public String getCreateForeignKeyConstraintSQL(DatabaseMetaData metaData, ForeignKeyConstraint key) throws SQLException
+	public String getCreateForeignKeyConstraintSQL(DatabaseMetaDataCache metaData, ForeignKeyConstraint key) throws SQLException
 	{
-		return MessageFormat.format(this.createForeignKeyPattern(), this.quote(metaData, key.getName()), this.qualifyTable(metaData, key.getSchema(), key.getTable()), this.joinColumns(metaData, key.getColumnList()), this.qualifyTable(metaData, key.getForeignSchema(), key.getForeignTable()), this.joinColumns(metaData, key.getForeignColumnList()), key.getDeleteRule(), key.getUpdateRule(), key.getDeferrability());
+		return MessageFormat.format(this.createForeignKeyFormat(), key.getName(), metaData.getQualifiedTableForDDL(key.getSchema(), key.getTable()), Strings.join(key.getColumnList(), ","), metaData.getQualifiedTableForDDL(key.getForeignSchema(), key.getForeignTable()), Strings.join(key.getForeignColumnList(), ","), key.getDeleteRule(), key.getUpdateRule(), key.getDeferrability());
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.Dialect#getDropForeignKeyConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public String getDropForeignKeyConstraintSQL(DatabaseMetaData metaData, ForeignKeyConstraint key) throws SQLException
+	public String getDropForeignKeyConstraintSQL(DatabaseMetaDataCache metaData, ForeignKeyConstraint key) throws SQLException
 	{
-		return MessageFormat.format(this.dropConstraintPattern(), this.quote(metaData, key.getName()), this.qualifyTable(metaData, key.getSchema(), key.getTable()));
+		return MessageFormat.format(this.dropConstraintFormat(), key.getName(), metaData.getQualifiedTableForDDL(key.getSchema(), key.getTable()));
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.Dialect#getCreateUniqueConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String, java.util.List)
 	 */
-	public String getCreateUniqueConstraintSQL(DatabaseMetaData metaData, UniqueConstraint constraint) throws SQLException
+	public String getCreateUniqueConstraintSQL(DatabaseMetaDataCache metaData, UniqueConstraint constraint) throws SQLException
 	{
-		return MessageFormat.format(this.createUnqiueKeyPattern(), this.quote(metaData, constraint.getName()), this.qualifyTable(metaData, constraint.getSchema(), constraint.getTable()), this.joinColumns(metaData, constraint.getColumnList()));
+		return MessageFormat.format(this.createUniqueKeyFormat(), constraint.getName(), metaData.getQualifiedTableForDDL(constraint.getSchema(), constraint.getTable()), Strings.join(constraint.getColumnList(), ","));
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.Dialect#getDropUniqueConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public String getDropUniqueConstraintSQL(DatabaseMetaData metaData, UniqueConstraint constraint) throws SQLException
+	public String getDropUniqueConstraintSQL(DatabaseMetaDataCache metaData, UniqueConstraint constraint) throws SQLException
 	{
-		return MessageFormat.format(this.dropConstraintPattern(), this.quote(metaData, constraint.getName()), this.qualifyTable(metaData, constraint.getSchema(), constraint.getTable()));
+		return MessageFormat.format(this.dropConstraintFormat(), constraint.getName(), metaData.getQualifiedTableForDDL(constraint.getSchema(), constraint.getTable()));
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#getCreatePrimaryKeyConstraintSQL(net.sf.hajdbc.DatabaseMetaDataCache, net.sf.hajdbc.UniqueConstraint)
+	 */
+	public String getCreatePrimaryKeyConstraintSQL(DatabaseMetaDataCache metaData, UniqueConstraint constraint) throws SQLException
+	{
+		return MessageFormat.format(this.createPrimaryKeyFormat(), constraint.getName(), metaData.getQualifiedTableForDDL(constraint.getSchema(), constraint.getTable()), Strings.join(constraint.getColumnList(), ","));
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#getDropPrimaryKeyConstraintSQL(net.sf.hajdbc.DatabaseMetaDataCache, net.sf.hajdbc.UniqueConstraint)
+	 */
+	public String getDropPrimaryKeyConstraintSQL(DatabaseMetaDataCache metaData, UniqueConstraint constraint) throws SQLException
+	{
+		return MessageFormat.format(this.dropConstraintFormat(), constraint.getName(), metaData.getQualifiedTableForDDL(constraint.getSchema(), constraint.getTable()));
 	}
 
 	/**
 	 * @see net.sf.hajdbc.Dialect#isSelectForUpdate(java.sql.DatabaseMetaData, java.lang.String)
 	 */
-	public boolean isSelectForUpdate(DatabaseMetaData metaData, String sql) throws SQLException
+	public boolean isSelectForUpdate(DatabaseMetaDataCache metaData, String sql) throws SQLException
 	{
 		return metaData.supportsSelectForUpdate() ? this.selectForUpdatePattern.matcher(sql).find() : false;
 	}
 	
-	protected String joinColumns(DatabaseMetaData metaData, List<String> columnList) throws SQLException
+	/**
+	 * @see net.sf.hajdbc.Dialect#isInsertIntoTableWithAutoIncrementColumn(net.sf.hajdbc.DatabaseMetaDataCache, java.lang.String)
+	 */
+	public boolean isInsertIntoTableWithAutoIncrementColumn(DatabaseMetaDataCache metaData, String sql) throws SQLException
 	{
-		StringBuilder builder = new StringBuilder();
-
-		Iterator<String> columns = columnList.iterator();
+		Matcher matcher = this.insertIntoTablePattern.matcher(sql);
 		
-		while (columns.hasNext())
-		{
-			builder.append(this.quote(metaData, columns.next()));
-			
-			if (columns.hasNext())
-			{
-				builder.append(',');
-			}
-		}
-		
-		return builder.toString();
+		return matcher.find() ? metaData.containsAutoIncrementColumn(matcher.group(1)) : false;
 	}
 	
-	protected String truncateTablePattern()
+	/**
+	 * @see net.sf.hajdbc.Dialect#parseSequence(java.lang.String)
+	 */
+	public String parseSequence(String sql)
+	{
+		Matcher matcher = this.sequencePattern.matcher(sql);
+		
+		return matcher.find() ? matcher.group(1) : null;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#getColumnType(net.sf.hajdbc.cache.ColumnProperties)
+	 */
+	public int getColumnType(DatabaseMetaDataCache metaData, String schema, String table, String column) throws SQLException
+	{
+		return metaData.getColumns(schema, table).get(column).getType();
+	}
+
+	protected String truncateTableFormat()
 	{
 		return "DELETE FROM {0}";
 	}
 	
-	protected String createForeignKeyPattern()
+	protected String createForeignKeyFormat()
 	{
 		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} ON UPDATE {6,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} {7,choice,5#DEFERRABLE INITIALLY DEFERRED|6#DEFERRABLE INITIALLY IMMEDIATE|7#NOT DEFERRABLE}";
 	}
 	
-	protected String createUnqiueKeyPattern()
+	protected String createUniqueKeyFormat()
 	{
 		return "ALTER TABLE {1} ADD CONSTRAINT {0} UNIQUE ({2})";
 	}
 	
-	protected String dropConstraintPattern()
+	protected String createPrimaryKeyFormat()
+	{
+		return "ALTER TABLE {1} ADD CONSTRAINT {0} PRIMARY KEY ({2})";
+	}
+	
+	protected String dropConstraintFormat()
 	{
 		return "ALTER TABLE {1} DROP CONSTRAINT {0}";
 	}
@@ -212,5 +199,15 @@ public class DefaultDialect implements Dialect
 	protected String selectForUpdatePattern()
 	{
 		return "SELECT\\s+.+\\s+FOR\\s+UPDATE";
+	}
+	
+	protected String insertIntoTablePattern()
+	{
+		return "INSERT\\s+(?:INTO\\s+)?(\\S+)";
+	}
+	
+	protected String sequencePattern()
+	{
+		return "NEXT\\s+VALUE\\s+FOR\\s+(\\S+)";
 	}
 }

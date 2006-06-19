@@ -21,8 +21,7 @@
 package net.sf.hajdbc.dialect;
 
 /**
- * Dialect for HSQLDB (open-source)
- * <p><a href="http://www.hsqldb.org">http://www.hsqldb.org</a></p>
+ * Dialect for <a href="http://www.hsqldb.org">HSQLDB</a>.
  * 
  * @author  Paul Ferraro
  * @since   1.1
@@ -36,5 +35,15 @@ public class HSQLDBDialect extends DefaultDialect
 	public String getSimpleSQL()
 	{
 		return "CALL NOW()";
+	}
+	
+	/**
+	 * Deferrability clause is not supported.
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#createForeignKeyFormat()
+	 */
+	@Override
+	protected String createForeignKeyFormat()
+	{
+		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} ON UPDATE {6,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT}";
 	}
 }

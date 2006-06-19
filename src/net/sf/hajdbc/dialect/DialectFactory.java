@@ -42,12 +42,12 @@ public class DialectFactory
 	{
 		dialectMap.put("db2", DB2Dialect.class);
 		dialectMap.put("derby", DerbyDialect.class);
-		dialectMap.put("firebird", DefaultDialect.class);
+		dialectMap.put("firebird", FirebirdDialect.class);
 		dialectMap.put("hsqldb", HSQLDBDialect.class);
 		dialectMap.put("ingres", DefaultDialect.class);
 		dialectMap.put("maxdb", MaxDBDialect.class);
 		dialectMap.put("mckoi", DefaultDialect.class);
-		dialectMap.put("mysql", DefaultDialect.class);
+		dialectMap.put("mysql", MySQLDialect.class);
 		dialectMap.put("oracle", MaxDBDialect.class);
 		dialectMap.put("postgresql", PostgreSQLDialect.class);
 	}

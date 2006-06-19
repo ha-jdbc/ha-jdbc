@@ -20,11 +20,15 @@
  */
 package net.sf.hajdbc.dialect;
 
-import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.text.MessageFormat;
 
+import net.sf.hajdbc.DatabaseMetaDataCache;
+import net.sf.hajdbc.cache.ColumnProperties;
+
 /**
+ * Dialect for <a href="http://postgresql.org">PostgreSQL</a>.
  * @author  Paul Ferraro
  * @since   1.1
  */
@@ -40,17 +44,38 @@ public class PostgreSQLDialect extends DefaultDialect
 	 * @see net.sf.hajdbc.dialect.DefaultDialect#getLockTableSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public String getLockTableSQL(DatabaseMetaData metaData, String schema, String table) throws SQLException
+	public String getLockTableSQL(DatabaseMetaDataCache metaData, String schema, String table) throws SQLException
 	{
-		return MessageFormat.format("LOCK TABLE {0} IN EXCLUSIVE MODE; SELECT 1 FROM {0}", this.qualifyTable(metaData, schema, table));
+		return MessageFormat.format("LOCK TABLE {0} IN EXCLUSIVE MODE; SELECT 1 FROM {0}", metaData.getQualifiedTableForDML(schema, table));
+	}
+	
+	/**
+	 * PostgreSQL uses the native type OID for BLOBs.  However the driver maps OID to INTEGER.  OID columns should really be mapped to BLOB.
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#getColumnType(net.sf.hajdbc.DatabaseMetaDataCache, java.lang.String, java.lang.String, java.lang.String)
+	 */
+	@Override
+	public int getColumnType(DatabaseMetaDataCache metaData, String schema, String table, String column) throws SQLException
+	{
+		ColumnProperties properties = metaData.getColumns(schema, table).get(column);
+		
+		return properties.getNativeType().equals("oid") ? Types.BLOB : properties.getType();
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#truncateTablePattern()
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#truncateTableFormat()
 	 */
 	@Override
-	protected String truncateTablePattern()
+	protected String truncateTableFormat()
 	{
 		return "TRUNCATE TABLE {0}";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#sequencePattern()
+	 */
+	@Override
+	protected String sequencePattern()
+	{
+		return "(?:(?:CURR)|(?:NEXT))VAL\\s*\\(\\s*'(\\S+\\)'\\s*)";
 	}
 }
