@@ -57,7 +57,8 @@
 			<include name="bcel-*.jar"/>
 		</fileset>
 		<fileset dir="${lib.runtime.dir}">
-			<include name="xpp3-*.jar"/>
+			<include name="stax-api-*.jar"/>
+			<include name="wstx-*.jar"/>
 		</fileset>
 	</path>
 	
