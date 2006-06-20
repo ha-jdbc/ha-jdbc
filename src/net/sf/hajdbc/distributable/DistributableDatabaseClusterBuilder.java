@@ -29,24 +29,35 @@ import net.sf.hajdbc.DatabaseClusterBuilder;
  */
 public class DistributableDatabaseClusterBuilder implements DatabaseClusterBuilder
 {
-	private String protocol;
+	private String config;
+	private String stack;
 	private int timeout;
 	
+	public String getStack()
+	{
+		return this.stack;
+	}
+
+	public void setStack(String stack)
+	{
+		this.stack = stack;
+	}
+
 	/**
 	 * Returns the protocol stack that this database cluster will use to broadcast cluster changes.
 	 * @return a JGroups protocol stack.
 	 */
-	public String getProtocol()
+	public String getConfig()
 	{
-		return this.protocol;
+		return this.config;
 	}
 	
 	/**
 	 * @param protocol 
 	 */
-	public void setProtocol(String protocol)
+	public void setConfig(String config)
 	{
-		this.protocol = protocol;
+		this.config = config;
 	}
 	
 	/**

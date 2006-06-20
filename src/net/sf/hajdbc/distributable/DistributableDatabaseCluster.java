@@ -151,15 +151,18 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 	{
 		try
 		{
-			JChannelFactory factory = new JChannelFactory(this.builder.getProtocol());
+			JChannelFactory factory = new JChannelFactory();
 			
-			Channel notificationBusChannel = factory.createMultiplexerChannel(this.getId(), this.getId());
+			factory.setMultiplexerConfig(this.builder.getConfig());
+			factory.setDomain("org.jgroups");
+			
+			Channel notificationBusChannel = factory.createMultiplexerChannel(this.builder.getStack(), this.getId());
 			
 			this.notificationBus = new NotificationBus(notificationBusChannel, this.getId());
 			this.notificationBus.setConsumer(this);
 			this.notificationBus.start();
 
-			Channel lockManagerChannel = factory.createMultiplexerChannel(this.getId(), this.getId() + "-lock");
+			Channel lockManagerChannel = factory.createMultiplexerChannel(this.builder.getStack(), this.getId() + "-lock");
 			
 			this.lockManager = new DistributableLockManager(lockManagerChannel, this.builder.getTimeout(), super.getLockManager());
 			this.lockManager.start();
