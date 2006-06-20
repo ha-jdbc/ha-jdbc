@@ -24,15 +24,20 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.concurrent.locks.Lock;
 
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SQLException;
 import net.sf.hajdbc.local.LocalDatabaseCluster;
 
 import org.jgroups.Address;
 import org.jgroups.Channel;
-import org.jgroups.JChannelFactory;
+import org.jgroups.JChannel;
 import org.jgroups.blocks.NotificationBus;
+import org.jgroups.jmx.JmxConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -151,24 +156,32 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 	{
 		try
 		{
-			JChannelFactory factory = new JChannelFactory(this.builder.getProtocol());
-			
-			factory.setDomain("net.sf.hajdbc");
-			
-			Channel notificationBusChannel = factory.createMultiplexerChannel(this.getId(), this.getId());
-
-			this.notificationBus = new NotificationBus(notificationBusChannel, this.getId());
+			this.notificationBus = new NotificationBus(this.getId(), this.builder.getProtocol());
 			this.notificationBus.setConsumer(this);
 			this.notificationBus.start();
 			
-			Channel lockChannel = factory.createMultiplexerChannel(this.getId(), this.getId() + "-lock");
-			this.lock = new DistributableLock(lockChannel, this.builder.getTimeout(), super.writeLock());
+			this.lock = new DistributableLock(this.getId() + "-lock", this.builder.getProtocol(), this.builder.getTimeout(), super.writeLock());
+			
+			this.register(this.notificationBus.getChannel());
+			this.register(this.lock.getChannel());
 
 			super.start();
 		}
 		catch (Exception e)
 		{
 			throw new SQLException(e.toString(), e);
+		}
+	}
+
+	private void register(Channel channel) throws Exception
+	{
+		MBeanServer server = DatabaseClusterFactory.getMBeanServer();
+
+		ObjectName name = ObjectName.getInstance("org.jgroups", "channel", ObjectName.quote(channel.getChannelName()));
+		
+		if (!server.isRegistered(name))
+		{
+			JmxConfigurator.registerChannel(JChannel.class.cast(channel), server, name.getCanonicalName(), true);
 		}
 	}
 	
