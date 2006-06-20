@@ -31,7 +31,6 @@ import net.sf.hajdbc.local.LocalDatabaseCluster;
 
 import org.jgroups.Address;
 import org.jgroups.Channel;
-import org.jgroups.JChannelFactory;
 import org.jgroups.blocks.NotificationBus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +44,7 @@ import org.slf4j.LoggerFactory;
  */
 public class DistributableDatabaseCluster extends LocalDatabaseCluster implements NotificationBus.Consumer
 {
-	static Logger logger = LoggerFactory.getLogger(DistributableDatabaseCluster.class);
+	private static Logger logger = LoggerFactory.getLogger(DistributableDatabaseCluster.class);
 	
 	private NotificationBus notificationBus;
 	private DistributableLockManager lockManager;
@@ -117,9 +116,7 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 	 */
 	public void memberJoined(Address address)
 	{
-		String channel = this.notificationBus.getChannel().getChannelName();
-		
-		logger.info(Messages.getMessage(Messages.GROUP_MEMBER_JOINED, address, channel));
+		logger.info(Messages.getMessage(Messages.GROUP_MEMBER_JOINED, address, this.getId()));
 	}
 
 	/**
@@ -127,9 +124,7 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 	 */
 	public void memberLeft(Address address)
 	{
-		String channel = this.notificationBus.getChannel().getChannelName();
-		
-		logger.info(Messages.getMessage(Messages.GROUP_MEMBER_LEFT, address, channel));
+		logger.info(Messages.getMessage(Messages.GROUP_MEMBER_LEFT, address, this.getId()));
 	}
 	
 	/**
@@ -151,18 +146,13 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 	{
 		try
 		{
-			JChannelFactory factory = new JChannelFactory();
-			
-			factory.setMultiplexerConfig(this.builder.getConfig());
-			factory.setDomain("org.jgroups");
-			
-			Channel notificationBusChannel = factory.createMultiplexerChannel(this.builder.getStack(), this.getId());
+			Channel notificationBusChannel = this.builder.getChannel(this.getId());
 			
 			this.notificationBus = new NotificationBus(notificationBusChannel, this.getId());
 			this.notificationBus.setConsumer(this);
 			this.notificationBus.start();
 
-			Channel lockManagerChannel = factory.createMultiplexerChannel(this.builder.getStack(), this.getId() + "-lock");
+			Channel lockManagerChannel = this.builder.getChannel(this.getId() + "-lock");
 			
 			this.lockManager = new DistributableLockManager(lockManagerChannel, this.builder.getTimeout(), super.getLockManager());
 			this.lockManager.start();

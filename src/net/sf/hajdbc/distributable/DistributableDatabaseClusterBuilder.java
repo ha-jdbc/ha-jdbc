@@ -23,12 +23,16 @@ package net.sf.hajdbc.distributable;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterBuilder;
 
+import org.jgroups.Channel;
+import org.jgroups.JChannelFactory;
+
 /**
  * @author  Paul Ferraro
  * @since   1.1
  */
 public class DistributableDatabaseClusterBuilder implements DatabaseClusterBuilder
 {
+	private JChannelFactory factory = new JChannelFactory();
 	private String config;
 	private String stack;
 	private int timeout;
@@ -55,9 +59,16 @@ public class DistributableDatabaseClusterBuilder implements DatabaseClusterBuild
 	/**
 	 * @param protocol 
 	 */
-	public void setConfig(String config)
+	public void setConfig(String config) throws Exception
 	{
 		this.config = config;
+		this.factory.setDomain("org.jgroups");
+		this.factory.setMultiplexerConfig(config);
+	}
+	
+	public Channel getChannel(String id) throws Exception
+	{
+		return this.factory.createMultiplexerChannel(this.stack, id);
 	}
 	
 	/**
