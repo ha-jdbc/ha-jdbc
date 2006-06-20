@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -36,7 +37,6 @@ import net.sf.hajdbc.Messages;
 
 import org.jgroups.Channel;
 import org.jgroups.ChannelException;
-import org.jgroups.JChannel;
 import org.jgroups.blocks.TwoPhaseVotingAdapter;
 import org.jgroups.blocks.TwoPhaseVotingListener;
 import org.jgroups.blocks.VoteResponseProcessor;
@@ -69,18 +69,22 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	 * @param lock 
 	 * @throws Exception
 	 */
-	public DistributableLockManager(String name, String protocol, int timeout, LockManager localLockManager) throws Exception
+	public DistributableLockManager(Channel channel, int timeout, LockManager localLockManager) throws Exception
 	{
 		this.timeout = timeout;
 		this.localLockManager = localLockManager;
-		this.channel = new JChannel(protocol);
-		this.channel.connect(name);
+		this.channel = channel;
 		
 		this.votingAdapter = new TwoPhaseVotingAdapter(new VotingAdapter(this.channel));
 		
 		this.votingAdapter.addListener(this);
 	}
 
+	public void start() throws ChannelException
+	{
+		this.channel.connect(this.channel.getChannelName());
+	}
+	
 	public void stop()
 	{
 		this.channel.close();
@@ -119,13 +123,15 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	/**
 	 * @see org.jgroups.blocks.VoteResponseProcessor#processResponses(org.jgroups.util.RspList, int, java.lang.Object)
 	 */
-	public boolean processResponses(RspList responses, int consensusType, Object decree) throws ChannelException
+	public boolean processResponses(RspList responseMap, int consensusType, Object decree) throws ChannelException
 	{
-		if (responses == null) return false;
+		if (responseMap == null) return false;
 
-		for (int i = 0; i < responses.size(); ++i)
+		Iterator responses = responseMap.values().iterator();
+		
+		while (responses.hasNext())
 		{
-			Rsp response = Rsp.class.cast(responses.elementAt(i));
+			Rsp response = Rsp.class.cast(responses.next());
 			
 			if (response.wasSuspected()) continue;
 			
