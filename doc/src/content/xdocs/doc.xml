@@ -397,6 +397,11 @@
 						<td>postgresql</td>
 					</tr>
 					<tr>
+						<td>MySQL</td>
+						<td><a href="api/net/sf/hajdbc/dialect/MySQLDialect.html">net.sf.hajdbc.dialect.MySQLDialect</a></td>
+						<td>mysql</td>
+					</tr>
+					<tr>
 						<td>MySQL MaxDB, Oracle</td>
 						<td><a href="api/net/sf/hajdbc/dialect/MaxDBDialect.html">net.sf.hajdbc.dialect.MaxDBDialect</a></td>
 						<td>maxdb, oracle</td>
@@ -419,7 +424,7 @@
 					<tr>
 						<td>Default (SQL standard)</td>
 						<td><a href="api/net/sf/hajdbc/dialect/DefaultDialect.html">net.sf.hajdbc.dialect.DefaultDialect</a></td>
-						<td>mysql, firebird, ingres, mckoi</td>
+						<td>firebird, ingres, mckoi</td>
 					</tr>
 				</table>
 				<note>
