@@ -5,7 +5,7 @@
 		<person id="PF" name="Paul Ferraro" email="ferraro@users.sourceforge.net"/>
 	</developers>
 	<contexts>
-		<context id="code" title="Changes to code"/>
+		<context id="src" title="Changes to code"/>
 		<context id="test" title="Changes to tests"/>
 		<context id="doc" title="Changes to documentation"/>
 		<context id="lib" title="Changes to dependencies"/>
@@ -17,22 +17,53 @@
 				Upgraded Retrotranslator to version 1.0.4.
 			</action>
 			<action type="update" context="lib" dev="PF">
-				Upgraded JiBX to version 1.0.2.
+				Upgraded JiBX to version 1.1.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded JGroups to version 2.3.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded SLF4J to version 1.0.2.
+			</action>
+			<action type="fix" context="src" dev="PF" due-to="Ryan Holmes">
+				Fixed DefaultDialect.quote() to prevent already quoted identifiers from being double-quoted.
+			</action>
+			<action type="fix" context="src" dev="PF" due-to="Ryan Holmes">
+				Fixed create/drop constraint methods of DefaultDialect to quote constraint names.
+			</action>
+			<action type="update" context="src" dev="PF">
+				Modified Dialect interface to make use of ForeignKeyConstraint and UniqueConstraint objects to encapsulate constraint details.
+			</action>
+			<action type="fix" context="src" dev="PF">
+				Fixed DefaultDialect to correctly generate create foreign key statements for foreign keys containing multiple columns, ON DELETE/UPDATE actions, and deferrability.
+			</action>
+			<action type="add" context="src" dev="PF">
+				Created MySQL dialect, since deferrability of foreign key constraints is not supported.
+			</action>
+			<action type="update" context="src" dev="PF">
+				DerbyDialect, HSQLDBDialect, MaxDBDialect now override createForeignKeySQL().
+			</action>
+			<action type="fix" context="src" dev="PF">
+				Fixed synchronization of PostgreSQL tables containing Blob (oid) columns.
+			</action>
+			<action type="fix" context="src" dev="PF">
+				Modified differential synchronization strategy to use UPDATE statements instead of using updatable ResultSet, due to poor driver support.
+				e.g. ResultSet.updateBlob(...) is not implemented in PostgreSQL driver.
 			</action>
 		</release>
 		<release version="1.1" date="April 21, 2006">
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Ensure that causes of initialization failures are logged.
 			</action>
 		</release>
 		<release version="1.1-rc-2" date="April 18, 2006">
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixed IllegalArgumentException during startup when using transactions="xa".
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixed NullPointerException during startup when database does not define a driver.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixed CronExecutorService to use daemon threads so that it doesn't prevent the shutdown hook from firing.
 			</action>
 		</release>
@@ -40,18 +71,18 @@
 			<action type="update" context="lib" dev="PF">
 				Upgraded Retrotranslator to version 1.0.3.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixed Blob/Clob handling in PreparedStatement.setBlob(...)/setBlob(...) and ResultSet.updateBlob(...)/updateClob(...) methods.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixed bug in DefaultDialect.qualifyTable(...) for databases that do not support schemas.
 			</action>
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Added new required transactions="local|xa" option to cluster.
 				When in local mode, database writes are performed concurrently.
 				When in xa mode, database writes are performed synchronously to ensure a predictable execution order and prevent deadlocks.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Added fault tolerance measures to cluster thread pool under high load.
 				If pool size reaches max-threads threshold, database writes will be executed in the caller thread using java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy.
 			</action>
@@ -60,26 +91,26 @@
 			</action>
 		</release>
 		<release version="1.1-beta-7" date="March 20, 2006">
-			<action type="add" context="code" dev="PF" due-to="Tapan Paul">
+			<action type="add" context="src" dev="PF" due-to="Tapan Paul">
 				Added auto-activate-period cluster option that will auto-activate failed database nodes at a configurable interval.
 			</action>
 			<action type="add" context="lib" dev="PF">
 				New dependency on Quartz (http://opensymphony.com/quartz/).
 			</action>
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Created CronThreadPoolExecutor, a java.util.concurrent.ThreadPoolExecutor that leverages a Quartz CronTrigger to calculate future execution times of a scheduled task.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Enhanced auto-activation and failure detection to use a cron schedule, instead of a simple fixed-delay period.
 				Renamed failure-detect-period to failure-detect-schedule and auto-activate-period to auto-activate-schedule in DTD.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Migrated repository to Subversion.
 			</action>
 			<action type="update" context="test" dev="PF">
 				Migrated test suite to TestNG.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Migrated logging facade from commons-logging to SLF4J.
 			</action>
 			<action type="add" context="lib" dev="PF">
@@ -91,19 +122,19 @@
 			<action type="update" context="lib" dev="PF">
 				Replaced commons-logging-1.0.4.jar with jcl104-over-slf4j.jar from SLF4J distribution.
 			</action>
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Added management interface methods for adding and removing databases from a cluster.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Separated DatabaseMBean interface into InactiveDatabaseMBean (read-write) and ActiveDatabaseMBean (read-only).
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Activating/Deactivating database reregisters the database using the appropriate active/inactive mbean interface.
 			</action>
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Added dirty flag logic for Database attributes.  If a database is dirty when it is activated, then the HA-JDBC configuration is exported.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Renamed "name" property of DataSource to "cluster", since "name" cannot be set by the BeanFactory from Tomcat's server.xml file.
 			</action>
 			<action type="update" context="doc" dev="PF">
@@ -111,22 +142,22 @@
 			</action>
 		</release>
 		<release version="1.1-beta-6" date="February 15, 2006">
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Added workaround for missing ReentrantReadWriteLock(boolean) constructor in backport-util-concurrent package.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Added verify flag to retrotranslator compilation to catch future Java 1.4 compatibility issues.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Rollback change to PostgreSQL dialect.
 				Removed batching of lock table commands.
 			</action>
 		</release>
 		<release version="1.1-beta-5" date="February 13, 2006">
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Database activation uses Lock.lockInterruptibly() instead of Lock.tryLock() to prevent activation from failing due to concurrent writes.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixed getLockTableSQL() from PostgreSQL dialect so that it can be executed within a batch.
 			</action>
 		</release>
@@ -134,50 +165,50 @@
 			<action type="update" context="lib" dev="PF">
 				Upgraded Retrotranslator to version 0.9.8.
 			</action>
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Added optional failure-detect-period to configuration file.
 				If defined, HA-JDBC will proactively detect database failures every specified number of seconds.
 			</action>
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Replace DatabaseCluster.init() with start() and stop() methods.
 			</action>
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Added JVM shutdown hook that calls stop() on each DatabaseCluster.
 			</action>
-			<action type="add" context="code" dev="PF" due-to="Kurt Huwig">
+			<action type="add" context="src" dev="PF" due-to="Kurt Huwig">
 				Derby dialect overrides getLockTableSQL().
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Refactored DistributableDatabaseCluster to extend LocalDatabaseCluster rather than contain/decorate it.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Refactored JiBX configuration to support both input and output binding directions.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Removed configuration related methods from SynchronizationStrategy interface removing the need for AbstractSynchronizationStrategy.
 			</action>
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Implemented distributable read-write locking so that database writes are locked during database activation.
 				This eliminates the need to deactivate databases that were newly actived upon completion of a database write.
 			</action>
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Added mbean interfaces for Databases.
 			</action>
 		</release>
 		<release version="1.1-beta-3" date="January 27, 2006">
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Changed exceptions thrown by DatabaseClusterMBean methods to built-in Java exceptions so that they can be interpretted by a remote JMX client.
 			</action>
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Added distributable locking to prevent multiple simultaneous synchronizations on the same cluster.
 			</action>
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Added configurable timeout attribute to DTD for distributable operations.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Moved SELECT ... FOR UPDATE pattern definition to dialect.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixed IndexOutOfBoundsException during database activation when one or more databases in the cluster is not alive.
 			</action>
 		</release>
@@ -188,60 +219,60 @@
 			<action type="update" context="lib" dev="PF">
 				Upgraded JGroups to version 2.2.9.1.
 			</action>
-			<action type="fix" context="code" dev="PF" due-to="Ilkka Lassila">
+			<action type="fix" context="src" dev="PF" due-to="Ilkka Lassila">
 				Recorded Operations are stored in a Map keyed by class instead of a List to prevent unnecessary boundless growth.
 			</action>
-			<action type="fix" context="code" dev="PF" due-to="Kurt Huwig">
+			<action type="fix" context="src" dev="PF" due-to="Kurt Huwig">
 				DifferentialSynchronizationStrategy generates bad DELETE statements when table has multiple primary keys.
 			</action>
-			<action type="fix" context="code" dev="PF" due-to="Kurt Huwig">
+			<action type="fix" context="src" dev="PF" due-to="Kurt Huwig">
 				Fixes german error message translations.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				DatabaseClusterFactory.createDatabaseClusterFactory() throws RuntimeException instead of SQLException to prevent java.sql.DriverManager from masking root cause of HA-JDBC configuration failures.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixes potential NullPointerException if database is deactivated as a result of a read operation.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Migrated code base to Java 1.5.
 			</action>
 			<action type="update" context="lib" dev="PF">
 				Retrotranslator (http://retrotranslator.sf.net) leveraged for JDK 1.4 compatibility.
 				Build script generates separate 1.4 jar and includes additional dependencies.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Replaced Balancer.toArray() : Database[] with Balancer.list() : List<![CDATA[<Database>]]>
 			</action>
 			<action type="update" context="test" dev="PF">
 				Unit tests now use EasyMock 2.0.
 			</action>
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Added requiresTableLocking() method to SynchronizationStrategy interface.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				During database activation, table locking is only performed if required by synchronization strategy.
 			</action>
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				All vendor specific customizations to HA-JDBC are now encompassed in the Dialect attribute of a cluster.
 				This replaces the validate-sql attribute of a cluster; and the truncateTableSQL, createForeignKeySQL, dropForeignKeySQL, createUniqueKeySQL, and dropUniqueKeySQL properties of the diff and full synchronization strategies.
 			</action>
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Created dialects for PostgreSQL, MaxDB, Derby, HSQLDB, and a default dialect.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Changed default table locking query used during synchronization to use an innocuous UPDATE statement.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Added more explicit logging for exceptions thrown during HA-JDBC initialization that end up getting masked by JiBX.
 			</action>
-			<action type="fix" context="code" dev="PF" due-to="Kurt Huwig">
+			<action type="fix" context="src" dev="PF" due-to="Kurt Huwig">
 				Added missing rollback to exception handling in diff and full synchronization strategies.
 			</action>
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				In distributable mode, JGroups channel and protocols are registed with the mbean server.
 			</action>
-			<action type="remove" context="code" dev="PF">
+			<action type="remove" context="src" dev="PF">
 				Removed obsolete net.sf.hajdbc.sql.pool.xa and net.sf.hajdbc.sql.pool packages.
 			</action>
 		</release>
@@ -249,27 +280,27 @@
 			<action type="add" context="lib" dev="PF">
 				New dependency on JDK 1.4 backport of JDK 1.5 java.util.concurrent package.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Uses configurable thread pooling for asynchronously executed write operations for improved efficiency and fault tolerance under high load.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Uses default-minimalthreads.xml from JGroups distribution as default distributable protocol.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Synchronization strategies now use schema qualified table names when appropriate.
 			</action>
 			<action type="update" context="lib" dev="PF">
 				Upgraded JGroups to version 2.2.9.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixed problematic co-dependency between DatabaseCluster and ConnectionFactory.
 			</action>
 		</release>
 		<release version="1.0" date="September 22, 2005">
-			<action type="fix" context="code" dev="PF" due-to="Roman Kurmanowytsch">
+			<action type="fix" context="src" dev="PF" due-to="Roman Kurmanowytsch">
 				Fixed JDK 1.4 source compatibility issues.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Added explicit logging to expose root causes of exceptions that are hidden by JiBX.
 			</action>
 			<action type="add" context="doc" dev="PF">
@@ -283,84 +314,84 @@
 			</action>
 		</release>
 		<release version="1.0-rc-5" date="September 15, 2005">
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				During DatabaseClusterFactory initialization, if no mbean server can be found, an exception is thrown, rather than attempting to create a new one.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Quote all identifiers used in synchronization to prevent SQL syntax errors in identifier is a reserved word.
 			</action>
 		</release>
 		<release version="1.0-rc-4" date="September 6, 2005">
-			<action type="fix" context="code" dev="PF" due-to="Nick Rudnick">
+			<action type="fix" context="src" dev="PF" due-to="Nick Rudnick">
 				Correct error message when connection to config url fails.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Avoid wrapping SQLException cause when a database operation fails.
 			</action>
 			<action type="add" context="doc" dev="PF">
 				Added FAQ section for running HA-JDBC under Tomcat 5.0.
 			</action>
-			<action type="fix" context="code" dev="PF" due-to="Matthew Wooller">
+			<action type="fix" context="src" dev="PF" due-to="Matthew Wooller">
 				Fixed readProperties() and writeProperties(...) methods of AbstractSynchronizationStrategy to ignore the property "class".
 			</action>
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Reintroduced PassiveSynchronizationStrategy.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Added logic to LocalDatabaseCluster.loadState() to validate locally persisted cluster state.
 			</action>
 		</release>
 		<release version="1.0-rc-3" date="August 23, 2005">
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixed NullPointerException bug in LocalDatabaseCluster.loadState().
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Distributable database activation commands should not reinvoke synchronization.
 			</action>
 		</release>
 		<release version="1.0-rc-2" date="August 21, 2005">
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				SELECT...FOR UPDATE queries are now detected and distributed to each database cluster node.
 			</action>
-			<action type="fix" context="code" dev="PF" due-to="Nick Rudnick">
+			<action type="fix" context="src" dev="PF" due-to="Nick Rudnick">
 				Corrected German translation of error messages.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixed infinite loop in AbstractSynchronizationStrategy.getProperties().
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixed bug in LocalDatabaseCluster.loadState() when cluster is empty.
 			</action>
 		</release>
 		<release version="1.0-rc-1" date="August 2, 2005">
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Refactored HA-JDBC initialization and DTD.  Synchronization strategies are now shared across all clusters.  Each cluster defines a default synchronization strategy.
 			</action>
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Added properties to cluster configuration to allow DataSources to define custom JNDI environment parameters and to allow Driver to define additional runtime parameters.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Changed default JGroups protocol stack to use FD instead of FD_SOCK.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				activate(String) method in DatabaseClusterMBean interface will synchronize using the default synchronization strategy for the cluster.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Removed getSynchronizationStrategies() from DatabaseClusterMBean interface.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixed ClassCastException during XADataSource initialization.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				SQLException wrapper properly reports vendor-specific error code and SQL state.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Updated DifferentialSynchronizationStrategy to use PreparedStatements for inserts and deletions instead of using problematic updatable result set methods.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixed DifferentialSynchronizationStrategy to drop and re-create unique keys on each table to prevent possible unique constraint violations during sync.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				DifferentialSynchronizationStrategy now correctly compares byte[] columns.
 			</action>
 			<action type="update" context="test" dev="PF">
@@ -380,37 +411,37 @@
 			</action>
 		</release>
 		<release version="1.0-beta-8" date="April 27, 2005">
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Cluster state is now persisted locally so that it can be restored between application restarts.
 			</action>
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Added customizable fetchSize property to each synchronization strategy to avoid out of memory errors when synchronizing large tables.
 			</action>
 			<action type="add" context="test" dev="PF">
 				Added TestNG unit tests for Driver, Connection, Statement, and each balancer implementation.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixed issue with driver returning non-distributable connections when in distributable mode.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixed issue in DifferentialSynchronizationStrategy with some updatable result set implementations where inserted rows were deleted again.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixed ClassCastException in Connection.releaseSavepoint(Savepoint) and Connection.rollback(Savepoint) methods.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Minor fixes to zero weight handling in random and load balancers.
 			</action>
-			<action type="fix" context="code" dev="PF" due-to="Oezcan Acar">
+			<action type="fix" context="src" dev="PF" due-to="Oezcan Acar">
 				Corrected German translation of error messages.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				executeWriteToDatabase() will now throw SQLException for Statements and ResultSets if some valid databases fail while others succeed and auto-commit is off, giving the client the opportunity to rollback the current transaction.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Connection.isReadOnly() was changed from executeReadFromDatabase() to executeReadFromDriver().
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Refactored java.sql.* proxy classes.
 			</action>
 			<action type="update" context="lib" dev="PF">
@@ -418,67 +449,67 @@
 			</action>
 		</release>
 		<release version="1.0-beta-7" date="April 5, 2005">
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixed buggy weighted round-robin algorithm.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Round-robin balancer now handles databases with 0 weight properly.
 			</action>
 		</release>
 		<release version="1.0-beta-6" date="March 31, 2005">
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Database cluster now specifies 1 of 4 different strategies for balancing read requests: simple, random, round-robin, or load.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				A database can define a weight to affect how it is prioritized by the balancer.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				In distributed environment, a database cluster will get its initial state from the JGroups group coordinator.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixed bug where auto (i.e. non-manual) database deactivation behaved locally even if environment is distributed.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixed bug where synchronization strategies will fail if foreign key constraints have names that require quoting (e.g. $1, $2).
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Lots of refactored code.  Most notably, the HA-JDBC driver has moved to net.sf.hajdbc.sql.Driver
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Protocol parameter is now optional for distributable clusters.
 			</action>
-			<action type="add" context="code" dev="PF" due-to="AltaVista Babel Fish">
+			<action type="add" context="src" dev="PF" due-to="AltaVista Babel Fish">
 				Added error message translations for German, Spanish, French, Italian, and Portuguese.
 			</action>
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Added error message for tables without primary keys in DifferentialSynchronizationStrategy.
 			</action>
 		</release>
 		<release version="1.0-beta-5" date="March 3, 2005">
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Added better data type support for SynchronizationStrategy properties.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixed Java 1.4 compatibility.
 			</action>
 		</release>
 		<release version="1.0-beta-4" date="February 18, 2005">
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				getActiveDatabases() and getInactiveDatabases() no longer throw SQLException
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Configuration DTD updated:  Synchronization strategies and properties are now explicitly defined per cluster.
 			</action>
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Added getSynchronizationStrategies() method to cluster management interface.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Changed symantics of activate(...) methods on management interface:  activate(String, String) uses synchronization strategy identifier instead of class name; activate(String) now activates a database without synchronizing.
 			</action>
-			<action type="remove" context="code" dev="PF">
+			<action type="remove" context="src" dev="PF">
 				PassiveSynchronizationStrategy is obsolete.  Use activate(String) instead.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				synchronize() method of SynchronizationStrategy interface no longer uses DatabaseClusterDescriptor.
 			</action>
 			<action type="fix" context="doc" dev="PF">
@@ -486,42 +517,42 @@
 			</action>
 		</release>
 		<release version="1.0-beta-3" date="February 7, 2005">
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				All log/exception messages are now localized.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Driver is no longer required when defining a driver-based cluster since underlying driver already be registered via the jdbc.drivers system property.
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixed bug in SQLException when nested exception chain is already initialized.
 			</action>
 		</release>
 		<release version="1.0-beta-2" date="January 8, 2005">
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Added JMX interface to DatabaseCluster to allow administration of each cluster.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Refactored cluster initialization and management.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Distributable behavior implemented using command pattern.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Restructured configuration DTD adding new synchronization-related cluster properties.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Refactored distributable behavior to support activation.
 			</action>
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Added ability to activate a failed database.
 			</action>
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Created database synchronization strategies used during activation.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Allow simple names for DriverManager-based database cluster.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Enhanced large object support.
 			</action>
 			<action type="update" context="doc" dev="PF">
@@ -529,70 +560,70 @@
 			</action>
 		</release>
 		<release version="1.0-beta-1" date="October 1, 2004">
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixed bug in connection.rollback()
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixed logic in PreparedStatement/CallableStatement.setXXXStream() and ResultSet.updateXXXStream() methods
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Optimized asynchronous execution of write operations.
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Improved consistancy of cluster when autocommit is true.
 			</action>
 			<action type="update" context="lib" dev="PF">
 				Upgraded JGroups to v2.2.7
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Prevent multiple logging of database deactivation
 			</action>
 		</release>
 		<release version="1.0-alpha-3" date="August 30, 2004">
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Configuration DTD is now PUBLIC
 			</action>
 			<action type="update" context="lib" dev="PF">
 				Upgraded JGroups to v2.2.6
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixed thread safety bug in SQLProxy.executeWrite()
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Changed license to LGPL, added license details to source code
 			</action>
-			<action type="remove" context="code" dev="PF">
+			<action type="remove" context="src" dev="PF">
 				Removed obsolete RowSetProxy class, javax.sql.RowSet implementation are implicitly supported
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Refactored package names to reflect project name
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Replaced CHANGES.txt with this page
 			</action>
 		</release>
 		<release version="1.0-alpha-2" date="July 17, 2004">
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Added ability specify location of configuration file using a system property
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Extended classpath search for configuration file to include system classpath
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixed DataSource proxy initialization
 			</action>
-			<action type="update" context="code" dev="PF">
+			<action type="update" context="src" dev="PF">
 				DriverProxy now expects the cluster name to match the JDBC url
 			</action>
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Several refactorings affecting configuration dtd
 			</action>
-			<action type="fix" context="code" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Fixed bug in clean target of ant build file
 			</action>
 		</release>
 		<release version="1.0-alpha-1" date="July 14, 2004">
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Initial Release
 			</action>
 		</release>
@@ -600,15 +631,21 @@
 
 	<todo>
 		<actions priority="high">
-			<action type="add" context="code" dev="PF">
-				Add cache-meta-data="none|lazy|eager" option to cluster.
+			<action type="add" context="src" dev="PF">
+				Add meta-data-cache="none|lazy|eager" option to cluster.
 				Add database cluster mbean method to flush cache.
 			</action>
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Add support for common unique identifier generation mechanisms, namely identity columns and sequences.
 			</action>
 			<action type="add" context="doc" dev="PF">
-				Generate performance graphs for HA-JDBC 1.1.
+				Generate new performance graphs for HA-JDBC 1.1.
+			</action>
+			<action type="update" context="src" dev="PF">
+				Refactor differential synchronization strategy so that it performs a full synchronization if table does not contain a primary key.
+			</action>
+			<action type="add" context="src" dev="PF">
+				Enhance distributable locking to support both read and write locks.
 			</action>
 		</actions>
 		<actions priority="medium">
@@ -617,7 +654,7 @@
 			</action>
 		</actions>
 		<actions priority="low">
-			<action type="add" context="code" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Support for using HA-JDBC in conjunction with native database replication capabilities.
 				HA-JDBC would add high-availability to cluster through multiple master support while hiding write-to-master/read-from-slave details from the application.
 			</action>
