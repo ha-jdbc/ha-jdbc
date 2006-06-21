@@ -359,29 +359,18 @@ public class SQLObject<E, P>
 	{
 		Map<Database, T> resultMap = new TreeMap<Database, T>();
 
-		Lock lock = this.databaseCluster.getLockManager().readLock(LockManager.GLOBAL);
-
-		lock.lock();
+		List<Database> databaseList = this.databaseCluster.getBalancer().list();
 		
-		try
+		if (databaseList.isEmpty())
 		{
-			List<Database> databaseList = this.databaseCluster.getBalancer().list();
-			
-			if (databaseList.isEmpty())
-			{
-				throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this.databaseCluster));
-			}
-
-			for (Database database: databaseList)
-			{
-				E object = this.getObject(database);
-				
-				resultMap.put(database, operation.execute(database, object));
-			}
+			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this.databaseCluster));
 		}
-		finally
+
+		for (Database database: databaseList)
 		{
-			lock.unlock();
+			E object = this.getObject(database);
+			
+			resultMap.put(database, operation.execute(database, object));
 		}
 		
 		this.record(operation);
