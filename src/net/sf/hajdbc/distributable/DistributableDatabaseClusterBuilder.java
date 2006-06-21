@@ -62,7 +62,8 @@ public class DistributableDatabaseClusterBuilder implements DatabaseClusterBuild
 	public void setConfig(String config) throws Exception
 	{
 		this.config = config;
-		this.factory.setDomain("org.jgroups");
+		
+		this.factory.create();
 		this.factory.setMultiplexerConfig(config);
 	}
 	
