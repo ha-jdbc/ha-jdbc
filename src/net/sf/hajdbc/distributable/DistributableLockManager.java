@@ -52,7 +52,9 @@ import org.slf4j.LoggerFactory;
  */
 public class DistributableLockManager implements LockManager, TwoPhaseVotingListener, VoteResponseProcessor
 {
-	static Logger logger = LoggerFactory.getLogger(DistributableLockManager.class);
+	private static Logger logger = LoggerFactory.getLogger(DistributableLockManager.class);
+	
+	private static enum LockDecreeType { RELEASE, ACQUIRE };
 	
 	private Channel channel;
 	protected int timeout;
@@ -223,8 +225,6 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	{
 		return this.channel;
 	}
-	
-	private static enum LockDecreeType { RELEASE, ACQUIRE };
 	
 	private class DistributableLock implements Lock
 	{
