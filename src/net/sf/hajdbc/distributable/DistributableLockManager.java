@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
 
 import net.sf.hajdbc.LockManager;
 import net.sf.hajdbc.Messages;
@@ -58,7 +57,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	private Channel channel;
 	protected int timeout;
 	private LockManager localLockManager;
-	private Map<String, ReadWriteLock> lockMap = new HashMap<String, ReadWriteLock>();
+	private Map<String, Lock> lockMap = new HashMap<String, Lock>();
 	protected TwoPhaseVotingAdapter votingAdapter;
 	
 	/**
@@ -95,7 +94,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	 */
 	public Lock readLock(String object)
 	{
-		return this.getDistributableLock(object).readLock();
+		return this.localLockManager.readLock(object);
 	}
 
 	/**
@@ -103,16 +102,16 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	 */
 	public Lock writeLock(String object)
 	{
-		return this.getDistributableLock(object).writeLock();
+		return this.getDistributableLock(object);
 	}
 
-	private synchronized ReadWriteLock getDistributableLock(String object)
+	private synchronized Lock getDistributableLock(String object)
 	{
-		ReadWriteLock lock = this.lockMap.get(object);
+		Lock lock = this.lockMap.get(object);
 		
 		if (lock == null)
 		{
-			lock = new DistributableReadWriteLock(object);
+			lock = new DistributableLock(object);
 			
 			this.lockMap.put(object, lock);
 		}
@@ -176,7 +175,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	{
 		LockDecree decree = LockDecree.class.cast(object);
 		
-		if (decree.getDecreeType() == LockDecreeType.ACQUIRE)
+		if (decree.getType() == LockDecreeType.ACQUIRE)
 		{
 			return this.getLocalLock(decree).tryLock();
 		}
@@ -191,7 +190,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	{
 		LockDecree decree = LockDecree.class.cast(object);
 
-		if (decree.getDecreeType() == LockDecreeType.RELEASE)
+		if (decree.getType() == LockDecreeType.RELEASE)
 		{
 			this.getLocalLock(decree).unlock();
 		}
@@ -206,7 +205,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	{
 		LockDecree decree = LockDecree.class.cast(object);
 		
-		if (decree.getDecreeType() == LockDecreeType.ACQUIRE)
+		if (decree.getType() == LockDecreeType.ACQUIRE)
 		{
 			this.getLocalLock(decree).unlock();
 		}
@@ -214,9 +213,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	
 	private Lock getLocalLock(LockDecree decree)
 	{
-		String object = decree.getId();
-		
-		return (decree.getType() == LockType.READ) ? this.localLockManager.readLock(object) : this.localLockManager.writeLock(object);
+		return this.localLockManager.writeLock(decree.getId());
 	}
 	
 	/**
@@ -228,45 +225,14 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	}
 	
 	private static enum LockDecreeType { RELEASE, ACQUIRE };
-	private static enum LockType { READ, WRITE };
-	
-	private class DistributableReadWriteLock implements ReadWriteLock
-	{
-		private Lock readLock;
-		private Lock writeLock;
-		
-		public DistributableReadWriteLock(String object)
-		{
-			this.readLock = new DistributableLock(object, LockType.READ);
-			this.writeLock = new DistributableLock(object, LockType.WRITE);
-		}
-
-		/**
-		 * @see java.util.concurrent.locks.ReadWriteLock#readLock()
-		 */
-		public Lock readLock()
-		{
-			return this.readLock;
-		}
-
-		/**
-		 * @see java.util.concurrent.locks.ReadWriteLock#writeLock()
-		 */
-		public Lock writeLock()
-		{
-			return this.writeLock;
-		}
-	}
 	
 	private class DistributableLock implements Lock
 	{
 		private String object;
-		private LockType type;
 		
-		public DistributableLock(String object, LockType type)
+		public DistributableLock(String object)
 		{
 			this.object = object;
-			this.type = type;
 		}
 		
 		/**
@@ -298,7 +264,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 		{
 			try
 			{
-				return DistributableLockManager.this.votingAdapter.vote(new LockDecree(this.object, LockDecreeType.ACQUIRE, this.type), DistributableLockManager.this.timeout, DistributableLockManager.this);
+				return DistributableLockManager.this.votingAdapter.vote(new LockDecree(this.object, LockDecreeType.ACQUIRE), DistributableLockManager.this.timeout, DistributableLockManager.this);
 			}
 			catch (ClassCastException e)
 			{
@@ -335,7 +301,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 		{
 			try
 			{
-				if (!DistributableLockManager.this.votingAdapter.vote(new LockDecree(this.object, LockDecreeType.RELEASE, this.type), DistributableLockManager.this.timeout, DistributableLockManager.this))
+				if (!DistributableLockManager.this.votingAdapter.vote(new LockDecree(this.object, LockDecreeType.RELEASE), DistributableLockManager.this.timeout, DistributableLockManager.this))
 				{
 					throw new IllegalStateException();
 				}
@@ -364,13 +330,11 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 		private static final long serialVersionUID = -3362590132133718171L;
 		
 		private String object;
-		private LockDecreeType decreeType;
-		private LockType type;
+		private LockDecreeType type;
 		
-		public LockDecree(String id, LockDecreeType decreeType, LockType type)
+		public LockDecree(String id, LockDecreeType type)
 		{
 			this.object = id;
-			this.decreeType = decreeType;
 			this.type = type;
 		}
 
@@ -379,17 +343,12 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 			// Required for deserialization
 		}
 		
-		public LockDecreeType getDecreeType()
-		{
-			return this.decreeType;
-		}
-
 		public String getId()
 		{
 			return this.object;
 		}
 
-		public LockType getType()
+		public LockDecreeType getType()
 		{
 			return this.type;
 		}
@@ -400,7 +359,6 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 		public void writeExternal(ObjectOutput output) throws IOException
 		{
 			output.writeUTF(this.object);
-			output.writeInt(this.decreeType.ordinal());
 			output.writeInt(this.type.ordinal());
 		}
 
@@ -410,8 +368,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 		public void readExternal(ObjectInput input) throws IOException
 		{
 			this.object = input.readUTF();
-			this.decreeType = LockDecreeType.values()[input.readInt()];
-			this.type = LockType.values()[input.readInt()];
+			this.type = LockDecreeType.values()[input.readInt()];
 		}
 	}
 }
