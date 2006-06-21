@@ -40,7 +40,10 @@ import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.UniqueConstraint;
 
 /**
+ * DatabaseMetaDataCache implementation for populating actual cache implementations.
+ * 
  * @author Paul Ferraro
+ * @since 1.2
  */
 public class DatabaseMetaDataCacheImpl implements DatabaseMetaDataCache
 {
@@ -172,7 +175,9 @@ public class DatabaseMetaDataCacheImpl implements DatabaseMetaDataCache
 			int type = resultSet.getInt("DATA_TYPE");
 			String nativeType = resultSet.getString("TYPE_NAME");
 			
-			columnMap.put(this.quote(name), new ColumnProperties(type, nativeType));
+			String column = this.quote(name);
+			
+			columnMap.put(this.quote(name), new ColumnProperties(column, type, nativeType));
 		}
 		
 		resultSet.close();
@@ -311,7 +316,7 @@ public class DatabaseMetaDataCacheImpl implements DatabaseMetaDataCache
 	/**
 	 * @see net.sf.hajdbc.DatabaseMetaDataCache#qualifyTableForDML(java.lang.String, java.lang.String)
 	 */
-	public String getQualifiedTableForDML(String schema, String table) throws SQLException
+	public String getQualifiedNameForDML(String schema, String table) throws SQLException
 	{
 		return this.getDatabaseMetaData().supportsSchemasInDataManipulation() ? schema + "." + table : table;
 	}
@@ -319,7 +324,7 @@ public class DatabaseMetaDataCacheImpl implements DatabaseMetaDataCache
 	/**
 	 * @see net.sf.hajdbc.DatabaseMetaDataCache#qualifyTableForDDL(java.lang.String, java.lang.String)
 	 */
-	public String getQualifiedTableForDDL(String schema, String table) throws SQLException
+	public String getQualifiedNameForDDL(String schema, String table) throws SQLException
 	{
 		return this.getDatabaseMetaData().supportsSchemasInTableDefinitions() ? schema + "." + table : table;
 	}

@@ -24,7 +24,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -33,8 +32,10 @@ import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.UniqueConstraint;
 
 /**
+ * DatabaseMetaDataCache implementation that eagerly caches data when first flushed.
+ * 
  * @author Paul Ferraro
- *
+ * @since 1.2
  */
 public class EagerDatabaseMetaDataCache implements DatabaseMetaDataCache
 {
@@ -65,12 +66,12 @@ public class EagerDatabaseMetaDataCache implements DatabaseMetaDataCache
 				{
 					TableProperties properties = this.properties.getTableProperties(schema, table);
 					
-					properties.setQualifiedTableForDDL(this.cache.getQualifiedTableForDDL(schema, table));
-					properties.setQualifiedTableForDML(this.cache.getQualifiedTableForDML(schema, table));
+					properties.setQualifiedNameForDDL(this.cache.getQualifiedNameForDDL(schema, table));
+					properties.setQualifiedNameForDML(this.cache.getQualifiedNameForDML(schema, table));
 					
-					String qualifiedTable = properties.getQualifiedTableForDML();
+//					String qualifiedTable = properties.getQualifiedTableForDML();
 					
-					this.properties.getContainsAutoIncrementColumnMap().put(qualifiedTable, this.cache.containsAutoIncrementColumn(qualifiedTable));
+//					this.properties.getContainsAutoIncrementColumnMap().put(qualifiedTable, this.cache.containsAutoIncrementColumn(qualifiedTable));
 					
 					properties.setColumns(this.cache.getColumns(schema, table));
 					properties.setForeignKeyConstraints(this.cache.getForeignKeyConstraints(schema, table));
@@ -179,15 +180,15 @@ public class EagerDatabaseMetaDataCache implements DatabaseMetaDataCache
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getQualifiedTableForDDL(java.lang.String, java.lang.String)
+	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getQualifiedNameForDDL(java.lang.String, java.lang.String)
 	 */
-	public String getQualifiedTableForDDL(String schema, String table)
+	public String getQualifiedNameForDDL(String schema, String table)
 	{
 		this.lock.readLock().lock();
 		
 		try
 		{
-			return this.properties.getTableProperties(schema, table).getQualifiedTableForDDL();
+			return this.properties.getTableProperties(schema, table).getQualifiedNameForDDL();
 		}
 		finally
 		{
@@ -196,15 +197,15 @@ public class EagerDatabaseMetaDataCache implements DatabaseMetaDataCache
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getQualifiedTableForDML(java.lang.String, java.lang.String)
+	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getQualifiedNameForDML(java.lang.String, java.lang.String)
 	 */
-	public String getQualifiedTableForDML(String schema, String table)
+	public String getQualifiedNameForDML(String schema, String table)
 	{
 		this.lock.readLock().lock();
 		
 		try
 		{
-			return this.properties.getTableProperties(schema, table).getQualifiedTableForDML();
+			return this.properties.getTableProperties(schema, table).getQualifiedNameForDML();
 		}
 		finally
 		{
@@ -232,11 +233,9 @@ public class EagerDatabaseMetaDataCache implements DatabaseMetaDataCache
 	/**
 	 * @see net.sf.hajdbc.DatabaseMetaDataCache#containsAutoIncrementColumn(java.lang.String)
 	 */
-	public boolean containsAutoIncrementColumn(String qualifiedTable) throws SQLException
+/*	public boolean containsAutoIncrementColumn(String qualifiedTable) throws SQLException
 	{
-		Lock lock = this.lock.readLock();
-		
-		lock.lock();
+		this.lock.readLock().lock();
 		
 		try
 		{
@@ -261,7 +260,8 @@ public class EagerDatabaseMetaDataCache implements DatabaseMetaDataCache
 		}
 		finally
 		{
-			lock.unlock();
+			this.lock.readLock().unlock();
 		}
 	}
+*/
 }

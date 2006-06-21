@@ -25,14 +25,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Helper class that houses processed database meta data.
+ * 
  * @author Paul Ferraro
- *
+ * @since 1.2
  */
 public class DatabaseProperties
 {
 	private Map<String, Collection<String>> tablesMap = null;
 	private Map<String, Map<String, TableProperties>> tablePropertiesMap = new HashMap<String, Map<String, TableProperties>>();
-	private Map<String, Boolean> containsAutoIncrementColumnMap = new HashMap<String, Boolean>();
+//	private Map<String, Boolean> containsAutoIncrementColumnMap = new HashMap<String, Boolean>();
 	private Boolean supportsSelectForUpdate;
 	
 	public Map<String, Collection<String>> getTablesMap()
@@ -44,17 +46,17 @@ public class DatabaseProperties
 	{
 		this.tablesMap = tablesMap;
 	}
-	
+/*	
 	public Map<String, Boolean> getContainsAutoIncrementColumnMap()
 	{
 		return this.containsAutoIncrementColumnMap;
 	}
-	
+*/	
 	public void clear()
 	{
 		this.tablesMap = null;
 		this.tablePropertiesMap.clear();
-		this.containsAutoIncrementColumnMap.clear();
+//		this.containsAutoIncrementColumnMap.clear();
 	}
 	
 	public TableProperties getTableProperties(String schema, String table)
@@ -72,7 +74,7 @@ public class DatabaseProperties
 		
 		if (properties == null)
 		{
-			properties = new TableProperties();
+			properties = new TableProperties(schema, table);
 			
 			tableMap.put(table, properties);
 		}

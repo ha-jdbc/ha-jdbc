@@ -48,7 +48,7 @@ public class DerbyDialect extends DefaultDialect
 	@Override
 	public String getLockTableSQL(DatabaseMetaDataCache metaData, String schema, String table) throws SQLException
 	{
-		return MessageFormat.format("LOCK TABLE {0} IN SHARE MODE", metaData.getQualifiedTableForDML(schema, table));
+		return MessageFormat.format("LOCK TABLE {0} IN SHARE MODE", metaData.getQualifiedNameForDML(schema, table));
 	}
 
 	/**

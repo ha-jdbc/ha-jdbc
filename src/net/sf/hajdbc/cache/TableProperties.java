@@ -27,17 +27,45 @@ import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.UniqueConstraint;
 
 /**
+ * Helper class that houses processed database meta data for an individual table.
+ * 
  * @author Paul Ferraro
- *
+ * @since 1.2
  */
 public class TableProperties
 {
+	private String schema;
+	private String table;
 	private UniqueConstraint primaryKey;
 	private Collection<ForeignKeyConstraint> foreignKeyConstraints;
 	private Collection<UniqueConstraint> uniqueConstraints;
 	private Map<String, ColumnProperties> columnMap;
-	private String qualifiedTableForDDL;
-	private String qualifiedTableForDML;
+	private String qualifiedNameForDDL;
+	private String qualifiedNameForDML;
+	
+	public TableProperties(String schema, String table)
+	{
+		this.schema = schema;
+		this.table = table;
+	}
+	
+	/**
+	 * Returns the name of this table
+	 * @return the table name
+	 */
+	public String getTable()
+	{
+		return this.table;
+	}
+	
+	/**
+	 * Returns the schema of this table
+	 * @return the schema name
+	 */
+	public String getSchema()
+	{
+		return this.schema;
+	}
 	
 	/**
 	 * @return Returns the columns.
@@ -90,33 +118,33 @@ public class TableProperties
 	/**
 	 * @return Returns the qualifiedTableForDDL.
 	 */
-	public String getQualifiedTableForDDL()
+	public String getQualifiedNameForDDL()
 	{
-		return this.qualifiedTableForDDL;
+		return this.qualifiedNameForDDL;
 	}
 	
 	/**
 	 * @param qualifiedTableForDDL The qualifiedTableForDDL to set.
 	 */
-	public void setQualifiedTableForDDL(String qualifiedTableForDDL)
+	public void setQualifiedNameForDDL(String qualifiedTableForDDL)
 	{
-		this.qualifiedTableForDDL = qualifiedTableForDDL;
+		this.qualifiedNameForDDL = qualifiedTableForDDL;
 	}
 	
 	/**
 	 * @return Returns the qualifiedTableForDML.
 	 */
-	public String getQualifiedTableForDML()
+	public String getQualifiedNameForDML()
 	{
-		return this.qualifiedTableForDML;
+		return this.qualifiedNameForDML;
 	}
 	
 	/**
 	 * @param qualifiedTableForDML The qualifiedTableForDML to set.
 	 */
-	public void setQualifiedTableForDML(String qualifiedTableForDML)
+	public void setQualifiedNameForDML(String qualifiedTableForDML)
 	{
-		this.qualifiedTableForDML = qualifiedTableForDML;
+		this.qualifiedNameForDML = qualifiedTableForDML;
 	}
 	
 	/**

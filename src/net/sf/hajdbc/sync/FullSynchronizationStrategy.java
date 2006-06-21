@@ -119,7 +119,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 				
 				for (String table: schemaMapEntry.getValue())
 				{
-					String qualifiedTable = metaData.getQualifiedTableForDML(schema, table);
+					String qualifiedTable = metaData.getQualifiedNameForDML(schema, table);
 
 					Set<String> columnSet = metaData.getColumns(schema, table).keySet();
 					

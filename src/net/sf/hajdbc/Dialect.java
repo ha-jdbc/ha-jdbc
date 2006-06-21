@@ -135,7 +135,7 @@ public interface Dialect
 	 */
 	public boolean isSelectForUpdate(DatabaseMetaDataCache metaData, String sql) throws SQLException;
 	
-	public boolean isInsertIntoTableWithAutoIncrementColumn(DatabaseMetaDataCache metaData, String sql) throws SQLException;
+//	public boolean isInsertIntoTableWithAutoIncrementColumn(DatabaseMetaDataCache metaData, String sql) throws SQLException;
 	
 	/**
 	 * @param sql

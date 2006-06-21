@@ -130,7 +130,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				
 				for (String table: schemaMapEntry.getValue())
 				{
-					String qualifiedTable = metaData.getQualifiedTableForDML(schema, table);
+					String qualifiedTable = metaData.getQualifiedNameForDML(schema, table);
 
 					primaryKeyColumnMap.clear();
 					primaryKeyColumnIndexSet.clear();

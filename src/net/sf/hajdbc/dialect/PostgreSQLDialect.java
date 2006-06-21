@@ -46,7 +46,7 @@ public class PostgreSQLDialect extends DefaultDialect
 	@Override
 	public String getLockTableSQL(DatabaseMetaDataCache metaData, String schema, String table) throws SQLException
 	{
-		return MessageFormat.format("LOCK TABLE {0} IN EXCLUSIVE MODE; SELECT 1 FROM {0}", metaData.getQualifiedTableForDML(schema, table));
+		return MessageFormat.format("LOCK TABLE {0} IN EXCLUSIVE MODE; SELECT 1 FROM {0}", metaData.getQualifiedNameForDML(schema, table));
 	}
 	
 	/**

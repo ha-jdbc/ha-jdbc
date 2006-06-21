@@ -40,7 +40,7 @@ import net.sf.hajdbc.util.Strings;
 public class DefaultDialect implements Dialect
 {
 	private Pattern selectForUpdatePattern = Pattern.compile(this.selectForUpdatePattern(), Pattern.CASE_INSENSITIVE);
-	private Pattern insertIntoTablePattern = Pattern.compile(this.insertIntoTablePattern(), Pattern.CASE_INSENSITIVE);
+//	private Pattern insertIntoTablePattern = Pattern.compile(this.insertIntoTablePattern(), Pattern.CASE_INSENSITIVE);
 	private Pattern sequencePattern = Pattern.compile(this.sequencePattern(), Pattern.CASE_INSENSITIVE);
 	
 	/**
@@ -56,7 +56,7 @@ public class DefaultDialect implements Dialect
 	 */
 	public String getLockTableSQL(DatabaseMetaDataCache metaData, String schema, String table) throws SQLException
 	{
-		StringBuilder builder = new StringBuilder("UPDATE ").append(metaData.getQualifiedTableForDML(schema, table)).append(" SET ");
+		StringBuilder builder = new StringBuilder("UPDATE ").append(metaData.getQualifiedNameForDML(schema, table)).append(" SET ");
 		
 		UniqueConstraint primaryKey = metaData.getPrimaryKey(schema, table);
 		
@@ -84,7 +84,7 @@ public class DefaultDialect implements Dialect
 	 */
 	public String getTruncateTableSQL(DatabaseMetaDataCache metaData, String schema, String table) throws SQLException
 	{
-		return MessageFormat.format(this.truncateTableFormat(), metaData.getQualifiedTableForDML(schema, table));
+		return MessageFormat.format(this.truncateTableFormat(), metaData.getQualifiedNameForDML(schema, table));
 	}
 	
 	/**
@@ -92,7 +92,7 @@ public class DefaultDialect implements Dialect
 	 */
 	public String getCreateForeignKeyConstraintSQL(DatabaseMetaDataCache metaData, ForeignKeyConstraint key) throws SQLException
 	{
-		return MessageFormat.format(this.createForeignKeyFormat(), key.getName(), metaData.getQualifiedTableForDDL(key.getSchema(), key.getTable()), Strings.join(key.getColumnList(), ","), metaData.getQualifiedTableForDDL(key.getForeignSchema(), key.getForeignTable()), Strings.join(key.getForeignColumnList(), ","), key.getDeleteRule(), key.getUpdateRule(), key.getDeferrability());
+		return MessageFormat.format(this.createForeignKeyFormat(), key.getName(), metaData.getQualifiedNameForDDL(key.getSchema(), key.getTable()), Strings.join(key.getColumnList(), ","), metaData.getQualifiedNameForDDL(key.getForeignSchema(), key.getForeignTable()), Strings.join(key.getForeignColumnList(), ","), key.getDeleteRule(), key.getUpdateRule(), key.getDeferrability());
 	}
 	
 	/**
@@ -100,7 +100,7 @@ public class DefaultDialect implements Dialect
 	 */
 	public String getDropForeignKeyConstraintSQL(DatabaseMetaDataCache metaData, ForeignKeyConstraint key) throws SQLException
 	{
-		return MessageFormat.format(this.dropConstraintFormat(), key.getName(), metaData.getQualifiedTableForDDL(key.getSchema(), key.getTable()));
+		return MessageFormat.format(this.dropConstraintFormat(), key.getName(), metaData.getQualifiedNameForDDL(key.getSchema(), key.getTable()));
 	}
 	
 	/**
@@ -108,7 +108,7 @@ public class DefaultDialect implements Dialect
 	 */
 	public String getCreateUniqueConstraintSQL(DatabaseMetaDataCache metaData, UniqueConstraint constraint) throws SQLException
 	{
-		return MessageFormat.format(this.createUniqueKeyFormat(), constraint.getName(), metaData.getQualifiedTableForDDL(constraint.getSchema(), constraint.getTable()), Strings.join(constraint.getColumnList(), ","));
+		return MessageFormat.format(this.createUniqueKeyFormat(), constraint.getName(), metaData.getQualifiedNameForDDL(constraint.getSchema(), constraint.getTable()), Strings.join(constraint.getColumnList(), ","));
 	}
 	
 	/**
@@ -116,7 +116,7 @@ public class DefaultDialect implements Dialect
 	 */
 	public String getDropUniqueConstraintSQL(DatabaseMetaDataCache metaData, UniqueConstraint constraint) throws SQLException
 	{
-		return MessageFormat.format(this.dropConstraintFormat(), constraint.getName(), metaData.getQualifiedTableForDDL(constraint.getSchema(), constraint.getTable()));
+		return MessageFormat.format(this.dropConstraintFormat(), constraint.getName(), metaData.getQualifiedNameForDDL(constraint.getSchema(), constraint.getTable()));
 	}
 
 	/**
@@ -124,7 +124,7 @@ public class DefaultDialect implements Dialect
 	 */
 	public String getCreatePrimaryKeyConstraintSQL(DatabaseMetaDataCache metaData, UniqueConstraint constraint) throws SQLException
 	{
-		return MessageFormat.format(this.createPrimaryKeyFormat(), constraint.getName(), metaData.getQualifiedTableForDDL(constraint.getSchema(), constraint.getTable()), Strings.join(constraint.getColumnList(), ","));
+		return MessageFormat.format(this.createPrimaryKeyFormat(), constraint.getName(), metaData.getQualifiedNameForDDL(constraint.getSchema(), constraint.getTable()), Strings.join(constraint.getColumnList(), ","));
 	}
 
 	/**
@@ -132,7 +132,7 @@ public class DefaultDialect implements Dialect
 	 */
 	public String getDropPrimaryKeyConstraintSQL(DatabaseMetaDataCache metaData, UniqueConstraint constraint) throws SQLException
 	{
-		return MessageFormat.format(this.dropConstraintFormat(), constraint.getName(), metaData.getQualifiedTableForDDL(constraint.getSchema(), constraint.getTable()));
+		return MessageFormat.format(this.dropConstraintFormat(), constraint.getName(), metaData.getQualifiedNameForDDL(constraint.getSchema(), constraint.getTable()));
 	}
 
 	/**
@@ -146,13 +146,13 @@ public class DefaultDialect implements Dialect
 	/**
 	 * @see net.sf.hajdbc.Dialect#isInsertIntoTableWithAutoIncrementColumn(net.sf.hajdbc.DatabaseMetaDataCache, java.lang.String)
 	 */
-	public boolean isInsertIntoTableWithAutoIncrementColumn(DatabaseMetaDataCache metaData, String sql) throws SQLException
+/*	public boolean isInsertIntoTableWithAutoIncrementColumn(DatabaseMetaDataCache metaData, String sql) throws SQLException
 	{
 		Matcher matcher = this.insertIntoTablePattern.matcher(sql);
 		
 		return matcher.find() ? metaData.containsAutoIncrementColumn(matcher.group(1)) : false;
 	}
-	
+*/	
 	/**
 	 * @see net.sf.hajdbc.Dialect#parseSequence(java.lang.String)
 	 */
@@ -200,12 +200,12 @@ public class DefaultDialect implements Dialect
 	{
 		return "SELECT\\s+.+\\s+FOR\\s+UPDATE";
 	}
-	
+/*	
 	protected String insertIntoTablePattern()
 	{
 		return "INSERT\\s+(?:INTO\\s+)?(\\S+)";
 	}
-	
+*/	
 	protected String sequencePattern()
 	{
 		return "NEXT\\s+VALUE\\s+FOR\\s+(\\S+)";

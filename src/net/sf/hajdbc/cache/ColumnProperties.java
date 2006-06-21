@@ -21,18 +21,27 @@
 package net.sf.hajdbc.cache;
 
 /**
+ * Helper class that houses meta data about a specified column.
+ * 
  * @author Paul Ferraro
- *
+ * @since 1.2
  */
 public class ColumnProperties
 {
+	private String name;
 	private int type;
 	private String nativeType;
 	
-	public ColumnProperties(int type, String nativeType)
+	public ColumnProperties(String name, int type, String nativeType)
 	{
+		this.name = name;
 		this.type = type;
 		this.nativeType = nativeType;
+	}
+	
+	public String getName()
+	{
+		return this.name;
 	}
 	
 	public int getType()

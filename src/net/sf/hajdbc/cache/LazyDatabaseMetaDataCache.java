@@ -22,8 +22,11 @@ package net.sf.hajdbc.cache;
 
 
 /**
+ * DatabaseMetaDataCache that lazily caches data when requested.
+ * To be used when performance is more of a concern than memory usage, but 
+ * 
  * @author Paul Ferraro
- *
+ * @since 1.2
  */
 public class LazyDatabaseMetaDataCache extends AbstractLazyDatabaseMetaDataCache
 {

@@ -30,8 +30,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Factory for creating DatabaseMetaDataCache implementations.
+ * 
  * @author Paul Ferraro
- *
+ * @since 1.2
  */
 public class DatabaseMetaDataCacheFactory
 {

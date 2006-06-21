@@ -22,8 +22,11 @@ package net.sf.hajdbc.cache;
 
 
 /**
+ * DatabaseMetaDataCache that lazily caches data when requested, but only for a single thread.
+ * To be used when memory usage is more of a concern than performance.
+ * 
  * @author Paul Ferraro
- *
+ * @since 1.2
  */
 public class ThreadLocalDatabaseMetaDataCache extends AbstractLazyDatabaseMetaDataCache
 {

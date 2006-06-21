@@ -30,8 +30,10 @@ import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.UniqueConstraint;
 
 /**
+ * Abstract implementation of a DatabaseMetaDataCache that will lazily load.
+ * 
  * @author Paul Ferraro
- *
+ * @since 1.2
  */
 public abstract class AbstractLazyDatabaseMetaDataCache implements DatabaseMetaDataCache
 {
@@ -151,38 +153,38 @@ public abstract class AbstractLazyDatabaseMetaDataCache implements DatabaseMetaD
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getQualifiedTableForDDL(java.lang.String, java.lang.String)
+	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getQualifiedNameForDDL(java.lang.String, java.lang.String)
 	 */
-	public String getQualifiedTableForDDL(String schema, String table) throws SQLException
+	public String getQualifiedNameForDDL(String schema, String table) throws SQLException
 	{
 		TableProperties properties = this.getDatabaseProperties().getTableProperties(schema, table);
 		
-		String qualifiedTable = properties.getQualifiedTableForDDL();
+		String qualifiedTable = properties.getQualifiedNameForDDL();
 		
 		if (qualifiedTable == null)
 		{
-			qualifiedTable = this.cache.getQualifiedTableForDDL(schema, table);
+			qualifiedTable = this.cache.getQualifiedNameForDDL(schema, table);
 			
-			properties.setQualifiedTableForDDL(qualifiedTable);
+			properties.setQualifiedNameForDDL(qualifiedTable);
 		}
 		
 		return qualifiedTable;
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getQualifiedTableForDML(java.lang.String, java.lang.String)
+	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getQualifiedNameForDML(java.lang.String, java.lang.String)
 	 */
-	public String getQualifiedTableForDML(String schema, String table) throws SQLException
+	public String getQualifiedNameForDML(String schema, String table) throws SQLException
 	{
 		TableProperties properties = this.getDatabaseProperties().getTableProperties(schema, table);
 		
-		String qualifiedTable = properties.getQualifiedTableForDML();
+		String qualifiedTable = properties.getQualifiedNameForDML();
 		
 		if (qualifiedTable == null)
 		{
-			qualifiedTable = this.cache.getQualifiedTableForDML(schema, table);
+			qualifiedTable = this.cache.getQualifiedNameForDML(schema, table);
 			
-			properties.setQualifiedTableForDML(qualifiedTable);
+			properties.setQualifiedNameForDML(qualifiedTable);
 		}
 		
 		return qualifiedTable;
@@ -208,7 +210,7 @@ public abstract class AbstractLazyDatabaseMetaDataCache implements DatabaseMetaD
 	/**
 	 * @see net.sf.hajdbc.DatabaseMetaDataCache#containsAutoIncrementColumn(java.lang.String)
 	 */
-	public boolean containsAutoIncrementColumn(String qualifiedTable) throws SQLException
+/*	public boolean containsAutoIncrementColumn(String qualifiedTable) throws SQLException
 	{
 		Map<String, Boolean> containsAutoIncrementColumnMap = this.getDatabaseProperties().getContainsAutoIncrementColumnMap();
 		
@@ -223,4 +225,5 @@ public abstract class AbstractLazyDatabaseMetaDataCache implements DatabaseMetaD
 		
 		return containsAutoIncrementColumn;
 	}
+*/
 }
