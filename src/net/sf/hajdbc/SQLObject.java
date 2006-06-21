@@ -52,12 +52,17 @@ public class SQLObject<E, P>
 	private Map<Database, E> objectMap;
 	private Map<String, Operation<E, ?>> operationMap = new HashMap<String, Operation<E, ?>>();
 	
-	protected SQLObject(SQLObject<P, ?> parent, Operation<P, E> operation, ExecutorService executor) throws java.sql.SQLException
+	protected SQLObject(SQLObject<P, ?> parent, Operation<P, E> operation, ExecutorService executor, Lock lock) throws java.sql.SQLException
 	{
-		this(parent.getDatabaseCluster(), execute(parent, operation, executor));
+		this(parent.getDatabaseCluster(), execute(parent, operation, executor, lock));
 		
 		this.parent = parent;
 		this.parentOperation = operation;
+	}
+	
+	protected SQLObject(SQLObject<P, ?> parent, Operation<P, E> operation, ExecutorService executor) throws java.sql.SQLException
+	{
+		this(parent, operation, executor, null);
 	}
 	
 	/**
@@ -69,9 +74,9 @@ public class SQLObject<E, P>
 	 * @return map of Database to SQL object
 	 * @throws java.sql.SQLException 
 	 */
-	private static <T, S> Map<Database, T> execute(SQLObject<S, ?> parent, Operation<S, T> operation, ExecutorService executor) throws java.sql.SQLException
+	private static <T, S> Map<Database, T> execute(SQLObject<S, ?> parent, Operation<S, T> operation, ExecutorService executor, Lock lock) throws java.sql.SQLException
 	{
-		return parent.executeWriteToDatabase(operation, executor);
+		return parent.executeWriteToDatabase(operation, executor, lock);
 	}
 	
 	protected SQLObject(DatabaseCluster databaseCluster, Map<Database, E> objectMap)
@@ -221,7 +226,21 @@ public class SQLObject<E, P>
 	 */
 	public final <T> Map<Database, T> executeTransactionalWriteToDatabase(final Operation<E, T> operation) throws java.sql.SQLException
 	{
-		return this.executeWriteToDatabase(operation, this.databaseCluster.getTransactionalExecutor());
+		return this.executeTransactionalWriteToDatabase(operation, null);
+	}
+
+	/**
+	 * Executes the specified transactional write operation on every database in the cluster.
+	 * It is assumed that these types of operation will require access to the database.
+	 * @param <T> 
+	 * @param operation a database operation
+	 * @param lock a lock
+	 * @return the result of the operation
+	 * @throws java.sql.SQLException if operation execution fails
+	 */
+	public final <T> Map<Database, T> executeTransactionalWriteToDatabase(final Operation<E, T> operation, Lock lock) throws java.sql.SQLException
+	{
+		return this.executeWriteToDatabase(operation, this.databaseCluster.getTransactionalExecutor(), lock);
 	}
 	
 	/**
@@ -234,15 +253,18 @@ public class SQLObject<E, P>
 	 */
 	public final <T> Map<Database, T> executeNonTransactionalWriteToDatabase(final Operation<E, T> operation) throws java.sql.SQLException
 	{
-		return this.executeWriteToDatabase(operation, this.databaseCluster.getNonTransactionalExecutor());
+		return this.executeWriteToDatabase(operation, this.databaseCluster.getNonTransactionalExecutor(), null);
 	}
 	
-	private <T> Map<Database, T> executeWriteToDatabase(final Operation<E, T> operation, ExecutorService executor) throws java.sql.SQLException
+	private <T> Map<Database, T> executeWriteToDatabase(final Operation<E, T> operation, ExecutorService executor, Lock lock) throws java.sql.SQLException
 	{
 		Map<Database, T> resultMap = new TreeMap<Database, T>();
 		SortedMap<Database, java.sql.SQLException> exceptionMap = new TreeMap<Database, java.sql.SQLException>();
 		
-		Lock lock = this.databaseCluster.getLockManager().readLock(LockManager.GLOBAL);
+		if (lock == null)
+		{
+			lock = this.databaseCluster.getLockManager().readLock(LockManager.GLOBAL);
+		}
 		
 		lock.lock();
 		

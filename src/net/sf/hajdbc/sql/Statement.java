@@ -23,6 +23,7 @@ package net.sf.hajdbc.sql;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
@@ -37,6 +38,8 @@ import net.sf.hajdbc.SQLObject;
  */
 public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.sql.Connection> implements java.sql.Statement
 {
+	protected String sql;
+	
 	/**
 	 * Constructs a new StatementProxy.
 	 * @param connection a Connection proxy
@@ -107,6 +110,8 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
+		this.sql += sql;
+		
 		this.executeWriteToDriver(operation);
 	}
 
@@ -142,6 +147,8 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 				return null;
 			}
 		};
+		
+		this.sql = "";
 		
 		this.executeWriteToDriver(operation);
 	}
@@ -195,7 +202,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeTransactionalWriteToDatabase(operation));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLock(sql)));
 	}
 
 	/**
@@ -211,7 +218,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeTransactionalWriteToDatabase(operation));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLock(sql)));
 	}
 
 	/**
@@ -227,7 +234,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeTransactionalWriteToDatabase(operation));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLock(sql)));
 	}
 
 	/**
@@ -243,7 +250,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeTransactionalWriteToDatabase(operation));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLock(sql)));
 	}
 
 	/**
@@ -259,7 +266,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeTransactionalWriteToDatabase(operation));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLock(this.sql)));
 	}
 
 	/**
@@ -275,7 +282,9 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return ((this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(sql)) ? this.executeReadFromDatabase(operation) : new ResultSet<T>(this, operation);
+		Lock lock = this.getLock(sql);
+		
+		return ((this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(sql) && (lock == null)) ? this.executeReadFromDatabase(operation) : new ResultSet<T>(this, operation, lock);
 	}
 
 	/**
@@ -291,7 +300,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeTransactionalWriteToDatabase(operation));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLock(sql)));
 	}
 
 	/**
@@ -307,7 +316,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeTransactionalWriteToDatabase(operation));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLock(sql)));
 	}
 
 	/**
@@ -323,7 +332,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeTransactionalWriteToDatabase(operation));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLock(sql)));
 	}
 
 	/**
@@ -339,7 +348,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeTransactionalWriteToDatabase(operation));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLock(sql)));
 	}
 
 	/**
@@ -491,7 +500,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 
-		return (this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) ? this.executeReadFromDriver(operation) : new ResultSet<T>(this, operation);
+		return (this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) ? this.executeReadFromDriver(operation) : new ResultSet<T>(this, operation, null);
 	}
 
 	/**
@@ -721,5 +730,14 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 		DatabaseCluster databaseCluster = this.getDatabaseCluster();
 		
 		return databaseCluster.getDialect().isSelectForUpdate(databaseCluster.getDatabaseMetaDataCache(this.getConnection()), sql);
+	}
+	
+	protected Lock getLock(String sql) throws SQLException
+	{
+		DatabaseCluster databaseCluster = this.getDatabaseCluster();
+		
+		String sequence = databaseCluster.getDialect().parseSequence(sql);
+		
+		return (sequence != null) ? databaseCluster.getLockManager().writeLock(sequence) : null;
 	}
 }

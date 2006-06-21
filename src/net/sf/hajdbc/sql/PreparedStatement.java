@@ -36,6 +36,7 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Operation;
@@ -48,8 +49,6 @@ import net.sf.hajdbc.Operation;
  */
 public class PreparedStatement<T extends java.sql.PreparedStatement> extends Statement<T> implements java.sql.PreparedStatement
 {
-	private String sql;
-	
 	/**
 	 * Constructs a new PreparedStatementProxy.
 	 * @param connection a Connection proxy
@@ -113,7 +112,7 @@ public class PreparedStatement<T extends java.sql.PreparedStatement> extends Sta
 			}
 		};
 		
-		return this.firstValue(this.executeTransactionalWriteToDatabase(operation));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLock(this.sql)));
 	}
 
 	/**
@@ -129,7 +128,9 @@ public class PreparedStatement<T extends java.sql.PreparedStatement> extends Sta
 			}
 		};
 
-		return ((this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(this.sql)) ? this.executeReadFromDatabase(operation) : new ResultSet<T>(this, operation);
+		Lock lock = this.getLock(this.sql);
+		
+		return ((this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(this.sql) && (lock == null)) ? this.executeReadFromDatabase(operation) : new ResultSet<T>(this, operation, lock);
 	}
 
 	/**
@@ -145,7 +146,7 @@ public class PreparedStatement<T extends java.sql.PreparedStatement> extends Sta
 			}
 		};
 		
-		return this.firstValue(this.executeTransactionalWriteToDatabase(operation));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLock(this.sql)));
 	}
 
 	/**
