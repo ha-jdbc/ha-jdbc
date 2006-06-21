@@ -20,13 +20,7 @@
  */
 package net.sf.hajdbc.distributable;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -38,6 +32,7 @@ import org.jgroups.Channel;
 import org.jgroups.ChannelException;
 import org.jgroups.blocks.TwoPhaseVotingAdapter;
 import org.jgroups.blocks.TwoPhaseVotingListener;
+import org.jgroups.blocks.VoteException;
 import org.jgroups.blocks.VoteResponseProcessor;
 import org.jgroups.blocks.VotingAdapter;
 import org.jgroups.blocks.VotingAdapter.FailureVoteResult;
@@ -48,18 +43,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * LockManager implementation that leverages a JGroups 2-phase voting adapter for obtain remote write locks.
+ * 
  * @author Paul Ferraro
  */
-public class DistributableLockManager implements LockManager, TwoPhaseVotingListener, VoteResponseProcessor
+public class DistributableLockManager implements LockManager, TwoPhaseVotingListener
 {
-	private static Logger logger = LoggerFactory.getLogger(DistributableLockManager.class);
-	
-	private static enum LockDecreeType { RELEASE, ACQUIRE };
+	static Logger logger = LoggerFactory.getLogger(DistributableLockManager.class);
 	
 	private Channel channel;
 	protected int timeout;
 	private LockManager lockManager;
-	private Map<String, Lock> lockMap = new HashMap<String, Lock>();
 	protected TwoPhaseVotingAdapter votingAdapter;
 	
 	/**
@@ -91,6 +85,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	}
 	
 	/**
+	 * Read locks are local.
 	 * @see net.sf.hajdbc.LockManager#readLock(java.lang.String)
 	 */
 	public Lock readLock(String object)
@@ -99,133 +94,46 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	}
 
 	/**
+	 * Write locks are distributed.
 	 * @see net.sf.hajdbc.LockManager#writeLock(java.lang.String)
 	 */
 	public Lock writeLock(String object)
 	{
-		return this.getDistributableLock(object);
+		return new DistributableLock(object);
 	}
 
-	private synchronized Lock getDistributableLock(String object)
-	{
-		Lock lock = this.lockMap.get(object);
-		
-		if (lock == null)
-		{
-			lock = new DistributableLock(object);
-			
-			this.lockMap.put(object, lock);
-		}
-		
-		return lock;
-	}
-
-	/**
-	 * @see org.jgroups.blocks.VoteResponseProcessor#processResponses(org.jgroups.util.RspList, int, java.lang.Object)
-	 */
-	public boolean processResponses(RspList responseMap, int consensusType, Object decree) throws ChannelException
-	{
-		if (responseMap == null) return false;
-
-		Iterator responses = responseMap.values().iterator();
-		
-		while (responses.hasNext())
-		{
-			Rsp response = Rsp.class.cast(responses.next());
-			
-			if (response.wasSuspected()) continue;
-			
-			if (!response.wasReceived())
-			{
-				throw new ChannelException(Messages.getMessage(Messages.VOTE_NO_RESPONSE, response.getSender()));
-			}
-			
-			Object value = response.getValue();
-			
-			if (value == null) continue;
-
-			if (Throwable.class.isInstance(value))
-			{
-				throw new ChannelException(Messages.getMessage(Messages.VOTE_ERROR_RESPONSE, response.getSender()), Throwable.class.cast(value));
-			}
-			
-			if (!VoteResult.class.isInstance(value))
-			{
-				throw new ChannelException(Messages.getMessage(Messages.VOTE_INVALID_RESPONSE, response.getSender(), value.getClass().getName()));
-			}
-			
-			VoteResult result = VoteResult.class.cast(value);
-			
-			if (FailureVoteResult.class.isInstance(result))
-			{
-				logger.error(FailureVoteResult.class.cast(value).getReason());
-				
-				return false;
-			}
-			
-			if (result.getNegativeVotes() > 0) return false;
-		}
-		
-		return true;
-	}
-	
 	/**
 	 * @see org.jgroups.blocks.TwoPhaseVotingListener#prepare(java.lang.Object)
 	 */
-	public boolean prepare(Object object)
+	public boolean prepare(Object object) throws VoteException
 	{
-		LockDecree decree = LockDecree.class.cast(object);
-		
-		if (decree.getType() == LockDecreeType.ACQUIRE)
-		{
-			return this.getLocalLock(decree).tryLock();
-		}
-		
-		return true;
+		return this.toLockDecree(object).prepare(this.lockManager);
 	}
 
 	/**
 	 * @see org.jgroups.blocks.TwoPhaseVotingListener#commit(java.lang.Object)
 	 */
-	public boolean commit(Object object)
+	public boolean commit(Object object) throws VoteException
 	{
-		LockDecree decree = LockDecree.class.cast(object);
-
-		if (decree.getType() == LockDecreeType.RELEASE)
-		{
-			this.getLocalLock(decree).unlock();
-		}
-		
-		return true;
+		return this.toLockDecree(object).commit(this.lockManager);
 	}
 
 	/**
 	 * @see org.jgroups.blocks.TwoPhaseVotingListener#abort(java.lang.Object)
 	 */
-	public void abort(Object object)
+	public void abort(Object object) throws VoteException
 	{
-		LockDecree decree = LockDecree.class.cast(object);
+		this.toLockDecree(object).abort(this.lockManager);
+	}
+	
+	private LockDecree toLockDecree(Object object) throws VoteException
+	{
+		if (LockDecree.class.isInstance(object)) throw new VoteException("");
 		
-		if (decree.getType() == LockDecreeType.ACQUIRE)
-		{
-			this.getLocalLock(decree).unlock();
-		}
+		return LockDecree.class.cast(object);
 	}
 	
-	private Lock getLocalLock(LockDecree decree)
-	{
-		return this.lockManager.writeLock(decree.getId());
-	}
-	
-	/**
-	 * @return the channel used by the lock manager
-	 */
-	public Channel getChannel()
-	{
-		return this.channel;
-	}
-	
-	private class DistributableLock implements Lock
+	private class DistributableLock implements Lock, VoteResponseProcessor
 	{
 		private String object;
 		
@@ -263,11 +171,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 		{
 			try
 			{
-				return DistributableLockManager.this.votingAdapter.vote(new LockDecree(this.object, LockDecreeType.ACQUIRE), DistributableLockManager.this.timeout, DistributableLockManager.this);
-			}
-			catch (ClassCastException e)
-			{
-				throw new IllegalStateException(e);
+				return DistributableLockManager.this.votingAdapter.vote(new AcquireLockDecree(this.object), DistributableLockManager.this.timeout, this);
 			}
 			catch (ChannelException e)
 			{
@@ -300,14 +204,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 		{
 			try
 			{
-				if (!DistributableLockManager.this.votingAdapter.vote(new LockDecree(this.object, LockDecreeType.RELEASE), DistributableLockManager.this.timeout, DistributableLockManager.this))
-				{
-					throw new IllegalStateException();
-				}
-			}
-			catch (ClassCastException e)
-			{
-				throw new IllegalStateException(e);
+				DistributableLockManager.this.votingAdapter.vote(new ReleaseLockDecree(this.object), DistributableLockManager.this.timeout, this);
 			}
 			catch (ChannelException e)
 			{
@@ -322,52 +219,54 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 		{
 			throw new UnsupportedOperationException();
 		}
-	}
-	
-	public static class LockDecree implements Externalizable
-	{
-		private static final long serialVersionUID = -3362590132133718171L;
 		
-		private String object;
-		private LockDecreeType type;
-		
-		public LockDecree(String id, LockDecreeType type)
-		{
-			this.object = id;
-			this.type = type;
-		}
-
-		public LockDecree()
-		{
-			// Required for deserialization
-		}
-		
-		public String getId()
-		{
-			return this.object;
-		}
-
-		public LockDecreeType getType()
-		{
-			return this.type;
-		}
-
 		/**
-		 * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
+		 * @see org.jgroups.blocks.VoteResponseProcessor#processResponses(org.jgroups.util.RspList, int, java.lang.Object)
 		 */
-		public void writeExternal(ObjectOutput output) throws IOException
+		public boolean processResponses(RspList responseMap, int consensusType, Object decree) throws ChannelException
 		{
-			output.writeUTF(this.object);
-			output.writeInt(this.type.ordinal());
-		}
+			if (responseMap == null) return false;
 
-		/**
-		 * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
-		 */
-		public void readExternal(ObjectInput input) throws IOException
-		{
-			this.object = input.readUTF();
-			this.type = LockDecreeType.values()[input.readInt()];
-		}
+			Iterator responses = responseMap.values().iterator();
+			
+			while (responses.hasNext())
+			{
+				Rsp response = Rsp.class.cast(responses.next());
+				
+				if (response.wasSuspected()) continue;
+				
+				if (!response.wasReceived())
+				{
+					throw new ChannelException(Messages.getMessage(Messages.VOTE_NO_RESPONSE, response.getSender()));
+				}
+				
+				Object value = response.getValue();
+				
+				if (value == null) continue;
+
+				if (Throwable.class.isInstance(value))
+				{
+					throw new ChannelException(Messages.getMessage(Messages.VOTE_ERROR_RESPONSE, response.getSender()), Throwable.class.cast(value));
+				}
+				
+				if (!VoteResult.class.isInstance(value))
+				{
+					throw new ChannelException(Messages.getMessage(Messages.VOTE_INVALID_RESPONSE, response.getSender(), value.getClass().getName()));
+				}
+				
+				VoteResult result = VoteResult.class.cast(value);
+				
+				if (FailureVoteResult.class.isInstance(result))
+				{
+					logger.error(FailureVoteResult.class.cast(value).getReason());
+					
+					return false;
+				}
+				
+				if (result.getNegativeVotes() > 0) return false;
+			}
+			
+			return true;
+		}		
 	}
 }
