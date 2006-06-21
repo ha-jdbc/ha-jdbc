@@ -58,22 +58,21 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	
 	private Channel channel;
 	protected int timeout;
-	private LockManager localLockManager;
+	private LockManager lockManager;
 	private Map<String, Lock> lockMap = new HashMap<String, Lock>();
 	protected TwoPhaseVotingAdapter votingAdapter;
 	
 	/**
 	 * Constructs a new DistributableLock.
-	 * @param name
-	 * @param protocol 
+	 * @param channel
 	 * @param timeout 
-	 * @param lock 
+	 * @param lockManager 
 	 * @throws Exception
 	 */
-	public DistributableLockManager(Channel channel, int timeout, LockManager localLockManager) throws Exception
+	public DistributableLockManager(Channel channel, int timeout, LockManager lockManager) throws Exception
 	{
 		this.timeout = timeout;
-		this.localLockManager = localLockManager;
+		this.lockManager = lockManager;
 		this.channel = channel;
 		
 		this.votingAdapter = new TwoPhaseVotingAdapter(new VotingAdapter(this.channel));
@@ -96,7 +95,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	 */
 	public Lock readLock(String object)
 	{
-		return this.localLockManager.readLock(object);
+		return this.lockManager.readLock(object);
 	}
 
 	/**
@@ -215,7 +214,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	
 	private Lock getLocalLock(LockDecree decree)
 	{
-		return this.localLockManager.writeLock(decree.getId());
+		return this.lockManager.writeLock(decree.getId());
 	}
 	
 	/**
