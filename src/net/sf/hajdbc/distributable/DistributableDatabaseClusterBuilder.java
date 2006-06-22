@@ -63,6 +63,7 @@ public class DistributableDatabaseClusterBuilder implements DatabaseClusterBuild
 	{
 		this.config = config;
 		
+		this.factory.setDomain("org.jgroups");
 		this.factory.create();
 		this.factory.setMultiplexerConfig(config);
 	}
