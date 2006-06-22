@@ -606,13 +606,16 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		}
 		finally
 		{
-			try
+			if (connection != null)
 			{
-				connection.close();
-			}
-			catch (java.sql.SQLException e)
-			{
-				logger.warn(e.toString(), e);
+				try
+				{
+					connection.close();
+				}
+				catch (java.sql.SQLException e)
+				{
+					logger.warn(e.toString(), e);
+				}
 			}
 		}
 	}
