@@ -249,7 +249,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 							Object inactiveObject = inactiveResultSet.getObject(i);
 							
 							// We assume that the primary keys column types are Comparable
-							compare = Comparable.class.cast(activeObject).compareTo(inactiveObject);
+							compare = this.compare(activeObject, inactiveObject);
 							
 							if (compare != 0)
 							{
@@ -432,6 +432,27 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		}
 		
 		statement.executeBatch();
+		statement.clearBatch();
+		
+		Map<String, Long> activeSequenceMap = dialect.getSequences(activeConnection);
+		Map<String, Long> inactiveSequenceMap = dialect.getSequences(inactiveConnection);
+		
+		for (String sequence: activeSequenceMap.keySet())
+		{
+			long activeValue = activeSequenceMap.get(sequence);
+			long inactiveValue = inactiveSequenceMap.get(sequence);
+			
+			if (activeValue != inactiveValue)
+			{
+				String sql = dialect.getAlterSequenceSQL(sequence, activeValue);
+				
+				logger.debug(sql);
+				
+				statement.addBatch(sql);
+			}
+		}
+		
+		statement.executeBatch();
 		statement.close();
 	}
 
@@ -451,6 +472,12 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		}
 		
 		return object1.equals(object2);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private int compare(Object object1, Object object2)
+	{
+		return Comparable.class.cast(object1).compareTo(object2);
 	}
 	
 	/**

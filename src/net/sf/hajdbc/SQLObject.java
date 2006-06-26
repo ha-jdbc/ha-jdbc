@@ -391,6 +391,7 @@ public class SQLObject<E, P>
 	 * @param exceptionMap
 	 * @throws java.sql.SQLException
 	 */
+	@SuppressWarnings("unused")
 	public void handleExceptions(Map<Database, java.sql.SQLException> exceptionMap) throws java.sql.SQLException
 	{
 		for (Map.Entry<Database, java.sql.SQLException> exceptionMapEntry: exceptionMap.entrySet())

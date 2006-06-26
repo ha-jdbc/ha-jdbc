@@ -35,7 +35,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import net.sf.hajdbc.DatabaseMetaDataCache;
-import net.sf.hajdbc.DatabaseProperties;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.Messages;
@@ -233,6 +232,20 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 				
 				statement.addBatch(sql);
 			}
+		}
+		
+		statement.executeBatch();
+		statement.clearBatch();
+		
+		Map<String, Long> activeSequenceMap = dialect.getSequences(activeConnection);
+		
+		for (Map.Entry<String, Long> sequenceMapEntry: activeSequenceMap.entrySet())
+		{
+			String sql = dialect.getAlterSequenceSQL(sequenceMapEntry.getKey(), sequenceMapEntry.getValue());
+			
+			logger.debug(sql);
+			
+			statement.addBatch(sql);
 		}
 		
 		statement.executeBatch();

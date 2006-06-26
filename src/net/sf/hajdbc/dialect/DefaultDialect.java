@@ -20,12 +20,13 @@
  */
 package net.sf.hajdbc.dialect;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -178,9 +179,18 @@ public class DefaultDialect implements Dialect
 	 * JDBC API does not acknowledge the existence of sequences.  Each dialect 
 	 * @see net.sf.hajdbc.Dialect#getSequences()
 	 */
-	public List<String> getSequences()
+	@SuppressWarnings("unused")
+	public Map<String, Long> getSequences(Connection connection) throws SQLException
 	{
-		return Collections.emptyList();
+		return Collections.emptyMap();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#getAlterSequenceSQL(java.lang.String, long)
+	 */
+	public String getAlterSequenceSQL(String sequence, long value)
+	{
+		return MessageFormat.format(this.alterSequenceFormat(), sequence, value);
 	}
 
 	protected String truncateTableFormat()
@@ -221,5 +231,10 @@ public class DefaultDialect implements Dialect
 	protected String sequencePattern()
 	{
 		return "NEXT\\s+VALUE\\s+FOR\\s+(\\S+)";
+	}
+	
+	protected String alterSequenceFormat()
+	{
+		return "ALTER SEQUENCE {0} RESTART WITH {1}";
 	}
 }

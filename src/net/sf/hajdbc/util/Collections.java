@@ -92,7 +92,7 @@ public final class Collections
 	
 	private static class TypedIterator<E> implements Iterator<E>
 	{
-		private Iterator iterator;
+		protected Iterator iterator;
 		protected Class<E> targetClass;
 		
 		/**
@@ -152,6 +152,7 @@ public final class Collections
 		 * @return boolean 
 		 * @see java.util.Collection#add(Object)
 		 */
+		@SuppressWarnings("unchecked")
 		public boolean add(E element)
 		{
 			return this.collection.add(element);
@@ -160,6 +161,7 @@ public final class Collections
 		/**
 		 * @see java.util.Collection#addAll(java.util.Collection)
 		 */
+		@SuppressWarnings("unchecked")
 		public boolean addAll(Collection<? extends E> c)
 		{
 			return this.collection.addAll(c);
@@ -184,6 +186,7 @@ public final class Collections
 		/**
 		 * @see java.util.Collection#containsAll(java.util.Collection)
 		 */
+		@SuppressWarnings("unchecked")
 		public boolean containsAll(Collection<?> c)
 		{
 			return this.collection.containsAll(c);
@@ -200,6 +203,7 @@ public final class Collections
 		/**
 		 * @see java.util.Collection#iterator()
 		 */
+		@SuppressWarnings("unchecked")
 		public Iterator<E> iterator()
 		{
 			return new TypedIterator(this.collection.iterator(), this.targetClass);
@@ -216,6 +220,7 @@ public final class Collections
 		/**
 		 * @see java.util.Collection#removeAll(java.util.Collection)
 		 */
+		@SuppressWarnings("unchecked")
 		public boolean removeAll(Collection<?> c)
 		{
 			return this.collection.removeAll(c);
@@ -224,6 +229,7 @@ public final class Collections
 		/**
 		 * @see java.util.Collection#retainAll(java.util.Collection)
 		 */
+		@SuppressWarnings("unchecked")
 		public boolean retainAll(Collection<?> c)
 		{
 			return this.collection.retainAll(c);
@@ -251,6 +257,7 @@ public final class Collections
 		 * @return array
 		 * @see java.util.Collection#toArray(Object[])
 		 */
+		@SuppressWarnings("unchecked")
 		public <T> T[] toArray(T[] array)
 		{
 			return (T[]) this.collection.toArray(array);
@@ -289,6 +296,7 @@ public final class Collections
 		/**
 		 * @see java.util.List#addAll(int, java.util.Collection)
 		 */
+		@SuppressWarnings("unchecked")
 		public boolean addAll(int index, Collection<? extends E> collection)
 		{
 			return this.list.addAll(index, collection);
@@ -308,6 +316,7 @@ public final class Collections
 		 * @return old value
 		 * @see java.util.List#set(int, Object)
 		 */
+		@SuppressWarnings("unchecked")
 		public E set(int index, E value)
 		{
 			return this.targetClass.cast(this.list.set(index, value));
@@ -318,6 +327,7 @@ public final class Collections
 		 * @param value 
 		 * @see java.util.List#add(int, Object)
 		 */
+		@SuppressWarnings("unchecked")
 		public void add(int index, E value)
 		{
 			this.list.add(index, value);
@@ -366,6 +376,7 @@ public final class Collections
 		/**
 		 * @see java.util.List#subList(int, int)
 		 */
+		@SuppressWarnings("unchecked")
 		public List<E> subList(int startIndex, int endIndex)
 		{
 			return new TypedList(this.list.subList(startIndex, endIndex), this.targetClass);
@@ -373,8 +384,6 @@ public final class Collections
 		
 		private class TypedListIterator extends TypedIterator<E> implements ListIterator<E>
 		{
-			private ListIterator iterator;
-			
 			/**
 			 * Constructs a new TypedListIterator.
 			 * @param iterator
@@ -382,16 +391,19 @@ public final class Collections
 			public TypedListIterator(ListIterator iterator)
 			{
 				super(iterator, TypedList.this.targetClass);
-				
-				this.iterator = iterator;
 			}
 
+			private ListIterator listIterator()
+			{
+				return ListIterator.class.cast(this.iterator);
+			}
+			
 			/**
 			 * @see java.util.ListIterator#hasPrevious()
 			 */
 			public boolean hasPrevious()
 			{
-				return this.iterator.hasPrevious();
+				return this.listIterator().hasPrevious();
 			}
 
 			/**
@@ -399,7 +411,7 @@ public final class Collections
 			 */
 			public E previous()
 			{
-				return this.targetClass.cast(this.iterator.previous());
+				return this.targetClass.cast(this.listIterator().previous());
 			}
 
 			/**
@@ -407,7 +419,7 @@ public final class Collections
 			 */
 			public int nextIndex()
 			{
-				return this.iterator.nextIndex();
+				return this.listIterator().nextIndex();
 			}
 
 			/**
@@ -415,25 +427,27 @@ public final class Collections
 			 */
 			public int previousIndex()
 			{
-				return this.iterator.previousIndex();
+				return this.listIterator().previousIndex();
 			}
 
 			/**
 			 * @param element 
 			 * @see java.util.ListIterator#set(Object)
 			 */
+			@SuppressWarnings("unchecked")
 			public void set(E element)
 			{
-				this.iterator.set(element);
+				this.listIterator().set(element);
 			}
 
 			/**
 			 * @param element 
 			 * @see java.util.ListIterator#add(Object)
 			 */
+			@SuppressWarnings("unchecked")
 			public void add(E element)
 			{
-				this.iterator.add(element);
+				this.listIterator().add(element);
 			}
 		}
 	}
@@ -503,6 +517,7 @@ public final class Collections
 		 * @return old value
 		 * @see java.util.Map#put(Object, Object)
 		 */
+		@SuppressWarnings("unchecked")
 		public V put(K key, V value)
 		{
 			return this.targetValueClass.cast(this.map.put(key, value));
@@ -519,6 +534,7 @@ public final class Collections
 		/**
 		 * @see java.util.Map#putAll(java.util.Map)
 		 */
+		@SuppressWarnings("unchecked")
 		public void putAll(Map<? extends K, ? extends V> m)
 		{
 			this.map.putAll(m);
@@ -551,6 +567,7 @@ public final class Collections
 		/**
 		 * @see java.util.Map#entrySet()
 		 */
+		@SuppressWarnings("unchecked")
 		public Set<Map.Entry<K, V>> entrySet()
 		{
 			return this.map.entrySet();

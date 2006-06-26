@@ -20,8 +20,9 @@
  */
 package net.sf.hajdbc;
 
+import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.Map;
 
 /**
  * Encapsulates database vendor specific SQL syntax.  
@@ -166,5 +167,7 @@ public interface Dialect
 	 */
 	public String parseSequence(String sql) throws SQLException;
 	
-	public List<String> getSequences() throws SQLException;
+	public Map<String, Long> getSequences(Connection connection) throws SQLException;
+	
+	public String getAlterSequenceSQL(String sequence, long value);
 }

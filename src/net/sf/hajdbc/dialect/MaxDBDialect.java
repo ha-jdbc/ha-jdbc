@@ -20,6 +20,15 @@
  */
 package net.sf.hajdbc.dialect;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
+
+import net.sf.hajdbc.util.Strings;
+
 /**
  * Dialect for <a href="http://www.mysql.com/products/database/maxdb/">MySQL MaxDB</a>.
  * @author  Paul Ferraro
@@ -34,6 +43,41 @@ public class MaxDBDialect extends DefaultDialect
 	public String getSimpleSQL()
 	{
 		return "SELECT 1 FROM DUAL";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#getSequences(java.sql.Connection)
+	 */
+	@Override
+	public Map<String, Long> getSequences(Connection connection) throws SQLException
+	{
+		Map<String, Long> sequenceMap = new HashMap<String, Long>();
+		
+		Statement statement = connection.createStatement();
+		
+		ResultSet resultSet = statement.executeQuery("SELECT SEQUENCE_NAME FROM DBA_SEQUENCES");
+		
+		while (resultSet.next())
+		{
+			sequenceMap.put(resultSet.getString(1), null);
+		}
+		
+		resultSet.close();
+		
+		resultSet = statement.executeQuery("SELECT " + Strings.join(sequenceMap.keySet(), ".CURRVAL, ") + ".CURRVAL FROM DUAL");
+		
+		resultSet.next();
+		
+		int index = 0;
+		
+		for (String sequence: sequenceMap.keySet())
+		{
+			sequenceMap.put(sequence, resultSet.getLong(++index));
+		}
+		
+		statement.close();
+		
+		return sequenceMap;
 	}
 
 	/**

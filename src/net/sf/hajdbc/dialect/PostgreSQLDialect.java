@@ -20,12 +20,17 @@
  */
 package net.sf.hajdbc.dialect;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
 
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.TableProperties;
+import net.sf.hajdbc.util.Strings;
 
 /**
  * Dialect for <a href="http://postgresql.org">PostgreSQL</a>.
@@ -59,6 +64,42 @@ public class PostgreSQLDialect extends DefaultDialect
 		return properties.getNativeType().equals("oid") ? Types.BLOB : properties.getType();
 	}
 
+	/**
+	 * JDBC API does not acknowledge the existence of sequences.  Each dialect 
+	 * @see net.sf.hajdbc.Dialect#getSequences()
+	 */
+	@Override
+	public Map<String, Long> getSequences(Connection connection) throws SQLException
+	{
+		Map<String, Long> sequenceMap = new HashMap<String, Long>();
+		
+		String catalog = connection.getCatalog();
+		
+		ResultSet resultSet = connection.getMetaData().getTables((catalog != null) ? catalog : "", null, "%", new String[] { "SEQUENCE" });
+		
+		while (resultSet.next())
+		{
+			sequenceMap.put(resultSet.getString("TABLE_NAME"), null);
+		}
+		
+		resultSet.close();
+		
+		resultSet = connection.createStatement().executeQuery("SELECT CURRVAL('" + Strings.join(sequenceMap.keySet(), "'), CURRVAL('") + "')");
+		
+		resultSet.next();
+		
+		int index = 0;
+		
+		for (String sequence: sequenceMap.keySet())
+		{
+			sequenceMap.put(sequence, resultSet.getLong(++index));
+		}
+
+		resultSet.getStatement().close();
+		
+		return sequenceMap;
+	}
+	
 	/**
 	 * @see net.sf.hajdbc.dialect.DefaultDialect#truncateTableFormat()
 	 */

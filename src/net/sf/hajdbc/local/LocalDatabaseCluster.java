@@ -153,6 +153,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#isAlive(net.sf.hajdbc.Database)
 	 */
+	@SuppressWarnings("unchecked")
 	public boolean isAlive(Database database)
 	{
 		Connection connection = null;
@@ -645,6 +646,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#flushMetaDataCache()
 	 */
+	@SuppressWarnings("unchecked")
 	public void flushMetaDataCache()
 	{
 		Connection connection = null;
@@ -811,6 +813,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	private void activate(Database inactiveDatabase, List<Database> activeDatabaseList, SynchronizationStrategy strategy) throws java.sql.SQLException
 	{
 		Database activeDatabase = this.getBalancer().next();
