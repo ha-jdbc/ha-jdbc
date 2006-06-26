@@ -20,6 +20,8 @@
  */
 package net.sf.hajdbc.cache;
 
+import net.sf.hajdbc.DatabaseProperties;
+
 
 /**
  * DatabaseMetaDataCache that lazily caches data when requested, but only for a single thread.
@@ -28,19 +30,9 @@ package net.sf.hajdbc.cache;
  * @author Paul Ferraro
  * @since 1.2
  */
-public class ThreadLocalDatabaseMetaDataCache extends AbstractLazyDatabaseMetaDataCache
+public class ThreadLocalDatabaseMetaDataCache extends LazyDatabaseMetaDataCache
 {
-	private static ThreadLocal<DatabaseProperties> threadLocalProperties = new ThreadLocal<DatabaseProperties>()
-	{
-		/**
-		 * @see java.lang.ThreadLocal#initialValue()
-		 */
-		@Override
-		protected DatabaseProperties initialValue()
-		{
-			return new DatabaseProperties();
-		}		
-	};
+	private static ThreadLocal<DatabaseProperties> threadLocal = new ThreadLocal<DatabaseProperties>();
 
 	/**
 	 * @see net.sf.hajdbc.cache.AbstractLazyDatabaseMetaDataCache#getDatabaseProperties()
@@ -48,6 +40,15 @@ public class ThreadLocalDatabaseMetaDataCache extends AbstractLazyDatabaseMetaDa
 	@Override
 	protected DatabaseProperties getDatabaseProperties()
 	{
-		return threadLocalProperties.get();
+		return threadLocal.get();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.cache.AbstractLazyDatabaseMetaDataCache#setDatabaseProperties(net.sf.hajdbc.DatabaseProperties)
+	 */
+	@Override
+	protected void setDatabaseProperties(DatabaseProperties properties)
+	{
+		threadLocal.set(properties);
 	}
 }

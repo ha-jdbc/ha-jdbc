@@ -18,30 +18,28 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.cache;
+package net.sf.hajdbc;
 
 /**
- * Helper class that houses meta data about a specified column.
- * 
  * @author Paul Ferraro
- * @since 1.2
+ *
  */
 public class ColumnProperties
 {
-	private String name;
+	private String column;
 	private int type;
 	private String nativeType;
 	
-	public ColumnProperties(String name, int type, String nativeType)
+	public ColumnProperties(String column, int type, String nativeType)
 	{
-		this.name = name;
+		this.column = column;
 		this.type = type;
 		this.nativeType = nativeType;
 	}
 	
-	public String getName()
+	public String getColumn()
 	{
-		return this.name;
+		return this.column;
 	}
 	
 	public int getType()
@@ -52,5 +50,23 @@ public class ColumnProperties
 	public String getNativeType()
 	{
 		return this.nativeType;
+	}
+
+	/**
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object object)
+	{
+		return ColumnProperties.class.cast(object).getColumn().equals(this.column);
+	}
+
+	/**
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode()
+	{
+		return this.column.hashCode();
 	}
 }

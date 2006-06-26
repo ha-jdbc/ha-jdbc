@@ -20,14 +20,8 @@
  */
 package net.sf.hajdbc;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Represents a unique constraint on a table.
@@ -38,7 +32,6 @@ import java.util.Map;
 public class UniqueConstraint implements Comparable<UniqueConstraint>
 {
 	private String name;
-	private String schema;
 	private String table;
 	private List<String> columnList = new LinkedList<String>();
 		
@@ -48,10 +41,9 @@ public class UniqueConstraint implements Comparable<UniqueConstraint>
 	 * @param schema
 	 * @param table
 	 */
-	public UniqueConstraint(String name, String schema, String table)
+	public UniqueConstraint(String name, String table)
 	{
 		this.name = name;
-		this.schema = schema;
 		this.table = table;
 	}
 	
@@ -70,15 +62,7 @@ public class UniqueConstraint implements Comparable<UniqueConstraint>
 	{
 		return this.name;
 	}
-	
-	/**
-	 * @return the schema of this constraint
-	 */
-	public String getSchema()
-	{
-		return this.schema;
-	}
-	
+
 	/**
 	 * @return the table of this constraint
 	 */
@@ -113,45 +97,5 @@ public class UniqueConstraint implements Comparable<UniqueConstraint>
 	public int compareTo(UniqueConstraint constraint)
 	{
 		return this.name.compareTo(constraint.name);
-	}
-	
-	/**
-	 * Collects all foreign keys from the specified tables using the specified connection. 
-	 * @param connection a database connection
-	 * @param schema a schema name
-	 * @param table a table name
-	 * @param primaryKeyName the name of the primary key of this table
-	 * @return a Collection of ForeignKey objects.
-	 * @throws SQLException if a database error occurs
-	 */
-	public static Collection<UniqueConstraint> collect(Connection connection, String schema, String table, String primaryKeyName) throws SQLException
-	{
-		Map<String, UniqueConstraint> keyMap = new HashMap<String, UniqueConstraint>();
-		
-		ResultSet resultSet = connection.getMetaData().getIndexInfo(null, schema, table, true, false);
-		
-		while (resultSet.next())
-		{
-			String name = resultSet.getString("INDEX_NAME");
-			
-			if ((name == null) || name.equals(primaryKeyName)) continue;
-			
-			UniqueConstraint key = keyMap.get(name);
-			
-			if (key == null)
-			{
-				key = new UniqueConstraint(name, schema, table);
-				
-				keyMap.put(name, key);
-			}
-			
-			String column = resultSet.getString("COLUMN_NAME");
-			
-			key.getColumnList().add(column);
-		}
-		
-		resultSet.close();
-		
-		return keyMap.values();
 	}
 }

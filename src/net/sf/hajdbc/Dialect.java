@@ -21,6 +21,7 @@
 package net.sf.hajdbc;
 
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Encapsulates database vendor specific SQL syntax.  
@@ -38,27 +39,27 @@ public interface Dialect
 	
 	/**
 	 * Returns a SQL statement to be executed within a running transaction that will effectively lock the specified table for writing.
-	 * @param metaData a <code>DatabaseMetaData</code> object for a given database.
+	 * @param metaData a cache of <code>DatabaseMetaData</code> for a given database.
 	 * @param schema the name of a database schema, or null, if this database does not support schemas.
 	 * @param table the name of a database table.
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
-	public String getLockTableSQL(DatabaseMetaDataCache metaData, String schema, String table) throws SQLException;
+	public String getLockTableSQL(TableProperties properties) throws SQLException;
 	
 	/**
 	 * Returns a SQL statement used to truncate a table.
-	 * @param metaData a <code>DatabaseMetaData</code> object for a given database.
+	 * @param metaData a cache of <code>DatabaseMetaData</code> for a given database.
 	 * @param schema the name of a database schema, or null, if this database does not support schemas.
 	 * @param table the name of a database table.
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
-	public String getTruncateTableSQL(DatabaseMetaDataCache metaData, String schema, String table) throws SQLException;
+	public String getTruncateTableSQL(TableProperties properties) throws SQLException;
 	
 	/**
 	 * Returns a SQL statement used to create a foreign key constraint.
-	 * @param metaData a <code>DatabaseMetaData</code> object for a given database.
+	 * @param metaData a cache of <code>DatabaseMetaData</code> for a given database.
 	 * @param name the name of a foreign key constraint
 	 * @param schema the name of a database schema, or null, if this database does not support schemas.
 	 * @param table the name of a database table.
@@ -69,22 +70,22 @@ public interface Dialect
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
-	public String getCreateForeignKeyConstraintSQL(DatabaseMetaDataCache metaData, ForeignKeyConstraint foreignKeyConstraint) throws SQLException;
+	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint foreignKeyConstraint) throws SQLException;
 
 	/**
 	 * Returns a SQL statement used to drop a foreign key constraint.
-	 * @param metaData a <code>DatabaseMetaData</code> object for a given database.
+	 * @param metaData a cache of <code>DatabaseMetaData</code> for a given database.
 	 * @param name the name of the foreign key constraint
 	 * @param schema the name of a database schema, or null, if this database does not support schemas.
 	 * @param table the name of a database table.
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
-	public String getDropForeignKeyConstraintSQL(DatabaseMetaDataCache metaData, ForeignKeyConstraint constraint) throws SQLException;
+	public String getDropForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException;
 
 	/**
 	 * Returns a SQL statement used to create a unique constraint.
-	 * @param metaData a <code>DatabaseMetaData</code> object for a given database.
+	 * @param metaData a cache of <code>DatabaseMetaData</code> for a given database.
 	 * @param name the name of a unique key constraint
 	 * @param schema the name of a database schema, or null, if this database does not support schemas.
 	 * @param table the name of a database table.
@@ -92,22 +93,22 @@ public interface Dialect
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
-	public String getCreateUniqueConstraintSQL(DatabaseMetaDataCache metaData, UniqueConstraint constraint) throws SQLException;
+	public String getCreateUniqueConstraintSQL(UniqueConstraint constraint) throws SQLException;
 
 	/**
 	 * Returns a SQL statement used to drop a unique constraint.
-	 * @param metaData a <code>DatabaseMetaData</code> object for a given database.
+	 * @param metaData a cache of <code>DatabaseMetaData</code> for a given database.
 	 * @param name the name of a unique key constraint
 	 * @param schema the name of a database schema, or null, if this database does not support schemas.
 	 * @param table the name of a database table.
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
-	public String getDropUniqueConstraintSQL(DatabaseMetaDataCache metaData, UniqueConstraint constraint) throws SQLException;
+	public String getDropUniqueConstraintSQL(UniqueConstraint constraint) throws SQLException;
 	
 	/**
 	 * Returns a SQL statement used to create a unique constraint.
-	 * @param metaData a <code>DatabaseMetaData</code> object for a given database.
+	 * @param metaData a cache of <code>DatabaseMetaData</code> for a given database.
 	 * @param name the name of a unique key constraint
 	 * @param schema the name of a database schema, or null, if this database does not support schemas.
 	 * @param table the name of a database table.
@@ -115,43 +116,55 @@ public interface Dialect
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
-	public String getCreatePrimaryKeyConstraintSQL(DatabaseMetaDataCache metaData, UniqueConstraint constraint) throws SQLException;
+	public String getCreatePrimaryKeyConstraintSQL(UniqueConstraint constraint) throws SQLException;
 
 	/**
 	 * Returns a SQL statement used to drop a unique constraint.
-	 * @param metaData a <code>DatabaseMetaData</code> object for a given database.
+	 * @param metaData a cache of <code>DatabaseMetaData</code> for a given database.
 	 * @param name the name of a unique key constraint
 	 * @param schema the name of a database schema, or null, if this database does not support schemas.
 	 * @param table the name of a database table.
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
-	public String getDropPrimaryKeyConstraintSQL(DatabaseMetaDataCache metaData, UniqueConstraint constraint) throws SQLException;
+	public String getDropPrimaryKeyConstraintSQL(UniqueConstraint constraint) throws SQLException;
 	
 	/**
 	 * Determines whether the specified SQL is a SELECT ... FOR UPDATE statement
+	 * @param metaData a cache of <code>DatabaseMetaData</code> for a given database.
+	 * @param sql a SQL statement
 	 * @return true if this is a SELECT ... FOR UPDATE statement, false if it is not or if SELECT...FOR UPDATE is not supported
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
-	public boolean isSelectForUpdate(DatabaseMetaDataCache metaData, String sql) throws SQLException;
-	
-//	public boolean isInsertIntoTableWithAutoIncrementColumn(DatabaseMetaDataCache metaData, String sql) throws SQLException;
+	public boolean isSelectForUpdate(String sql) throws SQLException;
 	
 	/**
-	 * @param sql
-	 * @return sequence name, or null if this sql statement does not reference a sequence
+	 * Returns the data type of the specified column of the specified schema and table
+	 * @param metaData a cache of <code>DatabaseMetaData</code> for a given database.
+	 * @param schema a schema name
+	 * @param table a table name
+	 * @param column a column name
+	 * @return the JDBC data type of this column
+	 */
+	public int getColumnType(ColumnProperties properties) throws SQLException;
+	
+	/**
+	 * Parses a table name from the specified INSERT SQL statement.
+	 * @param sql a SQL statement
+	 * @return the name of a table, or null if this SQL statement is not an INSERT statement
+	 * @throws SQLException
+	 * @since 1.2
+	 */
+//	public String parseInsertTable(String sql) throws SQLException;
+	
+	/**
+	 * Parses a sequence name from the specified SQL statement.
+	 * @param sql a SQL statement
+	 * @return the name of a sequence, or null if this SQL statement does not reference a sequence
 	 * @throws SQLException
 	 * @since 1.2
 	 */
 	public String parseSequence(String sql) throws SQLException;
 	
-	/**
-	 * Returns the data type of the specified column of the specified schema and table
-	 * @param metaData
-	 * @param schema
-	 * @param table
-	 * @param column
-	 * @return
-	 */
-	public int getColumnType(DatabaseMetaDataCache metaData, String schema, String table, String column) throws SQLException;
+	public List<String> getSequences() throws SQLException;
 }

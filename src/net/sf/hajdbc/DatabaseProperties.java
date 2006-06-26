@@ -20,27 +20,16 @@
  */
 package net.sf.hajdbc;
 
-import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Collection;
 
 /**
- * Interface for retrieving pre-processed, cached, database meta data.
- * 
  * @author Paul Ferraro
- * @since 1.2
+ *
  */
-public interface DatabaseMetaDataCache
+public interface DatabaseProperties
 {
-	/**
-	 * Initializes/Flushes this cache.
-	 * @throws SQLException if flush fails
-	 */
-	public void flush(Connection connection) throws SQLException;
-	
-	/**
-	 * Retrieves processed meta data for this database.
-	 * @return
-	 * @throws SQLException
-	 */
-	public DatabaseProperties getDatabaseProperties(Connection connection) throws SQLException;
+	public Collection<TableProperties> getTables() throws SQLException;
+
+	public boolean getSupportsSelectForUpdate() throws SQLException;
 }

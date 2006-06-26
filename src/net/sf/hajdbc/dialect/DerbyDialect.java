@@ -23,7 +23,7 @@ package net.sf.hajdbc.dialect;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 
-import net.sf.hajdbc.DatabaseMetaDataCache;
+import net.sf.hajdbc.TableProperties;
 
 /**
  * Dialect for <a href="http://db.apache.org/derby">Apache Derby</a>.
@@ -46,9 +46,9 @@ public class DerbyDialect extends DefaultDialect
 	 * @see net.sf.hajdbc.dialect.DefaultDialect#getLockTableSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public String getLockTableSQL(DatabaseMetaDataCache metaData, String schema, String table) throws SQLException
+	public String getLockTableSQL(TableProperties properties) throws SQLException
 	{
-		return MessageFormat.format("LOCK TABLE {0} IN SHARE MODE", metaData.getQualifiedNameForDML(schema, table));
+		return MessageFormat.format("LOCK TABLE {0} IN SHARE MODE", properties.getName());
 	}
 
 	/**

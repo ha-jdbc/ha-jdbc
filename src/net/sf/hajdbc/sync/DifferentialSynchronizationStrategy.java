@@ -44,6 +44,7 @@ import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationStrategy;
+import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.UniqueConstraint;
 import net.sf.hajdbc.util.Strings;
 import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
@@ -94,23 +95,18 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		
 		Statement statement = inactiveConnection.createStatement();
 
-		Map<String, Collection<String>> schemaMap = metaData.getTables();
+		Collection<TableProperties> tables = metaData.getDatabaseProperties(inactiveConnection).getTables();
 		
 		// Drop foreign key constraints on the inactive database
-		for (Map.Entry<String, Collection<String>> schemaMapEntry: schemaMap.entrySet())
+		for (TableProperties table: tables)
 		{
-			String schema = schemaMapEntry.getKey();
-			
-			for (String table: schemaMapEntry.getValue())
+			for (ForeignKeyConstraint constraint: table.getForeignKeyConstraints())
 			{
-				for (ForeignKeyConstraint constraint: metaData.getForeignKeyConstraints(schema, table))
-				{
-					String sql = dialect.getDropForeignKeyConstraintSQL(metaData, constraint);
-					
-					logger.debug(sql);
-					
-					statement.addBatch(sql);
-				}
+				String sql = dialect.getDropForeignKeyConstraintSQL(constraint);
+				
+				logger.debug(sql);
+				
+				statement.addBatch(sql);
 			}
 		}
 		
@@ -124,288 +120,281 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		
 		try
 		{
-			for (Map.Entry<String, Collection<String>> schemaMapEntry: schemaMap.entrySet())
+			for (TableProperties table: tables)
 			{
-				String schema = schemaMapEntry.getKey();
+				primaryKeyColumnMap.clear();
+				primaryKeyColumnIndexSet.clear();
 				
-				for (String table: schemaMapEntry.getValue())
+				UniqueConstraint primaryKey = table.getPrimaryKey();
+				
+				if (primaryKey == null)
 				{
-					String qualifiedTable = metaData.getQualifiedNameForDML(schema, table);
-
-					primaryKeyColumnMap.clear();
-					primaryKeyColumnIndexSet.clear();
-					
-					UniqueConstraint primaryKey = metaData.getPrimaryKey(schema, table);
-					
-					if (primaryKey == null)
-					{
-						throw new SQLException(Messages.getMessage(Messages.PRIMARY_KEY_REQUIRED, this.getClass().getName(), table));
-					}
-					
-					List<String> primaryKeyColumnList = primaryKey.getColumnList();
-					
-					Collection<UniqueConstraint> constraints = metaData.getUniqueConstraints(schema, table);
-					
-					constraints.remove(primaryKey);
-					
- 					// Drop unique constraints on the current table
-					for (UniqueConstraint constraint: constraints)
-					{
-						String sql = dialect.getDropUniqueConstraintSQL(metaData, constraint);
-						
-						logger.debug(sql);
-						
-						statement.addBatch(sql);
-					}
-					
-					statement.executeBatch();
-					statement.clearBatch();
-					
-					Set<String> columnSet = metaData.getColumns(schema, table).keySet();
-					
-					// List of colums for select statement - starting with primary key
-					List<String> columnList = new ArrayList<String>(columnSet);
-					
-					columnList.addAll(primaryKeyColumnList);
-					
-					for (String column: columnSet)
-					{
-						if (!primaryKeyColumnList.contains(column))
-						{
-							columnList.add(column);
-						}
-					}
-					
-					List<String> nonPrimaryKeyColumnList = columnList.subList(primaryKeyColumnList.size(), columnList.size());
-					
-					String commaDelimitedColumns = Strings.join(columnList, ",");
-					
-					// Retrieve table rows in primary key order
-					final String selectSQL = "SELECT " + commaDelimitedColumns + " FROM " + qualifiedTable + " ORDER BY " + Strings.join(primaryKeyColumnList, ",");
-					
-					final Statement inactiveStatement = inactiveConnection.createStatement();
-
-					inactiveStatement.setFetchSize(this.fetchSize);
-		
-					logger.debug(selectSQL);
-					
-					Callable<ResultSet> callable = new Callable<ResultSet>()
-					{
-						public ResultSet call() throws java.sql.SQLException
-						{
-							return inactiveStatement.executeQuery(selectSQL);
-						}
-					};
-		
-					Future<ResultSet> future = this.executor.submit(callable);
-					
-					Statement activeStatement = activeConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-					activeStatement.setFetchSize(this.fetchSize);
-					
-					ResultSet activeResultSet = activeStatement.executeQuery(selectSQL);
-
-					ResultSet inactiveResultSet = future.get();
-					
-					String primaryKeyWhereClause = " WHERE " + Strings.join(primaryKeyColumnList, "=? AND ") + "=?";
-					
-					// Construct DELETE SQL
-					String deleteSQL = "DELETE FROM " + qualifiedTable + primaryKeyWhereClause;
-					
-					logger.debug(deleteSQL.toString());
-					
-					PreparedStatement deleteStatement = inactiveConnection.prepareStatement(deleteSQL);
-					
-					String[] parameters = new String[columnList.size()];
-					Arrays.fill(parameters, "?");
-					
-					// Construct INSERT SQL
-					String insertSQL = "INSERT INTO " + qualifiedTable + " (" + commaDelimitedColumns + ") VALUES (" + Strings.join(Arrays.asList(parameters), ",") + ")";
-					
-					logger.debug(insertSQL);
-					
-					PreparedStatement insertStatement = inactiveConnection.prepareStatement(insertSQL);
-					
-					// Construct UPDATE SQL
-					String updateSQL = "UPDATE " + qualifiedTable + " SET " + Strings.join(nonPrimaryKeyColumnList, "=?,") + "=?" + primaryKeyWhereClause;
-					
-					logger.debug(updateSQL);
-					
-					PreparedStatement updateStatement = inactiveConnection.prepareStatement(updateSQL);
-					
-					boolean hasMoreActiveResults = activeResultSet.next();
-					boolean hasMoreInactiveResults = inactiveResultSet.next();
-					
-					int insertCount = 0;
-					int updateCount = 0;
-					int deleteCount = 0;
-					
-					while (hasMoreActiveResults || hasMoreInactiveResults)
-					{
-						int compare = 0;
-						
-						if (!hasMoreActiveResults)
-						{
-							compare = 1;
-						}
-						else if (!hasMoreInactiveResults)
-						{
-							compare = -1;
-						}
-						else
-						{
-							for (int i = 1; i <= primaryKeyColumnList.size(); ++i)
-							{
-								Object activeObject = activeResultSet.getObject(i);
-								Object inactiveObject = inactiveResultSet.getObject(i);
-								
-								// We assume that the primary keys column types are Comparable
-								compare = Comparable.class.cast(activeObject).compareTo(inactiveObject);
-								
-								if (compare != 0)
-								{
-									break;
-								}
-							}
-						}
-						
-						if (compare > 0)
-						{
-							deleteStatement.clearParameters();
-							
-							for (int i = 1; i <= primaryKeyColumnList.size(); ++i)
-							{
-								int type = dialect.getColumnType(metaData, schema, table, columnList.get(i - 1));
-								
-								deleteStatement.setObject(i, inactiveResultSet.getObject(i), type);
-							}
-							
-							deleteStatement.addBatch();
-							
-							deleteCount += 1;
-						}
-						else if (compare < 0)
-						{
-							insertStatement.clearParameters();
-
-							for (int i = 1; i <= columnList.size(); ++i)
-							{
-								Object object = activeResultSet.getObject(i);
-								
-								int type = dialect.getColumnType(metaData, schema, table, columnList.get(i - 1));
-								
-								if (activeResultSet.wasNull())
-								{
-									insertStatement.setNull(i, type);
-								}
-								else
-								{
-									insertStatement.setObject(i, object, type);
-								}
-							}
-							
-							insertStatement.addBatch();
-							
-							insertCount += 1;
-						}
-						else // if (compare == 0)
-						{
-							updateStatement.clearParameters();
-							
-							boolean updated = false;
-							
-							for (int i = primaryKeyColumnList.size() + 1; i <= columnList.size(); ++i)
-							{
-								Object activeObject = activeResultSet.getObject(i);
-								Object inactiveObject = inactiveResultSet.getObject(i);
-								
-								int type = dialect.getColumnType(metaData, schema, table, columnList.get(i - 1));
-								
-								int index = i - primaryKeyColumnList.size();
-								
-								if (activeResultSet.wasNull())
-								{
-									updateStatement.setNull(index, type);
-									
-									updated |= !inactiveResultSet.wasNull();
-								}
-								else
-								{
-									updateStatement.setObject(index, activeObject, type);
-									
-									updated |= inactiveResultSet.wasNull();
-									updated |= !equals(activeObject, inactiveObject);
-								}
-							}
-							
-							if (updated)
-							{
-								for (int i = 1; i <= primaryKeyColumnList.size(); ++i)
-								{
-									int type = dialect.getColumnType(metaData, schema, table, columnList.get(i - 1));
-									
-									updateStatement.setObject(i + nonPrimaryKeyColumnList.size(), inactiveResultSet.getObject(i), type);
-								}
-								
-								updateStatement.addBatch();
-								
-								updateCount += 1;
-							}
-						}
-						
-						if (hasMoreActiveResults && (compare <= 0))
-						{
-							hasMoreActiveResults = activeResultSet.next();
-						}
-						
-						if (hasMoreInactiveResults && (compare >= 0))
-						{
-							hasMoreInactiveResults = inactiveResultSet.next();
-						}
-					}
-					
-					if (deleteCount > 0)
-					{
-						deleteStatement.executeBatch();
-					}
-					
-					deleteStatement.close();
-					
-					if (insertCount > 0)
-					{
-						insertStatement.executeBatch();
-					}
-					
-					insertStatement.close();
-					
-					if (updateCount > 0)
-					{
-						updateStatement.executeBatch();
-					}
-					
-					updateStatement.close();
-					
-					inactiveStatement.close();
-					activeStatement.close();
-					
-					// Collect unique constraints on this table from the active database and re-create them on the inactive database
-					for (UniqueConstraint constraint: constraints)
-					{
-						String sql = dialect.getCreateUniqueConstraintSQL(metaData, constraint);
-						
-						logger.debug(sql);
-						
-						statement.addBatch(sql);
-					}
-					
-					statement.executeBatch();
-					statement.clearBatch();
-					
-					inactiveConnection.commit();
-					
-					logger.info(Messages.getMessage(Messages.INSERT_COUNT, insertCount, qualifiedTable));
-					logger.info(Messages.getMessage(Messages.UPDATE_COUNT, updateCount, qualifiedTable));
-					logger.info(Messages.getMessage(Messages.DELETE_COUNT, deleteCount, qualifiedTable));			
+					throw new SQLException(Messages.getMessage(Messages.PRIMARY_KEY_REQUIRED, this.getClass().getName(), table));
 				}
+				
+				List<String> primaryKeyColumnList = primaryKey.getColumnList();
+				
+				Collection<UniqueConstraint> constraints = table.getUniqueConstraints();
+				
+				constraints.remove(primaryKey);
+				
+				// Drop unique constraints on the current table
+				for (UniqueConstraint constraint: constraints)
+				{
+					String sql = dialect.getDropUniqueConstraintSQL(constraint);
+					
+					logger.debug(sql);
+					
+					statement.addBatch(sql);
+				}
+				
+				statement.executeBatch();
+				statement.clearBatch();
+				
+				Collection<String> columns = table.getColumns();
+				
+				// List of colums for select statement - starting with primary key
+				List<String> columnList = new ArrayList<String>(columns);
+				
+				columnList.addAll(primaryKeyColumnList);
+				
+				for (String column: columns)
+				{
+					if (!primaryKeyColumnList.contains(column))
+					{
+						columnList.add(column);
+					}
+				}
+				
+				List<String> nonPrimaryKeyColumnList = columnList.subList(primaryKeyColumnList.size(), columnList.size());
+				
+				String commaDelimitedColumns = Strings.join(columnList, ",");
+				
+				// Retrieve table rows in primary key order
+				final String selectSQL = "SELECT " + commaDelimitedColumns + " FROM " + table.getName() + " ORDER BY " + Strings.join(primaryKeyColumnList, ",");
+				
+				final Statement inactiveStatement = inactiveConnection.createStatement();
+
+				inactiveStatement.setFetchSize(this.fetchSize);
+	
+				logger.debug(selectSQL);
+				
+				Callable<ResultSet> callable = new Callable<ResultSet>()
+				{
+					public ResultSet call() throws java.sql.SQLException
+					{
+						return inactiveStatement.executeQuery(selectSQL);
+					}
+				};
+	
+				Future<ResultSet> future = this.executor.submit(callable);
+				
+				Statement activeStatement = activeConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				activeStatement.setFetchSize(this.fetchSize);
+				
+				ResultSet activeResultSet = activeStatement.executeQuery(selectSQL);
+
+				ResultSet inactiveResultSet = future.get();
+				
+				String primaryKeyWhereClause = " WHERE " + Strings.join(primaryKeyColumnList, "=? AND ") + "=?";
+				
+				// Construct DELETE SQL
+				String deleteSQL = "DELETE FROM " + table.getName() + primaryKeyWhereClause;
+				
+				logger.debug(deleteSQL.toString());
+				
+				PreparedStatement deleteStatement = inactiveConnection.prepareStatement(deleteSQL);
+				
+				String[] parameters = new String[columnList.size()];
+				Arrays.fill(parameters, "?");
+				
+				// Construct INSERT SQL
+				String insertSQL = "INSERT INTO " + table.getName() + " (" + commaDelimitedColumns + ") VALUES (" + Strings.join(Arrays.asList(parameters), ",") + ")";
+				
+				logger.debug(insertSQL);
+				
+				PreparedStatement insertStatement = inactiveConnection.prepareStatement(insertSQL);
+				
+				// Construct UPDATE SQL
+				String updateSQL = "UPDATE " + table.getName() + " SET " + Strings.join(nonPrimaryKeyColumnList, "=?,") + "=?" + primaryKeyWhereClause;
+				
+				logger.debug(updateSQL);
+				
+				PreparedStatement updateStatement = inactiveConnection.prepareStatement(updateSQL);
+				
+				boolean hasMoreActiveResults = activeResultSet.next();
+				boolean hasMoreInactiveResults = inactiveResultSet.next();
+				
+				int insertCount = 0;
+				int updateCount = 0;
+				int deleteCount = 0;
+				
+				while (hasMoreActiveResults || hasMoreInactiveResults)
+				{
+					int compare = 0;
+					
+					if (!hasMoreActiveResults)
+					{
+						compare = 1;
+					}
+					else if (!hasMoreInactiveResults)
+					{
+						compare = -1;
+					}
+					else
+					{
+						for (int i = 1; i <= primaryKeyColumnList.size(); ++i)
+						{
+							Object activeObject = activeResultSet.getObject(i);
+							Object inactiveObject = inactiveResultSet.getObject(i);
+							
+							// We assume that the primary keys column types are Comparable
+							compare = Comparable.class.cast(activeObject).compareTo(inactiveObject);
+							
+							if (compare != 0)
+							{
+								break;
+							}
+						}
+					}
+					
+					if (compare > 0)
+					{
+						deleteStatement.clearParameters();
+						
+						for (int i = 1; i <= primaryKeyColumnList.size(); ++i)
+						{
+							int type = dialect.getColumnType(table.getColumn(columnList.get(i - 1)));
+							
+							deleteStatement.setObject(i, inactiveResultSet.getObject(i), type);
+						}
+						
+						deleteStatement.addBatch();
+						
+						deleteCount += 1;
+					}
+					else if (compare < 0)
+					{
+						insertStatement.clearParameters();
+
+						for (int i = 1; i <= columnList.size(); ++i)
+						{
+							Object object = activeResultSet.getObject(i);
+							
+							int type = dialect.getColumnType(table.getColumn(columnList.get(i - 1)));
+							
+							if (activeResultSet.wasNull())
+							{
+								insertStatement.setNull(i, type);
+							}
+							else
+							{
+								insertStatement.setObject(i, object, type);
+							}
+						}
+						
+						insertStatement.addBatch();
+						
+						insertCount += 1;
+					}
+					else // if (compare == 0)
+					{
+						updateStatement.clearParameters();
+						
+						boolean updated = false;
+						
+						for (int i = primaryKeyColumnList.size() + 1; i <= columnList.size(); ++i)
+						{
+							Object activeObject = activeResultSet.getObject(i);
+							Object inactiveObject = inactiveResultSet.getObject(i);
+							
+							int type = dialect.getColumnType(table.getColumn(columnList.get(i - 1)));
+							
+							int index = i - primaryKeyColumnList.size();
+							
+							if (activeResultSet.wasNull())
+							{
+								updateStatement.setNull(index, type);
+								
+								updated |= !inactiveResultSet.wasNull();
+							}
+							else
+							{
+								updateStatement.setObject(index, activeObject, type);
+								
+								updated |= inactiveResultSet.wasNull();
+								updated |= !equals(activeObject, inactiveObject);
+							}
+						}
+						
+						if (updated)
+						{
+							for (int i = 1; i <= primaryKeyColumnList.size(); ++i)
+							{
+								int type = dialect.getColumnType(table.getColumn(columnList.get(i - 1)));
+								
+								updateStatement.setObject(i + nonPrimaryKeyColumnList.size(), inactiveResultSet.getObject(i), type);
+							}
+							
+							updateStatement.addBatch();
+							
+							updateCount += 1;
+						}
+					}
+					
+					if (hasMoreActiveResults && (compare <= 0))
+					{
+						hasMoreActiveResults = activeResultSet.next();
+					}
+					
+					if (hasMoreInactiveResults && (compare >= 0))
+					{
+						hasMoreInactiveResults = inactiveResultSet.next();
+					}
+				}
+				
+				if (deleteCount > 0)
+				{
+					deleteStatement.executeBatch();
+				}
+				
+				deleteStatement.close();
+				
+				if (insertCount > 0)
+				{
+					insertStatement.executeBatch();
+				}
+				
+				insertStatement.close();
+				
+				if (updateCount > 0)
+				{
+					updateStatement.executeBatch();
+				}
+				
+				updateStatement.close();
+				
+				inactiveStatement.close();
+				activeStatement.close();
+				
+				// Collect unique constraints on this table from the active database and re-create them on the inactive database
+				for (UniqueConstraint constraint: constraints)
+				{
+					String sql = dialect.getCreateUniqueConstraintSQL(constraint);
+					
+					logger.debug(sql);
+					
+					statement.addBatch(sql);
+				}
+				
+				statement.executeBatch();
+				statement.clearBatch();
+				
+				inactiveConnection.commit();
+				
+				logger.info(Messages.getMessage(Messages.INSERT_COUNT, insertCount, table.getName()));
+				logger.info(Messages.getMessage(Messages.UPDATE_COUNT, updateCount, table.getName()));
+				logger.info(Messages.getMessage(Messages.DELETE_COUNT, deleteCount, table.getName()));			
 			}
 		}
 		catch (ExecutionException e)
@@ -430,20 +419,15 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		inactiveConnection.setAutoCommit(true);
 
 		// Collect foreign key constraints from the active database and create them on the inactive database
-		for (Map.Entry<String, Collection<String>> schemaMapEntry: schemaMap.entrySet())
+		for (TableProperties table: tables)
 		{
-			String schema = schemaMapEntry.getKey();
-			
-			for (String table: schemaMapEntry.getValue())
+			for (ForeignKeyConstraint constraint: table.getForeignKeyConstraints())
 			{
-				for (ForeignKeyConstraint constraint: metaData.getForeignKeyConstraints(schema, table))
-				{
-					String sql = dialect.getCreateForeignKeyConstraintSQL(metaData, constraint);
-					
-					logger.debug(sql);
-					
-					statement.addBatch(sql);
-				}
+				String sql = dialect.getCreateForeignKeyConstraintSQL(constraint);
+				
+				logger.debug(sql);
+				
+				statement.addBatch(sql);
 			}
 		}
 		

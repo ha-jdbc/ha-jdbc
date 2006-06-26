@@ -20,6 +20,13 @@
  */
 package net.sf.hajdbc.cache;
 
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
+
+import net.sf.hajdbc.DatabaseMetaDataCache;
+import net.sf.hajdbc.DatabaseProperties;
+
 
 /**
  * DatabaseMetaDataCache that lazily caches data when requested.
@@ -28,16 +35,44 @@ package net.sf.hajdbc.cache;
  * @author Paul Ferraro
  * @since 1.2
  */
-public class LazyDatabaseMetaDataCache extends AbstractLazyDatabaseMetaDataCache
+public class LazyDatabaseMetaDataCache implements DatabaseMetaDataCache
 {
-	private DatabaseProperties properties = new DatabaseProperties();
+	private static ThreadLocal<Connection> threadLocal = new ThreadLocal<Connection>();
+	
+	private DatabaseProperties properties;
+	
+	public static DatabaseMetaData getDatabaseMetaData() throws SQLException
+	{
+		return threadLocal.get().getMetaData();
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush()
+	 */
+	public void flush(Connection connection) throws SQLException
+	{
+		threadLocal.set(connection);
+		
+		this.setDatabaseProperties(new LazyDatabaseProperties());
+	}
 
 	/**
-	 * @see net.sf.hajdbc.cache.AbstractLazyDatabaseMetaDataCache#getDatabaseProperties()
+	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getDatabaseProperties()
 	 */
-	@Override
+	public DatabaseProperties getDatabaseProperties(Connection connection)
+	{
+		threadLocal.set(connection);
+		
+		return this.getDatabaseProperties();
+	}
+	
 	protected DatabaseProperties getDatabaseProperties()
 	{
 		return this.properties;
+	}
+
+	protected void setDatabaseProperties(DatabaseProperties properties)
+	{
+		this.properties = properties;
 	}	
 }

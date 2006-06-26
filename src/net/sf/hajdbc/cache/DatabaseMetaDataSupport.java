@@ -20,12 +20,9 @@
  */
 package net.sf.hajdbc.cache;
 
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -35,17 +32,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import net.sf.hajdbc.DatabaseMetaDataCache;
+import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.UniqueConstraint;
 
 /**
- * DatabaseMetaDataCache implementation for populating actual cache implementations.
- * 
  * @author Paul Ferraro
- * @since 1.2
+ *
  */
-public class DatabaseMetaDataCacheImpl implements DatabaseMetaDataCache
+public class DatabaseMetaDataSupport
 {
 	// As defined in SQL-92 specification: http://www.andrew.cmu.edu/user/shadow/sql/sql1992.txt
 	private static final String[] SQL_92_RESERVED_WORDS = new String[] {
@@ -98,58 +93,38 @@ public class DatabaseMetaDataCacheImpl implements DatabaseMetaDataCache
 	private static final Pattern UPPER_CASE_PATTERN = Pattern.compile("[A-Z]");
 	private static final Pattern LOWER_CASE_PATTERN = Pattern.compile("[a-z]");
 	
-	private static ThreadLocal<Connection> threadLocalConnection = new ThreadLocal<Connection>();
-	
 	private Set<String> reservedIdentifierSet;
 	private Pattern identifierPattern;
-	
-	private DatabaseMetaData getDatabaseMetaData() throws SQLException
-	{
-		return threadLocalConnection.get().getMetaData();
-	}
 
-	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush()
-	 */
-	public synchronized void flush() throws SQLException
+	public DatabaseMetaDataSupport(DatabaseMetaData metaData) throws SQLException
 	{
-		DatabaseMetaData metaData = this.getDatabaseMetaData();
-		
 		this.reservedIdentifierSet = new HashSet<String>(Arrays.asList(SQL_92_RESERVED_WORDS));
 		this.reservedIdentifierSet.addAll(Arrays.asList(metaData.getSQLKeywords().split(",")));
 		
 		this.identifierPattern = Pattern.compile("[\\w" + Pattern.quote(metaData.getExtraNameCharacters()) + "]+");
 	}
-
-	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#setConnection(java.sql.Connection)
-	 */
-	public void setConnection(Connection connection)
-	{
-		threadLocalConnection.set(connection);
-	}
-
+	
 	/**
 	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getTables()
 	 */
-	public Map<String, Collection<String>> getTables() throws SQLException
+	public Map<String, Collection<String>> getTables(DatabaseMetaData metaData) throws SQLException
 	{
-		Map<String, Collection<String>> schemaMap = new HashMap<String, Collection<String>>();
+		Map<String, Collection<String>> tablesMap = new HashMap<String, Collection<String>>();
 		
-		ResultSet resultSet = this.getDatabaseMetaData().getTables(null, null, "%", new String[] { "TABLE" });
+		ResultSet resultSet = metaData.getTables(this.getCatalog(metaData), null, "%", new String[] { "TABLE" });
 		
 		while (resultSet.next())
 		{
-			String table = this.quote(resultSet.getString("TABLE_NAME"));
-			String schema = this.quote(resultSet.getString("TABLE_SCHEM"));
+			String table = this.quote(metaData, resultSet.getString("TABLE_NAME"));
+			String schema = this.quote(metaData, resultSet.getString("TABLE_SCHEM"));
 
-			Collection<String> tables = schemaMap.get(schema);
+			Collection<String> tables = tablesMap.get(schema);
 			
 			if (tables == null)
 			{
 				tables = new LinkedList<String>();
 				
-				schemaMap.put(schema, tables);
+				tablesMap.put(schema, tables);
 			}
 			
 			tables.add(table);
@@ -157,27 +132,25 @@ public class DatabaseMetaDataCacheImpl implements DatabaseMetaDataCache
 		
 		resultSet.close();
 		
-		return schemaMap;
+		return tablesMap;
 	}
 
 	/**
 	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getColumns(java.lang.String, java.lang.String)
 	 */
-	public Map<String, ColumnProperties> getColumns(String schema, String table) throws SQLException
+	public Map<String, ColumnProperties> getColumns(DatabaseMetaData metaData, String schema, String table) throws SQLException
 	{
 		Map<String, ColumnProperties> columnMap = new HashMap<String, ColumnProperties>();
 		
-		ResultSet resultSet = this.getDatabaseMetaData().getColumns(null, null, "%", "%");
+		ResultSet resultSet = metaData.getColumns(this.getCatalog(metaData), this.getSchema(metaData, schema), table, "%");
 		
 		while (resultSet.next())
 		{
-			String name = resultSet.getString("COLUMN_NAME");
+			String column = this.quote(metaData, resultSet.getString("COLUMN_NAME"));
 			int type = resultSet.getInt("DATA_TYPE");
 			String nativeType = resultSet.getString("TYPE_NAME");
 			
-			String column = this.quote(name);
-			
-			columnMap.put(this.quote(name), new ColumnProperties(column, type, nativeType));
+			columnMap.put(column, new ColumnProperties(column, type, nativeType));
 		}
 		
 		resultSet.close();
@@ -188,22 +161,22 @@ public class DatabaseMetaDataCacheImpl implements DatabaseMetaDataCache
 	/**
 	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getPrimaryKey(java.lang.String, java.lang.String)
 	 */
-	public UniqueConstraint getPrimaryKey(String schema, String table) throws SQLException
+	public UniqueConstraint getPrimaryKey(DatabaseMetaData metaData, String schema, String table) throws SQLException
 	{
 		UniqueConstraint constraint = null;
 
-		ResultSet resultSet = this.getDatabaseMetaData().getPrimaryKeys(null, schema, table);
+		ResultSet resultSet = metaData.getPrimaryKeys(this.getCatalog(metaData), this.getSchema(metaData, schema), table);
 		
 		while (resultSet.next())
 		{
-			String name = this.quote(resultSet.getString("PK_NAME"));
+			String name = this.quote(metaData, resultSet.getString("PK_NAME"));
 
 			if (constraint == null)
 			{
-				constraint = new UniqueConstraint(name, schema, table);
+				constraint = new UniqueConstraint(name, this.getQualifiedNameForDDL(metaData, schema, table));
 			}
 			
-			String column = this.quote(resultSet.getString("COLUMN_NAME"));
+			String column = this.quote(metaData, resultSet.getString("COLUMN_NAME"));
 			
 			constraint.getColumnList().add(column);
 		}
@@ -216,31 +189,33 @@ public class DatabaseMetaDataCacheImpl implements DatabaseMetaDataCache
 	/**
 	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getForeignKeyConstraints(java.lang.String, java.lang.String)
 	 */
-	public Collection<ForeignKeyConstraint> getForeignKeyConstraints(String schema, String table) throws SQLException
+	public Collection<ForeignKeyConstraint> getForeignKeyConstraints(DatabaseMetaData metaData, String schema, String table) throws SQLException
 	{
 		Map<String, ForeignKeyConstraint> foreignKeyMap = new HashMap<String, ForeignKeyConstraint>();
 		
-		ResultSet resultSet = this.getDatabaseMetaData().getImportedKeys(null, schema, table);
+		ResultSet resultSet = metaData.getImportedKeys(this.getCatalog(metaData), this.getSchema(metaData, schema), table);
 		
 		while (resultSet.next())
 		{
-			String name = this.quote(resultSet.getString("FK_NAME"));
+			String name = this.quote(metaData, resultSet.getString("FK_NAME"));
 			
 			ForeignKeyConstraint foreignKey = foreignKeyMap.get(name);
 			
 			if (foreignKey == null)
 			{
-				foreignKey = new ForeignKeyConstraint(name, schema, table);
+				foreignKey = new ForeignKeyConstraint(name, this.getQualifiedNameForDDL(metaData, schema, table));
 				
-				foreignKey.setForeignSchema(this.quote(resultSet.getString("PKTABLE_SCHEM")));
-				foreignKey.setForeignTable(this.quote(resultSet.getString("PKTABLE_NAME")));
+				String foreignSchema = this.quote(metaData, resultSet.getString("PKTABLE_SCHEM"));
+				String foreignTable = this.quote(metaData, resultSet.getString("PKTABLE_NAME"));
+				
+				foreignKey.setForeignTable(this.getQualifiedNameForDDL(metaData, foreignSchema, foreignTable));
 				foreignKey.setDeleteRule(resultSet.getInt("DELETE_RULE"));
 				foreignKey.setUpdateRule(resultSet.getInt("UPDATE_RULE"));
 				foreignKey.setDeferrability(resultSet.getInt("DEFERRABILITY"));
 			}
 			
-			String column = this.quote(resultSet.getString("FKCOLUMN_NAME"));
-			String foreignColumn = this.quote(resultSet.getString("PKCOLUMN_NAME"));
+			String column = this.quote(metaData, resultSet.getString("FKCOLUMN_NAME"));
+			String foreignColumn = this.quote(metaData, resultSet.getString("PKCOLUMN_NAME"));
 
 			foreignKey.getColumnList().add(column);
 			foreignKey.getForeignColumnList().add(foreignColumn);
@@ -254,23 +229,23 @@ public class DatabaseMetaDataCacheImpl implements DatabaseMetaDataCache
 	/**
 	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getUniqueConstraints(java.lang.String, java.lang.String)
 	 */
-	public Collection<UniqueConstraint> getUniqueConstraints(String schema, String table) throws SQLException
+	public Collection<UniqueConstraint> getUniqueConstraints(DatabaseMetaData metaData, String schema, String table) throws SQLException
 	{
 		Map<String, UniqueConstraint> keyMap = new HashMap<String, UniqueConstraint>();
 		
-		ResultSet resultSet = this.getDatabaseMetaData().getIndexInfo(null, schema, table, true, false);
+		ResultSet resultSet = metaData.getIndexInfo(this.getCatalog(metaData), this.getSchema(metaData, schema), table, true, false);
 		
 		while (resultSet.next())
 		{
 			if (resultSet.getInt("TYPE") == DatabaseMetaData.tableIndexStatistic) continue;
 			
-			String name = this.quote(resultSet.getString("INDEX_NAME"));
+			String name = this.quote(metaData, resultSet.getString("INDEX_NAME"));
 			
 			UniqueConstraint key = keyMap.get(name);
 			
 			if (key == null)
 			{
-				key = new UniqueConstraint(name, schema, table);
+				key = new UniqueConstraint(name, this.getQualifiedNameForDDL(metaData, schema, table));
 				
 				keyMap.put(name, key);
 			}
@@ -286,61 +261,63 @@ public class DatabaseMetaDataCacheImpl implements DatabaseMetaDataCache
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#containsAutoIncrementColumn(java.lang.String, java.lang.String)
-	 */
-	public boolean containsAutoIncrementColumn(String qualifiedTable) throws SQLException
-	{
-		boolean autoIncrement = false;
-		
-		Statement statement = this.getDatabaseMetaData().getConnection().createStatement();
-		
-		ResultSet resultSet = statement.executeQuery("SELECT * FROM " + qualifiedTable + " WHERE 0=1");
-		
-		ResultSetMetaData metaData = resultSet.getMetaData();
-		
-		for (int i = 1; i <= metaData.getColumnCount(); ++i)
-		{
-			if (metaData.isAutoIncrement(i))
-			{
-				autoIncrement = true;
-				break;
-			}
-		}
-		
-		resultSet.close();
-		statement.close();
-		
-		return autoIncrement;
-	}
-
-	/**
 	 * @see net.sf.hajdbc.DatabaseMetaDataCache#qualifyTableForDML(java.lang.String, java.lang.String)
 	 */
-	public String getQualifiedNameForDML(String schema, String table) throws SQLException
+	public String getQualifiedNameForDML(DatabaseMetaData metaData, String schema, String table) throws SQLException
 	{
-		return this.getDatabaseMetaData().supportsSchemasInDataManipulation() ? schema + "." + table : table;
+		StringBuilder builder = new StringBuilder();
+		
+		String catalog = metaData.getConnection().getCatalog();
+		
+		if (metaData.supportsCatalogsInDataManipulation() && (catalog != null))
+		{
+			builder.append(catalog).append(metaData.getCatalogSeparator());
+		}
+
+		if (metaData.supportsSchemasInDataManipulation() && (schema != null))
+		{
+			builder.append(schema).append(".");
+		}
+		
+		return builder.append(table).toString();
 	}
 
 	/**
 	 * @see net.sf.hajdbc.DatabaseMetaDataCache#qualifyTableForDDL(java.lang.String, java.lang.String)
 	 */
-	public String getQualifiedNameForDDL(String schema, String table) throws SQLException
+	public String getQualifiedNameForDDL(DatabaseMetaData metaData, String schema, String table) throws SQLException
 	{
-		return this.getDatabaseMetaData().supportsSchemasInTableDefinitions() ? schema + "." + table : table;
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#supportsSelectForUpdate()
-	 */
-	public boolean supportsSelectForUpdate() throws SQLException
-	{
-		return this.getDatabaseMetaData().supportsSelectForUpdate();
+		StringBuilder builder = new StringBuilder();
+		
+		String catalog = metaData.getConnection().getCatalog();
+		
+		if (metaData.supportsCatalogsInTableDefinitions() && (catalog != null))
+		{
+			builder.append(catalog).append(metaData.getCatalogSeparator());
+		}
+
+		if (metaData.supportsSchemasInTableDefinitions() && (schema != null))
+		{
+			builder.append(schema).append(".");
+		}
+		
+		return builder.append(table).toString();
 	}
 
-	private String quote(String identifier) throws SQLException
+	private String getCatalog(DatabaseMetaData metaData) throws SQLException
 	{
-		DatabaseMetaData metaData = this.getDatabaseMetaData();
+		String catalog = metaData.getConnection().getCatalog();
 		
+		return (catalog != null) ? catalog : "";
+	}
+	
+	private String getSchema(DatabaseMetaData metaData, String schema)
+	{
+		return (schema != null) ? schema : "";
+	}
+	
+	private String quote(DatabaseMetaData metaData, String identifier) throws SQLException
+	{
 		String quote = metaData.getIdentifierQuoteString();
 		
 		// Sometimes, drivers return identifiers already quoted.  If so, exit early.

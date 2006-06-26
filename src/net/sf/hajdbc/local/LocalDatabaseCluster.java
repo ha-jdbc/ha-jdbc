@@ -58,6 +58,7 @@ import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SQLException;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.SynchronizationStrategyBuilder;
+import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.sql.DataSourceDatabase;
 import net.sf.hajdbc.sql.DriverDatabase;
 import net.sf.hajdbc.util.concurrent.CronThreadPoolExecutor;
@@ -394,10 +395,8 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getDatabaseMetaDataCache(java.sql.Connection)
 	 */
-	public DatabaseMetaDataCache getDatabaseMetaDataCache(Connection connection)
+	public DatabaseMetaDataCache getDatabaseMetaDataCache()
 	{
-		this.databaseMetaDataCache.setConnection(connection);
-		
 		return this.databaseMetaDataCache;
 	}
 
@@ -656,9 +655,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		{
 			connection = database.connect(this.connectionFactoryMap.get(database));
 			
-			this.databaseMetaDataCache.setConnection(connection);
-			
-			this.databaseMetaDataCache.flush();
+			this.databaseMetaDataCache.flush(connection);
 		}
 		catch (java.sql.SQLException e)
 		{
@@ -829,18 +826,12 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			
 			inactiveConnection = inactiveDatabase.connect(connectionFactoryMap.get(inactiveDatabase));
 			activeConnection = activeDatabase.connect(connectionFactoryMap.get(activeDatabase));
-
-			DatabaseMetaDataCache metaData = this.getDatabaseMetaDataCache(activeConnection);
-
-			Map<String, Collection<String>> schemaMap = metaData.getTables();
-			
-			Dialect dialect = this.getDialect();
 			
 			if (strategy.requiresTableLocking())
 			{
 				logger.info(Messages.getMessage(Messages.TABLE_LOCK_ACQUIRE));
 				
-				Map<String, Map<String, String>> lockTableSQLMap = new HashMap<String, Map<String, String>>();
+				Map<String, String> lockTableSQLMap = new HashMap<String, String>();
 				
 				// Lock all tables on all active databases
 				for (Database database: activeDatabaseList)
@@ -854,34 +845,22 @@ public class LocalDatabaseCluster implements DatabaseCluster
 					
 					Statement statement = connection.createStatement();
 					
-					for (Map.Entry<String, Collection<String>> schemaMapEntry: schemaMap.entrySet())
+					for (TableProperties properties: this.databaseMetaDataCache.getDatabaseProperties(activeConnection).getTables())
 					{
-						String schema = schemaMapEntry.getKey();
+						String table = properties.getName();
 						
-						Map<String, String> map = lockTableSQLMap.get(schema);
+						String sql = lockTableSQLMap.get(table);
 						
-						if (map == null)
+						if (sql == null)
 						{
-							map = new HashMap<String, String>();
+							sql = this.dialect.getLockTableSQL(properties);
 							
-							lockTableSQLMap.put(schema, map);
-						}
-						
-						for (String table: schemaMapEntry.getValue())
-						{
-							String sql = map.get(table);
-							
-							if (sql == null)
-							{
-								sql = dialect.getLockTableSQL(metaData, schema, table);
+							logger.debug(sql);
 								
-								logger.debug(sql);
-								
-								map.put(table, sql);
-							}
-							
-							statement.execute(sql);
+							lockTableSQLMap.put(table, sql);
 						}
+							
+						statement.execute(sql);
 					}
 					
 					statement.close();
@@ -890,7 +869,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			
 			logger.info(Messages.getMessage(Messages.DATABASE_SYNC_START, inactiveDatabase, this));
 
-			strategy.synchronize(inactiveConnection, activeConnection, metaData, dialect);
+			strategy.synchronize(inactiveConnection, activeConnection, this.databaseMetaDataCache, this.dialect);
 			
 			logger.info(Messages.getMessage(Messages.DATABASE_SYNC_END, inactiveDatabase, this));
 	

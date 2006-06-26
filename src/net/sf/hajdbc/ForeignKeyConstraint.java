@@ -20,15 +20,8 @@
  */
 package net.sf.hajdbc;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -39,7 +32,6 @@ import java.util.Map;
  */
 public class ForeignKeyConstraint extends UniqueConstraint
 {
-	private String foreignSchema;
 	private String foreignTable;
 	private List<String> foreignColumnList = new LinkedList<String>();
 	private int updateRule;
@@ -51,14 +43,10 @@ public class ForeignKeyConstraint extends UniqueConstraint
 	 * @param name
 	 * @param schema
 	 * @param table
-	 * @param column
-	 * @param foreignSchema
-	 * @param foreignTable
-	 * @param foreignColumn
 	 */
-	public ForeignKeyConstraint(String name, String schema, String table)
+	public ForeignKeyConstraint(String name, String table)
 	{
-		super(name, schema, table);
+		super(name, table);
 	}
 	
 	/**
@@ -67,14 +55,6 @@ public class ForeignKeyConstraint extends UniqueConstraint
 	public String getForeignTable()
 	{
 		return this.foreignTable;
-	}
-	
-	/**
-	 * @return the foreign schema of this foreign key
-	 */
-	public String getForeignSchema()
-	{
-		return this.foreignSchema;
 	}
 	
 	/**
@@ -126,14 +106,6 @@ public class ForeignKeyConstraint extends UniqueConstraint
 	}
 
 	/**
-	 * @param foreignSchema The foreignSchema to set.
-	 */
-	public void setForeignSchema(String foreignSchema)
-	{
-		this.foreignSchema = foreignSchema;
-	}
-
-	/**
 	 * @param foreignTable The foreignTable to set.
 	 */
 	public void setForeignTable(String foreignTable)
@@ -147,57 +119,5 @@ public class ForeignKeyConstraint extends UniqueConstraint
 	public void setUpdateRule(int updateRule)
 	{
 		this.updateRule = updateRule;
-	}
-
-	/**
-	 * Collects all foreign keys from the specified tables using the specified connection. 
-	 * @param connection a database connection
-	 * @param schemaMap a map of schema name to list of table names
-	 * @return a Collection of ForeignKey objects.
-	 * @throws SQLException if a database error occurs
-	 */
-	public static Collection<ForeignKeyConstraint> collect(Connection connection, Map<String, List<String>> schemaMap) throws SQLException
-	{
-		Map<String, ForeignKeyConstraint> foreignKeyMap = new HashMap<String, ForeignKeyConstraint>();
-		DatabaseMetaData metaData = connection.getMetaData();
-		
-		for (Map.Entry<String, List<String>> schemaMapEntry: schemaMap.entrySet())
-		{
-			String schema = schemaMapEntry.getKey();
-			List<String> tableList = schemaMapEntry.getValue();
-			
-			for (String table: tableList)
-			{
-				ResultSet resultSet = metaData.getImportedKeys(null, schema, table);
-				
-				while (resultSet.next())
-				{
-					String name = resultSet.getString("FK_NAME");
-					
-					ForeignKeyConstraint foreignKey = foreignKeyMap.get(name);
-					
-					if (foreignKey == null)
-					{
-						foreignKey = new ForeignKeyConstraint(name, schema, table);
-						
-						foreignKey.foreignSchema = resultSet.getString("PKTABLE_SCHEM");
-						foreignKey.foreignTable = resultSet.getString("PKTABLE_NAME");
-						foreignKey.deleteRule = resultSet.getInt("DELETE_RULE");
-						foreignKey.updateRule = resultSet.getInt("UPDATE_RULE");
-						foreignKey.deferrability = resultSet.getInt("DEFERRABILITY");
-					}
-					
-					String column = resultSet.getString("FKCOLUMN_NAME");
-					String foreignColumn = resultSet.getString("PKCOLUMN_NAME");
-		
-					foreignKey.getColumnList().add(column);
-					foreignKey.getForeignColumnList().add(foreignColumn);
-				}
-				
-				resultSet.close();
-			}
-		}
-		
-		return foreignKeyMap.values();
 	}
 }

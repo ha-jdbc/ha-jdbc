@@ -24,8 +24,8 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.text.MessageFormat;
 
-import net.sf.hajdbc.DatabaseMetaDataCache;
-import net.sf.hajdbc.cache.ColumnProperties;
+import net.sf.hajdbc.ColumnProperties;
+import net.sf.hajdbc.TableProperties;
 
 /**
  * Dialect for <a href="http://postgresql.org">PostgreSQL</a>.
@@ -44,9 +44,9 @@ public class PostgreSQLDialect extends DefaultDialect
 	 * @see net.sf.hajdbc.dialect.DefaultDialect#getLockTableSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public String getLockTableSQL(DatabaseMetaDataCache metaData, String schema, String table) throws SQLException
+	public String getLockTableSQL(TableProperties properties) throws SQLException
 	{
-		return MessageFormat.format("LOCK TABLE {0} IN EXCLUSIVE MODE; SELECT 1 FROM {0}", metaData.getQualifiedNameForDML(schema, table));
+		return MessageFormat.format("LOCK TABLE {0} IN EXCLUSIVE MODE; SELECT 1 FROM {0}", properties.getName());
 	}
 	
 	/**
@@ -54,10 +54,8 @@ public class PostgreSQLDialect extends DefaultDialect
 	 * @see net.sf.hajdbc.dialect.DefaultDialect#getColumnType(net.sf.hajdbc.DatabaseMetaDataCache, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public int getColumnType(DatabaseMetaDataCache metaData, String schema, String table, String column) throws SQLException
+	public int getColumnType(ColumnProperties properties)
 	{
-		ColumnProperties properties = metaData.getColumns(schema, table).get(column);
-		
 		return properties.getNativeType().equals("oid") ? Types.BLOB : properties.getType();
 	}
 

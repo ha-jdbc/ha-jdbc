@@ -22,14 +22,9 @@ package net.sf.hajdbc.cache;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import net.sf.hajdbc.DatabaseMetaDataCache;
-import net.sf.hajdbc.ForeignKeyConstraint;
-import net.sf.hajdbc.UniqueConstraint;
+import net.sf.hajdbc.DatabaseProperties;
 
 /**
  * DatabaseMetaDataCache implementation that eagerly caches data when first flushed.
@@ -39,229 +34,21 @@ import net.sf.hajdbc.UniqueConstraint;
  */
 public class EagerDatabaseMetaDataCache implements DatabaseMetaDataCache
 {
-	private DatabaseProperties properties = new DatabaseProperties();
-	private DatabaseMetaDataCache cache = new DatabaseMetaDataCacheImpl();
-	private ReadWriteLock lock = new ReentrantReadWriteLock();
+	private DatabaseProperties properties;
 	
 	/**
-	 * @see net.sf.hajdbc.cache.LazyDatabaseMetaDataCache#flush()
+	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush(java.sql.Connection)
 	 */
-	public void flush() throws SQLException
+	public void flush(Connection connection) throws SQLException
 	{
-		this.lock.writeLock().lock();
-		
-		try
-		{
-			this.cache.flush();
-			this.properties.clear();
-			
-			this.properties.setTablesMap(this.cache.getTables());
-			this.properties.setSupportsSelectForUpdate(this.cache.supportsSelectForUpdate());
-			
-			for (Map.Entry<String, Collection<String>> tableMapEntry: this.properties.getTablesMap().entrySet())
-			{
-				String schema = tableMapEntry.getKey();
-				
-				for (String table: tableMapEntry.getValue())
-				{
-					TableProperties properties = this.properties.getTableProperties(schema, table);
-					
-					properties.setQualifiedNameForDDL(this.cache.getQualifiedNameForDDL(schema, table));
-					properties.setQualifiedNameForDML(this.cache.getQualifiedNameForDML(schema, table));
-					
-//					String qualifiedTable = properties.getQualifiedTableForDML();
-					
-//					this.properties.getContainsAutoIncrementColumnMap().put(qualifiedTable, this.cache.containsAutoIncrementColumn(qualifiedTable));
-					
-					properties.setColumns(this.cache.getColumns(schema, table));
-					properties.setForeignKeyConstraints(this.cache.getForeignKeyConstraints(schema, table));
-					properties.setPrimaryKey(this.cache.getPrimaryKey(schema, table));
-					properties.setUniqueConstraints(this.cache.getUniqueConstraints(schema, table));
-				}
-			}
-		}
-		finally
-		{
-			this.lock.writeLock().unlock();
-		}
+		this.properties = new EagerDatabaseProperties(connection);
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#setConnection(java.sql.Connection)
+	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getDatabaseProperties(java.sql.Connection)
 	 */
-	public void setConnection(Connection connection)
+	public DatabaseProperties getDatabaseProperties(Connection connection)
 	{
-		this.cache.setConnection(connection);
+		return this.properties;
 	}
-
-	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getTables()
-	 */
-	public Map<String, Collection<String>> getTables()
-	{
-		this.lock.readLock().lock();
-		
-		try
-		{
-			return this.properties.getTablesMap();
-		}
-		finally
-		{
-			this.lock.readLock().unlock();
-		}
-	}
-
-	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getPrimaryKey(java.lang.String, java.lang.String)
-	 */
-	public UniqueConstraint getPrimaryKey(String schema, String table)
-	{
-		this.lock.readLock().lock();
-		
-		try
-		{
-			return this.properties.getTableProperties(schema, table).getPrimaryKey();
-		}
-		finally
-		{
-			this.lock.readLock().unlock();
-		}
-	}
-
-	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getForeignKeyConstraints(java.lang.String, java.lang.String)
-	 */
-	public Collection<ForeignKeyConstraint> getForeignKeyConstraints(String schema, String table)
-	{
-		this.lock.readLock().lock();
-		
-		try
-		{
-			return this.properties.getTableProperties(schema, table).getForeignKeyConstraints();
-		}
-		finally
-		{
-			this.lock.readLock().unlock();
-		}
-	}
-
-	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getUniqueConstraints(java.lang.String, java.lang.String)
-	 */
-	public Collection<UniqueConstraint> getUniqueConstraints(String schema, String table)
-	{
-		this.lock.readLock().lock();
-		
-		try
-		{
-			return this.properties.getTableProperties(schema, table).getUniqueConstraints();
-		}
-		finally
-		{
-			this.lock.readLock().unlock();
-		}
-	}
-
-	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getColumns(java.lang.String, java.lang.String)
-	 */
-	public Map<String, ColumnProperties> getColumns(String schema, String table)
-	{
-		this.lock.readLock().lock();
-		
-		try
-		{
-			return this.properties.getTableProperties(schema, table).getColumnMap();
-		}
-		finally
-		{
-			this.lock.readLock().unlock();
-		}
-	}
-
-	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getQualifiedNameForDDL(java.lang.String, java.lang.String)
-	 */
-	public String getQualifiedNameForDDL(String schema, String table)
-	{
-		this.lock.readLock().lock();
-		
-		try
-		{
-			return this.properties.getTableProperties(schema, table).getQualifiedNameForDDL();
-		}
-		finally
-		{
-			this.lock.readLock().unlock();
-		}
-	}
-
-	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getQualifiedNameForDML(java.lang.String, java.lang.String)
-	 */
-	public String getQualifiedNameForDML(String schema, String table)
-	{
-		this.lock.readLock().lock();
-		
-		try
-		{
-			return this.properties.getTableProperties(schema, table).getQualifiedNameForDML();
-		}
-		finally
-		{
-			this.lock.readLock().unlock();
-		}
-	}
-
-	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#supportsSelectForUpdate()
-	 */
-	public boolean supportsSelectForUpdate()
-	{
-		this.lock.readLock().lock();
-		
-		try
-		{
-			return this.properties.getSupportsSelectForUpdate();
-		}
-		finally
-		{
-			this.lock.readLock().unlock();
-		}
-	}
-
-	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#containsAutoIncrementColumn(java.lang.String)
-	 */
-/*	public boolean containsAutoIncrementColumn(String qualifiedTable) throws SQLException
-	{
-		this.lock.readLock().lock();
-		
-		try
-		{
-			Map<String, Boolean> containsAutoIncrementColumnMap = this.properties.getContainsAutoIncrementColumnMap();
-			
-			Boolean containsAutoIncrementColumn = this.properties.getContainsAutoIncrementColumnMap().get(qualifiedTable);
-			
-			if (containsAutoIncrementColumn == null)
-			{
-				lock.unlock();
-				
-				lock = this.lock.writeLock();
-				
-				lock.lock();
-				
-				containsAutoIncrementColumn = this.cache.containsAutoIncrementColumn(qualifiedTable);
-				
-				containsAutoIncrementColumnMap.put(qualifiedTable, containsAutoIncrementColumn);
-			}
-			
-			return containsAutoIncrementColumn;
-		}
-		finally
-		{
-			this.lock.readLock().unlock();
-		}
-	}
-*/
 }

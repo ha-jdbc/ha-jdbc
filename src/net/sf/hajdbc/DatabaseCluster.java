@@ -20,13 +20,9 @@
  */
 package net.sf.hajdbc;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
-
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.locks.Lock;
-
 
 /**
  * @author  Paul Ferraro
@@ -139,10 +135,9 @@ public interface DatabaseCluster extends DatabaseClusterMBean
 	public void stop();
 	
 	/**
-	 * 
-	 * @param connection
-	 * @return
+	 * Returns a DatabaseMetaData cache.
+	 * @return a <code>DatabaseMetaDataCache</code> implementation
 	 * @since 1.2
 	 */
-	public DatabaseMetaDataCache getDatabaseMetaDataCache(Connection connection);
+	public DatabaseMetaDataCache getDatabaseMetaDataCache();
 }
