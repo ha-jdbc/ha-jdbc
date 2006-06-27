@@ -65,7 +65,6 @@ public class PostgreSQLDialect extends DefaultDialect
 	}
 
 	/**
-	 * JDBC API does not acknowledge the existence of sequences.  Each dialect 
 	 * @see net.sf.hajdbc.Dialect#getSequences()
 	 */
 	@Override

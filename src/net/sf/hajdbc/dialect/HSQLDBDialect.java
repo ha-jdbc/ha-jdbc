@@ -20,6 +20,13 @@
  */
 package net.sf.hajdbc.dialect;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Dialect for <a href="http://www.hsqldb.org">HSQLDB</a>.
  * 
@@ -37,6 +44,41 @@ public class HSQLDBDialect extends DefaultDialect
 		return "CALL NOW()";
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#getSequences(java.sql.Connection)
+	 */
+	@Override
+	public Map<String, Long> getSequences(Connection connection) throws SQLException
+	{
+		Map<String, Long> sequenceMap = new HashMap<String, Long>();
+		
+		ResultSet resultSet = connection.createStatement().executeQuery("SELECT SEQUENCE_NAME FROM INFORMATION_SCHEMA.SYSTEM_SEQUENCES");
+		
+		while (resultSet.next())
+		{
+			sequenceMap.put(resultSet.getString(1), null);
+		}
+		
+		resultSet.getStatement().close();
+		
+		for (String sequence: sequenceMap.keySet())
+		{
+			PreparedStatement statement = connection.prepareStatement("SELECT NEXT VALUE FOR " + sequence + " FROM INFORMATION_SCHEMA.SYSTEM_SEQUENCES WHERE SEQUENCE_NAME = ?");
+			
+			statement.setString(1, sequence);
+			
+			resultSet = statement.executeQuery();
+			
+			resultSet.next();
+			
+			sequenceMap.put(sequence, resultSet.getLong(1));
+			
+			statement.close();
+		}
+		
+		return sequenceMap;
+	}
+
 	/**
 	 * Deferrability clause is not supported.
 	 * @see net.sf.hajdbc.dialect.DefaultDialect#createForeignKeyFormat()

@@ -20,6 +20,15 @@
  */
 package net.sf.hajdbc.dialect;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
+
+import net.sf.hajdbc.util.Strings;
+
 /**
  * Dialect for DB2 (commercial).
  * @author  Paul Ferraro
@@ -33,7 +42,45 @@ public class DB2Dialect extends DefaultDialect
 	@Override
 	public String getSimpleSQL()
 	{
-		return "SELECT 1 FROM SYSIBM.SYSDUMMY";
+		return "VALUES 1";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#getSequences(java.sql.Connection)
+	 */
+	@Override
+	public Map<String, Long> getSequences(Connection connection) throws SQLException
+	{
+		Map<String, Long> sequenceMap = new HashMap<String, Long>();
+		
+		Statement statement = connection.createStatement();
+		
+		ResultSet resultSet = statement.executeQuery("SELECT SEQNAME FROM SYSCAT.SEQUENCES");
+		
+		while (resultSet.next())
+		{
+			sequenceMap.put(resultSet.getString(1), null);
+		}
+		
+		resultSet.close();
+		
+		if (!sequenceMap.isEmpty())
+		{
+			resultSet = statement.executeQuery("VALUES (PREVVAL FOR " + Strings.join(sequenceMap.keySet(), ", PREVVAL FOR ") + ")");
+			
+			resultSet.next();
+			
+			int index = 0;
+			
+			for (String sequence: sequenceMap.keySet())
+			{
+				sequenceMap.put(sequence, resultSet.getLong(++index));
+			}
+		}
+		
+		statement.close();
+		
+		return sequenceMap;
 	}
 
 	/**

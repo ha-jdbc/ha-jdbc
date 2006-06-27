@@ -55,7 +55,7 @@ public class MaxDBDialect extends DefaultDialect
 		
 		Statement statement = connection.createStatement();
 		
-		ResultSet resultSet = statement.executeQuery("SELECT SEQUENCE_NAME FROM DBA_SEQUENCES");
+		ResultSet resultSet = statement.executeQuery("SELECT SEQUENCE_NAME FROM ALL_SEQUENCES");
 		
 		while (resultSet.next())
 		{
@@ -64,15 +64,18 @@ public class MaxDBDialect extends DefaultDialect
 		
 		resultSet.close();
 		
-		resultSet = statement.executeQuery("SELECT " + Strings.join(sequenceMap.keySet(), ".CURRVAL, ") + ".CURRVAL FROM DUAL");
-		
-		resultSet.next();
-		
-		int index = 0;
-		
-		for (String sequence: sequenceMap.keySet())
+		if (!sequenceMap.isEmpty())
 		{
-			sequenceMap.put(sequence, resultSet.getLong(++index));
+			resultSet = statement.executeQuery("SELECT " + Strings.join(sequenceMap.keySet(), ".CURRVAL, ") + ".CURRVAL FROM DUAL");
+			
+			resultSet.next();
+			
+			int index = 0;
+			
+			for (String sequence: sequenceMap.keySet())
+			{
+				sequenceMap.put(sequence, resultSet.getLong(++index));
+			}
 		}
 		
 		statement.close();

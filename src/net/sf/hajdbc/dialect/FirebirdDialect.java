@@ -20,6 +20,15 @@
  */
 package net.sf.hajdbc.dialect;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
+
+import net.sf.hajdbc.util.Strings;
+
 /**
  * Dialect for <a href="firebird.sourceforge.net">Firebird</a>.
  * @author Paul Ferraro
@@ -27,11 +36,69 @@ package net.sf.hajdbc.dialect;
 public class FirebirdDialect extends DefaultDialect
 {
 	/**
+	 * Firebird 2.0 will support standard syntax.  Until then...
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#alterSequenceFormat()
+	 */
+	@Override
+	protected String alterSequenceFormat()
+	{
+		return "SET GENERATOR {0} TO {1}";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#getSequences(java.sql.Connection)
+	 */
+	@Override
+	public Map<String, Long> getSequences(Connection connection) throws SQLException
+	{
+		Map<String, Long> sequenceMap = new HashMap<String, Long>();
+		
+		Statement statement = connection.createStatement();
+		
+		ResultSet resultSet = statement.executeQuery("SELECT RDB$GENERATOR_NAME FROM RDB$GENERATORS");
+		
+		while (resultSet.next())
+		{
+			sequenceMap.put(resultSet.getString(1), null);
+		}
+		
+		resultSet.close();
+		
+		if (!sequenceMap.isEmpty())
+		{
+			resultSet = statement.executeQuery("SELECT GEN_ID(" + Strings.join(sequenceMap.keySet(), ", 0), ") + ", 0) FROM RDB$DATABASE");
+			
+			resultSet.next();
+			
+			int index = 0;
+			
+			for (String sequence: sequenceMap.keySet())
+			{
+				sequenceMap.put(sequence, resultSet.getLong(++index));
+			}
+		}
+		
+		statement.close();
+		
+		return sequenceMap;
+	}
+
+	/**
+	 * Firebird 2.0 will support standard syntax.  Until then...
 	 * @see net.sf.hajdbc.dialect.DefaultDialect#sequencePattern()
 	 */
 	@Override
 	protected String sequencePattern()
 	{
 		return "GEN_ID\\s*\\(\\s*(\\S+)\\s*,\\s*\\d+\\s*\\)";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#selectForUpdatePattern()
+	 */
+	@Override
+	protected String selectForUpdatePattern()
+	{
+		return "SELECT\\s+.+\\s+WITH\\s+LOCK";
 	}
 }
