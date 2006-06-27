@@ -922,7 +922,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			{
 				if (!LocalDatabaseCluster.this.isAlive(database))
 				{
-					logger.warn(Messages.getMessage(Messages.DATABASE_NOT_ALIVE, database, this));
+					logger.warn(Messages.getMessage(Messages.DATABASE_NOT_ALIVE, database, LocalDatabaseCluster.this));
 					
 					LocalDatabaseCluster.this.deactivate(database);
 				}
@@ -943,7 +943,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 				{
 					if (LocalDatabaseCluster.this.activate(database, LocalDatabaseCluster.this.getDefaultSynchronizationStrategy()))
 					{
-						logger.info(Messages.getMessage(Messages.DATABASE_ACTIVATED, database.getId(), this));
+						logger.info(Messages.getMessage(Messages.DATABASE_ACTIVATED, database, LocalDatabaseCluster.this));
 					}
 				}
 				catch (java.sql.SQLException e)
