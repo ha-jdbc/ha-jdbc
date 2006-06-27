@@ -14,7 +14,7 @@
 	<changes>
 		<release version="1.1.1" date="...">
 			<action type="update" context="lib" dev="PF">
-				Upgraded Retrotranslator to version 1.0.4.
+				Upgraded Retrotranslator to version 1.0.6.
 			</action>
 			<action type="update" context="lib" dev="PF">
 				Upgraded JiBX to version 1.1.
