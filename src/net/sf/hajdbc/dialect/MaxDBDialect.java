@@ -55,11 +55,20 @@ public class MaxDBDialect extends DefaultDialect
 		
 		Statement statement = connection.createStatement();
 		
-		ResultSet resultSet = statement.executeQuery("SELECT SEQUENCE_NAME FROM ALL_SEQUENCES");
+		ResultSet resultSet = statement.executeQuery("SELECT SEQUENCE_OWNER, SEQUENCE_NAME FROM ALL_SEQUENCES");
 		
 		while (resultSet.next())
 		{
-			sequenceMap.put(resultSet.getString(1), null);
+			StringBuilder builder = new StringBuilder();
+			
+			String schema = resultSet.getString(1);
+			
+			if (schema != null)
+			{
+				builder.append(schema).append(".");
+			}
+			
+			sequenceMap.put(builder.append(resultSet.getString(2)).toString(), null);
 		}
 		
 		resultSet.close();

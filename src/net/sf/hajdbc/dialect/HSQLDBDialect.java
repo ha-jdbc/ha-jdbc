@@ -51,11 +51,20 @@ public class HSQLDBDialect extends DefaultDialect
 	{
 		Map<String, Long> sequenceMap = new HashMap<String, Long>();
 		
-		ResultSet resultSet = connection.createStatement().executeQuery("SELECT SEQUENCE_NAME, NEXT_VALUE FROM INFORMATION_SCHEMA.SYSTEM_SEQUENCES");
+		ResultSet resultSet = connection.createStatement().executeQuery("SELECT SEQUENCE_SCHEMA, SEQUENCE_NAME, NEXT_VALUE FROM INFORMATION_SCHEMA.SYSTEM_SEQUENCES");
 		
 		while (resultSet.next())
 		{
-			sequenceMap.put(resultSet.getString(1), resultSet.getLong(2));
+			StringBuilder builder = new StringBuilder();
+			
+			String schema = resultSet.getString(1);
+			
+			if (schema != null)
+			{
+				builder.append(schema).append(".");
+			}
+			
+			sequenceMap.put(builder.append(resultSet.getString(2)).toString(), resultSet.getLong(2));
 		}
 		
 		resultSet.getStatement().close();

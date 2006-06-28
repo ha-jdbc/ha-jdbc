@@ -78,7 +78,16 @@ public class PostgreSQLDialect extends DefaultDialect
 		
 		while (resultSet.next())
 		{
-			sequenceMap.put(resultSet.getString("TABLE_NAME"), null);
+			StringBuilder builder = new StringBuilder();
+			
+			String schema = resultSet.getString("TABLE_SCHEM");
+			
+			if (schema != null)
+			{
+				builder.append(schema).append(".");
+			}
+			
+			sequenceMap.put(builder.append(resultSet.getString("TABLE_NAME")).toString(), null);
 		}
 		
 		resultSet.close();
