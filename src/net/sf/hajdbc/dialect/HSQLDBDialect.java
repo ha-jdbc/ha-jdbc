@@ -64,7 +64,7 @@ public class HSQLDBDialect extends DefaultDialect
 				builder.append(schema).append(".");
 			}
 			
-			sequenceMap.put(builder.append(resultSet.getString(2)).toString(), resultSet.getLong(2));
+			sequenceMap.put(builder.append(resultSet.getString(2)).toString(), resultSet.getLong(3));
 		}
 		
 		resultSet.getStatement().close();
