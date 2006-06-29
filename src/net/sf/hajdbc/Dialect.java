@@ -71,7 +71,7 @@ public interface Dialect
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
-	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint foreignKeyConstraint) throws SQLException;
+	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException;
 
 	/**
 	 * Returns a SQL statement used to drop a foreign key constraint.
