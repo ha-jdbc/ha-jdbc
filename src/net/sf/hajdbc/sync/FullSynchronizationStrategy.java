@@ -146,7 +146,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 				String[] parameters = new String[columns.size()];
 				Arrays.fill(parameters, "?");
 				
-				String insertSQL = "INSERT INTO " + table.getName() + " (" + commaDelimitedColumns + ") VALUES (" + Strings.join(Arrays.asList(parameters), ",") + ")";
+				String insertSQL = "INSERT INTO " + table.getName() + " (" + commaDelimitedColumns + ") VALUES (" + Strings.join(Arrays.asList(parameters), ", ") + ")";
 				
 				logger.debug(insertSQL);
 				

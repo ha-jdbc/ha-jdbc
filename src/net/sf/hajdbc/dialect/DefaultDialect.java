@@ -72,11 +72,11 @@ public class DefaultDialect implements Dialect
 		{
 			String column = columns.next();
 			
-			builder.append(column).append('=').append(column);
+			builder.append(column).append(" = ").append(column);
 			
 			if (columns.hasNext())
 			{
-				builder.append(',');
+				builder.append(", ");
 			}
 		}
 		
@@ -96,7 +96,7 @@ public class DefaultDialect implements Dialect
 	 */
 	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint key)
 	{
-		return MessageFormat.format(this.createForeignKeyFormat(), key.getName(), key.getTable(), Strings.join(key.getColumnList(), ","), key.getForeignTable(), Strings.join(key.getForeignColumnList(), ","), key.getDeleteRule(), key.getUpdateRule(), key.getDeferrability());
+		return MessageFormat.format(this.createForeignKeyFormat(), key.getName(), key.getTable(), Strings.join(key.getColumnList(), ", "), key.getForeignTable(), Strings.join(key.getForeignColumnList(), ", "), key.getDeleteRule(), key.getUpdateRule(), key.getDeferrability());
 	}
 	
 	/**
@@ -112,7 +112,7 @@ public class DefaultDialect implements Dialect
 	 */
 	public String getCreateUniqueConstraintSQL(UniqueConstraint constraint)
 	{
-		return MessageFormat.format(this.createUniqueKeyFormat(), constraint.getName(), constraint.getTable(), Strings.join(constraint.getColumnList(), ","));
+		return MessageFormat.format(this.createUniqueKeyFormat(), constraint.getName(), constraint.getTable(), Strings.join(constraint.getColumnList(), ", "));
 	}
 	
 	/**
@@ -128,7 +128,7 @@ public class DefaultDialect implements Dialect
 	 */
 	public String getCreatePrimaryKeyConstraintSQL(UniqueConstraint constraint)
 	{
-		return MessageFormat.format(this.createPrimaryKeyFormat(), constraint.getName(), constraint.getTable(), Strings.join(constraint.getColumnList(), ","));
+		return MessageFormat.format(this.createPrimaryKeyFormat(), constraint.getName(), constraint.getTable(), Strings.join(constraint.getColumnList(), ", "));
 	}
 
 	/**

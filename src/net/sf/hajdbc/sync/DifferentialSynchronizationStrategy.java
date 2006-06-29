@@ -168,10 +168,10 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				
 				List<String> nonPrimaryKeyColumnList = columnList.subList(primaryKeyColumnList.size(), columnList.size());
 				
-				String commaDelimitedColumns = Strings.join(columnList, ",");
+				String commaDelimitedColumns = Strings.join(columnList, ", ");
 				
 				// Retrieve table rows in primary key order
-				final String selectSQL = "SELECT " + commaDelimitedColumns + " FROM " + table.getName() + " ORDER BY " + Strings.join(primaryKeyColumnList, ",");
+				final String selectSQL = "SELECT " + commaDelimitedColumns + " FROM " + table.getName() + " ORDER BY " + Strings.join(primaryKeyColumnList, ", ");
 				
 				final Statement inactiveStatement = inactiveConnection.createStatement();
 
@@ -196,7 +196,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 
 				ResultSet inactiveResultSet = future.get();
 				
-				String primaryKeyWhereClause = " WHERE " + Strings.join(primaryKeyColumnList, "=? AND ") + "=?";
+				String primaryKeyWhereClause = " WHERE " + Strings.join(primaryKeyColumnList, " = ? AND ") + " = ?";
 				
 				// Construct DELETE SQL
 				String deleteSQL = "DELETE FROM " + table.getName() + primaryKeyWhereClause;
@@ -209,14 +209,14 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				Arrays.fill(parameters, "?");
 				
 				// Construct INSERT SQL
-				String insertSQL = "INSERT INTO " + table.getName() + " (" + commaDelimitedColumns + ") VALUES (" + Strings.join(Arrays.asList(parameters), ",") + ")";
+				String insertSQL = "INSERT INTO " + table.getName() + " (" + commaDelimitedColumns + ") VALUES (" + Strings.join(Arrays.asList(parameters), ", ") + ")";
 				
 				logger.debug(insertSQL);
 				
 				PreparedStatement insertStatement = inactiveConnection.prepareStatement(insertSQL);
 				
 				// Construct UPDATE SQL
-				String updateSQL = "UPDATE " + table.getName() + " SET " + Strings.join(nonPrimaryKeyColumnList, "=?,") + "=?" + primaryKeyWhereClause;
+				String updateSQL = "UPDATE " + table.getName() + " SET " + Strings.join(nonPrimaryKeyColumnList, " = ?, ") + " = ?" + primaryKeyWhereClause;
 				
 				logger.debug(updateSQL);
 				

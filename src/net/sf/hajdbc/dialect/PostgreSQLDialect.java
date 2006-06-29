@@ -123,6 +123,6 @@ public class PostgreSQLDialect extends DefaultDialect
 	@Override
 	protected String sequencePattern()
 	{
-		return "(?:(?:CURR)|(?:NEXT))VAL\\s*\\(\\s*'(\\S+\\)'\\s*)";
+		return "(?:(?:CURR)|(?:NEXT))VAL\\s*\\(\\s*'(\\S+)'\\s*\\)";
 	}
 }

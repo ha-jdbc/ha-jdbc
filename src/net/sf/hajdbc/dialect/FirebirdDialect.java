@@ -36,6 +36,15 @@ import net.sf.hajdbc.util.Strings;
 public class FirebirdDialect extends DefaultDialect
 {
 	/**
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#getSimpleSQL()
+	 */
+	@Override
+	public String getSimpleSQL()
+	{
+		return "SELECT 1 FROM RDB$DATABASE";
+	}
+
+	/**
 	 * Firebird 2.0 will support standard syntax.  Until then...
 	 * @see net.sf.hajdbc.dialect.DefaultDialect#alterSequenceFormat()
 	 */
@@ -66,7 +75,7 @@ public class FirebirdDialect extends DefaultDialect
 		
 		if (!sequenceMap.isEmpty())
 		{
-			resultSet = statement.executeQuery("SELECT GEN_ID(" + Strings.join(sequenceMap.keySet(), ", 0), ") + ", 0) FROM RDB$DATABASE");
+			resultSet = statement.executeQuery("SELECT GEN_ID(" + Strings.join(sequenceMap.keySet(), ", 0), GEN_ID(") + ", 0) FROM RDB$DATABASE");
 			
 			resultSet.next();
 			
