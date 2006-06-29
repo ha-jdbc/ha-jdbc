@@ -20,15 +20,19 @@
  */
 package net.sf.hajdbc.dialect;
 
+import java.sql.SQLException;
+
+import org.easymock.EasyMock;
 import org.testng.annotations.Test;
 
 import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.ForeignKeyConstraint;
+import net.sf.hajdbc.TableProperties;
 
 /**
  * @author Paul Ferraro
  *
  */
-@Test
 public class TestDerbyDialect extends TestDefaultDialect
 {
 	@Override
@@ -37,11 +41,70 @@ public class TestDerbyDialect extends TestDefaultDialect
 		return new DerbyDialect();
 	}
 
+	/**
+	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
+	 */
 	@Override
-	public void testGetSimpleSQL()
+	@Test(dataProvider = "foreign-key")
+	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException
 	{
+		this.control.replay();
+		
+		String sql = this.dialect.getCreateForeignKeyConstraintSQL(constraint);
+		
+		assert sql.equals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE ON UPDATE RESTRICT") : sql;
+		
+		return sql;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getLockTableSQL(net.sf.hajdbc.TableProperties)
+	 */
+	@Override
+	@Test(dataProvider = "table")
+	public String getLockTableSQL(TableProperties properties) throws SQLException
+	{
+		EasyMock.expect(properties.getName()).andReturn("table");
+		
+		this.control.replay();
+		
+		String sql = this.dialect.getLockTableSQL(properties);
+		
+		assert sql.equals("LOCK TABLE table IN SHARE MODE") : sql;
+		
+		return sql;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getSimpleSQL()
+	 */
+	@Override
+	public String getSimpleSQL()
+	{
+		this.control.replay();
+		
 		String sql = this.dialect.getSimpleSQL();
 		
+		this.control.verify();
+		
 		assert sql.equals("VALUES 1") : sql;
+		
+		return sql;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#parseSequence(java.lang.String)
+	 */
+	@Override
+	@Test(dataProvider = "null")
+	public String parseSequence(String sql) throws SQLException
+	{
+		this.control.replay();
+		
+		String sequence = this.dialect.parseSequence("SELECT NEXT VALUE FROM sequence");
+		
+		assert sequence == null : sequence;
+		
+		return sequence;
 	}
 }

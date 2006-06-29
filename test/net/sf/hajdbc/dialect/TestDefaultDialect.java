@@ -20,29 +20,33 @@
  */
 package net.sf.hajdbc.dialect;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.List;
+import java.sql.Types;
+import java.util.Map;
 
+import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.ForeignKeyConstraint;
+import net.sf.hajdbc.TableProperties;
+import net.sf.hajdbc.UniqueConstraint;
 
 import org.easymock.EasyMock;
 import org.easymock.IMocksControl;
 import org.testng.annotations.Configuration;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
  * @author Paul Ferraro
  *
  */
-@Test
-public class TestDefaultDialect
+public class TestDefaultDialect implements Dialect
 {
 	protected IMocksControl control = EasyMock.createStrictControl();
-	protected DatabaseMetaData metaData = this.control.createMock(DatabaseMetaData.class);
-	protected ResultSet resultSet = this.control.createMock(ResultSet.class);
+	protected TableProperties tableProperties = this.control.createMock(TableProperties.class);
+	protected Connection connection = this.control.createMock(Connection.class);
 	
 	protected Dialect dialect = this.createDialect();
 	
@@ -57,385 +61,327 @@ public class TestDefaultDialect
 		this.control.reset();
 	}
 	
-	/**
-	 * Test case for {@link net.sf.hajdbc.Dialect#getSimpleSQL()}
-	 */
-	public void testGetSimpleSQL()
+	@DataProvider(name = "table")
+	public Object[][] getTableProperties()
 	{
+		return new Object[][] { new Object[] { this.tableProperties } };
+	}
+	
+	@DataProvider(name = "foreign-key")
+	public Object[][] getForeignKeyParameters()
+	{
+		ForeignKeyConstraint foreignKey = new ForeignKeyConstraint("name", "table");
+		foreignKey.getColumnList().add("column1");
+		foreignKey.getColumnList().add("column2");
+		foreignKey.setForeignTable("foreign_table");
+		foreignKey.getForeignColumnList().add("foreign_column1");
+		foreignKey.getForeignColumnList().add("foreign_column2");
+		foreignKey.setDeferrability(DatabaseMetaData.importedKeyInitiallyDeferred);
+		foreignKey.setDeleteRule(DatabaseMetaData.importedKeyCascade);
+		foreignKey.setUpdateRule(DatabaseMetaData.importedKeyRestrict);
+		
+		return new Object[][] { new Object[] { foreignKey } };
+	}
+	
+	@DataProvider(name = "unique-constraint")
+	public Object[][] getUniqueKeyParameters()
+	{
+		UniqueConstraint uniqueKey = new UniqueConstraint("name", "table");
+		uniqueKey.getColumnList().add("column1");
+		uniqueKey.getColumnList().add("column2");
+		
+		return new Object[][] { new Object[] { uniqueKey } };
+	}
+	
+	@DataProvider(name = "alter-sequence")
+	public Object[][] getAlterSequenceParameters()
+	{
+		return new Object[][] { new Object[] { "sequence", 1L } };
+	}
+	
+	@DataProvider(name = "column")
+	public Object[][] getColumnParameters()
+	{
+		return new Object[][] { new Object[] { new ColumnProperties("column", Types.INTEGER, "int") } };
+	}
+
+	@DataProvider(name = "connection")
+	public Object[][] getConnectionParameters()
+	{
+		return new Object[][] { new Object[] { this.connection } };
+	}
+
+	@DataProvider(name = "null")
+	public Object[][] getNullParameters()
+	{
+		return new Object[][] { new Object[] { null } };
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#getAlterSequenceSQL(java.lang.String, long)
+	 */
+	@Test(dataProvider = "alter-sequence")
+	public String getAlterSequenceSQL(String sequence, long value)
+	{
+		this.control.replay();
+		
+		String sql = this.dialect.getAlterSequenceSQL(sequence, value);
+		
+		this.control.verify();
+		
+		assert sql.equals("ALTER SEQUENCE sequence RESTART WITH 1") : sql;
+		
+		return sql;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#getColumnType(net.sf.hajdbc.ColumnProperties)
+	 */
+	@Test(dataProvider = "column")
+	public int getColumnType(ColumnProperties properties) throws SQLException
+	{
+		this.control.replay();
+		
+		int type = this.dialect.getColumnType(properties);
+		
+		this.control.verify();
+		
+		assert type == properties.getType() : type;
+		
+		return type;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
+	 */
+	@Test(dataProvider = "foreign-key")
+	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException
+	{
+		this.control.replay();
+		
+		String sql = this.dialect.getCreateForeignKeyConstraintSQL(constraint);
+		
+		assert sql.equals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE ON UPDATE RESTRICT DEFERRABLE INITIALLY DEFERRED") : sql;
+		
+		return sql;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#getCreatePrimaryKeyConstraintSQL(net.sf.hajdbc.UniqueConstraint)
+	 */
+	@Test(dataProvider = "unique-constraint")
+	public String getCreatePrimaryKeyConstraintSQL(UniqueConstraint constraint) throws SQLException
+	{
+		this.control.replay();
+		
+		String sql = this.dialect.getCreatePrimaryKeyConstraintSQL(constraint);
+		
+		assert sql.equals("ALTER TABLE table ADD CONSTRAINT name PRIMARY KEY (column1, column2)") : sql;
+		
+		return sql;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#getCreateUniqueConstraintSQL(net.sf.hajdbc.UniqueConstraint)
+	 */
+	@Test(dataProvider = "unique-constraint")
+	public String getCreateUniqueConstraintSQL(UniqueConstraint constraint) throws SQLException
+	{
+		this.control.replay();
+		
+		String sql = this.dialect.getCreateUniqueConstraintSQL(constraint);
+		
+		assert sql.equals("ALTER TABLE table ADD CONSTRAINT name UNIQUE (column1, column2)") : sql;
+		
+		return sql;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#getDropForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
+	 */
+	@Test(dataProvider = "foreign-key")
+	public String getDropForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException
+	{
+		this.control.replay();
+		
+		String sql = this.dialect.getDropForeignKeyConstraintSQL(constraint);
+		
+		assert sql.equals("ALTER TABLE table DROP CONSTRAINT name") : sql;
+		
+		return sql;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#getDropPrimaryKeyConstraintSQL(net.sf.hajdbc.UniqueConstraint)
+	 */
+	@Test(dataProvider = "unique-constraint")
+	public String getDropPrimaryKeyConstraintSQL(UniqueConstraint constraint) throws SQLException
+	{
+		this.control.replay();
+		
+		String sql = this.dialect.getDropPrimaryKeyConstraintSQL(constraint);
+		
+		assert sql.equals("ALTER TABLE table DROP CONSTRAINT name") : sql;
+		
+		return sql;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#getDropUniqueConstraintSQL(net.sf.hajdbc.UniqueConstraint)
+	 */
+	@Test(dataProvider = "unique-constraint")
+	public String getDropUniqueConstraintSQL(UniqueConstraint constraint) throws SQLException
+	{
+		this.control.replay();
+		
+		String sql = this.dialect.getDropUniqueConstraintSQL(constraint);
+		
+		assert sql.equals("ALTER TABLE table DROP CONSTRAINT name") : sql;
+		
+		return sql;
+	}
+	
+	/**
+	 * @throws SQLException 
+	 * @see net.sf.hajdbc.Dialect#getLockTableSQL(net.sf.hajdbc.TableProperties)
+	 */
+	@Test(dataProvider = "table")
+	public String getLockTableSQL(TableProperties properties) throws SQLException
+	{
+		UniqueConstraint primaryKey = new UniqueConstraint("name", "table");
+		primaryKey.getColumnList().add("column1");
+		primaryKey.getColumnList().add("column2");
+		
+		EasyMock.expect(properties.getName()).andReturn("table");
+		EasyMock.expect(properties.getPrimaryKey()).andReturn(primaryKey);
+		
+		this.control.replay();
+		
+		String sql = this.dialect.getLockTableSQL(properties);
+		
+		this.control.verify();
+		
+		assert sql.equals("UPDATE table SET column1 = column1, column2 = column2") : sql;
+		
+		this.control.reset();
+		
+		EasyMock.expect(properties.getName()).andReturn("table");
+		EasyMock.expect(properties.getPrimaryKey()).andReturn(null);
+		EasyMock.expect(properties.getColumns()).andReturn(primaryKey.getColumnList());
+		
+		this.control.replay();
+		
+		sql = this.dialect.getLockTableSQL(properties);
+		
+		this.control.verify();
+		
+		assert sql.equals("UPDATE table SET column1 = column1, column2 = column2") : sql;
+		
+		return sql;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#getSequences(java.sql.Connection)
+	 */
+	@Test(dataProvider = "connection")
+	public Map<String, Long> getSequences(Connection connection) throws SQLException
+	{
+		this.control.replay();
+		
+		Map<String, Long> sequenceMap = this.dialect.getSequences(connection);
+		
+		this.control.verify();
+		
+		assert sequenceMap.isEmpty() : sequenceMap;
+		
+		return sequenceMap;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.Dialect#getSimpleSQL()
+	 */
+	@Test
+	public String getSimpleSQL()
+	{
+		this.control.replay();
+		
 		String sql = this.dialect.getSimpleSQL();
 		
+		this.control.verify();
+		
 		assert sql.equals("SELECT 1") : sql;
+		
+		return sql;
 	}
 
 	/**
-	 * Test case for {@link net.sf.hajdbc.Dialect#getLockTableSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String)}
+	 * @see net.sf.hajdbc.Dialect#getTruncateTableSQL(net.sf.hajdbc.TableProperties)
 	 */
-	public void testGetLockTableSQL()
+	@Test(dataProvider = "table")
+	public String getTruncateTableSQL(TableProperties properties) throws SQLException
 	{
-		String schema = "schema";
-		String table = "table";
-		String quote = "'";
+		EasyMock.expect(properties.getName()).andReturn("table");
 		
-		try
-		{
-			EasyMock.expect(this.metaData.supportsSchemasInDataManipulation()).andReturn(true);
-			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote).times(2);
-			EasyMock.expect(this.metaData.getPrimaryKeys(null, schema, table)).andReturn(this.resultSet);
-			EasyMock.expect(this.resultSet.next()).andReturn(true);
-			EasyMock.expect(this.resultSet.getString("COLUMN_NAME")).andReturn("column");
-			EasyMock.expect(this.resultSet.next()).andReturn(false);
-			
-			this.resultSet.close();
-			
-			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote);
-			
-			this.control.replay();
-			
-			String sql = this.dialect.getLockTableSQL(this.metaData, schema, table);
-			
-			this.control.verify();
-			
-			assert sql.equals("UPDATE 'schema'.'table' SET 'column'='column'") : sql;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		String sql = this.dialect.getTruncateTableSQL(properties);
+		
+		this.control.verify();
+		
+		assert sql.equals("DELETE FROM table");
+		
+		return sql;
 	}
 
 	/**
-	 * Test case for {@link net.sf.hajdbc.Dialect#getTruncateTableSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String)}
+	 * @see net.sf.hajdbc.Dialect#isSelectForUpdate(java.lang.String)
 	 */
-	public void testGetTruncateTableSQL()
+	@Test(dataProvider = "null")
+	public boolean isSelectForUpdate(String sql) throws SQLException
 	{
-		String schema = "schema";
-		String table = "table";
-		String quote = "'";
+		this.control.replay();
 		
-		try
-		{
-			EasyMock.expect(this.metaData.supportsSchemasInDataManipulation()).andReturn(true);
-			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote).times(2);
-			
-			this.control.replay();
-			
-			String sql = this.dialect.getTruncateTableSQL(this.metaData, schema, table);
-			
-			this.control.verify();
-			
-			assert sql.equals("DELETE FROM 'schema'.'table'") : sql;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		boolean selectForUpdate = this.dialect.isSelectForUpdate("SELECT * FROM table FOR UPDATE");
+		
+		this.control.verify();
+		
+		assert selectForUpdate;
+		
+		this.control.reset();
+		this.control.replay();
+		
+		selectForUpdate = this.dialect.isSelectForUpdate("SELECT * FROM table");
+		
+		this.control.verify();
+		
+		assert !selectForUpdate;
+		
+		return selectForUpdate;
 	}
 
 	/**
-	 * Test case for {@link net.sf.hajdbc.Dialect#getCreateForeignKeyConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}
+	 * @see net.sf.hajdbc.Dialect#parseSequence(java.lang.String)
 	 */
-	public void testGetCreateForeignKeyConstraintSQL()
+	@Test(dataProvider = "null")
+	public String parseSequence(String sql) throws SQLException
 	{
-		String name = "fk_name";
-		String schema = "schema";
-		String table = "table";
-		String column = "column";
-		String foreignSchema = "other_schema";
-		String foreignTable = "other_table";
-		String foreignColumn = "other_column";
-		String quote = "'";
+		this.control.replay();
 		
-		try
-		{
-			EasyMock.expect(this.metaData.supportsSchemasInDataManipulation()).andReturn(true);
-			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote).times(3);
-			EasyMock.expect(this.metaData.supportsSchemasInDataManipulation()).andReturn(true);
-			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote).times(3);
-			
-			this.control.replay();
-			
-			String sql = this.dialect.getCreateForeignKeyConstraintSQL(this.metaData, name, schema, table, column, foreignSchema, foreignTable, foreignColumn);
-			
-			this.control.verify();
-			
-			assert sql.equals("ALTER TABLE 'schema'.'table' ADD CONSTRAINT fk_name FOREIGN KEY ('column') REFERENCES 'other_schema'.'other_table' ('other_column')") : sql;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test case for {@link net.sf.hajdbc.Dialect#getDropForeignKeyConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String)}
-	 */
-	public void testGetDropForeignKeyConstraintSQL()
-	{
-		String name = "fk_name";
-		String schema = "schema";
-		String table = "table";
-		String quote = "'";
+		String sequence = this.dialect.parseSequence("SELECT NEXT VALUE FOR sequence");
 		
-		try
-		{
-			EasyMock.expect(this.metaData.supportsSchemasInDataManipulation()).andReturn(true);
-			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote).times(2);
-			
-			this.control.replay();
-			
-			String sql = this.dialect.getDropForeignKeyConstraintSQL(this.metaData, name, schema, table);
-			
-			this.control.verify();
-			
-			assert sql.equals("ALTER TABLE 'schema'.'table' DROP CONSTRAINT fk_name") : sql;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test case for {@link net.sf.hajdbc.Dialect#getCreateUniqueConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String, java.util.List)}
-	 */
-	public void testGetCreateUniqueConstraintSQL()
-	{
-		String name = "uk_name";
-		String schema = "schema";
-		String table = "table";
-		List<String> columnList = Arrays.asList(new String[] {"column1", "column2"});
-		String quote = "'";
+		this.control.verify();
 		
-		try
-		{
-			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote).times(2);
-			EasyMock.expect(this.metaData.supportsSchemasInDataManipulation()).andReturn(true);
-			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote).times(2);
-			
-			this.control.replay();
-			
-			String sql = this.dialect.getCreateUniqueConstraintSQL(this.metaData, name, schema, table, columnList);
-			
-			this.control.verify();
-			
-			assert sql.equals("ALTER TABLE 'schema'.'table' ADD CONSTRAINT uk_name UNIQUE ('column1','column2')") : sql;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test case for {@link net.sf.hajdbc.Dialect#getDropUniqueConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String)}
-	 */
-	public void testGetDropUniqueConstraintSQL()
-	{
-		String name = "uk_name";
-		String schema = "schema";
-		String table = "table";
-		String quote = "'";
+		assert sequence.equals("sequence") : sequence;
 		
-		try
-		{
-			EasyMock.expect(this.metaData.supportsSchemasInDataManipulation()).andReturn(true);
-			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote).times(2);
-			
-			this.control.replay();
-			
-			String sql = this.dialect.getDropForeignKeyConstraintSQL(this.metaData, name, schema, table);
-			
-			this.control.verify();
-			
-			assert sql.equals("ALTER TABLE 'schema'.'table' DROP CONSTRAINT uk_name") : sql;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test case for {@link net.sf.hajdbc.Dialect#qualifyTable(java.sql.DatabaseMetaData, java.lang.String, java.lang.String)}
-	 */
-	public void testQualifyTable()
-	{
-		String schema = "schema";
-		String table = "table";
-		String quote = "'";
+		this.control.reset();
+		this.control.replay();
 		
-		try
-		{
-			EasyMock.expect(this.metaData.supportsSchemasInDataManipulation()).andReturn(true);
-			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote).times(2);
-			
-			this.control.replay();
-			
-			String sql = this.dialect.qualifyTable(this.metaData, schema, table);
-			
-			this.control.verify();
-			
-			assert sql.equals("'schema'.'table'") : sql;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test case for {@link net.sf.hajdbc.Dialect#qualifyTable(java.sql.DatabaseMetaData, java.lang.String, java.lang.String)}
-	 */
-	public void testQualifyTableNoSchema()
-	{
-		String schema = null;
-		String table = "table";
-		String quote = "'";
+		sequence = this.dialect.parseSequence("SELECT * FROM table");
 		
-		try
-		{
-			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote);
-			
-			this.control.replay();
-			
-			String sql = this.dialect.qualifyTable(this.metaData, schema, table);
-			
-			this.control.verify();
-			
-			assert sql.equals("'table'") : sql;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test case for {@link net.sf.hajdbc.Dialect#qualifyTable(java.sql.DatabaseMetaData, java.lang.String, java.lang.String)}
-	 */
-	public void testQualifyTableSchemaNotSupported()
-	{
-		String schema = "schema";
-		String table = "table";
-		String quote = "'";
+		this.control.verify();
 		
-		try
-		{
-			EasyMock.expect(this.metaData.supportsSchemasInDataManipulation()).andReturn(false);
-			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote);
-			
-			this.control.replay();
-			
-			String sql = this.dialect.qualifyTable(this.metaData, schema, table);
-			
-			this.control.verify();
-			
-			assert sql.equals("'table'") : sql;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test case for {@link net.sf.hajdbc.Dialect#quote(java.sql.DatabaseMetaData, java.lang.String)}
-	 */
-	public void testQuote()
-	{
-		String identifier = "blah";
-		String quote = "'";
+		assert sequence == null : sequence;
 		
-		try
-		{
-			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote);
-			
-			this.control.replay();
-			
-			String sql = this.dialect.quote(this.metaData, identifier);
-			
-			this.control.verify();
-			
-			assert sql.equals("'blah'") : sql;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test case for {@link net.sf.hajdbc.Dialect#isSelectForUpdate(java.sql.DatabaseMetaData, java.lang.String)}
-	 */
-	public void testIsSelectForUpdate()
-	{
-		String sql = "SELECT * FROM table FOR UPDATE";
-		
-		try
-		{
-			EasyMock.expect(this.metaData.supportsSelectForUpdate()).andReturn(true);
-			
-			this.control.replay();
-			
-			boolean result = this.dialect.isSelectForUpdate(this.metaData, sql);
-			
-			this.control.verify();
-			
-			assert result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test case for {@link net.sf.hajdbc.Dialect#isSelectForUpdate(java.sql.DatabaseMetaData, java.lang.String)}
-	 */
-	public void testIsSelectForUpdateFalse()
-	{
-		String sql = "SELECT * FROM table";
-		
-		try
-		{
-			EasyMock.expect(this.metaData.supportsSelectForUpdate()).andReturn(true);
-			
-			this.control.replay();
-			
-			boolean result = this.dialect.isSelectForUpdate(this.metaData, sql);
-			
-			this.control.verify();
-			
-			assert !result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test case for {@link net.sf.hajdbc.Dialect#isSelectForUpdate(java.sql.DatabaseMetaData, java.lang.String)}
-	 */
-	public void testIsSelectForUpdateNotSupported()
-	{
-		String sql = "SELECT blah FOR UPDATE";
-		
-		try
-		{
-			EasyMock.expect(this.metaData.supportsSelectForUpdate()).andReturn(false);
-			
-			this.control.replay();
-			
-			boolean result = this.dialect.isSelectForUpdate(this.metaData, sql);
-			
-			this.control.verify();
-			
-			assert !result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		return sequence;
 	}
 }
