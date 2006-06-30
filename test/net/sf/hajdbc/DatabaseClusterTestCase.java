@@ -28,15 +28,13 @@ import javax.management.MBeanServerFactory;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.Reference;
-import javax.sql.ConnectionPoolDataSource;
 import javax.sql.DataSource;
-import javax.sql.XADataSource;
+
+import net.sf.hajdbc.sql.MockDriver;
 
 import org.easymock.EasyMock;
 import org.easymock.IMocksControl;
 import org.testng.annotations.Configuration;
-
-import net.sf.hajdbc.sql.MockDriver;
 
 /**
  * @author  Paul Ferraro
@@ -65,16 +63,6 @@ public abstract class DatabaseClusterTestCase
 		
 		this.context.rebind("datasource1", reference);
 		this.context.rebind("datasource2", reference);
-		
-		reference = new Reference(ConnectionPoolDataSource.class.toString(), "net.sf.hajdbc.sql.pool.MockConnectionPoolDataSourceFactory", null);
-		
-		this.context.rebind("pool-datasource1", reference);
-		this.context.rebind("pool-datasource2", reference);
-		
-		reference = new Reference(XADataSource.class.toString(), "net.sf.hajdbc.sql.pool.xa.MockXADataSourceFactory", null);
-		
-		this.context.rebind("xa-datasource1", reference);
-		this.context.rebind("xa-datasource2", reference);
 	}
 
 	@Configuration(afterTestClass = true)
@@ -84,10 +72,6 @@ public abstract class DatabaseClusterTestCase
 		
 		this.context.unbind("datasource1");
 		this.context.unbind("datasource2");
-		this.context.unbind("pool-datasource1");
-		this.context.unbind("pool-datasource2");
-		this.context.unbind("xa-datasource1");
-		this.context.unbind("xa-datasource2");
 		
 		MBeanServerFactory.releaseMBeanServer(this.server);
 	}
