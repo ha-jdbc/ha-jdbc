@@ -34,12 +34,20 @@ import net.sf.hajdbc.MockDatabase;
 @Test
 public class TestRandomBalancer extends AbstractTestBalancer
 {
+	/**
+	 * @see net.sf.hajdbc.balancer.AbstractTestBalancer#createBalancer()
+	 */
+	@Override
 	protected Balancer createBalancer()
 	{
 		return new RandomBalancer();
 	}
 
-	protected void testNext(Balancer balancer)
+	/**
+	 * @see net.sf.hajdbc.balancer.AbstractTestBalancer#next(net.sf.hajdbc.Balancer)
+	 */
+	@Override
+	protected void next(Balancer balancer)
 	{
 		int count = 100;
 		int[] results = new int[3];

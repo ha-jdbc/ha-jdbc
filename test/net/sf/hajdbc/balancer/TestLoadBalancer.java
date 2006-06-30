@@ -40,15 +40,17 @@ public class TestLoadBalancer extends AbstractTestBalancer
 	/**
 	 * @see net.sf.hajdbc.balancer.AbstractTestBalancer#createBalancer()
 	 */
+	@Override
 	protected Balancer createBalancer()
 	{
 		return new LoadBalancer();
 	}
 
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractTestBalancer#testNext(net.sf.hajdbc.Balancer)
+	 * @see net.sf.hajdbc.balancer.AbstractTestBalancer#next(net.sf.hajdbc.Balancer)
 	 */
-	protected void testNext(Balancer balancer)
+	@Override
+	protected void next(Balancer balancer)
 	{
 		Database database0 = new MockDatabase("0", 0);
 		Database database1 = new MockDatabase("1", 1);
@@ -111,7 +113,7 @@ public class TestLoadBalancer extends AbstractTestBalancer
 	private class OperationThread extends Thread
 	{
 		private Balancer balancer;
-		private Operation operation;
+		private Operation<Void, Void> operation;
 		private Database database;
 		
 		/**
@@ -120,7 +122,7 @@ public class TestLoadBalancer extends AbstractTestBalancer
 		 * @param operation 
 		 * @param database
 		 */
-		public OperationThread(Balancer balancer, Operation operation, Database database)
+		public OperationThread(Balancer balancer, Operation<Void, Void> operation, Database database)
 		{
 			super();
 			
@@ -134,6 +136,7 @@ public class TestLoadBalancer extends AbstractTestBalancer
 		/**
 		 * @see java.lang.Runnable#run()
 		 */
+		@Override
 		public void run()
 		{
 			this.balancer.beforeOperation(this.database);
@@ -153,6 +156,7 @@ public class TestLoadBalancer extends AbstractTestBalancer
 		/**
 		 * @see java.lang.Thread#start()
 		 */
+		@Override
 		public synchronized void start()
 		{
 			super.start();
@@ -163,6 +167,7 @@ public class TestLoadBalancer extends AbstractTestBalancer
 		/**
 		 * @see java.lang.Thread#interrupt()
 		 */
+		@Override
 		public void interrupt()
 		{
 			super.interrupt();

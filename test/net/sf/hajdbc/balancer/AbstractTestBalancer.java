@@ -28,13 +28,14 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.MockDatabase;
 
 import org.testng.annotations.Configuration;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
  * @author  Paul Ferraro
  * @since   1.0
  */
-public abstract class AbstractTestBalancer
+public abstract class AbstractTestBalancer implements Balancer
 {
 	private Balancer balancer = createBalancer();
 	
@@ -49,14 +50,18 @@ public abstract class AbstractTestBalancer
 		}
 	}
 	
-	/**
-	 * Test method for {@link Balancer#add(Database)}
-	 */
-	@Test
-	public void testAdd()
+	@DataProvider(name = "database")
+	public Object[][] getDatabaseParameters()
 	{
-		Database database = new MockDatabase("1", 1);
-		
+		return new Object[][] { new Object[] { new MockDatabase("1", 1) } };
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.Balancer#add(net.sf.hajdbc.Database)
+	 */
+	@Test(dataProvider = "database")
+	public boolean add(Database database)
+	{
 		boolean added = this.balancer.add(database);
 		
 		assert added;
@@ -64,117 +69,56 @@ public abstract class AbstractTestBalancer
 		added = this.balancer.add(database);
 
 		assert !added;
+		
+		return added;
 	}
 
 	/**
-	 * Test method for {@link Balancer#beforeOperation(Database)}
+	 * @see net.sf.hajdbc.Balancer#afterOperation(net.sf.hajdbc.Database)
 	 */
-	@Test
-	public void testBeforeOperation()
+	@Test(dataProvider = "database")
+	public void afterOperation(Database database)
 	{
-		Database database = new MockDatabase("db1", 1);
-
 		this.balancer.add(database);
 		
 		this.balancer.beforeOperation(database);
 	}
 
 	/**
-	 * Test method for {@link Balancer#afterOperation(Database)}
+	 * @see net.sf.hajdbc.Balancer#beforeOperation(net.sf.hajdbc.Database)
 	 */
-	@Test
-	public void testAfterOperation()
+	@Test(dataProvider = "database")
+	public void beforeOperation(Database database)
 	{
-		Database database = new MockDatabase("db1", 1);
-
 		this.balancer.add(database);
 		
-		this.balancer.afterOperation(database);
+		this.balancer.beforeOperation(database);
 	}
-	
-	/**
-	 * Test method for {@link Balancer#remove(Database)}
-	 */
-	@Test
-	public void testRemove()
-	{
-		Database database = new MockDatabase("1", 1);
-		
-		boolean removed = this.balancer.remove(database);
 
-		assert !removed;
+	/**
+	 * @see net.sf.hajdbc.Balancer#contains(net.sf.hajdbc.Database)
+	 */
+	@Test(dataProvider = "database")
+	public boolean contains(Database database)
+	{
+		boolean contains = this.balancer.contains(database);
+		
+		assert !contains;
 		
 		this.balancer.add(database);
-
-		removed = this.balancer.remove(database);
-
-		assert removed;
 		
-		removed = this.balancer.remove(database);
-
-		assert !removed;
+		contains = this.balancer.contains(database);
+		
+		assert contains;
+		
+		return contains;
 	}
 
 	/**
-	 * Test method for {@link Balancer#contains(Database)}
+	 * @see net.sf.hajdbc.Balancer#first()
 	 */
 	@Test
-	public void testGetDatabases()
-	{
-		List<Database> databases = this.balancer.list();
-		
-		assert databases.isEmpty() : databases.size();
-		
-		Database database1 = new MockDatabase("db1", 1);
-		this.balancer.add(database1);
-		
-		databases = this.balancer.list();
-		
-		assert databases.size() == 1 : databases.size();
-		assert databases.contains(database1);
-		
-		Database database2 = new MockDatabase("db2", 1);
-		this.balancer.add(database2);
-
-		databases = this.balancer.list();
-
-		assert databases.size() == 2 : databases.size();
-		assert databases.contains(database1) && databases.contains(database2);
-
-		this.balancer.remove(database1);
-
-		databases = this.balancer.list();
-		
-		assert databases.size() == 1 : databases.size();
-		assert databases.contains(database2);
-		
-		this.balancer.remove(database2);
-		
-		databases = this.balancer.list();
-		
-		assert databases.isEmpty() : databases.size();
-	}
-
-	/**
-	 * Test method for {@link Balancer#contains(Database)}
-	 */
-	@Test
-	public void testContains()
-	{
-		Database database1 = new MockDatabase("db1", 1);
-		Database database2 = new MockDatabase("db2", 1);
-
-		this.balancer.add(database1);
-		
-		assert this.balancer.contains(database1);
-		assert !this.balancer.contains(database2);
-	}
-
-	/**
-	 * Test method for {@link Balancer#first()}
-	 */
-	@Test
-	public void testFirst()
+	public Database first()
 	{
 		try
 		{
@@ -194,13 +138,57 @@ public abstract class AbstractTestBalancer
 		Database first = this.balancer.first();
 
 		assert database.equals(first) : database;
+		
+		return database;
 	}
 
 	/**
-	 * Test method for {@link Balancer#next()}
+	 * @see net.sf.hajdbc.Balancer#list()
 	 */
 	@Test
-	public void testNext()
+	public List<Database> list()
+	{
+		List<Database> databaseList = this.balancer.list();
+		
+		assert databaseList.isEmpty() : databaseList.size();
+		
+		Database database1 = new MockDatabase("db1", 1);
+		this.balancer.add(database1);
+		
+		databaseList = this.balancer.list();
+		
+		assert databaseList.size() == 1 : databaseList.size();
+		assert databaseList.contains(database1);
+		
+		Database database2 = new MockDatabase("db2", 1);
+		this.balancer.add(database2);
+
+		databaseList = this.balancer.list();
+
+		assert databaseList.size() == 2 : databaseList.size();
+		assert databaseList.contains(database1) && databaseList.contains(database2);
+
+		this.balancer.remove(database1);
+
+		databaseList = this.balancer.list();
+		
+		assert databaseList.size() == 1 : databaseList.size();
+		assert databaseList.contains(database2);
+		
+		this.balancer.remove(database2);
+		
+		databaseList = this.balancer.list();
+		
+		assert databaseList.isEmpty() : databaseList.size();
+		
+		return databaseList;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Balancer#next()
+	 */
+	@Test
+	public Database next()
 	{
 		try
 		{
@@ -213,8 +201,33 @@ public abstract class AbstractTestBalancer
 			assert true;
 		}
 		
-		testNext(this.balancer);
+		this.next(this.balancer);
+		
+		return null;
 	}
 	
-	protected abstract void testNext(Balancer balancer);
+	protected abstract void next(Balancer balancer);
+
+	/**
+	 * @see net.sf.hajdbc.Balancer#remove(net.sf.hajdbc.Database)
+	 */
+	@Test(dataProvider = "database")
+	public boolean remove(Database database)
+	{
+		boolean removed = this.balancer.remove(database);
+
+		assert !removed;
+		
+		this.balancer.add(database);
+
+		removed = this.balancer.remove(database);
+
+		assert removed;
+		
+		removed = this.balancer.remove(database);
+
+		assert !removed;
+		
+		return removed;
+	}
 }

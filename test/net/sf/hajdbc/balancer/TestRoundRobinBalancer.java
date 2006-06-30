@@ -33,12 +33,17 @@ import net.sf.hajdbc.MockDatabase;
 @Test
 public class TestRoundRobinBalancer extends AbstractTestBalancer
 {
+	/**
+	 * @see net.sf.hajdbc.balancer.AbstractTestBalancer#createBalancer()
+	 */
+	@Override
 	protected Balancer createBalancer()
 	{
 		return new RoundRobinBalancer();
 	}
 
-	protected void testNext(Balancer balancer)
+	@Override
+	protected void next(Balancer balancer)
 	{
 		int count = 100;
 		

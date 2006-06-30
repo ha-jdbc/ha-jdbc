@@ -34,12 +34,14 @@ import net.sf.hajdbc.MockDatabase;
 @Test
 public class TestSimpleBalancer extends AbstractTestBalancer
 {
+	@Override
 	protected Balancer createBalancer()
 	{
 		return new SimpleBalancer();
 	}
 
-	protected void testNext(Balancer balancer)
+	@Override
+	protected void next(Balancer balancer)
 	{
 		balancer.add(new MockDatabase("0", 0));
 		
