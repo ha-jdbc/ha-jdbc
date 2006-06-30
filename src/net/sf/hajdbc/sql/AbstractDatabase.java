@@ -23,7 +23,6 @@ package net.sf.hajdbc.sql;
 import java.util.Properties;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.InactiveDatabaseMBean;
 
 /**
  * @author  Paul Ferraro
@@ -31,7 +30,7 @@ import net.sf.hajdbc.InactiveDatabaseMBean;
  * @param <T> 
  * @since   1.0
  */
-public abstract class AbstractDatabase<T> implements Database<T>, InactiveDatabaseMBean
+public abstract class AbstractDatabase<T> implements Database<T>
 {
 	protected String id;
 	protected String user;
