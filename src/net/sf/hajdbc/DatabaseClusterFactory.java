@@ -44,7 +44,6 @@ import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-import javax.management.StandardMBean;
 
 import net.sf.hajdbc.local.LocalDatabaseCluster;
 
@@ -396,21 +395,15 @@ public final class DatabaseClusterFactory
 		{
 			databaseCluster.start();
 			
-			ObjectName name = getObjectName(databaseCluster.getId());
-			
-			MBeanServer server = getMBeanServer();
-			
-			if (!server.isRegistered(name))
-			{
-				server.registerMBean(new StandardMBean(databaseCluster, DatabaseClusterMBean.class), name);
-			}
-			
 			this.databaseClusterMap.put(databaseCluster.getId(), databaseCluster);
 		}
 		catch (Exception e)
 		{
 			// Log exception here, since it will be masked by JiBX
 			logger.error(e.toString(), e);
+			
+			databaseCluster.stop();
+			
 			throw e;
 		}
 	}
