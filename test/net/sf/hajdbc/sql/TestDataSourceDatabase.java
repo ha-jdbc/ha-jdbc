@@ -22,171 +22,47 @@ package net.sf.hajdbc.sql;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Hashtable;
-import java.util.Properties;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import javax.naming.Name;
+import javax.naming.NamingException;
 import javax.naming.Reference;
-import javax.naming.spi.ObjectFactory;
 import javax.sql.DataSource;
 
-import org.easymock.EasyMock;
-import org.testng.annotations.Test;
+import net.sf.hajdbc.ActiveDatabaseMBean;
+import net.sf.hajdbc.InactiveDatabaseMBean;
 
-import net.sf.hajdbc.Database;
+import org.easymock.EasyMock;
+import org.testng.annotations.Configuration;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
 
 /**
  * Unit test for {@link DataSourceDatabase}.
  * @author  Paul Ferraro
  * @since   1.1
  */
-@Test
-public class TestDataSourceDatabase extends AbstractTestDatabase
+public class TestDataSourceDatabase extends AbstractTestDatabase<DataSourceDatabase, DataSource> implements InactiveDataSourceDatabaseMBean
 {
 	private DataSource dataSource = this.control.createMock(DataSource.class);
 
-	/**
-	 * Test method for {@link net.sf.hajdbc.sql.DataSourceDatabase.connect(Object)}
-	 */
-	public void testConnect()
+	@Override
+	@Configuration(beforeTestMethod = true)
+	protected void setup()
 	{
-		DataSourceDatabase database = new DataSourceDatabase();
+		super.setup();
 		
-		Connection connection = EasyMock.createMock(Connection.class);
-
-		try
-		{
-			EasyMock.expect(this.dataSource.getConnection()).andReturn(connection);
-			
-			this.control.replay();
-			
-			Connection conn = database.connect(this.dataSource);
-			
-			this.control.verify();
-			
-			assert connection == conn;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link net.sf.hajdbc.sql.DataSourceDatabase.connect(Object)}
-	 */
-	public void testConnectAsUser()
-	{
-		DataSourceDatabase database = new DataSourceDatabase();
-		database.setUser("test-user");
-		database.setPassword("test-password");
-		
-		Connection connection = EasyMock.createMock(Connection.class);
-
-		try
-		{
-			EasyMock.expect(this.dataSource.getConnection("test-user", "test-password")).andReturn(connection);
-			
-			this.control.replay();
-			
-			Connection conn = database.connect(this.dataSource);
-			
-			this.control.verify();
-			
-			assert connection == conn;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link net.sf.hajdbc.sql.DataSourceDatabase.createConnectionFactory()}
-	 */
-	public void testCreateConnectionFactory()
-	{
 		try
 		{
 			Reference reference = new Reference(this.dataSource.getClass().getName(), DataSourceFactory.class.getName(), null);
 			
-			DataSourceDatabase database = new DataSourceDatabase();
-			database.setName("test");
-			database.setProperties(new Properties());
-			database.getProperties().setProperty(Context.INITIAL_CONTEXT_FACTORY, MockInitialContextFactory.class.getName());
-			
-			Context context = new InitialContext(database.getProperties());
+			Context context = new InitialContext(this.database.getProperties());
 			
 			context.rebind("test", reference);
-			
-			DataSource dataSource = database.createConnectionFactory();
-			
-			assert dataSource != null;
-			assert DataSource.class.isInstance(dataSource);
-			
-			context.unbind("test");
 		}
-		catch (Exception e)
+		catch (NamingException e)
 		{
-			assert false : e;
-		}
-	}
-	
-	/**
-	 * Test method for {@link net.sf.hajdbc.sql.DataSourceDatabase.createConnectionFactory()}
-	 */
-	public void testSetName()
-	{
-		DataSourceDatabase database = new DataSourceDatabase();
-		
-		assert !database.isDirty();
-		
-		database.setName(null);
-		
-		assert !database.isDirty();
-		
-		database.setName("test");
-		
-		assert database.isDirty();
-
-		database.setName("test");
-		
-		assert database.isDirty();
-
-		database.clean();
-		
-		assert !database.isDirty();
-		
-		database.setName(null);
-		
-		assert database.isDirty();
-		
-		database.setName("test");
-		
-		assert database.isDirty();
-		
-		database.clean();
-		
-		assert !database.isDirty();
-		
-		database.setName("different");
-		
-		assert database.isDirty();
-	}
-	
-	/**
-	 * Object factory that returns mock DataSource objects.
-	 */
-	public static class DataSourceFactory implements ObjectFactory
-	{
-		/**
-		 * @see javax.naming.spi.ObjectFactory#getObjectInstance(java.lang.Object, javax.naming.Name, javax.naming.Context, java.util.Hashtable)
-		 */
-		public Object getObjectInstance(Object object, Name name, Context context, Hashtable environment) throws Exception
-		{
-			return EasyMock.createMock(DataSource.class);
+			assert false;
 		}
 	}
 
@@ -194,12 +70,95 @@ public class TestDataSourceDatabase extends AbstractTestDatabase
 	 * @see net.sf.hajdbc.sql.AbstractTestDatabase#createDatabase(java.lang.String)
 	 */
 	@Override
-	protected Database createDatabase(String id)
+	protected DataSourceDatabase createDatabase(String id)
 	{
 		DataSourceDatabase database = new DataSourceDatabase();
 		
 		database.setId(id);
+		database.setName("test");
+		database.getProperties().setProperty(Context.INITIAL_CONTEXT_FACTORY, MockInitialContextFactory.class.getName());
 		
 		return database;
+	}
+
+	@DataProvider(name = "datasource")
+	protected Object[][] dataSourceParameters()
+	{
+		return new Object[][] { new Object[] { this.dataSource } };
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.Database#connect(T)
+	 */
+	@Test(dataProvider = "datasource")
+	public Connection connect(DataSource connectionFactory) throws SQLException
+	{
+		Connection connection = EasyMock.createMock(Connection.class);
+		
+		EasyMock.expect(this.dataSource.getConnection()).andReturn(connection);
+		
+		this.control.replay();
+		
+		Connection c = this.database.connect(connectionFactory);
+		
+		this.control.verify();
+		
+		assert c == connection : c.getClass().getName();
+		
+		return null;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Database#createConnectionFactory()
+	 */
+	@Test
+	public DataSource createConnectionFactory()
+	{
+		DataSource dataSource = this.database.createConnectionFactory();
+		
+		String dataSourceClass = dataSource.getClass().getName();
+		
+		assert dataSourceClass.equals("net.sf.hajdbc.sql.MockDataSource") : dataSourceClass;
+		
+		return dataSource;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Database#getActiveMBeanClass()
+	 */
+	@Test
+	public Class<? extends ActiveDatabaseMBean> getActiveMBeanClass()
+	{
+		Class<? extends ActiveDatabaseMBean> mbeanClass = this.database.getActiveMBeanClass();
+		
+		assert mbeanClass.equals(ActiveDataSourceDatabaseMBean.class) : mbeanClass.getName();
+		
+		return mbeanClass;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Database#getInactiveMBeanClass()
+	 */
+	@Test
+	public Class<? extends InactiveDatabaseMBean> getInactiveMBeanClass()
+	{
+		Class<? extends InactiveDatabaseMBean> mbeanClass = this.database.getInactiveMBeanClass();
+		
+		assert mbeanClass.equals(InactiveDataSourceDatabaseMBean.class) : mbeanClass.getName();
+		
+		return mbeanClass;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.ActiveDataSourceDatabaseMBean#getName()
+	 */
+	@Test
+	public String getName()
+	{
+		String name = this.database.getName();
+		
+		assert name.equals("test") : name;
+		
+		return name;
 	}
 }

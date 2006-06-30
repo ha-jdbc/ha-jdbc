@@ -24,9 +24,11 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
+import javax.naming.Binding;
 import javax.naming.CompositeName;
 import javax.naming.Context;
 import javax.naming.Name;
+import javax.naming.NameClassPair;
 import javax.naming.NameNotFoundException;
 import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
@@ -49,6 +51,7 @@ public class MockInitialContextFactory implements InitialContextFactory
 		/**
 		 * @see java.lang.ThreadLocal#initialValue()
 		 */
+		@Override
 		protected Object initialValue()
 		{
 			return new MockContext();
@@ -58,7 +61,7 @@ public class MockInitialContextFactory implements InitialContextFactory
 	/**
 	 * @see javax.naming.spi.InitialContextFactory#getInitialContext(java.util.Hashtable)
 	 */
-	public Context getInitialContext(Hashtable environment) throws NamingException
+	public Context getInitialContext(Hashtable environment)
 	{
 		return (Context) threadLocal.get();
 	}
@@ -69,7 +72,7 @@ public class MockInitialContextFactory implements InitialContextFactory
 	 */
 	public static class MockContext implements Context
 	{
-		private Map referenceMap = new HashMap();
+		private Map<String, Reference> referenceMap = new HashMap<String, Reference>();
 		
 		/**
 		 * @see javax.naming.Context#lookup(javax.naming.Name)
@@ -84,7 +87,7 @@ public class MockInitialContextFactory implements InitialContextFactory
 		 */
 		public Object lookup(String name) throws NamingException
 		{
-			Reference reference = (Reference) this.referenceMap.get(name.toString());
+			Reference reference = this.referenceMap.get(name.toString());
 			
 			if (reference == null)
 			{
@@ -157,7 +160,7 @@ public class MockInitialContextFactory implements InitialContextFactory
 		/**
 		 * @see javax.naming.Context#unbind(javax.naming.Name)
 		 */
-		public void unbind(Name name) throws NamingException
+		public void unbind(Name name)
 		{
 			this.unbind(name.toString());
 		}
@@ -165,7 +168,7 @@ public class MockInitialContextFactory implements InitialContextFactory
 		/**
 		 * @see javax.naming.Context#unbind(java.lang.String)
 		 */
-		public void unbind(String name) throws NamingException
+		public void unbind(String name)
 		{
 			this.referenceMap.remove(name);
 		}
@@ -173,7 +176,7 @@ public class MockInitialContextFactory implements InitialContextFactory
 		/**
 		 * @see javax.naming.Context#rename(javax.naming.Name, javax.naming.Name)
 		 */
-		public void rename(Name oldName, Name newName) throws NamingException
+		public void rename(Name oldName, Name newName)
 		{
 			this.rename(oldName.toString(), newName.toString());
 		}
@@ -181,7 +184,7 @@ public class MockInitialContextFactory implements InitialContextFactory
 		/**
 		 * @see javax.naming.Context#rename(java.lang.String, java.lang.String)
 		 */
-		public void rename(String oldName, String newName) throws NamingException
+		public void rename(String oldName, String newName)
 		{
 			this.referenceMap.put(newName, this.referenceMap.remove(oldName));
 		}
@@ -189,7 +192,7 @@ public class MockInitialContextFactory implements InitialContextFactory
 		/**
 		 * @see javax.naming.Context#list(javax.naming.Name)
 		 */
-		public NamingEnumeration list(Name name) throws NamingException
+		public NamingEnumeration<NameClassPair> list(Name name)
 		{
 			return null;
 		}
@@ -197,7 +200,7 @@ public class MockInitialContextFactory implements InitialContextFactory
 		/**
 		 * @see javax.naming.Context#list(java.lang.String)
 		 */
-		public NamingEnumeration list(String name) throws NamingException
+		public NamingEnumeration<NameClassPair> list(String name)
 		{
 			return null;
 		}
@@ -205,7 +208,7 @@ public class MockInitialContextFactory implements InitialContextFactory
 		/**
 		 * @see javax.naming.Context#listBindings(javax.naming.Name)
 		 */
-		public NamingEnumeration listBindings(Name name) throws NamingException
+		public NamingEnumeration<Binding> listBindings(Name name)
 		{
 			return null;
 		}
@@ -213,7 +216,7 @@ public class MockInitialContextFactory implements InitialContextFactory
 		/**
 		 * @see javax.naming.Context#listBindings(java.lang.String)
 		 */
-		public NamingEnumeration listBindings(String name) throws NamingException
+		public NamingEnumeration<Binding> listBindings(String name)
 		{
 			return null;
 		}
@@ -221,21 +224,21 @@ public class MockInitialContextFactory implements InitialContextFactory
 		/**
 		 * @see javax.naming.Context#destroySubcontext(javax.naming.Name)
 		 */
-		public void destroySubcontext(Name name) throws NamingException
+		public void destroySubcontext(Name name)
 		{
 		}
 
 		/**
 		 * @see javax.naming.Context#destroySubcontext(java.lang.String)
 		 */
-		public void destroySubcontext(String name) throws NamingException
+		public void destroySubcontext(String name)
 		{
 		}
 
 		/**
 		 * @see javax.naming.Context#createSubcontext(javax.naming.Name)
 		 */
-		public Context createSubcontext(Name name) throws NamingException
+		public Context createSubcontext(Name name)
 		{
 			return null;
 		}
@@ -243,7 +246,7 @@ public class MockInitialContextFactory implements InitialContextFactory
 		/**
 		 * @see javax.naming.Context#createSubcontext(java.lang.String)
 		 */
-		public Context createSubcontext(String name) throws NamingException
+		public Context createSubcontext(String name)
 		{
 			return null;
 		}
@@ -251,7 +254,7 @@ public class MockInitialContextFactory implements InitialContextFactory
 		/**
 		 * @see javax.naming.Context#lookupLink(javax.naming.Name)
 		 */
-		public Object lookupLink(Name name) throws NamingException
+		public Object lookupLink(Name name)
 		{
 			return null;
 		}
@@ -259,7 +262,7 @@ public class MockInitialContextFactory implements InitialContextFactory
 		/**
 		 * @see javax.naming.Context#lookupLink(java.lang.String)
 		 */
-		public Object lookupLink(String name) throws NamingException
+		public Object lookupLink(String name)
 		{
 			return null;
 		}
@@ -267,7 +270,7 @@ public class MockInitialContextFactory implements InitialContextFactory
 		/**
 		 * @see javax.naming.Context#getNameParser(javax.naming.Name)
 		 */
-		public NameParser getNameParser(Name name) throws NamingException
+		public NameParser getNameParser(Name name)
 		{
 			return null;
 		}
@@ -275,7 +278,7 @@ public class MockInitialContextFactory implements InitialContextFactory
 		/**
 		 * @see javax.naming.Context#getNameParser(java.lang.String)
 		 */
-		public NameParser getNameParser(String name) throws NamingException
+		public NameParser getNameParser(String name)
 		{
 			return null;
 		}
@@ -283,7 +286,7 @@ public class MockInitialContextFactory implements InitialContextFactory
 		/**
 		 * @see javax.naming.Context#composeName(javax.naming.Name, javax.naming.Name)
 		 */
-		public Name composeName(Name arg0, Name arg1) throws NamingException
+		public Name composeName(Name arg0, Name arg1)
 		{
 			return null;
 		}
@@ -291,7 +294,7 @@ public class MockInitialContextFactory implements InitialContextFactory
 		/**
 		 * @see javax.naming.Context#composeName(java.lang.String, java.lang.String)
 		 */
-		public String composeName(String arg0, String arg1) throws NamingException
+		public String composeName(String arg0, String arg1)
 		{
 			return null;
 		}
@@ -299,7 +302,7 @@ public class MockInitialContextFactory implements InitialContextFactory
 		/**
 		 * @see javax.naming.Context#addToEnvironment(java.lang.String, java.lang.Object)
 		 */
-		public Object addToEnvironment(String arg0, Object arg1) throws NamingException
+		public Object addToEnvironment(String arg0, Object arg1)
 		{
 			return null;
 		}
@@ -307,7 +310,7 @@ public class MockInitialContextFactory implements InitialContextFactory
 		/**
 		 * @see javax.naming.Context#removeFromEnvironment(java.lang.String)
 		 */
-		public Object removeFromEnvironment(String arg0) throws NamingException
+		public Object removeFromEnvironment(String arg0)
 		{
 			return null;
 		}
@@ -315,7 +318,7 @@ public class MockInitialContextFactory implements InitialContextFactory
 		/**
 		 * @see javax.naming.Context#getEnvironment()
 		 */
-		public Hashtable getEnvironment() throws NamingException
+		public Hashtable<?, ?> getEnvironment()
 		{
 			return null;
 		}
@@ -323,7 +326,7 @@ public class MockInitialContextFactory implements InitialContextFactory
 		/**
 		 * @see javax.naming.Context#close()
 		 */
-		public void close() throws NamingException
+		public void close()
 		{
 			this.referenceMap.clear();
 		}
@@ -331,7 +334,7 @@ public class MockInitialContextFactory implements InitialContextFactory
 		/**
 		 * @see javax.naming.Context#getNameInNamespace()
 		 */
-		public String getNameInNamespace() throws NamingException
+		public String getNameInNamespace()
 		{
 			return null;
 		}

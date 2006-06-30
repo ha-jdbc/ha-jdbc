@@ -20,16 +20,11 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Hashtable;
 
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.spi.ObjectFactory;
-import javax.sql.DataSource;
 
 /**
  * Mock data source factory that creates a mock data source that references a mock connection.
@@ -45,54 +40,5 @@ public class MockDataSourceFactory implements ObjectFactory
 	public Object getObjectInstance(Object arg0, Name arg1, Context arg2, Hashtable arg3) throws Exception
 	{
 		return new MockDataSource();
-	}
-	
-	private class MockDataSource implements DataSource
-	{
-		/**
-		 * @see javax.sql.DataSource#getConnection()
-		 */
-		public Connection getConnection() throws SQLException
-		{
-			return new MockConnection();
-		}
-
-		/**
-		 * @see javax.sql.DataSource#getConnection(java.lang.String, java.lang.String)
-		 */
-		public Connection getConnection(String arg0, String arg1) throws SQLException
-		{
-			return this.getConnection();
-		}
-
-		/**
-		 * @see javax.sql.DataSource#getLogWriter()
-		 */
-		public PrintWriter getLogWriter() throws SQLException
-		{
-			return new PrintWriter(new StringWriter());
-		}
-
-		/**
-		 * @see javax.sql.DataSource#setLogWriter(java.io.PrintWriter)
-		 */
-		public void setLogWriter(PrintWriter writer) throws SQLException
-		{
-		}
-
-		/**
-		 * @see javax.sql.DataSource#setLoginTimeout(int)
-		 */
-		public void setLoginTimeout(int timeout) throws SQLException
-		{
-		}
-
-		/**
-		 * @see javax.sql.DataSource#getLoginTimeout()
-		 */
-		public int getLoginTimeout() throws SQLException
-		{
-			return 0;
-		}
 	}
 }

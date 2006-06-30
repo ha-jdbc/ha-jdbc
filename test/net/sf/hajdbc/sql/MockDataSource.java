@@ -20,63 +20,61 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverPropertyInfo;
-import java.util.Properties;
+
+import javax.sql.DataSource;
 
 /**
- * Mock driver that creates mock connections
- * @author  Paul Ferraro
- * @since   1.1
+ * @author Paul Ferraro
+ *
  */
-public class MockDriver implements Driver
+public class MockDataSource implements DataSource
 {
 	/**
-	 * @see java.sql.Driver#connect(java.lang.String, java.util.Properties)
+	 * @see javax.sql.DataSource#getConnection()
 	 */
-	public Connection connect(String url, Properties properties)
+	public Connection getConnection()
 	{
 		return new MockConnection();
 	}
 
 	/**
-	 * @see java.sql.Driver#acceptsURL(java.lang.String)
+	 * @see javax.sql.DataSource#getConnection(java.lang.String, java.lang.String)
 	 */
-	public boolean acceptsURL(String url)
+	public Connection getConnection(String arg0, String arg1)
 	{
-		return url.startsWith("jdbc:mock:");
+		return this.getConnection();
 	}
 
 	/**
-	 * @see java.sql.Driver#getPropertyInfo(java.lang.String, java.util.Properties)
+	 * @see javax.sql.DataSource#getLogWriter()
 	 */
-	public DriverPropertyInfo[] getPropertyInfo(String url, Properties properties)
+	public PrintWriter getLogWriter()
 	{
-		return new DriverPropertyInfo[0];
+		return new PrintWriter(new StringWriter());
 	}
 
 	/**
-	 * @see java.sql.Driver#getMajorVersion()
+	 * @see javax.sql.DataSource#setLogWriter(java.io.PrintWriter)
 	 */
-	public int getMajorVersion()
+	public void setLogWriter(PrintWriter writer)
+	{
+	}
+
+	/**
+	 * @see javax.sql.DataSource#setLoginTimeout(int)
+	 */
+	public void setLoginTimeout(int timeout)
+	{
+	}
+
+	/**
+	 * @see javax.sql.DataSource#getLoginTimeout()
+	 */
+	public int getLoginTimeout()
 	{
 		return 0;
-	}
-
-	/**
-	 * @see java.sql.Driver#getMinorVersion()
-	 */
-	public int getMinorVersion()
-	{
-		return 0;
-	}
-
-	/**
-	 * @see java.sql.Driver#jdbcCompliant()
-	 */
-	public boolean jdbcCompliant()
-	{
-		return false;
 	}
 }

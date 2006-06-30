@@ -23,23 +23,24 @@ package net.sf.hajdbc.sql;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import javax.naming.NamingException;
-import javax.naming.Reference;
-
-import org.testng.annotations.Configuration;
-import org.testng.annotations.Test;
 
 import net.sf.hajdbc.DatabaseClusterTestCase;
+
+import org.testng.annotations.Configuration;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
 
 /**
  * Unit test for {@link TestDataSource}.
  * @author  Paul Ferraro
  * @since   1.1
  */
-@Test
-public class TestDataSource extends DatabaseClusterTestCase
+public class TestDataSource extends DatabaseClusterTestCase implements javax.sql.DataSource
 {
+	@Override
 	@Configuration(beforeTestClass = true)
 	public void setUp() throws Exception
 	{
@@ -52,6 +53,7 @@ public class TestDataSource extends DatabaseClusterTestCase
 		this.context.bind("datasource", dataSource);
 	}
 
+	@Override
 	@Configuration(afterTestClass = true)
 	public void tearDown() throws Exception
 	{
@@ -60,160 +62,108 @@ public class TestDataSource extends DatabaseClusterTestCase
 		super.tearDown();
 	}
 
-	private DataSource getDataSource() throws NamingException
+	private javax.sql.DataSource getDataSource()
 	{
-		return (DataSource) this.context.lookup("datasource");
+		try
+		{
+			return javax.sql.DataSource.class.cast(this.context.lookup("datasource"));
+		}
+		catch (NamingException e)
+		{
+			assert false : e;
+			return null;
+		}
+	}
+
+	@DataProvider(name = "connect")
+	public Object[][] connectParameters()
+	{
+		return new Object[][] { new Object[] { "", "" } };
+	}
+
+	@DataProvider(name = "timeout")
+	public Object[][] timeoutParameters()
+	{
+		return new Object[][] { new Object[] { 0 } };
+	}
+	
+	@DataProvider(name = "writer")
+	public Object[][] writerParameters()
+	{
+		return new Object[][] { new Object[] { new PrintWriter(new StringWriter()) } };
 	}
 	
 	/**
-	 * Test method for {@link DataSource#getLoginTimeout()}
+	 * @see javax.sql.DataSource#getConnection()
 	 */
-	public void testGetLoginTimeout()
+	@Test
+	public Connection getConnection() throws SQLException
 	{
-		try
-		{
-			int timeout = this.getDataSource().getLoginTimeout();
-			
-			assert timeout == 0 : timeout;
-		}
-		catch (Exception e)
-		{
-			assert false : e;
-		}
+		Connection connection = this.getDataSource().getConnection();
+		
+		assert connection != null;
+		
+		assert net.sf.hajdbc.sql.Connection.class.equals(connection.getClass()) : connection.getClass().getName();
+		
+		return connection;
+	}
+	
+	/**
+	 * @see javax.sql.DataSource#getConnection(java.lang.String, java.lang.String)
+	 */
+	@Test(dataProvider = "connect")
+	public Connection getConnection(String username, String password) throws SQLException
+	{
+		Connection connection = this.getDataSource().getConnection(username, password);
+		
+		assert connection != null;
+		
+		assert net.sf.hajdbc.sql.Connection.class.equals(connection.getClass()) : connection.getClass().getName();
+		
+		return connection;
 	}
 
 	/**
-	 * Test method for {@link DataSource#setLoginTimeout(int)}
+	 * @see javax.sql.DataSource#getLoginTimeout()
 	 */
-	public void testSetLoginTimeout()
+	@Test
+	public int getLoginTimeout() throws SQLException
 	{
-		try
-		{
-			this.getDataSource().setLoginTimeout(1000);
-		}
-		catch (Exception e)
-		{
-			assert false : e;
-		}
+		int timeout = this.getDataSource().getLoginTimeout();
+		
+		assert timeout == 0 : timeout;
+		
+		return timeout;
 	}
 
 	/**
-	 * Test method for {@link DataSource#getLogWriter()}
+	 * @see javax.sql.DataSource#getLogWriter()
 	 */
-	public void testGetLogWriter()
+	@Test
+	public PrintWriter getLogWriter() throws SQLException
 	{
-		try
-		{
-			PrintWriter writer = this.getDataSource().getLogWriter();
-			
-			assert writer != null;
-		}
-		catch (Exception e)
-		{
-			assert false : e;
-		}
+		PrintWriter writer = this.getDataSource().getLogWriter();
+		
+		assert writer != null;
+		
+		return writer;
 	}
 
 	/**
-	 * Test method for {@link DataSource#setLogWriter(PrintWriter)}
+	 * @see javax.sql.DataSource#setLoginTimeout(int)
 	 */
-	public void testSetLogWriter()
+	@Test(dataProvider = "timeout")
+	public void setLoginTimeout(int seconds) throws SQLException
 	{
-		try
-		{
-			PrintWriter writer = new PrintWriter(new StringWriter());
-			
-			this.getDataSource().setLogWriter(writer);
-		}
-		catch (Exception e)
-		{
-			assert false : e;
-		}
+		this.getDataSource().setLoginTimeout(seconds);
 	}
 
 	/**
-	 * Test method for {@link DataSource#getConnection()}
+	 * @see javax.sql.DataSource#setLogWriter(java.io.PrintWriter)
 	 */
-	public void testGetConnection()
+	@Test(dataProvider = "writer")
+	public void setLogWriter(PrintWriter out) throws SQLException
 	{
-		try
-		{
-			Connection connection = this.getDataSource().getConnection();
-			
-			assert connection != null;
-			assert net.sf.hajdbc.sql.Connection.class.equals(connection.getClass()) : connection.getClass().getName();
-		}
-		catch (Exception e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link DataSource#getConnection(String, String)}
-	 */
-	public void testGetConnectionStringString()
-	{
-		try
-		{
-			Connection connection = this.getDataSource().getConnection("sa", "");
-			
-			assert connection != null;
-			assert net.sf.hajdbc.sql.Connection.class.equals(connection.getClass()) : connection.getClass().getName();
-		}
-		catch (Exception e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link DataSource#getName()}
-	 */
-	public void testGetCluster()
-	{
-		try
-		{
-			String name = this.getDataSource().getCluster();
-			
-			assert name.equals("test-datasource-cluster");
-		}
-		catch (Exception e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link DataSource#setName(String)}
-	 */
-	public void testSetName()
-	{
-		try
-		{
-			this.getDataSource().setCluster("test");
-		}
-		catch (Exception e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link DataSource#getReference()}
-	 */
-	public void testGetReference()
-	{
-		try
-		{
-			Reference reference = this.getDataSource().getReference();
-			
-			assert reference.getClassName().equals("net.sf.hajdbc.sql.DataSource");
-			assert reference.getFactoryClassName().equals("net.sf.hajdbc.sql.DataSourceFactory");
-		}
-		catch (Exception e)
-		{
-			assert false : e;
-		}
+		this.getDataSource().setLogWriter(out);
 	}
 }

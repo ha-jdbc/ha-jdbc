@@ -20,22 +20,32 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.util.Properties;
+
 import net.sf.hajdbc.Database;
 
 import org.easymock.EasyMock;
 import org.easymock.IMocksControl;
 import org.testng.annotations.Configuration;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
  * @author Paul Ferraro
  *
  */
-public abstract class AbstractTestDatabase
+public abstract class AbstractTestDatabase<T extends Database, U> implements Database<U>
 {
 	protected IMocksControl control = EasyMock.createControl();
+	protected T database;
 	
-	protected abstract Database createDatabase(String id);
+	protected abstract T createDatabase(String id);
+	
+	@Configuration(beforeTestMethod = true)
+	protected void setup()
+	{
+		this.database = this.createDatabase("1");
+	}
 	
 	@Configuration(afterTestMethod = true)
 	protected void tearDown()
@@ -43,224 +53,296 @@ public abstract class AbstractTestDatabase
 		this.control.reset();
 	}
 	
-	/**
-	 * Test method for {@link net.sf.hajdbc.sql.AbstractDatabase#equals(Object)}
-	 */
-	@Test
-	public void testEqualsObject()
+	@DataProvider(name = "database")
+	protected Object[][] databaseParameters()
 	{
-		Database database1 = this.createDatabase("1");
-		
-		Database database2 = this.createDatabase("1");
-		
-		assert database1.equals(database2);
-		
-		database2 = this.createDatabase("2");
-
-		assert !database1.equals(database2);
-	}
-
-	/**
-	 * Test method for {@link net.sf.hajdbc.sql.AbstractDatabase#hashCode()}
-	 */
-	@Test
-	public void testHashCode()
-	{
-		Database database = this.createDatabase("test");
-		
-		int hashCode = database.hashCode();
-		
-		assert "test".hashCode() == hashCode;
+		return new Object[][] { new Object[] { this.createDatabase("1") } };
 	}
 	
 	/**
-	 * Test method for {@link net.sf.hajdbc.sql.AbstractDatabase#compareTo(Database)}
+	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
-	@Test
-	public void testCompareTo()
+	@Override
+	@Test(dataProvider = "database")
+	public boolean equals(Object object)
 	{
-		Database database1 = this.createDatabase("a");
-		Database database2 = this.createDatabase("b");
+		boolean equals = this.database.equals(object);
 		
-		int result = database1.compareTo(database2);
+		assert equals;
 		
-		assert result < 0 : result;
+		equals = this.database.equals(this.createDatabase("2"));
 		
-		result = database2.compareTo(database1);
+		assert !equals;
 		
-		assert result > 0 : result;
-		
-		database2 = this.createDatabase("a");
-		
-		result = database1.compareTo(database2);
-		
-		assert result == 0 : result;
-		
-		result = database2.compareTo(database1);
-		
-		assert result == 0 : result;
+		return equals;
+	}
+
+	@DataProvider(name = "string")
+	public Object[][] stringParameters()
+	{
+		return new Object[][] { new Object[] { "test" } };
 	}
 	
-	/**
-	 * Test method for {@link net.sf.hajdbc.sql.AbstractDatabase#setUser(String)}
-	 */
-	@Test
-	public void testSetUser()
+	@DataProvider(name = "property")
+	public Object[][] propertyParameters()
 	{
-		Database database = this.createDatabase(null);
-		
-		assert !database.isDirty();
-		
-		database.setUser(null);
-		
-		assert !database.isDirty();
-		
-		database.setUser("test");
-		
-		assert database.isDirty();
-
-		database.setUser("test");
-		
-		assert database.isDirty();
-
-		database.clean();
-		
-		assert !database.isDirty();
-		
-		database.setUser(null);
-		
-		assert database.isDirty();
-		
-		database.setUser("test");
-		
-		assert database.isDirty();
-		
-		database.clean();
-		
-		assert !database.isDirty();
-		
-		database.setUser("different");
-		
-		assert database.isDirty();
+		return new Object[][] { new Object[] { "name", "value" } };
 	}
-	
-	/**
-	 * Test method for {@link net.sf.hajdbc.sql.AbstractDatabase#setPassword(String)}
-	 */
-	@Test
-	public void testSetPassword()
+		
+	@DataProvider(name = "weight")
+	public Object[][] weightParameters()
 	{
-		Database database = this.createDatabase(null);
-		
-		assert !database.isDirty();
-		
-		database.setPassword(null);
-		
-		assert !database.isDirty();
-		
-		database.setPassword("test");
-		
-		assert database.isDirty();
-
-		database.setPassword("test");
-		
-		assert database.isDirty();
-
-		database.clean();
-		
-		assert !database.isDirty();
-		
-		database.setPassword(null);
-		
-		assert database.isDirty();
-		
-		database.setPassword("test");
-		
-		assert database.isDirty();
-		
-		database.clean();
-		
-		assert !database.isDirty();
-		
-		database.setUser("different");
-		
-		assert database.isDirty();
+		return new Object[][] { new Object[] { 0 } };
 	}
-	
+		
 	/**
-	 * Test method for {@link net.sf.hajdbc.sql.AbstractDatabase#setProperty(String, String)}
+	 * @see java.lang.Object#hashCode()
 	 */
+	@Override
 	@Test
-	public void testSetProperty()
+	public int hashCode()
 	{
-		Database database = this.createDatabase(null);
+		int hashCode = this.database.hashCode();
 		
-		assert !database.isDirty();
+		assert hashCode == this.database.getId().hashCode() : hashCode;
 		
-		database.setProperty("name", "test");
-		
-		assert database.isDirty();
-
-		database.setProperty("name", "test");
-		
-		assert database.isDirty();
-
-		database.clean();
-		
-		assert !database.isDirty();
-		
-		database.setProperty("name", "different");
-		
-		assert database.isDirty();
+		return hashCode;
 	}
-	
-	/**
-	 * Test method for {@link net.sf.hajdbc.sql.AbstractDatabase#setWeight(int)}
-	 */
-	@Test
-	public void testSetWeight()
-	{
-		Database database = this.createDatabase(null);
-		
-		assert !database.isDirty();
-		
-		database.setWeight(1);
-		
-		assert !database.isDirty();
-		
-		database.setWeight(2);
-		
-		assert database.isDirty();
 
-		database.setWeight(2);
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	@Test
+	public String toString()
+	{
+		String string = this.database.toString();
 		
-		assert database.isDirty();
+		assert string.equals(this.database.getId()) : string;
+
+		return string;
 	}
-	
+
 	/**
-	 * Test method for {@link net.sf.hajdbc.sql.AbstractDatabase#removeProperty(String)}
+	 * @see net.sf.hajdbc.Database#clean()
 	 */
 	@Test
-	public void testRemoveProperty()
+	public void clean()
 	{
-		Database database = this.createDatabase(null);
+		assert this.database.isDirty();
 		
-		assert !database.isDirty();
+		this.database.clean();
 		
-		database.removeProperty("name");
-		
-		assert !database.isDirty();
-		
-		database.setProperty("name", "test");
-		
-		assert database.isDirty();
+		assert !this.database.isDirty();
+	}
 
-		database.clean();
+	/**
+	 * @see net.sf.hajdbc.Database#isDirty()
+	 */
+	@Test
+	public boolean isDirty()
+	{
+		boolean dirty = this.database.isDirty();
 		
-		assert !database.isDirty();
+		assert dirty;
+		
+		return dirty;
+	}
 
-		database.removeProperty("name");
+	/**
+	 * @see net.sf.hajdbc.InactiveDatabaseMBean#removeProperty(java.lang.String)
+	 */
+	@Test(dataProvider = "string")
+	public void removeProperty(String name)
+	{
+		this.database.setProperty(name, "value");
 		
-		assert database.isDirty();
+		this.database.clean();
+		
+		assert !this.database.isDirty();
+		
+		this.database.removeProperty(name);
+		
+		assert this.database.isDirty();
+		
+		this.database.clean();
+		
+		assert !this.database.isDirty();
+		
+		this.database.removeProperty(name);
+		
+		assert !this.database.isDirty();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.InactiveDatabaseMBean#setPassword(java.lang.String)
+	 */
+	@Test(dataProvider = "string")
+	public void setPassword(String password)
+	{
+		this.database.clean();
+		
+		this.database.setPassword(password);
+		
+		String pass = this.database.getPassword();
+		
+		assert pass.equals(password) : pass;
+		
+		assert this.database.isDirty();
+		
+		this.database.clean();
+		
+		this.database.setPassword(password);
+		
+		assert !this.database.isDirty();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.InactiveDatabaseMBean#setProperty(java.lang.String, java.lang.String)
+	 */
+	@Test(dataProvider = "property")
+	public void setProperty(String name, String value)
+	{
+		this.database.clean();
+		
+		this.database.setProperty(name, value);
+		
+		String propertyValue = this.database.getProperties().getProperty(name);
+		
+		assert propertyValue.equals(value) : propertyValue;
+		
+		assert this.database.isDirty();
+		
+		this.database.clean();
+		
+		this.database.setProperty(name, value);
+		
+		assert !this.database.isDirty();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.InactiveDatabaseMBean#setUser(java.lang.String)
+	 */
+	@Test(dataProvider = "string")
+	public void setUser(String user)
+	{
+		this.database.clean();
+		
+		this.database.setUser(user);
+		
+		String username = this.database.getUser();
+		
+		assert username.equals(user) : username;
+		
+		assert this.database.isDirty();
+		
+		this.database.clean();
+		
+		this.database.setUser(user);
+		
+		assert !this.database.isDirty();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.InactiveDatabaseMBean#setWeight(int)
+	 */
+	@Test(dataProvider = "weight")
+	public void setWeight(int weight)
+	{
+		this.database.clean();
+		
+		this.database.setWeight(weight);
+		
+		int w = this.database.getWeight();
+		
+		assert w == weight : w;
+		
+		assert this.database.isDirty();
+		
+		this.database.clean();
+		
+		this.database.setWeight(weight);
+		
+		assert !this.database.isDirty();
+	}
+
+	/**
+	 * @see java.lang.Comparable#compareTo(T)
+	 */
+	@SuppressWarnings("unchecked")
+	@Test(dataProvider = "database")
+	public int compareTo(Database object)
+	{
+		int compare = this.database.compareTo(object);
+		
+		assert compare == 0 : compare;
+		
+		T database = this.createDatabase("2");
+		
+		compare = this.database.compareTo(database);
+		
+		assert compare == this.database.getId().compareTo(database.getId()) : compare;
+		
+		return compare;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getId()
+	 */
+	public String getId()
+	{
+		String id = this.database.getId();
+		
+		assert id.equals("1") : id;
+		
+		return id;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getPassword()
+	 */
+	public String getPassword()
+	{
+		String password = this.database.getPassword();
+		
+		assert password == null : password;
+		
+		return password;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getProperties()
+	 */
+	public Properties getProperties()
+	{
+		Properties properties = this.database.getProperties();
+		
+		assert properties.isEmpty();
+		
+		return properties;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getUser()
+	 */
+	public String getUser()
+	{
+		String user = this.database.getUser();
+		
+		assert user == null : user;
+		
+		return user;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getWeight()
+	 */
+	public int getWeight()
+	{
+		int weight = this.database.getWeight();
+		
+		assert weight == 1 : weight;
+		
+		return weight;
 	}
 }

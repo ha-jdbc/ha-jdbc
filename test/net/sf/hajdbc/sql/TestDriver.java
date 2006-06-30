@@ -25,7 +25,9 @@ import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.Properties;
 
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import net.sf.hajdbc.DatabaseClusterTestCase;
@@ -35,15 +37,15 @@ import net.sf.hajdbc.DatabaseClusterTestCase;
  * @author  Paul Ferraro
  * @since   1.0
  */
-@Test
-public class TestDriver extends DatabaseClusterTestCase
+public class TestDriver extends DatabaseClusterTestCase implements java.sql.Driver
 {
-	private Driver driver = new Driver();
+	private java.sql.Driver driver = new Driver();
 
 	/**
 	 * Test method for {@link Driver} static initialization.
 	 */
-	public void testRegister()
+	@Test
+	public void register()
 	{
 		boolean registered = false;
 		
@@ -57,13 +59,41 @@ public class TestDriver extends DatabaseClusterTestCase
 		
 		assert registered;
 	}
+	
+	@DataProvider(name = "connect")
+	public Object[][] getConnectParameters()
+	{
+		return new Object[][] { new Object[] { "jdbc:ha-jdbc:test-database-cluster", null } };
+	}
+
+	@DataProvider(name = "url")
+	public Object[][] getUrlParameters()
+	{
+		return new Object[][] { new Object[] { "jdbc:ha-jdbc:test-database-cluster" } };
+	}
 
 	/**
-	 * Test method for {@link Driver#acceptsURL(String)}.
+	 * @see java.sql.Driver#connect(java.lang.String, java.util.Properties)
 	 */
-	public void testAcceptsURL()
+	@Test(dataProvider = "connect")
+	public Connection connect(String url, Properties info) throws SQLException
 	{
-		boolean accepted = this.driver.acceptsURL("jdbc:ha-jdbc:test-database-cluster");
+		Connection connection = this.driver.connect("jdbc:ha-jdbc:test-database-cluster", null);
+		
+		assert connection != null;
+		
+		assert net.sf.hajdbc.sql.Connection.class.equals(connection.getClass()) : connection.getClass().getName();
+		
+		return connection;
+	}
+
+	/**
+	 * @see java.sql.Driver#acceptsURL(java.lang.String)
+	 */
+	@Test(dataProvider = "url")
+	public boolean acceptsURL(String url) throws SQLException
+	{
+		boolean accepted = this.driver.acceptsURL(url);
 		
 		assert accepted;
 
@@ -89,51 +119,59 @@ public class TestDriver extends DatabaseClusterTestCase
 		accepted = this.driver.acceptsURL("jdbc:test:database1");
 		
 		assert !accepted;
+		
+		return accepted;
 	}
 
 	/**
-	 * Test method for {@link Driver#connect(String, Properties)}
+	 * @see java.sql.Driver#getPropertyInfo(java.lang.String, java.util.Properties)
 	 */
-	public void testConnect()
+	@Test(dataProvider = "connect")
+	public DriverPropertyInfo[] getPropertyInfo(String url, Properties properties) throws SQLException
 	{
-		try
-		{
-			Connection connection = this.driver.connect("jdbc:ha-jdbc:test-database-cluster", null);
-			
-			assert connection != null;
-			
-			assert net.sf.hajdbc.sql.Connection.class.equals(connection.getClass()) : connection.getClass().getName();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		DriverPropertyInfo[] info = this.driver.getPropertyInfo("jdbc:ha-jdbc:test-database-cluster", null);
+		
+		assert info != null;
+		
+		return info;
 	}
 
 	/**
-	 * Test method for {@link Driver#getPropertyInfo(String, Properties)}
+	 * @see java.sql.Driver#getMajorVersion()
 	 */
-	public void testGetPropertyInfo()
+	@Test
+	public int getMajorVersion()
 	{
-		try
-		{
-			DriverPropertyInfo[] info = this.driver.getPropertyInfo("jdbc:ha-jdbc:test-database-cluster", null);
-			
-			assert info != null;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		int version = this.driver.getMajorVersion();
+		
+		assert version == 1 : version;
+		
+		return version;
 	}
 
 	/**
-	 * Test method for {@link Driver#jdbcCompliant()}
+	 * @see java.sql.Driver#getMinorVersion()
 	 */
-	public void testJdbcCompliant()
+	@Test
+	public int getMinorVersion()
+	{
+		int version = this.driver.getMinorVersion();
+		
+		assert version == 2 : version;
+		
+		return version;
+	}
+
+	/**
+	 * @see java.sql.Driver#jdbcCompliant()
+	 */
+	@Test
+	public boolean jdbcCompliant()
 	{
 		boolean compliant = this.driver.jdbcCompliant();
 		
 		assert compliant;
+		
+		return compliant;
 	}
 }
