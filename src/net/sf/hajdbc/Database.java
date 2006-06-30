@@ -46,11 +46,6 @@ public interface Database<T> extends InactiveDatabaseMBean, Comparable<Database>
 	 */
 	public T createConnectionFactory();
 	
-	/**
-	 * @return the class implemented by connection factory objects for this database.
-	 */
-	public Class<T> getConnectionFactoryClass();
-	
 	public Class<? extends ActiveDatabaseMBean> getActiveMBeanClass();
 	
 	public Class<? extends InactiveDatabaseMBean> getInactiveMBeanClass();

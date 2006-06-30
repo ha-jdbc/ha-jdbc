@@ -21,7 +21,6 @@
 package net.sf.hajdbc.local;
 
 import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,7 +46,6 @@ import javax.management.MBeanServerFactory;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.StandardMBean;
-import javax.sql.DataSource;
 
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
@@ -758,21 +756,21 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	
 	Iterator<Database> getDriverDatabases()
 	{
-		return this.getDatabases(Driver.class);
+		return this.getDatabases(DriverDatabase.class);
 	}
 	
 	Iterator<Database> getDataSourceDatabases()
 	{
-		return this.getDatabases(DataSource.class);
+		return this.getDatabases(DataSourceDatabase.class);
 	}
 	
-	Iterator<Database> getDatabases(Class targetClass)
+	private Iterator<Database> getDatabases(Class targetClass)
 	{
 		List<Database> databaseList = new ArrayList<Database>(this.databaseMap.size());
 		
 		for (Database database: this.databaseMap.values())
 		{
-			if (targetClass.equals(database.getConnectionFactoryClass()))
+			if (targetClass.equals(database.getClass()))
 			{
 				databaseList.add(database);
 			}
