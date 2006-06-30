@@ -93,14 +93,6 @@ public class DataSourceDatabase extends AbstractDatabase<DataSource> implements 
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Database#getConnectionFactoryClass()
-	 */
-	public Class<DataSource> getConnectionFactoryClass()
-	{
-		return DataSource.class;
-	}
-
-	/**
 	 * @see net.sf.hajdbc.Database#getActiveMBeanClass()
 	 */
 	public Class<? extends ActiveDatabaseMBean> getActiveMBeanClass()

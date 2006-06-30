@@ -139,14 +139,6 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 			throw new IllegalArgumentException(Messages.getMessage(Messages.JDBC_URL_REJECTED, url), e);
 		}
 	}
-	
-	/**
-	 * @see net.sf.hajdbc.Database#getConnectionFactoryClass()
-	 */
-	public Class<Driver> getConnectionFactoryClass()
-	{
-		return Driver.class;
-	}
 
 	/**
 	 * @see net.sf.hajdbc.Database#getActiveMBeanClass()
