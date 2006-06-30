@@ -29,7 +29,7 @@ import java.sql.SQLException;
  * @param <T> 
  * @since   1.0
  */
-public interface Database<T> extends InactiveDatabaseMBean, Comparable<Database>
+public interface Database<T> extends ActiveDatabaseMBean, Comparable<Database>
 {
 	/**
 	 * Connects to the database using the specified connection factory.
