@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,6 +43,8 @@ import java.util.prefs.Preferences;
 
 import javax.management.JMException;
 import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.StandardMBean;
 import javax.sql.DataSource;
@@ -74,10 +77,47 @@ import org.slf4j.LoggerFactory;
  */
 public class LocalDatabaseCluster implements DatabaseCluster
 {
+	private static final String JMX_AGENT_PROPERTY = "ha-jdbc.jmx-agent";
 	private static final String STATE_DELIMITER = ",";
-	
+	private static final String MBEAN_DOMAIN = "net.sf.hajdbc";
+	private static final String MBEAN_CLUSTER_KEY = "cluster";
+	private static final String MBEAN_DATABASE_KEY = "database";
+		
 	private static Preferences preferences = Preferences.userNodeForPackage(LocalDatabaseCluster.class);
 	static Logger logger = LoggerFactory.getLogger(LocalDatabaseCluster.class);
+	
+	/**
+	 * Convenience method for constructing a standardized mbean ObjectName for this cluster.
+	 * @param databaseClusterId a cluster identifier
+	 * @return an ObjectName for this cluster
+	 * @throws MalformedObjectNameException if the ObjectName could not be constructed
+	 */
+	public static ObjectName getObjectName(String databaseClusterId) throws MalformedObjectNameException
+	{
+		return getObjectName(databaseClusterId, new Properties());
+	}
+
+	/**
+	 * Convenience method for constructing a standardized mbean ObjectName for this database.
+	 * @param databaseClusterId a cluster identifier
+	 * @param databaseId a database identifier
+	 * @return an ObjectName for this cluster
+	 * @throws MalformedObjectNameException if the ObjectName could not be constructed
+	 */
+	public static ObjectName getObjectName(String databaseClusterId, String databaseId) throws MalformedObjectNameException
+	{
+		Properties properties = new Properties();
+		properties.setProperty(MBEAN_DATABASE_KEY, ObjectName.quote(databaseId));
+		
+		return getObjectName(databaseClusterId, properties);
+	}
+	
+	private static ObjectName getObjectName(String databaseClusterId, Properties properties) throws MalformedObjectNameException
+	{
+		properties.setProperty(MBEAN_CLUSTER_KEY, ObjectName.quote(databaseClusterId));
+		
+		return ObjectName.getInstance(MBEAN_DOMAIN, properties);
+	}
 	
 	private String id;
 	private Balancer balancer;
@@ -91,12 +131,27 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	private int maxIdle;
 	private Transaction transaction;
 	
+	private MBeanServer server;
 	private Map<String, Database> databaseMap = new ConcurrentHashMap<String, Database>();
 	private Map<Database, Object> connectionFactoryMap = new ConcurrentHashMap<Database, Object>();
 	private ExecutorService transactionalExecutor;
 	private ExecutorService nonTransactionalExecutor;
 	private CronThreadPoolExecutor cronExecutor = new CronThreadPoolExecutor(2);
 	private LockManager lockManager = new LocalLockManager();
+	
+	public LocalDatabaseCluster()
+	{
+		String agent = System.getProperty(JMX_AGENT_PROPERTY);
+		
+		List serverList = MBeanServerFactory.findMBeanServer(agent);
+		
+		if (serverList.isEmpty())
+		{
+			throw new IllegalStateException(Messages.getMessage(Messages.MBEAN_SERVER_NOT_FOUND));
+		}
+		
+		this.server = MBeanServer.class.cast(serverList.get(0));
+	}
 	
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#loadState()
@@ -195,24 +250,9 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	 */
 	public synchronized boolean deactivate(Database database)
 	{
-		MBeanServer server = DatabaseClusterFactory.getMBeanServer();
-
-		try
-		{
-			ObjectName name = DatabaseClusterFactory.getObjectName(this.id, database.getId());
-			
-			// Reregister database mbean using "inactive" interface
-			if (server.isRegistered(name))
-			{
-				server.unregisterMBean(name);
-			}
-			
-			server.registerMBean(new StandardMBean(database, database.getInactiveMBeanClass()), name);
-		}
-		catch (JMException e)
-		{
-			throw new IllegalStateException(e.toString(), e);
-		}
+		this.unregister(database);
+		// Reregister database mbean using "inactive" interface
+		this.register(database, database.getInactiveMBeanClass());
 		
 		boolean removed = this.balancer.remove(database);
 		
@@ -237,40 +277,25 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	 */
 	public synchronized boolean activate(Database database)
 	{
-		MBeanServer server = DatabaseClusterFactory.getMBeanServer();
-
-		try
+		this.unregister(database);
+		// Reregister database mbean using "active" interface
+		this.register(database, database.getActiveMBeanClass());
+		
+		if (database.isDirty())
 		{
-			ObjectName name = DatabaseClusterFactory.getObjectName(this.id, database.getId());
+			DatabaseClusterFactory.getInstance().exportConfiguration();
 			
-			// Reregister database mbean using "active" interface
-			if (server.isRegistered(name))
-			{
-				server.unregisterMBean(name);
-			}
-			
-			server.registerMBean(new StandardMBean(database, database.getActiveMBeanClass()), name);
-			
-			if (database.isDirty())
-			{
-				DatabaseClusterFactory.getInstance().exportConfiguration();
-				
-				database.clean();
-			}
-			
-			boolean added = this.balancer.add(database);
-			
-			if (added)
-			{
-				this.storeState();			
-			}
-			
-			return added;
+			database.clean();
 		}
-		catch (JMException e)
+		
+		boolean added = this.balancer.add(database);
+		
+		if (added)
 		{
-			throw new IllegalStateException(e);
+			this.storeState();			
 		}
+		
+		return added;
 	}
 	
 	private void storeState()
@@ -482,7 +507,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		database.setDriver(driver);
 		database.setUrl(url);
 		
-		this.register(database);
+		this.register(database, database.getInactiveMBeanClass());
 		
 		this.add(database);
 	}
@@ -497,20 +522,18 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		database.setId(id);
 		database.setName(name);
 		
-		this.register(database);
+		this.register(database, database.getInactiveMBeanClass());
 		
 		this.add(database);
 	}
 	
-	private void register(Database database)
+	private void register(Database database, Class mbeanClass)
 	{
-		MBeanServer server = DatabaseClusterFactory.getMBeanServer();
-
 		try
 		{
-			ObjectName name = DatabaseClusterFactory.getObjectName(this.id, database.getId());
+			ObjectName name = getObjectName(this.id, database.getId());
 			
-			server.registerMBean(new StandardMBean(database, database.getInactiveMBeanClass()), name);
+			this.server.registerMBean(new StandardMBean(database, mbeanClass), name);
 		}
 		catch (JMException e)
 		{
@@ -542,13 +565,14 @@ public class LocalDatabaseCluster implements DatabaseCluster
 
 	private void unregister(Database database)
 	{
-		MBeanServer server = DatabaseClusterFactory.getMBeanServer();
-
 		try
 		{
-			ObjectName name = DatabaseClusterFactory.getObjectName(this.id, database.getId());
+			ObjectName name = getObjectName(this.id, database.getId());
 			
-			server.unregisterMBean(name);
+			if (this.server.isRegistered(name))
+			{
+				this.server.unregisterMBean(name);
+			}
 		}
 		catch (JMException e)
 		{
@@ -563,17 +587,13 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	 */
 	public void start() throws java.sql.SQLException
 	{
-		MBeanServer server = DatabaseClusterFactory.getMBeanServer();
-
 		try
 		{
-			server.registerMBean(new StandardMBean(this, DatabaseClusterMBean.class), DatabaseClusterFactory.getObjectName(this.id));
+			this.server.registerMBean(new StandardMBean(this, DatabaseClusterMBean.class), getObjectName(this.id));
 			
 			for (Database database: this.databaseMap.values())
 			{
-				ObjectName name = DatabaseClusterFactory.getObjectName(this.id, database.getId());
-				
-				server.registerMBean(new StandardMBean(database, database.getInactiveMBeanClass()), name);
+				this.register(database, database.getInactiveMBeanClass());
 			}
 		}
 		catch (JMException e)
@@ -625,32 +645,18 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	 */
 	public void stop()
 	{
-		MBeanServer server = DatabaseClusterFactory.getMBeanServer();
-
-		for (String databaseId: this.databaseMap.keySet())
+		for (Database database: this.databaseMap.values())
 		{
-			try
-			{
-				ObjectName name = DatabaseClusterFactory.getObjectName(this.id, databaseId);
-				
-				if (server.isRegistered(name))
-				{
-					server.unregisterMBean(name);
-				}
-			}
-			catch (JMException e)
-			{
-				logger.warn(e.getMessage(), e);
-			}
+			this.unregister(database);
 		}
 		
 		try
 		{
-			ObjectName name = DatabaseClusterFactory.getObjectName(this.id);
+			ObjectName name = getObjectName(this.id);
 			
-			if (server.isRegistered(name))
+			if (this.server.isRegistered(name))
 			{
-				server.unregisterMBean(name);
+				this.server.unregisterMBean(name);
 			}
 		}
 		catch (JMException e)

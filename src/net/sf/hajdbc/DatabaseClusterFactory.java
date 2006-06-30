@@ -37,13 +37,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.ResourceBundle;
-
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
 
 import net.sf.hajdbc.local.LocalDatabaseCluster;
 
@@ -61,53 +55,14 @@ import org.slf4j.LoggerFactory;
  */
 public final class DatabaseClusterFactory
 {
-	private static final String JMX_AGENT_PROPERTY = "ha-jdbc.jmx-agent";
-	private static final String CONFIGURATION_PROPERTY = "ha-jdbc.configuration";
-	
+	private static final String CONFIGURATION_PROPERTY = "ha-jdbc.configuration";	
 	private static final String DEFAULT_RESOURCE = "ha-jdbc.xml";
-	
-	private static final String MBEAN_DOMAIN = "net.sf.hajdbc";
-	private static final String MBEAN_CLUSTER_KEY = "cluster";
-	private static final String MBEAN_DATABASE_KEY = "database";
 	
 	static Logger logger = LoggerFactory.getLogger(DatabaseClusterFactory.class);
 	
 	private static DatabaseClusterFactory instance = null;
 	private static ResourceBundle resource = ResourceBundle.getBundle(DatabaseClusterFactory.class.getName());
 		
-	/**
-	 * Convenience method for constructing a standardized mbean ObjectName for this cluster.
-	 * @param databaseClusterId a cluster identifier
-	 * @return an ObjectName for this cluster
-	 * @throws MalformedObjectNameException if the ObjectName could not be constructed
-	 */
-	public static ObjectName getObjectName(String databaseClusterId) throws MalformedObjectNameException
-	{
-		return getObjectName(databaseClusterId, new Properties());
-	}
-
-	/**
-	 * Convenience method for constructing a standardized mbean ObjectName for this database.
-	 * @param databaseClusterId a cluster identifier
-	 * @param databaseId a database identifier
-	 * @return an ObjectName for this cluster
-	 * @throws MalformedObjectNameException if the ObjectName could not be constructed
-	 */
-	public static ObjectName getObjectName(String databaseClusterId, String databaseId) throws MalformedObjectNameException
-	{
-		Properties properties = new Properties();
-		properties.setProperty(MBEAN_DATABASE_KEY, ObjectName.quote(databaseId));
-		
-		return getObjectName(databaseClusterId, properties);
-	}
-	
-	private static ObjectName getObjectName(String databaseClusterId, Properties properties) throws MalformedObjectNameException
-	{
-		properties.setProperty(MBEAN_CLUSTER_KEY, ObjectName.quote(databaseClusterId));
-		
-		return ObjectName.getInstance(MBEAN_DOMAIN, properties);
-	}
-	
 	/**
 	 * Returns the current HA-JDBC version.
 	 * @return a version label
@@ -129,24 +84,6 @@ public final class DatabaseClusterFactory
 		}
 		
 		return instance;
-	}
-	
-	/**
-	 * Returns the mbean server to which the database clusters will be registered.
-	 * @return an mbean server instance
-	 */
-	public static MBeanServer getMBeanServer()
-	{
-		String agent = System.getProperty(JMX_AGENT_PROPERTY);
-		
-		List serverList = MBeanServerFactory.findMBeanServer(agent);
-		
-		if (serverList.isEmpty())
-		{
-			throw new IllegalStateException(Messages.getMessage(Messages.MBEAN_SERVER_NOT_FOUND));
-		}
-		
-		return MBeanServer.class.cast(serverList.get(0));
 	}
 	
 	/**
