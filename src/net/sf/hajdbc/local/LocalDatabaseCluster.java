@@ -482,6 +482,8 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		database.setDriver(driver);
 		database.setUrl(url);
 		
+		this.register(database);
+		
 		this.add(database);
 	}
 	
@@ -495,7 +497,27 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		database.setId(id);
 		database.setName(name);
 		
+		this.register(database);
+		
 		this.add(database);
+	}
+	
+	private void register(Database database)
+	{
+		MBeanServer server = DatabaseClusterFactory.getMBeanServer();
+
+		try
+		{
+			ObjectName name = DatabaseClusterFactory.getObjectName(this.id, database.getId());
+			
+			server.registerMBean(new StandardMBean(database, database.getInactiveMBeanClass()), name);
+		}
+		catch (JMException e)
+		{
+			logger.error(e.toString(), e);
+			
+			throw new IllegalStateException(e);
+		}
 	}
 	
 	/**
@@ -510,22 +532,28 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			throw new IllegalStateException(Messages.getMessage(Messages.DATABASE_STILL_ACTIVE, id, this));
 		}
 
+		this.unregister(database);
+		
+		this.databaseMap.remove(id);
+		this.connectionFactoryMap.remove(database);
+		
+		DatabaseClusterFactory.getInstance().exportConfiguration();
+	}
+
+	private void unregister(Database database)
+	{
 		MBeanServer server = DatabaseClusterFactory.getMBeanServer();
 
 		try
 		{
-			ObjectName name = DatabaseClusterFactory.getObjectName(this.id, id);
+			ObjectName name = DatabaseClusterFactory.getObjectName(this.id, database.getId());
 			
 			server.unregisterMBean(name);
-			
-			this.databaseMap.remove(id);
-			this.connectionFactoryMap.remove(database);
-			
-			DatabaseClusterFactory.getInstance().exportConfiguration();
 		}
 		catch (JMException e)
 		{
 			logger.error(e.toString(), e);
+			
 			throw new IllegalStateException(e);
 		}
 	}
