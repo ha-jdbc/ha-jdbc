@@ -97,7 +97,7 @@ public class DataSourceDatabase extends AbstractDatabase<DataSource> implements 
 	 */
 	public Class<DataSource> getConnectionFactoryClass()
 	{
-		return null;
+		return DataSource.class;
 	}
 
 	/**
