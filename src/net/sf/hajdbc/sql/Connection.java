@@ -186,7 +186,7 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 			}	
 		};
 		
-		return this.executeReadFromDatabase(operation);
+		return this.executeReadFromDriver(operation);
 	}
 
 	/**
