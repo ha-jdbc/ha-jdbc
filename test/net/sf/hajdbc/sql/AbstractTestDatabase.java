@@ -54,7 +54,7 @@ public abstract class AbstractTestDatabase<T extends Database, U> implements Dat
 	}
 	
 	@DataProvider(name = "database")
-	protected Object[][] databaseParameters()
+	protected Object[][] databaseProvider()
 	{
 		return new Object[][] { new Object[] { this.createDatabase("1") } };
 	}
@@ -78,19 +78,19 @@ public abstract class AbstractTestDatabase<T extends Database, U> implements Dat
 	}
 
 	@DataProvider(name = "string")
-	public Object[][] stringParameters()
+	public Object[][] stringProvider()
 	{
 		return new Object[][] { new Object[] { "test" } };
 	}
 	
 	@DataProvider(name = "property")
-	public Object[][] propertyParameters()
+	public Object[][] propertyProvider()
 	{
 		return new Object[][] { new Object[] { "name", "value" } };
 	}
 		
 	@DataProvider(name = "weight")
-	public Object[][] weightParameters()
+	public Object[][] weightProvider()
 	{
 		return new Object[][] { new Object[] { 0 } };
 	}

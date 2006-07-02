@@ -61,13 +61,13 @@ public class TestDriver extends DatabaseClusterTestCase implements java.sql.Driv
 	}
 	
 	@DataProvider(name = "connect")
-	public Object[][] getConnectParameters()
+	public Object[][] getConnectProvider()
 	{
 		return new Object[][] { new Object[] { "jdbc:ha-jdbc:test-database-cluster", null } };
 	}
 
 	@DataProvider(name = "url")
-	public Object[][] getUrlParameters()
+	public Object[][] getUrlProvider()
 	{
 		return new Object[][] { new Object[] { "jdbc:ha-jdbc:test-database-cluster" } };
 	}

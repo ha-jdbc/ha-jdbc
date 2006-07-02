@@ -76,19 +76,19 @@ public class TestDataSource extends DatabaseClusterTestCase implements javax.sql
 	}
 
 	@DataProvider(name = "connect")
-	public Object[][] connectParameters()
+	protected Object[][] connectProvider()
 	{
 		return new Object[][] { new Object[] { "", "" } };
 	}
 
 	@DataProvider(name = "timeout")
-	public Object[][] timeoutParameters()
+	protected Object[][] timeoutProvider()
 	{
 		return new Object[][] { new Object[] { 0 } };
 	}
 	
 	@DataProvider(name = "writer")
-	public Object[][] writerParameters()
+	protected Object[][] writerProvider()
 	{
 		return new Object[][] { new Object[] { new PrintWriter(new StringWriter()) } };
 	}

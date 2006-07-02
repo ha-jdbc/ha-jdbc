@@ -68,7 +68,7 @@ public class TestDriverDatabase extends AbstractTestDatabase<DriverDatabase, Dri
 	}
 	
 	@DataProvider(name = "driver")
-	public Object[][] driverParameters()
+	public Object[][] driverProvider()
 	{
 		return new Object[][] { new Object[] { "net.sf.hajdbc.sql.MockDriver" } };
 	}
@@ -130,7 +130,7 @@ public class TestDriverDatabase extends AbstractTestDatabase<DriverDatabase, Dri
 	}
 	
 	@DataProvider(name = "connection-factory")
-	protected Object[][] connectionFactoryParameters()
+	protected Object[][] connectionFactoryProvider()
 	{
 		return new Object[][] { new Object[] { this.driver } };
 	}
@@ -209,7 +209,7 @@ public class TestDriverDatabase extends AbstractTestDatabase<DriverDatabase, Dri
 	}
 
 	@DataProvider(name = "url")
-	protected Object[][] urlParameters()
+	protected Object[][] urlProvider()
 	{
 		return new Object[][] { new Object[] { "jdbc:mock:test" } };
 	}

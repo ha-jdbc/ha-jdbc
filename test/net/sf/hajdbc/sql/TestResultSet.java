@@ -50,6 +50,7 @@ import java.util.concurrent.locks.Lock;
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.LockManager;
 import net.sf.hajdbc.MockDatabase;
 import net.sf.hajdbc.Operation;
 
@@ -68,6 +69,8 @@ public class TestResultSet
 	private IMocksControl control = EasyMock.createStrictControl();
 	
 	private DatabaseCluster databaseCluster = this.control.createMock(DatabaseCluster.class);
+	
+	private LockManager lockManager = this.control.createMock(LockManager.class);
 	
 	protected java.sql.Connection sqlConnection = this.control.createMock(java.sql.Connection.class);
 	
@@ -96,21 +99,24 @@ public class TestResultSet
 		EasyMock.expect(this.databaseCluster.getConnectionFactoryMap()).andReturn(map);
 		
 		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		this.lock.lock();
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		this.lock.unlock();
 
 		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		this.lock.lock();
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		this.lock.unlock();
 		
 		EasyMock.expect(this.databaseCluster.getTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		this.lock.lock();
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
@@ -148,7 +154,7 @@ public class TestResultSet
 			}
 		};
 		
-		this.resultSet = new ResultSet(this.statement, statementOperation);
+		this.resultSet = new ResultSet(this.statement, statementOperation, this.lock);
 		
 		this.control.verify();
 		this.control.reset();
@@ -247,7 +253,8 @@ public class TestResultSet
 	 */
 	public void testAbsolute()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -279,7 +286,8 @@ public class TestResultSet
 	 */
 	public void testAfterLast()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -309,7 +317,8 @@ public class TestResultSet
 	 */
 	public void testBeforeFirst()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -339,7 +348,8 @@ public class TestResultSet
 	 */
 	public void testCancelRowUpdates()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -369,7 +379,8 @@ public class TestResultSet
 	 */
 	public void testClearWarnings()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -400,7 +411,8 @@ public class TestResultSet
 	public void testClose()
 	{
 		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -431,7 +443,8 @@ public class TestResultSet
 	public void testDeleteRow()
 	{
 		EasyMock.expect(this.databaseCluster.getTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -494,7 +507,8 @@ public class TestResultSet
 		{
 			EasyMock.expect(this.sqlResultSet.getType()).andReturn(ResultSet.TYPE_FORWARD_ONLY);
 			
-			EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 			
 			this.lock.lock();
 			
@@ -2309,7 +2323,8 @@ public class TestResultSet
 	public void testInsertRow()
 	{
 		EasyMock.expect(this.databaseCluster.getTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -2530,7 +2545,8 @@ public class TestResultSet
 		{
 			EasyMock.expect(this.sqlResultSet.getType()).andReturn(ResultSet.TYPE_FORWARD_ONLY);
 			
-			EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 			
 			this.lock.lock();
 			
@@ -2567,7 +2583,8 @@ public class TestResultSet
 		{
 			EasyMock.expect(this.sqlResultSet.getType()).andReturn(ResultSet.TYPE_FORWARD_ONLY);
 			
-			EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 			
 			this.lock.lock();
 			
@@ -2595,7 +2612,8 @@ public class TestResultSet
 	 */
 	public void testMoveToInsertRow()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -2632,7 +2650,8 @@ public class TestResultSet
 		{
 			EasyMock.expect(this.sqlResultSet.getType()).andReturn(ResultSet.TYPE_FORWARD_ONLY);
 			
-			EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 			
 			this.lock.lock();
 			
@@ -2669,7 +2688,8 @@ public class TestResultSet
 		{
 			EasyMock.expect(this.sqlResultSet.getType()).andReturn(ResultSet.TYPE_FORWARD_ONLY);
 			
-			EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 			
 			this.lock.lock();
 			
@@ -2700,7 +2720,8 @@ public class TestResultSet
 	public void testRefreshRow()
 	{
 		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -2730,7 +2751,8 @@ public class TestResultSet
 	 */
 	public void testRelative()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -2840,7 +2862,8 @@ public class TestResultSet
 	 */
 	public void testSetFetchDirection()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -2870,7 +2893,8 @@ public class TestResultSet
 	 */
 	public void testSetFetchSize()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -2902,7 +2926,8 @@ public class TestResultSet
 	{
 		Array array = EasyMock.createMock(Array.class);
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -2934,7 +2959,8 @@ public class TestResultSet
 	{
 		Array array = EasyMock.createMock(Array.class);
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -2971,7 +2997,8 @@ public class TestResultSet
 		{
 			EasyMock.expect(this.fileSupport.createFile(inputStream)).andReturn(file);
 			
-			EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 			
 			this.lock.lock();
 			
@@ -3008,7 +3035,8 @@ public class TestResultSet
 		{
 			EasyMock.expect(this.fileSupport.createFile(inputStream)).andReturn(file);
 			
-			EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 			
 			this.lock.lock();
 			
@@ -3040,7 +3068,8 @@ public class TestResultSet
 	{
 		BigDecimal decimal = new BigDecimal(1.0);
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -3072,7 +3101,8 @@ public class TestResultSet
 	{
 		BigDecimal decimal = new BigDecimal(1.0);
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -3109,7 +3139,8 @@ public class TestResultSet
 		{
 			EasyMock.expect(this.fileSupport.createFile(inputStream)).andReturn(file);
 			
-			EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 			
 			this.lock.lock();
 			
@@ -3146,7 +3177,8 @@ public class TestResultSet
 		{
 			EasyMock.expect(this.fileSupport.createFile(inputStream)).andReturn(file);
 			
-			EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 			
 			this.lock.lock();
 			
@@ -3183,7 +3215,8 @@ public class TestResultSet
 		{
 			EasyMock.expect(this.fileSupport.createFile(blob)).andReturn(file);
 			
-			EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 			
 			this.lock.lock();
 			
@@ -3220,7 +3253,8 @@ public class TestResultSet
 		{
 			EasyMock.expect(this.fileSupport.createFile(blob)).andReturn(file);
 			
-			EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 			
 			this.lock.lock();
 			
@@ -3250,7 +3284,8 @@ public class TestResultSet
 	 */
 	public void testUpdateBooleanIntBoolean()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -3280,7 +3315,8 @@ public class TestResultSet
 	 */
 	public void testUpdateBooleanStringBoolean()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -3312,7 +3348,8 @@ public class TestResultSet
 	{
 		byte value = 1;
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -3344,7 +3381,8 @@ public class TestResultSet
 	{
 		byte value = 1;
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -3376,7 +3414,8 @@ public class TestResultSet
 	{
 		byte[] value = new byte[] { 1 };
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -3408,7 +3447,8 @@ public class TestResultSet
 	{
 		byte[] value = new byte[] { 1 };
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -3445,7 +3485,8 @@ public class TestResultSet
 		{
 			EasyMock.expect(this.fileSupport.createFile(reader)).andReturn(file);
 			
-			EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 			
 			this.lock.lock();
 			
@@ -3482,7 +3523,8 @@ public class TestResultSet
 		{
 			EasyMock.expect(this.fileSupport.createFile(reader)).andReturn(file);
 			
-			EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 			
 			this.lock.lock();
 			
@@ -3519,7 +3561,8 @@ public class TestResultSet
 		{
 			EasyMock.expect(this.fileSupport.createFile(clob)).andReturn(file);
 			
-			EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 			
 			this.lock.lock();
 			
@@ -3556,7 +3599,8 @@ public class TestResultSet
 		{
 			EasyMock.expect(this.fileSupport.createFile(clob)).andReturn(file);
 			
-			EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 			
 			this.lock.lock();
 			
@@ -3588,7 +3632,8 @@ public class TestResultSet
 	{
 		Date date = new Date(System.currentTimeMillis());
 
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -3620,7 +3665,8 @@ public class TestResultSet
 	{
 		Date date = new Date(System.currentTimeMillis());
 
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -3650,7 +3696,8 @@ public class TestResultSet
 	 */
 	public void testUpdateDoubleIntDouble()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -3680,7 +3727,8 @@ public class TestResultSet
 	 */
 	public void testUpdateDoubleStringDouble()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -3710,7 +3758,8 @@ public class TestResultSet
 	 */
 	public void testUpdateFloatIntFloat()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -3740,7 +3789,8 @@ public class TestResultSet
 	 */
 	public void testUpdateFloatStringFloat()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -3770,7 +3820,8 @@ public class TestResultSet
 	 */
 	public void testUpdateIntIntInt()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -3800,7 +3851,8 @@ public class TestResultSet
 	 */
 	public void testUpdateIntStringInt()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -3830,7 +3882,8 @@ public class TestResultSet
 	 */
 	public void testUpdateLongIntLong()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -3860,7 +3913,8 @@ public class TestResultSet
 	 */
 	public void testUpdateLongStringLong()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -3890,7 +3944,8 @@ public class TestResultSet
 	 */
 	public void testUpdateNullInt()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -3920,7 +3975,8 @@ public class TestResultSet
 	 */
 	public void testUpdateNullString()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -3952,7 +4008,8 @@ public class TestResultSet
 	{
 		Object object = new Object();
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -3984,7 +4041,8 @@ public class TestResultSet
 	{
 		Object object = new Object();
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -4016,7 +4074,8 @@ public class TestResultSet
 	{
 		Object object = new Object();
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -4048,7 +4107,8 @@ public class TestResultSet
 	{
 		Object object = new Object();
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -4080,7 +4140,8 @@ public class TestResultSet
 	{
 		Ref ref = EasyMock.createMock(Ref.class);
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -4112,7 +4173,8 @@ public class TestResultSet
 	{
 		Ref ref = EasyMock.createMock(Ref.class);
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -4143,7 +4205,8 @@ public class TestResultSet
 	public void testUpdateRow()
 	{
 		EasyMock.expect(this.databaseCluster.getTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -4175,7 +4238,8 @@ public class TestResultSet
 	{
 		short s = Integer.valueOf(1).shortValue();
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -4207,7 +4271,8 @@ public class TestResultSet
 	{
 		short s = Integer.valueOf(1).shortValue();
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -4237,7 +4302,8 @@ public class TestResultSet
 	 */
 	public void testUpdateStringIntString()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -4267,7 +4333,8 @@ public class TestResultSet
 	 */
 	public void testUpdateStringStringString()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -4299,7 +4366,8 @@ public class TestResultSet
 	{
 		Time time = new Time(System.currentTimeMillis());
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -4331,7 +4399,8 @@ public class TestResultSet
 	{
 		Time time = new Time(System.currentTimeMillis());
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -4363,7 +4432,8 @@ public class TestResultSet
 	{
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -4395,7 +4465,8 @@ public class TestResultSet
 	{
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		

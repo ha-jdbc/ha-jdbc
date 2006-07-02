@@ -44,6 +44,7 @@ import org.easymock.EasyMock;
 import org.testng.annotations.Test;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.LockManager;
 import net.sf.hajdbc.Operation;
 
 /**
@@ -1395,7 +1396,8 @@ public class TestCallableStatement extends TestPreparedStatement
 	 */
 	public void testRegisterOutParameterIntInt()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -1425,7 +1427,8 @@ public class TestCallableStatement extends TestPreparedStatement
 	 */
 	public void testRegisterOutParameterIntIntInt()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -1455,7 +1458,8 @@ public class TestCallableStatement extends TestPreparedStatement
 	 */
 	public void testRegisterOutParameterIntIntString()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -1485,7 +1489,8 @@ public class TestCallableStatement extends TestPreparedStatement
 	 */
 	public void testRegisterOutParameterStringInt()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -1515,7 +1520,8 @@ public class TestCallableStatement extends TestPreparedStatement
 	 */
 	public void testRegisterOutParameterStringIntInt()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -1545,7 +1551,8 @@ public class TestCallableStatement extends TestPreparedStatement
 	 */
 	public void testRegisterOutParameterStringIntString()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -1582,7 +1589,8 @@ public class TestCallableStatement extends TestPreparedStatement
 		{
 			EasyMock.expect(this.fileSupport.createFile(inputStream)).andReturn(file);
 			
-			EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+			EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 			
 			this.lock.lock();
 			
@@ -1614,7 +1622,8 @@ public class TestCallableStatement extends TestPreparedStatement
 	{
 		BigDecimal decimal = new BigDecimal(1.1);
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -1651,7 +1660,8 @@ public class TestCallableStatement extends TestPreparedStatement
 		{
 			EasyMock.expect(this.fileSupport.createFile(inputStream)).andReturn(file);
 			
-			EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+			EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 			
 			this.lock.lock();
 			
@@ -1681,7 +1691,8 @@ public class TestCallableStatement extends TestPreparedStatement
 	 */
 	public void testSetBooleanStringBoolean()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -1711,7 +1722,8 @@ public class TestCallableStatement extends TestPreparedStatement
 	 */
 	public void testSetByteStringByte()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -1743,7 +1755,8 @@ public class TestCallableStatement extends TestPreparedStatement
 	{
 		byte[] bytes = new byte[] { 1 };
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -1780,7 +1793,8 @@ public class TestCallableStatement extends TestPreparedStatement
 		{
 			EasyMock.expect(this.fileSupport.createFile(reader)).andReturn(file);
 			
-			EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+			EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 			
 			this.lock.lock();
 			
@@ -1812,7 +1826,8 @@ public class TestCallableStatement extends TestPreparedStatement
 	{
 		Date date = new Date(System.currentTimeMillis());
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -1845,7 +1860,8 @@ public class TestCallableStatement extends TestPreparedStatement
 		Date date = new Date(System.currentTimeMillis());
 		Calendar calendar = Calendar.getInstance();
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -1875,7 +1891,8 @@ public class TestCallableStatement extends TestPreparedStatement
 	 */
 	public void testSetDoubleStringDouble()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -1905,7 +1922,8 @@ public class TestCallableStatement extends TestPreparedStatement
 	 */
 	public void testSetFloatStringFloat()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -1935,7 +1953,8 @@ public class TestCallableStatement extends TestPreparedStatement
 	 */
 	public void testSetIntStringInt()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -1965,7 +1984,8 @@ public class TestCallableStatement extends TestPreparedStatement
 	 */
 	public void testSetLongStringLong()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -1995,7 +2015,8 @@ public class TestCallableStatement extends TestPreparedStatement
 	 */
 	public void testSetNullStringInt()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -2025,7 +2046,8 @@ public class TestCallableStatement extends TestPreparedStatement
 	 */
 	public void testSetNullStringIntString()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -2057,7 +2079,8 @@ public class TestCallableStatement extends TestPreparedStatement
 	{
 		Object object = new Object();
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -2089,7 +2112,8 @@ public class TestCallableStatement extends TestPreparedStatement
 	{
 		Object object = new Object();
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -2121,7 +2145,8 @@ public class TestCallableStatement extends TestPreparedStatement
 	{
 		Object object = new Object();
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -2151,7 +2176,8 @@ public class TestCallableStatement extends TestPreparedStatement
 	 */
 	public void testSetShortStringShort()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -2181,7 +2207,8 @@ public class TestCallableStatement extends TestPreparedStatement
 	 */
 	public void testSetStringStringString()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -2213,7 +2240,8 @@ public class TestCallableStatement extends TestPreparedStatement
 	{
 		Time time = new Time(System.currentTimeMillis());
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -2246,7 +2274,8 @@ public class TestCallableStatement extends TestPreparedStatement
 		Time time = new Time(System.currentTimeMillis());
 		Calendar calendar = Calendar.getInstance();
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -2278,7 +2307,8 @@ public class TestCallableStatement extends TestPreparedStatement
 	{
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -2311,7 +2341,8 @@ public class TestCallableStatement extends TestPreparedStatement
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 		Calendar calendar = Calendar.getInstance();
 		
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		
@@ -2341,7 +2372,8 @@ public class TestCallableStatement extends TestPreparedStatement
 	 */
 	public void testSetURLStringURL()
 	{
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		this.lock.lock();
 		

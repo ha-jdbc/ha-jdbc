@@ -82,7 +82,7 @@ public class TestDataSourceDatabase extends AbstractTestDatabase<DataSourceDatab
 	}
 
 	@DataProvider(name = "datasource")
-	protected Object[][] dataSourceParameters()
+	protected Object[][] dataSourceProvider()
 	{
 		return new Object[][] { new Object[] { this.dataSource } };
 	}

@@ -67,7 +67,7 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase implements Ob
 	}
 
 	@DataProvider(name = "object-instance")
-	protected Object[][] objectInstanceParameters()
+	protected Object[][] objectInstanceProvider()
 	{
 		return new Object[][] { new Object[] { new Reference("net.sf.hajdbc.sql.DataSource", new StringRefAddr(DataSource.DATABASE_CLUSTER, "test-datasource-cluster")), null, null, null } };
 	}
