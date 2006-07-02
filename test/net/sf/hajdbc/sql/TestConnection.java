@@ -51,7 +51,7 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
-public class TestingConnection implements java.sql.Connection
+public class TestConnection implements java.sql.Connection
 {
 	private IMocksControl control = EasyMock.createStrictControl();
 	private Balancer balancer = this.control.createMock(Balancer.class);
