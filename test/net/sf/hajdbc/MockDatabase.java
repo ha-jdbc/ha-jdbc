@@ -50,6 +50,7 @@ public class MockDatabase extends AbstractDatabase<Void>
 	/**
 	 * @see net.sf.hajdbc.Database#connect(T)
 	 */
+	@SuppressWarnings("unused")
 	public Connection connect(Void connectionFactory) throws SQLException
 	{
 		return null;
