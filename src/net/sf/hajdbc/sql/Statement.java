@@ -729,7 +729,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 	{
 		DatabaseCluster databaseCluster = this.getDatabaseCluster();
 		
-		return databaseCluster.getDatabaseMetaDataCache().getDatabaseProperties(this.getConnection()).getSupportsSelectForUpdate() ? databaseCluster.getDialect().isSelectForUpdate(sql) : false;
+		return databaseCluster.getDatabaseMetaDataCache().getDatabaseProperties(this.getConnection()).isSelectForUpdateSupported() ? databaseCluster.getDialect().isSelectForUpdate(sql) : false;
 	}
 	
 	protected Lock getLock(String sql) throws SQLException

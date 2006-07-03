@@ -70,9 +70,9 @@ public class EagerDatabaseProperties implements DatabaseProperties
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseProperties#getSupportsSelectForUpdate()
+	 * @see net.sf.hajdbc.DatabaseProperties#isSelectForUpdateSupported()
 	 */
-	public boolean getSupportsSelectForUpdate()
+	public boolean isSelectForUpdateSupported()
 	{
 		return this.supportsSelectForUpdate;
 	}	

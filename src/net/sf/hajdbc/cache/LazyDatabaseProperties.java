@@ -74,9 +74,9 @@ public class LazyDatabaseProperties implements DatabaseProperties
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseProperties#getSupportsSelectForUpdate()
+	 * @see net.sf.hajdbc.DatabaseProperties#isSelectForUpdateSupported()
 	 */
-	public synchronized boolean getSupportsSelectForUpdate() throws SQLException
+	public synchronized boolean isSelectForUpdateSupported() throws SQLException
 	{
 		if (this.supportsSelectForUpdate == null)
 		{

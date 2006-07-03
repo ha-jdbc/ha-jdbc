@@ -31,5 +31,5 @@ public interface DatabaseProperties
 {
 	public Collection<TableProperties> getTables() throws SQLException;
 
-	public boolean getSupportsSelectForUpdate() throws SQLException;
+	public boolean isSelectForUpdateSupported() throws SQLException;
 }
