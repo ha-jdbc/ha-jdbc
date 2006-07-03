@@ -1506,18 +1506,10 @@ public class TestConnection implements java.sql.Connection
 	@Test(dataProvider = "map")
 	public void setTypeMap(Map<String, Class<?>> map) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
 		this.sqlConnection.setTypeMap(map);
-		
-		this.lock.unlock();
 		
 		this.control.replay();
 		
