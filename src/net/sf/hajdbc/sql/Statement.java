@@ -765,6 +765,8 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		}
 		
+		if (sequenceSet.size() == 0) return java.util.Collections.emptyList();
+		
 		List<Lock> lockList = new ArrayList<Lock>(sequenceSet.size());
 
 		LockManager lockManager = databaseCluster.getLockManager();
