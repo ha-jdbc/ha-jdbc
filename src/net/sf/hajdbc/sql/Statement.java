@@ -23,12 +23,16 @@ package net.sf.hajdbc.sql;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.LockManager;
 import net.sf.hajdbc.Operation;
 import net.sf.hajdbc.SQLObject;
 
@@ -743,18 +747,31 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 		return (sequence != null) ? databaseCluster.getLockManager().writeLock(sequence) : null;
 	}
 	
-	protected List<Lock> getLockList(List<String> sqlList) throws SQLException
+	private List<Lock> getLockList(List<String> sqlList) throws SQLException
 	{
-		List<Lock> lockList = new ArrayList<Lock>(this.sqlList.size());
+		DatabaseCluster databaseCluster = this.getDatabaseCluster();
 		
-		for (String statement: this.sqlList)
+		Dialect dialect = databaseCluster.getDialect();
+		
+		Set<String> sequenceSet = new LinkedHashSet<String>();
+		
+		for (String sql: this.sqlList)
 		{
-			Lock lock = this.getLock(statement);
+			String sequence = dialect.parseSequence(sql);
 			
-			if (lock != null)
+			if (sequence != null)
 			{
-				lockList.add(lock);
+				sequenceSet.add(sequence);
 			}
+		}
+		
+		List<Lock> lockList = new ArrayList<Lock>(sequenceSet.size());
+
+		LockManager lockManager = databaseCluster.getLockManager();
+		
+		for (String sequence: sequenceSet)
+		{
+			lockList.add(lockManager.writeLock(sequence));
 		}
 		
 		return lockList;
