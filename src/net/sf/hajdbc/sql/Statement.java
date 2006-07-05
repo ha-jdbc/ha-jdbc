@@ -753,7 +753,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 		
 		Dialect dialect = databaseCluster.getDialect();
 		
-		Set<String> sequenceSet = new LinkedHashSet<String>();
+		Set<String> sequenceSet = new LinkedHashSet<String>(sqlList.size());
 		
 		for (String sql: this.sqlList)
 		{
