@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,7 +77,7 @@ public class SQLObject<E, P>
 	 */
 	private static <T, S> Map<Database, T> execute(SQLObject<S, ?> parent, Operation<S, T> operation, ExecutorService executor, Lock lock) throws java.sql.SQLException
 	{
-		return parent.executeWriteToDatabase(operation, executor, lock);
+		return parent.executeWriteToDatabase(operation, executor, Collections.singletonList((lock == null) ? parent.getDatabaseCluster().getLockManager().readLock(LockManager.GLOBAL) : lock));
 	}
 	
 	protected SQLObject(DatabaseCluster databaseCluster, Map<Database, E> objectMap)
@@ -226,7 +227,7 @@ public class SQLObject<E, P>
 	 */
 	public final <T> Map<Database, T> executeTransactionalWriteToDatabase(final Operation<E, T> operation) throws java.sql.SQLException
 	{
-		return this.executeTransactionalWriteToDatabase(operation, null);
+		return this.executeTransactionalWriteToDatabase(operation, this.databaseCluster.getLockManager().readLock(LockManager.GLOBAL));
 	}
 
 	/**
@@ -240,7 +241,21 @@ public class SQLObject<E, P>
 	 */
 	public final <T> Map<Database, T> executeTransactionalWriteToDatabase(final Operation<E, T> operation, Lock lock) throws java.sql.SQLException
 	{
-		return this.executeWriteToDatabase(operation, this.databaseCluster.getTransactionalExecutor(), lock);
+		return (lock == null) ? this.executeTransactionalWriteToDatabase(operation) : this.executeTransactionalWriteToDatabase(operation, Collections.singletonList(lock));
+	}
+	
+	/**
+	 * Executes the specified transactional write operation on every database in the cluster.
+	 * It is assumed that these types of operation will require access to the database.
+	 * @param <T> 
+	 * @param operation a database operation
+	 * @param lock a lock
+	 * @return the result of the operation
+	 * @throws java.sql.SQLException if operation execution fails
+	 */
+	public final <T> Map<Database, T> executeTransactionalWriteToDatabase(final Operation<E, T> operation, List<Lock> locks) throws java.sql.SQLException
+	{
+		return locks.isEmpty() ? this.executeTransactionalWriteToDatabase(operation) : this.executeWriteToDatabase(operation, this.databaseCluster.getTransactionalExecutor(), locks);
 	}
 	
 	/**
@@ -253,20 +268,18 @@ public class SQLObject<E, P>
 	 */
 	public final <T> Map<Database, T> executeNonTransactionalWriteToDatabase(final Operation<E, T> operation) throws java.sql.SQLException
 	{
-		return this.executeWriteToDatabase(operation, this.databaseCluster.getNonTransactionalExecutor(), null);
+		return this.executeWriteToDatabase(operation, this.databaseCluster.getNonTransactionalExecutor(), Collections.singletonList(this.databaseCluster.getLockManager().readLock(LockManager.GLOBAL)));
 	}
 	
-	private <T> Map<Database, T> executeWriteToDatabase(final Operation<E, T> operation, ExecutorService executor, Lock lock) throws java.sql.SQLException
+	public <T> Map<Database, T> executeWriteToDatabase(final Operation<E, T> operation, ExecutorService executor, List<Lock> locks) throws java.sql.SQLException
 	{
 		Map<Database, T> resultMap = new TreeMap<Database, T>();
 		SortedMap<Database, java.sql.SQLException> exceptionMap = new TreeMap<Database, java.sql.SQLException>();
 		
-		if (lock == null)
+		for (Lock lock: locks)
 		{
-			lock = this.databaseCluster.getLockManager().readLock(LockManager.GLOBAL);
+			lock.lock();
 		}
-		
-		lock.lock();
 		
 		try
 		{
@@ -323,7 +336,10 @@ public class SQLObject<E, P>
 		}
 		finally
 		{
-			lock.unlock();
+			for (Lock lock: locks)
+			{
+				lock.unlock();
+			}
 		}
 		
 		// If no databases returned successfully, return an exception back to the caller
