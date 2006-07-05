@@ -77,7 +77,19 @@ public class SQLObject<E, P>
 	 */
 	private static <T, S> Map<Database, T> execute(SQLObject<S, ?> parent, Operation<S, T> operation, ExecutorService executor, Lock lock) throws java.sql.SQLException
 	{
-		return parent.executeWriteToDatabase(operation, executor, Collections.singletonList((lock == null) ? parent.getDatabaseCluster().getLockManager().readLock(LockManager.GLOBAL) : lock));
+		return parent.executeWriteToDatabase(operation, executor, toList(lock));
+	}
+	
+	private static List<Lock> toList(Lock lock)
+	{
+		List<Lock> lockList = Collections.emptyList();
+		
+		if (lock != null)
+		{
+			lockList = Collections.singletonList(lock);
+		}
+		
+		return lockList;
 	}
 	
 	protected SQLObject(DatabaseCluster databaseCluster, Map<Database, E> objectMap)
@@ -227,7 +239,7 @@ public class SQLObject<E, P>
 	 */
 	public final <T> Map<Database, T> executeTransactionalWriteToDatabase(final Operation<E, T> operation) throws java.sql.SQLException
 	{
-		return this.executeTransactionalWriteToDatabase(operation, this.databaseCluster.getLockManager().readLock(LockManager.GLOBAL));
+		return this.executeTransactionalWriteToDatabase(operation, toList(null));
 	}
 
 	/**
@@ -241,7 +253,7 @@ public class SQLObject<E, P>
 	 */
 	public final <T> Map<Database, T> executeTransactionalWriteToDatabase(final Operation<E, T> operation, Lock lock) throws java.sql.SQLException
 	{
-		return (lock == null) ? this.executeTransactionalWriteToDatabase(operation) : this.executeTransactionalWriteToDatabase(operation, Collections.singletonList(lock));
+		return this.executeTransactionalWriteToDatabase(operation, toList(lock));
 	}
 	
 	/**
@@ -253,9 +265,9 @@ public class SQLObject<E, P>
 	 * @return the result of the operation
 	 * @throws java.sql.SQLException if operation execution fails
 	 */
-	public final <T> Map<Database, T> executeTransactionalWriteToDatabase(final Operation<E, T> operation, List<Lock> locks) throws java.sql.SQLException
+	public final <T> Map<Database, T> executeTransactionalWriteToDatabase(final Operation<E, T> operation, List<Lock> lockList) throws java.sql.SQLException
 	{
-		return locks.isEmpty() ? this.executeTransactionalWriteToDatabase(operation) : this.executeWriteToDatabase(operation, this.databaseCluster.getTransactionalExecutor(), locks);
+		return this.executeWriteToDatabase(operation, this.databaseCluster.getTransactionalExecutor(), lockList);
 	}
 	
 	/**
@@ -268,15 +280,20 @@ public class SQLObject<E, P>
 	 */
 	public final <T> Map<Database, T> executeNonTransactionalWriteToDatabase(final Operation<E, T> operation) throws java.sql.SQLException
 	{
-		return this.executeWriteToDatabase(operation, this.databaseCluster.getNonTransactionalExecutor(), Collections.singletonList(this.databaseCluster.getLockManager().readLock(LockManager.GLOBAL)));
+		return this.executeWriteToDatabase(operation, this.databaseCluster.getNonTransactionalExecutor(), toList(null));
 	}
 	
-	public <T> Map<Database, T> executeWriteToDatabase(final Operation<E, T> operation, ExecutorService executor, List<Lock> locks) throws java.sql.SQLException
+	public <T> Map<Database, T> executeWriteToDatabase(final Operation<E, T> operation, ExecutorService executor, List<Lock> lockList) throws java.sql.SQLException
 	{
 		Map<Database, T> resultMap = new TreeMap<Database, T>();
 		SortedMap<Database, java.sql.SQLException> exceptionMap = new TreeMap<Database, java.sql.SQLException>();
 		
-		for (Lock lock: locks)
+		if (lockList.isEmpty())
+		{
+			lockList = Collections.singletonList(this.databaseCluster.getLockManager().readLock(LockManager.GLOBAL));
+		}
+		
+		for (Lock lock: lockList)
 		{
 			lock.lock();
 		}
@@ -336,7 +353,7 @@ public class SQLObject<E, P>
 		}
 		finally
 		{
-			for (Lock lock: locks)
+			for (Lock lock: lockList)
 			{
 				lock.unlock();
 			}
