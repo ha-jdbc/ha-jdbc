@@ -49,6 +49,8 @@ import net.sf.hajdbc.Operation;
  */
 public class PreparedStatement<T extends java.sql.PreparedStatement> extends Statement<T> implements java.sql.PreparedStatement
 {
+	private String sql;
+	
 	/**
 	 * Constructs a new PreparedStatementProxy.
 	 * @param connection a Connection proxy
@@ -130,7 +132,7 @@ public class PreparedStatement<T extends java.sql.PreparedStatement> extends Sta
 
 		Lock lock = this.getLock(this.sql);
 		
-		return ((this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(this.sql) && (lock == null)) ? this.executeReadFromDatabase(operation) : new ResultSet<T>(this, operation, lock);
+		return ((lock == null) && (this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(this.sql)) ? this.executeReadFromDatabase(operation) : new ResultSet<T>(this, operation, lock);
 	}
 
 	/**

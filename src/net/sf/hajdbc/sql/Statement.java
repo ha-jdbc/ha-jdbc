@@ -22,6 +22,8 @@ package net.sf.hajdbc.sql;
 
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 
@@ -38,7 +40,7 @@ import net.sf.hajdbc.SQLObject;
  */
 public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.sql.Connection> implements java.sql.Statement
 {
-	protected String sql;
+	private List<String> sqlList = new ArrayList<String>();
 	
 	/**
 	 * Constructs a new StatementProxy.
@@ -110,7 +112,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		this.sql += sql;
+		this.sqlList.add(sql);
 		
 		this.executeWriteToDriver(operation);
 	}
@@ -148,7 +150,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		this.sql = "";
+		this.sqlList.clear();
 		
 		this.executeWriteToDriver(operation);
 	}
@@ -265,8 +267,8 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 				return statement.executeBatch();
 			}
 		};
-		
-		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLock(this.sql)));
+				
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLockList(this.sqlList)));
 	}
 
 	/**
@@ -284,7 +286,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 		
 		Lock lock = this.getLock(sql);
 		
-		return ((this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(sql) && (lock == null)) ? this.executeReadFromDatabase(operation) : new ResultSet<T>(this, operation, lock);
+		return ((lock == null) && (this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(sql)) ? this.executeReadFromDatabase(operation) : new ResultSet<T>(this, operation, lock);
 	}
 
 	/**
@@ -739,5 +741,22 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 		String sequence = databaseCluster.getDialect().parseSequence(sql);
 		
 		return (sequence != null) ? databaseCluster.getLockManager().writeLock(sequence) : null;
+	}
+	
+	protected List<Lock> getLockList(List<String> sqlList) throws SQLException
+	{
+		List<Lock> lockList = new ArrayList<Lock>(this.sqlList.size());
+		
+		for (String statement: this.sqlList)
+		{
+			Lock lock = this.getLock(statement);
+			
+			if (lock != null)
+			{
+				lockList.add(lock);
+			}
+		}
+		
+		return lockList;
 	}
 }
