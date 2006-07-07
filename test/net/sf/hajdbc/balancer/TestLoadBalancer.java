@@ -110,7 +110,7 @@ public class TestLoadBalancer extends AbstractTestBalancer
 		assert database2.equals(next) : next;
 	}
 	
-	private class OperationThread extends Thread
+	private static class OperationThread extends Thread
 	{
 		private Balancer balancer;
 		private Operation<Void, Void> operation;
@@ -188,7 +188,7 @@ public class TestLoadBalancer extends AbstractTestBalancer
 		}
 	}
 	
-	private class MockOperation implements Operation<Void, Void>
+	static class MockOperation implements Operation<Void, Void>
 	{
 		/**
 		 * @see net.sf.hajdbc.Operation#execute(net.sf.hajdbc.Database, java.lang.Object)
