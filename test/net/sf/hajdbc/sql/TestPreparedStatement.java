@@ -1184,6 +1184,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	/**
 	 * @see java.sql.PreparedStatement#setURL(int, java.net.URL)
 	 */
+	@Test(dataProvider = "int-url")
 	public void setURL(int index, URL value) throws SQLException
 	{
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
