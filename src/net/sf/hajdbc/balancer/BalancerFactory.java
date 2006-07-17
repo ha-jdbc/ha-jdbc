@@ -76,8 +76,8 @@ public final class BalancerFactory
 	
 	/**
 	 * Return the identifier of the specified Balancer.
-	 * @param balancer a Dialect implementation
-	 * @return the class name of this dialect
+	 * @param balancer a Balancer implementation
+	 * @return the class name of this balancer
 	 */
 	public static String serialize(Balancer balancer)
 	{

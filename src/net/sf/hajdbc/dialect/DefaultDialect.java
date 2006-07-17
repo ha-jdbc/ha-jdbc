@@ -56,7 +56,7 @@ public class DefaultDialect implements Dialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getLockTableSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String)
+	 * @see net.sf.hajdbc.Dialect#getLockTableSQL(net.sf.hajdbc.TableProperties)
 	 */
 	public String getLockTableSQL(TableProperties properties) throws SQLException
 	{
@@ -84,7 +84,7 @@ public class DefaultDialect implements Dialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getTruncateTableSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String)
+	 * @see net.sf.hajdbc.Dialect#getTruncateTableSQL(net.sf.hajdbc.TableProperties)
 	 */
 	public String getTruncateTableSQL(TableProperties properties) throws SQLException
 	{
@@ -92,7 +92,7 @@ public class DefaultDialect implements Dialect
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Dialect#getCreateForeignKeyConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 * @see net.sf.hajdbc.Dialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
 	 */
 	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint key)
 	{
@@ -100,7 +100,7 @@ public class DefaultDialect implements Dialect
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Dialect#getDropForeignKeyConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String)
+	 * @see net.sf.hajdbc.Dialect#getDropForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
 	 */
 	public String getDropForeignKeyConstraintSQL(ForeignKeyConstraint key)
 	{
@@ -108,7 +108,7 @@ public class DefaultDialect implements Dialect
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Dialect#getCreateUniqueConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String, java.util.List)
+	 * @see net.sf.hajdbc.Dialect#getCreateUniqueConstraintSQL(net.sf.hajdbc.UniqueConstraint)
 	 */
 	public String getCreateUniqueConstraintSQL(UniqueConstraint constraint)
 	{
@@ -116,7 +116,7 @@ public class DefaultDialect implements Dialect
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Dialect#getDropUniqueConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String)
+	 * @see net.sf.hajdbc.Dialect#getDropUniqueConstraintSQL(net.sf.hajdbc.UniqueConstraint)
 	 */
 	public String getDropUniqueConstraintSQL(UniqueConstraint constraint)
 	{
@@ -124,7 +124,7 @@ public class DefaultDialect implements Dialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getCreatePrimaryKeyConstraintSQL(net.sf.hajdbc.DatabaseMetaDataCache, net.sf.hajdbc.UniqueConstraint)
+	 * @see net.sf.hajdbc.Dialect#getCreatePrimaryKeyConstraintSQL(net.sf.hajdbc.UniqueConstraint)
 	 */
 	public String getCreatePrimaryKeyConstraintSQL(UniqueConstraint constraint)
 	{
@@ -132,7 +132,7 @@ public class DefaultDialect implements Dialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getDropPrimaryKeyConstraintSQL(net.sf.hajdbc.DatabaseMetaDataCache, net.sf.hajdbc.UniqueConstraint)
+	 * @see net.sf.hajdbc.Dialect#getDropPrimaryKeyConstraintSQL(net.sf.hajdbc.UniqueConstraint)
 	 */
 	public String getDropPrimaryKeyConstraintSQL(UniqueConstraint constraint)
 	{
@@ -140,7 +140,7 @@ public class DefaultDialect implements Dialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#isSelectForUpdate(java.sql.DatabaseMetaData, java.lang.String)
+	 * @see net.sf.hajdbc.Dialect#isSelectForUpdate(java.lang.String)
 	 */
 	public boolean isSelectForUpdate(String sql)
 	{
@@ -168,7 +168,7 @@ public class DefaultDialect implements Dialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getColumnType(net.sf.hajdbc.cache.ColumnProperties)
+	 * @see net.sf.hajdbc.Dialect#getColumnType(net.sf.hajdbc.ColumnProperties)
 	 */
 	public int getColumnType(ColumnProperties properties)
 	{
@@ -176,8 +176,8 @@ public class DefaultDialect implements Dialect
 	}
 
 	/**
-	 * JDBC API does not acknowledge the existence of sequences.  Each dialect 
-	 * @see net.sf.hajdbc.Dialect#getSequences()
+	 * JDBC API does not acknowledge the existence of sequences.
+	 * @see net.sf.hajdbc.Dialect#getSequences(java.sql.Connection)
 	 */
 	@SuppressWarnings("unused")
 	public Map<String, Long> getSequences(Connection connection) throws SQLException

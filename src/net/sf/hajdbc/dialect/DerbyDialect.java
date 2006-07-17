@@ -43,7 +43,7 @@ public class DerbyDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#getLockTableSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String)
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#getLockTableSQL(net.sf.hajdbc.TableProperties)
 	 */
 	@Override
 	public String getLockTableSQL(TableProperties properties) throws SQLException

@@ -62,7 +62,7 @@ public class EagerDatabaseProperties implements DatabaseProperties
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseProperties#getSchemas()
+	 * @see net.sf.hajdbc.DatabaseProperties#getTables()
 	 */
 	public Collection<TableProperties> getTables()
 	{

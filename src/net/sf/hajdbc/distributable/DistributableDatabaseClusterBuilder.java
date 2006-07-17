@@ -37,19 +37,27 @@ public class DistributableDatabaseClusterBuilder implements DatabaseClusterBuild
 	private String stack;
 	private int timeout;
 	
+	/**
+	 * Returns the name of the protocol stack.
+	 * @return a stack name
+	 */
 	public String getStack()
 	{
 		return this.stack;
 	}
 
+	/**
+	 * Sets the name of the protocol stack.
+	 * @param stack a stack name
+	 */
 	public void setStack(String stack)
 	{
 		this.stack = stack;
 	}
 
 	/**
-	 * Returns the protocol stack that this database cluster will use to broadcast cluster changes.
-	 * @return a JGroups protocol stack.
+	 * Returns the configuration of protocol stacks.
+	 * @return a configuration of protocol stacks.
 	 */
 	public String getConfig()
 	{
@@ -57,7 +65,8 @@ public class DistributableDatabaseClusterBuilder implements DatabaseClusterBuild
 	}
 	
 	/**
-	 * @param protocol 
+	 * Sets the configuration of protocol stacks.
+	 * @param config  a configuration of protocol stacks.
 	 */
 	public void setConfig(String config) throws Exception
 	{

@@ -40,9 +40,8 @@ public class ForeignKeyConstraint extends UniqueConstraint
 	
 	/**
 	 * Constructs a new ForeignKey.
-	 * @param name
-	 * @param schema
-	 * @param table
+	 * @param name the name of this constraint
+	 * @param table a schema qualified table name
 	 */
 	public ForeignKeyConstraint(String name, String table)
 	{

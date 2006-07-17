@@ -49,10 +49,10 @@ public class DatabaseMetaDataCacheFactory
 	}
 	
 	/**
-	 * Creates a new instance of the Balancer implementation indentified by the specified identifier
-	 * @param id an enumerated balancer identifier
-	 * @return a new Balancer instance
-	 * @throws Exception if specified balancer identifier is invalid
+	 * Creates a new instance of the DatabaseMetaDataCache implementation indentified by the specified identifier
+	 * @param id an enumerated cache identifier
+	 * @return a new DatabaseMetaDataCache instance
+	 * @throws Exception if specified cache identifier is invalid
 	 */
 	public static DatabaseMetaDataCache deserialize(String id) throws Exception
 	{
@@ -76,9 +76,9 @@ public class DatabaseMetaDataCacheFactory
 	}
 	
 	/**
-	 * Return the identifier of the specified Balancer.
-	 * @param balancer a Dialect implementation
-	 * @return the class name of this dialect
+	 * Return the identifier of the specified DatabaseMetaDataCache.
+	 * @param cache a cache implementation
+	 * @return the class name of this cache
 	 */
 	public static String serialize(DatabaseMetaDataCache cache)
 	{

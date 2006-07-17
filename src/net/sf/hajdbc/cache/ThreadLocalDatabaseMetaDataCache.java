@@ -35,7 +35,7 @@ public class ThreadLocalDatabaseMetaDataCache extends LazyDatabaseMetaDataCache
 	private static ThreadLocal<DatabaseProperties> threadLocal = new ThreadLocal<DatabaseProperties>();
 
 	/**
-	 * @see net.sf.hajdbc.cache.AbstractLazyDatabaseMetaDataCache#getDatabaseProperties()
+	 * @see net.sf.hajdbc.cache.LazyDatabaseMetaDataCache#getDatabaseProperties()
 	 */
 	@Override
 	protected DatabaseProperties getDatabaseProperties()
@@ -44,7 +44,7 @@ public class ThreadLocalDatabaseMetaDataCache extends LazyDatabaseMetaDataCache
 	}
 
 	/**
-	 * @see net.sf.hajdbc.cache.AbstractLazyDatabaseMetaDataCache#setDatabaseProperties(net.sf.hajdbc.DatabaseProperties)
+	 * @see net.sf.hajdbc.cache.LazyDatabaseMetaDataCache#setDatabaseProperties(net.sf.hajdbc.DatabaseProperties)
 	 */
 	@Override
 	protected void setDatabaseProperties(DatabaseProperties properties)

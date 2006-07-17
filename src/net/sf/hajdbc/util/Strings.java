@@ -34,7 +34,7 @@ public final class Strings
 	 * Performs the reverse of a split operation, joining the elements of the specified collection using the specified delimiter.
 	 * @param collection a collection of strings
 	 * @param delimiter a string to insert between each collection element
-	 * @return 
+	 * @return a new String
 	 */
 	public static String join(Collection<String> collection, String delimiter)
 	{

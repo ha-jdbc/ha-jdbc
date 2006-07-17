@@ -74,6 +74,7 @@ import org.slf4j.LoggerFactory;
  *   </ol>
  *  </li>
  *  <li>Re-create the foreign keys on the inactive database</li>
+ *  <li>Synchronize sequences</li>
  * </ol>
  * @author  Paul Ferraro
  * @version $Revision$
@@ -87,7 +88,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 	private int fetchSize = 0;
 	
 	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(Connection, Connection, Map, Dialect)
+	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, net.sf.hajdbc.DatabaseMetaDataCache, net.sf.hajdbc.Dialect)
 	 */
 	public void synchronize(Connection inactiveConnection, Connection activeConnection, DatabaseMetaDataCache metaData, Dialect dialect) throws SQLException
 	{

@@ -34,7 +34,7 @@ public interface SynchronizationStrategy
 	 * Implementors must not close the specified connections.
 	 * @param inactiveConnection a connection to the inactive database
 	 * @param activeConnection a connection to the active database
-	 * @param schemaMap a map of schema name to list of table names
+	 * @param metaData a cache of database meta data
 	 * @param dialect a Dialect instance
 	 * @throws java.sql.SQLException if synchronization fails
 	 */

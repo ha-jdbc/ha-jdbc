@@ -27,7 +27,7 @@ import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.SynchronizationStrategy;
 
 /**
- * Trivial {@link SynchronizationStrategy} implementation with an empty {@link SynchronizationStrategy#synchronize(Connection, Connection, Map, Dialect)} method.
+ * Trivial {@link SynchronizationStrategy} implementation that assumes that the inactive database is already in sync.
  * 
  * @author  Paul Ferraro
  * @since   1.0
@@ -35,7 +35,7 @@ import net.sf.hajdbc.SynchronizationStrategy;
 public class PassiveSynchronizationStrategy implements SynchronizationStrategy
 {
 	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(Connection, Connection, Map, Dialect)
+	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, net.sf.hajdbc.DatabaseMetaDataCache, net.sf.hajdbc.Dialect)
 	 */
 	public void synchronize(Connection inactiveConnection, Connection activeConnection, DatabaseMetaDataCache metaData, Dialect dialect)
 	{

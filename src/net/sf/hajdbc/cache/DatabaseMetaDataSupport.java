@@ -37,8 +37,8 @@ import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.UniqueConstraint;
 
 /**
+ * Processes database meta data into useful structures.
  * @author Paul Ferraro
- *
  */
 public class DatabaseMetaDataSupport
 {
@@ -96,6 +96,11 @@ public class DatabaseMetaDataSupport
 	private Set<String> reservedIdentifierSet;
 	private Pattern identifierPattern;
 
+	/**
+	 * Constructs a new DatabaseMetaDataSupport using the specified DatabaseMetaData implementation.
+	 * @param metaData a DatabaseMetaData implementation
+	 * @throws SQLException if an error occurs access DatabaseMetaData
+	 */
 	public DatabaseMetaDataSupport(DatabaseMetaData metaData) throws SQLException
 	{
 		this.reservedIdentifierSet = new HashSet<String>(Arrays.asList(SQL_92_RESERVED_WORDS));
@@ -105,7 +110,10 @@ public class DatabaseMetaDataSupport
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getTables()
+	 * Returns all tables in this database mapped by schema.
+	 * @param metaData a DatabaseMetaData implementation
+	 * @return a Map of schema name to Collection of table names
+	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */
 	public Map<String, Collection<String>> getTables(DatabaseMetaData metaData) throws SQLException
 	{
@@ -136,7 +144,12 @@ public class DatabaseMetaDataSupport
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getColumns(java.lang.String, java.lang.String)
+	 * Returns the columns of the specified table.
+	 * @param metaData a DatabaseMetaData implementation
+	 * @param schema a schema name, possibly null
+	 * @param table a table name
+	 * @return a Map of column name to column properties
+	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */
 	public Map<String, ColumnProperties> getColumns(DatabaseMetaData metaData, String schema, String table) throws SQLException
 	{
@@ -159,7 +172,12 @@ public class DatabaseMetaDataSupport
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getPrimaryKey(java.lang.String, java.lang.String)
+	 * Returns the primary key of the specified table.
+	 * @param metaData a DatabaseMetaData implementation
+	 * @param schema a schema name, possibly null
+	 * @param table a table name
+	 * @return a unique constraint
+	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */
 	public UniqueConstraint getPrimaryKey(DatabaseMetaData metaData, String schema, String table) throws SQLException
 	{
@@ -187,7 +205,12 @@ public class DatabaseMetaDataSupport
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getForeignKeyConstraints(java.lang.String, java.lang.String)
+	 * Returns the foreign key constraints on the specified table.
+	 * @param metaData a DatabaseMetaData implementation
+	 * @param schema a schema name, possibly null
+	 * @param table a table name
+	 * @return a Collection of foreign key constraints.
+	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */
 	public Collection<ForeignKeyConstraint> getForeignKeyConstraints(DatabaseMetaData metaData, String schema, String table) throws SQLException
 	{
@@ -227,7 +250,12 @@ public class DatabaseMetaDataSupport
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getUniqueConstraints(java.lang.String, java.lang.String)
+	 * Returns the unique constraints on the specified table.  This may include the primary key of the table.
+	 * @param metaData a DatabaseMetaData implementation
+	 * @param schema a schema name, possibly null
+	 * @param table a table name
+	 * @return a Collection of unique constraints.
+	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */
 	public Collection<UniqueConstraint> getUniqueConstraints(DatabaseMetaData metaData, String schema, String table) throws SQLException
 	{
@@ -261,7 +289,12 @@ public class DatabaseMetaDataSupport
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#qualifyTableForDML(java.lang.String, java.lang.String)
+	 * Returns the schema qualified name of the specified table suitable for use in a data modification language (DML) statement.
+	 * @param metaData a DatabaseMetaData implementation
+	 * @param schema a schema name, possibly null
+	 * @param table a table name
+	 * @return a Collection of unique constraints.
+	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */
 	public String getQualifiedNameForDML(DatabaseMetaData metaData, String schema, String table) throws SQLException
 	{
@@ -283,7 +316,12 @@ public class DatabaseMetaDataSupport
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#qualifyTableForDDL(java.lang.String, java.lang.String)
+	 * Returns the schema qualified name of the specified table suitable for use in a data definition language (DDL) statement.
+	 * @param metaData a DatabaseMetaData implementation
+	 * @param schema a schema name, possibly null
+	 * @param table a table name
+	 * @return a Collection of unique constraints.
+	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */
 	public String getQualifiedNameForDDL(DatabaseMetaData metaData, String schema, String table) throws SQLException
 	{

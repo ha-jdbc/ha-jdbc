@@ -40,9 +40,7 @@ public interface Dialect
 	
 	/**
 	 * Returns a SQL statement to be executed within a running transaction that will effectively lock the specified table for writing.
-	 * @param metaData a cache of <code>DatabaseMetaData</code> for a given database.
-	 * @param schema the name of a database schema, or null, if this database does not support schemas.
-	 * @param table the name of a database table.
+	 * @param properties table meta data
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
@@ -50,9 +48,7 @@ public interface Dialect
 	
 	/**
 	 * Returns a SQL statement used to truncate a table.
-	 * @param metaData a cache of <code>DatabaseMetaData</code> for a given database.
-	 * @param schema the name of a database schema, or null, if this database does not support schemas.
-	 * @param table the name of a database table.
+	 * @param properties table meta data
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
@@ -60,14 +56,7 @@ public interface Dialect
 	
 	/**
 	 * Returns a SQL statement used to create a foreign key constraint.
-	 * @param metaData a cache of <code>DatabaseMetaData</code> for a given database.
-	 * @param name the name of a foreign key constraint
-	 * @param schema the name of a database schema, or null, if this database does not support schemas.
-	 * @param table the name of a database table.
-	 * @param column the name of a column in the table
-	 * @param foreignSchema the name of a database schema, or null, if this database does not support schemas.
-	 * @param foreignTable the name of a database table.
-	 * @param foreignColumn the name of a column in the foreign table
+	 * @param constraint foreign key constraint meta data
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
@@ -75,10 +64,7 @@ public interface Dialect
 
 	/**
 	 * Returns a SQL statement used to drop a foreign key constraint.
-	 * @param metaData a cache of <code>DatabaseMetaData</code> for a given database.
-	 * @param name the name of the foreign key constraint
-	 * @param schema the name of a database schema, or null, if this database does not support schemas.
-	 * @param table the name of a database table.
+	 * @param constraint foreign key constraint meta data
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
@@ -86,11 +72,7 @@ public interface Dialect
 
 	/**
 	 * Returns a SQL statement used to create a unique constraint.
-	 * @param metaData a cache of <code>DatabaseMetaData</code> for a given database.
-	 * @param name the name of a unique key constraint
-	 * @param schema the name of a database schema, or null, if this database does not support schemas.
-	 * @param table the name of a database table.
-	 * @param columnList a List<String> fo column names.
+	 * @param constraint unique constraint meta data
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
@@ -98,10 +80,7 @@ public interface Dialect
 
 	/**
 	 * Returns a SQL statement used to drop a unique constraint.
-	 * @param metaData a cache of <code>DatabaseMetaData</code> for a given database.
-	 * @param name the name of a unique key constraint
-	 * @param schema the name of a database schema, or null, if this database does not support schemas.
-	 * @param table the name of a database table.
+	 * @param constraint unique constraint meta data
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
@@ -109,11 +88,7 @@ public interface Dialect
 	
 	/**
 	 * Returns a SQL statement used to create a unique constraint.
-	 * @param metaData a cache of <code>DatabaseMetaData</code> for a given database.
-	 * @param name the name of a unique key constraint
-	 * @param schema the name of a database schema, or null, if this database does not support schemas.
-	 * @param table the name of a database table.
-	 * @param columnList a List<String> fo column names.
+	 * @param constraint unique constraint meta data
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
@@ -121,10 +96,7 @@ public interface Dialect
 
 	/**
 	 * Returns a SQL statement used to drop a unique constraint.
-	 * @param metaData a cache of <code>DatabaseMetaData</code> for a given database.
-	 * @param name the name of a unique key constraint
-	 * @param schema the name of a database schema, or null, if this database does not support schemas.
-	 * @param table the name of a database table.
+	 * @param constraint unique constraint meta data
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
@@ -132,19 +104,15 @@ public interface Dialect
 	
 	/**
 	 * Determines whether the specified SQL is a SELECT ... FOR UPDATE statement
-	 * @param metaData a cache of <code>DatabaseMetaData</code> for a given database.
 	 * @param sql a SQL statement
-	 * @return true if this is a SELECT ... FOR UPDATE statement, false if it is not or if SELECT...FOR UPDATE is not supported
+	 * @return true if this is a SELECT ... FOR UPDATE statement, false if it is not
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
 	public boolean isSelectForUpdate(String sql) throws SQLException;
 	
 	/**
 	 * Returns the data type of the specified column of the specified schema and table
-	 * @param metaData a cache of <code>DatabaseMetaData</code> for a given database.
-	 * @param schema a schema name
-	 * @param table a table name
-	 * @param column a column name
+	 * @param properties table column meta data
 	 * @return the JDBC data type of this column
 	 */
 	public int getColumnType(ColumnProperties properties) throws SQLException;
@@ -167,7 +135,19 @@ public interface Dialect
 	 */
 	public String parseSequence(String sql) throws SQLException;
 	
+	/**
+	 * Returns a map of all sequences in this database.
+	 * @param connection a database connection
+	 * @return a Map of sequence name to current value
+	 * @throws SQLException
+	 */
 	public Map<String, Long> getSequences(Connection connection) throws SQLException;
 	
+	/**
+	 * Returns a SQL statement used reset the current value of a sequence.
+	 * @param sequence a sequence name
+	 * @param value a sequence value
+	 * @return a SQL statement
+	 */
 	public String getAlterSequenceSQL(String sequence, long value);
 }

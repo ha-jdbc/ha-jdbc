@@ -417,7 +417,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getDatabaseMetaDataCache(java.sql.Connection)
+	 * @see net.sf.hajdbc.DatabaseCluster#getDatabaseMetaDataCache()
 	 */
 	public DatabaseMetaDataCache getDatabaseMetaDataCache()
 	{

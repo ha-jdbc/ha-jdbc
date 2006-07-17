@@ -46,7 +46,7 @@ public class PostgreSQLDialect extends DefaultDialect
 	 * Unlike traditional database systems which use locks for concurrency control, PostgreSQL maintains data consistency by using a multiversion model (Multiversion Concurrency Control, MVCC).
 	 * This means that while querying a database each transaction sees a snapshot of data (a database version) as it was some time ago, regardless of the current state of the underlying data.
 	 * This protects the transaction from viewing inconsistent data that could be caused by (other) concurrent transaction updates on the same data rows, providing transaction isolation for each database session.	 * 
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#getLockTableSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String)
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#getLockTableSQL(net.sf.hajdbc.TableProperties)
 	 */
 	@Override
 	public String getLockTableSQL(TableProperties properties) throws SQLException
@@ -55,8 +55,10 @@ public class PostgreSQLDialect extends DefaultDialect
 	}
 	
 	/**
-	 * PostgreSQL uses the native type OID for BLOBs.  However the driver maps OID to INTEGER.  OID columns should really be mapped to BLOB.
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#getColumnType(net.sf.hajdbc.DatabaseMetaDataCache, java.lang.String, java.lang.String, java.lang.String)
+	 * PostgreSQL uses the native type OID for BLOBs.
+	 * However the driver maps OID to INTEGER.
+	 * OID columns should really be mapped to BLOB.
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#getColumnType(net.sf.hajdbc.ColumnProperties)
 	 */
 	@Override
 	public int getColumnType(ColumnProperties properties)
@@ -65,7 +67,7 @@ public class PostgreSQLDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getSequences()
+	 * @see net.sf.hajdbc.Dialect#getSequences(java.sql.Connection)
 	 */
 	@Override
 	public Map<String, Long> getSequences(Connection connection) throws SQLException

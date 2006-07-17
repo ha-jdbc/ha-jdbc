@@ -47,7 +47,7 @@ public class LazyDatabaseMetaDataCache implements DatabaseMetaDataCache
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush()
+	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush(java.sql.Connection)
 	 */
 	public void flush(Connection connection) throws SQLException
 	{
@@ -57,7 +57,7 @@ public class LazyDatabaseMetaDataCache implements DatabaseMetaDataCache
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getDatabaseProperties()
+	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getDatabaseProperties(java.sql.Connection)
 	 */
 	public DatabaseProperties getDatabaseProperties(Connection connection)
 	{

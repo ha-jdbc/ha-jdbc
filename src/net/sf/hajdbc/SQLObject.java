@@ -261,7 +261,7 @@ public class SQLObject<E, P>
 	 * It is assumed that these types of operation will require access to the database.
 	 * @param <T> 
 	 * @param operation a database operation
-	 * @param lock a lock
+	 * @param lockList a list of locks
 	 * @return the result of the operation
 	 * @throws java.sql.SQLException if operation execution fails
 	 */

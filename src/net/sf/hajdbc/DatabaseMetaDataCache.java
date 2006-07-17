@@ -39,8 +39,8 @@ public interface DatabaseMetaDataCache
 	
 	/**
 	 * Retrieves processed meta data for this database.
-	 * @return
-	 * @throws SQLException
+	 * @return a DatabaseProperties implementation
+	 * @throws SQLException if database properties could not be fetched.
 	 */
 	public DatabaseProperties getDatabaseProperties(Connection connection) throws SQLException;
 }

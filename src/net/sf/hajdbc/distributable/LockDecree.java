@@ -64,15 +64,15 @@ public abstract class LockDecree implements Externalizable
 	
 	/**
 	 * Prepare phase of 2-phase vote
-	 * @param lockManager
-	 * @return
+	 * @param lockManager a lock manager
+	 * @return true if prepare phase was successful, false otherwise.
 	 */
 	public abstract boolean prepare(LockManager lockManager);
 	
 	/**
 	 * Commit phase of 2-phase vote
-	 * @param lockManager
-	 * @return
+	 * @param lockManager a lock manager
+	 * @return true if commit phase was successful, false otherwise.
 	 */
 	public abstract boolean commit(LockManager lockManager);
 	
