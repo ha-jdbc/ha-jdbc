@@ -39,6 +39,8 @@ import net.sf.hajdbc.util.Strings;
  */
 public class PostgreSQLDialect extends DefaultDialect
 {
+	public static final String[] SEQUENCES = new String[] { "SEQUENCE" };
+	
 	/**
 	 * Default implementation does not block INSERT statements.
 	 * Requires explicit exclusive mode table lock.
@@ -76,7 +78,7 @@ public class PostgreSQLDialect extends DefaultDialect
 		
 		String catalog = connection.getCatalog();
 		
-		ResultSet resultSet = connection.getMetaData().getTables((catalog != null) ? catalog : "", null, "%", new String[] { "SEQUENCE" });
+		ResultSet resultSet = connection.getMetaData().getTables((catalog != null) ? catalog : "", null, "%", SEQUENCES);
 		
 		while (resultSet.next())
 		{

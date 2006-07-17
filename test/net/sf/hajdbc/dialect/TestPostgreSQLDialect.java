@@ -39,7 +39,6 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
-@Test
 public class TestPostgreSQLDialect extends TestDefaultDialect
 {
 	private DatabaseMetaData metaData = this.control.createMock(DatabaseMetaData.class);
@@ -78,6 +77,7 @@ public class TestPostgreSQLDialect extends TestDefaultDialect
 	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getLockTableSQL(net.sf.hajdbc.TableProperties)
 	 */
 	@Override
+	@Test(dataProvider = "table")
 	public String getLockTableSQL(TableProperties properties) throws SQLException
 	{
 		EasyMock.expect(properties.getName()).andReturn("table");
@@ -100,23 +100,25 @@ public class TestPostgreSQLDialect extends TestDefaultDialect
 	@Test(dataProvider = "connection")
 	public Map<String, Long> getSequences(Connection connection) throws SQLException
 	{
-		EasyMock.expect(connection.getMetaData()).andReturn(this.metaData);
 		EasyMock.expect(connection.getCatalog()).andReturn(null);
-		EasyMock.expect(this.metaData.getTables("", null, "%", new String[] { "SEQUENCE" })).andReturn(this.resultSet);
+		EasyMock.expect(connection.getMetaData()).andReturn(this.metaData);
+		EasyMock.expect(this.metaData.getTables("", null, "%", PostgreSQLDialect.SEQUENCES)).andReturn(this.resultSet);
 		EasyMock.expect(this.resultSet.next()).andReturn(true);
 		EasyMock.expect(this.resultSet.getString("TABLE_SCHEM")).andReturn("schema");
 		EasyMock.expect(this.resultSet.getString("TABLE_NAME")).andReturn("sequence1");
 		EasyMock.expect(this.resultSet.next()).andReturn(true);
 		EasyMock.expect(this.resultSet.getString("TABLE_SCHEM")).andReturn("schema");
-		EasyMock.expect(this.resultSet.getString("TABLE_NAME")).andReturn("sequence1");
+		EasyMock.expect(this.resultSet.getString("TABLE_NAME")).andReturn("sequence2");
 		EasyMock.expect(this.resultSet.next()).andReturn(false);
 		
 		this.resultSet.close();
 		
-		EasyMock.expect(this.statement.executeQuery("SELECT CURRVAL('schema.sequence2'), CURRVAL('schema.sequence1')")).andReturn(this.resultSet);
+		EasyMock.expect(connection.createStatement()).andReturn(this.statement);
+		EasyMock.expect(this.statement.executeQuery("SELECT CURRVAL('schema.sequence1'), CURRVAL('schema.sequence2')")).andReturn(this.resultSet);
 		EasyMock.expect(this.resultSet.next()).andReturn(true);
-		EasyMock.expect(this.resultSet.getLong(1)).andReturn(2L);
-		EasyMock.expect(this.resultSet.getLong(2)).andReturn(1L);
+		EasyMock.expect(this.resultSet.getLong(1)).andReturn(1L);
+		EasyMock.expect(this.resultSet.getLong(2)).andReturn(2L);
+		EasyMock.expect(this.resultSet.getStatement()).andReturn(this.statement);
 		
 		this.statement.close();
 		
@@ -137,6 +139,7 @@ public class TestPostgreSQLDialect extends TestDefaultDialect
 	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getTruncateTableSQL(net.sf.hajdbc.TableProperties)
 	 */
 	@Override
+	@Test(dataProvider = "table")
 	public String getTruncateTableSQL(TableProperties properties) throws SQLException
 	{
 		EasyMock.expect(properties.getName()).andReturn("table");
