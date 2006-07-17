@@ -84,46 +84,25 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase implements Ob
 		
 		assert className.equals("net.sf.hajdbc.sql.DataSource") : className;
 		
-		try
-		{
-			this.factory.getObjectInstance(null, name, nameCtx, environment);
-			
-			assert false;
-		}
-		catch (Exception e)
-		{
-			assert true;
-		}
+		object = this.factory.getObjectInstance(null, name, nameCtx, environment);
 		
-		try
-		{
-			Reference reference = new Reference("net.sf.hajdbc.sql.Driver", new StringRefAddr(DataSource.DATABASE_CLUSTER, "test-datasource-cluster"));
-			
-			this.factory.getObjectInstance(reference, name, nameCtx, environment);
-			
-			assert false;
-		}
-		catch (Exception e)
-		{
-			assert true;
-		}
+		assert object == null;
 		
-		try
-		{
-			Reference reference = new Reference("net.sf.hajdbc.sql.DataSource");
+		Reference reference = new Reference("net.sf.hajdbc.sql.Driver", new StringRefAddr(DataSource.DATABASE_CLUSTER, "test-datasource-cluster"));
 			
-			this.factory.getObjectInstance(reference, name, nameCtx, environment);
+		object = this.factory.getObjectInstance(reference, name, nameCtx, environment);
+		
+		assert object == null;
+		
+		reference = new Reference("net.sf.hajdbc.sql.DataSource");
 			
-			assert false;
-		}
-		catch (Exception e)
-		{
-			assert true;
-		}
+		object = this.factory.getObjectInstance(reference, name, nameCtx, environment);
+		
+		assert object == null;
 
 		try
 		{
-			Reference reference = new Reference("net.sf.hajdbc.sql.DataSource", new StringRefAddr(DataSource.DATABASE_CLUSTER, "invalid-name"));
+			reference = new Reference("net.sf.hajdbc.sql.DataSource", new StringRefAddr(DataSource.DATABASE_CLUSTER, "invalid-name"));
 			
 			this.factory.getObjectInstance(reference, name, nameCtx, environment);
 			
