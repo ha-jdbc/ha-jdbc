@@ -454,7 +454,14 @@ public final class DatabaseClusterFactory
 			
 			while (databaseClusters.hasNext())
 			{
-				databaseClusters.next().stop();
+				try
+				{
+					databaseClusters.next().stop();
+				}
+				catch (Throwable e)
+				{
+					logger.warn(e.getMessage(), e);
+				}
 			}
 		}	
 	}
