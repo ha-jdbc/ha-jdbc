@@ -54,7 +54,7 @@ public abstract class AbstractTestDatabase<T extends Database, U> implements Dat
 	}
 	
 	@DataProvider(name = "database")
-	protected Object[][] databaseProvider()
+	Object[][] databaseProvider()
 	{
 		return new Object[][] { new Object[] { this.createDatabase("1") } };
 	}

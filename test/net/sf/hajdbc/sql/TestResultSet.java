@@ -21,10 +21,10 @@
 package net.sf.hajdbc.sql;
 
 import java.io.ByteArrayInputStream;
+import java.io.CharArrayReader;
 import java.io.File;
 import java.io.InputStream;
 import java.io.Reader;
-import java.io.StringReader;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -38,7 +38,6 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.sql.Types;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
@@ -57,14 +56,14 @@ import net.sf.hajdbc.Operation;
 import org.easymock.EasyMock;
 import org.easymock.IMocksControl;
 import org.testng.annotations.Configuration;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /***
  * @author  Paul Ferraro
  * @since   1.0
  */
-@Test
-public class TestResultSet
+public class TestResultSet implements java.sql.ResultSet
 {
 	private IMocksControl control = EasyMock.createStrictControl();
 	
@@ -86,11 +85,12 @@ public class TestResultSet
 	
 	private Lock lock = this.control.createMock(Lock.class);
 	
-	private Statement statement;
-	private ResultSet resultSet;
+	private Statement<java.sql.Statement> statement;
+	private ResultSet<java.sql.Statement> resultSet;
 	private List<Database> databaseList = Collections.singletonList(this.database);
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
 	
+	@SuppressWarnings("unchecked")
 	@Configuration(beforeTestClass = true)
 	protected void setUp() throws Exception
 	{
@@ -115,8 +115,6 @@ public class TestResultSet
 		this.lock.unlock();
 		
 		EasyMock.expect(this.databaseCluster.getTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		this.lock.lock();
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
@@ -128,7 +126,7 @@ public class TestResultSet
 		
 		Operation<Object, java.sql.Connection> operation = new Operation<Object, java.sql.Connection>()
 		{
-			public java.sql.Connection execute(Database database, Object sqlObject) throws SQLException
+			public java.sql.Connection execute(Database database, Object sqlObject)
 			{
 				return TestResultSet.this.sqlConnection;
 			}
@@ -138,23 +136,23 @@ public class TestResultSet
 		
 		Operation<java.sql.Connection, java.sql.Statement> connectionOperation = new Operation<java.sql.Connection, java.sql.Statement>()
 		{
-			public java.sql.Statement execute(Database database, java.sql.Connection connection) throws SQLException
+			public java.sql.Statement execute(Database database, java.sql.Connection connection)
 			{
 				return TestResultSet.this.sqlStatement;
 			}
 		};
 		
-		this.statement = new Statement(connection, connectionOperation);
+		this.statement = new Statement<java.sql.Statement>(connection, connectionOperation);
 		
 		Operation<java.sql.Statement, java.sql.ResultSet> statementOperation = new Operation<java.sql.Statement, java.sql.ResultSet>()
 		{
-			public java.sql.ResultSet execute(Database database, java.sql.Statement statement) throws SQLException
+			public java.sql.ResultSet execute(Database database, java.sql.Statement statement)
 			{
 				return TestResultSet.this.sqlResultSet;
 			}
 		};
 		
-		this.resultSet = new ResultSet(this.statement, statementOperation, this.lock);
+		this.resultSet = new ResultSet<java.sql.Statement>(this.statement, statementOperation, this.lock);
 		
 		this.control.verify();
 		this.control.reset();
@@ -165,250 +163,112 @@ public class TestResultSet
 	{
 		this.control.reset();
 	}
-	
-	/**
-	 * Test method for {@link SQLObject#getObject(Database)}
-	 */
-	public void testGetObject()
-	{
-		this.control.replay();
-		
-		Object resultSet = this.resultSet.getObject(this.database);
-		
-		this.control.verify();
-		
-		assert resultSet == this.sqlResultSet;
-	}
 
-	/**
-	 * Test method for {@link SQLObject#getDatabaseCluster()}
-	 */
-	public void testGetDatabaseCluster()
+	@DataProvider(name = "int")
+	Object[][] intProvider()
 	{
-		this.control.replay();
-		
-		DatabaseCluster databaseCluster = this.resultSet.getDatabaseCluster();
-		
-		this.control.verify();
-		
-		assert databaseCluster == this.databaseCluster;
-	}
-
-	/**
-	 * Test method for {@link SQLObject#handleExceptions(Map)}
-	 */
-	public void testHandleException()
-	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		
-		try
-		{
-			EasyMock.expect(this.sqlConnection.getAutoCommit()).andReturn(true);
-			
-			EasyMock.expect(this.databaseCluster.deactivate(this.database)).andReturn(false);
-			
-			this.control.replay();
-			
-			this.resultSet.handleExceptions(Collections.singletonMap(this.database, new SQLException()));
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link SQLObject#handleExceptions(Map)}
-	 */
-	public void testAutoCommitOffHandleException()
-	{
-		SQLException exception = new SQLException();
-		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		
-		try
-		{
-			EasyMock.expect(this.sqlConnection.getAutoCommit()).andReturn(false);
-			
-			this.databaseCluster.handleFailure(this.database, exception);
-			
-			this.control.replay();
-			
-			this.resultSet.handleExceptions(Collections.singletonMap(this.database, exception));
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		return new Object[][] { new Object[] { 1 } };
 	}
 	
 	/**
-	 * Test method for {@link ResultSet#absolute(int)}
+	 * @see java.sql.ResultSet#absolute(int)
 	 */
-	public void testAbsolute()
+	@Test(dataProvider = "int")
+	public boolean absolute(int row) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.absolute(10)).andReturn(true);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			boolean valid = this.resultSet.absolute(10);
-			
-			this.control.verify();
-			
-			assert valid;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		EasyMock.expect(this.sqlResultSet.absolute(row)).andReturn(true);
+		
+		this.control.replay();
+		
+		boolean valid = this.resultSet.absolute(row);
+		
+		this.control.verify();
+		
+		assert valid;
+		
+		return valid;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#afterLast()}
+	 * @see java.sql.ResultSet#afterLast()
 	 */
-	public void testAfterLast()
+	@Test
+	public void afterLast() throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.afterLast();
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.afterLast();
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.afterLast();
+		
+		this.control.replay();
+		
+		this.resultSet.afterLast();
+		
+		this.control.verify();
 	}
 
 	/**
-	 * Test method for {@link ResultSet#beforeFirst()}
+	 * @see java.sql.ResultSet#beforeFirst()
 	 */
-	public void testBeforeFirst()
+	@Test
+	public void beforeFirst() throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.beforeFirst();
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.beforeFirst();
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.beforeFirst();
+		
+		this.control.replay();
+		
+		this.resultSet.beforeFirst();
+		
+		this.control.verify();
 	}
 
 	/**
-	 * Test method for {@link ResultSet#cancelRowUpdates()}
+	 * @see java.sql.ResultSet#cancelRowUpdates()
 	 */
-	public void testCancelRowUpdates()
+	@Test
+	public void cancelRowUpdates() throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.cancelRowUpdates();
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.cancelRowUpdates();
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.cancelRowUpdates();
+		
+		this.control.replay();
+		
+		this.resultSet.cancelRowUpdates();
+		
+		this.control.verify();
 	}
 
 	/**
-	 * Test method for {@link ResultSet#clearWarnings()}
+	 * @see java.sql.ResultSet#clearWarnings()
 	 */
-	public void testClearWarnings()
+	@Test
+	public void clearWarnings() throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.clearWarnings();
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.clearWarnings();
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.clearWarnings();
+		
+		this.control.replay();
+		
+		this.resultSet.clearWarnings();
+		
+		this.control.verify();
 	}
 
 	/**
-	 * Test method for {@link ResultSet#close()}
+	 * @see java.sql.ResultSet#close()
 	 */
-	public void testClose()
+	@Test
+	public void close() throws SQLException
 	{
 		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
@@ -419,28 +279,22 @@ public class TestResultSet
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.close();
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.close();
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.close();
+		
+		this.lock.unlock();
+		
+		this.control.replay();
+		
+		this.resultSet.close();
+		
+		this.control.verify();
 	}
 
 	/**
-	 * Test method for {@link ResultSet#deleteRow()}
+	 * @see java.sql.ResultSet#deleteRow()
 	 */
-	public void testDeleteRow()
+	@Test
+	public void deleteRow() throws SQLException
 	{
 		EasyMock.expect(this.databaseCluster.getTransactionalExecutor()).andReturn(this.executor);
 		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
@@ -451,1876 +305,1712 @@ public class TestResultSet
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.deleteRow();
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.deleteRow();
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.deleteRow();
+		
+		this.lock.unlock();
+		
+		this.control.replay();
+		
+		this.resultSet.deleteRow();
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "string")
+	Object[][] stringProvider()
+	{
+		return new Object[][] { new Object[] { "" } };
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#findColumn(java.lang.String)
+	 */
+	@Test(dataProvider = "string")
+	public int findColumn(String name) throws SQLException
+	{
+		int index = 1;
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		
+		EasyMock.expect(this.sqlResultSet.findColumn(name)).andReturn(index);
+		
+		this.control.replay();
+		
+		int result = this.resultSet.findColumn(name);
+		
+		this.control.verify();
+		
+		assert result == index : result;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#findColumn(String)}
+	 * @see java.sql.ResultSet#first()
 	 */
-	public void testFindColumn()
+	@Test
+	public boolean first() throws SQLException
 	{
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.findColumn("test")).andReturn(1);
-			
-			this.control.replay();
-			
-			int column = this.resultSet.findColumn("test");
-			
-			this.control.verify();
-			
-			assert column == 1 : column;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link ResultSet#first()}
-	 */
-	public void testFirst()
-	{
+		EasyMock.expect(this.sqlResultSet.getType()).andReturn(java.sql.ResultSet.TYPE_FORWARD_ONLY);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		EasyMock.expect(this.sqlResultSet.first()).andReturn(true);
+		
+		this.control.replay();
+		
+		boolean result = this.resultSet.first();
+		
+		this.control.verify();
+		
+		assert result;
+		
+		this.control.reset();
+		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getType()).andReturn(ResultSet.TYPE_FORWARD_ONLY);
-			
-			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.sqlResultSet.getType()).andReturn(java.sql.ResultSet.TYPE_SCROLL_SENSITIVE);
+		
+		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
 		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-			
-			this.lock.lock();
-			
-			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
-			
-			EasyMock.expect(this.sqlResultSet.first()).andReturn(true);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			boolean valid = this.resultSet.first();
-			
-			this.control.verify();
-			
-			assert valid;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		
+		this.lock.lock();
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		EasyMock.expect(this.sqlResultSet.first()).andReturn(true);
+		
+		this.lock.unlock();
+		
+		this.control.replay();
+		
+		result = this.resultSet.first();
+		
+		this.control.verify();
+		
+		assert result;
+				
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getArray(int)}
+	 * @see java.sql.ResultSet#getArray(int)
 	 */
-	public void testGetArrayInt()
+	@Test(dataProvider = "int")
+	public Array getArray(int index) throws SQLException
 	{
 		Array array = EasyMock.createMock(Array.class);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getArray(1)).andReturn(array);
-			
-			this.control.replay();
-			
-			Array value = this.resultSet.getArray(1);
-			
-			this.control.verify();
-			
-			assert value == array;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
 
+		EasyMock.expect(this.sqlResultSet.getArray(index)).andReturn(array);
+		
+		this.control.replay();
+		
+		Array result = this.resultSet.getArray(index);
+		
+		this.control.verify();
+		
+		assert array == result;
+		
+		return result;
+	}
+	
 	/**
-	 * Test method for {@link ResultSet#getArray(String)}
+	 * @see java.sql.ResultSet#getArray(java.lang.String)
 	 */
-	public void testGetArrayString()
+	@Test(dataProvider = "string")
+	public Array getArray(String name) throws SQLException
 	{
 		Array array = EasyMock.createMock(Array.class);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getArray(name)).andReturn(array);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getArray("column")).andReturn(array);
-			
-			this.control.replay();
-			
-			Array value = this.resultSet.getArray("column");
-			
-			this.control.verify();
-			
-			assert value == array;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		Array result = this.resultSet.getArray(name);
+		
+		this.control.verify();
+		
+		assert array == result;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getAsciiStream(int)}
+	 * @see java.sql.ResultSet#getAsciiStream(int)
 	 */
-	public void testGetAsciiStreamInt()
+	@Test(dataProvider = "int")
+	public InputStream getAsciiStream(int index) throws SQLException
 	{
 		InputStream inputStream = new ByteArrayInputStream(new byte[0]);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getAsciiStream(index)).andReturn(inputStream);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getAsciiStream(1)).andReturn(inputStream);
-			
-			this.control.replay();
-			
-			InputStream value = this.resultSet.getAsciiStream(1);
-			
-			this.control.verify();
-			
-			assert value == inputStream;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		InputStream result = this.resultSet.getAsciiStream(index);
+		
+		this.control.verify();
+		
+		assert inputStream == result;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getAsciiStream(String)}
+	 * @see java.sql.ResultSet#getAsciiStream(java.lang.String)
 	 */
-	public void testGetAsciiStreamString()
+	@Test(dataProvider = "string")
+	public InputStream getAsciiStream(String name) throws SQLException
 	{
 		InputStream inputStream = new ByteArrayInputStream(new byte[0]);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getAsciiStream(name)).andReturn(inputStream);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getAsciiStream("column")).andReturn(inputStream);
-			
-			this.control.replay();
-			
-			InputStream value = this.resultSet.getAsciiStream("column");
-			
-			this.control.verify();
-			
-			assert value == inputStream;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		InputStream result = this.resultSet.getAsciiStream(name);
+		
+		this.control.verify();
+		
+		assert inputStream == result;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getBigDecimal(int)}
+	 * @see java.sql.ResultSet#getBigDecimal(int)
 	 */
-	public void testGetBigDecimalInt()
+	@Test(dataProvider = "int")
+	public BigDecimal getBigDecimal(int index) throws SQLException
 	{
 		BigDecimal decimal = new BigDecimal(1.0);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getBigDecimal(1)).andReturn(decimal);
-			
-			this.control.replay();
-			
-			BigDecimal value = this.resultSet.getBigDecimal(1);
-			
-			this.control.verify();
-			
-			assert value == decimal;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
 
-	/***
-	 * Test method for {@link ResultSet#getBigDecimal(int, int)}
-	 * @deprecated
-	 */
-	public void testGetBigDecimalIntInt()
-	{
-		BigDecimal decimal = new BigDecimal(1.0);
+		EasyMock.expect(this.sqlResultSet.getBigDecimal(index)).andReturn(decimal);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		this.control.replay();
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getBigDecimal(1, 0)).andReturn(decimal);
-			
-			this.control.replay();
-			
-			BigDecimal value = this.resultSet.getBigDecimal(1, 0);
-			
-			this.control.verify();
-			
-			assert value == decimal;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		BigDecimal result = this.resultSet.getBigDecimal(index);
+		
+		this.control.verify();
+		
+		assert decimal == result;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getBigDecimal(String)}
+	 * @see java.sql.ResultSet#getBigDecimal(java.lang.String)
 	 */
-	public void testGetBigDecimalString()
+	@Test(dataProvider = "string")
+	public BigDecimal getBigDecimal(String name) throws SQLException
 	{
 		BigDecimal decimal = new BigDecimal(1.0);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getBigDecimal(name)).andReturn(decimal);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getBigDecimal("column")).andReturn(decimal);
-			
-			this.control.replay();
-			
-			BigDecimal value = this.resultSet.getBigDecimal("column");
-			
-			this.control.verify();
-			
-			assert value == decimal;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		BigDecimal result = this.resultSet.getBigDecimal(name);
+		
+		this.control.verify();
+		
+		assert decimal == result;
+		
+		return result;
 	}
 
-	/***
-	 * Test method for {@link ResultSet#getBigDecimal(String, int)}
-	 * @deprecated
+	@DataProvider(name = "int-int")
+	Object[][] intIntProvider()
+	{
+		return new Object[][] { new Object[] { 1, 1 } };
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getBigDecimal(int, int)
 	 */
-	public void testGetBigDecimalStringInt()
+	@Test(dataProvider = "int-int")
+	@Deprecated
+	public BigDecimal getBigDecimal(int index, int scale) throws SQLException
 	{
 		BigDecimal decimal = new BigDecimal(1.0);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getBigDecimal(index, scale)).andReturn(decimal);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getBigDecimal("column", 0)).andReturn(decimal);
-			
-			this.control.replay();
-			
-			BigDecimal value = this.resultSet.getBigDecimal("column", 0);
-			
-			this.control.verify();
-			
-			assert value == decimal;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		BigDecimal result = this.resultSet.getBigDecimal(index, scale);
+		
+		this.control.verify();
+		
+		assert decimal == result;
+		
+		return result;
+	}
+
+	@DataProvider(name = "string-int")
+	Object[][] stringIntProvider()
+	{
+		return new Object[][] { new Object[] { "", 1 } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getBinaryStream(int)}
+	 * @see java.sql.ResultSet#getBigDecimal(java.lang.String, int)
 	 */
-	public void testGetBinaryStreamInt()
+	@Test(dataProvider = "string-int")
+	@Deprecated
+	public BigDecimal getBigDecimal(String name, int scale) throws SQLException
+	{
+		BigDecimal decimal = new BigDecimal(1.0);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getBigDecimal(name, scale)).andReturn(decimal);
+		
+		this.control.replay();
+		
+		BigDecimal result = this.resultSet.getBigDecimal(name, scale);
+		
+		this.control.verify();
+		
+		assert decimal == result;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.ResultSet#getBinaryStream(int)
+	 */
+	@Test(dataProvider = "int")
+	public InputStream getBinaryStream(int index) throws SQLException
 	{
 		InputStream inputStream = new ByteArrayInputStream(new byte[0]);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getBinaryStream(index)).andReturn(inputStream);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getBinaryStream(1)).andReturn(inputStream);
-			
-			this.control.replay();
-			
-			InputStream value = this.resultSet.getBinaryStream(1);
-			
-			this.control.verify();
-			
-			assert value == inputStream;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		InputStream result = this.resultSet.getBinaryStream(index);
+		
+		this.control.verify();
+		
+		assert inputStream == result;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getBinaryStream(String)}
+	 * @see java.sql.ResultSet#getBinaryStream(java.lang.String)
 	 */
-	public void testGetBinaryStreamString()
+	@Test(dataProvider = "string")
+	public InputStream getBinaryStream(String name) throws SQLException
 	{
 		InputStream inputStream = new ByteArrayInputStream(new byte[0]);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getBinaryStream(name)).andReturn(inputStream);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getBinaryStream("column")).andReturn(inputStream);
-			
-			this.control.replay();
-			
-			InputStream value = this.resultSet.getBinaryStream("column");
-			
-			this.control.verify();
-			
-			assert value == inputStream;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		InputStream result = this.resultSet.getBinaryStream(name);
+		
+		this.control.verify();
+		
+		assert inputStream == result;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getBlob(int)}
+	 * @see java.sql.ResultSet#getBlob(int)
 	 */
-	public void testGetBlobInt()
+	@Test(dataProvider = "int")
+	public Blob getBlob(int index) throws SQLException
 	{
 		Blob blob = EasyMock.createMock(Blob.class);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getBlob(index)).andReturn(blob);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getBlob(1)).andReturn(blob);
-			
-			this.control.replay();
-			
-			Blob value = this.resultSet.getBlob(1);
-			
-			this.control.verify();
-			
-			assert value == blob;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		Blob result = this.resultSet.getBlob(index);
+		
+		this.control.verify();
+		
+		assert blob == result;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getBlob(String)}
+	 * @see java.sql.ResultSet#getBlob(java.lang.String)
 	 */
-	public void testGetBlobString()
+	@Test(dataProvider = "string")
+	public Blob getBlob(String name) throws SQLException
 	{
 		Blob blob = EasyMock.createMock(Blob.class);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getBlob(name)).andReturn(blob);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getBlob("column")).andReturn(blob);
-			
-			this.control.replay();
-			
-			Blob value = this.resultSet.getBlob("column");
-			
-			this.control.verify();
-			
-			assert value == blob;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		Blob result = this.resultSet.getBlob(name);
+		
+		this.control.verify();
+		
+		assert blob == result;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getBoolean(int)}
+	 * @see java.sql.ResultSet#getBoolean(int)
 	 */
-	public void testGetBooleanInt()
+	@Test(dataProvider = "int")
+	public boolean getBoolean(int index) throws SQLException
 	{
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getBoolean(index)).andReturn(true);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getBoolean(1)).andReturn(true);
-			
-			this.control.replay();
-			
-			boolean value = this.resultSet.getBoolean(1);
-			
-			this.control.verify();
-			
-			assert value;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		boolean result = this.resultSet.getBoolean(index);
+		
+		this.control.verify();
+		
+		assert result;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getBoolean(String)}
+	 * @see java.sql.ResultSet#getBoolean(java.lang.String)
 	 */
-	public void testGetBooleanString()
+	@Test(dataProvider = "string")
+	public boolean getBoolean(String name) throws SQLException
 	{
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getBoolean(name)).andReturn(true);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getBoolean("column")).andReturn(true);
-			
-			this.control.replay();
-			
-			boolean value = this.resultSet.getBoolean("column");
-			
-			this.control.verify();
-			
-			assert value;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		boolean result = this.resultSet.getBoolean(name);
+		
+		this.control.verify();
+		
+		assert result;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getByte(int)}
+	 * @see java.sql.ResultSet#getByte(int)
 	 */
-	public void testGetByteInt()
+	@Test(dataProvider = "int")
+	public byte getByte(int index) throws SQLException
 	{
-		byte b = 1;
+		byte b = Integer.valueOf(1).byteValue();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getByte(index)).andReturn(b);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getByte(1)).andReturn(b);
-			
-			this.control.replay();
-			
-			byte value = this.resultSet.getByte(1);
-			
-			this.control.verify();
-			
-			assert value == b;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		byte result = this.resultSet.getByte(index);
+		
+		this.control.verify();
+		
+		assert b == result;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getByte(String)}
+	 * @see java.sql.ResultSet#getByte(java.lang.String)
 	 */
-	public void testGetByteString()
+	@Test(dataProvider = "string")
+	public byte getByte(String name) throws SQLException
 	{
-		byte b = 1;
+		byte b = Integer.valueOf(1).byteValue();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getByte(name)).andReturn(b);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getByte("column")).andReturn(b);
-			
-			this.control.replay();
-			
-			byte value = this.resultSet.getByte("column");
-			
-			this.control.verify();
-			
-			assert value == b;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		byte result = this.resultSet.getByte(name);
+		
+		this.control.verify();
+		
+		assert b == result;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getBytes(int)}
+	 * @see java.sql.ResultSet#getBytes(int)
 	 */
-	public void testGetBytesInt()
+	@Test(dataProvider = "int")
+	public byte[] getBytes(int index) throws SQLException
 	{
-		byte[] bytes = new byte[] { 1 };
+		byte[] bytes = new byte[0];
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getBytes(index)).andReturn(bytes);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getBytes(1)).andReturn(bytes);
-			
-			this.control.replay();
-			
-			byte[] value = this.resultSet.getBytes(1);
-			
-			this.control.verify();
-			
-			assert value == bytes;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		byte[] result = this.resultSet.getBytes(index);
+		
+		this.control.verify();
+		
+		assert bytes == result;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getBytes(String)}
+	 * @see java.sql.ResultSet#getBytes(java.lang.String)
 	 */
-	public void testGetBytesString()
+	@Test(dataProvider = "string")
+	public byte[] getBytes(String name) throws SQLException
 	{
-		byte[] bytes = new byte[] { 1 };
+		byte[] bytes = new byte[0];
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getBytes(name)).andReturn(bytes);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getBytes("column")).andReturn(bytes);
-			
-			this.control.replay();
-			
-			byte[] value = this.resultSet.getBytes("column");
-			
-			this.control.verify();
-			
-			assert value == bytes;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		byte[] result = this.resultSet.getBytes(name);
+		
+		this.control.verify();
+		
+		assert bytes == result;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getCharacterStream(int)}
+	 * @see java.sql.ResultSet#getCharacterStream(int)
 	 */
-	public void testGetCharacterStreamInt()
+	@Test(dataProvider = "int")
+	public Reader getCharacterStream(int index) throws SQLException
 	{
-		Reader reader = new StringReader("");
+		Reader reader = new CharArrayReader(new char[0]);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getCharacterStream(index)).andReturn(reader);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getCharacterStream(1)).andReturn(reader);
-			
-			this.control.replay();
-			
-			Reader value = this.resultSet.getCharacterStream(1);
-			
-			this.control.verify();
-			
-			assert value == reader;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		Reader result = this.resultSet.getCharacterStream(index);
+		
+		this.control.verify();
+		
+		assert result == reader;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getCharacterStream(String)}
+	 * @see java.sql.ResultSet#getCharacterStream(java.lang.String)
 	 */
-	public void testGetCharacterStreamString()
+	@Test(dataProvider = "string")
+	public Reader getCharacterStream(String name) throws SQLException
 	{
-		Reader reader = new StringReader("");
+		Reader reader = new CharArrayReader(new char[0]);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getCharacterStream(name)).andReturn(reader);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getCharacterStream("column")).andReturn(reader);
-			
-			this.control.replay();
-			
-			Reader value = this.resultSet.getCharacterStream("column");
-			
-			this.control.verify();
-			
-			assert value == reader;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		Reader result = this.resultSet.getCharacterStream(name);
+		
+		this.control.verify();
+		
+		assert result == reader;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getClob(int)}
+	 * @see java.sql.ResultSet#getClob(int)
 	 */
-	public void testGetClobInt()
+	@Test(dataProvider = "int")
+	public Clob getClob(int index) throws SQLException
 	{
 		Clob clob = EasyMock.createMock(Clob.class);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getClob(index)).andReturn(clob);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getClob(1)).andReturn(clob);
-			
-			this.control.replay();
-			
-			Clob value = this.resultSet.getClob(1);
-			
-			this.control.verify();
-			
-			assert value == clob;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		Clob result = this.resultSet.getClob(index);
+		
+		this.control.verify();
+		
+		assert result == clob;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getClob(String)}
+	 * @see java.sql.ResultSet#getClob(java.lang.String)
 	 */
-	public void testGetClobString()
+	@Test(dataProvider = "string")
+	public Clob getClob(String name) throws SQLException
 	{
 		Clob clob = EasyMock.createMock(Clob.class);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getClob(name)).andReturn(clob);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getClob("column")).andReturn(clob);
-			
-			this.control.replay();
-			
-			Clob value = this.resultSet.getClob("column");
-			
-			this.control.verify();
-			
-			assert value == clob;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		Clob result = this.resultSet.getClob(name);
+		
+		this.control.verify();
+		
+		assert result == clob;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getConcurrency()}
+	 * @see java.sql.ResultSet#getConcurrency()
 	 */
-	public void testGetConcurrency()
+	@Test
+	public int getConcurrency() throws SQLException
 	{
+		int concurrency = java.sql.ResultSet.CONCUR_READ_ONLY;
+		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getConcurrency()).andReturn(concurrency);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getConcurrency()).andReturn(ResultSet.CONCUR_UPDATABLE);
-			
-			this.control.replay();
-			
-			int concurrency = this.resultSet.getConcurrency();
-			
-			this.control.verify();
-			
-			assert concurrency == ResultSet.CONCUR_UPDATABLE : concurrency;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		int result = this.resultSet.getConcurrency();
+		
+		this.control.verify();
+		
+		assert result == concurrency;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getCursorName()}
+	 * @see java.sql.ResultSet#getCursorName()
 	 */
-	public void testGetCursorName()
+	@Test
+	public String getCursorName() throws SQLException
 	{
+		String cursor = "cursor";
+		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getCursorName()).andReturn(cursor);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getCursorName()).andReturn("test");
-			
-			this.control.replay();
-			
-			String cursor = this.resultSet.getCursorName();
-			
-			this.control.verify();
-			
-			assert cursor == "test";
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		String result = this.resultSet.getCursorName();
+		
+		this.control.verify();
+		
+		assert result == cursor;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getDate(int)}
+	 * @see java.sql.ResultSet#getDate(int)
 	 */
-	public void testGetDateInt()
+	@Test(dataProvider = "int")
+	public Date getDate(int index) throws SQLException
 	{
 		Date date = new Date(System.currentTimeMillis());
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getDate(index)).andReturn(date);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getDate(1)).andReturn(date);
-			
-			this.control.replay();
-			
-			Date value = this.resultSet.getDate(1);
-			
-			this.control.verify();
-			
-			assert value == date;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		Date result = this.resultSet.getDate(index);
+		
+		this.control.verify();
+		
+		assert result == date;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getDate(int, Calendar)}
+	 * @see java.sql.ResultSet#getDate(java.lang.String)
 	 */
-	public void testGetDateIntCalendar()
-	{
-		Date date = new Date(System.currentTimeMillis());
-		Calendar calendar = Calendar.getInstance();
-		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getDate(1, calendar)).andReturn(date);
-			
-			this.control.replay();
-			
-			Date value = this.resultSet.getDate(1, calendar);
-			
-			this.control.verify();
-			
-			assert value == date;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link ResultSet#getDate(String)}
-	 */
-	public void testGetDateString()
+	@Test(dataProvider = "string")
+	public Date getDate(String name) throws SQLException
 	{
 		Date date = new Date(System.currentTimeMillis());
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getDate(name)).andReturn(date);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getDate("column")).andReturn(date);
-			
-			this.control.replay();
-			
-			Date value = this.resultSet.getDate("column");
-			
-			this.control.verify();
-			
-			assert value == date;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		Date result = this.resultSet.getDate(name);
+		
+		this.control.verify();
+		
+		assert result == date;
+		
+		return result;
 	}
 
+	@DataProvider(name = "int-calendar")
+	Object[][] intCalendarProvider()
+	{
+		return new Object[][] { new Object[] { 1, Calendar.getInstance() } };
+	}
+	
 	/**
-	 * Test method for {@link ResultSet#getDate(String, Calendar)}
+	 * @see java.sql.ResultSet#getDate(int, java.util.Calendar)
 	 */
-	public void testGetDateStringCalendar()
+	@Test(dataProvider = "int-calendar")
+	public Date getDate(int index, Calendar calendar) throws SQLException
 	{
 		Date date = new Date(System.currentTimeMillis());
-		Calendar calendar = Calendar.getInstance();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getDate(index, calendar)).andReturn(date);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getDate("column", calendar)).andReturn(date);
-			
-			this.control.replay();
-			
-			Date value = this.resultSet.getDate("column", calendar);
-			
-			this.control.verify();
-			
-			assert value == date;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		Date result = this.resultSet.getDate(index, calendar);
+		
+		this.control.verify();
+		
+		assert result == date;
+		
+		return result;
 	}
 
-	/**
-	 * Test method for {@link ResultSet#getDouble(int)}
-	 */
-	public void testGetDoubleInt()
+	@DataProvider(name = "string-calendar")
+	Object[][] stringCalendarProvider()
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getDouble(1)).andReturn(1.0);
-			
-			this.control.replay();
-			
-			double value = this.resultSet.getDouble(1);
-			
-			this.control.verify();
-			
-			assert value == 1.0;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		return new Object[][] { new Object[] { "", Calendar.getInstance() } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getDouble(String)}
+	 * @see java.sql.ResultSet#getDate(java.lang.String, java.util.Calendar)
 	 */
-	public void testGetDoubleString()
+	@Test(dataProvider = "string-calendar")
+	public Date getDate(String name, Calendar calendar) throws SQLException
 	{
+		Date date = new Date(System.currentTimeMillis());
+		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getDate(name, calendar)).andReturn(date);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getDouble("column")).andReturn(1.0);
-			
-			this.control.replay();
-			
-			double value = this.resultSet.getDouble("column");
-			
-			this.control.verify();
-			
-			assert value == 1.0;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		Date result = this.resultSet.getDate(name, calendar);
+		
+		this.control.verify();
+		
+		assert result == date;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getFetchDirection()}
+	 * @see java.sql.ResultSet#getDouble(int)
 	 */
-	public void testGetFetchDirection()
+	@Test(dataProvider = "int")
+	public double getDouble(int index) throws SQLException
 	{
+		double d = 1.0;
+		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getDouble(index)).andReturn(d);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getFetchDirection()).andReturn(ResultSet.FETCH_REVERSE);
-			
-			this.control.replay();
-			
-			int direction = this.resultSet.getFetchDirection();
-			
-			this.control.verify();
-			
-			assert direction == ResultSet.FETCH_REVERSE : direction;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		double result = this.resultSet.getDouble(index);
+		
+		this.control.verify();
+		
+		assert result == d;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getFetchSize()}
+	 * @see java.sql.ResultSet#getDouble(java.lang.String)
 	 */
-	public void testGetFetchSize()
+	@Test(dataProvider = "string")
+	public double getDouble(String name) throws SQLException
 	{
+		double d = 1.0;
+		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getDouble(name)).andReturn(d);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getFetchSize()).andReturn(100);
-			
-			this.control.replay();
-			
-			int size = this.resultSet.getFetchSize();
-			
-			this.control.verify();
-			
-			assert size == 100 : size;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		double result = this.resultSet.getDouble(name);
+		
+		this.control.verify();
+		
+		assert result == d;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getFloat(int)}
+	 * @see java.sql.ResultSet#getFetchDirection()
 	 */
-	public void testGetFloatInt()
+	@Test
+	public int getFetchDirection() throws SQLException
 	{
+		int direction = java.sql.ResultSet.FETCH_FORWARD;
+		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getFetchDirection()).andReturn(direction);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getFloat(1)).andReturn(1.0f);
-			
-			this.control.replay();
-			
-			float value = this.resultSet.getFloat(1);
-			
-			this.control.verify();
-			
-			assert value == 1.0f;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		int result = this.resultSet.getFetchDirection();
+		
+		this.control.verify();
+		
+		assert result == direction;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getFloat(String)}
+	 * @see java.sql.ResultSet#getFetchSize()
 	 */
-	public void testGetFloatString()
+	@Test
+	public int getFetchSize() throws SQLException
 	{
+		int size = 10;
+		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getFetchSize()).andReturn(size);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getFloat("column")).andReturn(1.0f);
-			
-			this.control.replay();
-			
-			float value = this.resultSet.getFloat("column");
-			
-			this.control.verify();
-			
-			assert value == 1.0f;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		int result = this.resultSet.getFetchSize();
+		
+		this.control.verify();
+		
+		assert result == size;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getInt(int)}
+	 * @see java.sql.ResultSet#getFloat(int)
 	 */
-	public void testGetIntInt()
+	@Test(dataProvider = "int")
+	public float getFloat(int index) throws SQLException
 	{
+		float f = 1.0F;
+		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getFloat(index)).andReturn(f);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getInt(1)).andReturn(1);
-			
-			this.control.replay();
-			
-			int value = this.resultSet.getInt(1);
-			
-			this.control.verify();
-			
-			assert value == 1;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		float result = this.resultSet.getFloat(index);
+		
+		this.control.verify();
+		
+		assert result == f;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getInt(String)}
+	 * @see java.sql.ResultSet#getFloat(java.lang.String)
 	 */
-	public void testGetIntString()
+	@Test(dataProvider = "string")
+	public float getFloat(String name) throws SQLException
 	{
+		float f = 1.0F;
+		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getFloat(name)).andReturn(f);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getInt("column")).andReturn(1);
-			
-			this.control.replay();
-			
-			int value = this.resultSet.getInt("column");
-			
-			this.control.verify();
-			
-			assert value == 1;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		float result = this.resultSet.getFloat(name);
+		
+		this.control.verify();
+		
+		assert result == f;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getLong(int)}
+	 * @see java.sql.ResultSet#getInt(int)
 	 */
-	public void testGetLongInt()
+	@Test(dataProvider = "int")
+	public int getInt(int index) throws SQLException
 	{
+		int i = 1;
+		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getInt(index)).andReturn(i);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getLong(1)).andReturn(100L);
-			
-			this.control.replay();
-			
-			long value = this.resultSet.getLong(1);
-			
-			this.control.verify();
-			
-			assert value == 100L;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		int result = this.resultSet.getInt(index);
+		
+		this.control.verify();
+		
+		assert result == i;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getLong(String)}
+	 * @see java.sql.ResultSet#getInt(java.lang.String)
 	 */
-	public void testGetLongString()
+	@Test(dataProvider = "string")
+	public int getInt(String name) throws SQLException
 	{
+		int i = 1;
+		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getInt(name)).andReturn(i);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getLong("column")).andReturn(100L);
-			
-			this.control.replay();
-			
-			long value = this.resultSet.getLong("column");
-			
-			this.control.verify();
-			
-			assert value == 100L;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		int result = this.resultSet.getInt(name);
+		
+		this.control.verify();
+		
+		assert result == i;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getMetaData()}
+	 * @see java.sql.ResultSet#getLong(int)
 	 */
-	public void testGetMetaData()
+	@Test(dataProvider = "int")
+	public long getLong(int index) throws SQLException
 	{
-		ResultSetMetaData resultSetMetaData = EasyMock.createMock(ResultSetMetaData.class);
+		long l = 1;
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getLong(index)).andReturn(l);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getMetaData()).andReturn(resultSetMetaData);
-			
-			this.control.replay();
-			
-			ResultSetMetaData metaData = this.resultSet.getMetaData();
-			
-			this.control.verify();
-			
-			assert metaData == resultSetMetaData;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		long result = this.resultSet.getLong(index);
+		
+		this.control.verify();
+		
+		assert result == l;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getObject(int)}
+	 * @see java.sql.ResultSet#getLong(java.lang.String)
 	 */
-	public void testGetObjectInt()
+	@Test(dataProvider = "string")
+	public long getLong(String name) throws SQLException
+	{
+		long l = 1;
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getLong(name)).andReturn(l);
+		
+		this.control.replay();
+		
+		long result = this.resultSet.getLong(name);
+		
+		this.control.verify();
+		
+		assert result == l;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.ResultSet#getMetaData()
+	 */
+	@Test
+	public ResultSetMetaData getMetaData() throws SQLException
+	{
+		ResultSetMetaData metaData = EasyMock.createMock(ResultSetMetaData.class);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getMetaData()).andReturn(metaData);
+		
+		this.control.replay();
+		
+		ResultSetMetaData result = this.resultSet.getMetaData();
+		
+		this.control.verify();
+		
+		assert result == metaData;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.ResultSet#getObject(int)
+	 */
+	@Test(dataProvider = "int")
+	public Object getObject(int index) throws SQLException
+	{
+		Object object = new Object();
+				
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getObject(index)).andReturn(object);
+		
+		this.control.replay();
+		
+		Object result = this.resultSet.getObject(index);
+		
+		this.control.verify();
+		
+		assert result == object;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.ResultSet#getObject(java.lang.String)
+	 */
+	@Test(dataProvider = "string")
+	public Object getObject(String name) throws SQLException
 	{
 		Object object = new Object();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getObject(name)).andReturn(object);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getObject(1)).andReturn(object);
-			
-			this.control.replay();
-			
-			Object value = this.resultSet.getObject(1);
-			
-			this.control.verify();
-			
-			assert value == object;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		Object result = this.resultSet.getObject(name);
+		
+		this.control.verify();
+		
+		assert result == object;
+		
+		return result;
 	}
 
+	@DataProvider(name = "int-map")
+	Object[][] intMapProvider()
+	{
+		return new Object[][] { new Object[] { 1, Collections.EMPTY_MAP } };
+	}
+	
 	/**
-	 * Test method for {@link ResultSet#getObject(int, Map)}
+	 * @see java.sql.ResultSet#getObject(int, java.util.Map)
 	 */
-	public void testGetObjectIntMap()
+	@Test(dataProvider = "int-map")
+	public Object getObject(int index, Map<String, Class<?>> map) throws SQLException
 	{
 		Object object = new Object();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getObject(index, map)).andReturn(object);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getObject(1, Collections.EMPTY_MAP)).andReturn(object);
-			
-			this.control.replay();
-			
-			Object value = this.resultSet.getObject(1, Collections.EMPTY_MAP);
-			
-			this.control.verify();
-			
-			assert value == object;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		Object result = this.resultSet.getObject(index, map);
+		
+		this.control.verify();
+		
+		assert result == object;
+		
+		return result;
+	}
+
+	@DataProvider(name = "string-map")
+	Object[][] stringMapProvider()
+	{
+		return new Object[][] { new Object[] { "", Collections.EMPTY_MAP } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getObject(String)}
+	 * @see java.sql.ResultSet#getObject(java.lang.String, java.util.Map)
 	 */
-	public void testGetObjectString()
+	@Test(dataProvider = "string-map")
+	public Object getObject(String name, Map<String, Class<?>> map) throws SQLException
 	{
 		Object object = new Object();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getObject(name, map)).andReturn(object);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getObject("column")).andReturn(object);
-			
-			this.control.replay();
-			
-			Object value = this.resultSet.getObject("column");
-			
-			this.control.verify();
-			
-			assert value == object;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		Object result = this.resultSet.getObject(name, map);
+		
+		this.control.verify();
+		
+		assert result == object;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getObject(String, Map)}
+	 * @see java.sql.ResultSet#getRef(int)
 	 */
-	public void testGetObjectStringMap()
-	{
-		Object object = new Object();
-		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getObject("column", Collections.EMPTY_MAP)).andReturn(object);
-			
-			this.control.replay();
-			
-			Object value = this.resultSet.getObject("column", Collections.EMPTY_MAP);
-			
-			this.control.verify();
-			
-			assert value == object;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link ResultSet#getRef(int)}
-	 */
-	public void testGetRefInt()
+	@Test(dataProvider = "int")
+	public Ref getRef(int index) throws SQLException
 	{
 		Ref ref = EasyMock.createMock(Ref.class);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getRef(index)).andReturn(ref);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getRef(1)).andReturn(ref);
-			
-			this.control.replay();
-			
-			Ref value = this.resultSet.getRef(1);
-			
-			this.control.verify();
-			
-			assert value == ref;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		Ref result = this.resultSet.getRef(index);
+		
+		this.control.verify();
+		
+		assert result == ref;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getRef(String)}
+	 * @see java.sql.ResultSet#getRef(java.lang.String)
 	 */
-	public void testGetRefString()
+	@Test(dataProvider = "string")
+	public Ref getRef(String name) throws SQLException
 	{
 		Ref ref = EasyMock.createMock(Ref.class);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getRef(name)).andReturn(ref);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getRef("column")).andReturn(ref);
-			
-			this.control.replay();
-			
-			Ref value = this.resultSet.getRef("column");
-			
-			this.control.verify();
-			
-			assert value == ref;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		Ref result = this.resultSet.getRef(name);
+		
+		this.control.verify();
+		
+		assert result == ref;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getRow()}
+	 * @see java.sql.ResultSet#getRow()
 	 */
-	public void testGetRow()
+	@Test
+	public int getRow() throws SQLException
 	{
+		int row = 1;
+		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getRow()).andReturn(row);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getRow()).andReturn(10);
-			
-			this.control.replay();
-			
-			int row = this.resultSet.getRow();
-			
-			this.control.verify();
-			
-			assert row == 10 : row;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		int result = this.resultSet.getRow();
+		
+		this.control.verify();
+		
+		assert result == row;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getShort(int)}
+	 * @see java.sql.ResultSet#getShort(int)
 	 */
-	public void testGetShortInt()
+	@Test(dataProvider = "int")
+	public short getShort(int index) throws SQLException
 	{
 		short s = Integer.valueOf(1).shortValue();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getShort(index)).andReturn(s);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getShort(1)).andReturn(s);
-			
-			this.control.replay();
-			
-			short value = this.resultSet.getShort(1);
-			
-			this.control.verify();
-			
-			assert value == s;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		short result = this.resultSet.getShort(index);
+		
+		this.control.verify();
+		
+		assert result == s;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getShort(String)}
+	 * @see java.sql.ResultSet#getShort(java.lang.String)
 	 */
-	public void testGetShortString()
+	@Test(dataProvider = "string")
+	public short getShort(String name) throws SQLException
 	{
 		short s = Integer.valueOf(1).shortValue();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getShort(name)).andReturn(s);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getShort("column")).andReturn(s);
-			
-			this.control.replay();
-			
-			short value = this.resultSet.getShort("column");
-			
-			this.control.verify();
-			
-			assert value == s;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		short result = this.resultSet.getShort(name);
+		
+		this.control.verify();
+		
+		assert result == s;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getStatement()}
+	 * @see java.sql.ResultSet#getStatement()
 	 */
-	public void testGetStatement()
+	@Test
+	public java.sql.Statement getStatement()
 	{
-		java.sql.Statement statement = this.resultSet.getStatement();
+		this.control.replay();
 		
-		assert statement == this.statement;
+		java.sql.Statement result = this.resultSet.getStatement();
+		
+		this.control.verify();
+		
+		assert result == this.statement;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getString(int)}
+	 * @see java.sql.ResultSet#getString(int)
 	 */
-	public void testGetStringInt()
+	@Test(dataProvider = "int")
+	public String getString(int index) throws SQLException
 	{
+		String string = "";
+		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getString(index)).andReturn(string);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getString(1)).andReturn("test");
-			
-			this.control.replay();
-			
-			String value = this.resultSet.getString(1);
-			
-			this.control.verify();
-			
-			assert value == "test";
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		String result = this.resultSet.getString(index);
+		
+		this.control.verify();
+		
+		assert result == string;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getString(String)}
+	 * @see java.sql.ResultSet#getString(java.lang.String)
 	 */
-	public void testGetStringString()
+	@Test(dataProvider = "string")
+	public String getString(String name) throws SQLException
 	{
+		String string = "";
+		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getString(name)).andReturn(string);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getString("column")).andReturn("test");
-			
-			this.control.replay();
-			
-			String value = this.resultSet.getString("column");
-			
-			this.control.verify();
-			
-			assert value == "test";
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		String result = this.resultSet.getString(name);
+		
+		this.control.verify();
+		
+		assert result == string;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getTime(int)}
+	 * @see java.sql.ResultSet#getTime(int)
 	 */
-	public void testGetTimeInt()
+	@Test(dataProvider = "int")
+	public Time getTime(int index) throws SQLException
 	{
 		Time time = new Time(System.currentTimeMillis());
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getTime(index)).andReturn(time);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getTime(1)).andReturn(time);
-			
-			this.control.replay();
-			
-			Time value = this.resultSet.getTime(1);
-			
-			this.control.verify();
-			
-			assert value == time;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		Time result = this.resultSet.getTime(index);
+		
+		this.control.verify();
+		
+		assert result == time;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getTime(int, Calendar)}
+	 * @see java.sql.ResultSet#getTime(java.lang.String)
 	 */
-	public void testGetTimeIntCalendar()
-	{
-		Time time = new Time(System.currentTimeMillis());
-		Calendar calendar = Calendar.getInstance();
-		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getTime(1, calendar)).andReturn(time);
-			
-			this.control.replay();
-			
-			Time value = this.resultSet.getTime(1, calendar);
-			
-			this.control.verify();
-			
-			assert value == time;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link ResultSet#getTime(String)}
-	 */
-	public void testGetTimeString()
+	@Test(dataProvider = "string")
+	public Time getTime(String name) throws SQLException
 	{
 		Time time = new Time(System.currentTimeMillis());
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getTime(name)).andReturn(time);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getTime("column")).andReturn(time);
-			
-			this.control.replay();
-			
-			Time value = this.resultSet.getTime("column");
-			
-			this.control.verify();
-			
-			assert value == time;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		Time result = this.resultSet.getTime(name);
+		
+		this.control.verify();
+		
+		assert result == time;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getTime(String, Calendar)}
+	 * @see java.sql.ResultSet#getTime(int, java.util.Calendar)
 	 */
-	public void testGetTimeStringCalendar()
+	@Test(dataProvider = "int-calendar")
+	public Time getTime(int index, Calendar calendar) throws SQLException
 	{
 		Time time = new Time(System.currentTimeMillis());
-		Calendar calendar = Calendar.getInstance();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getTime(index, calendar)).andReturn(time);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getTime("column", calendar)).andReturn(time);
-			
-			this.control.replay();
-			
-			Time value = this.resultSet.getTime("column", calendar);
-			
-			this.control.verify();
-			
-			assert value == time;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		Time result = this.resultSet.getTime(index, calendar);
+		
+		this.control.verify();
+		
+		assert result == time;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getTimestamp(int)}
+	 * @see java.sql.ResultSet#getTime(java.lang.String, java.util.Calendar)
 	 */
-	public void testGetTimestampInt()
+	@Test(dataProvider = "string-calendar")
+	public Time getTime(String name, Calendar calendar) throws SQLException
+	{
+		Time time = new Time(System.currentTimeMillis());
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getTime(name, calendar)).andReturn(time);
+		
+		this.control.replay();
+		
+		Time result = this.resultSet.getTime(name, calendar);
+		
+		this.control.verify();
+		
+		assert result == time;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.ResultSet#getTimestamp(int)
+	 */
+	@Test(dataProvider = "int")
+	public Timestamp getTimestamp(int index) throws SQLException
 	{
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getTimestamp(index)).andReturn(timestamp);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getTimestamp(1)).andReturn(timestamp);
-			
-			this.control.replay();
-			
-			Timestamp value = this.resultSet.getTimestamp(1);
-			
-			this.control.verify();
-			
-			assert value == timestamp;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		Timestamp result = this.resultSet.getTimestamp(index);
+		
+		this.control.verify();
+		
+		assert result == timestamp;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getTimestamp(int, Calendar)}
+	 * @see java.sql.ResultSet#getTimestamp(java.lang.String)
 	 */
-	public void testGetTimestampIntCalendar()
-	{
-		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-		Calendar calendar = Calendar.getInstance();
-		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getTimestamp(1, calendar)).andReturn(timestamp);
-			
-			this.control.replay();
-			
-			Timestamp value = this.resultSet.getTimestamp(1, calendar);
-			
-			this.control.verify();
-			
-			assert value == timestamp;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link ResultSet#getTimestamp(String)}
-	 */
-	public void testGetTimestampString()
+	@Test(dataProvider = "string")
+	public Timestamp getTimestamp(String name) throws SQLException
 	{
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getTimestamp(name)).andReturn(timestamp);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getTimestamp("column")).andReturn(timestamp);
-			
-			this.control.replay();
-			
-			Timestamp value = this.resultSet.getTimestamp("column");
-			
-			this.control.verify();
-			
-			assert value == timestamp;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		Timestamp result = this.resultSet.getTimestamp(name);
+		
+		this.control.verify();
+		
+		assert result == timestamp;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getTimestamp(String, Calendar)}
+	 * @see java.sql.ResultSet#getTimestamp(int, java.util.Calendar)
 	 */
-	public void testGetTimestampStringCalendar()
+	@Test(dataProvider = "int-calendar")
+	public Timestamp getTimestamp(int index, Calendar calendar) throws SQLException
 	{
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-		Calendar calendar = Calendar.getInstance();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getTimestamp(index, calendar)).andReturn(timestamp);
 		
+		this.control.replay();
+		
+		Timestamp result = this.resultSet.getTimestamp(index, calendar);
+		
+		this.control.verify();
+		
+		assert result == timestamp;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.ResultSet#getTimestamp(java.lang.String, java.util.Calendar)
+	 */
+	@Test(dataProvider = "string-calendar")
+	public Timestamp getTimestamp(String name, Calendar calendar) throws SQLException
+	{
+		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getTimestamp(name, calendar)).andReturn(timestamp);
+		
+		this.control.replay();
+		
+		Timestamp result = this.resultSet.getTimestamp(name, calendar);
+		
+		this.control.verify();
+		
+		assert result == timestamp;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.ResultSet#getType()
+	 */
+	@Test
+	public int getType() throws SQLException
+	{
+		int type = java.sql.ResultSet.TYPE_FORWARD_ONLY;
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getType()).andReturn(type);
+		
+		this.control.replay();
+		
+		int result = this.resultSet.getType();
+		
+		this.control.verify();
+		
+		assert result == type;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.ResultSet#getURL(int)
+	 */
+	@Test(dataProvider = "int")
+	public URL getURL(int index) throws SQLException
+	{
 		try
 		{
-			EasyMock.expect(this.sqlResultSet.getTimestamp("column", calendar)).andReturn(timestamp);
+			URL url = new URL("http://ha-jdbc.sf.net");
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.first()).andReturn(this.database);
+	
+			EasyMock.expect(this.sqlResultSet.getURL(index)).andReturn(url);
 			
 			this.control.replay();
 			
-			Timestamp value = this.resultSet.getTimestamp("column", calendar);
+			URL result = this.resultSet.getURL(index);
 			
 			this.control.verify();
 			
-			assert value == timestamp;
+			assert result == url;
+			
+			return result;
 		}
-		catch (SQLException e)
+		catch (MalformedURLException e)
 		{
-			assert false : e;
+			assert false;
+			return null;
 		}
 	}
 
 	/**
-	 * Test method for {@link ResultSet#getType()}
+	 * @see java.sql.ResultSet#getURL(java.lang.String)
 	 */
-	public void testGetType()
+	@Test(dataProvider = "string")
+	public URL getURL(String name) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		
 		try
 		{
-			EasyMock.expect(this.sqlResultSet.getType()).andReturn(ResultSet.TYPE_SCROLL_INSENSITIVE);
+			URL url = new URL("http://ha-jdbc.sf.net");
+			
+			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+			EasyMock.expect(this.balancer.first()).andReturn(this.database);
+	
+			EasyMock.expect(this.sqlResultSet.getURL(name)).andReturn(url);
 			
 			this.control.replay();
 			
-			int type = this.resultSet.getType();
+			URL result = this.resultSet.getURL(name);
 			
 			this.control.verify();
 			
-			assert type == ResultSet.TYPE_SCROLL_INSENSITIVE : type;
+			assert result == url;
+			
+			return result;
 		}
-		catch (SQLException e)
+		catch (MalformedURLException e)
 		{
-			assert false : e;
+			assert false;
+			return null;
 		}
 	}
 
-	/***
-	 * Test method for {@link ResultSet#getUnicodeStream(int)}
-	 * @deprecated
+	/**
+	 * @see java.sql.ResultSet#getUnicodeStream(int)
 	 */
-	public void testGetUnicodeStreamInt()
+	@Test(dataProvider = "int")
+	@Deprecated
+	public InputStream getUnicodeStream(int index) throws SQLException
 	{
 		InputStream inputStream = new ByteArrayInputStream(new byte[0]);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getUnicodeStream(index)).andReturn(inputStream);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getUnicodeStream(1)).andReturn(inputStream);
-			
-			this.control.replay();
-			
-			InputStream value = this.resultSet.getUnicodeStream(1);
-			
-			this.control.verify();
-			
-			assert value == inputStream;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+		
+		InputStream result = this.resultSet.getUnicodeStream(index);
+		
+		this.control.verify();
+		
+		assert result == inputStream;
+		
+		return result;
 	}
 
-	/***
-	 * Test method for {@link ResultSet#getUnicodeStream(String)}
-	 * @deprecated
+	/**
+	 * @see java.sql.ResultSet#getUnicodeStream(java.lang.String)
 	 */
-	public void testGetUnicodeStreamString()
+	@Test(dataProvider = "string")
+	@Deprecated
+	public InputStream getUnicodeStream(String name) throws SQLException
 	{
 		InputStream inputStream = new ByteArrayInputStream(new byte[0]);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getUnicodeStream(name)).andReturn(inputStream);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getUnicodeStream("column")).andReturn(inputStream);
-			
-			this.control.replay();
-			
-			InputStream value = this.resultSet.getUnicodeStream("column");
-			
-			this.control.verify();
-			
-			assert value == inputStream;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link ResultSet#getURL(int)}
-	 */
-	public void testGetURLInt()
-	{
-		try
-		{
-			URL url = new URL("http://www.google.com");
-			
-			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.first()).andReturn(this.database);
-			
-			EasyMock.expect(this.sqlResultSet.getURL(1)).andReturn(url);
-			
-			this.control.replay();
-			
-			URL value = this.resultSet.getURL(1);
-			
-			this.control.verify();
-			
-			assert value == url;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-		catch (MalformedURLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link ResultSet#getURL(String)}
-	 */
-	public void testGetURLString()
-	{
-		try
-		{
-			URL url = new URL("http://www.google.com");
-			
-			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.first()).andReturn(this.database);
-			
-			EasyMock.expect(this.sqlResultSet.getURL("column")).andReturn(url);
-			
-			this.control.replay();
-			
-			URL value = this.resultSet.getURL("column");
-			
-			this.control.verify();
-			
-			assert value == url;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-		catch (MalformedURLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link ResultSet#getWarnings()}
-	 */
-	public void testGetWarnings()
-	{
-		SQLWarning warnings = new SQLWarning();
+		this.control.replay();
 		
-		try
-		{
-			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.first()).andReturn(this.database);
-			
-			EasyMock.expect(this.sqlResultSet.getWarnings()).andReturn(warnings);
-			
-			this.control.replay();
-			
-			SQLWarning value = this.resultSet.getWarnings();
-			
-			this.control.verify();
-			
-			assert value == warnings;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		InputStream result = this.resultSet.getUnicodeStream(name);
+		
+		this.control.verify();
+		
+		assert result == inputStream;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#insertRow()}
+	 * @see java.sql.ResultSet#getWarnings()
 	 */
-	public void testInsertRow()
+	@Test
+	public SQLWarning getWarnings() throws SQLException
+	{
+		SQLWarning warning = new SQLWarning();
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.getWarnings()).andReturn(warning);
+		
+		this.control.replay();
+		
+		SQLWarning result = this.resultSet.getWarnings();
+		
+		this.control.verify();
+		
+		assert result == warning;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.ResultSet#insertRow()
+	 */
+	@Test
+	public void insertRow() throws SQLException
 	{
 		EasyMock.expect(this.databaseCluster.getTransactionalExecutor()).andReturn(this.executor);
 		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
@@ -2331,287 +2021,195 @@ public class TestResultSet
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.insertRow();
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.insertRow();
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.insertRow();
+		
+		this.lock.unlock();
+		
+		this.control.replay();
+		
+		this.resultSet.insertRow();
+		
+		this.control.verify();
 	}
 
 	/**
-	 * Test method for {@link ResultSet#isAfterLast()}
+	 * @see java.sql.ResultSet#isAfterLast()
 	 */
-	public void testIsAfterLast()
+	@Test
+	public boolean isAfterLast() throws SQLException
+	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.isAfterLast()).andReturn(true);
+		
+		this.control.replay();
+		
+		boolean result = this.resultSet.isAfterLast();
+		
+		this.control.verify();
+		
+		assert result;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.ResultSet#isBeforeFirst()
+	 */
+	@Test
+	public boolean isBeforeFirst() throws SQLException
+	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+
+		EasyMock.expect(this.sqlResultSet.isBeforeFirst()).andReturn(true);
+		
+		this.control.replay();
+		
+		boolean result = this.resultSet.isBeforeFirst();
+		
+		this.control.verify();
+		
+		assert result;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.ResultSet#isFirst()
+	 */
+	@Test
+	public boolean isFirst() throws SQLException
 	{
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.isAfterLast()).andReturn(true);
-			
-			this.control.replay();
-			
-			boolean afterLast = this.resultSet.isAfterLast();
-			
-			this.control.verify();
-			
-			assert afterLast;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		EasyMock.expect(this.sqlResultSet.getType()).andReturn(java.sql.ResultSet.TYPE_FORWARD_ONLY);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		
+		EasyMock.expect(this.sqlResultSet.isFirst()).andReturn(true);
+		
+		this.control.replay();
+		
+		boolean result = this.resultSet.isFirst();
+		
+		this.control.verify();
+		
+		assert result;
+		
+		this.control.reset();
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		
+		EasyMock.expect(this.sqlResultSet.getType()).andReturn(java.sql.ResultSet.TYPE_SCROLL_SENSITIVE);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.next()).andReturn(this.database);
+		
+		this.balancer.beforeOperation(this.database);
+		
+		EasyMock.expect(this.sqlResultSet.isFirst()).andReturn(true);
+		
+		this.balancer.afterOperation(this.database);
+		
+		this.control.replay();
+		
+		result = this.resultSet.isFirst();
+		
+		this.control.verify();
+		
+		assert result;
+				
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#isBeforeFirst()}
+	 * @see java.sql.ResultSet#isLast()
 	 */
-	public void testIsBeforeFirst()
+	@Test
+	public boolean isLast() throws SQLException
 	{
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.isBeforeFirst()).andReturn(true);
-			
-			this.control.replay();
-			
-			boolean beforeFirst = this.resultSet.isBeforeFirst();
-			
-			this.control.verify();
-			
-			assert beforeFirst;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		EasyMock.expect(this.sqlResultSet.getType()).andReturn(java.sql.ResultSet.TYPE_FORWARD_ONLY);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		
+		EasyMock.expect(this.sqlResultSet.isLast()).andReturn(true);
+		
+		this.control.replay();
+		
+		boolean result = this.resultSet.isLast();
+		
+		this.control.verify();
+		
+		assert result;
+		
+		this.control.reset();
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		
+		EasyMock.expect(this.sqlResultSet.getType()).andReturn(java.sql.ResultSet.TYPE_SCROLL_SENSITIVE);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.next()).andReturn(this.database);
+		
+		this.balancer.beforeOperation(this.database);
+		
+		EasyMock.expect(this.sqlResultSet.isLast()).andReturn(true);
+
+		this.balancer.afterOperation(this.database);
+		
+		this.control.replay();
+		
+		result = this.resultSet.isLast();
+		
+		this.control.verify();
+		
+		assert result;
+				
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#isFirst()}
+	 * @see java.sql.ResultSet#last()
 	 */
-	public void testIsFirst()
+	@Test
+	public boolean last() throws SQLException
 	{
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getType()).andReturn(ResultSet.TYPE_FORWARD_ONLY);
-			
-			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.first()).andReturn(this.database);
-			
-			EasyMock.expect(this.sqlResultSet.isFirst()).andReturn(true);
-			
-			this.control.replay();
-			
-			boolean first = this.resultSet.isFirst();
-			
-			this.control.verify();
-			
-			assert first;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link ResultSet#isFirst()}
-	 */
-	public void testScrollSensitiveIsFirst()
-	{
+		EasyMock.expect(this.sqlResultSet.getType()).andReturn(java.sql.ResultSet.TYPE_FORWARD_ONLY);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		EasyMock.expect(this.sqlResultSet.last()).andReturn(true);
+		
+		this.control.replay();
+		
+		boolean result = this.resultSet.last();
+		
+		this.control.verify();
+		
+		assert result;
+		
+		this.control.reset();
+		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getType()).andReturn(ResultSet.TYPE_SCROLL_SENSITIVE);
-			
-			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.next()).andReturn(this.database);
-			
-			this.balancer.beforeOperation(this.database);
-			
-			EasyMock.expect(this.sqlResultSet.isFirst()).andReturn(true);
-			
-			this.balancer.afterOperation(this.database);
-			
-			this.control.replay();
-			
-			boolean first = this.resultSet.isFirst();
-			
-			this.control.verify();
-			
-			assert first;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link ResultSet#isLast()}
-	 */
-	public void testIsLast()
-	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.sqlResultSet.getType()).andReturn(java.sql.ResultSet.TYPE_SCROLL_SENSITIVE);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getType()).andReturn(ResultSet.TYPE_FORWARD_ONLY);
-			
-			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.first()).andReturn(this.database);
-			
-			EasyMock.expect(this.sqlResultSet.isLast()).andReturn(true);
-			
-			this.control.replay();
-			
-			boolean last = this.resultSet.isLast();
-			
-			this.control.verify();
-			
-			assert last;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link ResultSet#isLast()}
-	 */
-	public void testScrollSensitiveIsLast()
-	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getType()).andReturn(ResultSet.TYPE_SCROLL_SENSITIVE);
-			
-			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.next()).andReturn(this.database);
-			
-			this.balancer.beforeOperation(this.database);
-			
-			EasyMock.expect(this.sqlResultSet.isLast()).andReturn(true);
-			
-			this.balancer.afterOperation(this.database);
-			
-			this.control.replay();
-			
-			boolean last = this.resultSet.isLast();
-			
-			this.control.verify();
-			
-			assert last;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link ResultSet#last()}
-	 */
-	public void testLast()
-	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getType()).andReturn(ResultSet.TYPE_FORWARD_ONLY);
-			
-			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-			
-			this.lock.lock();
-			
-			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
-			
-			EasyMock.expect(this.sqlResultSet.last()).andReturn(true);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			boolean valid = this.resultSet.last();
-			
-			this.control.verify();
-			
-			assert valid;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link ResultSet#moveToCurrentRow()}
-	 */
-	public void testMoveToCurrentRow()
-	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getType()).andReturn(ResultSet.TYPE_FORWARD_ONLY);
-			
-			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-			
-			this.lock.lock();
-			
-			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
-			
-			this.sqlResultSet.moveToCurrentRow();
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.moveToCurrentRow();
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link ResultSet#moveToInsertRow()}
-	 */
-	public void testMoveToInsertRow()
-	{
+		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
 		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
@@ -2620,104 +2218,202 @@ public class TestResultSet
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.moveToInsertRow();
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.moveToInsertRow();
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		EasyMock.expect(this.sqlResultSet.last()).andReturn(true);
+		
+		this.lock.unlock();
+		
+		this.control.replay();
+		
+		result = this.resultSet.last();
+		
+		this.control.verify();
+		
+		assert result;
+				
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#next()}
+	 * @see java.sql.ResultSet#moveToCurrentRow()
 	 */
-	public void testNext()
+	@Test
+	public void moveToCurrentRow() throws SQLException
 	{
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getType()).andReturn(ResultSet.TYPE_FORWARD_ONLY);
-			
-			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.sqlResultSet.getType()).andReturn(java.sql.ResultSet.TYPE_FORWARD_ONLY);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		this.sqlResultSet.moveToCurrentRow();
+		
+		this.control.replay();
+		
+		this.resultSet.moveToCurrentRow();
+		
+		this.control.verify();		
+		this.control.reset();
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		
+		EasyMock.expect(this.sqlResultSet.getType()).andReturn(java.sql.ResultSet.TYPE_SCROLL_SENSITIVE);
+		
+		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
 		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-			
-			this.lock.lock();
-			
-			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		this.lock.lock();
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 
-			EasyMock.expect(this.sqlResultSet.next()).andReturn(true);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			boolean valid = this.resultSet.next();
-			
-			this.control.verify();
-			
-			assert valid;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.moveToCurrentRow();
+		
+		this.lock.unlock();
+		
+		this.control.replay();
+
+		this.resultSet.moveToCurrentRow();
+		
+		this.control.verify();
 	}
 
 	/**
-	 * Test method for {@link ResultSet#previous()}
+	 * @see java.sql.ResultSet#moveToInsertRow()
 	 */
-	public void testPrevious()
+	@Test
+	public void moveToInsertRow() throws SQLException
+	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		this.sqlResultSet.moveToInsertRow();
+		
+		this.control.replay();
+		
+		this.resultSet.moveToInsertRow();
+		
+		this.control.verify();
+	}
+
+	/**
+	 * @see java.sql.ResultSet#next()
+	 */
+	@Test
+	public boolean next() throws SQLException
 	{
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.getType()).andReturn(ResultSet.TYPE_FORWARD_ONLY);
-			
-			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.sqlResultSet.getType()).andReturn(java.sql.ResultSet.TYPE_FORWARD_ONLY);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		EasyMock.expect(this.sqlResultSet.next()).andReturn(true);
+		
+		this.control.replay();
+		
+		boolean result = this.resultSet.next();
+		
+		this.control.verify();
+		
+		assert result;
+		
+		this.control.reset();
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		
+		EasyMock.expect(this.sqlResultSet.getType()).andReturn(java.sql.ResultSet.TYPE_SCROLL_SENSITIVE);
+		
+		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
 		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-			
-			this.lock.lock();
-			
-			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
-			
-			EasyMock.expect(this.sqlResultSet.previous()).andReturn(true);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			boolean valid = this.resultSet.previous();
-			
-			this.control.verify();
-			
-			assert valid;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		
+		this.lock.lock();
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+
+		EasyMock.expect(this.sqlResultSet.next()).andReturn(true);
+		
+		this.lock.unlock();
+		
+		this.control.replay();
+
+		result = this.resultSet.next();
+		
+		this.control.verify();
+		
+		assert result;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#refreshRow()}
+	 * @see java.sql.ResultSet#previous()
 	 */
-	public void testRefreshRow()
+	@Test
+	public boolean previous() throws SQLException
+	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		
+		EasyMock.expect(this.sqlResultSet.getType()).andReturn(java.sql.ResultSet.TYPE_FORWARD_ONLY);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		EasyMock.expect(this.sqlResultSet.previous()).andReturn(true);
+		
+		this.control.replay();
+		
+		boolean result = this.resultSet.previous();
+		
+		this.control.verify();
+		
+		assert result;
+		
+		this.control.reset();
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		
+		EasyMock.expect(this.sqlResultSet.getType()).andReturn(java.sql.ResultSet.TYPE_SCROLL_SENSITIVE);
+		
+		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
+		
+		this.lock.lock();
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+
+		EasyMock.expect(this.sqlResultSet.previous()).andReturn(true);
+		
+		this.lock.unlock();
+		
+		this.control.replay();
+
+		result = this.resultSet.previous();
+		
+		this.control.verify();
+		
+		assert result;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.ResultSet#refreshRow()
+	 */
+	@Test
+	public void refreshRow() throws SQLException
 	{
 		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
@@ -2728,1481 +2424,1092 @@ public class TestResultSet
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.refreshRow();
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.refreshRow();
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.refreshRow();
+		
+		this.lock.unlock();
+		
+		this.control.replay();
+		
+		this.resultSet.refreshRow();
+		
+		this.control.verify();
 	}
 
 	/**
-	 * Test method for {@link ResultSet#relative(int)}
+	 * @see java.sql.ResultSet#relative(int)
 	 */
-	public void testRelative()
+	@Test(dataProvider = "int")
+	public boolean relative(int rows) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.relative(10)).andReturn(true);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			boolean valid = this.resultSet.relative(10);
-			
-			this.control.verify();
-			
-			assert valid;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		EasyMock.expect(this.sqlResultSet.relative(rows)).andReturn(true);
+		
+		this.control.replay();
+
+		boolean result = this.resultSet.relative(rows);
+		
+		this.control.verify();
+		
+		assert result;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#rowDeleted()}
+	 * @see java.sql.ResultSet#rowDeleted()
 	 */
-	public void testRowDeleted()
+	@Test
+	public boolean rowDeleted() throws SQLException
 	{
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.rowDeleted()).andReturn(true);
-			
-			this.control.replay();
-			
-			boolean deleted = this.resultSet.rowDeleted();
-			
-			this.control.verify();
-			
-			assert deleted;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		EasyMock.expect(this.sqlResultSet.rowDeleted()).andReturn(true);
+		
+		this.control.replay();
+
+		boolean result = this.resultSet.rowDeleted();
+		
+		this.control.verify();
+		
+		assert result;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#rowInserted()}
+	 * @see java.sql.ResultSet#rowInserted()
 	 */
-	public void testRowInserted()
+	@Test
+	public boolean rowInserted() throws SQLException
 	{
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.rowUpdated()).andReturn(true);
-			
-			this.control.replay();
-			
-			boolean updated = this.resultSet.rowUpdated();
-			
-			this.control.verify();
-			
-			assert updated;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		EasyMock.expect(this.sqlResultSet.rowInserted()).andReturn(true);
+		
+		this.control.replay();
+
+		boolean result = this.resultSet.rowInserted();
+		
+		this.control.verify();
+		
+		assert result;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#rowUpdated()}
+	 * @see java.sql.ResultSet#rowUpdated()
 	 */
-	public void testRowUpdated()
+	@Test
+	public boolean rowUpdated() throws SQLException
 	{
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.rowInserted()).andReturn(true);
-			
-			this.control.replay();
-			
-			boolean inserted = this.resultSet.rowInserted();
-			
-			this.control.verify();
-			
-			assert inserted;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		EasyMock.expect(this.sqlResultSet.rowUpdated()).andReturn(true);
+		
+		this.control.replay();
+
+		boolean result = this.resultSet.rowUpdated();
+		
+		this.control.verify();
+		
+		assert result;
+		
+		return result;
 	}
 
 	/**
-	 * Test method for {@link ResultSet#setFetchDirection(int)}
+	 * @see java.sql.ResultSet#setFetchDirection(int)
 	 */
-	public void testSetFetchDirection()
+	@Test(dataProvider = "int")
+	public void setFetchDirection(int direction) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.setFetchDirection(ResultSet.FETCH_REVERSE);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.setFetchDirection(ResultSet.FETCH_REVERSE);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.setFetchDirection(direction);
+		
+		this.control.replay();
+
+		this.resultSet.setFetchDirection(direction);
+		
+		this.control.verify();
 	}
 
 	/**
-	 * Test method for {@link ResultSet#setFetchSize(int)}
+	 * @see java.sql.ResultSet#setFetchSize(int)
 	 */
-	public void testSetFetchSize()
+	@Test(dataProvider = "int")
+	public void setFetchSize(int rows) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.setFetchSize(100);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.setFetchSize(100);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.setFetchSize(rows);
+		
+		this.control.replay();
+
+		this.resultSet.setFetchSize(rows);
+		
+		this.control.verify();
 	}
 
-	/**
-	 * Test method for {@link ResultSet#updateArray(int, Array)}
-	 */
-	public void testUpdateArrayIntArray()
+	@DataProvider(name = "int-array")
+	Object[][] intArrayProvider()
 	{
-		Array array = EasyMock.createMock(Array.class);
+		return new Object[][] { new Object[] { 1, EasyMock.createMock(Array.class) } };
+	}
 		
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
+	/**
+	 * @see java.sql.ResultSet#updateArray(int, java.sql.Array)
+	 */
+	@Test(dataProvider = "int-array")
+	public void updateArray(int index, Array value) throws SQLException
+	{
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateArray(1, array);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateArray(1, array);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateArray(index, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateArray(index, value);
+		
+		this.control.verify();
 	}
 
-	/**
-	 * Test method for {@link ResultSet#updateArray(String, Array)}
-	 */
-	public void testUpdateArrayStringArray()
+	@DataProvider(name = "string-array")
+	Object[][] stringArrayProvider()
 	{
-		Array array = EasyMock.createMock(Array.class);
-		
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
+		return new Object[][] { new Object[] { "", EasyMock.createMock(Array.class) } };
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#updateArray(java.lang.String, java.sql.Array)
+	 */
+	@Test(dataProvider = "string-array")
+	public void updateArray(String name, Array value) throws SQLException
+	{
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateArray("column", array);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateArray("column", array);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateArray(name, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateArray(name, value);
+		
+		this.control.verify();
 	}
 
-	/**
-	 * Test method for {@link ResultSet#updateAsciiStream(int, InputStream, int)}
-	 */
-	public void testUpdateAsciiStreamIntInputStreamInt()
+	@DataProvider(name = "int-inputStream-int")
+	Object[][] intInputStreamIntProvider()
 	{
-		InputStream inputStream = new ByteArrayInputStream(new byte[] { 1 });
+		return new Object[][] { new Object[] { 1, new ByteArrayInputStream(new byte[0]), 1 } };
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#updateAsciiStream(int, java.io.InputStream, int)
+	 */
+	@Test(dataProvider = "int-inputStream-int")
+	public void updateAsciiStream(int index, InputStream value, int length) throws SQLException
+	{
 		File file = new File("");
+		InputStream inputStream = new ByteArrayInputStream(new byte[0]);
 		
-		try
-		{
-			EasyMock.expect(this.fileSupport.createFile(inputStream)).andReturn(file);
-			
-			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-			
-			this.lock.lock();
-			
-			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
-			
-			EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(inputStream);
-			
-			this.sqlResultSet.updateAsciiStream(1, inputStream, 100);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateAsciiStream(1, inputStream, 100);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link ResultSet#updateAsciiStream(String, InputStream, int)}
-	 */
-	public void testUpdateAsciiStreamStringInputStreamInt()
-	{
-		InputStream inputStream = new ByteArrayInputStream(new byte[] { 1 });
-		File file = new File("");
-		
-		try
-		{
-			EasyMock.expect(this.fileSupport.createFile(inputStream)).andReturn(file);
-			
-			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-			
-			this.lock.lock();
-			
-			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
-			
-			EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(inputStream);
-			
-			this.sqlResultSet.updateAsciiStream("column", inputStream, 100);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateAsciiStream("column", inputStream, 100);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link ResultSet#updateBigDecimal(int, BigDecimal)}
-	 */
-	public void testUpdateBigDecimalIntBigDecimal()
-	{
-		BigDecimal decimal = new BigDecimal(1.0);
-		
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
+		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateBigDecimal(1, decimal);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateBigDecimal(1, decimal);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(inputStream);
+		
+		this.sqlResultSet.updateAsciiStream(index, inputStream, length);
+		
+		this.control.replay();
+
+		this.resultSet.updateAsciiStream(index, value, length);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "string-inputStream-int")
+	Object[][] stringInputStreamIntProvider()
+	{
+		return new Object[][] { new Object[] { "", new ByteArrayInputStream(new byte[0]), 1 } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateBigDecimal(String, BigDecimal)}
+	 * @see java.sql.ResultSet#updateAsciiStream(java.lang.String, java.io.InputStream, int)
 	 */
-	public void testUpdateBigDecimalStringBigDecimal()
+	@Test(dataProvider = "string-inputStream-int")
+	public void updateAsciiStream(String name, InputStream value, int length) throws SQLException
 	{
-		BigDecimal decimal = new BigDecimal(1.0);
+		File file = new File("");
+		InputStream inputStream = new ByteArrayInputStream(new byte[0]);
 		
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
+		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateBigDecimal("column", decimal);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateBigDecimal("column", decimal);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link ResultSet#updateBinaryStream(int, InputStream, int)}
-	 */
-	public void testUpdateBinaryStreamIntInputStreamInt()
-	{
-		InputStream inputStream = new ByteArrayInputStream(new byte[] { 1 });
-		File file = new File("");
+		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(inputStream);
 		
-		try
-		{
-			EasyMock.expect(this.fileSupport.createFile(inputStream)).andReturn(file);
-			
-			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-			
-			this.lock.lock();
-			
-			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
-			
-			EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(inputStream);
-			
-			this.sqlResultSet.updateBinaryStream(1, inputStream, 100);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateBinaryStream(1, inputStream, 100);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link ResultSet#updateBinaryStream(String, InputStream, int)}
-	 */
-	public void testUpdateBinaryStreamStringInputStreamInt()
-	{
-		InputStream inputStream = new ByteArrayInputStream(new byte[] { 1 });
-		File file = new File("");
+		this.sqlResultSet.updateAsciiStream(name, inputStream, length);
 		
-		try
-		{
-			EasyMock.expect(this.fileSupport.createFile(inputStream)).andReturn(file);
-			
-			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-			
-			this.lock.lock();
-			
-			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
-			
-			EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(inputStream);
-			
-			this.sqlResultSet.updateBinaryStream("column", inputStream, 100);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateBinaryStream("column", inputStream, 100);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.control.replay();
+
+		this.resultSet.updateAsciiStream(name, value, length);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "int-bigDecimal")
+	Object[][] intBigDecimalProvider()
+	{
+		return new Object[][] { new Object[] { 1, new BigDecimal(1.0) } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateBlob(int, Blob)}
+	 * @see java.sql.ResultSet#updateBigDecimal(int, java.math.BigDecimal)
 	 */
-	public void testUpdateBlobIntBlob()
+	@Test(dataProvider = "int-bigDecimal")
+	public void updateBigDecimal(int index, BigDecimal value) throws SQLException
 	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		this.sqlResultSet.updateBigDecimal(index, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateBigDecimal(index, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "string-bigDecimal")
+	Object[][] stringBigDecimalProvider()
+	{
+		return new Object[][] { new Object[] { "", new BigDecimal(1.0) } };
+	}
+
+	/**
+	 * @see java.sql.ResultSet#updateBigDecimal(java.lang.String, java.math.BigDecimal)
+	 */
+	@Test(dataProvider = "string-bigDecimal")
+	public void updateBigDecimal(String name, BigDecimal value) throws SQLException
+	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		this.sqlResultSet.updateBigDecimal(name, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateBigDecimal(name, value);
+		
+		this.control.verify();
+	}
+
+	/**
+	 * @see java.sql.ResultSet#updateBinaryStream(int, java.io.InputStream, int)
+	 */
+	@Test(dataProvider = "int-inputStream-int")
+	public void updateBinaryStream(int index, InputStream value, int length) throws SQLException
+	{
+		File file = new File("");
+		InputStream inputStream = new ByteArrayInputStream(new byte[0]);
+		
+		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(inputStream);
+		
+		this.sqlResultSet.updateBinaryStream(index, inputStream, length);
+		
+		this.control.replay();
+
+		this.resultSet.updateBinaryStream(index, value, length);
+		
+		this.control.verify();
+	}
+
+	/**
+	 * @see java.sql.ResultSet#updateBinaryStream(java.lang.String, java.io.InputStream, int)
+	 */
+	@Test(dataProvider = "string-inputStream-int")
+	public void updateBinaryStream(String name, InputStream value, int length) throws SQLException
+	{
+		File file = new File("");
+		InputStream inputStream = new ByteArrayInputStream(new byte[0]);
+		
+		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(inputStream);
+		
+		this.sqlResultSet.updateBinaryStream(name, inputStream, length);
+		
+		this.control.replay();
+
+		this.resultSet.updateBinaryStream(name, value, length);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "int-blob")
+	Object[][] intBlobProvider()
+	{
+		return new Object[][] { new Object[] { 1, EasyMock.createMock(Blob.class) } };
+	}
+
+	/**
+	 * @see java.sql.ResultSet#updateBlob(int, java.sql.Blob)
+	 */
+	@Test(dataProvider = "int-blob")
+	public void updateBlob(int index, Blob value) throws SQLException
+	{
+		File file = new File("");
 		Blob blob = EasyMock.createMock(Blob.class);
-		File file = new File("");
 		
-		try
-		{
-			EasyMock.expect(this.fileSupport.createFile(blob)).andReturn(file);
-			
-			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-			
-			this.lock.lock();
-			
-			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
-			
-			EasyMock.expect(this.fileSupport.getBlob(file)).andReturn(blob);
-			
-			this.sqlResultSet.updateBlob(1, blob);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateBlob(1, blob);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		EasyMock.expect(this.fileSupport.getBlob(file)).andReturn(blob);
+		
+		this.sqlResultSet.updateBlob(index, blob);
+		
+		this.control.replay();
+
+		this.resultSet.updateBlob(index, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "string-blob")
+	Object[][] stringBlobProvider()
+	{
+		return new Object[][] { new Object[] { "", EasyMock.createMock(Blob.class) } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateBlob(String, Blob)}
+	 * @see java.sql.ResultSet#updateBlob(java.lang.String, java.sql.Blob)
 	 */
-	public void testUpdateBlobStringBlob()
+	@Test(dataProvider = "string-blob")
+	public void updateBlob(String name, Blob value) throws SQLException
 	{
+		File file = new File("");
 		Blob blob = EasyMock.createMock(Blob.class);
+		
+		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		EasyMock.expect(this.fileSupport.getBlob(file)).andReturn(blob);
+		
+		this.sqlResultSet.updateBlob(name, blob);
+		
+		this.control.replay();
+
+		this.resultSet.updateBlob(name, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "int-boolean")
+	Object[][] intBooleanProvider()
+	{
+		return new Object[][] { new Object[] { 1, true } };
+	}
+
+	/**
+	 * @see java.sql.ResultSet#updateBoolean(int, boolean)
+	 */
+	@Test(dataProvider = "int-boolean")
+	public void updateBoolean(int index, boolean value) throws SQLException
+	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		this.sqlResultSet.updateBoolean(index, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateBoolean(index, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "string-boolean")
+	Object[][] stringBooleanProvider()
+	{
+		return new Object[][] { new Object[] { "", true } };
+	}
+
+	/**
+	 * @see java.sql.ResultSet#updateBoolean(java.lang.String, boolean)
+	 */
+	@Test(dataProvider = "string-boolean")
+	public void updateBoolean(String name, boolean value) throws SQLException
+	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		this.sqlResultSet.updateBoolean(name, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateBoolean(name, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "int-byte")
+	Object[][] intByteProvider()
+	{
+		return new Object[][] { new Object[] { 1, Integer.valueOf(1).byteValue() } };
+	}
+
+	/**
+	 * @see java.sql.ResultSet#updateByte(int, byte)
+	 */
+	@Test(dataProvider = "int-byte")
+	public void updateByte(int index, byte value) throws SQLException
+	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		this.sqlResultSet.updateByte(index, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateByte(index, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "string-byte")
+	Object[][] stringByteProvider()
+	{
+		return new Object[][] { new Object[] { "", Integer.valueOf(1).byteValue() } };
+	}
+
+	/**
+	 * @see java.sql.ResultSet#updateByte(java.lang.String, byte)
+	 */
+	@Test(dataProvider = "string-byte")
+	public void updateByte(String name, byte value) throws SQLException
+	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		this.sqlResultSet.updateByte(name, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateByte(name, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "int-bytes")
+	Object[][] intBytesProvider()
+	{
+		return new Object[][] { new Object[] { 1, new byte[0] } };
+	}
+
+	/**
+	 * @see java.sql.ResultSet#updateBytes(int, byte[])
+	 */
+	@Test(dataProvider = "int-bytes")
+	public void updateBytes(int index, byte[] value) throws SQLException
+	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		this.sqlResultSet.updateBytes(index, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateBytes(index, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "string-bytes")
+	Object[][] stringBytesProvider()
+	{
+		return new Object[][] { new Object[] { "", new byte[0] } };
+	}
+
+	/**
+	 * @see java.sql.ResultSet#updateBytes(java.lang.String, byte[])
+	 */
+	@Test(dataProvider = "string-bytes")
+	public void updateBytes(String name, byte[] value) throws SQLException
+	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		this.sqlResultSet.updateBytes(name, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateBytes(name, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "int-reader-int")
+	Object[][] intReaderIntProvider()
+	{
+		return new Object[][] { new Object[] { 1, new CharArrayReader(new char[0]), 0 } };
+	}
+
+	/**
+	 * @see java.sql.ResultSet#updateCharacterStream(int, java.io.Reader, int)
+	 */
+	@Test(dataProvider = "int-reader-int")
+	public void updateCharacterStream(int index, Reader value, int length) throws SQLException
+	{
 		File file = new File("");
+		Reader reader = new CharArrayReader(new char[0]);
 		
-		try
-		{
-			EasyMock.expect(this.fileSupport.createFile(blob)).andReturn(file);
-			
-			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-			
-			this.lock.lock();
-			
-			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
-			
-			EasyMock.expect(this.fileSupport.getBlob(file)).andReturn(blob);
-			
-			this.sqlResultSet.updateBlob("column", blob);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateBlob("column", blob);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link ResultSet#updateBoolean(int, boolean)}
-	 */
-	public void testUpdateBooleanIntBoolean()
-	{
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
+		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateBoolean(1, true);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateBoolean(1, true);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader);
+		
+		this.sqlResultSet.updateCharacterStream(index, reader, length);
+		
+		this.control.replay();
+
+		this.resultSet.updateCharacterStream(index, value, length);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "string-reader-int")
+	Object[][] stringReaderIntProvider()
+	{
+		return new Object[][] { new Object[] { "", new CharArrayReader(new char[0]), 0 } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateBoolean(String, boolean)}
+	 * @see java.sql.ResultSet#updateCharacterStream(java.lang.String, java.io.Reader, int)
 	 */
-	public void testUpdateBooleanStringBoolean()
+	@Test(dataProvider = "string-reader-int")
+	public void updateCharacterStream(String name, Reader value, int length) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
-		
-		try
-		{
-			this.sqlResultSet.updateBoolean("column", true);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateBoolean("column", true);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link ResultSet#updateByte(int, byte)}
-	 */
-	public void testUpdateByteIntByte()
-	{
-		byte value = 1;
-		
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
-		
-		try
-		{
-			this.sqlResultSet.updateByte(1, value);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateByte(1, value);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link ResultSet#updateByte(String, byte)}
-	 */
-	public void testUpdateByteStringByte()
-	{
-		byte value = 1;
-		
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
-		
-		try
-		{
-			this.sqlResultSet.updateByte("column", value);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateByte("column", value);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link ResultSet#updateBytes(int, byte[])}
-	 */
-	public void testUpdateBytesIntByteArray()
-	{
-		byte[] value = new byte[] { 1 };
-		
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
-		
-		try
-		{
-			this.sqlResultSet.updateBytes(1, value);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateBytes(1, value);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link ResultSet#updateBytes(String, byte[])}
-	 */
-	public void testUpdateBytesStringByteArray()
-	{
-		byte[] value = new byte[] { 1 };
-		
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
-		
-		try
-		{
-			this.sqlResultSet.updateBytes("column", value);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateBytes("column", value);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link ResultSet#updateCharacterStream(int, Reader, int)}
-	 */
-	public void testUpdateCharacterStreamIntReaderInt()
-	{
-		Reader reader = new StringReader("test");
 		File file = new File("");
+		Reader reader = new CharArrayReader(new char[0]);
 		
-		try
-		{
-			EasyMock.expect(this.fileSupport.createFile(reader)).andReturn(file);
-			
-			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-			
-			this.lock.lock();
-			
-			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
-			
-			EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader);
-			
-			this.sqlResultSet.updateCharacterStream(1, reader, 100);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateCharacterStream(1, reader, 100);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader);
+		
+		this.sqlResultSet.updateCharacterStream(name, reader, length);
+		
+		this.control.replay();
+
+		this.resultSet.updateCharacterStream(name, value, length);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "int-clob")
+	Object[][] intClobProvider()
+	{
+		return new Object[][] { new Object[] { 1, EasyMock.createMock(Clob.class) } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateCharacterStream(String, Reader, int)}
+	 * @see java.sql.ResultSet#updateClob(int, java.sql.Clob)
 	 */
-	public void testUpdateCharacterStreamStringReaderInt()
+	@Test(dataProvider = "int-clob")
+	public void updateClob(int index, Clob value) throws SQLException
 	{
-		Reader reader = new StringReader("test");
 		File file = new File("");
-		
-		try
-		{
-			EasyMock.expect(this.fileSupport.createFile(reader)).andReturn(file);
-			
-			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-			
-			this.lock.lock();
-			
-			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
-			
-			EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader);
-			
-			this.sqlResultSet.updateCharacterStream("column", reader, 100);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateCharacterStream("column", reader, 100);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link ResultSet#updateClob(int, Clob)}
-	 */
-	public void testUpdateClobIntClob()
-	{
 		Clob clob = EasyMock.createMock(Clob.class);
-		File file = new File("");
 		
-		try
-		{
-			EasyMock.expect(this.fileSupport.createFile(clob)).andReturn(file);
-			
-			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-			
-			this.lock.lock();
-			
-			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
-			
-			EasyMock.expect(this.fileSupport.getClob(file)).andReturn(clob);
-			
-			this.sqlResultSet.updateClob(1, clob);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateClob(1, clob);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
+		
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		EasyMock.expect(this.fileSupport.getClob(file)).andReturn(clob);
+		
+		this.sqlResultSet.updateClob(index, clob);
+		
+		this.control.replay();
+
+		this.resultSet.updateClob(index, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "string-clob")
+	Object[][] stringClobProvider()
+	{
+		return new Object[][] { new Object[] { "", EasyMock.createMock(Clob.class) } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateClob(String, Clob)}
+	 * @see java.sql.ResultSet#updateClob(java.lang.String, java.sql.Clob)
 	 */
-	public void testUpdateClobStringClob()
+	@Test(dataProvider = "string-clob")
+	public void updateClob(String name, Clob value) throws SQLException
 	{
+		File file = new File("");
 		Clob clob = EasyMock.createMock(Clob.class);
-		File file = new File("");
 		
-		try
-		{
-			EasyMock.expect(this.fileSupport.createFile(clob)).andReturn(file);
-			
-			EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-			
-			this.lock.lock();
-			
-			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
-			
-			EasyMock.expect(this.fileSupport.getClob(file)).andReturn(clob);
-			
-			this.sqlResultSet.updateClob("column", clob);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateClob("column", clob);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
-
-	/**
-	 * Test method for {@link ResultSet#updateDate(int, Date)}
-	 */
-	public void testUpdateDateIntDate()
-	{
-		Date date = new Date(System.currentTimeMillis());
-
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
+		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateDate(1, date);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateDate(1, date);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		EasyMock.expect(this.fileSupport.getClob(file)).andReturn(clob);
+		
+		this.sqlResultSet.updateClob(name, clob);
+		
+		this.control.replay();
+
+		this.resultSet.updateClob(name, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "int-date")
+	Object[][] intDateProvider()
+	{
+		return new Object[][] { new Object[] { 1, new Date(System.currentTimeMillis()) } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateDate(String, Date)}
+	 * @see java.sql.ResultSet#updateDate(int, java.sql.Date)
 	 */
-	public void testUpdateDateStringDate()
+	@Test(dataProvider = "int-date")
+	public void updateDate(int index, Date value) throws SQLException
 	{
-		Date date = new Date(System.currentTimeMillis());
-
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateDate("column", date);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateDate("column", date);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateDate(index, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateDate(index, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "string-date")
+	Object[][] stringDateProvider()
+	{
+		return new Object[][] { new Object[] { "", new Date(System.currentTimeMillis()) } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateDouble(int, double)}
+	 * @see java.sql.ResultSet#updateDate(java.lang.String, java.sql.Date)
 	 */
-	public void testUpdateDoubleIntDouble()
+	@Test(dataProvider = "string-date")
+	public void updateDate(String name, Date value) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateDouble(1, 1.1);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateDouble(1, 1.1);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateDate(name, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateDate(name, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "int-double")
+	Object[][] intDoubleProvider()
+	{
+		return new Object[][] { new Object[] { 1, 1.0 } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateDouble(String, double)}
+	 * @see java.sql.ResultSet#updateDouble(int, double)
 	 */
-	public void testUpdateDoubleStringDouble()
+	@Test(dataProvider = "int-double")
+	public void updateDouble(int index, double value) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateDouble("column", 1.1);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateDouble("column", 1.1);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateDouble(index, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateDouble(index, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "string-double")
+	Object[][] stringDoubleProvider()
+	{
+		return new Object[][] { new Object[] { "", 1.0 } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateFloat(int, float)}
+	 * @see java.sql.ResultSet#updateDouble(java.lang.String, double)
 	 */
-	public void testUpdateFloatIntFloat()
+	@Test(dataProvider = "string-double")
+	public void updateDouble(String name, double value) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateFloat(1, 1.1f);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateFloat(1, 1.1f);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateDouble(name, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateDouble(name, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "int-float")
+	Object[][] intFloatProvider()
+	{
+		return new Object[][] { new Object[] { 1, 1.0F } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateFloat(String, float)}
+	 * @see java.sql.ResultSet#updateFloat(int, float)
 	 */
-	public void testUpdateFloatStringFloat()
+	@Test(dataProvider = "int-float")
+	public void updateFloat(int index, float value) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateFloat("column", 1.1f);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateFloat("column", 1.1f);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateFloat(index, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateFloat(index, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "string-float")
+	Object[][] stringFloatProvider()
+	{
+		return new Object[][] { new Object[] { "", 1.0F } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateInt(int, int)}
+	 * @see java.sql.ResultSet#updateFloat(java.lang.String, float)
 	 */
-	public void testUpdateIntIntInt()
+	@Test(dataProvider = "string-float")
+	public void updateFloat(String name, float value) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateInt(1, 1);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateInt(1, 1);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateFloat(name, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateFloat(name, value);
+		
+		this.control.verify();
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateInt(String, int)}
+	 * @see java.sql.ResultSet#updateInt(int, int)
 	 */
-	public void testUpdateIntStringInt()
+	@Test(dataProvider = "int-int")
+	public void updateInt(int index, int value) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateInt("column", 1);;
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateInt("column", 1);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateInt(index, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateInt(index, value);
+		
+		this.control.verify();
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateLong(int, long)}
+	 * @see java.sql.ResultSet#updateInt(java.lang.String, int)
 	 */
-	public void testUpdateLongIntLong()
+	@Test(dataProvider = "string-int")
+	public void updateInt(String name, int value) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateLong(1, 1);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateLong(1, 1);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateInt(name, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateInt(name, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "int-long")
+	Object[][] intLongProvider()
+	{
+		return new Object[][] { new Object[] { 1, 1L } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateLong(String, long)}
+	 * @see java.sql.ResultSet#updateLong(int, long)
 	 */
-	public void testUpdateLongStringLong()
+	@Test(dataProvider = "int-long")
+	public void updateLong(int index, long value) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateLong("column", 1);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateLong("column", 1);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateLong(index, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateLong(index, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "string-long")
+	Object[][] stringLongProvider()
+	{
+		return new Object[][] { new Object[] { "", 1L } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateNull(int)}
+	 * @see java.sql.ResultSet#updateLong(java.lang.String, long)
 	 */
-	public void testUpdateNullInt()
+	@Test(dataProvider = "string-long")
+	public void updateLong(String name, long value) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateNull(1);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateNull(1);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateLong(name, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateLong(name, value);
+		
+		this.control.verify();
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateNull(String)}
+	 * @see java.sql.ResultSet#updateNull(int)
 	 */
-	public void testUpdateNullString()
+	@Test(dataProvider = "int")
+	public void updateNull(int index) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateNull("column");
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateNull("column");
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateNull(index);
+		
+		this.control.replay();
+
+		this.resultSet.updateNull(index);
+		
+		this.control.verify();
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateObject(int, Object)}
+	 * @see java.sql.ResultSet#updateNull(java.lang.String)
 	 */
-	public void testUpdateObjectIntObject()
+	@Test(dataProvider = "string")
+	public void updateNull(String name) throws SQLException
 	{
-		Object object = new Object();
-		
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateObject(1, object);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateObject(1, object);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateNull(name);
+		
+		this.control.replay();
+
+		this.resultSet.updateNull(name);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "int-object")
+	Object[][] intObjectProvider()
+	{
+		return new Object[][] { new Object[] { 1, new Object() } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateObject(int, Object, int)}
+	 * @see java.sql.ResultSet#updateObject(int, java.lang.Object)
 	 */
-	public void testUpdateObjectIntObjectInt()
+	@Test(dataProvider = "int-object")
+	public void updateObject(int index, Object value) throws SQLException
 	{
-		Object object = new Object();
-		
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateObject(1, object, Types.ARRAY);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateObject(1, object, Types.ARRAY);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateObject(index, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateObject(index, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "string-object")
+	Object[][] stringObjectProvider()
+	{
+		return new Object[][] { new Object[] { "", new Object() } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateObject(String, Object)}
+	 * @see java.sql.ResultSet#updateObject(java.lang.String, java.lang.Object)
 	 */
-	public void testUpdateObjectStringObject()
+	@Test(dataProvider = "string-object")
+	public void updateObject(String name, Object value) throws SQLException
 	{
-		Object object = new Object();
-		
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateObject("column", object);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateObject("column", object);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateObject(name, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateObject(name, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "int-object-int")
+	Object[][] intObjectIntProvider()
+	{
+		return new Object[][] { new Object[] { 1, new Object(), 1 } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateObject(String, Object, int)}
+	 * @see java.sql.ResultSet#updateObject(int, java.lang.Object, int)
 	 */
-	public void testUpdateObjectStringObjectInt()
+	@Test(dataProvider = "int-object-int")
+	public void updateObject(int index, Object value, int scale) throws SQLException
 	{
-		Object object = new Object();
-		
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateObject("column", object, Types.ARRAY);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateObject("column", object, Types.ARRAY);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateObject(index, value, scale);
+		
+		this.control.replay();
+
+		this.resultSet.updateObject(index, value, scale);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "string-object-int")
+	Object[][] stringObjectIntProvider()
+	{
+		return new Object[][] { new Object[] { "", new Object(), 1 } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateRef(int, Ref)}
+	 * @see java.sql.ResultSet#updateObject(java.lang.String, java.lang.Object, int)
 	 */
-	public void testUpdateRefIntRef()
+	@Test(dataProvider = "string-object-int")
+	public void updateObject(String name, Object value, int scale) throws SQLException
 	{
-		Ref ref = EasyMock.createMock(Ref.class);
-		
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateObject(1, ref);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateObject(1, ref);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateObject(name, value, scale);
+		
+		this.control.replay();
+
+		this.resultSet.updateObject(name, value, scale);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "int-ref")
+	Object[][] intRefProvider()
+	{
+		return new Object[][] { new Object[] { 1, EasyMock.createMock(Ref.class) } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateRef(String, Ref)}
+	 * @see java.sql.ResultSet#updateRef(int, java.sql.Ref)
 	 */
-	public void testUpdateRefStringRef()
+	@Test(dataProvider = "int-ref")
+	public void updateRef(int index, Ref value) throws SQLException
 	{
-		Ref ref = EasyMock.createMock(Ref.class);
-		
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateObject("column", ref);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateObject("column", ref);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateRef(index, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateRef(index, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "string-ref")
+	Object[][] stringRefProvider()
+	{
+		return new Object[][] { new Object[] { "", EasyMock.createMock(Ref.class) } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateRow()}
+	 * @see java.sql.ResultSet#updateRef(java.lang.String, java.sql.Ref)
 	 */
-	public void testUpdateRow()
+	@Test(dataProvider = "string-ref")
+	public void updateRef(String name, Ref value) throws SQLException
+	{
+		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		
+		this.sqlResultSet.updateRef(name, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateRef(name, value);
+		
+		this.control.verify();
+	}
+
+	/**
+	 * @see java.sql.ResultSet#updateRow()
+	 */
+	@Test
+	public void updateRow() throws SQLException
 	{
 		EasyMock.expect(this.databaseCluster.getTransactionalExecutor()).andReturn(this.executor);
 		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
@@ -4213,307 +3520,228 @@ public class TestResultSet
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateRow();
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateRow();
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateRow();
+		
+		this.lock.unlock();
+		
+		this.control.replay();
+		
+		this.resultSet.updateRow();
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "int-short")
+	Object[][] intShortProvider()
+	{
+		return new Object[][] { new Object[] { 1, Integer.valueOf(1).shortValue() } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateShort(int, short)}
+	 * @see java.sql.ResultSet#updateShort(int, short)
 	 */
-	public void testUpdateShortIntShort()
+	@Test(dataProvider = "int-short")
+	public void updateShort(int index, short value) throws SQLException
 	{
-		short s = Integer.valueOf(1).shortValue();
-		
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateShort(1, s);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateShort(1, s);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateShort(index, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateShort(index, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "string-short")
+	Object[][] stringShortProvider()
+	{
+		return new Object[][] { new Object[] { "", Integer.valueOf(1).shortValue() } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateShort(String, short)}
+	 * @see java.sql.ResultSet#updateShort(java.lang.String, short)
 	 */
-	public void testUpdateShortStringShort()
+	@Test(dataProvider = "string-short")
+	public void updateShort(String name, short value) throws SQLException
 	{
-		short s = Integer.valueOf(1).shortValue();
-		
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateShort("column", s);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateShort("column", s);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateShort(name, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateShort(name, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "int-string")
+	Object[][] intStringProvider()
+	{
+		return new Object[][] { new Object[] { 1, "" } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateString(int, String)}
+	 * @see java.sql.ResultSet#updateString(int, java.lang.String)
 	 */
-	public void testUpdateStringIntString()
+	@Test(dataProvider = "int-string")
+	public void updateString(int index, String value) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateString(1, "test");
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateString(1, "test");
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateString(index, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateString(index, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "string-string")
+	Object[][] stringStringProvider()
+	{
+		return new Object[][] { new Object[] { "", "" } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateString(String, String)}
+	 * @see java.sql.ResultSet#updateString(java.lang.String, java.lang.String)
 	 */
-	public void testUpdateStringStringString()
+	@Test(dataProvider = "string-string")
+	public void updateString(String name, String value) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateString("column", "test");
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateString("column", "test");
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateString(name, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateString(name, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "int-time")
+	Object[][] intTimeProvider()
+	{
+		return new Object[][] { new Object[] { 1, new Time(System.currentTimeMillis()) } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateTime(int, Time)}
+	 * @see java.sql.ResultSet#updateTime(int, java.sql.Time)
 	 */
-	public void testUpdateTimeIntTime()
+	@Test(dataProvider = "int-time")
+	public void updateTime(int index, Time value) throws SQLException
 	{
-		Time time = new Time(System.currentTimeMillis());
-		
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateTime(1, time);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateTime(1, time);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateTime(index, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateTime(index, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "string-time")
+	Object[][] stringTimeProvider()
+	{
+		return new Object[][] { new Object[] { "", new Time(System.currentTimeMillis()) } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateTime(String, Time)}
+	 * @see java.sql.ResultSet#updateTime(java.lang.String, java.sql.Time)
 	 */
-	public void testUpdateTimeStringTime()
+	@Test(dataProvider = "string-time")
+	public void updateTime(String name, Time value) throws SQLException
 	{
-		Time time = new Time(System.currentTimeMillis());
-		
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateTime("column", time);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateTime("column", time);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateTime(name, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateTime(name, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "int-timestamp")
+	Object[][] intTimestampProvider()
+	{
+		return new Object[][] { new Object[] { 1, new Timestamp(System.currentTimeMillis()) } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateTimestamp(int, Timestamp)}
+	 * @see java.sql.ResultSet#updateTimestamp(int, java.sql.Timestamp)
 	 */
-	public void testUpdateTimestampIntTimestamp()
+	@Test(dataProvider = "int-timestamp")
+	public void updateTimestamp(int index, Timestamp value) throws SQLException
 	{
-		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-		
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateTimestamp(1, timestamp);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateTimestamp(1, timestamp);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateTimestamp(index, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateTimestamp(index, value);
+		
+		this.control.verify();
+	}
+
+	@DataProvider(name = "string-timestamp")
+	Object[][] stringTimestampProvider()
+	{
+		return new Object[][] { new Object[] { "", new Timestamp(System.currentTimeMillis()) } };
 	}
 
 	/**
-	 * Test method for {@link ResultSet#updateTimestamp(String, Timestamp)}
+	 * @see java.sql.ResultSet#updateTimestamp(java.lang.String, java.sql.Timestamp)
 	 */
-	public void testUpdateTimestampStringTimestamp()
+	@Test(dataProvider = "string-timestamp")
+	public void updateTimestamp(String name, Timestamp value) throws SQLException
 	{
-		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-		
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
-		try
-		{
-			this.sqlResultSet.updateTimestamp("column", timestamp);
-			
-			this.lock.unlock();
-			
-			this.control.replay();
-			
-			this.resultSet.updateTimestamp("column", timestamp);
-			
-			this.control.verify();
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		this.sqlResultSet.updateTimestamp(name, value);
+		
+		this.control.replay();
+
+		this.resultSet.updateTimestamp(name, value);
+		
+		this.control.verify();
 	}
 
 	/**
-	 * Test method for {@link ResultSet#wasNull()}
+	 * @see java.sql.ResultSet#wasNull()
 	 */
-	public void testWasNull()
+	@Test
+	public boolean wasNull() throws SQLException
 	{
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
 		
-		try
-		{
-			EasyMock.expect(this.sqlResultSet.wasNull()).andReturn(true);
-			
-			this.control.replay();
-			
-			boolean wasNull = this.resultSet.wasNull();
-			
-			this.control.verify();
-			
-			assert wasNull;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
-	}
+		EasyMock.expect(this.sqlResultSet.wasNull()).andReturn(true);
+		
+		this.control.replay();
+
+		boolean result = this.resultSet.wasNull();
+		
+		this.control.verify();
+		
+		assert result;
+		
+		return result;
+	}	
 }

@@ -130,7 +130,7 @@ public class TestDriverDatabase extends AbstractTestDatabase<DriverDatabase, Dri
 	}
 	
 	@DataProvider(name = "connection-factory")
-	protected Object[][] connectionFactoryProvider()
+	Object[][] connectionFactoryProvider()
 	{
 		return new Object[][] { new Object[] { this.driver } };
 	}
@@ -209,7 +209,7 @@ public class TestDriverDatabase extends AbstractTestDatabase<DriverDatabase, Dri
 	}
 
 	@DataProvider(name = "url")
-	protected Object[][] urlProvider()
+	Object[][] urlProvider()
 	{
 		return new Object[][] { new Object[] { "jdbc:mock:test" } };
 	}

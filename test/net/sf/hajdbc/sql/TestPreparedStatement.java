@@ -461,7 +461,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-array")
-	protected Object[][] intArrayProvider()
+	Object[][] intArrayProvider()
 	{
 		return new Object[][] { new Object[] { 1, EasyMock.createMock(Array.class) } };
 	}
@@ -485,7 +485,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-inputStream-int")
-	protected Object[][] intInputStreamIntProvider()
+	Object[][] intInputStreamIntProvider()
 	{
 		return new Object[][] { new Object[] { 1, new ByteArrayInputStream(new byte[0]), 0 } };
 	}
@@ -515,7 +515,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-bigDecimal")
-	protected Object[][] intBigDecimalProvider()
+	Object[][] intBigDecimalProvider()
 	{
 		return new Object[][] { new Object[] { 1, new BigDecimal(10) } };
 	}
@@ -563,7 +563,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-blob")
-	protected Object[][] intBlobProvider()
+	Object[][] intBlobProvider()
 	{
 		return new Object[][] { new Object[] { 1, EasyMock.createMock(Blob.class) } };
 	}
@@ -593,7 +593,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-boolean")
-	protected Object[][] intBooleanProvider()
+	Object[][] intBooleanProvider()
 	{
 		return new Object[][] { new Object[] { 1, true } };
 	}
@@ -617,9 +617,9 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-byte")
-	protected Object[][] intByteProvider()
+	Object[][] intByteProvider()
 	{
-		return new Object[][] { new Object[] { 1, (byte) 'a' } };
+		return new Object[][] { new Object[] { 1, Integer.valueOf(1).byteValue() } };
 	}
 
 	/**
@@ -641,7 +641,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-bytes")
-	protected Object[][] intBytesProvider()
+	Object[][] intBytesProvider()
 	{
 		return new Object[][] { new Object[] { 1, new byte[0] } };
 	}
@@ -665,7 +665,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-reader-int")
-	protected Object[][] intReaderIntProvider()
+	Object[][] intReaderIntProvider()
 	{
 		return new Object[][] { new Object[] { 1, new CharArrayReader(new char[0]), 0 } };
 	}
@@ -695,7 +695,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-clob")
-	protected Object[][] intClobProvider()
+	Object[][] intClobProvider()
 	{
 		return new Object[][] { new Object[] { 1, EasyMock.createMock(Clob.class) } };
 	}
@@ -725,7 +725,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-date")
-	protected Object[][] intDateProvider()
+	Object[][] intDateProvider()
 	{
 		return new Object[][] { new Object[] { 1, new Date(System.currentTimeMillis()) } };
 	}
@@ -749,7 +749,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-date-calendar")
-	protected Object[][] intDateCalendarProvider()
+	Object[][] intDateCalendarProvider()
 	{
 		return new Object[][] { new Object[] { 1, new Date(System.currentTimeMillis()), Calendar.getInstance() } };
 	}
@@ -773,7 +773,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-double")
-	protected Object[][] intDoubleProvider()
+	Object[][] intDoubleProvider()
 	{
 		return new Object[][] { new Object[] { 1, 1.0 } };
 	}
@@ -797,7 +797,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-float")
-	protected Object[][] intFloatProvider()
+	Object[][] intFloatProvider()
 	{
 		return new Object[][] { new Object[] { 1, 1.0f } };
 	}
@@ -821,7 +821,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-int")
-	protected Object[][] intIntProvider()
+	Object[][] intIntProvider()
 	{
 		return new Object[][] { new Object[] { 1, 1 } };
 	}
@@ -845,7 +845,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-long")
-	protected Object[][] intLongProvider()
+	Object[][] intLongProvider()
 	{
 		return new Object[][] { new Object[] { 1, 1L } };
 	}
@@ -887,7 +887,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-int-string")
-	protected Object[][] intIntStringProvider()
+	Object[][] intIntStringProvider()
 	{
 		return new Object[][] { new Object[] { 1, 1, "" } };
 	}
@@ -911,7 +911,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-object")
-	protected Object[][] intObjectProvider()
+	Object[][] intObjectProvider()
 	{
 		return new Object[][] { new Object[] { 1, new Object() } };
 	}
@@ -935,7 +935,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-object-int")
-	protected Object[][] intObjectIntProvider()
+	Object[][] intObjectIntProvider()
 	{
 		return new Object[][] { new Object[] { 1, new Object(), 1 } };
 	}
@@ -959,7 +959,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-object-int-int")
-	protected Object[][] intObjectIntIntProvider()
+	Object[][] intObjectIntIntProvider()
 	{
 		return new Object[][] { new Object[] { 1, new Object(), 1, 1 } };
 	}
@@ -983,7 +983,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-ref")
-	protected Object[][] intRefProvider()
+	Object[][] intRefProvider()
 	{
 		return new Object[][] { new Object[] { 1, EasyMock.createMock(Ref.class) } };
 	}
@@ -1007,9 +1007,9 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-short")
-	protected Object[][] intShortProvider()
+	Object[][] intShortProvider()
 	{
-		return new Object[][] { new Object[] { 1, (short) 1 } };
+		return new Object[][] { new Object[] { 1, Integer.valueOf(1).shortValue() } };
 	}
 
 	/**
@@ -1031,7 +1031,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-string")
-	protected Object[][] intStringProvider()
+	Object[][] intStringProvider()
 	{
 		return new Object[][] { new Object[] { 1, "" } };
 	}
@@ -1055,7 +1055,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-time")
-	protected Object[][] intTimeProvider()
+	Object[][] intTimeProvider()
 	{
 		return new Object[][] { new Object[] { 1, new Time(System.currentTimeMillis()) } };
 	}
@@ -1079,7 +1079,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-time-calendar")
-	protected Object[][] intTimeCalendarProvider()
+	Object[][] intTimeCalendarProvider()
 	{
 		return new Object[][] { new Object[] { 1, new Time(System.currentTimeMillis()), Calendar.getInstance() } };
 	}
@@ -1103,7 +1103,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-timestamp")
-	protected Object[][] intTimestampProvider()
+	Object[][] intTimestampProvider()
 	{
 		return new Object[][] { new Object[] { 1, new Timestamp(System.currentTimeMillis()) } };
 	}
@@ -1127,7 +1127,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-timestamp-calendar")
-	protected Object[][] intTimestampCalendarProvider()
+	Object[][] intTimestampCalendarProvider()
 	{
 		return new Object[][] { new Object[] { 1, new Timestamp(System.currentTimeMillis()), Calendar.getInstance() } };
 	}
@@ -1176,7 +1176,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 
 	@DataProvider(name = "int-url")
-	protected Object[][] intURLProvider() throws MalformedURLException
+	Object[][] intURLProvider() throws MalformedURLException
 	{
 		return new Object[][] { new Object[] { 1, new URL("http://ha-jdbc.sf.net") } };
 	}

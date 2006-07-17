@@ -62,13 +62,13 @@ public class TestDefaultDialect implements Dialect
 	}
 	
 	@DataProvider(name = "table")
-	protected Object[][] tableProvider()
+	Object[][] tableProvider()
 	{
 		return new Object[][] { new Object[] { this.tableProperties } };
 	}
 	
 	@DataProvider(name = "foreign-key")
-	protected Object[][] foreignKeyProvider()
+	Object[][] foreignKeyProvider()
 	{
 		ForeignKeyConstraint foreignKey = new ForeignKeyConstraint("name", "table");
 		foreignKey.getColumnList().add("column1");
@@ -84,7 +84,7 @@ public class TestDefaultDialect implements Dialect
 	}
 	
 	@DataProvider(name = "unique-constraint")
-	protected Object[][] uniqueConstraintProvider()
+	Object[][] uniqueConstraintProvider()
 	{
 		UniqueConstraint uniqueKey = new UniqueConstraint("name", "table");
 		uniqueKey.getColumnList().add("column1");
@@ -94,25 +94,25 @@ public class TestDefaultDialect implements Dialect
 	}
 	
 	@DataProvider(name = "alter-sequence")
-	protected Object[][] alterSequenceProvider()
+	Object[][] alterSequenceProvider()
 	{
 		return new Object[][] { new Object[] { "sequence", 1L } };
 	}
 	
 	@DataProvider(name = "column")
-	protected Object[][] columnProvider()
+	Object[][] columnProvider()
 	{
 		return new Object[][] { new Object[] { new ColumnProperties("column", Types.INTEGER, "int") } };
 	}
 
 	@DataProvider(name = "connection")
-	protected Object[][] connectionProvider()
+	Object[][] connectionProvider()
 	{
 		return new Object[][] { new Object[] { this.connection } };
 	}
 
 	@DataProvider(name = "null")
-	protected Object[][] nullProvider()
+	Object[][] nullProvider()
 	{
 		return new Object[][] { new Object[] { null } };
 	}

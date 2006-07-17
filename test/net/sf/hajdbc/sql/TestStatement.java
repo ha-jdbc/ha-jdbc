@@ -140,7 +140,7 @@ public class TestStatement implements java.sql.Statement
 	}
 
 	@DataProvider(name = "string")
-	protected Object[][] stringProvider()
+	Object[][] stringProvider()
 	{
 		return new Object[][] { new Object[] { "sql" } };
 	}
@@ -313,7 +313,7 @@ public class TestStatement implements java.sql.Statement
 	}
 
 	@DataProvider(name = "string-int")
-	protected Object[][] stringIntProvider()
+	Object[][] stringIntProvider()
 	{
 		return new Object[][] { new Object[] { "sql", java.sql.Statement.NO_GENERATED_KEYS } };
 	}
@@ -380,7 +380,7 @@ public class TestStatement implements java.sql.Statement
 	}
 
 	@DataProvider(name = "string-ints")
-	protected Object[][] stringIntsProvider()
+	Object[][] stringIntsProvider()
 	{
 		return new Object[][] { new Object[] { "sql", new int[] { 1 } } };
 	}
@@ -447,7 +447,7 @@ public class TestStatement implements java.sql.Statement
 	}
 
 	@DataProvider(name = "string-strings")
-	protected Object[][] stringStringsProvider()
+	Object[][] stringStringsProvider()
 	{
 		return new Object[][] { new Object[] { "sql", new String[] { "name" } } };
 	}
@@ -1157,7 +1157,7 @@ public class TestStatement implements java.sql.Statement
 	}
 
 	@DataProvider(name = "int")
-	protected Object[][] intProvider()
+	Object[][] intProvider()
 	{
 		return new Object[][] { new Object[] { 10 } };
 	}
@@ -1423,7 +1423,7 @@ public class TestStatement implements java.sql.Statement
 	}
 
 	@DataProvider(name = "boolean")
-	protected Object[][] booleanProvider()
+	Object[][] booleanProvider()
 	{
 		return new Object[][] { new Object[] { true } };
 	}
@@ -1447,7 +1447,7 @@ public class TestStatement implements java.sql.Statement
 	}
 
 	@DataProvider(name = "direction")
-	protected Object[][] directionProvider()
+	Object[][] directionProvider()
 	{
 		return new Object[][] { new Object[] { ResultSet.FETCH_FORWARD } };
 	}

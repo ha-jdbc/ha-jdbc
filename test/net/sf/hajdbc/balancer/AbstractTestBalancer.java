@@ -51,7 +51,7 @@ public abstract class AbstractTestBalancer implements Balancer
 	}
 	
 	@DataProvider(name = "database")
-	protected Object[][] databaseProvider()
+	Object[][] databaseProvider()
 	{
 		return new Object[][] { new Object[] { new MockDatabase("1", 1) } };
 	}

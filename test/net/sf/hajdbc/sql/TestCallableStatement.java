@@ -312,7 +312,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "int")
 	public byte getByte(int index) throws SQLException
 	{
-		byte b = (byte) 'a';
+		byte b = Integer.valueOf(1).byteValue();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
@@ -336,7 +336,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string")
 	public byte getByte(String name) throws SQLException
 	{
-		byte b = (byte) 'a';
+		byte b = Integer.valueOf(1).byteValue();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
@@ -475,7 +475,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "int-calendar")
-	protected Object[][] intCalendarProvider()
+	Object[][] intCalendarProvider()
 	{
 		return new Object[][] { new Object[] { 1, Calendar.getInstance() } };
 	}
@@ -529,7 +529,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "string-calendar")
-	protected Object[][] stringCalendarProvider()
+	Object[][] stringCalendarProvider()
 	{
 		return new Object[][] { new Object[] { "column", Calendar.getInstance() } };
 	}
@@ -775,7 +775,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "int-map")
-	protected Object[][] intMapProvider()
+	Object[][] intMapProvider()
 	{
 		return new Object[][] { new Object[] { 1, Collections.EMPTY_MAP } };
 	}
@@ -828,7 +828,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "string-map")
-	protected Object[][] stringMapProvider()
+	Object[][] stringMapProvider()
 	{
 		return new Object[][] { new Object[] { "column", Collections.EMPTY_MAP } };
 	}
@@ -911,7 +911,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "int")
 	public short getShort(int index) throws SQLException
 	{
-		short s = (short) 1;
+		short s = Integer.valueOf(1).shortValue();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
@@ -935,7 +935,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string")
 	public short getShort(String name) throws SQLException
 	{
-		short s = (short) 1;
+		short s = Integer.valueOf(1).shortValue();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
@@ -1276,7 +1276,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 	
 	@DataProvider(name = "int-int-int")
-	protected Object[][] intIntIntProvider()
+	Object[][] intIntIntProvider()
 	{
 		return new Object[][] { new Object[] { 1, Types.INTEGER, 1 } };
 	}
@@ -1336,7 +1336,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "string-int-int")
-	protected Object[][] stringIntIntProvider()
+	Object[][] stringIntIntProvider()
 	{
 		return new Object[][] { new Object[] { "column", Types.INTEGER, 1 } };
 	}
@@ -1360,7 +1360,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "string-int-string")
-	protected Object[][] stringIntStringProvider()
+	Object[][] stringIntStringProvider()
 	{
 		return new Object[][] { new Object[] { "column", Types.INTEGER, "int" } };
 	}
@@ -1384,7 +1384,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "string-inputStream-int")
-	protected Object[][] stringInputStreamIntProvider()
+	Object[][] stringInputStreamIntProvider()
 	{
 		return new Object[][] { new Object[] { "column", new ByteArrayInputStream(new byte[0]), 0 } };
 	}
@@ -1415,7 +1415,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "string-bigDecimal")
-	protected Object[][] stringBigDecimalProvider()
+	Object[][] stringBigDecimalProvider()
 	{
 		return new Object[][] { new Object[] { "column", new BigDecimal(1.0) } };
 	}
@@ -1464,7 +1464,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "string-boolean")
-	protected Object[][] stringBooleanProvider()
+	Object[][] stringBooleanProvider()
 	{
 		return new Object[][] { new Object[] { "column", true } };
 	}
@@ -1488,9 +1488,9 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "string-byte")
-	protected Object[][] stringByteProvider()
+	Object[][] stringByteProvider()
 	{
-		return new Object[][] { new Object[] { "column", (byte) 'a' } };
+		return new Object[][] { new Object[] { "column", Integer.valueOf(1).byteValue() } };
 	}
 
 	/**
@@ -1512,7 +1512,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "string-bytes")
-	protected Object[][] stringBytesProvider()
+	Object[][] stringBytesProvider()
 	{
 		return new Object[][] { new Object[] { "column", new byte[0] } };
 	}
@@ -1536,7 +1536,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "string-reader-int")
-	protected Object[][] stringReaderProvider()
+	Object[][] stringReaderProvider()
 	{
 		return new Object[][] { new Object[] { "column", new CharArrayReader(new char[0]), 0 } };
 	}
@@ -1567,7 +1567,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "string-date")
-	protected Object[][] stringDateProvider()
+	Object[][] stringDateProvider()
 	{
 		return new Object[][] { new Object[] { "column", new Date(System.currentTimeMillis()) } };
 	}
@@ -1591,7 +1591,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "string-date-calendar")
-	protected Object[][] stringDateCalendarProvider()
+	Object[][] stringDateCalendarProvider()
 	{
 		return new Object[][] { new Object[] { "column", new Date(System.currentTimeMillis()), Calendar.getInstance() } };
 	}
@@ -1615,7 +1615,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "string-double")
-	protected Object[][] stringDoubleProvider()
+	Object[][] stringDoubleProvider()
 	{
 		return new Object[][] { new Object[] { "column", 1.0 } };
 	}
@@ -1639,7 +1639,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "string-float")
-	protected Object[][] stringFloatProvider()
+	Object[][] stringFloatProvider()
 	{
 		return new Object[][] { new Object[] { "column", 1.0F } };
 	}
@@ -1681,7 +1681,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "string-long")
-	protected Object[][] stringLongProvider()
+	Object[][] stringLongProvider()
 	{
 		return new Object[][] { new Object[] { "column", 1L } };
 	}
@@ -1741,7 +1741,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "string-object")
-	protected Object[][] stringObjectProvider()
+	Object[][] stringObjectProvider()
 	{
 		return new Object[][] { new Object[] { "column", new Object() } };
 	}
@@ -1765,7 +1765,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "string-object-int")
-	protected Object[][] stringObjectIntProvider()
+	Object[][] stringObjectIntProvider()
 	{
 		return new Object[][] { new Object[] { "column", new Object(), Types.INTEGER } };
 	}
@@ -1789,7 +1789,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "string-object-int-int")
-	protected Object[][] stringObjectIntIntProvider()
+	Object[][] stringObjectIntIntProvider()
 	{
 		return new Object[][] { new Object[] { "column", new Object(), Types.INTEGER, 1 } };
 	}
@@ -1813,9 +1813,9 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "string-short")
-	protected Object[][] stringShortProvider()
+	Object[][] stringShortProvider()
 	{
-		return new Object[][] { new Object[] { "column", (short) 1 } };
+		return new Object[][] { new Object[] { "column", Integer.valueOf(1).shortValue() } };
 	}
 
 	/**
@@ -1837,7 +1837,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "string-string")
-	protected Object[][] stringStringProvider()
+	Object[][] stringStringProvider()
 	{
 		return new Object[][] { new Object[] { "column", "" } };
 	}
@@ -1861,7 +1861,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "string-time")
-	protected Object[][] stringTimeProvider()
+	Object[][] stringTimeProvider()
 	{
 		return new Object[][] { new Object[] { "column", new Time(System.currentTimeMillis()) } };
 	}
@@ -1885,7 +1885,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "string-time-calendar")
-	protected Object[][] stringTimeCalendarProvider()
+	Object[][] stringTimeCalendarProvider()
 	{
 		return new Object[][] { new Object[] { "column", new Time(System.currentTimeMillis()), Calendar.getInstance() } };
 	}
@@ -1909,7 +1909,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "string-timestamp")
-	protected Object[][] stringTimestampProvider()
+	Object[][] stringTimestampProvider()
 	{
 		return new Object[][] { new Object[] { "column", new Timestamp(System.currentTimeMillis()) } };
 	}
@@ -1933,7 +1933,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "string-timestamp-calendar")
-	protected Object[][] stringTimestampCalendarProvider()
+	Object[][] stringTimestampCalendarProvider()
 	{
 		return new Object[][] { new Object[] { "column", new Timestamp(System.currentTimeMillis()), Calendar.getInstance() } };
 	}
@@ -1957,7 +1957,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 
 	@DataProvider(name = "string-url")
-	protected Object[][] stringUrlProvider() throws MalformedURLException
+	Object[][] stringUrlProvider() throws MalformedURLException
 	{
 		return new Object[][] { new Object[] { "column", new URL("http://ha-jdbc.sf.net") } };
 	}

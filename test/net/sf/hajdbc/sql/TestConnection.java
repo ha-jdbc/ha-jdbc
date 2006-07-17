@@ -238,7 +238,7 @@ public class TestConnection implements java.sql.Connection
 	}
 	
 	@DataProvider(name = "int-int")
-	protected Object[][] intIntProvider()
+	Object[][] intIntProvider()
 	{
 		return new Object[][] { new Object[] { ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE } };
 	}
@@ -302,7 +302,7 @@ public class TestConnection implements java.sql.Connection
 	}
 	
 	@DataProvider(name = "int-int-int")
-	protected Object[][] intIntIntProvider()
+	Object[][] intIntIntProvider()
 	{
 		return new Object[][] { new Object[] { ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.HOLD_CURSORS_OVER_COMMIT } };
 	}
@@ -578,7 +578,7 @@ public class TestConnection implements java.sql.Connection
 	}
 	
 	@DataProvider(name = "string")
-	protected Object[][] stringProvider()
+	Object[][] stringProvider()
 	{
 		return new Object[][] { new Object[] { "sql" } };
 	}
@@ -667,7 +667,7 @@ public class TestConnection implements java.sql.Connection
 	}
 	
 	@DataProvider(name = "string-int-int")
-	protected Object[][] stringIntIntProvider()
+	Object[][] stringIntIntProvider()
 	{
 		return new Object[][] { new Object[] { "sql", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY } };
 	}
@@ -734,7 +734,7 @@ public class TestConnection implements java.sql.Connection
 	}
 	
 	@DataProvider(name = "string-int-int-int")
-	protected Object[][] stringIntIntIntProvider()
+	Object[][] stringIntIntIntProvider()
 	{
 		return new Object[][] { new Object[] { "sql", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT } };
 	}
@@ -862,7 +862,7 @@ public class TestConnection implements java.sql.Connection
 	}
 	
 	@DataProvider(name = "string-int")
-	protected Object[][] stringIntProvider()
+	Object[][] stringIntProvider()
 	{
 		return new Object[][] { new Object[] { "sql", Statement.NO_GENERATED_KEYS } };
 	}
@@ -1051,7 +1051,7 @@ public class TestConnection implements java.sql.Connection
 	}
 	
 	@DataProvider(name = "string-ints")
-	protected Object[][] stringIntsProvider()
+	Object[][] stringIntsProvider()
 	{
 		return new Object[][] { new Object[] { "sql", new int[] { 1 } } };
 	}
@@ -1118,7 +1118,7 @@ public class TestConnection implements java.sql.Connection
 	}
 	
 	@DataProvider(name = "string-strings")
-	protected Object[][] stringStringsProvider()
+	Object[][] stringStringsProvider()
 	{
 		return new Object[][] { new Object[] { "sql", new String[] { "col1" } } };
 	}
@@ -1185,7 +1185,7 @@ public class TestConnection implements java.sql.Connection
 	}
 	
 	@DataProvider(name = "savepoint")
-	protected Object[][] savepointProvider() throws SQLException
+	Object[][] savepointProvider() throws SQLException
 	{
 		final java.sql.Savepoint sqlSavepoint = EasyMock.createMock(java.sql.Savepoint.class);
 		
@@ -1297,7 +1297,7 @@ public class TestConnection implements java.sql.Connection
 	}
 	
 	@DataProvider(name = "boolean")
-	protected Object[][] booleanProvider()
+	Object[][] booleanProvider()
 	{
 		return new Object[][] { new Object[] { true } };
 	}
@@ -1355,7 +1355,7 @@ public class TestConnection implements java.sql.Connection
 	}
 	
 	@DataProvider(name = "holdability")
-	protected Object[][] holdabilityProvider()
+	Object[][] holdabilityProvider()
 	{
 		return new Object[][] { new Object[] { ResultSet.HOLD_CURSORS_OVER_COMMIT } };
 	}
@@ -1463,7 +1463,7 @@ public class TestConnection implements java.sql.Connection
 	}
 	
 	@DataProvider(name = "isolation")
-	protected Object[][] isolationProvider()
+	Object[][] isolationProvider()
 	{
 		return new Object[][] { new Object[] { java.sql.Connection.TRANSACTION_NONE } };
 	}
@@ -1495,7 +1495,7 @@ public class TestConnection implements java.sql.Connection
 	}
 	
 	@DataProvider(name = "map")
-	protected Object[][] mapProvider()
+	Object[][] mapProvider()
 	{
 		return new Object[][] { new Object[] { Collections.EMPTY_MAP } };
 	}
