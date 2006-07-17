@@ -108,7 +108,7 @@ public class UniqueConstraint implements Comparable<UniqueConstraint>
 	}
 
 	/**
-	 * @see java.lang.Comparable#compareTo(T)
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
 	public int compareTo(UniqueConstraint constraint)
 	{

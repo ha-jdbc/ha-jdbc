@@ -42,7 +42,7 @@ public interface Dialect
 	/**
 	 * Returns a SQL statement to be executed within a running transaction that will effectively lock the specified table for writing.
 	 * @param metaData a <code>DatabaseMetaData</code> object for a given database.
-	 * @param schema the name of a database schema, or null, if this database does not support schemas.
+	 * @param schema the name of a database schema, possibly null.
 	 * @param table the name of a database table.
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
@@ -62,24 +62,16 @@ public interface Dialect
 	/**
 	 * Returns a SQL statement used to create a foreign key constraint.
 	 * @param metaData a <code>DatabaseMetaData</code> object for a given database.
-	 * @param name the name of a foreign key constraint
-	 * @param schema the name of a database schema, or null, if this database does not support schemas.
-	 * @param table the name of a database table.
-	 * @param column the name of a column in the table
-	 * @param foreignSchema the name of a database schema, or null, if this database does not support schemas.
-	 * @param foreignTable the name of a database table.
-	 * @param foreignColumn the name of a column in the foreign table
+	 * @param constraint a foreign key constraint
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
-	public String getCreateForeignKeyConstraintSQL(DatabaseMetaData metaData, ForeignKeyConstraint foreignKeyConstraint) throws SQLException;
+	public String getCreateForeignKeyConstraintSQL(DatabaseMetaData metaData, ForeignKeyConstraint constraint) throws SQLException;
 
 	/**
 	 * Returns a SQL statement used to drop a foreign key constraint.
 	 * @param metaData a <code>DatabaseMetaData</code> object for a given database.
-	 * @param name the name of the foreign key constraint
-	 * @param schema the name of a database schema, or null, if this database does not support schemas.
-	 * @param table the name of a database table.
+	 * @param constraint a foreign key constraint
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
@@ -88,10 +80,7 @@ public interface Dialect
 	/**
 	 * Returns a SQL statement used to create a unique constraint.
 	 * @param metaData a <code>DatabaseMetaData</code> object for a given database.
-	 * @param name the name of a unique key constraint
-	 * @param schema the name of a database schema, or null, if this database does not support schemas.
-	 * @param table the name of a database table.
-	 * @param columnList a List<String> fo column names.
+	 * @param constraint a unique constraint
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
@@ -100,9 +89,7 @@ public interface Dialect
 	/**
 	 * Returns a SQL statement used to drop a unique constraint.
 	 * @param metaData a <code>DatabaseMetaData</code> object for a given database.
-	 * @param name the name of a unique key constraint
-	 * @param schema the name of a database schema, or null, if this database does not support schemas.
-	 * @param table the name of a database table.
+	 * @param constraint a unique constraint
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */

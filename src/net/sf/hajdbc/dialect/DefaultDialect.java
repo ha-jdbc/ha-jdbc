@@ -132,7 +132,7 @@ public class DefaultDialect implements Dialect
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Dialect#getCreateForeignKeyConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 * @see net.sf.hajdbc.Dialect#getCreateForeignKeyConstraintSQL(java.sql.DatabaseMetaData, net.sf.hajdbc.ForeignKeyConstraint)
 	 */
 	public String getCreateForeignKeyConstraintSQL(DatabaseMetaData metaData, ForeignKeyConstraint key) throws SQLException
 	{
@@ -140,7 +140,7 @@ public class DefaultDialect implements Dialect
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Dialect#getDropForeignKeyConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String)
+	 * @see net.sf.hajdbc.Dialect#getDropForeignKeyConstraintSQL(java.sql.DatabaseMetaData, net.sf.hajdbc.ForeignKeyConstraint)
 	 */
 	public String getDropForeignKeyConstraintSQL(DatabaseMetaData metaData, ForeignKeyConstraint key) throws SQLException
 	{
@@ -148,7 +148,7 @@ public class DefaultDialect implements Dialect
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Dialect#getCreateUniqueConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String, java.util.List)
+	 * @see net.sf.hajdbc.Dialect#getCreateUniqueConstraintSQL(java.sql.DatabaseMetaData, net.sf.hajdbc.UniqueConstraint)
 	 */
 	public String getCreateUniqueConstraintSQL(DatabaseMetaData metaData, UniqueConstraint constraint) throws SQLException
 	{
@@ -156,7 +156,7 @@ public class DefaultDialect implements Dialect
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Dialect#getDropUniqueConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String)
+	 * @see net.sf.hajdbc.Dialect#getDropUniqueConstraintSQL(java.sql.DatabaseMetaData, net.sf.hajdbc.UniqueConstraint)
 	 */
 	public String getDropUniqueConstraintSQL(DatabaseMetaData metaData, UniqueConstraint constraint) throws SQLException
 	{

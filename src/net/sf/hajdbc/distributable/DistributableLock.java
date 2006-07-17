@@ -47,10 +47,10 @@ public class DistributableLock implements Lock, TwoPhaseVotingListener
 	
 	/**
 	 * Constructs a new DistributableLock.
-	 * @param name
-	 * @param protocol 
-	 * @param timeout 
-	 * @param lock 
+	 * @param channel a JGroups channel
+	 * @param name a channel name
+	 * @param timeout a timeout for channel messages.
+	 * @param lock a local lock
 	 * @throws Exception
 	 */
 	public DistributableLock(Channel channel, String name, int timeout, Lock lock) throws Exception
@@ -201,7 +201,7 @@ public class DistributableLock implements Lock, TwoPhaseVotingListener
 	}
 	
 	/**
-	 * @return the channel used by the lock manager
+	 * Stops the channel.
 	 */
 	public void stop()
 	{
