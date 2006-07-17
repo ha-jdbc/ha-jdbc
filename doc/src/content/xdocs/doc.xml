@@ -77,7 +77,9 @@
 						<dd>Optional.  Required if Log4J 1.3.X is your logging provider.</dd>
 						<dt>slf4j-XXX-simple.jar : Simple-Log provider for <a href="http://slf4j.org">SLF4J</a>.</dt>
 						<dd>Optional.  Required if Simple-Log is your logging provider.</dd>
-						<dt>xpp3-XXX.jar : <a href="http://www.extreme.indiana.edu/xgws/xsoap/xpp/mxp1">XML Pull Parser</a></dt>
+						<dt>stax-api-XXX.jar : Streaming API for XML</dt>
+						<dd>Required.  Dependency of JiBX</dd>
+						<dt>wstx-XXX.jar : Woodstox StAX implementation</dt>
 						<dd>Required.  Dependency of JiBX.</dd>
 					</dl>
 				</dd>
@@ -156,16 +158,20 @@
 >
 ]]></source>
 				<dl>
-					<dt>protocol</dt>
+					<dt>config</dt>
 					<dd>
 						Defines one of the following:
 						<ul>
-							<li>Property string representation of the JGroups protocol stack.</li>
 							<li>Name of a system resource containing the JGroups XML configuration.</li>
 							<li>URL of the JGroups XML configuration file.</li>
 							<li>Path of the JGroups XML configuration on the local file system.</li>
 						</ul>
+						The jgroups config file is expected to use the new (as of 2.3) muliplexing format.
 						See the JGroup's <a href="http://www.jboss.com/wiki/Wiki.jsp?page=JGroups">Wiki</a> for assistance with customizing the protocol stack.
+					</dd>
+					<dt>stack</dt>
+					<dd>
+						The stack name from the jgroups configuration file.
 					</dd>
 					<dt>timeout</dt>
 					<dd>
@@ -229,6 +235,7 @@
   balancer                (simple|random|round-robin|load) #REQUIRED
   default-sync            IDREF                            #REQUIRED
   dialect                 CDATA                            "net.sf.hajdbc.dialect.DefaultDialect"
+  meta-data-cache         (none|lazy|eager)                #REQUIRED
   transactions            (local|xa)                       #REQUIRED
   auto-activate-schedule  CDATA                            #IMPLIED
   failure-detect-schedule CDATA                            #IMPLIED
@@ -259,11 +266,27 @@
 						</ul>
 						HA-JDBC references the configured dialect for any vendor specific SQL.
 					</dd>
+					<dt>meta-data-cache</dt>
+					<dd>
+						Defines the strategy to use for caching database meta data.
+						<dl>
+							<dt>none</dt>
+							<dd>Meta data is loaded when requested and not cached.</dd>
+							<dt>lazy</dt>
+							<dd>Meta data is loaded and cached as it is requested.</dd>
+							<dt>eager</dt>
+							<dd>All necessary meta data is loaded and cached during HA-JDBC initialization.</dd>
+						</dl>
+					</dd>
 					<dt>transactions</dt>
 					<dd>
 						Indicates whether transactions are assumed to be single database <acronym title="Java Database Connectivity">JDBC</acronym> transactions, or distributed transactions coordinated via a transaction manager (typically provided by an application server) using the X/Open XA protocol.
-						If in "local" mode, database writes are executed concurrently, for effiency.
-						If in "xa" mode, database writes are executed synchronously, for preventing deadlocks by maintaining predictable execution order across databases.
+						<dl>
+							<dt>local</dt>
+							<dd>Database writes are executed concurrently, for effiency.</dd>
+							<dt>xa</dt>
+							<dd>Database writes are executed synchronously, for preventing deadlocks by maintaining predictable execution order across databases.</dd>
+						</dl>
 					</dd>
 					<dt>auto-activate-schedule</dt>
 					<dd>
@@ -392,19 +415,14 @@
 						<th>Aliases</th>
 					</tr>
 					<tr>
-						<td>PostgreSQL</td>
-						<td><a href="api/net/sf/hajdbc/dialect/PostgreSQLDialect.html">net.sf.hajdbc.dialect.PostgreSQLDialect</a></td>
-						<td>postgresql</td>
-					</tr>
-					<tr>
-						<td>MySQL MaxDB, Oracle</td>
-						<td><a href="api/net/sf/hajdbc/dialect/MaxDBDialect.html">net.sf.hajdbc.dialect.MaxDBDialect</a></td>
-						<td>maxdb, oracle</td>
-					</tr>
-					<tr>
 						<td>Apache Derby</td>
 						<td><a href="api/net/sf/hajdbc/dialect/DerbyDialect.html">net.sf.hajdbc.dialect.DerbyDialect</a></td>
 						<td>derby</td>
+					</tr>
+					<tr>
+						<td>Firebird</td>
+						<td><a href="api/net/sf/hajdbc/dialect/FirebirdDialect.html">net.sf.hajdbc.dialect.FirebirdDialect</a></td>
+						<td>firebird</td>
 					</tr>
 					<tr>
 						<td>HSQLDB</td>
@@ -417,9 +435,24 @@
 						<td>db2</td>
 					</tr>
 					<tr>
-						<td>Default (SQL standard)</td>
+						<td>MySQL</td>
+						<td><a href="api/net/sf/hajdbc/dialect/MaxDBDialect.html">net.sf.hajdbc.dialect.MySQLDialect</a></td>
+						<td>mysql</td>
+					</tr>
+					<tr>
+						<td>MySQL MaxDB, Oracle</td>
+						<td><a href="api/net/sf/hajdbc/dialect/MaxDBDialect.html">net.sf.hajdbc.dialect.MaxDBDialect</a></td>
+						<td>maxdb, oracle</td>
+					</tr>
+					<tr>
+						<td>PostgreSQL</td>
+						<td><a href="api/net/sf/hajdbc/dialect/PostgreSQLDialect.html">net.sf.hajdbc.dialect.PostgreSQLDialect</a></td>
+						<td>postgresql</td>
+					</tr>
+					<tr>
+						<td>Default (SQL-92 compliant)</td>
 						<td><a href="api/net/sf/hajdbc/dialect/DefaultDialect.html">net.sf.hajdbc.dialect.DefaultDialect</a></td>
-						<td>mysql, firebird, ingres, mckoi</td>
+						<td>ingres, mckoi</td>
 					</tr>
 				</table>
 				<note>
@@ -685,107 +718,19 @@ Connection connection = dataSource.getConnection();
 			</section>
 			<section>
 				<title>Unique identifier generation</title>
-				<p>The following traditional mechanisms for generating unique identifiers are problematic for clustered database environments:</p>
-				<ul>
-					<li>Identity columns (only supported by MySQL, HSQLDB, DB2, MS SQL Server, Sybase, etc.) fetched using the <acronym title="Java Database Connectivity">JDBC</acronym> 3.0 <code>ResultSet.getGeneratedKeys()</code> method</li>
-					<li>Sequences (only supported by PostgreSQL, MySQL MaxDB (fka SAP DB), Firebird (fka Interbase), Mckoi, Oracle, DB2, etc.)</li>
-				</ul>
 				<p>
-					In general, for unique identifier generation to function correctly, each database node within a cluster needs to independently generate the same sets of identifiers.
-					Because of the distributed nature of HA-JDBC, the execution order of 2 simultaneous requests for a new unique identifier cannot be guaranteed to be the same on each database.
-					In other words, HA-JDBC cannot guarantee that the same identifier will be generated for each database in the cluster.
-					Another reason not to use either of these mechanisms is that they are not supported by every DBMS.
+					As of version 1.2-beta-1, HA-JDBC now supports database sequences.
+					Support for auto-increment/identity columns is not yet complete, but is expected to be included in the next beta release.
 				</p>
-				<p>The following alternative unique identifier generation methods are certain to function properly with HA-JDBC for any database:</p>
-				<ul>
-					<li>High-Low algorithm (often implemented using a Stateless Session EJB)</li>
-					<li>UUID algorithms</li>
-					<li>Others?</li>
-				</ul>
 				<p>
-					Object-relation mapping (ORM) frameworks (e.g. Hibernate, OJB, Cayenne) typically include implementations of these mechanisms.
+					It is important to note the performance implications when using identity columns and sequences in conjunction with HA-JDBC.
+					Both algorithms introduce per statement regular expression matching and mutex costs, the latter being particularly costly for distributed environments.
+					Fortunately, the performance penalty for sequences may be improved significantly by utilizing what Hibernate calls a <a href="http://www.hibernate.org/doc/api/org/hibernate/id/SequenceHiLoGenerator.html">Sequence-HiLo algorithm</a>.
 				</p>
-				<!--p>
-					As of version X.Y, HA-JDBC supports those unique identifier generation mechanisms that were problematic in version 1.0 (i.e. identity columns and sequences).
-					To support identity columns and sequences, HA-JDBC will acquire a distributable lock on the specific table or sequence before executing the appropriate statements.
-					
+				<p>
+					For best performance, HA-JDBC recommends using a high-low or UUID algorithm so that statement parsing and locking costs can be avoided.
+					Object-relation mapping (ORM) frameworks (e.g. Hibernate, OJB, Cayanne) typically include implementations of these mechanisms.
 				</p>
-				<section>
-					<title>Supported unique identifier mechanisms</title>
-					<table>
-						<tr>
-							<th>Mechanism</th>
-							<th>Supported Databases</th>
-							<th>Usage</th>
-							<th>Consequences</th>
-						</tr>
-						<tr>
-							<td>identity</td>
-							<td>MySQL, HSQLDB, Derby/Cloudscape,<br/>DB2, Sybase/SQL Server,<br/>Informix</td>
-							<td>INSERT [INTO] my_table ...</td>
-							<td>INSERT statements require mutually exclusive lock on table name.</td>
-						</tr>
-						<tr>
-							<td>sequence-SQL:2003</td>
-							<td>SQL:2003 syntax</td>
-							<td>next value from my_sequence</td>
-							<td>Requires mutually exclusive lock on sequence name.</td>
-						</tr>
-						<tr>
-							<td>sequence-PostgreSQL</td>
-							<td>PostgreSQL, Mckoi</td>
-							<td>nextval('my_sequence')</td>
-							<td>Requires mutually exclusive lock on sequence name.</td>
-						</tr>
-						<tr>
-							<td>sequence-MaxDB</td>
-							<td>MaxDB/SAPDB, One$DB/Daffodil,<br/>Axion, Oracle, Informix</td>
-							<td>my_sequence.nextval</td>
-							<td>Requires mutually exclusive lock on sequence name.</td>
-						</tr>
-						<tr>
-							<td>sequence-Firebird</td>
-							<td>Firebird/Interbase</td>
-							<td>gen_id('my_sequence', 1)</td>
-							<td>Requires mutually exclusive lock on sequence name.</td>
-						</tr>
-						<tr>
-							<td>sequence-DB2</td>
-							<td>DB2</td>
-							<td>nextval from my_sequence</td>
-							<td>Requires mutually exclusive lock on sequence name.</td>
-						</tr>
-						<tr>
-							<td>other</td>
-							<td>Any database</td>
-							<td>Table high-low algorithm, UUID, etc.</td>
-							<td>No locking required.</td>
-						</tr>
-					</table>
-					<p>
-						HA-JDBC 1.1 requires that the unique identifier generation mechansim be specified using the <em>primary-keys</em> attribute for a given cluster.
-						The list of acceptable values is specified in the <em>Mechanism</em> column above.
-					</p>
-					<p>e.g.</p>
-					<source><![CDATA[
-	<ha-jdbc>
-	  <cluster id="..." balancer="..." default-sync="..." primary-keys="other">
-	  </cluster>
-	</ha-jdbc>
-	]]></source>
-				</section>
-				<section>
-					<title>Performance</title>
-					<p>
-						As you may have guessed, there are performance implications to using identity columns and sequences.
-						Both algorithms introduce per statement regular expression matching and mutex costs, the latter being even more costly for distruted environments.
-						Fortunately, the performance penalty for sequences may be improved significantly by utilizing what Hibernate calls a <a href="http://www.hibernate.org/doc/api/org/hibernate/id/SequenceHiLoGenerator.html">Sequence-HiLo algorithm</a>.
-					</p>
-					<p>
-						For best performance, HA-JDBC recommends using a high-low or UUID algorithm so that statement parsing and locking costs can be avoided.
-						Object-relation mapping (ORM) frameworks (e.g. Hibernate, OJB, Cayanne) typically include implementations of these mechanisms.
-					</p>
-				</section-->
 			</section>
 			<section>
 				<title>Advanced <acronym title="Java Database Connectivity">JDBC</acronym> Features</title>
