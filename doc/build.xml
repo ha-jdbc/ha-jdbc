@@ -2,7 +2,7 @@
 <project name="ha-jdbc-doc" default="site" basedir=".">
 
 	<property environment="env"></property>
-	<property name="forrest.home" location="${env.FORREST_HOME}"></property>
+
 	<import file="${env.FORREST_HOME}/main/forrest.build.xml"/>
 	
 </project>
