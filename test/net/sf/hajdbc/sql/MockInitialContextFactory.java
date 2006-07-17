@@ -87,11 +87,11 @@ public class MockInitialContextFactory implements InitialContextFactory
 		 */
 		public Object lookup(String name) throws NamingException
 		{
-			Reference reference = this.referenceMap.get(name.toString());
+			Reference reference = this.referenceMap.get(name);
 			
 			if (reference == null)
 			{
-				throw new NameNotFoundException(name.toString());
+				throw new NameNotFoundException(name);
 			}
 			
 			try

@@ -54,7 +54,7 @@ public class TestDataSourceDatabase extends AbstractTestDatabase<DataSourceDatab
 		
 		try
 		{
-			Reference reference = new Reference(this.dataSource.getClass().getName(), DataSourceFactory.class.getName(), null);
+			Reference reference = new Reference(this.dataSource.getClass().getName(), MockDataSourceFactory.class.getName(), null);
 			
 			Context context = new InitialContext(this.database.getProperties());
 			
