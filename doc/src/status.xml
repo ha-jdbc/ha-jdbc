@@ -12,18 +12,24 @@
 	</contexts>
 
 	<changes>
-		<release version="1.1.1" date="...">
+		<release version="1.1.1" date="July 17, 2006">
 			<action type="update" context="lib" dev="PF">
-				Upgraded Retrotranslator to version 1.0.6.
+				Upgraded Retrotranslator to version 1.0.7.
 			</action>
 			<action type="update" context="lib" dev="PF">
 				Upgraded JiBX to version 1.1.
 			</action>
 			<action type="update" context="lib" dev="PF">
-				Upgraded JGroups to version 2.3.
+				Upgraded JGroups to version 2.3-sp1.
 			</action>
 			<action type="update" context="lib" dev="PF">
 				Upgraded SLF4J to version 1.0.2.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded Quartz to version 1.5.2.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded EasyMock to version 2.2.
 			</action>
 			<action type="fix" context="src" dev="PF" due-to="Ryan Holmes">
 				Fixed DefaultDialect.quote() to prevent already quoted identifiers from being double-quoted.
@@ -49,6 +55,13 @@
 			<action type="fix" context="src" dev="PF">
 				Modified differential synchronization strategy to use UPDATE statements instead of using updatable ResultSet, due to poor driver support.
 				e.g. ResultSet.updateBlob(...) is not implemented in PostgreSQL driver.
+			</action>
+			<action type="fix" context="src" dev="PF">
+				Moved mbean registration to DatabaseCluster.start() and added mbean unregistration to DatabaseCluster.stop().
+				HA-JDBC initialization failures will no longer leave stray registered mbeans.
+			</action>
+			<action type="fix" context="src" dev="PF">
+				Fixed bug where DataSource-based clusters did not export correctly.
 			</action>
 		</release>
 		<release version="1.1" date="April 21, 2006">
