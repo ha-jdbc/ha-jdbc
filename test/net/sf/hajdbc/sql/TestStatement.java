@@ -43,7 +43,7 @@ import net.sf.hajdbc.Operation;
 import org.easymock.EasyMock;
 import org.easymock.IMocksControl;
 import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -91,7 +91,7 @@ public class TestStatement implements java.sql.Statement
 	}
 	
 	@SuppressWarnings("unchecked")
-	@BeforeClass
+	@BeforeMethod
 	void init() throws Exception
 	{
 		Map map = Collections.singletonMap(this.database, new Object());
