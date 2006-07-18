@@ -26,9 +26,6 @@ import java.util.Map;
 import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.Messages;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Factory for creating DatabaseMetaDataCache implementations.
  * 
@@ -37,8 +34,6 @@ import org.slf4j.LoggerFactory;
  */
 public class DatabaseMetaDataCacheFactory
 {
-	private static Logger logger = LoggerFactory.getLogger(DatabaseMetaDataCacheFactory.class);
-	
 	private static Map<String, Class<? extends DatabaseMetaDataCache>> cacheMap = new HashMap<String, Class<? extends DatabaseMetaDataCache>>();
 	
 	static
@@ -58,21 +53,12 @@ public class DatabaseMetaDataCacheFactory
 	{
 		Class<? extends DatabaseMetaDataCache> cacheClass = cacheMap.get(id);
 		
-		try
+		if (cacheClass == null)
 		{
-			if (cacheClass == null)
-			{
-				throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_META_DATA_CACHE, id));
-			}
-			
-			return cacheClass.newInstance();
+			throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_META_DATA_CACHE, id));
 		}
-		catch (Exception e)
-		{
-			logger.error(e.toString(), e);
-			
-			throw e;
-		}
+		
+		return cacheClass.newInstance();
 	}
 	
 	/**

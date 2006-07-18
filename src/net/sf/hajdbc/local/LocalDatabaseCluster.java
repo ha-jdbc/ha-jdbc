@@ -970,7 +970,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		}
 	}
 	
-	private class FailureDetectionTask implements Runnable
+	class FailureDetectionTask implements Runnable
 	{
 		/**
 		 * @see java.lang.Runnable#run()
@@ -989,7 +989,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		}
 	}	
 	
-	private class AutoActivationTask implements Runnable
+	class AutoActivationTask implements Runnable
 	{
 		/**
 		 * @see java.lang.Runnable#run()

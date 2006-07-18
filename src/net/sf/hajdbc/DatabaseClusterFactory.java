@@ -336,9 +336,6 @@ public final class DatabaseClusterFactory
 		}
 		catch (Exception e)
 		{
-			// Log exception here, since it will be masked by JiBX
-			logger.error(e.toString(), e);
-			
 			for (DatabaseCluster cluster: this.databaseClusterMap.values())
 			{
 				cluster.stop();

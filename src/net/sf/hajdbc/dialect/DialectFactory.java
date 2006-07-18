@@ -25,17 +25,12 @@ import java.util.Map;
 
 import net.sf.hajdbc.Dialect;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * @author  Paul Ferraro
  * @since   1.1
  */
 public class DialectFactory
 {
-	private static Logger logger = LoggerFactory.getLogger(DialectFactory.class);
-	
 	private static Map<String, Class<? extends Dialect>> dialectMap = new HashMap<String, Class<? extends Dialect>>();
 	
 	static
@@ -60,24 +55,14 @@ public class DialectFactory
 	 */
 	public static Dialect deserialize(String id) throws Exception
 	{
-		try
+		Class<? extends Dialect> targetClass = dialectMap.get(id.toLowerCase());
+		
+		if (targetClass == null)
 		{
-			Class<? extends Dialect> targetClass = dialectMap.get(id.toLowerCase());
-			
-			if (targetClass == null)
-			{
-				targetClass = Class.forName(id).asSubclass(Dialect.class);
-			}
-			
-			return targetClass.newInstance();
+			targetClass = Class.forName(id).asSubclass(Dialect.class);
 		}
-		catch (Exception e)
-		{
-			// JiBX will mask this exception, so logger it here
-			logger.error(e.toString(), e);
-			
-			throw e;
-		}
+		
+		return targetClass.newInstance();
 	}
 	
 	/**

@@ -61,7 +61,7 @@ public class SimpleBalancer extends AbstractBalancer
 		return this.first();
 	}
 	
-	private static class WeightComparator implements Comparator<Database>
+	static class WeightComparator implements Comparator<Database>
 	{
 		/**
 		 * @see java.util.Comparator#compare(T, T)
