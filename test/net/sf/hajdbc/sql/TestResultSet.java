@@ -55,7 +55,8 @@ import net.sf.hajdbc.Operation;
 
 import org.easymock.EasyMock;
 import org.easymock.IMocksControl;
-import org.testng.annotations.Configuration;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -91,8 +92,8 @@ public class TestResultSet implements java.sql.ResultSet
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
 	
 	@SuppressWarnings("unchecked")
-	@Configuration(beforeTestClass = true)
-	protected void setUp() throws Exception
+	@BeforeClass
+	void init() throws Exception
 	{
 		Map map = Collections.singletonMap(this.database, new Object());
 		
@@ -158,8 +159,8 @@ public class TestResultSet implements java.sql.ResultSet
 		this.control.reset();
 	}
 	
-	@Configuration(afterTestMethod = true)
-	public void reset()
+	@AfterMethod
+	void reset()
 	{
 		this.control.reset();
 	}

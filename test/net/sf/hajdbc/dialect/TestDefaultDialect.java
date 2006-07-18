@@ -34,7 +34,7 @@ import net.sf.hajdbc.UniqueConstraint;
 
 import org.easymock.EasyMock;
 import org.easymock.IMocksControl;
-import org.testng.annotations.Configuration;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -55,8 +55,8 @@ public class TestDefaultDialect implements Dialect
 		return new DefaultDialect();
 	}
 	
-	@Configuration(afterTestMethod = true)
-	public void reset()
+	@AfterMethod
+	void reset()
 	{
 		this.control.reset();
 	}

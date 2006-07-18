@@ -29,7 +29,8 @@ import javax.naming.NamingException;
 
 import net.sf.hajdbc.DatabaseClusterTestCase;
 
-import org.testng.annotations.Configuration;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -41,8 +42,8 @@ import org.testng.annotations.Test;
 public class TestDataSource extends DatabaseClusterTestCase implements javax.sql.DataSource
 {
 	@Override
-	@Configuration(beforeTestClass = true)
-	public void setUp() throws Exception
+	@BeforeClass
+	protected void setUp() throws Exception
 	{
 		super.setUp();
 		
@@ -54,8 +55,8 @@ public class TestDataSource extends DatabaseClusterTestCase implements javax.sql
 	}
 
 	@Override
-	@Configuration(afterTestClass = true)
-	public void tearDown() throws Exception
+	@AfterClass
+	protected void tearDown() throws Exception
 	{
 		this.context.unbind("datasource");
 		

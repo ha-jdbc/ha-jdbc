@@ -27,7 +27,7 @@ import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.MockDatabase;
 
-import org.testng.annotations.Configuration;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -41,8 +41,8 @@ public abstract class AbstractTestBalancer implements Balancer
 	
 	protected abstract Balancer createBalancer();
 
-	@Configuration(afterTestMethod = true)
-	protected void tearDown()
+	@AfterMethod
+	void tearDown()
 	{
 		for (Database database: this.balancer.list())
 		{

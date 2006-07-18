@@ -33,7 +33,7 @@ import net.sf.hajdbc.ActiveDatabaseMBean;
 import net.sf.hajdbc.InactiveDatabaseMBean;
 
 import org.easymock.EasyMock;
-import org.testng.annotations.Configuration;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -47,8 +47,8 @@ public class TestDataSourceDatabase extends AbstractTestDatabase<DataSourceDatab
 	private DataSource dataSource = this.control.createMock(DataSource.class);
 
 	@Override
-	@Configuration(beforeTestMethod = true)
-	protected void setup()
+	@BeforeMethod
+	void setup()
 	{
 		super.setup();
 		

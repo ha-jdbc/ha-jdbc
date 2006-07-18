@@ -43,7 +43,8 @@ import net.sf.hajdbc.Operation;
 
 import org.easymock.EasyMock;
 import org.easymock.IMocksControl;
-import org.testng.annotations.Configuration;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -66,8 +67,8 @@ public class TestConnection implements java.sql.Connection
 	private Connection<java.sql.Connection> connection;
 	
 	@SuppressWarnings("unchecked")
-	@Configuration(beforeTestClass = true)
-	public void init() throws Exception
+	@BeforeClass
+	void init() throws Exception
 	{
 		Map map = Collections.singletonMap(this.database, this.sqlConnection);
 		
@@ -101,8 +102,8 @@ public class TestConnection implements java.sql.Connection
 		this.control.reset();
 	}
 	
-	@Configuration(afterTestMethod = true)
-	protected void reset()
+	@AfterMethod
+	void reset()
 	{
 		this.control.reset();
 	}
