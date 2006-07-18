@@ -12,7 +12,7 @@
 	</contexts>
 
 	<changes>
-		<release version="1.2-beta-1" date="July 17, 2006">
+		<release version="1.2-beta-1" date="July 18, 2006">
 			<action type="update" context="lib" dev="PF">
 				Upgraded Retrotranslator to version 1.0.7.
 			</action>
@@ -83,6 +83,9 @@
 			</action>
 			<action type="update" context="test" dev="PF">
 				Refactored unit tests so that test classes implement subject interfaces.
+			</action>
+			<action type="fix" context="src" dev="PF">
+				Fixed non-default charset handling of Clobs.
 			</action>
 		</release>
 		<release version="1.1" date="April 21, 2006">
