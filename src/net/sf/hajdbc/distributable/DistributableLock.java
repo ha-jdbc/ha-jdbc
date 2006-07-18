@@ -26,6 +26,7 @@ import java.util.concurrent.locks.Lock;
 
 import org.jgroups.Channel;
 import org.jgroups.ChannelException;
+import org.jgroups.JChannel;
 import org.jgroups.blocks.DistributedLockManager;
 import org.jgroups.blocks.LockManager;
 import org.jgroups.blocks.LockNotGrantedException;
@@ -47,17 +48,17 @@ public class DistributableLock implements Lock, TwoPhaseVotingListener
 	
 	/**
 	 * Constructs a new DistributableLock.
-	 * @param channel a JGroups channel
 	 * @param name a channel name
+	 * @param protocol a channel protocol
 	 * @param timeout a timeout for channel messages.
 	 * @param lock a local lock
 	 * @throws Exception
 	 */
-	public DistributableLock(Channel channel, String name, int timeout, Lock lock) throws Exception
+	public DistributableLock(String name, String protocol, int timeout, Lock lock) throws Exception
 	{
 		this.timeout = timeout;
 		this.lock = lock;
-		this.channel = channel;
+		this.channel = new JChannel(protocol);
 		this.channel.connect(name);
 		
 		TwoPhaseVotingAdapter adapter = new TwoPhaseVotingAdapter(new VotingAdapter(this.channel));
@@ -65,6 +66,14 @@ public class DistributableLock implements Lock, TwoPhaseVotingListener
 		adapter.addListener(this);
 		
 		this.lockManager = new DistributedLockManager(adapter, name);
+	}
+	
+	/**
+	 * @return the channel used by the lock manager
+	 */
+	public Channel getChannel()
+	{
+		return this.channel;
 	}
 	
 	/**

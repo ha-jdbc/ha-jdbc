@@ -24,14 +24,20 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.concurrent.locks.Lock;
 
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SQLException;
 import net.sf.hajdbc.local.LocalDatabaseCluster;
 
 import org.jgroups.Address;
-import org.jgroups.JChannelFactory;
+import org.jgroups.Channel;
+import org.jgroups.JChannel;
 import org.jgroups.blocks.NotificationBus;
+import org.jgroups.jmx.JmxConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -150,15 +156,15 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 	{
 		try
 		{
-			JChannelFactory factory = new JChannelFactory(this.builder.getProtocol());
-			
-			factory.setDomain("org.jgroups");
-			
-			this.notificationBus = new NotificationBus(factory.createChannel(), this.getId());
+			this.notificationBus = new NotificationBus(this.getId(), this.builder.getProtocol());
 			this.notificationBus.setConsumer(this);
 			this.notificationBus.start();
 			
-			this.lock = new DistributableLock(factory.createChannel(), this.getId() + "-lock", this.builder.getTimeout(), super.writeLock());
+			this.register(this.notificationBus.getChannel());
+			
+			this.lock = new DistributableLock(this.getId() + "-lock", this.builder.getProtocol(), this.builder.getTimeout(), super.writeLock());
+			
+			this.register(this.lock.getChannel());
 
 			super.start();
 		}
@@ -166,6 +172,23 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 		{
 			throw new SQLException(e.toString(), e);
 		}
+	}
+
+	private void register(Channel channel) throws Exception
+	{
+		MBeanServer server = DatabaseClusterFactory.getMBeanServer();
+
+		ObjectName name = this.getObjectName(channel);
+		
+		if (!server.isRegistered(name))
+		{
+			JmxConfigurator.registerChannel(JChannel.class.cast(channel), server, name.getCanonicalName(), true);
+		}
+	}
+	
+	private ObjectName getObjectName(Channel channel) throws Exception
+	{
+		return ObjectName.getInstance("org.jgroups", "channel", ObjectName.quote(channel.getChannelName()));
 	}
 	
 	/**
@@ -176,9 +199,32 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 	{
 		this.lock.stop();
 		
+		this.unregister(this.lock.getChannel());
+		
 		this.notificationBus.stop();
 		
+		this.unregister(this.notificationBus.getChannel());
+		
 		super.stop();
+	}
+	
+	private void unregister(Channel channel)
+	{
+		MBeanServer server = DatabaseClusterFactory.getMBeanServer();
+		
+		try
+		{	
+			ObjectName name = this.getObjectName(channel);
+			
+			if (server.isRegistered(name))
+			{
+				JmxConfigurator.unregisterChannel(server, name);
+			}
+		}
+		catch (Exception e)
+		{
+			logger.warn(e.getMessage(), e);
+		}
 	}
 	
 	/**
