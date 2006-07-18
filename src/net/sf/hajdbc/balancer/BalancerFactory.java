@@ -26,17 +26,12 @@ import java.util.Map;
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Messages;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * @author  Paul Ferraro
  * @since   1.1
  */
 public final class BalancerFactory
 {
-	private static Logger logger = LoggerFactory.getLogger(BalancerFactory.class);
-	
 	private static Map<String, Class<? extends Balancer>> balancerMap = new HashMap<String, Class<? extends Balancer>>();
 	
 	static
@@ -57,21 +52,12 @@ public final class BalancerFactory
 	{
 		Class<? extends Balancer> balancerClass = balancerMap.get(id);
 		
-		try
+		if (balancerClass == null)
 		{
-			if (balancerClass == null)
-			{
-				throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_BALANCER, id));
-			}
-			
-			return balancerClass.newInstance();
+			throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_BALANCER, id));
 		}
-		catch (Exception e)
-		{
-			logger.error(e.toString(), e);
-			
-			throw e;
-		}
+		
+		return balancerClass.newInstance();
 	}
 	
 	/**
