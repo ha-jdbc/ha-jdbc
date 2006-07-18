@@ -394,23 +394,33 @@ public class FileSupportImpl implements FileSupport
 
 				public int setString(long position, String value) throws java.sql.SQLException
 				{
-					CharBuffer buffer = CharBuffer.wrap(value);
-					
-					return writeBuffer(position, buffer);
+					try
+					{
+						return this.writeBuffer(position, ByteBuffer.wrap(value.getBytes(charset.name())));
+					}
+					catch (IOException e)
+					{
+						throw new SQLException(e);
+					}
 				}
 
 				public int setString(long position, String value, int offset, int length) throws java.sql.SQLException
 				{
-					CharBuffer buffer = CharBuffer.wrap(value, offset, length);
-					
-					return writeBuffer(position, buffer);
+					try
+					{
+						return this.writeBuffer(position, ByteBuffer.wrap(value.getBytes(charset.name()), this.byteLength(offset), this.byteLength(length)));
+					}
+					catch (IOException e)
+					{
+						throw new SQLException(e);
+					}
 				}
 
-				private int writeBuffer(long position, CharBuffer buffer) throws java.sql.SQLException
+				private int writeBuffer(long position, ByteBuffer buffer) throws java.sql.SQLException
 				{
 					try
 					{
-						return channel.write(ByteBuffer.wrap(buffer.toString().getBytes(charset.name())), this.byteLength(position));
+						return this.charLength(channel.write(buffer, this.byteLength(position)));
 					}
 					catch (IOException e)
 					{
@@ -468,6 +478,11 @@ public class FileSupportImpl implements FileSupport
 				private long byteLength(long charLength)
 				{
 					return charLength * charBytes;
+				}
+				
+				private int charLength(int byteLength)
+				{
+					return byteLength / charBytes;
 				}
 				
 				private long charLength(long byteLength)
