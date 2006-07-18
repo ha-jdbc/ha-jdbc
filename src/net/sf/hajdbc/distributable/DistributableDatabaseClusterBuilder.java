@@ -23,7 +23,7 @@ package net.sf.hajdbc.distributable;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterBuilder;
 
-import org.jgroups.Channel;
+import org.jgroups.ChannelFactory;
 import org.jgroups.JChannelFactory;
 
 /**
@@ -77,9 +77,9 @@ public class DistributableDatabaseClusterBuilder implements DatabaseClusterBuild
 		this.factory.setMultiplexerConfig(config);
 	}
 	
-	public Channel getChannel(String id) throws Exception
+	public ChannelFactory getChannelFactory()
 	{
-		return this.factory.createMultiplexerChannel(this.stack, id);
+		return this.factory;
 	}
 	
 	/**

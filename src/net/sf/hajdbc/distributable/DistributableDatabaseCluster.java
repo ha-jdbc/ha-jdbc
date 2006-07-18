@@ -31,6 +31,7 @@ import net.sf.hajdbc.local.LocalDatabaseCluster;
 
 import org.jgroups.Address;
 import org.jgroups.Channel;
+import org.jgroups.ChannelFactory;
 import org.jgroups.blocks.NotificationBus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -144,15 +145,17 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 	@Override
 	public void start() throws java.sql.SQLException
 	{
+		ChannelFactory factory = this.builder.getChannelFactory();
+		
 		try
 		{
-			Channel notificationBusChannel = this.builder.getChannel(this.getId());
+			Channel notificationBusChannel = factory.createMultiplexerChannel(this.builder.getStack(), this.getId());
 			
 			this.notificationBus = new NotificationBus(notificationBusChannel, this.getId());
 			this.notificationBus.setConsumer(this);
 			this.notificationBus.start();
 
-			Channel lockManagerChannel = this.builder.getChannel(this.getId() + "-lock");
+			Channel lockManagerChannel = factory.createMultiplexerChannel(this.builder.getStack(), this.getId() + "-lock");
 			
 			this.lockManager = new DistributableLockManager(lockManagerChannel, this.builder.getTimeout(), super.getLockManager());
 			this.lockManager.start();
