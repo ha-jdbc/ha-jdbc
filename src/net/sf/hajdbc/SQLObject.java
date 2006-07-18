@@ -336,19 +336,30 @@ public class SQLObject<E, P>
 	public final <T> Map<Database, T> executeWriteToDriver(Operation<E, T> operation) throws java.sql.SQLException
 	{
 		Map<Database, T> resultMap = new TreeMap<Database, T>();
-		
-		List<Database> databaseList = this.databaseCluster.getBalancer().list();
-		
-		if (databaseList.isEmpty())
-		{
-			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this.databaseCluster));
-		}
 
-		for (Database database: databaseList)
+		Lock lock = this.databaseCluster.readLock();
+
+		lock.lock();
+		
+		try
 		{
-			E object = this.getObject(database);
+			List<Database> databaseList = this.databaseCluster.getBalancer().list();
 			
-			resultMap.put(database, operation.execute(database, object));
+			if (databaseList.isEmpty())
+			{
+				throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this.databaseCluster));
+			}
+
+			for (Database database: databaseList)
+			{
+				E object = this.getObject(database);
+				
+				resultMap.put(database, operation.execute(database, object));
+			}
+		}
+		finally
+		{
+			lock.unlock();
 		}
 		
 		this.record(operation);
