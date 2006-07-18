@@ -28,6 +28,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
@@ -311,6 +312,12 @@ public class FileSupportImpl implements FileSupport
 						throw new SQLException(e);
 					}
 				}
+				
+				@Override
+				protected void finalize() throws IOException
+				{
+					channel.close();
+				}
 			};
 		}
 		catch (IOException e)
@@ -326,7 +333,12 @@ public class FileSupportImpl implements FileSupport
 	{
 		try
 		{
-			final FileChannel channel = new FileInputStream(file).getChannel();
+			FileInputStream inputStream = new FileInputStream(file);
+			final Charset charset = Charset.forName(new InputStreamReader(inputStream).getEncoding());
+			final FileChannel channel = inputStream.getChannel();
+			
+			// Calculate the number of bytes in a single character
+			final int charBytes = "a".getBytes(charset.name()).length;
 			
 			return new Clob()
 			{
@@ -334,7 +346,7 @@ public class FileSupportImpl implements FileSupport
 				{
 					try
 					{
-						return channel.size();
+						return this.charLength(channel.size());
 					}
 					catch (IOException e)
 					{
@@ -344,11 +356,11 @@ public class FileSupportImpl implements FileSupport
 
 				public String getSubString(long position, int length) throws java.sql.SQLException
 				{
-					ByteBuffer buffer = ByteBuffer.allocate(length);
+					ByteBuffer buffer = ByteBuffer.allocate(this.byteLength(length));
 					
 					try
 					{
-						channel.read(buffer, position);
+						channel.read(buffer, byteLength(position));
 					}
 					catch (IOException e)
 					{
@@ -357,12 +369,12 @@ public class FileSupportImpl implements FileSupport
 					
 					buffer.compact();
 					
-					return String.valueOf(buffer.asCharBuffer().array());
+					return String.valueOf(charset.decode(buffer).array());
 				}
 
 				public Reader getCharacterStream()
 				{
-					return Channels.newReader(channel, Charset.defaultCharset().newDecoder(), -1);
+					return Channels.newReader(channel, charset.newDecoder(), -1);
 				}
 
 				public InputStream getAsciiStream()
@@ -398,7 +410,7 @@ public class FileSupportImpl implements FileSupport
 				{
 					try
 					{
-						return channel.write(ByteBuffer.wrap(buffer.toString().getBytes()), position);
+						return channel.write(ByteBuffer.wrap(buffer.toString().getBytes(charset.name())), this.byteLength(position));
 					}
 					catch (IOException e)
 					{
@@ -410,7 +422,7 @@ public class FileSupportImpl implements FileSupport
 				{
 					try
 					{
-						return Channels.newOutputStream(channel.position(position));
+						return Channels.newOutputStream(channel.position(this.byteLength(position)));
 					}
 					catch (IOException e)
 					{
@@ -422,7 +434,7 @@ public class FileSupportImpl implements FileSupport
 				{
 					try
 					{
-						return Channels.newWriter(channel.position(position), Charset.defaultCharset().newEncoder(), -1);
+						return Channels.newWriter(channel.position(this.byteLength(position)), charset.newEncoder(), -1);
 					}
 					catch (IOException e)
 					{
@@ -434,12 +446,33 @@ public class FileSupportImpl implements FileSupport
 				{
 					try
 					{
-						channel.truncate(length);
+						channel.truncate(this.byteLength(length));
 					}
 					catch (IOException e)
 					{
 						throw new SQLException(e);
 					}
+				}
+				
+				@Override
+				protected void finalize() throws IOException
+				{
+					channel.close();
+				}
+				
+				private int byteLength(int charLength)
+				{
+					return charLength * charBytes;
+				}
+				
+				private long byteLength(long charLength)
+				{
+					return charLength * charBytes;
+				}
+				
+				private long charLength(long byteLength)
+				{
+					return byteLength / charBytes;
 				}
 			};
 		}
