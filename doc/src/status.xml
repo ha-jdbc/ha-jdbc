@@ -31,6 +31,9 @@
 			<action type="update" context="lib" dev="PF">
 				Upgraded EasyMock to version 2.2.
 			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded TestNG to version 5.0.
+			</action>
 			<action type="fix" context="src" dev="PF" due-to="Ryan Holmes">
 				Fixed DefaultDialect.quote() to prevent already quoted identifiers from being double-quoted.
 			</action>
