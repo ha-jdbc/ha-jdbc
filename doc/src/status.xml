@@ -34,6 +34,9 @@
 			<action type="update" context="lib" dev="PF">
 				Upgraded EasyMock to version 2.2.
 			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded TestNG to version 5.0.
+			</action>
 			<action type="fix" context="src" dev="PF" due-to="Ryan Holmes">
 				Fixed create/drop constraint methods of DefaultDialect to quote constraint names.
 			</action>
