@@ -328,18 +328,21 @@ public final class DatabaseClusterFactory
 	
 	void addDatabaseCluster(DatabaseCluster databaseCluster) throws Exception
 	{
+		this.databaseClusterMap.put(databaseCluster.getId(), databaseCluster);
+		
 		try
 		{
 			databaseCluster.start();
-			
-			this.databaseClusterMap.put(databaseCluster.getId(), databaseCluster);
 		}
 		catch (Exception e)
 		{
 			// Log exception here, since it will be masked by JiBX
 			logger.error(e.toString(), e);
 			
-			databaseCluster.stop();
+			for (DatabaseCluster cluster: this.databaseClusterMap.values())
+			{
+				cluster.stop();
+			}
 			
 			throw e;
 		}
