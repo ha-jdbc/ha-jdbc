@@ -33,7 +33,7 @@ import java.io.Writer;
 import java.sql.SQLException;
 import java.util.Arrays;
 
-import org.testng.annotations.Configuration;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
 /**
@@ -47,7 +47,7 @@ public class TestFileSupportImpl
 {
 	private FileSupport fileSupport = new FileSupportImpl();
 	
-	@Configuration(afterTestClass = true)
+	@AfterClass
 	public void tearDown() throws Exception
 	{
 		this.fileSupport.close();

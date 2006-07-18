@@ -27,6 +27,9 @@ import java.sql.SQLWarning;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
@@ -34,15 +37,13 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.MockDatabase;
 import net.sf.hajdbc.Operation;
+import net.sf.hajdbc.SQLObject;
 
 import org.easymock.EasyMock;
 import org.easymock.IMocksControl;
-import org.testng.annotations.Configuration;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.locks.Lock;
 
 /**
  * Unit test for {@link Statement}.
@@ -80,7 +81,7 @@ public class TestStatement
 		return java.sql.Statement.class;
 	}
 	
-	@Configuration(beforeTestClass = true)
+	@BeforeClass
 	protected void setUp() throws Exception
 	{
 		Map map = Collections.singletonMap(this.database, new Object());
@@ -121,7 +122,7 @@ public class TestStatement
 		this.control.reset();
 	}
 	
-	@Configuration(afterTestMethod = true)
+	@AfterMethod
 	public void reset()
 	{
 		this.control.reset();

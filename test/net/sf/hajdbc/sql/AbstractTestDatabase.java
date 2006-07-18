@@ -24,7 +24,7 @@ import net.sf.hajdbc.Database;
 
 import org.easymock.EasyMock;
 import org.easymock.IMocksControl;
-import org.testng.annotations.Configuration;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
 
 /**
@@ -37,7 +37,7 @@ public abstract class AbstractTestDatabase
 	
 	protected abstract Database createDatabase(String id);
 	
-	@Configuration(afterTestMethod = true)
+	@AfterMethod
 	protected void tearDown()
 	{
 		this.control.reset();

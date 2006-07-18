@@ -27,10 +27,11 @@ import java.sql.Connection;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 
-import org.testng.annotations.Configuration;
-import org.testng.annotations.Test;
-
 import net.sf.hajdbc.DatabaseClusterTestCase;
+
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 /**
  * Unit test for {@link TestDataSource}.
@@ -40,7 +41,7 @@ import net.sf.hajdbc.DatabaseClusterTestCase;
 @Test
 public class TestDataSource extends DatabaseClusterTestCase
 {
-	@Configuration(beforeTestClass = true)
+	@BeforeClass
 	public void setUp() throws Exception
 	{
 		super.setUp();
@@ -52,7 +53,7 @@ public class TestDataSource extends DatabaseClusterTestCase
 		this.context.bind("datasource", dataSource);
 	}
 
-	@Configuration(afterTestClass = true)
+	@AfterClass
 	public void tearDown() throws Exception
 	{
 		this.context.unbind("datasource");

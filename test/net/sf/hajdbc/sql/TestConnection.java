@@ -29,6 +29,9 @@ import java.sql.Statement;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
@@ -36,13 +39,10 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.MockDatabase;
 import net.sf.hajdbc.Operation;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.locks.Lock;
-
 import org.easymock.EasyMock;
 import org.easymock.IMocksControl;
-import org.testng.annotations.Configuration;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
@@ -64,7 +64,7 @@ public class TestConnection
 	private List<Database> databaseList = Collections.singletonList(this.database);
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
 	
-	@Configuration(beforeTestClass = true)
+	@BeforeClass
 	public void init() throws Exception
 	{
 		Map map = Collections.singletonMap(this.database, this.sqlConnection);
@@ -95,7 +95,7 @@ public class TestConnection
 		this.control.reset();
 	}
 
-	@Configuration(afterTestMethod = true)
+	@AfterMethod
 	public void reset()
 	{
 		this.control.reset();

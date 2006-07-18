@@ -29,7 +29,7 @@ import java.util.Properties;
 import net.sf.hajdbc.Database;
 
 import org.easymock.EasyMock;
-import org.testng.annotations.Configuration;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 
@@ -43,7 +43,7 @@ public class TestDriverDatabase extends AbstractTestDatabase
 {
 	private Driver driver = this.control.createMock(Driver.class);
 	
-	@Configuration(beforeTestClass = true)
+	@BeforeClass
 	protected void setup()
 	{
 		try

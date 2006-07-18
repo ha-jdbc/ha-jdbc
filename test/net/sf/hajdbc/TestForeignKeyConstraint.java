@@ -26,12 +26,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
-
-import net.sf.hajdbc.ForeignKeyConstraint;
+import java.util.Map;
 
 import org.easymock.EasyMock;
 import org.easymock.IMocksControl;
-import org.testng.annotations.Configuration;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
 
 /**
@@ -46,7 +45,7 @@ public class TestForeignKeyConstraint
 	private DatabaseMetaData metaData = this.control.createMock(DatabaseMetaData.class);
 	private ResultSet resultSet = this.control.createMock(ResultSet.class);
 	
-	@Configuration(afterTestMethod = true)
+	@AfterMethod
 	public void reset()
 	{
 		this.control.reset();

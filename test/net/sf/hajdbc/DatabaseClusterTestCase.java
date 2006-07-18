@@ -32,11 +32,13 @@ import javax.sql.ConnectionPoolDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
+import net.sf.hajdbc.sql.MockDriver;
+
 import org.easymock.EasyMock;
 import org.easymock.IMocksControl;
-import org.testng.annotations.Configuration;
-
-import net.sf.hajdbc.sql.MockDriver;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 
 /**
  * @author  Paul Ferraro
@@ -48,7 +50,7 @@ public abstract class DatabaseClusterTestCase
 	protected Context context;
 	private MBeanServer server;
 	
-	@Configuration(beforeTestClass = true)
+	@BeforeClass
 	public void setUp() throws Exception
 	{
 		this.server = MBeanServerFactory.createMBeanServer();
@@ -77,7 +79,7 @@ public abstract class DatabaseClusterTestCase
 		this.context.rebind("xa-datasource2", reference);
 	}
 
-	@Configuration(afterTestClass = true)
+	@AfterClass
 	public void tearDown() throws Exception
 	{
 		DriverManager.deregisterDriver(new MockDriver());
@@ -92,7 +94,7 @@ public abstract class DatabaseClusterTestCase
 		MBeanServerFactory.releaseMBeanServer(this.server);
 	}
 	
-	@Configuration(afterTestMethod = true)
+	@AfterMethod
 	public void reset()
 	{
 		this.control.reset();

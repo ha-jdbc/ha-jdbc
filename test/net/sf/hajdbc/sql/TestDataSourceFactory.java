@@ -20,12 +20,17 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.util.Hashtable;
+
+import javax.naming.Context;
+import javax.naming.Name;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
 
 import net.sf.hajdbc.DatabaseClusterTestCase;
 
-import org.testng.annotations.Configuration;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
@@ -39,7 +44,7 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 {
 	private DataSourceFactory factory = new DataSourceFactory();
 	
-	@Configuration(beforeTestClass = true)
+	@BeforeClass
 	public void setUp() throws Exception
 	{
 		super.setUp();
@@ -51,7 +56,7 @@ public class TestDataSourceFactory extends DatabaseClusterTestCase
 		this.context.bind("datasource", dataSource);
 	}
 
-	@Configuration(afterTestClass = true)
+	@AfterClass
 	public void tearDown() throws Exception
 	{
 		this.context.unbind("datasource");
