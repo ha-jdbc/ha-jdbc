@@ -219,6 +219,7 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 			if (server.isRegistered(name))
 			{
 				JmxConfigurator.unregisterChannel(server, name);
+				JmxConfigurator.unregisterProtocols(server, JChannel.class.cast(channel), name.getCanonicalName());
 			}
 		}
 		catch (Exception e)
