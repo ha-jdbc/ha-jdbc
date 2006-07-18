@@ -12,6 +12,11 @@
 				<th>System ID</th>
 			</tr>
 			<tr>
+				<td>1.2</td>
+				<td>-//HA-JDBC//DTD HA-JDBC 1.2//EN</td>
+				<td><a href="dtd/ha-jdbc-1.2.dtd">http://ha-jdbc.sourceforge.net/dtd/ha-jdbc-1.2.dtd</a></td>
+			</tr>
+			<tr>
 				<td>1.1</td>
 				<td>-//HA-JDBC//DTD HA-JDBC 1.1//EN</td>
 				<td><a href="dtd/ha-jdbc-1.1.dtd">http://ha-jdbc.sourceforge.net/dtd/ha-jdbc-1.1.dtd</a></td>
