@@ -197,13 +197,19 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 	@Override
 	public void stop()
 	{
-		this.lock.stop();
-		
-		this.unregister(this.lock.getChannel());
-		
-		this.notificationBus.stop();
-		
-		this.unregister(this.notificationBus.getChannel());
+		if (this.notificationBus != null)
+		{
+			this.notificationBus.stop();
+			
+			this.unregister(this.notificationBus.getChannel());
+		}
+
+		if (this.lock != null)
+		{
+			this.lock.stop();
+			
+			this.unregister(this.lock.getChannel());
+		}
 		
 		super.stop();
 	}
