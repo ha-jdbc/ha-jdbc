@@ -20,7 +20,7 @@
 				Upgraded JiBX to version 1.1.
 			</action>
 			<action type="update" context="lib" dev="PF">
-				Upgraded JGroups to version 2.3-sp1.
+				Upgraded JGroups to version 2.2.9.3.
 			</action>
 			<action type="update" context="lib" dev="PF">
 				Upgraded SLF4J to version 1.0.2.
