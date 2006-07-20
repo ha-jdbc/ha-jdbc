@@ -199,16 +199,16 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 	{
 		if (this.notificationBus != null)
 		{
-			this.notificationBus.stop();
-			
 			this.unregister(this.notificationBus.getChannel());
+			
+			this.notificationBus.stop();
 		}
 
 		if (this.lock != null)
 		{
-			this.lock.stop();
-			
 			this.unregister(this.lock.getChannel());
+			
+			this.lock.stop();
 		}
 		
 		super.stop();
