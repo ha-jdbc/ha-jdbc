@@ -102,7 +102,7 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 	 */
 	public void handleNotification(Serializable command)
 	{
-		logger.info(Messages.getMessage(Messages.DATABASE_COMMAND_RECEIVED, command.getClass().getName()));
+		logger.info(Messages.getMessage(Messages.DATABASE_COMMAND_RECEIVED, command));
 		
 		DatabaseCommand.class.cast(command).execute(this);
 	}
