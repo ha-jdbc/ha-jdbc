@@ -482,9 +482,10 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			throw cause;
 		}
 		
-		logger.warn(Messages.getMessage(Messages.DATABASE_NOT_ALIVE, database, this), cause);
-		
-		this.deactivate(database);
+		if (this.deactivate(database))
+		{
+			logger.warn(Messages.getMessage(Messages.DATABASE_NOT_ALIVE, database, this), cause);
+		}
 	}
 	
 	/**
@@ -994,9 +995,10 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			{
 				if (!LocalDatabaseCluster.this.isAlive(database))
 				{
-					logger.warn(Messages.getMessage(Messages.DATABASE_NOT_ALIVE, database, LocalDatabaseCluster.this));
-					
-					LocalDatabaseCluster.this.deactivate(database);
+					if (LocalDatabaseCluster.this.deactivate(database))
+					{
+						logger.warn(Messages.getMessage(Messages.DATABASE_NOT_ALIVE, database, LocalDatabaseCluster.this));
+					}
 				}
 			}
 		}
