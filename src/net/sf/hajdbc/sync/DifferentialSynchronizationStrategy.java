@@ -307,13 +307,13 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 						{
 							deleteStatement.clearParameters();
 							
-							int index = 1;
+							int index = 0;
 							
 							for (int column: primaryKeyColumnIndexSet)
 							{
-								deleteStatement.setObject(index, inactiveResultSet.getObject(column), types[column]);
-								
 								index += 1;
+								
+								deleteStatement.setObject(index, inactiveResultSet.getObject(column), types[column]);
 							}
 							
 							deleteStatement.addBatch();
@@ -376,6 +376,13 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 							
 							if (updated)
 							{
+								for (int column: primaryKeyColumnIndexSet)
+								{
+									index += 1;
+									
+									updateStatement.setObject(index, activeResultSet.getObject(column), types[column]);
+								}
+								
 								updateStatement.addBatch();
 								
 								updateCount += 1;
