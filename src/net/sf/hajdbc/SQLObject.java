@@ -136,9 +136,10 @@ public class SQLObject<E, P>
 			}
 			catch (java.sql.SQLException e)
 			{
-				logger.warn(Messages.getMessage(Messages.SQL_OBJECT_INIT_FAILED, this.getClass().getName(), database), e);
-				
-				this.databaseCluster.deactivate(database);
+				if (this.databaseCluster.deactivate(database))
+				{
+					logger.warn(Messages.getMessage(Messages.SQL_OBJECT_INIT_FAILED, this.getClass().getName(), database), e);
+				}
 			}
 		}
 		
