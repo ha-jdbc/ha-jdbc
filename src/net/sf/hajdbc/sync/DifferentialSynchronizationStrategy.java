@@ -130,7 +130,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				
 				if (primaryKey == null)
 				{
-					throw new SQLException(Messages.getMessage(Messages.PRIMARY_KEY_REQUIRED, this.getClass().getName(), table));
+					throw new SQLException(Messages.getMessage(Messages.PRIMARY_KEY_REQUIRED, this.getClass().getName(), table.getName()));
 				}
 				
 				List<String> primaryKeyColumnList = primaryKey.getColumnList();
