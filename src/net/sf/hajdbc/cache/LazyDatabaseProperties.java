@@ -43,14 +43,12 @@ public class LazyDatabaseProperties implements DatabaseProperties
 	private Boolean supportsSelectForUpdate;
 	private DatabaseMetaDataSupport support;
 
-	public LazyDatabaseProperties(Connection connection) throws SQLException
+	public LazyDatabaseProperties() throws SQLException
 	{
-		this.setConnection(connection);
-		
 		this.support = new DatabaseMetaDataSupport(getDatabaseMetaData());
 	}
 
-	public void setConnection(Connection connection)
+	public static void setConnection(Connection connection)
 	{
 		threadLocal.set(connection);
 	}

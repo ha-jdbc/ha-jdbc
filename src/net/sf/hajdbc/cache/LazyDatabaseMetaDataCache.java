@@ -36,14 +36,16 @@ import net.sf.hajdbc.DatabaseProperties;
  */
 public class LazyDatabaseMetaDataCache implements DatabaseMetaDataCache
 {
-	private LazyDatabaseProperties properties;
+	private DatabaseProperties properties;
 	
 	/**
 	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush(java.sql.Connection)
 	 */
 	public void flush(Connection connection) throws SQLException
 	{
-		this.properties = new LazyDatabaseProperties(connection);
+		LazyDatabaseProperties.setConnection(connection);
+		
+		this.properties = new LazyDatabaseProperties();
 	}
 
 	/**
@@ -51,7 +53,7 @@ public class LazyDatabaseMetaDataCache implements DatabaseMetaDataCache
 	 */
 	public DatabaseProperties getDatabaseProperties(Connection connection)
 	{
-		this.properties.setConnection(connection);
+		LazyDatabaseProperties.setConnection(connection);
 		
 		return this.properties;
 	}

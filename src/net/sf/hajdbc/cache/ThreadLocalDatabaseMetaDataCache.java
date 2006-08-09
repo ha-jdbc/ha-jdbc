@@ -36,7 +36,7 @@ import net.sf.hajdbc.DatabaseProperties;
  */
 public class ThreadLocalDatabaseMetaDataCache implements DatabaseMetaDataCache
 {
-	private static ThreadLocal<LazyDatabaseProperties> threadLocal = new ThreadLocal<LazyDatabaseProperties>();
+	private static ThreadLocal<DatabaseProperties> threadLocal = new ThreadLocal<DatabaseProperties>();
 
 	/**
 	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush(java.sql.Connection)
@@ -51,17 +51,15 @@ public class ThreadLocalDatabaseMetaDataCache implements DatabaseMetaDataCache
 	 */
 	public DatabaseProperties getDatabaseProperties(Connection connection) throws SQLException
 	{
-		LazyDatabaseProperties properties = threadLocal.get();
+		LazyDatabaseProperties.setConnection(connection);
+		
+		DatabaseProperties properties = threadLocal.get();
 		
 		if (properties == null)
 		{
-			properties = new LazyDatabaseProperties(connection);
+			properties = new LazyDatabaseProperties();
 			
 			threadLocal.set(properties);
-		}
-		else
-		{
-			properties.setConnection(connection);
 		}
 		
 		return properties;
