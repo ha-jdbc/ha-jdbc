@@ -123,8 +123,8 @@ public class DatabaseMetaDataSupport
 		
 		while (resultSet.next())
 		{
-			String table = this.quote(metaData, resultSet.getString("TABLE_NAME"));
-			String schema = this.quote(metaData, resultSet.getString("TABLE_SCHEM"));
+			String table = resultSet.getString("TABLE_NAME");
+			String schema = resultSet.getString("TABLE_SCHEM");
 
 			Collection<String> tables = tablesMap.get(schema);
 			
@@ -304,15 +304,15 @@ public class DatabaseMetaDataSupport
 		
 		if (metaData.supportsCatalogsInDataManipulation() && (catalog != null))
 		{
-			builder.append(catalog).append(metaData.getCatalogSeparator());
+			builder.append(this.quote(metaData, catalog)).append(metaData.getCatalogSeparator());
 		}
 
 		if (metaData.supportsSchemasInDataManipulation() && (schema != null))
 		{
-			builder.append(schema).append(".");
+			builder.append(this.quote(metaData, schema)).append(".");
 		}
 		
-		return builder.append(table).toString();
+		return builder.append(this.quote(metaData, table)).toString();
 	}
 
 	/**
@@ -331,15 +331,15 @@ public class DatabaseMetaDataSupport
 		
 		if (metaData.supportsCatalogsInTableDefinitions() && (catalog != null))
 		{
-			builder.append(catalog).append(metaData.getCatalogSeparator());
+			builder.append(this.quote(metaData, catalog)).append(metaData.getCatalogSeparator());
 		}
 
 		if (metaData.supportsSchemasInTableDefinitions() && (schema != null))
 		{
-			builder.append(schema).append(".");
+			builder.append(this.quote(metaData, schema)).append(".");
 		}
 		
-		return builder.append(table).toString();
+		return builder.append(this.quote(metaData, table)).toString();
 	}
 
 	private String getCatalog(DatabaseMetaData metaData) throws SQLException
