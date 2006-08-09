@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc.cache;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -36,21 +37,35 @@ import net.sf.hajdbc.TableProperties;
  */
 public class LazyDatabaseProperties implements DatabaseProperties
 {
+	private static ThreadLocal<Connection> threadLocal = new ThreadLocal<Connection>();
+	
 	private List<TableProperties> tableList;
 	private Boolean supportsSelectForUpdate;
-	private DatabaseMetaDataSupport support;;
+	private DatabaseMetaDataSupport support;
 
-	public LazyDatabaseProperties() throws SQLException
+	public LazyDatabaseProperties(Connection connection) throws SQLException
 	{
-		this.support = new DatabaseMetaDataSupport(LazyDatabaseMetaDataCache.getDatabaseMetaData());
+		this.setConnection(connection);
+		
+		this.support = new DatabaseMetaDataSupport(getDatabaseMetaData());
 	}
 
+	public void setConnection(Connection connection)
+	{
+		threadLocal.set(connection);
+	}
+	
+	public static DatabaseMetaData getDatabaseMetaData() throws SQLException
+	{
+		return threadLocal.get().getMetaData();
+	}
+	
 	/**
 	 * @see net.sf.hajdbc.DatabaseProperties#getTables()
 	 */
 	public synchronized Collection<TableProperties> getTables() throws SQLException
 	{
-		DatabaseMetaData metaData = LazyDatabaseMetaDataCache.getDatabaseMetaData();
+		DatabaseMetaData metaData = getDatabaseMetaData();
 		
 		if (this.tableList == null)
 		{
@@ -80,7 +95,7 @@ public class LazyDatabaseProperties implements DatabaseProperties
 	{
 		if (this.supportsSelectForUpdate == null)
 		{
-			this.supportsSelectForUpdate = LazyDatabaseMetaDataCache.getDatabaseMetaData().supportsSelectForUpdate();
+			this.supportsSelectForUpdate = getDatabaseMetaData().supportsSelectForUpdate();
 		}
 		
 		return this.supportsSelectForUpdate;

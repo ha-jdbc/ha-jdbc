@@ -20,6 +20,10 @@
  */
 package net.sf.hajdbc.cache;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+
+import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.DatabaseProperties;
 
 
@@ -30,25 +34,36 @@ import net.sf.hajdbc.DatabaseProperties;
  * @author Paul Ferraro
  * @since 1.2
  */
-public class ThreadLocalDatabaseMetaDataCache extends LazyDatabaseMetaDataCache
+public class ThreadLocalDatabaseMetaDataCache implements DatabaseMetaDataCache
 {
-	private static ThreadLocal<DatabaseProperties> threadLocal = new ThreadLocal<DatabaseProperties>();
+	private static ThreadLocal<LazyDatabaseProperties> threadLocal = new ThreadLocal<LazyDatabaseProperties>();
 
 	/**
-	 * @see net.sf.hajdbc.cache.LazyDatabaseMetaDataCache#getDatabaseProperties()
+	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush(java.sql.Connection)
 	 */
-	@Override
-	protected DatabaseProperties getDatabaseProperties()
+	public void flush(Connection connection)
 	{
-		return threadLocal.get();
+		// Nothing to flush
 	}
 
 	/**
-	 * @see net.sf.hajdbc.cache.LazyDatabaseMetaDataCache#setDatabaseProperties(net.sf.hajdbc.DatabaseProperties)
+	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getDatabaseProperties(java.sql.Connection)
 	 */
-	@Override
-	protected void setDatabaseProperties(DatabaseProperties properties)
+	public DatabaseProperties getDatabaseProperties(Connection connection) throws SQLException
 	{
-		threadLocal.set(properties);
+		LazyDatabaseProperties properties = threadLocal.get();
+		
+		if (properties == null)
+		{
+			properties = new LazyDatabaseProperties(connection);
+			
+			threadLocal.set(properties);
+		}
+		else
+		{
+			properties.setConnection(connection);
+		}
+		
+		return properties;
 	}
 }

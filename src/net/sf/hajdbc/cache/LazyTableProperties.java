@@ -58,7 +58,7 @@ public class LazyTableProperties implements TableProperties
 	{
 		if (this.columnMap == null)
 		{
-			this.columnMap = this.support.getColumns(LazyDatabaseMetaDataCache.getDatabaseMetaData(), this.schema, this.table);
+			this.columnMap = this.support.getColumns(LazyDatabaseProperties.getDatabaseMetaData(), this.schema, this.table);
 		}
 		
 		return this.columnMap.keySet();
@@ -71,7 +71,7 @@ public class LazyTableProperties implements TableProperties
 	{
 		if (this.columnMap == null)
 		{
-			this.columnMap = this.support.getColumns(LazyDatabaseMetaDataCache.getDatabaseMetaData(), this.schema, this.table);
+			this.columnMap = this.support.getColumns(LazyDatabaseProperties.getDatabaseMetaData(), this.schema, this.table);
 		}
 		
 		return this.columnMap.get(column);
@@ -84,7 +84,7 @@ public class LazyTableProperties implements TableProperties
 	{
 		if (this.primaryKey == null)
 		{
-			this.primaryKey = this.support.getPrimaryKey(LazyDatabaseMetaDataCache.getDatabaseMetaData(), this.schema, this.table);
+			this.primaryKey = this.support.getPrimaryKey(LazyDatabaseProperties.getDatabaseMetaData(), this.schema, this.table);
 		}
 		
 		return this.primaryKey;
@@ -97,7 +97,7 @@ public class LazyTableProperties implements TableProperties
 	{
 		if (this.foreignKeyConstraints == null)
 		{
-			this.foreignKeyConstraints = this.support.getForeignKeyConstraints(LazyDatabaseMetaDataCache.getDatabaseMetaData(), this.schema, this.table);
+			this.foreignKeyConstraints = this.support.getForeignKeyConstraints(LazyDatabaseProperties.getDatabaseMetaData(), this.schema, this.table);
 		}
 		
 		return this.foreignKeyConstraints;
@@ -110,7 +110,7 @@ public class LazyTableProperties implements TableProperties
 	{
 		if (this.uniqueConstraints == null)
 		{
-			this.uniqueConstraints = this.support.getUniqueConstraints(LazyDatabaseMetaDataCache.getDatabaseMetaData(), this.schema, this.table);
+			this.uniqueConstraints = this.support.getUniqueConstraints(LazyDatabaseProperties.getDatabaseMetaData(), this.schema, this.table);
 		}
 		
 		return this.uniqueConstraints;
@@ -123,7 +123,7 @@ public class LazyTableProperties implements TableProperties
 	{
 		if (this.name == null)
 		{
-			this.name = this.support.getQualifiedNameForDML(LazyDatabaseMetaDataCache.getDatabaseMetaData(), this.schema, this.table);
+			this.name = this.support.getQualifiedNameForDML(LazyDatabaseProperties.getDatabaseMetaData(), this.schema, this.table);
 		}
 		
 		return this.name;
