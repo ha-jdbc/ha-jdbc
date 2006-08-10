@@ -21,9 +21,9 @@
 package net.sf.hajdbc.balancer;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
-import java.util.PriorityQueue;
-import java.util.Queue;
+import java.util.LinkedList;
 
 import net.sf.hajdbc.Database;
 
@@ -33,7 +33,7 @@ import net.sf.hajdbc.Database;
  */
 public class SimpleBalancer extends AbstractBalancer
 {
-	private Queue<Database> databaseQueue = new PriorityQueue<Database>(2, new WeightComparator());
+	private LinkedList<Database> databaseList = new LinkedList<Database>();
 
 	/**
 	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
@@ -41,7 +41,7 @@ public class SimpleBalancer extends AbstractBalancer
 	@Override
 	protected Collection<Database> getDatabases()
 	{
-		return this.databaseQueue;
+		return this.databaseList;
 	}
 	
 	/**
@@ -50,7 +50,7 @@ public class SimpleBalancer extends AbstractBalancer
 	@Override
 	public synchronized Database first()
 	{
-		return this.databaseQueue.element();
+		return this.databaseList.element();
 	}
 	
 	/**
@@ -61,7 +61,24 @@ public class SimpleBalancer extends AbstractBalancer
 		return this.first();
 	}
 	
-	static class WeightComparator implements Comparator<Database>
+	/**
+	 * @see net.sf.hajdbc.balancer.AbstractBalancer#add(net.sf.hajdbc.Database)
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public synchronized boolean add(Database database)
+	{
+		boolean added = super.add(database);
+		
+		if (added)
+		{
+			Collections.sort(this.databaseList, comparator);
+		}
+		
+		return added;
+	}
+
+	private static Comparator<Database> comparator = new Comparator<Database>()
 	{
 		/**
 		 * @see java.util.Comparator#compare(T, T)
@@ -70,5 +87,5 @@ public class SimpleBalancer extends AbstractBalancer
 		{
 			return database2.getWeight() - database1.getWeight();
 		}
-	}
+	};
 }
