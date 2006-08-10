@@ -12,6 +12,11 @@
 	</contexts>
 
 	<changes>
+		<release version="1.1.4" date="August 10, 2006">
+			<action type="fix" context="src" dev="PF">
+				Fixed bug in SimpleBalancer where a database deactivation would trigger the deactivation of other databases of identical weight.
+			</action>
+		</release>
 		<release version="1.1.3" date="August 8, 2006">
 			<action type="fix" context="src" dev="PF">
 				Fixed unset prepared statement where clause parameters when executing update statement in DifferentialSynchronizationStrategy.
