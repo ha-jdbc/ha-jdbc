@@ -12,6 +12,23 @@
 	</contexts>
 
 	<changes>
+		<release version="1.2-beta-2" date="August 10, 2006">
+			<action type="update" context="lib" dev="PF">
+				Upgraded TestNG to 5.0.1.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded Woodstox to 3.0.0.
+			</action>
+			<action type="fix" context="src" dev="PF">
+				Fixed premature quoting of schema and tables in DatabaseMetaDataCacheSupport.
+			</action>
+			<action type="fix" context="src" dev="PF">
+				Fixed NullPointerException in ThreadLocalDatabaseMetaDataCache.
+			</action>
+			<action type="fix" context="src" dev="PF">
+				Fixed bug in SimpleBalancer where a database deactivation would trigger the deactivation of other databases of identical weight.
+			</action>
+		</release>
 		<release version="1.2-beta-1" date="July 19, 2006">
 			<action type="update" context="lib" dev="PF">
 				Upgraded Retrotranslator to version 1.0.7.
