@@ -220,6 +220,18 @@ public abstract class AbstractTestBalancer implements Balancer
 		
 		this.balancer.add(database);
 
+		Database database2 = new MockDatabase("2", 1);
+		
+		this.balancer.add(database2);
+		
+		removed = this.balancer.remove(database2);
+
+		assert removed;
+		
+		removed = this.balancer.remove(database2);
+
+		assert !removed;
+		
 		removed = this.balancer.remove(database);
 
 		assert removed;
