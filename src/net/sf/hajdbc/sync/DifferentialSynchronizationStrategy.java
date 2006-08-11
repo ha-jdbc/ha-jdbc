@@ -155,7 +155,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				Collection<String> columns = table.getColumns();
 				
 				// List of colums for select statement - starting with primary key
-				List<String> columnList = new ArrayList<String>(columns);
+				List<String> columnList = new ArrayList<String>(columns.size());
 				
 				columnList.addAll(primaryKeyColumnList);
 				
@@ -190,7 +190,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 	
 				Future<ResultSet> future = this.executor.submit(callable);
 				
-				Statement activeStatement = activeConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				Statement activeStatement = activeConnection.createStatement();
 				activeStatement.setFetchSize(this.fetchSize);
 				
 				ResultSet activeResultSet = activeStatement.executeQuery(selectSQL);
