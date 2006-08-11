@@ -24,7 +24,6 @@ import java.sql.SQLException;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Operation;
-import net.sf.hajdbc.SQLObject;
 
 /**
  * @author  Paul Ferraro

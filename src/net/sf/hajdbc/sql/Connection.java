@@ -27,7 +27,6 @@ import java.util.Map;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Operation;
-import net.sf.hajdbc.SQLObject;
 
 /**
  * @author  Paul Ferraro

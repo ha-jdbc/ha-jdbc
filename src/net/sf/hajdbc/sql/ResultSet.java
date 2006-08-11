@@ -41,7 +41,6 @@ import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Operation;
-import net.sf.hajdbc.SQLObject;
 
 /**
  * @author  Paul Ferraro
@@ -63,7 +62,7 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.SQLObject#handleExceptions(java.util.Map)
+	 * @see net.sf.hajdbc.sql.SQLObject#handleExceptions(java.util.Map)
 	 */
 	@Override
 	public void handleExceptions(Map<Database, SQLException> exceptionMap) throws SQLException

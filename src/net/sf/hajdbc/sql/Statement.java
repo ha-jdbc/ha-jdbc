@@ -34,7 +34,6 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.LockManager;
 import net.sf.hajdbc.Operation;
-import net.sf.hajdbc.SQLObject;
 
 /**
  * @author  Paul Ferraro
@@ -58,7 +57,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 	}
 
 	/**
-	 * @see net.sf.hajdbc.SQLObject#handleExceptions(java.util.Map)
+	 * @see net.sf.hajdbc.sql.SQLObject#handleExceptions(java.util.Map)
 	 */
 	@Override
 	public void handleExceptions(Map<Database, SQLException> exceptionMap) throws SQLException

@@ -22,7 +22,6 @@ package net.sf.hajdbc.sql;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.SQLObject;
 import net.sf.hajdbc.util.Collections;
 
 /**
