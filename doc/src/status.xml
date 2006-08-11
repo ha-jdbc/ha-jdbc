@@ -12,6 +12,18 @@
 	</contexts>
 
 	<changes>
+		<release version="1.2-beta-3" date="...">
+			<action type="fix" context="src" dev="PF">
+				Fixed bug in DifferentialSynchronizationStrategy where generated select statements had duplicated columns.
+			</action>
+			<action type="update" context="src" dev="PF">
+				Extracted interfaces from ColumnProperties, ForeignKeyConstraint, and UniqueConstraint.
+				Implementations refactored into net.sf.hajdbc.cache package.
+			</action>
+			<action type="add" context="test" dev="PF">
+				Added unit test for DifferentialSynchronizationStrategy.
+			</action>
+		</release>
 		<release version="1.2-beta-2" date="August 10, 2006">
 			<action type="update" context="lib" dev="PF">
 				Upgraded TestNG to 5.0.1.
