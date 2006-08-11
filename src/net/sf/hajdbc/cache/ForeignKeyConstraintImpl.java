@@ -18,61 +18,104 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc;
+package net.sf.hajdbc.cache;
 
+import java.util.LinkedList;
 import java.util.List;
 
+import net.sf.hajdbc.ForeignKeyConstraint;
 
 /**
- * Represents a foreign key constraint on a table.
- * 
- * @author  Paul Ferraro
- * @since   1.1
+ * @author Paul Ferraro
+ *
  */
-public interface ForeignKeyConstraint extends UniqueConstraint
+public class ForeignKeyConstraintImpl extends UniqueConstraintImpl implements ForeignKeyConstraint
 {
+	private String foreignTable;
+	private List<String> foreignColumnList = new LinkedList<String>();
+	private int updateRule;
+	private int deleteRule;
+	private int deferrability;
+	
+	/**
+	 * Constructs a new ForeignKey.
+	 * @param name the name of this constraint
+	 * @param table a schema qualified table name
+	 */
+	public ForeignKeyConstraintImpl(String name, String table)
+	{
+		super(name, table);
+	}
+	
 	/**
 	 * @return the foreign table of this foreign key
 	 */
-	public String getForeignTable();
+	public String getForeignTable()
+	{
+		return this.foreignTable;
+	}
 	
 	/**
 	 * @return the foreign column of this foreign key
 	 */
-	public List<String> getForeignColumnList();
+	public List<String> getForeignColumnList()
+	{
+		return this.foreignColumnList;
+	}
 	
 	/**
 	 * @return Returns the deleteRule.
 	 */
-	public int getDeleteRule();
+	public int getDeleteRule()
+	{
+		return this.deleteRule;
+	}
 
 	/**
 	 * @return Returns the updateRule.
 	 */
-	public int getUpdateRule();
+	public int getUpdateRule()
+	{
+		return this.updateRule;
+	}
 
 	/**
 	 * @return Returns the deferrability.
 	 */
-	public int getDeferrability();
+	public int getDeferrability()
+	{
+		return this.deferrability;
+	}
 
 	/**
 	 * @param deferrability The deferrability to set.
 	 */
-	public void setDeferrability(int deferrability);
+	public void setDeferrability(int deferrability)
+	{
+		this.deferrability = deferrability;
+	}
 
 	/**
 	 * @param deleteRule The deleteRule to set.
 	 */
-	public void setDeleteRule(int deleteRule);
+	public void setDeleteRule(int deleteRule)
+	{
+		this.deleteRule = deleteRule;
+	}
 
 	/**
 	 * @param foreignTable The foreignTable to set.
 	 */
-	public void setForeignTable(String foreignTable);
+	public void setForeignTable(String foreignTable)
+	{
+		this.foreignTable = foreignTable;
+	}
 
 	/**
 	 * @param updateRule The updateRule to set.
 	 */
-	public void setUpdateRule(int updateRule);
+	public void setUpdateRule(int updateRule)
+	{
+		this.updateRule = updateRule;
+	}
 }

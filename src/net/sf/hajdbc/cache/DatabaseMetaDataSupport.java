@@ -163,7 +163,7 @@ public class DatabaseMetaDataSupport
 			int type = resultSet.getInt("DATA_TYPE");
 			String nativeType = resultSet.getString("TYPE_NAME");
 			
-			columnMap.put(column, new ColumnProperties(column, type, nativeType));
+			columnMap.put(column, new ColumnPropertiesImpl(column, type, nativeType));
 		}
 		
 		resultSet.close();
@@ -191,7 +191,7 @@ public class DatabaseMetaDataSupport
 
 			if (constraint == null)
 			{
-				constraint = new UniqueConstraint(name, this.getQualifiedNameForDDL(metaData, schema, table));
+				constraint = new UniqueConstraintImpl(name, this.getQualifiedNameForDDL(metaData, schema, table));
 			}
 			
 			String column = this.quote(metaData, resultSet.getString("COLUMN_NAME"));
@@ -226,7 +226,7 @@ public class DatabaseMetaDataSupport
 			
 			if (foreignKey == null)
 			{
-				foreignKey = new ForeignKeyConstraint(name, this.getQualifiedNameForDDL(metaData, schema, table));
+				foreignKey = new ForeignKeyConstraintImpl(name, this.getQualifiedNameForDDL(metaData, schema, table));
 				
 				String foreignSchema = this.quote(metaData, resultSet.getString("PKTABLE_SCHEM"));
 				String foreignTable = this.quote(metaData, resultSet.getString("PKTABLE_NAME"));
@@ -273,7 +273,7 @@ public class DatabaseMetaDataSupport
 			
 			if (key == null)
 			{
-				key = new UniqueConstraint(name, this.getQualifiedNameForDDL(metaData, schema, table));
+				key = new UniqueConstraintImpl(name, this.getQualifiedNameForDDL(metaData, schema, table));
 				
 				keyMap.put(name, key);
 			}

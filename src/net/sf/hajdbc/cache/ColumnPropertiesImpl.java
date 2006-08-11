@@ -18,17 +18,57 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc;
+package net.sf.hajdbc.cache;
+
+import net.sf.hajdbc.ColumnProperties;
 
 /**
  * @author Paul Ferraro
  *
  */
-public interface ColumnProperties
+public class ColumnPropertiesImpl implements ColumnProperties
 {
-	public String getColumn();
+	private String column;
+	private int type;
+	private String nativeType;
 	
-	public int getType();
+	public ColumnPropertiesImpl(String column, int type, String nativeType)
+	{
+		this.column = column;
+		this.type = type;
+		this.nativeType = nativeType;
+	}
 	
-	public String getNativeType();
+	public String getColumn()
+	{
+		return this.column;
+	}
+	
+	public int getType()
+	{
+		return this.type;
+	}
+	
+	public String getNativeType()
+	{
+		return this.nativeType;
+	}
+
+	/**
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object object)
+	{
+		return ColumnProperties.class.cast(object).getColumn().equals(this.column);
+	}
+
+	/**
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode()
+	{
+		return this.column.hashCode();
+	}
 }

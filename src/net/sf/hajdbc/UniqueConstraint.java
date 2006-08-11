@@ -20,7 +20,6 @@
  */
 package net.sf.hajdbc;
 
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -29,72 +28,20 @@ import java.util.List;
  * @author  Paul Ferraro
  * @since   1.1
  */
-public class UniqueConstraint implements Comparable<UniqueConstraint>
-{
-	private String name;
-	private String table;
-	private List<String> columnList = new LinkedList<String>();
-		
-	/**
-	 * Constructs a new UniqueConstraint.
-	 * @param name the name of this constraint
-	 * @param table a schema qualified table name
-	 */
-	public UniqueConstraint(String name, String table)
-	{
-		this.name = name;
-		this.table = table;
-	}
-	
-	/**
-	 * @return the list of columns in this unique constraint
-	 */
-	public List<String> getColumnList()
-	{
-		return this.columnList;
-	}
-	
+public interface UniqueConstraint extends Comparable<UniqueConstraint>
+{	
 	/**
 	 * @return the name of this constraint
 	 */
-	public String getName()
-	{
-		return this.name;
-	}
+	public String getName();
 
 	/**
 	 * @return the table of this constraint
 	 */
-	public String getTable()
-	{
-		return this.table;
-	}
+	public String getTable();
 	
 	/**
-	 * @see java.lang.Object#equals(java.lang.Object)
+	 * @return the list of columns in this unique constraint
 	 */
-	@Override
-	public boolean equals(Object object)
-	{
-		UniqueConstraint key = (UniqueConstraint) object;
-		
-		return (key != null) && (key.name != null) && key.name.equals(this.name);
-	}
-	
-	/**
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode()
-	{
-		return this.name.hashCode();
-	}
-
-	/**
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
-	 */
-	public int compareTo(UniqueConstraint constraint)
-	{
-		return this.name.compareTo(constraint.name);
-	}
+	public List<String> getColumnList();
 }
