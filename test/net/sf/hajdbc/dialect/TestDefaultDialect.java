@@ -31,6 +31,8 @@ import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.UniqueConstraint;
+import net.sf.hajdbc.cache.ForeignKeyConstraintImpl;
+import net.sf.hajdbc.cache.UniqueConstraintImpl;
 
 import org.easymock.EasyMock;
 import org.easymock.IMocksControl;
@@ -47,6 +49,7 @@ public class TestDefaultDialect implements Dialect
 	protected IMocksControl control = EasyMock.createStrictControl();
 	protected TableProperties tableProperties = this.control.createMock(TableProperties.class);
 	protected Connection connection = this.control.createMock(Connection.class);
+	protected ColumnProperties columnProperties = this.control.createMock(ColumnProperties.class);
 	
 	protected Dialect dialect = this.createDialect();
 	
@@ -70,7 +73,7 @@ public class TestDefaultDialect implements Dialect
 	@DataProvider(name = "foreign-key")
 	Object[][] foreignKeyProvider()
 	{
-		ForeignKeyConstraint foreignKey = new ForeignKeyConstraint("name", "table");
+		ForeignKeyConstraint foreignKey = new ForeignKeyConstraintImpl("name", "table");
 		foreignKey.getColumnList().add("column1");
 		foreignKey.getColumnList().add("column2");
 		foreignKey.setForeignTable("foreign_table");
@@ -86,7 +89,7 @@ public class TestDefaultDialect implements Dialect
 	@DataProvider(name = "unique-constraint")
 	Object[][] uniqueConstraintProvider()
 	{
-		UniqueConstraint uniqueKey = new UniqueConstraint("name", "table");
+		UniqueConstraint uniqueKey = new UniqueConstraintImpl("name", "table");
 		uniqueKey.getColumnList().add("column1");
 		uniqueKey.getColumnList().add("column2");
 		
@@ -102,7 +105,7 @@ public class TestDefaultDialect implements Dialect
 	@DataProvider(name = "column")
 	Object[][] columnProvider()
 	{
-		return new Object[][] { new Object[] { new ColumnProperties("column", Types.INTEGER, "int") } };
+		return new Object[][] { new Object[] { this.columnProperties } };
 	}
 
 	@DataProvider(name = "connection")
@@ -140,13 +143,15 @@ public class TestDefaultDialect implements Dialect
 	@Test(dataProvider = "column")
 	public int getColumnType(ColumnProperties properties) throws SQLException
 	{
+		EasyMock.expect(properties.getType()).andReturn(Types.INTEGER);
+		
 		this.control.replay();
 		
 		int type = this.dialect.getColumnType(properties);
 		
 		this.control.verify();
 		
-		assert type == properties.getType() : type;
+		assert type == Types.INTEGER : type;
 		
 		return type;
 	}
@@ -248,7 +253,7 @@ public class TestDefaultDialect implements Dialect
 	@Test(dataProvider = "table")
 	public String getLockTableSQL(TableProperties properties) throws SQLException
 	{
-		UniqueConstraint primaryKey = new UniqueConstraint("name", "table");
+		UniqueConstraint primaryKey = new UniqueConstraintImpl("name", "table");
 		primaryKey.getColumnList().add("column1");
 		primaryKey.getColumnList().add("column2");
 		

@@ -44,7 +44,7 @@ public class TestPostgreSQLDialect extends TestDefaultDialect
 	private DatabaseMetaData metaData = this.control.createMock(DatabaseMetaData.class);
 	private Statement statement = this.control.createMock(Statement.class);
 	private ResultSet resultSet = this.control.createMock(ResultSet.class);
-	
+
 	@Override
 	protected Dialect createDialect()
 	{
@@ -58,17 +58,19 @@ public class TestPostgreSQLDialect extends TestDefaultDialect
 	@Test(dataProvider = "column")
 	public int getColumnType(ColumnProperties properties) throws SQLException
 	{
-		ColumnProperties oidProperties = new ColumnProperties("column", Types.INTEGER, "oid");
+		EasyMock.expect(properties.getNativeType()).andReturn("oid");
 		
 		this.control.replay();
 		
-		int type = this.dialect.getColumnType(oidProperties);
+		int type = this.dialect.getColumnType(properties);
 		
 		this.control.verify();
 		
 		assert type == Types.BLOB : type;
 		
 		this.control.reset();
+
+		EasyMock.expect(properties.getNativeType()).andReturn("int");
 		
 		return super.getColumnType(properties);
 	}
