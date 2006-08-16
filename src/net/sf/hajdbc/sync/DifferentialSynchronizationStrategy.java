@@ -126,11 +126,13 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				primaryKeyColumnMap.clear();
 				primaryKeyColumnIndexSet.clear();
 				
+				String tableName = table.getName();
+				
 				UniqueConstraint primaryKey = table.getPrimaryKey();
 				
 				if (primaryKey == null)
 				{
-					throw new SQLException(Messages.getMessage(Messages.PRIMARY_KEY_REQUIRED, this.getClass().getName(), table.getName()));
+					throw new SQLException(Messages.getMessage(Messages.PRIMARY_KEY_REQUIRED, this.getClass().getName(), tableName));
 				}
 				
 				List<String> primaryKeyColumnList = primaryKey.getColumnList();
@@ -172,7 +174,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				String commaDelimitedColumns = Strings.join(columnList, ", ");
 				
 				// Retrieve table rows in primary key order
-				final String selectSQL = "SELECT " + commaDelimitedColumns + " FROM " + table.getName() + " ORDER BY " + Strings.join(primaryKeyColumnList, ", ");
+				final String selectSQL = "SELECT " + commaDelimitedColumns + " FROM " + tableName + " ORDER BY " + Strings.join(primaryKeyColumnList, ", ");
 				
 				final Statement inactiveStatement = inactiveConnection.createStatement();
 
@@ -200,7 +202,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				String primaryKeyWhereClause = " WHERE " + Strings.join(primaryKeyColumnList, " = ? AND ") + " = ?";
 				
 				// Construct DELETE SQL
-				String deleteSQL = "DELETE FROM " + table.getName() + primaryKeyWhereClause;
+				String deleteSQL = "DELETE FROM " + tableName + primaryKeyWhereClause;
 				
 				logger.debug(deleteSQL.toString());
 				
@@ -210,14 +212,14 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				Arrays.fill(parameters, "?");
 				
 				// Construct INSERT SQL
-				String insertSQL = "INSERT INTO " + table.getName() + " (" + commaDelimitedColumns + ") VALUES (" + Strings.join(Arrays.asList(parameters), ", ") + ")";
+				String insertSQL = "INSERT INTO " + tableName + " (" + commaDelimitedColumns + ") VALUES (" + Strings.join(Arrays.asList(parameters), ", ") + ")";
 				
 				logger.debug(insertSQL);
 				
 				PreparedStatement insertStatement = inactiveConnection.prepareStatement(insertSQL);
 				
 				// Construct UPDATE SQL
-				String updateSQL = "UPDATE " + table.getName() + " SET " + Strings.join(nonPrimaryKeyColumnList, " = ?, ") + " = ?" + primaryKeyWhereClause;
+				String updateSQL = "UPDATE " + tableName + " SET " + Strings.join(nonPrimaryKeyColumnList, " = ?, ") + " = ?" + primaryKeyWhereClause;
 				
 				logger.debug(updateSQL);
 				
@@ -393,9 +395,9 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				
 				inactiveConnection.commit();
 				
-				logger.info(Messages.getMessage(Messages.INSERT_COUNT, insertCount, table.getName()));
-				logger.info(Messages.getMessage(Messages.UPDATE_COUNT, updateCount, table.getName()));
-				logger.info(Messages.getMessage(Messages.DELETE_COUNT, deleteCount, table.getName()));			
+				logger.info(Messages.getMessage(Messages.INSERT_COUNT, insertCount, tableName));
+				logger.info(Messages.getMessage(Messages.UPDATE_COUNT, updateCount, tableName));
+				logger.info(Messages.getMessage(Messages.DELETE_COUNT, deleteCount, tableName));			
 			}
 		}
 		catch (ExecutionException e)
