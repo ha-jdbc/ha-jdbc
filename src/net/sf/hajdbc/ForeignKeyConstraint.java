@@ -181,6 +181,8 @@ public class ForeignKeyConstraint extends UniqueConstraint
 						foreignKey.deleteRule = resultSet.getInt("DELETE_RULE");
 						foreignKey.updateRule = resultSet.getInt("UPDATE_RULE");
 						foreignKey.deferrability = resultSet.getInt("DEFERRABILITY");
+						
+						foreignKeyMap.put(name, foreignKey);
 					}
 					
 					String column = resultSet.getString("FKCOLUMN_NAME");
