@@ -111,13 +111,14 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		{
 			for (TableProperties table: tables)
 			{
+				String tableName = table.getName();
 				Collection<String> columns = table.getColumns();
 				
 				String commaDelimitedColumns = Strings.join(columns, ",");
 				
-				final String selectSQL = "SELECT " + commaDelimitedColumns + " FROM " + table.getName();
+				final String selectSQL = "SELECT " + commaDelimitedColumns + " FROM " + tableName;
 				
-				final Statement selectStatement = activeConnection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				final Statement selectStatement = activeConnection.createStatement();
 				selectStatement.setFetchSize(this.fetchSize);
 				
 				Callable<ResultSet> callable = new Callable<ResultSet>()
@@ -138,7 +139,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 	
 				int deletedRows = deleteStatement.executeUpdate(deleteSQL);
 				
-				logger.info(Messages.getMessage(Messages.DELETE_COUNT, deletedRows, table.getName()));
+				logger.info(Messages.getMessage(Messages.DELETE_COUNT, deletedRows, tableName));
 				
 				deleteStatement.close();
 				
@@ -147,7 +148,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 				String[] parameters = new String[columns.size()];
 				Arrays.fill(parameters, "?");
 				
-				String insertSQL = "INSERT INTO " + table.getName() + " (" + commaDelimitedColumns + ") VALUES (" + Strings.join(Arrays.asList(parameters), ", ") + ")";
+				String insertSQL = "INSERT INTO " + tableName + " (" + commaDelimitedColumns + ") VALUES (" + Strings.join(Arrays.asList(parameters), ", ") + ")";
 				
 				logger.debug(insertSQL);
 				
@@ -193,7 +194,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 					insertStatement.executeBatch();
 				}
 	
-				logger.info(Messages.getMessage(Messages.INSERT_COUNT, statementCount, table.getName()));
+				logger.info(Messages.getMessage(Messages.INSERT_COUNT, statementCount, tableName));
 				
 				insertStatement.close();
 				selectStatement.close();
