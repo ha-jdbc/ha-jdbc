@@ -12,6 +12,11 @@
 	</contexts>
 
 	<changes>
+		<release version="1.1.5" date="August 16, 2006">
+			<action type="fix" context="src" dev="PF" due-to="Mark Anderson">
+				Fixed bug in ForeignKeyConstraint.collect() causing referential integrity violations during synchronization.
+			</action>
+		</release>
 		<release version="1.1.4" date="August 10, 2006">
 			<action type="fix" context="src" dev="PF">
 				Fixed bug in SimpleBalancer where a database deactivation would trigger the deactivation of other databases of identical weight.
