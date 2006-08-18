@@ -114,7 +114,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 				String tableName = table.getName();
 				Collection<String> columns = table.getColumns();
 				
-				String commaDelimitedColumns = Strings.join(columns, ",");
+				String commaDelimitedColumns = Strings.join(columns, ", ");
 				
 				final String selectSQL = "SELECT " + commaDelimitedColumns + " FROM " + tableName;
 				
