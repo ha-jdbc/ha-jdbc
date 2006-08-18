@@ -21,7 +21,10 @@
 				Implementations refactored into net.sf.hajdbc.cache package.
 			</action>
 			<action type="add" context="test" dev="PF">
-				Added unit test for DifferentialSynchronizationStrategy.
+				Added long needed unit tests for each synchronization strategy.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded JGroups to 2.4-cr-1.
 			</action>
 		</release>
 		<release version="1.2-beta-2" date="August 10, 2006">
