@@ -26,6 +26,9 @@
 			<action type="update" context="lib" dev="PF">
 				Upgraded JGroups to 2.4-cr-1.
 			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded Retrotranslator to 1.0.8.
+			</action>
 		</release>
 		<release version="1.2-beta-2" date="August 10, 2006">
 			<action type="update" context="lib" dev="PF">
