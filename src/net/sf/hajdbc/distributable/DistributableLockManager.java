@@ -76,7 +76,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 
 	public void start() throws ChannelException
 	{
-		this.channel.connect(this.channel.getChannelName());
+		this.channel.connect(this.channel.getClusterName());
 	}
 	
 	public void stop()
