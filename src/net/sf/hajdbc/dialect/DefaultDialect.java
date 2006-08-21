@@ -229,6 +229,24 @@ public class DefaultDialect implements Dialect
 	 * Returns a SQL-92 compatible DROP CONSTRAINT statement pattern.
 	 * @return a <code>java.text.MessageFormat</code> pattern.
 	 */
+	protected String dropForeignKeyPattern()
+	{
+		return this.dropConstraintPattern();
+	}
+	
+	/**
+	 * Returns a SQL-92 compatible DROP CONSTRAINT statement pattern.
+	 * @return a <code>java.text.MessageFormat</code> pattern.
+	 */
+	protected String dropUniqueKeyPattern()
+	{
+		return this.dropConstraintPattern();
+	}
+	
+	/**
+	 * Returns a SQL-92 compatible DROP CONSTRAINT statement pattern.
+	 * @return a <code>java.text.MessageFormat</code> pattern.
+	 */
 	protected String dropConstraintPattern()
 	{
 		return "ALTER TABLE {1} DROP CONSTRAINT {0}";
