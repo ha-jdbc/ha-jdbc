@@ -45,4 +45,31 @@ public class MySQLDialect extends DefaultDialect
 	{
 		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} ON UPDATE {6,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT}";
 	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#createUniqueKeyFormat()
+	 */
+	@Override
+	protected String createUniqueKeyFormat()
+	{
+		return "ALTER TABLE {1} ADD UNIQUE {0} ({2})";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#dropForeignKeyFormat()
+	 */
+	@Override
+	protected String dropForeignKeyFormat()
+	{
+		return "ALTER TABLE {1} DROP FOREIGN KEY {0}";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#dropUniqueKeyFormat()
+	 */
+	@Override
+	protected String dropUniqueKeyFormat()
+	{
+		return "ALTER TABLE {1} DROP INDEX {0}";
+	}
 }

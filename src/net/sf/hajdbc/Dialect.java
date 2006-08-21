@@ -87,22 +87,6 @@ public interface Dialect
 	public String getDropUniqueConstraintSQL(UniqueConstraint constraint) throws SQLException;
 	
 	/**
-	 * Returns a SQL statement used to create a unique constraint.
-	 * @param constraint unique constraint meta data
-	 * @return a SQL statement
-	 * @throws SQLException if there was an error fetching meta data.
-	 */
-	public String getCreatePrimaryKeyConstraintSQL(UniqueConstraint constraint) throws SQLException;
-
-	/**
-	 * Returns a SQL statement used to drop a unique constraint.
-	 * @param constraint unique constraint meta data
-	 * @return a SQL statement
-	 * @throws SQLException if there was an error fetching meta data.
-	 */
-	public String getDropPrimaryKeyConstraintSQL(UniqueConstraint constraint) throws SQLException;
-	
-	/**
 	 * Determines whether the specified SQL is a SELECT ... FOR UPDATE statement
 	 * @param sql a SQL statement
 	 * @return true if this is a SELECT ... FOR UPDATE statement, false if it is not

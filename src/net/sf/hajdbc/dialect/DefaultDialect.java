@@ -104,7 +104,7 @@ public class DefaultDialect implements Dialect
 	 */
 	public String getDropForeignKeyConstraintSQL(ForeignKeyConstraint key)
 	{
-		return MessageFormat.format(this.dropConstraintFormat(), key.getName(), key.getTable());
+		return MessageFormat.format(this.dropForeignKeyFormat(), key.getName(), key.getTable());
 	}
 	
 	/**
@@ -120,23 +120,7 @@ public class DefaultDialect implements Dialect
 	 */
 	public String getDropUniqueConstraintSQL(UniqueConstraint constraint)
 	{
-		return MessageFormat.format(this.dropConstraintFormat(), constraint.getName(), constraint.getTable());
-	}
-
-	/**
-	 * @see net.sf.hajdbc.Dialect#getCreatePrimaryKeyConstraintSQL(net.sf.hajdbc.UniqueConstraint)
-	 */
-	public String getCreatePrimaryKeyConstraintSQL(UniqueConstraint constraint)
-	{
-		return MessageFormat.format(this.createPrimaryKeyFormat(), constraint.getName(), constraint.getTable(), Strings.join(constraint.getColumnList(), ", "));
-	}
-
-	/**
-	 * @see net.sf.hajdbc.Dialect#getDropPrimaryKeyConstraintSQL(net.sf.hajdbc.UniqueConstraint)
-	 */
-	public String getDropPrimaryKeyConstraintSQL(UniqueConstraint constraint)
-	{
-		return MessageFormat.format(this.dropConstraintFormat(), constraint.getName(), constraint.getTable());
+		return MessageFormat.format(this.dropUniqueKeyFormat(), constraint.getName(), constraint.getTable());
 	}
 
 	/**
@@ -208,9 +192,14 @@ public class DefaultDialect implements Dialect
 		return "ALTER TABLE {1} ADD CONSTRAINT {0} UNIQUE ({2})";
 	}
 	
-	protected String createPrimaryKeyFormat()
+	protected String dropForeignKeyFormat()
 	{
-		return "ALTER TABLE {1} ADD CONSTRAINT {0} PRIMARY KEY ({2})";
+		return this.dropConstraintFormat();
+	}
+	
+	protected String dropUniqueKeyFormat()
+	{
+		return this.dropConstraintFormat();
 	}
 	
 	protected String dropConstraintFormat()

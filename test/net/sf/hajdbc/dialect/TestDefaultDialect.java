@@ -172,21 +172,6 @@ public class TestDefaultDialect implements Dialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getCreatePrimaryKeyConstraintSQL(net.sf.hajdbc.UniqueConstraint)
-	 */
-	@Test(dataProvider = "unique-constraint")
-	public String getCreatePrimaryKeyConstraintSQL(UniqueConstraint constraint) throws SQLException
-	{
-		this.control.replay();
-		
-		String sql = this.dialect.getCreatePrimaryKeyConstraintSQL(constraint);
-		
-		assert sql.equals("ALTER TABLE table ADD CONSTRAINT name PRIMARY KEY (column1, column2)") : sql;
-		
-		return sql;
-	}
-
-	/**
 	 * @see net.sf.hajdbc.Dialect#getCreateUniqueConstraintSQL(net.sf.hajdbc.UniqueConstraint)
 	 */
 	@Test(dataProvider = "unique-constraint")
@@ -210,21 +195,6 @@ public class TestDefaultDialect implements Dialect
 		this.control.replay();
 		
 		String sql = this.dialect.getDropForeignKeyConstraintSQL(constraint);
-		
-		assert sql.equals("ALTER TABLE table DROP CONSTRAINT name") : sql;
-		
-		return sql;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.Dialect#getDropPrimaryKeyConstraintSQL(net.sf.hajdbc.UniqueConstraint)
-	 */
-	@Test(dataProvider = "unique-constraint")
-	public String getDropPrimaryKeyConstraintSQL(UniqueConstraint constraint) throws SQLException
-	{
-		this.control.replay();
-		
-		String sql = this.dialect.getDropPrimaryKeyConstraintSQL(constraint);
 		
 		assert sql.equals("ALTER TABLE table DROP CONSTRAINT name") : sql;
 		
