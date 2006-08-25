@@ -144,7 +144,7 @@ public class DefaultDialect implements Dialect
 	 */
 	public String getDropForeignKeyConstraintSQL(DatabaseMetaData metaData, ForeignKeyConstraint key) throws SQLException
 	{
-		return MessageFormat.format(this.dropConstraintPattern(), this.quote(metaData, key.getName()), this.qualifyTable(metaData, key.getSchema(), key.getTable()));
+		return MessageFormat.format(this.dropForeignKeyPattern(), this.quote(metaData, key.getName()), this.qualifyTable(metaData, key.getSchema(), key.getTable()));
 	}
 	
 	/**
@@ -160,7 +160,7 @@ public class DefaultDialect implements Dialect
 	 */
 	public String getDropUniqueConstraintSQL(DatabaseMetaData metaData, UniqueConstraint constraint) throws SQLException
 	{
-		return MessageFormat.format(this.dropConstraintPattern(), this.quote(metaData, constraint.getName()), this.qualifyTable(metaData, constraint.getSchema(), constraint.getTable()));
+		return MessageFormat.format(this.dropUniqueKeyPattern(), this.quote(metaData, constraint.getName()), this.qualifyTable(metaData, constraint.getSchema(), constraint.getTable()));
 	}
 
 	/**
