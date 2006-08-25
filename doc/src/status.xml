@@ -29,7 +29,7 @@
 			<action type="update" context="lib" dev="PF">
 				Upgraded Retrotranslator to 1.0.8.
 			</action>
-			<action type="fix" context="src" dev="PF">
+			<action type="fix" context="src" dev="PF" due-to="Stephan Hesse">
 				Fixed MySQL dialect methods for generating drop foreign key, create unique constraint, and drop unique contraint SQL.
 			</action>
 		</release>
