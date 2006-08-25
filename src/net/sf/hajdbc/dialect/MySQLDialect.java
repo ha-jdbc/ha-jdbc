@@ -38,37 +38,37 @@ public class MySQLDialect extends DefaultDialect
 
 	/**
 	 * Deferrability clause is not supported.
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#createForeignKeyFormat()
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#createForeignKeyConstraintFormat()
 	 */
 	@Override
-	protected String createForeignKeyFormat()
+	protected String createForeignKeyConstraintFormat()
 	{
 		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} ON UPDATE {6,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT}";
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#createUniqueKeyFormat()
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#createUniqueConstraintFormat()
 	 */
 	@Override
-	protected String createUniqueKeyFormat()
+	protected String createUniqueConstraintFormat()
 	{
 		return "ALTER TABLE {1} ADD UNIQUE {0} ({2})";
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#dropForeignKeyFormat()
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#dropForeignKeyConstraintFormat()
 	 */
 	@Override
-	protected String dropForeignKeyFormat()
+	protected String dropForeignKeyConstraintFormat()
 	{
 		return "ALTER TABLE {1} DROP FOREIGN KEY {0}";
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#dropUniqueKeyFormat()
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#dropUniqueConstraintFormat()
 	 */
 	@Override
-	protected String dropUniqueKeyFormat()
+	protected String dropUniqueConstraintFormat()
 	{
 		return "ALTER TABLE {1} DROP INDEX {0}";
 	}

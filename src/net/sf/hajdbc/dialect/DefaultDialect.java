@@ -96,7 +96,7 @@ public class DefaultDialect implements Dialect
 	 */
 	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint key)
 	{
-		return MessageFormat.format(this.createForeignKeyFormat(), key.getName(), key.getTable(), Strings.join(key.getColumnList(), ", "), key.getForeignTable(), Strings.join(key.getForeignColumnList(), ", "), key.getDeleteRule(), key.getUpdateRule(), key.getDeferrability());
+		return MessageFormat.format(this.createForeignKeyConstraintFormat(), key.getName(), key.getTable(), Strings.join(key.getColumnList(), ", "), key.getForeignTable(), Strings.join(key.getForeignColumnList(), ", "), key.getDeleteRule(), key.getUpdateRule(), key.getDeferrability());
 	}
 	
 	/**
@@ -104,7 +104,7 @@ public class DefaultDialect implements Dialect
 	 */
 	public String getDropForeignKeyConstraintSQL(ForeignKeyConstraint key)
 	{
-		return MessageFormat.format(this.dropForeignKeyFormat(), key.getName(), key.getTable());
+		return MessageFormat.format(this.dropForeignKeyConstraintFormat(), key.getName(), key.getTable());
 	}
 	
 	/**
@@ -112,7 +112,7 @@ public class DefaultDialect implements Dialect
 	 */
 	public String getCreateUniqueConstraintSQL(UniqueConstraint constraint)
 	{
-		return MessageFormat.format(this.createUniqueKeyFormat(), constraint.getName(), constraint.getTable(), Strings.join(constraint.getColumnList(), ", "));
+		return MessageFormat.format(this.createUniqueConstraintFormat(), constraint.getName(), constraint.getTable(), Strings.join(constraint.getColumnList(), ", "));
 	}
 	
 	/**
@@ -120,7 +120,7 @@ public class DefaultDialect implements Dialect
 	 */
 	public String getDropUniqueConstraintSQL(UniqueConstraint constraint)
 	{
-		return MessageFormat.format(this.dropUniqueKeyFormat(), constraint.getName(), constraint.getTable());
+		return MessageFormat.format(this.dropUniqueConstraintFormat(), constraint.getName(), constraint.getTable());
 	}
 
 	/**
@@ -182,22 +182,22 @@ public class DefaultDialect implements Dialect
 		return "DELETE FROM {0}";
 	}
 	
-	protected String createForeignKeyFormat()
+	protected String createForeignKeyConstraintFormat()
 	{
 		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} ON UPDATE {6,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} {7,choice,5#DEFERRABLE INITIALLY DEFERRED|6#DEFERRABLE INITIALLY IMMEDIATE|7#NOT DEFERRABLE}";
 	}
 	
-	protected String createUniqueKeyFormat()
+	protected String createUniqueConstraintFormat()
 	{
 		return "ALTER TABLE {1} ADD CONSTRAINT {0} UNIQUE ({2})";
 	}
 	
-	protected String dropForeignKeyFormat()
+	protected String dropForeignKeyConstraintFormat()
 	{
 		return this.dropConstraintFormat();
 	}
 	
-	protected String dropUniqueKeyFormat()
+	protected String dropUniqueConstraintFormat()
 	{
 		return this.dropConstraintFormat();
 	}

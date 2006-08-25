@@ -74,10 +74,10 @@ public class HSQLDBDialect extends DefaultDialect
 
 	/**
 	 * Deferrability clause is not supported.
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#createForeignKeyFormat()
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#createForeignKeyConstraintFormat()
 	 */
 	@Override
-	protected String createForeignKeyFormat()
+	protected String createForeignKeyConstraintFormat()
 	{
 		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} ON UPDATE {6,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT}";
 	}
