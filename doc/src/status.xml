@@ -17,7 +17,7 @@
 				Upgraded Retrotranslator to 1.0.8.
 			</action>
 			<action type="fix" context="src" dev="PF" due-to="Stephan Hesse">
-				Fixed bugs in MySQLDialect relating to generating SQL for creating and dropping foreign keys and unique constraints.
+				Fixed bugs in MySQLDialect related to generating SQL for creating and dropping foreign keys and unique constraints.
 			</action>
 		</release>
 		<release version="1.1.5" date="August 16, 2006">
