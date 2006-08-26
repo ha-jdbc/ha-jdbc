@@ -151,10 +151,11 @@ public class TestDefaultDialect
 		
 		try
 		{
+			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote);
 			EasyMock.expect(this.metaData.supportsSchemasInDataManipulation()).andReturn(true);
-			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote).times(3);
+			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote).times(4);
 			EasyMock.expect(this.metaData.supportsSchemasInDataManipulation()).andReturn(true);
-			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote).times(3);
+			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote).times(4);
 			
 			this.control.replay();
 			
@@ -162,7 +163,7 @@ public class TestDefaultDialect
 			
 			this.control.verify();
 			
-			assert sql.equals("ALTER TABLE 'schema'.'table' ADD CONSTRAINT fk_name FOREIGN KEY ('column1','column2') REFERENCES 'other_schema'.'other_table' ('other_column1','other_column2') ON DELETE NO ACTION ON UPDATE NO ACTION NOT DEFERRED") : sql;
+			assert sql.equals("ALTER TABLE 'schema'.'table' ADD CONSTRAINT 'fk_name' FOREIGN KEY ('column1','column2') REFERENCES 'other_schema'.'other_table' ('other_column1','other_column2') ON DELETE NO ACTION ON UPDATE NO ACTION NOT DEFERRABLE") : sql;
 		}
 		catch (SQLException e)
 		{
@@ -180,6 +181,7 @@ public class TestDefaultDialect
 		
 		try
 		{
+			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote);
 			EasyMock.expect(this.metaData.supportsSchemasInDataManipulation()).andReturn(true);
 			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote).times(2);
 			
@@ -189,7 +191,7 @@ public class TestDefaultDialect
 			
 			this.control.verify();
 			
-			assert sql.equals("ALTER TABLE 'schema'.'table' DROP CONSTRAINT fk_name") : sql;
+			assert sql.equals("ALTER TABLE 'schema'.'table' DROP CONSTRAINT 'fk_name'") : sql;
 		}
 		catch (SQLException e)
 		{
@@ -209,9 +211,9 @@ public class TestDefaultDialect
 		
 		try
 		{
-			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote).times(2);
+			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote);
 			EasyMock.expect(this.metaData.supportsSchemasInDataManipulation()).andReturn(true);
-			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote).times(2);
+			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote).times(4);
 			
 			this.control.replay();
 			
@@ -219,7 +221,7 @@ public class TestDefaultDialect
 			
 			this.control.verify();
 			
-			assert sql.equals("ALTER TABLE 'schema'.'table' ADD CONSTRAINT uk_name UNIQUE ('column1','column2')") : sql;
+			assert sql.equals("ALTER TABLE 'schema'.'table' ADD CONSTRAINT 'uk_name' UNIQUE ('column1','column2')") : sql;
 		}
 		catch (SQLException e)
 		{
@@ -237,6 +239,7 @@ public class TestDefaultDialect
 		
 		try
 		{
+			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote);
 			EasyMock.expect(this.metaData.supportsSchemasInDataManipulation()).andReturn(true);
 			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote).times(2);
 			
@@ -246,7 +249,7 @@ public class TestDefaultDialect
 			
 			this.control.verify();
 			
-			assert sql.equals("ALTER TABLE 'schema'.'table' DROP CONSTRAINT uk_name") : sql;
+			assert sql.equals("ALTER TABLE 'schema'.'table' DROP CONSTRAINT 'uk_name'") : sql;
 		}
 		catch (SQLException e)
 		{

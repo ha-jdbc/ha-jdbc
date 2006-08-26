@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc.dialect;
 
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
 import net.sf.hajdbc.Dialect;
@@ -46,6 +47,47 @@ public class TestMySQLDialect extends TestDefaultDialect
 	}
 
 	/**
+	 * Test case for {@link net.sf.hajdbc.Dialect#getCreateForeignKeyConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)}
+	 */
+	@Override
+	public void testGetCreateForeignKeyConstraintSQL()
+	{
+		ForeignKeyConstraint constraint = new ForeignKeyConstraint("fk_name", "schema", "table");
+		constraint.getColumnList().add("column1");
+		constraint.getColumnList().add("column2");
+		constraint.setForeignSchema("other_schema");
+		constraint.setForeignTable("other_table");
+		constraint.getForeignColumnList().add("other_column1");
+		constraint.getForeignColumnList().add("other_column2");
+		constraint.setUpdateRule(DatabaseMetaData.importedKeyNoAction);
+		constraint.setDeleteRule(DatabaseMetaData.importedKeyNoAction);
+		constraint.setDeferrability(DatabaseMetaData.importedKeyNotDeferrable);
+
+		String quote = "'";
+		
+		try
+		{
+			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote);
+			EasyMock.expect(this.metaData.supportsSchemasInDataManipulation()).andReturn(true);
+			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote).times(4);
+			EasyMock.expect(this.metaData.supportsSchemasInDataManipulation()).andReturn(true);
+			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote).times(4);
+			
+			this.control.replay();
+			
+			String sql = this.dialect.getCreateForeignKeyConstraintSQL(this.metaData, constraint);
+			
+			this.control.verify();
+			
+			assert sql.equals("ALTER TABLE 'schema'.'table' ADD CONSTRAINT 'fk_name' FOREIGN KEY ('column1','column2') REFERENCES 'other_schema'.'other_table' ('other_column1','other_column2') ON DELETE NO ACTION ON UPDATE NO ACTION") : sql;
+		}
+		catch (SQLException e)
+		{
+			assert false : e;
+		}
+	}
+
+	/**
 	 * Test case for {@link net.sf.hajdbc.Dialect#getDropForeignKeyConstraintSQL(java.sql.DatabaseMetaData, java.lang.String, java.lang.String, java.lang.String)}
 	 */
 	@Override
@@ -56,6 +98,7 @@ public class TestMySQLDialect extends TestDefaultDialect
 		
 		try
 		{
+			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote);
 			EasyMock.expect(this.metaData.supportsSchemasInDataManipulation()).andReturn(true);
 			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote).times(2);
 			
@@ -65,7 +108,7 @@ public class TestMySQLDialect extends TestDefaultDialect
 			
 			this.control.verify();
 			
-			assert sql.equals("ALTER TABLE 'schema'.'table' DROP FOREIGN KEY fk_name") : sql;
+			assert sql.equals("ALTER TABLE 'schema'.'table' DROP FOREIGN KEY 'fk_name'") : sql;
 		}
 		catch (SQLException e)
 		{
@@ -86,9 +129,9 @@ public class TestMySQLDialect extends TestDefaultDialect
 		
 		try
 		{
-			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote).times(2);
+			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote);
 			EasyMock.expect(this.metaData.supportsSchemasInDataManipulation()).andReturn(true);
-			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote).times(2);
+			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote).times(4);
 			
 			this.control.replay();
 			
@@ -96,7 +139,7 @@ public class TestMySQLDialect extends TestDefaultDialect
 			
 			this.control.verify();
 			
-			assert sql.equals("ALTER TABLE 'schema'.'table' ADD UNIQUE uk_name ('column1','column2')") : sql;
+			assert sql.equals("ALTER TABLE 'schema'.'table' ADD UNIQUE 'uk_name' ('column1','column2')") : sql;
 		}
 		catch (SQLException e)
 		{
@@ -115,6 +158,7 @@ public class TestMySQLDialect extends TestDefaultDialect
 		
 		try
 		{
+			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote);
 			EasyMock.expect(this.metaData.supportsSchemasInDataManipulation()).andReturn(true);
 			EasyMock.expect(this.metaData.getIdentifierQuoteString()).andReturn(quote).times(2);
 			
@@ -124,7 +168,7 @@ public class TestMySQLDialect extends TestDefaultDialect
 			
 			this.control.verify();
 			
-			assert sql.equals("ALTER TABLE 'schema'.'table' DROP INDEX uk_name") : sql;
+			assert sql.equals("ALTER TABLE 'schema'.'table' DROP INDEX 'uk_name'") : sql;
 		}
 		catch (SQLException e)
 		{
