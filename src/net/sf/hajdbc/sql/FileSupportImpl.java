@@ -196,7 +196,10 @@ public class FileSupportImpl implements FileSupport
 	{
 		for (File file: this.fileList)
 		{
-			file.delete();
+			if (!file.delete())
+			{
+				file.deleteOnExit();
+			}
 		}
 	}
 	
