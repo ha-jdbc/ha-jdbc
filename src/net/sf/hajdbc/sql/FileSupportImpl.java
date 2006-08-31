@@ -40,7 +40,6 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.sql.Blob;
 import java.sql.Clob;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -56,7 +55,7 @@ public class FileSupportImpl implements FileSupport
 	private static final String TEMP_FILE_SUFFIX = ".lob";
 	private static final int BUFFER_SIZE = 8192;
 	
-	private List<File> fileList = Collections.synchronizedList(new LinkedList<File>());
+	private List<File> fileList = new LinkedList<File>();
 	
 	/**
 	 * @see net.sf.hajdbc.sql.FileSupport#createFile(java.io.InputStream)
