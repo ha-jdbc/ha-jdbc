@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -161,6 +162,16 @@ public class SQLObject<E, P>
 	protected synchronized final void record(Operation<E, ?> operation)
 	{
 		this.operationMap.put(operation.getClass().toString(), operation);
+	}
+	
+	protected synchronized void retain(Collection<Database> databases)
+	{
+		this.objectMap.keySet().retainAll(databases);
+		
+		if (this.parent != null)
+		{
+			this.parent.retain(databases);
+		}
 	}
 	
 	/**
@@ -316,6 +327,8 @@ public class SQLObject<E, P>
 				throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this.databaseCluster));
 			}
 			
+			this.retain(databaseList);
+			
 			Map<Database, Future<T>> futureMap = new HashMap<Database, Future<T>>();
 
 			for (final Database database: databaseList)
@@ -408,6 +421,8 @@ public class SQLObject<E, P>
 			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this.databaseCluster));
 		}
 
+		this.retain(databaseList);
+		
 		for (Database database: databaseList)
 		{
 			E object = this.getObject(database);
