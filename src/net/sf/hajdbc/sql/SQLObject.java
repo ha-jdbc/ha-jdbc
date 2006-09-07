@@ -23,6 +23,7 @@ package net.sf.hajdbc.sql;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -52,7 +53,7 @@ import org.slf4j.LoggerFactory;
  * @param <P> parent object that created the elements proxied by this object
  * @since   1.0
  */
-public class SQLObject<E, P>
+public abstract class SQLObject<E, P>
 {
 	private static Logger logger = LoggerFactory.getLogger(SQLObject.class);
 	
@@ -164,15 +165,52 @@ public class SQLObject<E, P>
 		this.operationMap.put(operation.getClass().toString(), operation);
 	}
 	
-	protected synchronized void retain(Collection<Database> databases)
+	private List<Database> getActiveDatabaseList()
 	{
-		this.objectMap.keySet().retainAll(databases);
+		List<Database> databaseList = this.databaseCluster.getBalancer().list();
+		
+		this.retain(databaseList);
+		
+		return databaseList;
+	}
+	
+	protected synchronized void retain(Collection<Database> activeDatabases)
+	{
+		Iterator<Map.Entry<Database, E>> mapEntries = this.objectMap.entrySet().iterator();
+		
+		while (mapEntries.hasNext())
+		{
+			Map.Entry<Database, E> mapEntry = mapEntries.next();
+			
+			Database database = mapEntry.getKey();
+			
+			if (!activeDatabases.contains(database))
+			{
+				E object = mapEntry.getValue();
+				
+				if (object != null)
+				{
+					try
+					{
+						this.close(object);
+					}
+					catch (java.sql.SQLException e)
+					{
+						// Ignore
+					}
+				}
+				
+				mapEntries.remove();
+			}
+		}
 		
 		if (this.parent != null)
 		{
-			this.parent.retain(databases);
+			this.parent.retain(activeDatabases);
 		}
 	}
+	
+	protected abstract void close(E object) throws java.sql.SQLException;
 	
 	/**
 	 * Helper method that extracts the first result from a map of results.
@@ -320,14 +358,12 @@ public class SQLObject<E, P>
 		
 		try
 		{
-			List<Database> databaseList = this.databaseCluster.getBalancer().list();
+			List<Database> databaseList = this.getActiveDatabaseList();
 			
 			if (databaseList.isEmpty())
 			{
 				throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this.databaseCluster));
 			}
-			
-			this.retain(databaseList);
 			
 			Map<Database, Future<T>> futureMap = new HashMap<Database, Future<T>>();
 
@@ -414,14 +450,12 @@ public class SQLObject<E, P>
 	{
 		Map<Database, T> resultMap = new TreeMap<Database, T>();
 
-		List<Database> databaseList = this.databaseCluster.getBalancer().list();
+		List<Database> databaseList = this.getActiveDatabaseList();
 		
 		if (databaseList.isEmpty())
 		{
 			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this.databaseCluster));
 		}
-
-		this.retain(databaseList);
 		
 		for (Database database: databaseList)
 		{

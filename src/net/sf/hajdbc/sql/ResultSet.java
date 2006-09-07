@@ -2462,4 +2462,13 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 		
 		return connection.getFileSupport();
 	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.SQLObject#close(java.lang.Object)
+	 */
+	@Override
+	protected void close(java.sql.ResultSet resultSet) throws SQLException
+	{
+		resultSet.close();
+	}
 }

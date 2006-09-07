@@ -777,4 +777,13 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 		
 		return lockList;
 	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.SQLObject#close(java.lang.Object)
+	 */
+	@Override
+	protected void close(T statement) throws SQLException
+	{
+		statement.close();
+	}
 }

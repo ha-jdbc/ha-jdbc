@@ -74,4 +74,13 @@ public class Savepoint extends SQLObject<java.sql.Savepoint, java.sql.Connection
 		
 		return this.executeReadFromDriver(operation);
 	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.SQLObject#close(java.lang.Object)
+	 */
+	@Override
+	protected void close(java.sql.Savepoint savepoint)
+	{
+		// Nothing to close
+	}
 }

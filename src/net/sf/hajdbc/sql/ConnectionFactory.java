@@ -41,4 +41,13 @@ public class ConnectionFactory<E> extends SQLObject<E, Void>
 	{
 		super(databaseCluster, Collections.cast(databaseCluster.getConnectionFactoryMap(), Database.class, targetClass));
 	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.SQLObject#close(java.lang.Object)
+	 */
+	@Override
+	protected void close(E object)
+	{
+		// Nothing to close
+	}
 }
