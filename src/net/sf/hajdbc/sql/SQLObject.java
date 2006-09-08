@@ -168,6 +168,8 @@ public abstract class SQLObject<E, P>
 	
 	protected synchronized void retain(Collection<Database> activeDatabases)
 	{
+		if (this.parent == null) return;
+		
 		Iterator<Map.Entry<Database, E>> mapEntries = this.objectMap.entrySet().iterator();
 		
 		while (mapEntries.hasNext())
@@ -196,10 +198,7 @@ public abstract class SQLObject<E, P>
 			}
 		}
 		
-		if (this.parent != null)
-		{
-			this.parent.retain(activeDatabases);
-		}
+		this.parent.retain(activeDatabases);
 	}
 	
 	protected abstract void close(E object) throws java.sql.SQLException;
