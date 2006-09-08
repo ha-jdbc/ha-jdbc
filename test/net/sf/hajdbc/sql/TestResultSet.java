@@ -52,7 +52,6 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.MockDatabase;
 import net.sf.hajdbc.Operation;
-import net.sf.hajdbc.SQLObject;
 
 import org.easymock.EasyMock;
 import org.easymock.IMocksControl;
