@@ -18,9 +18,11 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc;
+package net.sf.hajdbc.sql;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -32,6 +34,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.Lock;
 
+import net.sf.hajdbc.Balancer;
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.Operation;
+import net.sf.hajdbc.SQLException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +51,7 @@ import org.slf4j.LoggerFactory;
  * @param <P> parent object that created the elements proxied by this object
  * @since   1.0
  */
-public class SQLObject<E, P>
+public abstract class SQLObject<E, P>
 {
 	private static Logger logger = LoggerFactory.getLogger(SQLObject.class);
 	
@@ -147,7 +156,54 @@ public class SQLObject<E, P>
 	{
 		return valueMap.values().iterator().next();
 	}
-
+	
+	private List<Database> getActiveDatabaseList()
+	{
+		List<Database> databaseList = this.databaseCluster.getBalancer().list();
+		
+		this.retain(databaseList);
+		
+		return databaseList;
+	}
+	
+	protected synchronized void retain(Collection<Database> activeDatabases)
+	{
+		Iterator<Map.Entry<Database, E>> mapEntries = this.objectMap.entrySet().iterator();
+		
+		while (mapEntries.hasNext())
+		{
+			Map.Entry<Database, E> mapEntry = mapEntries.next();
+			
+			Database database = mapEntry.getKey();
+			
+			if (!activeDatabases.contains(database))
+			{
+				E object = mapEntry.getValue();
+				
+				if (object != null)
+				{
+					try
+					{
+						this.close(object);
+					}
+					catch (java.sql.SQLException e)
+					{
+						// Ignore
+					}
+				}
+				
+				mapEntries.remove();
+			}
+		}
+		
+		if (this.parent != null)
+		{
+			this.parent.retain(activeDatabases);
+		}
+	}
+	
+	protected abstract void close(E object) throws java.sql.SQLException;
+	
 	/**
 	 * Executes the specified read operation on a single database in the cluster.
 	 * It is assumed that these types of operation will <em>not</em> require access to the database.
@@ -249,7 +305,7 @@ public class SQLObject<E, P>
 		
 		try
 		{
-			List<Database> databaseList = this.databaseCluster.getBalancer().list();
+			List<Database> databaseList = this.getActiveDatabaseList();
 			
 			if (databaseList.isEmpty())
 			{
@@ -344,7 +400,7 @@ public class SQLObject<E, P>
 		
 		try
 		{
-			List<Database> databaseList = this.databaseCluster.getBalancer().list();
+			List<Database> databaseList = this.getActiveDatabaseList();
 			
 			if (databaseList.isEmpty())
 			{

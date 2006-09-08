@@ -24,7 +24,6 @@ import java.sql.SQLException;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Operation;
-import net.sf.hajdbc.SQLObject;
 
 /**
  * @author  Paul Ferraro
@@ -74,5 +73,14 @@ public class Savepoint extends SQLObject<java.sql.Savepoint, java.sql.Connection
 		};
 		
 		return this.executeReadFromDriver(operation);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.SQLObject#close(java.lang.Object)
+	 */
+	@Override
+	protected void close(java.sql.Savepoint savepoint)
+	{
+		// Nothing to close
 	}
 }

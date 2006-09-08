@@ -26,7 +26,6 @@ import java.util.Map;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Operation;
-import net.sf.hajdbc.SQLObject;
 
 /**
  * @author  Paul Ferraro
@@ -48,7 +47,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 	}
 
 	/**
-	 * @see net.sf.hajdbc.SQLObject#handleExceptions(java.util.Map)
+	 * @see net.sf.hajdbc.sql.SQLObject#handleExceptions(java.util.Map)
 	 */
 	@Override
 	public void handleExceptions(Map<Database, SQLException> exceptionMap) throws SQLException
@@ -718,5 +717,14 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 	protected boolean isSelectForUpdate(String sql) throws SQLException
 	{
 		return this.getDatabaseCluster().getDialect().isSelectForUpdate(this.getConnection().getMetaData(), sql);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.SQLObject#close(java.lang.Object)
+	 */
+	@Override
+	protected void close(T statement) throws SQLException
+	{
+		statement.close();
 	}
 }

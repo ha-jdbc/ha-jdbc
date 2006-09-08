@@ -22,7 +22,6 @@ package net.sf.hajdbc.sql;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.SQLObject;
 import net.sf.hajdbc.util.Collections;
 
 /**
@@ -41,5 +40,14 @@ public class ConnectionFactory<E> extends SQLObject<E, Void>
 	public ConnectionFactory(DatabaseCluster databaseCluster, Class<E> targetClass)
 	{
 		super(databaseCluster, Collections.cast(databaseCluster.getConnectionFactoryMap(), Database.class, targetClass));
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.SQLObject#close(java.lang.Object)
+	 */
+	@Override
+	protected void close(E object)
+	{
+		// Nothing to close
 	}
 }

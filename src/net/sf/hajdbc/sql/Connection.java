@@ -27,7 +27,6 @@ import java.util.Map;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Operation;
-import net.sf.hajdbc.SQLObject;
 
 /**
  * @author  Paul Ferraro
@@ -667,5 +666,14 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 	public FileSupport getFileSupport()
 	{
 		return this.fileSupport;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.SQLObject#close(java.lang.Object)
+	 */
+	@Override
+	protected void close(java.sql.Connection connection) throws SQLException
+	{
+		connection.close();
 	}
 }
