@@ -12,6 +12,14 @@
 	</contexts>
 
 	<changes>
+		<release version="1.1.7" date="...">
+			<action type="update" context="lib" dev="PF">
+				Upgraded TestNG to 5.1.
+			</action>
+			<action type="fix" context="src" dev="PF" fixes-bug="1543962">
+				Force cleanup of underlying connections, statements, and result sets when a database is deactivated.
+			</action>
+		</release>
 		<release version="1.1.6" date="August 26, 2006">
 			<action type="update" context="lib" dev="PF">
 				Upgraded Retrotranslator to 1.0.8.
