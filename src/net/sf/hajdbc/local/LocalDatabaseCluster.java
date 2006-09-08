@@ -225,6 +225,8 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		}
 		catch (java.sql.SQLException e)
 		{
+			logger.info(Messages.getMessage(Messages.DATABASE_NOT_ALIVE, database, this), e);
+			
 			return false;
 		}
 		finally
