@@ -176,6 +176,8 @@ public abstract class SQLObject<E, P>
 	
 	protected synchronized void retain(Collection<Database> activeDatabases)
 	{
+		if (this.parent == null) return;
+		
 		Iterator<Map.Entry<Database, E>> mapEntries = this.objectMap.entrySet().iterator();
 		
 		while (mapEntries.hasNext())
