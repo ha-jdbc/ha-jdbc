@@ -17,10 +17,16 @@
 				Upgraded JGroups to 2.4-cr-2.
 			</action>
 			<action type="update" context="lib" dev="PF">
+				Upgraded Woodstox to 3.0.1.
+			</action>
+			<action type="update" context="lib" dev="PF">
 				Upgraded TestNG to 5.1.
 			</action>
 			<action type="fix" context="src" dev="PF" fixes-bug="1543962">
 				Force cleanup of underlying connections, statements, and result sets when a database is deactivated.
+			</action>
+			<action type="update" context="src" dev="PF">
+				Log cause of DatabaseCluster.isAlive(Database) failures.
 			</action>
 		</release>
 		<release version="1.2-beta-3" date="August 26, 2006">
