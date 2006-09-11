@@ -235,6 +235,8 @@ public class DatabaseMetaDataSupport
 				foreignKey.setDeleteRule(resultSet.getInt("DELETE_RULE"));
 				foreignKey.setUpdateRule(resultSet.getInt("UPDATE_RULE"));
 				foreignKey.setDeferrability(resultSet.getInt("DEFERRABILITY"));
+				
+				foreignKeyMap.put(name, foreignKey);
 			}
 			
 			String column = this.quote(metaData, resultSet.getString("FKCOLUMN_NAME"));
