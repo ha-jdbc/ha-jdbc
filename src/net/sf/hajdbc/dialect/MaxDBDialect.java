@@ -85,6 +85,8 @@ public class MaxDBDialect extends DefaultDialect
 			{
 				sequenceMap.put(sequence, resultSet.getLong(++index));
 			}
+			
+			resultSet.close();
 		}
 		
 		statement.close();

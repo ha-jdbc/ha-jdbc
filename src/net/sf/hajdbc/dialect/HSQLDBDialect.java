@@ -23,6 +23,7 @@ package net.sf.hajdbc.dialect;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -51,7 +52,8 @@ public class HSQLDBDialect extends DefaultDialect
 	{
 		Map<String, Long> sequenceMap = new HashMap<String, Long>();
 		
-		ResultSet resultSet = connection.createStatement().executeQuery("SELECT SEQUENCE_SCHEMA, SEQUENCE_NAME, NEXT_VALUE FROM INFORMATION_SCHEMA.SYSTEM_SEQUENCES");
+		Statement statement = connection.createStatement();
+		ResultSet resultSet = statement.executeQuery("SELECT SEQUENCE_SCHEMA, SEQUENCE_NAME, NEXT_VALUE FROM INFORMATION_SCHEMA.SYSTEM_SEQUENCES");
 		
 		while (resultSet.next())
 		{
@@ -66,8 +68,9 @@ public class HSQLDBDialect extends DefaultDialect
 			
 			sequenceMap.put(builder.append(resultSet.getString(2)).toString(), resultSet.getLong(3));
 		}
-		
-		resultSet.getStatement().close();
+
+		resultSet.close();
+		statement.close();
 		
 		return sequenceMap;
 	}

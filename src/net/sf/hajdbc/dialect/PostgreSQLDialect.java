@@ -23,6 +23,7 @@ package net.sf.hajdbc.dialect;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
 import java.text.MessageFormat;
 import java.util.HashMap;
@@ -96,18 +97,24 @@ public class PostgreSQLDialect extends DefaultDialect
 		
 		resultSet.close();
 		
-		resultSet = connection.createStatement().executeQuery("SELECT CURRVAL('" + Strings.join(sequenceMap.keySet(), "'), CURRVAL('") + "')");
-		
-		resultSet.next();
-		
-		int index = 0;
-		
-		for (String sequence: sequenceMap.keySet())
+		if (!sequenceMap.isEmpty())
 		{
-			sequenceMap.put(sequence, resultSet.getLong(++index));
+			Statement statement = connection.createStatement();
+			
+			resultSet = statement.executeQuery("SELECT CURRVAL('" + Strings.join(sequenceMap.keySet(), "'), CURRVAL('") + "')");
+			
+			resultSet.next();
+			
+			int index = 0;
+			
+			for (String sequence: sequenceMap.keySet())
+			{
+				sequenceMap.put(sequence, resultSet.getLong(++index));
+			}
+			
+			resultSet.close();
+			statement.close();
 		}
-
-		resultSet.getStatement().close();
 		
 		return sequenceMap;
 	}
