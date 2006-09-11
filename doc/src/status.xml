@@ -12,7 +12,7 @@
 	</contexts>
 
 	<changes>
-		<release version="1.2-beta-4" date="...">
+		<release version="1.2-beta-4" date="September 11, 2006">
 			<action type="update" context="lib" dev="PF">
 				Upgraded JGroups to 2.4-cr-2.
 			</action>
