@@ -28,6 +28,12 @@
 			<action type="update" context="src" dev="PF">
 				Log cause of DatabaseCluster.isAlive(Database) failures.
 			</action>
+			<action type="fix" context="src" dev="PF">
+				Fixed bug in DatabaseMetaDataSupport.getForeignKeyConstraints() causing method to always return an empty collection.
+			</action>
+			<action type="fix" context="src" dev="PF">
+				Fixed bug in PostgreSQLDialect.getSequences(...) causing method to fail to when database does not contain any sequences.
+			</action>
 		</release>
 		<release version="1.2-beta-3" date="August 26, 2006">
 			<action type="fix" context="src" dev="PF">
