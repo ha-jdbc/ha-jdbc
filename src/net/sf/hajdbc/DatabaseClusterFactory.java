@@ -289,7 +289,7 @@ public final class DatabaseClusterFactory
 				}
 				catch (IOException e)
 				{
-					logger.warn(e.toString(), e);
+					logger.warn(e.getMessage(), e);
 				}
 			}
 			
@@ -301,7 +301,7 @@ public final class DatabaseClusterFactory
 				}
 				catch (IOException e)
 				{
-					logger.warn(e.toString(), e);
+					logger.warn(e.getMessage(), e);
 				}
 			}
 			
