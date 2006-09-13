@@ -76,7 +76,9 @@ public class UniqueConstraintImpl implements UniqueConstraint
 	@Override
 	public boolean equals(Object object)
 	{
-		UniqueConstraint key = (UniqueConstraint) object;
+		if ((object == null) || !UniqueConstraint.class.isInstance(object)) return false;
+		
+		UniqueConstraint key = UniqueConstraint.class.cast(object);
 		
 		return (key != null) && (key.getName() != null) && key.getName().equals(this.name);
 	}
