@@ -729,11 +729,23 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	@Override
 	public final boolean equals(Object object)
 	{
-		DatabaseCluster databaseCluster = (DatabaseCluster) object;
+		if ((object == null) || !DatabaseCluster.class.isInstance(object)) return false;
 		
-		return this.getId().equals(databaseCluster.getId());
+		DatabaseCluster databaseCluster = DatabaseCluster.class.cast(object);
+		
+		return this.id.equals(databaseCluster.getId());
 	}
 	
+	
+	/**
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public final int hashCode()
+	{
+		return this.id.hashCode();
+	}
+
 	SynchronizationStrategyBuilder getDefaultSynchronizationStrategyBuilder()
 	{
 		return new SynchronizationStrategyBuilder(this.defaultSynchronizationStrategyId);
