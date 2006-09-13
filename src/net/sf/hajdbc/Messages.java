@@ -30,7 +30,7 @@ import java.util.ResourceBundle;
  * @version $Revision$
  * @since   1.0
  */
-public class Messages
+public final class Messages
 {
 	public static final String CLUSTER_STATE_LOAD_FAILED = "cluster-state-load-failed";
 	public static final String CLUSTER_STATE_STORE_FAILED = "cluster-state-store-failed";
@@ -90,5 +90,10 @@ public class Messages
 		String message = resource.getString(key);
 		
 		return (args.length == 0) ? message : MessageFormat.format(message, args);
+	}
+	
+	private Messages()
+	{
+		// Hide constructor
 	}
 }
