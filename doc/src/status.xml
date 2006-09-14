@@ -12,6 +12,11 @@
 	</contexts>
 
 	<changes>
+		<release version="1.1.8" date="???">
+			<action type="update" context="lib" dev="PF">
+				Upgraded TestNG to 5.2.
+			</action>
+		</release>
 		<release version="1.1.7" date="September 11, 2006">
 			<action type="update" context="lib" dev="PF">
 				Upgraded TestNG to 5.1.
