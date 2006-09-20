@@ -35,6 +35,7 @@ public class DialectFactory
 	
 	static
 	{
+		dialectMap.put("default", DefaultDialect.class);
 		dialectMap.put("db2", DB2Dialect.class);
 		dialectMap.put("derby", DerbyDialect.class);
 		dialectMap.put("firebird", DefaultDialect.class);
@@ -55,7 +56,7 @@ public class DialectFactory
 	 */
 	public static Dialect deserialize(String id) throws Exception
 	{
-		Class<? extends Dialect> targetClass = dialectMap.get(id.toLowerCase());
+		Class<? extends Dialect> targetClass = (id != null) ? dialectMap.get(id.toLowerCase()) : DefaultDialect.class;
 		
 		if (targetClass == null)
 		{

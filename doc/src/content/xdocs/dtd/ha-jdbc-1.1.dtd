@@ -44,7 +44,7 @@
 	id CDATA #REQUIRED
 	balancer (simple|random|round-robin|load) #REQUIRED
 	default-sync IDREF #REQUIRED
-	dialect CDATA "net.sf.hajdbc.dialect.DefaultDialect"
+	dialect CDATA "default"
 	transactions (local|xa) #REQUIRED
 	auto-activate-schedule CDATA #IMPLIED
 	failure-detect-schedule CDATA #IMPLIED

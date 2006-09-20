@@ -16,6 +16,9 @@
 			<action type="update" context="lib" dev="PF">
 				Upgraded TestNG to 5.2.
 			</action>
+			<action type="fix" context="src" dev="PF">
+				Fixed binding compiler error that seemed to only affect windows users.
+			</action>
 		</release>
 		<release version="1.1.7" date="September 11, 2006">
 			<action type="update" context="lib" dev="PF">

@@ -228,7 +228,7 @@
   id                      CDATA                            #REQUIRED
   balancer                (simple|random|round-robin|load) #REQUIRED
   default-sync            IDREF                            #REQUIRED
-  dialect                 CDATA                            "net.sf.hajdbc.dialect.DefaultDialect"
+  dialect                 CDATA                            "default"
   transactions            (local|xa)                       #REQUIRED
   auto-activate-schedule  CDATA                            #IMPLIED
   failure-detect-schedule CDATA                            #IMPLIED
@@ -424,7 +424,7 @@
 					<tr>
 						<td>Default (SQL standard)</td>
 						<td><a href="api/net/sf/hajdbc/dialect/DefaultDialect.html">net.sf.hajdbc.dialect.DefaultDialect</a></td>
-						<td>firebird, ingres, mckoi</td>
+						<td>default, firebird, ingres, mckoi</td>
 					</tr>
 				</table>
 				<note>
