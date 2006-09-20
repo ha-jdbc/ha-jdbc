@@ -19,7 +19,7 @@
 		<value name="id" field="id" style="attribute"/>
 		<value name="balancer" field="balancer" style="attribute" deserializer="net.sf.hajdbc.balancer.BalancerFactory.deserialize" serializer="net.sf.hajdbc.balancer.BalancerFactory.serialize"/>
 		<value name="default-sync" get-method="getDefaultSynchronizationStrategyBuilder" set-method="setDefaultSynchronizationStrategyBuilder" style="attribute" ident="ref"/>
-		<value name="dialect" field="dialect" style="attribute" deserializer="net.sf.hajdbc.dialect.DialectFactory.deserialize" serializer="net.sf.hajdbc.dialect.DialectFactory.serialize" usage="optional" default="net.sf.hajdbc.dialect.DefaultDialect"/>
+		<value name="dialect" field="dialect" style="attribute" deserializer="net.sf.hajdbc.dialect.DialectFactory.deserialize" serializer="net.sf.hajdbc.dialect.DialectFactory.serialize" usage="optional"/>
 		<value name="meta-data-cache" field="databaseMetaDataCache" style="attribute" deserializer="net.sf.hajdbc.cache.DatabaseMetaDataCacheFactory.deserialize" serializer="net.sf.hajdbc.cache.DatabaseMetaDataCacheFactory.serialize" usage="required"/>
 		<value name="transactions" field="transaction" style="attribute" deserializer="net.sf.hajdbc.local.Transaction.deserialize" serializer="net.sf.hajdbc.local.Transaction.serialize"/>
 		<value name="auto-activate-schedule" field="autoActivationSchedule" style="attribute" usage="optional"/>

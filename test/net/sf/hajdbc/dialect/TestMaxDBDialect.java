@@ -91,6 +91,7 @@ public class TestMaxDBDialect extends TestDefaultDialect
 		EasyMock.expect(this.resultSet.getLong(1)).andReturn(1L);
 		EasyMock.expect(this.resultSet.getLong(2)).andReturn(2L);
 		
+		this.resultSet.close();
 		this.statement.close();
 		
 		this.control.replay();

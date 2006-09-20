@@ -68,6 +68,7 @@ public class TestDB2Dialect extends TestDefaultDialect
 		EasyMock.expect(this.resultSet.getLong(1)).andReturn(2L);
 		EasyMock.expect(this.resultSet.getLong(2)).andReturn(1L);
 		
+		this.resultSet.close();
 		this.statement.close();
 		
 		this.control.replay();

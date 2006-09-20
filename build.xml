@@ -88,25 +88,25 @@
 		<mkdir dir="${build.dir}"/>
 	</target>
 	
-    <target name="compile" depends="init">
-        <javac srcdir="${src.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="build.classpath" source="1.5" target="1.5"></javac>
+	<target name="compile" depends="init">
+		<javac srcdir="${src.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="build.classpath" source="1.5" target="1.5"></javac>
 		<copy todir="${build.dir}">
 			<fileset dir="${src.dir}" excludes="**/*.java"></fileset>
 		</copy>
-    </target>
+	</target>
 	
-    <target name="bind" depends="clean, compile">
+	<target name="bind" depends="clean, compile">
 		<bind verbose="false" load="true">
 			<bindingfileset dir="${conf.jibx.dir}" includes="*.xml"/>
 			<classpath refid="build.classpath"></classpath>
 		</bind> 
-    </target>
+	</target>
 
-    <target name="jar" depends="bind">
-        <jar jarfile="${jar.file}" index="true">
+	<target name="jar" depends="bind">
+		<jar jarfile="${jar.file}" index="true">
 			<fileset dir="${build.dir}"></fileset>
 		</jar>
-    </target>
+	</target>
 
 	<target name="compile-1.4" depends="bind">
 		<echo>The following verification warning is expected and should be ignored:</echo>
@@ -115,7 +115,7 @@
 	</target>
 
 	<target name="jar-1.4" depends="compile-1.4">
-        <jar jarfile="${jar-1.4.file}" index="true">
+		<jar jarfile="${jar-1.4.file}" index="true">
 			<fileset dir="${build.dir}"></fileset>
 		</jar>
 	</target>

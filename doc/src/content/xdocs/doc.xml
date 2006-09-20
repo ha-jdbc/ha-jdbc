@@ -234,7 +234,7 @@
   id                      CDATA                            #REQUIRED
   balancer                (simple|random|round-robin|load) #REQUIRED
   default-sync            IDREF                            #REQUIRED
-  dialect                 CDATA                            "net.sf.hajdbc.dialect.DefaultDialect"
+  dialect                 CDATA                            "default"
   meta-data-cache         (none|lazy|eager)                #REQUIRED
   transactions            (local|xa)                       #REQUIRED
   auto-activate-schedule  CDATA                            #IMPLIED
@@ -405,7 +405,6 @@
 				<p>
 					The <code>dialect</code> attribute of a cluster determines the SQL syntax used for a given task.
 					The value specified for this attribute is either the name of a class that implements <a href="api/net/sf/hajdbc/Dialect.html">net.sf.hajdbc.Dialect</a> (custom implementations are allowed), or, more conveniently, a pre-defined, case-insensitive alias.
-					If the dialect attribute is omitted, then <a href="api/net/sf/hajdbc/dialect/DefaultDialect.html">net.sf.hajdbc.dialect.DefaultDialect</a> will be used.
 				</p>
 				<table>
 					<caption>The HA-JDBC distribution contains the following dialect implementations:</caption>
@@ -452,7 +451,7 @@
 					<tr>
 						<td>Default (SQL-92 compliant)</td>
 						<td><a href="api/net/sf/hajdbc/dialect/DefaultDialect.html">net.sf.hajdbc.dialect.DefaultDialect</a></td>
-						<td>ingres, mckoi</td>
+						<td>default, ingres, mckoi</td>
 					</tr>
 				</table>
 				<note>

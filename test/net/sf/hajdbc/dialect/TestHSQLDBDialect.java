@@ -81,8 +81,8 @@ public class TestHSQLDBDialect extends TestDefaultDialect
 		EasyMock.expect(this.resultSet.getString(2)).andReturn("sequence2");
 		EasyMock.expect(this.resultSet.getLong(3)).andReturn(2L);
 		EasyMock.expect(this.resultSet.next()).andReturn(false);
-		EasyMock.expect(this.resultSet.getStatement()).andReturn(this.statement);
 		
+		this.resultSet.close();
 		this.statement.close();
 		
 		this.control.replay();

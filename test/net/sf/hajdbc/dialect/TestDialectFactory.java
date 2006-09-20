@@ -43,6 +43,7 @@ public class TestDialectFactory
 	
 	public void testDeserialize()
 	{
+		this.assertDialect(null, DefaultDialect.class);
 		this.assertDialect("net.sf.hajdbc.dialect.DefaultDialect", DefaultDialect.class);
 		this.assertDialect("db2", DB2Dialect.class);
 		this.assertDialect("derby", DerbyDialect.class);

@@ -120,8 +120,8 @@ public class TestPostgreSQLDialect extends TestDefaultDialect
 		EasyMock.expect(this.resultSet.next()).andReturn(true);
 		EasyMock.expect(this.resultSet.getLong(1)).andReturn(1L);
 		EasyMock.expect(this.resultSet.getLong(2)).andReturn(2L);
-		EasyMock.expect(this.resultSet.getStatement()).andReturn(this.statement);
 		
+		this.resultSet.close();
 		this.statement.close();
 		
 		this.control.replay();
