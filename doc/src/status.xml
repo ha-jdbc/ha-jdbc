@@ -12,12 +12,18 @@
 	</contexts>
 
 	<changes>
-		<release version="1.1.8" date="???">
+		<release version="1.1.8" date="September 22, 2006">
+			<action type="fix" context="src" dev="PF">
+				Fixed binding compiler error that seemed to only affect windows users.
+			</action>
+			<action type="fix" context="src" dev="PF">
+				Fixed mbean registration race condition during startup in distributable mode.
+			</action>
 			<action type="update" context="lib" dev="PF">
 				Upgraded TestNG to 5.2.
 			</action>
-			<action type="fix" context="src" dev="PF">
-				Fixed binding compiler error that seemed to only affect windows users.
+			<action type="update" context="lib" dev="PF">
+				Upgraded JGroups to 2.2.9.4.
 			</action>
 		</release>
 		<release version="1.1.7" date="September 11, 2006">
