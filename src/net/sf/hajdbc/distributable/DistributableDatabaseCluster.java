@@ -152,7 +152,7 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 	 * @see net.sf.hajdbc.DatabaseCluster#start()
 	 */
 	@Override
-	public void start() throws java.sql.SQLException
+	public synchronized void start() throws java.sql.SQLException
 	{
 		try
 		{
@@ -195,7 +195,7 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 	 * @see net.sf.hajdbc.DatabaseCluster#stop()
 	 */
 	@Override
-	public void stop()
+	public synchronized void stop()
 	{
 		if (this.notificationBus != null)
 		{
