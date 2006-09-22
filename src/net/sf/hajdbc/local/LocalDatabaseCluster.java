@@ -578,7 +578,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#start()
 	 */
-	public synchronized void start() throws java.sql.SQLException
+	public void start() throws java.sql.SQLException
 	{
 		MBeanServer server = DatabaseClusterFactory.getMBeanServer();
 
