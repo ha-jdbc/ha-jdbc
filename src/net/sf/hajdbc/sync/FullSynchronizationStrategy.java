@@ -27,6 +27,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -179,8 +180,9 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 					{
 						for (int i = 1; i <= columns; ++i)
 						{
-							Object object = resultSet.getObject(i);
 							int type = dialect.getColumnType(resultSetMetaData, i);
+							
+							Object object = this.getObject(resultSet, i, type);
 							
 							if (resultSet.wasNull())
 							{
@@ -259,6 +261,25 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 	public boolean requiresTableLocking()
 	{
 		return true;
+	}
+
+	private Object getObject(ResultSet resultSet, int index, int type) throws SQLException
+	{
+		switch (type)
+		{
+			case Types.BLOB:
+			{
+				return resultSet.getBlob(index);
+			}
+			case Types.CLOB:
+			{
+				return resultSet.getClob(index);
+			}
+			default:
+			{
+				return resultSet.getObject(index);
+			}
+		}
 	}
 	
 	private void rollback(Connection connection)

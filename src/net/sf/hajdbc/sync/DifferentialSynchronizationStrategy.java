@@ -27,6 +27,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -326,15 +327,17 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		
 							for (int i = 1; i <= columns; ++i)
 							{
-								Object object = activeResultSet.getObject(i);
+								int type = types[i];
+								
+								Object object = this.getObject(activeResultSet, i, type);
 								
 								if (activeResultSet.wasNull())
 								{
-									insertStatement.setNull(i, types[i]);
+									insertStatement.setNull(i, type);
 								}
 								else
 								{
-									insertStatement.setObject(i, object, types[i]);
+									insertStatement.setObject(i, object, type);
 								}
 							}
 							
@@ -355,18 +358,20 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 								{
 									index += 1;
 									
-									Object activeObject = activeResultSet.getObject(i);
-									Object inactiveObject = inactiveResultSet.getObject(i);
+									int type = types[i];
+									
+									Object activeObject = this.getObject(activeResultSet, i, type);
+									Object inactiveObject = this.getObject(inactiveResultSet, i, type);
 									
 									if (activeResultSet.wasNull())
 									{
-										updateStatement.setNull(index, types[i]);
+										updateStatement.setNull(index, type);
 										
 										updated |= !inactiveResultSet.wasNull();
 									}
 									else
 									{
-										updateStatement.setObject(index, activeObject, types[i]);
+										updateStatement.setObject(index, activeObject, type);
 										
 										updated |= inactiveResultSet.wasNull();
 										updated |= !equals(activeObject, inactiveObject);
@@ -470,6 +475,25 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		
 		statement.executeBatch();
 		statement.close();
+	}
+
+	private Object getObject(ResultSet resultSet, int index, int type) throws SQLException
+	{
+		switch (type)
+		{
+			case Types.BLOB:
+			{
+				return resultSet.getBlob(index);
+			}
+			case Types.CLOB:
+			{
+				return resultSet.getClob(index);
+			}
+			default:
+			{
+				return resultSet.getObject(index);
+			}
+		}
 	}
 
 	private boolean equals(Object object1, Object object2)
