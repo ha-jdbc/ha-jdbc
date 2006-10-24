@@ -12,6 +12,14 @@
 	</contexts>
 
 	<changes>
+		<release version="1.1.9" date="???">
+			<action type="update" context="lib" dev="PF">
+				Upgraded jcl104-over-slf4j.jar to slf4j 1.0.2 version.
+			</action>
+			<action type="fix" context="src" dev="PF">
+				Fixed PostgreSQL Blob/Clob handling in differential and full synchronization strategies when large objects require updating.
+			</action>
+		</release>
 		<release version="1.1.8" date="September 22, 2006">
 			<action type="fix" context="src" dev="PF">
 				Fixed binding compiler error that seemed to only affect windows users.
