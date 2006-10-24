@@ -234,7 +234,7 @@
   id                      CDATA                            #REQUIRED
   balancer                (simple|random|round-robin|load) #REQUIRED
   default-sync            IDREF                            #REQUIRED
-  dialect                 CDATA                            "default"
+  dialect                 CDATA                            "standard"
   meta-data-cache         (none|lazy|eager)                #REQUIRED
   transactions            (local|xa)                       #REQUIRED
   auto-activate-schedule  CDATA                            #IMPLIED
@@ -242,6 +242,8 @@
   min-threads             CDATA                            "0"
   max-threads             CDATA                            "100"
   max-idle                CDATA                            "60"
+  detect-identity-columns (true|false)                     "false"
+  detect-sequences        (true|false)                     "false"
 >
 ]]></source>
 				<dl>
@@ -309,6 +311,14 @@
 					<dt>max-idle</dt>
 					<dd>
 						Defines the amount of time for which a non-core idle thread will remain in the thread pool before it is discarded.
+					</dd>
+					<dt id="identity-columns">detect-identity-columns</dt>
+					<dd>
+						Indicates that identity columns should be detected (if the configured dialect supports them) and measures taken to ensure that they are replicated correctly.
+					</dd>
+					<dt id="sequences">detect-sequences</dt>
+					<dd>
+						Indicates that sequences should be detected (if the configured dialect supports them) and measures taken to ensure that they are replicated correctly.
 					</dd>
 				</dl>
 				<section id="database">
@@ -424,14 +434,24 @@
 						<td>firebird</td>
 					</tr>
 					<tr>
-						<td>HSQLDB</td>
+						<td>HSQLDB, H2</td>
 						<td><a href="api/net/sf/hajdbc/dialect/HSQLDBDialect.html">net.sf.hajdbc.dialect.HSQLDBDialect</a></td>
-						<td>hsqldb</td>
+						<td>hsqldb, h2</td>
 					</tr>
 					<tr>
 						<td>IBM DB2</td>
 						<td><a href="api/net/sf/hajdbc/dialect/DB2Dialect.html">net.sf.hajdbc.dialect.DB2Dialect</a></td>
 						<td>db2</td>
+					</tr>
+					<tr>
+						<td>Ingres</td>
+						<td><a href="api/net/sf/hajdbc/dialect/IngresDialect.html">net.sf.hajdbc.dialect.IngresDialect</a></td>
+						<td>ingres</td>
+					</tr>
+					<tr>
+						<td>Mckoi</td>
+						<td><a href="api/net/sf/hajdbc/dialect/MckoiDialect.html">net.sf.hajdbc.dialect.MckoiDialect</a></td>
+						<td>mckoi</td>
 					</tr>
 					<tr>
 						<td>MySQL</td>
@@ -449,9 +469,9 @@
 						<td>postgresql</td>
 					</tr>
 					<tr>
-						<td>Default (SQL-92 compliant)</td>
-						<td><a href="api/net/sf/hajdbc/dialect/DefaultDialect.html">net.sf.hajdbc.dialect.DefaultDialect</a></td>
-						<td>default, ingres, mckoi</td>
+						<td>Standard (SQL-92 compliant)</td>
+						<td><a href="api/net/sf/hajdbc/dialect/DefaultDialect.html">net.sf.hajdbc.dialect.StandardDialect</a></td>
+						<td>standard</td>
 					</tr>
 				</table>
 				<note>
@@ -715,19 +735,20 @@ DataSource dataSource = (DataSource) context.lookup("java:comp/env/jdbc/cluster"
 Connection connection = dataSource.getConnection();
 ]]></source>
 			</section>
-			<section>
+			<section id="unique-id">
 				<title>Unique identifier generation</title>
 				<p>
-					As of version 1.2-beta-1, HA-JDBC now supports database sequences.
-					Support for auto-increment/identity columns is not yet complete, but is expected to be included in the next beta release.
+					As of version 1.2, HA-JDBC now supports database sequences and identity (i.e. auto-incrementing) columns.
 				</p>
 				<p>
-					It is important to note the performance implications when using identity columns and sequences in conjunction with HA-JDBC.
-					Both algorithms introduce per statement regular expression matching and mutex costs, the latter being particularly costly for distributed environments.
-					Fortunately, the performance penalty for sequences may be improved significantly by utilizing what Hibernate calls a <a href="http://www.hibernate.org/doc/api/org/hibernate/id/SequenceHiLoGenerator.html">Sequence-HiLo algorithm</a>.
+					It is important to note the performance implications when using sequences and/or identity columns in conjunction with HA-JDBC.
+					Both algorithms introduce per statement regular expression matching and mutex costs in HA-JDBC, the latter being particularly costly for distributed environments.
+					Because of their performance impact, support for both sequences and identity columns is disabled by default.
+					Suppoort for each is enabled via the <a href="#sequences">detect-sequences</a> and <a href="#identity-columns">detect-identity-columns</a> cluster attributes, respectively.
+					Fortunately, the performance penalty for sequences can be mitigated via what Hibernate calls a <a href="http://www.hibernate.org/doc/api/org/hibernate/id/SequenceHiLoGenerator.html">Sequence-HiLo algorithm</a>.
 				</p>
 				<p>
-					For best performance, HA-JDBC recommends using a high-low or UUID algorithm so that statement parsing and locking costs can be avoided.
+					For best performance, HA-JDBC recommends using a table-based high-low or UUID algorithm so that statement parsing and locking costs can be avoided.
 					Object-relation mapping (ORM) frameworks (e.g. Hibernate, OJB, Cayanne) typically include implementations of these mechanisms.
 				</p>
 			</section>

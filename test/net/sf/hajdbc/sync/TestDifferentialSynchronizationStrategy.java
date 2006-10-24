@@ -176,7 +176,7 @@ public class TestDifferentialSynchronizationStrategy implements SynchronizationS
 		
 		EasyMock.expect(table.getColumnProperties("column4")).andReturn(column4);
 		EasyMock.expect(dialect.getColumnType(column4)).andReturn(Types.CLOB);
-		EasyMock.expect(activeResultSet.getBlob(4)).andReturn(null);
+		EasyMock.expect(activeResultSet.getClob(4)).andReturn(null);
 		EasyMock.expect(activeResultSet.wasNull()).andReturn(true);
 		insertStatement.setNull(4, Types.CLOB);
 		

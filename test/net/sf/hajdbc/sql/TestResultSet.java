@@ -100,20 +100,12 @@ public class TestResultSet implements java.sql.ResultSet
 		EasyMock.expect(this.databaseCluster.getConnectionFactoryMap()).andReturn(map);
 		
 		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		this.lock.lock();
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
-		this.lock.unlock();
 
 		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		this.lock.lock();
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
-		this.lock.unlock();
 		
 		EasyMock.expect(this.databaseCluster.getTransactionalExecutor()).andReturn(this.executor);
 		this.lock.lock();
@@ -272,17 +264,10 @@ public class TestResultSet implements java.sql.ResultSet
 	public void close() throws SQLException
 	{
 		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
 		this.sqlResultSet.close();
-		
-		this.lock.unlock();
 		
 		this.control.replay();
 		
@@ -379,17 +364,10 @@ public class TestResultSet implements java.sql.ResultSet
 		EasyMock.expect(this.sqlResultSet.getType()).andReturn(java.sql.ResultSet.TYPE_SCROLL_SENSITIVE);
 		
 		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
 		EasyMock.expect(this.sqlResultSet.first()).andReturn(true);
-		
-		this.lock.unlock();
 		
 		this.control.replay();
 		
@@ -2211,17 +2189,10 @@ public class TestResultSet implements java.sql.ResultSet
 		EasyMock.expect(this.sqlResultSet.getType()).andReturn(java.sql.ResultSet.TYPE_SCROLL_SENSITIVE);
 		
 		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
 		EasyMock.expect(this.sqlResultSet.last()).andReturn(true);
-		
-		this.lock.unlock();
 		
 		this.control.replay();
 		
@@ -2263,17 +2234,10 @@ public class TestResultSet implements java.sql.ResultSet
 		EasyMock.expect(this.sqlResultSet.getType()).andReturn(java.sql.ResultSet.TYPE_SCROLL_SENSITIVE);
 		
 		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 
 		this.sqlResultSet.moveToCurrentRow();
-		
-		this.lock.unlock();
 		
 		this.control.replay();
 
@@ -2332,17 +2296,10 @@ public class TestResultSet implements java.sql.ResultSet
 		EasyMock.expect(this.sqlResultSet.getType()).andReturn(java.sql.ResultSet.TYPE_SCROLL_SENSITIVE);
 		
 		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 
 		EasyMock.expect(this.sqlResultSet.next()).andReturn(true);
-		
-		this.lock.unlock();
 		
 		this.control.replay();
 
@@ -2387,17 +2344,10 @@ public class TestResultSet implements java.sql.ResultSet
 		EasyMock.expect(this.sqlResultSet.getType()).andReturn(java.sql.ResultSet.TYPE_SCROLL_SENSITIVE);
 		
 		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 
 		EasyMock.expect(this.sqlResultSet.previous()).andReturn(true);
-		
-		this.lock.unlock();
 		
 		this.control.replay();
 
@@ -2417,17 +2367,10 @@ public class TestResultSet implements java.sql.ResultSet
 	public void refreshRow() throws SQLException
 	{
 		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
 		
 		this.sqlResultSet.refreshRow();
-		
-		this.lock.unlock();
 		
 		this.control.replay();
 		

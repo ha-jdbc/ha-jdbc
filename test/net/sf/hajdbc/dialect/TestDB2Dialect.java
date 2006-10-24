@@ -35,8 +35,7 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
-@Test
-public class TestDB2Dialect extends TestDefaultDialect
+public class TestDB2Dialect extends TestStandardDialect
 {
 	@Override
 	protected Dialect createDialect()
@@ -45,7 +44,7 @@ public class TestDB2Dialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getSequences(java.sql.Connection)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSequences(java.sql.Connection)
 	 */
 	@Override
 	@Test(dataProvider = "connection")
@@ -83,7 +82,7 @@ public class TestDB2Dialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getCurrentSequenceValueSQL(java.lang.String)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getCurrentSequenceValueSQL(java.lang.String)
 	 */
 	@Override
 	@Test(dataProvider = "sequence")
@@ -101,7 +100,7 @@ public class TestDB2Dialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getSimpleSQL()
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSimpleSQL()
 	 */
 	@Override
 	public String getSimpleSQL() throws SQLException
@@ -118,7 +117,7 @@ public class TestDB2Dialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#parseSequence(java.lang.String)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#parseSequence(java.lang.String)
 	 */
 	@Override
 	@Test(dataProvider = "null")

@@ -34,10 +34,10 @@ import java.util.List;
  * @author  Paul Ferraro
  * @since   1.1
  */
-public class HSQLDBDialect extends DefaultDialect
+public class HSQLDBDialect extends StandardDialect
 {
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#executeFunctionKeyword()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#executeFunctionKeyword()
 	 */
 	@Override
 	protected String executeFunctionFormat()
@@ -46,7 +46,7 @@ public class HSQLDBDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#getSequences(java.sql.Connection)
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.Connection)
 	 */
 	@Override
 	public Collection<String> getSequences(Connection connection) throws SQLException
@@ -69,7 +69,7 @@ public class HSQLDBDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#getCurrentSequenceValueSQL(java.lang.String)
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getCurrentSequenceValueSQL(java.lang.String)
 	 */
 	@Override
 	public String getCurrentSequenceValueSQL(String sequence)
@@ -79,7 +79,7 @@ public class HSQLDBDialect extends DefaultDialect
 
 	/**
 	 * Deferrability clause is not supported.
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#createForeignKeyConstraintFormat()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#createForeignKeyConstraintFormat()
 	 */
 	@Override
 	protected String createForeignKeyConstraintFormat()

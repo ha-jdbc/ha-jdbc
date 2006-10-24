@@ -37,12 +37,12 @@ import net.sf.hajdbc.TableProperties;
  * @author  Paul Ferraro
  * @since   1.1
  */
-public class PostgreSQLDialect extends DefaultDialect
+public class PostgreSQLDialect extends StandardDialect
 {
 	/**
 	 * PostgreSQL uses a schema search path to locate unqualified table names.
 	 * The default search path is [$user,public], where $user is the current user.
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#getDefaultSchemas()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getDefaultSchemas()
 	 */
 	@Override
 	public List<String> getDefaultSchemas(Connection connection) throws SQLException
@@ -75,7 +75,7 @@ public class PostgreSQLDialect extends DefaultDialect
 	 * Unlike traditional database systems which use locks for concurrency control, PostgreSQL maintains data consistency by using a multiversion model (Multiversion Concurrency Control, MVCC).
 	 * This means that while querying a database each transaction sees a snapshot of data (a database version) as it was some time ago, regardless of the current state of the underlying data.
 	 * This protects the transaction from viewing inconsistent data that could be caused by (other) concurrent transaction updates on the same data rows, providing transaction isolation for each database session.	 * 
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#getLockTableSQL(net.sf.hajdbc.TableProperties)
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getLockTableSQL(net.sf.hajdbc.TableProperties)
 	 */
 	@Override
 	public String getLockTableSQL(TableProperties properties) throws SQLException
@@ -87,7 +87,7 @@ public class PostgreSQLDialect extends DefaultDialect
 	 * PostgreSQL uses the native type OID for BLOBs.
 	 * However the driver maps OID to INTEGER.
 	 * OID columns should really be mapped to BLOB.
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#getColumnType(net.sf.hajdbc.ColumnProperties)
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getColumnType(net.sf.hajdbc.ColumnProperties)
 	 */
 	@Override
 	public int getColumnType(ColumnProperties properties)
@@ -96,10 +96,10 @@ public class PostgreSQLDialect extends DefaultDialect
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#isAutoIncrementing(net.sf.hajdbc.ColumnProperties)
+	 * @see net.sf.hajdbc.dialect.StandardDialect#isIdentity(net.sf.hajdbc.ColumnProperties)
 	 */
 	@Override
-	public boolean isAutoIncrementing(ColumnProperties properties)
+	public boolean isIdentity(ColumnProperties properties)
 	{
 		String type = properties.getNativeType();
 		
@@ -107,7 +107,7 @@ public class PostgreSQLDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#truncateTableFormat()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#truncateTableFormat()
 	 */
 	@Override
 	protected String truncateTableFormat()
@@ -116,7 +116,7 @@ public class PostgreSQLDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#sequencePattern()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#sequencePattern()
 	 */
 	@Override
 	protected String sequencePattern()
@@ -125,11 +125,11 @@ public class PostgreSQLDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#currentSequenceValueFormat()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentSequenceValueFormat()
 	 */
 	@Override
 	protected String currentSequenceValueFormat()
 	{
-		return "CURRVAL('{0}')";
+		return "CURRVAL(''{0}'')";
 	}
 }

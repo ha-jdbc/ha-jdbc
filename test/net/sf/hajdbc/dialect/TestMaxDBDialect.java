@@ -37,10 +37,10 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
-public class TestMaxDBDialect extends TestDefaultDialect
+public class TestMaxDBDialect extends TestStandardDialect
 {
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#createDialect()
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#createDialect()
 	 */
 	@Override
 	protected Dialect createDialect()
@@ -49,7 +49,7 @@ public class TestMaxDBDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
 	 */
 	@Override
 	@Test(dataProvider = "foreign-key")
@@ -65,7 +65,7 @@ public class TestMaxDBDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getSequences(java.sql.Connection)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSequences(java.sql.Connection)
 	 */
 	@Override
 	@Test(dataProvider = "connection")
@@ -103,7 +103,7 @@ public class TestMaxDBDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getSimpleSQL()
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSimpleSQL()
 	 */
 	@Override
 	public String getSimpleSQL() throws SQLException
@@ -120,7 +120,7 @@ public class TestMaxDBDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getTruncateTableSQL(net.sf.hajdbc.TableProperties)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getTruncateTableSQL(net.sf.hajdbc.TableProperties)
 	 */
 	@Override
 	@Test(dataProvider = "table")
@@ -140,7 +140,7 @@ public class TestMaxDBDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#parseSequence(java.lang.String)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#parseSequence(java.lang.String)
 	 */
 	@Override
 	@Test(dataProvider = "null")
@@ -176,15 +176,15 @@ public class TestMaxDBDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#supportsAutoIncrementColumns()
+	 * @see net.sf.hajdbc.Dialect#supportsIdentityColumns()
 	 */
 	@Override
 	@Test
-	public boolean supportsAutoIncrementColumns()
+	public boolean supportsIdentityColumns()
 	{
 		this.control.replay();
 		
-		boolean supports = this.dialect.supportsAutoIncrementColumns();
+		boolean supports = this.dialect.supportsIdentityColumns();
 		
 		this.control.verify();
 		

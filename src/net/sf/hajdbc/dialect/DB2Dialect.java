@@ -33,10 +33,10 @@ import java.util.List;
  * @author  Paul Ferraro
  * @since   1.1
  */
-public class DB2Dialect extends DefaultDialect
+public class DB2Dialect extends StandardDialect
 {
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#executeFunctionKeyword()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#executeFunctionKeyword()
 	 */
 	@Override
 	protected String executeFunctionFormat()
@@ -45,7 +45,7 @@ public class DB2Dialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#getSequences(java.sql.Connection)
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.Connection)
 	 */
 	@Override
 	public Collection<String> getSequences(Connection connection) throws SQLException
@@ -68,7 +68,7 @@ public class DB2Dialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#sequencePattern()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#sequencePattern()
 	 */
 	@Override
 	protected String sequencePattern()
@@ -77,7 +77,7 @@ public class DB2Dialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#currentSequenceValueFormat()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentSequenceValueFormat()
 	 */
 	@Override
 	protected String currentSequenceValueFormat()

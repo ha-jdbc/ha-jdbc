@@ -752,7 +752,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 		
 		Set<String> identifierSet = new LinkedHashSet<String>(sqlList.size());
 		
-		for (String sql: this.sqlList)
+		for (String sql: sqlList)
 		{
 			if (databaseCluster.isSequenceDetectionEnabled() && dialect.supportsSequences())
 			{
@@ -764,7 +764,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 				}
 			}
 			
-			if (databaseCluster.isAutoIncrementDetectionEnabled() && dialect.supportsAutoIncrementColumns())
+			if (databaseCluster.isIdentityColumnDetectionEnabled() && dialect.supportsIdentityColumns())
 			{
 				String table = dialect.parseInsertTable(sql);
 				
@@ -774,7 +774,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 					
 					for (String column: properties.getColumns())
 					{
-						if (dialect.isAutoIncrementing(properties.getColumnProperties(column)))
+						if (dialect.isIdentity(properties.getColumnProperties(column)))
 						{
 							identifierSet.add(properties.getName());
 							
@@ -787,11 +787,14 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 		
 		List<Lock> lockList = new ArrayList<Lock>(identifierSet.size());
 
-		LockManager lockManager = databaseCluster.getLockManager();
-		
-		for (String identifier: identifierSet)
+		if (!identifierSet.isEmpty())
 		{
-			lockList.add(lockManager.writeLock(identifier));
+			LockManager lockManager = databaseCluster.getLockManager();
+			
+			for (String identifier: identifierSet)
+			{
+				lockList.add(lockManager.writeLock(identifier));
+			}
 		}
 		
 		return lockList;

@@ -32,10 +32,10 @@ import java.util.List;
  * Dialect for <a href="firebird.sourceforge.net">Firebird</a>.
  * @author Paul Ferraro
  */
-public class FirebirdDialect extends DefaultDialect
+public class FirebirdDialect extends StandardDialect
 {
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#dummyTable()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#dummyTable()
 	 */
 	@Override
 	protected String dummyTable()
@@ -45,7 +45,7 @@ public class FirebirdDialect extends DefaultDialect
 
 	/**
 	 * Firebird 2.0 will support standard syntax.  Until then...
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#alterSequenceFormat()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#alterSequenceFormat()
 	 */
 	@Override
 	protected String alterSequenceFormat()
@@ -54,7 +54,7 @@ public class FirebirdDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#getSequences(java.sql.Connection)
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.Connection)
 	 */
 	@Override
 	public Collection<String> getSequences(Connection connection) throws SQLException
@@ -77,17 +77,17 @@ public class FirebirdDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#supportsAutoIncrementColumns()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#supportsIdentityColumns()
 	 */
 	@Override
-	public boolean supportsAutoIncrementColumns()
+	public boolean supportsIdentityColumns()
 	{
 		return false;
 	}
 
 	/**
 	 * Firebird 2.0 will support standard syntax.  Until then...
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#sequencePattern()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#sequencePattern()
 	 */
 	@Override
 	protected String sequencePattern()
@@ -96,7 +96,7 @@ public class FirebirdDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#selectForUpdatePattern()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#selectForUpdatePattern()
 	 */
 	@Override
 	protected String selectForUpdatePattern()
@@ -105,7 +105,7 @@ public class FirebirdDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#currentSequenceValueFormat()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentSequenceValueFormat()
 	 */
 	@Override
 	protected String currentSequenceValueFormat()

@@ -45,7 +45,7 @@
 	id CDATA #REQUIRED
 	balancer (simple|random|round-robin|load) #REQUIRED
 	default-sync IDREF #REQUIRED
-	dialect CDATA "default"
+	dialect CDATA "standard"
 	meta-data-cache (none|lazy|eager) #REQUIRED
 	transactions (local|xa) #REQUIRED
 	auto-activate-schedule CDATA #IMPLIED
@@ -53,8 +53,8 @@
 	min-threads CDATA "0"
 	max-threads CDATA "100"
 	max-idle CDATA "60"
-	detect-auto-increment-columns (true|false) "true"
-	detect-sequences (true|false) "true"
+	detect-identity-columns (true|false) "false"
+	detect-sequences (true|false) "false"
 >
 
 <!ENTITY % authentication-info "(user, password)?">

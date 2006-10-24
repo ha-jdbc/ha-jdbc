@@ -36,7 +36,7 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
-public class TestPostgreSQLDialect extends TestDefaultDialect
+public class TestPostgreSQLDialect extends TestStandardDialect
 {
 	@Override
 	protected Dialect createDialect()
@@ -45,7 +45,7 @@ public class TestPostgreSQLDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getColumnType(net.sf.hajdbc.ColumnProperties)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getColumnType(net.sf.hajdbc.ColumnProperties)
 	 */
 	@Override
 	@Test(dataProvider = "column")
@@ -69,7 +69,7 @@ public class TestPostgreSQLDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getLockTableSQL(net.sf.hajdbc.TableProperties)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getLockTableSQL(net.sf.hajdbc.TableProperties)
 	 */
 	@Override
 	@Test(dataProvider = "table")
@@ -89,7 +89,7 @@ public class TestPostgreSQLDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getTruncateTableSQL(net.sf.hajdbc.TableProperties)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getTruncateTableSQL(net.sf.hajdbc.TableProperties)
 	 */
 	@Override
 	@Test(dataProvider = "table")
@@ -109,7 +109,7 @@ public class TestPostgreSQLDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getCurrentSequenceValueSQL(java.lang.String)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getCurrentSequenceValueSQL(java.lang.String)
 	 */
 	@Override
 	@Test(dataProvider = "sequence")
@@ -121,13 +121,13 @@ public class TestPostgreSQLDialect extends TestDefaultDialect
 		
 		this.control.verify();
 		
-		assert sql.equals("SELECT nextval('sequence')");
+		assert sql.equals("SELECT CURRVAL('sequence')") : sql;
 		
 		return sql;
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#parseSequence(java.lang.String)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#parseSequence(java.lang.String)
 	 */
 	@Override
 	@Test(dataProvider = "null")
@@ -135,7 +135,7 @@ public class TestPostgreSQLDialect extends TestDefaultDialect
 	{
 		this.control.replay();
 		
-		String sequence = this.dialect.parseSequence("SELECT currval('sequence')");
+		String sequence = this.dialect.parseSequence("SELECT CURRVAL('sequence')");
 		
 		this.control.verify();
 		
@@ -163,7 +163,7 @@ public class TestPostgreSQLDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getDefaultSchemas(java.sql.Connection)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getDefaultSchemas(java.sql.Connection)
 	 */
 	@Override
 	public List<String> getDefaultSchemas(Connection connection) throws SQLException
@@ -196,5 +196,48 @@ public class TestPostgreSQLDialect extends TestDefaultDialect
 		assert schemaList.get(1).equals("public") : schemaList.get(1);
 		
 		return schemaList;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#isIdentity(net.sf.hajdbc.ColumnProperties)
+	 */
+	@Override
+	public boolean isIdentity(ColumnProperties properties) throws SQLException
+	{
+		EasyMock.expect(properties.getNativeType()).andReturn("serial");
+		
+		this.control.replay();
+		
+		boolean identity = this.dialect.isIdentity(properties);
+		
+		this.control.verify();
+		
+		assert identity;
+		
+		this.control.reset();
+		
+		EasyMock.expect(properties.getNativeType()).andReturn("bigserial");
+		
+		this.control.replay();
+		
+		identity = this.dialect.isIdentity(properties);
+		
+		this.control.verify();
+		
+		assert identity;
+		
+		this.control.reset();
+		
+		EasyMock.expect(this.columnProperties.getNativeType()).andReturn("int");
+		
+		this.control.replay();
+		
+		identity = this.dialect.isIdentity(properties);
+		
+		this.control.verify();
+
+		assert !identity;
+		
+		return identity;
 	}
 }

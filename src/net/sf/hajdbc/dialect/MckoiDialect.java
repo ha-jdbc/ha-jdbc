@@ -25,19 +25,19 @@ package net.sf.hajdbc.dialect;
  * 
  * @author Paul Ferraro
  */
-public class MckoiDialect extends DefaultDialect
+public class MckoiDialect extends StandardDialect
 {
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#supportsAutoIncrementColumns()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#supportsIdentityColumns()
 	 */
 	@Override
-	public boolean supportsAutoIncrementColumns()
+	public boolean supportsIdentityColumns()
 	{
 		return false;
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#sequencePattern()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#sequencePattern()
 	 */
 	@Override
 	protected String sequencePattern()

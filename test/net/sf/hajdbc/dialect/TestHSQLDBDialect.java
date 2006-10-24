@@ -36,8 +36,7 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
-@Test
-public class TestHSQLDBDialect extends TestDefaultDialect
+public class TestHSQLDBDialect extends TestStandardDialect
 {
 	@Override
 	protected Dialect createDialect()
@@ -46,7 +45,7 @@ public class TestHSQLDBDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
 	 */
 	@Override
 	@Test(dataProvider = "foreign-key")
@@ -62,7 +61,7 @@ public class TestHSQLDBDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getSequences(java.sql.Connection)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSequences(java.sql.Connection)
 	 */
 	@Override
 	@Test(dataProvider = "connection")
@@ -100,7 +99,7 @@ public class TestHSQLDBDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getSimpleSQL()
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSimpleSQL()
 	 */
 	@Override
 	public String getSimpleSQL() throws SQLException

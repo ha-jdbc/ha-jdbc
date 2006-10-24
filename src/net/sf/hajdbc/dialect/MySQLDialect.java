@@ -31,10 +31,10 @@ import net.sf.hajdbc.ColumnProperties;
  * Dialect for <a href="http://www.mysql.com/products/database/mysql/">MySQL</a>
  * @author Paul Ferraro
  */
-public class MySQLDialect extends DefaultDialect
+public class MySQLDialect extends StandardDialect
 {
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#getDefaultSchemas(java.sql.Connection)
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getDefaultSchemas(java.sql.Connection)
 	 */
 	@Override
 	public List<String> getDefaultSchemas(Connection connection) throws SQLException
@@ -43,10 +43,10 @@ public class MySQLDialect extends DefaultDialect
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#isAutoIncrementing(net.sf.hajdbc.ColumnProperties)
+	 * @see net.sf.hajdbc.dialect.StandardDialect#isIdentity(net.sf.hajdbc.ColumnProperties)
 	 */
 	@Override
-	public boolean isAutoIncrementing(ColumnProperties properties)
+	public boolean isIdentity(ColumnProperties properties)
 	{
 		String remarks = properties.getRemarks();
 		
@@ -54,7 +54,7 @@ public class MySQLDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#supportsSequences()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#supportsSequences()
 	 */
 	@Override
 	public boolean supportsSequences()
@@ -64,7 +64,7 @@ public class MySQLDialect extends DefaultDialect
 
 	/**
 	 * Deferrability clause is not supported.
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#createForeignKeyConstraintFormat()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#createForeignKeyConstraintFormat()
 	 */
 	@Override
 	protected String createForeignKeyConstraintFormat()
@@ -73,7 +73,7 @@ public class MySQLDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#createUniqueConstraintFormat()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#createUniqueConstraintFormat()
 	 */
 	@Override
 	protected String createUniqueConstraintFormat()
@@ -82,7 +82,7 @@ public class MySQLDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#dropForeignKeyConstraintFormat()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#dropForeignKeyConstraintFormat()
 	 */
 	@Override
 	protected String dropForeignKeyConstraintFormat()
@@ -91,7 +91,7 @@ public class MySQLDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#dropUniqueConstraintFormat()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#dropUniqueConstraintFormat()
 	 */
 	@Override
 	protected String dropUniqueConstraintFormat()

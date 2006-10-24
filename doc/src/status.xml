@@ -14,10 +14,10 @@
 	<changes>
 		<release version="1.2-beta-6" date="???">
 			<action type="add" context="src" dev="PF">
-				Added support for auto-incrementing columns.
+				Added support for identity columns.
 			</action>
 			<action type="add" context="src" dev="PF">
-				Added new cluster attributes "detect-sequences" and "detect-auto-increment-columns".
+				Added new cluster attributes "detect-sequences" and "detect-identity-columns".
 			</action>
 			<action type="add" context="src" dev="PF">
 				Added dialect implementations for H2, Ingres, and Mckoi.
@@ -27,6 +27,9 @@
 			</action>
 			<action type="fix" context="src" dev="PF">
 				Fixed PostgreSQL Blob/Clob handling in differential and full synchronization strategies when large objects require updating.
+			</action>
+			<action type="update" context="src" dev="PF">
+				Refactored DefaultDialect to StandardDialect and renamed dialect alias from "default" to "standard"
 			</action>
 		</release>
 		<release version="1.2-beta-5" date="September 22, 2006">

@@ -138,7 +138,13 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	{
 		// No sequence
 		EasyMock.expect(this.databaseCluster.getDialect()).andReturn(this.dialect);
+		EasyMock.expect(this.databaseCluster.isSequenceDetectionEnabled()).andReturn(true);
+		EasyMock.expect(this.dialect.supportsSequences()).andReturn(true);
 		EasyMock.expect(this.dialect.parseSequence(this.sql)).andReturn(null);
+
+		EasyMock.expect(this.databaseCluster.isIdentityColumnDetectionEnabled()).andReturn(true);
+		EasyMock.expect(this.dialect.supportsIdentityColumns()).andReturn(true);
+		EasyMock.expect(this.dialect.parseInsertTable(this.sql)).andReturn(null);
 		
 		EasyMock.expect(this.databaseCluster.getTransactionalExecutor()).andReturn(this.executor);
 		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
@@ -167,7 +173,13 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 		String sequence = "sequence";
 		
 		EasyMock.expect(this.databaseCluster.getDialect()).andReturn(this.dialect);
+		EasyMock.expect(this.databaseCluster.isSequenceDetectionEnabled()).andReturn(true);
+		EasyMock.expect(this.dialect.supportsSequences()).andReturn(true);
 		EasyMock.expect(this.dialect.parseSequence(this.sql)).andReturn(sequence);
+
+		EasyMock.expect(this.databaseCluster.isIdentityColumnDetectionEnabled()).andReturn(true);
+		EasyMock.expect(this.dialect.supportsIdentityColumns()).andReturn(true);
+		EasyMock.expect(this.dialect.parseInsertTable(this.sql)).andReturn(null);
 		
 		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
 		EasyMock.expect(this.lockManager.writeLock(sequence)).andReturn(this.lock);
@@ -203,7 +215,13 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 		
 		// Read-only result set
 		EasyMock.expect(this.databaseCluster.getDialect()).andReturn(this.dialect);
+		EasyMock.expect(this.databaseCluster.isSequenceDetectionEnabled()).andReturn(true);
+		EasyMock.expect(this.dialect.supportsSequences()).andReturn(true);
 		EasyMock.expect(this.dialect.parseSequence(this.sql)).andReturn(null);
+
+		EasyMock.expect(this.databaseCluster.isIdentityColumnDetectionEnabled()).andReturn(true);
+		EasyMock.expect(this.dialect.supportsIdentityColumns()).andReturn(true);
+		EasyMock.expect(this.dialect.parseInsertTable(this.sql)).andReturn(null);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
@@ -239,7 +257,13 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 		String sequence = "sequence";
 		
 		EasyMock.expect(this.databaseCluster.getDialect()).andReturn(this.dialect);
+		EasyMock.expect(this.databaseCluster.isSequenceDetectionEnabled()).andReturn(true);
+		EasyMock.expect(this.dialect.supportsSequences()).andReturn(true);
 		EasyMock.expect(this.dialect.parseSequence(this.sql)).andReturn(sequence);
+
+		EasyMock.expect(this.databaseCluster.isIdentityColumnDetectionEnabled()).andReturn(true);
+		EasyMock.expect(this.dialect.supportsIdentityColumns()).andReturn(true);
+		EasyMock.expect(this.dialect.parseInsertTable(this.sql)).andReturn(null);
 		
 		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
 		EasyMock.expect(this.lockManager.writeLock(sequence)).andReturn(this.lock);
@@ -268,7 +292,13 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 		
 		// Updatable result set
 		EasyMock.expect(this.databaseCluster.getDialect()).andReturn(this.dialect);
+		EasyMock.expect(this.databaseCluster.isSequenceDetectionEnabled()).andReturn(true);
+		EasyMock.expect(this.dialect.supportsSequences()).andReturn(true);
 		EasyMock.expect(this.dialect.parseSequence(this.sql)).andReturn(null);
+
+		EasyMock.expect(this.databaseCluster.isIdentityColumnDetectionEnabled()).andReturn(true);
+		EasyMock.expect(this.dialect.supportsIdentityColumns()).andReturn(true);
+		EasyMock.expect(this.dialect.parseInsertTable(this.sql)).andReturn(null);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
@@ -301,7 +331,13 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 		
 		// SELECT...FOR UPDATE
 		EasyMock.expect(this.databaseCluster.getDialect()).andReturn(this.dialect);
+		EasyMock.expect(this.databaseCluster.isSequenceDetectionEnabled()).andReturn(true);
+		EasyMock.expect(this.dialect.supportsSequences()).andReturn(true);
 		EasyMock.expect(this.dialect.parseSequence(this.sql)).andReturn(null);
+
+		EasyMock.expect(this.databaseCluster.isIdentityColumnDetectionEnabled()).andReturn(true);
+		EasyMock.expect(this.dialect.supportsIdentityColumns()).andReturn(true);
+		EasyMock.expect(this.dialect.parseInsertTable(this.sql)).andReturn(null);
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.first()).andReturn(this.database);
@@ -349,7 +385,13 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 		
 		// No sequence
 		EasyMock.expect(this.databaseCluster.getDialect()).andReturn(this.dialect);
+		EasyMock.expect(this.databaseCluster.isSequenceDetectionEnabled()).andReturn(true);
+		EasyMock.expect(this.dialect.supportsSequences()).andReturn(true);
 		EasyMock.expect(this.dialect.parseSequence(this.sql)).andReturn(null);
+
+		EasyMock.expect(this.databaseCluster.isIdentityColumnDetectionEnabled()).andReturn(true);
+		EasyMock.expect(this.dialect.supportsIdentityColumns()).andReturn(true);
+		EasyMock.expect(this.dialect.parseInsertTable(this.sql)).andReturn(null);
 		
 		EasyMock.expect(this.databaseCluster.getTransactionalExecutor()).andReturn(this.executor);
 		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
@@ -378,7 +420,13 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 		String sequence = "sequence";
 		
 		EasyMock.expect(this.databaseCluster.getDialect()).andReturn(this.dialect);
+		EasyMock.expect(this.databaseCluster.isSequenceDetectionEnabled()).andReturn(true);
+		EasyMock.expect(this.dialect.supportsSequences()).andReturn(true);
 		EasyMock.expect(this.dialect.parseSequence(this.sql)).andReturn(sequence);
+
+		EasyMock.expect(this.databaseCluster.isIdentityColumnDetectionEnabled()).andReturn(true);
+		EasyMock.expect(this.dialect.supportsIdentityColumns()).andReturn(true);
+		EasyMock.expect(this.dialect.parseInsertTable(this.sql)).andReturn(null);
 		
 		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
 		EasyMock.expect(this.lockManager.writeLock(sequence)).andReturn(this.lock);

@@ -35,11 +35,10 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
-@Test
-public class TestFirebirdDialect extends TestDefaultDialect
+public class TestFirebirdDialect extends TestStandardDialect
 {
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#createDialect()
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#createDialect()
 	 */
 	@Override
 	protected Dialect createDialect()
@@ -48,7 +47,7 @@ public class TestFirebirdDialect extends TestDefaultDialect
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getAlterSequenceSQL(java.lang.String, long)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getAlterSequenceSQL(java.lang.String, long)
 	 */
 	@Override
 	@Test(dataProvider = "alter-sequence")
@@ -66,7 +65,7 @@ public class TestFirebirdDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getSequences(java.sql.Connection)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSequences(java.sql.Connection)
 	 */
 	@Override
 	@Test(dataProvider = "connection")
@@ -122,7 +121,7 @@ public class TestFirebirdDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getSimpleSQL()
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSimpleSQL()
 	 */
 	@Override
 	@Test
@@ -136,7 +135,7 @@ public class TestFirebirdDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#isSelectForUpdate(java.lang.String)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#isSelectForUpdate(java.lang.String)
 	 */
 	@Override
 	@Test(dataProvider = "null")
@@ -163,7 +162,7 @@ public class TestFirebirdDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#parseSequence(java.lang.String)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#parseSequence(java.lang.String)
 	 */
 	@Override
 	@Test(dataProvider = "null")
@@ -190,15 +189,15 @@ public class TestFirebirdDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#supportsAutoIncrementColumns()
+	 * @see net.sf.hajdbc.Dialect#supportsIdentityColumns()
 	 */
 	@Test
 	@Override
-	public boolean supportsAutoIncrementColumns()
+	public boolean supportsIdentityColumns()
 	{
 		this.control.replay();
 		
-		boolean supports = this.dialect.supportsAutoIncrementColumns();
+		boolean supports = this.dialect.supportsIdentityColumns();
 		
 		this.control.verify();
 		

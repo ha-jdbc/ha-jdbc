@@ -33,10 +33,10 @@ import java.util.List;
  * @author  Paul Ferraro
  * @since   1.1
  */
-public class MaxDBDialect extends DefaultDialect
+public class MaxDBDialect extends StandardDialect
 {
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#dummyTable()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#dummyTable()
 	 */
 	@Override
 	protected String dummyTable()
@@ -45,7 +45,7 @@ public class MaxDBDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#currentTimestampFunction()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentTimestampFunction()
 	 */
 	@Override
 	protected String currentTimestampFunction()
@@ -54,7 +54,7 @@ public class MaxDBDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#getSequences(java.sql.Connection)
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.Connection)
 	 */
 	@Override
 	public Collection<String> getSequences(Connection connection) throws SQLException
@@ -77,16 +77,16 @@ public class MaxDBDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#supportsAutoIncrementColumns()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#supportsIdentityColumns()
 	 */
 	@Override
-	public boolean supportsAutoIncrementColumns()
+	public boolean supportsIdentityColumns()
 	{
 		return false;
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#truncateTableFormat()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#truncateTableFormat()
 	 */
 	@Override
 	protected String truncateTableFormat()
@@ -96,7 +96,7 @@ public class MaxDBDialect extends DefaultDialect
 	
 	/**
 	 * ON UPDATE and deferrability clauses are not supported.
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#createForeignKeyConstraintFormat()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#createForeignKeyConstraintFormat()
 	 */
 	@Override
 	protected String createForeignKeyConstraintFormat()
@@ -105,7 +105,7 @@ public class MaxDBDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#sequencePattern()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#sequencePattern()
 	 */
 	@Override
 	protected String sequencePattern()
@@ -114,7 +114,7 @@ public class MaxDBDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#currentSequenceValueFormat()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentSequenceValueFormat()
 	 */
 	@Override
 	protected String currentSequenceValueFormat()

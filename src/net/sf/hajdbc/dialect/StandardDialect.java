@@ -44,7 +44,7 @@ import net.sf.hajdbc.util.Strings;
  * @author  Paul Ferraro
  * @since   1.1
  */
-public class DefaultDialect implements Dialect
+public class StandardDialect implements Dialect
 {
 	private Pattern selectForUpdatePattern = Pattern.compile(this.selectForUpdatePattern(), Pattern.CASE_INSENSITIVE);
 	private Pattern insertIntoTablePattern = Pattern.compile(this.insertIntoTablePattern(), Pattern.CASE_INSENSITIVE);
@@ -156,9 +156,9 @@ public class DefaultDialect implements Dialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#isAutoIncrementing(net.sf.hajdbc.ColumnProperties)
+	 * @see net.sf.hajdbc.Dialect#isIdentity(net.sf.hajdbc.ColumnProperties)
 	 */
-	public boolean isAutoIncrementing(ColumnProperties properties)
+	public boolean isIdentity(ColumnProperties properties)
 	{
 		String remarks = properties.getRemarks();
 		
@@ -281,9 +281,9 @@ public class DefaultDialect implements Dialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#supportsAutoIncrementColumns()
+	 * @see net.sf.hajdbc.Dialect#supportsIdentityColumns()
 	 */
-	public boolean supportsAutoIncrementColumns()
+	public boolean supportsIdentityColumns()
 	{
 		return true;
 	}

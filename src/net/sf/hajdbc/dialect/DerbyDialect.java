@@ -32,10 +32,10 @@ import net.sf.hajdbc.TableProperties;
  * @author  Paul Ferraro
  * @since   1.1
  */
-public class DerbyDialect extends DefaultDialect
+public class DerbyDialect extends StandardDialect
 {
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#executeFunctionKeyword()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#executeFunctionKeyword()
 	 */
 	@Override
 	protected String executeFunctionFormat()
@@ -44,7 +44,7 @@ public class DerbyDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#getLockTableSQL(net.sf.hajdbc.TableProperties)
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getLockTableSQL(net.sf.hajdbc.TableProperties)
 	 */
 	@Override
 	public String getLockTableSQL(TableProperties properties) throws SQLException
@@ -53,10 +53,10 @@ public class DerbyDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#isAutoIncrementing(net.sf.hajdbc.ColumnProperties)
+	 * @see net.sf.hajdbc.dialect.StandardDialect#isIdentity(net.sf.hajdbc.ColumnProperties)
 	 */
 	@Override
-	public boolean isAutoIncrementing(ColumnProperties properties)
+	public boolean isIdentity(ColumnProperties properties)
 	{
 		String remarks = properties.getRemarks();
 		
@@ -64,7 +64,7 @@ public class DerbyDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#supportsSequences()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#supportsSequences()
 	 */
 	@Override
 	public boolean supportsSequences()
@@ -74,7 +74,7 @@ public class DerbyDialect extends DefaultDialect
 
 	/**
 	 * Deferrability clause is not supported.
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#createForeignKeyConstraintFormat()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#createForeignKeyConstraintFormat()
 	 */
 	@Override
 	protected String createForeignKeyConstraintFormat()

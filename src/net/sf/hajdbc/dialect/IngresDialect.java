@@ -34,21 +34,21 @@ import java.util.regex.Pattern;
  * 
  * @author Paul Ferraro
  */
-public class IngresDialect extends DefaultDialect
+public class IngresDialect extends StandardDialect
 {
 	private Pattern legacySequencePattern = Pattern.compile("(\\S+)\\.(?:(?:CURR)|(?:NEXT))VAL", Pattern.CASE_INSENSITIVE);
 	
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#supportsAutoIncrementColumns()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#supportsIdentityColumns()
 	 */
 	@Override
-	public boolean supportsAutoIncrementColumns()
+	public boolean supportsIdentityColumns()
 	{
 		return false;
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#getSequences(java.sql.Connection)
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.Connection)
 	 */
 	@Override
 	public Collection<String> getSequences(Connection connection) throws SQLException
@@ -71,7 +71,7 @@ public class IngresDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#parseSequence(java.lang.String)
+	 * @see net.sf.hajdbc.dialect.StandardDialect#parseSequence(java.lang.String)
 	 */
 	@Override
 	public String parseSequence(String sql)
@@ -82,7 +82,7 @@ public class IngresDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#sequencePattern()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#sequencePattern()
 	 */
 	@Override
 	protected String sequencePattern()

@@ -20,10 +20,14 @@
  */
 package net.sf.hajdbc.dialect;
 
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
+import org.easymock.EasyMock;
 import org.testng.annotations.Test;
 
+import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.UniqueConstraint;
@@ -32,10 +36,10 @@ import net.sf.hajdbc.UniqueConstraint;
  * @author Paul Ferraro
  *
  */
-public class TestMySQLDialect extends TestDefaultDialect
+public class TestMySQLDialect extends TestStandardDialect
 {
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#createDialect()
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#createDialect()
 	 */
 	@Override
 	protected Dialect createDialect()
@@ -44,7 +48,7 @@ public class TestMySQLDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
 	 */
 	@Override
 	@Test(dataProvider = "foreign-key")
@@ -60,7 +64,7 @@ public class TestMySQLDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
 	 */
 	@Override
 	@Test(dataProvider = "foreign-key")
@@ -76,7 +80,7 @@ public class TestMySQLDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
 	 */
 	@Override
 	@Test(dataProvider = "unique-constraint")
@@ -92,7 +96,7 @@ public class TestMySQLDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
 	 */
 	@Override
 	@Test(dataProvider = "unique-constraint")
@@ -108,7 +112,7 @@ public class TestMySQLDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#parseSequence(java.lang.String)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#parseSequence(java.lang.String)
 	 */
 	@Override
 	@Test(dataProvider = "null")
@@ -121,5 +125,75 @@ public class TestMySQLDialect extends TestDefaultDialect
 		assert sequence == null : sequence;
 		
 		return sequence;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getDefaultSchemas(java.sql.Connection)
+	 */
+	@Override
+	public List<String> getDefaultSchemas(Connection connection) throws SQLException
+	{
+		EasyMock.expect(connection.createStatement()).andReturn(this.statement);
+		EasyMock.expect(this.statement.executeQuery("SELECT DATABASE()")).andReturn(this.resultSet);
+		EasyMock.expect(this.resultSet.next()).andReturn(false);
+		EasyMock.expect(this.resultSet.getString(1)).andReturn("database");
+
+		this.resultSet.close();
+		this.statement.close();
+		
+		this.control.replay();
+		
+		List<String> schemaList = this.dialect.getDefaultSchemas(connection);
+		
+		this.control.verify();
+		
+		assert schemaList.size() == 1 : schemaList.size();
+		
+		assert schemaList.get(0).equals("database") : schemaList.get(0);
+		
+		return schemaList;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#supportsSequences()
+	 */
+	@Override
+	public boolean supportsSequences()
+	{
+		this.control.replay();
+		
+		boolean supports = this.dialect.supportsSequences();
+		
+		this.control.verify();
+		
+		assert !supports;
+		
+		return supports;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#isIdentity(net.sf.hajdbc.ColumnProperties)
+	 */
+	@Override
+	public boolean isIdentity(ColumnProperties properties) throws SQLException
+	{
+		EasyMock.expect(properties.getRemarks()).andReturn("AUTO_INCREMENT");
+		
+		this.control.replay();
+		
+		boolean identity = this.dialect.isIdentity(properties);
+		
+		this.control.verify();
+		this.control.reset();
+		
+		EasyMock.expect(this.columnProperties.getRemarks()).andReturn(null);
+		
+		this.control.replay();
+		
+		identity = this.dialect.isIdentity(properties);
+		
+		this.control.verify();
+		
+		return identity;
 	}
 }

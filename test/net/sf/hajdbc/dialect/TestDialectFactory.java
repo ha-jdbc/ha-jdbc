@@ -29,9 +29,9 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
-@Test
 public class TestDialectFactory
 {
+	@Test
 	public void testSerialize()
 	{
 		Dialect dialect = EasyMock.createMock(Dialect.class);
@@ -41,15 +41,16 @@ public class TestDialectFactory
 		assert id.equals(dialect.getClass().getName()) : id;
 	}
 	
+	@Test
 	public void testDeserialize()
 	{
-		this.assertDialect(null, DefaultDialect.class);
-		this.assertDialect("net.sf.hajdbc.dialect.DefaultDialect", DefaultDialect.class);
+		this.assertDialect(null, StandardDialect.class);
+		this.assertDialect("net.sf.hajdbc.dialect.StandardDialect", StandardDialect.class);
 
-		this.assertDialect("default", DefaultDialect.class);
+		this.assertDialect("standard", StandardDialect.class);
 		this.assertDialect("db2", DB2Dialect.class);
 		this.assertDialect("derby", DerbyDialect.class);
-		this.assertDialect("firebird", DefaultDialect.class);
+		this.assertDialect("firebird", StandardDialect.class);
 		this.assertDialect("h2", HSQLDBDialect.class);
 		this.assertDialect("hsqldb", HSQLDBDialect.class);
 		this.assertDialect("ingres", IngresDialect.class);

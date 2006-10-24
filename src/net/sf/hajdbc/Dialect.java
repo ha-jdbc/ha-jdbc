@@ -112,20 +112,20 @@ public interface Dialect
 	public String parseInsertTable(String sql) throws SQLException;
 	
 	/**
-	 * Indicates whether or not this dialect supports auto-incrementing columns.
-	 * @return true, if auto-incrementing columns are supported, false otherwise.
+	 * Indicates whether or not this dialect supports identity columns.
+	 * @return true, if identity columns are supported, false otherwise.
 	 * @since 1.2
 	 */
-	public boolean supportsAutoIncrementColumns();
+	public boolean supportsIdentityColumns();
 	
 	/**
-	 * Indicates whether or not the specified column is auto-incrementing.
+	 * Indicates whether or not the specified column is an identity column.
 	 * @param properties a table column
-	 * @return true, if this column is auto-incrementing, false otherwise
+	 * @return true, if this column is an identity column, false otherwise
 	 * @throws SQLException
 	 * @since 1.2
 	 */
-	public boolean isAutoIncrementing(ColumnProperties properties) throws SQLException;
+	public boolean isIdentity(ColumnProperties properties) throws SQLException;
 
 	/**
 	 * Indicates whether or not this dialect supports sequences.

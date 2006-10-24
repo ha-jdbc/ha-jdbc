@@ -36,7 +36,7 @@ import net.sf.hajdbc.TableProperties;
  * @author Paul Ferraro
  *
  */
-public class TestDerbyDialect extends TestDefaultDialect
+public class TestDerbyDialect extends TestStandardDialect
 {
 	@Override
 	protected Dialect createDialect()
@@ -45,7 +45,7 @@ public class TestDerbyDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
 	 */
 	@Override
 	@Test(dataProvider = "foreign-key")
@@ -61,7 +61,7 @@ public class TestDerbyDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getLockTableSQL(net.sf.hajdbc.TableProperties)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getLockTableSQL(net.sf.hajdbc.TableProperties)
 	 */
 	@Override
 	@Test(dataProvider = "table")
@@ -79,7 +79,7 @@ public class TestDerbyDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getSimpleSQL()
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSimpleSQL()
 	 */
 	@Override
 	@Test
@@ -97,7 +97,7 @@ public class TestDerbyDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#parseSequence(java.lang.String)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#parseSequence(java.lang.String)
 	 */
 	@Override
 	@Test(dataProvider = "null")
@@ -141,17 +141,17 @@ public class TestDerbyDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#isAutoIncrementing(net.sf.hajdbc.ColumnProperties)
+	 * @see net.sf.hajdbc.Dialect#isIdentity(net.sf.hajdbc.ColumnProperties)
 	 */
 	@Override
 	@Test(dataProvider = "column")
-	public boolean isAutoIncrementing(ColumnProperties properties) throws SQLException
+	public boolean isIdentity(ColumnProperties properties) throws SQLException
 	{
 		EasyMock.expect(properties.getRemarks()).andReturn("GENERATED ALWAYS AS IDENTITY");
 		
 		this.control.replay();
 		
-		boolean autoIncrementing = this.dialect.isAutoIncrementing(properties);
+		boolean identity = this.dialect.isIdentity(properties);
 		
 		this.control.verify();
 		this.control.reset();
@@ -160,11 +160,11 @@ public class TestDerbyDialect extends TestDefaultDialect
 		
 		this.control.replay();
 		
-		autoIncrementing = this.dialect.isAutoIncrementing(properties);
+		identity = this.dialect.isIdentity(properties);
 		
 		this.control.verify();
 		
-		return autoIncrementing;
+		return identity;
 	}
 	
 	/**

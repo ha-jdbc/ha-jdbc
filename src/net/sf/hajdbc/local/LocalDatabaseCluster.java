@@ -128,7 +128,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	private int maxThreads;
 	private int maxIdle;
 	private Transaction transaction;
-	private boolean autoIncrementDetectionEnabled;
+	private boolean identityColumnDetectionEnabled;
 	private boolean sequenceDetectionEnabled;
 	
 	private MBeanServer server;
@@ -719,11 +719,11 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#isAutoIncrementDetectionEnabled()
+	 * @see net.sf.hajdbc.DatabaseCluster#isIdentityColumnDetectionEnabled()
 	 */
-	public boolean isAutoIncrementDetectionEnabled()
+	public boolean isIdentityColumnDetectionEnabled()
 	{
-		return this.autoIncrementDetectionEnabled;
+		return this.identityColumnDetectionEnabled;
 	}
 
 	/**

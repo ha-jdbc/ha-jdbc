@@ -143,5 +143,5 @@ public interface DatabaseCluster extends DatabaseClusterMBean
 	
 	public boolean isSequenceDetectionEnabled();
 	
-	public boolean isAutoIncrementDetectionEnabled();
+	public boolean isIdentityColumnDetectionEnabled();
 }

@@ -20,7 +20,6 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -275,6 +274,11 @@ public abstract class SQLObject<E, P>
 		}
 	}
 
+	protected static List<Lock> emptyLockList()
+	{
+		return Collections.emptyList();
+	}
+	
 	/**
 	 * Executes the specified transactional write operation on every database in the cluster.
 	 * It is assumed that these types of operation will require access to the database.
@@ -285,7 +289,7 @@ public abstract class SQLObject<E, P>
 	 */
 	public final <T> Map<Database, T> executeTransactionalWriteToDatabase(final Operation<E, T> operation) throws java.sql.SQLException
 	{
-		return this.executeTransactionalWriteToDatabase(operation, new ArrayList<Lock>(0));
+		return this.executeTransactionalWriteToDatabase(operation, emptyLockList());
 	}
 	
 	/**
