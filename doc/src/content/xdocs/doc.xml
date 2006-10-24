@@ -242,8 +242,8 @@
   min-threads             CDATA                            "0"
   max-threads             CDATA                            "100"
   max-idle                CDATA                            "60"
-  detect-identity-columns (true|false)                     "false"
-  detect-sequences        (true|false)                     "false"
+  detect-identity-columns (true|false)                     "true"
+  detect-sequences        (true|false)                     "true"
 >
 ]]></source>
 				<dl>
@@ -743,8 +743,7 @@ Connection connection = dataSource.getConnection();
 				<p>
 					It is important to note the performance implications when using sequences and/or identity columns in conjunction with HA-JDBC.
 					Both algorithms introduce per statement regular expression matching and mutex costs in HA-JDBC, the latter being particularly costly for distributed environments.
-					Because of their performance impact, support for both sequences and identity columns is disabled by default.
-					Suppoort for each is enabled via the <a href="#sequences">detect-sequences</a> and <a href="#identity-columns">detect-identity-columns</a> cluster attributes, respectively.
+					Because of their performance impact, support for both sequences and identity columns can be disabled via the <a href="#sequences">detect-sequences</a> and <a href="#identity-columns">detect-identity-columns</a> cluster attributes, respectively.
 					Fortunately, the performance penalty for sequences can be mitigated via what Hibernate calls a <a href="http://www.hibernate.org/doc/api/org/hibernate/id/SequenceHiLoGenerator.html">Sequence-HiLo algorithm</a>.
 				</p>
 				<p>

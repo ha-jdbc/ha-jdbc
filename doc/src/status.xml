@@ -12,7 +12,7 @@
 	</contexts>
 
 	<changes>
-		<release version="1.2-beta-6" date="???">
+		<release version="1.2-beta-6" date="October 24, 2006">
 			<action type="add" context="src" dev="PF">
 				Added support for identity columns.
 			</action>
@@ -20,7 +20,7 @@
 				Added new cluster attributes "detect-sequences" and "detect-identity-columns".
 			</action>
 			<action type="add" context="src" dev="PF">
-				Added dialect implementations for H2, Ingres, and Mckoi.
+				Added dialect implementations for Ingres and Mckoi.
 			</action>
 			<action type="update" context="lib" dev="PF">
 				Upgraded Woodstox to 3.0.2.
