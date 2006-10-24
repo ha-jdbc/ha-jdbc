@@ -12,7 +12,7 @@
 	</contexts>
 
 	<changes>
-		<release version="1.1.9" date="???">
+		<release version="1.1.9" date="October 24, 2006">
 			<action type="update" context="lib" dev="PF">
 				Upgraded jcl104-over-slf4j.jar to slf4j 1.0.2 version.
 			</action>
