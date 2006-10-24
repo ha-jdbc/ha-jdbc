@@ -37,7 +37,7 @@ public class MySQLDialect extends DefaultDialect
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#createUniqueKeyFormat()
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#createUniqueKeyPattern()
 	 */
 	@Override
 	protected String createUniqueKeyPattern()
@@ -46,7 +46,7 @@ public class MySQLDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#dropForeignKeyFormat()
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#dropForeignKeyPattern()
 	 */
 	@Override
 	protected String dropForeignKeyPattern()
@@ -55,7 +55,7 @@ public class MySQLDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#dropUniqueKeyFormat()
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#dropUniqueKeyPattern()
 	 */
 	@Override
 	protected String dropUniqueKeyPattern()
