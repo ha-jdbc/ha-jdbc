@@ -22,7 +22,8 @@ package net.sf.hajdbc;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Map;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Encapsulates database vendor specific SQL syntax.  
@@ -36,7 +37,7 @@ public interface Dialect
 	 * Returns a simple SQL statement used to validate whether a database is alive or not.
 	 * @return a SQL statement
 	 */
-	public String getSimpleSQL();
+	public String getSimpleSQL() throws SQLException;
 	
 	/**
 	 * Returns a SQL statement to be executed within a running transaction that will effectively lock the specified table for writing.
@@ -108,7 +109,30 @@ public interface Dialect
 	 * @throws SQLException
 	 * @since 1.2
 	 */
-//	public String parseInsertTable(String sql) throws SQLException;
+	public String parseInsertTable(String sql) throws SQLException;
+	
+	/**
+	 * Indicates whether or not this dialect supports auto-incrementing columns.
+	 * @return true, if auto-incrementing columns are supported, false otherwise.
+	 * @since 1.2
+	 */
+	public boolean supportsAutoIncrementColumns();
+	
+	/**
+	 * Indicates whether or not the specified column is auto-incrementing.
+	 * @param properties a table column
+	 * @return true, if this column is auto-incrementing, false otherwise
+	 * @throws SQLException
+	 * @since 1.2
+	 */
+	public boolean isAutoIncrementing(ColumnProperties properties) throws SQLException;
+
+	/**
+	 * Indicates whether or not this dialect supports sequences.
+	 * @return true, if sequences are supported, false otherwise.
+	 * @since 1.2
+	 */
+	public boolean supportsSequences();
 	
 	/**
 	 * Parses a sequence name from the specified SQL statement.
@@ -120,18 +144,36 @@ public interface Dialect
 	public String parseSequence(String sql) throws SQLException;
 	
 	/**
-	 * Returns a map of all sequences in this database.
+	 * Returns a collection of all sequences in this database.
 	 * @param connection a database connection
 	 * @return a Map of sequence name to current value
 	 * @throws SQLException
+	 * @since 1.2
 	 */
-	public Map<String, Long> getSequences(Connection connection) throws SQLException;
+	public Collection<String> getSequences(Connection connection) throws SQLException;
 	
+	/**
+	 * Returns a SQL statement for obtaining the current value the specified sequence
+	 * @param sequence a sequence name
+	 * @return a SQL statement
+	 * @throws SQLException
+	 * @since 1.2
+	 */
+	public String getCurrentSequenceValueSQL(String sequence) throws SQLException;
+
 	/**
 	 * Returns a SQL statement used reset the current value of a sequence.
 	 * @param sequence a sequence name
 	 * @param value a sequence value
 	 * @return a SQL statement
+	 * @since 1.2
 	 */
-	public String getAlterSequenceSQL(String sequence, long value);
+	public String getAlterSequenceSQL(String sequence, long value) throws SQLException;
+	
+	/**
+	 * Returns a search path of schemas 
+	 * @return a list of schema names
+	 * @since 1.2
+	 */
+	public List<String> getDefaultSchemas(Connection connection) throws SQLException;
 }

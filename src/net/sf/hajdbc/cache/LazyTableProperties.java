@@ -65,9 +65,9 @@ public class LazyTableProperties implements TableProperties
 	}
 
 	/**
-	 * @see net.sf.hajdbc.TableProperties#getColumn(java.lang.String)
+	 * @see net.sf.hajdbc.TableProperties#getColumnProperties(java.lang.String)
 	 */
-	public synchronized ColumnProperties getColumn(String column) throws SQLException
+	public synchronized ColumnProperties getColumnProperties(String column) throws SQLException
 	{
 		if (this.columnMap == null)
 		{
@@ -119,11 +119,11 @@ public class LazyTableProperties implements TableProperties
 	/**
 	 * @see net.sf.hajdbc.TableProperties#getName()
 	 */
-	public synchronized String getName() throws SQLException
+	public synchronized String getName()
 	{
 		if (this.name == null)
 		{
-			this.name = this.support.getQualifiedNameForDML(LazyDatabaseProperties.getDatabaseMetaData(), this.schema, this.table);
+			this.name = this.support.getQualifiedNameForDML(this.schema, this.table);
 		}
 		
 		return this.name;

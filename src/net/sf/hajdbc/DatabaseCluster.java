@@ -140,4 +140,8 @@ public interface DatabaseCluster extends DatabaseClusterMBean
 	 * @since 1.2
 	 */
 	public DatabaseMetaDataCache getDatabaseMetaDataCache();
+	
+	public boolean isSequenceDetectionEnabled();
+	
+	public boolean isAutoIncrementDetectionEnabled();
 }

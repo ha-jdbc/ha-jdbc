@@ -24,11 +24,12 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import net.sf.hajdbc.DatabaseProperties;
+import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.TableProperties;
 
 /**
@@ -37,17 +38,20 @@ import net.sf.hajdbc.TableProperties;
  */
 public class EagerDatabaseProperties implements DatabaseProperties
 {
-	private List<TableProperties> tableList = new LinkedList<TableProperties>();
+	private DatabaseMetaDataSupport support;
+	private Map<String, TableProperties> tableMap = new HashMap<String, TableProperties>();
 	private boolean supportsSelectForUpdate;
+	private List<String> defaultSchemaList;
+	private Class<? extends Dialect> dialectClass;
 	
-	public EagerDatabaseProperties(Connection connection) throws SQLException
+	public EagerDatabaseProperties(Connection connection, Dialect dialect) throws SQLException
 	{
 		DatabaseMetaData metaData = connection.getMetaData();
-		DatabaseMetaDataSupport support = new DatabaseMetaDataSupport(metaData);
+		this.support = new DatabaseMetaDataSupport(metaData);
 		
 		this.supportsSelectForUpdate = metaData.supportsSelectForUpdate();
 		
-		Map<String, Collection<String>> tablesMap = support.getTables(metaData);
+		Map<String, Collection<String>> tablesMap = this.support.getTables(metaData);
 		
 		for (Map.Entry<String, Collection<String>> tablesMapEntry: tablesMap.entrySet())
 		{
@@ -56,9 +60,14 @@ public class EagerDatabaseProperties implements DatabaseProperties
 			
 			for (String table: tables)
 			{
-				this.tableList.add(new EagerTableProperties(metaData, support, schema, table));
+				TableProperties properties = new EagerTableProperties(metaData, this.support, schema, table);
+				
+				this.tableMap.put(properties.getName(), properties);
 			}
 		}
+		
+		this.dialectClass = dialect.getClass();
+		this.defaultSchemaList = dialect.getDefaultSchemas(connection);
 	}
 
 	/**
@@ -66,7 +75,15 @@ public class EagerDatabaseProperties implements DatabaseProperties
 	 */
 	public Collection<TableProperties> getTables()
 	{
-		return this.tableList;
+		return this.tableMap.values();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseProperties#findTable(java.lang.String)
+	 */
+	public TableProperties findTable(String table) throws SQLException
+	{
+		return this.support.findTable(this.tableMap, table, this.defaultSchemaList, this.dialectClass);
 	}
 
 	/**

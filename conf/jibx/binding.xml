@@ -27,6 +27,8 @@
 		<value name="min-threads" field="minThreads" usage="optional" default="0"/>
 		<value name="max-threads" field="maxThreads" usage="optional" default="100"/>
 		<value name="max-idle" field="maxIdle" style="attribute" usage="optional" default="60"/>
+		<value name="detect-sequences" field="sequenceDetectionEnabled" style="attribute" usage="optional" default="true"/>
+		<value name="detect-auto-increment-columns" field="autoIncrementDetectionEnabled" style="attribute" usage="optional" default="true"/>
 		<collection add-method="add" iter-method="getDriverDatabases" item-type="net.sf.hajdbc.sql.DriverDatabase"></collection>
 		<collection add-method="add" iter-method="getDataSourceDatabases" item-type="net.sf.hajdbc.sql.DataSourceDatabase"></collection>
 	</mapping>

@@ -26,9 +26,11 @@ package net.sf.hajdbc;
  */
 public interface ColumnProperties
 {
-	public String getColumn();
+	public String getName();
 	
 	public int getType();
 	
 	public String getNativeType();
+	
+	public String getRemarks();
 }

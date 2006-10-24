@@ -21,10 +21,10 @@
 package net.sf.hajdbc.dialect;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Map;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 import net.sf.hajdbc.Dialect;
 
@@ -35,11 +35,9 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
+@Test
 public class TestFirebirdDialect extends TestDefaultDialect
 {
-	private Statement statement = this.control.createMock(Statement.class);
-	private ResultSet resultSet = this.control.createMock(ResultSet.class);
-	
 	/**
 	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#createDialect()
 	 */
@@ -54,7 +52,7 @@ public class TestFirebirdDialect extends TestDefaultDialect
 	 */
 	@Override
 	@Test(dataProvider = "alter-sequence")
-	public String getAlterSequenceSQL(String sequence, long value)
+	public String getAlterSequenceSQL(String sequence, long value) throws SQLException
 	{
 		this.control.replay();
 		
@@ -72,7 +70,7 @@ public class TestFirebirdDialect extends TestDefaultDialect
 	 */
 	@Override
 	@Test(dataProvider = "connection")
-	public Map<String, Long> getSequences(Connection connection) throws SQLException
+	public Collection<String> getSequences(Connection connection) throws SQLException
 	{
 		EasyMock.expect(connection.createStatement()).andReturn(this.statement);
 		EasyMock.expect(this.statement.executeQuery("SELECT RDB$GENERATOR_NAME FROM RDB$GENERATORS")).andReturn(this.resultSet);
@@ -83,37 +81,56 @@ public class TestFirebirdDialect extends TestDefaultDialect
 		EasyMock.expect(this.resultSet.next()).andReturn(false);
 		
 		this.resultSet.close();
-		
-		EasyMock.expect(this.statement.executeQuery("SELECT GEN_ID(sequence2, 0), GEN_ID(sequence1, 0) FROM RDB$DATABASE")).andReturn(this.resultSet);
-		EasyMock.expect(this.resultSet.next()).andReturn(true);
-		EasyMock.expect(this.resultSet.getLong(1)).andReturn(2L);
-		EasyMock.expect(this.resultSet.getLong(2)).andReturn(1L);
-		
-		this.resultSet.close();
 		this.statement.close();
 		
 		this.control.replay();
 		
-		Map<String, Long> sequenceMap = this.dialect.getSequences(connection);
+		Collection<String> sequences = this.dialect.getSequences(connection);
 		
 		this.control.verify();
 		
-		assert sequenceMap.size() == 2 : sequenceMap;
-		assert sequenceMap.get("sequence1").equals(1L) : sequenceMap;
-		assert sequenceMap.get("sequence2").equals(2L) : sequenceMap;
+		assert sequences.size() == 2 : sequences;
 		
-		return sequenceMap;
+		Iterator<String> iterator = sequences.iterator();
+		String sequence = iterator.next();
+		
+		assert sequence.equals("sequence1") : sequence;
+
+		sequence = iterator.next();
+		
+		assert sequence.equals("sequence2") : sequence;
+		
+		return sequences;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.Dialect#getCurrentSequenceValueSQL(java.lang.String)
+	 */
+	@Override
+	@Test(dataProvider = "sequence")
+	public String getCurrentSequenceValueSQL(String sequence) throws SQLException
+	{
+		this.control.replay();
+		
+		String sql = this.dialect.getCurrentSequenceValueSQL(sequence);
+		
+		this.control.verify();
+		
+		assert sql.equals("SELECT GEN_ID(sequence, 0) FROM RDB$DATABASE") : sql;
+		
+		return sql;
 	}
 
 	/**
 	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getSimpleSQL()
 	 */
 	@Override
-	public String getSimpleSQL()
+	@Test
+	public String getSimpleSQL() throws SQLException
 	{
 		String sql = this.dialect.getSimpleSQL();
 		
-		assert sql.equals("SELECT 1 FROM RDB$DATABASE") : sql;
+		assert sql.equals("SELECT CURRENT_TIMESTAMP FROM RDB$DATABASE") : sql;
 		
 		return sql;
 	}
@@ -122,6 +139,7 @@ public class TestFirebirdDialect extends TestDefaultDialect
 	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#isSelectForUpdate(java.lang.String)
 	 */
 	@Override
+	@Test(dataProvider = "null")
 	public boolean isSelectForUpdate(String sql) throws SQLException
 	{
 		this.control.replay();
@@ -148,6 +166,7 @@ public class TestFirebirdDialect extends TestDefaultDialect
 	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#parseSequence(java.lang.String)
 	 */
 	@Override
+	@Test(dataProvider = "null")
 	public String parseSequence(String sql) throws SQLException
 	{
 		this.control.replay();
@@ -168,5 +187,51 @@ public class TestFirebirdDialect extends TestDefaultDialect
 		assert sequence == null : sequence;
 		
 		return sequence;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#supportsAutoIncrementColumns()
+	 */
+	@Test
+	@Override
+	public boolean supportsAutoIncrementColumns()
+	{
+		this.control.replay();
+		
+		boolean supports = this.dialect.supportsAutoIncrementColumns();
+		
+		this.control.verify();
+		
+		assert !supports;
+		
+		return supports;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#getDefaultSchemas(java.sql.Connection)
+	 */
+	@Override
+	@Test(dataProvider = "connection")
+	public List<String> getDefaultSchemas(Connection connection) throws SQLException
+	{
+		EasyMock.expect(connection.createStatement()).andReturn(this.statement);
+		EasyMock.expect(this.statement.executeQuery("SELECT CURRENT_USER FROM RDB$DATABASE")).andReturn(this.resultSet);
+		EasyMock.expect(this.resultSet.next()).andReturn(false);
+		EasyMock.expect(this.resultSet.getString(1)).andReturn("user");
+
+		this.resultSet.close();
+		this.statement.close();
+		
+		this.control.replay();
+		
+		List<String> schemaList = this.dialect.getDefaultSchemas(connection);
+		
+		this.control.verify();
+		
+		assert schemaList.size() == 1 : schemaList.size();
+		
+		assert schemaList.get(0).equals("user") : schemaList.get(0);
+		
+		return schemaList;
 	}
 }

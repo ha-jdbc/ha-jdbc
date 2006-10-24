@@ -25,6 +25,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -267,7 +268,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 						
 						for (int i = 1; i <= primaryKeyColumnList.size(); ++i)
 						{
-							int type = dialect.getColumnType(table.getColumn(columnList.get(i - 1)));
+							int type = dialect.getColumnType(table.getColumnProperties(columnList.get(i - 1)));
 							
 							deleteStatement.setObject(i, inactiveResultSet.getObject(i), type);
 						}
@@ -282,9 +283,9 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 
 						for (int i = 1; i <= columnList.size(); ++i)
 						{
-							Object object = activeResultSet.getObject(i);
-							
-							int type = dialect.getColumnType(table.getColumn(columnList.get(i - 1)));
+							int type = dialect.getColumnType(table.getColumnProperties(columnList.get(i - 1)));
+
+							Object object = this.getObject(activeResultSet, i, type);
 							
 							if (activeResultSet.wasNull())
 							{
@@ -308,10 +309,10 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 						
 						for (int i = primaryKeyColumnList.size() + 1; i <= columnList.size(); ++i)
 						{
-							Object activeObject = activeResultSet.getObject(i);
-							Object inactiveObject = inactiveResultSet.getObject(i);
+							int type = dialect.getColumnType(table.getColumnProperties(columnList.get(i - 1)));
 							
-							int type = dialect.getColumnType(table.getColumn(columnList.get(i - 1)));
+							Object activeObject = this.getObject(activeResultSet, i, type);
+							Object inactiveObject = this.getObject(inactiveResultSet, i, type);
 							
 							int index = i - primaryKeyColumnList.size();
 							
@@ -334,7 +335,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 						{
 							for (int i = 1; i <= primaryKeyColumnList.size(); ++i)
 							{
-								int type = dialect.getColumnType(table.getColumn(columnList.get(i - 1)));
+								int type = dialect.getColumnType(table.getColumnProperties(columnList.get(i - 1)));
 								
 								updateStatement.setObject(i + nonPrimaryKeyColumnList.size(), inactiveResultSet.getObject(i), type);
 							}
@@ -437,28 +438,77 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		statement.executeBatch();
 		statement.clearBatch();
 		
-		Map<String, Long> activeSequenceMap = dialect.getSequences(activeConnection);
-		Map<String, Long> inactiveSequenceMap = dialect.getSequences(inactiveConnection);
-		
-		for (String sequence: activeSequenceMap.keySet())
+		if (dialect.supportsSequences())
 		{
-			long activeValue = activeSequenceMap.get(sequence);
-			long inactiveValue = inactiveSequenceMap.get(sequence);
+			Collection<String> sequences = dialect.getSequences(activeConnection);
 			
-			if (activeValue != inactiveValue)
+			Statement activeStatement = activeConnection.createStatement();
+			Statement inactiveStatement = inactiveConnection.createStatement();
+			
+			for (String sequence: sequences)
 			{
-				String sql = dialect.getAlterSequenceSQL(sequence, activeValue);
+				String sql = dialect.getCurrentSequenceValueSQL(sequence);
 				
 				logger.debug(sql);
 				
-				statement.addBatch(sql);
+				ResultSet activeResultSet = activeStatement.executeQuery(sql);
+				ResultSet inactiveResultSet = inactiveStatement.executeQuery(sql);
+				
+				activeResultSet.next();
+				inactiveResultSet.next();
+				
+				long activeValue = activeResultSet.getLong(1);
+				long inactiveValue = inactiveResultSet.getLong(1);
+				
+				activeResultSet.close();
+				inactiveResultSet.close();
+				
+				if (activeValue != inactiveValue)
+				{
+					sql = dialect.getAlterSequenceSQL(sequence, activeValue);
+					
+					logger.debug(sql);
+					
+					statement.addBatch(sql);
+				}
 			}
+			
+			activeStatement.close();
+			inactiveStatement.close();
+
+			statement.executeBatch();
 		}
 		
-		statement.executeBatch();
 		statement.close();
 	}
 
+	private Object getObject(ResultSet resultSet, int index, int type) throws SQLException
+	{
+		switch (type)
+		{
+			case Types.BLOB:
+			{
+				return resultSet.getBlob(index);
+			}
+			case Types.CLOB:
+			{
+				return resultSet.getClob(index);
+			}
+			default:
+			{
+				return resultSet.getObject(index);
+			}
+		}
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.SynchronizationStrategy#requiresTableLocking()
+	 */
+	public boolean requiresTableLocking()
+	{
+		return true;
+	}
+	
 	private boolean equals(Object object1, Object object2)
 	{
 		if (byte[].class.isInstance(object1) && byte[].class.isInstance(object2))
@@ -481,14 +531,6 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 	private int compare(Object object1, Object object2)
 	{
 		return Comparable.class.cast(object1).compareTo(object2);
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#requiresTableLocking()
-	 */
-	public boolean requiresTableLocking()
-	{
-		return true;
 	}
 	
 	private void rollback(Connection connection)

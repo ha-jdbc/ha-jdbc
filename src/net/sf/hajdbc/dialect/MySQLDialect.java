@@ -20,6 +20,13 @@
  */
 package net.sf.hajdbc.dialect;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Collections;
+import java.util.List;
+
+import net.sf.hajdbc.ColumnProperties;
+
 /**
  * Dialect for <a href="http://www.mysql.com/products/database/mysql/">MySQL</a>
  * @author Paul Ferraro
@@ -27,13 +34,32 @@ package net.sf.hajdbc.dialect;
 public class MySQLDialect extends DefaultDialect
 {
 	/**
-	 * MySQL does not support sequences.
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#parseSequence(java.lang.String)
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#getDefaultSchemas(java.sql.Connection)
 	 */
 	@Override
-	public String parseSequence(String sql)
+	public List<String> getDefaultSchemas(Connection connection) throws SQLException
 	{
-		return null;
+		return Collections.singletonList(this.executeFunction(connection, "DATABASE()"));
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#isAutoIncrementing(net.sf.hajdbc.ColumnProperties)
+	 */
+	@Override
+	public boolean isAutoIncrementing(ColumnProperties properties)
+	{
+		String remarks = properties.getRemarks();
+		
+		return (remarks != null) && remarks.contains("AUTO_INCREMENT");
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#supportsSequences()
+	 */
+	@Override
+	public boolean supportsSequences()
+	{
+		return false;
 	}
 
 	/**

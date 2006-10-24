@@ -36,6 +36,7 @@ import java.sql.SQLWarning;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 
@@ -56,9 +57,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 * @param operation an operation that creates ResultSets
 	 * @throws SQLException if operation execution fails
 	 */
-	public ResultSet(Statement<T> statement, Operation<T, java.sql.ResultSet> operation, Lock lock) throws SQLException
+	public ResultSet(Statement<T> statement, Operation<T, java.sql.ResultSet> operation, List<Lock> lockList) throws SQLException
 	{
-		super(statement, operation, statement.getDatabaseCluster().getTransactionalExecutor(), lock);
+		super(statement, operation, statement.getDatabaseCluster().getTransactionalExecutor(), lockList);
 	}
 	
 	/**

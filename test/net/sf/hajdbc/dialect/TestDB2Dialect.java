@@ -21,10 +21,10 @@
 package net.sf.hajdbc.dialect;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Map;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 import net.sf.hajdbc.Dialect;
 
@@ -35,11 +35,9 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
+@Test
 public class TestDB2Dialect extends TestDefaultDialect
 {
-	private Statement statement = this.control.createMock(Statement.class);
-	private ResultSet resultSet = this.control.createMock(ResultSet.class);
-	
 	@Override
 	protected Dialect createDialect()
 	{
@@ -51,7 +49,7 @@ public class TestDB2Dialect extends TestDefaultDialect
 	 */
 	@Override
 	@Test(dataProvider = "connection")
-	public Map<String, Long> getSequences(Connection connection) throws SQLException
+	public Collection<String> getSequences(Connection connection) throws SQLException
 	{
 		EasyMock.expect(connection.createStatement()).andReturn(this.statement);
 		EasyMock.expect(this.statement.executeQuery("SELECT SEQNAME FROM SYSCAT.SEQUENCES")).andReturn(this.resultSet);
@@ -62,41 +60,59 @@ public class TestDB2Dialect extends TestDefaultDialect
 		EasyMock.expect(this.resultSet.next()).andReturn(false);
 		
 		this.resultSet.close();
-		
-		EasyMock.expect(this.statement.executeQuery("VALUES (PREVVAL FOR sequence2, PREVVAL FOR sequence1)")).andReturn(this.resultSet);
-		EasyMock.expect(this.resultSet.next()).andReturn(true);
-		EasyMock.expect(this.resultSet.getLong(1)).andReturn(2L);
-		EasyMock.expect(this.resultSet.getLong(2)).andReturn(1L);
-		
-		this.resultSet.close();
 		this.statement.close();
 		
 		this.control.replay();
 		
-		Map<String, Long> sequenceMap = this.dialect.getSequences(connection);
+		Collection<String> sequences = this.dialect.getSequences(connection);
+		
+		this.control.verify();
+
+		assert sequences.size() == 2 : sequences.size();
+		
+		Iterator<String> iterator = sequences.iterator();
+		String sequence = iterator.next();
+		
+		assert sequence.equals("sequence1") : sequence;
+		
+		sequence = iterator.next();
+		
+		assert sequence.equals("sequence2") : sequence;
+		
+		return sequences;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getCurrentSequenceValueSQL(java.lang.String)
+	 */
+	@Override
+	@Test(dataProvider = "sequence")
+	public String getCurrentSequenceValueSQL(String sequence) throws SQLException
+	{
+		this.control.replay();
+		
+		String sql = this.dialect.getCurrentSequenceValueSQL(sequence);
 		
 		this.control.verify();
 		
-		assert sequenceMap.size() == 2 : sequenceMap;
-		assert sequenceMap.get("sequence1").equals(1L) : sequenceMap;
-		assert sequenceMap.get("sequence2").equals(2L) : sequenceMap;
+		assert sql.equals("VALUES PREVVAL FOR sequence") : sql;
 		
-		return sequenceMap;
+		return sql;
 	}
 
 	/**
 	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getSimpleSQL()
 	 */
 	@Override
-	public String getSimpleSQL()
+	public String getSimpleSQL() throws SQLException
 	{
 		this.control.replay();
 		
 		String sql = this.dialect.getSimpleSQL();
-		
+
 		this.control.verify();
 		
-		assert sql.equals("VALUES 1") : sql;
+		assert sql.equals("VALUES CURRENT_TIMESTAMP") : sql;
 		
 		return sql;
 	}
@@ -135,5 +151,33 @@ public class TestDB2Dialect extends TestDefaultDialect
 		assert sequence == null : sequence;
 		
 		return sequence;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#getDefaultSchemas(java.sql.Connection)
+	 */
+	@Override
+	@Test(dataProvider = "connection")
+	public List<String> getDefaultSchemas(Connection connection) throws SQLException
+	{
+		EasyMock.expect(connection.createStatement()).andReturn(this.statement);
+		EasyMock.expect(this.statement.executeQuery("VALUES CURRENT_USER")).andReturn(this.resultSet);
+		EasyMock.expect(this.resultSet.next()).andReturn(false);
+		EasyMock.expect(this.resultSet.getString(1)).andReturn("user");
+
+		this.resultSet.close();
+		this.statement.close();
+		
+		this.control.replay();
+		
+		List<String> schemaList = this.dialect.getDefaultSchemas(connection);
+		
+		this.control.verify();
+		
+		assert schemaList.size() == 1 : schemaList.size();
+		
+		assert schemaList.get(0).equals("user") : schemaList.get(0);
+		
+		return schemaList;
 	}
 }

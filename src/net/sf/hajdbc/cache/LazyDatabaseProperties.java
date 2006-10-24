@@ -24,11 +24,12 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import net.sf.hajdbc.DatabaseProperties;
+import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.TableProperties;
 
 /**
@@ -39,13 +40,16 @@ public class LazyDatabaseProperties implements DatabaseProperties
 {
 	private static ThreadLocal<Connection> threadLocal = new ThreadLocal<Connection>();
 	
-	private List<TableProperties> tableList;
+	private Map<String, TableProperties> tableMap;
 	private Boolean supportsSelectForUpdate;
 	private DatabaseMetaDataSupport support;
+	private List<String> defaultSchemaList;
+	private Dialect dialect;
 
-	public LazyDatabaseProperties() throws SQLException
+	public LazyDatabaseProperties(Dialect dialect) throws SQLException
 	{
 		this.support = new DatabaseMetaDataSupport(getDatabaseMetaData());
+		this.dialect = dialect;
 	}
 
 	public static void setConnection(Connection connection)
@@ -63,11 +67,16 @@ public class LazyDatabaseProperties implements DatabaseProperties
 	 */
 	public synchronized Collection<TableProperties> getTables() throws SQLException
 	{
+		return this.getTableMap().values();
+	}
+
+	private synchronized Map<String, TableProperties> getTableMap() throws SQLException
+	{
 		DatabaseMetaData metaData = getDatabaseMetaData();
 		
-		if (this.tableList == null)
+		if (this.tableMap == null)
 		{
-			this.tableList = new LinkedList<TableProperties>();
+			this.tableMap = new HashMap<String, TableProperties>();
 			
 			Map<String, Collection<String>> tablesMap = this.support.getTables(metaData);
 			
@@ -78,12 +87,32 @@ public class LazyDatabaseProperties implements DatabaseProperties
 				
 				for (String table: tables)
 				{
-					this.tableList.add(new LazyTableProperties(this.support, schema, table));
+					TableProperties properties = new LazyTableProperties(this.support, schema, table);
+					
+					this.tableMap.put(properties.getName(), properties);
 				}
 			}
 		}
 		
-		return this.tableList;
+		return this.tableMap;
+	}
+	
+	private synchronized List<String> getDefaultSchemaList() throws SQLException
+	{
+		if (this.defaultSchemaList == null)
+		{
+			this.defaultSchemaList = this.dialect.getDefaultSchemas(threadLocal.get());
+		}
+		
+		return this.defaultSchemaList;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseProperties#findTable(java.lang.String)
+	 */
+	public TableProperties findTable(String table) throws SQLException
+	{
+		return this.support.findTable(this.getTableMap(), table, this.getDefaultSchemaList(), this.dialect.getClass());
 	}
 
 	/**

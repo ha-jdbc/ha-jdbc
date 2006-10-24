@@ -22,9 +22,13 @@ package net.sf.hajdbc.dialect;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
-import java.util.Map;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.Dialect;
@@ -44,12 +48,16 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
+@Test
 public class TestDefaultDialect implements Dialect
 {
 	protected IMocksControl control = EasyMock.createStrictControl();
 	protected TableProperties tableProperties = this.control.createMock(TableProperties.class);
 	protected Connection connection = this.control.createMock(Connection.class);
 	protected ColumnProperties columnProperties = this.control.createMock(ColumnProperties.class);
+	protected DatabaseMetaData metaData = this.control.createMock(DatabaseMetaData.class);
+	protected Statement statement = this.control.createMock(Statement.class);
+	protected ResultSet resultSet = this.control.createMock(ResultSet.class);
 	
 	protected Dialect dialect = this.createDialect();
 	
@@ -120,11 +128,17 @@ public class TestDefaultDialect implements Dialect
 		return new Object[][] { new Object[] { null } };
 	}
 
+	@DataProvider(name = "sequence")
+	Object[][] sequenceProvider()
+	{
+		return new Object[][] { new Object[] { "sequence" } };
+	}
+
 	/**
 	 * @see net.sf.hajdbc.Dialect#getAlterSequenceSQL(java.lang.String, long)
 	 */
 	@Test(dataProvider = "alter-sequence")
-	public String getAlterSequenceSQL(String sequence, long value)
+	public String getAlterSequenceSQL(String sequence, long value) throws SQLException
 	{
 		this.control.replay();
 		
@@ -254,29 +268,67 @@ public class TestDefaultDialect implements Dialect
 		
 		return sql;
 	}
+	
+	/**
+	 * @see net.sf.hajdbc.Dialect#getCurrentSequenceValueSQL(java.lang.String)
+	 */
+	@Test(dataProvider = "sequence")
+	public String getCurrentSequenceValueSQL(String sequence) throws SQLException
+	{
+		this.control.replay();
+		
+		String sql = this.dialect.getCurrentSequenceValueSQL(sequence);
+		
+		this.control.verify();
+		
+		assert sql.equals("SELECT CURRENT VALUE FOR sequence") : sql;
+		
+		return sql;
+	}
 
 	/**
 	 * @see net.sf.hajdbc.Dialect#getSequences(java.sql.Connection)
 	 */
 	@Test(dataProvider = "connection")
-	public Map<String, Long> getSequences(Connection connection) throws SQLException
+	public Collection<String> getSequences(Connection connection) throws SQLException
 	{
+		EasyMock.expect(connection.getMetaData()).andReturn(this.metaData);
+		EasyMock.expect(this.metaData.getTables(EasyMock.eq(""), EasyMock.eq((String) null), EasyMock.eq("%"), EasyMock.aryEq(new String[] { "SEQUENCE" }))).andReturn(this.resultSet);
+		EasyMock.expect(this.resultSet.next()).andReturn(true);
+		EasyMock.expect(this.resultSet.getString("TABLE_SCHEM")).andReturn("schema");
+		EasyMock.expect(this.resultSet.getString("TABLE_NAME")).andReturn("sequence1");
+		EasyMock.expect(this.resultSet.next()).andReturn(true);
+		EasyMock.expect(this.resultSet.getString("TABLE_SCHEM")).andReturn("schema");
+		EasyMock.expect(this.resultSet.getString("TABLE_NAME")).andReturn("sequence2");
+		EasyMock.expect(this.resultSet.next()).andReturn(false);
+		
+		this.resultSet.close();
+		
 		this.control.replay();
 		
-		Map<String, Long> sequenceMap = this.dialect.getSequences(connection);
+		Collection<String> sequences = this.dialect.getSequences(connection);
 		
 		this.control.verify();
 		
-		assert sequenceMap.isEmpty() : sequenceMap;
+		assert sequences.size() == 2 : sequences;
 		
-		return sequenceMap;
+		Iterator<String> iterator = sequences.iterator();
+		String sequence = iterator.next();
+		
+		assert sequence.equals("schema.sequence1") : sequence;
+		
+		sequence = iterator.next();
+		
+		assert sequence.equals("schema.sequence2") : sequence;
+		
+		return sequences;
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.Dialect#getSimpleSQL()
 	 */
 	@Test
-	public String getSimpleSQL()
+	public String getSimpleSQL() throws SQLException
 	{
 		this.control.replay();
 		
@@ -284,7 +336,7 @@ public class TestDefaultDialect implements Dialect
 		
 		this.control.verify();
 		
-		assert sql.equals("SELECT 1") : sql;
+		assert sql.equals("SELECT CURRENT_TIMESTAMP") : sql;
 		
 		return sql;
 	}
@@ -358,5 +410,119 @@ public class TestDefaultDialect implements Dialect
 		assert sequence == null : sequence;
 		
 		return sequence;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#getDefaultSchemas(java.sql.Connection)
+	 */
+	@Test(dataProvider = "connection")
+	public List<String> getDefaultSchemas(Connection connection) throws SQLException
+	{
+		EasyMock.expect(connection.createStatement()).andReturn(this.statement);
+		EasyMock.expect(this.statement.executeQuery("SELECT CURRENT_USER")).andReturn(this.resultSet);
+		EasyMock.expect(this.resultSet.next()).andReturn(false);
+		EasyMock.expect(this.resultSet.getString(1)).andReturn("user");
+
+		this.resultSet.close();
+		this.statement.close();
+		
+		this.control.replay();
+		
+		List<String> schemaList = this.dialect.getDefaultSchemas(connection);
+		
+		this.control.verify();
+		
+		assert schemaList.size() == 1 : schemaList.size();
+		
+		assert schemaList.get(0).equals("user") : schemaList.get(0);
+		
+		return schemaList;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#isAutoIncrementing(net.sf.hajdbc.ColumnProperties)
+	 */
+	@Test(dataProvider = "column")
+	public boolean isAutoIncrementing(ColumnProperties properties) throws SQLException
+	{
+		EasyMock.expect(properties.getRemarks()).andReturn("GENERATED BY DEFAULT AS IDENTITY");
+		
+		this.control.replay();
+		
+		boolean autoIncrementing = this.dialect.isAutoIncrementing(properties);
+		
+		this.control.verify();
+		this.control.reset();
+		
+		EasyMock.expect(this.columnProperties.getRemarks()).andReturn(null);
+		
+		this.control.replay();
+		
+		autoIncrementing = this.dialect.isAutoIncrementing(properties);
+		
+		this.control.verify();
+		
+		return autoIncrementing;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#parseInsertTable(java.lang.String)
+	 */
+	@Test(dataProvider = "null")
+	public String parseInsertTable(String sql) throws SQLException
+	{
+		this.control.replay();
+		
+		String table = this.dialect.parseInsertTable("INSERT INTO test VALUES (...)");
+
+		this.control.verify();
+		
+		assert table != null;
+		assert table.equals("test") : table;
+		
+		this.control.reset();
+		this.control.replay();
+		
+		table = this.dialect.parseInsertTable("SELECT * FROM test WHERE ...");
+		
+		this.control.verify();
+
+		assert table == null : table;
+
+		return table;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#supportsAutoIncrementColumns()
+	 */
+	@Test
+	public boolean supportsAutoIncrementColumns()
+	{
+		this.control.replay();
+		
+		boolean supports = this.dialect.supportsAutoIncrementColumns();
+		
+		this.control.verify();
+		
+		assert supports;
+		
+		return supports;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#supportsSequences()
+	 */
+	@Test
+	public boolean supportsSequences()
+	{
+		this.control.replay();
+		
+		boolean supports = this.dialect.supportsSequences();
+		
+		this.control.verify();
+		
+		assert supports;
+		
+		return supports;
 	}
 }

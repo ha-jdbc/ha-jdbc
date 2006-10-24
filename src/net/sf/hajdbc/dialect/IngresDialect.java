@@ -27,30 +27,24 @@ import java.sql.Statement;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
- * Dialect for <a href="http://www.mysql.com/products/database/maxdb/">MySQL MaxDB</a>.
- * @author  Paul Ferraro
- * @since   1.1
+ * Dialect for <a href="http://opensource.ingres.com/projects/ingres/">Ingres</a>.
+ * 
+ * @author Paul Ferraro
  */
-public class MaxDBDialect extends DefaultDialect
+public class IngresDialect extends DefaultDialect
 {
+	private Pattern legacySequencePattern = Pattern.compile("(\\S+)\\.(?:(?:CURR)|(?:NEXT))VAL", Pattern.CASE_INSENSITIVE);
+	
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#dummyTable()
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#supportsAutoIncrementColumns()
 	 */
 	@Override
-	protected String dummyTable()
+	public boolean supportsAutoIncrementColumns()
 	{
-		return "DUAL";
-	}
-
-	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#currentTimestampFunction()
-	 */
-	@Override
-	protected String currentTimestampFunction()
-	{
-		return "SYSDATE";
+		return false;
 	}
 
 	/**
@@ -63,7 +57,7 @@ public class MaxDBDialect extends DefaultDialect
 		
 		Statement statement = connection.createStatement();
 		
-		ResultSet resultSet = statement.executeQuery("SELECT SEQUENCE_NAME FROM USER_SEQUENCES");
+		ResultSet resultSet = statement.executeQuery("SELECT seq_name FROM iisequence");
 		
 		while (resultSet.next())
 		{
@@ -77,31 +71,14 @@ public class MaxDBDialect extends DefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#supportsAutoIncrementColumns()
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#parseSequence(java.lang.String)
 	 */
 	@Override
-	public boolean supportsAutoIncrementColumns()
+	public String parseSequence(String sql)
 	{
-		return false;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#truncateTableFormat()
-	 */
-	@Override
-	protected String truncateTableFormat()
-	{
-		return "TRUNCATE TABLE {0}";
-	}
-	
-	/**
-	 * ON UPDATE and deferrability clauses are not supported.
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#createForeignKeyConstraintFormat()
-	 */
-	@Override
-	protected String createForeignKeyConstraintFormat()
-	{
-		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT}";
+		String sequence = super.parseSequence(sql);
+		
+		return (sequence != null) ? sequence : this.parse(this.legacySequencePattern, sql);
 	}
 
 	/**
@@ -110,15 +87,6 @@ public class MaxDBDialect extends DefaultDialect
 	@Override
 	protected String sequencePattern()
 	{
-		return "(\\S+)\\.(?:(?:CURR)|(?:NEXT))VAL";
-	}
-
-	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#currentSequenceValueFormat()
-	 */
-	@Override
-	protected String currentSequenceValueFormat()
-	{
-		return "{0}.CURRVAL";
+		return "(?:(?:NEXT)|(?:CURRENT))\\s+VALUE\\s+FOR\\s+(\\S+)";
 	}
 }

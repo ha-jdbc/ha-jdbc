@@ -24,8 +24,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Dialect for <a href="http://www.hsqldb.org">HSQLDB</a>.
@@ -36,43 +37,44 @@ import java.util.Map;
 public class HSQLDBDialect extends DefaultDialect
 {
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#getSimpleSQL()
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#executeFunctionKeyword()
 	 */
 	@Override
-	public String getSimpleSQL()
+	protected String executeFunctionFormat()
 	{
-		return "CALL NOW()";
+		return "CALL {0}";
 	}
-	
+
 	/**
 	 * @see net.sf.hajdbc.dialect.DefaultDialect#getSequences(java.sql.Connection)
 	 */
 	@Override
-	public Map<String, Long> getSequences(Connection connection) throws SQLException
+	public Collection<String> getSequences(Connection connection) throws SQLException
 	{
-		Map<String, Long> sequenceMap = new HashMap<String, Long>();
+		List<String> sequenceList = new LinkedList<String>();
 		
 		Statement statement = connection.createStatement();
-		ResultSet resultSet = statement.executeQuery("SELECT SEQUENCE_SCHEMA, SEQUENCE_NAME, NEXT_VALUE FROM INFORMATION_SCHEMA.SYSTEM_SEQUENCES");
+		
+		ResultSet resultSet = statement.executeQuery("SELECT SEQUENCE_NAME FROM INFORMATION_SCHEMA.SYSTEM_SEQUENCES");
 		
 		while (resultSet.next())
 		{
-			StringBuilder builder = new StringBuilder();
-			
-			String schema = resultSet.getString(1);
-			
-			if (schema != null)
-			{
-				builder.append(schema).append(".");
-			}
-			
-			sequenceMap.put(builder.append(resultSet.getString(2)).toString(), resultSet.getLong(3));
+			sequenceList.add(resultSet.getString(1));
 		}
 
 		resultSet.close();
 		statement.close();
 		
-		return sequenceMap;
+		return sequenceList;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#getCurrentSequenceValueSQL(java.lang.String)
+	 */
+	@Override
+	public String getCurrentSequenceValueSQL(String sequence)
+	{
+		return "SELECT NEXT_VALUE - 1 FROM INFORMATION_SCHEMA.SYSTEM_SEQUENCES WHERE SEQUENCE_NAME = '" + sequence + "'";
 	}
 
 	/**

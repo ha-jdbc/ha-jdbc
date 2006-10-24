@@ -23,6 +23,7 @@ package net.sf.hajdbc.dialect;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 
+import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.TableProperties;
 
 /**
@@ -34,12 +35,12 @@ import net.sf.hajdbc.TableProperties;
 public class DerbyDialect extends DefaultDialect
 {
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#getSimpleSQL()
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#executeFunctionKeyword()
 	 */
 	@Override
-	public String getSimpleSQL()
+	protected String executeFunctionFormat()
 	{
-		return "VALUES 1";
+		return "VALUES {0}";
 	}
 
 	/**
@@ -52,13 +53,23 @@ public class DerbyDialect extends DefaultDialect
 	}
 
 	/**
-	 * Derby does not support sequences.
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#parseSequence(java.lang.String)
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#isAutoIncrementing(net.sf.hajdbc.ColumnProperties)
 	 */
 	@Override
-	public String parseSequence(String sql)
+	public boolean isAutoIncrementing(ColumnProperties properties)
 	{
-		return null;
+		String remarks = properties.getRemarks();
+		
+		return (remarks != null) && remarks.contains("GENERATED ALWAYS AS IDENTITY");
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#supportsSequences()
+	 */
+	@Override
+	public boolean supportsSequences()
+	{
+		return false;
 	}
 
 	/**

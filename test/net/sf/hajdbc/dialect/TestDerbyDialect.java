@@ -20,11 +20,14 @@
  */
 package net.sf.hajdbc.dialect;
 
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.easymock.EasyMock;
 import org.testng.annotations.Test;
 
+import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.TableProperties;
@@ -79,7 +82,8 @@ public class TestDerbyDialect extends TestDefaultDialect
 	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getSimpleSQL()
 	 */
 	@Override
-	public String getSimpleSQL()
+	@Test
+	public String getSimpleSQL() throws SQLException
 	{
 		this.control.replay();
 		
@@ -87,7 +91,7 @@ public class TestDerbyDialect extends TestDefaultDialect
 		
 		this.control.verify();
 		
-		assert sql.equals("VALUES 1") : sql;
+		assert sql.equals("VALUES CURRENT_TIMESTAMP") : sql;
 		
 		return sql;
 	}
@@ -106,5 +110,96 @@ public class TestDerbyDialect extends TestDefaultDialect
 		assert sequence == null : sequence;
 		
 		return sequence;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#getDefaultSchemas(java.sql.Connection)
+	 */
+	@Override
+	@Test(dataProvider = "connection")
+	public List<String> getDefaultSchemas(Connection connection) throws SQLException
+	{
+		EasyMock.expect(connection.createStatement()).andReturn(this.statement);
+		EasyMock.expect(this.statement.executeQuery("VALUES CURRENT_USER")).andReturn(this.resultSet);
+		EasyMock.expect(this.resultSet.next()).andReturn(false);
+		EasyMock.expect(this.resultSet.getString(1)).andReturn("user");
+
+		this.resultSet.close();
+		this.statement.close();
+		
+		this.control.replay();
+		
+		List<String> schemaList = this.dialect.getDefaultSchemas(connection);
+		
+		this.control.verify();
+		
+		assert schemaList.size() == 1 : schemaList.size();
+		
+		assert schemaList.get(0).equals("user") : schemaList.get(0);
+		
+		return schemaList;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#isAutoIncrementing(net.sf.hajdbc.ColumnProperties)
+	 */
+	@Override
+	@Test(dataProvider = "column")
+	public boolean isAutoIncrementing(ColumnProperties properties) throws SQLException
+	{
+		EasyMock.expect(properties.getRemarks()).andReturn("GENERATED ALWAYS AS IDENTITY");
+		
+		this.control.replay();
+		
+		boolean autoIncrementing = this.dialect.isAutoIncrementing(properties);
+		
+		this.control.verify();
+		this.control.reset();
+		
+		EasyMock.expect(this.columnProperties.getRemarks()).andReturn(null);
+		
+		this.control.replay();
+		
+		autoIncrementing = this.dialect.isAutoIncrementing(properties);
+		
+		this.control.verify();
+		
+		return autoIncrementing;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.Dialect#getCurrentSequenceValueSQL(java.lang.String)
+	 */
+	@Override
+	@Test(dataProvider = "sequence")
+	public String getCurrentSequenceValueSQL(String sequence) throws SQLException
+	{
+		this.control.replay();
+		
+		String sql = this.dialect.getCurrentSequenceValueSQL(sequence);
+		
+		this.control.verify();
+		
+		assert sql.equals("VALUES CURRENT VALUE FOR sequence") : sql;
+		
+		return sql;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#supportsSequences()
+	 */
+	@Override
+	@Test
+	public boolean supportsSequences()
+	{
+		this.control.replay();
+		
+		boolean supports = this.dialect.supportsSequences();
+		
+		this.control.verify();
+		
+		assert !supports;
+		
+		return supports;
 	}
 }

@@ -26,12 +26,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.TableProperties;
-import net.sf.hajdbc.util.Strings;
 
 /**
  * Dialect for <a href="http://postgresql.org">PostgreSQL</a>.
@@ -40,10 +39,37 @@ import net.sf.hajdbc.util.Strings;
  */
 public class PostgreSQLDialect extends DefaultDialect
 {
-	public static final String[] SEQUENCES = new String[] { "SEQUENCE" };
-	
 	/**
-	 * Default implementation does not block INSERT statements.
+	 * PostgreSQL uses a schema search path to locate unqualified table names.
+	 * The default search path is [$user,public], where $user is the current user.
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#getDefaultSchemas()
+	 */
+	@Override
+	public List<String> getDefaultSchemas(Connection connection) throws SQLException
+	{
+		Statement statement = connection.createStatement();
+		
+		ResultSet resultSet = statement.executeQuery("SHOW search_path");
+		
+		resultSet.next();
+		
+		String[] schemas = resultSet.getString(1).split(",");
+		
+		resultSet.close();
+		statement.close();
+		
+		List<String> schemaList = new ArrayList<String>(schemas.length);
+		
+		for (String schema: schemas)
+		{
+			schemaList.add(schema.equals("$user") ? super.getCurrentUser(connection) : schema);
+		}
+		
+		return schemaList;
+	}
+
+	/**
+	 * Default implementation does not block INSERT statements in PostgreSQL.
 	 * Requires explicit exclusive mode table lock.
 	 * <p><em>From PostgreSQL documentation</em></p>
 	 * Unlike traditional database systems which use locks for concurrency control, PostgreSQL maintains data consistency by using a multiversion model (Multiversion Concurrency Control, MVCC).
@@ -66,59 +92,20 @@ public class PostgreSQLDialect extends DefaultDialect
 	@Override
 	public int getColumnType(ColumnProperties properties)
 	{
-		return properties.getNativeType().equals("oid") ? Types.BLOB : properties.getType();
-	}
-
-	/**
-	 * @see net.sf.hajdbc.Dialect#getSequences(java.sql.Connection)
-	 */
-	@Override
-	public Map<String, Long> getSequences(Connection connection) throws SQLException
-	{
-		Map<String, Long> sequenceMap = new HashMap<String, Long>();
-		
-		String catalog = connection.getCatalog();
-		
-		ResultSet resultSet = connection.getMetaData().getTables((catalog != null) ? catalog : "", null, "%", SEQUENCES);
-		
-		while (resultSet.next())
-		{
-			StringBuilder builder = new StringBuilder();
-			
-			String schema = resultSet.getString("TABLE_SCHEM");
-			
-			if (schema != null)
-			{
-				builder.append(schema).append(".");
-			}
-			
-			sequenceMap.put(builder.append(resultSet.getString("TABLE_NAME")).toString(), null);
-		}
-		
-		resultSet.close();
-		
-		if (!sequenceMap.isEmpty())
-		{
-			Statement statement = connection.createStatement();
-			
-			resultSet = statement.executeQuery("SELECT CURRVAL('" + Strings.join(sequenceMap.keySet(), "'), CURRVAL('") + "')");
-			
-			resultSet.next();
-			
-			int index = 0;
-			
-			for (String sequence: sequenceMap.keySet())
-			{
-				sequenceMap.put(sequence, resultSet.getLong(++index));
-			}
-			
-			resultSet.close();
-			statement.close();
-		}
-		
-		return sequenceMap;
+		return properties.getNativeType().equalsIgnoreCase("oid") ? Types.BLOB : properties.getType();
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#isAutoIncrementing(net.sf.hajdbc.ColumnProperties)
+	 */
+	@Override
+	public boolean isAutoIncrementing(ColumnProperties properties)
+	{
+		String type = properties.getNativeType();
+		
+		return type.equalsIgnoreCase("serial") || type.equalsIgnoreCase("bigserial");
+	}
+
 	/**
 	 * @see net.sf.hajdbc.dialect.DefaultDialect#truncateTableFormat()
 	 */
@@ -135,5 +122,14 @@ public class PostgreSQLDialect extends DefaultDialect
 	protected String sequencePattern()
 	{
 		return "(?:(?:CURR)|(?:NEXT))VAL\\s*\\(\\s*'(\\S+)'\\s*\\)";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#currentSequenceValueFormat()
+	 */
+	@Override
+	protected String currentSequenceValueFormat()
+	{
+		return "CURRVAL('{0}')";
 	}
 }

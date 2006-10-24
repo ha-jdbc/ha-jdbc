@@ -23,6 +23,7 @@ package net.sf.hajdbc.sql;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,7 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.LockManager;
 import net.sf.hajdbc.Operation;
+import net.sf.hajdbc.TableProperties;
 
 /**
  * @author  Paul Ferraro
@@ -207,7 +209,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLock(sql)));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLockList(sql)));
 	}
 
 	/**
@@ -223,7 +225,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLock(sql)));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLockList(sql)));
 	}
 
 	/**
@@ -239,7 +241,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLock(sql)));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLockList(sql)));
 	}
 
 	/**
@@ -255,7 +257,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLock(sql)));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLockList(sql)));
 	}
 
 	/**
@@ -287,9 +289,9 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		Lock lock = this.getLock(sql);
+		List<Lock> lockList = this.getLockList(sql);
 		
-		return ((lock == null) && (this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(sql)) ? this.executeReadFromDatabase(operation) : new ResultSet<T>(this, operation, lock);
+		return (lockList.isEmpty() && (this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(sql)) ? this.executeReadFromDatabase(operation) : new ResultSet<T>(this, operation, lockList);
 	}
 
 	/**
@@ -305,7 +307,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLock(sql)));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLockList(sql)));
 	}
 
 	/**
@@ -321,7 +323,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLock(sql)));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLockList(sql)));
 	}
 
 	/**
@@ -337,7 +339,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLock(sql)));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLockList(sql)));
 	}
 
 	/**
@@ -353,7 +355,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLock(sql)));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLockList(sql)));
 	}
 
 	/**
@@ -737,13 +739,9 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 		return databaseCluster.getDatabaseMetaDataCache().getDatabaseProperties(this.getConnection()).isSelectForUpdateSupported() ? databaseCluster.getDialect().isSelectForUpdate(sql) : false;
 	}
 	
-	protected Lock getLock(String sql) throws SQLException
+	protected List<Lock> getLockList(String sql) throws SQLException
 	{
-		DatabaseCluster databaseCluster = this.getDatabaseCluster();
-		
-		String sequence = databaseCluster.getDialect().parseSequence(sql);
-		
-		return (sequence != null) ? databaseCluster.getLockManager().writeLock(sequence) : null;
+		return this.getLockList(Collections.singletonList(sql));
 	}
 	
 	private List<Lock> getLockList(List<String> sqlList) throws SQLException
@@ -752,27 +750,48 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 		
 		Dialect dialect = databaseCluster.getDialect();
 		
-		Set<String> sequenceSet = new LinkedHashSet<String>(sqlList.size());
+		Set<String> identifierSet = new LinkedHashSet<String>(sqlList.size());
 		
 		for (String sql: this.sqlList)
 		{
-			String sequence = dialect.parseSequence(sql);
-			
-			if (sequence != null)
+			if (databaseCluster.isSequenceDetectionEnabled() && dialect.supportsSequences())
 			{
-				sequenceSet.add(sequence);
+				String sequence = dialect.parseSequence(sql);
+				
+				if (sequence != null)
+				{
+					identifierSet.add(sequence);
+				}
+			}
+			
+			if (databaseCluster.isAutoIncrementDetectionEnabled() && dialect.supportsAutoIncrementColumns())
+			{
+				String table = dialect.parseInsertTable(sql);
+				
+				if (table != null)
+				{
+					TableProperties properties = databaseCluster.getDatabaseMetaDataCache().getDatabaseProperties(this.getConnection()).findTable(table);
+					
+					for (String column: properties.getColumns())
+					{
+						if (dialect.isAutoIncrementing(properties.getColumnProperties(column)))
+						{
+							identifierSet.add(properties.getName());
+							
+							break;
+						}
+					}
+				}
 			}
 		}
 		
-		if (sequenceSet.size() == 0) return java.util.Collections.emptyList();
-		
-		List<Lock> lockList = new ArrayList<Lock>(sequenceSet.size());
+		List<Lock> lockList = new ArrayList<Lock>(identifierSet.size());
 
 		LockManager lockManager = databaseCluster.getLockManager();
 		
-		for (String sequence: sequenceSet)
+		for (String identifier: identifierSet)
 		{
-			lockList.add(lockManager.writeLock(sequence));
+			lockList.add(lockManager.writeLock(identifier));
 		}
 		
 		return lockList;

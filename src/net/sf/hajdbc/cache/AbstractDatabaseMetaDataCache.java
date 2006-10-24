@@ -18,26 +18,24 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc;
+package net.sf.hajdbc.cache;
 
-import java.sql.SQLException;
-import java.util.Collection;
+import net.sf.hajdbc.DatabaseMetaDataCache;
+import net.sf.hajdbc.Dialect;
 
 /**
  * @author Paul Ferraro
  *
  */
-public interface TableProperties
+public abstract class AbstractDatabaseMetaDataCache implements DatabaseMetaDataCache
 {
-	public String getName() throws SQLException;
-	
-	public Collection<String> getColumns() throws SQLException;
-	
-	public ColumnProperties getColumnProperties(String column) throws SQLException;
-	
-	public UniqueConstraint getPrimaryKey() throws SQLException;
-	
-	public Collection<ForeignKeyConstraint> getForeignKeyConstraints() throws SQLException;
-	
-	public Collection<UniqueConstraint> getUniqueConstraints() throws SQLException;	
+	protected Dialect dialect;
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseMetaDataCache#setDialect(net.sf.hajdbc.Dialect)
+	 */
+	public void setDialect(Dialect dialect)
+	{
+		this.dialect = dialect;
+	}
 }

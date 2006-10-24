@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+ <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE status PUBLIC "-//APACHE//DTD Status V1.3//EN" "http://forrest.apache.org/dtd/status-v13.dtd">
 <status>
 	<developers>
@@ -12,6 +12,23 @@
 	</contexts>
 
 	<changes>
+		<release version="1.2-beta-6" date="???">
+			<action type="add" context="src" dev="PF">
+				Added support for auto-incrementing columns.
+			</action>
+			<action type="add" context="src" dev="PF">
+				Added new cluster attributes "detect-sequences" and "detect-auto-increment-columns".
+			</action>
+			<action type="add" context="src" dev="PF">
+				Added dialect implementations for H2, Ingres, and Mckoi.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded Woodstox to 3.0.2.
+			</action>
+			<action type="fix" context="src" dev="PF">
+				Fixed PostgreSQL Blob/Clob handling in differential and full synchronization strategies when large objects require updating.
+			</action>
+		</release>
 		<release version="1.2-beta-5" date="September 22, 2006">
 			<action type="update" context="lib" dev="PF">
 				Upgraded TestNG to 5.2.

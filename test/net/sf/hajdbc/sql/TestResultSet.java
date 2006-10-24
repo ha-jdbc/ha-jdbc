@@ -153,7 +153,7 @@ public class TestResultSet implements java.sql.ResultSet
 			}
 		};
 		
-		this.resultSet = new ResultSet<java.sql.Statement>(this.statement, statementOperation, this.lock);
+		this.resultSet = new ResultSet<java.sql.Statement>(this.statement, statementOperation, Collections.singletonList(this.lock));
 		
 		this.control.verify();
 		this.control.reset();

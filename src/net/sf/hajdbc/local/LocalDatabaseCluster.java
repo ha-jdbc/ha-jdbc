@@ -128,6 +128,8 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	private int maxThreads;
 	private int maxIdle;
 	private Transaction transaction;
+	private boolean autoIncrementDetectionEnabled;
+	private boolean sequenceDetectionEnabled;
 	
 	private MBeanServer server;
 	private Map<String, Database> databaseMap = new ConcurrentHashMap<String, Database>();
@@ -628,6 +630,8 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		
 		this.transactionalExecutor = this.transaction.equals(Transaction.XA) ? new SynchronousExecutor() : this.nonTransactionalExecutor;
 		
+		this.databaseMetaDataCache.setDialect(this.dialect);
+		
 		this.flushMetaDataCache();
 		
 		if (this.failureDetectionSchedule != null)
@@ -715,6 +719,22 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	}
 
 	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#isAutoIncrementDetectionEnabled()
+	 */
+	public boolean isAutoIncrementDetectionEnabled()
+	{
+		return this.autoIncrementDetectionEnabled;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#isSequenceDetectionEnabled()
+	 */
+	public boolean isSequenceDetectionEnabled()
+	{
+		return this.sequenceDetectionEnabled;
+	}
+
+	/**
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -735,7 +755,6 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		
 		return this.id.equals(databaseCluster.getId());
 	}
-	
 	
 	/**
 	 * @see java.lang.Object#hashCode()

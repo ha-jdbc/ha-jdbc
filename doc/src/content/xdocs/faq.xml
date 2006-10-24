@@ -178,22 +178,6 @@
 		</faq>
 		<faq>
 			<question>
-				When I use distributable mode, my log file is flooded with messages like:<br/>
-				<code>[timestamp] [org.jgroups.protocols.UDP] WARN: discarded message from different group "XXX" (our group is "YYY"). Sender was[ip-address]:[port]</code><br/>
-				Is this normal?
-			</question>
-			<answer>
-				Yes, this is normal, albeit annoying.
-				<p>
-					These messages occur when you have 2 or more JGroups channels listening on the same address and port.
-					HA-JDBC uses two channels using the same jgroups configuration (thus the same address and port) for each database cluster.
-					I'm not entirely sure why JGroups uses a WARN log level here - they should probably use debug/fine level instead.
-					You can suppress these log messages by specifying a threshold of ERROR in your logging configuration for the "org.jgroups" logger/category.
-				</p>
-			</answer>
-		</faq>
-		<faq>
-			<question>
 				JBoss throws a javax.management.MalformedObjectNameException when I try to execute any HA-JDBC mbean method via the JBoss jmx-console.
 				What is wrong here?
 			</question>
@@ -203,6 +187,22 @@
 				<p>
 					JBoss users should use Sun's JConsole or <a href="doc.html#jmx">other</a> 3rd-party JMX administration console instead.
 				</p>
+			</answer>
+		</faq>
+		<faq>
+			<question>
+				Is it safe to use stored procedures with HA-JDBC?
+			</question>
+			<answer>
+				Yes, but only if the stored procedure does not reference sequences or insert rows using auto-increment columns.
+			</answer>
+		</faq>
+		<faq>
+			<question>
+				Is it safe to use HA-JDBC in auto-commit mode?
+			</question>
+			<answer>
+				No.  
 			</answer>
 		</faq>
 	</faqsection>

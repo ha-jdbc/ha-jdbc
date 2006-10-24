@@ -69,6 +69,7 @@ public final class Messages
 	public static final String SHUT_DOWN = "shut-down";
 	public static final String SQL_OBJECT_INIT_FAILED = "sql-object-init-failed";
 	public static final String STATEMENT_FAILED = "statement-failed";
+	public static final String TABLE_LOOKUP_FAILED = "table-lookup-failed";
 	public static final String TABLE_LOCK_ACQUIRE = "table-lock-acquire";
 	public static final String TABLE_LOCK_RELEASE = "table-lock-release";
 	public static final String UPDATE_COUNT = "update-count";

@@ -31,27 +31,46 @@ public class ColumnPropertiesImpl implements ColumnProperties
 	private String column;
 	private int type;
 	private String nativeType;
+	private String remarks;
 	
-	public ColumnPropertiesImpl(String column, int type, String nativeType)
+	public ColumnPropertiesImpl(String column, int type, String nativeType, String remarks)
 	{
 		this.column = column;
 		this.type = type;
 		this.nativeType = nativeType;
+		this.remarks = remarks;
 	}
 	
-	public String getColumn()
+	/**
+	 * @see net.sf.hajdbc.ColumnProperties#getName()
+	 */
+	public String getName()
 	{
 		return this.column;
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.ColumnProperties#getType()
+	 */
 	public int getType()
 	{
 		return this.type;
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.ColumnProperties#getNativeType()
+	 */
 	public String getNativeType()
 	{
 		return this.nativeType;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.ColumnProperties#getRemark()
+	 */
+	public String getRemarks()
+	{
+		return this.remarks;
 	}
 
 	/**
@@ -60,7 +79,7 @@ public class ColumnPropertiesImpl implements ColumnProperties
 	@Override
 	public boolean equals(Object object)
 	{
-		return ColumnProperties.class.cast(object).getColumn().equals(this.column);
+		return ColumnProperties.class.cast(object).getName().equals(this.column);
 	}
 
 	/**

@@ -24,10 +24,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
-import java.util.Map;
-
-import net.sf.hajdbc.util.Strings;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Dialect for DB2 (commercial).
@@ -37,21 +36,21 @@ import net.sf.hajdbc.util.Strings;
 public class DB2Dialect extends DefaultDialect
 {
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#getSimpleSQL()
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#executeFunctionKeyword()
 	 */
 	@Override
-	public String getSimpleSQL()
+	protected String executeFunctionFormat()
 	{
-		return "VALUES 1";
+		return "VALUES {0}";
 	}
 
 	/**
 	 * @see net.sf.hajdbc.dialect.DefaultDialect#getSequences(java.sql.Connection)
 	 */
 	@Override
-	public Map<String, Long> getSequences(Connection connection) throws SQLException
+	public Collection<String> getSequences(Connection connection) throws SQLException
 	{
-		Map<String, Long> sequenceMap = new HashMap<String, Long>();
+		List<String> sequenceList = new LinkedList<String>();
 		
 		Statement statement = connection.createStatement();
 		
@@ -59,30 +58,13 @@ public class DB2Dialect extends DefaultDialect
 		
 		while (resultSet.next())
 		{
-			sequenceMap.put(resultSet.getString(1), null);
+			sequenceList.add(resultSet.getString(1));
 		}
 		
 		resultSet.close();
-		
-		if (!sequenceMap.isEmpty())
-		{
-			resultSet = statement.executeQuery("VALUES (PREVVAL FOR " + Strings.join(sequenceMap.keySet(), ", PREVVAL FOR ") + ")");
-			
-			resultSet.next();
-			
-			int index = 0;
-			
-			for (String sequence: sequenceMap.keySet())
-			{
-				sequenceMap.put(sequence, resultSet.getLong(++index));
-			}
-			
-			resultSet.close();
-		}
-		
 		statement.close();
 		
-		return sequenceMap;
+		return sequenceList;
 	}
 
 	/**
@@ -92,5 +74,14 @@ public class DB2Dialect extends DefaultDialect
 	protected String sequencePattern()
 	{
 		return "(?:(?:NEXT)|(?:PREV))VAL\\s+FOR\\s+(\\S+)";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#currentSequenceValueFormat()
+	 */
+	@Override
+	protected String currentSequenceValueFormat()
+	{
+		return "PREVVAL FOR {0}";
 	}
 }

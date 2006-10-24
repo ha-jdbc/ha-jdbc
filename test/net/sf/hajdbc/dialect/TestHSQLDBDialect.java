@@ -21,10 +21,10 @@
 package net.sf.hajdbc.dialect;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Map;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ForeignKeyConstraint;
@@ -36,11 +36,9 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
+@Test
 public class TestHSQLDBDialect extends TestDefaultDialect
 {
-	private Statement statement = this.control.createMock(Statement.class);
-	private ResultSet resultSet = this.control.createMock(ResultSet.class);
-	
 	@Override
 	protected Dialect createDialect()
 	{
@@ -68,18 +66,14 @@ public class TestHSQLDBDialect extends TestDefaultDialect
 	 */
 	@Override
 	@Test(dataProvider = "connection")
-	public Map<String, Long> getSequences(Connection connection) throws SQLException
+	public Collection<String> getSequences(Connection connection) throws SQLException
 	{
 		EasyMock.expect(connection.createStatement()).andReturn(this.statement);
-		EasyMock.expect(this.statement.executeQuery("SELECT SEQUENCE_SCHEMA, SEQUENCE_NAME, NEXT_VALUE FROM INFORMATION_SCHEMA.SYSTEM_SEQUENCES")).andReturn(this.resultSet);
+		EasyMock.expect(this.statement.executeQuery("SELECT SEQUENCE_NAME FROM INFORMATION_SCHEMA.SYSTEM_SEQUENCES")).andReturn(this.resultSet);
 		EasyMock.expect(this.resultSet.next()).andReturn(true);
-		EasyMock.expect(this.resultSet.getString(1)).andReturn("schema");
-		EasyMock.expect(this.resultSet.getString(2)).andReturn("sequence1");
-		EasyMock.expect(this.resultSet.getLong(3)).andReturn(1L);
+		EasyMock.expect(this.resultSet.getString(1)).andReturn("sequence1");
 		EasyMock.expect(this.resultSet.next()).andReturn(true);
-		EasyMock.expect(this.resultSet.getString(1)).andReturn("schema");
-		EasyMock.expect(this.resultSet.getString(2)).andReturn("sequence2");
-		EasyMock.expect(this.resultSet.getLong(3)).andReturn(2L);
+		EasyMock.expect(this.resultSet.getString(1)).andReturn("sequence2");
 		EasyMock.expect(this.resultSet.next()).andReturn(false);
 		
 		this.resultSet.close();
@@ -87,22 +81,29 @@ public class TestHSQLDBDialect extends TestDefaultDialect
 		
 		this.control.replay();
 		
-		Map<String, Long> sequenceMap = this.dialect.getSequences(connection);
+		Collection<String> sequences = this.dialect.getSequences(connection);
 		
 		this.control.verify();
 		
-		assert sequenceMap.size() == 2 : sequenceMap;
-		assert sequenceMap.get("schema.sequence1").equals(1L) : sequenceMap;
-		assert sequenceMap.get("schema.sequence2").equals(2L) : sequenceMap;
+		assert sequences.size() == 2 : sequences;
 		
-		return sequenceMap;
+		Iterator<String> iterator = sequences.iterator();
+		String sequence = iterator.next();
+		
+		assert sequence.equals("sequence1") : sequence;
+		
+		sequence = iterator.next();
+		
+		assert sequence.equals("sequence2") : sequence;
+		
+		return sequences;
 	}
 
 	/**
 	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getSimpleSQL()
 	 */
 	@Override
-	public String getSimpleSQL()
+	public String getSimpleSQL() throws SQLException
 	{
 		this.control.replay();
 		
@@ -110,7 +111,53 @@ public class TestHSQLDBDialect extends TestDefaultDialect
 		
 		this.control.verify();
 		
-		assert sql.equals("CALL NOW()") : sql;
+		assert sql.equals("CALL CURRENT_TIMESTAMP") : sql;
+		
+		return sql;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#getDefaultSchemas(java.sql.Connection)
+	 */
+	@Override
+	@Test(dataProvider = "connection")
+	public List<String> getDefaultSchemas(Connection connection) throws SQLException
+	{
+		EasyMock.expect(connection.createStatement()).andReturn(this.statement);
+		EasyMock.expect(this.statement.executeQuery("CALL CURRENT_USER")).andReturn(this.resultSet);
+		EasyMock.expect(this.resultSet.next()).andReturn(false);
+		EasyMock.expect(this.resultSet.getString(1)).andReturn("user");
+
+		this.resultSet.close();
+		this.statement.close();
+		
+		this.control.replay();
+		
+		List<String> schemaList = this.dialect.getDefaultSchemas(connection);
+		
+		this.control.verify();
+		
+		assert schemaList.size() == 1 : schemaList.size();
+		
+		assert schemaList.get(0).equals("user") : schemaList.get(0);
+		
+		return schemaList;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.Dialect#getCurrentSequenceValueSQL(java.lang.String)
+	 */
+	@Override
+	@Test(dataProvider = "sequence")
+	public String getCurrentSequenceValueSQL(String sequence) throws SQLException
+	{
+		this.control.replay();
+		
+		String sql = this.dialect.getCurrentSequenceValueSQL(sequence);
+		
+		this.control.verify();
+		
+		assert sql.equals("SELECT NEXT_VALUE - 1 FROM INFORMATION_SCHEMA.SYSTEM_SEQUENCES WHERE SEQUENCE_NAME = 'sequence'") : sql;
 		
 		return sql;
 	}

@@ -23,7 +23,6 @@ package net.sf.hajdbc.cache;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.DatabaseProperties;
 
 
@@ -34,7 +33,7 @@ import net.sf.hajdbc.DatabaseProperties;
  * @author Paul Ferraro
  * @since 1.2
  */
-public class ThreadLocalDatabaseMetaDataCache implements DatabaseMetaDataCache
+public class ThreadLocalDatabaseMetaDataCache extends AbstractDatabaseMetaDataCache
 {
 	private static ThreadLocal<DatabaseProperties> threadLocal = new ThreadLocal<DatabaseProperties>();
 
@@ -57,7 +56,7 @@ public class ThreadLocalDatabaseMetaDataCache implements DatabaseMetaDataCache
 		
 		if (properties == null)
 		{
-			properties = new LazyDatabaseProperties();
+			properties = new LazyDatabaseProperties(this.dialect);
 			
 			threadLocal.set(properties);
 		}

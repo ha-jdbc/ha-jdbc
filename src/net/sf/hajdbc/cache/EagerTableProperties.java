@@ -48,7 +48,7 @@ public class EagerTableProperties implements TableProperties
 		this.primaryKey = support.getPrimaryKey(metaData, schema, table);
 		this.uniqueConstraints = support.getUniqueConstraints(metaData, schema, table);
 		this.foreignKeyConstraints = support.getForeignKeyConstraints(metaData, schema, table);
-		this.name = support.getQualifiedNameForDML(metaData, schema, table);
+		this.name = support.getQualifiedNameForDML(schema, table);
 	}
 
 	/**
@@ -60,9 +60,9 @@ public class EagerTableProperties implements TableProperties
 	}
 
 	/**
-	 * @see net.sf.hajdbc.TableProperties#getColumn(java.lang.String)
+	 * @see net.sf.hajdbc.TableProperties#getColumnProperties(java.lang.String)
 	 */
-	public ColumnProperties getColumn(String column)
+	public ColumnProperties getColumnProperties(String column)
 	{
 		return this.columnMap.get(column);
 	}

@@ -18,26 +18,30 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc;
-
-import java.sql.SQLException;
-import java.util.Collection;
+package net.sf.hajdbc.dialect;
 
 /**
+ * Dialect for <a href="http://mckoi.com">Mckoi</a>.
+ * 
  * @author Paul Ferraro
- *
  */
-public interface TableProperties
+public class MckoiDialect extends DefaultDialect
 {
-	public String getName() throws SQLException;
-	
-	public Collection<String> getColumns() throws SQLException;
-	
-	public ColumnProperties getColumnProperties(String column) throws SQLException;
-	
-	public UniqueConstraint getPrimaryKey() throws SQLException;
-	
-	public Collection<ForeignKeyConstraint> getForeignKeyConstraints() throws SQLException;
-	
-	public Collection<UniqueConstraint> getUniqueConstraints() throws SQLException;	
+	/**
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#supportsAutoIncrementColumns()
+	 */
+	@Override
+	public boolean supportsAutoIncrementColumns()
+	{
+		return false;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#sequencePattern()
+	 */
+	@Override
+	protected String sequencePattern()
+	{
+		return "(?:(?:CURR)|(?:NEXT))VAL\\s*\\(\\s*'(\\S+)'\\s*\\)";
+	}
 }

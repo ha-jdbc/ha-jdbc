@@ -24,10 +24,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
-import java.util.Map;
-
-import net.sf.hajdbc.util.Strings;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Dialect for <a href="firebird.sourceforge.net">Firebird</a>.
@@ -36,12 +35,12 @@ import net.sf.hajdbc.util.Strings;
 public class FirebirdDialect extends DefaultDialect
 {
 	/**
-	 * @see net.sf.hajdbc.dialect.DefaultDialect#getSimpleSQL()
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#dummyTable()
 	 */
 	@Override
-	public String getSimpleSQL()
+	protected String dummyTable()
 	{
-		return "SELECT 1 FROM RDB$DATABASE";
+		return "RDB$DATABASE";
 	}
 
 	/**
@@ -58,9 +57,9 @@ public class FirebirdDialect extends DefaultDialect
 	 * @see net.sf.hajdbc.dialect.DefaultDialect#getSequences(java.sql.Connection)
 	 */
 	@Override
-	public Map<String, Long> getSequences(Connection connection) throws SQLException
+	public Collection<String> getSequences(Connection connection) throws SQLException
 	{
-		Map<String, Long> sequenceMap = new HashMap<String, Long>();
+		List<String> sequenceList = new LinkedList<String>();
 		
 		Statement statement = connection.createStatement();
 		
@@ -68,30 +67,22 @@ public class FirebirdDialect extends DefaultDialect
 		
 		while (resultSet.next())
 		{
-			sequenceMap.put(resultSet.getString(1), null);
+			sequenceList.add(resultSet.getString(1));
 		}
 		
 		resultSet.close();
-		
-		if (!sequenceMap.isEmpty())
-		{
-			resultSet = statement.executeQuery("SELECT GEN_ID(" + Strings.join(sequenceMap.keySet(), ", 0), GEN_ID(") + ", 0) FROM RDB$DATABASE");
-			
-			resultSet.next();
-			
-			int index = 0;
-			
-			for (String sequence: sequenceMap.keySet())
-			{
-				sequenceMap.put(sequence, resultSet.getLong(++index));
-			}
-			
-			resultSet.close();
-		}
-		
 		statement.close();
 		
-		return sequenceMap;
+		return sequenceList;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#supportsAutoIncrementColumns()
+	 */
+	@Override
+	public boolean supportsAutoIncrementColumns()
+	{
+		return false;
 	}
 
 	/**
@@ -111,5 +102,14 @@ public class FirebirdDialect extends DefaultDialect
 	protected String selectForUpdatePattern()
 	{
 		return "SELECT\\s+.+\\s+WITH\\s+LOCK";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.DefaultDialect#currentSequenceValueFormat()
+	 */
+	@Override
+	protected String currentSequenceValueFormat()
+	{
+		return "GEN_ID({0}, 0)";
 	}
 }

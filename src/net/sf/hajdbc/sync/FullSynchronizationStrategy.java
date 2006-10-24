@@ -25,9 +25,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -163,9 +163,9 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 					{
 						index += 1;
 						
-						Object object = resultSet.getObject(index);
+						int type = dialect.getColumnType(table.getColumnProperties(column));
 						
-						int type = dialect.getColumnType(table.getColumn(column));
+						Object object = this.getObject(resultSet, index, type);
 						
 						if (resultSet.wasNull())
 						{
@@ -239,18 +239,38 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		statement.executeBatch();
 		statement.clearBatch();
 		
-		Map<String, Long> activeSequenceMap = dialect.getSequences(activeConnection);
-		
-		for (Map.Entry<String, Long> sequenceMapEntry: activeSequenceMap.entrySet())
+		if (dialect.supportsSequences())
 		{
-			String sql = dialect.getAlterSequenceSQL(sequenceMapEntry.getKey(), sequenceMapEntry.getValue());
+			Collection<String> sequences = dialect.getSequences(activeConnection);
 			
-			logger.debug(sql);
+			Statement activeStatement = activeConnection.createStatement();
 			
-			statement.addBatch(sql);
+			for (String sequence: sequences)
+			{
+				String sql = dialect.getCurrentSequenceValueSQL(sequence);
+				
+				logger.debug(sql);
+				
+				ResultSet resultSet = activeStatement.executeQuery(sql);
+				
+				resultSet.next();
+				
+				long value = resultSet.getLong(1);
+				
+				resultSet.close();
+				
+				sql = dialect.getAlterSequenceSQL(sequence, value);
+				
+				logger.debug(sql);
+				
+				statement.addBatch(sql);
+			}
+			
+			activeStatement.close();
+			
+			statement.executeBatch();
 		}
 		
-		statement.executeBatch();
 		statement.close();
 	}
 	
@@ -260,6 +280,25 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 	public boolean requiresTableLocking()
 	{
 		return true;
+	}
+
+	private Object getObject(ResultSet resultSet, int index, int type) throws SQLException
+	{
+		switch (type)
+		{
+			case Types.BLOB:
+			{
+				return resultSet.getBlob(index);
+			}
+			case Types.CLOB:
+			{
+				return resultSet.getClob(index);
+			}
+			default:
+			{
+				return resultSet.getObject(index);
+			}
+		}
 	}
 	
 	private void rollback(Connection connection)

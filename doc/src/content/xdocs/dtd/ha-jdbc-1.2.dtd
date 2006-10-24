@@ -53,6 +53,8 @@
 	min-threads CDATA "0"
 	max-threads CDATA "100"
 	max-idle CDATA "60"
+	detect-auto-increment-columns (true|false) "true"
+	detect-sequences (true|false) "true"
 >
 
 <!ENTITY % authentication-info "(user, password)?">

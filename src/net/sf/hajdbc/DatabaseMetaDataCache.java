@@ -43,4 +43,6 @@ public interface DatabaseMetaDataCache
 	 * @throws SQLException if database properties could not be fetched.
 	 */
 	public DatabaseProperties getDatabaseProperties(Connection connection) throws SQLException;
+	
+	public void setDialect(Dialect dialect);
 }

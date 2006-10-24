@@ -45,14 +45,17 @@ public class TestDialectFactory
 	{
 		this.assertDialect(null, DefaultDialect.class);
 		this.assertDialect("net.sf.hajdbc.dialect.DefaultDialect", DefaultDialect.class);
+
+		this.assertDialect("default", DefaultDialect.class);
 		this.assertDialect("db2", DB2Dialect.class);
 		this.assertDialect("derby", DerbyDialect.class);
 		this.assertDialect("firebird", DefaultDialect.class);
+		this.assertDialect("h2", HSQLDBDialect.class);
 		this.assertDialect("hsqldb", HSQLDBDialect.class);
-		this.assertDialect("ingres", DefaultDialect.class);
+		this.assertDialect("ingres", IngresDialect.class);
 		this.assertDialect("maxdb", MaxDBDialect.class);
-		this.assertDialect("mckoi", DefaultDialect.class);
-		this.assertDialect("mysql", DefaultDialect.class);
+		this.assertDialect("mckoi", MckoiDialect.class);
+		this.assertDialect("mysql", MySQLDialect.class);
 		this.assertDialect("oracle", MaxDBDialect.class);
 		this.assertDialect("postgresql", PostgreSQLDialect.class);
 

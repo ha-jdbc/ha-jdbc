@@ -21,12 +21,9 @@
 package net.sf.hajdbc.dialect;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Types;
-import java.util.Map;
+import java.util.List;
 
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.Dialect;
@@ -41,10 +38,6 @@ import org.testng.annotations.Test;
  */
 public class TestPostgreSQLDialect extends TestDefaultDialect
 {
-	private DatabaseMetaData metaData = this.control.createMock(DatabaseMetaData.class);
-	private Statement statement = this.control.createMock(Statement.class);
-	private ResultSet resultSet = this.control.createMock(ResultSet.class);
-
 	@Override
 	protected Dialect createDialect()
 	{
@@ -96,48 +89,6 @@ public class TestPostgreSQLDialect extends TestDefaultDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getSequences(java.sql.Connection)
-	 */
-	@Override
-	@Test(dataProvider = "connection")
-	public Map<String, Long> getSequences(Connection connection) throws SQLException
-	{
-		EasyMock.expect(connection.getCatalog()).andReturn(null);
-		EasyMock.expect(connection.getMetaData()).andReturn(this.metaData);
-		EasyMock.expect(this.metaData.getTables("", null, "%", PostgreSQLDialect.SEQUENCES)).andReturn(this.resultSet);
-		EasyMock.expect(this.resultSet.next()).andReturn(true);
-		EasyMock.expect(this.resultSet.getString("TABLE_SCHEM")).andReturn("schema");
-		EasyMock.expect(this.resultSet.getString("TABLE_NAME")).andReturn("sequence1");
-		EasyMock.expect(this.resultSet.next()).andReturn(true);
-		EasyMock.expect(this.resultSet.getString("TABLE_SCHEM")).andReturn("schema");
-		EasyMock.expect(this.resultSet.getString("TABLE_NAME")).andReturn("sequence2");
-		EasyMock.expect(this.resultSet.next()).andReturn(false);
-		
-		this.resultSet.close();
-		
-		EasyMock.expect(connection.createStatement()).andReturn(this.statement);
-		EasyMock.expect(this.statement.executeQuery("SELECT CURRVAL('schema.sequence1'), CURRVAL('schema.sequence2')")).andReturn(this.resultSet);
-		EasyMock.expect(this.resultSet.next()).andReturn(true);
-		EasyMock.expect(this.resultSet.getLong(1)).andReturn(1L);
-		EasyMock.expect(this.resultSet.getLong(2)).andReturn(2L);
-		
-		this.resultSet.close();
-		this.statement.close();
-		
-		this.control.replay();
-		
-		Map<String, Long> sequenceMap = this.dialect.getSequences(connection);
-		
-		this.control.verify();
-		
-		assert sequenceMap.size() == 2 : sequenceMap;
-		assert sequenceMap.get("schema.sequence1").equals(1L) : sequenceMap;
-		assert sequenceMap.get("schema.sequence2").equals(2L) : sequenceMap;
-		
-		return sequenceMap;
-	}
-
-	/**
 	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getTruncateTableSQL(net.sf.hajdbc.TableProperties)
 	 */
 	@Override
@@ -153,6 +104,24 @@ public class TestPostgreSQLDialect extends TestDefaultDialect
 		this.control.verify();
 		
 		assert sql.equals("TRUNCATE TABLE table");
+		
+		return sql;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getCurrentSequenceValueSQL(java.lang.String)
+	 */
+	@Override
+	@Test(dataProvider = "sequence")
+	public String getCurrentSequenceValueSQL(String sequence) throws SQLException
+	{
+		this.control.replay();
+		
+		String sql = this.dialect.getCurrentSequenceValueSQL(sequence);
+		
+		this.control.verify();
+		
+		assert sql.equals("SELECT nextval('sequence')");
 		
 		return sql;
 	}
@@ -191,5 +160,41 @@ public class TestPostgreSQLDialect extends TestDefaultDialect
 		assert sequence == null : sequence;
 		
 		return sequence;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.TestDefaultDialect#getDefaultSchemas(java.sql.Connection)
+	 */
+	@Override
+	public List<String> getDefaultSchemas(Connection connection) throws SQLException
+	{
+		EasyMock.expect(connection.createStatement()).andReturn(this.statement);
+		EasyMock.expect(this.statement.executeQuery("SHOW search_path")).andReturn(this.resultSet);
+		EasyMock.expect(this.resultSet.next()).andReturn(false);
+		EasyMock.expect(this.resultSet.getString(1)).andReturn("$user,public");
+
+		this.resultSet.close();
+		this.statement.close();
+		
+		EasyMock.expect(connection.createStatement()).andReturn(this.statement);
+		EasyMock.expect(this.statement.executeQuery("SELECT CURRENT_USER")).andReturn(this.resultSet);
+		EasyMock.expect(this.resultSet.next()).andReturn(false);
+		EasyMock.expect(this.resultSet.getString(1)).andReturn("user");
+
+		this.resultSet.close();
+		this.statement.close();
+		
+		this.control.replay();
+		
+		List<String> schemaList = this.dialect.getDefaultSchemas(connection);
+		
+		this.control.verify();
+		
+		assert schemaList.size() == 2 : schemaList.size();
+		
+		assert schemaList.get(0).equals("user") : schemaList.get(0);
+		assert schemaList.get(1).equals("public") : schemaList.get(1);
+		
+		return schemaList;
 	}
 }

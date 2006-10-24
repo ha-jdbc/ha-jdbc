@@ -27,8 +27,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.TreeMap;
 
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.DatabaseMetaDataCache;
@@ -88,6 +88,7 @@ public class TestFullSynchronizationStrategy implements SynchronizationStrategy
 		PreparedStatement insertStatement = this.control.createMock(PreparedStatement.class);
 		ColumnProperties column1 = this.control.createMock(ColumnProperties.class);
 		ColumnProperties column2 = this.control.createMock(ColumnProperties.class);
+		Statement activeStatement = this.control.createMock(Statement.class);
 		
 		inactiveConnection.setAutoCommit(true);
 		
@@ -126,17 +127,34 @@ public class TestFullSynchronizationStrategy implements SynchronizationStrategy
 		
 		EasyMock.expect(resultSet.next()).andReturn(true);
 		
-		EasyMock.expect(resultSet.getObject(1)).andReturn(1);
-		EasyMock.expect(table.getColumn("column1")).andReturn(column1);
+		EasyMock.expect(table.getColumnProperties("column1")).andReturn(column1);
 		EasyMock.expect(dialect.getColumnType(column1)).andReturn(Types.INTEGER);
+		EasyMock.expect(resultSet.getObject(1)).andReturn(1);
 		EasyMock.expect(resultSet.wasNull()).andReturn(false);
 		insertStatement.setObject(1, 1, Types.INTEGER);
 		
-		EasyMock.expect(resultSet.getObject(2)).andReturn(null);
-		EasyMock.expect(table.getColumn("column2")).andReturn(column2);
+		EasyMock.expect(table.getColumnProperties("column2")).andReturn(column2);
 		EasyMock.expect(dialect.getColumnType(column2)).andReturn(Types.VARCHAR);
+		EasyMock.expect(resultSet.getObject(2)).andReturn("");
+		EasyMock.expect(resultSet.wasNull()).andReturn(false);
+		insertStatement.setObject(2, "", Types.VARCHAR);
+		
+		insertStatement.addBatch();
+		insertStatement.clearParameters();
+		
+		EasyMock.expect(resultSet.next()).andReturn(true);
+		
+		EasyMock.expect(table.getColumnProperties("column1")).andReturn(column1);
+		EasyMock.expect(dialect.getColumnType(column1)).andReturn(Types.BLOB);
+		EasyMock.expect(resultSet.getBlob(1)).andReturn(null);
 		EasyMock.expect(resultSet.wasNull()).andReturn(true);
-		insertStatement.setNull(2, Types.VARCHAR);
+		insertStatement.setNull(1, Types.BLOB);
+		
+		EasyMock.expect(table.getColumnProperties("column2")).andReturn(column2);
+		EasyMock.expect(dialect.getColumnType(column2)).andReturn(Types.CLOB);
+		EasyMock.expect(resultSet.getClob(2)).andReturn(null);
+		EasyMock.expect(resultSet.wasNull()).andReturn(true);
+		insertStatement.setNull(2, Types.CLOB);
 		
 		insertStatement.addBatch();
 		insertStatement.clearParameters();
@@ -159,19 +177,42 @@ public class TestFullSynchronizationStrategy implements SynchronizationStrategy
 		EasyMock.expect(statement.executeBatch()).andReturn(null);
 		statement.clearBatch();
 		
-		TreeMap<String, Long> activeSequenceMap = new TreeMap<String, Long>();
-		activeSequenceMap.put("sequence1", 1L);
-		activeSequenceMap.put("sequence2", 2L);
-
-		EasyMock.expect(dialect.getSequences(activeConnection)).andReturn(activeSequenceMap);
-
-		EasyMock.expect(dialect.getAlterSequenceSQL("sequence1", 1L)).andReturn("alter sequence");
-		statement.addBatch("alter sequence");
+		EasyMock.expect(dialect.supportsSequences()).andReturn(true);
 		
-		EasyMock.expect(dialect.getAlterSequenceSQL("sequence2", 2L)).andReturn("alter sequence");
-		statement.addBatch("alter sequence");
+		Collection<String> sequenceList = Arrays.asList(new String[] { "sequence1", "sequence2" });
+		
+		EasyMock.expect(dialect.getSequences(activeConnection)).andReturn(sequenceList);
+
+		EasyMock.expect(activeConnection.createStatement()).andReturn(activeStatement);
+
+		EasyMock.expect(dialect.getCurrentSequenceValueSQL("sequence1")).andReturn("sequence1 current value");
+		
+		EasyMock.expect(activeStatement.executeQuery("sequence1 current value")).andReturn(resultSet);
+		EasyMock.expect(resultSet.next()).andReturn(true);
+		EasyMock.expect(resultSet.getLong(1)).andReturn(1L);
+		
+		resultSet.close();
+
+		EasyMock.expect(dialect.getAlterSequenceSQL("sequence1", 1L)).andReturn("alter sequence1");
+		
+		statement.addBatch("alter sequence1");
+
+		EasyMock.expect(dialect.getCurrentSequenceValueSQL("sequence2")).andReturn("sequence2 current value");
+		
+		EasyMock.expect(activeStatement.executeQuery("sequence2 current value")).andReturn(resultSet);
+		EasyMock.expect(resultSet.next()).andReturn(true);
+		EasyMock.expect(resultSet.getLong(1)).andReturn(2L);
+		
+		resultSet.close();
+
+		EasyMock.expect(dialect.getAlterSequenceSQL("sequence2", 2L)).andReturn("alter sequence2");
+		
+		statement.addBatch("alter sequence2");
+		
+		activeStatement.close();
 		
 		EasyMock.expect(statement.executeBatch()).andReturn(null);
+
 		statement.close();
 		
 		this.control.replay();

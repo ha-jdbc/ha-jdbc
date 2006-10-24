@@ -23,7 +23,6 @@ package net.sf.hajdbc.cache;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.DatabaseProperties;
 
 
@@ -34,7 +33,7 @@ import net.sf.hajdbc.DatabaseProperties;
  * @author Paul Ferraro
  * @since 1.2
  */
-public class LazyDatabaseMetaDataCache implements DatabaseMetaDataCache
+public class LazyDatabaseMetaDataCache extends AbstractDatabaseMetaDataCache
 {
 	private DatabaseProperties properties;
 	
@@ -45,7 +44,7 @@ public class LazyDatabaseMetaDataCache implements DatabaseMetaDataCache
 	{
 		LazyDatabaseProperties.setConnection(connection);
 		
-		this.properties = new LazyDatabaseProperties();
+		this.properties = new LazyDatabaseProperties(this.dialect);
 	}
 
 	/**

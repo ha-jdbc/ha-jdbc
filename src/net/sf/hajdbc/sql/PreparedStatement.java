@@ -36,6 +36,7 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Database;
@@ -114,7 +115,7 @@ public class PreparedStatement<T extends java.sql.PreparedStatement> extends Sta
 			}
 		};
 		
-		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLock(this.sql)));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLockList(this.sql)));
 	}
 
 	/**
@@ -130,9 +131,9 @@ public class PreparedStatement<T extends java.sql.PreparedStatement> extends Sta
 			}
 		};
 
-		Lock lock = this.getLock(this.sql);
+		List<Lock> lockList = this.getLockList(this.sql);
 		
-		return ((lock == null) && (this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(this.sql)) ? this.executeReadFromDatabase(operation) : new ResultSet<T>(this, operation, lock);
+		return (lockList.isEmpty() && (this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(this.sql)) ? this.executeReadFromDatabase(operation) : new ResultSet<T>(this, operation, lockList);
 	}
 
 	/**
@@ -148,7 +149,7 @@ public class PreparedStatement<T extends java.sql.PreparedStatement> extends Sta
 			}
 		};
 		
-		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLock(this.sql)));
+		return this.firstValue(this.executeTransactionalWriteToDatabase(operation, this.getLockList(this.sql)));
 	}
 
 	/**
