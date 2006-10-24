@@ -291,7 +291,6 @@ public class DatabaseMetaDataSupport
 
 	/**
 	 * Returns the schema qualified name of the specified table suitable for use in a data modification language (DML) statement.
-	 * @param metaData a DatabaseMetaData implementation
 	 * @param schema a schema name, possibly null
 	 * @param table a table name
 	 * @return a Collection of unique constraints.
@@ -311,7 +310,6 @@ public class DatabaseMetaDataSupport
 
 	/**
 	 * Returns the schema qualified name of the specified table suitable for use in a data definition language (DDL) statement.
-	 * @param metaData a DatabaseMetaData implementation
 	 * @param schema a schema name, possibly null
 	 * @param table a table name
 	 * @return a Collection of unique constraints.

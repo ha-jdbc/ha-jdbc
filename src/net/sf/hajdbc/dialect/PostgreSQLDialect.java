@@ -42,7 +42,7 @@ public class PostgreSQLDialect extends StandardDialect
 	/**
 	 * PostgreSQL uses a schema search path to locate unqualified table names.
 	 * The default search path is [$user,public], where $user is the current user.
-	 * @see net.sf.hajdbc.dialect.StandardDialect#getDefaultSchemas()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getDefaultSchemas(java.sql.Connection)
 	 */
 	@Override
 	public List<String> getDefaultSchemas(Connection connection) throws SQLException

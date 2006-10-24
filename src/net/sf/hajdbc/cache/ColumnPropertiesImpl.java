@@ -66,7 +66,7 @@ public class ColumnPropertiesImpl implements ColumnProperties
 	}
 
 	/**
-	 * @see net.sf.hajdbc.ColumnProperties#getRemark()
+	 * @see net.sf.hajdbc.ColumnProperties#getRemarks()
 	 */
 	public String getRemarks()
 	{

@@ -37,7 +37,7 @@ import java.util.List;
 public class HSQLDBDialect extends StandardDialect
 {
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#executeFunctionKeyword()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#executeFunctionFormat()
 	 */
 	@Override
 	protected String executeFunctionFormat()

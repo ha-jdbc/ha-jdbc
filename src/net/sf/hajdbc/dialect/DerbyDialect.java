@@ -35,7 +35,7 @@ import net.sf.hajdbc.TableProperties;
 public class DerbyDialect extends StandardDialect
 {
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#executeFunctionKeyword()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#executeFunctionFormat()
 	 */
 	@Override
 	protected String executeFunctionFormat()

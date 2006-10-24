@@ -174,7 +174,7 @@ public class StandardDialect implements Dialect
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Dialect#parseAutoIncrementingInsertTable(java.lang.String)
+	 * @see net.sf.hajdbc.Dialect#parseInsertTable(java.lang.String)
 	 */
 	public String parseInsertTable(String sql)
 	{
@@ -182,7 +182,7 @@ public class StandardDialect implements Dialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getDefaultSchemas()
+	 * @see net.sf.hajdbc.Dialect#getDefaultSchemas(java.sql.Connection)
 	 */
 	public List<String> getDefaultSchemas(Connection connection) throws SQLException
 	{
@@ -354,9 +354,8 @@ public class StandardDialect implements Dialect
 	}
 	
 	/**
-	 * Although the SQL standard does not provide a mechanism for retrieving the current value of a sequence.
-	 * If it did, it would probably look like this.
-	 * @return
+	 * Although the SQL standard does not provide a mechanism for retrieving the current value of a sequence, if one did exist, it would probably look like this.
+	 * @return a sql function pattern for retrieving the current value of a sequence.
 	 */
 	protected String currentSequenceValueFormat()
 	{
