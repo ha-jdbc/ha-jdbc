@@ -58,6 +58,8 @@
 						<dd>Required.</dd>
 						<dt>quartz-XXX.jar : <a href="http://www.opensymphony.com/quartz">Quartz</a></dt>
 						<dd>Optional.  Required if auto-activate-schedule and/or failure-detect-schedule cluster options are specified.</dd>
+						<dt>slf4j-api-XXX.jar : <a href="http://slf4j.org">SLF4J</a></dt>
+						<dd>Required.</dd>
 					</dl>
 				</dd>
 				<dt>/lib/runtime : Libraries used during runtime</dt>
@@ -65,17 +67,17 @@
 					<dl>
 						<dt>concurrent-XXX.jar : Doug Lea's <a href="http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent/intro.html">util.concurrent</a> package</dt>
 						<dd>Optional.  Required dependency of JGroups.</dd>
-						<dt>jcl104-over-slf4j.jar : <a href="http://slf4j.org">SLF4J</a> drop-in replacement for commons-logging-1.0.4.jar</dt>
-						<dd>Optional.  Required dependency of JGroups and Quartz.  Provided for <a href="http://www.slf4j.org/manual.html#gradual">gradual migration</a> from commons-logging to SLF4J.</dd>
-						<dt>slf4j-XXX-jcl.jar : Commons-logging provider for <a href="http://slf4j.org">SLF4J</a>.</dt>
+						<dt>jcl104-over-slf4j-XXX.jar : <a href="http://slf4j.org">SLF4J</a> drop-in replacement for commons-logging-1.0.4.jar</dt>
+						<dd>Optional.  Commons-logging is a required dependency of JGroups and Quartz.  Provided for <a href="http://www.slf4j.org/manual.html#gradual">gradual migration</a> from commons-logging to SLF4J.</dd>
+						<dt>log4j-over-slf4j-XXX.jar : <a href="http://slf4j.org">SLF4J</a> drop-in replacement for log4j.jar</dt>
+						<dd>Optional.  Provided for <a href="http://www.slf4j.org/manual.html#gradual">gradual migration</a> from Log4J to SLF4J.</dd>
+						<dt>slf4j-jcl-XXX.jar : Commons-logging provider for <a href="http://slf4j.org">SLF4J</a>.</dt>
 						<dd>Optional.  Required if you insist on using commons-logging-XXX.jar instead of jcl104-over-slf4j.jar.</dd>
-						<dt>slf4j-XXX-jdk14.jar : java.util.logging provider for <a href="http://slf4j.org">SLF4J</a>.</dt>
+						<dt>slf4j-jdk14-XXX.jar : java.util.logging provider for <a href="http://slf4j.org">SLF4J</a>.</dt>
 						<dd>Optional.  Required if java.util.logging is your logging provider.</dd>
-						<dt>slf4j-XXX-log4j12.jar : Log4J 1.2.X provider for <a href="http://slf4j.org">SLF4J</a>.</dt>
+						<dt>slf4j-log4j12-XXX.jar : Log4J 1.2.X provider for <a href="http://slf4j.org">SLF4J</a>.</dt>
 						<dd>Optional.  Required if Log4J 1.2.X is your logging provider.</dd>
-						<dt>slf4j-XXX-log4j13.jar : Log4J 1.3.X provider for <a href="http://slf4j.org">SLF4J</a>.</dt>
-						<dd>Optional.  Required if Log4J 1.3.X is your logging provider.</dd>
-						<dt>slf4j-XXX-simple.jar : Simple-Log provider for <a href="http://slf4j.org">SLF4J</a>.</dt>
+						<dt>slf4j-simple-XXX.jar : Simple-Log provider for <a href="http://slf4j.org">SLF4J</a>.</dt>
 						<dd>Optional.  Required if Simple-Log is your logging provider.</dd>
 						<dt>stax-api-XXX.jar : Streaming API for XML</dt>
 						<dd>Required.  Dependency of JiBX</dd>
@@ -97,7 +99,7 @@
 					<ul>
 						<li>bcel-XXX.jar : <a href="http://jakarta.apache.org/bcel">BCEL</a></li>
 						<li>jibx-bind-XXX.jar : <a href="http://jibx.sourceforge.net">JiBX</a> binding compiler</li>
-						<li>slf4j-XXX-nop.jar : No-op implementation of <a href="http://slf4j.org">SLF4J</a></li>
+						<li>slf4j-nop-XXX.jar : No-op implementation of <a href="http://slf4j.org">SLF4J</a></li>
 					</ul>
 				</dd>
 				<dt>/lib/compile-1.4 : Additional libraries used for compiling for JDK 1.4 support</dt>
