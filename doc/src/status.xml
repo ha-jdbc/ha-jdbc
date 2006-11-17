@@ -12,6 +12,23 @@
 	</contexts>
 
 	<changes>
+		<release version="1.2-beta-7" date="...">
+			<action type="update" context="lib" dev="PF">
+				Upgraded JGroups to 2.4 GA (final).
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded Retrotranslator to 1.1.0.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded Quartz to 1.6.0.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded SLF4J to 1.1.0 RC1.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded TestNG to 5.3.
+			</action>
+		</release>
 		<release version="1.2-beta-6" date="October 24, 2006">
 			<action type="add" context="src" dev="PF">
 				Added support for identity columns.
@@ -763,20 +780,19 @@
 
 	<todo>
 		<actions priority="high">
-			<action type="add" context="src" dev="PF">
-				Add cache-meta-data="none|lazy|eager" option to cluster.
-				Add database cluster mbean method to flush cache.
+			<action type="update" context="doc" dev="PF">
+				Minimize table/row locking during diff and full synchronization strategies.
 			</action>
-			<action type="add" context="src" dev="PF">
-				Add support for common unique identifier generation mechanisms, namely identity columns and sequences.
+			<action type="update" context="doc" dev="PF">
+				Refactor synchronization strategy interface and improve documentation to more easily facilitate custom strategies.
 			</action>
 			<action type="add" context="doc" dev="PF">
-				Generate performance graphs for HA-JDBC 1.1.
+				Create a feasible synchronization strategy for large databases.
 			</action>
 		</actions>
 		<actions priority="medium">
-			<action type="update" context="test" dev="PF">
-				Migrate unit test suite to TestNG now that EasyMock no longer depends on JUnit.
+			<action type="add" context="doc" dev="PF">
+				Update performance graphs with results from latest version.
 			</action>
 		</actions>
 		<actions priority="low">
