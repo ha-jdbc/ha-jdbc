@@ -113,15 +113,15 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 	 */
 	@Override
 	@Test(dataProvider = "sequence")
-	public String getCurrentSequenceValueSQL(String sequence) throws SQLException
+	public String getNextSequenceValueSQL(String sequence) throws SQLException
 	{
 		this.control.replay();
 		
-		String sql = this.dialect.getCurrentSequenceValueSQL(sequence);
+		String sql = this.dialect.getNextSequenceValueSQL(sequence);
 		
 		this.control.verify();
 		
-		assert sql.equals("SELECT CURRVAL('sequence')") : sql;
+		assert sql.equals("SELECT NEXTVAL('sequence')") : sql;
 		
 		return sql;
 	}

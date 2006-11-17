@@ -172,15 +172,15 @@ public class TestDerbyDialect extends TestStandardDialect
 	 */
 	@Override
 	@Test(dataProvider = "sequence")
-	public String getCurrentSequenceValueSQL(String sequence) throws SQLException
+	public String getNextSequenceValueSQL(String sequence) throws SQLException
 	{
 		this.control.replay();
 		
-		String sql = this.dialect.getCurrentSequenceValueSQL(sequence);
+		String sql = this.dialect.getNextSequenceValueSQL(sequence);
 		
 		this.control.verify();
 		
-		assert sql.equals("VALUES CURRENT VALUE FOR sequence") : sql;
+		assert sql.equals("VALUES NEXT VALUE FOR sequence") : sql;
 		
 		return sql;
 	}

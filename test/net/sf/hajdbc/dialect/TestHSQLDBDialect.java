@@ -142,22 +142,4 @@ public class TestHSQLDBDialect extends TestStandardDialect
 		
 		return schemaList;
 	}
-	
-	/**
-	 * @see net.sf.hajdbc.Dialect#getCurrentSequenceValueSQL(java.lang.String)
-	 */
-	@Override
-	@Test(dataProvider = "sequence")
-	public String getCurrentSequenceValueSQL(String sequence) throws SQLException
-	{
-		this.control.replay();
-		
-		String sql = this.dialect.getCurrentSequenceValueSQL(sequence);
-		
-		this.control.verify();
-		
-		assert sql.equals("SELECT NEXT_VALUE - 1 FROM INFORMATION_SCHEMA.SYSTEM_SEQUENCES WHERE SEQUENCE_NAME = 'sequence'") : sql;
-		
-		return sql;
-	}
 }

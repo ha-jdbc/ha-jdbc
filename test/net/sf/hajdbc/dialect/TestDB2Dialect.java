@@ -86,15 +86,15 @@ public class TestDB2Dialect extends TestStandardDialect
 	 */
 	@Override
 	@Test(dataProvider = "sequence")
-	public String getCurrentSequenceValueSQL(String sequence) throws SQLException
+	public String getNextSequenceValueSQL(String sequence) throws SQLException
 	{
 		this.control.replay();
 		
-		String sql = this.dialect.getCurrentSequenceValueSQL(sequence);
+		String sql = this.dialect.getNextSequenceValueSQL(sequence);
 		
 		this.control.verify();
 		
-		assert sql.equals("VALUES PREVVAL FOR sequence") : sql;
+		assert sql.equals("VALUES NEXTVAL FOR sequence") : sql;
 		
 		return sql;
 	}

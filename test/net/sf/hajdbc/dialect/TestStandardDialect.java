@@ -272,15 +272,15 @@ public class TestStandardDialect implements Dialect
 	 * @see net.sf.hajdbc.Dialect#getCurrentSequenceValueSQL(java.lang.String)
 	 */
 	@Test(dataProvider = "sequence")
-	public String getCurrentSequenceValueSQL(String sequence) throws SQLException
+	public String getNextSequenceValueSQL(String sequence) throws SQLException
 	{
 		this.control.replay();
 		
-		String sql = this.dialect.getCurrentSequenceValueSQL(sequence);
+		String sql = this.dialect.getNextSequenceValueSQL(sequence);
 		
 		this.control.verify();
 		
-		assert sql.equals("SELECT CURRENT VALUE FOR sequence") : sql;
+		assert sql.equals("SELECT NEXT VALUE FOR sequence") : sql;
 		
 		return sql;
 	}
