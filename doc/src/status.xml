@@ -23,6 +23,9 @@
 				Upgraded Quartz to 1.6.0.
 			</action>
 			<action type="update" context="lib" dev="PF">
+				Upgraded Woodstox to 3.1.0.
+			</action>
+			<action type="update" context="lib" dev="PF">
 				Upgraded SLF4J to 1.1.0 RC1.
 			</action>
 			<action type="update" context="lib" dev="PF">
