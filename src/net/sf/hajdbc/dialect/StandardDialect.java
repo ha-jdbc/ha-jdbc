@@ -267,9 +267,9 @@ public class StandardDialect implements Dialect
 	/**
 	 * @see net.sf.hajdbc.Dialect#getCurrentSequenceValueSQL(java.lang.String)
 	 */
-	public String getCurrentSequenceValueSQL(String sequence)
+	public String getNextValueForSequenceSQL(String sequence)
 	{
-		return this.executeFunctionSQL(MessageFormat.format(this.currentSequenceValueFormat(), sequence));
+		return this.executeFunctionSQL(MessageFormat.format(this.nextValueForSequenceFormat(), sequence));
 	}
 	
 	/**
@@ -353,12 +353,8 @@ public class StandardDialect implements Dialect
 		return "ALTER SEQUENCE {0} RESTART WITH {1}";
 	}
 	
-	/**
-	 * Although the SQL standard does not provide a mechanism for retrieving the current value of a sequence, if one did exist, it would probably look like this.
-	 * @return a sql function pattern for retrieving the current value of a sequence.
-	 */
-	protected String currentSequenceValueFormat()
+	protected String nextValueForSequenceFormat()
 	{
-		return "CURRENT VALUE FOR {0}";
+		return "NEXT VALUE FOR {0}";
 	}
 }

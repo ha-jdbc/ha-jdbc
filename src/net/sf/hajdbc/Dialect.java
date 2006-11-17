@@ -153,13 +153,13 @@ public interface Dialect
 	public Collection<String> getSequences(Connection connection) throws SQLException;
 	
 	/**
-	 * Returns a SQL statement for obtaining the current value the specified sequence
+	 * Returns a SQL statement for obtaining the next value the specified sequence
 	 * @param sequence a sequence name
 	 * @return a SQL statement
 	 * @throws SQLException
 	 * @since 1.2
 	 */
-	public String getCurrentSequenceValueSQL(String sequence) throws SQLException;
+	public String getNextValueForSequenceSQL(String sequence) throws SQLException;
 
 	/**
 	 * Returns a SQL statement used reset the current value of a sequence.

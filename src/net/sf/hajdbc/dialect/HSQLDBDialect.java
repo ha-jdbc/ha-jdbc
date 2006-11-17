@@ -69,15 +69,6 @@ public class HSQLDBDialect extends StandardDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#getCurrentSequenceValueSQL(java.lang.String)
-	 */
-	@Override
-	public String getCurrentSequenceValueSQL(String sequence)
-	{
-		return "SELECT NEXT_VALUE - 1 FROM INFORMATION_SCHEMA.SYSTEM_SEQUENCES WHERE SEQUENCE_NAME = '" + sequence + "'";
-	}
-
-	/**
 	 * Deferrability clause is not supported.
 	 * @see net.sf.hajdbc.dialect.StandardDialect#createForeignKeyConstraintFormat()
 	 */

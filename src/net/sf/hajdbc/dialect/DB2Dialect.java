@@ -80,8 +80,8 @@ public class DB2Dialect extends StandardDialect
 	 * @see net.sf.hajdbc.dialect.StandardDialect#currentSequenceValueFormat()
 	 */
 	@Override
-	protected String currentSequenceValueFormat()
+	protected String nextValueForSequenceFormat()
 	{
-		return "PREVVAL FOR {0}";
+		return "NEXTVAL FOR {0}";
 	}
 }
