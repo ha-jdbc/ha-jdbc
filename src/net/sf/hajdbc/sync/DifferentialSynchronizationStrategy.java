@@ -25,7 +25,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -40,10 +39,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.Dialect;
-import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.UniqueConstraint;
@@ -87,43 +85,51 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 
 	private ExecutorService executor = Executors.newSingleThreadExecutor(DaemonThreadFactory.getInstance());
 	private int fetchSize = 0;
+	private SynchronizationSupport support;
 	
 	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, net.sf.hajdbc.DatabaseMetaDataCache, net.sf.hajdbc.Dialect)
+	 * @see net.sf.hajdbc.SynchronizationStrategy#cleanup(net.sf.hajdbc.SynchronizationContext)
 	 */
-	public void synchronize(Connection inactiveConnection, Connection activeConnection, DatabaseMetaDataCache metaData, Dialect dialect) throws SQLException
+	public void cleanup(SynchronizationContext context)
 	{
-		inactiveConnection.setAutoCommit(true);
-		
-		Statement statement = inactiveConnection.createStatement();
+		this.support.unlock(context);
+	}
 
-		Collection<TableProperties> tables = metaData.getDatabaseProperties(inactiveConnection).getTables();
-		
-		// Drop foreign key constraints on the inactive database
-		for (TableProperties table: tables)
-		{
-			for (ForeignKeyConstraint constraint: table.getForeignKeyConstraints())
-			{
-				String sql = dialect.getDropForeignKeyConstraintSQL(constraint);
-				
-				logger.debug(sql);
-				
-				statement.addBatch(sql);
-			}
-		}
-		
-		statement.executeBatch();
-		statement.clearBatch();
-		
+	/**
+	 * @see net.sf.hajdbc.SynchronizationStrategy#prepare(net.sf.hajdbc.SynchronizationContext)
+	 */
+	public void prepare(SynchronizationContext context) throws SQLException
+	{
+		this.support.lock(context);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.SynchronizationContext)
+	 */
+	public void synchronize(SynchronizationContext context) throws SQLException
+	{
 		Map<Short, String> primaryKeyColumnMap = new TreeMap<Short, String>();
 		Set<Integer> primaryKeyColumnIndexSet = new LinkedHashSet<Integer>();
 		
-		inactiveConnection.setAutoCommit(false);
+		Connection sourceConnection = context.getConnection(context.getSourceDatabase());
+		Connection targetConnection = context.getConnection(context.getTargetDatabase());
+
+		Dialect dialect = context.getDialect();
+		
+		targetConnection.setAutoCommit(true);
+		
+		this.support.dropForeignKeys(context);
 		
 		try
 		{
-			for (TableProperties table: tables)
+			for (TableProperties table: context.getDatabaseMetaDataCache().getDatabaseProperties(sourceConnection).getTables())
 			{
+				targetConnection.setAutoCommit(true);
+				
+				this.support.dropUniqueConstraints(context, table);
+				
+				targetConnection.setAutoCommit(false);
+				
 				primaryKeyColumnMap.clear();
 				primaryKeyColumnIndexSet.clear();
 				
@@ -137,23 +143,6 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				}
 				
 				List<String> primaryKeyColumnList = primaryKey.getColumnList();
-				
-				Collection<UniqueConstraint> constraints = table.getUniqueConstraints();
-				
-				constraints.remove(primaryKey);
-				
-				// Drop unique constraints on the current table
-				for (UniqueConstraint constraint: constraints)
-				{
-					String sql = dialect.getDropUniqueConstraintSQL(constraint);
-					
-					logger.debug(sql);
-					
-					statement.addBatch(sql);
-				}
-				
-				statement.executeBatch();
-				statement.clearBatch();
 				
 				Collection<String> columns = table.getColumns();
 				
@@ -177,9 +166,9 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				// Retrieve table rows in primary key order
 				final String selectSQL = "SELECT " + commaDelimitedColumns + " FROM " + tableName + " ORDER BY " + Strings.join(primaryKeyColumnList, ", ");
 				
-				final Statement inactiveStatement = inactiveConnection.createStatement();
+				final Statement targetStatement = targetConnection.createStatement();
 
-				inactiveStatement.setFetchSize(this.fetchSize);
+				targetStatement.setFetchSize(this.fetchSize);
 	
 				logger.debug(selectSQL);
 				
@@ -187,16 +176,16 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				{
 					public ResultSet call() throws java.sql.SQLException
 					{
-						return inactiveStatement.executeQuery(selectSQL);
+						return targetStatement.executeQuery(selectSQL);
 					}
 				};
 	
 				Future<ResultSet> future = this.executor.submit(callable);
 				
-				Statement activeStatement = activeConnection.createStatement();
-				activeStatement.setFetchSize(this.fetchSize);
+				Statement sourceStatement = sourceConnection.createStatement();
+				sourceStatement.setFetchSize(this.fetchSize);
 				
-				ResultSet activeResultSet = activeStatement.executeQuery(selectSQL);
+				ResultSet sourceResultSet = sourceStatement.executeQuery(selectSQL);
 
 				ResultSet inactiveResultSet = future.get();
 				
@@ -207,7 +196,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				
 				logger.debug(deleteSQL.toString());
 				
-				PreparedStatement deleteStatement = inactiveConnection.prepareStatement(deleteSQL);
+				PreparedStatement deleteStatement = targetConnection.prepareStatement(deleteSQL);
 				
 				String[] parameters = new String[columnList.size()];
 				Arrays.fill(parameters, "?");
@@ -217,16 +206,16 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				
 				logger.debug(insertSQL);
 				
-				PreparedStatement insertStatement = inactiveConnection.prepareStatement(insertSQL);
+				PreparedStatement insertStatement = targetConnection.prepareStatement(insertSQL);
 				
 				// Construct UPDATE SQL
 				String updateSQL = "UPDATE " + tableName + " SET " + Strings.join(nonPrimaryKeyColumnList, " = ?, ") + " = ?" + primaryKeyWhereClause;
 				
 				logger.debug(updateSQL);
 				
-				PreparedStatement updateStatement = inactiveConnection.prepareStatement(updateSQL);
+				PreparedStatement updateStatement = targetConnection.prepareStatement(updateSQL);
 				
-				boolean hasMoreActiveResults = activeResultSet.next();
+				boolean hasMoreActiveResults = sourceResultSet.next();
 				boolean hasMoreInactiveResults = inactiveResultSet.next();
 				
 				int insertCount = 0;
@@ -249,7 +238,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 					{
 						for (int i = 1; i <= primaryKeyColumnList.size(); ++i)
 						{
-							Object activeObject = activeResultSet.getObject(i);
+							Object activeObject = sourceResultSet.getObject(i);
 							Object inactiveObject = inactiveResultSet.getObject(i);
 							
 							// We assume that the primary keys column types are Comparable
@@ -285,9 +274,9 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 						{
 							int type = dialect.getColumnType(table.getColumnProperties(columnList.get(i - 1)));
 
-							Object object = this.getObject(activeResultSet, i, type);
+							Object object = this.support.getObject(sourceResultSet, i, type);
 							
-							if (activeResultSet.wasNull())
+							if (sourceResultSet.wasNull())
 							{
 								insertStatement.setNull(i, type);
 							}
@@ -311,12 +300,12 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 						{
 							int type = dialect.getColumnType(table.getColumnProperties(columnList.get(i - 1)));
 							
-							Object activeObject = this.getObject(activeResultSet, i, type);
-							Object inactiveObject = this.getObject(inactiveResultSet, i, type);
+							Object activeObject = this.support.getObject(sourceResultSet, i, type);
+							Object inactiveObject = this.support.getObject(inactiveResultSet, i, type);
 							
 							int index = i - primaryKeyColumnList.size();
 							
-							if (activeResultSet.wasNull())
+							if (sourceResultSet.wasNull())
 							{
 								updateStatement.setNull(index, type);
 								
@@ -348,7 +337,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 					
 					if (hasMoreActiveResults && (compare <= 0))
 					{
-						hasMoreActiveResults = activeResultSet.next();
+						hasMoreActiveResults = sourceResultSet.next();
 					}
 					
 					if (hasMoreInactiveResults && (compare >= 0))
@@ -378,23 +367,12 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				
 				updateStatement.close();
 				
-				inactiveStatement.close();
-				activeStatement.close();
+				targetStatement.close();
+				sourceStatement.close();
 				
-				// Collect unique constraints on this table from the active database and re-create them on the inactive database
-				for (UniqueConstraint constraint: constraints)
-				{
-					String sql = dialect.getCreateUniqueConstraintSQL(constraint);
-					
-					logger.debug(sql);
-					
-					statement.addBatch(sql);
-				}
-				
-				statement.executeBatch();
-				statement.clearBatch();
-				
-				inactiveConnection.commit();
+				targetConnection.commit();
+
+				this.support.restoreUniqueConstraints(context, table);
 				
 				logger.info(Messages.getMessage(Messages.INSERT_COUNT, insertCount, tableName));
 				logger.info(Messages.getMessage(Messages.UPDATE_COUNT, updateCount, tableName));
@@ -403,112 +381,30 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		}
 		catch (ExecutionException e)
 		{
-			this.rollback(inactiveConnection);
+			this.support.rollback(targetConnection);
 			
 			throw new net.sf.hajdbc.SQLException(e.getCause());
 		}
 		catch (InterruptedException e)
 		{
-			this.rollback(inactiveConnection);
+			this.support.rollback(targetConnection);
 			
 			throw new net.sf.hajdbc.SQLException(e);
 		}
 		catch (SQLException e)
 		{
-			this.rollback(inactiveConnection);
+			this.support.rollback(targetConnection);
 			
 			throw e;
 		}
 		
-		inactiveConnection.setAutoCommit(true);
-
-		// Collect foreign key constraints from the active database and create them on the inactive database
-		for (TableProperties table: tables)
-		{
-			for (ForeignKeyConstraint constraint: table.getForeignKeyConstraints())
-			{
-				String sql = dialect.getCreateForeignKeyConstraintSQL(constraint);
-				
-				logger.debug(sql);
-				
-				statement.addBatch(sql);
-			}
-		}
+		targetConnection.setAutoCommit(true);
 		
-		statement.executeBatch();
-		statement.clearBatch();
+		this.support.restoreForeignKeys(context);
 		
-		if (dialect.supportsSequences())
-		{
-			Collection<String> sequences = dialect.getSequences(activeConnection);
-			
-			Statement activeStatement = activeConnection.createStatement();
-			Statement inactiveStatement = inactiveConnection.createStatement();
-			
-			for (String sequence: sequences)
-			{
-				String sql = dialect.getCurrentSequenceValueSQL(sequence);
-				
-				logger.debug(sql);
-				
-				ResultSet activeResultSet = activeStatement.executeQuery(sql);
-				ResultSet inactiveResultSet = inactiveStatement.executeQuery(sql);
-				
-				activeResultSet.next();
-				inactiveResultSet.next();
-				
-				long activeValue = activeResultSet.getLong(1);
-				long inactiveValue = inactiveResultSet.getLong(1);
-				
-				activeResultSet.close();
-				inactiveResultSet.close();
-				
-				if (activeValue != inactiveValue)
-				{
-					sql = dialect.getAlterSequenceSQL(sequence, activeValue);
-					
-					logger.debug(sql);
-					
-					statement.addBatch(sql);
-				}
-			}
-			
-			activeStatement.close();
-			inactiveStatement.close();
-
-			statement.executeBatch();
-		}
-		
-		statement.close();
+		this.support.synchronizeSequences(context);
 	}
 
-	private Object getObject(ResultSet resultSet, int index, int type) throws SQLException
-	{
-		switch (type)
-		{
-			case Types.BLOB:
-			{
-				return resultSet.getBlob(index);
-			}
-			case Types.CLOB:
-			{
-				return resultSet.getClob(index);
-			}
-			default:
-			{
-				return resultSet.getObject(index);
-			}
-		}
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#requiresTableLocking()
-	 */
-	public boolean requiresTableLocking()
-	{
-		return true;
-	}
-	
 	private boolean equals(Object object1, Object object2)
 	{
 		if (byte[].class.isInstance(object1) && byte[].class.isInstance(object2))
@@ -531,19 +427,6 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 	private int compare(Object object1, Object object2)
 	{
 		return Comparable.class.cast(object1).compareTo(object2);
-	}
-	
-	private void rollback(Connection connection)
-	{
-		try
-		{
-			connection.rollback();
-			connection.setAutoCommit(true);
-		}
-		catch (java.sql.SQLException e)
-		{
-			logger.warn(e.toString(), e);
-		}
 	}
 
 	/**

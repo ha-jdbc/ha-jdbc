@@ -25,7 +25,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.Callable;
@@ -34,10 +33,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.Dialect;
-import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.util.Strings;
@@ -77,39 +75,43 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 	private ExecutorService executor = Executors.newSingleThreadExecutor(DaemonThreadFactory.getInstance());
 	private int maxBatchSize = 100;
 	private int fetchSize = 0;
+	private SynchronizationSupport support = new SynchronizationSupport();
 	
 	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, net.sf.hajdbc.DatabaseMetaDataCache, net.sf.hajdbc.Dialect)
+	 * @see net.sf.hajdbc.SynchronizationStrategy#cleanup(net.sf.hajdbc.SynchronizationContext)
 	 */
-	public void synchronize(Connection inactiveConnection, Connection activeConnection, DatabaseMetaDataCache metaData, Dialect dialect) throws SQLException
+	public void cleanup(SynchronizationContext context)
 	{
-		inactiveConnection.setAutoCommit(true);
+		this.support.unlock(context);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.SynchronizationStrategy#prepare(net.sf.hajdbc.SynchronizationContext)
+	 */
+	public void prepare(SynchronizationContext context) throws SQLException
+	{
+		this.support.lock(context);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.SynchronizationContext)
+	 */
+	public void synchronize(SynchronizationContext context) throws SQLException
+	{
+		Connection sourceConnection = context.getConnection(context.getSourceDatabase());
+		Connection targetConnection = context.getConnection(context.getTargetDatabase());
+
+		Dialect dialect = context.getDialect();
 		
-		Statement statement = inactiveConnection.createStatement();
+		targetConnection.setAutoCommit(true);
 		
-		Collection<TableProperties> tables = metaData.getDatabaseProperties(inactiveConnection).getTables();
+		this.support.dropForeignKeys(context);
 		
-		// Drop foreign key constraints on the inactive database
-		for (TableProperties table: tables)
-		{
-			for (ForeignKeyConstraint constraint: table.getForeignKeyConstraints())
-			{
-				String sql = dialect.getDropForeignKeyConstraintSQL(constraint);
-				
-				logger.debug(sql);
-				
-				statement.addBatch(sql);
-			}
-		}
-		
-		statement.executeBatch();
-		statement.clearBatch();
-		
-		inactiveConnection.setAutoCommit(false);
+		targetConnection.setAutoCommit(false);
 		
 		try
 		{
-			for (TableProperties table: tables)
+			for (TableProperties table: context.getDatabaseMetaDataCache().getDatabaseProperties(sourceConnection).getTables())
 			{
 				String tableName = table.getName();
 				Collection<String> columns = table.getColumns();
@@ -118,7 +120,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 				
 				final String selectSQL = "SELECT " + commaDelimitedColumns + " FROM " + tableName;
 				
-				final Statement selectStatement = activeConnection.createStatement();
+				final Statement selectStatement = sourceConnection.createStatement();
 				selectStatement.setFetchSize(this.fetchSize);
 				
 				Callable<ResultSet> callable = new Callable<ResultSet>()
@@ -135,7 +137,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 	
 				logger.debug(deleteSQL);
 				
-				Statement deleteStatement = inactiveConnection.createStatement();
+				Statement deleteStatement = targetConnection.createStatement();
 	
 				int deletedRows = deleteStatement.executeUpdate(deleteSQL);
 				
@@ -152,7 +154,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 				
 				logger.debug(insertSQL);
 				
-				PreparedStatement insertStatement = inactiveConnection.prepareStatement(insertSQL);
+				PreparedStatement insertStatement = targetConnection.prepareStatement(insertSQL);
 				int statementCount = 0;
 				
 				while (resultSet.next())
@@ -165,7 +167,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 						
 						int type = dialect.getColumnType(table.getColumnProperties(column));
 						
-						Object object = this.getObject(resultSet, index, type);
+						Object object = this.support.getObject(resultSet, index, type);
 						
 						if (resultSet.wasNull())
 						{
@@ -199,119 +201,33 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 				insertStatement.close();
 				selectStatement.close();
 				
-				inactiveConnection.commit();
+				targetConnection.commit();
 			}
 		}
 		catch (InterruptedException e)
 		{
-			this.rollback(inactiveConnection);
+			this.support.rollback(targetConnection);
 
 			throw new net.sf.hajdbc.SQLException(e);
 		}
 		catch (ExecutionException e)
 		{
-			this.rollback(inactiveConnection);
+			this.support.rollback(targetConnection);
 
 			throw new net.sf.hajdbc.SQLException(e.getCause());
 		}
 		catch (SQLException e)
 		{
-			this.rollback(inactiveConnection);
+			this.support.rollback(targetConnection);
 			
 			throw e;
 		}
 		
-		inactiveConnection.setAutoCommit(true);
-
-		// Collect foreign key constraints from the active database and create them on the inactive database
-		for (TableProperties table: tables)
-		{
-			for (ForeignKeyConstraint constraint: table.getForeignKeyConstraints())
-			{
-				String sql = dialect.getCreateForeignKeyConstraintSQL(constraint);
-				
-				logger.debug(sql);
-				
-				statement.addBatch(sql);
-			}
-		}
+		targetConnection.setAutoCommit(true);
 		
-		statement.executeBatch();
-		statement.clearBatch();
+		this.support.restoreForeignKeys(context);
 		
-		if (dialect.supportsSequences())
-		{
-			Collection<String> sequences = dialect.getSequences(activeConnection);
-			
-			Statement activeStatement = activeConnection.createStatement();
-			
-			for (String sequence: sequences)
-			{
-				String sql = dialect.getCurrentSequenceValueSQL(sequence);
-				
-				logger.debug(sql);
-				
-				ResultSet resultSet = activeStatement.executeQuery(sql);
-				
-				resultSet.next();
-				
-				long value = resultSet.getLong(1);
-				
-				resultSet.close();
-				
-				sql = dialect.getAlterSequenceSQL(sequence, value);
-				
-				logger.debug(sql);
-				
-				statement.addBatch(sql);
-			}
-			
-			activeStatement.close();
-			
-			statement.executeBatch();
-		}
-		
-		statement.close();
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#requiresTableLocking()
-	 */
-	public boolean requiresTableLocking()
-	{
-		return true;
-	}
-
-	private Object getObject(ResultSet resultSet, int index, int type) throws SQLException
-	{
-		switch (type)
-		{
-			case Types.BLOB:
-			{
-				return resultSet.getBlob(index);
-			}
-			case Types.CLOB:
-			{
-				return resultSet.getClob(index);
-			}
-			default:
-			{
-				return resultSet.getObject(index);
-			}
-		}
-	}
-	
-	private void rollback(Connection connection)
-	{
-		try
-		{
-			connection.rollback();
-			connection.setAutoCommit(true);
-		}
-		catch (java.sql.SQLException e)
-		{
-			logger.warn(e.toString(), e);
-		}
+		this.support.synchronizeSequences(context);
 	}
 
 	/**

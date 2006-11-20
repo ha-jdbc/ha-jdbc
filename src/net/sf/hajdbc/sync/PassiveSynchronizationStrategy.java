@@ -20,10 +20,7 @@
  */
 package net.sf.hajdbc.sync;
 
-import java.sql.Connection;
-
-import net.sf.hajdbc.DatabaseMetaDataCache;
-import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.SynchronizationStrategy;
 
 /**
@@ -35,18 +32,26 @@ import net.sf.hajdbc.SynchronizationStrategy;
 public class PassiveSynchronizationStrategy implements SynchronizationStrategy
 {
 	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, net.sf.hajdbc.DatabaseMetaDataCache, net.sf.hajdbc.Dialect)
+	 * @see net.sf.hajdbc.SynchronizationStrategy#cleanup(net.sf.hajdbc.SynchronizationContext)
 	 */
-	public void synchronize(Connection inactiveConnection, Connection activeConnection, DatabaseMetaDataCache metaData, Dialect dialect)
+	public void cleanup(SynchronizationContext context)
 	{
 		// Do nothing
 	}
 
 	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#requiresTableLocking()
+	 * @see net.sf.hajdbc.SynchronizationStrategy#prepare(net.sf.hajdbc.SynchronizationContext)
 	 */
-	public boolean requiresTableLocking()
+	public void prepare(SynchronizationContext context)
 	{
-		return false;
+		// Do nothing
+	}
+
+	/**
+	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.SynchronizationContext)
+	 */
+	public void synchronize(SynchronizationContext context)
+	{
+		// Do nothing
 	}
 }

@@ -159,7 +159,7 @@ public interface Dialect
 	 * @throws SQLException
 	 * @since 1.2
 	 */
-	public String getNextValueForSequenceSQL(String sequence) throws SQLException;
+	public String getNextSequenceValueSQL(String sequence) throws SQLException;
 
 	/**
 	 * Returns a SQL statement used reset the current value of a sequence.

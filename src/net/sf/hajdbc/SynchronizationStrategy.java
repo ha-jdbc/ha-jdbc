@@ -20,7 +20,6 @@
  */
 package net.sf.hajdbc;
 
-import java.sql.Connection;
 
 /**
  * @author  Paul Ferraro
@@ -29,6 +28,10 @@ import java.sql.Connection;
  */
 public interface SynchronizationStrategy
 {
+	public void prepare(SynchronizationContext context) throws java.sql.SQLException;
+	
+	public void cleanup(SynchronizationContext context);
+	
 	/**
 	 * Synchronizes the an inactive database with an active database using the specified connections.
 	 * Implementors must not close the specified connections.
@@ -38,11 +41,5 @@ public interface SynchronizationStrategy
 	 * @param dialect a Dialect instance
 	 * @throws java.sql.SQLException if synchronization fails
 	 */
-	public void synchronize(Connection inactiveConnection, Connection activeConnection, DatabaseMetaDataCache metaData, Dialect dialect) throws java.sql.SQLException;
-	
-	/**
-	 * Indicates whether this strategy requires table locking on active databases.
-	 * @return <code>true</code>, if table locking is required, <code>false</code> otherwise.
-	 */
-	public boolean requiresTableLocking();
+	public void synchronize(SynchronizationContext context) throws java.sql.SQLException;
 }

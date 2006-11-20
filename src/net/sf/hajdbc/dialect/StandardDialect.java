@@ -267,7 +267,7 @@ public class StandardDialect implements Dialect
 	/**
 	 * @see net.sf.hajdbc.Dialect#getCurrentSequenceValueSQL(java.lang.String)
 	 */
-	public String getNextValueForSequenceSQL(String sequence)
+	public String getNextSequenceValueSQL(String sequence)
 	{
 		return this.executeFunctionSQL(MessageFormat.format(this.nextValueForSequenceFormat(), sequence));
 	}

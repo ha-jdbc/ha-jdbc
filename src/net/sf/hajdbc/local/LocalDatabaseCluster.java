@@ -24,7 +24,6 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -57,9 +56,9 @@ import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.LockManager;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SQLException;
+import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.SynchronizationStrategyBuilder;
-import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.sql.DataSourceDatabase;
 import net.sf.hajdbc.sql.DriverDatabase;
 import net.sf.hajdbc.util.concurrent.CronThreadPoolExecutor;
@@ -862,23 +861,38 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		
 		try
 		{
-			List<Database> databaseList = this.getBalancer().list();
+			SynchronizationContext context = new SynchronizationContext(this, database);
 			
-			if (databaseList.isEmpty())
+			try
 			{
-				return this.activate(database);
+				if (!context.getActiveDatabases().isEmpty())
+				{
+					strategy.prepare(context);
+					
+					logger.info(Messages.getMessage(Messages.DATABASE_SYNC_START, database, this));
+					
+					strategy.synchronize(context);
+					
+					logger.info(Messages.getMessage(Messages.DATABASE_SYNC_END, database, this));
+				}
+				
+				boolean activated = this.activate(database);
+				
+				strategy.cleanup(context);
+				
+				return activated;
 			}
-			
-			this.activate(database, databaseList, strategy);
-			
-			return true;
+			finally
+			{
+				context.close();
+			}
 		}
 		finally
 		{
 			lock.unlock();
 		}
 	}
-	
+/*	
 	@SuppressWarnings("unchecked")
 	private void activate(Database inactiveDatabase, List<Database> activeDatabaseList, SynchronizationStrategy strategy) throws java.sql.SQLException
 	{
@@ -1003,7 +1017,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			}
 		}
 	}
-	
+*/	
 	class FailureDetectionTask implements Runnable
 	{
 		/**
