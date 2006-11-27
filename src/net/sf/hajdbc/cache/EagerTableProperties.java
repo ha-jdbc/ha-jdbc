@@ -27,14 +27,13 @@ import java.util.Map;
 
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.ForeignKeyConstraint;
-import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.UniqueConstraint;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class EagerTableProperties implements TableProperties
+public class EagerTableProperties extends AbstractTableProperties
 {
 	private Map<String, ColumnProperties> columnMap;
 	private UniqueConstraint primaryKey;

@@ -26,14 +26,13 @@ import java.util.Map;
 
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.ForeignKeyConstraint;
-import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.UniqueConstraint;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class LazyTableProperties implements TableProperties
+public class LazyTableProperties extends AbstractTableProperties
 {
 	private String schema;
 	private String table;
