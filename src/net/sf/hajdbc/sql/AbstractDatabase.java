@@ -127,11 +127,7 @@ public abstract class AbstractDatabase<T> implements Database<T>
 	@Override
 	public boolean equals(Object object)
 	{
-		if ((object == null) || !Database.class.isInstance(object)) return false;
-		
-		Database database = Database.class.cast(object);
-		
-		return this.id.equals(database.getId());
+		return (object != null) && Database.class.isInstance(object) && this.id.equals(Database.class.cast(object).getId());
 	}
 	
 	/**
