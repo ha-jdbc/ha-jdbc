@@ -28,8 +28,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import net.sf.hajdbc.util.Collections;
-
 /**
  * @author  Paul Ferraro
  * @since   1.1
@@ -126,8 +124,10 @@ public class SynchronizationStrategyBuilder
 			propertyDescriptorMap.put(descriptor.getName(), descriptor);
 		}
 		
-		for (String name: Collections.cast(this.properties.keySet(), String.class))
+		for (Object key: this.properties.keySet())
 		{
+			String name = String.class.cast(key);
+			
 			PropertyDescriptor descriptor = propertyDescriptorMap.get(name);
 			
 			if (descriptor == null)

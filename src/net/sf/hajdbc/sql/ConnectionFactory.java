@@ -20,9 +20,10 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.util.Map;
+
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.util.Collections;
 
 /**
  * @author  Paul Ferraro
@@ -37,9 +38,10 @@ public class ConnectionFactory<E> extends SQLObject<E, Void>
 	 * @param databaseCluster a database cluster
 	 * @param targetClass target class of 
 	 */
+	@SuppressWarnings("unchecked")
 	public ConnectionFactory(DatabaseCluster databaseCluster, Class<E> targetClass)
 	{
-		super(databaseCluster, Collections.cast(databaseCluster.getConnectionFactoryMap(), Database.class, targetClass));
+		super(databaseCluster, (Map<Database, E>) databaseCluster.getConnectionFactoryMap());
 	}
 
 	/**

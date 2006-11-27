@@ -138,8 +138,10 @@ public class PropertiesMapper implements IUnmarshaller, IMarshaller, IAliasable
 				context.startTag(this.index, this.name);
 			}
 			
-			for (String name: Collections.cast(properties.keySet(), String.class))
+			for (Object key: properties.keySet())
 			{
+				String name = String.class.cast(key);
+				
 				context.startTagAttributes(this.index, ELEMENT).attribute(this.index, ATTRIBUTE, name).closeStartContent().content(properties.getProperty(name)).endTag(this.index, ELEMENT);
 			}
 
