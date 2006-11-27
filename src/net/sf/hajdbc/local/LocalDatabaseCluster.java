@@ -61,6 +61,7 @@ import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.SynchronizationStrategyBuilder;
 import net.sf.hajdbc.sql.DataSourceDatabase;
 import net.sf.hajdbc.sql.DriverDatabase;
+import net.sf.hajdbc.sync.SynchronizationContextImpl;
 import net.sf.hajdbc.util.concurrent.CronThreadPoolExecutor;
 import net.sf.hajdbc.util.concurrent.SynchronousExecutor;
 
@@ -748,11 +749,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	@Override
 	public final boolean equals(Object object)
 	{
-		if ((object == null) || !DatabaseCluster.class.isInstance(object)) return false;
-		
-		DatabaseCluster databaseCluster = DatabaseCluster.class.cast(object);
-		
-		return this.id.equals(databaseCluster.getId());
+		return (object != null) && DatabaseCluster.class.isInstance(object) && this.id.equals(DatabaseCluster.class.cast(object).getId());
 	}
 	
 	/**
@@ -861,7 +858,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		
 		try
 		{
-			SynchronizationContext context = new SynchronizationContext(this, database);
+			SynchronizationContext context = new SynchronizationContextImpl(this, database);
 			
 			try
 			{

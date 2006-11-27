@@ -68,33 +68,15 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$
  * @since   1.0
  */
-public class FullSynchronizationStrategy implements SynchronizationStrategy
+public class FullSynchronizationStrategy extends LockingSynchronizationStrategy implements SynchronizationStrategy
 {
 	private static Logger logger = LoggerFactory.getLogger(FullSynchronizationStrategy.class);
 
 	private ExecutorService executor = Executors.newSingleThreadExecutor(DaemonThreadFactory.getInstance());
 	private int maxBatchSize = 100;
 	private int fetchSize = 0;
-	private SynchronizationSupport support = new SynchronizationSupport();
-	
 	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#cleanup(net.sf.hajdbc.SynchronizationContext)
-	 */
-	public void cleanup(SynchronizationContext context)
-	{
-		this.support.unlock(context);
-	}
-
-	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#prepare(net.sf.hajdbc.SynchronizationContext)
-	 */
-	public void prepare(SynchronizationContext context) throws SQLException
-	{
-		this.support.lock(context);
-	}
-
-	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.SynchronizationContext)
+	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.SynchronizationContextImpl)
 	 */
 	public void synchronize(SynchronizationContext context) throws SQLException
 	{
@@ -227,7 +209,10 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		
 		this.support.restoreForeignKeys(context);
 		
-		this.support.synchronizeSequences(context);
+		if (dialect.supportsSequences())
+		{
+			this.support.synchronizeSequences(context);
+		}
 	}
 
 	/**

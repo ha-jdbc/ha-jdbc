@@ -66,6 +66,7 @@ public final class Messages
 	public static final String MBEAN_SERVER_NOT_FOUND = "mbean-server-not-found";
 	public static final String NO_ACTIVE_DATABASES = "no-active-databases";
 	public static final String PRIMARY_KEY_REQUIRED = "primary-key-required";
+	public static final String SEQUENCE_OUT_OF_SYNC = "sequence-out-of-sync";
 	public static final String SHUT_DOWN = "shut-down";
 	public static final String SQL_OBJECT_INIT_FAILED = "sql-object-init-failed";
 	public static final String STATEMENT_FAILED = "statement-failed";

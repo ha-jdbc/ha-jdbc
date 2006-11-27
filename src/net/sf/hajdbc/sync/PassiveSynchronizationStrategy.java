@@ -32,7 +32,7 @@ import net.sf.hajdbc.SynchronizationStrategy;
 public class PassiveSynchronizationStrategy implements SynchronizationStrategy
 {
 	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#cleanup(net.sf.hajdbc.SynchronizationContext)
+	 * @see net.sf.hajdbc.SynchronizationStrategy#cleanup(net.sf.hajdbc.SynchronizationContextImpl)
 	 */
 	public void cleanup(SynchronizationContext context)
 	{
@@ -40,7 +40,7 @@ public class PassiveSynchronizationStrategy implements SynchronizationStrategy
 	}
 
 	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#prepare(net.sf.hajdbc.SynchronizationContext)
+	 * @see net.sf.hajdbc.SynchronizationStrategy#prepare(net.sf.hajdbc.SynchronizationContextImpl)
 	 */
 	public void prepare(SynchronizationContext context)
 	{
@@ -48,7 +48,7 @@ public class PassiveSynchronizationStrategy implements SynchronizationStrategy
 	}
 
 	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.SynchronizationContext)
+	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.SynchronizationContextImpl)
 	 */
 	public void synchronize(SynchronizationContext context)
 	{

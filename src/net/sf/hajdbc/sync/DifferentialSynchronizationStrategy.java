@@ -42,7 +42,6 @@ import java.util.concurrent.Future;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationContext;
-import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.UniqueConstraint;
 import net.sf.hajdbc.util.Strings;
@@ -79,32 +78,15 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$
  * @since   1.0
  */
-public class DifferentialSynchronizationStrategy implements SynchronizationStrategy
+public class DifferentialSynchronizationStrategy extends LockingSynchronizationStrategy
 {
 	private static Logger logger = LoggerFactory.getLogger(DifferentialSynchronizationStrategy.class);
 
 	private ExecutorService executor = Executors.newSingleThreadExecutor(DaemonThreadFactory.getInstance());
 	private int fetchSize = 0;
-	private SynchronizationSupport support;
 	
 	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#cleanup(net.sf.hajdbc.SynchronizationContext)
-	 */
-	public void cleanup(SynchronizationContext context)
-	{
-		this.support.unlock(context);
-	}
-
-	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#prepare(net.sf.hajdbc.SynchronizationContext)
-	 */
-	public void prepare(SynchronizationContext context) throws SQLException
-	{
-		this.support.lock(context);
-	}
-
-	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.SynchronizationContext)
+	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.SynchronizationContextImpl)
 	 */
 	public void synchronize(SynchronizationContext context) throws SQLException
 	{
@@ -122,10 +104,8 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		
 		try
 		{
-			for (TableProperties table: context.getDatabaseMetaDataCache().getDatabaseProperties(sourceConnection).getTables())
+			for (TableProperties table: context.getDatabaseMetaDataCache().getDatabaseProperties(targetConnection).getTables())
 			{
-				targetConnection.setAutoCommit(true);
-				
 				this.support.dropUniqueConstraints(context, table);
 				
 				targetConnection.setAutoCommit(false);
@@ -372,6 +352,8 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				
 				targetConnection.commit();
 
+				targetConnection.setAutoCommit(true);
+				
 				this.support.restoreUniqueConstraints(context, table);
 				
 				logger.info(Messages.getMessage(Messages.INSERT_COUNT, insertCount, tableName));
@@ -398,11 +380,12 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 			throw e;
 		}
 		
-		targetConnection.setAutoCommit(true);
-		
 		this.support.restoreForeignKeys(context);
 		
-		this.support.synchronizeSequences(context);
+		if (dialect.supportsSequences())
+		{
+			this.support.synchronizeSequences(context);
+		}
 	}
 
 	private boolean equals(Object object1, Object object2)

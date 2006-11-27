@@ -28,6 +28,11 @@ import java.sql.Types;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Dialect;
@@ -52,11 +57,11 @@ public class SynchronizationSupport
 	{
 		Connection connection = context.getConnection(context.getTargetDatabase());
 		
-		Statement statement = connection.createStatement();
-		
 		Collection<TableProperties> tables = context.getDatabaseMetaDataCache().getDatabaseProperties(connection).getTables();
 		
 		Dialect dialect = context.getDialect();
+		
+		Statement statement = connection.createStatement();
 		
 		// Drop foreign key constraints on the inactive database
 		for (TableProperties table: tables)
@@ -79,11 +84,11 @@ public class SynchronizationSupport
 	{
 		Connection connection = context.getConnection(context.getTargetDatabase());
 		
-		Statement statement = connection.createStatement();
-		
 		Collection<TableProperties> tables = context.getDatabaseMetaDataCache().getDatabaseProperties(connection).getTables();
 		
 		Dialect dialect = context.getDialect();
+		
+		Statement statement = connection.createStatement();
 		
 		// Drop foreign key constraints on the inactive database
 		for (TableProperties table: tables)
@@ -102,51 +107,91 @@ public class SynchronizationSupport
 		statement.close();
 	}
 	
-	public void synchronizeSequences(SynchronizationContext context) throws SQLException
+	public void synchronizeSequences(final SynchronizationContext context) throws SQLException
 	{
-		Connection targetConnection = context.getConnection(context.getTargetDatabase());
-		Statement targetStatement = targetConnection.createStatement();
-
 		Database sourceDatabase = context.getSourceDatabase();		
 		Connection sourceConnection = context.getConnection(sourceDatabase);
 		
 		Dialect dialect = context.getDialect();
 		
-		for (String sequence: dialect.getSequences(sourceConnection))
+		Map<String, Long> sequenceMap = new HashMap<String, Long>();
+
+		Collection<String> sequences = dialect.getSequences(sourceConnection);
+		Collection<Database> databases = context.getActiveDatabases();
+
+		Map<Database, Future<Long>> futureMap = new HashMap<Database, Future<Long>>();
+		ExecutorService executor = Executors.newFixedThreadPool(databases.size());
+		
+		for (String sequence: sequences)
 		{
-			String sql = dialect.getNextSequenceValueSQL(sequence);
+			final String sql = dialect.getNextSequenceValueSQL(sequence);
 			
 			logger.debug(sql);
 
-			Statement statement = sourceConnection.createStatement();
-			
-			ResultSet resultSet = statement.executeQuery(sql);
-			
-			resultSet.next();
-			
-			long value = resultSet.getLong(1);
-			
-			resultSet.close();
-			statement.close();
-			
-			// Next value for sequence must be performed on all active databases
-			for (Database database: context.getActiveDatabases())
+			for (final Database database: databases)
 			{
-				if (!database.equals(sourceDatabase))
+				Callable<Long> task = new Callable<Long>()
 				{
-					Connection connection = context.getConnection(database);
+					public Long call() throws SQLException
+					{
+						Statement statement = context.getConnection(database).createStatement();
+						ResultSet resultSet = statement.executeQuery(sql);
+						
+						resultSet.next();
+						
+						long value = resultSet.getLong(1);
+						
+						resultSet.close();
+						statement.close();
+						
+						return value;
+					}
+				};
+				
+				futureMap.put(database, executor.submit(task));				
+			}
 
-					statement = connection.createStatement();
-					statement.execute(sql);
-					statement.close();
+			try
+			{
+				Long sourceValue = futureMap.get(sourceDatabase).get();
+				
+				sequenceMap.put(sequence, sourceValue);
+				
+				for (Database database: databases)
+				{
+					if (!database.equals(sourceDatabase))
+					{
+						Long value = futureMap.get(database).get();
+						
+						if (!value.equals(sourceValue))
+						{
+							throw new SQLException(Messages.getMessage(Messages.SEQUENCE_OUT_OF_SYNC, sequence, database, value, sourceDatabase, sourceValue));
+						}
+					}
 				}
 			}
-			
-			sql = dialect.getAlterSequenceSQL(sequence, value);
+			catch (InterruptedException e)
+			{
+				throw new net.sf.hajdbc.SQLException(e);
+			}
+			catch (ExecutionException e)
+			{
+				throw new net.sf.hajdbc.SQLException(e);
+			}
+		}
+		
+		executor.shutdown();
+		
+		Connection targetConnection = context.getConnection(context.getTargetDatabase());
+		Statement targetStatement = targetConnection.createStatement();
+
+		for (String sequence: sequences)
+		{
+			String sql = dialect.getAlterSequenceSQL(sequence, sequenceMap.get(sequence) + 1);
 			
 			logger.debug(sql);
 			
-			statement.addBatch(sql);
+			targetStatement.addBatch(sql);
 		}
 		
 		targetStatement.executeBatch();		
@@ -157,7 +202,7 @@ public class SynchronizationSupport
 	{
 		logger.info(Messages.getMessage(Messages.TABLE_LOCK_ACQUIRE));
 		
-		Map<String, String> lockTableSQLMap = new HashMap<String, String>();
+		Map<TableProperties, String> lockTableSQLMap = new HashMap<TableProperties, String>();
 		
 		Connection targetConnection = context.getConnection(context.getTargetDatabase());
 		
@@ -174,15 +219,13 @@ public class SynchronizationSupport
 			
 			Statement statement = connection.createStatement();
 			
-			for (TableProperties properties: tables)
+			for (TableProperties table: tables)
 			{
-				String table = properties.getName();
-				
 				String sql = lockTableSQLMap.get(table);
 				
 				if (sql == null)
 				{
-					sql = dialect.getLockTableSQL(properties);
+					sql = dialect.getLockTableSQL(table);
 					
 					logger.debug(sql);
 						
@@ -216,16 +259,16 @@ public class SynchronizationSupport
 	
 	public void dropUniqueConstraints(SynchronizationContext context, TableProperties table) throws SQLException
 	{
+		Collection<UniqueConstraint> constraints = table.getUniqueConstraints();
+		
+		constraints.remove(table.getPrimaryKey());
+
 		Dialect dialect = context.getDialect();
 
 		Connection connection = context.getConnection(context.getTargetDatabase());
 		
 		Statement statement = connection.createStatement();
 		
-		Collection<UniqueConstraint> constraints = table.getUniqueConstraints();
-		
-		constraints.remove(table.getPrimaryKey());
-
 		// Drop unique constraints on the current table
 		for (UniqueConstraint constraint: constraints)
 		{
@@ -242,16 +285,16 @@ public class SynchronizationSupport
 	
 	public void restoreUniqueConstraints(SynchronizationContext context, TableProperties table) throws SQLException
 	{
+		Collection<UniqueConstraint> constraints = table.getUniqueConstraints();
+		
+		constraints.remove(table.getPrimaryKey());
+
 		Dialect dialect = context.getDialect();
 
 		Connection connection = context.getConnection(context.getTargetDatabase());
 		
 		Statement statement = connection.createStatement();
 		
-		Collection<UniqueConstraint> constraints = table.getUniqueConstraints();
-		
-		constraints.remove(table.getPrimaryKey());
-
 		// Drop unique constraints on the current table
 		for (UniqueConstraint constraint: constraints)
 		{

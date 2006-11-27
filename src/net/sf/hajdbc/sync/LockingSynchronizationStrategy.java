@@ -18,30 +18,34 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc;
+package net.sf.hajdbc.sync;
 
-import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Collection;
 
+import net.sf.hajdbc.SynchronizationContext;
+import net.sf.hajdbc.SynchronizationStrategy;
 
 /**
  * @author Paul Ferraro
- * @since 1.2
+ *
  */
-public interface SynchronizationContext
+public abstract class LockingSynchronizationStrategy implements SynchronizationStrategy
 {
-	public Connection getConnection(Database database) throws SQLException;
-	
-	public Database getSourceDatabase();
-	
-	public Database getTargetDatabase();
-	
-	public Collection<Database> getActiveDatabases();
-	
-	public DatabaseMetaDataCache getDatabaseMetaDataCache();
-	
-	public Dialect getDialect();
-	
-	public void close();
+	protected SynchronizationSupport support = new SynchronizationSupport();
+
+	/**
+	 * @see net.sf.hajdbc.SynchronizationStrategy#cleanup(net.sf.hajdbc.SynchronizationContextImpl)
+	 */
+	public void cleanup(SynchronizationContext context)
+	{
+		this.support.unlock(context);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.SynchronizationStrategy#prepare(net.sf.hajdbc.SynchronizationContextImpl)
+	 */
+	public void prepare(SynchronizationContext context) throws SQLException
+	{
+		this.support.lock(context);
+	}
 }
