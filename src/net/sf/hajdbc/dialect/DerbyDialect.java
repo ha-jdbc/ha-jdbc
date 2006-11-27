@@ -20,7 +20,6 @@
  */
 package net.sf.hajdbc.dialect;
 
-import java.sql.SQLException;
 import java.text.MessageFormat;
 
 import net.sf.hajdbc.ColumnProperties;
@@ -47,7 +46,7 @@ public class DerbyDialect extends StandardDialect
 	 * @see net.sf.hajdbc.dialect.StandardDialect#getLockTableSQL(net.sf.hajdbc.TableProperties)
 	 */
 	@Override
-	public String getLockTableSQL(TableProperties properties) throws SQLException
+	public String getLockTableSQL(TableProperties properties)
 	{
 		return MessageFormat.format("LOCK TABLE {0} IN SHARE MODE", properties.getName());
 	}

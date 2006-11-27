@@ -78,7 +78,7 @@ public class PostgreSQLDialect extends StandardDialect
 	 * @see net.sf.hajdbc.dialect.StandardDialect#getLockTableSQL(net.sf.hajdbc.TableProperties)
 	 */
 	@Override
-	public String getLockTableSQL(TableProperties properties) throws SQLException
+	public String getLockTableSQL(TableProperties properties)
 	{
 		return MessageFormat.format("LOCK TABLE {0} IN EXCLUSIVE MODE; SELECT 1 FROM {0}", properties.getName());
 	}

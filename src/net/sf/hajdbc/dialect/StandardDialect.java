@@ -118,7 +118,7 @@ public class StandardDialect implements Dialect
 	/**
 	 * @see net.sf.hajdbc.Dialect#getTruncateTableSQL(net.sf.hajdbc.TableProperties)
 	 */
-	public String getTruncateTableSQL(TableProperties properties) throws SQLException
+	public String getTruncateTableSQL(TableProperties properties)
 	{
 		return MessageFormat.format(this.truncateTableFormat(), properties.getName());
 	}

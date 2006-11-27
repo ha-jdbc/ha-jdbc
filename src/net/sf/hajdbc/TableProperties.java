@@ -29,7 +29,7 @@ import java.util.Collection;
  */
 public interface TableProperties
 {
-	public String getName() throws SQLException;
+	public String getName();
 	
 	public Collection<String> getColumns() throws SQLException;
 	
