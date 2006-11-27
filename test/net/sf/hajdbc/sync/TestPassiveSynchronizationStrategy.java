@@ -20,16 +20,15 @@
  */
 package net.sf.hajdbc.sync;
 
-import java.sql.Connection;
+import java.sql.SQLException;
+
+import net.sf.hajdbc.SynchronizationContext;
+import net.sf.hajdbc.SynchronizationStrategy;
 
 import org.easymock.EasyMock;
 import org.easymock.IMocksControl;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-
-import net.sf.hajdbc.DatabaseMetaDataCache;
-import net.sf.hajdbc.Dialect;
-import net.sf.hajdbc.SynchronizationStrategy;
 
 /**
  * @author Paul Ferraro
@@ -41,32 +40,51 @@ public class TestPassiveSynchronizationStrategy implements SynchronizationStrate
 	
 	private SynchronizationStrategy strategy = new PassiveSynchronizationStrategy();
 	
-	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#requiresTableLocking()
-	 */
-	@Test
-	public boolean requiresTableLocking()
+	@DataProvider(name = "context")
+	public Object[][] contextProvider()
 	{
-		boolean requires = this.strategy.requiresTableLocking();
-		
-		assert !requires;
-		
-		return requires;
+		return new Object[][] { new Object[] { this.control.createMock(SynchronizationContext.class) } };
 	}
-	
-	@DataProvider(name = "sync")
-	public Object[][] syncProvider()
+
+	/**
+	 * @see net.sf.hajdbc.SynchronizationStrategy#cleanup(net.sf.hajdbc.sync.SynchronizationContextImpl)
+	 */
+	@Test(dataProvider = "context")
+	public void cleanup(SynchronizationContext context)
 	{
-		return new Object[][] { new Object[] { this.control.createMock(Connection.class), this.control.createMock(Connection.class), this.control.createMock(DatabaseMetaDataCache.class), this.control.createMock(Dialect.class) } };
+		this.control.replay();
+		
+		this.strategy.cleanup(context);
+		
+		this.control.verify();
+		
+		this.control.reset();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.SynchronizationStrategy#prepare(net.sf.hajdbc.sync.SynchronizationContextImpl)
+	 */
+	@Test(dataProvider = "context")
+	public void prepare(SynchronizationContext context) throws SQLException
+	{
+		this.control.replay();
+		
+		this.strategy.prepare(context);
+		
+		this.control.verify();
+		
+		this.control.reset();
 	}
 
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, net.sf.hajdbc.DatabaseMetaDataCache, net.sf.hajdbc.Dialect)
 	 */
-	@Test(dataProvider = "sync")
-	public void synchronize(Connection inactiveConnection, Connection activeConnection, DatabaseMetaDataCache metaData, Dialect dialect)
+	@Test(dataProvider = "context")
+	public void synchronize(SynchronizationContext context) throws SQLException
 	{
 		this.control.replay();
+		
+		this.strategy.synchronize(context);
 		
 		this.control.verify();
 		
