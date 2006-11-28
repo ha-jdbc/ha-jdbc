@@ -22,7 +22,6 @@ package net.sf.hajdbc.local;
 
 import java.sql.Connection;
 import java.sql.Statement;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -892,26 +891,6 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		}
 	}
 
-	String getFailureDetectionSchedule()
-	{
-		return (this.failureDetectionExpression != null) ? this.failureDetectionExpression.getCronExpression() : null;
-	}
-	
-	void setFailureDetectionSchedule(String schedule) throws ParseException
-	{
-		this.failureDetectionExpression = (schedule != null) ? new CronExpression(schedule) : null;
-	}
-
-	String getAutoActivationSchedule()
-	{
-		return (this.autoActivationExpression != null) ? this.autoActivationExpression.getCronExpression() : null;
-	}
-	
-	void setAutoActivationSchedule(String schedule) throws ParseException
-	{
-		this.autoActivationExpression = (schedule != null) ? new CronExpression(schedule) : null;
-	}
-	
 	class FailureDetectionTask implements Runnable
 	{
 		/**
