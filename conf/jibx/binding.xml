@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <!--DOCTYPE binding SYSTEM "binding.dtd"-->
 <binding>
+	<format type="org.quartz.CronExpression" serializer="net.sf.hajdbc.util.Formatter.serializeCronExpression" deserializer="net.sf.hajdbc.util.Formatter.deserializeCronExpression"/>
+	<format type="java.lang.Class" serializer="net.sf.hajdbc.util.Formatter.serializeClass" deserializer="net.sf.hajdbc.util.Formatter.deserializeClass"/>
 	<mapping name="ha-jdbc" class="net.sf.hajdbc.DatabaseClusterFactory">
 		<structure name="distributable" field="builder" type="net.sf.hajdbc.distributable.DistributableDatabaseClusterBuilder" usage="optional">
 			<value name="config" get-method="getConfig" set-method="setConfig" style="attribute" usage="optional" default="stacks.xml"/>
@@ -22,8 +24,8 @@
 		<value name="dialect" field="dialect" style="attribute" deserializer="net.sf.hajdbc.dialect.DialectFactory.deserialize" serializer="net.sf.hajdbc.dialect.DialectFactory.serialize" usage="optional"/>
 		<value name="meta-data-cache" field="databaseMetaDataCache" style="attribute" deserializer="net.sf.hajdbc.cache.DatabaseMetaDataCacheFactory.deserialize" serializer="net.sf.hajdbc.cache.DatabaseMetaDataCacheFactory.serialize" usage="required"/>
 		<value name="transactions" field="transaction" style="attribute" deserializer="net.sf.hajdbc.local.Transaction.deserialize" serializer="net.sf.hajdbc.local.Transaction.serialize"/>
-		<value name="auto-activate-schedule" field="autoActivationSchedule" style="attribute" usage="optional"/>
-		<value name="failure-detect-schedule" field="failureDetectionSchedule" style="attribute" usage="optional"/>
+		<value name="auto-activate-schedule" field="autoActivationExpression" style="attribute" usage="optional"/>
+		<value name="failure-detect-schedule" field="failureDetectionExpression" style="attribute" usage="optional"/>
 		<value name="min-threads" field="minThreads" usage="optional" default="0"/>
 		<value name="max-threads" field="maxThreads" usage="optional" default="100"/>
 		<value name="max-idle" field="maxIdle" style="attribute" usage="optional" default="60"/>
@@ -40,7 +42,7 @@
 		<value name="password" field="password" usage="optional"/>
 	</mapping>
 	<mapping name="database" class="net.sf.hajdbc.sql.DriverDatabase" extends="net.sf.hajdbc.sql.AbstractDatabase">
-		<value name="driver" field="driverClass" usage="optional" serializer="net.sf.hajdbc.sql.DriverDatabase.getClassName" deserializer="net.sf.hajdbc.sql.DriverDatabase.forName"/>
+		<value name="driver" field="driverClass" usage="optional"/>
 		<value name="url" field="url"/>
 		<structure map-as="net.sf.hajdbc.sql.AbstractDatabase"></structure>
 	</mapping>
