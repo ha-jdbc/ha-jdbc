@@ -20,7 +20,6 @@
  */
 package net.sf.hajdbc.util.concurrent;
 
-import java.text.ParseException;
 import java.util.Date;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -29,12 +28,12 @@ import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.quartz.CronTrigger;
+import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Scheduled thread-pool executor implementation that leverages a Quartz cron trigger to calculate future execution times for scheduled tasks.
+ * Scheduled thread-pool executor implementation that leverages a Quartz CronExpression to calculate future execution times for scheduled tasks.
  *
  * @author  Paul Ferraro
  * @since   1.1
@@ -63,22 +62,11 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.util.concurrent.CronExecutorService#schedule(java.lang.Runnable, java.lang.String)
+	 * @see net.sf.hajdbc.util.concurrent.CronExecutorService#schedule(java.lang.Runnable, org.quartz.CronExpression)
 	 */
-	public void schedule(final Runnable task, String expression)
+	public void schedule(final Runnable task, final CronExpression expression)
 	{
 		if (task == null) throw new NullPointerException();
-		
-		final CronTrigger trigger = new CronTrigger();
-		
-		try
-		{
-			trigger.setCronExpression(expression);
-		}
-		catch (ParseException e)
-		{
-			throw new RejectedExecutionException(e);
-		}
 		
 		this.setCorePoolSize(this.getCorePoolSize() + 1);
 		
@@ -89,19 +77,19 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 			 */
 			public void run()
 			{
-				Date fireTime = trigger.getFireTimeAfter(new Date());
+				Date time = expression.getNextValidTimeAfter(new Date());
 			
 				try
 				{
-					while (fireTime != null)
+					while (time != null)
 					{
-						long delay = Math.max(fireTime.getTime() - System.currentTimeMillis(), 0);
+						long delay = Math.max(time.getTime() - System.currentTimeMillis(), 0);
 						
 						try
 						{
 							CronThreadPoolExecutor.this.schedule(task, delay, TimeUnit.MILLISECONDS).get();
 							
-							fireTime = trigger.getFireTimeAfter(new Date());
+							time = expression.getNextValidTimeAfter(new Date());
 						}
 						catch (ExecutionException e)
 						{
