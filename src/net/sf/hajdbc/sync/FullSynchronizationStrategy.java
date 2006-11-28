@@ -75,6 +75,7 @@ public class FullSynchronizationStrategy extends LockingSynchronizationStrategy 
 	private ExecutorService executor = Executors.newSingleThreadExecutor(DaemonThreadFactory.getInstance());
 	private int maxBatchSize = 100;
 	private int fetchSize = 0;
+	
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.SynchronizationContextImpl)
 	 */
@@ -87,7 +88,7 @@ public class FullSynchronizationStrategy extends LockingSynchronizationStrategy 
 		
 		targetConnection.setAutoCommit(true);
 		
-		this.support.dropForeignKeys(context);
+		SynchronizationSupport.dropForeignKeys(context);
 		
 		targetConnection.setAutoCommit(false);
 		
@@ -149,7 +150,7 @@ public class FullSynchronizationStrategy extends LockingSynchronizationStrategy 
 						
 						int type = dialect.getColumnType(table.getColumnProperties(column));
 						
-						Object object = this.support.getObject(resultSet, index, type);
+						Object object = SynchronizationSupport.getObject(resultSet, index, type);
 						
 						if (resultSet.wasNull())
 						{
@@ -188,30 +189,30 @@ public class FullSynchronizationStrategy extends LockingSynchronizationStrategy 
 		}
 		catch (InterruptedException e)
 		{
-			this.support.rollback(targetConnection);
+			SynchronizationSupport.rollback(targetConnection);
 
 			throw new net.sf.hajdbc.SQLException(e);
 		}
 		catch (ExecutionException e)
 		{
-			this.support.rollback(targetConnection);
+			SynchronizationSupport.rollback(targetConnection);
 
 			throw new net.sf.hajdbc.SQLException(e.getCause());
 		}
 		catch (SQLException e)
 		{
-			this.support.rollback(targetConnection);
+			SynchronizationSupport.rollback(targetConnection);
 			
 			throw e;
 		}
 		
 		targetConnection.setAutoCommit(true);
 		
-		this.support.restoreForeignKeys(context);
+		SynchronizationSupport.restoreForeignKeys(context);
 		
 		if (dialect.supportsSequences())
 		{
-			this.support.synchronizeSequences(context);
+			SynchronizationSupport.synchronizeSequences(context);
 		}
 	}
 

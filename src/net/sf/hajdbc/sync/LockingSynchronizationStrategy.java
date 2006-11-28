@@ -31,14 +31,12 @@ import net.sf.hajdbc.SynchronizationStrategy;
  */
 public abstract class LockingSynchronizationStrategy implements SynchronizationStrategy
 {
-	protected SynchronizationSupport support = new SynchronizationSupport();
-
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#cleanup(net.sf.hajdbc.SynchronizationContextImpl)
 	 */
 	public void cleanup(SynchronizationContext context)
 	{
-		this.support.unlock(context);
+		SynchronizationSupport.unlock(context);
 	}
 
 	/**
@@ -46,6 +44,6 @@ public abstract class LockingSynchronizationStrategy implements SynchronizationS
 	 */
 	public void prepare(SynchronizationContext context) throws SQLException
 	{
-		this.support.lock(context);
+		SynchronizationSupport.lock(context);
 	}
 }

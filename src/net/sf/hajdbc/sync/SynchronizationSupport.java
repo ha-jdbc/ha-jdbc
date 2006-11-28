@@ -49,11 +49,16 @@ import org.slf4j.LoggerFactory;
  * @author Paul Ferraro
  *
  */
-public class SynchronizationSupport
+public final class SynchronizationSupport
 {
 	private static Logger logger = LoggerFactory.getLogger(SynchronizationSupport.class);
 	
-	public void dropForeignKeys(SynchronizationContext context) throws SQLException
+	private SynchronizationSupport()
+	{
+		// Hide
+	}
+	
+	public static void dropForeignKeys(SynchronizationContext context) throws SQLException
 	{
 		Connection connection = context.getConnection(context.getTargetDatabase());
 		
@@ -80,7 +85,7 @@ public class SynchronizationSupport
 		statement.close();
 	}
 	
-	public void restoreForeignKeys(SynchronizationContext context) throws SQLException
+	public static void restoreForeignKeys(SynchronizationContext context) throws SQLException
 	{
 		Connection connection = context.getConnection(context.getTargetDatabase());
 		
@@ -107,7 +112,7 @@ public class SynchronizationSupport
 		statement.close();
 	}
 	
-	public void synchronizeSequences(final SynchronizationContext context) throws SQLException
+	public static void synchronizeSequences(final SynchronizationContext context) throws SQLException
 	{
 		Database sourceDatabase = context.getSourceDatabase();		
 		Connection sourceConnection = context.getConnection(sourceDatabase);
@@ -198,7 +203,7 @@ public class SynchronizationSupport
 		targetStatement.close();
 	}
 	
-	public void lock(SynchronizationContext context) throws SQLException
+	public static void lock(SynchronizationContext context) throws SQLException
 	{
 		logger.info(Messages.getMessage(Messages.TABLE_LOCK_ACQUIRE));
 		
@@ -239,7 +244,7 @@ public class SynchronizationSupport
 		}
 	}
 	
-	public void unlock(SynchronizationContext context)
+	public static void unlock(SynchronizationContext context)
 	{
 		for (Database database: context.getActiveDatabases())
 		{
@@ -257,7 +262,7 @@ public class SynchronizationSupport
 		}
 	}
 	
-	public void dropUniqueConstraints(SynchronizationContext context, TableProperties table) throws SQLException
+	public static void dropUniqueConstraints(SynchronizationContext context, TableProperties table) throws SQLException
 	{
 		Collection<UniqueConstraint> constraints = table.getUniqueConstraints();
 		
@@ -283,7 +288,7 @@ public class SynchronizationSupport
 		statement.close();
 	}
 	
-	public void restoreUniqueConstraints(SynchronizationContext context, TableProperties table) throws SQLException
+	public static void restoreUniqueConstraints(SynchronizationContext context, TableProperties table) throws SQLException
 	{
 		Collection<UniqueConstraint> constraints = table.getUniqueConstraints();
 		
@@ -309,7 +314,7 @@ public class SynchronizationSupport
 		statement.close();
 	}
 	
-	public void rollback(Connection connection)
+	public static void rollback(Connection connection)
 	{
 		try
 		{
@@ -322,7 +327,7 @@ public class SynchronizationSupport
 		}
 	}
 	
-	public Object getObject(ResultSet resultSet, int index, int type) throws SQLException
+	public static Object getObject(ResultSet resultSet, int index, int type) throws SQLException
 	{
 		switch (type)
 		{

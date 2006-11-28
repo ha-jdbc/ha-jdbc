@@ -100,13 +100,13 @@ public class DifferentialSynchronizationStrategy extends LockingSynchronizationS
 		
 		targetConnection.setAutoCommit(true);
 		
-		this.support.dropForeignKeys(context);
+		SynchronizationSupport.dropForeignKeys(context);
 		
 		try
 		{
 			for (TableProperties table: context.getDatabaseMetaDataCache().getDatabaseProperties(targetConnection).getTables())
 			{
-				this.support.dropUniqueConstraints(context, table);
+				SynchronizationSupport.dropUniqueConstraints(context, table);
 				
 				targetConnection.setAutoCommit(false);
 				
@@ -254,7 +254,7 @@ public class DifferentialSynchronizationStrategy extends LockingSynchronizationS
 						{
 							int type = dialect.getColumnType(table.getColumnProperties(columnList.get(i - 1)));
 
-							Object object = this.support.getObject(sourceResultSet, i, type);
+							Object object = SynchronizationSupport.getObject(sourceResultSet, i, type);
 							
 							if (sourceResultSet.wasNull())
 							{
@@ -280,8 +280,8 @@ public class DifferentialSynchronizationStrategy extends LockingSynchronizationS
 						{
 							int type = dialect.getColumnType(table.getColumnProperties(columnList.get(i - 1)));
 							
-							Object activeObject = this.support.getObject(sourceResultSet, i, type);
-							Object inactiveObject = this.support.getObject(inactiveResultSet, i, type);
+							Object activeObject = SynchronizationSupport.getObject(sourceResultSet, i, type);
+							Object inactiveObject = SynchronizationSupport.getObject(inactiveResultSet, i, type);
 							
 							int index = i - primaryKeyColumnList.size();
 							
@@ -354,7 +354,7 @@ public class DifferentialSynchronizationStrategy extends LockingSynchronizationS
 
 				targetConnection.setAutoCommit(true);
 				
-				this.support.restoreUniqueConstraints(context, table);
+				SynchronizationSupport.restoreUniqueConstraints(context, table);
 				
 				logger.info(Messages.getMessage(Messages.INSERT_COUNT, insertCount, tableName));
 				logger.info(Messages.getMessage(Messages.UPDATE_COUNT, updateCount, tableName));
@@ -363,28 +363,28 @@ public class DifferentialSynchronizationStrategy extends LockingSynchronizationS
 		}
 		catch (ExecutionException e)
 		{
-			this.support.rollback(targetConnection);
+			SynchronizationSupport.rollback(targetConnection);
 			
 			throw new net.sf.hajdbc.SQLException(e.getCause());
 		}
 		catch (InterruptedException e)
 		{
-			this.support.rollback(targetConnection);
+			SynchronizationSupport.rollback(targetConnection);
 			
 			throw new net.sf.hajdbc.SQLException(e);
 		}
 		catch (SQLException e)
 		{
-			this.support.rollback(targetConnection);
+			SynchronizationSupport.rollback(targetConnection);
 			
 			throw e;
 		}
 		
-		this.support.restoreForeignKeys(context);
+		SynchronizationSupport.restoreForeignKeys(context);
 		
 		if (dialect.supportsSequences())
 		{
-			this.support.synchronizeSequences(context);
+			SynchronizationSupport.synchronizeSequences(context);
 		}
 	}
 
