@@ -22,6 +22,7 @@ package net.sf.hajdbc.local;
 
 import java.sql.Connection;
 import java.sql.Statement;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -65,6 +66,7 @@ import net.sf.hajdbc.sync.SynchronizationContextImpl;
 import net.sf.hajdbc.util.concurrent.CronThreadPoolExecutor;
 import net.sf.hajdbc.util.concurrent.SynchronousExecutor;
 
+import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,8 +124,8 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	private Dialect dialect;
 	private DatabaseMetaDataCache databaseMetaDataCache;
 	private String defaultSynchronizationStrategyId;
-	private String failureDetectionSchedule;
-	private String autoActivationSchedule;
+	private CronExpression failureDetectionExpression;
+	private CronExpression autoActivationExpression;
 	private int minThreads;
 	private int maxThreads;
 	private int maxIdle;
@@ -634,14 +636,14 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		
 		this.flushMetaDataCache();
 		
-		if (this.failureDetectionSchedule != null)
+		if (this.failureDetectionExpression != null)
 		{
-			this.cronExecutor.schedule(new FailureDetectionTask(), this.failureDetectionSchedule);
+			this.cronExecutor.schedule(new FailureDetectionTask(), this.failureDetectionExpression);
 		}
 		
-		if (this.autoActivationSchedule != null)
+		if (this.autoActivationExpression != null)
 		{
-			this.cronExecutor.schedule(new AutoActivationTask(), this.autoActivationSchedule);
+			this.cronExecutor.schedule(new AutoActivationTask(), this.autoActivationExpression);
 		}
 	}
 	
@@ -889,132 +891,27 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			lock.unlock();
 		}
 	}
-/*	
-	@SuppressWarnings("unchecked")
-	private void activate(Database inactiveDatabase, List<Database> activeDatabaseList, SynchronizationStrategy strategy) throws java.sql.SQLException
-	{
-		Database activeDatabase = this.getBalancer().next();
-		
-		Connection inactiveConnection = null;
-		Connection activeConnection = null;
 
-		List<Connection> connectionList = new ArrayList<Connection>(activeDatabaseList.size());
-		
-		try
-		{
-			Map<Database, ?> connectionFactoryMap = this.getConnectionFactoryMap();
-			
-			inactiveConnection = inactiveDatabase.connect(connectionFactoryMap.get(inactiveDatabase));
-			activeConnection = activeDatabase.connect(connectionFactoryMap.get(activeDatabase));
-			
-			if (strategy.requiresTableLocking())
-			{
-				logger.info(Messages.getMessage(Messages.TABLE_LOCK_ACQUIRE));
-				
-				Map<String, String> lockTableSQLMap = new HashMap<String, String>();
-				
-				// Lock all tables on all active databases
-				for (Database database: activeDatabaseList)
-				{
-					Connection connection = database.equals(activeDatabase) ? activeConnection : database.connect(connectionFactoryMap.get(database));
-					
-					connectionList.add(connection);
-					
-					connection.setAutoCommit(false);
-					connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-					
-					Statement statement = connection.createStatement();
-					
-					for (TableProperties properties: this.databaseMetaDataCache.getDatabaseProperties(activeConnection).getTables())
-					{
-						String table = properties.getName();
-						
-						String sql = lockTableSQLMap.get(table);
-						
-						if (sql == null)
-						{
-							sql = this.dialect.getLockTableSQL(properties);
-							
-							logger.debug(sql);
-								
-							lockTableSQLMap.put(table, sql);
-						}
-							
-						statement.execute(sql);
-					}
-					
-					statement.close();
-				}
-			}
-			
-			logger.info(Messages.getMessage(Messages.DATABASE_SYNC_START, inactiveDatabase, this));
+	String getFailureDetectionSchedule()
+	{
+		return (this.failureDetectionExpression != null) ? this.failureDetectionExpression.getCronExpression() : null;
+	}
+	
+	void setFailureDetectionSchedule(String schedule) throws ParseException
+	{
+		this.failureDetectionExpression = (schedule != null) ? new CronExpression(schedule) : null;
+	}
 
-			strategy.synchronize(inactiveConnection, activeConnection, this.databaseMetaDataCache, this.dialect);
-			
-			logger.info(Messages.getMessage(Messages.DATABASE_SYNC_END, inactiveDatabase, this));
-	
-			this.activate(inactiveDatabase);
-			
-			if (strategy.requiresTableLocking())
-			{
-				logger.info(Messages.getMessage(Messages.TABLE_LOCK_RELEASE));
-				
-				// Release table locks
-				this.rollback(connectionList);
-			}
-		}
-		catch (java.sql.SQLException e)
-		{
-			this.rollback(connectionList);
-			
-			throw e;
-		}
-		finally
-		{
-			this.close(activeConnection);
-			this.close(inactiveConnection);
-			
-			for (Connection connection: connectionList)
-			{
-				this.close(connection);
-			}
-		}
-	}
-	
-	private void rollback(List<Connection> connectionList)
+	String getAutoActivationSchedule()
 	{
-		for (Connection connection: connectionList)
-		{
-			try
-			{
-				connection.rollback();
-				connection.setAutoCommit(true);
-			}
-			catch (java.sql.SQLException e)
-			{
-				logger.warn(e.toString(), e);
-			}
-		}
+		return (this.autoActivationExpression != null) ? this.autoActivationExpression.getCronExpression() : null;
 	}
 	
-	private void close(Connection connection)
+	void setAutoActivationSchedule(String schedule) throws ParseException
 	{
-		if (connection != null)
-		{
-			try
-			{
-				if (!connection.isClosed())
-				{
-					connection.close();
-				}
-			}
-			catch (java.sql.SQLException e)
-			{
-				logger.warn(e.toString(), e);
-			}
-		}
+		this.autoActivationExpression = (schedule != null) ? new CronExpression(schedule) : null;
 	}
-*/	
+	
 	class FailureDetectionTask implements Runnable
 	{
 		/**
