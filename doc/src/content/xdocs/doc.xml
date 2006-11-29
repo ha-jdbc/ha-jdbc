@@ -155,8 +155,9 @@
 				<source><![CDATA[
 <!ELEMENT distributable EMPTY>
 <!ATTLIST distributable
-  protocol CDATA "default-minimalthreads.xml"
-  timeout  CDATA "1000"
+  config  CDATA "stacks.xml"
+  stack   CDATA "udp"
+  timeout CDATA "1000"
 >
 ]]></source>
 				<dl>
