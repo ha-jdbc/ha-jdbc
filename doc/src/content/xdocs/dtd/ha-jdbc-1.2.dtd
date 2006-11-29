@@ -30,7 +30,7 @@
 <!ELEMENT distributable EMPTY>
 <!ATTLIST distributable
 	config CDATA "stacks.xml"
-	stack CDATA "fc-fast-minimalthreads"
+	stack CDATA "udp"
 	timeout CDATA "1000"
 >
 
