@@ -6,7 +6,7 @@
 	<mapping name="ha-jdbc" class="net.sf.hajdbc.DatabaseClusterFactory">
 		<structure name="distributable" field="builder" type="net.sf.hajdbc.distributable.DistributableDatabaseClusterBuilder" usage="optional">
 			<value name="config" get-method="getConfig" set-method="setConfig" style="attribute" usage="optional" default="stacks.xml"/>
-			<value name="stack" field="stack" style="attribute" usage="optional" default="fc-fast-minimalthreads"/>
+			<value name="stack" field="stack" style="attribute" usage="optional" default="udp"/>
 			<value name="timeout" field="timeout" style="attribute" usage="optional" default="1000"/>
 		</structure>
 		<collection add-method="addSynchronizationStrategyBuilder" iter-method="getSynchronizationStrategyBuilders" item-type="net.sf.hajdbc.SynchronizationStrategyBuilder"></collection>
