@@ -24,6 +24,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collections;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.easymock.EasyMock;
 import org.easymock.IMocksControl;
@@ -54,7 +56,9 @@ public abstract class TestLockingSynchronizationStrategy implements Synchronizat
 	protected Dialect dialect = this.control.createMock(Dialect.class);
 	protected DatabaseProperties database = this.control.createMock(DatabaseProperties.class);
 	protected TableProperties table = this.control.createMock(TableProperties.class);
-
+	
+	protected ExecutorService executor = Executors.newSingleThreadExecutor();
+	
 	protected SynchronizationStrategy strategy = this.createSynchronizationStrategy();
 
 	protected abstract SynchronizationStrategy createSynchronizationStrategy();
@@ -78,6 +82,7 @@ public abstract class TestLockingSynchronizationStrategy implements Synchronizat
 	public void cleanup(SynchronizationContext context)
 	{
 		EasyMock.expect(context.getActiveDatabases()).andReturn(Collections.singleton(this.sourceDatabase));
+		EasyMock.expect(context.getExecutor()).andReturn(this.executor);
 		
 		try
 		{
@@ -115,14 +120,16 @@ public abstract class TestLockingSynchronizationStrategy implements Synchronizat
 		EasyMock.expect(context.getDialect()).andReturn(this.dialect);
 
 		EasyMock.expect(context.getActiveDatabases()).andReturn(Collections.singleton(this.sourceDatabase));
+		EasyMock.expect(context.getExecutor()).andReturn(this.executor);
+		
+		EasyMock.expect(this.dialect.getLockTableSQL(this.table)).andReturn("LOCK TABLE table");
+		
 		EasyMock.expect(context.getConnection(this.sourceDatabase)).andReturn(this.sourceConnection);
 		
 		this.sourceConnection.setAutoCommit(false);
 		this.sourceConnection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 		
 		EasyMock.expect(this.sourceConnection.createStatement()).andReturn(statement);
-		
-		EasyMock.expect(this.dialect.getLockTableSQL(this.table)).andReturn("LOCK TABLE table");
 		
 		EasyMock.expect(statement.execute("LOCK TABLE table")).andReturn(true);
 		

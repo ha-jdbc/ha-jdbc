@@ -76,7 +76,8 @@ public class TestFullSynchronizationStrategy extends TestLockingSynchronizationS
 		EasyMock.expect(context.getConnection(this.targetDatabase)).andReturn(this.targetConnection);
 		
 		EasyMock.expect(context.getDialect()).andReturn(this.dialect);
-		
+		EasyMock.expect(context.getExecutor()).andReturn(this.executor);
+
 		this.targetConnection.setAutoCommit(true);
 		
 		EasyMock.expect(context.getTargetDatabase()).andReturn(this.targetDatabase);
@@ -199,6 +200,7 @@ public class TestFullSynchronizationStrategy extends TestLockingSynchronizationS
 		
 		EasyMock.expect(this.dialect.getSequences(this.sourceConnection)).andReturn(sequenceList);
 		EasyMock.expect(context.getActiveDatabases()).andReturn(Collections.singleton(this.sourceDatabase));
+		EasyMock.expect(context.getExecutor()).andReturn(this.executor);
 		
 		EasyMock.expect(this.dialect.getNextSequenceValueSQL("sequence1")).andReturn("sequence1 next value");
 
@@ -213,7 +215,6 @@ public class TestFullSynchronizationStrategy extends TestLockingSynchronizationS
 		sourceResultSet.close();
 		sourceStatement.close();
 
-		
 		EasyMock.expect(this.dialect.getNextSequenceValueSQL("sequence2")).andReturn("sequence2 next value");
 		
 		EasyMock.expect(context.getConnection(this.sourceDatabase)).andReturn(this.sourceConnection);
