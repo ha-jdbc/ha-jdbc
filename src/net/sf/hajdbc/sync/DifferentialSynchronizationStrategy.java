@@ -36,7 +36,6 @@ import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import net.sf.hajdbc.Dialect;
@@ -45,7 +44,6 @@ import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.UniqueConstraint;
 import net.sf.hajdbc.util.Strings;
-import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,7 +80,6 @@ public class DifferentialSynchronizationStrategy extends LockingSynchronizationS
 {
 	private static Logger logger = LoggerFactory.getLogger(DifferentialSynchronizationStrategy.class);
 
-	private ExecutorService executor = Executors.newSingleThreadExecutor(DaemonThreadFactory.getInstance());
 	private int fetchSize = 0;
 	
 	/**
@@ -97,6 +94,8 @@ public class DifferentialSynchronizationStrategy extends LockingSynchronizationS
 		Connection targetConnection = context.getConnection(context.getTargetDatabase());
 
 		Dialect dialect = context.getDialect();
+
+		ExecutorService executor = context.getExecutor();
 		
 		targetConnection.setAutoCommit(true);
 		
@@ -160,7 +159,7 @@ public class DifferentialSynchronizationStrategy extends LockingSynchronizationS
 					}
 				};
 	
-				Future<ResultSet> future = this.executor.submit(callable);
+				Future<ResultSet> future = executor.submit(callable);
 				
 				Statement sourceStatement = sourceConnection.createStatement();
 				sourceStatement.setFetchSize(this.fetchSize);

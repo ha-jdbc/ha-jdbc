@@ -30,7 +30,6 @@ import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import net.sf.hajdbc.Dialect;
@@ -39,7 +38,6 @@ import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.util.Strings;
-import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,7 +70,6 @@ public class FullSynchronizationStrategy extends LockingSynchronizationStrategy 
 {
 	private static Logger logger = LoggerFactory.getLogger(FullSynchronizationStrategy.class);
 
-	private ExecutorService executor = Executors.newSingleThreadExecutor(DaemonThreadFactory.getInstance());
 	private int maxBatchSize = 100;
 	private int fetchSize = 0;
 	
@@ -85,6 +82,7 @@ public class FullSynchronizationStrategy extends LockingSynchronizationStrategy 
 		Connection targetConnection = context.getConnection(context.getTargetDatabase());
 
 		Dialect dialect = context.getDialect();
+		ExecutorService executor = context.getExecutor();
 		
 		targetConnection.setAutoCommit(true);
 		
@@ -114,7 +112,7 @@ public class FullSynchronizationStrategy extends LockingSynchronizationStrategy 
 					}
 				};
 	
-				Future<ResultSet> future = this.executor.submit(callable);
+				Future<ResultSet> future = executor.submit(callable);
 				
 				String deleteSQL = dialect.getTruncateTableSQL(table);
 	

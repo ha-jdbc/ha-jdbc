@@ -25,6 +25,8 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
@@ -32,6 +34,7 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.SynchronizationContext;
+import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +53,7 @@ public class SynchronizationContextImpl implements SynchronizationContext
 	private Database targetDatabase;
 	private DatabaseCluster cluster;
 	private Map<Database, Connection> connectionMap = new HashMap<Database, Connection>();
+	private ExecutorService executor;
 	
 	public SynchronizationContextImpl(DatabaseCluster cluster, Database database)
 	{
@@ -60,6 +64,7 @@ public class SynchronizationContextImpl implements SynchronizationContext
 		this.sourceDatabase = balancer.next();
 		this.activeDatabases = balancer.list();
 		this.targetDatabase = database;
+		this.executor = Executors.newFixedThreadPool(this.activeDatabases.size(), DaemonThreadFactory.getInstance());
 	}
 	
 	/**
@@ -124,6 +129,14 @@ public class SynchronizationContextImpl implements SynchronizationContext
 	}
 	
 	/**
+	 * @see net.sf.hajdbc.SynchronizationContext#getExecutor()
+	 */
+	public ExecutorService getExecutor()
+	{
+		return this.executor;
+	}
+
+	/**
 	 * @see net.sf.hajdbc.SynchronizationContext#close()
 	 */
 	public void close()
@@ -145,6 +158,7 @@ public class SynchronizationContextImpl implements SynchronizationContext
 				}
 			}
 		}
+		
+		this.executor.shutdown();
 	}
-	
 }
