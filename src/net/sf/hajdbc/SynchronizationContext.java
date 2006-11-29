@@ -23,6 +23,7 @@ package net.sf.hajdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.concurrent.ExecutorService;
 
 
 /**
@@ -42,6 +43,8 @@ public interface SynchronizationContext
 	public DatabaseMetaDataCache getDatabaseMetaDataCache();
 	
 	public Dialect getDialect();
+	
+	public ExecutorService getExecutor();
 	
 	public void close();
 }
