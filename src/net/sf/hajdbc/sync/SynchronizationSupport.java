@@ -290,7 +290,7 @@ public final class SynchronizationSupport
 		
 		Collection<Future<Void>> futures = new ArrayList<Future<Void>>(databases.size());
 		
-		for (final Database database: context.getActiveDatabases())
+		for (final Database database: databases)
 		{
 			Callable<Void> task = new Callable<Void>()
 			{
