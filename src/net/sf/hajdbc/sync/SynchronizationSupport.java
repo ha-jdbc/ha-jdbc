@@ -25,13 +25,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import net.sf.hajdbc.Database;
@@ -58,6 +58,11 @@ public final class SynchronizationSupport
 		// Hide
 	}
 	
+	/**
+	 * Drop all foreign key constraints on the target database
+	 * @param context a synchronization context
+	 * @throws SQLException if database error occurs
+	 */
 	public static void dropForeignKeys(SynchronizationContext context) throws SQLException
 	{
 		Connection connection = context.getConnection(context.getTargetDatabase());
@@ -68,7 +73,6 @@ public final class SynchronizationSupport
 		
 		Statement statement = connection.createStatement();
 		
-		// Drop foreign key constraints on the inactive database
 		for (TableProperties table: tables)
 		{
 			for (ForeignKeyConstraint constraint: table.getForeignKeyConstraints())
@@ -85,6 +89,11 @@ public final class SynchronizationSupport
 		statement.close();
 	}
 	
+	/**
+	 * Restores all foreign key constraints on the target database
+	 * @param context a synchronization context
+	 * @throws SQLException if database error occurs
+	 */
 	public static void restoreForeignKeys(SynchronizationContext context) throws SQLException
 	{
 		Connection connection = context.getConnection(context.getTargetDatabase());
@@ -95,7 +104,6 @@ public final class SynchronizationSupport
 		
 		Statement statement = connection.createStatement();
 		
-		// Drop foreign key constraints on the inactive database
 		for (TableProperties table: tables)
 		{
 			for (ForeignKeyConstraint constraint: table.getForeignKeyConstraints())
@@ -112,6 +120,11 @@ public final class SynchronizationSupport
 		statement.close();
 	}
 	
+	/**
+	 * Synchronizes the sequences on the target database with the source database.
+	 * @param context a synchronization context
+	 * @throws SQLException if database error occurs
+	 */
 	public static void synchronizeSequences(final SynchronizationContext context) throws SQLException
 	{
 		Database sourceDatabase = context.getSourceDatabase();		
@@ -124,9 +137,10 @@ public final class SynchronizationSupport
 		Collection<String> sequences = dialect.getSequences(sourceConnection);
 		Collection<Database> databases = context.getActiveDatabases();
 
-		Map<Database, Future<Long>> futureMap = new HashMap<Database, Future<Long>>();
-		ExecutorService executor = Executors.newFixedThreadPool(databases.size());
+		ExecutorService executor = context.getExecutor();
 		
+		Map<Database, Future<Long>> futureMap = new HashMap<Database, Future<Long>>();
+
 		for (String sequence: sequences)
 		{
 			final String sql = dialect.getNextSequenceValueSQL(sequence);
@@ -185,8 +199,6 @@ public final class SynchronizationSupport
 			}
 		}
 		
-		executor.shutdown();
-		
 		Connection targetConnection = context.getConnection(context.getTargetDatabase());
 		Statement targetStatement = targetConnection.createStatement();
 
@@ -203,11 +215,14 @@ public final class SynchronizationSupport
 		targetStatement.close();
 	}
 	
-	public static void lock(SynchronizationContext context) throws SQLException
+	/**
+	 * Read-locks all of the tables in each active database.
+	 * @param context a synchronization context
+	 * @throws SQLException if database error occurs
+	 */
+	public static void lock(final SynchronizationContext context) throws SQLException
 	{
 		logger.info(Messages.getMessage(Messages.TABLE_LOCK_ACQUIRE));
-		
-		Map<TableProperties, String> lockTableSQLMap = new HashMap<TableProperties, String>();
 		
 		Connection targetConnection = context.getConnection(context.getTargetDatabase());
 		
@@ -215,50 +230,97 @@ public final class SynchronizationSupport
 		
 		Dialect dialect = context.getDialect();
 		
-		for (Database database: context.getActiveDatabases())
+		Collection<Database> databases = context.getActiveDatabases();
+		
+		ExecutorService executor = context.getExecutor();
+		
+		Collection<Future<Void>> futures = new ArrayList<Future<Void>>(databases.size());
+		
+		for (TableProperties table: tables)
 		{
-			Connection connection = context.getConnection(database);
+			final String sql = dialect.getLockTableSQL(table);
 			
-			connection.setAutoCommit(false);
-			connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-			
-			Statement statement = connection.createStatement();
-			
-			for (TableProperties table: tables)
+			for (final Database database: databases)
 			{
-				String sql = lockTableSQLMap.get(table);
-				
-				if (sql == null)
+				Callable<Void> task = new Callable<Void>()
 				{
-					sql = dialect.getLockTableSQL(table);
-					
-					logger.debug(sql);
+					public Void call() throws SQLException
+					{
+						Connection connection = context.getConnection(database);
 						
-					lockTableSQLMap.put(table, sql);
-				}
-					
-				statement.execute(sql);
+						connection.setAutoCommit(false);
+						connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+						
+						Statement statement = connection.createStatement();
+						
+						statement.execute(sql);
+						
+						statement.close();
+						
+						return null;
+					}
+				};
+				
+				futures.add(executor.submit(task));
 			}
 			
-			statement.close();
+			try
+			{
+				for (Future<Void> future: futures)
+				{
+					future.get();
+				}
+			}
+			catch (InterruptedException e)
+			{
+				throw new net.sf.hajdbc.SQLException(e);
+			}
+			catch (ExecutionException e)
+			{
+				throw new net.sf.hajdbc.SQLException(e);
+			}
 		}
 	}
 	
-	public static void unlock(SynchronizationContext context)
+	public static void unlock(final SynchronizationContext context)
 	{
-		for (Database database: context.getActiveDatabases())
+		Collection<Database> databases = context.getActiveDatabases();
+		
+		ExecutorService executor = context.getExecutor();
+		
+		Collection<Future<Void>> futures = new ArrayList<Future<Void>>(databases.size());
+		
+		for (final Database database: context.getActiveDatabases())
 		{
-			try
+			Callable<Void> task = new Callable<Void>()
 			{
-				Connection connection = context.getConnection(database);
-				
-				connection.rollback();
-				connection.setAutoCommit(true);
-			}
-			catch (java.sql.SQLException e)
+				public Void call() throws SQLException
+				{
+					Connection connection = context.getConnection(database);
+					
+					SynchronizationSupport.rollback(connection);
+					
+					return null;
+				}
+			};
+			
+			futures.add(executor.submit(task));
+		}
+		
+		try
+		{
+			for (Future<Void> future: futures)
 			{
-				logger.warn(e.toString(), e);
+				future.get();
 			}
+		}
+		catch (InterruptedException e)
+		{
+			logger.warn(e.toString(), e);
+		}
+		catch (ExecutionException e)
+		{
+			logger.warn(e.toString(), e);
 		}
 	}
 	
