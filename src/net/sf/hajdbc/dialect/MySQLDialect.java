@@ -54,6 +54,17 @@ public class MySQLDialect extends StandardDialect
 	}
 
 	/**
+	 * Support for identity columns is disabled.
+	 * Although MySQL supports this feature, its in-memory implementation provides no mechanism to reset the counter during synchronization.
+	 * @see net.sf.hajdbc.dialect.StandardDialect#supportsIdentityColumns()
+	 */
+	@Override
+	public boolean supportsIdentityColumns()
+	{
+		return false;
+	}
+
+	/**
 	 * @see net.sf.hajdbc.dialect.StandardDialect#supportsSequences()
 	 */
 	@Override
