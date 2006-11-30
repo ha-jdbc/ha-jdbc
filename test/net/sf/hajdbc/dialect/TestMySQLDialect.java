@@ -196,4 +196,21 @@ public class TestMySQLDialect extends TestStandardDialect
 		
 		return identity;
 	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#supportsIdentityColumns()
+	 */
+	@Override
+	public boolean supportsIdentityColumns()
+	{
+		this.control.replay();
+		
+		boolean supports = this.dialect.supportsIdentityColumns();
+		
+		this.control.verify();
+		
+		assert !supports;
+		
+		return supports;
+	}
 }
