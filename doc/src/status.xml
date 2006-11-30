@@ -12,15 +12,25 @@
 	</contexts>
 
 	<changes>
-		<release version="1.2-beta-7" date="...">
+		<release version="1.2-beta-7" date="November 30, 2006">
 			<action type="fix" context="src" dev="PF">
-				Fixed synchronization of sequences.
+				Fixed sequence synchronization logic to use next value instead of current value since it may be undefined.
 			</action>
 			<action type="update" context="src" dev="PF">
 				Refactored SynchronizationStrategy interface into distinct prepare (e.g. lock), synchronize, and cleanup (e.g. unlock) stages.
 			</action>
 			<action type="update" context="src" dev="PF">
 				Created SynchronizationContext to simplify SynchronizationStrategy interface methods.
+			</action>
+			<action type="update" context="src" dev="PF">
+				Refactored CronExecutorService to use CronExpression instead of CronTrigger.
+			</action>
+			<action type="update" context="src" dev="PF">
+				Changed default distributable stack to "udp".
+			</action>
+			<action type="fix" context="PF" dev="PF">
+				Disabled support for identity columns in MySQL dialect.
+				MySQL's implementation has no mechanism to synchronize auto-increment counter.
 			</action>
 			<action type="update" context="lib" dev="PF">
 				Upgraded JGroups to 2.4 GA (final).
