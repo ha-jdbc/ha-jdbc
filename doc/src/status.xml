@@ -28,7 +28,7 @@
 			<action type="update" context="src" dev="PF">
 				Changed default distributable stack to "udp".
 			</action>
-			<action type="fix" context="PF" dev="PF">
+			<action type="fix" context="src" dev="PF">
 				Disabled support for identity columns in MySQL dialect.
 				MySQL's implementation has no mechanism to synchronize auto-increment counter.
 			</action>
