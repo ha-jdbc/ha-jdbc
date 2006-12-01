@@ -125,10 +125,10 @@ public class PostgreSQLDialect extends StandardDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#currentSequenceValueFormat()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#nextSequenceValueFormat()
 	 */
 	@Override
-	protected String nextValueForSequenceFormat()
+	protected String nextSequenceValueFormat()
 	{
 		return "NEXTVAL(''{0}'')";
 	}

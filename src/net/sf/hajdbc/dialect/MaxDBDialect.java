@@ -114,10 +114,10 @@ public class MaxDBDialect extends StandardDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#currentSequenceValueFormat()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#nextSequenceValueFormat()
 	 */
 	@Override
-	protected String nextValueForSequenceFormat()
+	protected String nextSequenceValueFormat()
 	{
 		return "{0}.NEXTVAL";
 	}

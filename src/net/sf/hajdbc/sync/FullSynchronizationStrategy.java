@@ -74,7 +74,7 @@ public class FullSynchronizationStrategy extends LockingSynchronizationStrategy 
 	private int fetchSize = 0;
 	
 	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.SynchronizationContextImpl)
+	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.SynchronizationContext)
 	 */
 	public void synchronize(SynchronizationContext context) throws SQLException
 	{

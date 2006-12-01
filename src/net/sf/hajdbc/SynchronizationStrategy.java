@@ -28,17 +28,23 @@ package net.sf.hajdbc;
  */
 public interface SynchronizationStrategy
 {
+	/**
+	 * Prepares the specified synchronization context for actual synchronization.
+	 * @param context a synchronization context
+	 * @throws java.sql.SQLException if prepare fails
+	 */
 	public void prepare(SynchronizationContext context) throws java.sql.SQLException;
 	
+	/**
+	 * Cleans up the specified synchronization context after synchronization.
+	 * @param context a synchronization context
+	 * @throws java.sql.SQLException if cleanup fails
+	 */
 	public void cleanup(SynchronizationContext context);
 	
 	/**
-	 * Synchronizes the an inactive database with an active database using the specified connections.
-	 * Implementors must not close the specified connections.
-	 * @param inactiveConnection a connection to the inactive database
-	 * @param activeConnection a connection to the active database
-	 * @param metaData a cache of database meta data
-	 * @param dialect a Dialect instance
+	 * Synchronizes a target database with a source database.
+	 * @param context a synchronization context
 	 * @throws java.sql.SQLException if synchronization fails
 	 */
 	public void synchronize(SynchronizationContext context) throws java.sql.SQLException;

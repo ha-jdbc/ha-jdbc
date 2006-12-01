@@ -77,10 +77,10 @@ public class DB2Dialect extends StandardDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#currentSequenceValueFormat()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#nextSequenceValueFormat()
 	 */
 	@Override
-	protected String nextValueForSequenceFormat()
+	protected String nextSequenceValueFormat()
 	{
 		return "NEXTVAL FOR {0}";
 	}

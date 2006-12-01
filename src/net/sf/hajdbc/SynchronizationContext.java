@@ -32,19 +32,52 @@ import java.util.concurrent.ExecutorService;
  */
 public interface SynchronizationContext
 {
+	/**
+	 * Returns a connection to the specified database.
+	 * @param database a database to which to connect
+	 * @return a database connection
+	 * @throws SQLException if connection could not be obtained
+	 */
 	public Connection getConnection(Database database) throws SQLException;
 	
+	/**
+	 * Returns the database from which to synchronize.
+	 * @return a database
+	 */
 	public Database getSourceDatabase();
 	
+	/**
+	 * Returns the database to synchronize.
+	 * @return a database
+	 */
 	public Database getTargetDatabase();
 	
+	/**
+	 * Returns a snapshot of the activate databases in the cluster at the time synchronization started.
+	 * @return a collection of databases
+	 */
 	public Collection<Database> getActiveDatabases();
 	
+	/**
+	 * Returns a cache of database meta data.
+	 * @return a cache of database meta data.
+	 */
 	public DatabaseMetaDataCache getDatabaseMetaDataCache();
 	
+	/**
+	 * Returns the dialect of the cluster.
+	 * @return a dialect
+	 */
 	public Dialect getDialect();
 	
+	/**
+	 * An executor service for executing tasks asynchronously.
+	 * @return an executor service
+	 */
 	public ExecutorService getExecutor();
 	
+	/**
+	 * Closes any open database connections and shuts down the executor service. 
+	 */
 	public void close();
 }

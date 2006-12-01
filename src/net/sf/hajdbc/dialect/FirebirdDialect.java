@@ -105,10 +105,10 @@ public class FirebirdDialect extends StandardDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#currentSequenceValueFormat()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#nextSequenceValueFormat()
 	 */
 	@Override
-	protected String nextValueForSequenceFormat()
+	protected String nextSequenceValueFormat()
 	{
 		return "GEN_ID({0}, 1)";
 	}

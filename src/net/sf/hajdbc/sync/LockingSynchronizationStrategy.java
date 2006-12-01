@@ -32,7 +32,7 @@ import net.sf.hajdbc.SynchronizationStrategy;
 public abstract class LockingSynchronizationStrategy implements SynchronizationStrategy
 {
 	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#cleanup(net.sf.hajdbc.SynchronizationContextImpl)
+	 * @see net.sf.hajdbc.SynchronizationStrategy#cleanup(net.sf.hajdbc.SynchronizationContext)
 	 */
 	public void cleanup(SynchronizationContext context)
 	{
@@ -40,7 +40,7 @@ public abstract class LockingSynchronizationStrategy implements SynchronizationS
 	}
 
 	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#prepare(net.sf.hajdbc.SynchronizationContextImpl)
+	 * @see net.sf.hajdbc.SynchronizationStrategy#prepare(net.sf.hajdbc.SynchronizationContext)
 	 */
 	public void prepare(SynchronizationContext context) throws SQLException
 	{

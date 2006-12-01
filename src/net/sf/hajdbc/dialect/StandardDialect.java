@@ -265,11 +265,11 @@ public class StandardDialect implements Dialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getCurrentSequenceValueSQL(java.lang.String)
+	 * @see net.sf.hajdbc.Dialect#getNextSequenceValueSQL(java.lang.String)
 	 */
 	public String getNextSequenceValueSQL(String sequence)
 	{
-		return this.executeFunctionSQL(MessageFormat.format(this.nextValueForSequenceFormat(), sequence));
+		return this.executeFunctionSQL(MessageFormat.format(this.nextSequenceValueFormat(), sequence));
 	}
 	
 	/**
@@ -353,7 +353,7 @@ public class StandardDialect implements Dialect
 		return "ALTER SEQUENCE {0} RESTART WITH {1}";
 	}
 	
-	protected String nextValueForSequenceFormat()
+	protected String nextSequenceValueFormat()
 	{
 		return "NEXT VALUE FOR {0}";
 	}
