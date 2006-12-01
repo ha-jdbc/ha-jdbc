@@ -236,6 +236,44 @@ public final class SynchronizationSupport
 		
 		Collection<Future<Void>> futures = new ArrayList<Future<Void>>(databases.size());
 		
+		// Create connections and set transaction isolation level
+		for (final Database database: databases)
+		{
+			Callable<Void> task = new Callable<Void>()
+			{
+				public Void call() throws SQLException
+				{
+					Connection connection = context.getConnection(database);
+					
+					connection.setAutoCommit(false);
+					connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+					
+					return null;
+				}
+			};
+			
+			futures.add(executor.submit(task));
+		}
+		
+		try
+		{
+			for (Future<Void> future: futures)
+			{
+				future.get();
+			}
+		}
+		catch (InterruptedException e)
+		{
+			throw new net.sf.hajdbc.SQLException(e);
+		}
+		catch (ExecutionException e)
+		{
+			throw new net.sf.hajdbc.SQLException(e);
+		}
+		
+		futures.clear();
+		
+		// For each table - execute a lock table statement
 		for (TableProperties table: tables)
 		{
 			final String sql = dialect.getLockTableSQL(table);
@@ -247,9 +285,6 @@ public final class SynchronizationSupport
 					public Void call() throws SQLException
 					{
 						Connection connection = context.getConnection(database);
-						
-						connection.setAutoCommit(false);
-						connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 						
 						Statement statement = connection.createStatement();
 						
