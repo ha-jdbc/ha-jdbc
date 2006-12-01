@@ -12,7 +12,7 @@
 	</contexts>
 
 	<changes>
-		<release version="1.2-beta-7" date="November 30, 2006">
+		<release version="1.2-beta-7" date="December 1, 2006">
 			<action type="fix" context="src" dev="PF">
 				Fixed sequence synchronization logic to use next value instead of current value since it may be undefined.
 			</action>
