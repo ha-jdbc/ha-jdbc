@@ -277,7 +277,7 @@ public abstract class SQLObject<E, P>
 	 */
 	public final <T> Map<Database, T> executeTransactionalWriteToDatabase(final Operation<E, T> operation) throws java.sql.SQLException
 	{
-		return this.executeWriteToDatabase(operation, this.databaseCluster.getTransactionalExecutor());
+		return this.executeWriteToDatabase(operation, this.databaseCluster.getTransactionalExecutor(), this.databaseCluster.readLock());
 	}
 	
 	/**
@@ -290,17 +290,18 @@ public abstract class SQLObject<E, P>
 	 */
 	public final <T> Map<Database, T> executeNonTransactionalWriteToDatabase(final Operation<E, T> operation) throws java.sql.SQLException
 	{
-		return this.executeWriteToDatabase(operation, this.databaseCluster.getNonTransactionalExecutor());
+		return this.executeWriteToDatabase(operation, this.databaseCluster.getNonTransactionalExecutor(), null);
 	}
 	
-	private <T> Map<Database, T> executeWriteToDatabase(final Operation<E, T> operation, ExecutorService executor) throws java.sql.SQLException
+	private <T> Map<Database, T> executeWriteToDatabase(final Operation<E, T> operation, ExecutorService executor, Lock lock) throws java.sql.SQLException
 	{
 		Map<Database, T> resultMap = new TreeMap<Database, T>();
 		SortedMap<Database, java.sql.SQLException> exceptionMap = new TreeMap<Database, java.sql.SQLException>();
 		
-		Lock lock = this.databaseCluster.readLock();
-		
-		lock.lock();
+		if (lock != null)
+		{
+			lock.lock();
+		}
 		
 		try
 		{
@@ -357,7 +358,10 @@ public abstract class SQLObject<E, P>
 		}
 		finally
 		{
-			lock.unlock();
+			if (lock != null)
+			{
+				lock.unlock();
+			}
 		}
 		
 		// If no databases returned successfully, return an exception back to the caller
