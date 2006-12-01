@@ -111,23 +111,29 @@ public abstract class TestLockingSynchronizationStrategy implements Synchronizat
 	{
 		Statement statement = this.control.createMock(Statement.class);
 		
-		EasyMock.expect(context.getTargetDatabase()).andReturn(this.targetDatabase);
-		EasyMock.expect(context.getConnection(this.targetDatabase)).andReturn(this.targetConnection);
-		
-		EasyMock.expect(context.getDatabaseMetaDataCache()).andReturn(this.metaData);
-		EasyMock.expect(this.metaData.getDatabaseProperties(this.targetConnection)).andReturn(this.database);
-		EasyMock.expect(this.database.getTables()).andReturn(Collections.singleton(this.table));
-		EasyMock.expect(context.getDialect()).andReturn(this.dialect);
-
 		EasyMock.expect(context.getActiveDatabases()).andReturn(Collections.singleton(this.sourceDatabase));
 		EasyMock.expect(context.getExecutor()).andReturn(this.executor);
 		
-		EasyMock.expect(this.dialect.getLockTableSQL(this.table)).andReturn("LOCK TABLE table");
+		this.control.checkOrder(false);
+		
+		EasyMock.expect(context.getTargetDatabase()).andReturn(this.targetDatabase);
+		EasyMock.expect(context.getConnection(this.targetDatabase)).andReturn(this.targetConnection);
+		EasyMock.expect(context.getDatabaseMetaDataCache()).andReturn(this.metaData);
+		EasyMock.expect(this.metaData.getDatabaseProperties(this.targetConnection)).andReturn(this.database);
+		EasyMock.expect(this.database.getTables()).andReturn(Collections.singleton(this.table));
 		
 		EasyMock.expect(context.getConnection(this.sourceDatabase)).andReturn(this.sourceConnection);
 		
 		this.sourceConnection.setAutoCommit(false);
 		this.sourceConnection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+
+		this.control.checkOrder(true);
+		
+		EasyMock.expect(context.getDialect()).andReturn(this.dialect);
+
+		EasyMock.expect(this.dialect.getLockTableSQL(this.table)).andReturn("LOCK TABLE table");
+		
+		EasyMock.expect(context.getConnection(this.sourceDatabase)).andReturn(this.sourceConnection);
 		
 		EasyMock.expect(this.sourceConnection.createStatement()).andReturn(statement);
 		
