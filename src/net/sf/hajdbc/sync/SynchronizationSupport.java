@@ -224,12 +224,6 @@ public final class SynchronizationSupport
 	{
 		logger.info(Messages.getMessage(Messages.TABLE_LOCK_ACQUIRE));
 		
-		Connection targetConnection = context.getConnection(context.getTargetDatabase());
-		
-		Collection<TableProperties> tables = context.getDatabaseMetaDataCache().getDatabaseProperties(targetConnection).getTables();
-		
-		Dialect dialect = context.getDialect();
-		
 		Collection<Database> databases = context.getActiveDatabases();
 		
 		ExecutorService executor = context.getExecutor();
@@ -255,6 +249,10 @@ public final class SynchronizationSupport
 			futures.add(executor.submit(task));
 		}
 		
+		Connection targetConnection = context.getConnection(context.getTargetDatabase());
+		
+		Collection<TableProperties> tables = context.getDatabaseMetaDataCache().getDatabaseProperties(targetConnection).getTables();
+		
 		try
 		{
 			for (Future<Void> future: futures)
@@ -272,6 +270,8 @@ public final class SynchronizationSupport
 		}
 		
 		futures.clear();
+		
+		Dialect dialect = context.getDialect();
 		
 		// For each table - execute a lock table statement
 		for (TableProperties table: tables)
