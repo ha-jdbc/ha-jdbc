@@ -83,7 +83,7 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		
 		this.control.verify();
 		
-		assert sql.equals("LOCK TABLE table IN EXCLUSIVE MODE; SELECT 1 FROM table") : sql;
+		assert sql.equals("LOCK TABLE table IN EXCLUSIVE MODE") : sql;
 		
 		return sql;
 	}
