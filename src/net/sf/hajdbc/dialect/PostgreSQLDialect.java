@@ -80,7 +80,7 @@ public class PostgreSQLDialect extends StandardDialect
 	@Override
 	public String getLockTableSQL(TableProperties properties)
 	{
-		return MessageFormat.format("LOCK TABLE {0} IN EXCLUSIVE MODE; SELECT 1 FROM {0}", properties.getName());
+		return MessageFormat.format("LOCK TABLE {0} IN EXCLUSIVE MODE", properties.getName());
 	}
 	
 	/**
