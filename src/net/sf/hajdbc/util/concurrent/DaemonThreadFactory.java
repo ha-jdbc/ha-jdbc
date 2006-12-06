@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc.util.concurrent;
 
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 /**
@@ -31,6 +32,8 @@ import java.util.concurrent.ThreadFactory;
 public class DaemonThreadFactory implements ThreadFactory
 {
 	private static ThreadFactory instance = new DaemonThreadFactory();
+	
+	private ThreadFactory factory = Executors.defaultThreadFactory();
 	
 	/**
 	 * Returns single shared instance
@@ -46,7 +49,7 @@ public class DaemonThreadFactory implements ThreadFactory
 	 */
 	public Thread newThread(Runnable runnable)
 	{
-		Thread thread = new Thread(runnable);
+		Thread thread = this.factory.newThread(runnable);
 		
 		thread.setDaemon(true);
 
