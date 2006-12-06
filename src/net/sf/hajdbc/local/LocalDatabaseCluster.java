@@ -63,6 +63,7 @@ import net.sf.hajdbc.sql.DataSourceDatabase;
 import net.sf.hajdbc.sql.DriverDatabase;
 import net.sf.hajdbc.sync.SynchronizationContextImpl;
 import net.sf.hajdbc.util.concurrent.CronThreadPoolExecutor;
+import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
 import net.sf.hajdbc.util.concurrent.SynchronousExecutor;
 
 import org.quartz.CronExpression;
@@ -627,7 +628,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 			}
 		}
 		
-		this.nonTransactionalExecutor = new ThreadPoolExecutor(this.minThreads, this.maxThreads, this.maxIdle, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new ThreadPoolExecutor.CallerRunsPolicy());
+		this.nonTransactionalExecutor = new ThreadPoolExecutor(this.minThreads, this.maxThreads, this.maxIdle, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), DaemonThreadFactory.getInstance(), new ThreadPoolExecutor.CallerRunsPolicy());
 		
 		this.transactionalExecutor = this.transaction.equals(Transaction.XA) ? new SynchronousExecutor() : this.nonTransactionalExecutor;
 		
