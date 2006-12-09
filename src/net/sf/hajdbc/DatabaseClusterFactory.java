@@ -173,8 +173,6 @@ public final class DatabaseClusterFactory
 
 			factory.url = url;
 			
-			Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook(factory)));
-			
 			return factory;
 		}
 		catch (IOException e)
@@ -430,39 +428,24 @@ public final class DatabaseClusterFactory
 		return this.databaseClusterMap.values().iterator();
 	}
 	
-	private static class ShutdownHook implements Runnable
+	/**
+	 * @see java.lang.Object#finalize()
+	 */
+	@Override
+	protected void finalize() throws Throwable
 	{
-		private DatabaseClusterFactory factory;
+		logger.info(Messages.getMessage(Messages.SHUT_DOWN));
 		
-		/**
-		 * Constructs a new ShutdownHook.
-		 * @param factory
-		 */
-		public ShutdownHook(DatabaseClusterFactory factory)
+		for (DatabaseCluster cluster: this.databaseClusterMap.values())
 		{
-			this.factory = factory;
-		}
-		
-		/**
-		 * @see java.lang.Runnable#run()
-		 */
-		public void run()
-		{
-			logger.info(Messages.getMessage(Messages.SHUT_DOWN));
-			
-			Iterator<DatabaseCluster> databaseClusters = this.factory.getDatabaseClusters();
-			
-			while (databaseClusters.hasNext())
+			try
 			{
-				try
-				{
-					databaseClusters.next().stop();
-				}
-				catch (Throwable e)
-				{
-					logger.warn(e.getMessage(), e);
-				}
+				cluster.stop();
 			}
-		}	
+			catch (Throwable e)
+			{
+				logger.warn(e.getMessage(), e);
+			}
+		}
 	}
 }
