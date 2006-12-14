@@ -61,9 +61,9 @@ public abstract class SQLObject<E, P>
 	private Map<Database, E> objectMap;
 	private Map<String, Operation<E, ?>> operationMap = new HashMap<String, Operation<E, ?>>();
 	
-	protected SQLObject(SQLObject<P, ?> parent, Operation<P, E> operation, ExecutorService executor) throws java.sql.SQLException
+	protected SQLObject(SQLObject<P, ?> parent, Operation<P, E> operation, ExecutorService executor, Lock lock) throws java.sql.SQLException
 	{
-		this(parent.getDatabaseCluster(), execute(parent, operation, executor));
+		this(parent.getDatabaseCluster(), execute(parent, operation, executor, lock));
 		
 		this.parent = parent;
 		this.parentOperation = operation;
@@ -78,9 +78,9 @@ public abstract class SQLObject<E, P>
 	 * @return map of Database to SQL object
 	 * @throws java.sql.SQLException 
 	 */
-	private static <T, S> Map<Database, T> execute(SQLObject<S, ?> parent, Operation<S, T> operation, ExecutorService executor) throws java.sql.SQLException
+	private static <T, S> Map<Database, T> execute(SQLObject<S, ?> parent, Operation<S, T> operation, ExecutorService executor, Lock lock) throws java.sql.SQLException
 	{
-		return parent.executeWriteToDatabase(operation, executor);
+		return parent.executeWriteToDatabase(operation, executor, lock);
 	}
 	
 	protected SQLObject(DatabaseCluster databaseCluster, Map<Database, E> objectMap)
@@ -440,6 +440,7 @@ public abstract class SQLObject<E, P>
 	 * @param exceptionMap
 	 * @throws java.sql.SQLException
 	 */
+	@SuppressWarnings("unused")
 	public void handleExceptions(Map<Database, java.sql.SQLException> exceptionMap) throws java.sql.SQLException
 	{
 		for (Map.Entry<Database, java.sql.SQLException> exceptionMapEntry: exceptionMap.entrySet())

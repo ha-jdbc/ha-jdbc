@@ -57,7 +57,7 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public ResultSet(Statement<T> statement, Operation<T, java.sql.ResultSet> operation) throws SQLException
 	{
-		super(statement, operation, statement.getDatabaseCluster().getTransactionalExecutor());
+		super(statement, operation, statement.getDatabaseCluster().getTransactionalExecutor(), statement.getDatabaseCluster().readLock());
 	}
 	
 	/**

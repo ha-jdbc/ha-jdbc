@@ -47,7 +47,7 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 	 */
 	public Connection(SQLObject<P, ?> object, Operation<P, java.sql.Connection> operation, FileSupport fileSupport) throws java.sql.SQLException
 	{
-		super(object, operation, object.getDatabaseCluster().getNonTransactionalExecutor());
+		super(object, operation, object.getDatabaseCluster().getNonTransactionalExecutor(), null);
 		
 		this.fileSupport = fileSupport;
 	}

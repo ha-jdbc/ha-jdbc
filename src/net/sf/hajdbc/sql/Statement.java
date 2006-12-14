@@ -43,7 +43,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 	 */
 	public Statement(Connection<?> connection, Operation<java.sql.Connection, T> operation) throws SQLException
 	{
-		super(connection, operation, connection.getDatabaseCluster().getNonTransactionalExecutor());
+		super(connection, operation, connection.getDatabaseCluster().getNonTransactionalExecutor(), null);
 	}
 
 	/**

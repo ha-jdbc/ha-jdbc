@@ -40,7 +40,7 @@ public class Savepoint extends SQLObject<java.sql.Savepoint, java.sql.Connection
 	 */
 	public Savepoint(Connection<?> connection, Operation<java.sql.Connection, java.sql.Savepoint> operation) throws SQLException
 	{
-		super(connection, operation, connection.getDatabaseCluster().getNonTransactionalExecutor());
+		super(connection, operation, connection.getDatabaseCluster().getTransactionalExecutor(), null);
 	}
 	
 	/**
