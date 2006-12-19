@@ -341,6 +341,8 @@ public class DatabaseMetaDataSupport
 	
 	private String quote(String identifier)
 	{
+		if (identifier == null) return null;
+		
 		// Driver may return identifiers already quoted.  If so, exit early.
 		if (identifier.startsWith(this.quote)) return identifier;
 		
