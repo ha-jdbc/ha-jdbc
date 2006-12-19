@@ -36,10 +36,10 @@ public class SimpleBalancer extends AbstractBalancer
 	private LinkedList<Database> databaseQueue = new LinkedList<Database>();
 
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
+	 * @see net.sf.hajdbc.balancer.AbstractBalancer#collect()
 	 */
 	@Override
-	protected Collection<Database> getDatabases()
+	protected Collection<Database> collect()
 	{
 		return this.databaseQueue;
 	}

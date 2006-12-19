@@ -20,10 +20,10 @@
  */
 package net.sf.hajdbc.balancer;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
@@ -57,7 +57,7 @@ public abstract class AbstractBalancer implements Balancer
 	 */
 	public synchronized boolean remove(Database database)
 	{
-		return this.getDatabases().remove(database);
+		return this.collect().remove(database);
 	}
 	
 	/**
@@ -65,7 +65,7 @@ public abstract class AbstractBalancer implements Balancer
 	 */
 	public synchronized boolean add(Database database)
 	{
-		return this.getDatabases().contains(database) ? false : this.getDatabases().add(database);
+		return this.collect().contains(database) ? false : this.collect().add(database);
 	}
 	
 	/**
@@ -73,7 +73,7 @@ public abstract class AbstractBalancer implements Balancer
 	 */
 	public synchronized boolean contains(Database database)
 	{
-		return this.getDatabases().contains(database);
+		return this.collect().contains(database);
 	}
 	
 	/**
@@ -81,25 +81,22 @@ public abstract class AbstractBalancer implements Balancer
 	 */
 	public synchronized Database first()
 	{
-		return this.getDatabases().iterator().next();
+		return this.collect().iterator().next();
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Balancer#list()
+	 * @see net.sf.hajdbc.Balancer#all()
 	 */
-	@SuppressWarnings("unchecked")
-	public synchronized List<Database> list()
+	public synchronized Set<Database> all()
 	{
-		List<Database> list = new ArrayList<Database>(this.getDatabases());
+		Set<Database> databaseSet = new TreeSet<Database>(this.collect());
 		
-		Collections.sort(list);
-		
-		return Collections.unmodifiableList(list);
+		return Collections.unmodifiableSet(databaseSet);
 	}
 	
 	/**
 	 * Exposes a view of the underlying collection of Databases.
 	 * @return a Collection of databases
 	 */
-	protected abstract Collection<Database> getDatabases();
+	protected abstract Collection<Database> collect();
 }

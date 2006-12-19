@@ -20,7 +20,7 @@
  */
 package net.sf.hajdbc;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * @author  Paul Ferraro
@@ -58,7 +58,7 @@ public interface Balancer
 	 * Returns an unmodifiable collection of databases known to this balancer
 	 * @return a collection of database descriptors
 	 */
-	public List<Database> list();
+	public Set<Database> all();
 
 	/**
 	 * Check whether the specified database is known to this balancer
