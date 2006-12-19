@@ -39,7 +39,7 @@ public class ConnectionFactory<E> extends SQLObject<E, Void>
 	 * @param targetClass target class of 
 	 */
 	@SuppressWarnings("unchecked")
-	public ConnectionFactory(DatabaseCluster databaseCluster, Class<E> targetClass)
+	public ConnectionFactory(DatabaseCluster databaseCluster)
 	{
 		super(databaseCluster, (Map<Database, E>) databaseCluster.getConnectionFactoryMap());
 	}
