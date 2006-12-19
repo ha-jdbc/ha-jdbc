@@ -48,15 +48,13 @@ public final class Driver implements java.sql.Driver
 	
 	static
 	{
-		Driver driver = new Driver();
-		
 		try
 		{
-			DriverManager.registerDriver(driver);
+			DriverManager.registerDriver(new Driver());
 		}
 		catch (SQLException e)
 		{
-			logger.error(Messages.getMessage(Messages.DRIVER_REGISTER_FAILED, driver.getClass().getName()), e);
+			logger.error(Messages.getMessage(Messages.DRIVER_REGISTER_FAILED, Driver.class.getName()), e);
 		}
 	}
 	
@@ -65,7 +63,7 @@ public final class Driver implements java.sql.Driver
 	 */
 	public boolean acceptsURL(String url)
 	{
-		return (this.getDatabaseCluster(url) != null);
+		return (this.parse(url) != null);
 	}
 	
 	/**
@@ -73,12 +71,9 @@ public final class Driver implements java.sql.Driver
 	 */
 	public java.sql.Connection connect(String url, final Properties properties) throws SQLException
 	{
-		DatabaseCluster databaseCluster = this.getDatabaseCluster(url);
+		String id = this.parse(url);
 		
-		if (databaseCluster == null)
-		{
-			return null;
-		}
+		if (id == null) return null;
 		
 		Operation<java.sql.Driver, java.sql.Connection> operation = new Operation<java.sql.Driver, java.sql.Connection>()
 		{
@@ -88,7 +83,7 @@ public final class Driver implements java.sql.Driver
 			}	
 		};
 		
-		return new Connection<java.sql.Driver>(this.getConnectionFactory(databaseCluster), operation, new FileSupportImpl());
+		return new Connection<java.sql.Driver>(this.getConnectionFactory(this.getDatabaseCluster(id)), operation, new FileSupportImpl());
 	}
 	
 	/**
@@ -112,12 +107,9 @@ public final class Driver implements java.sql.Driver
 	 */
 	public DriverPropertyInfo[] getPropertyInfo(String url, final Properties properties) throws SQLException
 	{
-		DatabaseCluster databaseCluster = this.getDatabaseCluster(url);
+		String id = this.parse(url);
 		
-		if (databaseCluster == null)
-		{
-			return null;
-		}
+		if (id == null) return null;
 		
 		Operation<java.sql.Driver, DriverPropertyInfo[]> operation = new Operation<java.sql.Driver, DriverPropertyInfo[]>()
 		{
@@ -127,7 +119,7 @@ public final class Driver implements java.sql.Driver
 			}	
 		};
 		
-		return this.getConnectionFactory(databaseCluster).executeReadFromDriver(operation);
+		return this.getConnectionFactory(this.getDatabaseCluster(url)).executeReadFromDriver(operation);
 	}
 	
 	/**
@@ -138,7 +130,19 @@ public final class Driver implements java.sql.Driver
 		return true;
 	}
 	
-	private DatabaseCluster getDatabaseCluster(String url)
+	private DatabaseCluster getDatabaseCluster(String id) throws SQLException
+	{
+		DatabaseCluster cluster = DatabaseClusterFactory.getInstance().getDatabaseClusterMap().get(id);
+		
+		if (cluster == null)
+		{
+			throw new SQLException(Messages.getMessage(Messages.INVALID_DATABASE_CLUSTER, id));
+		}
+		
+		return cluster;
+	}
+	
+	private String parse(String url)
 	{
 		Matcher matcher = URL_PATTERN.matcher(url);
 		
@@ -147,13 +151,11 @@ public final class Driver implements java.sql.Driver
 			return null;
 		}
 		
-		String name = matcher.group(1);
-		
-		return DatabaseClusterFactory.getInstance().getDatabaseCluster(name);
+		return matcher.group(1);
 	}
 	
 	private ConnectionFactory<java.sql.Driver> getConnectionFactory(DatabaseCluster databaseCluster)
 	{
-		return new ConnectionFactory<java.sql.Driver>(databaseCluster, java.sql.Driver.class);
+		return new ConnectionFactory<java.sql.Driver>(databaseCluster);
 	}
 }
