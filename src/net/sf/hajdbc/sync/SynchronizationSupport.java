@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -135,7 +136,7 @@ public final class SynchronizationSupport
 		Map<String, Long> sequenceMap = new HashMap<String, Long>();
 
 		Collection<String> sequences = dialect.getSequences(sourceConnection);
-		Collection<Database> databases = context.getActiveDatabases();
+		Set<Database> databases = context.getActiveDatabaseSet();
 
 		ExecutorService executor = context.getExecutor();
 		
@@ -224,7 +225,7 @@ public final class SynchronizationSupport
 	{
 		logger.info(Messages.getMessage(Messages.TABLE_LOCK_ACQUIRE));
 		
-		Collection<Database> databases = context.getActiveDatabases();
+		Set<Database> databases = context.getActiveDatabaseSet();
 		
 		ExecutorService executor = context.getExecutor();
 		
@@ -319,7 +320,7 @@ public final class SynchronizationSupport
 	
 	public static void unlock(final SynchronizationContext context)
 	{
-		Collection<Database> databases = context.getActiveDatabases();
+		Set<Database> databases = context.getActiveDatabaseSet();
 		
 		ExecutorService executor = context.getExecutor();
 		

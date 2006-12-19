@@ -22,7 +22,7 @@ package net.sf.hajdbc;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Collection;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 
@@ -56,7 +56,7 @@ public interface SynchronizationContext
 	 * Returns a snapshot of the activate databases in the cluster at the time synchronization started.
 	 * @return a collection of databases
 	 */
-	public Collection<Database> getActiveDatabases();
+	public Set<Database> getActiveDatabaseSet();
 	
 	/**
 	 * Returns a cache of database meta data.

@@ -22,9 +22,9 @@ package net.sf.hajdbc.sync;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -48,7 +48,7 @@ public class SynchronizationContextImpl implements SynchronizationContext
 {
 	private static Logger logger = LoggerFactory.getLogger(SynchronizationContextImpl.class);
 	
-	private Collection<Database> activeDatabases;
+	private Set<Database> activeDatabaseSet;
 	private Database sourceDatabase;
 	private Database targetDatabase;
 	private DatabaseCluster cluster;
@@ -62,9 +62,9 @@ public class SynchronizationContextImpl implements SynchronizationContext
 		Balancer balancer = cluster.getBalancer();
 		
 		this.sourceDatabase = balancer.next();
-		this.activeDatabases = balancer.list();
+		this.activeDatabaseSet = balancer.all();
 		this.targetDatabase = database;
-		this.executor = Executors.newFixedThreadPool(this.activeDatabases.size(), DaemonThreadFactory.getInstance());
+		this.executor = Executors.newFixedThreadPool(this.activeDatabaseSet.size(), DaemonThreadFactory.getInstance());
 	}
 	
 	/**
@@ -107,9 +107,9 @@ public class SynchronizationContextImpl implements SynchronizationContext
 	/**
 	 * @see net.sf.hajdbc.SynchronizationContext#getActiveDatabases()
 	 */
-	public Collection<Database> getActiveDatabases()
+	public Set<Database> getActiveDatabaseSet()
 	{
-		return this.activeDatabases;
+		return this.activeDatabaseSet;
 	}
 	
 	/**
