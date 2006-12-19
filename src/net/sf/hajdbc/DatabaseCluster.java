@@ -64,19 +64,6 @@ public interface DatabaseCluster extends DatabaseClusterMBean
 	 * @throws IllegalArgumentException if no database exists with the specified identifier
 	 */
 	public Database getDatabase(String id);
-	
-	/**
-	 * Loads the persisted state of this database cluster
-	 * @return an array of database identifiers
-	 * @throws SQLException if state could not be obtained
-	 */
-	public String[] loadState() throws SQLException;
-	
-	/**
-	 * Returns the default synchronization strategy for this database cluster
-	 * @return a synchronization strategy implementation
-	 */
-	public SynchronizationStrategy getDefaultSynchronizationStrategy();
 
 	/**
 	 * Handles a failure caused by the specified cause on the specified database.
