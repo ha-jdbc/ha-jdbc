@@ -20,13 +20,13 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
@@ -153,16 +153,16 @@ public abstract class SQLObject<E, P>
 		this.operationMap.put(operation.getClass().toString(), operation);
 	}
 	
-	private List<Database> getActiveDatabaseList()
+	private Set<Database> getActiveDatabaseSet()
 	{
-		List<Database> databaseList = this.databaseCluster.getBalancer().list();
+		Set<Database> databaseSet = this.databaseCluster.getBalancer().all();
 		
-		this.retain(databaseList);
+		this.retain(databaseSet);
 		
-		return databaseList;
+		return databaseSet;
 	}
 	
-	protected synchronized void retain(Collection<Database> activeDatabases)
+	protected synchronized void retain(Set<Database> databaseSet)
 	{
 		if (this.parent == null) return;
 		
@@ -174,7 +174,7 @@ public abstract class SQLObject<E, P>
 			
 			Database database = mapEntry.getKey();
 			
-			if (!activeDatabases.contains(database))
+			if (!databaseSet.contains(database))
 			{
 				E object = mapEntry.getValue();
 				
@@ -194,7 +194,7 @@ public abstract class SQLObject<E, P>
 			}
 		}
 		
-		this.parent.retain(activeDatabases);
+		this.parent.retain(databaseSet);
 	}
 	
 	protected abstract void close(E object) throws java.sql.SQLException;
@@ -339,16 +339,16 @@ public abstract class SQLObject<E, P>
 		
 		try
 		{
-			List<Database> databaseList = this.getActiveDatabaseList();
+			Set<Database> databaseSet = this.getActiveDatabaseSet();
 			
-			if (databaseList.isEmpty())
+			if (databaseSet.isEmpty())
 			{
 				throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this.databaseCluster));
 			}
 			
 			Map<Database, Future<T>> futureMap = new HashMap<Database, Future<T>>();
 
-			for (final Database database: databaseList)
+			for (final Database database: databaseSet)
 			{
 				final E object = this.getObject(database);
 				
@@ -363,7 +363,7 @@ public abstract class SQLObject<E, P>
 				futureMap.put(database, executor.submit(task));
 			}
 
-			for (Database database: databaseList)
+			for (Database database: databaseSet)
 			{
 				Future<T> future = futureMap.get(database);
 				
@@ -434,14 +434,14 @@ public abstract class SQLObject<E, P>
 	{
 		Map<Database, T> resultMap = new TreeMap<Database, T>();
 
-		List<Database> databaseList = this.getActiveDatabaseList();
+		Set<Database> databaseSet = this.getActiveDatabaseSet();
 		
-		if (databaseList.isEmpty())
+		if (databaseSet.isEmpty())
 		{
 			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this.databaseCluster));
 		}
 		
-		for (Database database: databaseList)
+		for (Database database: databaseSet)
 		{
 			E object = this.getObject(database);
 			
