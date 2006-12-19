@@ -43,7 +43,7 @@ public interface SynchronizationStrategy
 	public void cleanup(SynchronizationContext context);
 	
 	/**
-	 * Synchronizes a target database with a source database.
+	 * Synchronizes a target database with a source database as defined by the synchronization context.
 	 * @param context a synchronization context
 	 * @throws java.sql.SQLException if synchronization fails
 	 */
