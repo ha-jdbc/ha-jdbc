@@ -25,57 +25,58 @@ import java.util.Set;
 /**
  * @author  Paul Ferraro
  * @since   1.0
+ * @param <D> either java.sql.Driver or javax.sql.DataSource
  */
-public interface Balancer
+public interface Balancer<D>
 {
 	/**
 	 * Removes the specified database from this balancer.
 	 * @param database a database descriptor
 	 * @return true, if the database was removed successfully, false if it did not exist.
 	 */
-	public boolean remove(Database database);
+	public boolean remove(Database<D> database);
 
 	/**
 	 * Adds the specified database to this balancer.
 	 * @param database a database descriptor
 	 * @return true, if the database was added successfully, false if already existed.
 	 */
-	public boolean add(Database database);
+	public boolean add(Database<D> database);
 
 	/**
 	 * Returns the first database from this balancer
 	 * @return the first database from this balancer
 	 */
-	public Database first();
+	public Database<D> first();
 
 	/**
 	 * Returns the next database from this balancer
 	 * @return the next database from this balancer
 	 */
-	public Database next();
+	public Database<D> next();
 
 	/**
 	 * Returns an unmodifiable collection of databases known to this balancer
 	 * @return a collection of database descriptors
 	 */
-	public Set<Database> all();
+	public Set<Database<D>> all();
 
 	/**
 	 * Check whether the specified database is known to this balancer
 	 * @param database a database descriptor
 	 * @return true, if the database is known to this balancer, false otherwise
 	 */
-	public boolean contains(Database database);
+	public boolean contains(Database<D> database);
 	
 	/**
 	 * Called before an operation is performed on the specified database retrieved via {@link #next()}.
 	 * @param database a database descriptor
 	 */
-	public void beforeOperation(Database database);
+	public void beforeOperation(Database<D> database);
 	
 	/**
 	 * Called after an operation is performed on the specified database retrieved via {@link #next()}.
 	 * @param database a database descriptor
 	 */
-	public void afterOperation(Database database);
+	public void afterOperation(Database<D> database);
 }

@@ -45,4 +45,8 @@ public interface LockManager
 	 * @return a write lock
 	 */
 	public Lock writeLock(String object);
+	
+	public void start() throws Exception;
+	
+	public void stop();
 }

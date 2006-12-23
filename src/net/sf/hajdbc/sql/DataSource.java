@@ -87,9 +87,9 @@ public class DataSource implements javax.sql.DataSource, Referenceable
 	 */
 	public int getLoginTimeout() throws SQLException
 	{
-		Operation<javax.sql.DataSource, Integer> operation = new Operation<javax.sql.DataSource, Integer>()
+		DataSourceOperation<Integer> operation = new DataSourceOperation<Integer>()
 		{
-			public Integer execute(Database database, javax.sql.DataSource dataSource) throws SQLException
+			public Integer execute(Database<javax.sql.DataSource> database, javax.sql.DataSource dataSource) throws SQLException
 			{
 				return dataSource.getLoginTimeout();
 			}
@@ -103,9 +103,9 @@ public class DataSource implements javax.sql.DataSource, Referenceable
 	 */
 	public void setLoginTimeout(final int seconds) throws SQLException
 	{
-		Operation<javax.sql.DataSource, Void> operation = new Operation<javax.sql.DataSource, Void>()
+		DataSourceOperation<Void> operation = new DataSourceOperation<Void>()
 		{
-			public Void execute(Database database, javax.sql.DataSource dataSource) throws SQLException
+			public Void execute(Database<javax.sql.DataSource> database, javax.sql.DataSource dataSource) throws SQLException
 			{
 				dataSource.setLoginTimeout(seconds);
 				
@@ -121,9 +121,9 @@ public class DataSource implements javax.sql.DataSource, Referenceable
 	 */
 	public PrintWriter getLogWriter() throws SQLException
 	{
-		Operation<javax.sql.DataSource, PrintWriter> operation = new Operation<javax.sql.DataSource, PrintWriter>()
+		DataSourceOperation<PrintWriter> operation = new DataSourceOperation<PrintWriter>()
 		{
-			public PrintWriter execute(Database database, javax.sql.DataSource dataSource) throws SQLException
+			public PrintWriter execute(Database<javax.sql.DataSource> database, javax.sql.DataSource dataSource) throws SQLException
 			{
 				return dataSource.getLogWriter();
 			}
@@ -137,9 +137,9 @@ public class DataSource implements javax.sql.DataSource, Referenceable
 	 */
 	public void setLogWriter(final PrintWriter writer) throws SQLException
 	{
-		Operation<javax.sql.DataSource, Void> operation = new Operation<javax.sql.DataSource, Void>()
+		DataSourceOperation<Void> operation = new DataSourceOperation<Void>()
 		{
-			public Void execute(Database database, javax.sql.DataSource dataSource) throws SQLException
+			public Void execute(Database<javax.sql.DataSource> database, javax.sql.DataSource dataSource) throws SQLException
 			{
 				dataSource.setLogWriter(writer);
 				
@@ -155,9 +155,9 @@ public class DataSource implements javax.sql.DataSource, Referenceable
 	 */
 	public java.sql.Connection getConnection() throws SQLException
 	{
-		Operation<javax.sql.DataSource, java.sql.Connection> operation = new Operation<javax.sql.DataSource, java.sql.Connection>()
+		DataSourceOperation<java.sql.Connection> operation = new DataSourceOperation<java.sql.Connection>()
 		{
-			public java.sql.Connection execute(Database database, javax.sql.DataSource dataSource) throws SQLException
+			public java.sql.Connection execute(Database<javax.sql.DataSource> database, javax.sql.DataSource dataSource) throws SQLException
 			{
 				return dataSource.getConnection();
 			}
@@ -171,14 +171,19 @@ public class DataSource implements javax.sql.DataSource, Referenceable
 	 */
 	public java.sql.Connection getConnection(final String user, final String password) throws SQLException
 	{
-		Operation<javax.sql.DataSource, java.sql.Connection> operation = new Operation<javax.sql.DataSource, java.sql.Connection>()
+		DataSourceOperation<java.sql.Connection> operation = new DataSourceOperation<java.sql.Connection>()
 		{
-			public java.sql.Connection execute(Database database, javax.sql.DataSource dataSource) throws SQLException
+			public java.sql.Connection execute(Database<javax.sql.DataSource> database, javax.sql.DataSource dataSource) throws SQLException
 			{
 				return dataSource.getConnection(user, password);
 			}
 		};
 		
 		return new Connection<javax.sql.DataSource>(this.connectionFactory, operation, new FileSupportImpl());
+	}
+	
+	private interface DataSourceOperation<R> extends Operation<javax.sql.DataSource, javax.sql.DataSource, R>
+	{
+		
 	}
 }

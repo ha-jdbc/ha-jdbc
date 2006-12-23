@@ -64,7 +64,7 @@ public final class SynchronizationSupport
 	 * @param context a synchronization context
 	 * @throws SQLException if database error occurs
 	 */
-	public static void dropForeignKeys(SynchronizationContext context) throws SQLException
+	public static <D> void dropForeignKeys(SynchronizationContext<D> context) throws SQLException
 	{
 		Connection connection = context.getConnection(context.getTargetDatabase());
 		
@@ -95,7 +95,7 @@ public final class SynchronizationSupport
 	 * @param context a synchronization context
 	 * @throws SQLException if database error occurs
 	 */
-	public static void restoreForeignKeys(SynchronizationContext context) throws SQLException
+	public static <D> void restoreForeignKeys(SynchronizationContext<D> context) throws SQLException
 	{
 		Connection connection = context.getConnection(context.getTargetDatabase());
 		
@@ -126,9 +126,9 @@ public final class SynchronizationSupport
 	 * @param context a synchronization context
 	 * @throws SQLException if database error occurs
 	 */
-	public static void synchronizeSequences(final SynchronizationContext context) throws SQLException
+	public static <D> void synchronizeSequences(final SynchronizationContext<D> context) throws SQLException
 	{
-		Database sourceDatabase = context.getSourceDatabase();		
+		Database<D> sourceDatabase = context.getSourceDatabase();		
 		Connection sourceConnection = context.getConnection(sourceDatabase);
 		
 		Dialect dialect = context.getDialect();
@@ -136,11 +136,11 @@ public final class SynchronizationSupport
 		Map<String, Long> sequenceMap = new HashMap<String, Long>();
 
 		Collection<String> sequences = dialect.getSequences(sourceConnection);
-		Set<Database> databases = context.getActiveDatabaseSet();
+		Set<Database<D>> databases = context.getActiveDatabaseSet();
 
 		ExecutorService executor = context.getExecutor();
 		
-		Map<Database, Future<Long>> futureMap = new HashMap<Database, Future<Long>>();
+		Map<Database<D>, Future<Long>> futureMap = new HashMap<Database<D>, Future<Long>>();
 
 		for (String sequence: sequences)
 		{
@@ -148,7 +148,7 @@ public final class SynchronizationSupport
 			
 			logger.debug(sql);
 
-			for (final Database database: databases)
+			for (final Database<D> database: databases)
 			{
 				Callable<Long> task = new Callable<Long>()
 				{
@@ -221,18 +221,18 @@ public final class SynchronizationSupport
 	 * @param context a synchronization context
 	 * @throws SQLException if database error occurs
 	 */
-	public static void lock(final SynchronizationContext context) throws SQLException
+	public static <D> void lock(final SynchronizationContext<D> context) throws SQLException
 	{
 		logger.info(Messages.getMessage(Messages.TABLE_LOCK_ACQUIRE));
 		
-		Set<Database> databases = context.getActiveDatabaseSet();
+		Set<Database<D>> databases = context.getActiveDatabaseSet();
 		
 		ExecutorService executor = context.getExecutor();
 		
 		Collection<Future<Void>> futures = new ArrayList<Future<Void>>(databases.size());
 		
 		// Create connections and set transaction isolation level
-		for (final Database database: databases)
+		for (final Database<D> database: databases)
 		{
 			Callable<Void> task = new Callable<Void>()
 			{
@@ -279,7 +279,7 @@ public final class SynchronizationSupport
 		{
 			final String sql = dialect.getLockTableSQL(table);
 			
-			for (final Database database: databases)
+			for (final Database<D> database: databases)
 			{
 				Callable<Void> task = new Callable<Void>()
 				{
@@ -318,15 +318,15 @@ public final class SynchronizationSupport
 		}
 	}
 	
-	public static void unlock(final SynchronizationContext context)
+	public static <D> void unlock(final SynchronizationContext<D> context)
 	{
-		Set<Database> databases = context.getActiveDatabaseSet();
+		Set<Database<D>> databases = context.getActiveDatabaseSet();
 		
 		ExecutorService executor = context.getExecutor();
 		
 		Collection<Future<Void>> futures = new ArrayList<Future<Void>>(databases.size());
 		
-		for (final Database database: databases)
+		for (final Database<D> database: databases)
 		{
 			Callable<Void> task = new Callable<Void>()
 			{
@@ -360,7 +360,7 @@ public final class SynchronizationSupport
 		}
 	}
 	
-	public static void dropUniqueConstraints(SynchronizationContext context, TableProperties table) throws SQLException
+	public static <D> void dropUniqueConstraints(SynchronizationContext<D> context, TableProperties table) throws SQLException
 	{
 		Collection<UniqueConstraint> constraints = table.getUniqueConstraints();
 		
@@ -386,7 +386,7 @@ public final class SynchronizationSupport
 		statement.close();
 	}
 	
-	public static void restoreUniqueConstraints(SynchronizationContext context, TableProperties table) throws SQLException
+	public static <D> void restoreUniqueConstraints(SynchronizationContext<D> context, TableProperties table) throws SQLException
 	{
 		Collection<UniqueConstraint> constraints = table.getUniqueConstraints();
 		

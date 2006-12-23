@@ -25,37 +25,39 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 /**
- * @author  Paul Ferraro
- * @since   1.0
+ * @author Paul Ferraro
+ * @param <D> either java.sql.Driver or javax.sql.DataSource
  */
-public interface DatabaseCluster extends DatabaseClusterMBean
+public interface DatabaseCluster<D>
 {
+	public String getId();
+	
 	/**
 	 * Activates the specified database
 	 * @param database a database descriptor
 	 * @return true, if the database was activated, false it was already active
 	 */
-	public boolean activate(Database database);
+	public boolean activate(Database<D> database);
 	
 	/**
 	 * Deactivates the specified database
 	 * @param database a database descriptor
 	 * @return true, if the database was deactivated, false it was already inactive
 	 */
-	public boolean deactivate(Database database);
+	public boolean deactivate(Database<D> database);
 	
 	/**
 	 * Returns a map of database to connection factory for this obtaining connections to databases in this cluster.
 	 * @return a connection factory map
 	 */
-	public Map<Database, ?> getConnectionFactoryMap();
+	public Map<Database<D>, D> getConnectionFactoryMap();
 	
 	/**
 	 * Determines whether or not the specified database is responding
 	 * @param database a database descriptor
 	 * @return true, if the database is responding, false if it appears down
 	 */
-	public boolean isAlive(Database database);
+	public boolean isAlive(Database<D> database);
 	
 	/**
 	 * Returns the database identified by the specified id
@@ -63,7 +65,7 @@ public interface DatabaseCluster extends DatabaseClusterMBean
 	 * @return a database descriptor
 	 * @throws IllegalArgumentException if no database exists with the specified identifier
 	 */
-	public Database getDatabase(String id);
+	public Database<D> getDatabase(String id);
 
 	/**
 	 * Handles a failure caused by the specified cause on the specified database.
@@ -72,13 +74,13 @@ public interface DatabaseCluster extends DatabaseClusterMBean
 	 * @param cause the cause of the failure
 	 * @throws SQLException if the database is alive
 	 */
-	public void handleFailure(Database database, SQLException cause) throws SQLException;
+	public void handleFailure(Database<D> database, SQLException cause) throws SQLException;
 	
 	/**
 	 * Returns the Balancer implementation used by this database cluster.
 	 * @return an implementation of <code>Balancer</code>
 	 */
-	public Balancer getBalancer();
+	public Balancer<D> getBalancer();
 	
 	/**
 	 * Returns an executor service used to execute transactional database writes.
@@ -109,11 +111,32 @@ public interface DatabaseCluster extends DatabaseClusterMBean
 	public LockManager getLockManager();
 	
 	/**
+	 * Sets the LockManager implementation capable of acquiring named read/write locks on the specific objects in this database cluster.
+	 * @return a LockManager implementation
+	 * @since 1.2
+	 */
+	public void setLockManager(LockManager lockManager);
+	
+	/**
+	 * Returns a StateManager for persisting database cluster state.
+	 * @return a StateManager implementation
+	 * @since 1.2
+	 */
+	public StateManager getStateManager();
+	
+	/**
+	 * Sets the StateManager implementation for persisting database cluster state.
+	 * @return a StateManager implementation
+	 * @since 1.2
+	 */
+	public void setStateManager(StateManager stateManager);
+	
+	/**
 	 * Starts this database cluster.
-	 * @throws SQLException if database cluster fails to start
+	 * @throws Exception if database cluster fails to start
 	 * @since 1.1
 	 */
-	public void start() throws SQLException;
+	public void start() throws Exception;
 	
 	/**
 	 * Stops this database cluster.

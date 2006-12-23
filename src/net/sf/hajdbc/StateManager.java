@@ -18,25 +18,23 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.sql;
+package net.sf.hajdbc;
 
-import java.sql.SQLException;
-
-import net.sf.hajdbc.Operation;
+import java.util.Set;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class Statement<D> extends AbstractStatement<D, java.sql.Statement>
+public interface StateManager
 {
-	/**
-	 * @param connection
-	 * @param operation
-	 * @throws SQLException
-	 */
-	public Statement(Connection<D> connection, Operation<D, java.sql.Connection, java.sql.Statement> operation) throws SQLException
-	{
-		super(connection, operation);
-	}
+	public Set<String> getInitialState();
+	
+	public void add(String databaseId);
+	
+	public void remove(String databaseId);
+	
+	public void start() throws Exception;
+	
+	public void stop();
 }

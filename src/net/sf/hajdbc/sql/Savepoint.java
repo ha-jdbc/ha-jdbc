@@ -30,7 +30,7 @@ import net.sf.hajdbc.Operation;
  * @version $Revision$
  * @since   1.0
  */
-public class Savepoint extends SQLObject<java.sql.Savepoint, java.sql.Connection> implements java.sql.Savepoint
+public class Savepoint<D> extends SQLObject<D, java.sql.Savepoint, java.sql.Connection> implements java.sql.Savepoint
 {
 	/**
 	 * Constructs a new SavepointProxy.
@@ -38,7 +38,7 @@ public class Savepoint extends SQLObject<java.sql.Savepoint, java.sql.Connection
 	 * @param operation
 	 * @throws SQLException
 	 */
-	public Savepoint(Connection<?> connection, Operation<java.sql.Connection, java.sql.Savepoint> operation) throws SQLException
+	public Savepoint(Connection<D> connection, Operation<D, java.sql.Connection, java.sql.Savepoint> operation) throws SQLException
 	{
 		super(connection, operation, connection.getDatabaseCluster().getTransactionalExecutor(), emptyLockList());
 	}
@@ -48,9 +48,9 @@ public class Savepoint extends SQLObject<java.sql.Savepoint, java.sql.Connection
 	 */
 	public int getSavepointId() throws SQLException
 	{
-		Operation<java.sql.Savepoint, Integer> operation = new Operation<java.sql.Savepoint, Integer>()
+		SavepointOperation<D, Integer> operation = new SavepointOperation<D, Integer>()
 		{
-			public Integer execute(Database database, java.sql.Savepoint savepoint) throws SQLException
+			public Integer execute(Database<D> database, java.sql.Savepoint savepoint) throws SQLException
 			{
 				return savepoint.getSavepointId();
 			}
@@ -64,9 +64,9 @@ public class Savepoint extends SQLObject<java.sql.Savepoint, java.sql.Connection
 	 */
 	public String getSavepointName() throws SQLException
 	{
-		Operation<java.sql.Savepoint, String> operation = new Operation<java.sql.Savepoint, String>()
+		SavepointOperation<D, String> operation = new SavepointOperation<D, String>()
 		{
-			public String execute(Database database, java.sql.Savepoint savepoint) throws SQLException
+			public String execute(Database<D> database, java.sql.Savepoint savepoint) throws SQLException
 			{
 				return savepoint.getSavepointName();
 			}
@@ -82,5 +82,10 @@ public class Savepoint extends SQLObject<java.sql.Savepoint, java.sql.Connection
 	protected void close(java.sql.Savepoint savepoint)
 	{
 		// Nothing to close
+	}
+	
+	private static interface SavepointOperation<D, R> extends Operation<D, java.sql.Savepoint, R>
+	{
+		
 	}
 }

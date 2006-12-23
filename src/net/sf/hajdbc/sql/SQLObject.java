@@ -49,21 +49,22 @@ import org.slf4j.LoggerFactory;
 /**
  * Base class for all HA-JDBC proxy objects.
  * @author  Paul Ferraro
+ * @param <D> either java.sql.Driver or javax.sql.DataSource
  * @param <E> elements proxied by this object
  * @param <P> parent object that created the elements proxied by this object
  * @since   1.0
  */
-public abstract class SQLObject<E, P>
+public abstract class SQLObject<D, E, P>
 {
 	private static Logger logger = LoggerFactory.getLogger(SQLObject.class);
 	
-	private DatabaseCluster databaseCluster;
-	protected SQLObject<P, ?> parent;
-	private Operation<P, E> parentOperation;
-	private Map<Database, E> objectMap;
-	private Map<String, Operation<E, ?>> operationMap = new HashMap<String, Operation<E, ?>>();
+	private DatabaseCluster<D> databaseCluster;
+	protected SQLObject<D, P, ?> parent;
+	private Operation<D, P, E> parentOperation;
+	private Map<Database<D>, E> objectMap;
+	private Map<String, Operation<D, E, ?>> operationMap = new HashMap<String, Operation<D, E, ?>>();
 	
-	protected SQLObject(SQLObject<P, ?> parent, Operation<P, E> operation, ExecutorService executor, List<Lock> lockList) throws java.sql.SQLException
+	protected SQLObject(SQLObject<D, P, ?> parent, Operation<D, P, E> operation, ExecutorService executor, List<Lock> lockList) throws java.sql.SQLException
 	{
 		this(parent.getDatabaseCluster(), execute(parent, operation, executor, lockList));
 		
@@ -71,7 +72,7 @@ public abstract class SQLObject<E, P>
 		this.parentOperation = operation;
 	}
 	
-	protected SQLObject(SQLObject<P, ?> parent, Operation<P, E> operation, ExecutorService executor) throws java.sql.SQLException
+	protected SQLObject(SQLObject<D, P, ?> parent, Operation<D, P, E> operation, ExecutorService executor) throws java.sql.SQLException
 	{
 		this(parent, operation, executor, null);
 	}
@@ -85,12 +86,12 @@ public abstract class SQLObject<E, P>
 	 * @return map of Database to SQL object
 	 * @throws java.sql.SQLException 
 	 */
-	private static <T, S> Map<Database, T> execute(SQLObject<S, ?> parent, Operation<S, T> operation, ExecutorService executor, List<Lock> lockList) throws java.sql.SQLException
+	private static <D, T, S> Map<Database<D>, T> execute(SQLObject<D, S, ?> parent, Operation<D, S, T> operation, ExecutorService executor, List<Lock> lockList) throws java.sql.SQLException
 	{
 		return parent.executeWriteToDatabase(operation, executor, lockList);
 	}
 	
-	protected SQLObject(DatabaseCluster databaseCluster, Map<Database, E> objectMap)
+	protected SQLObject(DatabaseCluster<D> databaseCluster, Map<Database<D>, E> objectMap)
 	{
 		this.databaseCluster = databaseCluster;
 		this.objectMap = objectMap;
@@ -103,7 +104,7 @@ public abstract class SQLObject<E, P>
 	 * @param database a database descriptor.
 	 * @return an underlying SQL object
 	 */
-	public synchronized final E getObject(Database database)
+	public synchronized final E getObject(Database<D> database)
 	{
 		E object = this.objectMap.get(database);
 		
@@ -125,7 +126,7 @@ public abstract class SQLObject<E, P>
 				
 				object = this.parentOperation.execute(database, parentObject);
 				
-				for (Operation<E, ?> operation: this.operationMap.values())
+				for (Operation<D, E, ?> operation: this.operationMap.values())
 				{
 					operation.execute(database, object);
 				}
@@ -148,29 +149,29 @@ public abstract class SQLObject<E, P>
 	 * Records an operation.
 	 * @param operation a database operation
 	 */
-	protected synchronized final void record(Operation<E, ?> operation)
+	protected synchronized final void record(Operation<D, E, ?> operation)
 	{
 		this.operationMap.put(operation.getClass().toString(), operation);
 	}
 	
-	private Set<Database> getActiveDatabaseSet()
+	private Set<Database<D>> getActiveDatabaseSet()
 	{
-		Set<Database> databaseSet = this.databaseCluster.getBalancer().all();
+		Set<Database<D>> databaseSet = this.databaseCluster.getBalancer().all();
 		
 		this.retain(databaseSet);
 		
 		return databaseSet;
 	}
 	
-	protected synchronized void retain(Set<Database> databaseSet)
+	protected synchronized void retain(Set<Database<D>> databaseSet)
 	{
 		if (this.parent == null) return;
 		
-		Iterator<Map.Entry<Database, E>> mapEntries = this.objectMap.entrySet().iterator();
+		Iterator<Map.Entry<Database<D>, E>> mapEntries = this.objectMap.entrySet().iterator();
 		
 		while (mapEntries.hasNext())
 		{
-			Map.Entry<Database, E> mapEntry = mapEntries.next();
+			Map.Entry<Database<D>, E> mapEntry = mapEntries.next();
 			
 			Database database = mapEntry.getKey();
 			
@@ -205,7 +206,7 @@ public abstract class SQLObject<E, P>
 	 * @param valueMap a Map<Database, Object> of operation execution results.
 	 * @return a operation execution result
 	 */
-	protected final <T> T firstValue(Map<Database, T> valueMap)
+	protected final <T> T firstValue(Map<Database<D>, T> valueMap)
 	{
 		return valueMap.values().iterator().next();
 	}
@@ -218,11 +219,11 @@ public abstract class SQLObject<E, P>
 	 * @return the result of the operation
 	 * @throws java.sql.SQLException if operation execution fails
 	 */
-	public final <T> T executeReadFromDriver(Operation<E, T> operation) throws java.sql.SQLException
+	public final <T> T executeReadFromDriver(Operation<D, E, T> operation) throws java.sql.SQLException
 	{
 		try
 		{
-			Database database = this.databaseCluster.getBalancer().first();
+			Database<D> database = this.databaseCluster.getBalancer().first();
 			E object = this.getObject(database);
 			
 			return operation.execute(database, object);
@@ -241,15 +242,15 @@ public abstract class SQLObject<E, P>
 	 * @return the result of the operation
 	 * @throws java.sql.SQLException if operation execution fails
 	 */
-	public final <T> T executeReadFromDatabase(Operation<E, T> operation) throws java.sql.SQLException
+	public final <T> T executeReadFromDatabase(Operation<D, E, T> operation) throws java.sql.SQLException
 	{
-		Balancer balancer = this.databaseCluster.getBalancer();
+		Balancer<D> balancer = this.databaseCluster.getBalancer();
 		
 		try
 		{
 			while (true)
 			{
-				Database database = balancer.next();
+				Database<D> database = balancer.next();
 				E object = this.getObject(database);
 	
 				try
@@ -287,7 +288,7 @@ public abstract class SQLObject<E, P>
 	 * @return the result of the operation
 	 * @throws java.sql.SQLException if operation execution fails
 	 */
-	public final <T> Map<Database, T> executeTransactionalWriteToDatabase(final Operation<E, T> operation) throws java.sql.SQLException
+	public final <T> Map<Database<D>, T> executeTransactionalWriteToDatabase(final Operation<D, E, T> operation) throws java.sql.SQLException
 	{
 		return this.executeTransactionalWriteToDatabase(operation, emptyLockList());
 	}
@@ -301,7 +302,7 @@ public abstract class SQLObject<E, P>
 	 * @return the result of the operation
 	 * @throws java.sql.SQLException if operation execution fails
 	 */
-	public final <T> Map<Database, T> executeTransactionalWriteToDatabase(final Operation<E, T> operation, List<Lock> lockList) throws java.sql.SQLException
+	public final <T> Map<Database<D>, T> executeTransactionalWriteToDatabase(final Operation<D, E, T> operation, List<Lock> lockList) throws java.sql.SQLException
 	{
 		return this.executeWriteToDatabase(operation, this.databaseCluster.getTransactionalExecutor(), lockList);
 	}
@@ -314,15 +315,15 @@ public abstract class SQLObject<E, P>
 	 * @return the result of the operation
 	 * @throws java.sql.SQLException if operation execution fails
 	 */
-	public final <T> Map<Database, T> executeNonTransactionalWriteToDatabase(final Operation<E, T> operation) throws java.sql.SQLException
+	public final <T> Map<Database<D>, T> executeNonTransactionalWriteToDatabase(final Operation<D, E, T> operation) throws java.sql.SQLException
 	{
 		return this.executeWriteToDatabase(operation, this.databaseCluster.getNonTransactionalExecutor(), null);
 	}
 	
-	private <T> Map<Database, T> executeWriteToDatabase(final Operation<E, T> operation, ExecutorService executor, List<Lock> lockList) throws java.sql.SQLException
+	private <T> Map<Database<D>, T> executeWriteToDatabase(final Operation<D, E, T> operation, ExecutorService executor, List<Lock> lockList) throws java.sql.SQLException
 	{
-		Map<Database, T> resultMap = new TreeMap<Database, T>();
-		SortedMap<Database, java.sql.SQLException> exceptionMap = new TreeMap<Database, java.sql.SQLException>();
+		Map<Database<D>, T> resultMap = new TreeMap<Database<D>, T>();
+		SortedMap<Database<D>, java.sql.SQLException> exceptionMap = new TreeMap<Database<D>, java.sql.SQLException>();
 		
 		if (lockList != null)
 		{
@@ -339,7 +340,7 @@ public abstract class SQLObject<E, P>
 		
 		try
 		{
-			Set<Database> databaseSet = this.getActiveDatabaseSet();
+			Set<Database<D>> databaseSet = this.getActiveDatabaseSet();
 			
 			if (databaseSet.isEmpty())
 			{
@@ -348,7 +349,7 @@ public abstract class SQLObject<E, P>
 			
 			Map<Database, Future<T>> futureMap = new HashMap<Database, Future<T>>();
 
-			for (final Database database: databaseSet)
+			for (final Database<D> database: databaseSet)
 			{
 				final E object = this.getObject(database);
 				
@@ -363,7 +364,7 @@ public abstract class SQLObject<E, P>
 				futureMap.put(database, executor.submit(task));
 			}
 
-			for (Database database: databaseSet)
+			for (Database<D> database: databaseSet)
 			{
 				Future<T> future = futureMap.get(database);
 				
@@ -430,18 +431,18 @@ public abstract class SQLObject<E, P>
 	 * @return the result of the operation
 	 * @throws java.sql.SQLException if operation execution fails
 	 */
-	public final <T> Map<Database, T> executeWriteToDriver(Operation<E, T> operation) throws java.sql.SQLException
+	public final <T> Map<Database<D>, T> executeWriteToDriver(Operation<D, E, T> operation) throws java.sql.SQLException
 	{
-		Map<Database, T> resultMap = new TreeMap<Database, T>();
+		Map<Database<D>, T> resultMap = new TreeMap<Database<D>, T>();
 
-		Set<Database> databaseSet = this.getActiveDatabaseSet();
+		Set<Database<D>> databaseSet = this.getActiveDatabaseSet();
 		
 		if (databaseSet.isEmpty())
 		{
 			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this.databaseCluster));
 		}
 		
-		for (Database database: databaseSet)
+		for (Database<D> database: databaseSet)
 		{
 			E object = this.getObject(database);
 			
@@ -457,7 +458,7 @@ public abstract class SQLObject<E, P>
 	 * Returns the database cluster to which this proxy is associated.
 	 * @return a database cluster
 	 */
-	public DatabaseCluster getDatabaseCluster()
+	public DatabaseCluster<D> getDatabaseCluster()
 	{
 		return this.databaseCluster;
 	}
@@ -467,11 +468,11 @@ public abstract class SQLObject<E, P>
 	 * @throws java.sql.SQLException
 	 */
 	@SuppressWarnings("unused")
-	public void handleExceptions(Map<Database, java.sql.SQLException> exceptionMap) throws java.sql.SQLException
+	public void handleExceptions(Map<Database<D>, java.sql.SQLException> exceptionMap) throws java.sql.SQLException
 	{
-		for (Map.Entry<Database, java.sql.SQLException> exceptionMapEntry: exceptionMap.entrySet())
+		for (Map.Entry<Database<D>, java.sql.SQLException> exceptionMapEntry: exceptionMap.entrySet())
 		{
-			Database database = exceptionMapEntry.getKey();
+			Database<D> database = exceptionMapEntry.getKey();
 			java.sql.SQLException exception = exceptionMapEntry.getValue();
 			
 			if (this.databaseCluster.deactivate(database))

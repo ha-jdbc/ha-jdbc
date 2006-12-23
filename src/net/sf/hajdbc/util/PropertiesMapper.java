@@ -22,11 +22,6 @@ package net.sf.hajdbc.util;
 
 import java.util.Properties;
 
-import org.jibx.runtime.IAliasable;
-import org.jibx.runtime.IMarshaller;
-import org.jibx.runtime.IMarshallingContext;
-import org.jibx.runtime.IUnmarshaller;
-import org.jibx.runtime.IUnmarshallingContext;
 import org.jibx.runtime.JiBXException;
 import org.jibx.runtime.impl.MarshallingContext;
 import org.jibx.runtime.impl.UnmarshallingContext;
@@ -37,52 +32,62 @@ import org.jibx.runtime.impl.UnmarshallingContext;
  * @author  Paul Ferraro
  * @since   1.0
  */
-public class PropertiesMapper implements IUnmarshaller, IMarshaller, IAliasable
+public class PropertiesMapper extends AbstractMapper<Properties>
 {
 	private static final String ELEMENT = "property";
 	private static final String ATTRIBUTE = "name";
-	
-	private String uri;
-	private String name;
-	private int index;
-	
+
 	/**
-	 * Constructs a new PropertiesMapper.
+	 * 
 	 */
 	public PropertiesMapper()
 	{
+		super();
 	}
-	
+
 	/**
-	 * Constructs a new PropertiesMapper.
 	 * @param uri
-	 * @param index 
+	 * @param index
 	 * @param name
 	 */
 	public PropertiesMapper(String uri, int index, String name)
 	{
-		this.uri = uri;
-		this.index = index;
-		this.name = name;
-	}
-    
-	/**
-	 * @see org.jibx.runtime.IUnmarshaller#isPresent(org.jibx.runtime.IUnmarshallingContext)
-	 */
-	public boolean isPresent(IUnmarshallingContext context) throws JiBXException
-	{
-		return context.isAt(this.uri, this.name);
+		super(uri, index, name);
 	}
 
 	/**
-	 * @see org.jibx.runtime.IUnmarshaller#unmarshal(java.lang.Object, org.jibx.runtime.IUnmarshallingContext)
+	 * @see net.sf.hajdbc.util.AbstractMapper#marshal(java.lang.Object, org.jibx.runtime.impl.MarshallingContext)
 	 */
-	public Object unmarshal(Object object, IUnmarshallingContext ctx) throws JiBXException
+	@Override
+	protected void marshal(Properties properties, MarshallingContext context) throws JiBXException
 	{
-		UnmarshallingContext context = UnmarshallingContext.class.cast(ctx);
-		
-		Properties properties = Properties.class.cast(object);
-		
+		if (properties != null)
+		{
+			if (this.name != null)
+			{
+				context.startTag(this.index, this.name);
+			}
+			
+			for (Object key: properties.keySet())
+			{
+				String name = String.class.cast(key);
+				
+				context.startTagAttributes(this.index, ELEMENT).attribute(this.index, ATTRIBUTE, name).closeStartContent().content(properties.getProperty(name)).endTag(this.index, ELEMENT);
+			}
+
+			if (this.name != null)
+			{
+				context.endTag(this.index, this.name);
+			}
+		}
+	}
+
+	/**
+	 * @see net.sf.hajdbc.util.AbstractMapper#unmarshal(java.lang.Object, org.jibx.runtime.impl.UnmarshallingContext)
+	 */
+	@Override
+	protected Properties unmarshal(Properties properties, UnmarshallingContext context) throws JiBXException
+	{
 		if (properties == null)
 		{
 			properties = new Properties();
@@ -112,43 +117,5 @@ public class PropertiesMapper implements IUnmarshaller, IMarshaller, IAliasable
 		}
 		
 		return properties;
-	}
-
-	/**
-	 * @see org.jibx.runtime.IMarshaller#isExtension(int)
-	 */
-	public boolean isExtension(int index)
-	{
-		return false;
-	}
-
-	/**
-	 * @see org.jibx.runtime.IMarshaller#marshal(java.lang.Object, org.jibx.runtime.IMarshallingContext)
-	 */
-	public void marshal(Object object, IMarshallingContext ctx) throws JiBXException
-	{
-		Properties properties = Properties.class.cast(object);
-		
-		if (properties != null)
-		{
-			MarshallingContext context = MarshallingContext.class.cast(ctx);
-			
-			if (this.name != null)
-			{
-				context.startTag(this.index, this.name);
-			}
-			
-			for (Object key: properties.keySet())
-			{
-				String name = String.class.cast(key);
-				
-				context.startTagAttributes(this.index, ELEMENT).attribute(this.index, ATTRIBUTE, name).closeStartContent().content(properties.getProperty(name)).endTag(this.index, ELEMENT);
-			}
-
-			if (this.name != null)
-			{
-				context.endTag(this.index, this.name);
-			}
-		}
 	}
 }

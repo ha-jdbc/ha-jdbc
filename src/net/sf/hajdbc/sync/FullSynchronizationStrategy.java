@@ -76,7 +76,7 @@ public class FullSynchronizationStrategy extends LockingSynchronizationStrategy 
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.SynchronizationContext)
 	 */
-	public void synchronize(SynchronizationContext context) throws SQLException
+	public <D> void synchronize(SynchronizationContext<D> context) throws SQLException
 	{
 		Connection sourceConnection = context.getConnection(context.getSourceDatabase());
 		Connection targetConnection = context.getConnection(context.getTargetDatabase());

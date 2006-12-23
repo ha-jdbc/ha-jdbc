@@ -21,13 +21,9 @@
 package net.sf.hajdbc;
 
 /**
- * @author  Paul Ferraro
- * @since   1.1
+ * @author Paul Ferraro
  */
-public interface DatabaseClusterBuilder
+public interface DatabaseClusterDecorator
 {
-	/**
-	 * @return a DatabaseCluster instance
-	 */
-	public DatabaseCluster buildDatabaseCluster();
+	public <D> void decorate(DatabaseCluster<D> databaseCluster) throws Exception;
 }

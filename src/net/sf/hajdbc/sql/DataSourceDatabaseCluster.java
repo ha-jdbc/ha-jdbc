@@ -20,23 +20,37 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.sql.SQLException;
+import javax.sql.DataSource;
 
-import net.sf.hajdbc.Operation;
+import net.sf.hajdbc.DatabaseClusterMBean;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class Statement<D> extends AbstractStatement<D, java.sql.Statement>
+public class DataSourceDatabaseCluster extends AbstractDatabaseCluster<DataSource> implements DataSourceDatabaseClusterMBean
 {
 	/**
-	 * @param connection
-	 * @param operation
-	 * @throws SQLException
+	 * @see net.sf.hajdbc.sql.AbstractDatabaseCluster#getMBeanClass()
 	 */
-	public Statement(Connection<D> connection, Operation<D, java.sql.Connection, java.sql.Statement> operation) throws SQLException
+	@Override
+	protected Class<? extends DatabaseClusterMBean> getMBeanClass()
 	{
-		super(connection, operation);
+		return null;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.DataSourceDatabaseClusterMBean#add(java.lang.String, java.lang.String)
+	 */
+	public void add(String databaseId, String name)
+	{
+		DataSourceDatabase database = new DataSourceDatabase();
+		
+		database.setId(databaseId);
+		database.setName(name);
+		
+		this.register(database, database.getInactiveMBeanClass());
+		
+		this.add(database);
 	}
 }

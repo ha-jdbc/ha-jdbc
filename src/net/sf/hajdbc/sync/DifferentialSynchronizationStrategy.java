@@ -85,7 +85,7 @@ public class DifferentialSynchronizationStrategy extends LockingSynchronizationS
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.SynchronizationContext)
 	 */
-	public void synchronize(SynchronizationContext context) throws SQLException
+	public <D> void synchronize(SynchronizationContext<D> context) throws SQLException
 	{
 		Map<Short, String> primaryKeyColumnMap = new TreeMap<Short, String>();
 		Set<Integer> primaryKeyColumnIndexSet = new LinkedHashSet<Integer>();

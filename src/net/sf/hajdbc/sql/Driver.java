@@ -75,9 +75,9 @@ public final class Driver implements java.sql.Driver
 		
 		if (id == null) return null;
 		
-		Operation<java.sql.Driver, java.sql.Connection> operation = new Operation<java.sql.Driver, java.sql.Connection>()
+		DriverOperation<java.sql.Connection> operation = new DriverOperation<java.sql.Connection>()
 		{
-			public java.sql.Connection execute(Database database, java.sql.Driver driver) throws SQLException
+			public java.sql.Connection execute(Database<java.sql.Driver> database, java.sql.Driver driver) throws SQLException
 			{
 				return driver.connect(DriverDatabase.class.cast(database).getUrl(), properties);
 			}	
@@ -111,9 +111,9 @@ public final class Driver implements java.sql.Driver
 		
 		if (id == null) return null;
 		
-		Operation<java.sql.Driver, DriverPropertyInfo[]> operation = new Operation<java.sql.Driver, DriverPropertyInfo[]>()
+		DriverOperation<DriverPropertyInfo[]> operation = new DriverOperation<DriverPropertyInfo[]>()
 		{
-			public DriverPropertyInfo[] execute(Database database, java.sql.Driver driver) throws SQLException
+			public DriverPropertyInfo[] execute(Database<java.sql.Driver> database, java.sql.Driver driver) throws SQLException
 			{
 				return driver.getPropertyInfo(DriverDatabase.class.cast(database).getUrl(), properties);
 			}	
@@ -130,9 +130,9 @@ public final class Driver implements java.sql.Driver
 		return true;
 	}
 	
-	private DatabaseCluster getDatabaseCluster(String id) throws SQLException
+	private DatabaseCluster<java.sql.Driver> getDatabaseCluster(String id) throws SQLException
 	{
-		DatabaseCluster cluster = DatabaseClusterFactory.getInstance().getDatabaseClusterMap().get(id);
+		DatabaseCluster<java.sql.Driver> cluster = DatabaseClusterFactory.getInstance().getDriverDatabaseClusterMap().get(id);
 		
 		if (cluster == null)
 		{
@@ -154,8 +154,13 @@ public final class Driver implements java.sql.Driver
 		return matcher.group(1);
 	}
 	
-	private ConnectionFactory<java.sql.Driver> getConnectionFactory(DatabaseCluster databaseCluster)
+	private ConnectionFactory<java.sql.Driver> getConnectionFactory(DatabaseCluster<java.sql.Driver> databaseCluster)
 	{
 		return new ConnectionFactory<java.sql.Driver>(databaseCluster);
+	}
+	
+	private static interface DriverOperation<R> extends Operation<java.sql.Driver, java.sql.Driver, R>
+	{
+		// No additional methods, just simplify the type parameters
 	}
 }

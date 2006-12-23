@@ -18,25 +18,23 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.sql;
-
-import java.sql.SQLException;
-
-import net.sf.hajdbc.Operation;
+package net.sf.hajdbc;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class Statement<D> extends AbstractStatement<D, java.sql.Statement>
+public enum Transaction
 {
-	/**
-	 * @param connection
-	 * @param operation
-	 * @throws SQLException
-	 */
-	public Statement(Connection<D> connection, Operation<D, java.sql.Connection, java.sql.Statement> operation) throws SQLException
+	LOCAL, XA;
+	
+	public static Transaction deserialize(String value)
 	{
-		super(connection, operation);
+		return Transaction.valueOf(value.toUpperCase());
+	}
+	
+	public static String serialize(Transaction transaction)
+	{
+		return transaction.name().toLowerCase();
 	}
 }

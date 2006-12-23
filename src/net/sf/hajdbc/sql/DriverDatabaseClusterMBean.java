@@ -20,23 +20,21 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.sql.SQLException;
-
-import net.sf.hajdbc.Operation;
+import net.sf.hajdbc.DatabaseClusterMBean;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class Statement<D> extends AbstractStatement<D, java.sql.Statement>
+public interface DriverDatabaseClusterMBean extends DatabaseClusterMBean
 {
 	/**
-	 * @param connection
-	 * @param operation
-	 * @throws SQLException
+	 * Adds a new database to this cluster using the specified identifier, url, and driver.
+	 * @param databaseId a database identifier
+	 * @param url a JDBC url
+	 * @param driver a JDBC driver class name
+	 * @throws IllegalArgumentException if this database already exists, if the specified driver is invalid, or if the specified url is invalid.
+	 * @throws IllegalStateException if mbean registration fails.
 	 */
-	public Statement(Connection<D> connection, Operation<D, java.sql.Connection, java.sql.Statement> operation) throws SQLException
-	{
-		super(connection, operation);
-	}
+	public void add(String databaseId, String driver, String url);
 }

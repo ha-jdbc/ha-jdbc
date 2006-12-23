@@ -26,12 +26,12 @@ import java.sql.SQLException;
  * General interface for defining operation on an SQL object.
  * 
  * @author  Paul Ferraro
- * @version $Revision$
- * @param <S>
- * @param <T> 
+ * @param <D> the database implementation class
+ * @param <T> the class of the java.sql object
+ * @param <R> the class of the return value of the operation
  * @since   1.0
  */
-public interface Operation<T, S>
+public interface Operation<D, T, R>
 {
 	/**
 	 * Executes this operation of the specified SQL object for the specified database.
@@ -40,5 +40,5 @@ public interface Operation<T, S>
 	 * @return the result of this operation
 	 * @throws SQLException if execution fails
 	 */
-	public S execute(Database database, T sqlObject) throws SQLException;
+	public R execute(Database<D> database, T sqlObject) throws SQLException;
 }

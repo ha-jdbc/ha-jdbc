@@ -20,23 +20,38 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.sql.SQLException;
+import java.sql.Driver;
 
-import net.sf.hajdbc.Operation;
+import net.sf.hajdbc.DatabaseClusterMBean;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class Statement<D> extends AbstractStatement<D, java.sql.Statement>
+public class DriverDatabaseCluster extends AbstractDatabaseCluster<Driver> implements DriverDatabaseClusterMBean
 {
 	/**
-	 * @param connection
-	 * @param operation
-	 * @throws SQLException
+	 * @see net.sf.hajdbc.sql.AbstractDatabaseCluster#getMBeanClass()
 	 */
-	public Statement(Connection<D> connection, Operation<D, java.sql.Connection, java.sql.Statement> operation) throws SQLException
+	@Override
+	protected Class<? extends DatabaseClusterMBean> getMBeanClass()
 	{
-		super(connection, operation);
+		return DriverDatabaseClusterMBean.class;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.sql.DriverDatabaseClusterMBean#add(java.lang.String, java.lang.String, java.lang.String)
+	 */
+	public void add(String databaseId, String driver, String url)
+	{
+		DriverDatabase database = new DriverDatabase();
+		
+		database.setId(databaseId);
+		database.setDriver(driver);
+		database.setUrl(url);
+		
+		this.register(database, database.getInactiveMBeanClass());
+		
+		this.add(database);
 	}
 }

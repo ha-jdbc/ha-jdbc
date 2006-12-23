@@ -18,11 +18,10 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.local;
+package net.sf.hajdbc.sql;
 
 import java.sql.Connection;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -35,8 +34,6 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
 
 import javax.management.JMException;
 import javax.management.MBeanServer;
@@ -50,16 +47,17 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.DatabaseClusterMBean;
+import net.sf.hajdbc.StateManager;
 import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.LockManager;
 import net.sf.hajdbc.Messages;
-import net.sf.hajdbc.SQLException;
 import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.SynchronizationStrategyBuilder;
-import net.sf.hajdbc.sql.DataSourceDatabase;
-import net.sf.hajdbc.sql.DriverDatabase;
+import net.sf.hajdbc.Transaction;
+import net.sf.hajdbc.local.LocalStateManager;
+import net.sf.hajdbc.local.LocalLockManager;
 import net.sf.hajdbc.sync.SynchronizationContextImpl;
 import net.sf.hajdbc.util.concurrent.CronThreadPoolExecutor;
 import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
@@ -71,19 +69,17 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author  Paul Ferraro
- * @version $Revision$
+ * @param <D> either java.sql.Driver or javax.sql.DataSource
  * @since   1.0
  */
-public class LocalDatabaseCluster implements DatabaseCluster
+public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, DatabaseClusterMBean
 {
 	private static final String JMX_AGENT_PROPERTY = "ha-jdbc.jmx-agent";
-	private static final String STATE_DELIMITER = ",";
 	private static final String MBEAN_DOMAIN = "net.sf.hajdbc";
 	private static final String MBEAN_CLUSTER_KEY = "cluster";
 	private static final String MBEAN_DATABASE_KEY = "database";
 		
-	private static Preferences preferences = Preferences.userNodeForPackage(LocalDatabaseCluster.class);
-	static Logger logger = LoggerFactory.getLogger(LocalDatabaseCluster.class);
+	static Logger logger = LoggerFactory.getLogger(AbstractDatabaseCluster.class);
 	
 	/**
 	 * Convenience method for constructing a standardized mbean ObjectName for this cluster.
@@ -122,7 +118,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	}
 	
 	private String id;
-	private Balancer balancer;
+	private Balancer<D> balancer;
 	private Dialect dialect;
 	private DatabaseMetaDataCache databaseMetaDataCache;
 	private String defaultSynchronizationStrategyId;
@@ -136,14 +132,15 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	private boolean sequenceDetectionEnabled;
 	
 	private MBeanServer server;
-	private Map<String, Database> databaseMap = new ConcurrentHashMap<String, Database>();
-	private Map<Database, Object> connectionFactoryMap = new ConcurrentHashMap<Database, Object>();
+	private Map<String, Database<D>> databaseMap = new ConcurrentHashMap<String, Database<D>>();
+	private Map<Database<D>, D> connectionFactoryMap = new ConcurrentHashMap<Database<D>, D>();
 	private ExecutorService transactionalExecutor;
 	private ExecutorService nonTransactionalExecutor;
 	private CronThreadPoolExecutor cronExecutor = new CronThreadPoolExecutor(2);
 	private LockManager lockManager = new LocalLockManager();
+	private StateManager stateManager = new LocalStateManager(this);
 	
-	public LocalDatabaseCluster()
+	public AbstractDatabaseCluster()
 	{
 		String agent = System.getProperty(JMX_AGENT_PROPERTY);
 		
@@ -156,55 +153,11 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		
 		this.server = MBeanServer.class.cast(serverList.get(0));
 	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#loadState()
-	 */
-	public String[] loadState() throws java.sql.SQLException
-	{
-		try
-		{
-			preferences.sync();
-			
-			String state = preferences.get(this.id, null);
-			
-			if (state == null)
-			{
-				return null;
-			}
-			
-			if (state.length() == 0)
-			{
-				return new String[0];
-			}
-			
-			String[] databases = state.split(STATE_DELIMITER);
-			
-			// Validate persisted cluster state
-			for (String id: databases)
-			{
-				if (!this.databaseMap.containsKey(id))
-				{
-					// Persisted cluster state is invalid!
-					preferences.remove(this.id);					
-					preferences.flush();
-					
-					return null;
-				}
-			}
-			
-			return databases;
-		}
-		catch (BackingStoreException e)
-		{
-			throw new SQLException(Messages.getMessage(Messages.CLUSTER_STATE_LOAD_FAILED, this), e);
-		}
-	}
 
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getConnectionFactoryMap()
 	 */
-	public Map<Database, ?> getConnectionFactoryMap()
+	public Map<Database<D>, D> getConnectionFactoryMap()
 	{
 		return this.connectionFactoryMap;
 	}
@@ -212,8 +165,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#isAlive(net.sf.hajdbc.Database)
 	 */
-	@SuppressWarnings("unchecked")
-	public boolean isAlive(Database database)
+	public boolean isAlive(Database<D> database)
 	{
 		Connection connection = null;
 		
@@ -254,7 +206,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#deactivate(net.sf.hajdbc.Database)
 	 */
-	public synchronized boolean deactivate(Database database)
+	public synchronized boolean deactivate(Database<D> database)
 	{
 		this.unregister(database);
 		// Reregister database mbean using "inactive" interface
@@ -264,7 +216,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		
 		if (removed)
 		{
-			this.storeState();
+			this.stateManager.remove(database.getId());
 		}
 		
 		return removed;
@@ -281,7 +233,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#activate(net.sf.hajdbc.Database)
 	 */
-	public synchronized boolean activate(Database database)
+	public synchronized boolean activate(Database<D> database)
 	{
 		this.unregister(database);
 		// Reregister database mbean using "active" interface
@@ -298,38 +250,10 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		
 		if (added)
 		{
-			this.storeState();			
+			this.stateManager.add(database.getId());
 		}
 		
 		return added;
-	}
-	
-	private void storeState()
-	{
-		StringBuilder builder = new StringBuilder();
-		
-		Iterator<Database> databases = this.balancer.all().iterator();
-		
-		while (databases.hasNext())
-		{
-			builder.append(databases.next().getId());
-			
-			if (databases.hasNext())
-			{
-				builder.append(STATE_DELIMITER);
-			}
-		}
-		
-		preferences.put(this.id, builder.toString());
-		
-		try
-		{
-			preferences.flush();
-		}
-		catch (BackingStoreException e)
-		{
-			logger.warn(Messages.getMessage(Messages.CLUSTER_STATE_STORE_FAILED, this), e);
-		}
 	}
 	
 	/**
@@ -365,9 +289,9 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getDatabase(java.lang.String)
 	 */
-	public Database getDatabase(String id)
+	public Database<D> getDatabase(String id)
 	{
-		Database database = this.databaseMap.get(id);
+		Database<D> database = this.databaseMap.get(id);
 		
 		if (database == null)
 		{
@@ -384,13 +308,13 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	{
 		return this.defaultSynchronizationStrategyId;
 	}
-	
+
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#getSynchronizationStrategies()
 	 */
 	public Set<String> getSynchronizationStrategies()
 	{
-		return DatabaseClusterFactory.getInstance().getSynchronizationStrategyMap().keySet();
+		return new TreeSet<String>(DatabaseClusterFactory.getInstance().getSynchronizationStrategyMap().keySet());
 	}
 
 	/**
@@ -404,7 +328,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getBalancer()
 	 */
-	public Balancer getBalancer()
+	public Balancer<D> getBalancer()
 	{
 		return this.balancer;
 	}
@@ -498,7 +422,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	 * @param cause the cause of the failure
 	 * @throws java.sql.SQLException if the database is alive
 	 */
-	public final void handleFailure(Database database, java.sql.SQLException cause) throws java.sql.SQLException
+	public final void handleFailure(Database<D> database, java.sql.SQLException cause) throws java.sql.SQLException
 	{
 		if (this.isAlive(database))
 		{
@@ -511,38 +435,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		}
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.DatabaseClusterMBean#add(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	public void add(String id, String driver, String url)
-	{
-		DriverDatabase database = new DriverDatabase();
-		
-		database.setId(id);
-		database.setDriver(driver);
-		database.setUrl(url);
-		
-		this.register(database, database.getInactiveMBeanClass());
-		
-		this.add(database);
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseClusterMBean#add(java.lang.String, java.lang.String)
-	 */
-	public void add(String id, String name)
-	{
-		DataSourceDatabase database = new DataSourceDatabase();
-		
-		database.setId(id);
-		database.setName(name);
-		
-		this.register(database, database.getInactiveMBeanClass());
-		
-		this.add(database);
-	}
-	
-	private void register(Database database, Class mbeanClass)
+	protected void register(Database<D> database, Class mbeanClass)
 	{
 		try
 		{
@@ -563,7 +456,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	 */
 	public synchronized void remove(String id)
 	{
-		Database database = this.getDatabase(id);
+		Database<D> database = this.getDatabase(id);
 		
 		if (this.balancer.contains(database))
 		{
@@ -578,7 +471,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		DatabaseClusterFactory.getInstance().exportConfig();
 	}
 
-	private void unregister(Database database)
+	private void unregister(Database<D> database)
 	{
 		try
 		{
@@ -600,37 +493,36 @@ public class LocalDatabaseCluster implements DatabaseCluster
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#start()
 	 */
-	public void start() throws java.sql.SQLException
+	public void start() throws Exception
 	{
-		try
+		this.server.registerMBean(new StandardMBean(this, this.getMBeanClass()), getObjectName(this.id));
+		
+		for (Database<D> database: this.databaseMap.values())
 		{
-			this.server.registerMBean(new StandardMBean(this, DatabaseClusterMBean.class), getObjectName(this.id));
-			
-			for (Database database: this.databaseMap.values())
-			{
-				this.register(database, database.getInactiveMBeanClass());
-			}
-		}
-		catch (JMException e)
-		{
-			throw new SQLException(e);
+			this.register(database, database.getInactiveMBeanClass());
 		}
 		
-		String[] databases = this.loadState();
+		this.lockManager.start();
+		this.stateManager.start();
 		
-		if (databases != null)
+		Set<String> databaseSet = this.stateManager.getInitialState();
+		
+		if (databaseSet != null)
 		{
-			for (String id: databases)
+			for (String databaseId: databaseSet)
 			{
-				this.activate(this.getDatabase(id));
+				Database<D> database = this.getDatabase(databaseId);
+				
+				if (database != null)
+				{
+					this.activate(database);
+				}
 			}
 		}
 		else
 		{
-			for (String id: this.getInactiveDatabases())
+			for (Database<D> database: this.databaseMap.values())
 			{
-				Database database = this.getDatabase(id);
-				
 				if (this.isAlive(database))
 				{
 					this.activate(database);
@@ -657,12 +549,14 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		}
 	}
 	
+	protected abstract Class<? extends DatabaseClusterMBean> getMBeanClass();
+
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#stop()
 	 */
 	public synchronized void stop()
 	{
-		for (Database database: this.databaseMap.values())
+		for (Database<D> database: this.databaseMap.values())
 		{
 			this.unregister(database);
 		}
@@ -680,6 +574,9 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		{
 			logger.warn(e.getMessage(), e);
 		}
+		
+		this.stateManager.stop();
+		this.lockManager.stop();
 		
 		this.cronExecutor.shutdownNow();
 		
@@ -783,7 +680,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		this.defaultSynchronizationStrategyId = builder.getId();
 	}
 	
-	synchronized void add(Database database)
+	protected synchronized void add(Database<D> database)
 	{
 		String id = database.getId();
 		
@@ -796,31 +693,35 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		this.databaseMap.put(id, database);
 	}
 	
-	Iterator<Database> getDriverDatabases()
+	Iterator<Database<D>> getDatabases()
 	{
-		return this.getDatabases(DriverDatabase.class);
+		return this.databaseMap.values().iterator();
 	}
 	
-	Iterator<Database> getDataSourceDatabases()
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getStateManager()
+	 */
+	public StateManager getStateManager()
 	{
-		return this.getDatabases(DataSourceDatabase.class);
+		return this.stateManager;
 	}
-	
-	private Iterator<Database> getDatabases(Class targetClass)
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#setStateManager(net.sf.hajdbc.StateManager)
+	 */
+	public void setStateManager(StateManager stateManager)
 	{
-		List<Database> databaseList = new ArrayList<Database>(this.databaseMap.size());
-		
-		for (Database database: this.databaseMap.values())
-		{
-			if (targetClass.equals(database.getClass()))
-			{
-				databaseList.add(database);
-			}
-		}
-		
-		return databaseList.iterator();
+		this.stateManager = stateManager;
 	}
-	
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#setLockManager(net.sf.hajdbc.LockManager)
+	 */
+	public void setLockManager(LockManager lockManager)
+	{
+		this.lockManager = lockManager;
+	}
+
 	private void activate(String databaseId, SynchronizationStrategy strategy)
 	{
 		try
@@ -852,7 +753,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		}
 	}
 	
-	private boolean activate(Database database, SynchronizationStrategy strategy) throws java.sql.SQLException, InterruptedException
+	private boolean activate(Database<D> database, SynchronizationStrategy strategy) throws java.sql.SQLException, InterruptedException
 	{
 		if (this.getBalancer().contains(database))
 		{
@@ -870,7 +771,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		
 		try
 		{
-			SynchronizationContext context = new SynchronizationContextImpl(this, database);
+			SynchronizationContext<D> context = new SynchronizationContextImpl<D>(this, database);
 			
 			try
 			{
@@ -909,11 +810,11 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		 */
 		public void run()
 		{
-			for (String databaseId: LocalDatabaseCluster.this.getActiveDatabases())
+			for (String databaseId: AbstractDatabaseCluster.this.getActiveDatabases())
 			{
-				if (!LocalDatabaseCluster.this.isAlive(databaseId))
+				if (!AbstractDatabaseCluster.this.isAlive(databaseId))
 				{
-					LocalDatabaseCluster.this.deactivate(databaseId);
+					AbstractDatabaseCluster.this.deactivate(databaseId);
 				}
 			}
 		}
@@ -926,9 +827,9 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		 */
 		public void run()
 		{
-			for (String databaseId: LocalDatabaseCluster.this.getInactiveDatabases())
+			for (String databaseId: AbstractDatabaseCluster.this.getInactiveDatabases())
 			{
-				LocalDatabaseCluster.this.activate(databaseId);
+				AbstractDatabaseCluster.this.activate(databaseId);
 			}
 		}
 	}

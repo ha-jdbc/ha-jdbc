@@ -26,11 +26,10 @@ import net.sf.hajdbc.Database;
 
 /**
  * @author  Paul Ferraro
- * @version $Revision$
- * @param <T> 
+ * @param <D> either java.sql.Driver or javax.sql.DataSource
  * @since   1.0
  */
-public abstract class AbstractDatabase<T> implements Database<T>
+public abstract class AbstractDatabase<D> implements Database<D>
 {
 	protected String id;
 	protected String user;
@@ -203,7 +202,7 @@ public abstract class AbstractDatabase<T> implements Database<T>
 	/**
 	 * @see java.lang.Comparable#compareTo(Object)
 	 */
-	public int compareTo(Database database)
+	public int compareTo(Database<D> database)
 	{
 		return this.id.compareTo(database.getId());
 	}

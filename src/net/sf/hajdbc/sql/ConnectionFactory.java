@@ -20,9 +20,6 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.util.Map;
-
-import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 
 /**
@@ -31,7 +28,7 @@ import net.sf.hajdbc.DatabaseCluster;
  * @param <E> 
  * @since   1.0
  */
-public class ConnectionFactory<E> extends SQLObject<E, Void>
+public class ConnectionFactory<D> extends SQLObject<D, D, Void>
 {
 	/**
 	 * Constructs a new ConnectionFactory.
@@ -39,16 +36,16 @@ public class ConnectionFactory<E> extends SQLObject<E, Void>
 	 * @param targetClass target class of 
 	 */
 	@SuppressWarnings("unchecked")
-	public ConnectionFactory(DatabaseCluster databaseCluster)
+	public ConnectionFactory(DatabaseCluster<D> databaseCluster)
 	{
-		super(databaseCluster, (Map<Database, E>) databaseCluster.getConnectionFactoryMap());
+		super(databaseCluster, databaseCluster.getConnectionFactoryMap());
 	}
 
 	/**
 	 * @see net.sf.hajdbc.sql.SQLObject#close(java.lang.Object)
 	 */
 	@Override
-	protected void close(E object)
+	protected void close(D object)
 	{
 		// Nothing to close
 	}

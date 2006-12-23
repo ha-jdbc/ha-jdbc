@@ -44,22 +44,22 @@ import org.slf4j.LoggerFactory;
  * @author Paul Ferraro
  * @since 1.2
  */
-public class SynchronizationContextImpl implements SynchronizationContext
+public class SynchronizationContextImpl<D> implements SynchronizationContext<D>
 {
 	private static Logger logger = LoggerFactory.getLogger(SynchronizationContextImpl.class);
 	
-	private Set<Database> activeDatabaseSet;
-	private Database sourceDatabase;
-	private Database targetDatabase;
-	private DatabaseCluster cluster;
-	private Map<Database, Connection> connectionMap = new HashMap<Database, Connection>();
+	private Set<Database<D>> activeDatabaseSet;
+	private Database<D> sourceDatabase;
+	private Database<D> targetDatabase;
+	private DatabaseCluster<D> cluster;
+	private Map<Database<D>, Connection> connectionMap = new HashMap<Database<D>, Connection>();
 	private ExecutorService executor;
 	
-	public SynchronizationContextImpl(DatabaseCluster cluster, Database database)
+	public SynchronizationContextImpl(DatabaseCluster<D> cluster, Database<D> database)
 	{
 		this.cluster = cluster;
 		
-		Balancer balancer = cluster.getBalancer();
+		Balancer<D> balancer = cluster.getBalancer();
 		
 		this.sourceDatabase = balancer.next();
 		this.activeDatabaseSet = balancer.all();
@@ -91,7 +91,7 @@ public class SynchronizationContextImpl implements SynchronizationContext
 	/**
 	 * @see net.sf.hajdbc.SynchronizationContext#getSourceDatabase()
 	 */
-	public Database getSourceDatabase()
+	public Database<D> getSourceDatabase()
 	{
 		return this.sourceDatabase;
 	}
@@ -99,7 +99,7 @@ public class SynchronizationContextImpl implements SynchronizationContext
 	/**
 	 * @see net.sf.hajdbc.SynchronizationContext#getTargetDatabase()
 	 */
-	public Database getTargetDatabase()
+	public Database<D> getTargetDatabase()
 	{
 		return this.targetDatabase;
 	}
@@ -107,7 +107,7 @@ public class SynchronizationContextImpl implements SynchronizationContext
 	/**
 	 * @see net.sf.hajdbc.SynchronizationContext#getActiveDatabases()
 	 */
-	public Set<Database> getActiveDatabaseSet()
+	public Set<Database<D>> getActiveDatabaseSet()
 	{
 		return this.activeDatabaseSet;
 	}

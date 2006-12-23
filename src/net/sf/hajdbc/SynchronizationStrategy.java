@@ -33,19 +33,19 @@ public interface SynchronizationStrategy
 	 * @param context a synchronization context
 	 * @throws java.sql.SQLException if prepare fails
 	 */
-	public void prepare(SynchronizationContext context) throws java.sql.SQLException;
+	public <D> void prepare(SynchronizationContext<D> context) throws java.sql.SQLException;
 	
 	/**
 	 * Cleans up the specified synchronization context after synchronization.
 	 * @param context a synchronization context
 	 * @throws java.sql.SQLException if cleanup fails
 	 */
-	public void cleanup(SynchronizationContext context);
+	public <D> void cleanup(SynchronizationContext<D> context);
 	
 	/**
 	 * Synchronizes a target database with a source database as defined by the synchronization context.
 	 * @param context a synchronization context
 	 * @throws java.sql.SQLException if synchronization fails
 	 */
-	public void synchronize(SynchronizationContext context) throws java.sql.SQLException;
+	public <D> void synchronize(SynchronizationContext<D> context) throws java.sql.SQLException;
 }

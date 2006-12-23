@@ -30,7 +30,7 @@ import java.util.concurrent.ExecutorService;
  * @author Paul Ferraro
  * @since 1.2
  */
-public interface SynchronizationContext
+public interface SynchronizationContext<D>
 {
 	/**
 	 * Returns a connection to the specified database.
@@ -38,25 +38,25 @@ public interface SynchronizationContext
 	 * @return a database connection
 	 * @throws SQLException if connection could not be obtained
 	 */
-	public Connection getConnection(Database database) throws SQLException;
+	public Connection getConnection(Database<D> database) throws SQLException;
 	
 	/**
 	 * Returns the database from which to synchronize.
 	 * @return a database
 	 */
-	public Database getSourceDatabase();
+	public Database<D> getSourceDatabase();
 	
 	/**
 	 * Returns the database to synchronize.
 	 * @return a database
 	 */
-	public Database getTargetDatabase();
+	public Database<D> getTargetDatabase();
 	
 	/**
 	 * Returns a snapshot of the activate databases in the cluster at the time synchronization started.
 	 * @return a collection of databases
 	 */
-	public Set<Database> getActiveDatabaseSet();
+	public Set<Database<D>> getActiveDatabaseSet();
 	
 	/**
 	 * Returns a cache of database meta data.

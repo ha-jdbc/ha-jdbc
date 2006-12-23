@@ -39,7 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import net.sf.hajdbc.local.LocalDatabaseCluster;
+import net.sf.hajdbc.sql.DataSourceDatabaseCluster;
+import net.sf.hajdbc.sql.DriverDatabaseCluster;
 
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IMarshallingContext;
@@ -109,8 +110,6 @@ public final class DatabaseClusterFactory
 			DatabaseClusterFactory factory = DatabaseClusterFactory.class.cast(context.unmarshalDocument(inputStream, null));
 
 			factory.url = url;
-			
-			Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook(factory)));
 			
 			return factory;
 		}
@@ -192,62 +191,36 @@ public final class DatabaseClusterFactory
 		}
 	}
 	
-	static DatabaseCluster createDatabaseCluster(Object factory)
-	{
-		DatabaseClusterBuilder builder = DatabaseClusterFactory.class.cast(factory).builder;
-		
-		return (builder == null) ? new LocalDatabaseCluster() : builder.buildDatabaseCluster();
-	}
-	
-	private Map<String, DatabaseCluster> databaseClusterMap = new HashMap<String, DatabaseCluster>();
+	private Map<String, DriverDatabaseCluster> driverDatabaseClusterMap = new HashMap<String, DriverDatabaseCluster>();
+	private Map<String, DataSourceDatabaseCluster> dataSourceDatabaseClusterMap = new HashMap<String, DataSourceDatabaseCluster>();
 	private Map<String, SynchronizationStrategy> synchronizationStrategyMap = new HashMap<String, SynchronizationStrategy>();
-	private DatabaseClusterBuilder builder;
+	private DatabaseClusterDecorator decorator;
 	private URL url;
 	
 	private DatabaseClusterFactory()
 	{
 		// Do nothing
 	}
-	
-	/**
-	 * Returns the database cluster identified by the specified id
-	 * @param id a database cluster identifier
-	 * @return a database cluster
-	 */
-	public DatabaseCluster getDatabaseCluster(String id)
+
+	public Map<String, DriverDatabaseCluster> getDriverDatabaseClusterMap()
 	{
-		DatabaseCluster databaseCluster = this.databaseClusterMap.get(id);
-		
-		if (databaseCluster == null)
-		{
-			throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_DATABASE_CLUSTER, id));
-		}
-		
-		return databaseCluster;
+		return this.driverDatabaseClusterMap;
 	}
 	
-	/**
-	 * Returns the synchronization strategy identified by the specified id
-	 * @param id a synchronization strategy identifier
-	 * @return a synchronization strategy
-	 * @throws IllegalArgumentException if the specified identifier is not a valid sychronization strategy
-	 */
-	public SynchronizationStrategy getSynchronizationStrategy(String id)
+	public Map<String, DataSourceDatabaseCluster> getDataSourceDatabaseClusterMap()
 	{
-		SynchronizationStrategy strategy = this.synchronizationStrategyMap.get(id);
-		
-		if (strategy == null)
-		{
-			throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_SYNC_STRATEGY, id));
-		}
-		
-		return strategy;
+		return this.dataSourceDatabaseClusterMap;
+	}
+	
+	public Map<String, SynchronizationStrategy> getSynchronizationStrategyMap()
+	{
+		return this.synchronizationStrategyMap;
 	}
 	
 	/**
 	 * Exports the current HA-JDBC configuration.
 	 */
-	public synchronized void exportConfiguration()
+	public synchronized void exportConfig()
 	{
 		File file = null;
 		WritableByteChannel outputChannel = null;
@@ -325,10 +298,22 @@ public final class DatabaseClusterFactory
 		
 		return file;
 	}
-	
-	void addDatabaseCluster(DatabaseCluster databaseCluster) throws Exception
+
+	<D> void addDatabaseCluster(DatabaseCluster<D> databaseCluster) throws Exception
 	{
-		this.databaseClusterMap.put(databaseCluster.getId(), databaseCluster);
+		if (this.decorator != null)
+		{
+			this.decorator.decorate(databaseCluster);			
+		}
+		
+		if (DriverDatabaseCluster.class.isInstance(databaseCluster))
+		{
+			this.driverDatabaseClusterMap.put(databaseCluster.getId(), DriverDatabaseCluster.class.cast(databaseCluster));
+		}
+		else
+		{
+			this.dataSourceDatabaseClusterMap.put(databaseCluster.getId(), DataSourceDatabaseCluster.class.cast(databaseCluster));
+		}
 		
 		try
 		{
@@ -336,10 +321,7 @@ public final class DatabaseClusterFactory
 		}
 		catch (Exception e)
 		{
-			for (DatabaseCluster cluster: this.databaseClusterMap.values())
-			{
-				cluster.stop();
-			}
+			this.stop();
 			
 			throw e;
 		}
@@ -362,44 +344,32 @@ public final class DatabaseClusterFactory
 		return builderList.iterator();
 	}
 	
-	Iterator<DatabaseCluster> getDatabaseClusters()
+	Iterator<DatabaseCluster<?>> getDatabaseClusters()
 	{
-		return this.databaseClusterMap.values().iterator();
+		List<DatabaseCluster<?>> list = new ArrayList<DatabaseCluster<?>>(this.driverDatabaseClusterMap.size() + this.dataSourceDatabaseClusterMap.size());
+		
+		list.addAll(this.driverDatabaseClusterMap.values());
+		list.addAll(this.dataSourceDatabaseClusterMap.values());
+		
+		return list.iterator();
 	}
 	
-	private static class ShutdownHook implements Runnable
+	private void stop()
 	{
-		private DatabaseClusterFactory factory;
-		
-		/**
-		 * Constructs a new ShutdownHook.
-		 * @param factory
-		 */
-		public ShutdownHook(DatabaseClusterFactory factory)
+		for (DriverDatabaseCluster cluster: this.driverDatabaseClusterMap.values())
 		{
-			this.factory = factory;
+			cluster.stop();
 		}
 		
-		/**
-		 * @see java.lang.Runnable#run()
-		 */
-		public void run()
+		for (DataSourceDatabaseCluster cluster: this.dataSourceDatabaseClusterMap.values())
 		{
-			logger.info(Messages.getMessage(Messages.SHUT_DOWN));
-			
-			Iterator<DatabaseCluster> databaseClusters = this.factory.getDatabaseClusters();
-			
-			while (databaseClusters.hasNext())
-			{
-				try
-				{
-					databaseClusters.next().stop();
-				}
-				catch (Throwable e)
-				{
-					logger.warn(e.getMessage(), e);
-				}
-			}
-		}	
+			cluster.stop();
+		}
+	}
+	
+	@Override
+	protected void finalize()
+	{
+		this.stop();
 	}
 }

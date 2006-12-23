@@ -26,10 +26,10 @@ import java.sql.SQLException;
 /**
  * @author  Paul Ferraro
  * @version $Revision$
- * @param <T> 
+ * @param <D> either java.sql.Driver or javax.sql.DataSource
  * @since   1.0
  */
-public interface Database<T> extends InactiveDatabaseMBean, Comparable<Database>
+public interface Database<D> extends InactiveDatabaseMBean, Comparable<Database<D>>
 {
 	/**
 	 * Connects to the database using the specified connection factory.
@@ -37,14 +37,14 @@ public interface Database<T> extends InactiveDatabaseMBean, Comparable<Database>
 	 * @return a database connection
 	 * @throws SQLException if connection fails
 	 */
-	public Connection connect(T connectionFactory) throws SQLException;
+	public Connection connect(D connectionFactory) throws SQLException;
 	
 	/**
 	 * Factory method for creating a connection factory object for this database.
 	 * @return a connection factory object
 	 * @throws IllegalArgumentException if connection factory could not be created
 	 */
-	public T createConnectionFactory();
+	public D createConnectionFactory();
 	
 	public Class<? extends ActiveDatabaseMBean> getActiveMBeanClass();
 	

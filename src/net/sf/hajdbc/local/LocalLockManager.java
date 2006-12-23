@@ -160,4 +160,20 @@ public class LocalLockManager implements LockManager
 			throw new UnsupportedOperationException();
 		}
 	}
+
+	/**
+	 * @see net.sf.hajdbc.LockManager#start()
+	 */
+	public void start() throws Exception
+	{
+		// Do nothing
+	}
+
+	/**
+	 * @see net.sf.hajdbc.LockManager#stop()
+	 */
+	public void stop()
+	{
+		// Do nothing
+	}
 }

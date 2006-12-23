@@ -34,7 +34,7 @@ public abstract class LockingSynchronizationStrategy implements SynchronizationS
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#cleanup(net.sf.hajdbc.SynchronizationContext)
 	 */
-	public void cleanup(SynchronizationContext context)
+	public <D> void cleanup(SynchronizationContext<D> context)
 	{
 		SynchronizationSupport.unlock(context);
 	}
@@ -42,7 +42,7 @@ public abstract class LockingSynchronizationStrategy implements SynchronizationS
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#prepare(net.sf.hajdbc.SynchronizationContext)
 	 */
-	public void prepare(SynchronizationContext context) throws SQLException
+	public <D> void prepare(SynchronizationContext<D> context) throws SQLException
 	{
 		SynchronizationSupport.lock(context);
 	}

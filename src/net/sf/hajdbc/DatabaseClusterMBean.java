@@ -20,7 +20,7 @@
  */
 package net.sf.hajdbc;
 
-import java.util.Collection;
+import java.util.Set;
 
 /**
  * @author  Paul Ferraro
@@ -29,12 +29,6 @@ import java.util.Collection;
  */
 public interface DatabaseClusterMBean
 {
-	/**
-	 * Returns the name of this database cluster.
-	 * @return the database cluster name
-	 */
-	public String getId();
-	
 	/**
 	 * Determines whether or not the specified database is responsive
 	 * @param databaseId a database identifier
@@ -72,38 +66,19 @@ public interface DatabaseClusterMBean
 	 * Returns a collection of active databases in this cluster.
 	 * @return a list of database identifiers
 	 */
-	public Collection<String> getActiveDatabases();
+	public Set<String> getActiveDatabases();
 	
 	/**
 	 * Returns a collection of inactive databases in this cluster.
 	 * @return a collection of database identifiers
 	 */
-	public Collection<String> getInactiveDatabases();
+	public Set<String> getInactiveDatabases();
 	
 	/**
 	 * Return the current HA-JDBC version
 	 * @return the current version
 	 */
 	public String getVersion();
-	
-	/**
-	 * Adds a new database to this cluster using the specified identifier, url, and driver.
-	 * @param databaseId a database identifier
-	 * @param url a JDBC url
-	 * @param driver a JDBC driver class name
-	 * @throws IllegalArgumentException if this database already exists, if the specified driver is invalid, or if the specified url is invalid.
-	 * @throws IllegalStateException if mbean registration fails.
-	 */
-	public void add(String databaseId, String driver, String url);
-	
-	/**
-	 * Adds a new DataSource to this cluster using the specified identifier and JNDI name.
-	 * @param databaseId a database identifier
-	 * @param name the JNDI name use to lookup the DataSource
-	 * @throws IllegalArgumentException if this database already exists, or no DataSource was found using the specified name.
-	 * @throws IllegalStateException if mbean registration fails.
-	 */
-	public void add(String databaseId, String name);
 	
 	/**
 	 * Removes the specified database/DataSource from the cluster.
@@ -116,4 +91,8 @@ public interface DatabaseClusterMBean
 	 * Flushes this cluster's cache of DatabaseMetaData.
 	 */
 	public void flushMetaDataCache();
+	
+	public Set<String> getSynchronizationStrategies();
+	
+	public String getDefaultSynchronizationStrategy();
 }

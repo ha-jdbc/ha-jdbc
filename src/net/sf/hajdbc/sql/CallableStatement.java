@@ -44,7 +44,7 @@ import net.sf.hajdbc.Operation;
  * @version $Revision$
  * @since   1.0
  */
-public class CallableStatement extends PreparedStatement<java.sql.CallableStatement> implements java.sql.CallableStatement
+public class CallableStatement<D> extends AbstractPreparedStatement<D, java.sql.CallableStatement> implements java.sql.CallableStatement
 {
 	/**
 	 * Constructs a new CallableStatementProxy.
@@ -53,7 +53,7 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 * @param sql an SQL statement
 	 * @throws java.sql.SQLException if operation execution fails
 	 */
-	public CallableStatement(Connection<?> connection, Operation<java.sql.Connection, java.sql.CallableStatement> operation, String sql) throws java.sql.SQLException
+	public CallableStatement(Connection<D> connection, Operation<D, java.sql.Connection, java.sql.CallableStatement> operation, String sql) throws java.sql.SQLException
 	{
 		super(connection, operation, sql);
 	}
@@ -63,9 +63,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public Array getArray(final int index) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Array> operation = new Operation<java.sql.CallableStatement, Array>()
+		StatementOperation<D, Array> operation = new StatementOperation<D, Array>()
 		{
-			public Array execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Array execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getArray(index);
 			}
@@ -79,9 +79,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public Array getArray(final String name) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Array> operation = new Operation<java.sql.CallableStatement, Array>()
+		StatementOperation<D, Array> operation = new StatementOperation<D, Array>()
 		{
-			public Array execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Array execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getArray(name);
 			}
@@ -95,9 +95,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public BigDecimal getBigDecimal(final int index) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, BigDecimal> operation = new Operation<java.sql.CallableStatement, BigDecimal>()
+		StatementOperation<D, BigDecimal> operation = new StatementOperation<D, BigDecimal>()
 		{
-			public BigDecimal execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public BigDecimal execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getBigDecimal(index);
 			}
@@ -113,9 +113,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	@Deprecated
 	public BigDecimal getBigDecimal(final int index, final int scale) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, BigDecimal> operation = new Operation<java.sql.CallableStatement, BigDecimal>()
+		StatementOperation<D, BigDecimal> operation = new StatementOperation<D, BigDecimal>()
 		{
-			public BigDecimal execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public BigDecimal execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getBigDecimal(index, scale);
 			}
@@ -129,9 +129,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public BigDecimal getBigDecimal(final String name) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, BigDecimal> operation = new Operation<java.sql.CallableStatement, BigDecimal>()
+		StatementOperation<D, BigDecimal> operation = new StatementOperation<D, BigDecimal>()
 		{
-			public BigDecimal execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public BigDecimal execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getBigDecimal(name);
 			}
@@ -145,9 +145,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public Blob getBlob(final int index) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, java.sql.Blob> operation = new Operation<java.sql.CallableStatement, Blob>()
+		StatementOperation<D, java.sql.Blob> operation = new StatementOperation<D, Blob>()
 		{
-			public Blob execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Blob execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getBlob(index);
 			}
@@ -161,9 +161,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public Blob getBlob(final String name) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, java.sql.Blob> operation = new Operation<java.sql.CallableStatement, Blob>()
+		StatementOperation<D, java.sql.Blob> operation = new StatementOperation<D, Blob>()
 		{
-			public Blob execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Blob execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getBlob(name);
 			}
@@ -177,9 +177,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public boolean getBoolean(final int index) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Boolean> operation = new Operation<java.sql.CallableStatement, Boolean>()
+		StatementOperation<D, Boolean> operation = new StatementOperation<D, Boolean>()
 		{
-			public Boolean execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Boolean execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getBoolean(index);
 			}
@@ -193,9 +193,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public boolean getBoolean(final String name) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Boolean> operation = new Operation<java.sql.CallableStatement, Boolean>()
+		StatementOperation<D, Boolean> operation = new StatementOperation<D, Boolean>()
 		{
-			public Boolean execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Boolean execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getBoolean(name);
 			}
@@ -209,9 +209,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public byte getByte(final int index) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Byte> operation = new Operation<java.sql.CallableStatement, Byte>()
+		StatementOperation<D, Byte> operation = new StatementOperation<D, Byte>()
 		{
-			public Byte execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Byte execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getByte(index);
 			}
@@ -225,9 +225,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public byte getByte(final String name) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Byte> operation = new Operation<java.sql.CallableStatement, Byte>()
+		StatementOperation<D, Byte> operation = new StatementOperation<D, Byte>()
 		{
-			public Byte execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Byte execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getByte(name);
 			}
@@ -241,9 +241,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public byte[] getBytes(final int index) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, byte[]> operation = new Operation<java.sql.CallableStatement, byte[]>()
+		StatementOperation<D, byte[]> operation = new StatementOperation<D, byte[]>()
 		{
-			public byte[] execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public byte[] execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getBytes(index);
 			}
@@ -257,9 +257,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public byte[] getBytes(final String name) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, byte[]> operation = new Operation<java.sql.CallableStatement, byte[]>()
+		StatementOperation<D, byte[]> operation = new StatementOperation<D, byte[]>()
 		{
-			public byte[] execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public byte[] execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getBytes(name);
 			}
@@ -273,9 +273,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public Clob getClob(final int index) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, java.sql.Clob> operation = new Operation<java.sql.CallableStatement, Clob>()
+		StatementOperation<D, java.sql.Clob> operation = new StatementOperation<D, Clob>()
 		{
-			public Clob execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Clob execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getClob(index);
 			}
@@ -289,9 +289,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public Clob getClob(final String name) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, java.sql.Clob> operation = new Operation<java.sql.CallableStatement, Clob>()
+		StatementOperation<D, java.sql.Clob> operation = new StatementOperation<D, Clob>()
 		{
-			public Clob execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Clob execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getClob(name);
 			}
@@ -305,9 +305,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public Date getDate(final int index) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Date> operation = new Operation<java.sql.CallableStatement, Date>()
+		StatementOperation<D, Date> operation = new StatementOperation<D, Date>()
 		{
-			public Date execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Date execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getDate(index);
 			}
@@ -321,9 +321,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public Date getDate(final int index, final Calendar calendar) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Date> operation = new Operation<java.sql.CallableStatement, Date>()
+		StatementOperation<D, Date> operation = new StatementOperation<D, Date>()
 		{
-			public Date execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Date execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getDate(index, calendar);
 			}
@@ -337,9 +337,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public Date getDate(final String name) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Date> operation = new Operation<java.sql.CallableStatement, Date>()
+		StatementOperation<D, Date> operation = new StatementOperation<D, Date>()
 		{
-			public Date execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Date execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getDate(name);
 			}
@@ -353,9 +353,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public Date getDate(final String name, final Calendar calendar) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Date> operation = new Operation<java.sql.CallableStatement, Date>()
+		StatementOperation<D, Date> operation = new StatementOperation<D, Date>()
 		{
-			public Date execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Date execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getDate(name, calendar);
 			}
@@ -369,9 +369,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public double getDouble(final int index) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Double> operation = new Operation<java.sql.CallableStatement, Double>()
+		StatementOperation<D, Double> operation = new StatementOperation<D, Double>()
 		{
-			public Double execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Double execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getDouble(index);
 			}
@@ -385,9 +385,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public double getDouble(final String name) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Double> operation = new Operation<java.sql.CallableStatement, Double>()
+		StatementOperation<D, Double> operation = new StatementOperation<D, Double>()
 		{
-			public Double execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Double execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getDouble(name);
 			}
@@ -401,9 +401,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public float getFloat(final int index) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Float> operation = new Operation<java.sql.CallableStatement, Float>()
+		StatementOperation<D, Float> operation = new StatementOperation<D, Float>()
 		{
-			public Float execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Float execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getFloat(index);
 			}
@@ -417,9 +417,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public float getFloat(final String name) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Float> operation = new Operation<java.sql.CallableStatement, Float>()
+		StatementOperation<D, Float> operation = new StatementOperation<D, Float>()
 		{
-			public Float execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Float execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getFloat(name);
 			}
@@ -433,9 +433,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public int getInt(final int index) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Integer> operation = new Operation<java.sql.CallableStatement, Integer>()
+		StatementOperation<D, Integer> operation = new StatementOperation<D, Integer>()
 		{
-			public Integer execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Integer execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getInt(index);
 			}
@@ -449,9 +449,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public int getInt(final String name) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Integer> operation = new Operation<java.sql.CallableStatement, Integer>()
+		StatementOperation<D, Integer> operation = new StatementOperation<D, Integer>()
 		{
-			public Integer execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Integer execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getInt(name);
 			}
@@ -465,9 +465,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public long getLong(final int index) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Long> operation = new Operation<java.sql.CallableStatement, Long>()
+		StatementOperation<D, Long> operation = new StatementOperation<D, Long>()
 		{
-			public Long execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Long execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getLong(index);
 			}
@@ -481,9 +481,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public long getLong(final String name) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Long> operation = new Operation<java.sql.CallableStatement, Long>()
+		StatementOperation<D, Long> operation = new StatementOperation<D, Long>()
 		{
-			public Long execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Long execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getLong(name);
 			}
@@ -497,9 +497,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public Object getObject(final int index) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Object> operation = new Operation<java.sql.CallableStatement, Object>()
+		StatementOperation<D, Object> operation = new StatementOperation<D, Object>()
 		{
-			public Object execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Object execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getObject(index);
 			}
@@ -513,9 +513,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public Object getObject(final int index, final Map<String, Class<?>> typeMap) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Object> operation = new Operation<java.sql.CallableStatement, Object>()
+		StatementOperation<D, Object> operation = new StatementOperation<D, Object>()
 		{
-			public Object execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Object execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getObject(index, typeMap);
 			}
@@ -529,9 +529,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public Object getObject(final String name) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Object> operation = new Operation<java.sql.CallableStatement, Object>()
+		StatementOperation<D, Object> operation = new StatementOperation<D, Object>()
 		{
-			public Object execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Object execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getObject(name);
 			}
@@ -545,9 +545,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public Object getObject(final String name, final Map<String, Class<?>> typeMap) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Object> operation = new Operation<java.sql.CallableStatement, Object>()
+		StatementOperation<D, Object> operation = new StatementOperation<D, Object>()
 		{
-			public Object execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Object execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getObject(name, typeMap);
 			}
@@ -561,9 +561,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public Ref getRef(final int index) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Ref> operation = new Operation<java.sql.CallableStatement, Ref>()
+		StatementOperation<D, Ref> operation = new StatementOperation<D, Ref>()
 		{
-			public Ref execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Ref execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getRef(index);
 			}
@@ -577,9 +577,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public Ref getRef(final String name) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Ref> operation = new Operation<java.sql.CallableStatement, Ref>()
+		StatementOperation<D, Ref> operation = new StatementOperation<D, Ref>()
 		{
-			public Ref execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Ref execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getRef(name);
 			}
@@ -593,9 +593,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public short getShort(final int index) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Short> operation = new Operation<java.sql.CallableStatement, Short>()
+		StatementOperation<D, Short> operation = new StatementOperation<D, Short>()
 		{
-			public Short execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Short execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getShort(index);
 			}
@@ -609,9 +609,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public short getShort(final String name) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Short> operation = new Operation<java.sql.CallableStatement, Short>()
+		StatementOperation<D, Short> operation = new StatementOperation<D, Short>()
 		{
-			public Short execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Short execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getShort(name);
 			}
@@ -625,9 +625,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public String getString(final int index) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, String> operation = new Operation<java.sql.CallableStatement, String>()
+		StatementOperation<D, String> operation = new StatementOperation<D, String>()
 		{
-			public String execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public String execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getString(index);
 			}
@@ -641,9 +641,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public String getString(final String name) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, String> operation = new Operation<java.sql.CallableStatement, String>()
+		StatementOperation<D, String> operation = new StatementOperation<D, String>()
 		{
-			public String execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public String execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getString(name);
 			}
@@ -657,9 +657,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public Time getTime(final int index) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Time> operation = new Operation<java.sql.CallableStatement, Time>()
+		StatementOperation<D, Time> operation = new StatementOperation<D, Time>()
 		{
-			public Time execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Time execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getTime(index);
 			}
@@ -673,9 +673,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public Time getTime(final int index, final Calendar calendar) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Time> operation = new Operation<java.sql.CallableStatement, Time>()
+		StatementOperation<D, Time> operation = new StatementOperation<D, Time>()
 		{
-			public Time execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Time execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getTime(index, calendar);
 			}
@@ -689,9 +689,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public Time getTime(final String name) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Time> operation = new Operation<java.sql.CallableStatement, Time>()
+		StatementOperation<D, Time> operation = new StatementOperation<D, Time>()
 		{
-			public Time execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Time execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getTime(name);
 			}
@@ -705,9 +705,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public Time getTime(final String name, final Calendar calendar) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Time> operation = new Operation<java.sql.CallableStatement, Time>()
+		StatementOperation<D, Time> operation = new StatementOperation<D, Time>()
 		{
-			public Time execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Time execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getTime(name, calendar);
 			}
@@ -721,9 +721,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public Timestamp getTimestamp(final int index) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Timestamp> operation = new Operation<java.sql.CallableStatement, Timestamp>()
+		StatementOperation<D, Timestamp> operation = new StatementOperation<D, Timestamp>()
 		{
-			public Timestamp execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Timestamp execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getTimestamp(index);
 			}
@@ -737,9 +737,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public Timestamp getTimestamp(final int index, final Calendar calendar) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Timestamp> operation = new Operation<java.sql.CallableStatement, Timestamp>()
+		StatementOperation<D, Timestamp> operation = new StatementOperation<D, Timestamp>()
 		{
-			public Timestamp execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Timestamp execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getTimestamp(index, calendar);
 			}
@@ -753,9 +753,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public Timestamp getTimestamp(final String name) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Timestamp> operation = new Operation<java.sql.CallableStatement, Timestamp>()
+		StatementOperation<D, Timestamp> operation = new StatementOperation<D, Timestamp>()
 		{
-			public Timestamp execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Timestamp execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getTimestamp(name);
 			}
@@ -769,9 +769,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public Timestamp getTimestamp(final String name, final Calendar calendar) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Timestamp> operation = new Operation<java.sql.CallableStatement, Timestamp>()
+		StatementOperation<D, Timestamp> operation = new StatementOperation<D, Timestamp>()
 		{
-			public Timestamp execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Timestamp execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getTimestamp(name, calendar);
 			}
@@ -785,9 +785,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public URL getURL(final int index) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, URL> operation = new Operation<java.sql.CallableStatement, URL>()
+		StatementOperation<D, URL> operation = new StatementOperation<D, URL>()
 		{
-			public URL execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public URL execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getURL(index);
 			}
@@ -801,9 +801,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public URL getURL(final String name) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, URL> operation = new Operation<java.sql.CallableStatement, URL>()
+		StatementOperation<D, URL> operation = new StatementOperation<D, URL>()
 		{
-			public URL execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public URL execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.getURL(name);
 			}
@@ -817,9 +817,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void registerOutParameter(final int index, final int sqlType) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.registerOutParameter(index, sqlType);
 				
@@ -835,9 +835,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void registerOutParameter(final int index, final int sqlType, final int scale) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.registerOutParameter(index, sqlType, scale);
 				
@@ -853,9 +853,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void registerOutParameter(final int index, final int sqlType, final String typeName) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.registerOutParameter(index, sqlType, typeName);
 				
@@ -871,9 +871,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void registerOutParameter(final String name, final int sqlType) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.registerOutParameter(name, sqlType);
 				
@@ -889,9 +889,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void registerOutParameter(final String name, final int sqlType, final int scale) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.registerOutParameter(name, sqlType, scale);
 				
@@ -907,9 +907,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void registerOutParameter(final String name, final int sqlType, final String typeName) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.registerOutParameter(name, sqlType, typeName);
 				
@@ -928,9 +928,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 		final FileSupport fileSupport = this.getFileSupport();
 		final File file = fileSupport.createFile(inputStream);
 		
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setAsciiStream(name, fileSupport.getInputStream(file), length);
 				
@@ -946,9 +946,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void setBigDecimal(final String name, final BigDecimal value) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setBigDecimal(name, value);
 				
@@ -967,9 +967,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 		final FileSupport fileSupport = this.getFileSupport();
 		final File file = fileSupport.createFile(inputStream);
 		
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setBinaryStream(name, fileSupport.getInputStream(file), length);
 				
@@ -985,9 +985,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void setBoolean(final String name, final boolean value) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setBoolean(name, value);
 				
@@ -1003,9 +1003,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void setByte(final String name, final byte value) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setByte(name, value);
 				
@@ -1021,9 +1021,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void setBytes(final String name, final byte[] value) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setBytes(name, value);
 				
@@ -1042,9 +1042,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 		final FileSupport fileSupport = this.getFileSupport();
 		final File file = fileSupport.createFile(reader);
 		
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setCharacterStream(name, fileSupport.getReader(file), length);
 				
@@ -1060,9 +1060,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void setDate(final String name, final Date value) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setDate(name, value);
 				
@@ -1078,9 +1078,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void setDate(final String name, final Date value, final Calendar calendar) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setDate(name, value, calendar);
 				
@@ -1096,9 +1096,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void setDouble(final String name, final double value) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setDouble(name, value);
 				
@@ -1114,9 +1114,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void setFloat(final String name, final float value) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setFloat(name, value);
 				
@@ -1132,9 +1132,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void setInt(final String name, final int value) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setInt(name, value);
 				
@@ -1150,9 +1150,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void setLong(final String name, final long value) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setLong(name, value);
 				
@@ -1168,9 +1168,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void setNull(final String name, final int sqlType) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setNull(name, sqlType);
 				
@@ -1186,9 +1186,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void setNull(final String name, final int sqlType, final String typeName) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setNull(name, sqlType, typeName);
 				
@@ -1204,9 +1204,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void setObject(final String name, final Object value) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setObject(name, value);
 				
@@ -1222,9 +1222,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void setObject(final String name, final Object value, final int sqlType) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setObject(name, value, sqlType);
 				
@@ -1240,9 +1240,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void setObject(final String name, final Object value, final int sqlType, final int scale) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setObject(name, value, sqlType, scale);
 				
@@ -1258,9 +1258,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void setShort(final String name, final short value) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setShort(name, value);
 				
@@ -1276,9 +1276,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void setString(final String name, final String value) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setString(name, value);
 				
@@ -1294,9 +1294,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void setTime(final String name, final Time value) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setTime(name, value);
 				
@@ -1312,9 +1312,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void setTime(final String name, final Time value, final Calendar calendar) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setTime(name, value, calendar);
 				
@@ -1330,9 +1330,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void setTimestamp(final String name, final Timestamp value) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setTimestamp(name, value);
 				
@@ -1348,9 +1348,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void setTimestamp(final String name, final Timestamp value, final Calendar calendar) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setTimestamp(name, value, calendar);
 				
@@ -1366,9 +1366,9 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public void setURL(final String name, final URL value) throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Void> operation = new Operation<java.sql.CallableStatement, Void>()
+		StatementOperation<D, Void> operation = new StatementOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Void execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				statement.setURL(name, value);
 				
@@ -1384,14 +1384,19 @@ public class CallableStatement extends PreparedStatement<java.sql.CallableStatem
 	 */
 	public boolean wasNull() throws SQLException
 	{
-		Operation<java.sql.CallableStatement, Boolean> operation = new Operation<java.sql.CallableStatement, Boolean>()
+		StatementOperation<D, Boolean> operation = new StatementOperation<D, Boolean>()
 		{
-			public Boolean execute(Database database, java.sql.CallableStatement statement) throws SQLException
+			public Boolean execute(Database<D> database, java.sql.CallableStatement statement) throws SQLException
 			{
 				return statement.wasNull();
 			}
 		};
 		
 		return this.executeReadFromDriver(operation);
+	}
+	
+	private static interface StatementOperation<D, R> extends Operation<D, java.sql.CallableStatement, R>
+	{
+		
 	}
 }

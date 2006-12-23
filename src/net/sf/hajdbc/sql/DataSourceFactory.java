@@ -65,7 +65,7 @@ public class DataSourceFactory implements ObjectFactory
 
 		if (id == null) return null;
 		
-		DatabaseCluster databaseCluster = DatabaseClusterFactory.getInstance().getDatabaseClusterMap().get(id);
+		DatabaseCluster<javax.sql.DataSource> databaseCluster = DatabaseClusterFactory.getInstance().getDataSourceDatabaseClusterMap().get(id);
 		
 		if (databaseCluster == null) return null;
 		

@@ -49,15 +49,15 @@ import net.sf.hajdbc.Operation;
  * @param <T> 
  * @since   1.0
  */
-public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.ResultSet, T> implements java.sql.ResultSet
+public class ResultSet<D, S extends java.sql.Statement> extends SQLObject<D, java.sql.ResultSet, S> implements java.sql.ResultSet
 {
 	/**
 	 * Constructs a new ResultSetProxy.
-	 * @param statement a Statement proxy
+	 * @param statement a AbstractStatement proxy
 	 * @param operation an operation that creates ResultSets
 	 * @throws SQLException if operation execution fails
 	 */
-	public ResultSet(Statement<T> statement, Operation<T, java.sql.ResultSet> operation, List<Lock> lockList) throws SQLException
+	public ResultSet(AbstractStatement<D, S> statement, Operation<D, S, java.sql.ResultSet> operation, List<Lock> lockList) throws SQLException
 	{
 		super(statement, operation, statement.getDatabaseCluster().getTransactionalExecutor(), lockList);
 	}
@@ -66,7 +66,7 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 * @see net.sf.hajdbc.sql.SQLObject#handleExceptions(java.util.Map)
 	 */
 	@Override
-	public void handleExceptions(Map<Database, SQLException> exceptionMap) throws SQLException
+	public void handleExceptions(Map<Database<D>, SQLException> exceptionMap) throws SQLException
 	{
 		this.parent.handleExceptions(exceptionMap);
 	}
@@ -76,9 +76,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public boolean absolute(final int index) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Boolean> operation = new Operation<java.sql.ResultSet, Boolean>()
+		ResultSetOperation<D, Boolean> operation = new ResultSetOperation<D, Boolean>()
 		{
-			public Boolean execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Boolean execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.absolute(index);
 			}
@@ -92,9 +92,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void afterLast() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.afterLast();
 				
@@ -110,9 +110,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void beforeFirst() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.beforeFirst();
 				
@@ -128,9 +128,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void cancelRowUpdates() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.cancelRowUpdates();
 				
@@ -146,9 +146,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void clearWarnings() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.clearWarnings();
 				
@@ -164,9 +164,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void close() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.close();
 				
@@ -182,9 +182,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void deleteRow() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.deleteRow();
 				
@@ -200,9 +200,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public int findColumn(final String name) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Integer> operation = new Operation<java.sql.ResultSet, Integer>()
+		ResultSetOperation<D, Integer> operation = new ResultSetOperation<D, Integer>()
 		{
-			public Integer execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Integer execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.findColumn(name);
 			}
@@ -216,9 +216,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public boolean first() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Boolean> operation = new Operation<java.sql.ResultSet, Boolean>()
+		ResultSetOperation<D, Boolean> operation = new ResultSetOperation<D, Boolean>()
 		{
-			public Boolean execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Boolean execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.first();
 			}
@@ -232,9 +232,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public Array getArray(final int index) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Array> operation = new Operation<java.sql.ResultSet, Array>()
+		ResultSetOperation<D, Array> operation = new ResultSetOperation<D, Array>()
 		{
-			public Array execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Array execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getArray(index);
 			}
@@ -248,9 +248,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public Array getArray(final String name) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Array> operation = new Operation<java.sql.ResultSet, Array>()
+		ResultSetOperation<D, Array> operation = new ResultSetOperation<D, Array>()
 		{
-			public Array execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Array execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getArray(name);
 			}
@@ -264,9 +264,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public InputStream getAsciiStream(final int index) throws SQLException
 	{
-		Operation<java.sql.ResultSet, InputStream> operation = new Operation<java.sql.ResultSet, InputStream>()
+		ResultSetOperation<D, InputStream> operation = new ResultSetOperation<D, InputStream>()
 		{
-			public InputStream execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public InputStream execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getAsciiStream(index);
 			}
@@ -280,9 +280,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public InputStream getAsciiStream(final String name) throws SQLException
 	{
-		Operation<java.sql.ResultSet, InputStream> operation = new Operation<java.sql.ResultSet, InputStream>()
+		ResultSetOperation<D, InputStream> operation = new ResultSetOperation<D, InputStream>()
 		{
-			public InputStream execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public InputStream execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getAsciiStream(name);
 			}
@@ -296,9 +296,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public BigDecimal getBigDecimal(final int index) throws SQLException
 	{
-		Operation<java.sql.ResultSet, BigDecimal> operation = new Operation<java.sql.ResultSet, BigDecimal>()
+		ResultSetOperation<D, BigDecimal> operation = new ResultSetOperation<D, BigDecimal>()
 		{
-			public BigDecimal execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public BigDecimal execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getBigDecimal(index);
 			}
@@ -314,9 +314,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	@Deprecated
 	public BigDecimal getBigDecimal(final int index, final int scale) throws SQLException
 	{
-		Operation<java.sql.ResultSet, BigDecimal> operation = new Operation<java.sql.ResultSet, BigDecimal>()
+		ResultSetOperation<D, BigDecimal> operation = new ResultSetOperation<D, BigDecimal>()
 		{
-			public BigDecimal execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public BigDecimal execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getBigDecimal(index, scale);
 			}
@@ -330,9 +330,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public BigDecimal getBigDecimal(final String name) throws SQLException
 	{
-		Operation<java.sql.ResultSet, BigDecimal> operation = new Operation<java.sql.ResultSet, BigDecimal>()
+		ResultSetOperation<D, BigDecimal> operation = new ResultSetOperation<D, BigDecimal>()
 		{
-			public BigDecimal execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public BigDecimal execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getBigDecimal(name);
 			}
@@ -348,9 +348,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	@Deprecated
 	public BigDecimal getBigDecimal(final String name, final int scale) throws SQLException
 	{
-		Operation<java.sql.ResultSet, BigDecimal> operation = new Operation<java.sql.ResultSet, BigDecimal>()
+		ResultSetOperation<D, BigDecimal> operation = new ResultSetOperation<D, BigDecimal>()
 		{
-			public BigDecimal execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public BigDecimal execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getBigDecimal(name, scale);
 			}
@@ -364,9 +364,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public InputStream getBinaryStream(final int index) throws SQLException
 	{
-		Operation<java.sql.ResultSet, InputStream> operation = new Operation<java.sql.ResultSet, InputStream>()
+		ResultSetOperation<D, InputStream> operation = new ResultSetOperation<D, InputStream>()
 		{
-			public InputStream execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public InputStream execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getBinaryStream(index);
 			}
@@ -380,9 +380,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public InputStream getBinaryStream(final String name) throws SQLException
 	{
-		Operation<java.sql.ResultSet, InputStream> operation = new Operation<java.sql.ResultSet, InputStream>()
+		ResultSetOperation<D, InputStream> operation = new ResultSetOperation<D, InputStream>()
 		{
-			public InputStream execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public InputStream execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getBinaryStream(name);
 			}
@@ -396,9 +396,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public Blob getBlob(final int index) throws SQLException
 	{
-		Operation<java.sql.ResultSet, java.sql.Blob> operation = new Operation<java.sql.ResultSet, Blob>()
+		ResultSetOperation<D, java.sql.Blob> operation = new ResultSetOperation<D, Blob>()
 		{
-			public Blob execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Blob execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getBlob(index);
 			}
@@ -412,9 +412,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public Blob getBlob(final String name) throws SQLException
 	{
-		Operation<java.sql.ResultSet, java.sql.Blob> operation = new Operation<java.sql.ResultSet, Blob>()
+		ResultSetOperation<D, java.sql.Blob> operation = new ResultSetOperation<D, Blob>()
 		{
-			public Blob execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Blob execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getBlob(name);
 			}
@@ -428,9 +428,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public boolean getBoolean(final int index) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Boolean> operation = new Operation<java.sql.ResultSet, Boolean>()
+		ResultSetOperation<D, Boolean> operation = new ResultSetOperation<D, Boolean>()
 		{
-			public Boolean execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Boolean execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getBoolean(index);
 			}
@@ -444,9 +444,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public boolean getBoolean(final String name) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Boolean> operation = new Operation<java.sql.ResultSet, Boolean>()
+		ResultSetOperation<D, Boolean> operation = new ResultSetOperation<D, Boolean>()
 		{
-			public Boolean execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Boolean execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getBoolean(name);
 			}
@@ -460,9 +460,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public byte getByte(final int index) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Byte> operation = new Operation<java.sql.ResultSet, Byte>()
+		ResultSetOperation<D, Byte> operation = new ResultSetOperation<D, Byte>()
 		{
-			public Byte execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Byte execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getByte(index);
 			}
@@ -476,9 +476,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public byte getByte(final String name) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Byte> operation = new Operation<java.sql.ResultSet, Byte>()
+		ResultSetOperation<D, Byte> operation = new ResultSetOperation<D, Byte>()
 		{
-			public Byte execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Byte execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getByte(name);
 			}
@@ -492,9 +492,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public byte[] getBytes(final int index) throws SQLException
 	{
-		Operation<java.sql.ResultSet, byte[]> operation = new Operation<java.sql.ResultSet, byte[]>()
+		ResultSetOperation<D, byte[]> operation = new ResultSetOperation<D, byte[]>()
 		{
-			public byte[] execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public byte[] execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getBytes(index);
 			}
@@ -508,9 +508,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public byte[] getBytes(final String name) throws SQLException
 	{
-		Operation<java.sql.ResultSet, byte[]> operation = new Operation<java.sql.ResultSet, byte[]>()
+		ResultSetOperation<D, byte[]> operation = new ResultSetOperation<D, byte[]>()
 		{
-			public byte[] execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public byte[] execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getBytes(name);
 			}
@@ -524,9 +524,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public Reader getCharacterStream(final int index) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Reader> operation = new Operation<java.sql.ResultSet, Reader>()
+		ResultSetOperation<D, Reader> operation = new ResultSetOperation<D, Reader>()
 		{
-			public Reader execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Reader execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getCharacterStream(index);
 			}
@@ -540,9 +540,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public Reader getCharacterStream(final String name) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Reader> operation = new Operation<java.sql.ResultSet, Reader>()
+		ResultSetOperation<D, Reader> operation = new ResultSetOperation<D, Reader>()
 		{
-			public Reader execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Reader execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getCharacterStream(name);
 			}
@@ -556,9 +556,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public Clob getClob(final int index) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Clob> operation = new Operation<java.sql.ResultSet, Clob>()
+		ResultSetOperation<D, Clob> operation = new ResultSetOperation<D, Clob>()
 		{
-			public Clob execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Clob execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getClob(index);
 			}
@@ -572,9 +572,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public Clob getClob(final String name) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Clob> operation = new Operation<java.sql.ResultSet, Clob>()
+		ResultSetOperation<D, Clob> operation = new ResultSetOperation<D, Clob>()
 		{
-			public Clob execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Clob execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getClob(name);
 			}
@@ -588,9 +588,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public int getConcurrency() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Integer> operation = new Operation<java.sql.ResultSet, Integer>()
+		ResultSetOperation<D, Integer> operation = new ResultSetOperation<D, Integer>()
 		{
-			public Integer execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Integer execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getConcurrency();
 			}
@@ -604,9 +604,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public String getCursorName() throws SQLException
 	{
-		Operation<java.sql.ResultSet, String> operation = new Operation<java.sql.ResultSet, String>()
+		ResultSetOperation<D, String> operation = new ResultSetOperation<D, String>()
 		{
-			public String execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public String execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getCursorName();
 			}
@@ -620,9 +620,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public Date getDate(final int index) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Date> operation = new Operation<java.sql.ResultSet, Date>()
+		ResultSetOperation<D, Date> operation = new ResultSetOperation<D, Date>()
 		{
-			public Date execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Date execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getDate(index);
 			}
@@ -636,9 +636,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public Date getDate(final int index, final Calendar calendar) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Date> operation = new Operation<java.sql.ResultSet, Date>()
+		ResultSetOperation<D, Date> operation = new ResultSetOperation<D, Date>()
 		{
-			public Date execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Date execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getDate(index, calendar);
 			}
@@ -652,9 +652,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public Date getDate(final String name) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Date> operation = new Operation<java.sql.ResultSet, Date>()
+		ResultSetOperation<D, Date> operation = new ResultSetOperation<D, Date>()
 		{
-			public Date execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Date execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getDate(name);
 			}
@@ -668,9 +668,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public Date getDate(final String name, final Calendar calendar) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Date> operation = new Operation<java.sql.ResultSet, Date>()
+		ResultSetOperation<D, Date> operation = new ResultSetOperation<D, Date>()
 		{
-			public Date execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Date execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getDate(name, calendar);
 			}
@@ -684,9 +684,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public double getDouble(final int index) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Double> operation = new Operation<java.sql.ResultSet, Double>()
+		ResultSetOperation<D, Double> operation = new ResultSetOperation<D, Double>()
 		{
-			public Double execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Double execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getDouble(index);
 			}
@@ -700,9 +700,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public double getDouble(final String name) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Double> operation = new Operation<java.sql.ResultSet, Double>()
+		ResultSetOperation<D, Double> operation = new ResultSetOperation<D, Double>()
 		{
-			public Double execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Double execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getDouble(name);
 			}
@@ -716,9 +716,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public int getFetchDirection() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Integer> operation = new Operation<java.sql.ResultSet, Integer>()
+		ResultSetOperation<D, Integer> operation = new ResultSetOperation<D, Integer>()
 		{
-			public Integer execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Integer execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getFetchDirection();
 			}
@@ -732,9 +732,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public int getFetchSize() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Integer> operation = new Operation<java.sql.ResultSet, Integer>()
+		ResultSetOperation<D, Integer> operation = new ResultSetOperation<D, Integer>()
 		{
-			public Integer execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Integer execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getFetchSize();
 			}
@@ -748,9 +748,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public float getFloat(final int index) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Float> operation = new Operation<java.sql.ResultSet, Float>()
+		ResultSetOperation<D, Float> operation = new ResultSetOperation<D, Float>()
 		{
-			public Float execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Float execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getFloat(index);
 			}
@@ -764,9 +764,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public float getFloat(final String name) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Float> operation = new Operation<java.sql.ResultSet, Float>()
+		ResultSetOperation<D, Float> operation = new ResultSetOperation<D, Float>()
 		{
-			public Float execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Float execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getFloat(name);
 			}
@@ -780,9 +780,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public int getInt(final int index) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Integer> operation = new Operation<java.sql.ResultSet, Integer>()
+		ResultSetOperation<D, Integer> operation = new ResultSetOperation<D, Integer>()
 		{
-			public Integer execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Integer execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getInt(index);
 			}
@@ -796,9 +796,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public int getInt(final String name) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Integer> operation = new Operation<java.sql.ResultSet, Integer>()
+		ResultSetOperation<D, Integer> operation = new ResultSetOperation<D, Integer>()
 		{
-			public Integer execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Integer execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getInt(name);
 			}
@@ -812,9 +812,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public long getLong(final int index) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Long> operation = new Operation<java.sql.ResultSet, Long>()
+		ResultSetOperation<D, Long> operation = new ResultSetOperation<D, Long>()
 		{
-			public Long execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Long execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getLong(index);
 			}
@@ -828,9 +828,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public long getLong(final String name) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Long> operation = new Operation<java.sql.ResultSet, Long>()
+		ResultSetOperation<D, Long> operation = new ResultSetOperation<D, Long>()
 		{
-			public Long execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Long execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getLong(name);
 			}
@@ -844,9 +844,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public ResultSetMetaData getMetaData() throws SQLException
 	{
-		Operation<java.sql.ResultSet, ResultSetMetaData> operation = new Operation<java.sql.ResultSet, ResultSetMetaData>()
+		ResultSetOperation<D, ResultSetMetaData> operation = new ResultSetOperation<D, ResultSetMetaData>()
 		{
-			public ResultSetMetaData execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public ResultSetMetaData execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getMetaData();
 			}
@@ -860,9 +860,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public Object getObject(final int index) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Object> operation = new Operation<java.sql.ResultSet, Object>()
+		ResultSetOperation<D, Object> operation = new ResultSetOperation<D, Object>()
 		{
-			public Object execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Object execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getObject(index);
 			}
@@ -876,9 +876,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public Object getObject(final int index, final Map<String, Class<?>> typeMap) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Object> operation = new Operation<java.sql.ResultSet, Object>()
+		ResultSetOperation<D, Object> operation = new ResultSetOperation<D, Object>()
 		{
-			public Object execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Object execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getObject(index, typeMap);
 			}
@@ -892,9 +892,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public Object getObject(final String name) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Object> operation = new Operation<java.sql.ResultSet, Object>()
+		ResultSetOperation<D, Object> operation = new ResultSetOperation<D, Object>()
 		{
-			public Object execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Object execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getObject(name);
 			}
@@ -908,9 +908,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public Object getObject(final String name, final Map<String, Class<?>> typeMap) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Object> operation = new Operation<java.sql.ResultSet, Object>()
+		ResultSetOperation<D, Object> operation = new ResultSetOperation<D, Object>()
 		{
-			public Object execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Object execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getObject(name, typeMap);
 			}
@@ -924,9 +924,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public Ref getRef(final int index) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Ref> operation = new Operation<java.sql.ResultSet, Ref>()
+		ResultSetOperation<D, Ref> operation = new ResultSetOperation<D, Ref>()
 		{
-			public Ref execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Ref execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getRef(index);
 			}
@@ -940,9 +940,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public Ref getRef(final String name) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Ref> operation = new Operation<java.sql.ResultSet, Ref>()
+		ResultSetOperation<D, Ref> operation = new ResultSetOperation<D, Ref>()
 		{
-			public Ref execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Ref execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getRef(name);
 			}
@@ -956,9 +956,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public int getRow() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Integer> operation = new Operation<java.sql.ResultSet, Integer>()
+		ResultSetOperation<D, Integer> operation = new ResultSetOperation<D, Integer>()
 		{
-			public Integer execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Integer execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getRow();
 			}
@@ -972,9 +972,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public short getShort(final int index) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Short> operation = new Operation<java.sql.ResultSet, Short>()
+		ResultSetOperation<D, Short> operation = new ResultSetOperation<D, Short>()
 		{
-			public Short execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Short execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getShort(index);
 			}
@@ -988,9 +988,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public short getShort(final String name) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Short> operation = new Operation<java.sql.ResultSet, Short>()
+		ResultSetOperation<D, Short> operation = new ResultSetOperation<D, Short>()
 		{
-			public Short execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Short execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getShort(name);
 			}
@@ -1004,7 +1004,7 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public java.sql.Statement getStatement()
 	{
-		return Statement.class.cast(this.parent);
+		return AbstractStatement.class.cast(this.parent);
 	}
 
 	/**
@@ -1012,9 +1012,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public String getString(final int index) throws SQLException
 	{
-		Operation<java.sql.ResultSet, String> operation = new Operation<java.sql.ResultSet, String>()
+		ResultSetOperation<D, String> operation = new ResultSetOperation<D, String>()
 		{
-			public String execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public String execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getString(index);
 			}
@@ -1028,9 +1028,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public String getString(final String name) throws SQLException
 	{
-		Operation<java.sql.ResultSet, String> operation = new Operation<java.sql.ResultSet, String>()
+		ResultSetOperation<D, String> operation = new ResultSetOperation<D, String>()
 		{
-			public String execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public String execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getString(name);
 			}
@@ -1044,9 +1044,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public Time getTime(final int index) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Time> operation = new Operation<java.sql.ResultSet, Time>()
+		ResultSetOperation<D, Time> operation = new ResultSetOperation<D, Time>()
 		{
-			public Time execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Time execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getTime(index);
 			}
@@ -1060,9 +1060,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public Time getTime(final int index, final Calendar calendar) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Time> operation = new Operation<java.sql.ResultSet, Time>()
+		ResultSetOperation<D, Time> operation = new ResultSetOperation<D, Time>()
 		{
-			public Time execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Time execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getTime(index, calendar);
 			}
@@ -1076,9 +1076,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public Time getTime(final String name) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Time> operation = new Operation<java.sql.ResultSet, Time>()
+		ResultSetOperation<D, Time> operation = new ResultSetOperation<D, Time>()
 		{
-			public Time execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Time execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getTime(name);
 			}
@@ -1092,9 +1092,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public Time getTime(final String name, final Calendar calendar) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Time> operation = new Operation<java.sql.ResultSet, Time>()
+		ResultSetOperation<D, Time> operation = new ResultSetOperation<D, Time>()
 		{
-			public Time execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Time execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getTime(name, calendar);
 			}
@@ -1108,9 +1108,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public Timestamp getTimestamp(final int index) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Timestamp> operation = new Operation<java.sql.ResultSet, Timestamp>()
+		ResultSetOperation<D, Timestamp> operation = new ResultSetOperation<D, Timestamp>()
 		{
-			public Timestamp execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Timestamp execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getTimestamp(index);
 			}
@@ -1124,9 +1124,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public Timestamp getTimestamp(final int index, final Calendar calendar) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Timestamp> operation = new Operation<java.sql.ResultSet, Timestamp>()
+		ResultSetOperation<D, Timestamp> operation = new ResultSetOperation<D, Timestamp>()
 		{
-			public Timestamp execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Timestamp execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getTimestamp(index, calendar);
 			}
@@ -1140,9 +1140,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public Timestamp getTimestamp(final String name) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Timestamp> operation = new Operation<java.sql.ResultSet, Timestamp>()
+		ResultSetOperation<D, Timestamp> operation = new ResultSetOperation<D, Timestamp>()
 		{
-			public Timestamp execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Timestamp execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getTimestamp(name);
 			}
@@ -1156,9 +1156,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public Timestamp getTimestamp(final String name, final Calendar calendar) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Timestamp> operation = new Operation<java.sql.ResultSet, Timestamp>()
+		ResultSetOperation<D, Timestamp> operation = new ResultSetOperation<D, Timestamp>()
 		{
-			public Timestamp execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Timestamp execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getTimestamp(name, calendar);
 			}
@@ -1172,9 +1172,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public int getType() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Integer> operation = new Operation<java.sql.ResultSet, Integer>()
+		ResultSetOperation<D, Integer> operation = new ResultSetOperation<D, Integer>()
 		{
-			public Integer execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Integer execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getType();
 			}
@@ -1190,9 +1190,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	@Deprecated
 	public InputStream getUnicodeStream(final int index) throws SQLException
 	{
-		Operation<java.sql.ResultSet, InputStream> operation = new Operation<java.sql.ResultSet, InputStream>()
+		ResultSetOperation<D, InputStream> operation = new ResultSetOperation<D, InputStream>()
 		{
-			public InputStream execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public InputStream execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getUnicodeStream(index);
 			}
@@ -1208,9 +1208,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	@Deprecated
 	public InputStream getUnicodeStream(final String name) throws SQLException
 	{
-		Operation<java.sql.ResultSet, InputStream> operation = new Operation<java.sql.ResultSet, InputStream>()
+		ResultSetOperation<D, InputStream> operation = new ResultSetOperation<D, InputStream>()
 		{
-			public InputStream execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public InputStream execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getUnicodeStream(name);
 			}
@@ -1224,9 +1224,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public URL getURL(final int index) throws SQLException
 	{
-		Operation<java.sql.ResultSet, URL> operation = new Operation<java.sql.ResultSet, URL>()
+		ResultSetOperation<D, URL> operation = new ResultSetOperation<D, URL>()
 		{
-			public URL execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public URL execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getURL(index);
 			}
@@ -1240,9 +1240,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public URL getURL(final String name) throws SQLException
 	{
-		Operation<java.sql.ResultSet, URL> operation = new Operation<java.sql.ResultSet, URL>()
+		ResultSetOperation<D, URL> operation = new ResultSetOperation<D, URL>()
 		{
-			public URL execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public URL execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getURL(name);
 			}
@@ -1256,9 +1256,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public SQLWarning getWarnings() throws SQLException
 	{
-		Operation<java.sql.ResultSet, SQLWarning> operation = new Operation<java.sql.ResultSet, SQLWarning>()
+		ResultSetOperation<D, SQLWarning> operation = new ResultSetOperation<D, SQLWarning>()
 		{
-			public SQLWarning execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public SQLWarning execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.getWarnings();
 			}
@@ -1272,9 +1272,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void insertRow() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.insertRow();
 				
@@ -1290,9 +1290,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public boolean isAfterLast() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Boolean> operation = new Operation<java.sql.ResultSet, Boolean>()
+		ResultSetOperation<D, Boolean> operation = new ResultSetOperation<D, Boolean>()
 		{
-			public Boolean execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Boolean execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.isAfterLast();
 			}
@@ -1306,9 +1306,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public boolean isBeforeFirst() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Boolean> operation = new Operation<java.sql.ResultSet, Boolean>()
+		ResultSetOperation<D, Boolean> operation = new ResultSetOperation<D, Boolean>()
 		{
-			public Boolean execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Boolean execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.isBeforeFirst();
 			}
@@ -1322,9 +1322,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public boolean isFirst() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Boolean> operation = new Operation<java.sql.ResultSet, Boolean>()
+		ResultSetOperation<D, Boolean> operation = new ResultSetOperation<D, Boolean>()
 		{
-			public Boolean execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Boolean execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.isFirst();
 			}
@@ -1338,9 +1338,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public boolean isLast() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Boolean> operation = new Operation<java.sql.ResultSet, Boolean>()
+		ResultSetOperation<D, Boolean> operation = new ResultSetOperation<D, Boolean>()
 		{
-			public Boolean execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Boolean execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.isLast();
 			}
@@ -1354,9 +1354,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public boolean last() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Boolean> operation = new Operation<java.sql.ResultSet, Boolean>()
+		ResultSetOperation<D, Boolean> operation = new ResultSetOperation<D, Boolean>()
 		{
-			public Boolean execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Boolean execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.last();
 			}
@@ -1370,9 +1370,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void moveToCurrentRow() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.moveToCurrentRow();
 				
@@ -1395,9 +1395,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void moveToInsertRow() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.moveToInsertRow();
 				
@@ -1413,9 +1413,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public boolean next() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Boolean> operation = new Operation<java.sql.ResultSet, Boolean>()
+		ResultSetOperation<D, Boolean> operation = new ResultSetOperation<D, Boolean>()
 		{
-			public Boolean execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Boolean execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.next();
 			}
@@ -1429,9 +1429,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public boolean previous() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Boolean> operation = new Operation<java.sql.ResultSet, Boolean>()
+		ResultSetOperation<D, Boolean> operation = new ResultSetOperation<D, Boolean>()
 		{
-			public Boolean execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Boolean execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.previous();
 			}
@@ -1445,9 +1445,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void refreshRow() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.refreshRow();
 				
@@ -1463,9 +1463,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public boolean relative(final int index) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Boolean> operation = new Operation<java.sql.ResultSet, Boolean>()
+		ResultSetOperation<D, Boolean> operation = new ResultSetOperation<D, Boolean>()
 		{
-			public Boolean execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Boolean execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.relative(index);
 			}
@@ -1479,9 +1479,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public boolean rowDeleted() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Boolean> operation = new Operation<java.sql.ResultSet, Boolean>()
+		ResultSetOperation<D, Boolean> operation = new ResultSetOperation<D, Boolean>()
 		{
-			public Boolean execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Boolean execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.rowDeleted();
 			}
@@ -1495,9 +1495,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public boolean rowInserted() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Boolean> operation = new Operation<java.sql.ResultSet, Boolean>()
+		ResultSetOperation<D, Boolean> operation = new ResultSetOperation<D, Boolean>()
 		{
-			public Boolean execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Boolean execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.rowInserted();
 			}
@@ -1511,9 +1511,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public boolean rowUpdated() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Boolean> operation = new Operation<java.sql.ResultSet, Boolean>()
+		ResultSetOperation<D, Boolean> operation = new ResultSetOperation<D, Boolean>()
 		{
-			public Boolean execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Boolean execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.rowUpdated();
 			}
@@ -1527,9 +1527,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void setFetchDirection(final int direction) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.setFetchDirection(direction);
 				
@@ -1545,9 +1545,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void setFetchSize(final int size) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.setFetchSize(size);
 				
@@ -1563,9 +1563,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateArray(final int index, final Array value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateArray(index, value);
 				
@@ -1581,9 +1581,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateArray(final String name, final Array value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateArray(name, value);
 				
@@ -1602,9 +1602,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 		final FileSupport fileSupport = this.getFileSupport();
 		final File file = fileSupport.createFile(inputStream);
 		
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateAsciiStream(index, fileSupport.getInputStream(file), length);
 				
@@ -1623,9 +1623,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 		final FileSupport fileSupport = this.getFileSupport();
 		final File file = fileSupport.createFile(inputStream);
 		
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateAsciiStream(name, fileSupport.getInputStream(file), length);
 				
@@ -1641,9 +1641,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateBigDecimal(final int index, final BigDecimal value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateBigDecimal(index, value);
 				
@@ -1659,9 +1659,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateBigDecimal(final String name, final BigDecimal value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateBigDecimal(name, value);
 				
@@ -1682,9 +1682,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 		
 		try
 		{
-			Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+			ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 			{
-				public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+				public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 				{
 					resultSet.updateBinaryStream(index, fileSupport.getInputStream(file), length);
 					
@@ -1708,9 +1708,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 		final FileSupport fileSupport = this.getFileSupport();
 		final File file = fileSupport.createFile(inputStream);
 		
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateBinaryStream(name, fileSupport.getInputStream(file), length);
 				
@@ -1729,9 +1729,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 		final FileSupport fileSupport = this.getFileSupport();
 		final File file = fileSupport.createFile(value);
 		
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateBlob(index, fileSupport.getBlob(file));
 				
@@ -1750,9 +1750,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 		final FileSupport fileSupport = this.getFileSupport();
 		final File file = fileSupport.createFile(value);
 		
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateBlob(name, fileSupport.getBlob(file));
 				
@@ -1768,9 +1768,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateBoolean(final int index, final boolean value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateBoolean(index, value);
 				
@@ -1786,9 +1786,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateBoolean(final String name, final boolean value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateBoolean(name, value);
 				
@@ -1804,9 +1804,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateByte(final int index, final byte value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateByte(index, value);
 				
@@ -1822,9 +1822,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateByte(final String name, final byte value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateByte(name, value);
 				
@@ -1840,9 +1840,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateBytes(final int index, final byte[] value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateBytes(index, value);
 				
@@ -1858,9 +1858,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateBytes(final String name, final byte[] value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateBytes(name, value);
 				
@@ -1879,9 +1879,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 		final FileSupport fileSupport = this.getFileSupport();
 		final File file = fileSupport.createFile(reader);
 		
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateCharacterStream(index, fileSupport.getReader(file), length);
 				
@@ -1900,9 +1900,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 		final FileSupport fileSupport = this.getFileSupport();
 		final File file = fileSupport.createFile(reader);
 		
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateCharacterStream(name, fileSupport.getReader(file), length);
 				
@@ -1921,9 +1921,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 		final FileSupport fileSupport = this.getFileSupport();
 		final File file = fileSupport.createFile(value);
 		
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateClob(index, fileSupport.getClob(file));
 				
@@ -1942,9 +1942,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 		final FileSupport fileSupport = this.getFileSupport();
 		final File file = fileSupport.createFile(value);
 		
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateClob(name, fileSupport.getClob(file));
 				
@@ -1960,9 +1960,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateDate(final int index, final Date value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateDate(index, value);
 				
@@ -1978,9 +1978,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateDate(final String name, final Date value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateDate(name, value);
 				
@@ -1996,9 +1996,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateDouble(final int index, final double value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateDouble(index, value);
 				
@@ -2014,9 +2014,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateDouble(final String name, final double value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateDouble(name, value);
 				
@@ -2032,9 +2032,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateFloat(final int index, final float value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateFloat(index, value);
 				
@@ -2050,9 +2050,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateFloat(final String name, final float value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateFloat(name, value);
 				
@@ -2068,9 +2068,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateInt(final int index, final int value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateInt(index, value);
 				
@@ -2086,9 +2086,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateInt(final String name, final int value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateInt(name, value);
 				
@@ -2104,9 +2104,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateLong(final int index, final long value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateLong(index, value);
 				
@@ -2122,9 +2122,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateLong(final String name, final long value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateLong(name, value);
 				
@@ -2140,9 +2140,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateNull(final int index) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateNull(index);
 				
@@ -2158,9 +2158,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateNull(final String name) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateNull(name);
 				
@@ -2176,9 +2176,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateObject(final int index, final Object value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateObject(index, value);
 				
@@ -2194,9 +2194,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateObject(final int index, final Object value, final int sqlType) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateObject(index, value, sqlType);
 				
@@ -2212,9 +2212,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateObject(final String name, final Object value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateObject(name, value);
 				
@@ -2230,9 +2230,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateObject(final String name, final Object value, final int sqlType) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateObject(name, value, sqlType);
 				
@@ -2248,9 +2248,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateRef(final int index, final Ref value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateRef(index, value);
 				
@@ -2266,9 +2266,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateRef(final String name, final Ref value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateRef(name, value);
 				
@@ -2284,9 +2284,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateRow() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateRow();
 				
@@ -2302,9 +2302,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateShort(final int index, final short value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateShort(index, value);
 				
@@ -2320,9 +2320,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateShort(final String name, final short value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateShort(name, value);
 				
@@ -2338,9 +2338,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateString(final int index, final String value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateString(index, value);
 				
@@ -2356,9 +2356,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateString(final String name, final String value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateString(name, value);
 				
@@ -2374,9 +2374,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateTime(final int index, final Time value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateTime(index, value);
 				
@@ -2392,9 +2392,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateTime(final String name, final Time value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateTime(name, value);
 				
@@ -2410,9 +2410,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateTimestamp(final int index, final Timestamp value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateTimestamp(index, value);
 				
@@ -2428,9 +2428,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public void updateTimestamp(final String name, final Timestamp value) throws SQLException
 	{
-		Operation<java.sql.ResultSet, Void> operation = new Operation<java.sql.ResultSet, Void>()
+		ResultSetOperation<D, Void> operation = new ResultSetOperation<D, Void>()
 		{
-			public Void execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Void execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				resultSet.updateTimestamp(name, value);
 				
@@ -2446,9 +2446,9 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 */
 	public boolean wasNull() throws SQLException
 	{
-		Operation<java.sql.ResultSet, Boolean> operation = new Operation<java.sql.ResultSet, Boolean>()
+		ResultSetOperation<D, Boolean> operation = new ResultSetOperation<D, Boolean>()
 		{
-			public Boolean execute(Database database, java.sql.ResultSet resultSet) throws SQLException
+			public Boolean execute(Database<D> database, java.sql.ResultSet resultSet) throws SQLException
 			{
 				return resultSet.wasNull();
 			}
@@ -2471,5 +2471,10 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	protected void close(java.sql.ResultSet resultSet) throws SQLException
 	{
 		resultSet.close();
+	}
+	
+	private static interface ResultSetOperation<D, R> extends Operation<D, java.sql.ResultSet, R>
+	{
+		
 	}
 }

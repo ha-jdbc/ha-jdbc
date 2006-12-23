@@ -20,23 +20,20 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.sql.SQLException;
-
-import net.sf.hajdbc.Operation;
+import net.sf.hajdbc.DatabaseClusterMBean;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class Statement<D> extends AbstractStatement<D, java.sql.Statement>
+public interface DataSourceDatabaseClusterMBean extends DatabaseClusterMBean
 {
 	/**
-	 * @param connection
-	 * @param operation
-	 * @throws SQLException
+	 * Adds a new DataSource to this cluster using the specified identifier and JNDI name.
+	 * @param databaseId a database identifier
+	 * @param name the JNDI name use to lookup the DataSource
+	 * @throws IllegalArgumentException if this database already exists, or no DataSource was found using the specified name.
+	 * @throws IllegalStateException if mbean registration fails.
 	 */
-	public Statement(Connection<D> connection, Operation<D, java.sql.Connection, java.sql.Statement> operation) throws SQLException
-	{
-		super(connection, operation);
-	}
+	public void add(String databaseId, String name);
 }
