@@ -41,6 +41,7 @@ considered correct in the case of any differences.
   a linkage to an object.
 
   Special instance handling:
+    create-type - type to be used for creating new instances of object
     factory - factory method for constructing new instances of object; this
       applies to bindings for unmarshalling only, and if supplied it must be
       in the form of a fully-qualified class+method name (e.g.,
@@ -55,6 +56,8 @@ considered correct in the case of any differences.
       they are populated with data from unmarshalling.
     pre-get - bound class method called before instances of the class are
       marshalled.
+    nillable - support W3C XML Schema xsi:nil representation of missing values
+      (equivalent to null) in instance documents
 
   Special conversion handling:
     marshaller - custom serialization handler class, as the fully-qualified
@@ -71,11 +74,13 @@ considered correct in the case of any differences.
 -->
 
 <!ENTITY % object-attributes "
+    create-type CDATA   #IMPLIED
     factory     CDATA   #IMPLIED
     pre-set     CDATA   #IMPLIED
     post-set    CDATA   #IMPLIED
     pre-get     CDATA   #IMPLIED
     marshaller  CDATA   #IMPLIED
+    nillable    CDATA   #IMPLIED
     unmarshaller CDATA   #IMPLIED"
   >
 
@@ -164,45 +169,51 @@ considered correct in the case of any differences.
     using - identifier for component definition to be reused
   
   Component ordering:
-    ordered - ordered content flag: <"true"> (child binding components define
-      ordered content) or "false" (unordered child content)
+    allow-repeats - allow repeated elements flag
     choice - choice of content flag: "true" (choice between child binding
       components) or <"false"> (multiple child binding components allowed)
+    flexible - ignore unknown element flag
+    ordered - ordered content flag: <"true"> (child binding components define
+      ordered content) or "false" (unordered child content)
 -->
 
 <!ENTITY % structure-attributes "
+    allow-repeats CDATA #IMPLIED
+    choice      CDATA   #IMPLIED
+    flexible    CDATA   #IMPLIED
     label       CDATA   #IMPLIED
-    using       CDATA   #IMPLIED
     ordered     CDATA   #IMPLIED
-    choice      CDATA   #IMPLIED"
+    using       CDATA   #IMPLIED"
   >
 
 <!--
   Root element for binding definition.
 
   Basic attributes:
-    name - binding name (default is same as file name, without suffix)
+    add-constructors - add default constructors where needed by binding
     direction - usage of this binding: "input", "output", or <"both">
+    force-classes - force class generation for top-level abstract mappings:
+      "true" or <"false">
     forwards - allow forward references on ids in unmarshalling: <"true">
       (forward references handled) or "false" (all ids must be defined in XML
       before first reference)
+    name - binding name (default is same as file name, without suffix)
     package - package for created binding factory class, default is same
       package as class for first mapping element
     track-source - track unmarshalling source position: "true" or <"false">
-    force-classes - force class generation for top-level abstract mappings:
-      "true" or <"false">
 
   along with the style attributes defined above.
 -->
 
-<!ELEMENT binding (include*, namespace*, format*, mapping+)>
+<!ELEMENT binding (namespace*, format*, include*, mapping+)>
   <!ATTLIST binding
-    name        CDATA   #IMPLIED
+    add-constructors CDATA  #IMPLIED
     direction   CDATA   #IMPLIED
+    force-classes CDATA  #IMPLIED
     forwards    CDATA   #IMPLIED
+    name        CDATA   #IMPLIED
     package     CDATA   #IMPLIED
     track-source CDATA  #IMPLIED
-    force-classes CDATA  #IMPLIED
     %style-attribute;
   >
 
@@ -419,6 +430,7 @@ considered correct in the case of any differences.
     item-type   CDATA   #IMPLIED
     %style-attribute;
     %name-attributes;
+    %object-attributes;
     %property-attributes;
     %structure-attributes;
   >
