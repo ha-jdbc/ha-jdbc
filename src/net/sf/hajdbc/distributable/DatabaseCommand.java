@@ -21,69 +21,19 @@
 package net.sf.hajdbc.distributable;
 
 import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 
-import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 
 /**
- * Represents a database command to be executed on a given database cluster.
- * @author  Paul Ferraro
- * @version $Revision$
- * @since   1.0
+ * @author Paul Ferraro
  */
-public abstract class DatabaseCommand implements Externalizable
+public interface DatabaseCommand extends Externalizable
 {
-	protected String databaseId;
-	
-	/**
-	 * Constructs a new DatabaseCommand.
-	 */
-	protected DatabaseCommand()
-	{
-		// Do nothing
-	}
-	
-	/**
-	 * Constructs a new DatabaseCommand.
-	 * @param database a database descriptor
-	 */
-	public DatabaseCommand(Database database)
-	{
-		this.databaseId = database.getId();
-	}
-	
-	/**
-	 * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
-	 */
-	public void writeExternal(ObjectOutput output) throws IOException
-	{
-		output.writeUTF(this.databaseId);
-	}
-
-	/**
-	 * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
-	 */
-	public void readExternal(ObjectInput input) throws IOException
-	{
-		this.databaseId = input.readUTF();
-	}
-	
 	/**
 	 * Execute this command on the specified database cluster.
+	 * @param <D> either java.sql.Driver or javax.sql.DataSource
 	 * @param databaseCluster a database cluster
 	 * @throws java.sql.SQLException if command failed to execute
 	 */
-	public abstract void execute(DatabaseCluster databaseCluster);
-	
-	/**
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString()
-	{
-		return this.getClass().getName() + " [" + this.databaseId + "]";
-	}
+	public <D> void execute(DatabaseCluster<D> databaseCluster);
 }
