@@ -20,7 +20,6 @@
  */
 package net.sf.hajdbc.distributable;
 
-import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 
 
@@ -30,7 +29,7 @@ import net.sf.hajdbc.DatabaseCluster;
  * @version $Revision$
  * @since   1.0
  */
-public class DatabaseDeactivationCommand extends DatabaseCommand
+public class DatabaseDeactivationCommand extends AbstractDatabaseCommand
 {
 	private static final long serialVersionUID = 3257006574802647092L;
 
@@ -46,16 +45,15 @@ public class DatabaseDeactivationCommand extends DatabaseCommand
 	 * Constructs a new DatabaseDeactivationCommand.
 	 * @param database a database descriptor
 	 */
-	public DatabaseDeactivationCommand(Database database)
+	public DatabaseDeactivationCommand(String databaseId)
 	{
-		super(database);
+		super(databaseId);
 	}
 
 	/**
 	 * @see net.sf.hajdbc.distributable.DatabaseCommand#execute(net.sf.hajdbc.DatabaseCluster)
 	 */
-	@Override
-	public void execute(DatabaseCluster databaseCluster)
+	public <D> void execute(DatabaseCluster<D> databaseCluster)
 	{
 		databaseCluster.deactivate(databaseCluster.getDatabase(this.databaseId));
 	}

@@ -20,41 +20,59 @@
  */
 package net.sf.hajdbc.distributable;
 
-import net.sf.hajdbc.DatabaseCluster;
-
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 /**
- * Command pattern object indicating that a database is to be activated.
+ * Represents a database command to be executed on a given database cluster.
  * @author  Paul Ferraro
  * @param <D> either java.sql.Driver or javax.sql.DataSource
  * @since   1.0
  */
-public class DatabaseActivationCommand extends AbstractDatabaseCommand
+public abstract class AbstractDatabaseCommand implements DatabaseCommand
 {
-	private static final long serialVersionUID = 3618141143175673655L;
-
+	protected String databaseId;
+	
 	/**
-	 * Constructs a new DatabaseActivationCommand.
+	 * Constructs a new AbstractDatabaseCommand.
 	 */
-	public DatabaseActivationCommand()
+	protected AbstractDatabaseCommand()
 	{
 		// Do nothing
 	}
 	
 	/**
-	 * Constructs a new DatabaseActivationCommand.
+	 * Constructs a new AbstractDatabaseCommand.
 	 * @param database a database descriptor
 	 */
-	public DatabaseActivationCommand(String databaseId)
+	public AbstractDatabaseCommand(String databaseId)
 	{
-		super(databaseId);
+		this.databaseId = databaseId;
+	}
+	
+	/**
+	 * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
+	 */
+	public void writeExternal(ObjectOutput output) throws IOException
+	{
+		output.writeUTF(this.databaseId);
 	}
 
 	/**
-	 * @see net.sf.hajdbc.distributable.DatabaseCommand#execute(net.sf.hajdbc.DatabaseCluster)
+	 * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
 	 */
-	public <D> void execute(DatabaseCluster<D> databaseCluster)
+	public void readExternal(ObjectInput input) throws IOException
 	{
-		databaseCluster.activate(databaseCluster.getDatabase(this.databaseId));
+		this.databaseId = input.readUTF();
+	}
+	
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString()
+	{
+		return this.getClass().getName() + " [" + this.databaseId + "]";
 	}
 }

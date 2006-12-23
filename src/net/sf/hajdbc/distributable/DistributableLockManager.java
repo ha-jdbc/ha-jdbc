@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.LockManager;
 import net.sf.hajdbc.Messages;
 
@@ -51,10 +52,10 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 {
 	static Logger logger = LoggerFactory.getLogger(DistributableLockManager.class);
 	
-	private Channel channel;
-	protected int timeout;
-	private LockManager lockManager;
 	protected TwoPhaseVotingAdapter votingAdapter;
+	protected int timeout;
+	private Channel channel;
+	private LockManager lockManager;
 	
 	/**
 	 * Constructs a new DistributableLock.
@@ -63,25 +64,29 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	 * @param lockManager 
 	 * @throws Exception
 	 */
-	public DistributableLockManager(Channel channel, int timeout, LockManager lockManager) throws Exception
+	public DistributableLockManager(DatabaseCluster databaseCluster, DistributableDatabaseClusterDecorator decorator) throws Exception
 	{
-		this.timeout = timeout;
-		this.lockManager = lockManager;
-		this.channel = channel;
+		this.lockManager = databaseCluster.getLockManager();
+		this.channel = decorator.createChannel(databaseCluster.getId() + "lock");
+		this.timeout = decorator.getTimeout();
 		
 		this.votingAdapter = new TwoPhaseVotingAdapter(new VotingAdapter(this.channel));
 		
 		this.votingAdapter.addListener(this);
 	}
 
-	public void start() throws ChannelException
+	public void start() throws Exception
 	{
 		this.channel.connect(this.channel.getClusterName());
+		
+		this.lockManager.start();
 	}
 	
 	public void stop()
 	{
 		this.channel.close();
+
+		this.lockManager.stop();
 	}
 	
 	/**
