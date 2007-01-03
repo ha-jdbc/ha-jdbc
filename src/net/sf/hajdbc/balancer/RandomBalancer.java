@@ -33,17 +33,17 @@ import net.sf.hajdbc.Database;
  * @author  Paul Ferraro
  * @since   1.0
  */
-public class RandomBalancer extends AbstractBalancer
+public class RandomBalancer<D> extends AbstractBalancer<D>
 {
 	private Random random = new Random();
-	private Set<Database> databaseSet = new HashSet<Database>();
-	private List<Database> databaseList = new ArrayList<Database>();
+	private Set<Database<D>> databaseSet = new HashSet<Database<D>>();
+	private List<Database<D>> databaseList = new ArrayList<Database<D>>();
 	
 	/**
 	 * @see net.sf.hajdbc.balancer.AbstractBalancer#collect()
 	 */
 	@Override
-	protected Collection<Database> collect()
+	protected Collection<Database<D>> collect()
 	{
 		return this.databaseSet;
 	}
@@ -52,7 +52,7 @@ public class RandomBalancer extends AbstractBalancer
 	 * @see net.sf.hajdbc.Balancer#add(net.sf.hajdbc.Database)
 	 */
 	@Override
-	public synchronized boolean add(Database database)
+	public synchronized boolean add(Database<D> database)
 	{
 		boolean added = super.add(database);
 		
@@ -73,7 +73,7 @@ public class RandomBalancer extends AbstractBalancer
 	 * @see net.sf.hajdbc.Balancer#remove(net.sf.hajdbc.Database)
 	 */
 	@Override
-	public synchronized boolean remove(Database database)
+	public synchronized boolean remove(Database<D> database)
 	{
 		boolean removed = super.remove(database);
 		
@@ -92,7 +92,7 @@ public class RandomBalancer extends AbstractBalancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#next()
 	 */
-	public synchronized Database next()
+	public synchronized Database<D> next()
 	{
 		if (this.databaseList.isEmpty())
 		{

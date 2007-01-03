@@ -32,16 +32,16 @@ import net.sf.hajdbc.Database;
  * @author  Paul Ferraro
  * @since   1.0
  */
-public class RoundRobinBalancer extends AbstractBalancer
+public class RoundRobinBalancer<D> extends AbstractBalancer<D>
 {
-	private Set<Database> databaseSet = new HashSet<Database>();
-	private Queue<Database> databaseQueue = new LinkedList<Database>();
+	private Set<Database<D>> databaseSet = new HashSet<Database<D>>();
+	private Queue<Database<D>> databaseQueue = new LinkedList<Database<D>>();
 
 	/**
 	 * @see net.sf.hajdbc.balancer.AbstractBalancer#collect()
 	 */
 	@Override
-	protected Collection<Database> collect()
+	protected Collection<Database<D>> collect()
 	{
 		return this.databaseSet;
 	}
@@ -50,7 +50,7 @@ public class RoundRobinBalancer extends AbstractBalancer
 	 * @see net.sf.hajdbc.Balancer#add(net.sf.hajdbc.Database)
 	 */
 	@Override
-	public synchronized boolean add(Database database)
+	public synchronized boolean add(Database<D> database)
 	{
 		boolean added = super.add(database);
 		
@@ -71,7 +71,7 @@ public class RoundRobinBalancer extends AbstractBalancer
 	 * @see net.sf.hajdbc.Balancer#remove(net.sf.hajdbc.Database)
 	 */
 	@Override
-	public synchronized boolean remove(Database database)
+	public synchronized boolean remove(Database<D> database)
 	{
 		boolean removed = super.remove(database);
 
@@ -92,7 +92,7 @@ public class RoundRobinBalancer extends AbstractBalancer
 	 * @see net.sf.hajdbc.Balancer#first()
 	 */
 	@Override
-	public synchronized Database first()
+	public synchronized Database<D> first()
 	{
 		return (this.databaseQueue.isEmpty()) ? super.first() : this.databaseQueue.element();
 	}
@@ -100,14 +100,14 @@ public class RoundRobinBalancer extends AbstractBalancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#next()
 	 */
-	public synchronized Database next()
+	public synchronized Database<D> next()
 	{
 		if (this.databaseQueue.isEmpty())
 		{
 			return super.first();
 		}
 		
-		Database database = this.databaseQueue.remove();
+		Database<D> database = this.databaseQueue.remove();
 		
 		this.databaseQueue.add(database);
 		

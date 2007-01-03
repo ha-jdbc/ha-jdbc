@@ -34,12 +34,12 @@ import net.sf.hajdbc.Database;
  * @author  Paul Ferraro
  * @since   1.0
  */
-public abstract class AbstractBalancer implements Balancer
+public abstract class AbstractBalancer<D> implements Balancer<D>
 {
 	/**
 	 * @see net.sf.hajdbc.Balancer#beforeOperation(net.sf.hajdbc.Database)
 	 */
-	public void beforeOperation(Database database)
+	public void beforeOperation(Database<D> database)
 	{
 		// Do nothing
 	}
@@ -47,7 +47,7 @@ public abstract class AbstractBalancer implements Balancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#afterOperation(net.sf.hajdbc.Database)
 	 */
-	public void afterOperation(Database database)
+	public void afterOperation(Database<D> database)
 	{
 		// Do nothing
 	}
@@ -55,7 +55,7 @@ public abstract class AbstractBalancer implements Balancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#remove(net.sf.hajdbc.Database)
 	 */
-	public synchronized boolean remove(Database database)
+	public synchronized boolean remove(Database<D> database)
 	{
 		return this.collect().remove(database);
 	}
@@ -63,7 +63,7 @@ public abstract class AbstractBalancer implements Balancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#add(net.sf.hajdbc.Database)
 	 */
-	public synchronized boolean add(Database database)
+	public synchronized boolean add(Database<D> database)
 	{
 		return this.collect().contains(database) ? false : this.collect().add(database);
 	}
@@ -71,7 +71,7 @@ public abstract class AbstractBalancer implements Balancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#contains(net.sf.hajdbc.Database)
 	 */
-	public synchronized boolean contains(Database database)
+	public synchronized boolean contains(Database<D> database)
 	{
 		return this.collect().contains(database);
 	}
@@ -79,7 +79,7 @@ public abstract class AbstractBalancer implements Balancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#first()
 	 */
-	public synchronized Database first()
+	public synchronized Database<D> first()
 	{
 		return this.collect().iterator().next();
 	}
@@ -87,9 +87,9 @@ public abstract class AbstractBalancer implements Balancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#all()
 	 */
-	public synchronized Set<Database> all()
+	public synchronized Set<Database<D>> all()
 	{
-		Set<Database> databaseSet = new TreeSet<Database>(this.collect());
+		Set<Database<D>> databaseSet = new TreeSet<Database<D>>(this.collect());
 		
 		return Collections.unmodifiableSet(databaseSet);
 	}
@@ -98,5 +98,5 @@ public abstract class AbstractBalancer implements Balancer
 	 * Exposes a view of the underlying collection of Databases.
 	 * @return a Collection of databases
 	 */
-	protected abstract Collection<Database> collect();
+	protected abstract Collection<Database<D>> collect();
 }

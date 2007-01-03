@@ -31,15 +31,15 @@ import net.sf.hajdbc.Database;
  * @author  Paul Ferraro
  * @since   1.0
  */
-public class SimpleBalancer extends AbstractBalancer
+public class SimpleBalancer<D> extends AbstractBalancer<D>
 {
-	private LinkedList<Database> databaseQueue = new LinkedList<Database>();
+	private LinkedList<Database<D>> databaseQueue = new LinkedList<Database<D>>();
 
 	/**
 	 * @see net.sf.hajdbc.balancer.AbstractBalancer#collect()
 	 */
 	@Override
-	protected Collection<Database> collect()
+	protected Collection<Database<D>> collect()
 	{
 		return this.databaseQueue;
 	}
@@ -48,7 +48,7 @@ public class SimpleBalancer extends AbstractBalancer
 	 * @see net.sf.hajdbc.Balancer#first()
 	 */
 	@Override
-	public synchronized Database first()
+	public synchronized Database<D> first()
 	{
 		return this.databaseQueue.element();
 	}
@@ -56,7 +56,7 @@ public class SimpleBalancer extends AbstractBalancer
 	/**
 	 * @see net.sf.hajdbc.Balancer#next()
 	 */
-	public synchronized Database next()
+	public synchronized Database<D> next()
 	{
 		return this.first();
 	}
@@ -66,24 +66,24 @@ public class SimpleBalancer extends AbstractBalancer
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public synchronized boolean add(Database database)
+	public synchronized boolean add(Database<D> database)
 	{
 		boolean added = super.add(database);
 		
 		if (added)
 		{
-			Collections.sort(this.databaseQueue, comparator);
+			Collections.sort(this.databaseQueue, this.comparator);
 		}
 		
 		return added;
 	}
 
-	private static Comparator<Database> comparator = new Comparator<Database>()
+	private Comparator<Database<D>> comparator = new Comparator<Database<D>>()
 	{
 		/**
 		 * @see java.util.Comparator#compare(T, T)
 		 */
-		public int compare(Database database1, Database database2)
+		public int compare(Database<D> database1, Database<D> database2)
 		{
 			return database2.getWeight() - database1.getWeight();
 		}
