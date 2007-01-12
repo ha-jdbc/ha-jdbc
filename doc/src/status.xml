@@ -12,6 +12,32 @@
 	</contexts>
 
 	<changes>
+		<release version="1.1.10" date="?">
+			<action type="fix" context="src" dev="PF" due-to="David Goodenough">
+				Optimized PostgreSQLDialect.getLockTableSQL() by removing unnecessary select statement.
+			</action>
+			<action type="fix" context="src" dev="PF">
+				Removed shutdown hook in DatabaseClusterFactory which caused JBoss to hang upon shutdown.
+			</action>
+			<action type="fix" context="src" dev="PF">
+				Creation of Connection, Statement do not require transactional writes, thus don't require cluster read locks.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded TestNG to 5.4.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded JiBX to 1.1.3.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded SLF4J to 1.1.0.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded Quartz to 1.6.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded Retrotranslator to 1.2.0.
+			</action>
+		</release>
 		<release version="1.1.9" date="October 24, 2006">
 			<action type="update" context="lib" dev="PF">
 				Upgraded jcl104-over-slf4j.jar to slf4j 1.0.2 version.
