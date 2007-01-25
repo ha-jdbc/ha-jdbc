@@ -20,40 +20,43 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.sql.Driver;
+import java.sql.Connection;
+import java.sql.Savepoint;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.locks.Lock;
 
-import javax.management.DynamicMBean;
-import javax.management.NotCompliantMBeanException;
-import javax.management.StandardMBean;
+import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class DriverDatabaseCluster extends AbstractDatabaseCluster<Driver> implements DriverDatabaseClusterMBean
+public class SavepointInvocationStrategy<D> extends DatabaseWriteInvocationStrategy<D, Connection, Savepoint>
 {
+	private Connection connection;
+	
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractDatabaseCluster#createMBean()
+	 * @param executor
 	 */
-	@Override
-	protected DynamicMBean createMBean() throws NotCompliantMBeanException
+	public SavepointInvocationStrategy(Connection connection)
 	{
-		return new StandardMBean(this, DriverDatabaseClusterMBean.class);
+		super(emptyLockList());
+		
+		this.connection = connection;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.sql.DriverDatabaseClusterMBean#add(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	public void add(String databaseId, String driver, String url)
+	private static List<Lock> emptyLockList()
 	{
-		DriverDatabase database = new DriverDatabase();
-		
-		database.setId(databaseId);
-		database.setDriver(driver);
-		database.setUrl(url);
-		
-		this.register(database, database.getInactiveMBean());
-		
-		this.add(database);
+		return Collections.emptyList();
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.sql.DatabaseWriteInvocationStrategy#invoke(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker)
+	 */
+	@Override
+	public Savepoint invoke(SQLProxy<D, Connection> proxy, Invoker<D, Connection, Savepoint> invoker) throws Exception
+	{
+		return ProxyFactory.createProxy(Savepoint.class, new SavepointInvocationHandler<D>(this.connection, proxy, invoker, this.invokeAll(proxy, invoker)));
 	}
 }

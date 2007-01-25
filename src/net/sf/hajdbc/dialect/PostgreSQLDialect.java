@@ -84,9 +84,9 @@ public class PostgreSQLDialect extends StandardDialect
 	}
 	
 	/**
-	 * PostgreSQL uses the native type OID for BLOBs.
-	 * However the driver maps OID to INTEGER.
-	 * OID columns should really be mapped to BLOB.
+	 * PostgreSQL uses the native type OID to identify BLOBs.
+	 * However the JDBC driver incomprehensibly maps OIDs to INTEGERs.
+	 * The PostgreSQL JDBC folks claim this intentional.
 	 * @see net.sf.hajdbc.dialect.StandardDialect#getColumnType(net.sf.hajdbc.ColumnProperties)
 	 */
 	@Override
@@ -121,7 +121,7 @@ public class PostgreSQLDialect extends StandardDialect
 	@Override
 	protected String sequencePattern()
 	{
-		return "(?:(?:CURR)|(?:NEXT))VAL\\s*\\(\\s*'(\\S+)'\\s*\\)";
+		return "(?:(?:CURR)|(?:NEXT))VAL\\s*\\(\\s*'(\\w+)'\\s*\\)";
 	}
 
 	/**

@@ -73,7 +73,7 @@ public class DB2Dialect extends StandardDialect
 	@Override
 	protected String sequencePattern()
 	{
-		return "(?:(?:NEXT)|(?:PREV))VAL\\s+FOR\\s+(\\S+)";
+		return "(?:(?:NEXT)|(?:PREV))VAL\\s+FOR\\s+\\W?(\\w+)\\W?";
 	}
 
 	/**

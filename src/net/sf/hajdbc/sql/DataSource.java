@@ -20,29 +20,44 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.io.PrintWriter;
-import java.sql.SQLException;
+import java.util.Hashtable;
 
+import javax.naming.Context;
+import javax.naming.Name;
+import javax.naming.RefAddr;
 import javax.naming.Reference;
 import javax.naming.Referenceable;
 import javax.naming.StringRefAddr;
+import javax.naming.spi.ObjectFactory;
 
-import net.sf.hajdbc.Database;
-import net.sf.hajdbc.Operation;
+import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.DatabaseClusterFactory;
+import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 
 /**
  * @author Paul Ferraro
  * @version $Revision$
  */
-public class DataSource implements javax.sql.DataSource, Referenceable
+public class DataSource implements Referenceable, ObjectFactory
 {
 	/**	Property that identifies this data source */
 	public static final String DATABASE_CLUSTER = "cluster";
 	
 	private String cluster;
-	private ConnectionFactory<javax.sql.DataSource> connectionFactory;
-
+	
+	/**
+	 * @see javax.naming.Referenceable#getReference()
+	 */
+	public Reference getReference()
+	{
+        Reference ref = new Reference(javax.sql.DataSource.class.getName(), this.getClass().getName(), null);
+        
+        ref.add(new StringRefAddr(DATABASE_CLUSTER, this.cluster));
+        
+        return ref;
+	}
+	
 	/**
 	 * Returns the identifier of the database cluster represented by this DataSource
 	 * @return a database cluster identifier
@@ -60,130 +75,36 @@ public class DataSource implements javax.sql.DataSource, Referenceable
 	{
 		this.cluster = cluster;
 	}
-	
-	/**
-	 * @see javax.naming.Referenceable#getReference()
-	 */
-	public final Reference getReference()
-	{
-        Reference ref = new Reference(this.getClass().getName(), DataSourceFactory.class.getName(), null);
-        
-        ref.add(new StringRefAddr(DATABASE_CLUSTER, this.cluster));
-        
-        return ref;
-	}
-	
-	/**
-	 * Set the connection factory for this datasource.
-	 * @param connectionFactory a factory for creating database connections
-	 */
-	public void setConnectionFactory(ConnectionFactory<javax.sql.DataSource> connectionFactory)
-	{
-		this.connectionFactory = connectionFactory;
-	}
-	
-	/**
-	 * @see javax.sql.DataSource#getLoginTimeout()
-	 */
-	public int getLoginTimeout() throws SQLException
-	{
-		DataSourceOperation<Integer> operation = new DataSourceOperation<Integer>()
-		{
-			public Integer execute(Database<javax.sql.DataSource> database, javax.sql.DataSource dataSource) throws SQLException
-			{
-				return dataSource.getLoginTimeout();
-			}
-		};
-		
-		return this.connectionFactory.executeReadFromDriver(operation);
-	}
 
 	/**
-	 * @see javax.sql.DataSource#setLoginTimeout(int)
+	 * @see javax.naming.spi.ObjectFactory#getObjectInstance(java.lang.Object, javax.naming.Name, javax.naming.Context, java.util.Hashtable)
 	 */
-	public void setLoginTimeout(final int seconds) throws SQLException
+	public Object getObjectInstance(Object object, Name name, Context context, Hashtable<?,?> environment) throws Exception
 	{
-		DataSourceOperation<Void> operation = new DataSourceOperation<Void>()
-		{
-			public Void execute(Database<javax.sql.DataSource> database, javax.sql.DataSource dataSource) throws SQLException
-			{
-				dataSource.setLoginTimeout(seconds);
-				
-				return null;
-			}
-		};
+		if (object == null) return null;
 		
-		this.connectionFactory.executeWriteToDriver(operation);
-	}
+		if (!Reference.class.isInstance(object)) return null;
+		
+		Reference reference = Reference.class.cast(object);
+		
+		String className = reference.getClassName();
+		
+		if (className == null) return null;
+		
+		if (!javax.sql.DataSource.class.getName().equals(className)) return null;
+		
+		RefAddr addr = reference.get(DataSource.DATABASE_CLUSTER);
+		
+		if (addr == null) return null;
+		
+		String id = String.class.cast(addr.getContent());
 
-	/**
-	 * @see javax.sql.DataSource#getLogWriter()
-	 */
-	public PrintWriter getLogWriter() throws SQLException
-	{
-		DataSourceOperation<PrintWriter> operation = new DataSourceOperation<PrintWriter>()
-		{
-			public PrintWriter execute(Database<javax.sql.DataSource> database, javax.sql.DataSource dataSource) throws SQLException
-			{
-				return dataSource.getLogWriter();
-			}
-		};
+		if (id == null) return null;
 		
-		return this.connectionFactory.executeReadFromDriver(operation);
-	}
-
-	/**
-	 * @see javax.sql.DataSource#setLogWriter(java.io.PrintWriter)
-	 */
-	public void setLogWriter(final PrintWriter writer) throws SQLException
-	{
-		DataSourceOperation<Void> operation = new DataSourceOperation<Void>()
-		{
-			public Void execute(Database<javax.sql.DataSource> database, javax.sql.DataSource dataSource) throws SQLException
-			{
-				dataSource.setLogWriter(writer);
-				
-				return null;
-			}
-		};
+		DatabaseCluster<javax.sql.DataSource> cluster = DatabaseClusterFactory.getInstance().getDataSourceDatabaseClusterMap().get(id);
 		
-		this.connectionFactory.executeWriteToDriver(operation);
-	}
-
-	/**
-	 * @see javax.sql.DataSource#getConnection()
-	 */
-	public java.sql.Connection getConnection() throws SQLException
-	{
-		DataSourceOperation<java.sql.Connection> operation = new DataSourceOperation<java.sql.Connection>()
-		{
-			public java.sql.Connection execute(Database<javax.sql.DataSource> database, javax.sql.DataSource dataSource) throws SQLException
-			{
-				return dataSource.getConnection();
-			}
-		};
+		if (cluster == null) return null;
 		
-		return new Connection<javax.sql.DataSource>(this.connectionFactory, operation, new FileSupportImpl());
-	}
-
-	/**
-	 * @see javax.sql.DataSource#getConnection(java.lang.String, java.lang.String)
-	 */
-	public java.sql.Connection getConnection(final String user, final String password) throws SQLException
-	{
-		DataSourceOperation<java.sql.Connection> operation = new DataSourceOperation<java.sql.Connection>()
-		{
-			public java.sql.Connection execute(Database<javax.sql.DataSource> database, javax.sql.DataSource dataSource) throws SQLException
-			{
-				return dataSource.getConnection(user, password);
-			}
-		};
-		
-		return new Connection<javax.sql.DataSource>(this.connectionFactory, operation, new FileSupportImpl());
-	}
-	
-	private interface DataSourceOperation<R> extends Operation<javax.sql.DataSource, javax.sql.DataSource, R>
-	{
-		
-	}
+		return ProxyFactory.createProxy(javax.sql.DataSource.class, new DataSourceInvocationHandler(cluster));
+	}	
 }

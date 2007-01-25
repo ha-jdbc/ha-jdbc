@@ -18,42 +18,36 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.sql;
+package net.sf.hajdbc.util;
 
-import java.sql.Driver;
-
-import javax.management.DynamicMBean;
-import javax.management.NotCompliantMBeanException;
-import javax.management.StandardMBean;
+import java.sql.SQLException;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class DriverDatabaseCluster extends AbstractDatabaseCluster<Driver> implements DriverDatabaseClusterMBean
+public class SQLExceptionFactory
 {
-	/**
-	 * @see net.sf.hajdbc.sql.AbstractDatabaseCluster#createMBean()
-	 */
-	@Override
-	protected DynamicMBean createMBean() throws NotCompliantMBeanException
+	public static SQLException createSQLException(String message, Throwable cause)
 	{
-		return new StandardMBean(this, DriverDatabaseClusterMBean.class);
+		SQLException exception = new SQLException(message);
+		
+		exception.initCause(cause);
+		
+		return exception;
 	}
-
-	/**
-	 * @see net.sf.hajdbc.sql.DriverDatabaseClusterMBean#add(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	public void add(String databaseId, String driver, String url)
+	
+	public static SQLException createSQLException(Throwable cause)
 	{
-		DriverDatabase database = new DriverDatabase();
+		if (SQLException.class.isInstance(cause))
+		{
+			return SQLException.class.cast(cause);
+		}
 		
-		database.setId(databaseId);
-		database.setDriver(driver);
-		database.setUrl(url);
+		SQLException exception = new SQLException();
 		
-		this.register(database, database.getInactiveMBean());
+		exception.initCause(cause);
 		
-		this.add(database);
+		return exception;
 	}
 }

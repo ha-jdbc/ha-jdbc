@@ -37,17 +37,17 @@ import net.sf.hajdbc.Database;
 public abstract class AbstractBalancer<D> implements Balancer<D>
 {
 	/**
-	 * @see net.sf.hajdbc.Balancer#beforeOperation(net.sf.hajdbc.Database)
+	 * @see net.sf.hajdbc.Balancer#beforeInvocation(net.sf.hajdbc.Database)
 	 */
-	public void beforeOperation(Database<D> database)
+	public void beforeInvocation(Database<D> database)
 	{
 		// Do nothing
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Balancer#afterOperation(net.sf.hajdbc.Database)
+	 * @see net.sf.hajdbc.Balancer#afterInvocation(net.sf.hajdbc.Database)
 	 */
-	public void afterOperation(Database<D> database)
+	public void afterInvocation(Database<D> database)
 	{
 		// Do nothing
 	}
@@ -74,14 +74,6 @@ public abstract class AbstractBalancer<D> implements Balancer<D>
 	public synchronized boolean contains(Database<D> database)
 	{
 		return this.collect().contains(database);
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.Balancer#first()
-	 */
-	public synchronized Database<D> first()
-	{
-		return this.collect().iterator().next();
 	}
 	
 	/**

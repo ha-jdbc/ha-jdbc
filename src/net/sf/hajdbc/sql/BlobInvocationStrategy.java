@@ -20,40 +20,34 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.sql.Driver;
+import java.sql.Blob;
 
-import javax.management.DynamicMBean;
-import javax.management.NotCompliantMBeanException;
-import javax.management.StandardMBean;
+import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class DriverDatabaseCluster extends AbstractDatabaseCluster<Driver> implements DriverDatabaseClusterMBean
+public class BlobInvocationStrategy<D, P> extends DatabaseWriteInvocationStrategy<D, P, Blob>
 {
+	private P parent;
+	
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractDatabaseCluster#createMBean()
+	 * @param lockList
 	 */
-	@Override
-	protected DynamicMBean createMBean() throws NotCompliantMBeanException
+	public BlobInvocationStrategy(P parent)
 	{
-		return new StandardMBean(this, DriverDatabaseClusterMBean.class);
+		super(null);
+		
+		this.parent = parent;
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.DriverDatabaseClusterMBean#add(java.lang.String, java.lang.String, java.lang.String)
+	 * @see net.sf.hajdbc.sql.DatabaseWriteInvocationStrategy#invoke(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker)
 	 */
-	public void add(String databaseId, String driver, String url)
+	@Override
+	public Blob invoke(SQLProxy<D, P> proxy, Invoker<D, P, Blob> invoker) throws Exception
 	{
-		DriverDatabase database = new DriverDatabase();
-		
-		database.setId(databaseId);
-		database.setDriver(driver);
-		database.setUrl(url);
-		
-		this.register(database, database.getInactiveMBean());
-		
-		this.add(database);
+		return ProxyFactory.createProxy(Blob.class, new BlobInvocationHandler<D, P>(this.parent, proxy, invoker, this.invokeAll(proxy, invoker)));
 	}
 }

@@ -28,8 +28,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.ByteBuffer;
@@ -37,13 +35,11 @@ import java.nio.CharBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.charset.Charset;
-import java.sql.Blob;
-import java.sql.Clob;
+import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
-import net.sf.hajdbc.SQLException;
+import net.sf.hajdbc.util.SQLExceptionFactory;
 
 /**
  * @author  Paul Ferraro
@@ -60,7 +56,7 @@ public class FileSupportImpl implements FileSupport
 	/**
 	 * @see net.sf.hajdbc.sql.FileSupport#createFile(java.io.InputStream)
 	 */
-	public File createFile(InputStream inputStream) throws java.sql.SQLException
+	public File createFile(InputStream inputStream) throws SQLException
 	{
 		File file = this.createTempFile();
 		
@@ -86,14 +82,14 @@ public class FileSupportImpl implements FileSupport
 		}
 		catch (IOException e)
 		{
-			throw new SQLException(e);
+			throw SQLExceptionFactory.createSQLException(e);
 		}
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.sql.FileSupport#createFile(java.io.Reader)
 	 */
-	public File createFile(Reader reader) throws java.sql.SQLException
+	public File createFile(Reader reader) throws SQLException
 	{
 		File file = this.createTempFile();
 		
@@ -118,30 +114,14 @@ public class FileSupportImpl implements FileSupport
 		}
 		catch (IOException e)
 		{
-			throw new SQLException(e);
+			throw SQLExceptionFactory.createSQLException(e);
 		}
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.sql.FileSupport#createFile(java.sql.Blob)
-	 */
-	public File createFile(Blob blob) throws java.sql.SQLException
-	{
-		return this.createFile(blob.getBinaryStream());
-	}
-
-	/**
-	 * @see net.sf.hajdbc.sql.FileSupport#createFile(java.sql.Clob)
-	 */
-	public File createFile(Clob clob) throws java.sql.SQLException
-	{
-		return this.createFile(clob.getCharacterStream());
-	}
-
-	/**
 	 * @see net.sf.hajdbc.sql.FileSupport#getReader(java.io.File)
 	 */
-	public Reader getReader(File file) throws java.sql.SQLException
+	public Reader getReader(File file) throws SQLException
 	{
 		try
 		{
@@ -149,14 +129,14 @@ public class FileSupportImpl implements FileSupport
 		}
 		catch (IOException e)
 		{
-			throw new SQLException(e);
+			throw SQLExceptionFactory.createSQLException(e);
 		}
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.sql.FileSupport#getInputStream(java.io.File)
 	 */
-	public InputStream getInputStream(File file) throws java.sql.SQLException
+	public InputStream getInputStream(File file) throws SQLException
 	{
 		try
 		{
@@ -164,7 +144,7 @@ public class FileSupportImpl implements FileSupport
 		}
 		catch (IOException e)
 		{
-			throw new SQLException(e);
+			throw SQLExceptionFactory.createSQLException(e);
 		}
 	}
 	
@@ -185,7 +165,7 @@ public class FileSupportImpl implements FileSupport
 		}
 		catch (IOException e)
 		{
-			throw new SQLException(e);
+			throw SQLExceptionFactory.createSQLException(e);
 		}
 	}
 	
@@ -212,291 +192,5 @@ public class FileSupportImpl implements FileSupport
 		this.close();
 		
 		super.finalize();
-	}
-
-	/**
-	 * @see net.sf.hajdbc.sql.FileSupport#getBlob(java.io.File)
-	 */
-	public Blob getBlob(File file) throws java.sql.SQLException
-	{
-		try
-		{
-			final FileChannel channel = new FileInputStream(file).getChannel();
-		
-			return new Blob()
-			{
-				public long length() throws java.sql.SQLException
-				{
-					try
-					{
-						return channel.size();
-					}
-					catch (IOException e)
-					{
-						throw new SQLException(e);
-					}
-				}
-	
-				public byte[] getBytes(long position, int length) throws java.sql.SQLException
-				{
-					ByteBuffer buffer = ByteBuffer.allocate(length);
-					
-					try
-					{
-						channel.read(buffer, position);
-					}
-					catch (IOException e)
-					{
-						throw new SQLException(e);
-					}
-					
-					buffer.compact();
-					
-					return buffer.array();
-				}
-	
-				public InputStream getBinaryStream()
-				{
-					return Channels.newInputStream(channel);
-				}
-	
-				public long position(byte[] pattern, long start)
-				{
-					throw new UnsupportedOperationException();
-				}
-	
-				public long position(Blob pattern, long start)
-				{
-					throw new UnsupportedOperationException();
-				}
-	
-				public int setBytes(long position, byte[] bytes) throws java.sql.SQLException
-				{
-					return this.writeBuffer(position, ByteBuffer.wrap(bytes));
-				}
-	
-				public int setBytes(long position, byte[] bytes, int offset, int length) throws java.sql.SQLException
-				{
-					return this.writeBuffer(position, ByteBuffer.wrap(bytes, offset, length));
-				}
-
-				private int writeBuffer(long position, ByteBuffer buffer) throws java.sql.SQLException
-				{
-					try
-					{
-						return channel.write(buffer, position);
-					}
-					catch (IOException e)
-					{
-						throw new SQLException(e);
-					}
-				}
-				
-				public OutputStream setBinaryStream(long position) throws java.sql.SQLException
-				{
-					try
-					{
-						return Channels.newOutputStream(channel.position(position));
-					}
-					catch (IOException e)
-					{
-						throw new SQLException(e);
-					}
-				}
-	
-				public void truncate(long length) throws java.sql.SQLException
-				{
-					try
-					{
-						channel.truncate(length);
-					}
-					catch (IOException e)
-					{
-						throw new SQLException(e);
-					}
-				}
-				
-				@Override
-				protected void finalize() throws IOException
-				{
-					channel.close();
-				}
-			};
-		}
-		catch (IOException e)
-		{
-			throw new SQLException(e);
-		}
-	}
-
-	/**
-	 * @see net.sf.hajdbc.sql.FileSupport#getClob(java.io.File)
-	 */
-	public Clob getClob(File file) throws java.sql.SQLException
-	{
-		try
-		{
-			FileInputStream inputStream = new FileInputStream(file);
-			final Charset charset = Charset.forName(new InputStreamReader(inputStream).getEncoding());
-			final FileChannel channel = inputStream.getChannel();
-			
-			// Calculate the number of bytes in a single character
-			final int charBytes = "a".getBytes(charset.name()).length;
-			
-			return new Clob()
-			{
-				public long length() throws java.sql.SQLException
-				{
-					try
-					{
-						return this.charLength(channel.size());
-					}
-					catch (IOException e)
-					{
-						throw new SQLException(e);
-					}
-				}
-
-				public String getSubString(long position, int length) throws java.sql.SQLException
-				{
-					ByteBuffer buffer = ByteBuffer.allocate(this.byteLength(length));
-					
-					try
-					{
-						channel.read(buffer, byteLength(position));
-					}
-					catch (IOException e)
-					{
-						throw new SQLException(e);
-					}
-					
-					buffer.compact();
-					
-					return String.valueOf(charset.decode(buffer).array());
-				}
-
-				public Reader getCharacterStream()
-				{
-					return Channels.newReader(channel, charset.newDecoder(), -1);
-				}
-
-				public InputStream getAsciiStream()
-				{
-					return Channels.newInputStream(channel);
-				}
-
-				public long position(String pattern, long position)
-				{
-					throw new UnsupportedOperationException();
-				}
-
-				public long position(Clob pattern, long position)
-				{
-					throw new UnsupportedOperationException();
-				}
-
-				public int setString(long position, String value) throws java.sql.SQLException
-				{
-					try
-					{
-						return this.writeBuffer(position, ByteBuffer.wrap(value.getBytes(charset.name())));
-					}
-					catch (IOException e)
-					{
-						throw new SQLException(e);
-					}
-				}
-
-				public int setString(long position, String value, int offset, int length) throws java.sql.SQLException
-				{
-					try
-					{
-						return this.writeBuffer(position, ByteBuffer.wrap(value.getBytes(charset.name()), this.byteLength(offset), this.byteLength(length)));
-					}
-					catch (IOException e)
-					{
-						throw new SQLException(e);
-					}
-				}
-
-				private int writeBuffer(long position, ByteBuffer buffer) throws java.sql.SQLException
-				{
-					try
-					{
-						return this.charLength(channel.write(buffer, this.byteLength(position)));
-					}
-					catch (IOException e)
-					{
-						throw new SQLException(e);
-					}
-				}
-
-				public OutputStream setAsciiStream(long position) throws java.sql.SQLException
-				{
-					try
-					{
-						return Channels.newOutputStream(channel.position(this.byteLength(position)));
-					}
-					catch (IOException e)
-					{
-						throw new SQLException(e);
-					}
-				}
-
-				public Writer setCharacterStream(long position) throws java.sql.SQLException
-				{
-					try
-					{
-						return Channels.newWriter(channel.position(this.byteLength(position)), charset.newEncoder(), -1);
-					}
-					catch (IOException e)
-					{
-						throw new SQLException(e);
-					}
-				}
-
-				public void truncate(long length) throws java.sql.SQLException
-				{
-					try
-					{
-						channel.truncate(this.byteLength(length));
-					}
-					catch (IOException e)
-					{
-						throw new SQLException(e);
-					}
-				}
-				
-				@Override
-				protected void finalize() throws IOException
-				{
-					channel.close();
-				}
-				
-				private int byteLength(int charLength)
-				{
-					return charLength * charBytes;
-				}
-				
-				private long byteLength(long charLength)
-				{
-					return charLength * charBytes;
-				}
-				
-				private int charLength(int byteLength)
-				{
-					return byteLength / charBytes;
-				}
-				
-				private long charLength(long byteLength)
-				{
-					return byteLength / charBytes;
-				}
-			};
-		}
-		catch (IOException e)
-		{
-			throw new SQLException(e);
-		}
 	}
 }

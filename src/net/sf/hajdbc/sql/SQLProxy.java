@@ -20,40 +20,31 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.sql.Driver;
+import java.sql.SQLException;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
 
-import javax.management.DynamicMBean;
-import javax.management.NotCompliantMBeanException;
-import javax.management.StandardMBean;
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseCluster;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class DriverDatabaseCluster extends AbstractDatabaseCluster<Driver> implements DriverDatabaseClusterMBean
+public interface SQLProxy<D, E>
 {
-	/**
-	 * @see net.sf.hajdbc.sql.AbstractDatabaseCluster#createMBean()
-	 */
-	@Override
-	protected DynamicMBean createMBean() throws NotCompliantMBeanException
-	{
-		return new StandardMBean(this, DriverDatabaseClusterMBean.class);
-	}
-
-	/**
-	 * @see net.sf.hajdbc.sql.DriverDatabaseClusterMBean#add(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	public void add(String databaseId, String driver, String url)
-	{
-		DriverDatabase database = new DriverDatabase();
-		
-		database.setId(databaseId);
-		database.setDriver(driver);
-		database.setUrl(url);
-		
-		this.register(database, database.getInactiveMBean());
-		
-		this.add(database);
-	}
+	public DatabaseCluster<D> getDatabaseCluster();
+	
+	public Map.Entry<Database<D>, E> entry();
+	
+	public Set<Map.Entry<Database<D>, E>> entries();
+	
+	public E getObject(Database<D> database);
+	
+	public void retain(Set<Database<D>> databaseSet);
+	
+	public void record(Invoker<D, E, ?> invoker);
+	
+	public void handleFailures(SortedMap<Database<D>, SQLException> exceptionMap) throws SQLException;
 }

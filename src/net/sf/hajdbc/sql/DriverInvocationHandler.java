@@ -22,38 +22,19 @@ package net.sf.hajdbc.sql;
 
 import java.sql.Driver;
 
-import javax.management.DynamicMBean;
-import javax.management.NotCompliantMBeanException;
-import javax.management.StandardMBean;
+import net.sf.hajdbc.DatabaseCluster;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class DriverDatabaseCluster extends AbstractDatabaseCluster<Driver> implements DriverDatabaseClusterMBean
+public class DriverInvocationHandler extends AbstractInvocationHandler<Driver, Void, Driver>
 {
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractDatabaseCluster#createMBean()
+	 * @param databaseCluster
 	 */
-	@Override
-	protected DynamicMBean createMBean() throws NotCompliantMBeanException
+	public DriverInvocationHandler(DatabaseCluster<Driver> databaseCluster)
 	{
-		return new StandardMBean(this, DriverDatabaseClusterMBean.class);
-	}
-
-	/**
-	 * @see net.sf.hajdbc.sql.DriverDatabaseClusterMBean#add(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	public void add(String databaseId, String driver, String url)
-	{
-		DriverDatabase database = new DriverDatabase();
-		
-		database.setId(databaseId);
-		database.setDriver(driver);
-		database.setUrl(url);
-		
-		this.register(database, database.getInactiveMBean());
-		
-		this.add(database);
+		super(databaseCluster, databaseCluster.getConnectionFactoryMap());
 	}
 }

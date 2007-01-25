@@ -18,25 +18,37 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.sql;
+package net.sf.hajdbc.util;
 
-import java.sql.SQLException;
-
-import net.sf.hajdbc.Operation;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class Statement<D> extends AbstractStatement<D, java.sql.Statement>
+public class SimpleInvocationHandler implements InvocationHandler
 {
-	/**
-	 * @param connection
-	 * @param operation
-	 * @throws SQLException
-	 */
-	public Statement(Connection<D> connection, Operation<D, java.sql.Connection, java.sql.Statement> operation) throws SQLException
+	private Object object;
+	
+	public SimpleInvocationHandler(Object object)
 	{
-		super(connection, operation);
+		this.object = object;
+	}
+	
+	/**
+	 * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 */
+	public Object invoke(Object proxy, Method method, Object[] parameters) throws Throwable
+	{
+		try
+		{
+			return method.invoke(this.object, parameters);
+		}
+		catch (InvocationTargetException e)
+		{
+			throw e.getTargetException();
+		}
 	}
 }

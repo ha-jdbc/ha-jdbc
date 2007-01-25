@@ -22,10 +22,10 @@ package net.sf.hajdbc.sql;
 
 import java.sql.Connection;
 import java.sql.Statement;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,29 +35,30 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
+import javax.management.DynamicMBean;
 import javax.management.JMException;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
-import javax.management.StandardMBean;
 
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.DatabaseClusterMBean;
-import net.sf.hajdbc.StateManager;
 import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.LockManager;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.StateManager;
 import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.SynchronizationStrategyBuilder;
 import net.sf.hajdbc.Transaction;
-import net.sf.hajdbc.local.LocalStateManager;
 import net.sf.hajdbc.local.LocalLockManager;
+import net.sf.hajdbc.local.LocalStateManager;
 import net.sf.hajdbc.sync.SynchronizationContextImpl;
 import net.sf.hajdbc.util.concurrent.CronThreadPoolExecutor;
 import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
@@ -101,18 +102,18 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	 */
 	public static ObjectName getObjectName(String databaseClusterId, String databaseId) throws MalformedObjectNameException
 	{
-		Properties properties = createProperties(databaseClusterId);
+		Hashtable<String, String> properties = createProperties(databaseClusterId);
 		
-		properties.put(MBEAN_DATABASE_KEY, ObjectName.quote(databaseId));
+		properties.put(MBEAN_DATABASE_KEY, databaseId);
 		
 		return ObjectName.getInstance(MBEAN_DOMAIN, properties);
 	}
 	
-	private static Properties createProperties(String databaseClusterId)
+	private static Hashtable<String, String> createProperties(String databaseClusterId)
 	{
-		Properties properties = new Properties();
+		Hashtable<String, String> properties = new Hashtable<String, String>();
 		
-		properties.put(MBEAN_CLUSTER_KEY, ObjectName.quote(databaseClusterId));
+		properties.put(MBEAN_CLUSTER_KEY, databaseClusterId);
 		
 		return properties;
 	}
@@ -173,6 +174,8 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		{
 			connection = database.connect(this.connectionFactoryMap.get(database));
 			
+			// In Java 1.6...
+			// return connection.isValid(0);
 			Statement statement = connection.createStatement();
 			
 			statement.execute(this.dialect.getSimpleSQL());
@@ -210,7 +213,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	{
 		this.unregister(database);
 		// Reregister database mbean using "inactive" interface
-		this.register(database, database.getInactiveMBeanClass());
+		this.register(database, database.getInactiveMBean());
 		
 		boolean removed = this.balancer.remove(database);
 		
@@ -237,7 +240,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	{
 		this.unregister(database);
 		// Reregister database mbean using "active" interface
-		this.register(database, database.getActiveMBeanClass());
+		this.register(database, database.getActiveMBean());
 		
 		if (database.isDirty())
 		{
@@ -435,13 +438,13 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		}
 	}
 	
-	protected void register(Database<D> database, Class mbeanClass)
+	protected void register(Database<D> database, DynamicMBean mbean)
 	{
 		try
 		{
 			ObjectName name = getObjectName(this.id, database.getId());
 			
-			this.server.registerMBean(new StandardMBean(database, mbeanClass), name);
+			this.server.registerMBean(mbean, name);
 		}
 		catch (JMException e)
 		{
@@ -495,11 +498,11 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	 */
 	public void start() throws Exception
 	{
-		this.server.registerMBean(new StandardMBean(this, this.getMBeanClass()), getObjectName(this.id));
+		this.server.registerMBean(this.createMBean(), getObjectName(this.id));
 		
 		for (Database<D> database: this.databaseMap.values())
 		{
-			this.register(database, database.getInactiveMBeanClass());
+			this.register(database, database.getInactiveMBean());
 		}
 		
 		this.lockManager.start();
@@ -549,7 +552,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		}
 	}
 	
-	protected abstract Class<? extends DatabaseClusterMBean> getMBeanClass();
+	protected abstract DynamicMBean createMBean() throws NotCompliantMBeanException;
 
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#stop()

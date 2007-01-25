@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
@@ -31,7 +32,7 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.Messages;
-import net.sf.hajdbc.Operation;
+import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,27 +66,40 @@ public final class Driver implements java.sql.Driver
 	{
 		return (this.parse(url) != null);
 	}
-	
+
 	/**
 	 * @see java.sql.Driver#connect(java.lang.String, java.util.Properties)
 	 */
-	public java.sql.Connection connect(String url, final Properties properties) throws SQLException
+	public Connection connect(String url, final Properties properties) throws SQLException
 	{
 		String id = this.parse(url);
 		
 		if (id == null) return null;
 		
-		DriverOperation<java.sql.Connection> operation = new DriverOperation<java.sql.Connection>()
+		DatabaseCluster<java.sql.Driver> cluster = this.getDatabaseCluster(id);
+		
+		DriverInvocationHandler handler = new DriverInvocationHandler(cluster);
+		
+		Driver driver = ProxyFactory.createProxy(Driver.class, handler);
+		
+		Invoker<java.sql.Driver, java.sql.Driver, Connection> invoker = new Invoker<java.sql.Driver, java.sql.Driver, Connection>()
 		{
-			public java.sql.Connection execute(Database<java.sql.Driver> database, java.sql.Driver driver) throws SQLException
+			public Connection invoke(Database<java.sql.Driver> database, java.sql.Driver driver) throws SQLException
 			{
 				return driver.connect(DriverDatabase.class.cast(database).getUrl(), properties);
-			}	
+			}
 		};
 		
-		return new Connection<java.sql.Driver>(this.getConnectionFactory(this.getDatabaseCluster(id)), operation, new FileSupportImpl());
+		try
+		{
+			return new ConnectionInvocationStrategy<java.sql.Driver>(driver).invoke(handler, invoker);
+		}
+		catch (Exception e)
+		{
+			throw new SQLException(e);
+		}
 	}
-	
+
 	/**
 	 * @see java.sql.Driver#getMajorVersion()
 	 */
@@ -101,7 +115,7 @@ public final class Driver implements java.sql.Driver
 	{
 		return Integer.parseInt(DatabaseClusterFactory.getVersion().split(Pattern.quote("."))[1].split("-")[0]);
 	}
-	
+
 	/**
 	 * @see java.sql.Driver#getPropertyInfo(java.lang.String, java.util.Properties)
 	 */
@@ -111,17 +125,28 @@ public final class Driver implements java.sql.Driver
 		
 		if (id == null) return null;
 		
-		DriverOperation<DriverPropertyInfo[]> operation = new DriverOperation<DriverPropertyInfo[]>()
+		DatabaseCluster<java.sql.Driver> cluster = this.getDatabaseCluster(id);
+		
+		DriverInvocationHandler handler = new DriverInvocationHandler(cluster);
+		
+		Invoker<java.sql.Driver, java.sql.Driver, DriverPropertyInfo[]> invoker = new Invoker<java.sql.Driver, java.sql.Driver, DriverPropertyInfo[]>()
 		{
-			public DriverPropertyInfo[] execute(Database<java.sql.Driver> database, java.sql.Driver driver) throws SQLException
+			public DriverPropertyInfo[] invoke(Database<java.sql.Driver> database, java.sql.Driver driver) throws SQLException
 			{
 				return driver.getPropertyInfo(DriverDatabase.class.cast(database).getUrl(), properties);
-			}	
+			}			
 		};
 		
-		return this.getConnectionFactory(this.getDatabaseCluster(url)).executeReadFromDriver(operation);
+		try
+		{
+			return new DriverReadInvocationStrategy<java.sql.Driver, java.sql.Driver, DriverPropertyInfo[]>().invoke(handler, invoker);
+		}
+		catch (Exception e)
+		{
+			throw new SQLException(e);
+		}
 	}
-	
+
 	/**
 	 * @see java.sql.Driver#jdbcCompliant()
 	 */
@@ -152,15 +177,5 @@ public final class Driver implements java.sql.Driver
 		}
 		
 		return matcher.group(1);
-	}
-	
-	private ConnectionFactory<java.sql.Driver> getConnectionFactory(DatabaseCluster<java.sql.Driver> databaseCluster)
-	{
-		return new ConnectionFactory<java.sql.Driver>(databaseCluster);
-	}
-	
-	private static interface DriverOperation<R> extends Operation<java.sql.Driver, java.sql.Driver, R>
-	{
-		// No additional methods, just simplify the type parameters
 	}
 }

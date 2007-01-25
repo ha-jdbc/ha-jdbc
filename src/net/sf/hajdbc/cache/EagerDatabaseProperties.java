@@ -41,6 +41,7 @@ public class EagerDatabaseProperties implements DatabaseProperties
 	private DatabaseMetaDataSupport support;
 	private Map<String, TableProperties> tableMap = new HashMap<String, TableProperties>();
 	private boolean supportsSelectForUpdate;
+	private boolean locatorsUpdateCopy;
 	private List<String> defaultSchemaList;
 	private Class<? extends Dialect> dialectClass;
 	
@@ -50,6 +51,7 @@ public class EagerDatabaseProperties implements DatabaseProperties
 		this.support = new DatabaseMetaDataSupport(metaData);
 		
 		this.supportsSelectForUpdate = metaData.supportsSelectForUpdate();
+		this.locatorsUpdateCopy = metaData.locatorsUpdateCopy();
 		
 		Map<String, Collection<String>> tablesMap = this.support.getTables(metaData);
 		
@@ -87,10 +89,18 @@ public class EagerDatabaseProperties implements DatabaseProperties
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseProperties#isSelectForUpdateSupported()
+	 * @see net.sf.hajdbc.DatabaseProperties#supportsSelectForUpdate()
 	 */
-	public boolean isSelectForUpdateSupported()
+	public boolean supportsSelectForUpdate()
 	{
 		return this.supportsSelectForUpdate;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseProperties#locatorsUpdateCopy()
+	 */
+	public boolean locatorsUpdateCopy()
+	{
+		return this.locatorsUpdateCopy;
 	}	
 }

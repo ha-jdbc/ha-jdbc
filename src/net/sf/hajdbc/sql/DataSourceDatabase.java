@@ -22,13 +22,14 @@ package net.sf.hajdbc.sql;
 
 import java.sql.Connection;
 
+import javax.management.DynamicMBean;
+import javax.management.NotCompliantMBeanException;
+import javax.management.StandardMBean;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import net.sf.hajdbc.ActiveDatabaseMBean;
-import net.sf.hajdbc.InactiveDatabaseMBean;
 import net.sf.hajdbc.Messages;
 
 /**
@@ -93,18 +94,34 @@ public class DataSourceDatabase extends AbstractDatabase<DataSource> implements 
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Database#getActiveMBeanClass()
+	 * @throws NotCompliantMBeanException 
+	 * @see net.sf.hajdbc.Database#getActiveMBean()
 	 */
-	public Class<? extends ActiveDatabaseMBean> getActiveMBeanClass()
+	public DynamicMBean getActiveMBean()
 	{
-		return ActiveDataSourceDatabaseMBean.class;
+		try
+		{
+			return new StandardMBean(this, ActiveDataSourceDatabaseMBean.class);
+		}
+		catch (NotCompliantMBeanException e)
+		{
+			throw new IllegalStateException(e);
+		}
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Database#getInactiveMBeanClass()
+	 * @throws NotCompliantMBeanException 
+	 * @see net.sf.hajdbc.Database#getInactiveMBean()
 	 */
-	public Class<? extends InactiveDatabaseMBean> getInactiveMBeanClass()
+	public DynamicMBean getInactiveMBean()
 	{
-		return InactiveDataSourceDatabaseMBean.class;
+		try
+		{
+			return new StandardMBean(this, InactiveDataSourceDatabaseMBean.class);
+		}
+		catch (NotCompliantMBeanException e)
+		{
+			throw new IllegalStateException(e);
+		}
 	}
 }

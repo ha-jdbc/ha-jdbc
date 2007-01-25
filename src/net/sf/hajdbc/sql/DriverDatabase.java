@@ -25,8 +25,10 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.util.Properties;
 
-import net.sf.hajdbc.ActiveDatabaseMBean;
-import net.sf.hajdbc.InactiveDatabaseMBean;
+import javax.management.DynamicMBean;
+import javax.management.NotCompliantMBeanException;
+import javax.management.StandardMBean;
+
 import net.sf.hajdbc.Messages;
 
 /**
@@ -143,16 +145,30 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	/**
 	 * @see net.sf.hajdbc.Database#getActiveMBeanClass()
 	 */
-	public Class<? extends ActiveDatabaseMBean> getActiveMBeanClass()
+	public DynamicMBean getActiveMBean()
 	{
-		return ActiveDriverDatabaseMBean.class;
+		try
+		{
+			return new StandardMBean(this, ActiveDriverDatabaseMBean.class);
+		}
+		catch (NotCompliantMBeanException e)
+		{
+			throw new IllegalStateException(e);
+		}
 	}
 
 	/**
 	 * @see net.sf.hajdbc.Database#getInactiveMBeanClass()
 	 */
-	public Class<? extends InactiveDatabaseMBean> getInactiveMBeanClass()
+	public DynamicMBean getInactiveMBean()
 	{
-		return InactiveDriverDatabaseMBean.class;
+		try
+		{
+			return new StandardMBean(this, InactiveDriverDatabaseMBean.class);
+		}
+		catch (NotCompliantMBeanException e)
+		{
+			throw new IllegalStateException(e);
+		}
 	}
 }

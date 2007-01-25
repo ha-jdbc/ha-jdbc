@@ -20,9 +20,10 @@
  */
 package net.sf.hajdbc.sql;
 
+import javax.management.DynamicMBean;
+import javax.management.NotCompliantMBeanException;
+import javax.management.StandardMBean;
 import javax.sql.DataSource;
-
-import net.sf.hajdbc.DatabaseClusterMBean;
 
 /**
  * @author Paul Ferraro
@@ -31,12 +32,13 @@ import net.sf.hajdbc.DatabaseClusterMBean;
 public class DataSourceDatabaseCluster extends AbstractDatabaseCluster<DataSource> implements DataSourceDatabaseClusterMBean
 {
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractDatabaseCluster#getMBeanClass()
+	 * @throws NotCompliantMBeanException 
+	 * @see net.sf.hajdbc.sql.AbstractDatabaseCluster#createMBean()
 	 */
 	@Override
-	protected Class<? extends DatabaseClusterMBean> getMBeanClass()
+	protected DynamicMBean createMBean() throws NotCompliantMBeanException
 	{
-		return null;
+		return new StandardMBean(this, DataSourceDatabaseClusterMBean.class);
 	}
 
 	/**
@@ -49,7 +51,7 @@ public class DataSourceDatabaseCluster extends AbstractDatabaseCluster<DataSourc
 		database.setId(databaseId);
 		database.setName(name);
 		
-		this.register(database, database.getInactiveMBeanClass());
+		this.register(database, database.getInactiveMBean());
 		
 		this.add(database);
 	}

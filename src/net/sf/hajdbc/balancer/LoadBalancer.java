@@ -24,9 +24,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import net.sf.hajdbc.Database;
 
@@ -36,7 +37,7 @@ import net.sf.hajdbc.Database;
  */
 public class LoadBalancer<D> extends AbstractBalancer<D>
 {
-	private Map<Database<D>, Integer> databaseMap = new HashMap<Database<D>, Integer>();
+	private SortedMap<Database<D>, Integer> databaseMap = new TreeMap<Database<D>, Integer>();
 	
 	/**
 	 * @see net.sf.hajdbc.balancer.AbstractBalancer#collect()
@@ -70,7 +71,7 @@ public class LoadBalancer<D> extends AbstractBalancer<D>
 	{
 		if (this.databaseMap.size() <= 1)
 		{
-			return this.first();
+			return this.databaseMap.firstKey();
 		}
 		
 		List<Map.Entry<Database<D>, Integer>> databaseMapEntryList = new ArrayList<Map.Entry<Database<D>, Integer>>(this.databaseMap.entrySet());
@@ -83,19 +84,19 @@ public class LoadBalancer<D> extends AbstractBalancer<D>
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Balancer#beforeOperation(net.sf.hajdbc.Database)
+	 * @see net.sf.hajdbc.Balancer#beforeInvocation(net.sf.hajdbc.Database)
 	 */
 	@Override
-	public void beforeOperation(Database<D> database)
+	public void beforeInvocation(Database<D> database)
 	{
 		this.incrementLoad(database, 1);
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Balancer#afterOperation(net.sf.hajdbc.Database)
+	 * @see net.sf.hajdbc.Balancer#afterInvocation(net.sf.hajdbc.Database)
 	 */
 	@Override
-	public void afterOperation(Database<D> database)
+	public void afterInvocation(Database<D> database)
 	{
 		this.incrementLoad(database, -1);
 	}

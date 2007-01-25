@@ -37,6 +37,7 @@ import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.TableProperties;
+import net.sf.hajdbc.util.SQLExceptionFactory;
 import net.sf.hajdbc.util.Strings;
 
 import org.slf4j.Logger;
@@ -189,13 +190,13 @@ public class FullSynchronizationStrategy extends LockingSynchronizationStrategy 
 		{
 			SynchronizationSupport.rollback(targetConnection);
 
-			throw new net.sf.hajdbc.SQLException(e);
+			SQLExceptionFactory.createSQLException(e);
 		}
 		catch (ExecutionException e)
 		{
 			SynchronizationSupport.rollback(targetConnection);
 
-			throw new net.sf.hajdbc.SQLException(e.getCause());
+			SQLExceptionFactory.createSQLException(e.getCause());
 		}
 		catch (SQLException e)
 		{

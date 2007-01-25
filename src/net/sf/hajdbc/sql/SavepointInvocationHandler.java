@@ -20,24 +20,37 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.sql.SQLException;
+import java.lang.reflect.Method;
+import java.sql.Connection;
+import java.sql.Savepoint;
+import java.util.Map;
 
-import net.sf.hajdbc.Operation;
+import net.sf.hajdbc.Database;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class PreparedStatement<D> extends AbstractPreparedStatement<D, java.sql.PreparedStatement>
+public class SavepointInvocationHandler<D> extends AbstractInvocationHandler<D, Connection, Savepoint>
 {
 	/**
-	 * @param connection
-	 * @param operation
-	 * @param sql
-	 * @throws SQLException
+	 * @param object
+	 * @param proxy
+	 * @param invoker
+	 * @param objectMap
+	 * @throws Exception
 	 */
-	public PreparedStatement(Connection<D> connection, Operation<D, java.sql.Connection, java.sql.PreparedStatement> operation, String sql) throws SQLException
+	protected SavepointInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, Savepoint> invoker, Map<Database<D>, Savepoint> savepointMap) throws Exception
 	{
-		super(connection, operation, sql);
+		super(connection, proxy, invoker, savepointMap);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 */
+	@Override
+	protected InvocationStrategy<D, Savepoint, ?> getInvocationStrategy(Savepoint object, Method method, Object[] parameters)
+	{
+		return new DriverReadInvocationStrategy<D, Savepoint, Object>();
 	}
 }

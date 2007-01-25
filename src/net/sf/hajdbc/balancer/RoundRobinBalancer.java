@@ -89,22 +89,13 @@ public class RoundRobinBalancer<D> extends AbstractBalancer<D>
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Balancer#first()
-	 */
-	@Override
-	public synchronized Database<D> first()
-	{
-		return (this.databaseQueue.isEmpty()) ? super.first() : this.databaseQueue.element();
-	}
-	
-	/**
 	 * @see net.sf.hajdbc.Balancer#next()
 	 */
 	public synchronized Database<D> next()
 	{
-		if (this.databaseQueue.isEmpty())
+		if (this.databaseQueue.size() <= 1)
 		{
-			return super.first();
+			return this.databaseQueue.element();
 		}
 		
 		Database<D> database = this.databaseQueue.remove();

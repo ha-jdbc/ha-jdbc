@@ -22,10 +22,10 @@ package net.sf.hajdbc.balancer;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import net.sf.hajdbc.Database;
 
@@ -36,7 +36,7 @@ import net.sf.hajdbc.Database;
 public class RandomBalancer<D> extends AbstractBalancer<D>
 {
 	private Random random = new Random();
-	private Set<Database<D>> databaseSet = new HashSet<Database<D>>();
+	private SortedSet<Database<D>> databaseSet = new TreeSet<Database<D>>();
 	private List<Database<D>> databaseList = new ArrayList<Database<D>>();
 	
 	/**
@@ -96,7 +96,7 @@ public class RandomBalancer<D> extends AbstractBalancer<D>
 	{
 		if (this.databaseList.isEmpty())
 		{
-			return this.first();
+			return this.databaseSet.first();
 		}
 		
 		int index = this.random.nextInt(this.databaseList.size());

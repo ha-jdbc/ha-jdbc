@@ -96,7 +96,8 @@ public interface Dialect
 	public boolean isSelectForUpdate(String sql) throws SQLException;
 	
 	/**
-	 * Returns the data type of the specified column of the specified schema and table
+	 * Returns the data type of the specified column of the specified schema and table.
+	 * This method is intended to correct JDBC driver type mapping flaws.
 	 * @param properties table column meta data
 	 * @return the JDBC data type of this column
 	 */

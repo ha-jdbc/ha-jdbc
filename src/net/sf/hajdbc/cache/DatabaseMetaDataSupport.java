@@ -161,8 +161,27 @@ public class DatabaseMetaDataSupport
 			int type = resultSet.getInt("DATA_TYPE");
 			String nativeType = resultSet.getString("TYPE_NAME");
 			String remarks = resultSet.getString("REMARKS");
+			Boolean autoIncrement = null;
 			
-			columnMap.put(column, new ColumnPropertiesImpl(column, type, nativeType, remarks));
+			try
+			{
+				String value = resultSet.getString("IS_AUTOINCREMENT");
+				
+				if (value.equals("YES"))
+				{
+					autoIncrement = true;
+				}
+				else if (value.equals("NO"))
+				{
+					autoIncrement = false;
+				}
+			}
+			catch (SQLException e)
+			{
+				// Ignore - this column is new to Java 1.6
+			}
+			
+			columnMap.put(column, new ColumnPropertiesImpl(column, type, nativeType, remarks, autoIncrement));
 		}
 		
 		resultSet.close();

@@ -42,6 +42,7 @@ import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.UniqueConstraint;
+import net.sf.hajdbc.util.SQLExceptionFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -192,11 +193,11 @@ public final class SynchronizationSupport
 			}
 			catch (InterruptedException e)
 			{
-				throw new net.sf.hajdbc.SQLException(e);
+				throw SQLExceptionFactory.createSQLException(e);
 			}
 			catch (ExecutionException e)
 			{
-				throw new net.sf.hajdbc.SQLException(e);
+				throw SQLExceptionFactory.createSQLException(e.getCause());
 			}
 		}
 		
@@ -263,11 +264,11 @@ public final class SynchronizationSupport
 		}
 		catch (InterruptedException e)
 		{
-			throw new net.sf.hajdbc.SQLException(e);
+			throw SQLExceptionFactory.createSQLException(e);
 		}
 		catch (ExecutionException e)
 		{
-			throw new net.sf.hajdbc.SQLException(e);
+			throw SQLExceptionFactory.createSQLException(e.getCause());
 		}
 		
 		futures.clear();
@@ -309,11 +310,11 @@ public final class SynchronizationSupport
 			}
 			catch (InterruptedException e)
 			{
-				throw new net.sf.hajdbc.SQLException(e);
+				throw SQLExceptionFactory.createSQLException(e);
 			}
 			catch (ExecutionException e)
 			{
-				throw new net.sf.hajdbc.SQLException(e);
+				throw SQLExceptionFactory.createSQLException(e.getCause());
 			}
 		}
 	}

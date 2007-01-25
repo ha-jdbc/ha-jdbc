@@ -20,33 +20,11 @@
  */
 package net.sf.hajdbc.sql;
 
-import net.sf.hajdbc.DatabaseCluster;
+import java.sql.SQLException;
 
-/**
- * @author  Paul Ferraro
- * @version $Revision$
- * @param <E> 
- * @since   1.0
- */
-public class ConnectionFactory<D> extends SQLObject<D, D, Void>
+import net.sf.hajdbc.Database;
+
+public interface Invoker<D, T, R>
 {
-	/**
-	 * Constructs a new ConnectionFactory.
-	 * @param databaseCluster a database cluster
-	 * @param targetClass target class of 
-	 */
-	@SuppressWarnings("unchecked")
-	public ConnectionFactory(DatabaseCluster<D> databaseCluster)
-	{
-		super(databaseCluster, databaseCluster.getConnectionFactoryMap());
-	}
-
-	/**
-	 * @see net.sf.hajdbc.sql.SQLObject#close(java.lang.Object)
-	 */
-	@Override
-	protected void close(D object)
-	{
-		// Nothing to close
-	}
+	public R invoke(Database<D> database, T object) throws SQLException;
 }

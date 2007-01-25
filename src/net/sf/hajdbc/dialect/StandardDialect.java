@@ -340,12 +340,12 @@ public class StandardDialect implements Dialect
 
 	protected String insertIntoTablePattern()
 	{
-		return "INSERT\\s+(?:INTO\\s+)?(\\S+)";
+		return "INSERT\\s+(?:INTO\\s+)?\\W?(\\w+)\\W?";
 	}
 
 	protected String sequencePattern()
 	{
-		return "NEXT\\s+VALUE\\s+FOR\\s+(\\S+)";
+		return "NEXT\\s+VALUE\\s+FOR\\s+\\W?(\\w+)\\W?";
 	}
 	
 	protected String alterSequenceFormat()

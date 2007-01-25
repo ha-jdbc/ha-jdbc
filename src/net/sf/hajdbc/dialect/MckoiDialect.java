@@ -42,6 +42,6 @@ public class MckoiDialect extends StandardDialect
 	@Override
 	protected String sequencePattern()
 	{
-		return "(?:(?:CURR)|(?:NEXT))VAL\\s*\\(\\s*'(\\S+)'\\s*\\)";
+		return "(?:(?:CURR)|(?:NEXT))VAL\\s*\\(\\s*'(\\w+)'\\s*\\)";
 	}
 }

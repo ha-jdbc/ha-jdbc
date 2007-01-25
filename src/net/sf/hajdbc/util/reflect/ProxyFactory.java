@@ -18,22 +18,20 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc;
+package net.sf.hajdbc.util.reflect;
 
-import java.sql.SQLException;
-import java.util.Collection;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
 
 /**
  * @author Paul Ferraro
  *
  */
-public interface DatabaseProperties
+public class ProxyFactory
 {
-	public Collection<TableProperties> getTables() throws SQLException;
-
-	public boolean supportsSelectForUpdate() throws SQLException;
-	
-	public boolean locatorsUpdateCopy() throws SQLException;
-
-	public TableProperties findTable(String table) throws SQLException;
+	@SuppressWarnings("unchecked")
+	public static <T> T createProxy(Class<T> targetInterface, InvocationHandler handler)
+	{
+		return (T) Proxy.newProxyInstance(targetInterface.getClassLoader(), new Class<?>[] { targetInterface }, handler);
+	}
 }

@@ -18,27 +18,35 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc;
+package net.sf.hajdbc.sql;
 
-import java.sql.SQLException;
+import java.sql.Clob;
+
+import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 /**
- * General interface for defining operation on an SQL object.
- * 
- * @author  Paul Ferraro
- * @param <D> the database implementation class
- * @param <T> the class of the java.sql object
- * @param <R> the class of the return value of the operation
- * @since   1.0
+ * @author Paul Ferraro
+ *
  */
-public interface Operation<D, T, R>
+public class ClobInvocationStrategy<D, P> extends DatabaseWriteInvocationStrategy<D, P, Clob>
 {
+	private P parent;
+	private Class<? extends Clob> clobClass;
+	
+	public ClobInvocationStrategy(P parent, Class<? extends Clob> clobClass)
+	{
+		super(null);
+		
+		this.parent = parent;
+		this.clobClass = clobClass;
+	}
+
 	/**
-	 * Executes this operation of the specified SQL object for the specified database.
-	 * @param database a database descriptor
-	 * @param sqlObject a java.sql or javax.sql object.
-	 * @return the result of this operation
-	 * @throws SQLException if execution fails
+	 * @see net.sf.hajdbc.sql.DatabaseWriteInvocationStrategy#invoke(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker)
 	 */
-	public R execute(Database<D> database, T sqlObject) throws SQLException;
+	@Override
+	public Clob invoke(SQLProxy<D, P> proxy, Invoker<D, P, Clob> invoker) throws Exception
+	{
+		return ProxyFactory.createProxy(this.clobClass, new ClobInvocationHandler<D, P>(this.parent, proxy, invoker, this.invokeAll(proxy, invoker)));
+	}
 }

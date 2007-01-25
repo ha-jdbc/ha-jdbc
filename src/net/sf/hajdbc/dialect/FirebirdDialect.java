@@ -92,7 +92,7 @@ public class FirebirdDialect extends StandardDialect
 	@Override
 	protected String sequencePattern()
 	{
-		return "GEN_ID\\s*\\(\\s*(\\S+)\\s*,\\s*\\d+\\s*\\)";
+		return "GEN_ID\\s*\\(\\s*(\\w+)\\s*,\\s*\\d+\\s*\\)";
 	}
 
 	/**

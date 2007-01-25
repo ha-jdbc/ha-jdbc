@@ -87,6 +87,6 @@ public class IngresDialect extends StandardDialect
 	@Override
 	protected String sequencePattern()
 	{
-		return "(?:(?:NEXT)|(?:CURRENT))\\s+VALUE\\s+FOR\\s+(\\S+)";
+		return "(?:(?:NEXT)|(?:CURRENT))\\s+VALUE\\s+FOR\\s+\\W?(\\w+)\\W?";
 	}
 }

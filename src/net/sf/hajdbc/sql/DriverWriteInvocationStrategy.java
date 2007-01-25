@@ -20,40 +20,41 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.sql.Driver;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
-import javax.management.DynamicMBean;
-import javax.management.NotCompliantMBeanException;
-import javax.management.StandardMBean;
+import net.sf.hajdbc.Database;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class DriverDatabaseCluster extends AbstractDatabaseCluster<Driver> implements DriverDatabaseClusterMBean
+public class DriverWriteInvocationStrategy<D, T, R> implements InvocationStrategy<D, T, R>
 {
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractDatabaseCluster#createMBean()
+	 * @see net.sf.hajdbc.sql.InvocationStrategy#invoke(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker)
 	 */
-	@Override
-	protected DynamicMBean createMBean() throws NotCompliantMBeanException
+	public R invoke(SQLProxy<D, T> proxy, Invoker<D, T, R> invoker) throws Exception
 	{
-		return new StandardMBean(this, DriverDatabaseClusterMBean.class);
+		SortedMap<Database<D>, R> map = this.invokeAll(proxy, invoker);
+		
+		proxy.record(invoker);
+		
+		return map.get(map.firstKey());
 	}
 
-	/**
-	 * @see net.sf.hajdbc.sql.DriverDatabaseClusterMBean#add(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	public void add(String databaseId, String driver, String url)
+	protected SortedMap<Database<D>, R> invokeAll(SQLProxy<D, T> proxy, Invoker<D, T, R> invoker) throws Exception
 	{
-		DriverDatabase database = new DriverDatabase();
+		SortedMap<Database<D>, R> resultMap = new TreeMap<Database<D>, R>();
+
+		for (Map.Entry<Database<D>, T> entry: proxy.entries())
+		{
+			Database<D> database = entry.getKey();
+			
+			resultMap.put(database, invoker.invoke(database, entry.getValue()));
+		}
 		
-		database.setId(databaseId);
-		database.setDriver(driver);
-		database.setUrl(url);
-		
-		this.register(database, database.getInactiveMBean());
-		
-		this.add(database);
+		return resultMap;
 	}
 }

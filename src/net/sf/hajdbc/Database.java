@@ -23,6 +23,8 @@ package net.sf.hajdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import javax.management.DynamicMBean;
+
 /**
  * @author  Paul Ferraro
  * @version $Revision$
@@ -46,9 +48,9 @@ public interface Database<D> extends InactiveDatabaseMBean, Comparable<Database<
 	 */
 	public D createConnectionFactory();
 	
-	public Class<? extends ActiveDatabaseMBean> getActiveMBeanClass();
+	public DynamicMBean getActiveMBean();
 	
-	public Class<? extends InactiveDatabaseMBean> getInactiveMBeanClass();
+	public DynamicMBean getInactiveMBean();
 	
 	public boolean isDirty();
 	

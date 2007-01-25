@@ -45,20 +45,11 @@ public class SimpleBalancer<D> extends AbstractBalancer<D>
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Balancer#first()
-	 */
-	@Override
-	public synchronized Database<D> first()
-	{
-		return this.databaseQueue.element();
-	}
-	
-	/**
 	 * @see net.sf.hajdbc.Balancer#next()
 	 */
 	public synchronized Database<D> next()
 	{
-		return this.first();
+		return this.databaseQueue.element();
 	}
 	
 	/**

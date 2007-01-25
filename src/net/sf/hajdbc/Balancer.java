@@ -44,12 +44,6 @@ public interface Balancer<D>
 	public boolean add(Database<D> database);
 
 	/**
-	 * Returns the first database from this balancer
-	 * @return the first database from this balancer
-	 */
-	public Database<D> first();
-
-	/**
 	 * Returns the next database from this balancer
 	 * @return the next database from this balancer
 	 */
@@ -72,11 +66,11 @@ public interface Balancer<D>
 	 * Called before an operation is performed on the specified database retrieved via {@link #next()}.
 	 * @param database a database descriptor
 	 */
-	public void beforeOperation(Database<D> database);
+	public void beforeInvocation(Database<D> database);
 	
 	/**
 	 * Called after an operation is performed on the specified database retrieved via {@link #next()}.
 	 * @param database a database descriptor
 	 */
-	public void afterOperation(Database<D> database);
+	public void afterInvocation(Database<D> database);
 }

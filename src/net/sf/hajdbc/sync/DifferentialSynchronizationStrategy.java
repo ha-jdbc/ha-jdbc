@@ -43,6 +43,7 @@ import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.UniqueConstraint;
+import net.sf.hajdbc.util.SQLExceptionFactory;
 import net.sf.hajdbc.util.Strings;
 
 import org.slf4j.Logger;
@@ -364,13 +365,13 @@ public class DifferentialSynchronizationStrategy extends LockingSynchronizationS
 		{
 			SynchronizationSupport.rollback(targetConnection);
 			
-			throw new net.sf.hajdbc.SQLException(e.getCause());
+			throw SQLExceptionFactory.createSQLException(e.getCause());
 		}
 		catch (InterruptedException e)
 		{
 			SynchronizationSupport.rollback(targetConnection);
 			
-			throw new net.sf.hajdbc.SQLException(e);
+			throw SQLExceptionFactory.createSQLException(e.getCause());
 		}
 		catch (SQLException e)
 		{
