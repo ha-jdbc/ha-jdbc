@@ -206,7 +206,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 		
 		for (String sql: sqlList)
 		{
-			if (databaseCluster.isSequenceDetectionEnabled() && dialect.supportsSequences())
+			if (dialect.supportsSequences() && databaseCluster.isSequenceDetectionEnabled())
 			{
 				String sequence = dialect.parseSequence(sql);
 				
@@ -216,7 +216,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 				}
 			}
 			
-			if (databaseCluster.isIdentityColumnDetectionEnabled() && dialect.supportsIdentityColumns())
+			if (dialect.supportsIdentityColumns() && databaseCluster.isIdentityColumnDetectionEnabled())
 			{
 				String table = dialect.parseInsertTable(sql);
 				
