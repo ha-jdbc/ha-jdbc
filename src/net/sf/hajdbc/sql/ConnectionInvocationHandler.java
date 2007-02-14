@@ -22,7 +22,6 @@ package net.sf.hajdbc.sql;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
@@ -43,10 +42,10 @@ import net.sf.hajdbc.Database;
  */
 public class ConnectionInvocationHandler<D> extends AbstractInvocationHandler<D, D, Connection>
 {
-	private static final Set<String> DRIVER_READ_METHOD_SET = new HashSet<String>(Arrays.asList(new String[] { "createArray", "createSQLXML", "createStruct", "getAutoCommit", "getCatalog", "getHoldability", "getTypeMap", "getWarnings", "isClosed", "isReadOnly", "nativeSQL" }));
+	private static final Set<String> DRIVER_READ_METHOD_SET = new HashSet<String>(Arrays.asList(new String[] { "createArrayOf", "createBlob", "createClob", "createNClob", "createSQLXML", "createStruct", "getAutoCommit", "getCatalog", "getHoldability", "getTypeMap", "getWarnings", "isClosed", "isReadOnly", "nativeSQL" }));
 	private static final Set<String> DATABASE_READ_METHOD_SET = new HashSet<String>(Arrays.asList(new String[] { "getClientInfo", "getMetaData", "getTransactionIsolation", "isValid" }));
-	private static final Set<String> DRIVER_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList(new String[] { "clearWarnings", "setHoldability", "setReadOnly", "setTypeMap" }));
-	private static final Set<String> DATABASE_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList(new String[] { "commit", "rollback" }));
+	private static final Set<String> DRIVER_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList(new String[] { "clearWarnings", "setClientInfo", "setHoldability", "setReadOnly", "setTypeMap" }));
+	private static final Set<String> DATABASE_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList(new String[] { "commit", "releaseSavepoint", "rollback" }));
 	
 	private FileSupport fileSupport;
 	
@@ -89,15 +88,22 @@ public class ConnectionInvocationHandler<D> extends AbstractInvocationHandler<D,
 		
 		if (methodName.startsWith("prepare") || methodName.endsWith("Statement"))
 		{
-			if (connection.isReadOnly())
+			if (methodName.equals("createStatement"))
 			{
-				return new DriverReadInvocationStrategy<D, Connection, Object>();
-			}
-			else if (methodName.equals("createStatement"))
-			{
+				if (connection.isReadOnly())
+				{
+					return new DriverReadInvocationStrategy<D, Connection, Object>();
+				}
+
 				return new StatementInvocationStrategy<D>(connection, this.fileSupport);
 			}
-			else if (methodName.equals("prepareStatement"))
+
+			if (connection.isReadOnly())
+			{
+				return new DatabaseReadInvocationStrategy<D, Connection, Object>();
+			}
+			
+			if (methodName.equals("prepareStatement"))
 			{
 				return new PreparedStatementInvocationStrategy<D>(connection, this.fileSupport, String.class.cast(parameters[0]));
 			}
@@ -111,7 +117,7 @@ public class ConnectionInvocationHandler<D> extends AbstractInvocationHandler<D,
 		{
 			return new SavepointInvocationStrategy<D>(connection);
 		}
-		
+/*		
 		if (methodName.equals("createBlob"))
 		{
 			return new BlobInvocationStrategy<D, Connection>(connection);
@@ -121,7 +127,7 @@ public class ConnectionInvocationHandler<D> extends AbstractInvocationHandler<D,
 		{
 			return new ClobInvocationStrategy<D, Connection>(connection, method.getReturnType().asSubclass(Clob.class));
 		}
-		
+*/		
 		return super.getInvocationStrategy(connection, method, parameters);
 	}
 
