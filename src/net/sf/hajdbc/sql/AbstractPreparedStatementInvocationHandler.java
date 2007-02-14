@@ -104,7 +104,7 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 		
 		if (method.equals(PreparedStatement.class.getMethod("executeQuery")))
 		{
-			if ((this.lockList.isEmpty() && (statement.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.selectForUpdate))
+			if ((this.lockList.isEmpty() && !this.selectForUpdate && (statement.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY)))
 			{
 				return new DatabaseReadInvocationStrategy<D, S, Object>();
 			}
