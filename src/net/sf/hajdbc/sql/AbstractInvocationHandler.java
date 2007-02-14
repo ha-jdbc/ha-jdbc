@@ -86,7 +86,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 		return result;
 	}
 	
-	protected InvocationStrategy<D, E, ?> getInvocationStrategy(E object, Method method, Object[] parameters) throws Exception
+	protected InvocationStrategy<D, E, ?> getInvocationStrategy(final E object, Method method, final Object[] parameters) throws Exception
 	{
 		Class<?> objectClass = method.getDeclaringClass();
 		
@@ -101,6 +101,22 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 		catch (NoSuchMethodException e)
 		{
 			// Ignore
+		}
+		
+		if (method.equals(Object.class.getMethod("equals", Object.class)))
+		{
+			return new InvocationStrategy<D, E, Boolean>()
+			{
+				public Boolean invoke(SQLProxy<D, E> proxy, Invoker<D, E, Boolean> invoker) throws Exception
+				{
+					return object == parameters[0];
+				}				
+			};
+		}
+		
+		if (method.equals(Object.class.getMethod("hashCode")) || method.equals(Object.class.getMethod("toString")))
+		{
+			return new DriverReadInvocationStrategy<D, E, Object>();
 		}
 		
 		return new DatabaseWriteInvocationStrategy<D, E, Object>(null);
