@@ -475,7 +475,7 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 			}
 		};
 		
-		this.executeNonTransactionalWriteToDatabase(operation);
+		this.executeTransactionalWriteToDatabase(operation);
 	}
 
 	/**
@@ -511,7 +511,7 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 			}
 		};
 		
-		this.executeNonTransactionalWriteToDatabase(operation);
+		this.executeTransactionalWriteToDatabase(operation);
 	}
 
 	/**

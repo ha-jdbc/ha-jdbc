@@ -97,18 +97,12 @@ public class TestResultSet
 		EasyMock.expect(this.databaseCluster.getConnectionFactoryMap()).andReturn(map);
 		
 		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
-		this.lock.lock();
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
-		this.lock.unlock();
 
 		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
-		this.lock.lock();
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
-		this.lock.unlock();
 		
 		EasyMock.expect(this.databaseCluster.getTransactionalExecutor()).andReturn(this.executor);
 		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
@@ -401,9 +395,6 @@ public class TestResultSet
 	public void testClose()
 	{
 		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
-		
-		this.lock.lock();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
@@ -411,8 +402,6 @@ public class TestResultSet
 		try
 		{
 			this.sqlResultSet.close();
-			
-			this.lock.unlock();
 			
 			this.control.replay();
 			
@@ -2701,9 +2690,6 @@ public class TestResultSet
 	public void testRefreshRow()
 	{
 		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.readLock()).andReturn(this.lock);
-		
-		this.lock.lock();
 		
 		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
@@ -2711,8 +2697,6 @@ public class TestResultSet
 		try
 		{
 			this.sqlResultSet.refreshRow();
-			
-			this.lock.unlock();
 			
 			this.control.replay();
 			
