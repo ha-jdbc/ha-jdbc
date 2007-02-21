@@ -82,6 +82,7 @@ public class DifferentialSynchronizationStrategy extends LockingSynchronizationS
 	private static Logger logger = LoggerFactory.getLogger(DifferentialSynchronizationStrategy.class);
 
 	private int fetchSize = 0;
+	private int maxBatchSize = 100;
 	
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.SynchronizationContext)
@@ -245,6 +246,12 @@ public class DifferentialSynchronizationStrategy extends LockingSynchronizationS
 						deleteStatement.addBatch();
 						
 						deleteCount += 1;
+						
+						if ((deleteCount % this.maxBatchSize) == 0)
+						{
+							deleteStatement.executeBatch();
+							deleteStatement.clearBatch();
+						}
 					}
 					else if (compare < 0)
 					{
@@ -269,6 +276,12 @@ public class DifferentialSynchronizationStrategy extends LockingSynchronizationS
 						insertStatement.addBatch();
 						
 						insertCount += 1;
+						
+						if ((insertCount % this.maxBatchSize) == 0)
+						{
+							insertStatement.executeBatch();
+							insertStatement.clearBatch();
+						}
 					}
 					else // if (compare == 0)
 					{
@@ -312,6 +325,12 @@ public class DifferentialSynchronizationStrategy extends LockingSynchronizationS
 							updateStatement.addBatch();
 							
 							updateCount += 1;
+							
+							if ((updateCount % this.maxBatchSize) == 0)
+							{
+								updateStatement.executeBatch();
+								updateStatement.clearBatch();
+							}
 						}
 					}
 					
@@ -326,21 +345,21 @@ public class DifferentialSynchronizationStrategy extends LockingSynchronizationS
 					}
 				}
 				
-				if (deleteCount > 0)
+				if ((deleteCount % this.maxBatchSize) > 0)
 				{
 					deleteStatement.executeBatch();
 				}
 				
 				deleteStatement.close();
 				
-				if (insertCount > 0)
+				if ((insertCount % this.maxBatchSize) > 0)
 				{
 					insertStatement.executeBatch();
 				}
 				
 				insertStatement.close();
 				
-				if (updateCount > 0)
+				if ((updateCount % this.maxBatchSize) > 0)
 				{
 					updateStatement.executeBatch();
 				}
@@ -426,5 +445,21 @@ public class DifferentialSynchronizationStrategy extends LockingSynchronizationS
 	public void setFetchSize(int fetchSize)
 	{
 		this.fetchSize = fetchSize;
+	}
+
+	/**
+	 * @return Returns the maxBatchSize.
+	 */
+	public int getMaxBatchSize()
+	{
+		return this.maxBatchSize;
+	}
+
+	/**
+	 * @param maxBatchSize The maxBatchSize to set.
+	 */
+	public void setMaxBatchSize(int maxBatchSize)
+	{
+		this.maxBatchSize = maxBatchSize;
 	}
 }
