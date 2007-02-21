@@ -84,6 +84,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 
 	private ExecutorService executor = Executors.newSingleThreadExecutor(DaemonThreadFactory.getInstance());
 	private int fetchSize = 0;
+	private int maxBatchSize = 100;
 	
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(Connection, Connection, Map, Dialect)
@@ -320,6 +321,12 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 							deleteStatement.addBatch();
 							
 							deleteCount += 1;
+							
+							if ((deleteCount % this.maxBatchSize) == 0)
+							{
+								deleteStatement.executeBatch();
+								deleteStatement.clearBatch();
+							}
 						}
 						else if (compare < 0)
 						{
@@ -344,6 +351,12 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 							insertStatement.addBatch();
 							
 							insertCount += 1;
+							
+							if ((insertCount % this.maxBatchSize) == 0)
+							{
+								insertStatement.executeBatch();
+								insertStatement.clearBatch();
+							}
 						}
 						else // if (compare == 0)
 						{
@@ -391,6 +404,12 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 								updateStatement.addBatch();
 								
 								updateCount += 1;
+								
+								if ((updateCount % this.maxBatchSize) == 0)
+								{
+									updateStatement.executeBatch();
+									updateStatement.clearBatch();
+								}
 							}
 						}
 						
@@ -405,21 +424,21 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 						}
 					}
 					
-					if (deleteCount > 0)
+					if ((deleteCount % this.maxBatchSize) > 0)
 					{
 						deleteStatement.executeBatch();
 					}
 					
 					deleteStatement.close();
 					
-					if (insertCount > 0)
+					if ((insertCount % this.maxBatchSize) > 0)
 					{
 						insertStatement.executeBatch();
 					}
 					
 					insertStatement.close();
 					
-					if (updateCount > 0)
+					if ((updateCount % this.maxBatchSize) > 0)
 					{
 						updateStatement.executeBatch();
 					}
@@ -549,5 +568,21 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 	public void setFetchSize(int fetchSize)
 	{
 		this.fetchSize = fetchSize;
+	}
+
+	/**
+	 * @return Returns the maxBatchSize.
+	 */
+	public int getMaxBatchSize()
+	{
+		return this.maxBatchSize;
+	}
+
+	/**
+	 * @param maxBatchSize The maxBatchSize to set.
+	 */
+	public void setMaxBatchSize(int maxBatchSize)
+	{
+		this.maxBatchSize = maxBatchSize;
 	}
 }
