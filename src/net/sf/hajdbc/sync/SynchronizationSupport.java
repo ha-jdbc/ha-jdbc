@@ -178,7 +178,7 @@ public final class SynchronizationSupport
 				
 				sequenceMap.put(sequence, sourceValue);
 				
-				for (Database database: databases)
+				for (Database<D> database: databases)
 				{
 					if (!database.equals(sourceDatabase))
 					{
