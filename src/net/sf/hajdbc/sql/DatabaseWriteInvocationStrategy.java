@@ -138,7 +138,7 @@ public class DatabaseWriteInvocationStrategy<D, T, R> implements InvocationStrat
 		}
 		catch (InterruptedException e)
 		{
-			throw new SQLException(e);
+			throw SQLExceptionFactory.createSQLException(e);
 		}
 		finally
 		{

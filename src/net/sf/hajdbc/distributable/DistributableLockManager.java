@@ -64,7 +64,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	 * @param lockManager 
 	 * @throws Exception
 	 */
-	public DistributableLockManager(DatabaseCluster databaseCluster, DistributableDatabaseClusterDecorator decorator) throws Exception
+	public <D> DistributableLockManager(DatabaseCluster<D> databaseCluster, DistributableDatabaseClusterDecorator decorator) throws Exception
 	{
 		this.lockManager = databaseCluster.getLockManager();
 		this.channel = decorator.createChannel(databaseCluster.getId() + "lock");
@@ -232,7 +232,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 		{
 			if (responseMap == null) return false;
 
-			Iterator responses = responseMap.values().iterator();
+			Iterator<?> responses = responseMap.values().iterator();
 			
 			while (responses.hasNext())
 			{

@@ -171,7 +171,7 @@ public class SynchronizationStrategyBuilder
 		
 		builder.setId(id);
 		
-		Class strategyClass = strategy.getClass();
+		Class<? extends SynchronizationStrategy> strategyClass = strategy.getClass();
 		
 		builder.setClassName(strategyClass.getName());
 		

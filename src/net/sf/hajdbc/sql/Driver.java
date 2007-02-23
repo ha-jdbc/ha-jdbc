@@ -32,6 +32,7 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.util.SQLExceptionFactory;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 import org.slf4j.Logger;
@@ -96,7 +97,7 @@ public final class Driver implements java.sql.Driver
 		}
 		catch (Exception e)
 		{
-			throw new SQLException(e);
+			throw SQLExceptionFactory.createSQLException(e);
 		}
 	}
 
@@ -143,7 +144,7 @@ public final class Driver implements java.sql.Driver
 		}
 		catch (Exception e)
 		{
-			throw new SQLException(e);
+			throw SQLExceptionFactory.createSQLException(e);
 		}
 	}
 

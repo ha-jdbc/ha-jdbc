@@ -145,7 +145,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	{
 		String agent = System.getProperty(JMX_AGENT_PROPERTY);
 		
-		List serverList = MBeanServerFactory.findMBeanServer(agent);
+		List<?> serverList = MBeanServerFactory.findMBeanServer(agent);
 		
 		if (serverList.isEmpty())
 		{
@@ -266,7 +266,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	{
 		Set<String> databaseSet = new TreeSet<String>();
 		
-		for (Database database: this.balancer.all())
+		for (Database<D> database: this.balancer.all())
 		{
 			databaseSet.add(database.getId());
 		}
@@ -281,7 +281,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	{
 		Set<String> databaseSet = new TreeSet<String>(this.databaseMap.keySet());
 
-		for (Database database: this.balancer.all())
+		for (Database<D> database: this.balancer.all())
 		{
 			databaseSet.remove(database.getId());
 		}

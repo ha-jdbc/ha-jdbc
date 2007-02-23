@@ -216,7 +216,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 		{
 			Map.Entry<Database<D>, E> mapEntry = mapEntries.next();
 			
-			Database database = mapEntry.getKey();
+			Database<D> database = mapEntry.getKey();
 			
 			if (!databaseSet.contains(database))
 			{
