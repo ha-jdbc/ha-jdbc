@@ -36,7 +36,7 @@ import net.sf.hajdbc.Database;
 public class BlobInvocationHandler<D, P> extends AbstractInvocationHandler<D, P, Blob>
 {
 	private static final Set<String> DATABASE_READ_METHOD_SET = new HashSet<String>(Arrays.asList("getBinaryStream", "getBytes", "length", "position"));
-	private static final Set<String> DRIVER_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList("free"));
+
 	/**
 	 * @param object
 	 * @param proxy
@@ -60,11 +60,6 @@ public class BlobInvocationHandler<D, P> extends AbstractInvocationHandler<D, P,
 		if (DATABASE_READ_METHOD_SET.contains(methodName))
 		{
 			return new DatabaseReadInvocationStrategy<D, Blob, Object>();
-		}
-		
-		if (DRIVER_WRITE_METHOD_SET.contains(methodName))
-		{
-			return new DriverWriteInvocationStrategy<D, Blob, Object>();
 		}
 		
 		return super.getInvocationStrategy(object, method, parameters);
