@@ -32,6 +32,7 @@ import net.sf.hajdbc.Messages;
  */
 public final class BalancerFactory
 {
+	@SuppressWarnings("unchecked")
 	private static Map<String, Class<? extends Balancer>> balancerMap = new HashMap<String, Class<? extends Balancer>>();
 	
 	static
@@ -48,6 +49,7 @@ public final class BalancerFactory
 	 * @return a new Balancer instance
 	 * @throws Exception if specified balancer identifier is invalid
 	 */
+	@SuppressWarnings("unchecked")
 	public static Balancer deserialize(String id) throws Exception
 	{
 		Class<? extends Balancer> balancerClass = balancerMap.get(id);
@@ -65,6 +67,7 @@ public final class BalancerFactory
 	 * @param balancer a Balancer implementation
 	 * @return the class name of this balancer
 	 */
+	@SuppressWarnings("unchecked")
 	public static String serialize(Balancer balancer)
 	{
 		for (Map.Entry<String, Class<? extends Balancer>> balancerMapEntry: balancerMap.entrySet())
