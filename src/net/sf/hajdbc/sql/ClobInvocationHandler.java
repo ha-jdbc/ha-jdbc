@@ -35,7 +35,8 @@ import net.sf.hajdbc.Database;
  */
 public class ClobInvocationHandler<D, P> extends AbstractInvocationHandler<D, P, Clob>
 {
-	private static final Set<String> DATABASE_READ_METHOD_SET = new HashSet<String>(Arrays.asList(new String[] { "getAsciiStream", "getCharacterStream", "getSubString", "length", "position" }));
+	private static final Set<String> DATABASE_READ_METHOD_SET = new HashSet<String>(Arrays.asList("getAsciiStream", "getCharacterStream", "getSubString", "length", "position"));
+	private static final Set<String> DRIVER_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList("free"));
 	
 	/**
 	 * @param object
@@ -60,6 +61,11 @@ public class ClobInvocationHandler<D, P> extends AbstractInvocationHandler<D, P,
 		if (DATABASE_READ_METHOD_SET.contains(methodName))
 		{
 			return new DatabaseReadInvocationStrategy<D, Clob, Object>();
+		}
+		
+		if (DRIVER_WRITE_METHOD_SET.contains(methodName))
+		{
+			return new DriverWriteInvocationStrategy<D, Clob, Object>();
 		}
 		
 		return super.getInvocationStrategy(clob, method, parameters);

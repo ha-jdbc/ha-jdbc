@@ -55,9 +55,9 @@ import net.sf.hajdbc.util.reflect.ProxyFactory;
  */
 public class ResultSetInvocationHandler<D, S extends Statement> extends AbstractInvocationHandler<D, S, ResultSet>
 {
-	private static final Set<String> DRIVER_READ_METHOD_SET = new HashSet<String>(Arrays.asList(new String[] { "findColumn", "getConcurrency", "getCursorName", "getFetchDirection", "getFetchSize", "getHoldability", "getMetaData", "getRow", "getType", "getWarnings", "isAfterLast", "isBeforeFirst", "isClosed", "isFirst", "isLast", "rowDeleted", "rowInserted", "rowUpdated", "wasNull" }));
-	private static final Set<String> DRIVER_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList(new String[] { "absolute", "afterLast", "beforeFirst", "cancelRowUpdates", "clearWarnings", "first", "last", "moveToCurrentRow", "moveToInsertRow", "next", "previous", "relative", "setFetchDirection", "setFetchSize" }));
-	private static final Set<String> DATABASE_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList(new String[] { "deleteRow", "insertRow", "updateRow" }));
+	private static final Set<String> DRIVER_READ_METHOD_SET = new HashSet<String>(Arrays.asList("findColumn", "getConcurrency", "getCursorName", "getFetchDirection", "getFetchSize", "getHoldability", "getMetaData", "getRow", "getType", "getWarnings", "isAfterLast", "isBeforeFirst", "isClosed", "isFirst", "isLast", "rowDeleted", "rowInserted", "rowUpdated", "wasNull"));
+	private static final Set<String> DRIVER_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList("absolute", "afterLast", "beforeFirst", "cancelRowUpdates", "clearWarnings", "first", "last", "moveToCurrentRow", "moveToInsertRow", "next", "previous", "relative", "setFetchDirection", "setFetchSize"));
+	private static final Set<String> DATABASE_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList("deleteRow", "insertRow", "updateRow"));
 	
 	protected FileSupport fileSupport;
 	

@@ -42,10 +42,10 @@ import net.sf.hajdbc.Database;
  */
 public class ConnectionInvocationHandler<D> extends AbstractInvocationHandler<D, D, Connection>
 {
-	private static final Set<String> DRIVER_READ_METHOD_SET = new HashSet<String>(Arrays.asList(new String[] { "createArrayOf", "createBlob", "createClob", "createNClob", "createSQLXML", "createStruct", "getAutoCommit", "getCatalog", "getHoldability", "getTypeMap", "getWarnings", "isClosed", "isReadOnly", "nativeSQL" }));
-	private static final Set<String> DATABASE_READ_METHOD_SET = new HashSet<String>(Arrays.asList(new String[] { "getClientInfo", "getMetaData", "getTransactionIsolation", "isValid" }));
-	private static final Set<String> DRIVER_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList(new String[] { "clearWarnings", "setClientInfo", "setHoldability", "setReadOnly", "setTypeMap" }));
-	private static final Set<String> DATABASE_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList(new String[] { "commit", "releaseSavepoint", "rollback" }));
+	private static final Set<String> DRIVER_READ_METHOD_SET = new HashSet<String>(Arrays.asList("createArrayOf", "createBlob", "createClob", "createNClob", "createSQLXML", "createStruct", "getAutoCommit", "getCatalog", "getHoldability", "getTypeMap", "getWarnings", "isClosed", "isReadOnly", "nativeSQL"));
+	private static final Set<String> DATABASE_READ_METHOD_SET = new HashSet<String>(Arrays.asList("getClientInfo", "getMetaData", "getTransactionIsolation", "isValid"));
+	private static final Set<String> DRIVER_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList("clearWarnings", "setClientInfo", "setHoldability", "setReadOnly", "setTypeMap"));
+	private static final Set<String> DATABASE_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList("commit", "releaseSavepoint", "rollback"));
 	
 	private FileSupport fileSupport;
 	

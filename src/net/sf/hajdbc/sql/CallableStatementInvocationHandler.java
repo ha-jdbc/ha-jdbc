@@ -23,6 +23,7 @@ package net.sf.hajdbc.sql;
 import java.lang.reflect.Method;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.util.Map;
 
 import net.sf.hajdbc.Database;
@@ -53,21 +54,19 @@ public class CallableStatementInvocationHandler<D> extends AbstractPreparedState
 	{
 		String methodName = method.getName();
 		
-		if (methodName.startsWith("registerOut"))
+		if (methodName.equals("registerOutParameter"))
 		{
 			return new DriverWriteInvocationStrategy<D, CallableStatement, Object>();
 		}
 		
 		Class<?>[] types = method.getParameterTypes();
 		
-		if (methodName.startsWith("get") && (types != null) && (types.length > 1) && ((types[0].equals(Integer.TYPE) || types[0].equals(String.class))))
+		if (methodName.startsWith("get") && (types != null) && (types.length > 0) && ((types[0].equals(Integer.TYPE) || types[0].equals(String.class))))
 		{
-			return new DriverReadInvocationStrategy<D, CallableStatement, Object>();
-		}
-		
-		if (methodName.startsWith("set") && (types != null) && (types.length > 2) && types[0].equals(String.class))
-		{
-			return new DriverWriteInvocationStrategy<D, CallableStatement, Object>();
+			if (!method.equals(PreparedStatement.class.getMethod("getMoreResults", Integer.TYPE)))
+			{
+				return new DriverReadInvocationStrategy<D, CallableStatement, Object>();
+			}
 		}
 		
 		if (method.equals(CallableStatement.class.getMethod("wasNull")))

@@ -53,8 +53,8 @@ import net.sf.hajdbc.util.reflect.ProxyFactory;
  */
 public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedStatement> extends AbstractStatementInvocationHandler<D, S>
 {
-	private static final Set<String> DATABASE_READ_METHOD_SET = new HashSet<String>(Arrays.asList(new String[] { "getMetaData", "getParameterMetaData" }));
-	private static final Set<String> DRIVER_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList(new String[] { "addBatch", "clearParameters",  }));
+	private static final Set<String> DATABASE_READ_METHOD_SET = new HashSet<String>(Arrays.asList("getMetaData", "getParameterMetaData"));
+	private static final Set<String> DRIVER_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList("addBatch", "clearParameters"));
 	
 	protected List<Lock> lockList;
 	protected boolean selectForUpdate;
