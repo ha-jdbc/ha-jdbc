@@ -81,7 +81,7 @@ public final class Driver implements java.sql.Driver
 		
 		DriverInvocationHandler handler = new DriverInvocationHandler(cluster);
 		
-		Driver driver = ProxyFactory.createProxy(Driver.class, handler);
+		java.sql.Driver driver = ProxyFactory.createProxy(java.sql.Driver.class, handler);
 		
 		Invoker<java.sql.Driver, java.sql.Driver, Connection> invoker = new Invoker<java.sql.Driver, java.sql.Driver, Connection>()
 		{
