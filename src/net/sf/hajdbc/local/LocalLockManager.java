@@ -87,7 +87,7 @@ public class LocalLockManager implements LockManager
 		}
 	}
 	
-	private class GlobalLock implements Lock
+	private static class GlobalLock implements Lock
 	{
 		private Lock globalLock;
 		private Lock lock;
