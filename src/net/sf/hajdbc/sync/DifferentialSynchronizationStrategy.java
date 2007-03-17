@@ -175,7 +175,7 @@ public class DifferentialSynchronizationStrategy extends LockingSynchronizationS
 				// Construct DELETE SQL
 				String deleteSQL = "DELETE FROM " + tableName + primaryKeyWhereClause;
 				
-				logger.debug(deleteSQL.toString());
+				logger.debug(deleteSQL);
 				
 				PreparedStatement deleteStatement = targetConnection.prepareStatement(deleteSQL);
 				
