@@ -93,7 +93,12 @@ public class RoundRobinBalancer<D> extends AbstractBalancer<D>
 	 */
 	public synchronized Database<D> next()
 	{
-		if (this.databaseQueue.size() <= 1)
+		if (this.databaseQueue.isEmpty())
+		{
+			return this.databaseSet.iterator().next();
+		}
+		
+		if (this.databaseQueue.size() == 1)
 		{
 			return this.databaseQueue.element();
 		}
