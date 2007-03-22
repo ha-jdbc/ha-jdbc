@@ -169,6 +169,11 @@ public abstract class AbstractDatabase<D> implements Database<D>
 	 */
 	public void setProperty(String name, String value)
 	{
+		if ((name == null) || (value == null))
+		{
+			throw new IllegalArgumentException();
+		}
+		
 		this.checkDirty(this.properties.getProperty(name), value);
 		this.properties.setProperty(name, value);
 	}
