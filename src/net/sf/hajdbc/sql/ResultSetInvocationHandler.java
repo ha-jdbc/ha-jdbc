@@ -101,7 +101,7 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 			return new DatabaseWriteInvocationStrategy<D, ResultSet, Object>(lockList);
 		}
 		
-		if (methodName.startsWith("get") && (types != null) && (types.length > 1) && ((types[0].equals(Integer.TYPE) || types[0].equals(String.class))))
+		if (methodName.startsWith("get") && (types != null) && (types.length > 0) && ((types[0].equals(Integer.TYPE) || types[0].equals(String.class))))
 		{
 			Class<?> returnClass = method.getReturnType();
 			
@@ -129,7 +129,7 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 			};
 		}
 		
-		if (methodName.startsWith("update") && (types != null) && (types.length > 2) && (types[0].equals(String.class) || types[0].equals(Integer.TYPE)))
+		if (methodName.startsWith("update") && (types != null) && (types.length > 0) && (types[0].equals(String.class) || types[0].equals(Integer.TYPE)))
 		{
 			return new DriverWriteInvocationStrategy<D, ResultSet, Object>();
 		}
