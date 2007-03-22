@@ -27,12 +27,6 @@ import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.easymock.EasyMock;
-import org.easymock.IMocksControl;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
-
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.DatabaseProperties;
@@ -41,24 +35,16 @@ import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.TableProperties;
 
+import org.easymock.EasyMock;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
+
 /**
  * @author Paul Ferraro
  *
  */
 public abstract class TestLockingSynchronizationStrategy implements SynchronizationStrategy
 {
-	protected IMocksControl control = EasyMock.createStrictControl();
-	protected Database sourceDatabase = this.control.createMock(Database.class);
-	protected Database targetDatabase = this.control.createMock(Database.class);
-	protected Connection targetConnection = this.control.createMock(Connection.class);
-	protected Connection sourceConnection = this.control.createMock(Connection.class);
-	protected DatabaseMetaDataCache metaData = this.control.createMock(DatabaseMetaDataCache.class);
-	protected Dialect dialect = this.control.createMock(Dialect.class);
-	protected DatabaseProperties database = this.control.createMock(DatabaseProperties.class);
-	protected TableProperties table = this.control.createMock(TableProperties.class);
-	
-	protected ExecutorService executor = Executors.newSingleThreadExecutor();
-	
 	protected SynchronizationStrategy strategy = this.createSynchronizationStrategy();
 
 	protected abstract SynchronizationStrategy createSynchronizationStrategy();
@@ -66,85 +52,102 @@ public abstract class TestLockingSynchronizationStrategy implements Synchronizat
 	@DataProvider(name = "context")
 	Object[][] contextProvider()
 	{
-		return new Object[][] { new Object[] { this.control.createMock(SynchronizationContext.class) } };
-	}
-	
-	@AfterMethod
-	void reset()
-	{
-		this.control.reset();
+		return new Object[][] { new Object[] { EasyMock.createStrictMock(SynchronizationContext.class) } };
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#cleanup(net.sf.hajdbc.sync.SynchronizationContextImpl)
 	 */
+	@SuppressWarnings("unchecked")
 	@Test(dataProvider = "context")
-	public void cleanup(SynchronizationContext context)
+	public <D> void cleanup(SynchronizationContext<D> context)
 	{
-		EasyMock.expect(context.getActiveDatabases()).andReturn(Collections.singleton(this.sourceDatabase));
-		EasyMock.expect(context.getExecutor()).andReturn(this.executor);
+		Database<D> sourceDatabase = EasyMock.createStrictMock(Database.class);
+		Connection sourceConnection = EasyMock.createStrictMock(Connection.class);
+		ExecutorService executor = Executors.newSingleThreadExecutor();
+		
+		EasyMock.expect(context.getActiveDatabaseSet()).andReturn(Collections.singleton(sourceDatabase));
+		EasyMock.expect(context.getExecutor()).andReturn(executor);
 		
 		try
 		{
-			EasyMock.expect(context.getConnection(this.sourceDatabase)).andReturn(this.sourceConnection);
+			EasyMock.expect(context.getConnection(sourceDatabase)).andReturn(sourceConnection);
 			
-			this.sourceConnection.rollback();
-			this.sourceConnection.setAutoCommit(true);
+			sourceConnection.rollback();
+			sourceConnection.setAutoCommit(true);
 		}
 		catch (SQLException e)
 		{
 			assert false : e;
 		}
 		
-		this.control.replay();
+		EasyMock.replay(context, sourceDatabase, sourceConnection);
 		
 		this.strategy.cleanup(context);
 		
-		this.control.verify();
+		EasyMock.verify(context, sourceDatabase, sourceConnection);
 	}
 
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#prepare(net.sf.hajdbc.sync.SynchronizationContextImpl)
 	 */
+	@SuppressWarnings("unchecked")
 	@Test(dataProvider = "context")
-	public void prepare(SynchronizationContext context) throws SQLException
+	public <D> void prepare(SynchronizationContext<D> context) throws SQLException
 	{
-		Statement statement = this.control.createMock(Statement.class);
+		Database<D> sourceDatabase = EasyMock.createStrictMock(Database.class);
+		Database<D> targetDatabase = EasyMock.createStrictMock(Database.class);
+		Connection sourceConnection = EasyMock.createStrictMock(Connection.class);
+		Connection targetConnection = EasyMock.createStrictMock(Connection.class);
+		Statement statement = EasyMock.createStrictMock(Statement.class);
+		DatabaseMetaDataCache metaData = EasyMock.createStrictMock(DatabaseMetaDataCache.class);
+		DatabaseProperties database = EasyMock.createStrictMock(DatabaseProperties.class);
+		TableProperties table = EasyMock.createStrictMock(TableProperties.class);
+		Dialect dialect = EasyMock.createStrictMock(Dialect.class);
+		ExecutorService executor = Executors.newSingleThreadExecutor();
 		
-		EasyMock.expect(context.getActiveDatabases()).andReturn(Collections.singleton(this.sourceDatabase));
-		EasyMock.expect(context.getExecutor()).andReturn(this.executor);
+		EasyMock.expect(context.getActiveDatabaseSet()).andReturn(Collections.singleton(sourceDatabase));
+		EasyMock.expect(context.getExecutor()).andReturn(executor);
 		
-		this.control.checkOrder(false);
+		EasyMock.checkOrder(context, false);
+		EasyMock.checkOrder(metaData, false);
+		EasyMock.checkOrder(database, false);
+		EasyMock.checkOrder(sourceDatabase, false);
+		EasyMock.checkOrder(sourceConnection, false);
 		
-		EasyMock.expect(context.getTargetDatabase()).andReturn(this.targetDatabase);
-		EasyMock.expect(context.getConnection(this.targetDatabase)).andReturn(this.targetConnection);
-		EasyMock.expect(context.getDatabaseMetaDataCache()).andReturn(this.metaData);
-		EasyMock.expect(this.metaData.getDatabaseProperties(this.targetConnection)).andReturn(this.database);
-		EasyMock.expect(this.database.getTables()).andReturn(Collections.singleton(this.table));
+		EasyMock.expect(context.getTargetDatabase()).andReturn(targetDatabase);
+		EasyMock.expect(context.getConnection(targetDatabase)).andReturn(targetConnection);
+		EasyMock.expect(context.getDatabaseMetaDataCache()).andReturn(metaData);
+		EasyMock.expect(metaData.getDatabaseProperties(targetConnection)).andReturn(database);
+		EasyMock.expect(database.getTables()).andReturn(Collections.singleton(table));
 		
-		EasyMock.expect(context.getConnection(this.sourceDatabase)).andReturn(this.sourceConnection);
+		EasyMock.expect(context.getConnection(sourceDatabase)).andReturn(sourceConnection);
 		
-		this.sourceConnection.setAutoCommit(false);
-		this.sourceConnection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+		sourceConnection.setAutoCommit(false);
+		sourceConnection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 
-		this.control.checkOrder(true);
+		EasyMock.checkOrder(context, true);
+		EasyMock.checkOrder(metaData, true);
+		EasyMock.checkOrder(database, true);
+		EasyMock.checkOrder(sourceDatabase, true);
+		EasyMock.checkOrder(sourceConnection, true);
 		
-		EasyMock.expect(context.getDialect()).andReturn(this.dialect);
+		EasyMock.expect(context.getDialect()).andReturn(dialect);
 
-		EasyMock.expect(this.dialect.getLockTableSQL(this.table)).andReturn("LOCK TABLE table");
+		EasyMock.expect(dialect.getLockTableSQL(table)).andReturn("LOCK TABLE table");
 		
-		EasyMock.expect(context.getConnection(this.sourceDatabase)).andReturn(this.sourceConnection);
+		EasyMock.expect(context.getConnection(sourceDatabase)).andReturn(sourceConnection);
 		
-		EasyMock.expect(this.sourceConnection.createStatement()).andReturn(statement);
+		EasyMock.expect(sourceConnection.createStatement()).andReturn(statement);
 		
 		EasyMock.expect(statement.execute("LOCK TABLE table")).andReturn(true);
 		
 		statement.close();
 		
-		this.control.replay();
+		EasyMock.replay(context, sourceDatabase, targetDatabase, sourceConnection, targetConnection, statement, metaData, database, table, dialect);
 		
 		this.strategy.prepare(context);
 		
-		this.control.verify();
+		EasyMock.verify(context, sourceDatabase, targetDatabase, sourceConnection, targetConnection, statement, metaData, database, table, dialect);
 	}
 }

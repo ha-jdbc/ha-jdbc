@@ -34,9 +34,13 @@ public class TestDialectFactory
 	@Test
 	public void testSerialize()
 	{
-		Dialect dialect = EasyMock.createMock(Dialect.class);
+		Dialect dialect = EasyMock.createStrictMock(Dialect.class);
+		
+		EasyMock.replay(dialect);
 		
 		String id = DialectFactory.serialize(dialect);
+		
+		EasyMock.verify(dialect);
 		
 		assert id.equals(dialect.getClass().getName()) : id;
 	}

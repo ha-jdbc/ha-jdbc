@@ -25,28 +25,39 @@ import java.io.CharArrayReader;
 import java.io.File;
 import java.io.InputStream;
 import java.io.Reader;
+import java.io.StringReader;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Array;
 import java.sql.Blob;
+import java.sql.CallableStatement;
 import java.sql.Clob;
 import java.sql.Date;
+import java.sql.NClob;
 import java.sql.Ref;
+import java.sql.RowId;
 import java.sql.SQLException;
+import java.sql.SQLXML;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Map;
+import java.util.TreeMap;
+
+import javax.sql.rowset.serial.SerialBlob;
+import javax.sql.rowset.serial.SerialClob;
+
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 import org.easymock.EasyMock;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-
-import net.sf.hajdbc.Database;
-import net.sf.hajdbc.Operation;
 
 /**
  * Unit test for {@link CallableStatement}.
@@ -54,43 +65,39 @@ import net.sf.hajdbc.Operation;
  * @author  Paul Ferraro
  * @since   1.1
  */
+@SuppressWarnings("unchecked")
 public class TestCallableStatement extends TestPreparedStatement implements java.sql.CallableStatement
 {
-	/**
-	 * @see net.sf.hajdbc.sql.TestingStatement#createStatement(net.sf.hajdbc.sql.Connection)
-	 */
 	@Override
-	protected Statement createStatement(Connection connection) throws SQLException
-	{
-		Operation<java.sql.Connection, java.sql.CallableStatement> operation = new Operation<java.sql.Connection, java.sql.CallableStatement>()
-		{
-			public java.sql.CallableStatement execute(Database database, java.sql.Connection connection)
-			{
-				return TestCallableStatement.this.getSQLStatement();
-			}
-		};
-		
-		return new CallableStatement(connection, operation, "sql");
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.sql.TestPreparedStatement#getStatementClass()
-	 */
-	@Override
-	protected Class< ? extends java.sql.Statement> getStatementClass()
+	protected Class<? extends java.sql.CallableStatement> getStatementClass()
 	{
 		return java.sql.CallableStatement.class;
 	}
-
+	
+	protected Class<? extends java.sql.CallableStatement> getCallableStatementClass()
+	{
+		return java.sql.CallableStatement.class;
+	}
+	
 	private CallableStatement getStatement()
 	{
 		return CallableStatement.class.cast(this.statement);
 	}
-
-	@Override
-	protected java.sql.CallableStatement getSQLStatement()
+	
+	private CallableStatement getStatement1()
 	{
-		return java.sql.CallableStatement.class.cast(this.sqlStatement);
+		return CallableStatement.class.cast(this.statement1);
+	}
+	
+	private CallableStatement getStatement2()
+	{
+		return CallableStatement.class.cast(this.statement2);
+	}
+	
+	@Override
+	protected InvocationHandler getInvocationHandler(Map map) throws Exception
+	{
+		return new CallableStatementInvocationHandler(this.connection, this.parent, EasyMock.createMock(Invoker.class), map, this.fileSupport, this.sql);
 	}
 	
 	/**
@@ -101,16 +108,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		Array array = EasyMock.createMock(Array.class);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getArray(index)).andReturn(array);
 		
-		EasyMock.expect(this.getSQLStatement().getArray(index)).andReturn(array);
-		
-		this.control.replay();
+		this.replay();
 		
 		Array value = this.getStatement().getArray(index);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == array;
 		
@@ -125,16 +129,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		Array array = EasyMock.createMock(Array.class);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getArray(name)).andReturn(array);
 		
-		EasyMock.expect(this.getSQLStatement().getArray(name)).andReturn(array);
-		
-		this.control.replay();
+		this.replay();
 		
 		Array value = this.getStatement().getArray(name);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == array;
 		
@@ -149,16 +150,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		BigDecimal decimal = new BigDecimal(10);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getBigDecimal(index)).andReturn(decimal);
 		
-		EasyMock.expect(this.getSQLStatement().getBigDecimal(index)).andReturn(decimal);
-		
-		this.control.replay();
+		this.replay();
 		
 		BigDecimal value = this.getStatement().getBigDecimal(index);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == decimal;
 		
@@ -174,16 +172,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		BigDecimal decimal = new BigDecimal(10);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getBigDecimal(index, scale)).andReturn(decimal);
 		
-		EasyMock.expect(this.getSQLStatement().getBigDecimal(index, scale)).andReturn(decimal);
-		
-		this.control.replay();
+		this.replay();
 		
 		BigDecimal value = this.getStatement().getBigDecimal(index, scale);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == decimal;
 		
@@ -198,16 +193,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		BigDecimal decimal = new BigDecimal(10);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getBigDecimal(name)).andReturn(decimal);
 		
-		EasyMock.expect(this.getSQLStatement().getBigDecimal(name)).andReturn(decimal);
-		
-		this.control.replay();
+		this.replay();
 		
 		BigDecimal value = this.getStatement().getBigDecimal(name);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == decimal;
 		
@@ -222,16 +214,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		Blob blob = EasyMock.createMock(Blob.class);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getBlob(index)).andReturn(blob);
 		
-		EasyMock.expect(this.getSQLStatement().getBlob(index)).andReturn(blob);
-		
-		this.control.replay();
+		this.replay();
 		
 		Blob value = this.getStatement().getBlob(index);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == blob;
 		
@@ -246,16 +235,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		Blob blob = EasyMock.createMock(Blob.class);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getBlob(name)).andReturn(blob);
 		
-		EasyMock.expect(this.getSQLStatement().getBlob(name)).andReturn(blob);
-		
-		this.control.replay();
+		this.replay();
 		
 		Blob value = this.getStatement().getBlob(name);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == blob;
 		
@@ -268,16 +254,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "int")
 	public boolean getBoolean(int index) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getBoolean(index)).andReturn(true);
 		
-		EasyMock.expect(this.getSQLStatement().getBoolean(index)).andReturn(true);
-		
-		this.control.replay();
+		this.replay();
 		
 		boolean value = this.getStatement().getBoolean(index);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value;
 		
@@ -290,16 +273,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string")
 	public boolean getBoolean(String name) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getBoolean(name)).andReturn(true);
 		
-		EasyMock.expect(this.getSQLStatement().getBoolean(name)).andReturn(true);
-		
-		this.control.replay();
+		this.replay();
 		
 		boolean value = this.getStatement().getBoolean(name);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value;
 		
@@ -314,16 +294,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		byte b = Integer.valueOf(1).byteValue();
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getByte(index)).andReturn(b);
 		
-		EasyMock.expect(this.getSQLStatement().getByte(index)).andReturn(b);
-		
-		this.control.replay();
+		this.replay();
 		
 		byte value = this.getStatement().getByte(index);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == b;
 		
@@ -338,16 +315,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		byte b = Integer.valueOf(1).byteValue();
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getByte(name)).andReturn(b);
 		
-		EasyMock.expect(this.getSQLStatement().getByte(name)).andReturn(b);
-		
-		this.control.replay();
+		this.replay();
 		
 		byte value = this.getStatement().getByte(name);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == b;
 		
@@ -362,16 +336,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		byte[] bytes = new byte[0];
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getBytes(index)).andReturn(bytes);
 		
-		EasyMock.expect(this.getSQLStatement().getBytes(index)).andReturn(bytes);
-		
-		this.control.replay();
+		this.replay();
 		
 		byte[] value = this.getStatement().getBytes(index);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == bytes;
 		
@@ -386,16 +357,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		byte[] bytes = new byte[0];
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getBytes(name)).andReturn(bytes);
 		
-		EasyMock.expect(this.getSQLStatement().getBytes(name)).andReturn(bytes);
-		
-		this.control.replay();
+		this.replay();
 		
 		byte[] value = this.getStatement().getBytes(name);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == bytes;
 		
@@ -410,16 +378,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		Clob clob = EasyMock.createMock(Clob.class);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getClob(index)).andReturn(clob);
 		
-		EasyMock.expect(this.getSQLStatement().getClob(index)).andReturn(clob);
-		
-		this.control.replay();
+		this.replay();
 		
 		Clob value = this.getStatement().getClob(index);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == clob;
 		
@@ -434,16 +399,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		Clob clob = EasyMock.createMock(Clob.class);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getClob(name)).andReturn(clob);
 		
-		EasyMock.expect(this.getSQLStatement().getClob(name)).andReturn(clob);
-		
-		this.control.replay();
+		this.replay();
 		
 		Clob value = this.getStatement().getClob(name);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == clob;
 		
@@ -458,16 +420,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		Date date = new Date(System.currentTimeMillis());
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getDate(index)).andReturn(date);
 		
-		EasyMock.expect(this.getSQLStatement().getDate(index)).andReturn(date);
-		
-		this.control.replay();
+		this.replay();
 		
 		Date value = this.getStatement().getDate(index);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == date;
 		
@@ -488,16 +447,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		Date date = new Date(System.currentTimeMillis());
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getDate(index, calendar)).andReturn(date);
 		
-		EasyMock.expect(this.getSQLStatement().getDate(index, calendar)).andReturn(date);
-		
-		this.control.replay();
+		this.replay();
 		
 		Date value = this.getStatement().getDate(index, calendar);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == date;
 		
@@ -512,16 +468,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		Date date = new Date(System.currentTimeMillis());
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getDate(name)).andReturn(date);
 		
-		EasyMock.expect(this.getSQLStatement().getDate(name)).andReturn(date);
-		
-		this.control.replay();
+		this.replay();
 		
 		Date value = this.getStatement().getDate(name);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == date;
 		
@@ -542,16 +495,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		Date date = new Date(System.currentTimeMillis());
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getDate(name, calendar)).andReturn(date);
 		
-		EasyMock.expect(this.getSQLStatement().getDate(name, calendar)).andReturn(date);
-		
-		this.control.replay();
+		this.replay();
 		
 		Date value = this.getStatement().getDate(name, calendar);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == date;
 		
@@ -566,16 +516,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		double d = 1.0;
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getDouble(index)).andReturn(d);
 		
-		EasyMock.expect(this.getSQLStatement().getDouble(index)).andReturn(d);
-		
-		this.control.replay();
+		this.replay();
 		
 		double value = this.getStatement().getDouble(index);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == d;
 		
@@ -590,16 +537,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		double d = 1.0;
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getDouble(name)).andReturn(d);
 		
-		EasyMock.expect(this.getSQLStatement().getDouble(name)).andReturn(d);
-		
-		this.control.replay();
+		this.replay();
 		
 		double value = this.getStatement().getDouble(name);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == d;
 		
@@ -614,16 +558,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		float f = 1.0f;
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getFloat(index)).andReturn(f);
 		
-		EasyMock.expect(this.getSQLStatement().getFloat(index)).andReturn(f);
-		
-		this.control.replay();
+		this.replay();
 		
 		float value = this.getStatement().getFloat(index);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == f;
 		
@@ -638,16 +579,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		float f = 1.0f;
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getFloat(name)).andReturn(f);
 		
-		EasyMock.expect(this.getSQLStatement().getFloat(name)).andReturn(f);
-		
-		this.control.replay();
+		this.replay();
 		
 		float value = this.getStatement().getFloat(name);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == f;
 		
@@ -662,16 +600,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		int i = 1;
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getInt(index)).andReturn(i);
 		
-		EasyMock.expect(this.getSQLStatement().getInt(index)).andReturn(i);
-		
-		this.control.replay();
+		this.replay();
 		
 		int value = this.getStatement().getInt(index);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == i;
 		
@@ -686,16 +621,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		int i = 1;
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getInt(name)).andReturn(i);
 		
-		EasyMock.expect(this.getSQLStatement().getInt(name)).andReturn(i);
-		
-		this.control.replay();
+		this.replay();
 		
 		int value = this.getStatement().getInt(name);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == i;
 		
@@ -710,16 +642,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		long i = 1;
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getLong(index)).andReturn(i);
 		
-		EasyMock.expect(this.getSQLStatement().getLong(index)).andReturn(i);
-		
-		this.control.replay();
+		this.replay();
 		
 		long value = this.getStatement().getLong(index);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == i;
 		
@@ -734,16 +663,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		long i = 1;
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getLong(name)).andReturn(i);
 		
-		EasyMock.expect(this.getSQLStatement().getLong(name)).andReturn(i);
-		
-		this.control.replay();
+		this.replay();
 		
 		long value = this.getStatement().getLong(name);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == i;
 		
@@ -758,16 +684,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		Object object = new Object();
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getObject(index)).andReturn(object);
 		
-		EasyMock.expect(this.getSQLStatement().getObject(index)).andReturn(object);
-		
-		this.control.replay();
+		this.replay();
 		
 		Object value = this.getStatement().getObject(index);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == object;
 		
@@ -787,16 +710,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		Object object = new Object();
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getObject(index, map)).andReturn(object);
 		
-		EasyMock.expect(this.getSQLStatement().getObject(index, map)).andReturn(object);
-		
-		this.control.replay();
+		this.replay();
 		
 		Object value = this.getStatement().getObject(index, map);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == object;
 		
@@ -811,16 +731,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		Object object = new Object();
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getObject(name)).andReturn(object);
 		
-		EasyMock.expect(this.getSQLStatement().getObject(name)).andReturn(object);
-		
-		this.control.replay();
+		this.replay();
 		
 		Object value = this.getStatement().getObject(name);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == object;
 		
@@ -841,16 +758,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		Object object = new Object();
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getObject(name, map)).andReturn(object);
 		
-		EasyMock.expect(this.getSQLStatement().getObject(name, map)).andReturn(object);
-		
-		this.control.replay();
+		this.replay();
 		
 		Object value = this.getStatement().getObject(name, map);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == object;
 		
@@ -865,16 +779,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		Ref ref = EasyMock.createMock(Ref.class);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getRef(index)).andReturn(ref);
 		
-		EasyMock.expect(this.getSQLStatement().getRef(index)).andReturn(ref);
-		
-		this.control.replay();
+		this.replay();
 		
 		Ref value = this.getStatement().getRef(index);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == ref;
 		
@@ -889,16 +800,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		Ref ref = EasyMock.createMock(Ref.class);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getRef(name)).andReturn(ref);
 		
-		EasyMock.expect(this.getSQLStatement().getRef(name)).andReturn(ref);
-		
-		this.control.replay();
+		this.replay();
 		
 		Ref value = this.getStatement().getRef(name);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == ref;
 		
@@ -913,16 +821,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		short s = Integer.valueOf(1).shortValue();
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getShort(index)).andReturn(s);
 		
-		EasyMock.expect(this.getSQLStatement().getShort(index)).andReturn(s);
-		
-		this.control.replay();
+		this.replay();
 		
 		short value = this.getStatement().getShort(index);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == s;
 		
@@ -937,16 +842,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		short s = Integer.valueOf(1).shortValue();
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getShort(name)).andReturn(s);
 		
-		EasyMock.expect(this.getSQLStatement().getShort(name)).andReturn(s);
-		
-		this.control.replay();
+		this.replay();
 		
 		short value = this.getStatement().getShort(name);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == s;
 		
@@ -961,16 +863,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		String s = "";
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getString(index)).andReturn(s);
 		
-		EasyMock.expect(this.getSQLStatement().getString(index)).andReturn(s);
-		
-		this.control.replay();
+		this.replay();
 		
 		String value = this.getStatement().getString(index);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == s;
 		
@@ -985,16 +884,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		String s = "";
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getString(name)).andReturn(s);
 		
-		EasyMock.expect(this.getSQLStatement().getString(name)).andReturn(s);
-		
-		this.control.replay();
+		this.replay();
 		
 		String value = this.getStatement().getString(name);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == s;
 		
@@ -1009,16 +905,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		Time time = new Time(System.currentTimeMillis());
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getTime(index)).andReturn(time);
 		
-		EasyMock.expect(this.getSQLStatement().getTime(index)).andReturn(time);
-		
-		this.control.replay();
+		this.replay();
 		
 		Time value = this.getStatement().getTime(index);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == time;
 		
@@ -1033,16 +926,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		Time time = new Time(System.currentTimeMillis());
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getTime(index, calendar)).andReturn(time);
 		
-		EasyMock.expect(this.getSQLStatement().getTime(index, calendar)).andReturn(time);
-		
-		this.control.replay();
+		this.replay();
 		
 		Time value = this.getStatement().getTime(index, calendar);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == time;
 		
@@ -1057,16 +947,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		Time time = new Time(System.currentTimeMillis());
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getTime(name)).andReturn(time);
 		
-		EasyMock.expect(this.getSQLStatement().getTime(name)).andReturn(time);
-		
-		this.control.replay();
+		this.replay();
 		
 		Time value = this.getStatement().getTime(name);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == time;
 		
@@ -1081,16 +968,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		Time time = new Time(System.currentTimeMillis());
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getTime(name, calendar)).andReturn(time);
 		
-		EasyMock.expect(this.getSQLStatement().getTime(name, calendar)).andReturn(time);
-		
-		this.control.replay();
+		this.replay();
 		
 		Time value = this.getStatement().getTime(name, calendar);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == time;
 		
@@ -1105,16 +989,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getTimestamp(index)).andReturn(timestamp);
 		
-		EasyMock.expect(this.getSQLStatement().getTimestamp(index)).andReturn(timestamp);
-		
-		this.control.replay();
+		this.replay();
 		
 		Timestamp value = this.getStatement().getTimestamp(index);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == timestamp;
 		
@@ -1129,16 +1010,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getTimestamp(index)).andReturn(timestamp);
 		
-		EasyMock.expect(this.getSQLStatement().getTimestamp(index)).andReturn(timestamp);
-		
-		this.control.replay();
+		this.replay();
 		
 		Timestamp value = this.getStatement().getTimestamp(index);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == timestamp;
 		
@@ -1153,16 +1031,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getTimestamp(name)).andReturn(timestamp);
 		
-		EasyMock.expect(this.getSQLStatement().getTimestamp(name)).andReturn(timestamp);
-		
-		this.control.replay();
+		this.replay();
 		
 		Timestamp value = this.getStatement().getTimestamp(name);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == timestamp;
 		
@@ -1177,16 +1052,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	{
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.getStatement1().getTimestamp(name, calendar)).andReturn(timestamp);
 		
-		EasyMock.expect(this.getSQLStatement().getTimestamp(name, calendar)).andReturn(timestamp);
-		
-		this.control.replay();
+		this.replay();
 		
 		Timestamp value = this.getStatement().getTimestamp(name, calendar);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert value == timestamp;
 		
@@ -1203,16 +1075,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 		{
 			URL url = new URL("http://ha-jdbc.sf.net");
 			
-			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.first()).andReturn(this.database);
+			EasyMock.expect(this.getStatement1().getURL(index)).andReturn(url);
 			
-			EasyMock.expect(this.getSQLStatement().getURL(index)).andReturn(url);
-			
-			this.control.replay();
+			this.replay();
 			
 			URL value = this.getStatement().getURL(index);
 			
-			this.control.verify();
+			this.verify();
 			
 			assert value == url;
 			
@@ -1235,16 +1104,13 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 		{
 			URL url = new URL("http://ha-jdbc.sf.net");
 			
-			EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-			EasyMock.expect(this.balancer.first()).andReturn(this.database);
+			EasyMock.expect(this.getStatement1().getURL(name)).andReturn(url);
 			
-			EasyMock.expect(this.getSQLStatement().getURL(name)).andReturn(url);
-			
-			this.control.replay();
+			this.replay();
 			
 			URL value = this.getStatement().getURL(name);
 			
-			this.control.verify();
+			this.verify();
 			
 			assert value == url;
 			
@@ -1263,16 +1129,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "int-int")
 	public void registerOutParameter(int index, int sqlType) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().registerOutParameter(index, sqlType);
+		this.getStatement2().registerOutParameter(index, sqlType);
 		
-		this.getSQLStatement().registerOutParameter(index, sqlType);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().registerOutParameter(index, sqlType);
 		
-		this.control.verify();
+		this.verify();
 	}
 	
 	@DataProvider(name = "int-int-int")
@@ -1287,16 +1151,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "int-int-int")
 	public void registerOutParameter(int index, int sqlType, int scale) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().registerOutParameter(index, sqlType, scale);
+		this.getStatement2().registerOutParameter(index, sqlType, scale);
 		
-		this.getSQLStatement().registerOutParameter(index, sqlType, scale);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().registerOutParameter(index, sqlType, scale);
 		
-		this.control.verify();
+		this.verify();
 	}
 	
 	/**
@@ -1305,16 +1167,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "int-int-string")
 	public void registerOutParameter(int index, int sqlType, String typeName) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().registerOutParameter(index, sqlType, typeName);
+		this.getStatement2().registerOutParameter(index, sqlType, typeName);
 		
-		this.getSQLStatement().registerOutParameter(index, sqlType, typeName);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().registerOutParameter(index, sqlType, typeName);
 		
-		this.control.verify();
+		this.verify();
 	}
 	
 	/**
@@ -1323,16 +1183,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-int")
 	public void registerOutParameter(String name, int sqlType) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().registerOutParameter(name, sqlType);
+		this.getStatement2().registerOutParameter(name, sqlType);
 		
-		this.getSQLStatement().registerOutParameter(name, sqlType);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().registerOutParameter(name, sqlType);
 		
-		this.control.verify();
+		this.verify();
 	}
 
 	@DataProvider(name = "string-int-int")
@@ -1347,16 +1205,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-int-int")
 	public void registerOutParameter(String name, int sqlType, int scale) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().registerOutParameter(name, sqlType, scale);
+		this.getStatement2().registerOutParameter(name, sqlType, scale);
 		
-		this.getSQLStatement().registerOutParameter(name, sqlType, scale);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().registerOutParameter(name, sqlType, scale);
 		
-		this.control.verify();
+		this.verify();
 	}
 
 	@DataProvider(name = "string-int-string")
@@ -1371,16 +1227,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-int-string")
 	public void registerOutParameter(String name, int sqlType, String typeName) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().registerOutParameter(name, sqlType, typeName);
+		this.getStatement2().registerOutParameter(name, sqlType, typeName);
 		
-		this.getSQLStatement().registerOutParameter(name, sqlType, typeName);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().registerOutParameter(name, sqlType, typeName);
 		
-		this.control.verify();
+		this.verify();
 	}
 
 	@DataProvider(name = "string-inputStream-int")
@@ -1395,23 +1249,25 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-inputStream-int")
 	public void setAsciiStream(String name, InputStream value, int length) throws SQLException
 	{
-		InputStream inputStream = new ByteArrayInputStream(new byte[0]);
+		InputStream inputStream1 = new ByteArrayInputStream(new byte[0]);
+		InputStream inputStream2 = new ByteArrayInputStream(new byte[0]);
 		File file = new File("");
 		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(inputStream1);
 		
-		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(inputStream);
+		this.getStatement1().setAsciiStream(name, inputStream1, length);
 		
-		this.getSQLStatement().setAsciiStream(name, inputStream, 100);
+		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(inputStream2);
 		
-		this.control.replay();
+		this.getStatement2().setAsciiStream(name, inputStream2, length);
 		
-		this.getStatement().setAsciiStream(name, value, 100);
+		this.replay();
 		
-		this.control.verify();
+		this.getStatement().setAsciiStream(name, value, length);
+		
+		this.verify();
 	}
 
 	@DataProvider(name = "string-bigDecimal")
@@ -1426,16 +1282,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-bigDecimal")
 	public void setBigDecimal(String name, BigDecimal value) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().setBigDecimal(name, value);
+		this.getStatement2().setBigDecimal(name, value);
 		
-		this.getSQLStatement().setBigDecimal(name, value);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().setBigDecimal(name, value);
 		
-		this.control.verify();
+		this.verify();
 	}
 
 	/**
@@ -1444,23 +1298,25 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-inputStream-int")
 	public void setBinaryStream(String name, InputStream value, int length) throws SQLException
 	{
-		InputStream inputStream = new ByteArrayInputStream(new byte[0]);
+		InputStream inputStream1 = new ByteArrayInputStream(new byte[0]);
+		InputStream inputStream2 = new ByteArrayInputStream(new byte[0]);
 		File file = new File("");
 		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(inputStream1);
 		
-		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(inputStream);
+		this.getStatement1().setBinaryStream(name, inputStream1, length);
+
+		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(inputStream2);
 		
-		this.getSQLStatement().setBinaryStream(name, inputStream, 100);
+		this.getStatement2().setBinaryStream(name, inputStream2, length);
 		
-		this.control.replay();
+		this.replay();
 		
-		this.getStatement().setBinaryStream(name, value, 100);
+		this.getStatement().setBinaryStream(name, value, length);
 		
-		this.control.verify();
+		this.verify();
 	}
 
 	@DataProvider(name = "string-boolean")
@@ -1475,16 +1331,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-boolean")
 	public void setBoolean(String name, boolean value) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().setBoolean(name, value);
+		this.getStatement2().setBoolean(name, value);
 		
-		this.getSQLStatement().setBoolean(name, value);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().setBoolean(name, value);
 		
-		this.control.verify();
+		this.verify();
 	}
 
 	@DataProvider(name = "string-byte")
@@ -1499,16 +1353,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-byte")
 	public void setByte(String name, byte value) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().setByte(name, value);
+		this.getStatement2().setByte(name, value);
 		
-		this.getSQLStatement().setByte(name, value);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().setByte(name, value);
 		
-		this.control.verify();
+		this.verify();
 	}
 
 	@DataProvider(name = "string-bytes")
@@ -1523,20 +1375,18 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-bytes")
 	public void setBytes(String name, byte[] value) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().setBytes(name, value);
+		this.getStatement2().setBytes(name, value);
 		
-		this.getSQLStatement().setBytes(name, value);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().setBytes(name, value);
 		
-		this.control.verify();
+		this.verify();
 	}
 
 	@DataProvider(name = "string-reader-int")
-	Object[][] stringReaderProvider()
+	Object[][] stringReaderIntProvider()
 	{
 		return new Object[][] { new Object[] { "column", new CharArrayReader(new char[0]), 0 } };
 	}
@@ -1547,23 +1397,25 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-reader-int")
 	public void setCharacterStream(String name, Reader value, int length) throws SQLException
 	{
-		Reader reader = new CharArrayReader(new char[0]);
+		Reader reader1 = new CharArrayReader(new char[0]);
+		Reader reader2 = new CharArrayReader(new char[0]);
 		File file = new File("");
 		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader1);
 		
-		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader);
+		this.getStatement1().setCharacterStream(name, reader1, length);
 		
-		this.getSQLStatement().setCharacterStream(name, reader, 100);
+		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader2);
 		
-		this.control.replay();
+		this.getStatement2().setCharacterStream(name, reader2, length);
 		
-		this.getStatement().setCharacterStream(name, value, 100);
+		this.replay();
 		
-		this.control.verify();
+		this.getStatement().setCharacterStream(name, value, length);
+		
+		this.verify();
 	}
 
 	@DataProvider(name = "string-date")
@@ -1578,16 +1430,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-date")
 	public void setDate(String name, Date value) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().setDate(name, value);
+		this.getStatement2().setDate(name, value);
 		
-		this.getSQLStatement().setDate(name, value);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().setDate(name, value);
 		
-		this.control.verify();
+		this.verify();
 	}
 
 	@DataProvider(name = "string-date-calendar")
@@ -1602,16 +1452,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-date-calendar")
 	public void setDate(String name, Date value, Calendar calendar) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().setDate(name, value, calendar);
+		this.getStatement2().setDate(name, value, calendar);
 		
-		this.getSQLStatement().setDate(name, value, calendar);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().setDate(name, value, calendar);
 		
-		this.control.verify();
+		this.verify();
 	}
 
 	@DataProvider(name = "string-double")
@@ -1626,16 +1474,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-double")
 	public void setDouble(String name, double value) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().setDouble(name, value);
+		this.getStatement2().setDouble(name, value);
 		
-		this.getSQLStatement().setDouble(name, value);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().setDouble(name, value);
 		
-		this.control.verify();
+		this.verify();
 	}
 
 	@DataProvider(name = "string-float")
@@ -1650,16 +1496,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-float")
 	public void setFloat(String name, float value) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().setFloat(name, value);
+		this.getStatement2().setFloat(name, value);
 		
-		this.getSQLStatement().setFloat(name, value);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().setFloat(name, value);
 		
-		this.control.verify();
+		this.verify();
 	}
 
 	/**
@@ -1668,16 +1512,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-int")
 	public void setInt(String name, int value) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().setInt(name, value);
+		this.getStatement2().setInt(name, value);
 		
-		this.getSQLStatement().setInt(name, value);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().setInt(name, value);
 		
-		this.control.verify();
+		this.verify();
 	}
 
 	@DataProvider(name = "string-long")
@@ -1692,16 +1534,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-long")
 	public void setLong(String name, long value) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().setLong(name, value);
+		this.getStatement2().setLong(name, value);
 		
-		this.getSQLStatement().setLong(name, value);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().setLong(name, value);
 		
-		this.control.verify();
+		this.verify();
 	}
 
 	/**
@@ -1710,16 +1550,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-int")
 	public void setNull(String name, int sqlType) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().setNull(name, sqlType);
+		this.getStatement2().setNull(name, sqlType);
 		
-		this.getSQLStatement().setNull(name, sqlType);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().setNull(name, sqlType);
 		
-		this.control.verify();
+		this.verify();
 	}
 	
 	/**
@@ -1728,16 +1566,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-int-string")
 	public void setNull(String name, int sqlType, String typeName) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().setNull(name, sqlType, typeName);
+		this.getStatement2().setNull(name, sqlType, typeName);
 		
-		this.getSQLStatement().setNull(name, sqlType, typeName);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().setNull(name, sqlType, typeName);
 		
-		this.control.verify();
+		this.verify();
 	}
 
 	@DataProvider(name = "string-object")
@@ -1752,16 +1588,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-object")
 	public void setObject(String name, Object value) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().setObject(name, value);
+		this.getStatement2().setObject(name, value);
 		
-		this.getSQLStatement().setObject(name, value);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().setObject(name, value);
 		
-		this.control.verify();
+		this.verify();
 	}
 
 	@DataProvider(name = "string-object-int")
@@ -1776,16 +1610,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-object-int")
 	public void setObject(String name, Object value, int targetSqlType) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().setObject(name, value, targetSqlType);
+		this.getStatement2().setObject(name, value, targetSqlType);
 		
-		this.getSQLStatement().setObject(name, value, targetSqlType);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().setObject(name, value, targetSqlType);
 		
-		this.control.verify();
+		this.verify();
 	}
 
 	@DataProvider(name = "string-object-int-int")
@@ -1800,16 +1632,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-object-int-int")
 	public void setObject(String name, Object value, int targetSqlType, int scale) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().setObject(name, value, targetSqlType, scale);
+		this.getStatement2().setObject(name, value, targetSqlType, scale);
 		
-		this.getSQLStatement().setObject(name, value, targetSqlType, scale);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().setObject(name, value, targetSqlType, scale);
 		
-		this.control.verify();
+		this.verify();
 	}
 
 	@DataProvider(name = "string-short")
@@ -1824,16 +1654,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-short")
 	public void setShort(String name, short value) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().setShort(name, value);
+		this.getStatement2().setShort(name, value);
 		
-		this.getSQLStatement().setShort(name, value);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().setShort(name, value);
 		
-		this.control.verify();
+		this.verify();
 	}
 
 	@DataProvider(name = "string-string")
@@ -1848,16 +1676,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-string")
 	public void setString(String name, String value) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().setString(name, value);
+		this.getStatement2().setString(name, value);
 		
-		this.getSQLStatement().setString(name, value);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().setString(name, value);
 		
-		this.control.verify();
+		this.verify();
 	}
 
 	@DataProvider(name = "string-time")
@@ -1872,16 +1698,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-time")
 	public void setTime(String name, Time value) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().setTime(name, value);
+		this.getStatement2().setTime(name, value);
 		
-		this.getSQLStatement().setTime(name, value);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().setTime(name, value);
 		
-		this.control.verify();
+		this.verify();
 	}
 
 	@DataProvider(name = "string-time-calendar")
@@ -1896,16 +1720,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-time-calendar")
 	public void setTime(String name, Time value, Calendar calendar) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().setTime(name, value, calendar);
+		this.getStatement2().setTime(name, value, calendar);
 		
-		this.getSQLStatement().setTime(name, value, calendar);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().setTime(name, value, calendar);
 		
-		this.control.verify();
+		this.verify();
 	}
 
 	@DataProvider(name = "string-timestamp")
@@ -1920,16 +1742,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-timestamp")
 	public void setTimestamp(String name, Timestamp value) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().setTimestamp(name, value);
+		this.getStatement2().setTimestamp(name, value);
 		
-		this.getSQLStatement().setTimestamp(name, value);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().setTimestamp(name, value);
 		
-		this.control.verify();
+		this.verify();
 	}
 
 	@DataProvider(name = "string-timestamp-calendar")
@@ -1944,16 +1764,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-timestamp-calendar")
 	public void setTimestamp(String name, Timestamp value, Calendar calendar) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().setTimestamp(name, value, calendar);
+		this.getStatement2().setTimestamp(name, value, calendar);
 		
-		this.getSQLStatement().setTimestamp(name, value, calendar);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().setTimestamp(name, value, calendar);
 		
-		this.control.verify();
+		this.verify();
 	}
 
 	@DataProvider(name = "string-url")
@@ -1968,16 +1786,14 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test(dataProvider = "string-url")
 	public void setURL(String name, URL value) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.getStatement1().setURL(name, value);
+		this.getStatement2().setURL(name, value);
 		
-		this.getSQLStatement().setURL(name, value);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.getStatement().setURL(name, value);
 		
-		this.control.verify();
+		this.verify();
 	}
 
 	/**
@@ -1986,18 +1802,862 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Test
 	public boolean wasNull() throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		EasyMock.expect(this.getSQLStatement().wasNull()).andReturn(true);
+		EasyMock.expect(this.getStatement1().wasNull()).andReturn(true);
 		
-		this.control.replay();
+		this.replay();
 		
 		boolean result = this.getStatement().wasNull();
 		
-		this.control.verify();
+		this.verify();
 		
 		assert result;
 		
-		return false;
+		return result;
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#getCharacterStream(int)
+	 */
+	@Test(dataProvider = "int")
+	public Reader getCharacterStream(int index) throws SQLException
+	{
+		Reader reader = new StringReader("");
+		
+		EasyMock.expect(this.getStatement1().getCharacterStream(index)).andReturn(reader);
+		
+		this.replay();
+		
+		Reader result = this.getStatement().getCharacterStream(index);
+		
+		this.verify();
+		
+		assert result == reader;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#getCharacterStream(java.lang.String)
+	 */
+	@Test(dataProvider = "string")
+	public Reader getCharacterStream(String name) throws SQLException
+	{
+		Reader reader = new StringReader("");
+		
+		EasyMock.expect(this.getStatement1().getCharacterStream(name)).andReturn(reader);
+		
+		this.replay();
+		
+		Reader result = this.getStatement().getCharacterStream(name);
+		
+		this.verify();
+		
+		assert result == reader;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#getNCharacterStream(int)
+	 */
+	@Test(dataProvider = "int")
+	public Reader getNCharacterStream(int index) throws SQLException
+	{
+		Reader reader = new StringReader("");
+		
+		EasyMock.expect(this.getStatement1().getNCharacterStream(index)).andReturn(reader);
+		
+		this.replay();
+		
+		Reader result = this.getStatement().getNCharacterStream(index);
+		
+		this.verify();
+		
+		assert result == reader;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#getNCharacterStream(java.lang.String)
+	 */
+	@Test(dataProvider = "string")
+	public Reader getNCharacterStream(String name) throws SQLException
+	{
+		Reader reader = new StringReader("");
+		
+		EasyMock.expect(this.getStatement1().getNCharacterStream(name)).andReturn(reader);
+		
+		this.replay();
+		
+		Reader result = this.getStatement().getNCharacterStream(name);
+		
+		this.verify();
+		
+		assert result == reader;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#getNClob(int)
+	 */
+	@Test(dataProvider = "int")
+	public NClob getNClob(int index) throws SQLException
+	{
+		NClob clob = EasyMock.createMock(NClob.class);
+		
+		EasyMock.expect(this.getStatement1().getNClob(index)).andReturn(clob);
+		
+		this.replay();
+		
+		NClob result = this.getStatement().getNClob(index);
+		
+		this.verify();
+		
+		assert result == clob;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#getNClob(java.lang.String)
+	 */
+	@Test(dataProvider = "string")
+	public NClob getNClob(String name) throws SQLException
+	{
+		NClob clob = EasyMock.createMock(NClob.class);
+		
+		EasyMock.expect(this.getStatement1().getNClob(name)).andReturn(clob);
+		
+		this.replay();
+		
+		NClob result = this.getStatement().getNClob(name);
+		
+		this.verify();
+		
+		assert result == clob;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#getNString(int)
+	 */
+	@Test(dataProvider = "int")
+	public String getNString(int index) throws SQLException
+	{
+		String string = "";
+		
+		EasyMock.expect(this.getStatement1().getNString(index)).andReturn(string);
+		
+		this.replay();
+		
+		String result = this.getStatement().getNString(index);
+		
+		this.verify();
+		
+		assert result == string;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#getNString(java.lang.String)
+	 */
+	@Test(dataProvider = "string")
+	public String getNString(String name) throws SQLException
+	{
+		String string = "";
+		
+		EasyMock.expect(this.getStatement1().getNString(name)).andReturn(string);
+		
+		this.replay();
+		
+		String result = this.getStatement().getNString(name);
+		
+		this.verify();
+		
+		assert result == string;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#getRowId(int)
+	 */
+	@Test(dataProvider = "int")
+	public RowId getRowId(int index) throws SQLException
+	{
+		RowId rowId = EasyMock.createMock(RowId.class);
+		
+		EasyMock.expect(this.getStatement1().getRowId(index)).andReturn(rowId);
+		
+		this.replay();
+		
+		RowId result = this.getStatement().getRowId(index);
+		
+		this.verify();
+		
+		assert result == rowId;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#getRowId(java.lang.String)
+	 */
+	@Test(dataProvider = "string")
+	public RowId getRowId(String name) throws SQLException
+	{
+		RowId rowId = EasyMock.createMock(RowId.class);
+		
+		EasyMock.expect(this.getStatement1().getRowId(name)).andReturn(rowId);
+		
+		this.replay();
+		
+		RowId result = this.getStatement().getRowId(name);
+		
+		this.verify();
+		
+		assert result == rowId;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#getSQLXML(int)
+	 */
+	@Test(dataProvider = "int")
+	public SQLXML getSQLXML(int index) throws SQLException
+	{
+		SQLXML xml = EasyMock.createMock(SQLXML.class);
+		
+		EasyMock.expect(this.getStatement1().getSQLXML(index)).andReturn(xml);
+		
+		this.replay();
+		
+		SQLXML result = this.getStatement().getSQLXML(index);
+		
+		this.verify();
+		
+		assert result == xml;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#getSQLXML(java.lang.String)
+	 */
+	@Test(dataProvider = "string")
+	public SQLXML getSQLXML(String name) throws SQLException
+	{
+		SQLXML xml = EasyMock.createMock(SQLXML.class);
+		
+		EasyMock.expect(this.getStatement1().getSQLXML(name)).andReturn(xml);
+		
+		this.replay();
+		
+		SQLXML result = this.getStatement().getSQLXML(name);
+		
+		this.verify();
+		
+		assert result == xml;
+		
+		return result;
+	}
+
+	@DataProvider(name = "string-inputStream")
+	Object[][] stringInputStreamProvider()
+	{
+		return new Object[][] { new Object[] { "", new ByteArrayInputStream(new byte[0]) } };
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#setAsciiStream(java.lang.String, java.io.InputStream)
+	 */
+	@Test(dataProvider = "string-inputStream")
+	public void setAsciiStream(String name, InputStream value) throws SQLException
+	{
+		File file = new File("");
+		InputStream input1 = new ByteArrayInputStream(new byte[0]);
+		InputStream input2 = new ByteArrayInputStream(new byte[0]);
+		
+		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
+
+		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(input1);
+		
+		this.getStatement1().setAsciiStream(name, input1);
+
+		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(input2);
+		
+		this.getStatement2().setAsciiStream(name, input2);
+		
+		this.replay();
+
+		this.getStatement().setAsciiStream(name, value);
+		
+		this.verify();
+	}
+
+	@DataProvider(name = "string-inputStream-long")
+	Object[][] stringInputStreamLongProvider()
+	{
+		return new Object[][] { new Object[] { "", new ByteArrayInputStream(new byte[0]), 1L } };
+	}
+		
+	/**
+	 * @see java.sql.CallableStatement#setAsciiStream(java.lang.String, java.io.InputStream, long)
+	 */
+	@Test(dataProvider = "string-inputStream-long")
+	public void setAsciiStream(String name, InputStream value, long length) throws SQLException
+	{
+		File file = new File("");
+		InputStream input1 = new ByteArrayInputStream(new byte[0]);
+		InputStream input2 = new ByteArrayInputStream(new byte[0]);
+		
+		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
+
+		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(input1);
+		
+		this.getStatement1().setAsciiStream(name, input1, length);
+
+		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(input2);
+		
+		this.getStatement2().setAsciiStream(name, input2, length);
+		
+		this.replay();
+
+		this.getStatement().setAsciiStream(name, value, length);
+		
+		this.verify();
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#setBinaryStream(java.lang.String, java.io.InputStream)
+	 */
+	@Test(dataProvider = "string-inputStream")
+	public void setBinaryStream(String name, InputStream value) throws SQLException
+	{
+		File file = new File("");
+		InputStream input1 = new ByteArrayInputStream(new byte[0]);
+		InputStream input2 = new ByteArrayInputStream(new byte[0]);
+		
+		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
+
+		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(input1);
+		
+		this.getStatement1().setBinaryStream(name, input1);
+
+		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(input2);
+		
+		this.getStatement2().setBinaryStream(name, input2);
+		
+		this.replay();
+
+		this.getStatement().setBinaryStream(name, value);
+		
+		this.verify();
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#setBinaryStream(java.lang.String, java.io.InputStream, long)
+	 */
+	@Test(dataProvider = "string-inputStream-long")
+	public void setBinaryStream(String name, InputStream value, long length) throws SQLException
+	{
+		File file = new File("");
+		InputStream input1 = new ByteArrayInputStream(new byte[0]);
+		InputStream input2 = new ByteArrayInputStream(new byte[0]);
+		
+		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
+
+		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(input1);
+		
+		this.getStatement1().setBinaryStream(name, input1, length);
+
+		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(input2);
+		
+		this.getStatement2().setBinaryStream(name, input2, length);
+		
+		this.replay();
+
+		this.getStatement().setBinaryStream(name, value, length);
+		
+		this.verify();
+	}
+
+	@DataProvider(name = "string-blob")
+	Object[][] stringBlobProvider() throws Exception
+	{
+		Map<Database, Blob> map = new TreeMap<Database, Blob>();
+		
+		map.put(this.database1, this.blob1);
+		map.put(this.database2, this.blob2);
+		
+		EasyMock.expect(this.parent.getDatabaseCluster()).andReturn(this.cluster);
+		
+		this.replay();
+		
+		Blob blob = ProxyFactory.createProxy(Blob.class, new BlobInvocationHandler(null, this.parent, null, map));
+		
+		this.verify();
+		this.reset();
+		
+		return new Object[][] { new Object[] { "", new MockBlob() }, new Object[] { "", blob } };
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#setBlob(java.lang.String, java.sql.Blob)
+	 */
+	@Test(dataProvider = "string-blob")
+	public void setBlob(String name, Blob value) throws SQLException
+	{
+		if (Proxy.isProxyClass(value.getClass()))
+		{
+			this.getStatement1().setBlob(name, this.blob1);
+			this.getStatement2().setBlob(name, this.blob2);
+		}
+		else
+		{
+			this.getStatement1().setBlob(EasyMock.eq(name), EasyMock.isA(SerialBlob.class));
+			this.getStatement2().setBlob(EasyMock.eq(name), EasyMock.isA(SerialBlob.class));
+		}
+		
+		this.replay();
+
+		this.getStatement().setBlob(name, value);
+		
+		this.verify();
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#setBlob(java.lang.String, java.io.InputStream)
+	 */
+	@Test(dataProvider = "string-inputStream")
+	public void setBlob(String name, InputStream value) throws SQLException
+	{
+		File file = new File("");
+		InputStream input1 = new ByteArrayInputStream(new byte[0]);
+		InputStream input2 = new ByteArrayInputStream(new byte[0]);
+		
+		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
+
+		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(input1);
+		
+		this.getStatement1().setBlob(name, input1);
+
+		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(input2);
+		
+		this.getStatement2().setBlob(name, input2);
+		
+		this.replay();
+
+		this.getStatement().setBlob(name, value);
+		
+		this.verify();
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#setBlob(java.lang.String, java.io.InputStream, long)
+	 */
+	@Test(dataProvider = "string-inputStream-long")
+	public void setBlob(String name, InputStream value, long length) throws SQLException
+	{
+		File file = new File("");
+		InputStream input1 = new ByteArrayInputStream(new byte[0]);
+		InputStream input2 = new ByteArrayInputStream(new byte[0]);
+		
+		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
+
+		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(input1);
+		
+		this.getStatement1().setBlob(name, input1, length);
+
+		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(input2);
+		
+		this.getStatement2().setBlob(name, input2, length);
+		
+		this.replay();
+
+		this.getStatement().setBlob(name, value, length);
+		
+		this.verify();
+	}
+
+	@DataProvider(name = "string-reader")
+	Object[][] stringReaderProvider()
+	{
+		return new Object[][] { new Object[] { "", new StringReader("") } };
+	}
+	
+	/**
+	 * @see java.sql.CallableStatement#setCharacterStream(java.lang.String, java.io.Reader)
+	 */
+	@Test(dataProvider = "string-reader")
+	public void setCharacterStream(String name, Reader value) throws SQLException
+	{
+		File file = new File("");
+		Reader reader1 = new CharArrayReader(new char[0]);
+		Reader reader2 = new CharArrayReader(new char[0]);
+		
+		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
+
+		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader1);
+		
+		this.getStatement1().setCharacterStream(name, reader1);
+		
+		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader2);
+		
+		this.getStatement2().setCharacterStream(name, reader2);
+		
+		this.replay();
+
+		this.getStatement().setCharacterStream(name, value);
+		
+		this.verify();
+	}
+
+	@DataProvider(name = "string-reader-long")
+	Object[][] stringReaderLongProvider()
+	{
+		return new Object[][] { new Object[] { "", new StringReader(""), 1L } };
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#setCharacterStream(java.lang.String, java.io.Reader, long)
+	 */
+	@Test(dataProvider = "string-reader-long")
+	public void setCharacterStream(String name, Reader value, long length) throws SQLException
+	{
+		File file = new File("");
+		Reader reader1 = new CharArrayReader(new char[0]);
+		Reader reader2 = new CharArrayReader(new char[0]);
+		
+		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
+
+		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader1);
+		
+		this.getStatement1().setCharacterStream(name, reader1, length);
+		
+		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader2);
+		
+		this.getStatement2().setCharacterStream(name, reader2, length);
+		
+		this.replay();
+
+		this.getStatement().setCharacterStream(name, value, length);
+		
+		this.verify();
+	}
+
+	@DataProvider(name = "string-clob")
+	Object[][] stringClobProvider() throws Exception
+	{
+		Map<Database, Clob> map = new TreeMap<Database, Clob>();
+		
+		map.put(this.database1, this.clob1);
+		map.put(this.database2, this.clob2);
+		
+		EasyMock.expect(this.parent.getDatabaseCluster()).andReturn(this.cluster);
+		
+		this.replay();
+		
+		Clob clob = ProxyFactory.createProxy(Clob.class, new ClobInvocationHandler(null, this.parent, null, map));
+		
+		this.verify();
+		this.reset();
+		
+		return new Object[][] { new Object[] { "", new MockClob() }, new Object[] { "", clob } };
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#setClob(java.lang.String, java.sql.Clob)
+	 */
+	@Test(dataProvider = "string-clob")
+	public void setClob(String name, Clob value) throws SQLException
+	{
+		if (Proxy.isProxyClass(value.getClass()))
+		{
+			this.getStatement1().setClob(name, this.clob1);
+			this.getStatement2().setClob(name, this.clob2);
+		}
+		else
+		{
+			this.getStatement1().setClob(EasyMock.eq(name), EasyMock.isA(SerialClob.class));
+			this.getStatement2().setClob(EasyMock.eq(name), EasyMock.isA(SerialClob.class));
+		}
+		
+		this.replay();
+
+		this.getStatement().setClob(name, value);
+		
+		this.verify();
+	}
+	
+	/**
+	 * @see java.sql.CallableStatement#setClob(java.lang.String, java.io.Reader)
+	 */
+	@Test(dataProvider = "string-reader")
+	public void setClob(String name, Reader value) throws SQLException
+	{
+		File file = new File("");
+		Reader reader1 = new CharArrayReader(new char[0]);
+		Reader reader2 = new CharArrayReader(new char[0]);
+		
+		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
+
+		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader1);
+		
+		this.getStatement1().setClob(name, reader1);
+		
+		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader2);
+		
+		this.getStatement2().setClob(name, reader2);
+		
+		this.replay();
+
+		this.getStatement().setClob(name, value);
+		
+		this.verify();
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#setClob(java.lang.String, java.io.Reader, long)
+	 */
+	@Test(dataProvider = "string-reader-long")
+	public void setClob(String name, Reader value, long length) throws SQLException
+	{
+		File file = new File("");
+		Reader reader1 = new CharArrayReader(new char[0]);
+		Reader reader2 = new CharArrayReader(new char[0]);
+		
+		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
+
+		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader1);
+		
+		this.getStatement1().setClob(name, reader1, length);
+		
+		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader2);
+		
+		this.getStatement2().setClob(name, reader2, length);
+		
+		this.replay();
+
+		this.getStatement().setClob(name, value, length);
+		
+		this.verify();
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#setNCharacterStream(java.lang.String, java.io.Reader)
+	 */
+	@Test(dataProvider = "string-reader")
+	public void setNCharacterStream(String name, Reader value) throws SQLException
+	{
+		File file = new File("");
+		Reader reader1 = new CharArrayReader(new char[0]);
+		Reader reader2 = new CharArrayReader(new char[0]);
+		
+		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
+
+		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader1);
+		
+		this.getStatement1().setNCharacterStream(name, reader1);
+		
+		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader2);
+		
+		this.getStatement2().setNCharacterStream(name, reader2);
+		
+		this.replay();
+
+		this.getStatement().setNCharacterStream(name, value);
+		
+		this.verify();
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#setNCharacterStream(java.lang.String, java.io.Reader, long)
+	 */
+	@Test(dataProvider = "string-reader-long")
+	public void setNCharacterStream(String name, Reader value, long length) throws SQLException
+	{
+		File file = new File("");
+		Reader reader1 = new CharArrayReader(new char[0]);
+		Reader reader2 = new CharArrayReader(new char[0]);
+		
+		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
+
+		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader1);
+		
+		this.getStatement1().setNCharacterStream(name, reader1, length);
+		
+		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader2);
+		
+		this.getStatement2().setNCharacterStream(name, reader2, length);
+		
+		this.replay();
+
+		this.getStatement().setNCharacterStream(name, value, length);
+		
+		this.verify();
+	}
+
+	@DataProvider(name = "string-nclob")
+	Object[][] stringNClobProvider() throws Exception
+	{
+		Map<Database, NClob> map = new TreeMap<Database, NClob>();
+		
+		map.put(this.database1, this.nClob1);
+		map.put(this.database2, this.nClob2);
+		
+		EasyMock.expect(this.parent.getDatabaseCluster()).andReturn(this.cluster);
+		
+		this.replay();
+		
+		NClob nClob = ProxyFactory.createProxy(NClob.class, new ClobInvocationHandler(null, this.parent, null, map));
+		
+		this.verify();
+		this.reset();
+		
+		return new Object[][] { new Object[] { "", new MockClob() }, new Object[] { "", nClob } };
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#setNClob(java.lang.String, java.sql.NClob)
+	 */
+	@Test(dataProvider = "string-nclob")
+	public void setNClob(String name, NClob value) throws SQLException
+	{
+		if (Proxy.isProxyClass(value.getClass()))
+		{
+			this.getStatement1().setNClob(name, this.nClob1);
+			this.getStatement2().setNClob(name, this.nClob2);
+		}
+		else
+		{
+			this.getStatement1().setNClob(EasyMock.eq(name), EasyMock.isA(NClob.class));
+			this.getStatement2().setNClob(EasyMock.eq(name), EasyMock.isA(NClob.class));
+		}
+		
+		this.replay();
+
+		this.getStatement().setNClob(name, value);
+		
+		this.verify();
+	}
+	
+	/**
+	 * @see java.sql.CallableStatement#setNClob(java.lang.String, java.io.Reader)
+	 */
+	@Test(dataProvider = "string-reader")
+	public void setNClob(String name, Reader value) throws SQLException
+	{
+		File file = new File("");
+		Reader reader1 = new CharArrayReader(new char[0]);
+		Reader reader2 = new CharArrayReader(new char[0]);
+		
+		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
+
+		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader1);
+		
+		this.getStatement1().setNClob(name, reader1);
+		
+		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader2);
+		
+		this.getStatement2().setNClob(name, reader2);
+		
+		this.replay();
+
+		this.getStatement().setNClob(name, value);
+		
+		this.verify();
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#setNClob(java.lang.String, java.io.Reader, long)
+	 */
+	@Test(dataProvider = "string-reader-long")
+	public void setNClob(String name, Reader value, long length) throws SQLException
+	{
+		File file = new File("");
+		Reader reader1 = new CharArrayReader(new char[0]);
+		Reader reader2 = new CharArrayReader(new char[0]);
+		
+		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
+
+		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader1);
+		
+		this.getStatement1().setNClob(name, reader1, length);
+		
+		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader2);
+		
+		this.getStatement2().setNClob(name, reader2, length);
+		
+		this.replay();
+
+		this.getStatement().setNClob(name, value, length);
+		
+		this.verify();
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#setNString(java.lang.String, java.lang.String)
+	 */
+	@Test(dataProvider = "string-string")
+	public void setNString(String name, String value) throws SQLException
+	{
+		this.getStatement1().setNString(name, value);
+		this.getStatement2().setNString(name, value);
+		
+		this.replay();
+
+		this.getStatement().setNString(name, value);
+		
+		this.verify();
+	}
+
+	@DataProvider(name = "string-rowId")
+	Object[][] stringRowIdProvider()
+	{
+		return new Object[][] { new Object[] { "", EasyMock.createMock(RowId.class) } };
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#setRowId(java.lang.String, java.sql.RowId)
+	 */
+	@Test(dataProvider = "string-rowId")
+	public void setRowId(String name, RowId value) throws SQLException
+	{
+		this.getStatement1().setRowId(name, value);
+		this.getStatement2().setRowId(name, value);
+		
+		this.replay();
+
+		this.getStatement().setRowId(name, value);
+		
+		this.verify();
+	}
+
+	@DataProvider(name = "string-xml")
+	Object[][] stringSQLXMLProvider()
+	{
+		return new Object[][] { new Object[] { "", EasyMock.createMock(SQLXML.class) } };
+	}
+
+	/**
+	 * @see java.sql.CallableStatement#setSQLXML(java.lang.String, java.sql.SQLXML)
+	 */
+	@Test(dataProvider = "string-xml")
+	public void setSQLXML(String name, SQLXML value) throws SQLException
+	{
+		this.getStatement1().setSQLXML(name, value);
+		this.getStatement2().setSQLXML(name, value);
+		
+		this.replay();
+
+		this.getStatement().setSQLXML(name, value);
+		
+		this.verify();
 	}
 }

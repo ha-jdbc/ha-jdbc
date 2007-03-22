@@ -54,9 +54,11 @@ public class TestMySQLDialect extends TestStandardDialect
 	@Test(dataProvider = "foreign-key")
 	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getCreateForeignKeyConstraintSQL(constraint);
+		
+		this.verify();
 		
 		assert sql.equals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE ON UPDATE RESTRICT") : sql;
 		
@@ -70,9 +72,11 @@ public class TestMySQLDialect extends TestStandardDialect
 	@Test(dataProvider = "foreign-key")
 	public String getDropForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getDropForeignKeyConstraintSQL(constraint);
+		
+		this.verify();
 		
 		assert sql.equals("ALTER TABLE table DROP FOREIGN KEY name") : sql;
 		
@@ -86,9 +90,11 @@ public class TestMySQLDialect extends TestStandardDialect
 	@Test(dataProvider = "unique-constraint")
 	public String getCreateUniqueConstraintSQL(UniqueConstraint constraint) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getCreateUniqueConstraintSQL(constraint);
+		
+		this.verify();
 		
 		assert sql.equals("ALTER TABLE table ADD UNIQUE name (column1, column2)") : sql;
 		
@@ -102,9 +108,11 @@ public class TestMySQLDialect extends TestStandardDialect
 	@Test(dataProvider = "unique-constraint")
 	public String getDropUniqueConstraintSQL(UniqueConstraint constraint) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getDropUniqueConstraintSQL(constraint);
+		
+		this.verify();
 		
 		assert sql.equals("ALTER TABLE table DROP INDEX name") : sql;
 		
@@ -118,9 +126,11 @@ public class TestMySQLDialect extends TestStandardDialect
 	@Test(dataProvider = "null")
 	public String parseSequence(String sql) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sequence = this.dialect.parseSequence("SELECT NEXT VALUE FROM sequence");
+		
+		this.verify();
 		
 		assert sequence == null : sequence;
 		
@@ -141,11 +151,11 @@ public class TestMySQLDialect extends TestStandardDialect
 		this.resultSet.close();
 		this.statement.close();
 		
-		this.control.replay();
+		this.replay();
 		
 		List<String> schemaList = this.dialect.getDefaultSchemas(connection);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert schemaList.size() == 1 : schemaList.size();
 		
@@ -160,11 +170,11 @@ public class TestMySQLDialect extends TestStandardDialect
 	@Override
 	public boolean supportsSequences()
 	{
-		this.control.replay();
+		this.replay();
 		
 		boolean supports = this.dialect.supportsSequences();
 		
-		this.control.verify();
+		this.verify();
 		
 		assert !supports;
 		
@@ -179,20 +189,19 @@ public class TestMySQLDialect extends TestStandardDialect
 	{
 		EasyMock.expect(properties.getRemarks()).andReturn("AUTO_INCREMENT");
 		
-		this.control.replay();
+		this.replay();
 		
 		boolean identity = this.dialect.isIdentity(properties);
 		
-		this.control.verify();
-		this.control.reset();
+		this.verify();
 		
 		EasyMock.expect(this.columnProperties.getRemarks()).andReturn(null);
 		
-		this.control.replay();
+		this.replay();
 		
 		identity = this.dialect.isIdentity(properties);
 		
-		this.control.verify();
+		this.verify();
 		
 		return identity;
 	}
@@ -203,11 +212,11 @@ public class TestMySQLDialect extends TestStandardDialect
 	@Override
 	public boolean supportsIdentityColumns()
 	{
-		this.control.replay();
+		this.replay();
 		
 		boolean supports = this.dialect.supportsIdentityColumns();
 		
-		this.control.verify();
+		this.verify();
 		
 		assert !supports;
 		

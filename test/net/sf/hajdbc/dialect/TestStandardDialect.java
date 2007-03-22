@@ -39,8 +39,6 @@ import net.sf.hajdbc.cache.ForeignKeyConstraintImpl;
 import net.sf.hajdbc.cache.UniqueConstraintImpl;
 
 import org.easymock.EasyMock;
-import org.easymock.IMocksControl;
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -50,13 +48,12 @@ import org.testng.annotations.Test;
  */
 public class TestStandardDialect implements Dialect
 {
-	protected IMocksControl control = EasyMock.createStrictControl();
-	protected TableProperties tableProperties = this.control.createMock(TableProperties.class);
-	protected Connection connection = this.control.createMock(Connection.class);
-	protected ColumnProperties columnProperties = this.control.createMock(ColumnProperties.class);
-	protected DatabaseMetaData metaData = this.control.createMock(DatabaseMetaData.class);
-	protected Statement statement = this.control.createMock(Statement.class);
-	protected ResultSet resultSet = this.control.createMock(ResultSet.class);
+	protected TableProperties tableProperties = EasyMock.createStrictMock(TableProperties.class);
+	protected Connection connection = EasyMock.createStrictMock(Connection.class);
+	protected ColumnProperties columnProperties = EasyMock.createStrictMock(ColumnProperties.class);
+	protected DatabaseMetaData metaData = EasyMock.createStrictMock(DatabaseMetaData.class);
+	protected Statement statement = EasyMock.createStrictMock(Statement.class);
+	protected ResultSet resultSet = EasyMock.createStrictMock(ResultSet.class);
 	
 	protected Dialect dialect = this.createDialect();
 	
@@ -65,10 +62,20 @@ public class TestStandardDialect implements Dialect
 		return new StandardDialect();
 	}
 	
-	@AfterMethod
-	void reset()
+	void replay()
 	{
-		this.control.reset();
+		EasyMock.replay(this.getMocks());
+	}
+	
+	void verify()
+	{
+		EasyMock.verify(this.getMocks());
+		EasyMock.reset(this.getMocks());
+	}
+
+	private Object[] getMocks()
+	{
+		return new Object[] { this.tableProperties, this.connection, this.columnProperties, this.metaData, this.statement, this.resultSet };
 	}
 	
 	@DataProvider(name = "table")
@@ -139,11 +146,11 @@ public class TestStandardDialect implements Dialect
 	@Test(dataProvider = "alter-sequence")
 	public String getAlterSequenceSQL(String sequence, long value) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getAlterSequenceSQL(sequence, value);
-		
-		this.control.verify();
+
+		this.verify();
 		
 		assert sql.equals("ALTER SEQUENCE sequence RESTART WITH 1") : sql;
 		
@@ -158,11 +165,11 @@ public class TestStandardDialect implements Dialect
 	{
 		EasyMock.expect(properties.getType()).andReturn(Types.INTEGER);
 		
-		this.control.replay();
+		this.replay();
 		
 		int type = this.dialect.getColumnType(properties);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert type == Types.INTEGER : type;
 		
@@ -175,9 +182,11 @@ public class TestStandardDialect implements Dialect
 	@Test(dataProvider = "foreign-key")
 	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getCreateForeignKeyConstraintSQL(constraint);
+		
+		this.verify();
 		
 		assert sql.equals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE ON UPDATE RESTRICT DEFERRABLE INITIALLY DEFERRED") : sql;
 		
@@ -190,9 +199,11 @@ public class TestStandardDialect implements Dialect
 	@Test(dataProvider = "unique-constraint")
 	public String getCreateUniqueConstraintSQL(UniqueConstraint constraint) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getCreateUniqueConstraintSQL(constraint);
+		
+		this.verify();
 		
 		assert sql.equals("ALTER TABLE table ADD CONSTRAINT name UNIQUE (column1, column2)") : sql;
 		
@@ -205,9 +216,11 @@ public class TestStandardDialect implements Dialect
 	@Test(dataProvider = "foreign-key")
 	public String getDropForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getDropForeignKeyConstraintSQL(constraint);
+		
+		this.verify();
 		
 		assert sql.equals("ALTER TABLE table DROP CONSTRAINT name") : sql;
 		
@@ -220,9 +233,11 @@ public class TestStandardDialect implements Dialect
 	@Test(dataProvider = "unique-constraint")
 	public String getDropUniqueConstraintSQL(UniqueConstraint constraint) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getDropUniqueConstraintSQL(constraint);
+		
+		this.verify();
 		
 		assert sql.equals("ALTER TABLE table DROP CONSTRAINT name") : sql;
 		
@@ -243,25 +258,23 @@ public class TestStandardDialect implements Dialect
 		EasyMock.expect(properties.getName()).andReturn("table");
 		EasyMock.expect(properties.getPrimaryKey()).andReturn(primaryKey);
 		
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getLockTableSQL(properties);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sql.equals("UPDATE table SET column1 = column1, column2 = column2") : sql;
-		
-		this.control.reset();
 		
 		EasyMock.expect(properties.getName()).andReturn("table");
 		EasyMock.expect(properties.getPrimaryKey()).andReturn(null);
 		EasyMock.expect(properties.getColumns()).andReturn(primaryKey.getColumnList());
 		
-		this.control.replay();
+		this.replay();
 		
 		sql = this.dialect.getLockTableSQL(properties);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sql.equals("UPDATE table SET column1 = column1, column2 = column2") : sql;
 		
@@ -274,11 +287,11 @@ public class TestStandardDialect implements Dialect
 	@Test(dataProvider = "sequence")
 	public String getNextSequenceValueSQL(String sequence) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getNextSequenceValueSQL(sequence);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sql.equals("SELECT NEXT VALUE FOR sequence") : sql;
 		
@@ -303,11 +316,11 @@ public class TestStandardDialect implements Dialect
 		
 		this.resultSet.close();
 		
-		this.control.replay();
+		this.replay();
 		
 		Collection<String> sequences = this.dialect.getSequences(connection);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sequences.size() == 2 : sequences;
 		
@@ -329,11 +342,11 @@ public class TestStandardDialect implements Dialect
 	@Test
 	public String getSimpleSQL() throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getSimpleSQL();
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sql.equals("SELECT CURRENT_TIMESTAMP") : sql;
 		
@@ -348,11 +361,11 @@ public class TestStandardDialect implements Dialect
 	{
 		EasyMock.expect(properties.getName()).andReturn("table");
 		
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getTruncateTableSQL(properties);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sql.equals("DELETE FROM table");
 		
@@ -365,20 +378,19 @@ public class TestStandardDialect implements Dialect
 	@Test(dataProvider = "null")
 	public boolean isSelectForUpdate(String sql) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		boolean selectForUpdate = this.dialect.isSelectForUpdate("SELECT * FROM table FOR UPDATE");
 		
-		this.control.verify();
+		this.verify();
 		
 		assert selectForUpdate;
 		
-		this.control.reset();
-		this.control.replay();
+		this.replay();
 		
 		selectForUpdate = this.dialect.isSelectForUpdate("SELECT * FROM table");
 		
-		this.control.verify();
+		this.verify();
 		
 		assert !selectForUpdate;
 		
@@ -391,20 +403,27 @@ public class TestStandardDialect implements Dialect
 	@Test(dataProvider = "null")
 	public String parseSequence(String sql) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sequence = this.dialect.parseSequence("SELECT NEXT VALUE FOR sequence");
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sequence.equals("sequence") : sequence;
 		
-		this.control.reset();
-		this.control.replay();
+		this.replay();
+		
+		sequence = this.dialect.parseSequence("SELECT NEXT VALUE FOR sequence, * FROM table");
+		
+		this.verify();
+		
+		assert sequence.equals("sequence") : sequence;
+		
+		this.replay();
 		
 		sequence = this.dialect.parseSequence("SELECT * FROM table");
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sequence == null : sequence;
 		
@@ -425,11 +444,11 @@ public class TestStandardDialect implements Dialect
 		this.resultSet.close();
 		this.statement.close();
 		
-		this.control.replay();
+		this.replay();
 		
 		List<String> schemaList = this.dialect.getDefaultSchemas(connection);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert schemaList.size() == 1 : schemaList.size();
 		
@@ -446,23 +465,21 @@ public class TestStandardDialect implements Dialect
 	{
 		EasyMock.expect(properties.getRemarks()).andReturn("GENERATED BY DEFAULT AS IDENTITY");
 		
-		this.control.replay();
+		this.replay();
 		
 		boolean identity = this.dialect.isIdentity(properties);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert identity;
 		
-		this.control.reset();
-		
 		EasyMock.expect(this.columnProperties.getRemarks()).andReturn(null);
 		
-		this.control.replay();
+		this.replay();
 		
 		identity = this.dialect.isIdentity(properties);
 		
-		this.control.verify();
+		this.verify();
 
 		assert !identity;
 		
@@ -475,21 +492,29 @@ public class TestStandardDialect implements Dialect
 	@Test(dataProvider = "null")
 	public String parseInsertTable(String sql) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
-		String table = this.dialect.parseInsertTable("INSERT INTO test VALUES (...)");
+		String table = this.dialect.parseInsertTable("INSERT INTO test VALUES (1, 2)");
 
-		this.control.verify();
+		this.verify();
+		
+		assert table != null;
+		assert table.equals("test") : table;
+
+		this.replay();
+		
+		table = this.dialect.parseInsertTable("INSERT INTO test(column1, column2) VALUES (...)");
+
+		this.verify();
 		
 		assert table != null;
 		assert table.equals("test") : table;
 		
-		this.control.reset();
-		this.control.replay();
+		this.replay();
 		
 		table = this.dialect.parseInsertTable("SELECT * FROM test WHERE ...");
 		
-		this.control.verify();
+		this.verify();
 
 		assert table == null : table;
 
@@ -502,11 +527,11 @@ public class TestStandardDialect implements Dialect
 	@Test
 	public boolean supportsIdentityColumns()
 	{
-		this.control.replay();
+		this.replay();
 		
 		boolean supports = this.dialect.supportsIdentityColumns();
 		
-		this.control.verify();
+		this.verify();
 		
 		assert supports;
 		
@@ -519,11 +544,11 @@ public class TestStandardDialect implements Dialect
 	@Test
 	public boolean supportsSequences()
 	{
-		this.control.replay();
+		this.replay();
 		
 		boolean supports = this.dialect.supportsSequences();
 		
-		this.control.verify();
+		this.verify();
 		
 		assert supports;
 		

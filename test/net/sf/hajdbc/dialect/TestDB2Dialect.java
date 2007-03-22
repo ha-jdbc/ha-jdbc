@@ -61,11 +61,11 @@ public class TestDB2Dialect extends TestStandardDialect
 		this.resultSet.close();
 		this.statement.close();
 		
-		this.control.replay();
+		this.replay();
 		
 		Collection<String> sequences = this.dialect.getSequences(connection);
 		
-		this.control.verify();
+		this.verify();
 
 		assert sequences.size() == 2 : sequences.size();
 		
@@ -88,11 +88,11 @@ public class TestDB2Dialect extends TestStandardDialect
 	@Test(dataProvider = "sequence")
 	public String getNextSequenceValueSQL(String sequence) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getNextSequenceValueSQL(sequence);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sql.equals("VALUES NEXTVAL FOR sequence") : sql;
 		
@@ -105,11 +105,11 @@ public class TestDB2Dialect extends TestStandardDialect
 	@Override
 	public String getSimpleSQL() throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getSimpleSQL();
 
-		this.control.verify();
+		this.verify();
 		
 		assert sql.equals("VALUES CURRENT_TIMESTAMP") : sql;
 		
@@ -123,29 +123,27 @@ public class TestDB2Dialect extends TestStandardDialect
 	@Test(dataProvider = "null")
 	public String parseSequence(String sql) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sequence = this.dialect.parseSequence("VALUES NEXTVAL FOR sequence");
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sequence.equals("sequence") : sequence;
 		
-		this.control.reset();
-		this.control.replay();
+		this.replay();
 		
 		sequence = this.dialect.parseSequence("VALUES PREVVAL FOR sequence");
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sequence.equals("sequence") : sequence;
 		
-		this.control.reset();
-		this.control.replay();
+		this.replay();
 		
 		sequence = this.dialect.parseSequence("SELECT * FROM table");
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sequence == null : sequence;
 		
@@ -167,11 +165,11 @@ public class TestDB2Dialect extends TestStandardDialect
 		this.resultSet.close();
 		this.statement.close();
 		
-		this.control.replay();
+		this.replay();
 		
 		List<String> schemaList = this.dialect.getDefaultSchemas(connection);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert schemaList.size() == 1 : schemaList.size();
 		

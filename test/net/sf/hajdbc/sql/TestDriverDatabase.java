@@ -26,8 +26,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import net.sf.hajdbc.ActiveDatabaseMBean;
-import net.sf.hajdbc.InactiveDatabaseMBean;
+import javax.management.DynamicMBean;
 
 import org.easymock.EasyMock;
 import org.testng.annotations.DataProvider;
@@ -49,11 +48,22 @@ public class TestDriverDatabase extends AbstractTestDatabase<DriverDatabase, Dri
 		}
 		catch (SQLException e)
 		{
-			assert false : e;;
+			assert false : e;
 		}
 	}
 	
-	private Driver driver = this.control.createMock(Driver.class);
+	private Driver driver = EasyMock.createStrictMock(Driver.class);
+	
+	void replay()
+	{
+		EasyMock.replay(this.driver);
+	}
+	
+	void verify()
+	{
+		EasyMock.verify(this.driver);
+		EasyMock.reset(this.driver);
+	}
 	
 	@Override
 	protected DriverDatabase createDatabase(String id)
@@ -61,76 +71,65 @@ public class TestDriverDatabase extends AbstractTestDatabase<DriverDatabase, Dri
 		DriverDatabase database = new DriverDatabase();
 		
 		database.setId(id);
-		database.setUrl("jdbc:mock:test");
-		database.setDriver("net.sf.hajdbc.sql.MockDriver");
 		
 		return database;
 	}
 	
-	@DataProvider(name = "driver")
-	public Object[][] driverProvider()
+	@DataProvider(name = "driver-class")
+	public Object[][] driverClassProvider()
 	{
-		return new Object[][] { new Object[] { "net.sf.hajdbc.sql.MockDriver" } };
+		return new Object[][] { new Object[] { MockDriver.class.getName() }, new Object[] { Object.class.getName() }, new Object[] { "invalid.class" }, new Object[] { "" }, new Object[] { null } };
 	}
 	
-	@Test(dataProvider = "driver")
+	@Test(dataProvider = "driver-class")
 	public void setDriver(String driver)
 	{
-		this.database.setDriver(null);
-		
-		String driverClass = this.database.getDriver();
-		
-		assert driverClass == null : driverClass;
-		
-		this.database.clean();
-		
-		this.database.setDriver("");
-		
-		driverClass = this.database.getDriver();
-		
-		assert driverClass == null : driverClass;
-		
-		assert !this.database.isDirty();
-
-		this.database.setDriver(driver);
-		
-		assert this.database.isDirty();
-
-		this.database.setDriver(driver);
-		
-		assert this.database.isDirty();
-
-		this.database.clean();
-		
-		this.database.setDriver("java.sql.Driver");
-		
-		assert this.database.isDirty();
+		boolean isDriver = false;
 		
 		try
 		{
-			this.database.setDriver("java.lang.Class");
-			
-			assert false;
+			isDriver = (driver == null) || driver.isEmpty() || Driver.class.isAssignableFrom(Class.forName(driver));
 		}
-		catch (IllegalArgumentException e)
+		catch (ClassNotFoundException e)
 		{
-			assert true;
+			// Ignore
 		}
+		
+		DriverDatabase database = this.createDatabase("1");
+		
+		database.clean();
 		
 		try
 		{
-			this.database.setDriver("not.a.valid.Class");
+			database.setDriver(driver);
 			
-			assert false;
+			assert isDriver : driver;
+			
+			if ((driver == null) || driver.isEmpty())
+			{
+				assert !database.isDirty();
+			}
+			else
+			{
+				assert database.isDirty();
+				
+				database.clean();
+			}
+			
+			database.setDriver(driver);
+			
+			assert !database.isDirty();
 		}
 		catch (IllegalArgumentException e)
 		{
-			assert true;
+			assert !isDriver : driver;
+		
+			assert !database.isDirty();
 		}
 	}
 	
-	@DataProvider(name = "connection-factory")
-	Object[][] connectionFactoryProvider()
+	@DataProvider(name = "driver")
+	Object[][] driverProvider()
 	{
 		return new Object[][] { new Object[] { this.driver } };
 	}
@@ -139,32 +138,56 @@ public class TestDriverDatabase extends AbstractTestDatabase<DriverDatabase, Dri
 	 * @see net.sf.hajdbc.Database#connect(T)
 	 */
 	@SuppressWarnings("unchecked")
-	@Test(dataProvider = "connection-factory")
-	public Connection connect(Driver connectionFactory) throws SQLException
+	@Test(dataProvider = "driver")
+	public Connection connect(Driver driver) throws SQLException
 	{
+		DriverDatabase database = this.createDatabase("1");
+		
+		database.setUrl("jdbc:mock:test");
+		
 		Connection connection = EasyMock.createMock(Connection.class);
 
 		EasyMock.expect(this.driver.connect("jdbc:mock:test", new Properties())).andReturn(connection);
 		
-		this.control.replay();
+		this.replay();
 		
-		Connection conn = this.database.connect(connectionFactory);
+		Connection result = database.connect(driver);
 		
-		this.control.verify();
+		this.verify();
 		
-		assert connection == conn;
+		assert connection == result;
 		
-		this.control.reset();
+		database.setUser("a");
+		database.setPassword("b");
 		
-		EasyMock.expect(this.driver.connect("jdbc:mock:test", new Properties())).andReturn(null);
+		Properties properties = new Properties();
 		
-		this.control.replay();
+		properties.setProperty("user", "a");
+		properties.setProperty("password", "b");
 		
-		conn = this.database.connect(connectionFactory);
+		EasyMock.expect(this.driver.connect("jdbc:mock:test", properties)).andReturn(connection);
 		
-		assert conn == null : conn.getClass().getName();
+		this.replay();
 		
-		return conn;
+		result = database.connect(driver);
+		
+		this.verify();
+		
+		assert result == connection;
+
+		database.setProperty("ssl", "true");
+		
+		EasyMock.expect(this.driver.connect("jdbc:mock:test", properties)).andReturn(connection);
+		
+		this.replay();
+		
+		result = database.connect(driver);
+		
+		this.verify();
+		
+		assert result == connection;
+		
+		return result;
 	}
 
 	/**
@@ -173,45 +196,21 @@ public class TestDriverDatabase extends AbstractTestDatabase<DriverDatabase, Dri
 	@Test
 	public Driver createConnectionFactory()
 	{
-		Driver connectionFactory = this.database.createConnectionFactory();
+		DriverDatabase database = this.createDatabase("1");
+		database.setDriver(MockDriver.class.getName());
+		database.setUrl("jdbc:mock:test");
 		
-		String connectionFactoryClassName = connectionFactory.getClass().getName();
+		Driver driver = database.createConnectionFactory();
 		
-		assert connectionFactoryClassName.equals("net.sf.hajdbc.sql.MockDriver") : connectionFactoryClassName;
+		assert driver.getClass().equals(MockDriver.class) : driver.getClass().getName();
 		
-		return connectionFactory;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.Database#getActiveMBeanClass()
-	 */
-	@Test
-	public Class<? extends ActiveDatabaseMBean> getActiveMBeanClass()
-	{
-		Class<? extends ActiveDatabaseMBean> mbeanClass = this.database.getActiveMBeanClass();
-		
-		assert mbeanClass.equals(ActiveDriverDatabaseMBean.class) : mbeanClass.getName();
-		
-		return mbeanClass;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.Database#getInactiveMBeanClass()
-	 */
-	@Test
-	public Class<? extends InactiveDatabaseMBean> getInactiveMBeanClass()
-	{
-		Class<? extends InactiveDatabaseMBean> mbeanClass = this.database.getInactiveMBeanClass();
-		
-		assert mbeanClass.equals(InactiveDriverDatabaseMBean.class) : mbeanClass.getName();
-		
-		return mbeanClass;
+		return driver;
 	}
 
 	@DataProvider(name = "url")
 	Object[][] urlProvider()
 	{
-		return new Object[][] { new Object[] { "jdbc:mock:test" } };
+		return new Object[][] { new Object[] { "jdbc:mock:test" }, new Object[] { "jdbc:invalid" } };
 	}
 	
 	/**
@@ -220,30 +219,38 @@ public class TestDriverDatabase extends AbstractTestDatabase<DriverDatabase, Dri
 	@Test(dataProvider = "url")
 	public void setUrl(String url)
 	{
-		this.database.setUrl(url);
+		DriverDatabase database = this.createDatabase("1");
 		
-		assert this.database.getUrl().equals(url) : this.database.getUrl();
+		database.clean();
 		
-		this.database.clean();
-		
-		assert !this.database.isDirty();
-		
-		this.database.setUrl(url);
-		
-		assert !this.database.isDirty();
+		boolean accepted = url.startsWith("jdbc:mock");
 		
 		try
 		{
-			this.database.setUrl("jdbc:test");
+			database.setUrl(url);
 			
-			assert false;
+			assert accepted : url;
+			
+			String value = database.getUrl();
+			
+			assert value.equals(url) : value;
+			
+			assert database.isDirty();
+			
+			database.clean();
+			
+			assert !database.isDirty();
+			
+			database.setUrl(url);
+			
+			assert !database.isDirty();
 		}
 		catch (IllegalArgumentException e)
 		{
-			assert true;
-		}
+			assert !accepted : url;
 		
-		assert !this.database.isDirty();
+			assert !database.isDirty();
+		}
 	}
 
 	/**
@@ -252,7 +259,15 @@ public class TestDriverDatabase extends AbstractTestDatabase<DriverDatabase, Dri
 	@Test
 	public String getUrl()
 	{
-		String url = this.database.getUrl();
+		DriverDatabase database = this.createDatabase("1");
+
+		String url = database.getUrl();
+		
+		assert url == null : url;
+		
+		database.setUrl("jdbc:mock:test");
+		
+		url = database.getUrl();
 		
 		assert url.equals("jdbc:mock:test") : url;
 		
@@ -265,10 +280,66 @@ public class TestDriverDatabase extends AbstractTestDatabase<DriverDatabase, Dri
 	@Test
 	public String getDriver()
 	{
-		String driver = this.database.getDriver();
+		DriverDatabase database = this.createDatabase("1");
+
+		String driver = database.getDriver();
 		
-		assert driver.equals("net.sf.hajdbc.sql.MockDriver") : driver;
+		assert driver == null : driver;
+		
+		database.setDriver(MockDriver.class.getName());
+
+		driver = database.getDriver();
+
+		assert driver.equals(MockDriver.class.getName()) : driver;
 		
 		return driver;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Database#getActiveMBean()
+	 */
+	@Test
+	public DynamicMBean getActiveMBean()
+	{
+		DriverDatabase database = this.createDatabase("1");
+		
+		DynamicMBean mbean = database.getActiveMBean();
+		
+		String className = mbean.getMBeanInfo().getClassName();
+		
+		try
+		{
+			assert ActiveDriverDatabaseMBean.class.isAssignableFrom(Class.forName(className)) : className;
+		}
+		catch (ClassNotFoundException e)
+		{
+			assert false : e;
+		}
+		
+		return mbean;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Database#getInactiveMBean()
+	 */
+	@Test
+	public DynamicMBean getInactiveMBean()
+	{
+		DriverDatabase database = this.createDatabase("1");
+		
+		DynamicMBean mbean = database.getInactiveMBean();
+		
+		String className = mbean.getMBeanInfo().getClassName();
+		
+		try
+		{
+			assert InactiveDriverDatabaseMBean.class.isAssignableFrom(Class.forName(className)) : className;
+		}
+		catch (ClassNotFoundException e)
+		{
+			assert false : e;
+		}
+		
+		return mbean;
 	}
 }

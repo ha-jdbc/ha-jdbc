@@ -28,8 +28,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
-import java.sql.Blob;
-import java.sql.Clob;
 import java.sql.SQLException;
 import java.util.Arrays;
 
@@ -48,8 +46,6 @@ import org.testng.annotations.Test;
 public class TestFileSupportImpl implements FileSupport
 {
 	private IMocksControl control = EasyMock.createStrictControl();
-	private Blob blob = this.control.createMock(Blob.class);
-	private Clob clob = this.control.createMock(Clob.class);
 	
 	private FileSupport fileSupport = new FileSupportImpl();
 	
@@ -128,68 +124,6 @@ public class TestFileSupportImpl implements FileSupport
 		return file;
 	}
 
-	@DataProvider(name = "blob")
-	Object[][] blobProvider()
-	{
-		return new Object[][] { new Object[] { this.blob } };
-	}
-
-	/**
-	 * @see net.sf.hajdbc.sql.FileSupport#createFile(java.sql.Blob)
-	 */
-	@Test(dataProvider = "blob")
-	public File createFile(Blob blob) throws SQLException
-	{
-		InputStream inputStream = new ByteArrayInputStream(new byte[] { 1, 2, 3, 4 });
-		
-		EasyMock.expect(blob.getBinaryStream()).andReturn(inputStream);
-		
-		this.control.replay();
-		
-		File file = this.fileSupport.createFile(blob);
-		
-		this.control.verify();
-		
-		assert file != null;
-		assert file.exists();
-		assert file.getName().startsWith("ha-jdbc-") : file.getName();
-		assert file.getName().endsWith(".lob") : file.getName();
-		assert file.length() == 4 : file.length();
-		
-		return file;
-	}
-
-	@DataProvider(name = "clob")
-	Object[][] clobProvider()
-	{
-		return new Object[][] { new Object[] { this.clob } };
-	}
-
-	/**
-	 * @see net.sf.hajdbc.sql.FileSupport#createFile(java.sql.Clob)
-	 */
-	@Test(dataProvider = "clob")
-	public File createFile(Clob clob) throws SQLException
-	{
-		Reader reader = new CharArrayReader("abcd".toCharArray());
-		
-		EasyMock.expect(clob.getCharacterStream()).andReturn(reader);
-		
-		this.control.replay();
-		
-		File file = this.fileSupport.createFile(clob);
-		
-		this.control.verify();
-		
-		assert file != null;
-		assert file.exists();
-		assert file.getName().startsWith("ha-jdbc-") : file.getName();
-		assert file.getName().endsWith(".lob") : file.getName();
-		assert file.length() == 4 : file.length();
-		
-		return file;
-	}
-
 	@DataProvider(name = "file")
 	Object[][] fileProvider() throws IOException
 	{
@@ -201,42 +135,6 @@ public class TestFileSupportImpl implements FileSupport
 		writer.close();
 		
 		return new Object[][] { new Object[] { file } };
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.sql.FileSupport#getBlob(java.io.File)
-	 */
-	@Test(dataProvider = "file")
-	public Blob getBlob(File file) throws SQLException
-	{
-		Blob blob = this.fileSupport.getBlob(file);
-		
-		assert blob != null;
-		assert blob.length() == 4 : blob.length();
-		
-		byte[] bytes = blob.getBytes(0L, 4);
-		
-		assert Arrays.equals(bytes, "abcd".getBytes());
-		
-		return blob;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.sql.FileSupport#getClob(java.io.File)
-	 */
-	@Test(dataProvider = "file")
-	public Clob getClob(File file) throws SQLException
-	{
-		Clob clob = this.fileSupport.getClob(file);
-		
-		assert clob != null;
-		assert clob.length() == 4 : clob.length();
-
-		String string = clob.getSubString(0L, 4);
-		
-		assert string.equals("abcd") : string;
-		
-		return clob;
 	}
 
 	/**

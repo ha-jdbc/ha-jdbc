@@ -23,6 +23,7 @@ package net.sf.hajdbc.sql;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
@@ -76,5 +77,23 @@ public class MockDataSource implements DataSource
 	public int getLoginTimeout()
 	{
 		return 0;
+	}
+
+	/**
+	 * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
+	 */
+	@Override
+	public boolean isWrapperFor(Class<?> arg0) throws SQLException
+	{
+		return false;
+	}
+
+	/**
+	 * @see java.sql.Wrapper#unwrap(java.lang.Class)
+	 */
+	@Override
+	public <T> T unwrap(Class<T> arg0) throws SQLException
+	{
+		return null;
 	}
 }

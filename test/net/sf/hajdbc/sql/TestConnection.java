@@ -20,85 +20,115 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.lang.reflect.Proxy;
+import java.sql.Array;
+import java.sql.Blob;
 import java.sql.CallableStatement;
+import java.sql.Clob;
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.NClob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLClientInfoException;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.sql.SQLXML;
+import java.sql.Savepoint;
 import java.sql.Statement;
+import java.sql.Struct;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Balancer;
+import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.DatabaseMetaDataCache;
+import net.sf.hajdbc.DatabaseProperties;
+import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.LockManager;
 import net.sf.hajdbc.MockDatabase;
-import net.sf.hajdbc.Operation;
+import net.sf.hajdbc.TableProperties;
+import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 import org.easymock.EasyMock;
-import org.easymock.IMocksControl;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-/**
- * @author Paul Ferraro
- *
- */
-public class TestConnection implements java.sql.Connection
+@SuppressWarnings("unchecked")
+public class TestConnection implements Connection
 {
-	private IMocksControl control = EasyMock.createStrictControl();
-	private Balancer balancer = this.control.createMock(Balancer.class);
-	private DatabaseCluster databaseCluster = this.control.createMock(DatabaseCluster.class);
-	private ExecutorService executor = Executors.newSingleThreadExecutor();
-	private FileSupport fileSupport = this.control.createMock(FileSupport.class);
-	private Lock lock = this.control.createMock(Lock.class);
-	private LockManager lockManager = this.control.createMock(LockManager.class);
-	private java.sql.Connection sqlConnection = this.control.createMock(java.sql.Connection.class);
-	private Database database = new MockDatabase();
-	private List<Database> databaseList = Collections.singletonList(this.database);
-	private Connection<java.sql.Connection> connection;
+	private Balancer balancer = EasyMock.createStrictMock(Balancer.class);
+	private DatabaseCluster cluster = EasyMock.createStrictMock(DatabaseCluster.class);
+	private FileSupport fileSupport = EasyMock.createStrictMock(FileSupport.class);
+	private Lock readLock = EasyMock.createStrictMock(Lock.class);
+	private Lock writeLock1 = EasyMock.createStrictMock(Lock.class);
+	private Lock writeLock2 = EasyMock.createStrictMock(Lock.class);
+	private LockManager lockManager = EasyMock.createStrictMock(LockManager.class);
+	private Dialect dialect = EasyMock.createStrictMock(Dialect.class);
+	private DatabaseMetaDataCache metaData = EasyMock.createStrictMock(DatabaseMetaDataCache.class);
+	private DatabaseProperties databaseProperties = EasyMock.createStrictMock(DatabaseProperties.class);
+	private TableProperties tableProperties = EasyMock.createStrictMock(TableProperties.class);
+	private ColumnProperties columnProperties = EasyMock.createStrictMock(ColumnProperties.class);
+	private Connection connection1 = EasyMock.createStrictMock(java.sql.Connection.class);
+	private Connection connection2 = EasyMock.createStrictMock(java.sql.Connection.class);
+	private SQLProxy parent = EasyMock.createStrictMock(SQLProxy.class);
+	private Savepoint savepoint1 = EasyMock.createStrictMock(Savepoint.class);
+	private Savepoint savepoint2 = EasyMock.createStrictMock(Savepoint.class);
 	
-	@SuppressWarnings("unchecked")
+	private Database database1 = new MockDatabase("1");
+	private Database database2 = new MockDatabase("2");
+	private Set<Database> databaseSet;
+	private ExecutorService executor = Executors.newSingleThreadExecutor();
+	private Connection connection;
+	
 	@BeforeClass
 	void init() throws Exception
 	{
-		Map map = Collections.singletonMap(this.database, this.sqlConnection);
+		Map<Database, Connection> map = new TreeMap<Database, Connection>();
+		map.put(this.database1, this.connection1);
+		map.put(this.database2, this.connection2);
 		
-		EasyMock.expect(this.databaseCluster.getConnectionFactoryMap()).andReturn(map);
-		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.databaseSet = map.keySet();
 		
-		this.control.replay();
+		EasyMock.expect(this.parent.getDatabaseCluster()).andReturn(this.cluster);
 		
-		ConnectionFactory<java.sql.Connection> connectionFactory = new ConnectionFactory<java.sql.Connection>(this.databaseCluster, java.sql.Connection.class);
+		this.replay();
 		
-		Operation<java.sql.Connection, java.sql.Connection> operation = new Operation<java.sql.Connection, java.sql.Connection>()
-		{
-			public java.sql.Connection execute(Database database, java.sql.Connection connection)
-			{
-				return connection;
-			}
-		};
+		this.connection = ProxyFactory.createProxy(Connection.class, new ConnectionInvocationHandler(new Object(), this.parent, EasyMock.createMock(Invoker.class), map, this.fileSupport));
 		
-		this.connection = new Connection<java.sql.Connection>(connectionFactory, operation, this.fileSupport);
-
-		this.control.verify();
-		this.control.reset();
+		this.verify();
+		this.reset();
+	}
+	
+	private Object[] objects()
+	{
+		return new Object[] { this.cluster, this.balancer, this.connection1, this.connection2, this.fileSupport, this.readLock, this.writeLock1, this.writeLock2, this.lockManager, this.parent, this.savepoint1, this.savepoint2, this.dialect, this.metaData, this.databaseProperties, this.tableProperties, this.columnProperties };
+	}
+	
+	void replay()
+	{
+		EasyMock.replay(this.objects());
+	}
+	
+	void verify()
+	{
+		EasyMock.verify(this.objects());
 	}
 	
 	@AfterMethod
 	void reset()
 	{
-		this.control.reset();
+		EasyMock.reset(this.objects());
 	}
 	
 	/**
@@ -107,16 +137,14 @@ public class TestConnection implements java.sql.Connection
 	@Test
 	public void clearWarnings() throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.connection1.clearWarnings();
+		this.connection2.clearWarnings();
 		
-		this.sqlConnection.clearWarnings();
-			
-		this.control.replay();
+		this.replay();
 		
 		this.connection.clearWarnings();
 		
-		this.control.verify();
+		this.verify();
 	}
 	
 	/**
@@ -125,19 +153,23 @@ public class TestConnection implements java.sql.Connection
 	@Test
 	public void close() throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
+
+		this.parent.retain(this.databaseSet);
 		
-		this.sqlConnection.close();
+		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		
+		this.connection1.close();
+		this.connection2.close();
 		
 		this.fileSupport.close();
 		
-		this.control.replay();
+		this.replay();
 		
 		this.connection.close();
 		
-		this.control.verify();
+		this.verify();
 	}
 	
 	/**
@@ -146,73 +178,73 @@ public class TestConnection implements java.sql.Connection
 	@Test
 	public void commit() throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
+		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.readLock);
 		
-		this.lock.lock();
+		this.readLock.lock();
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.sqlConnection.commit();
+		this.parent.retain(this.databaseSet);
 		
-		this.lock.unlock();
+		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
-		this.control.replay();
+		this.connection1.commit();
+		this.connection2.commit();
+		
+		this.readLock.unlock();
+		
+		this.replay();
 		
 		this.connection.commit();
 		
-		this.control.verify();
+		this.verify();
 	}
 	
 	/**
 	 * @see java.sql.Connection#createStatement()
 	 */
+	@SuppressWarnings("unchecked")
 	@Test
 	public Statement createStatement() throws SQLException
 	{
 		// Read/write connection
-		Statement statement = EasyMock.createMock(Statement.class);
+		Statement statement1 = EasyMock.createMock(Statement.class);
+		Statement statement2 = EasyMock.createMock(Statement.class);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		EasyMock.expect(this.sqlConnection.isReadOnly()).andReturn(false);
+		EasyMock.expect(this.connection1.isReadOnly()).andReturn(false);
 		
-		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.connection1.createStatement()).andReturn(statement1);
+		EasyMock.expect(this.connection2.createStatement()).andReturn(statement2);
 		
-		EasyMock.expect(this.sqlConnection.createStatement()).andReturn(statement);
-		
-		this.control.replay();
+		this.replay();
 		
 		Statement result = this.connection.createStatement();
 
-		this.control.verify();
+		this.verify();
 		
-		assert net.sf.hajdbc.sql.Statement.class.isInstance(result) : result.getClass().getName();
-		assert net.sf.hajdbc.sql.Statement.class.cast(result).getObject(this.database) == statement;
+		assert Proxy.isProxyClass(result.getClass());
+		
+		SQLProxy proxy = SQLProxy.class.cast(Proxy.getInvocationHandler(result));
+		
+		assert proxy.getObject(this.database1) == statement1;
+		assert proxy.getObject(this.database2) == statement2;
 
-		this.control.reset();
-
+		this.reset();
+		
 		// Read-only connection
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		EasyMock.expect(this.sqlConnection.isReadOnly()).andReturn(true);
+		EasyMock.expect(this.connection1.isReadOnly()).andReturn(true);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.connection1.createStatement()).andReturn(statement1);
 		
-		EasyMock.expect(this.sqlConnection.createStatement()).andReturn(statement);
-		
-		this.control.replay();
+		this.replay();
 		
 		result = this.connection.createStatement();
 
-		this.control.verify();
+		this.verify();
 		
-		assert result == statement;
+		assert result == statement1;
 		
 		return result;
 	}
@@ -227,49 +259,45 @@ public class TestConnection implements java.sql.Connection
 	 * @see java.sql.Connection#createStatement(int, int)
 	 */
 	@Test(dataProvider = "int-int")
+	@SuppressWarnings("unchecked")
 	public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException
 	{
 		// Read/write connection
-		Statement statement = EasyMock.createMock(Statement.class);
+		Statement statement1 = EasyMock.createMock(Statement.class);
+		Statement statement2 = EasyMock.createMock(Statement.class);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		EasyMock.expect(this.sqlConnection.isReadOnly()).andReturn(false);
+		EasyMock.expect(this.connection1.isReadOnly()).andReturn(false);
 		
-		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.connection1.createStatement(resultSetType, resultSetConcurrency)).andReturn(statement1);
+		EasyMock.expect(this.connection2.createStatement(resultSetType, resultSetConcurrency)).andReturn(statement2);
 		
-		EasyMock.expect(this.sqlConnection.createStatement(resultSetType, resultSetConcurrency)).andReturn(statement);
-		
-		this.control.replay();
+		this.replay();
 		
 		Statement result = this.connection.createStatement(resultSetType, resultSetConcurrency);
 
-		this.control.verify();
+		this.verify();
 		
-		assert net.sf.hajdbc.sql.Statement.class.isInstance(result) : result.getClass().getName();
-		assert net.sf.hajdbc.sql.Statement.class.cast(result).getObject(this.database) == statement;
+		assert Proxy.isProxyClass(result.getClass());
+		
+		SQLProxy proxy = SQLProxy.class.cast(Proxy.getInvocationHandler(result));
+		
+		assert proxy.getObject(this.database1) == statement1;
+		assert proxy.getObject(this.database2) == statement2;
 
-		this.control.reset();
-
+		this.reset();
+		
 		// Read-only connection
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		EasyMock.expect(this.sqlConnection.isReadOnly()).andReturn(true);
+		EasyMock.expect(this.connection.isReadOnly()).andReturn(true);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.connection1.createStatement(resultSetType, resultSetConcurrency)).andReturn(statement1);
 		
-		EasyMock.expect(this.sqlConnection.createStatement(resultSetType, resultSetConcurrency)).andReturn(statement);
-		
-		this.control.replay();
+		this.replay();
 		
 		result = this.connection.createStatement(resultSetType, resultSetConcurrency);
 
-		this.control.verify();
+		this.verify();
 		
-		assert result == statement;
+		assert result == statement1;
 		
 		return result;
 	}
@@ -284,49 +312,45 @@ public class TestConnection implements java.sql.Connection
 	 * @see java.sql.Connection#createStatement(int, int, int)
 	 */
 	@Test(dataProvider = "int-int-int")
+	@SuppressWarnings("unchecked")
 	public Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException
 	{
 		// Read/write connection
-		Statement statement = EasyMock.createMock(Statement.class);
+		Statement statement1 = EasyMock.createMock(Statement.class);
+		Statement statement2 = EasyMock.createMock(Statement.class);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		EasyMock.expect(this.sqlConnection.isReadOnly()).andReturn(false);
+		EasyMock.expect(this.connection1.isReadOnly()).andReturn(false);
 		
-		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.connection1.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability)).andReturn(statement1);
+		EasyMock.expect(this.connection2.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability)).andReturn(statement2);
 		
-		EasyMock.expect(this.sqlConnection.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability)).andReturn(statement);
-		
-		this.control.replay();
+		this.replay();
 		
 		Statement result = this.connection.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability);
 
-		this.control.verify();
+		this.verify();
 		
-		assert net.sf.hajdbc.sql.Statement.class.isInstance(result) : result.getClass().getName();
-		assert net.sf.hajdbc.sql.Statement.class.cast(result).getObject(this.database) == statement;
+		assert Proxy.isProxyClass(result.getClass());
+		
+		SQLProxy proxy = SQLProxy.class.cast(Proxy.getInvocationHandler(result));
+		
+		assert proxy.getObject(this.database1) == statement1;
+		assert proxy.getObject(this.database2) == statement2;
 
-		this.control.reset();
-
+		this.reset();
+		
 		// Read-only connection
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		EasyMock.expect(this.sqlConnection.isReadOnly()).andReturn(true);
+		EasyMock.expect(this.connection1.isReadOnly()).andReturn(true);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.connection1.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability)).andReturn(statement1);
 		
-		EasyMock.expect(this.sqlConnection.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability)).andReturn(statement);
-		
-		this.control.replay();
+		this.replay();
 		
 		result = this.connection.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability);
 
-		this.control.verify();
+		this.verify();
 		
-		assert result == statement;
+		assert result == statement1;
 		
 		return result;
 	}
@@ -337,16 +361,13 @@ public class TestConnection implements java.sql.Connection
 	@Test
 	public boolean getAutoCommit() throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.connection1.getAutoCommit()).andReturn(true);
 		
-		EasyMock.expect(this.sqlConnection.getAutoCommit()).andReturn(true);
-		
-		this.control.replay();
+		this.replay();
 		
 		boolean autoCommit = this.connection.getAutoCommit();
 		
-		this.control.verify();
+		this.verify();
 		
 		assert autoCommit;
 		
@@ -359,16 +380,13 @@ public class TestConnection implements java.sql.Connection
 	@Test
 	public String getCatalog() throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.connection1.getCatalog()).andReturn("catalog");
 		
-		EasyMock.expect(this.sqlConnection.getCatalog()).andReturn("catalog");
-		
-		this.control.replay();
+		this.replay();
 		
 		String catalog = this.connection.getCatalog();
 		
-		this.control.verify();
+		this.verify();
 		
 		assert catalog.equals("catalog") : catalog;
 		
@@ -381,16 +399,13 @@ public class TestConnection implements java.sql.Connection
 	@Test
 	public int getHoldability() throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.connection1.getHoldability()).andReturn(ResultSet.HOLD_CURSORS_OVER_COMMIT);
 		
-		EasyMock.expect(this.sqlConnection.getHoldability()).andReturn(ResultSet.HOLD_CURSORS_OVER_COMMIT);
-		
-		this.control.replay();
+		this.replay();
 		
 		int holdability = this.connection.getHoldability();
 		
-		this.control.verify();
+		this.verify();
 		
 		assert holdability == ResultSet.HOLD_CURSORS_OVER_COMMIT : holdability;
 		
@@ -401,24 +416,25 @@ public class TestConnection implements java.sql.Connection
 	 * @see java.sql.Connection#getMetaData()
 	 */
 	@Test
+	@SuppressWarnings("unchecked")
 	public DatabaseMetaData getMetaData() throws SQLException
 	{
 		DatabaseMetaData metaData = EasyMock.createMock(DatabaseMetaData.class);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.next()).andReturn(this.database);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
 
-		this.balancer.beforeOperation(this.database);
+		this.balancer.beforeInvocation(this.database2);
 		
-		EasyMock.expect(this.sqlConnection.getMetaData()).andReturn(metaData);
+		EasyMock.expect(this.connection2.getMetaData()).andReturn(metaData);
 		
-		this.balancer.afterOperation(this.database);
+		this.balancer.afterInvocation(this.database2);
 		
-		this.control.replay();
+		this.replay();
 		
 		DatabaseMetaData result = this.connection.getMetaData();
 		
-		this.control.verify();
+		this.verify();
 		
 		assert result == metaData;
 		
@@ -429,22 +445,23 @@ public class TestConnection implements java.sql.Connection
 	 * @see java.sql.Connection#getTransactionIsolation()
 	 */
 	@Test
+	@SuppressWarnings("unchecked")
 	public int getTransactionIsolation() throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.next()).andReturn(this.database);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
 		
-		this.balancer.beforeOperation(this.database);
+		this.balancer.beforeInvocation(this.database2);
 		
-		EasyMock.expect(this.sqlConnection.getTransactionIsolation()).andReturn(java.sql.Connection.TRANSACTION_NONE);
+		EasyMock.expect(this.connection2.getTransactionIsolation()).andReturn(java.sql.Connection.TRANSACTION_NONE);
 
-		this.balancer.afterOperation(this.database);
+		this.balancer.afterInvocation(this.database2);
 		
-		this.control.replay();
+		this.replay();
 		
 		int isolation = this.connection.getTransactionIsolation();
 		
-		this.control.verify();
+		this.verify();
 		
 		assert isolation == java.sql.Connection.TRANSACTION_NONE : isolation;
 		
@@ -459,16 +476,13 @@ public class TestConnection implements java.sql.Connection
 	{
 		Map<String, Class<?>> map = Collections.emptyMap();
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.connection1.getTypeMap()).andReturn(map);
 		
-		EasyMock.expect(this.sqlConnection.getTypeMap()).andReturn(map);
-		
-		this.control.replay();
+		this.replay();
 		
 		Map<String, Class<?>> result = this.connection.getTypeMap();
 		
-		this.control.verify();
+		this.verify();
 		
 		assert result == map;
 		
@@ -483,16 +497,13 @@ public class TestConnection implements java.sql.Connection
 	{
 		SQLWarning warning = new SQLWarning();
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.connection1.getWarnings()).andReturn(warning);
 		
-		EasyMock.expect(this.sqlConnection.getWarnings()).andReturn(warning);
-		
-		this.control.replay();
+		this.replay();
 		
 		SQLWarning result = this.connection.getWarnings();
 		
-		this.control.verify();
+		this.verify();
 		
 		assert result == warning;
 		
@@ -505,16 +516,13 @@ public class TestConnection implements java.sql.Connection
 	@Test
 	public boolean isClosed() throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.connection1.isClosed()).andReturn(true);
 		
-		EasyMock.expect(this.sqlConnection.isClosed()).andReturn(true);
-		
-		this.control.replay();
+		this.replay();
 		
 		boolean closed = this.connection.isClosed();
 		
-		this.control.verify();
+		this.verify();
 		
 		assert closed;
 		
@@ -527,16 +535,13 @@ public class TestConnection implements java.sql.Connection
 	@Test
 	public boolean isReadOnly() throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.connection1.isReadOnly()).andReturn(true);
 		
-		EasyMock.expect(this.sqlConnection.isReadOnly()).andReturn(true);
-		
-		this.control.replay();
+		this.replay();
 		
 		boolean readOnly = this.connection.isReadOnly();
 		
-		this.control.verify();
+		this.verify();
 		
 		assert readOnly;
 		
@@ -555,16 +560,13 @@ public class TestConnection implements java.sql.Connection
 	@Test(dataProvider = "string")
 	public String nativeSQL(String sql) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
+		EasyMock.expect(this.connection1.nativeSQL(sql)).andReturn("native-sql");
 		
-		EasyMock.expect(this.sqlConnection.nativeSQL(sql)).andReturn("native-sql");
-		
-		this.control.replay();
+		this.replay();
 		
 		String nativeSQL = this.connection.nativeSQL(sql);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert nativeSQL.equals("native-sql") : nativeSQL;
 		
@@ -575,53 +577,60 @@ public class TestConnection implements java.sql.Connection
 	 * @see java.sql.Connection#prepareCall(java.lang.String)
 	 */
 	@Test(dataProvider = "string")
+	@SuppressWarnings("unchecked")
 	public CallableStatement prepareCall(String sql) throws SQLException
 	{
-		CallableStatement statement = EasyMock.createMock(CallableStatement.class);
+		CallableStatement statement1 = EasyMock.createMock(CallableStatement.class);
+		CallableStatement statement2 = EasyMock.createMock(CallableStatement.class);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		EasyMock.expect(this.sqlConnection.isReadOnly()).andReturn(false);
+		EasyMock.expect(this.connection1.isReadOnly()).andReturn(false);
 		
-		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.parent.retain(this.databaseSet);
 		
-		EasyMock.expect(this.sqlConnection.prepareCall(sql)).andReturn(statement);
+		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
-		this.control.replay();
+		EasyMock.expect(this.connection1.prepareCall(sql)).andReturn(statement1);
+		EasyMock.expect(this.connection2.prepareCall(sql)).andReturn(statement2);
+
+		this.getLockList(sql);
+		
+		this.replay();
 		
 		CallableStatement result = this.connection.prepareCall(sql);
 
-		this.control.verify();
+		this.verify();
 		
-		assert net.sf.hajdbc.sql.CallableStatement.class.isInstance(result) : result.getClass().getName();
-		assert net.sf.hajdbc.sql.CallableStatement.class.cast(result).getObject(this.database) == statement;
+		assert Proxy.isProxyClass(result.getClass());
+		
+		SQLProxy proxy = SQLProxy.class.cast(Proxy.getInvocationHandler(result));
+		
+		assert proxy.getObject(this.database1) == statement1;
+		assert proxy.getObject(this.database2) == statement2;
 
-		this.control.reset();
-
+		this.reset();
+		
 		// Read-only connection
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		EasyMock.expect(this.sqlConnection.isReadOnly()).andReturn(true);
+		EasyMock.expect(this.connection1.isReadOnly()).andReturn(true);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.next()).andReturn(this.database);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
 		
-		this.balancer.beforeOperation(this.database);
+		this.balancer.beforeInvocation(this.database2);
 		
-		EasyMock.expect(this.sqlConnection.prepareCall(sql)).andReturn(statement);
+		EasyMock.expect(this.connection2.prepareCall(sql)).andReturn(statement2);
 
-		this.balancer.afterOperation(this.database);
+		this.balancer.afterInvocation(this.database2);
 		
-		this.control.replay();
+		this.replay();
 		
 		result = this.connection.prepareCall(sql);
 
-		this.control.verify();
+		this.verify();
 		
-		assert result == statement;
+		assert result == statement2;
 		
 		return result;
 	}
@@ -636,53 +645,60 @@ public class TestConnection implements java.sql.Connection
 	 * @see java.sql.Connection#prepareCall(java.lang.String, int, int)
 	 */
 	@Test(dataProvider = "string-int-int")
+	@SuppressWarnings("unchecked")
 	public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency) throws SQLException
 	{
-		CallableStatement statement = EasyMock.createMock(CallableStatement.class);
+		CallableStatement statement1 = EasyMock.createMock(CallableStatement.class);
+		CallableStatement statement2 = EasyMock.createMock(CallableStatement.class);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		EasyMock.expect(this.sqlConnection.isReadOnly()).andReturn(false);
+		EasyMock.expect(this.connection1.isReadOnly()).andReturn(false);
 		
-		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
+
+		this.parent.retain(this.databaseSet);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
-		EasyMock.expect(this.sqlConnection.prepareCall(sql, resultSetType, resultSetConcurrency)).andReturn(statement);
+		EasyMock.expect(this.connection1.prepareCall(sql, resultSetType, resultSetConcurrency)).andReturn(statement1);
+		EasyMock.expect(this.connection2.prepareCall(sql, resultSetType, resultSetConcurrency)).andReturn(statement2);
 		
-		this.control.replay();
+		this.getLockList(sql);
+		
+		this.replay();
 		
 		CallableStatement result = this.connection.prepareCall(sql, resultSetType, resultSetConcurrency);
 
-		this.control.verify();
+		this.verify();
 		
-		assert net.sf.hajdbc.sql.CallableStatement.class.isInstance(result) : result.getClass().getName();
-		assert net.sf.hajdbc.sql.CallableStatement.class.cast(result).getObject(this.database) == statement;
+		assert Proxy.isProxyClass(result.getClass());
+		
+		SQLProxy proxy = SQLProxy.class.cast(Proxy.getInvocationHandler(result));
+		
+		assert proxy.getObject(this.database1) == statement1;
+		assert proxy.getObject(this.database2) == statement2;
 
-		this.control.reset();
-
+		this.reset();
+		
 		// Read-only connection
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		EasyMock.expect(this.sqlConnection.isReadOnly()).andReturn(true);
+		EasyMock.expect(this.connection1.isReadOnly()).andReturn(true);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.next()).andReturn(this.database);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
 		
-		this.balancer.beforeOperation(this.database);
+		this.balancer.beforeInvocation(this.database2);
 		
-		EasyMock.expect(this.sqlConnection.prepareCall(sql, resultSetType, resultSetConcurrency)).andReturn(statement);
+		EasyMock.expect(this.connection2.prepareCall(sql, resultSetType, resultSetConcurrency)).andReturn(statement2);
 
-		this.balancer.afterOperation(this.database);
+		this.balancer.afterInvocation(this.database2);
 		
-		this.control.replay();
+		this.replay();
 		
 		result = this.connection.prepareCall(sql, resultSetType, resultSetConcurrency);
 
-		this.control.verify();
+		this.verify();
 		
-		assert result == statement;
+		assert result == statement2;
 		
 		return result;
 	}
@@ -697,53 +713,60 @@ public class TestConnection implements java.sql.Connection
 	 * @see java.sql.Connection#prepareCall(java.lang.String, int, int, int)
 	 */
 	@Test(dataProvider = "string-int-int-int")
+	@SuppressWarnings("unchecked")
 	public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException
 	{
-		CallableStatement statement = EasyMock.createMock(CallableStatement.class);
+		CallableStatement statement1 = EasyMock.createMock(CallableStatement.class);
+		CallableStatement statement2 = EasyMock.createMock(CallableStatement.class);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		EasyMock.expect(this.sqlConnection.isReadOnly()).andReturn(false);
+		EasyMock.expect(this.connection1.isReadOnly()).andReturn(false);
 		
-		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.parent.retain(this.databaseSet);
 		
-		EasyMock.expect(this.sqlConnection.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability)).andReturn(statement);
+		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
-		this.control.replay();
+		EasyMock.expect(this.connection1.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability)).andReturn(statement1);
+		EasyMock.expect(this.connection2.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability)).andReturn(statement2);
+
+		this.getLockList(sql);
+		
+		this.replay();
 		
 		CallableStatement result = this.connection.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
 
-		this.control.verify();
+		this.verify();
 		
-		assert net.sf.hajdbc.sql.CallableStatement.class.isInstance(result) : result.getClass().getName();
-		assert net.sf.hajdbc.sql.CallableStatement.class.cast(result).getObject(this.database) == statement;
+		assert Proxy.isProxyClass(result.getClass());
+		
+		SQLProxy proxy = SQLProxy.class.cast(Proxy.getInvocationHandler(result));
+		
+		assert proxy.getObject(this.database1) == statement1;
+		assert proxy.getObject(this.database2) == statement2;
 
-		this.control.reset();
-
+		this.reset();
+		
 		// Read-only connection
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		EasyMock.expect(this.sqlConnection.isReadOnly()).andReturn(true);
+		EasyMock.expect(this.connection1.isReadOnly()).andReturn(true);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.next()).andReturn(this.database);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
 		
-		this.balancer.beforeOperation(this.database);
+		this.balancer.beforeInvocation(this.database2);
 		
-		EasyMock.expect(this.sqlConnection.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability)).andReturn(statement);
+		EasyMock.expect(this.connection2.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability)).andReturn(statement2);
 
-		this.balancer.afterOperation(this.database);
+		this.balancer.afterInvocation(this.database2);
 		
-		this.control.replay();
+		this.replay();
 		
 		result = this.connection.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
 
-		this.control.verify();
+		this.verify();
 		
-		assert result == statement;
+		assert result == statement2;
 		
 		return result;
 	}
@@ -752,52 +775,60 @@ public class TestConnection implements java.sql.Connection
 	 * @see java.sql.Connection#prepareStatement(java.lang.String)
 	 */
 	@Test(dataProvider = "string")
+	@SuppressWarnings("unchecked")
 	public PreparedStatement prepareStatement(String sql) throws SQLException
 	{
-		PreparedStatement statement = EasyMock.createMock(PreparedStatement.class);
+		PreparedStatement statement1 = EasyMock.createMock(PreparedStatement.class);
+		PreparedStatement statement2 = EasyMock.createMock(PreparedStatement.class);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		EasyMock.expect(this.sqlConnection.isReadOnly()).andReturn(false);
+		EasyMock.expect(this.connection1.isReadOnly()).andReturn(false);
 		
-		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		EasyMock.expect(this.sqlConnection.prepareStatement(sql)).andReturn(statement);
+		this.parent.retain(this.databaseSet);
 		
-		this.control.replay();
+		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);		
+		
+		EasyMock.expect(this.connection1.prepareStatement(sql)).andReturn(statement1);
+		EasyMock.expect(this.connection2.prepareStatement(sql)).andReturn(statement2);
+		
+		this.getLockList(sql);
+		
+		this.replay();
 		
 		PreparedStatement result = this.connection.prepareStatement(sql);
 
-		this.control.verify();
+		this.verify();
 		
-		assert net.sf.hajdbc.sql.PreparedStatement.class.isInstance(result) : result.getClass().getName();
-		assert net.sf.hajdbc.sql.PreparedStatement.class.cast(result).getObject(this.database) == statement;
+		assert Proxy.isProxyClass(result.getClass());
+		
+		SQLProxy proxy = SQLProxy.class.cast(Proxy.getInvocationHandler(result));
+		
+		assert proxy.getObject(this.database1) == statement1;
+		assert proxy.getObject(this.database2) == statement2;
 
-		this.control.reset();
-
+		this.reset();
+		
 		// Read-only connection
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		EasyMock.expect(this.sqlConnection.isReadOnly()).andReturn(true);
+		EasyMock.expect(this.connection1.isReadOnly()).andReturn(true);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.next()).andReturn(this.database);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
 		
-		this.balancer.beforeOperation(this.database);
+		this.balancer.beforeInvocation(this.database2);
 		
-		EasyMock.expect(this.sqlConnection.prepareStatement(sql)).andReturn(statement);
+		EasyMock.expect(this.connection2.prepareStatement(sql)).andReturn(statement2);
 
-		this.balancer.afterOperation(this.database);
+		this.balancer.afterInvocation(this.database2);
 		
-		this.control.replay();
+		this.replay();
 		
 		result = this.connection.prepareStatement(sql);
 
-		this.control.verify();
+		this.verify();
 		
-		assert result == statement;
+		assert result == statement2;
 		
 		return result;
 	}
@@ -812,52 +843,60 @@ public class TestConnection implements java.sql.Connection
 	 * @see java.sql.Connection#prepareStatement(java.lang.String, int)
 	 */
 	@Test(dataProvider = "string-int")
+	@SuppressWarnings("unchecked")
 	public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) throws SQLException
 	{
-		PreparedStatement statement = EasyMock.createMock(PreparedStatement.class);
+		PreparedStatement statement1 = EasyMock.createMock(PreparedStatement.class);
+		PreparedStatement statement2 = EasyMock.createMock(PreparedStatement.class);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		EasyMock.expect(this.sqlConnection.isReadOnly()).andReturn(false);
+		EasyMock.expect(this.connection1.isReadOnly()).andReturn(false);
 		
-		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		EasyMock.expect(this.sqlConnection.prepareStatement(sql, autoGeneratedKeys)).andReturn(statement);
+		this.parent.retain(this.databaseSet);
 		
-		this.control.replay();
+		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		
+		EasyMock.expect(this.connection1.prepareStatement(sql, autoGeneratedKeys)).andReturn(statement1);
+		EasyMock.expect(this.connection2.prepareStatement(sql, autoGeneratedKeys)).andReturn(statement2);
+
+		this.getLockList(sql);
+		
+		this.replay();
 		
 		PreparedStatement result = this.connection.prepareStatement(sql, autoGeneratedKeys);
 
-		this.control.verify();
+		this.verify();
 		
-		assert net.sf.hajdbc.sql.PreparedStatement.class.isInstance(result) : result.getClass().getName();
-		assert net.sf.hajdbc.sql.PreparedStatement.class.cast(result).getObject(this.database) == statement;
+		assert Proxy.isProxyClass(result.getClass());
+		
+		SQLProxy proxy = SQLProxy.class.cast(Proxy.getInvocationHandler(result));
+		
+		assert proxy.getObject(this.database1) == statement1;
+		assert proxy.getObject(this.database2) == statement2;
 
-		this.control.reset();
-
+		this.reset();
+		
 		// Read-only connection
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		EasyMock.expect(this.sqlConnection.isReadOnly()).andReturn(true);
+		EasyMock.expect(this.connection1.isReadOnly()).andReturn(true);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.next()).andReturn(this.database);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
 		
-		this.balancer.beforeOperation(this.database);
+		this.balancer.beforeInvocation(this.database2);
 		
-		EasyMock.expect(this.sqlConnection.prepareStatement(sql, autoGeneratedKeys)).andReturn(statement);
+		EasyMock.expect(this.connection2.prepareStatement(sql, autoGeneratedKeys)).andReturn(statement2);
 
-		this.balancer.afterOperation(this.database);
+		this.balancer.afterInvocation(this.database2);
 		
-		this.control.replay();
+		this.replay();
 		
 		result = this.connection.prepareStatement(sql, autoGeneratedKeys);
 
-		this.control.verify();
+		this.verify();
 		
-		assert result == statement;
+		assert result == statement2;
 		
 		return result;
 	}
@@ -866,52 +905,60 @@ public class TestConnection implements java.sql.Connection
 	 * @see java.sql.Connection#prepareStatement(java.lang.String, int, int)
 	 */
 	@Test(dataProvider = "string-int-int")
+	@SuppressWarnings("unchecked")
 	public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLException
 	{
-		PreparedStatement statement = EasyMock.createMock(PreparedStatement.class);
+		PreparedStatement statement1 = EasyMock.createMock(PreparedStatement.class);
+		PreparedStatement statement2 = EasyMock.createMock(PreparedStatement.class);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		EasyMock.expect(this.sqlConnection.isReadOnly()).andReturn(false);
+		EasyMock.expect(this.connection1.isReadOnly()).andReturn(false);
 		
-		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		EasyMock.expect(this.sqlConnection.prepareStatement(sql, resultSetType, resultSetConcurrency)).andReturn(statement);
+		this.parent.retain(this.databaseSet);
 		
-		this.control.replay();
+		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		
+		EasyMock.expect(this.connection1.prepareStatement(sql, resultSetType, resultSetConcurrency)).andReturn(statement1);
+		EasyMock.expect(this.connection2.prepareStatement(sql, resultSetType, resultSetConcurrency)).andReturn(statement2);
+
+		this.getLockList(sql);
+		
+		this.replay();
 		
 		PreparedStatement result = this.connection.prepareStatement(sql, resultSetType, resultSetConcurrency);
 
-		this.control.verify();
+		this.verify();
 		
-		assert net.sf.hajdbc.sql.PreparedStatement.class.isInstance(result) : result.getClass().getName();
-		assert net.sf.hajdbc.sql.PreparedStatement.class.cast(result).getObject(this.database) == statement;
+		assert Proxy.isProxyClass(result.getClass());
+		
+		SQLProxy proxy = SQLProxy.class.cast(Proxy.getInvocationHandler(result));
+		
+		assert proxy.getObject(this.database1) == statement1;
+		assert proxy.getObject(this.database2) == statement2;
 
-		this.control.reset();
-
+		this.reset();
+		
 		// Read-only connection
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		EasyMock.expect(this.sqlConnection.isReadOnly()).andReturn(true);
+		EasyMock.expect(this.connection1.isReadOnly()).andReturn(true);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.next()).andReturn(this.database);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
 		
-		this.balancer.beforeOperation(this.database);
+		this.balancer.beforeInvocation(this.database2);
 		
-		EasyMock.expect(this.sqlConnection.prepareStatement(sql, resultSetType, resultSetConcurrency)).andReturn(statement);
+		EasyMock.expect(this.connection2.prepareStatement(sql, resultSetType, resultSetConcurrency)).andReturn(statement2);
 
-		this.balancer.afterOperation(this.database);
+		this.balancer.afterInvocation(this.database2);
 		
-		this.control.replay();
+		this.replay();
 		
 		result = this.connection.prepareStatement(sql, resultSetType, resultSetConcurrency);
 
-		this.control.verify();
+		this.verify();
 		
-		assert result == statement;
+		assert result == statement2;
 		
 		return result;
 	}
@@ -920,52 +967,60 @@ public class TestConnection implements java.sql.Connection
 	 * @see java.sql.Connection#prepareStatement(java.lang.String, int, int, int)
 	 */
 	@Test(dataProvider = "string-int-int-int")
+	@SuppressWarnings("unchecked")
 	public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException
 	{
-		PreparedStatement statement = EasyMock.createMock(PreparedStatement.class);
+		PreparedStatement statement1 = EasyMock.createMock(PreparedStatement.class);
+		PreparedStatement statement2 = EasyMock.createMock(PreparedStatement.class);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		EasyMock.expect(this.sqlConnection.isReadOnly()).andReturn(false);
+		EasyMock.expect(this.connection1.isReadOnly()).andReturn(false);
 		
-		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		EasyMock.expect(this.sqlConnection.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability)).andReturn(statement);
+		this.parent.retain(this.databaseSet);
 		
-		this.control.replay();
+		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		
+		EasyMock.expect(this.connection1.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability)).andReturn(statement1);
+		EasyMock.expect(this.connection2.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability)).andReturn(statement2);
+		
+		this.getLockList(sql);
+		
+		this.replay();
 		
 		PreparedStatement result = this.connection.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
 
-		this.control.verify();
+		this.verify();
 		
-		assert net.sf.hajdbc.sql.PreparedStatement.class.isInstance(result) : result.getClass().getName();
-		assert net.sf.hajdbc.sql.PreparedStatement.class.cast(result).getObject(this.database) == statement;
+		assert Proxy.isProxyClass(result.getClass());
+		
+		SQLProxy proxy = SQLProxy.class.cast(Proxy.getInvocationHandler(result));
+		
+		assert proxy.getObject(this.database1) == statement1;
+		assert proxy.getObject(this.database2) == statement2;
 
-		this.control.reset();
-
+		this.reset();
+		
 		// Read-only connection
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		EasyMock.expect(this.sqlConnection.isReadOnly()).andReturn(true);
+		EasyMock.expect(this.connection1.isReadOnly()).andReturn(true);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.next()).andReturn(this.database);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
 		
-		this.balancer.beforeOperation(this.database);
+		this.balancer.beforeInvocation(this.database2);
 		
-		EasyMock.expect(this.sqlConnection.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability)).andReturn(statement);
+		EasyMock.expect(this.connection2.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability)).andReturn(statement2);
 
-		this.balancer.afterOperation(this.database);
+		this.balancer.afterInvocation(this.database2);
 		
-		this.control.replay();
+		this.replay();
 		
 		result = this.connection.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
 
-		this.control.verify();
+		this.verify();
 		
-		assert result == statement;
+		assert result == statement2;
 		
 		return result;
 	}
@@ -980,52 +1035,60 @@ public class TestConnection implements java.sql.Connection
 	 * @see java.sql.Connection#prepareStatement(java.lang.String, int[])
 	 */
 	@Test(dataProvider = "string-ints")
+	@SuppressWarnings("unchecked")
 	public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException
 	{
-		PreparedStatement statement = EasyMock.createMock(PreparedStatement.class);
+		PreparedStatement statement1 = EasyMock.createMock(PreparedStatement.class);
+		PreparedStatement statement2 = EasyMock.createMock(PreparedStatement.class);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		EasyMock.expect(this.sqlConnection.isReadOnly()).andReturn(false);
+		EasyMock.expect(this.connection1.isReadOnly()).andReturn(false);
 		
-		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		EasyMock.expect(this.sqlConnection.prepareStatement(sql, columnIndexes)).andReturn(statement);
+		this.parent.retain(this.databaseSet);
+		
+		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		
+		EasyMock.expect(this.connection1.prepareStatement(sql, columnIndexes)).andReturn(statement1);
+		EasyMock.expect(this.connection2.prepareStatement(sql, columnIndexes)).andReturn(statement2);
 
-		this.control.replay();
+		this.getLockList(sql);
+		
+		this.replay();
 		
 		PreparedStatement result = this.connection.prepareStatement(sql, columnIndexes);
 
-		this.control.verify();
+		this.verify();
 		
-		assert net.sf.hajdbc.sql.PreparedStatement.class.isInstance(result) : result.getClass().getName();
-		assert net.sf.hajdbc.sql.PreparedStatement.class.cast(result).getObject(this.database) == statement;
+		assert Proxy.isProxyClass(result.getClass());
+		
+		SQLProxy proxy = SQLProxy.class.cast(Proxy.getInvocationHandler(result));
+		
+		assert proxy.getObject(this.database1) == statement1;
+		assert proxy.getObject(this.database2) == statement2;
 
-		this.control.reset();
-
+		this.reset();
+		
 		// Read-only connection
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		EasyMock.expect(this.sqlConnection.isReadOnly()).andReturn(true);
+		EasyMock.expect(this.connection1.isReadOnly()).andReturn(true);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.next()).andReturn(this.database);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
 		
-		this.balancer.beforeOperation(this.database);
+		this.balancer.beforeInvocation(this.database2);
 		
-		EasyMock.expect(this.sqlConnection.prepareStatement(sql, columnIndexes)).andReturn(statement);
+		EasyMock.expect(this.connection2.prepareStatement(sql, columnIndexes)).andReturn(statement2);
 
-		this.balancer.afterOperation(this.database);
+		this.balancer.afterInvocation(this.database2);
 		
-		this.control.replay();
+		this.replay();
 		
 		result = this.connection.prepareStatement(sql, columnIndexes);
 
-		this.control.verify();
+		this.verify();
 		
-		assert result == statement;
+		assert result == statement2;
 		
 		return result;
 	}
@@ -1040,114 +1103,102 @@ public class TestConnection implements java.sql.Connection
 	 * @see java.sql.Connection#prepareStatement(java.lang.String, java.lang.String[])
 	 */
 	@Test(dataProvider = "string-strings")
+	@SuppressWarnings("unchecked")
 	public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException
 	{
-		PreparedStatement statement = EasyMock.createMock(PreparedStatement.class);
+		PreparedStatement statement1 = EasyMock.createMock(PreparedStatement.class);
+		PreparedStatement statement2 = EasyMock.createMock(PreparedStatement.class);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		EasyMock.expect(this.sqlConnection.isReadOnly()).andReturn(false);
+		EasyMock.expect(this.connection1.isReadOnly()).andReturn(false);
 		
-		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		EasyMock.expect(this.sqlConnection.prepareStatement(sql, columnNames)).andReturn(statement);
+		this.parent.retain(this.databaseSet);
 		
-		this.control.replay();
+		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		
+		EasyMock.expect(this.connection1.prepareStatement(sql, columnNames)).andReturn(statement1);
+		EasyMock.expect(this.connection2.prepareStatement(sql, columnNames)).andReturn(statement2);
+
+		this.getLockList(sql);
+		
+		this.replay();
 		
 		PreparedStatement result = this.connection.prepareStatement(sql, columnNames);
 
-		this.control.verify();
+		this.verify();
 		
-		assert net.sf.hajdbc.sql.PreparedStatement.class.isInstance(result) : result.getClass().getName();
-		assert net.sf.hajdbc.sql.PreparedStatement.class.cast(result).getObject(this.database) == statement;
+		assert Proxy.isProxyClass(result.getClass());
+		
+		SQLProxy proxy = SQLProxy.class.cast(Proxy.getInvocationHandler(result));
+		
+		assert proxy.getObject(this.database1) == statement1;
+		assert proxy.getObject(this.database2) == statement2;
 
-		this.control.reset();
-
+		this.reset();
+		
 		// Read-only connection
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.first()).andReturn(this.database);
-		EasyMock.expect(this.sqlConnection.isReadOnly()).andReturn(true);
+		EasyMock.expect(this.connection1.isReadOnly()).andReturn(true);
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.next()).andReturn(this.database);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
 		
-		this.balancer.beforeOperation(this.database);
+		this.balancer.beforeInvocation(this.database2);
 		
-		EasyMock.expect(this.sqlConnection.prepareStatement(sql, columnNames)).andReturn(statement);
+		EasyMock.expect(this.connection2.prepareStatement(sql, columnNames)).andReturn(statement2);
 
-		this.balancer.afterOperation(this.database);
+		this.balancer.afterInvocation(this.database2);
 		
-		this.control.replay();
+		this.replay();
 		
 		result = this.connection.prepareStatement(sql, columnNames);
 
-		this.control.verify();
+		this.verify();
 		
-		assert result == statement;
+		assert result == statement2;
 		
 		return result;
 	}
 	
 	@DataProvider(name = "savepoint")
-	Object[][] savepointProvider() throws SQLException
+	Object[][] savepointProvider() throws Exception
 	{
-		final java.sql.Savepoint sqlSavepoint = EasyMock.createMock(java.sql.Savepoint.class);
+		Map<Database, Savepoint> map = new TreeMap<Database, Savepoint>();
+		map.put(this.database1, this.savepoint1);
+		map.put(this.database2, this.savepoint2);
 		
-		Operation<java.sql.Connection, java.sql.Savepoint> operation = new Operation<java.sql.Connection, java.sql.Savepoint>()
-		{
-			public java.sql.Savepoint execute(Database database, java.sql.Connection connection)
-			{
-				return sqlSavepoint;
-			}
-		};
-		
-		EasyMock.expect(this.databaseCluster.getTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.lock.lock();
-		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
-
-		this.lock.unlock();
-		
-		this.control.replay();
-		
-		Savepoint savepoint = new Savepoint(this.connection, operation);
-			
-		this.control.verify();
-		this.control.reset();
-		
-		return new Object[][] { new Object[] { savepoint } };
+		return new Object[][] { new Object[] { ProxyFactory.createProxy(Savepoint.class, new SavepointInvocationHandler(this.connection, EasyMock.createMock(SQLProxy.class), EasyMock.createMock(Invoker.class), map)) } };
 	}
 	
 	/**
-	 * @see java.sql.Connection#releaseSavepoint(java.sql.Savepoint)
+	 * @see java.sql.Connection#releaseSavepoint(Savepoint)
 	 */
 	@Test(dataProvider = "savepoint")
-	public void releaseSavepoint(java.sql.Savepoint savepoint) throws SQLException
+	public void releaseSavepoint(Savepoint savepoint) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
+		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.readLock);
 		
-		this.lock.lock();
+		this.readLock.lock();
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.sqlConnection.releaseSavepoint(savepoint);
+		this.parent.retain(this.databaseSet);
 		
-		this.lock.unlock();
+		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
-		this.control.replay();
+		this.connection1.releaseSavepoint(this.savepoint1);
+		this.connection2.releaseSavepoint(this.savepoint2);
+		
+		this.readLock.unlock();
+		
+		this.replay();
 		
 		this.connection.releaseSavepoint(savepoint);
 		
-		this.control.verify();
+		this.verify();
 	}
 	
 	/**
@@ -1156,50 +1207,58 @@ public class TestConnection implements java.sql.Connection
 	@Test
 	public void rollback() throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
+		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.readLock);
 		
-		this.lock.lock();
+		this.readLock.lock();
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
+
+		this.parent.retain(this.databaseSet);
 		
-		this.sqlConnection.rollback();
+		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
-		this.lock.unlock();
+		this.connection1.rollback();
+		this.connection2.rollback();
 		
-		this.control.replay();
+		this.readLock.unlock();
+		
+		this.replay();
 		
 		this.connection.rollback();
 		
-		this.control.verify();
+		this.verify();
 	}
 	
 	/**
-	 * @see java.sql.Connection#rollback(java.sql.Savepoint)
+	 * @see java.sql.Connection#rollback(Savepoint)
 	 */
 	@Test(dataProvider = "savepoint")
-	public void rollback(java.sql.Savepoint savepoint) throws SQLException
+	public void rollback(Savepoint savepoint) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
+		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.readLock);
 		
-		this.lock.lock();
+		this.readLock.lock();
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
+
+		this.parent.retain(this.databaseSet);
 		
-		this.sqlConnection.rollback(savepoint);
+		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
-		this.lock.unlock();
+		this.connection1.rollback(this.savepoint1);
+		this.connection2.rollback(this.savepoint2);
 		
-		this.control.replay();
+		this.readLock.unlock();
+		
+		this.replay();
 		
 		this.connection.rollback(savepoint);
 		
-		this.control.verify();
+		this.verify();
 	}
 	
 	@DataProvider(name = "boolean")
@@ -1214,17 +1273,14 @@ public class TestConnection implements java.sql.Connection
 	@Test(dataProvider = "boolean")
 	public void setAutoCommit(boolean autoCommit) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.connection1.setAutoCommit(autoCommit);
+		this.connection2.setAutoCommit(autoCommit);
 		
-		this.sqlConnection.setAutoCommit(autoCommit);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.connection.setAutoCommit(autoCommit);
 		
-		this.control.verify();
+		this.verify();
 	}
 	
 	/**
@@ -1233,17 +1289,21 @@ public class TestConnection implements java.sql.Connection
 	@Test(dataProvider = "string")
 	public void setCatalog(String catalog) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
+
+		this.parent.retain(this.databaseSet);
 		
-		this.sqlConnection.setCatalog(catalog);
+		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
-		this.control.replay();
+		this.connection1.setCatalog(catalog);
+		this.connection2.setCatalog(catalog);
+		
+		this.replay();
 		
 		this.connection.setCatalog(catalog);
 		
-		this.control.verify();
+		this.verify();
 	}
 	
 	@DataProvider(name = "holdability")
@@ -1255,19 +1315,17 @@ public class TestConnection implements java.sql.Connection
 	/**
 	 * @see java.sql.Connection#setHoldability(int)
 	 */
-	@Test(dataProvider = "holdability")
+	@Test(dataProvider = "int")
 	public void setHoldability(int holdability) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.connection1.setHoldability(holdability);
+		this.connection2.setHoldability(holdability);
 		
-		this.sqlConnection.setHoldability(holdability);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.connection.setHoldability(holdability);
 		
-		this.control.verify();
+		this.verify();
 	}
 	
 	/**
@@ -1276,47 +1334,55 @@ public class TestConnection implements java.sql.Connection
 	@Test(dataProvider = "boolean")
 	public void setReadOnly(boolean readOnly) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.connection1.setReadOnly(readOnly);
+		this.connection2.setReadOnly(readOnly);
 		
-		this.sqlConnection.setReadOnly(readOnly);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.connection.setReadOnly(readOnly);
 		
-		this.control.verify();
+		this.verify();
 	}
 	
 	/**
 	 * @see java.sql.Connection#setSavepoint()
 	 */
 	@Test
-	public java.sql.Savepoint setSavepoint() throws SQLException
+	@SuppressWarnings("unchecked")
+	public Savepoint setSavepoint() throws SQLException
 	{
-		java.sql.Savepoint savepoint = EasyMock.createMock(java.sql.Savepoint.class);
+		Savepoint savepoint1 = EasyMock.createMock(Savepoint.class);
+		Savepoint savepoint2 = EasyMock.createMock(Savepoint.class);
 		
-		EasyMock.expect(this.databaseCluster.getTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
+		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.readLock);
 		
-		this.lock.lock();
+		this.readLock.lock();
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
-		
-		EasyMock.expect(this.sqlConnection.setSavepoint()).andReturn(savepoint);
-		
-		this.lock.unlock();
-		
-		this.control.replay();
-		
-		java.sql.Savepoint result = this.connection.setSavepoint();
-		
-		this.control.verify();
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		assert Savepoint.class.isInstance(result) : result.getClass().getName();
-		assert Savepoint.class.cast(result).getObject(this.database) == savepoint;
+		this.parent.retain(this.databaseSet);
+		
+		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
+		
+		EasyMock.expect(this.connection1.setSavepoint()).andReturn(savepoint1);
+		EasyMock.expect(this.connection2.setSavepoint()).andReturn(savepoint2);
+		
+		this.readLock.unlock();
+		
+		this.replay();
+		
+		Savepoint result = this.connection.setSavepoint();
+		
+		this.verify();
+
+		assert Proxy.isProxyClass(result.getClass());
+		
+		SQLProxy proxy = SQLProxy.class.cast(Proxy.getInvocationHandler(result));
+		
+		assert proxy.getObject(this.database1) == savepoint1;
+		assert proxy.getObject(this.database2) == savepoint2;
 		
 		return result;
 	}
@@ -1325,31 +1391,41 @@ public class TestConnection implements java.sql.Connection
 	 * @see java.sql.Connection#setSavepoint(java.lang.String)
 	 */
 	@Test(dataProvider = "string")
-	public java.sql.Savepoint setSavepoint(String name) throws SQLException
+	@SuppressWarnings("unchecked")
+	public Savepoint setSavepoint(String name) throws SQLException
 	{
-		java.sql.Savepoint savepoint = EasyMock.createMock(java.sql.Savepoint.class);
+		Savepoint savepoint1 = EasyMock.createMock(Savepoint.class);
+		Savepoint savepoint2 = EasyMock.createMock(Savepoint.class);
 		
-		EasyMock.expect(this.databaseCluster.getTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
+		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.readLock);
 		
-		this.lock.lock();
+		this.readLock.lock();
 		
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		EasyMock.expect(this.sqlConnection.setSavepoint(name)).andReturn(savepoint);
+		this.parent.retain(this.databaseSet);
 		
-		this.lock.unlock();
+		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
-		this.control.replay();
+		EasyMock.expect(this.connection1.setSavepoint(name)).andReturn(savepoint1);
+		EasyMock.expect(this.connection2.setSavepoint(name)).andReturn(savepoint2);
 		
-		java.sql.Savepoint result = this.connection.setSavepoint(name);
+		this.readLock.unlock();
 		
-		this.control.verify();
+		this.replay();
+		
+		Savepoint result = this.connection.setSavepoint(name);
+		
+		this.verify();
 
-		assert Savepoint.class.isInstance(result) : result.getClass().getName();
-		assert Savepoint.class.cast(result).getObject(this.database) == savepoint;
+		assert Proxy.isProxyClass(result.getClass());
+		
+		SQLProxy proxy = SQLProxy.class.cast(Proxy.getInvocationHandler(result));
+		
+		assert proxy.getObject(this.database1) == savepoint1;
+		assert proxy.getObject(this.database2) == savepoint2;
 		
 		return result;
 	}
@@ -1366,17 +1442,21 @@ public class TestConnection implements java.sql.Connection
 	@Test(dataProvider = "isolation")
 	public void setTransactionIsolation(int level) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.sqlConnection.setTransactionIsolation(level);
+		this.parent.retain(this.databaseSet);
 		
-		this.control.replay();
+		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		
+		this.connection1.setTransactionIsolation(level);
+		this.connection2.setTransactionIsolation(level);
+		
+		this.replay();
 		
 		this.connection.setTransactionIsolation(level);
 		
-		this.control.verify();
+		this.verify();
 	}
 	
 	@DataProvider(name = "map")
@@ -1391,15 +1471,336 @@ public class TestConnection implements java.sql.Connection
 	@Test(dataProvider = "map")
 	public void setTypeMap(Map<String, Class<?>> map) throws SQLException
 	{
-		EasyMock.expect(this.databaseCluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.list()).andReturn(this.databaseList);
+		this.connection1.setTypeMap(map);
+		this.connection2.setTypeMap(map);
 		
-		this.sqlConnection.setTypeMap(map);
-		
-		this.control.replay();
+		this.replay();
 		
 		this.connection.setTypeMap(map);
 		
-		this.control.verify();
+		this.verify();
+	}
+
+	@DataProvider(name = "string-objects")
+	Object[][] elementsProvider()
+	{
+		return new Object[][] { new Object[] { "", new Object[0] } };
+	}
+
+	/**
+	 * @see java.sql.Connection#createArrayOf(java.lang.String, java.lang.Object[])
+	 */
+	@Test(dataProvider = "string-objects")
+	public Array createArrayOf(String typeName, Object[] elements) throws SQLException
+	{
+		Array array = EasyMock.createMock(Array.class);
+		
+		EasyMock.expect(this.connection1.createArrayOf(typeName, elements)).andReturn(array);
+		
+		this.replay();
+		
+		Array result = this.connection.createArrayOf(typeName, elements);
+		
+		this.verify();
+		
+		assert result == array;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.Connection#createBlob()
+	 */
+	@Test
+	public Blob createBlob() throws SQLException
+	{
+		Blob blob = EasyMock.createMock(Blob.class);
+		
+		EasyMock.expect(this.connection1.createBlob()).andReturn(blob);
+		
+		this.replay();
+		
+		Blob result = this.connection.createBlob();
+		
+		this.verify();
+		
+		assert result == blob;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.Connection#createClob()
+	 */
+	@Test
+	public Clob createClob() throws SQLException
+	{
+		Clob clob = EasyMock.createMock(Clob.class);
+		
+		EasyMock.expect(this.connection1.createClob()).andReturn(clob);
+		
+		this.replay();
+		
+		Clob result = this.connection.createClob();
+		
+		this.verify();
+		
+		assert result == clob;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.Connection#createNClob()
+	 */
+	@Test
+	public NClob createNClob() throws SQLException
+	{
+		NClob clob = EasyMock.createMock(NClob.class);
+		
+		EasyMock.expect(this.connection1.createNClob()).andReturn(clob);
+		
+		this.replay();
+		
+		NClob result = this.connection.createNClob();
+		
+		this.verify();
+		
+		assert result == clob;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.Connection#createSQLXML()
+	 */
+	@Test
+	public SQLXML createSQLXML() throws SQLException
+	{
+		SQLXML xml = EasyMock.createMock(SQLXML.class);
+		
+		EasyMock.expect(this.connection1.createSQLXML()).andReturn(xml);
+		
+		this.replay();
+		
+		SQLXML result = this.connection.createSQLXML();
+		
+		this.verify();
+		
+		assert result == xml;
+		
+		return result;
+	}
+	
+	/**
+	 * @see java.sql.Connection#createStruct(java.lang.String, java.lang.Object[])
+	 */
+	@Test(dataProvider = "string-objects")
+	public Struct createStruct(String typeName, Object[] elements) throws SQLException
+	{
+		Struct struct = EasyMock.createMock(Struct.class);
+		
+		EasyMock.expect(this.connection1.createStruct(typeName, elements)).andReturn(struct);
+		
+		this.replay();
+		
+		Struct result = this.connection.createStruct(typeName, elements);
+		
+		this.verify();
+		
+		assert result == struct;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.Connection#getClientInfo()
+	 */
+	@Test
+	public Properties getClientInfo() throws SQLException
+	{
+		Properties properties = new Properties();
+		
+		EasyMock.expect(this.connection1.getClientInfo()).andReturn(properties);
+		
+		this.replay();
+		
+		Properties result = this.connection.getClientInfo();
+		
+		this.verify();
+		
+		assert result == properties;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.Connection#getClientInfo(java.lang.String)
+	 */
+	@Test(dataProvider = "string")
+	public String getClientInfo(String property) throws SQLException
+	{
+		EasyMock.expect(this.connection1.getClientInfo(property)).andReturn("value");
+		
+		this.replay();
+		
+		String result = this.connection.getClientInfo(property);
+		
+		this.verify();
+		
+		assert result.equals("value");
+		
+		return result;
+	}
+
+	@DataProvider(name = "int")
+	Object[][] intProvider()
+	{
+		return new Object[][] { new Object[] { 1 } };
+	}
+	
+	/**
+	 * @see java.sql.Connection#isValid(int)
+	 */
+	@Test(dataProvider = "int")
+	public boolean isValid(int timeout) throws SQLException
+	{
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
+		
+		this.balancer.beforeInvocation(this.database2);
+		
+		EasyMock.expect(this.connection2.isValid(timeout)).andReturn(true);
+		
+		this.balancer.afterInvocation(this.database2);
+		
+		this.replay();
+		
+		boolean result = this.connection.isValid(timeout);
+		
+		this.verify();
+		
+		assert result;
+		
+		return result;
+	}
+
+	@DataProvider(name = "properties")
+	Object[][] propertiesProvider()
+	{
+		return new Object[][] { new Object[] { new Properties() } };
+	}
+	
+	/**
+	 * @see java.sql.Connection#setClientInfo(java.util.Properties)
+	 */
+	@Test(dataProvider = "properties")
+	public void setClientInfo(Properties properties) throws SQLClientInfoException
+	{
+		this.connection1.setClientInfo(properties);
+		this.connection2.setClientInfo(properties);
+		
+		this.replay();
+		
+		this.connection.setClientInfo(properties);
+		
+		this.verify();
+	}
+
+	@DataProvider(name = "string-string")
+	Object[][] stringStringProvider()
+	{
+		return new Object[][] { new Object[] { "name", "value" } };
+	}
+	
+	/**
+	 * @see java.sql.Connection#setClientInfo(java.lang.String, java.lang.String)
+	 */
+	@Test(dataProvider = "string-string")
+	public void setClientInfo(String property, String value) throws SQLClientInfoException
+	{
+		this.connection1.setClientInfo(property, value);
+		this.connection2.setClientInfo(property, value);
+		
+		this.replay();
+		
+		this.connection.setClientInfo(property, value);
+		
+		this.verify();
+	}
+
+	@DataProvider(name = "class")
+	Object[][] classProvider()
+	{
+		return new Object[][] { new Object[] { Connection.class } };
+	}
+	
+	/**
+	 * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
+	 */
+	@Test(dataProvider = "class")
+	public boolean isWrapperFor(Class<?> targetClass) throws SQLException
+	{
+		EasyMock.expect(this.connection1.isWrapperFor(targetClass)).andReturn(true);
+		
+		this.replay();
+		
+		boolean result = this.connection.isWrapperFor(targetClass);
+		
+		this.verify();
+		
+		assert result;
+		
+		return result;
+	}
+
+	/**
+	 * @see java.sql.Wrapper#unwrap(java.lang.Class)
+	 */
+	@Test(dataProvider = "class")
+	public <T> T unwrap(Class<T> targetClass) throws SQLException
+	{
+		T object = EasyMock.createMock(targetClass);
+		
+		EasyMock.expect(this.connection1.unwrap(targetClass)).andReturn(object);
+		
+		this.replay();
+		
+		T result = this.connection.unwrap(targetClass);
+		
+		this.verify();
+		
+		assert result == object;
+		
+		return result;
+	}
+	
+	protected void getLockList(String sql) throws SQLException
+	{	
+		EasyMock.expect(this.cluster.getDialect()).andReturn(this.dialect);
+		EasyMock.expect(this.dialect.supportsSequences()).andReturn(true);
+		EasyMock.expect(this.cluster.isSequenceDetectionEnabled()).andReturn(true);
+		EasyMock.expect(this.dialect.parseSequence(sql)).andReturn("sequence");
+		
+		EasyMock.expect(this.dialect.supportsIdentityColumns()).andReturn(true);
+		EasyMock.expect(this.cluster.isIdentityColumnDetectionEnabled()).andReturn(true);
+		EasyMock.expect(this.dialect.parseInsertTable(sql)).andReturn("table");
+		EasyMock.expect(this.cluster.getDatabaseMetaDataCache()).andReturn(this.metaData);
+		EasyMock.expect(this.metaData.getDatabaseProperties(this.connection)).andReturn(this.databaseProperties);
+		EasyMock.expect(this.databaseProperties.findTable("table")).andReturn(this.tableProperties);
+		EasyMock.expect(this.tableProperties.getColumns()).andReturn(Collections.singleton("column"));
+		EasyMock.expect(this.tableProperties.getColumnProperties("column")).andReturn(this.columnProperties);
+		EasyMock.expect(this.columnProperties.isAutoIncrement()).andReturn(null);
+		EasyMock.expect(this.dialect.isIdentity(this.columnProperties)).andReturn(true);
+		EasyMock.expect(this.tableProperties.getName()).andReturn("table");
+		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.writeLock("sequence")).andReturn(this.writeLock1);
+		EasyMock.expect(this.lockManager.writeLock("table")).andReturn(this.writeLock2);
+		
+		EasyMock.expect(this.cluster.getDatabaseMetaDataCache()).andReturn(this.metaData);
+		EasyMock.expect(this.metaData.getDatabaseProperties(this.connection)).andReturn(this.databaseProperties);
+		EasyMock.expect(this.databaseProperties.supportsSelectForUpdate()).andReturn(true);
+		EasyMock.expect(this.cluster.getDialect()).andReturn(this.dialect);
+		EasyMock.expect(this.dialect.isSelectForUpdate(sql)).andReturn(true);
 	}
 }

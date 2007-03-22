@@ -39,13 +39,16 @@
 	</path>
 
 	<path id="testng.classpath">
-		<fileset dir="${lib.test.dir}" includes="*.jar"></fileset>
-		<fileset dir="${lib.runtime.dir}" includes="*.jar"></fileset>
+		<fileset dir="${lib.test.dir}" includes="testng-*.jar"></fileset>
 	</path>
 
 	<path id="test.classpath">
 		<path refid="build.classpath"></path>
-		<path refid="testng.classpath"></path>
+		<fileset dir="${lib.test.dir}" includes="*.jar"></fileset>
+		<fileset dir="${lib.runtime.dir}">
+			<include name="stax-api-*.jar"/>
+			<include name="wstx-*.jar"/>
+		</fileset>
 	</path>
 	
 	<path id="bind.classpath">
@@ -105,6 +108,7 @@
 	<target name="jar" depends="bind">
 		<jar jarfile="${jar.file}" index="true">
 			<fileset dir="${build.dir}"></fileset>
+			<metainf dir="${conf.dir}" includes="services/*"></metainf>
 		</jar>
 	</target>
 
@@ -187,7 +191,7 @@
 	</target>
 
 	<target name="run-tests" depends="compile-tests">
-		<testng classpathref="test.classpath">
+		<testng classpathref="test.classpath" verbose="9">
 			<xmlfileset dir="${test.dir}" includes="testng.xml"/>
 		</testng>
 	</target>

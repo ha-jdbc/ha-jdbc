@@ -23,6 +23,8 @@ package net.sf.hajdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import javax.management.DynamicMBean;
+
 import net.sf.hajdbc.sql.AbstractDatabase;
 
 /**
@@ -75,7 +77,7 @@ public class MockDatabase extends AbstractDatabase<Void>
 	/**
 	 * @see net.sf.hajdbc.Database#getActiveMBeanClass()
 	 */
-	public Class<? extends ActiveDatabaseMBean> getActiveMBeanClass()
+	public DynamicMBean getActiveMBean()
 	{
 		return null;
 	}
@@ -83,7 +85,7 @@ public class MockDatabase extends AbstractDatabase<Void>
 	/**
 	 * @see net.sf.hajdbc.Database#getInactiveMBeanClass()
 	 */
-	public Class<? extends InactiveDatabaseMBean> getInactiveMBeanClass()
+	public DynamicMBean getInactiveMBean()
 	{
 		return null;
 	}

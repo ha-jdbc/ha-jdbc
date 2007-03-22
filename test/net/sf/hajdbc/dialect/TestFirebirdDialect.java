@@ -53,11 +53,11 @@ public class TestFirebirdDialect extends TestStandardDialect
 	@Test(dataProvider = "alter-sequence")
 	public String getAlterSequenceSQL(String sequence, long value) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getAlterSequenceSQL(sequence, value);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sql.equals("SET GENERATOR sequence TO 1") : sql;
 		
@@ -82,11 +82,11 @@ public class TestFirebirdDialect extends TestStandardDialect
 		this.resultSet.close();
 		this.statement.close();
 		
-		this.control.replay();
+		this.replay();
 		
 		Collection<String> sequences = this.dialect.getSequences(connection);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sequences.size() == 2 : sequences;
 		
@@ -109,11 +109,11 @@ public class TestFirebirdDialect extends TestStandardDialect
 	@Test(dataProvider = "sequence")
 	public String getNextSequenceValueSQL(String sequence) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getNextSequenceValueSQL(sequence);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sql.equals("SELECT GEN_ID(sequence, 1) FROM RDB$DATABASE") : sql;
 		
@@ -141,20 +141,19 @@ public class TestFirebirdDialect extends TestStandardDialect
 	@Test(dataProvider = "null")
 	public boolean isSelectForUpdate(String sql) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		boolean selectForUpdate = this.dialect.isSelectForUpdate("SELECT * FROM table FOR UPDATE");
 		
-		this.control.verify();
+		this.verify();
 		
 		assert !selectForUpdate;
 		
-		this.control.reset();
-		this.control.replay();
+		this.replay();
 		
 		selectForUpdate = this.dialect.isSelectForUpdate("SELECT * FROM table FOR UPDATE WITH LOCK");
 		
-		this.control.verify();
+		this.verify();
 		
 		assert selectForUpdate;
 		
@@ -168,20 +167,19 @@ public class TestFirebirdDialect extends TestStandardDialect
 	@Test(dataProvider = "null")
 	public String parseSequence(String sql) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sequence = this.dialect.parseSequence("SELECT GEN_ID(sequence, 1) FROM RDB$DATABASE");
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sequence.equals("sequence") : sequence;
 		
-		this.control.reset();
-		this.control.replay();
+		this.replay();
 		
 		sequence = this.dialect.parseSequence("SELECT * FROM RDB$DATABASE");
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sequence == null : sequence;
 		
@@ -195,11 +193,11 @@ public class TestFirebirdDialect extends TestStandardDialect
 	@Override
 	public boolean supportsIdentityColumns()
 	{
-		this.control.replay();
+		this.replay();
 		
 		boolean supports = this.dialect.supportsIdentityColumns();
 		
-		this.control.verify();
+		this.verify();
 		
 		assert !supports;
 		
@@ -221,11 +219,11 @@ public class TestFirebirdDialect extends TestStandardDialect
 		this.resultSet.close();
 		this.statement.close();
 		
-		this.control.replay();
+		this.replay();
 		
 		List<String> schemaList = this.dialect.getDefaultSchemas(connection);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert schemaList.size() == 1 : schemaList.size();
 		

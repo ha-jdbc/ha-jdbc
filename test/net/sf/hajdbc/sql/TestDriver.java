@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
@@ -27,19 +28,40 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Properties;
 
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import net.sf.hajdbc.DatabaseClusterTestCase;
 
 /**
  * Unit test for {@link Driver}.
  * @author  Paul Ferraro
  * @since   1.0
  */
-public class TestDriver extends DatabaseClusterTestCase implements java.sql.Driver
+public class TestDriver implements java.sql.Driver
 {
 	private java.sql.Driver driver = new Driver();
+	private MBeanServer server;
+	
+	@BeforeClass
+	protected void setUp() throws Exception
+	{
+		this.server = MBeanServerFactory.createMBeanServer();
+		
+		DriverManager.registerDriver(new MockDriver());
+	}
+
+	@AfterClass
+	protected void tearDown() throws Exception
+	{
+		DriverManager.deregisterDriver(new MockDriver());
+
+		MBeanServerFactory.releaseMBeanServer(this.server);
+	}
 
 	/**
 	 * Test method for {@link Driver} static initialization.
@@ -63,28 +85,44 @@ public class TestDriver extends DatabaseClusterTestCase implements java.sql.Driv
 	@DataProvider(name = "connect")
 	public Object[][] getConnectProvider()
 	{
-		return new Object[][] { new Object[] { "jdbc:ha-jdbc:test-database-cluster", null } };
-	}
-
-	@DataProvider(name = "url")
-	public Object[][] getUrlProvider()
-	{
-		return new Object[][] { new Object[] { "jdbc:ha-jdbc:test-database-cluster" } };
+		return new Object[][] { new Object[] { "jdbc:ha-jdbc:test-database-cluster", new Properties() }, new Object[] { "jdbc:ha-jdbc:invalid-cluster", new Properties() }, new Object[] { "jdbc:mock", new Properties() } };
 	}
 
 	/**
 	 * @see java.sql.Driver#connect(java.lang.String, java.util.Properties)
 	 */
 	@Test(dataProvider = "connect")
-	public Connection connect(String url, Properties info) throws SQLException
+	public Connection connect(String url, Properties properties)
 	{
-		Connection connection = this.driver.connect("jdbc:ha-jdbc:test-database-cluster", null);
+		try
+		{
+			Connection connection = this.driver.connect(url, properties);
+			
+			if (this.driver.acceptsURL(url))
+			{
+				assert connection != null;
+				
+				assert Proxy.isProxyClass(connection.getClass());
+				assert Proxy.getInvocationHandler(connection).getClass().equals(ConnectionInvocationHandler.class);
+			}
+			else
+			{
+				assert connection == null;
+			}
+		}
+		catch (SQLException e)
+		{
+			assert !url.equals("jdbc:ha-jdbc:test-database-cluster") : e.getMessage();
+//			e.printStackTrace();
+		}
 		
-		assert connection != null;
-		
-		assert net.sf.hajdbc.sql.Connection.class.equals(connection.getClass()) : connection.getClass().getName();
-		
-		return connection;
+		return null;
+	}
+
+	@DataProvider(name = "url")
+	public Object[][] getUrlProvider()
+	{
+		return new Object[][] { new Object[] { "jdbc:ha-jdbc:test-database-cluster" }, new Object[] { "jdbc:ha-jdbc:" }, new Object[] { "jdbc:ha-jdbc" }, new Object[] { "jdbc:mock" } };
 	}
 
 	/**
@@ -93,47 +131,40 @@ public class TestDriver extends DatabaseClusterTestCase implements java.sql.Driv
 	@Test(dataProvider = "url")
 	public boolean acceptsURL(String url) throws SQLException
 	{
-		boolean accepted = this.driver.acceptsURL(url);
+		boolean accepted = url.startsWith("jdbc:ha-jdbc:") && url.length() > 13;
 		
-		assert accepted;
+		boolean result = this.driver.acceptsURL(url);
+		
+		assert result == accepted : url;
 
-		try
-		{
-			accepted = this.driver.acceptsURL("jdbc:ha-jdbc:no-such-cluster");
-
-			assert false : accepted;
-		}
-		catch (IllegalArgumentException e)
-		{
-			assert true;
-		}
-		
-		accepted = this.driver.acceptsURL("jdbc:ha-jdbc:");
-
-		assert !accepted;
-		
-		accepted = this.driver.acceptsURL("jdbc:ha-jdbc");
-		
-		assert !accepted;
-
-		accepted = this.driver.acceptsURL("jdbc:test:database1");
-		
-		assert !accepted;
-		
-		return accepted;
+		return result;
 	}
 
 	/**
 	 * @see java.sql.Driver#getPropertyInfo(java.lang.String, java.util.Properties)
 	 */
 	@Test(dataProvider = "connect")
-	public DriverPropertyInfo[] getPropertyInfo(String url, Properties properties) throws SQLException
+	public DriverPropertyInfo[] getPropertyInfo(String url, Properties properties)
 	{
-		DriverPropertyInfo[] info = this.driver.getPropertyInfo("jdbc:ha-jdbc:test-database-cluster", null);
+		try
+		{
+			DriverPropertyInfo[] info = this.driver.getPropertyInfo(url, properties);
+			
+			if (this.driver.acceptsURL(url))
+			{
+				assert info != null;
+			}
+			else
+			{
+				assert info == null;
+			}
+		}
+		catch (SQLException e)
+		{
+			assert !url.equals("jdbc:ha-jdbc:test-database-cluster") : url;
+		}
 		
-		assert info != null;
-		
-		return info;
+		return null;
 	}
 
 	/**
@@ -144,7 +175,7 @@ public class TestDriver extends DatabaseClusterTestCase implements java.sql.Driv
 	{
 		int version = this.driver.getMajorVersion();
 		
-		assert version == 1 : version;
+		assert version == 2 : version;
 		
 		return version;
 	}
@@ -157,7 +188,7 @@ public class TestDriver extends DatabaseClusterTestCase implements java.sql.Driv
 	{
 		int version = this.driver.getMinorVersion();
 		
-		assert version == 2 : version;
+		assert version == 0 : version;
 		
 		return version;
 	}

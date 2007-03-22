@@ -51,9 +51,11 @@ public class TestHSQLDBDialect extends TestStandardDialect
 	@Test(dataProvider = "foreign-key")
 	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getCreateForeignKeyConstraintSQL(constraint);
+		
+		this.verify();
 		
 		assert sql.equals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE ON UPDATE RESTRICT") : sql;
 		
@@ -78,11 +80,11 @@ public class TestHSQLDBDialect extends TestStandardDialect
 		this.resultSet.close();
 		this.statement.close();
 		
-		this.control.replay();
+		this.replay();
 		
 		Collection<String> sequences = this.dialect.getSequences(connection);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sequences.size() == 2 : sequences;
 		
@@ -104,11 +106,11 @@ public class TestHSQLDBDialect extends TestStandardDialect
 	@Override
 	public String getSimpleSQL() throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getSimpleSQL();
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sql.equals("CALL CURRENT_TIMESTAMP") : sql;
 		
@@ -130,11 +132,11 @@ public class TestHSQLDBDialect extends TestStandardDialect
 		this.resultSet.close();
 		this.statement.close();
 		
-		this.control.replay();
+		this.replay();
 		
 		List<String> schemaList = this.dialect.getDefaultSchemas(connection);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert schemaList.size() == 1 : schemaList.size();
 		
@@ -150,11 +152,11 @@ public class TestHSQLDBDialect extends TestStandardDialect
 	@Override
 	public String getNextSequenceValueSQL(String sequence) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getNextSequenceValueSQL(sequence);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sql.equals("CALL NEXT VALUE FOR sequence") : sql;
 		

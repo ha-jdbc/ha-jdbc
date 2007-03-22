@@ -37,13 +37,13 @@ public class TestRoundRobinBalancer extends AbstractTestBalancer
 	 * @see net.sf.hajdbc.balancer.AbstractTestBalancer#createBalancer()
 	 */
 	@Override
-	protected Balancer createBalancer()
+	protected Balancer<Void> createBalancer()
 	{
-		return new RoundRobinBalancer();
+		return new RoundRobinBalancer<Void>();
 	}
 
 	@Override
-	protected void next(Balancer balancer)
+	protected void next(Balancer<Void> balancer)
 	{
 		int count = 100;
 		

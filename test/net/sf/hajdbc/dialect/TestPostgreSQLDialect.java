@@ -53,16 +53,14 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 	{
 		EasyMock.expect(properties.getNativeType()).andReturn("oid");
 		
-		this.control.replay();
+		this.replay();
 		
 		int type = this.dialect.getColumnType(properties);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert type == Types.BLOB : type;
 		
-		this.control.reset();
-
 		EasyMock.expect(properties.getNativeType()).andReturn("int");
 		
 		return super.getColumnType(properties);
@@ -77,11 +75,11 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 	{
 		EasyMock.expect(properties.getName()).andReturn("table");
 		
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getLockTableSQL(properties);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sql.equals("LOCK TABLE table IN EXCLUSIVE MODE") : sql;
 		
@@ -97,11 +95,11 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 	{
 		EasyMock.expect(properties.getName()).andReturn("table");
 		
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getTruncateTableSQL(properties);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sql.equals("TRUNCATE TABLE table");
 		
@@ -115,11 +113,11 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 	@Test(dataProvider = "sequence")
 	public String getNextSequenceValueSQL(String sequence) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getNextSequenceValueSQL(sequence);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sql.equals("SELECT NEXTVAL('sequence')") : sql;
 		
@@ -133,29 +131,27 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 	@Test(dataProvider = "null")
 	public String parseSequence(String sql) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sequence = this.dialect.parseSequence("SELECT CURRVAL('sequence')");
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sequence.equals("sequence") : sequence;
 		
-		this.control.reset();
-		this.control.replay();
+		this.replay();
 		
 		sequence = this.dialect.parseSequence("SELECT nextval('sequence')");
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sequence.equals("sequence") : sequence;
 		
-		this.control.reset();
-		this.control.replay();
+		this.replay();
 		
 		sequence = this.dialect.parseSequence("SELECT * FROM table");
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sequence == null : sequence;
 		
@@ -184,11 +180,11 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		this.resultSet.close();
 		this.statement.close();
 		
-		this.control.replay();
+		this.replay();
 		
 		List<String> schemaList = this.dialect.getDefaultSchemas(connection);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert schemaList.size() == 2 : schemaList.size();
 		
@@ -206,35 +202,31 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 	{
 		EasyMock.expect(properties.getNativeType()).andReturn("serial");
 		
-		this.control.replay();
+		this.replay();
 		
 		boolean identity = this.dialect.isIdentity(properties);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert identity;
-		
-		this.control.reset();
 		
 		EasyMock.expect(properties.getNativeType()).andReturn("bigserial");
 		
-		this.control.replay();
+		this.replay();
 		
 		identity = this.dialect.isIdentity(properties);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert identity;
 		
-		this.control.reset();
-		
 		EasyMock.expect(this.columnProperties.getNativeType()).andReturn("int");
 		
-		this.control.replay();
+		this.replay();
 		
 		identity = this.dialect.isIdentity(properties);
 		
-		this.control.verify();
+		this.verify();
 
 		assert !identity;
 		

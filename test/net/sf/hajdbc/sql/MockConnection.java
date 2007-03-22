@@ -20,15 +20,25 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.sql.Array;
+import java.sql.Blob;
 import java.sql.CallableStatement;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.NClob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.RowIdLifetime;
+import java.sql.SQLClientInfoException;
+import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.sql.SQLXML;
 import java.sql.Savepoint;
 import java.sql.Statement;
+import java.sql.Struct;
 import java.util.Map;
+import java.util.Properties;
 
 import org.easymock.EasyMock;
 
@@ -947,6 +957,60 @@ public class MockConnection implements Connection
 			{
 				return false;
 			}
+
+			@Override
+			public boolean autoCommitFailureClosesAllResultSets() throws SQLException
+			{
+				return false;
+			}
+
+			@Override
+			public ResultSet getClientInfoProperties() throws SQLException
+			{
+				return null;
+			}
+
+			@Override
+			public ResultSet getFunctionColumns(String arg0, String arg1, String arg2, String arg3) throws SQLException
+			{
+				return null;
+			}
+
+			@Override
+			public ResultSet getFunctions(String arg0, String arg1, String arg2) throws SQLException
+			{
+				return null;
+			}
+
+			@Override
+			public RowIdLifetime getRowIdLifetime() throws SQLException
+			{
+				return null;
+			}
+
+			@Override
+			public ResultSet getSchemas(String arg0, String arg1) throws SQLException
+			{
+				return null;
+			}
+
+			@Override
+			public boolean supportsStoredFunctionsUsingCallSyntax() throws SQLException
+			{
+				return false;
+			}
+
+			@Override
+			public boolean isWrapperFor(Class<?> arg0) throws SQLException
+			{
+				return false;
+			}
+
+			@Override
+			public <T> T unwrap(Class<T> arg0) throws SQLException
+			{
+				return null;
+			}
 			
 		};
 	}
@@ -1044,13 +1108,6 @@ public class MockConnection implements Connection
 	}
 
 	/**
-	 * @see java.sql.Connection#setTypeMap(java.util.Map)
-	 */
-	public void setTypeMap(Map arg0)
-	{
-	}
-
-	/**
 	 * @see java.sql.Connection#setHoldability(int)
 	 */
 	public void setHoldability(int arg0)
@@ -1139,6 +1196,129 @@ public class MockConnection implements Connection
 	 * @see java.sql.Connection#prepareStatement(java.lang.String, java.lang.String[])
 	 */
 	public PreparedStatement prepareStatement(String arg0, String[] arg1)
+	{
+		return null;
+	}
+
+	/**
+	 * @see java.sql.Connection#createArrayOf(java.lang.String, java.lang.Object[])
+	 */
+	@Override
+	public Array createArrayOf(String arg0, Object[] arg1) throws SQLException
+	{
+		return null;
+	}
+
+	/**
+	 * @see java.sql.Connection#createBlob()
+	 */
+	@Override
+	public Blob createBlob() throws SQLException
+	{
+		return null;
+	}
+
+	/**
+	 * @see java.sql.Connection#createClob()
+	 */
+	@Override
+	public Clob createClob() throws SQLException
+	{
+		return null;
+	}
+
+	/**
+	 * @see java.sql.Connection#createNClob()
+	 */
+	@Override
+	public NClob createNClob() throws SQLException
+	{
+		return null;
+	}
+
+	/**
+	 * @see java.sql.Connection#createSQLXML()
+	 */
+	@Override
+	public SQLXML createSQLXML() throws SQLException
+	{
+		return null;
+	}
+
+	/**
+	 * @see java.sql.Connection#createStruct(java.lang.String, java.lang.Object[])
+	 */
+	@Override
+	public Struct createStruct(String arg0, Object[] arg1) throws SQLException
+	{
+		return null;
+	}
+
+	/**
+	 * @see java.sql.Connection#getClientInfo()
+	 */
+	@Override
+	public Properties getClientInfo() throws SQLException
+	{
+		return null;
+	}
+
+	/**
+	 * @see java.sql.Connection#getClientInfo(java.lang.String)
+	 */
+	@Override
+	public String getClientInfo(String arg0) throws SQLException
+	{
+		return null;
+	}
+
+	/**
+	 * @see java.sql.Connection#isValid(int)
+	 */
+	@Override
+	public boolean isValid(int arg0) throws SQLException
+	{
+		return false;
+	}
+
+	/**
+	 * @see java.sql.Connection#setClientInfo(java.util.Properties)
+	 */
+	@Override
+	public void setClientInfo(Properties arg0) throws SQLClientInfoException
+	{
+	}
+
+	/**
+	 * @see java.sql.Connection#setClientInfo(java.lang.String, java.lang.String)
+	 */
+	@Override
+	public void setClientInfo(String arg0, String arg1) throws SQLClientInfoException
+	{
+	}
+
+	/**
+	 * @see java.sql.Connection#setTypeMap(java.util.Map)
+	 */
+	@Override
+	public void setTypeMap(Map<String, Class<?>> arg0) throws SQLException
+	{
+	}
+
+	/**
+	 * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
+	 */
+	@Override
+	public boolean isWrapperFor(Class<?> arg0) throws SQLException
+	{
+		return false;
+	}
+
+	/**
+	 * @see java.sql.Wrapper#unwrap(java.lang.Class)
+	 */
+	@Override
+	public <T> T unwrap(Class<T> arg0) throws SQLException
 	{
 		return null;
 	}

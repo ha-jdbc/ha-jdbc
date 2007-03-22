@@ -30,6 +30,7 @@ import org.testng.annotations.Test;
  *
  */
 @Test
+@SuppressWarnings("unchecked")
 public class TestBalancerFactory
 {
 	public void testSerialize()

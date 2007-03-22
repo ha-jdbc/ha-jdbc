@@ -38,16 +38,16 @@ public class TestRandomBalancer extends AbstractTestBalancer
 	 * @see net.sf.hajdbc.balancer.AbstractTestBalancer#createBalancer()
 	 */
 	@Override
-	protected Balancer createBalancer()
+	protected Balancer<Void> createBalancer()
 	{
-		return new RandomBalancer();
+		return new RandomBalancer<Void>();
 	}
 
 	/**
 	 * @see net.sf.hajdbc.balancer.AbstractTestBalancer#next(net.sf.hajdbc.Balancer)
 	 */
 	@Override
-	protected void next(Balancer balancer)
+	protected void next(Balancer<Void> balancer)
 	{
 		int count = 100;
 		int[] results = new int[3];

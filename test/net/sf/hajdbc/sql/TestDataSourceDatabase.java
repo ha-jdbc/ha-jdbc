@@ -23,17 +23,14 @@ package net.sf.hajdbc.sql;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import javax.management.DynamicMBean;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.sql.DataSource;
 
-import net.sf.hajdbc.ActiveDatabaseMBean;
-import net.sf.hajdbc.InactiveDatabaseMBean;
-
 import org.easymock.EasyMock;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -44,28 +41,19 @@ import org.testng.annotations.Test;
  */
 public class TestDataSourceDatabase extends AbstractTestDatabase<DataSourceDatabase, DataSource> implements InactiveDataSourceDatabaseMBean
 {
-	private DataSource dataSource = this.control.createMock(DataSource.class);
+	private DataSource dataSource = EasyMock.createStrictMock(DataSource.class);
 
-	@Override
-	@BeforeMethod
-	void setup()
+	void replay()
 	{
-		super.setup();
-		
-		try
-		{
-			Reference reference = new Reference(this.dataSource.getClass().getName(), MockDataSourceFactory.class.getName(), null);
-			
-			Context context = new InitialContext(this.database.getProperties());
-			
-			context.rebind("test", reference);
-		}
-		catch (NamingException e)
-		{
-			assert false;
-		}
+		EasyMock.replay(this.dataSource);
 	}
-
+	
+	void verify()
+	{
+		EasyMock.verify(this.dataSource);
+		EasyMock.reset(this.dataSource);
+	}
+	
 	/**
 	 * @see net.sf.hajdbc.sql.AbstractTestDatabase#createDatabase(java.lang.String)
 	 */
@@ -75,8 +63,6 @@ public class TestDataSourceDatabase extends AbstractTestDatabase<DataSourceDatab
 		DataSourceDatabase database = new DataSourceDatabase();
 		
 		database.setId(id);
-		database.setName("test");
-		database.getProperties().setProperty(Context.INITIAL_CONTEXT_FACTORY, MockInitialContextFactory.class.getName());
 		
 		return database;
 	}
@@ -91,21 +77,36 @@ public class TestDataSourceDatabase extends AbstractTestDatabase<DataSourceDatab
 	 * @see net.sf.hajdbc.Database#connect(T)
 	 */
 	@Test(dataProvider = "datasource")
-	public Connection connect(DataSource connectionFactory) throws SQLException
+	public Connection connect(DataSource dataSource) throws SQLException
 	{
+		DataSourceDatabase database = this.createDatabase("1");
+		
 		Connection connection = EasyMock.createMock(Connection.class);
 		
 		EasyMock.expect(this.dataSource.getConnection()).andReturn(connection);
 		
-		this.control.replay();
+		this.replay();
 		
-		Connection c = this.database.connect(connectionFactory);
+		Connection result = database.connect(dataSource);
 		
-		this.control.verify();
+		this.verify();
 		
-		assert c == connection : c.getClass().getName();
+		assert result == connection : result.getClass().getName();
 		
-		return null;
+		database.setUser("user");
+		database.setPassword("password");
+
+		EasyMock.expect(this.dataSource.getConnection("user", "password")).andReturn(connection);
+		
+		this.replay();
+		
+		result = database.connect(dataSource);
+		
+		this.verify();
+		
+		assert result == connection : result.getClass().getName();
+		
+		return result;
 	}
 
 	/**
@@ -114,39 +115,76 @@ public class TestDataSourceDatabase extends AbstractTestDatabase<DataSourceDatab
 	@Test
 	public DataSource createConnectionFactory()
 	{
-		DataSource dataSource = this.database.createConnectionFactory();
+		DataSourceDatabase database = this.createDatabase("1");
+		database.setName("test");
+		database.setProperty(Context.INITIAL_CONTEXT_FACTORY, MockInitialContextFactory.class.getName());
 		
-		String dataSourceClass = dataSource.getClass().getName();
+		try
+		{
+			Reference reference = new Reference(this.dataSource.getClass().getName(), MockDataSourceFactory.class.getName(), null);
+			
+			Context context = new InitialContext(database.getProperties());
+			
+			context.rebind("test", reference);
+		}
+		catch (NamingException e)
+		{
+			assert false;
+		}
 		
-		assert dataSourceClass.equals("net.sf.hajdbc.sql.MockDataSource") : dataSourceClass;
+		DataSource dataSource = database.createConnectionFactory();
+		
+		assert dataSource.getClass().equals(MockDataSource.class) : dataSource.getClass();
 		
 		return dataSource;
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Database#getActiveMBeanClass()
+	 * @see net.sf.hajdbc.Database#getActiveMBean()
 	 */
 	@Test
-	public Class<? extends ActiveDatabaseMBean> getActiveMBeanClass()
+	public DynamicMBean getActiveMBean()
 	{
-		Class<? extends ActiveDatabaseMBean> mbeanClass = this.database.getActiveMBeanClass();
+		DataSourceDatabase database = this.createDatabase("1");
 		
-		assert mbeanClass.equals(ActiveDataSourceDatabaseMBean.class) : mbeanClass.getName();
+		DynamicMBean mbean = database.getActiveMBean();
 		
-		return mbeanClass;
+		String className = mbean.getMBeanInfo().getClassName();
+		
+		try
+		{
+			assert ActiveDataSourceDatabaseMBean.class.isAssignableFrom(Class.forName(className)) : className;
+		}
+		catch (ClassNotFoundException e)
+		{
+			assert false : e;
+		}
+		
+		return mbean;
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Database#getInactiveMBeanClass()
+	 * @see net.sf.hajdbc.Database#getInactiveMBean()
 	 */
 	@Test
-	public Class<? extends InactiveDatabaseMBean> getInactiveMBeanClass()
+	public DynamicMBean getInactiveMBean()
 	{
-		Class<? extends InactiveDatabaseMBean> mbeanClass = this.database.getInactiveMBeanClass();
+		DataSourceDatabase database = this.createDatabase("1");
 		
-		assert mbeanClass.equals(InactiveDataSourceDatabaseMBean.class) : mbeanClass.getName();
+		DynamicMBean mbean = database.getInactiveMBean();
 		
-		return mbeanClass;
+		String className = mbean.getMBeanInfo().getClassName();
+		
+		try
+		{
+			assert InactiveDataSourceDatabaseMBean.class.isAssignableFrom(Class.forName(className)) : className;
+		}
+		catch (ClassNotFoundException e)
+		{
+			assert false : e;
+		}
+		
+		return mbean;
 	}
 
 	/**
@@ -155,10 +193,48 @@ public class TestDataSourceDatabase extends AbstractTestDatabase<DataSourceDatab
 	@Test
 	public String getName()
 	{
-		String name = this.database.getName();
+		DataSourceDatabase database = this.createDatabase("1");
+
+		String name = database.getName();
 		
-		assert name.equals("test") : name;
+		assert name == null : name;
+		
+		database.setName("name");
+		
+		name = database.getName();
+		
+		assert name.equals("name") : name;
 		
 		return name;
+	}
+	
+	@Test(dataProvider = "string")
+	public void setName(String name)
+	{
+		DataSourceDatabase database = this.createDatabase("1");
+		
+		database.setName(name);
+		
+		String value = database.getName();
+		
+		assert value.equals(name) : value;
+		
+		database.clean();
+		
+		database.setName(name);
+
+		value = database.getName();
+		
+		assert value.equals(name) : value;
+		
+		assert !database.isDirty();
+		
+		database.setName(null);
+		
+		assert database.isDirty();
+		
+		value = database.getName();
+		
+		assert value == null : value;
 	}
 }

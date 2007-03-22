@@ -1,5 +1,4 @@
 <?xml version="1.0"?>
-<!--DOCTYPE ha-jdbc SYSTEM "../doc/src/content/xdocs/dtd/ha-jdbc-1.2.dtd"-->
 <!--
  HA-JDBC: High-Availability JDBC
  Copyright (c) 2004-2006 Paul Ferraro
@@ -20,9 +19,11 @@
  
  Contact: ferraro@users.sourceforge.net
 -->
+<!--DOCTYPE ha-jdbc SYSTEM "../doc/src/content/xdocs/dtd/ha-jdbc-1.2.dtd"-->
+<!--ha-jdbc xmlns="http://ha-jdbc.sourceforge.net" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ha-jdbc.sourceforge.net ../doc/src/content/xdocs/xsd/ha-jdbc-1.2.xsd"-->
 <ha-jdbc>
-	<sync id="passive" class="net.sf.hajdbc.sync.PassiveSynchronizationStrategy"/>
-	<cluster id="test-database-cluster" balancer="simple" default-sync="passive" meta-data-cache="none" transactions="local">
+	<sync id="passive" class="net.sf.hajdbc.sync.PassiveSynchronizationStrategy"></sync>
+	<database-cluster id="test-database-cluster" balancer="simple" default-sync="passive" meta-data-cache="none" transactions="local" dialect="standard">
 		<database id="database1" weight="1">
 			<driver>net.sf.hajdbc.sql.MockDriver</driver>
 			<url>jdbc:mock:database1</url>
@@ -31,8 +32,8 @@
 			<driver>net.sf.hajdbc.sql.MockDriver</driver>
 			<url>jdbc:mock:database2</url>
 		</database>
-	</cluster>
-	<cluster id="test-datasource-cluster" balancer="simple" default-sync="passive" meta-data-cache="none" transactions="local">
+	</database-cluster>
+	<datasource-cluster id="test-datasource-cluster" balancer="simple" default-sync="passive" meta-data-cache="none" transactions="local">
 		<datasource id="datasource1" weight="1">
 			<name>datasource1</name>
 			<property name="java.naming.factory.initial">net.sf.hajdbc.sql.MockInitialContextFactory</property>
@@ -41,5 +42,5 @@
 			<name>datasource2</name>
 			<property name="java.naming.factory.initial">net.sf.hajdbc.sql.MockInitialContextFactory</property>
 		</datasource>
-	</cluster>
+	</datasource-cluster>
 </ha-jdbc>

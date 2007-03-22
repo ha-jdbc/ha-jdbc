@@ -26,7 +26,6 @@ import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.SynchronizationStrategy;
 
 import org.easymock.EasyMock;
-import org.easymock.IMocksControl;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -36,58 +35,50 @@ import org.testng.annotations.Test;
  */
 public class TestPassiveSynchronizationStrategy implements SynchronizationStrategy
 {
-	private IMocksControl control = EasyMock.createStrictControl();
-	
 	private SynchronizationStrategy strategy = new PassiveSynchronizationStrategy();
 	
 	@DataProvider(name = "context")
 	public Object[][] contextProvider()
 	{
-		return new Object[][] { new Object[] { this.control.createMock(SynchronizationContext.class) } };
+		return new Object[][] { new Object[] { EasyMock.createStrictMock(SynchronizationContext.class) } };
 	}
 
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#cleanup(net.sf.hajdbc.sync.SynchronizationContextImpl)
 	 */
 	@Test(dataProvider = "context")
-	public void cleanup(SynchronizationContext context)
+	public <D> void cleanup(SynchronizationContext<D> context)
 	{
-		this.control.replay();
+		EasyMock.replay(context);
 		
 		this.strategy.cleanup(context);
 		
-		this.control.verify();
-		
-		this.control.reset();
+		EasyMock.verify(context);
 	}
 
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#prepare(net.sf.hajdbc.sync.SynchronizationContextImpl)
 	 */
 	@Test(dataProvider = "context")
-	public void prepare(SynchronizationContext context) throws SQLException
+	public <D> void prepare(SynchronizationContext<D> context) throws SQLException
 	{
-		this.control.replay();
+		EasyMock.replay(context);
 		
 		this.strategy.prepare(context);
 		
-		this.control.verify();
-		
-		this.control.reset();
+		EasyMock.verify(context);
 	}
 
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, net.sf.hajdbc.DatabaseMetaDataCache, net.sf.hajdbc.Dialect)
 	 */
 	@Test(dataProvider = "context")
-	public void synchronize(SynchronizationContext context) throws SQLException
+	public <D> void synchronize(SynchronizationContext<D> context) throws SQLException
 	{
-		this.control.replay();
+		EasyMock.replay(context);
 		
 		this.strategy.synchronize(context);
 		
-		this.control.verify();
-		
-		this.control.reset();
+		EasyMock.verify(context);
 	}
 }

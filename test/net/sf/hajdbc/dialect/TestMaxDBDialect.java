@@ -55,9 +55,11 @@ public class TestMaxDBDialect extends TestStandardDialect
 	@Test(dataProvider = "foreign-key")
 	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getCreateForeignKeyConstraintSQL(constraint);
+
+		this.verify();
 		
 		assert sql.equals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE") : sql;
 		
@@ -82,11 +84,11 @@ public class TestMaxDBDialect extends TestStandardDialect
 		this.resultSet.close();		
 		this.statement.close();
 		
-		this.control.replay();
+		this.replay();
 		
 		Collection<String> sequences = this.dialect.getSequences(connection);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sequences.size() == 2 : sequences.size();
 		
@@ -108,11 +110,11 @@ public class TestMaxDBDialect extends TestStandardDialect
 	@Override
 	public String getSimpleSQL() throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getSimpleSQL();
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sql.equals("SELECT SYSDATE FROM DUAL") : sql;
 		
@@ -128,11 +130,11 @@ public class TestMaxDBDialect extends TestStandardDialect
 	{
 		EasyMock.expect(properties.getName()).andReturn("table");
 		
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getTruncateTableSQL(properties);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sql.equals("TRUNCATE TABLE table");
 		
@@ -146,29 +148,27 @@ public class TestMaxDBDialect extends TestStandardDialect
 	@Test(dataProvider = "null")
 	public String parseSequence(String sql) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sequence = this.dialect.parseSequence("SELECT sequence.nextval FROM DUAL");
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sequence.equals("sequence") : sequence;
 		
-		this.control.reset();
-		this.control.replay();
+		this.replay();
 		
 		sequence = this.dialect.parseSequence("SELECT sequence.currval FROM DUAL");
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sequence.equals("sequence") : sequence;
 		
-		this.control.reset();
-		this.control.replay();
+		this.replay();
 		
 		sequence = this.dialect.parseSequence("SELECT * FROM table");
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sequence == null : sequence;
 		
@@ -182,11 +182,11 @@ public class TestMaxDBDialect extends TestStandardDialect
 	@Test
 	public boolean supportsIdentityColumns()
 	{
-		this.control.replay();
+		this.replay();
 		
 		boolean supports = this.dialect.supportsIdentityColumns();
 		
-		this.control.verify();
+		this.verify();
 		
 		assert !supports;
 		
@@ -208,11 +208,11 @@ public class TestMaxDBDialect extends TestStandardDialect
 		this.resultSet.close();
 		this.statement.close();
 		
-		this.control.replay();
+		this.replay();
 		
 		List<String> schemaList = this.dialect.getDefaultSchemas(connection);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert schemaList.size() == 1 : schemaList.size();
 		
@@ -228,11 +228,11 @@ public class TestMaxDBDialect extends TestStandardDialect
 	@Test(dataProvider = "sequence")
 	public String getNextSequenceValueSQL(String sequence) throws SQLException
 	{
-		this.control.replay();
+		this.replay();
 		
 		String sql = this.dialect.getNextSequenceValueSQL(sequence);
 		
-		this.control.verify();
+		this.verify();
 		
 		assert sql.equals("SELECT sequence.NEXTVAL FROM DUAL") : sql;
 		

@@ -25,7 +25,7 @@ import java.sql.SQLException;
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.MockDatabase;
-import net.sf.hajdbc.Operation;
+import net.sf.hajdbc.sql.Invoker;
 
 import org.testng.annotations.Test;
 
@@ -41,24 +41,24 @@ public class TestLoadBalancer extends AbstractTestBalancer
 	 * @see net.sf.hajdbc.balancer.AbstractTestBalancer#createBalancer()
 	 */
 	@Override
-	protected Balancer createBalancer()
+	protected Balancer<Void> createBalancer()
 	{
-		return new LoadBalancer();
+		return new LoadBalancer<Void>();
 	}
 
 	/**
 	 * @see net.sf.hajdbc.balancer.AbstractTestBalancer#next(net.sf.hajdbc.Balancer)
 	 */
 	@Override
-	protected void next(Balancer balancer)
+	protected void next(Balancer<Void> balancer)
 	{
-		Database database0 = new MockDatabase("0", 0);
-		Database database1 = new MockDatabase("1", 1);
-		Database database2 = new MockDatabase("2", 2);
+		Database<Void> database0 = new MockDatabase("0", 0);
+		Database<Void> database1 = new MockDatabase("1", 1);
+		Database<Void> database2 = new MockDatabase("2", 2);
 
 		balancer.add(database0);
 		
-		Database next = balancer.next();
+		Database<Void> next = balancer.next();
 		
 		assert database0.equals(next) : next;
 
@@ -78,7 +78,7 @@ public class TestLoadBalancer extends AbstractTestBalancer
 		Thread[] database2Threads = new Thread[2];
 		for (int i = 0; i < 2; ++i)
 		{
-			database2Threads[i] = new OperationThread(balancer, new MockOperation(), database2);
+			database2Threads[i] = new InvokerThread(balancer, new MockInvoker(), database2);
 			database2Threads[i].start();
 		}
 		
@@ -87,7 +87,7 @@ public class TestLoadBalancer extends AbstractTestBalancer
 		assert database1.equals(next) : next;
 		
 		// Add enough load to database1 to shift relative effective load
-		Thread database1Thread = new OperationThread(balancer, new MockOperation(), database1);
+		Thread database1Thread = new InvokerThread(balancer, new MockInvoker(), database1);
 		database1Thread.start();
 
 		next = balancer.next();
@@ -110,24 +110,24 @@ public class TestLoadBalancer extends AbstractTestBalancer
 		assert database2.equals(next) : next;
 	}
 	
-	private static class OperationThread extends Thread
+	private static class InvokerThread extends Thread
 	{
-		private Balancer balancer;
-		private Operation<Void, Void> operation;
-		private Database database;
+		private Balancer<Void> balancer;
+		private Invoker<Void, Void, Void> invoker;
+		private Database<Void> database;
 		
 		/**
-		 * Constructs a new OperationThread.
+		 * Constructs a new InvokerThread.
 		 * @param balancer
 		 * @param operation 
 		 * @param database
 		 */
-		public OperationThread(Balancer balancer, Operation<Void, Void> operation, Database database)
+		public InvokerThread(Balancer<Void> balancer, Invoker<Void, Void, Void> invoker, Database<Void> database)
 		{
 			super();
 			
 			this.balancer = balancer;
-			this.operation = operation;
+			this.invoker = invoker;
 			this.database = database;
 			
 			this.setDaemon(true);
@@ -139,13 +139,13 @@ public class TestLoadBalancer extends AbstractTestBalancer
 		@Override
 		public void run()
 		{
-			this.balancer.beforeOperation(this.database);
+			this.balancer.beforeInvocation(this.database);
 			
 			try
 			{
-				this.operation.execute(this.database, null);
+				this.invoker.invoke(this.database, null);
 				
-				this.balancer.afterOperation(this.database);
+				this.balancer.afterInvocation(this.database);
 			}
 			catch (SQLException e)
 			{
@@ -188,12 +188,12 @@ public class TestLoadBalancer extends AbstractTestBalancer
 		}
 	}
 	
-	static class MockOperation implements Operation<Void, Void>
+	static class MockInvoker implements Invoker<Void, Void, Void>
 	{
 		/**
 		 * @see net.sf.hajdbc.Operation#execute(net.sf.hajdbc.Database, java.lang.Object)
 		 */
-		public Void execute(Database database, Void object)
+		public Void invoke(Database<Void> database, Void object)
 		{
 			// Simulate a long operation
 			try
