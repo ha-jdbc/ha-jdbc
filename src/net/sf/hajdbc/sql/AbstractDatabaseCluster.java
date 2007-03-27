@@ -20,11 +20,11 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.lang.management.ManagementFactory;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -38,7 +38,6 @@ import java.util.concurrent.locks.Lock;
 import javax.management.DynamicMBean;
 import javax.management.JMException;
 import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
@@ -75,7 +74,6 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, DatabaseClusterMBean
 {
-	private static final String JMX_AGENT_PROPERTY = "ha-jdbc.jmx-agent";
 	private static final String MBEAN_DOMAIN = "net.sf.hajdbc";
 	private static final String MBEAN_CLUSTER_KEY = "cluster";
 	private static final String MBEAN_DATABASE_KEY = "database";
@@ -143,16 +141,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	
 	public AbstractDatabaseCluster()
 	{
-		String agent = System.getProperty(JMX_AGENT_PROPERTY);
-		
-		List<?> serverList = MBeanServerFactory.findMBeanServer(agent);
-		
-		if (serverList.isEmpty())
-		{
-			throw new IllegalStateException(Messages.getMessage(Messages.MBEAN_SERVER_NOT_FOUND));
-		}
-		
-		this.server = MBeanServer.class.cast(serverList.get(0));
+		this.server = ManagementFactory.getPlatformMBeanServer();
 	}
 
 	/**
@@ -174,15 +163,20 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		{
 			connection = database.connect(this.connectionFactoryMap.get(database));
 			
-			// In Java 1.6...
-			// return connection.isValid(0);
-			Statement statement = connection.createStatement();
-			
-			statement.execute(this.dialect.getSimpleSQL());
+			try
+			{
+				return connection.isValid(0);
+			}
+			catch (NoSuchMethodError e)
+			{
+				Statement statement = connection.createStatement();
+				
+				statement.execute(this.dialect.getSimpleSQL());
 
-			statement.close();
-			
-			return true;
+				statement.close();
+				
+				return true;
+			}
 		}
 		catch (java.sql.SQLException e)
 		{
