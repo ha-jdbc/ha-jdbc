@@ -574,13 +574,13 @@ public class FasterFullSynchronizationStrategy extends net.sf.hajdbc.sync.FullSy
       <url>jdbc:postgresql://server1/database</url>
       <user>postgres</user>
       <password>password</password>
-    </datasource>
+    </database>
     <database id="database2">
       <driver>org.postgresql.Driver</driver>
       <url>jdbc:postgresql://server2/database</url>
       <user>postgres</user>
       <password>password</password>
-    </datasource>
+    </database>
   </cluster>
 </ha-jdbc>
 ]]></source>
