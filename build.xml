@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 <project name="ha-jdbc" default="jar" basedir=".">
 
-	<property name="build.dir" location="${basedir}/build"></property>
 	<property name="src.dir" location="${basedir}/src"></property>
+	<property name="build.dir" location="${basedir}/build"></property>
+	<property name="build-1.4.dir" location="${basedir}/build-1.4"></property>
 	<property name="test.dir" location="${basedir}/test"></property>
 	<property name="doc.dir" location="${basedir}/doc"></property>
 	<property name="lib.dir" location="${basedir}/lib"></property>
@@ -38,14 +39,21 @@
 		<dirset dir="${build.dir}"></dirset>
 	</path>
 
+	<path id="build-1.4.classpath">
+		<path refid="src.classpath"></path>
+		<dirset dir="${build-1.4.dir}"></dirset>
+	</path>
+
 	<path id="testng.classpath">
-		<fileset dir="${lib.test.dir}" includes="*.jar"></fileset>
-		<fileset dir="${lib.runtime.dir}" includes="*.jar"></fileset>
+		<fileset dir="${lib.test.dir}" includes="testng-*.jar"></fileset>
 	</path>
 
 	<path id="test.classpath">
 		<path refid="build.classpath"></path>
-		<path refid="testng.classpath"></path>
+		<fileset dir="${lib.test.dir}" includes="*.jar"></fileset>
+		<fileset dir="${lib.runtime.dir}">
+			<include name="xpp3-*.jar"/>
+		</fileset>
 	</path>
 	
 	<path id="bind.classpath">
@@ -64,12 +72,7 @@
 	<path id="retrotranslate.classpath">
 		<fileset dir="${lib.runtime-1.4.dir}"></fileset>
 		<fileset dir="${lib.compile-1.4.dir}"></fileset>
-	</path>
-
-	<path id="retrotranslate.build.classpath">
-		<fileset dir="${java.home}/lib" includes="rt.jar"></fileset>
-		<path refid="retrotranslate.classpath"></path>
-		<path refid="build.classpath"></path>
+		<dirset dir="${build-1.4.dir}"></dirset>
 	</path>
 	
 	<taskdef name="testng" classname="org.testng.TestNGAntTask" classpathref="testng.classpath"></taskdef>
@@ -77,9 +80,6 @@
 	<taskdef name="retrotranslate" classname="net.sf.retrotranslator.transformer.RetrotranslatorTask" classpathref="retrotranslate.classpath"></taskdef>
 	
 	<target name="clean">
-		<!--delete quiet="true">
-			<fileset dir="${basedir}" includes="${dist.name}-**"></fileset>
-		</delete-->
 		<delete dir="${build.dir}" quiet="true"></delete>
 	</target>
 
@@ -87,39 +87,45 @@
 		<mkdir dir="${build.dir}"/>
 	</target>
 	
-    <target name="compile" depends="init">
-        <javac srcdir="${src.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="build.classpath" source="1.5" target="1.5"></javac>
-		<copy todir="${build.dir}">
-			<fileset dir="${src.dir}" excludes="**/*.java"></fileset>
-		</copy>
-    </target>
+	<target name="compile" depends="init">
+		<javac srcdir="${src.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="build.classpath" source="1.5" target="1.5" excludes="net/sf/retrotranslator/**"></javac>
+	</target>
 	
-    <target name="bind" depends="clean, compile">
+	<target name="bind" depends="clean, compile">
 		<bind verbose="false" load="true">
 			<bindingfileset dir="${conf.jibx.dir}" includes="*.xml"/>
 			<classpath refid="build.classpath"></classpath>
 		</bind> 
-    </target>
-
-    <target name="jar" depends="bind">
-        <jar jarfile="${jar.file}" index="true">
-			<fileset dir="${build.dir}"></fileset>
-		</jar>
-    </target>
-
-	<target name="compile-1.4" depends="bind">
-		<echo>The following verification warning is expected and should be ignored:</echo>
-		<echo>Constructor not found: edu.emory.mathcs.backport.java.util.concurrent.locks.ReentrantReadWriteLock(boolean)</echo>
-		<retrotranslate srcdir="${build.dir}" classpathref="retrotranslate.build.classpath" verify="on" failonwarning="no"></retrotranslate>
 	</target>
 
-	<target name="jar-1.4" depends="compile-1.4">
-        <jar jarfile="${jar-1.4.file}" index="true">
+	<target name="jar" depends="bind">
+		<jar jarfile="${jar.file}" index="true">
 			<fileset dir="${build.dir}"></fileset>
+			<fileset dir="${src.dir}" excludes="**/*.java"></fileset>
 		</jar>
 	</target>
 	
-	<target name="dist-bin" depends="clean, jar, jar-1.4, site">
+	<target name="clean-1.4">
+		<delete dir="${build-1.4.dir}" quiet="true"></delete>
+	</target>
+
+	<target name="init-1.4">
+		<mkdir dir="${build-1.4.dir}"/>
+	</target>
+
+	<target name="compile-1.4" depends="clean-1.4, init-1.4, bind">
+		<javac srcdir="${src.dir}" destdir="${build-1.4.dir}" optimize="yes" debug="on" classpathref="build.classpath" source="1.4" target="1.4" includes="net/sf/retrotranslator/**"></javac>
+		<retrotranslate srcdir="${build.dir}" destdir="${build-1.4.dir}"></retrotranslate>
+	</target>
+
+	<target name="jar-1.4" depends="compile-1.4">
+		<jar jarfile="${jar-1.4.file}" index="true">
+			<fileset dir="${build-1.4.dir}"></fileset>
+			<fileset dir="${src.dir}" excludes="**/*.java"></fileset>
+		</jar>
+	</target>
+	
+	<target name="dist-bin" depends="jar, jar-1.4, site">
 		<tar tarfile="${dist.bin.file}" compression="gzip">
 			<tarfileset dir="${basedir}" prefix="${dist.version.name}">
 				<include name="${dist.version.name}.jar"/>
