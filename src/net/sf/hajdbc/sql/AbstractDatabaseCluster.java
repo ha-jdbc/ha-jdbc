@@ -163,20 +163,13 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		{
 			connection = database.connect(this.connectionFactoryMap.get(database));
 			
-			try
-			{
-				return connection.isValid(0);
-			}
-			catch (NoSuchMethodError e)
-			{
-				Statement statement = connection.createStatement();
-				
-				statement.execute(this.dialect.getSimpleSQL());
+			Statement statement = connection.createStatement();
+			
+			statement.execute(this.dialect.getSimpleSQL());
 
-				statement.close();
-				
-				return true;
-			}
+			statement.close();
+			
+			return true;
 		}
 		catch (java.sql.SQLException e)
 		{
