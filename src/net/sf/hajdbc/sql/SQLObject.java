@@ -23,6 +23,7 @@ package net.sf.hajdbc.sql;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -60,6 +61,7 @@ public abstract class SQLObject<E, P>
 	private Operation<P, E> parentOperation;
 	private Map<Database, E> objectMap;
 	private Map<String, Operation<E, ?>> operationMap = new HashMap<String, Operation<E, ?>>();
+	private List<SQLObject> childList = new LinkedList<SQLObject>();
 	
 	protected SQLObject(SQLObject<P, ?> parent, Operation<P, E> operation, ExecutorService executor, Lock lock) throws java.sql.SQLException
 	{
@@ -67,6 +69,7 @@ public abstract class SQLObject<E, P>
 		
 		this.parent = parent;
 		this.parentOperation = operation;
+		this.parent.addChild(this);
 	}
 	
 	/**
@@ -89,6 +92,41 @@ public abstract class SQLObject<E, P>
 		this.objectMap = objectMap;
 	}
 	
+	protected void addChild(SQLObject object)
+	{
+		synchronized (this.childList)
+		{
+			this.childList.add(object);
+		}
+	}
+	
+	protected void removeChild(SQLObject object)
+	{
+		object.removeChildren();
+		
+		synchronized (this.childList)
+		{
+			this.childList.remove(object);
+		}
+	}
+	
+	protected void removeChildren()
+	{
+		synchronized (this.childList)
+		{
+			Iterator<SQLObject> children = this.childList.iterator();
+			
+			while (children.hasNext())
+			{
+				SQLObject child = children.next();
+				
+				child.removeChildren();
+				
+				children.remove();
+			}
+		}
+	}
+	
 	/**
 	 * Returns the underlying SQL object for the specified database.
 	 * If the sql object does not exist (this might be the case if the database was newly activated), it will be created from the stored operation.
@@ -96,45 +134,48 @@ public abstract class SQLObject<E, P>
 	 * @param database a database descriptor.
 	 * @return an underlying SQL object
 	 */
-	public synchronized final E getObject(Database database)
+	public final E getObject(Database database)
 	{
-		E object = this.objectMap.get(database);
-		
-		if (object == null)
+		synchronized (this.objectMap)
 		{
-			try
+			E object = this.objectMap.get(database);
+			
+			if (object == null)
 			{
-				if (this.parent == null)
+				try
 				{
-					throw new java.sql.SQLException();
+					if (this.parent == null)
+					{
+						throw new java.sql.SQLException();
+					}
+					
+					P parentObject = this.parent.getObject(database);
+					
+					if (parentObject == null)
+					{
+						throw new java.sql.SQLException();
+					}
+					
+					object = this.parentOperation.execute(database, parentObject);
+					
+					for (Operation<E, ?> operation: this.operationMap.values())
+					{
+						operation.execute(database, object);
+					}
+					
+					this.objectMap.put(database, object);
 				}
-				
-				P parentObject = this.parent.getObject(database);
-				
-				if (parentObject == null)
+				catch (java.sql.SQLException e)
 				{
-					throw new java.sql.SQLException();
+					if (this.databaseCluster.deactivate(database))
+					{
+						logger.warn(Messages.getMessage(Messages.SQL_OBJECT_INIT_FAILED, this.getClass().getName(), database), e);
+					}
 				}
-				
-				object = this.parentOperation.execute(database, parentObject);
-				
-				for (Operation<E, ?> operation: this.operationMap.values())
-				{
-					operation.execute(database, object);
-				}
-				
-				this.objectMap.put(database, object);
 			}
-			catch (java.sql.SQLException e)
-			{
-				if (this.databaseCluster.deactivate(database))
-				{
-					logger.warn(Messages.getMessage(Messages.SQL_OBJECT_INIT_FAILED, this.getClass().getName(), database), e);
-				}
-			}
+			
+			return object;
 		}
-		
-		return object;
 	}
 	
 	/**
@@ -161,47 +202,64 @@ public abstract class SQLObject<E, P>
 	{
 		List<Database> databaseList = this.databaseCluster.getBalancer().list();
 		
-		this.retain(databaseList);
+		this.getConnectionFactory().retain(databaseList);
 		
 		return databaseList;
 	}
 	
-	protected synchronized void retain(Collection<Database> activeDatabases)
+	protected void retain(Collection<Database> activeDatabases)
 	{
-		if (this.parent == null) return;
-		
-		Iterator<Map.Entry<Database, E>> mapEntries = this.objectMap.entrySet().iterator();
-		
-		while (mapEntries.hasNext())
+		synchronized (this.childList)
 		{
-			Map.Entry<Database, E> mapEntry = mapEntries.next();
-			
-			Database database = mapEntry.getKey();
-			
-			if (!activeDatabases.contains(database))
+			for (SQLObject child: this.childList)
 			{
-				E object = mapEntry.getValue();
-				
-				if (object != null)
-				{
-					try
-					{
-						this.close(object);
-					}
-					catch (java.sql.SQLException e)
-					{
-						// Ignore
-					}
-				}
-				
-				mapEntries.remove();
+				child.retain(activeDatabases);
 			}
 		}
 		
-		this.parent.retain(activeDatabases);
+		if (this.parent != null)
+		{
+			synchronized (this.objectMap)
+			{
+				Iterator<Map.Entry<Database, E>> mapEntries = this.objectMap.entrySet().iterator();
+				
+				while (mapEntries.hasNext())
+				{
+					Map.Entry<Database, E> mapEntry = mapEntries.next();
+					
+					Database database = mapEntry.getKey();
+					
+					if (!activeDatabases.contains(database))
+					{
+						E object = mapEntry.getValue();
+						
+						if (object != null)
+						{
+							try
+							{
+								this.close(object);
+							}
+							catch (java.sql.SQLException e)
+							{
+								// Ignore
+							}
+						}
+						
+						mapEntries.remove();
+					}
+				}
+			}
+		}
 	}
 	
 	protected abstract void close(E object) throws java.sql.SQLException;
+	
+	protected SQLObject getConnectionFactory()
+	{
+		if (this.parent == null) return this;
+		
+		return this.parent.getConnectionFactory();
+	}
 	
 	/**
 	 * Executes the specified read operation on a single database in the cluster.

@@ -178,6 +178,8 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 		};
 		
 		this.executeNonTransactionalWriteToDatabase(operation);
+		
+		this.parent.removeChild(this);
 	}
 
 	/**

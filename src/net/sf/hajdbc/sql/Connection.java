@@ -88,6 +88,8 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 		this.executeNonTransactionalWriteToDatabase(operation);
 		
 		this.fileSupport.close();
+		
+		this.parent.removeChild(this);
 	}
 
 	/**
@@ -463,19 +465,23 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 	/**
 	 * @see java.sql.Connection#releaseSavepoint(java.sql.Savepoint)
 	 */
-	public void releaseSavepoint(final java.sql.Savepoint savepoint) throws SQLException
+	public void releaseSavepoint(java.sql.Savepoint savepoint) throws SQLException
 	{
+		final Savepoint savepointProxy = Savepoint.class.cast(savepoint);
+		
 		Operation<java.sql.Connection, Void> operation = new Operation<java.sql.Connection, Void>()
 		{
 			public Void execute(Database database, java.sql.Connection connection) throws SQLException
 			{
-				connection.releaseSavepoint(Savepoint.class.cast(savepoint));
+				connection.releaseSavepoint(savepointProxy);
 				
 				return null;
 			}
 		};
 		
 		this.executeTransactionalWriteToDatabase(operation);
+		
+		this.removeChild(savepointProxy);
 	}
 
 	/**
@@ -499,19 +505,23 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 	/**
 	 * @see java.sql.Connection#rollback(java.sql.Savepoint)
 	 */
-	public void rollback(final java.sql.Savepoint savepoint) throws SQLException
+	public void rollback(java.sql.Savepoint savepoint) throws SQLException
 	{
+		final Savepoint savepointProxy = Savepoint.class.cast(savepoint);
+		
 		Operation<java.sql.Connection, Void> operation = new Operation<java.sql.Connection, Void>()
 		{
 			public Void execute(Database database, java.sql.Connection connection) throws SQLException
 			{
-				connection.rollback(Savepoint.class.cast(savepoint));
+				connection.rollback(savepointProxy);
 				
 				return null;
 			}
 		};
 		
 		this.executeTransactionalWriteToDatabase(operation);
+		
+		this.removeChild(savepointProxy);
 	}
 
 	/**

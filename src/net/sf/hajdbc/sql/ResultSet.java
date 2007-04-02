@@ -173,6 +173,8 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 		};
 		
 		this.executeNonTransactionalWriteToDatabase(operation);
+		
+		this.parent.removeChild(this);
 	}
 
 	/**
