@@ -18,7 +18,7 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.retrotranslator.runtime.java.lang.management;
+package net.sf.hajdbc.backport.java.lang.management;
 
 import java.util.List;
 
@@ -29,7 +29,7 @@ import javax.management.MBeanServerFactory;
  * @author Paul Ferraro
  *
  */
-public class ManagementFactory
+public final class ManagementFactory
 {
 	public static MBeanServer getPlatformMBeanServer()
 	{
