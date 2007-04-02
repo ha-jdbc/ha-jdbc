@@ -12,6 +12,27 @@
 	</contexts>
 
 	<changes>
+		<release version="1.1.11" date="?">
+			<action type="add" context="src" dev="PF">
+				Added max batch size property to differential synchronization strategy to help prevent out of memory errors.
+			</action>
+			<action type="update" context="src" dev="PF">
+				Use platform mbean server for cluster/database mbean registration.
+				Provide retrotranslator plugin for java.lang.management.ManagementFactory that uses old logic to locate mbean server.
+			</action>
+			<action type="fix" context="src" dev="PF">
+				Fixed distributable mode race condition caused by duplicate activation/deactivation message notifications.
+			</action>
+			<action type="fix" context="src" dev="PF">
+				Forced cleanup of open java.sql objects that were not accessed during an deactivate/reactivate cycle.
+			</action>
+			<action type="fix" context="src" dev="PF" due-to="Kurt Huwig">
+				Fixed german message transations.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded SLF4J to 1.3.0.
+			</action>
+		</release>
 		<release version="1.1.10" date="February 18, 2007">
 			<action type="fix" context="src" dev="PF" due-to="David Goodenough">
 				Optimized PostgreSQLDialect.getLockTableSQL() by removing unnecessary select statement.
