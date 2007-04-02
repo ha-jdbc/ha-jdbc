@@ -18,7 +18,7 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.retrotranslator.runtime.java.lang.management;
+package net.sf.hajdbc.backport.java.lang.management;
 
 import java.util.List;
 
