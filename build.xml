@@ -84,6 +84,9 @@
 	
 	<target name="compile" depends="init">
 		<javac srcdir="${src.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="build.classpath" source="1.5" target="1.5" excludes="${backport.path}"></javac>
+		<copy todir="${build.dir}">
+			<fileset dir="${src.dir}" excludes="**/*.java"></fileset>
+		</copy>
 	</target>
 	
 	<target name="bind" depends="clean, compile">
@@ -96,7 +99,6 @@
 	<target name="jar" depends="bind">
 		<jar jarfile="${jar.file}" index="true">
 			<fileset dir="${build.dir}"></fileset>
-			<fileset dir="${src.dir}" excludes="**/*.java"></fileset>
 			<metainf dir="${conf.dir}" includes="services/*"></metainf>
 		</jar>
 	</target>
@@ -112,12 +114,14 @@
 	<target name="compile-1.4" depends="clean-1.4, init-1.4, bind">
 		<javac srcdir="${src.dir}" destdir="${build-1.4.dir}" optimize="yes" debug="on" classpathref="build.classpath" source="1.4" target="1.4" includes="${backport.path}"></javac>
 		<ant antfile="backport.xml" inheritall="false"></ant>
+		<copy todir="${build-1.4.dir}">
+			<fileset dir="${src.dir}" excludes="**/*.java"></fileset>
+		</copy>
 	</target>
 
 	<target name="jar-1.4" depends="compile-1.4">
 		<jar jarfile="${jar-1.4.file}" index="true">
 			<fileset dir="${build-1.4.dir}"></fileset>
-			<fileset dir="${src.dir}" excludes="**/*.java"></fileset>
 		</jar>
 	</target>
 	
@@ -182,14 +186,14 @@
 	</target>
 
 	<target name="compile-tests" depends="bind">
-		<javac srcdir="${test.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="test.classpath" source="1.6" target="1.6"></javac>
+		<javac srcdir="${test.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="test.classpath" source="1.5" target="1.5"></javac>
 		<copy todir="${build.dir}">
 			<fileset dir="${test.dir}" excludes="**/*.java"></fileset>
 		</copy>
 	</target>
 
 	<target name="run-tests" depends="compile-tests">
-		<testng classpathref="test.classpath">
+		<testng classpathref="test.classpath" verbose="9">
 			<xmlfileset dir="${test.dir}" includes="testng.xml"/>
 		</testng>
 	</target>
