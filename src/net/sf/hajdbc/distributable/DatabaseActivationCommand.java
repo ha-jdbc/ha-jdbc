@@ -21,7 +21,6 @@
 package net.sf.hajdbc.distributable;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.DatabaseCluster;
 
 
 /**
@@ -55,8 +54,8 @@ public class DatabaseActivationCommand extends DatabaseCommand
 	 * @see net.sf.hajdbc.distributable.DatabaseCommand#execute(net.sf.hajdbc.DatabaseCluster)
 	 */
 	@Override
-	public void execute(DatabaseCluster databaseCluster)
+	public void execute(DistributableDatabaseCluster databaseCluster)
 	{
-		databaseCluster.activate(databaseCluster.getDatabase(this.databaseId));
+		databaseCluster.activateFromCommand(databaseCluster.getDatabase(this.databaseId));
 	}
 }

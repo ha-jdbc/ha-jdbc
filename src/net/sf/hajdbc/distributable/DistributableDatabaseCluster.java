@@ -69,7 +69,7 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 	 * @see net.sf.hajdbc.DatabaseCluster#deactivate(net.sf.hajdbc.Database)
 	 */
 	@Override
-	public boolean deactivate(Database database)
+	public synchronized boolean deactivate(Database database)
 	{
 		boolean deactivated = super.deactivate(database);
 		
@@ -81,11 +81,16 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 		return deactivated;
 	}
 
+	public boolean deactivateFromCommand(Database database)
+	{
+		return super.deactivate(database);
+	}
+	
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#activate(net.sf.hajdbc.Database)
 	 */
 	@Override
-	public boolean activate(Database database)
+	public synchronized boolean activate(Database database)
 	{
 		boolean activated = super.activate(database);
 		
@@ -95,6 +100,11 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 		}
 		
 		return activated;
+	}
+
+	public boolean activateFromCommand(Database database)
+	{
+		return super.deactivate(database);
 	}
 
 	/**
