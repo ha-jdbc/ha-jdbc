@@ -158,9 +158,12 @@ public abstract class SQLObject<E, P>
 					
 					object = this.parentOperation.execute(database, parentObject);
 					
-					for (Operation<E, ?> operation: this.operationMap.values())
+					synchronized (this.operationMap)
 					{
-						operation.execute(database, object);
+						for (Operation<E, ?> operation: this.operationMap.values())
+						{
+							operation.execute(database, object);
+						}
 					}
 					
 					this.objectMap.put(database, object);
@@ -182,9 +185,12 @@ public abstract class SQLObject<E, P>
 	 * Records an operation.
 	 * @param operation a database operation
 	 */
-	protected synchronized final void record(Operation<E, ?> operation)
+	protected final void record(Operation<E, ?> operation)
 	{
-		this.operationMap.put(operation.getClass().toString(), operation);
+		synchronized (this.operationMap)
+		{
+			this.operationMap.put(operation.getClass().toString(), operation);
+		}
 	}
 	
 	/**
