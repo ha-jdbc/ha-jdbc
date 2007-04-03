@@ -520,8 +520,6 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 		};
 		
 		this.executeTransactionalWriteToDatabase(operation);
-		
-		this.removeChild(savepointProxy);
 	}
 
 	/**
