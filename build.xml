@@ -1,4 +1,24 @@
 <?xml version="1.0"?>
+<!--
+ HA-JDBC: High-Availability JDBC
+ Copyright (c) 2004-2007 Paul Ferraro
+
+ This library is free software; you can redistribute it and/or modify it
+ under the terms of the GNU Lesser General Public License as published by the
+ Free Software Foundation; either version 2.1 of the License, or (at your
+ option) any later version.
+
+ This library is distributed in the hope that it will be useful, but WITHOUT
+ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this library; if not, write to the Free Software Foundation,
+ Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+ Contact: ferraro@users.sourceforge.net
+-->
 <project name="ha-jdbc" default="jar" basedir=".">
 
 	<property name="src.dir" location="${basedir}/src"></property>
@@ -29,6 +49,8 @@
 	<property name="jar-1.4.file" location="${basedir}/${dist-1.4.version.name}.jar"></property>
 	<property name="dist-1.4.bin.file" location="${basedir}/${dist-1.4.version.name}-bin.tar.gz"></property>
 	
+	<property name="backport.path" value="net/sf/hajdbc/backport/**"></property>
+	
 	<path id="src.classpath">
 		<fileset dir="${lib.dir}" includes="*.jar"></fileset>
 		<fileset dir="${lib.compile.dir}" includes="*.jar"></fileset>
@@ -50,6 +72,8 @@
 
 	<path id="test.classpath">
 		<path refid="build.classpath"></path>
+		<dirset dir="${src.dir}"></dirset>
+		<dirset dir="${test.dir}"></dirset>
 		<fileset dir="${lib.test.dir}" includes="*.jar"></fileset>
 		<fileset dir="${lib.runtime.dir}">
 			<include name="stax-api-*.jar"/>
@@ -71,15 +95,8 @@
 		</fileset>
 	</path>
 	
-	<path id="retrotranslate.classpath">
-		<fileset dir="${lib.runtime-1.4.dir}"></fileset>
-		<fileset dir="${lib.compile-1.4.dir}"></fileset>
-		<dirset dir="${build-1.4.dir}"></dirset>
-	</path>
-	
 	<taskdef name="testng" classname="org.testng.TestNGAntTask" classpathref="testng.classpath"></taskdef>
 	<taskdef name="bind" classname="org.jibx.binding.ant.CompileTask" classpathref="bind.classpath"></taskdef>
-	<taskdef name="retrotranslate" classname="net.sf.retrotranslator.transformer.RetrotranslatorTask" classpathref="retrotranslate.classpath"></taskdef>
 	
 	<target name="clean">
 		<delete dir="${build.dir}" quiet="true"></delete>
@@ -90,17 +107,17 @@
 	</target>
 	
 	<target name="compile" depends="init">
-		<javac srcdir="${src.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="build.classpath" source="1.5" target="1.5" excludes="net/sf/retrotranslator/**"></javac>
+		<javac srcdir="${src.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="build.classpath" source="1.5" target="1.5" excludes="${backport.path}"></javac>
 	</target>
 	
-	<target name="bind" depends="clean, compile">
+	<target name="bind" depends="compile">
 		<bind verbose="false" load="true">
 			<bindingfileset dir="${conf.jibx.dir}" includes="*.xml"/>
 			<classpath refid="build.classpath"></classpath>
 		</bind> 
 	</target>
 
-	<target name="jar" depends="bind">
+	<target name="jar" depends="clean, bind">
 		<jar jarfile="${jar.file}" index="true">
 			<fileset dir="${build.dir}"></fileset>
 			<fileset dir="${src.dir}" excludes="**/*.java"></fileset>
@@ -116,12 +133,12 @@
 		<mkdir dir="${build-1.4.dir}"/>
 	</target>
 
-	<target name="compile-1.4" depends="clean-1.4, init-1.4, bind">
-		<javac srcdir="${src.dir}" destdir="${build-1.4.dir}" optimize="yes" debug="on" classpathref="build.classpath" source="1.4" target="1.4" includes="net/sf/retrotranslator/**"></javac>
-		<retrotranslate srcdir="${build.dir}" destdir="${build-1.4.dir}"></retrotranslate>
+	<target name="compile-1.4" depends="init-1.4, bind">
+		<javac srcdir="${src.dir}" destdir="${build-1.4.dir}" optimize="yes" debug="on" classpathref="build.classpath" source="1.4" target="1.4" includes="${backport.path}"></javac>
+		<ant antfile="backport.xml" inheritall="false"></ant>
 	</target>
 
-	<target name="jar-1.4" depends="compile-1.4">
+	<target name="jar-1.4" depends="clean-1.4, compile-1.4">
 		<jar jarfile="${jar-1.4.file}" index="true">
 			<fileset dir="${build-1.4.dir}"></fileset>
 			<fileset dir="${src.dir}" excludes="**/*.java"></fileset>
@@ -190,9 +207,6 @@
 
 	<target name="compile-tests" depends="bind">
 		<javac srcdir="${test.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="test.classpath" source="1.6" target="1.6"></javac>
-		<copy todir="${build.dir}">
-			<fileset dir="${test.dir}" excludes="**/*.java"></fileset>
-		</copy>
 	</target>
 
 	<target name="run-tests" depends="compile-tests">
