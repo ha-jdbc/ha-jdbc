@@ -208,7 +208,7 @@ public abstract class SQLObject<E, P>
 	{
 		List<Database> databaseList = this.databaseCluster.getBalancer().list();
 		
-		this.getConnectionFactory().retain(databaseList);
+		this.getRoot().retain(databaseList);
 		
 		return databaseList;
 	}
@@ -223,36 +223,35 @@ public abstract class SQLObject<E, P>
 			}
 		}
 		
-		if (this.parent != null)
+		if (this.parent == null) return;
+		
+		synchronized (this.objectMap)
 		{
-			synchronized (this.objectMap)
+			Iterator<Map.Entry<Database, E>> mapEntries = this.objectMap.entrySet().iterator();
+			
+			while (mapEntries.hasNext())
 			{
-				Iterator<Map.Entry<Database, E>> mapEntries = this.objectMap.entrySet().iterator();
+				Map.Entry<Database, E> mapEntry = mapEntries.next();
 				
-				while (mapEntries.hasNext())
+				Database database = mapEntry.getKey();
+				
+				if (!activeDatabases.contains(database))
 				{
-					Map.Entry<Database, E> mapEntry = mapEntries.next();
+					E object = mapEntry.getValue();
 					
-					Database database = mapEntry.getKey();
-					
-					if (!activeDatabases.contains(database))
+					if (object != null)
 					{
-						E object = mapEntry.getValue();
-						
-						if (object != null)
+						try
 						{
-							try
-							{
-								this.close(object);
-							}
-							catch (java.sql.SQLException e)
-							{
-								// Ignore
-							}
+							this.close(object);
 						}
-						
-						mapEntries.remove();
+						catch (java.sql.SQLException e)
+						{
+							// Ignore
+						}
 					}
+					
+					mapEntries.remove();
 				}
 			}
 		}
@@ -260,11 +259,11 @@ public abstract class SQLObject<E, P>
 	
 	protected abstract void close(E object) throws java.sql.SQLException;
 	
-	protected SQLObject getConnectionFactory()
+	protected SQLObject getRoot()
 	{
 		if (this.parent == null) return this;
 		
-		return this.parent.getConnectionFactory();
+		return this.parent.getRoot();
 	}
 	
 	/**
