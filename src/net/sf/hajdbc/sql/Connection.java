@@ -680,7 +680,7 @@ public class Connection<P> extends SQLObject<java.sql.Connection, P> implements 
 	 * @see net.sf.hajdbc.sql.SQLObject#close(java.lang.Object)
 	 */
 	@Override
-	protected void close(java.sql.Connection connection) throws SQLException
+	protected void close(P parent, java.sql.Connection connection) throws SQLException
 	{
 		connection.close();
 	}

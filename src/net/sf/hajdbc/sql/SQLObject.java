@@ -241,9 +241,11 @@ public abstract class SQLObject<E, P>
 					
 					if (object != null)
 					{
+						P parent = this.parent.getObject(database);
+						
 						try
 						{
-							this.close(object);
+							this.close(parent, object);
 						}
 						catch (java.sql.SQLException e)
 						{
@@ -257,7 +259,7 @@ public abstract class SQLObject<E, P>
 		}
 	}
 	
-	protected abstract void close(E object) throws java.sql.SQLException;
+	protected abstract void close(P parent, E object) throws java.sql.SQLException;
 	
 	protected SQLObject getRoot()
 	{

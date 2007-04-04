@@ -2468,7 +2468,7 @@ public class ResultSet<T extends java.sql.Statement> extends SQLObject<java.sql.
 	 * @see net.sf.hajdbc.sql.SQLObject#close(java.lang.Object)
 	 */
 	@Override
-	protected void close(java.sql.ResultSet resultSet) throws SQLException
+	protected void close(T statement, java.sql.ResultSet resultSet) throws SQLException
 	{
 		resultSet.close();
 	}

@@ -43,10 +43,10 @@ public class ConnectionFactory<E> extends SQLObject<E, Void>
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.SQLObject#close(java.lang.Object)
+	 * @see net.sf.hajdbc.sql.SQLObject#close(java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	protected void close(E object)
+	protected void close(Void parent, E object)
 	{
 		// Nothing to close
 	}

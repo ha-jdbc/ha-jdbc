@@ -725,7 +725,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 	 * @see net.sf.hajdbc.sql.SQLObject#close(java.lang.Object)
 	 */
 	@Override
-	protected void close(T statement) throws SQLException
+	protected void close(java.sql.Connection connection, T statement) throws SQLException
 	{
 		statement.close();
 	}
