@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2006 Paul Ferraro
+ * Copyright (c) 2004-2007 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -20,7 +20,6 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -76,19 +75,21 @@ public class TestStatement implements java.sql.Statement
 	protected Statement statement1 = EasyMock.createStrictMock(this.getStatementClass());
 	protected Statement statement2 = EasyMock.createStrictMock(this.getStatementClass());
 	protected SQLProxy parent = EasyMock.createStrictMock(SQLProxy.class);
+	protected SQLProxy root = EasyMock.createStrictMock(SQLProxy.class);
 	
 	protected Database database1 = new MockDatabase("1");
 	protected Database database2 = new MockDatabase("2");
 	protected Set<Database> databaseSet;
 	protected ExecutorService executor = Executors.newSingleThreadExecutor();
 	protected Statement statement;
+	protected AbstractStatementInvocationHandler handler;
 	
 	protected Class<? extends java.sql.Statement> getStatementClass()
 	{
 		return java.sql.Statement.class;
 	}
 	
-	protected InvocationHandler getInvocationHandler(Map map) throws Exception
+	protected AbstractStatementInvocationHandler getInvocationHandler(Map map) throws Exception
 	{
 		return new StatementInvocationHandler(this.connection, this.parent, EasyMock.createMock(Invoker.class), map, this.fileSupport);
 	}
@@ -103,13 +104,14 @@ public class TestStatement implements java.sql.Statement
 		this.databaseSet = map.keySet();
 		
 		EasyMock.expect(this.parent.getDatabaseCluster()).andReturn(this.cluster);
-		
+
 		this.recordConstructor();
 		
 		this.replay();
 
-		this.statement = ProxyFactory.createProxy(this.getStatementClass(), this.getInvocationHandler(map));
-		
+		this.handler = this.getInvocationHandler(map);
+		this.statement = ProxyFactory.createProxy(this.getStatementClass(), this.handler);
+
 		this.verify();
 		this.reset();
 	}
@@ -117,12 +119,12 @@ public class TestStatement implements java.sql.Statement
 	@SuppressWarnings("unused")
 	protected void recordConstructor() throws SQLException
 	{
-		
+		this.parent.addChild(EasyMock.isA(StatementInvocationHandler.class));
 	}
 	
 	private Object[] objects()
 	{
-		return new Object[] { this.cluster, this.balancer, this.connection, this.statement1, this.statement2, this.fileSupport, this.readLock, this.sequenceLock, this.tableLock, this.lockManager, this.parent, this.dialect, this.metaData, this.databaseProperties, this.tableProperties, this.columnProperties };
+		return new Object[] { this.cluster, this.balancer, this.connection, this.statement1, this.statement2, this.fileSupport, this.readLock, this.sequenceLock, this.tableLock, this.lockManager, this.parent, this.root, this.dialect, this.metaData, this.databaseProperties, this.tableProperties, this.columnProperties };
 	}
 	
 	void replay()
@@ -172,7 +174,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
@@ -227,12 +231,16 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
 		this.statement1.close();
 		this.statement2.close();
+
+		this.parent.removeChild(this.handler);
 		
 		this.replay();
 		
@@ -257,7 +265,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -283,7 +293,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -309,7 +321,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -336,7 +350,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -379,7 +395,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -405,7 +423,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -432,7 +452,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -459,7 +481,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -502,7 +526,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 
@@ -528,7 +554,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 
@@ -554,7 +582,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 
@@ -581,7 +611,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 
@@ -624,7 +656,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -650,7 +684,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -676,7 +712,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -703,7 +741,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -746,7 +786,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -772,7 +814,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -798,7 +842,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -825,7 +871,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -936,7 +984,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -972,7 +1022,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -1000,7 +1052,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -1028,7 +1082,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -1057,7 +1113,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -1096,7 +1154,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 
@@ -1122,7 +1182,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 
@@ -1148,7 +1210,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 
@@ -1175,7 +1239,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 
@@ -1212,7 +1278,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 
@@ -1238,7 +1306,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 
@@ -1264,7 +1334,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 
@@ -1291,7 +1363,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 
@@ -1328,7 +1402,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 
@@ -1354,7 +1430,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 
@@ -1380,7 +1458,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 
@@ -1407,7 +1487,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 
@@ -1444,7 +1526,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 
@@ -1470,7 +1554,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 
@@ -1496,7 +1582,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 
@@ -1523,7 +1611,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 
@@ -1663,7 +1753,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
@@ -1703,7 +1795,9 @@ public class TestStatement implements java.sql.Statement
 			EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 			EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-			this.parent.retain(this.databaseSet);
+			EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+			
+			this.root.retain(this.databaseSet);
 			
 			EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 			
@@ -1817,7 +1911,9 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		

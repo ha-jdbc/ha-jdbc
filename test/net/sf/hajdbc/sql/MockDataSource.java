@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2006 Paul Ferraro
+ * Copyright (c) 2004-2007 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -23,7 +23,6 @@ package net.sf.hajdbc.sql;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.Connection;
-import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
@@ -83,7 +82,7 @@ public class MockDataSource implements DataSource
 	 * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
 	 */
 	@Override
-	public boolean isWrapperFor(Class<?> arg0) throws SQLException
+	public boolean isWrapperFor(Class<?> arg0)
 	{
 		return false;
 	}
@@ -92,7 +91,7 @@ public class MockDataSource implements DataSource
 	 * @see java.sql.Wrapper#unwrap(java.lang.Class)
 	 */
 	@Override
-	public <T> T unwrap(Class<T> arg0) throws SQLException
+	public <T> T unwrap(Class<T> arg0)
 	{
 		return null;
 	}

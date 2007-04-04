@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2006 Paul Ferraro
+ * Copyright (c) 2004-2007 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -82,6 +82,7 @@ public class TestConnection implements Connection
 	private Connection connection1 = EasyMock.createStrictMock(java.sql.Connection.class);
 	private Connection connection2 = EasyMock.createStrictMock(java.sql.Connection.class);
 	private SQLProxy parent = EasyMock.createStrictMock(SQLProxy.class);
+	private SQLProxy root = EasyMock.createStrictMock(SQLProxy.class);
 	private Savepoint savepoint1 = EasyMock.createStrictMock(Savepoint.class);
 	private Savepoint savepoint2 = EasyMock.createStrictMock(Savepoint.class);
 	
@@ -90,6 +91,7 @@ public class TestConnection implements Connection
 	private Set<Database> databaseSet;
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
 	private Connection connection;
+	private ConnectionInvocationHandler handler;
 	
 	@BeforeClass
 	void init() throws Exception
@@ -101,10 +103,13 @@ public class TestConnection implements Connection
 		this.databaseSet = map.keySet();
 		
 		EasyMock.expect(this.parent.getDatabaseCluster()).andReturn(this.cluster);
-		
+
+		this.parent.addChild(EasyMock.isA(ConnectionInvocationHandler.class));
+
 		this.replay();
 		
-		this.connection = ProxyFactory.createProxy(Connection.class, new ConnectionInvocationHandler(new Object(), this.parent, EasyMock.createMock(Invoker.class), map, this.fileSupport));
+		this.handler = new ConnectionInvocationHandler(new Object(), this.parent, EasyMock.createMock(Invoker.class), map, this.fileSupport);
+		this.connection = ProxyFactory.createProxy(Connection.class, this.handler);
 		
 		this.verify();
 		this.reset();
@@ -112,7 +117,7 @@ public class TestConnection implements Connection
 	
 	private Object[] objects()
 	{
-		return new Object[] { this.cluster, this.balancer, this.connection1, this.connection2, this.fileSupport, this.readLock, this.writeLock1, this.writeLock2, this.lockManager, this.parent, this.savepoint1, this.savepoint2, this.dialect, this.metaData, this.databaseProperties, this.tableProperties, this.columnProperties };
+		return new Object[] { this.cluster, this.balancer, this.connection1, this.connection2, this.fileSupport, this.readLock, this.writeLock1, this.writeLock2, this.lockManager, this.parent, this.root, this.savepoint1, this.savepoint2, this.dialect, this.metaData, this.databaseProperties, this.tableProperties, this.columnProperties };
 	}
 	
 	void replay()
@@ -156,7 +161,9 @@ public class TestConnection implements Connection
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
@@ -164,6 +171,8 @@ public class TestConnection implements Connection
 		this.connection2.close();
 		
 		this.fileSupport.close();
+
+		this.parent.removeChild(this.handler);
 		
 		this.replay();
 		
@@ -186,7 +195,9 @@ public class TestConnection implements Connection
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -588,7 +599,9 @@ public class TestConnection implements Connection
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
@@ -656,7 +669,9 @@ public class TestConnection implements Connection
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
@@ -724,7 +739,9 @@ public class TestConnection implements Connection
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
@@ -786,7 +803,9 @@ public class TestConnection implements Connection
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);		
 		
@@ -854,7 +873,9 @@ public class TestConnection implements Connection
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
@@ -916,7 +937,9 @@ public class TestConnection implements Connection
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
@@ -978,7 +1001,9 @@ public class TestConnection implements Connection
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
@@ -1046,7 +1071,9 @@ public class TestConnection implements Connection
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
@@ -1114,7 +1141,9 @@ public class TestConnection implements Connection
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
@@ -1168,7 +1197,7 @@ public class TestConnection implements Connection
 		map.put(this.database1, this.savepoint1);
 		map.put(this.database2, this.savepoint2);
 		
-		return new Object[][] { new Object[] { ProxyFactory.createProxy(Savepoint.class, new SavepointInvocationHandler(this.connection, EasyMock.createMock(SQLProxy.class), EasyMock.createMock(Invoker.class), map)) } };
+		return new Object[][] { new Object[] { ProxyFactory.createProxy(Savepoint.class, new SavepointInvocationHandler(this.connection, this.handler, EasyMock.createMock(Invoker.class), map)) } };
 	}
 	
 	/**
@@ -1185,7 +1214,9 @@ public class TestConnection implements Connection
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -1215,7 +1246,9 @@ public class TestConnection implements Connection
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -1245,7 +1278,9 @@ public class TestConnection implements Connection
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -1292,7 +1327,9 @@ public class TestConnection implements Connection
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
@@ -1362,7 +1399,9 @@ public class TestConnection implements Connection
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -1405,7 +1444,9 @@ public class TestConnection implements Connection
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -1445,7 +1486,9 @@ public class TestConnection implements Connection
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		

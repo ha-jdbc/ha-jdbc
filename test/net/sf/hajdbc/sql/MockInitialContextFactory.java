@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2006 Paul Ferraro
+ * Copyright (c) 2004-2007 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -46,13 +46,13 @@ import javax.naming.spi.ObjectFactory;
  */
 public class MockInitialContextFactory implements InitialContextFactory
 {
-	private static ThreadLocal threadLocal = new ThreadLocal()
+	private static ThreadLocal<Context> threadLocal = new ThreadLocal<Context>()
 	{
 		/**
 		 * @see java.lang.ThreadLocal#initialValue()
 		 */
 		@Override
-		protected Object initialValue()
+		protected Context initialValue()
 		{
 			return new MockContext();
 		}	
@@ -61,9 +61,9 @@ public class MockInitialContextFactory implements InitialContextFactory
 	/**
 	 * @see javax.naming.spi.InitialContextFactory#getInitialContext(java.util.Hashtable)
 	 */
-	public Context getInitialContext(Hashtable environment)
+	public Context getInitialContext(Hashtable<?, ?> environment)
 	{
-		return (Context) threadLocal.get();
+		return threadLocal.get();
 	}
 	
 	/**

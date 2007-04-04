@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2006 Paul Ferraro
+ * Copyright (c) 2004-2007 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -28,8 +28,9 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Properties;
 
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.Reference;
 
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -45,22 +46,32 @@ import org.testng.annotations.Test;
 public class TestDriver implements java.sql.Driver
 {
 	private java.sql.Driver driver = new Driver();
-	private MBeanServer server;
+	private Context context;
 	
 	@BeforeClass
 	protected void setUp() throws Exception
 	{
-		this.server = MBeanServerFactory.createMBeanServer();
-		
 		DriverManager.registerDriver(new MockDriver());
+		
+		Properties properties = new Properties();
+		
+		properties.setProperty(Context.INITIAL_CONTEXT_FACTORY, "net.sf.hajdbc.sql.MockInitialContextFactory");
+		
+		this.context = new InitialContext(properties);
+		
+		Reference reference = new Reference(DataSource.class.toString(), "net.sf.hajdbc.sql.MockDataSourceFactory", null);
+		
+		this.context.rebind("datasource1", reference);
+		this.context.rebind("datasource2", reference);
 	}
 
 	@AfterClass
 	protected void tearDown() throws Exception
 	{
+		this.context.unbind("datasource1");
+		this.context.unbind("datasource2");
+		
 		DriverManager.deregisterDriver(new MockDriver());
-
-		MBeanServerFactory.releaseMBeanServer(this.server);
 	}
 
 	/**

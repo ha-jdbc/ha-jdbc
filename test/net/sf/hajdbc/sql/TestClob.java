@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2006 Paul Ferraro
+ * Copyright (c) 2004-2007 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -67,12 +67,14 @@ public class TestClob implements NClob
 	private NClob clob1 = EasyMock.createStrictMock(NClob.class);
 	private NClob clob2 = EasyMock.createStrictMock(NClob.class);
 	private SQLProxy parent = EasyMock.createStrictMock(SQLProxy.class);
+	private SQLProxy root = EasyMock.createStrictMock(SQLProxy.class);
 	
 	private Database database1 = new MockDatabase("1");
 	private Database database2 = new MockDatabase("2");
 	private Set<Database> databaseSet;
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
 	private NClob clob;
+	private ClobInvocationHandler handler;
 	
 	@BeforeClass
 	void init() throws Exception
@@ -84,10 +86,12 @@ public class TestClob implements NClob
 		this.databaseSet = map.keySet();
 		
 		EasyMock.expect(this.parent.getDatabaseCluster()).andReturn(this.cluster);
+		this.parent.addChild(EasyMock.isA(ClobInvocationHandler.class));
 		
 		this.replay();
 		
-		this.clob = ProxyFactory.createProxy(NClob.class, new ClobInvocationHandler(new Object(), this.parent, EasyMock.createMock(Invoker.class), map));
+		this.handler = new ClobInvocationHandler(new Object(), this.parent, EasyMock.createMock(Invoker.class), map);
+		this.clob = ProxyFactory.createProxy(NClob.class, this.handler);
 		
 		this.verify();
 		this.reset();
@@ -95,7 +99,7 @@ public class TestClob implements NClob
 	
 	private Object[] objects()
 	{
-		return new Object[] { this.cluster, this.balancer, this.clob1, this.clob2, this.readLock, this.writeLock1, this.writeLock2, this.lockManager, this.parent };
+		return new Object[] { this.cluster, this.balancer, this.clob1, this.clob2, this.readLock, this.writeLock1, this.writeLock2, this.lockManager, this.parent, this.root };
 	}
 	
 	void replay()
@@ -123,7 +127,11 @@ public class TestClob implements NClob
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+
+		this.root.retain(this.databaseSet);
+		
+		this.parent.removeChild(this.handler);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
@@ -367,7 +375,9 @@ public class TestClob implements NClob
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
@@ -397,7 +407,9 @@ public class TestClob implements NClob
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
@@ -430,7 +442,9 @@ public class TestClob implements NClob
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
@@ -463,7 +477,9 @@ public class TestClob implements NClob
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
@@ -490,7 +506,9 @@ public class TestClob implements NClob
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		

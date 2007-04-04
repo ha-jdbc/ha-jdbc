@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2006 Paul Ferraro
+ * Copyright (c) 2004-2007 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -21,11 +21,10 @@
 package net.sf.hajdbc.sql;
 
 import java.lang.reflect.Proxy;
+import java.sql.DriverManager;
 import java.util.Hashtable;
 import java.util.Properties;
 
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.Name;
@@ -49,13 +48,12 @@ import org.testng.annotations.Test;
 public class TestDataSourceFactory implements ObjectFactory
 {
 	private DataSource dataSource = new DataSource();
-	private MBeanServer server;
 	private Context context;
 	
 	@BeforeClass
 	protected void setUp() throws Exception
 	{
-		this.server = MBeanServerFactory.createMBeanServer();
+		DriverManager.registerDriver(new MockDriver());
 		
 		Properties properties = new Properties();
 		
@@ -81,7 +79,7 @@ public class TestDataSourceFactory implements ObjectFactory
 		this.context.unbind("datasource1");
 		this.context.unbind("datasource2");
 		
-		MBeanServerFactory.releaseMBeanServer(this.server);
+		DriverManager.deregisterDriver(new MockDriver());
 	}
 
 	@DataProvider(name = "factory")

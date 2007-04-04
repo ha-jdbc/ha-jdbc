@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2006 Paul Ferraro
+ * Copyright (c) 2004-2007 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -97,6 +97,7 @@ public class TestResultSet implements ResultSet
 	private ResultSet resultSet1 = EasyMock.createStrictMock(ResultSet.class);
 	private ResultSet resultSet2 = EasyMock.createStrictMock(ResultSet.class);
 	private SQLProxy parent = EasyMock.createStrictMock(SQLProxy.class);
+	private SQLProxy root = EasyMock.createStrictMock(SQLProxy.class);
 	private Blob blob1 = EasyMock.createMock(Blob.class);
 	private Blob blob2 = EasyMock.createMock(Blob.class);
 	private Clob clob1 = EasyMock.createMock(Clob.class);
@@ -110,6 +111,7 @@ public class TestResultSet implements ResultSet
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
 	private Statement statement = EasyMock.createMock(Statement.class);
 	private ResultSet resultSet;
+	private ResultSetInvocationHandler handler;
 	
 	@BeforeClass
 	void init() throws Exception
@@ -122,9 +124,12 @@ public class TestResultSet implements ResultSet
 		
 		EasyMock.expect(this.parent.getDatabaseCluster()).andReturn(this.cluster);
 		
+		this.parent.addChild(EasyMock.isA(ResultSetInvocationHandler.class));
+		
 		this.replay();
 		
-		this.resultSet = ProxyFactory.createProxy(ResultSet.class, new ResultSetInvocationHandler(this.statement, this.parent, EasyMock.createMock(Invoker.class), map, this.fileSupport));
+		this.handler = new ResultSetInvocationHandler(this.statement, this.parent, EasyMock.createMock(Invoker.class), map, this.fileSupport);
+		this.resultSet = ProxyFactory.createProxy(ResultSet.class, this.handler);
 		
 		this.verify();
 		this.reset();
@@ -132,7 +137,7 @@ public class TestResultSet implements ResultSet
 	
 	private Object[] objects()
 	{
-		return new Object[] { this.cluster, this.balancer, this.resultSet1, this.resultSet2, this.fileSupport, this.readLock, this.writeLock1, this.writeLock2, this.lockManager, this.parent, this.dialect, this.metaData, this.databaseProperties, this.tableProperties, this.columnProperties };
+		return new Object[] { this.cluster, this.balancer, this.resultSet1, this.resultSet2, this.fileSupport, this.readLock, this.writeLock1, this.writeLock2, this.lockManager, this.parent, this.root, this.dialect, this.metaData, this.databaseProperties, this.tableProperties, this.columnProperties };
 	}
 	
 	void replay()
@@ -250,12 +255,16 @@ public class TestResultSet implements ResultSet
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
 		this.resultSet1.close();
 		this.resultSet2.close();
+
+		this.parent.removeChild(this.handler);
 		
 		this.replay();
 		
@@ -278,7 +287,9 @@ public class TestResultSet implements ResultSet
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -575,7 +586,9 @@ public class TestResultSet implements ResultSet
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
@@ -610,7 +623,9 @@ public class TestResultSet implements ResultSet
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
@@ -809,7 +824,9 @@ public class TestResultSet implements ResultSet
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
@@ -844,7 +861,9 @@ public class TestResultSet implements ResultSet
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
@@ -1822,7 +1841,9 @@ public class TestResultSet implements ResultSet
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -2015,7 +2036,9 @@ public class TestResultSet implements ResultSet
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
@@ -2354,14 +2377,7 @@ public class TestResultSet implements ResultSet
 		map.put(this.database1, this.blob1);
 		map.put(this.database2, this.blob2);
 		
-		EasyMock.expect(this.parent.getDatabaseCluster()).andReturn(this.cluster);
-		
-		this.replay();
-		
-		Blob blob = ProxyFactory.createProxy(Blob.class, new BlobInvocationHandler(null, this.parent, null, map));
-		
-		this.verify();
-		this.reset();
+		Blob blob = ProxyFactory.createProxy(Blob.class, new BlobInvocationHandler(null, this.handler, null, map));
 		
 		return new Object[][] { new Object[] { 1, new MockBlob() }, new Object[] { 1, blob } };
 	}
@@ -2398,14 +2414,7 @@ public class TestResultSet implements ResultSet
 		map.put(this.database1, this.blob1);
 		map.put(this.database2, this.blob2);
 		
-		EasyMock.expect(this.parent.getDatabaseCluster()).andReturn(this.cluster);
-		
-		this.replay();
-		
-		Blob blob = ProxyFactory.createProxy(Blob.class, new BlobInvocationHandler(null, this.parent, null, map));
-		
-		this.verify();
-		this.reset();
+		Blob blob = ProxyFactory.createProxy(Blob.class, new BlobInvocationHandler(null, this.handler, null, map));
 		
 		return new Object[][] { new Object[] { "", new MockBlob() }, new Object[] { "", blob } };
 	}
@@ -2640,14 +2649,7 @@ public class TestResultSet implements ResultSet
 		map.put(this.database1, this.clob1);
 		map.put(this.database2, this.clob2);
 		
-		EasyMock.expect(this.parent.getDatabaseCluster()).andReturn(this.cluster);
-		
-		this.replay();
-		
-		Clob clob = ProxyFactory.createProxy(Clob.class, new ClobInvocationHandler(null, this.parent, null, map));
-		
-		this.verify();
-		this.reset();
+		Clob clob = ProxyFactory.createProxy(Clob.class, new ClobInvocationHandler(null, this.handler, null, map));
 		
 		return new Object[][] { new Object[] { 1, new MockClob() }, new Object[] { 1, clob } };
 	}
@@ -2684,14 +2686,7 @@ public class TestResultSet implements ResultSet
 		map.put(this.database1, this.clob1);
 		map.put(this.database2, this.clob2);
 		
-		EasyMock.expect(this.parent.getDatabaseCluster()).andReturn(this.cluster);
-		
-		this.replay();
-		
-		Clob clob = ProxyFactory.createProxy(Clob.class, new ClobInvocationHandler(null, this.parent, null, map));
-		
-		this.verify();
-		this.reset();
+		Clob clob = ProxyFactory.createProxy(Clob.class, new ClobInvocationHandler(null, this.handler, null, map));
 		
 		return new Object[][] { new Object[] { "", new MockClob() }, new Object[] { "", clob } };
 	}
@@ -3106,7 +3101,9 @@ public class TestResultSet implements ResultSet
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 
@@ -4263,14 +4260,7 @@ public class TestResultSet implements ResultSet
 		map.put(this.database1, this.nClob1);
 		map.put(this.database2, this.nClob2);
 		
-		EasyMock.expect(this.parent.getDatabaseCluster()).andReturn(this.cluster);
-		
-		this.replay();
-		
-		NClob clob = ProxyFactory.createProxy(NClob.class, new ClobInvocationHandler(null, this.parent, null, map));
-		
-		this.verify();
-		this.reset();
+		NClob clob = ProxyFactory.createProxy(NClob.class, new ClobInvocationHandler(null, this.handler, null, map));
 		
 		return new Object[][] { new Object[] { 1, new MockClob() }, new Object[] { 1, clob } };
 	}
@@ -4307,11 +4297,9 @@ public class TestResultSet implements ResultSet
 		map.put(this.database1, this.nClob1);
 		map.put(this.database2, this.nClob2);
 		
-		EasyMock.expect(this.parent.getDatabaseCluster()).andReturn(this.cluster);
-		
 		this.replay();
 		
-		NClob clob = ProxyFactory.createProxy(NClob.class, new ClobInvocationHandler(null, this.parent, null, map));
+		NClob clob = ProxyFactory.createProxy(NClob.class, new ClobInvocationHandler(null, this.handler, null, map));
 		
 		this.verify();
 		this.reset();

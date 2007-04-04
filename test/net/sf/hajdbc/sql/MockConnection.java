@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2006 Paul Ferraro
+ * Copyright (c) 2004-2007 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -30,8 +30,6 @@ import java.sql.NClob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.RowIdLifetime;
-import java.sql.SQLClientInfoException;
-import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.SQLXML;
 import java.sql.Savepoint;
@@ -959,55 +957,55 @@ public class MockConnection implements Connection
 			}
 
 			@Override
-			public boolean autoCommitFailureClosesAllResultSets() throws SQLException
+			public boolean autoCommitFailureClosesAllResultSets()
 			{
 				return false;
 			}
 
 			@Override
-			public ResultSet getClientInfoProperties() throws SQLException
+			public ResultSet getClientInfoProperties()
 			{
 				return null;
 			}
 
 			@Override
-			public ResultSet getFunctionColumns(String arg0, String arg1, String arg2, String arg3) throws SQLException
+			public ResultSet getFunctionColumns(String arg0, String arg1, String arg2, String arg3)
 			{
 				return null;
 			}
 
 			@Override
-			public ResultSet getFunctions(String arg0, String arg1, String arg2) throws SQLException
+			public ResultSet getFunctions(String arg0, String arg1, String arg2)
 			{
 				return null;
 			}
 
 			@Override
-			public RowIdLifetime getRowIdLifetime() throws SQLException
+			public RowIdLifetime getRowIdLifetime()
 			{
 				return null;
 			}
 
 			@Override
-			public ResultSet getSchemas(String arg0, String arg1) throws SQLException
+			public ResultSet getSchemas(String arg0, String arg1)
 			{
 				return null;
 			}
 
 			@Override
-			public boolean supportsStoredFunctionsUsingCallSyntax() throws SQLException
+			public boolean supportsStoredFunctionsUsingCallSyntax()
 			{
 				return false;
 			}
 
 			@Override
-			public boolean isWrapperFor(Class<?> arg0) throws SQLException
+			public boolean isWrapperFor(Class<?> arg0)
 			{
 				return false;
 			}
 
 			@Override
-			public <T> T unwrap(Class<T> arg0) throws SQLException
+			public <T> T unwrap(Class<T> arg0)
 			{
 				return null;
 			}
@@ -1204,7 +1202,7 @@ public class MockConnection implements Connection
 	 * @see java.sql.Connection#createArrayOf(java.lang.String, java.lang.Object[])
 	 */
 	@Override
-	public Array createArrayOf(String arg0, Object[] arg1) throws SQLException
+	public Array createArrayOf(String arg0, Object[] arg1)
 	{
 		return null;
 	}
@@ -1213,7 +1211,7 @@ public class MockConnection implements Connection
 	 * @see java.sql.Connection#createBlob()
 	 */
 	@Override
-	public Blob createBlob() throws SQLException
+	public Blob createBlob()
 	{
 		return null;
 	}
@@ -1222,7 +1220,7 @@ public class MockConnection implements Connection
 	 * @see java.sql.Connection#createClob()
 	 */
 	@Override
-	public Clob createClob() throws SQLException
+	public Clob createClob()
 	{
 		return null;
 	}
@@ -1231,7 +1229,7 @@ public class MockConnection implements Connection
 	 * @see java.sql.Connection#createNClob()
 	 */
 	@Override
-	public NClob createNClob() throws SQLException
+	public NClob createNClob()
 	{
 		return null;
 	}
@@ -1240,7 +1238,7 @@ public class MockConnection implements Connection
 	 * @see java.sql.Connection#createSQLXML()
 	 */
 	@Override
-	public SQLXML createSQLXML() throws SQLException
+	public SQLXML createSQLXML()
 	{
 		return null;
 	}
@@ -1249,7 +1247,7 @@ public class MockConnection implements Connection
 	 * @see java.sql.Connection#createStruct(java.lang.String, java.lang.Object[])
 	 */
 	@Override
-	public Struct createStruct(String arg0, Object[] arg1) throws SQLException
+	public Struct createStruct(String arg0, Object[] arg1)
 	{
 		return null;
 	}
@@ -1258,7 +1256,7 @@ public class MockConnection implements Connection
 	 * @see java.sql.Connection#getClientInfo()
 	 */
 	@Override
-	public Properties getClientInfo() throws SQLException
+	public Properties getClientInfo()
 	{
 		return null;
 	}
@@ -1267,7 +1265,7 @@ public class MockConnection implements Connection
 	 * @see java.sql.Connection#getClientInfo(java.lang.String)
 	 */
 	@Override
-	public String getClientInfo(String arg0) throws SQLException
+	public String getClientInfo(String arg0)
 	{
 		return null;
 	}
@@ -1276,7 +1274,7 @@ public class MockConnection implements Connection
 	 * @see java.sql.Connection#isValid(int)
 	 */
 	@Override
-	public boolean isValid(int arg0) throws SQLException
+	public boolean isValid(int arg0)
 	{
 		return false;
 	}
@@ -1285,7 +1283,7 @@ public class MockConnection implements Connection
 	 * @see java.sql.Connection#setClientInfo(java.util.Properties)
 	 */
 	@Override
-	public void setClientInfo(Properties arg0) throws SQLClientInfoException
+	public void setClientInfo(Properties arg0)
 	{
 	}
 
@@ -1293,7 +1291,7 @@ public class MockConnection implements Connection
 	 * @see java.sql.Connection#setClientInfo(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void setClientInfo(String arg0, String arg1) throws SQLClientInfoException
+	public void setClientInfo(String arg0, String arg1)
 	{
 	}
 
@@ -1301,7 +1299,7 @@ public class MockConnection implements Connection
 	 * @see java.sql.Connection#setTypeMap(java.util.Map)
 	 */
 	@Override
-	public void setTypeMap(Map<String, Class<?>> arg0) throws SQLException
+	public void setTypeMap(Map<String, Class<?>> arg0)
 	{
 	}
 
@@ -1309,7 +1307,7 @@ public class MockConnection implements Connection
 	 * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
 	 */
 	@Override
-	public boolean isWrapperFor(Class<?> arg0) throws SQLException
+	public boolean isWrapperFor(Class<?> arg0)
 	{
 		return false;
 	}
@@ -1318,7 +1316,7 @@ public class MockConnection implements Connection
 	 * @see java.sql.Wrapper#unwrap(java.lang.Class)
 	 */
 	@Override
-	public <T> T unwrap(Class<T> arg0) throws SQLException
+	public <T> T unwrap(Class<T> arg0)
 	{
 		return null;
 	}

@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2006 Paul Ferraro
+ * Copyright (c) 2004-2007 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -62,12 +62,14 @@ public class TestBlob implements Blob
 	private Blob blob1 = EasyMock.createStrictMock(java.sql.Blob.class);
 	private Blob blob2 = EasyMock.createStrictMock(java.sql.Blob.class);
 	private SQLProxy parent = EasyMock.createStrictMock(SQLProxy.class);
+	private SQLProxy root = EasyMock.createStrictMock(SQLProxy.class);
 	
 	private Database database1 = new MockDatabase("1");
 	private Database database2 = new MockDatabase("2");
 	private Set<Database> databaseSet;
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
 	private Blob blob;
+	private BlobInvocationHandler handler;
 	
 	@BeforeClass
 	void init() throws Exception
@@ -80,9 +82,12 @@ public class TestBlob implements Blob
 		
 		EasyMock.expect(this.parent.getDatabaseCluster()).andReturn(this.cluster);
 		
+		this.parent.addChild(EasyMock.isA(BlobInvocationHandler.class));
+		
 		this.replay();
 		
-		this.blob = ProxyFactory.createProxy(Blob.class, new BlobInvocationHandler(new Object(), this.parent, EasyMock.createMock(Invoker.class), map));
+		this.handler = new BlobInvocationHandler(new Object(), this.parent, EasyMock.createMock(Invoker.class), map);
+		this.blob = ProxyFactory.createProxy(Blob.class, this.handler);
 		
 		this.verify();
 		this.reset();
@@ -90,7 +95,7 @@ public class TestBlob implements Blob
 	
 	private Object[] objects()
 	{
-		return new Object[] { this.cluster, this.balancer, this.blob1, this.blob2, this.readLock, this.writeLock1, this.writeLock2, this.lockManager, this.parent };
+		return new Object[] { this.cluster, this.balancer, this.blob1, this.blob2, this.readLock, this.writeLock1, this.writeLock2, this.lockManager, this.parent, this.root };
 	}
 	
 	void replay()
@@ -118,7 +123,11 @@ public class TestBlob implements Blob
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+
+		this.root.retain(this.databaseSet);
+		
+		this.parent.removeChild(this.handler);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
@@ -336,7 +345,9 @@ public class TestBlob implements Blob
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
@@ -369,7 +380,9 @@ public class TestBlob implements Blob
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
@@ -402,7 +415,9 @@ public class TestBlob implements Blob
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
@@ -429,7 +444,9 @@ public class TestBlob implements Blob
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		

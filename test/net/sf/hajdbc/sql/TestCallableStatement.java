@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2006 Paul Ferraro
+ * Copyright (c) 2004-2007 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
@@ -95,9 +94,21 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	}
 	
 	@Override
-	protected InvocationHandler getInvocationHandler(Map map) throws Exception
+	protected AbstractStatementInvocationHandler getInvocationHandler(Map map) throws Exception
 	{
 		return new CallableStatementInvocationHandler(this.connection, this.parent, EasyMock.createMock(Invoker.class), map, this.fileSupport, this.sql);
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.sql.TestStatement#recordConstructor()
+	 */
+	@Override
+	protected void recordConstructor() throws SQLException
+	{
+		this.parent.addChild(EasyMock.isA(CallableStatementInvocationHandler.class));
+		
+		this.expectLocks(this.sql, null, null);
+		this.expectSelectForUpdateCheck(this.sql, false);
 	}
 	
 	/**
@@ -2197,6 +2208,8 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 		
 		EasyMock.expect(this.parent.getDatabaseCluster()).andReturn(this.cluster);
 		
+		this.parent.addChild(EasyMock.isA(BlobInvocationHandler.class));
+		
 		this.replay();
 		
 		Blob blob = ProxyFactory.createProxy(Blob.class, new BlobInvocationHandler(null, this.parent, null, map));
@@ -2361,6 +2374,8 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 		
 		EasyMock.expect(this.parent.getDatabaseCluster()).andReturn(this.cluster);
 		
+		this.parent.addChild(EasyMock.isA(ClobInvocationHandler.class));
+
 		this.replay();
 		
 		Clob clob = ProxyFactory.createProxy(Clob.class, new ClobInvocationHandler(null, this.parent, null, map));
@@ -2512,6 +2527,8 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 		map.put(this.database2, this.nClob2);
 		
 		EasyMock.expect(this.parent.getDatabaseCluster()).andReturn(this.cluster);
+		
+		this.parent.addChild(EasyMock.isA(ClobInvocationHandler.class));
 		
 		this.replay();
 		

@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2006 Paul Ferraro
+ * Copyright (c) 2004-2007 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
@@ -105,7 +104,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	}
 	
 	@Override
-	protected InvocationHandler getInvocationHandler(Map map) throws Exception
+	protected AbstractStatementInvocationHandler getInvocationHandler(Map map) throws Exception
 	{
 		return new PreparedStatementInvocationHandler(this.connection, this.parent, EasyMock.createMock(Invoker.class), map, this.fileSupport, this.sql);
 	}
@@ -116,6 +115,8 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	@Override
 	protected void recordConstructor() throws SQLException
 	{
+		this.parent.addChild(EasyMock.isA(PreparedStatementInvocationHandler.class));
+		
 		this.expectLocks(this.sql, null, null);
 		this.expectSelectForUpdateCheck(this.sql, false);
 	}
@@ -167,7 +168,9 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -231,7 +234,9 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -267,7 +272,9 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
-		this.parent.retain(this.databaseSet);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
 		
 		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
@@ -455,14 +462,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 		map.put(this.database1, this.blob1);
 		map.put(this.database2, this.blob2);
 		
-		EasyMock.expect(this.parent.getDatabaseCluster()).andReturn(this.cluster);
-		
-		this.replay();
-		
-		Blob blob = ProxyFactory.createProxy(Blob.class, new BlobInvocationHandler(null, this.parent, null, map));
-		
-		this.verify();
-		this.reset();
+		Blob blob = ProxyFactory.createProxy(Blob.class, new BlobInvocationHandler(null, this.handler, null, map));
 		
 		return new Object[][] { new Object[] { 1, new MockBlob() }, new Object[] { 1, blob } };
 	}
@@ -598,14 +598,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 		map.put(this.database1, this.clob1);
 		map.put(this.database2, this.clob2);
 		
-		EasyMock.expect(this.parent.getDatabaseCluster()).andReturn(this.cluster);
-		
-		this.replay();
-		
-		Clob clob = ProxyFactory.createProxy(Clob.class, new ClobInvocationHandler(null, this.parent, null, map));
-		
-		this.verify();
-		this.reset();
+		Clob clob = ProxyFactory.createProxy(Clob.class, new ClobInvocationHandler(null, this.handler, null, map));
 		
 		return new Object[][] { new Object[] { 1, new MockClob() }, new Object[] { 1, clob } };
 	}
@@ -1430,14 +1423,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 		map.put(this.database1, this.nClob1);
 		map.put(this.database2, this.nClob2);
 		
-		EasyMock.expect(this.parent.getDatabaseCluster()).andReturn(this.cluster);
-		
-		this.replay();
-		
-		NClob nClob = ProxyFactory.createProxy(NClob.class, new ClobInvocationHandler(null, this.parent, null, map));
-		
-		this.verify();
-		this.reset();
+		NClob nClob = ProxyFactory.createProxy(NClob.class, new ClobInvocationHandler(null, this.handler, null, map));
 		
 		return new Object[][] { new Object[] { 1, new MockClob() }, new Object[] { 1, nClob } };
 	}
