@@ -56,6 +56,6 @@ public class DatabaseDeactivationCommand extends DatabaseCommand
 	@Override
 	public void execute(DistributableDatabaseCluster databaseCluster)
 	{
-		databaseCluster.deactivateFromCommand(databaseCluster.getDatabase(this.databaseId));
+		databaseCluster.deactivateFromCommand(this.databaseId);
 	}
 }

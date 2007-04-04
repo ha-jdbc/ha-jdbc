@@ -56,6 +56,6 @@ public class DatabaseActivationCommand extends DatabaseCommand
 	@Override
 	public void execute(DistributableDatabaseCluster databaseCluster)
 	{
-		databaseCluster.activateFromCommand(databaseCluster.getDatabase(this.databaseId));
+		databaseCluster.activateFromCommand(this.databaseId);
 	}
 }

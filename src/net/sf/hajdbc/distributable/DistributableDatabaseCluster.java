@@ -81,9 +81,9 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 		return deactivated;
 	}
 
-	public boolean deactivateFromCommand(Database database)
+	public boolean deactivateFromCommand(String databaseId)
 	{
-		return super.deactivate(database);
+		return super.deactivate(this.getDatabase(databaseId));
 	}
 	
 	/**
@@ -102,9 +102,9 @@ public class DistributableDatabaseCluster extends LocalDatabaseCluster implement
 		return activated;
 	}
 
-	public boolean activateFromCommand(Database database)
+	public boolean activateFromCommand(String databaseId)
 	{
-		return super.deactivate(database);
+		return super.activate(this.getDatabase(databaseId));
 	}
 
 	/**
