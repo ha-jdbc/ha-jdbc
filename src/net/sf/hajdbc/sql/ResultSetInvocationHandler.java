@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2006 Paul Ferraro
+ * Copyright (c) 2004-2007 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -279,11 +279,32 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 	}
 
 	/**
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#postInvoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 */
+	@Override
+	protected void postInvoke(ResultSet object, Method method, Object[] parameters) throws Exception
+	{
+		if (method.equals(ResultSet.class.getMethod("close")))
+		{
+			this.getParentProxy().removeChild(this);
+		}
+	}
+
+	/**
 	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#handleFailures(java.util.SortedMap)
 	 */
 	@Override
 	public void handleFailures(SortedMap<Database<D>, SQLException> exceptionMap) throws SQLException
 	{
 		this.getParentProxy().handleFailures(exceptionMap);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#close(java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	protected void close(S statement, ResultSet resultSet) throws SQLException
+	{
+		resultSet.close();
 	}
 }

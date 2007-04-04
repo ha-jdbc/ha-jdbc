@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2006 Paul Ferraro
+ * Copyright (c) 2004-2007 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -36,5 +36,14 @@ public class DriverInvocationHandler extends AbstractInvocationHandler<Driver, V
 	public DriverInvocationHandler(DatabaseCluster<Driver> databaseCluster)
 	{
 		super(databaseCluster, databaseCluster.getConnectionFactoryMap());
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#close(java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	protected void close(Void parent, Driver driver)
+	{
+		// Do nothing
 	}
 }

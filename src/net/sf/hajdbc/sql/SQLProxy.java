@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2006 Paul Ferraro
+ * Copyright (c) 2004-2007 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -30,7 +30,7 @@ import net.sf.hajdbc.DatabaseCluster;
 
 /**
  * @author Paul Ferraro
- *
+ * @since 2.0
  */
 public interface SQLProxy<D, E>
 {
@@ -39,6 +39,14 @@ public interface SQLProxy<D, E>
 	public Map.Entry<Database<D>, E> entry();
 	
 	public Set<Map.Entry<Database<D>, E>> entries();
+	
+	public void addChild(SQLProxy<D, ?> child);
+
+	public void removeChild(SQLProxy<D, ?> child);
+	
+	public void removeChildren();
+
+	public SQLProxy<D, ?> getRoot();
 	
 	public E getObject(Database<D> database);
 	

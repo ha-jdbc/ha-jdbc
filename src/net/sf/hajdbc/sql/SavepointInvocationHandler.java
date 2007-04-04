@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2006 Paul Ferraro
+ * Copyright (c) 2004-2007 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -22,6 +22,7 @@ package net.sf.hajdbc.sql;
 
 import java.lang.reflect.Method;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.util.Map;
 
@@ -52,5 +53,14 @@ public class SavepointInvocationHandler<D> extends AbstractInvocationHandler<D, 
 	protected InvocationStrategy<D, Savepoint, ?> getInvocationStrategy(Savepoint object, Method method, Object[] parameters)
 	{
 		return new DriverReadInvocationStrategy<D, Savepoint, Object>();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#close(java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	protected void close(Connection connection, Savepoint savepoint) throws SQLException
+	{
+		connection.releaseSavepoint(savepoint);
 	}
 }

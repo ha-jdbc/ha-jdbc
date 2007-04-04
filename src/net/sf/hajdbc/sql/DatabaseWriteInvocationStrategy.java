@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2006 Paul Ferraro
+ * Copyright (c) 2004-2007 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -87,7 +87,7 @@ public class DatabaseWriteInvocationStrategy<D, T, R> implements InvocationStrat
 		{
 			Set<Database<D>> databaseSet = cluster.getBalancer().all();
 			
-			proxy.retain(databaseSet);
+			proxy.getRoot().retain(databaseSet);
 			
 			if (databaseSet.isEmpty())
 			{

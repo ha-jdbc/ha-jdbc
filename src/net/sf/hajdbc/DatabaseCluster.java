@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2006 Paul Ferraro
+ * Copyright (c) 2004-2007 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -106,28 +106,28 @@ public interface DatabaseCluster<D>
 	/**
 	 * Returns a LockManager capable of acquiring named read/write locks on the specific objects in this database cluster.
 	 * @return a LockManager implementation
-	 * @since 1.2
+	 * @since 2.0
 	 */
 	public LockManager getLockManager();
 	
 	/**
 	 * Sets the LockManager implementation capable of acquiring named read/write locks on the specific objects in this database cluster.
 	 * @return a LockManager implementation
-	 * @since 1.2
+	 * @since 2.0
 	 */
 	public void setLockManager(LockManager lockManager);
 	
 	/**
 	 * Returns a StateManager for persisting database cluster state.
 	 * @return a StateManager implementation
-	 * @since 1.2
+	 * @since 2.0
 	 */
 	public StateManager getStateManager();
 	
 	/**
 	 * Sets the StateManager implementation for persisting database cluster state.
 	 * @return a StateManager implementation
-	 * @since 1.2
+	 * @since 2.0
 	 */
 	public void setStateManager(StateManager stateManager);
 	
@@ -147,7 +147,7 @@ public interface DatabaseCluster<D>
 	/**
 	 * Returns a DatabaseMetaData cache.
 	 * @return a <code>DatabaseMetaDataCache</code> implementation
-	 * @since 1.2
+	 * @since 2.0
 	 */
 	public DatabaseMetaDataCache getDatabaseMetaDataCache();
 	

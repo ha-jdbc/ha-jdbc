@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2006 Paul Ferraro
+ * Copyright (c) 2004-2007 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -165,6 +165,10 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 		{
 			this.sqlList.clear();
 		}
+		else if (method.equals(Statement.class.getMethod("close")))
+		{
+			this.getParentProxy().removeChild(this);
+		}
 	}
 
 	/**
@@ -254,5 +258,14 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 		}
 		
 		return lockList;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#close(java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	protected void close(Connection connection, S statement) throws SQLException
+	{
+		statement.close();
 	}
 }

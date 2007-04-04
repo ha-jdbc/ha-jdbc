@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2006 Paul Ferraro
+ * Copyright (c) 2004-2007 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -140,13 +140,13 @@ public class ConnectionInvocationHandler<D> extends AbstractInvocationHandler<D,
 	{
 		if (method.equals(Connection.class.getMethod("releaseSavepoint", Savepoint.class)))
 		{
-			final SavepointInvocationHandler<D> handler = (SavepointInvocationHandler<D>) Proxy.getInvocationHandler(parameters[0]);
+			final SQLProxy<D, Savepoint> proxy = SQLProxy.class.cast(Proxy.getInvocationHandler(parameters[0]));
 			
 			return new Invoker<D, Connection, Void>()
 			{
 				public Void invoke(Database<D> database, Connection connection) throws SQLException
 				{
-					connection.releaseSavepoint(handler.getObject(database));
+					connection.releaseSavepoint(proxy.getObject(database));
 					
 					return null;
 				}					
@@ -155,13 +155,13 @@ public class ConnectionInvocationHandler<D> extends AbstractInvocationHandler<D,
 		
 		if (method.equals(Connection.class.getMethod("rollback", Savepoint.class)))
 		{
-			final SavepointInvocationHandler<D> handler = SavepointInvocationHandler.class.cast(Proxy.getInvocationHandler(parameters[0]));
+			final SQLProxy<D, Savepoint> proxy = SQLProxy.class.cast(Proxy.getInvocationHandler(parameters[0]));
 			
 			return new Invoker<D, Connection, Void>()
 			{
 				public Void invoke(Database<D> database, Connection connection) throws SQLException
 				{
-					connection.rollback(handler.getObject(database));
+					connection.rollback(proxy.getObject(database));
 					
 					return null;
 				}					
@@ -174,12 +174,30 @@ public class ConnectionInvocationHandler<D> extends AbstractInvocationHandler<D,
 	/**
 	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#postInvoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	protected void postInvoke(Connection object, Method method, Object[] parameters) throws Exception
 	{
 		if (method.equals(Connection.class.getMethod("close")))
 		{
 			this.fileSupport.close();
+			
+			this.getParentProxy().removeChild(this);
 		}
+		else if (method.equals(Connection.class.getMethod("releaseSavepoint", Savepoint.class)))
+		{
+			SQLProxy<D, Savepoint> proxy = SQLProxy.class.cast(Proxy.getInvocationHandler(parameters[0]));
+			
+			this.removeChild(proxy);
+		}
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#close(java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	protected void close(D parent, Connection connection) throws SQLException
+	{
+		connection.close();
 	}
 }

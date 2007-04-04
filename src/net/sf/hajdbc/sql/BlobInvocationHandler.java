@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2006 Paul Ferraro
+ * Copyright (c) 2004-2007 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -20,7 +20,6 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.lang.reflect.Method;
 import java.sql.Blob;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -33,7 +32,7 @@ import net.sf.hajdbc.Database;
  * @author Paul Ferraro
  *
  */
-public class BlobInvocationHandler<D, P> extends AbstractInvocationHandler<D, P, Blob>
+public class BlobInvocationHandler<D, P> extends AbstractLobInvocationHandler<D, P, Blob>
 {
 	private static final Set<String> DATABASE_READ_METHOD_SET = new HashSet<String>(Arrays.asList("getBinaryStream", "getBytes", "length", "position"));
 
@@ -48,20 +47,13 @@ public class BlobInvocationHandler<D, P> extends AbstractInvocationHandler<D, P,
 	{
 		super(object, proxy, invoker, objectMap);
 	}
-
+	
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 * @see net.sf.hajdbc.sql.AbstractLobInvocationHandler#getDatabaseReadMethodSet()
 	 */
 	@Override
-	protected InvocationStrategy<D, Blob, ?> getInvocationStrategy(Blob object, Method method, Object[] parameters) throws Exception
+	protected Set<String> getDatabaseReadMethodSet()
 	{
-		String methodName = method.getName();
-		
-		if (DATABASE_READ_METHOD_SET.contains(methodName))
-		{
-			return new DatabaseReadInvocationStrategy<D, Blob, Object>();
-		}
-		
-		return super.getInvocationStrategy(object, method, parameters);
+		return DATABASE_READ_METHOD_SET;
 	}
 }

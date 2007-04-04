@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2006 Paul Ferraro
+ * Copyright (c) 2004-2007 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -24,7 +24,7 @@ import net.sf.hajdbc.LockManager;
 
 /**
  * @author Paul Ferraro
- * @since 1.2
+ * @since 2.0
  */
 public class AcquireLockDecree extends LockDecree
 {

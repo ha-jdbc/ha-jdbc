@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2006 Paul Ferraro
+ * Copyright (c) 2004-2007 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -26,6 +26,8 @@ import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -52,6 +54,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 	private Invoker<D, P, E> parentInvoker;
 	private Map<Database<D>, E> objectMap;
 	private Set<Invoker<D, E, ?>> invokerSet = new LinkedHashSet<Invoker<D, E, ?>>();
+	private List<SQLProxy<D, ?>> childList = new LinkedList<SQLProxy<D, ?>>();
 	
 	protected AbstractInvocationHandler(DatabaseCluster<D> databaseCluster, Map<Database<D>, E> objectMap)
 	{
@@ -66,6 +69,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 		this.parentObject = object;
 		this.parentProxy = proxy;
 		this.parentInvoker = invoker;
+		this.parentProxy.addChild(this);
 	}
 	
 	/**
@@ -133,21 +137,62 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.sql.SQLProxy#firstDatabase()
+	 * @see net.sf.hajdbc.sql.SQLProxy#entry()
 	 */
-	public synchronized Map.Entry<Database<D>, E> entry()
+	public Map.Entry<Database<D>, E> entry()
 	{
-		return this.objectMap.entrySet().iterator().next();
+		synchronized (this.objectMap)
+		{
+			return this.objectMap.entrySet().iterator().next();
+		}
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.SQLProxy#firstDatabase()
+	 * @see net.sf.hajdbc.sql.SQLProxy#entries()
 	 */
-	public synchronized Set<Map.Entry<Database<D>, E>> entries()
+	public Set<Map.Entry<Database<D>, E>> entries()
 	{
-		return this.objectMap.entrySet();
+		synchronized (this.objectMap)
+		{
+			return this.objectMap.entrySet();
+		}
 	}
 
+	/**
+	 * @see net.sf.hajdbc.sql.SQLProxy#addChild(net.sf.hajdbc.sql.SQLProxy)
+	 */
+	public final void addChild(SQLProxy<D, ?> child)
+	{
+		synchronized (this.childList)
+		{
+			this.childList.add(child);
+		}
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.sql.SQLProxy#removeChildren()
+	 */
+	public final void removeChildren()
+	{
+		synchronized (this.childList)
+		{
+			this.childList.clear();
+		}
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.sql.SQLProxy#removeChild(net.sf.hajdbc.sql.SQLProxy)
+	 */
+	public final void removeChild(SQLProxy<D, ?> child)
+	{
+		synchronized (this.childList)
+		{
+			child.removeChildren();
+			
+			this.childList.remove(child);
+		}
+	}
+	
 	/**
 	 * Returns the underlying SQL object for the specified database.
 	 * If the sql object does not exist (this might be the case if the database was newly activated), it will be created from the stored operation.
@@ -156,89 +201,122 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 	 * @return an underlying SQL object
 	 */
 	@SuppressWarnings("unchecked")
-	public synchronized E getObject(Database<D> database)
+	public final E getObject(Database<D> database)
 	{
-		E object = this.objectMap.get(database);
-		
-		if (object == null)
+		synchronized (this.objectMap)
 		{
-			try
+			E object = this.objectMap.get(database);
+			
+			if (object == null)
 			{
-				if (this.parentProxy == null)
+				try
 				{
-					throw new java.sql.SQLException();
+					if (this.parentProxy == null)
+					{
+						throw new java.sql.SQLException();
+					}
+					
+					P parentObject = this.parentProxy.getObject(database);
+					
+					if (parentObject == null)
+					{
+						throw new java.sql.SQLException();
+					}
+					
+					object = this.parentInvoker.invoke(database, parentObject);
+					
+					synchronized (this.invokerSet)
+					{
+						for (Invoker<D, E, ?> invoker: this.invokerSet)
+						{
+							invoker.invoke(database, object);
+						}
+					}
+					
+					this.objectMap.put(database, object);
 				}
-				
-				P parentObject = this.parentProxy.getObject(database);
-				
-				if (parentObject == null)
+				catch (Exception e)
 				{
-					throw new java.sql.SQLException();
+					if (this.databaseCluster.deactivate(database))
+					{
+						this.logger.warn(Messages.getMessage(Messages.SQL_OBJECT_INIT_FAILED, this.getClass().getName(), database), e);
+					}
 				}
-				
-				object = this.parentInvoker.invoke(database, parentObject);
-				
-				for (Invoker<D, E, ?> invoker: this.invokerSet)
-				{
-					invoker.invoke(database, object);
-				}
-				
-				this.objectMap.put(database, object);
 			}
-			catch (Exception e)
-			{
-				if (this.databaseCluster.deactivate(database))
-				{
-					this.logger.warn(Messages.getMessage(Messages.SQL_OBJECT_INIT_FAILED, this.getClass().getName(), database), e);
-				}
-			}
+			
+			return object;
 		}
-		
-		return object;
 	}
 	
 	/**
 	 * Records an operation.
 	 * @param operation a database operation
 	 */
-	public synchronized final void record(Invoker<D, E, ?> invoker)
+	public final void record(Invoker<D, E, ?> invoker)
 	{
-		this.invokerSet.add(invoker);
+		synchronized (this.invokerSet)
+		{
+			this.invokerSet.add(invoker);
+		}
 	}
 	
-	public synchronized void retain(Set<Database<D>> databaseSet)
+	/**
+	 * @see net.sf.hajdbc.sql.SQLProxy#retain(java.util.Set)
+	 */
+	public final void retain(Set<Database<D>> databaseSet)
 	{
-		if (this.parentProxy == null) return;
-		
-		Iterator<Map.Entry<Database<D>, E>> mapEntries = this.objectMap.entrySet().iterator();
-		
-		while (mapEntries.hasNext())
+		synchronized (this.childList)
 		{
-			Map.Entry<Database<D>, E> mapEntry = mapEntries.next();
-			
-			Database<D> database = mapEntry.getKey();
-			
-			if (!databaseSet.contains(database))
+			for (SQLProxy<D, ?> child: this.childList)
 			{
-				Object object = mapEntry.getValue();
-				
-				if (object != null)
-				{
-					try
-					{
-						object.getClass().getMethod("close", new Class[0]).invoke(object, new Object[0]);
-					}
-					catch (Exception e)
-					{
-						// Ignore
-					}
-				}
-				
-				mapEntries.remove();
+				child.retain(databaseSet);
 			}
 		}
 		
-		this.parentProxy.retain(databaseSet);
+		if (this.parentProxy == null) return;
+		
+		synchronized (this.objectMap)
+		{
+			Iterator<Map.Entry<Database<D>, E>> mapEntries = this.objectMap.entrySet().iterator();
+			
+			while (mapEntries.hasNext())
+			{
+				Map.Entry<Database<D>, E> mapEntry = mapEntries.next();
+				
+				Database<D> database = mapEntry.getKey();
+				
+				if (!databaseSet.contains(database))
+				{
+					E object = mapEntry.getValue();
+					
+					if (object != null)
+					{
+						P parent = this.parentProxy.getObject(database);
+						
+						try
+						{
+							this.close(parent, object);
+						}
+						catch (SQLException e)
+						{
+							this.logger.info(e.getMessage(), e);
+						}
+					}
+					
+					mapEntries.remove();
+				}
+			}
+		}
+	}
+	
+	protected abstract void close(P parent, E object) throws SQLException;
+	
+	/**
+	 * @see net.sf.hajdbc.sql.SQLProxy#getRoot()
+	 */
+	public final SQLProxy<D, ?> getRoot()
+	{
+		return (this.parentProxy == null) ? this : this.parentProxy.getRoot();
 	}
 	
 	protected P getParent()
@@ -255,7 +333,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 	 * Returns the database cluster to which this proxy is associated.
 	 * @return a database cluster
 	 */
-	public DatabaseCluster<D> getDatabaseCluster()
+	public final DatabaseCluster<D> getDatabaseCluster()
 	{
 		return this.databaseCluster;
 	}

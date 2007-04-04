@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2006 Paul Ferraro
+ * Copyright (c) 2004-2007 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -108,14 +108,14 @@ public interface Dialect
 	 * @param sql a SQL statement
 	 * @return the name of a table, or null if this SQL statement is not an INSERT statement
 	 * @throws SQLException
-	 * @since 1.2
+	 * @since 2.0
 	 */
 	public String parseInsertTable(String sql) throws SQLException;
 	
 	/**
 	 * Indicates whether or not this dialect supports identity columns.
 	 * @return true, if identity columns are supported, false otherwise.
-	 * @since 1.2
+	 * @since 2.0
 	 */
 	public boolean supportsIdentityColumns();
 	
@@ -124,14 +124,14 @@ public interface Dialect
 	 * @param properties a table column
 	 * @return true, if this column is an identity column, false otherwise
 	 * @throws SQLException
-	 * @since 1.2
+	 * @since 2.0
 	 */
 	public boolean isIdentity(ColumnProperties properties) throws SQLException;
 
 	/**
 	 * Indicates whether or not this dialect supports sequences.
 	 * @return true, if sequences are supported, false otherwise.
-	 * @since 1.2
+	 * @since 2.0
 	 */
 	public boolean supportsSequences();
 	
@@ -140,7 +140,7 @@ public interface Dialect
 	 * @param sql a SQL statement
 	 * @return the name of a sequence, or null if this SQL statement does not reference a sequence
 	 * @throws SQLException
-	 * @since 1.2
+	 * @since 2.0
 	 */
 	public String parseSequence(String sql) throws SQLException;
 	
@@ -149,7 +149,7 @@ public interface Dialect
 	 * @param connection a database connection
 	 * @return a Map of sequence name to current value
 	 * @throws SQLException
-	 * @since 1.2
+	 * @since 2.0
 	 */
 	public Collection<String> getSequences(Connection connection) throws SQLException;
 	
@@ -158,7 +158,7 @@ public interface Dialect
 	 * @param sequence a sequence name
 	 * @return a SQL statement
 	 * @throws SQLException
-	 * @since 1.2
+	 * @since 2.0
 	 */
 	public String getNextSequenceValueSQL(String sequence) throws SQLException;
 
@@ -167,14 +167,14 @@ public interface Dialect
 	 * @param sequence a sequence name
 	 * @param value a sequence value
 	 * @return a SQL statement
-	 * @since 1.2
+	 * @since 2.0
 	 */
 	public String getAlterSequenceSQL(String sequence, long value) throws SQLException;
 	
 	/**
 	 * Returns a search path of schemas 
 	 * @return a list of schema names
-	 * @since 1.2
+	 * @since 2.0
 	 */
 	public List<String> getDefaultSchemas(Connection connection) throws SQLException;
 }
