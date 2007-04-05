@@ -38,7 +38,7 @@ public class EagerDatabaseMetaDataCache extends AbstractDatabaseMetaDataCache
 	/**
 	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush(java.sql.Connection)
 	 */
-	public void flush(Connection connection) throws SQLException
+	public synchronized void flush(Connection connection) throws SQLException
 	{
 		this.properties = new EagerDatabaseProperties(connection, this.dialect);
 	}
@@ -46,8 +46,13 @@ public class EagerDatabaseMetaDataCache extends AbstractDatabaseMetaDataCache
 	/**
 	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getDatabaseProperties(java.sql.Connection)
 	 */
-	public DatabaseProperties getDatabaseProperties(Connection connection)
+	public synchronized DatabaseProperties getDatabaseProperties(Connection connection) throws SQLException
 	{
+		if (this.properties == null)
+		{
+			this.flush(connection);
+		}
+		
 		return this.properties;
 	}
 }

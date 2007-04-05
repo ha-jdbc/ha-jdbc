@@ -26,6 +26,7 @@ import java.sql.Statement;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -526,7 +527,14 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		
 		this.databaseMetaDataCache.setDialect(this.dialect);
 		
-		this.flushMetaDataCache();
+		try
+		{
+			this.flushMetaDataCache();
+		}
+		catch (IllegalStateException e)
+		{
+			// Ignore - cache will initialize lazily.
+		}
 		
 		if (this.failureDetectionExpression != null)
 		{
@@ -589,13 +597,17 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	{
 		Connection connection = null;
 		
-		Database database = this.balancer.next();
-		
 		try
 		{
+			Database database = this.balancer.next();
+			
 			connection = database.connect(this.connectionFactoryMap.get(database));
 			
 			this.databaseMetaDataCache.flush(connection);
+		}
+		catch (NoSuchElementException e)
+		{
+			throw new IllegalStateException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this));
 		}
 		catch (java.sql.SQLException e)
 		{
