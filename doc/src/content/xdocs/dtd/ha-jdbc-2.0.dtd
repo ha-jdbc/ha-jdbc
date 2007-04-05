@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 	HA-JDBC: High-Availability JDBC
-	Copyright (c) 2004-2006 Paul Ferraro
+	Copyright (c) 2004-2007 Paul Ferraro
 
 	This library is free software; you can redistribute it and/or modify it 
 	under the terms of the GNU Lesser General Public License as published by the 
@@ -46,7 +46,7 @@
 	default-sync IDREF #REQUIRED
 	dialect CDATA 'standard'
 	meta-data-cache (none|lazy|eager) #REQUIRED
-	transactions (local|xa) #REQUIRED
+	transaction-mode (parallel|serial) #REQUIRED
 	auto-activate-schedule CDATA #IMPLIED
 	failure-detect-schedule CDATA #IMPLIED
 	min-threads CDATA '0'

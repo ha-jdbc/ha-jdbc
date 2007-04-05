@@ -24,16 +24,16 @@ package net.sf.hajdbc;
  * @author Paul Ferraro
  *
  */
-public enum Transaction
+public enum TransactionMode
 {
-	LOCAL, XA;
+	PARALLEL, SERIAL;
 	
-	public static Transaction deserialize(String value)
+	public static TransactionMode deserialize(String value)
 	{
-		return Transaction.valueOf(value.toUpperCase());
+		return TransactionMode.valueOf(value.toUpperCase());
 	}
 	
-	public static String serialize(Transaction transaction)
+	public static String serialize(TransactionMode transaction)
 	{
 		return transaction.name().toLowerCase();
 	}

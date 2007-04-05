@@ -56,7 +56,7 @@ import net.sf.hajdbc.StateManager;
 import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.SynchronizationStrategyBuilder;
-import net.sf.hajdbc.Transaction;
+import net.sf.hajdbc.TransactionMode;
 import net.sf.hajdbc.local.LocalLockManager;
 import net.sf.hajdbc.local.LocalStateManager;
 import net.sf.hajdbc.sync.SynchronizationContextImpl;
@@ -127,7 +127,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	private int minThreads;
 	private int maxThreads;
 	private int maxIdle;
-	private Transaction transaction;
+	private TransactionMode transactionMode;
 	private boolean identityColumnDetectionEnabled;
 	private boolean sequenceDetectionEnabled;
 	
@@ -523,7 +523,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		
 		this.nonTransactionalExecutor = new ThreadPoolExecutor(this.minThreads, this.maxThreads, this.maxIdle, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), DaemonThreadFactory.getInstance(), new ThreadPoolExecutor.CallerRunsPolicy());
 		
-		this.transactionalExecutor = this.transaction.equals(Transaction.XA) ? new SynchronousExecutor() : this.nonTransactionalExecutor;
+		this.transactionalExecutor = this.transactionMode.equals(TransactionMode.SERIAL) ? new SynchronousExecutor() : this.nonTransactionalExecutor;
 		
 		this.databaseMetaDataCache.setDialect(this.dialect);
 		
