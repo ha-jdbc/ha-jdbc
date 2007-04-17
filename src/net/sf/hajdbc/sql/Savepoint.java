@@ -76,7 +76,7 @@ public class Savepoint extends SQLObject<java.sql.Savepoint, java.sql.Connection
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.SQLObject#close(java.lang.Object)
+	 * @see net.sf.hajdbc.sql.SQLObject#close(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	protected void close(java.sql.Connection connection, java.sql.Savepoint savepoint) throws SQLException
