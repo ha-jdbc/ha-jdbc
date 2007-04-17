@@ -174,14 +174,14 @@
 	<target name="dist-src">
 		<tar tarfile="${dist.src.file}" compression="gzip">
 			<tarfileset dir="${basedir}" prefix="${dist.version.name}">
-				<include name="build.*"/>
+				<include name="*.xml"/>
 				<include name="*.txt"/>
 			</tarfileset>
 			<tarfileset dir="${src.dir}" prefix="${dist.version.name}/src" includes="**"></tarfileset>
 			<tarfileset dir="${test.dir}" prefix="${dist.version.name}/test" includes="**"></tarfileset>
 			<tarfileset dir="${lib.dir}" prefix="${dist.version.name}/lib" includes="**"></tarfileset>
 			<tarfileset dir="${conf.dir}" prefix="${dist.version.name}/conf" includes="**"></tarfileset>
-			<tarfileset dir="${doc.dir}" prefix="${dist.version.name}/doc" includes="**/*.*">
+			<tarfileset dir="${doc.dir}" prefix="${dist.version.name}/doc" includes="**">
 				<exclude name="build/**"/>
 				<exclude name="src/content/api/**"/>
 			</tarfileset>
