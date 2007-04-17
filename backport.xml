@@ -23,13 +23,12 @@
 	
 	<property name="build.dir" location="${basedir}/build"></property>
 	<property name="build-1.4.dir" location="${basedir}/build-1.4"></property>
-	<property name="lib.dir" location="${basedir}/lib"></property>
-	<property name="lib.compile-1.4.dir" location="${lib.dir}/compile-1.4"></property>
-	<property name="lib.runtime-1.4.dir" location="${lib.dir}/runtime-1.4"></property>
+	<property name="lib-1.4.dir" location="${basedir}/lib-1.4"></property>
+	<property name="lib-1.4.compile.dir" location="${lib-1.4.dir}/compile"></property>
 	
 	<path id="retrotranslate.classpath">
-		<fileset dir="${lib.runtime-1.4.dir}"></fileset>
-		<fileset dir="${lib.compile-1.4.dir}"></fileset>
+		<fileset dir="${lib-1.4.dir}"></fileset>
+		<fileset dir="${lib-1.4.compile.dir}"></fileset>
 		<dirset dir="${build-1.4.dir}"></dirset>
 	</path>
 	

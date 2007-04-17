@@ -27,6 +27,7 @@
 	<property name="test.dir" location="${basedir}/test"></property>
 	<property name="doc.dir" location="${basedir}/doc"></property>
 	<property name="lib.dir" location="${basedir}/lib"></property>
+	<property name="lib-1.4.dir" location="${basedir}/lib-1.4"></property>
 	
 	<property file="${src.dir}/net/sf/hajdbc/DatabaseClusterFactory.properties"></property>
 	
@@ -35,8 +36,8 @@
 	<property name="doc.api.dir" location="${doc.dir}/src/content/api"></property>
 	<property name="lib.compile.dir" location="${lib.dir}/compile"></property>
 	<property name="lib.runtime.dir" location="${lib.dir}/runtime"></property>
-	<property name="lib.compile-1.4.dir" location="${lib.dir}/compile-1.4"></property>
-	<property name="lib.runtime-1.4.dir" location="${lib.dir}/runtime-1.4"></property>
+	<property name="lib-1.4.compile.dir" location="${lib-1.4.dir}/compile"></property>
+	<property name="lib-1.4.runtime.dir" location="${lib-1.4.dir}/runtime"></property>
 	<property name="lib.test.dir" location="${lib.dir}/test"></property>
 	<property name="conf.dir" location="${basedir}/conf"></property>
 	<property name="conf.jibx.dir" location="${conf.dir}/jibx"></property>
@@ -152,9 +153,8 @@
 				<include name="*.txt"/>
 			</tarfileset>
 			<tarfileset dir="${lib.dir}" prefix="${dist.version.name}/lib" includes="**">
-				<exclude name="compile*/**"/>
+				<exclude name="compile/**"/>
 				<exclude name="test/**"/>
-				<exclude name="runtime-1.4/**"/>
 			</tarfileset>
 			<tarfileset dir="${doc.build.dir}/site" prefix="${dist.version.name}/doc" includes="**"></tarfileset>
 		</tar>
@@ -164,8 +164,11 @@
 				<include name="*.txt"/>
 			</tarfileset>
 			<tarfileset dir="${lib.dir}" prefix="${dist.version.name}/lib" includes="**">
-				<exclude name="compile*/**"/>
+				<exclude name="compile/**"/>
 				<exclude name="test/**"/>
+			</tarfileset>
+			<tarfileset dir="${lib-1.4.dir}" prefix="${dist.version.name}/lib" includes="**">
+				<exclude name="compile/**"/>
 			</tarfileset>
 			<tarfileset dir="${doc.build.dir}/site" prefix="${dist.version.name}/doc" includes="**"></tarfileset>
 		</tar>
@@ -180,6 +183,7 @@
 			<tarfileset dir="${src.dir}" prefix="${dist.version.name}/src" includes="**"></tarfileset>
 			<tarfileset dir="${test.dir}" prefix="${dist.version.name}/test" includes="**"></tarfileset>
 			<tarfileset dir="${lib.dir}" prefix="${dist.version.name}/lib" includes="**"></tarfileset>
+			<tarfileset dir="${lib-1.4.dir}" prefix="${dist.version.name}/lib-1.4" includes="**"></tarfileset>
 			<tarfileset dir="${conf.dir}" prefix="${dist.version.name}/conf" includes="**"></tarfileset>
 			<tarfileset dir="${doc.dir}" prefix="${dist.version.name}/doc" includes="**">
 				<exclude name="build/**"/>
