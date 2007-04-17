@@ -31,7 +31,7 @@ import javax.management.MBeanServerFactory;
  */
 public final class ManagementFactory
 {
-	public static MBeanServer getPlatformMBeanServer()
+	public static synchronized MBeanServer getPlatformMBeanServer()
 	{
 		List serverList = MBeanServerFactory.findMBeanServer(null);
 		
