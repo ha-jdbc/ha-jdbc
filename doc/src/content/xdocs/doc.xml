@@ -10,8 +10,6 @@
 			<ul>
 				<li>Java Runtime Environment 1.5+ (Java 1.4 supported via Retrotranslator)<a href="#Java1.4">*</a></li>
 				<li>Type IV <acronym title="Java Database Connectivity">JDBC</acronym> 3.0 driver</li>
-				<li>A <acronym title="Java Management Extensions">JMX</acronym> 1.2 compliant MBean server<a href="#MBeanServer">*</a></li>
-				<li>All databases in a cluster must initially be in sync.</li>
 			</ul>
 			<section id="Java1.4">
 				<title>Using Java 1.4</title>
@@ -20,27 +18,6 @@
 					However, a Java 1.4 compatible distribution is generated using <a href="http://retrotranslator.sourceforge.net">Retrotranslator</a>.
 					Consequently, this distribution has some additional runtime dependencies, defined <a href="#dependencies">here</a>.
 				</p>
-				<p>
-					HA-JDBC requires a <acronym title="Java Management Extensions">JMX</acronym> 1.2+ MBean server.
-					While Java 1.5 includes Sun's <acronym title="Java Management Extensions">JMX</acronym> reference implementation, Java 1.4 does not.
-					Therefore, if your application server or servlet container does not include a <acronym title="Java Management Extensions">JMX</acronym> 1.2 implementation, it is up to you to supply one.
-					Below is a list of popular and free <acronym title="Java Management Extensions">JMX</acronym> implementations available to you:
-				</p>
-				<ul>
-					<li><a href="http://java.sun.com/products/JavaManagement/index.jsp">Sun's <acronym title="Java Management Extensions">JMX</acronym> Reference Implemenation</a></li>
-					<li><a href="http://mx4j.sourceforge.net">MX4J</a></li>
-					<li><a href="http://www.xmojo.org/products/xmojo">XMOJO</a></li>
-					<li><a href="http://www.jboss.org/developers/projects/jboss/jbossmx">JBossMX</a></li>
-					<li><a href="http://www.huihoo.org/jfox/jfoxmx/index.html">JFoxMX</a></li>
-				</ul>
-			</section>
-			<section id="MBeanServer">
-				<title>Creating an MBean server</title>
-				<p>
-					If you are using HA-JDBC outside a servlet/<acronym title="Enterprise Java Bean">EJB</acronym> container, or if you are supplying your own <acronym title="Java Management Extensions">JMX</acronym> implementation, you may need to explicitly create an MBean server.
-					If this is the case, add the following code to a startup hook in your application:
-				</p>
-				<source>javax.management.MBeanServerFactory.createMBeanServer();</source>
 			</section>
 		</section>
 		<section id="dependencies">
@@ -86,6 +63,8 @@
 					<dl>
 						<dt>backport-util-concurrent-*.jar : JDK 1.4 <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent">backport of java.util.concurrent</a> package</dt>
 						<dd>Required.  Runtime dependency of Retrotranslator.</dd>
+						<dt>jmx-*.jar : JMX reference implementation</dt>
+						<dd>Optional.  Required if your application server does not include an mbean server.</dd>
 						<dt>retrotranslator-runtime-*.jar : <a href="http://retrotranslator.sourceforge.net">Retrotranslator</a></dt>
 						<dd>Required.</dd>
 					</dl>
