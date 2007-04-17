@@ -12,7 +12,7 @@
 	</contexts>
 
 	<changes>
-		<release version="1.1.11" date="?">
+		<release version="1.1.11" date="April 17, 2007">
 			<action type="add" context="src" dev="PF">
 				Added max batch size property to differential synchronization strategy to help prevent out of memory errors.
 			</action>
