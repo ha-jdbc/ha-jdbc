@@ -51,7 +51,7 @@ public class DatabaseActivationCommand extends DatabaseCommand
 	}
 
 	/**
-	 * @see net.sf.hajdbc.distributable.DatabaseCommand#execute(net.sf.hajdbc.DatabaseCluster)
+	 * @see net.sf.hajdbc.distributable.DatabaseCommand#execute(net.sf.hajdbc.distributable.DistributableDatabaseCluster)
 	 */
 	@Override
 	public void execute(DistributableDatabaseCluster databaseCluster)
