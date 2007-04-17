@@ -19,4 +19,4 @@
 		<retrotranslate srcdir="${build.dir}" destdir="${build-1.4.dir}" backport="net.sf.hajdbc.backport"></retrotranslate>
 	</target>
 	
-</project>	
+</project>
