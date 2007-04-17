@@ -29,8 +29,11 @@
 			<action type="fix" context="src" dev="PF" due-to="Kurt Huwig">
 				Fixed german message transations.
 			</action>
+			<action type="fix" context="lib" dev="PF">
+				Removed stray slf4j-api-1.1.0.jar from /lib
+			</action>
 			<action type="update" context="lib" dev="PF">
-				Upgraded SLF4J to 1.3.0.
+				Upgraded SLF4J to 1.3.1.
 			</action>
 		</release>
 		<release version="1.1.10" date="February 18, 2007">
@@ -42,6 +45,9 @@
 			</action>
 			<action type="fix" context="src" dev="PF">
 				Creation of Connection, Statement do not require transactional writes, thus don't require cluster read locks.
+			</action>
+			<action type="update" context="src" dev="PF">
+				Changed default distributable protocol stack from default-minimalthreads.xml to fc-fast-minimalthreads.xml
 			</action>
 			<action type="update" context="lib" dev="PF">
 				Upgraded TestNG to 5.5.
