@@ -35,6 +35,6 @@ public class ManagementFactory
 	{
 		List serverList = MBeanServerFactory.findMBeanServer(null);
 		
-		return serverList.isEmpty() ? MBeanServerFactory.createMBeanServer() : MBeanServer.class.cast(serverList.get(0));
+		return serverList.isEmpty() ? MBeanServerFactory.createMBeanServer() : (MBeanServer) serverList.get(0);
 	}
 }
