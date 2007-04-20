@@ -87,7 +87,10 @@ public class LocalStateManager implements StateManager
 			builder.append(database.getId()).append(STATE_DELIMITER);
 		}
 		
-		builder.deleteCharAt(builder.length() - 1);
+		if (builder.length() > 0)
+		{
+			builder.deleteCharAt(builder.length() - 1);
+		}
 		
 		preferences.put(this.databaseCluster.getId(), builder.toString());
 		
