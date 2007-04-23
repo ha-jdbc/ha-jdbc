@@ -12,6 +12,96 @@
 	</contexts>
 
 	<changes>
+		<release version="2.0-beta-1" date="April 23, 2007">
+			<action type="fix" context="src" dev="PF" due-to="David Goodenough">
+				Optimized PostgreSQLDialect.getLockTableSQL() by removing unnecessary select statement.
+			</action>
+			<action type="fix" context="src" dev="PF">
+				Removed JVM shutdown hook since it may prevent proper shutdown of a server-managed connection pool.
+			</action>
+			<action type="fix" context="src" dev="PF" fixes-bug="1618746">
+				Fixed NullPointerException accessing meta data if database does not support schemas.
+			</action>
+			<action type="update" context="src" dev="PF">
+				Refactored Balancer.list() to return a set to better reflect balancer semantics.
+			</action>
+			<action type="update" context="src" dev="PF">
+				Refactored DatabaseClusterMBean interface into DriverDatabaseClusterMBean and DataSourceDatabaseClusterMBean.
+				LocalDatabaseCluster refactored into generic AbstractDatabaseCluster.
+				Replaced &lt;cluster&gt; element in DTD with &lt;database-cluster&gt; and &lt;datasource-cluster&gt;.
+			</action>
+			<action type="update" context="src" dev="PF">
+				Created StateManager to encapsulate management of database cluster state.
+			</action>
+			<action type="update" context="src" dev="PF">
+				Distributable functionality no longer added via inheritance, but through lock manager and state manager implementations.
+			</action>
+			<action type="add" context="src" dev="PF">
+				Created schema definition of HA-JDBC configuration as an alternative to DTD.
+			</action>
+			<action type="update" context="src" dev="PF">
+				Reimplemented core logic to use dynamic instead of explicit proxies, decoupling HA-JDBC from a specific version of the JDBC API.
+				Resulting jar is approximately half the size as before.
+			</action>
+			<action type="update" context="src" dev="PF">
+				Refactored SynchronousExecutor implementation to extend AbstractExecutorService since the ExecutorService interface in Java 1.6 is not compatible with that of 1.5.
+			</action>
+			<action type="update" context="src" dev="PF">
+				Java 1.6 adds auto-increment column identification to DatabaseMetaData.getColumns().
+				Added isAutoIncrement() to ColumnProperties interface populated only if this information exists.
+				This value is now be consulted prior to querying the dialect to identify identity columns.
+			</action>
+			<action type="fix" context="src" dev="PF">
+				Fixed regular expressions in dialects to properly negotiate whitespace.
+			</action>
+			<action type="add" context="src" dev="PF">
+				Added support for JDBC 4.0 (i.e. Java 1.6).
+			</action>
+			<action type="add" context="src" dev="PF">
+				Added support for mutable LOBs.
+			</action>
+			<action type="add" context="src" dev="PF">
+				Added Java 1.6 service provider hook for HA-JDBC driver.
+			</action>
+			<action type="add" context="src" dev="PF">
+				Added max batch size property to differential synchronization strategy to help prevent out of memory errors when a table contains many changes.
+			</action>
+			<action type="update" context="src" dev="PF">
+				Use platform mbean server for cluster/database mbean registration.
+				Provide retrotranslator plugin for java.lang.management.ManagementFactory that uses old logic to locate mbean server.
+			</action>
+			<action type="fix" context="src" dev="PF">
+				Forced cleanup of open java.sql objects that were not accessed during an deactivate/reactivate cycle.
+			</action>
+			<action type="fix" context="src" dev="PF" due-to="Kurt Huwig">
+				Fixed german message transations.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded JiBX to 1.1.3.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded JGroups to 2.5.0-beta-2.
+				concurrent-*.jar is now obsolete.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded SLF4J to 1.3.1.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded Retrotranslator to 1.2.1.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded Woodstox to 3.2.1.
+			</action>
+			<action type="update" context="lib" dev="PF">
+				Upgraded TestNG to 5.5.
+			</action>
+			<action type="add" context="lib" dev="PF">
+				Added JDBC RowSet API to Java 1.4 runtime dependencies.
+			</action>
+			<action type="update" context="doc" dev="PF">
+				Updated documentation to use Forrest 0.8.
+			</action>
+		</release>
 		<release version="1.2-beta-7" date="December 1, 2006">
 			<action type="fix" context="src" dev="PF">
 				Fixed sequence synchronization logic to use next value instead of current value since it may be undefined.
@@ -802,17 +892,17 @@
 
 	<todo>
 		<actions priority="high">
-			<action type="update" context="doc" dev="PF">
+			<action type="update" context="src" dev="PF">
 				Minimize table/row locking during diff and full synchronization strategies.
 			</action>
-			<action type="update" context="doc" dev="PF">
-				Refactor synchronization strategy interface and improve documentation to more easily facilitate custom strategies.
-			</action>
-			<action type="add" context="doc" dev="PF">
+			<action type="add" context="src" dev="PF">
 				Create a feasible synchronization strategy for large databases.
 			</action>
 		</actions>
 		<actions priority="medium">
+			<action type="update" context="" dev="">
+				Require separate configuration file per cluster.
+			</action>
 			<action type="add" context="doc" dev="PF">
 				Update performance graphs with results from latest version.
 			</action>
