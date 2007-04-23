@@ -15,15 +15,14 @@
 			<title>Features</title>
 			<ul>
 				<li>Supports any database accessible via JDBC.</li>
-				<li>High-availability/Fault Tolerance - An HA-JDBC database cluster can lose a node without failing/corrupting the current transaction.</li>
+				<li>High-availability/Fault Tolerance - An HA-JDBC database cluster can lose a node without failing/corrupting open transactions.</li>
 				<li>Live activation/deactivation allows for maintenance/upgrading of a database node without loss of service.</li>
 				<li>Improves performance of concurrent read-access by distributing load across individual nodes.</li>
-				<li>Support for full JDBC 3.0 (Java 1.4) feature set.</li>
-				<li>Compatible with JDBC RowSet implementations found in Java 1.5.</li>
+				<li>Supports full JDBC 3.0 and 4.0 feature set.</li>
 				<li>Out-of-the-box database-independent strategies for synchronizing a failed cluster node.</li>
 				<li>Exposes JMX management interface to allow administration of databases and clusters.</li>
-				<li>Ability to add database nodes to a cluster at runtime.</li>
-				<li>Can be scheduled to auto-activate failed database nodes at off-peak times.</li>
+				<li>Ability to add/subtract database nodes to/from a cluster at runtime.</li>
+				<li>Can be configured to auto-activate failed database nodes during scheduled off-peak times.</li>
 				<li>Open source (LGPL).</li>
 			</ul>
 		</section>

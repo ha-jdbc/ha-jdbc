@@ -104,12 +104,11 @@
 </sync>
 ]]></source>
 				<p>
-					The FullSynchronization strategy has an additional <code>maxBatchSize</code> property to control the number of batched insert statements to execute at a time.
+					Each strategy also has a <code>maxBatchSize</code> property to control the number of statements to execute at a time.
 				</p>
 				<p>e.g.</p>
 <source><![CDATA[
 <sync id="full" class="net.sf.hajdbc.sync.FullSynchronizationStrategy">
-  <property name="fetchSize">1000</property>
   <property name="maxBatchSize">50</property>
 </sync>
 ]]></source>
@@ -189,30 +188,14 @@
 				</p>
 			</answer>
 		</faq>
-		<faq>
-			<question>
-				Is it safe to use stored procedures with HA-JDBC?
-			</question>
-			<answer>
-				Yes, but only if the stored procedure does not reference sequences or insert rows using auto-increment columns.
-			</answer>
-		</faq>
-		<faq>
-			<question>
-				Is it safe to use HA-JDBC in auto-commit mode?
-			</question>
-			<answer>
-				No.  
-			</answer>
-		</faq>
 	</faqsection>
 	<faqsection>
 		<title>About HA-JDBC</title>
 		<faq>
-			<question>How does HA-JDBC compare to <a href="http://http://sequoia.continuent.org">Sequoia</a> (formerly C-JDBC)?</question>
+			<question>How does HA-JDBC compare to <a href="http://http://sequoia.continuent.org">Sequoia</a>?</question>
 			<answer>
 				<p>
-					HA-JDBC and Sequoia are both attempts at solving the same problem (i.e. eliminating the database as a single point of failure), but have different approaches.
+					Both HA-JDBC and Sequoia attempt to solve the same problem (i.e. eliminating the database as a single point of failure), but have different approaches.
 				</p>
 				<table>
 					<caption>Feature comparison</caption>
@@ -292,7 +275,7 @@
 					<tr>
 						<th>Cluster administration</th>
 						<td>
-							<p>Leverages JConsole from JDK 1.5 or other 3rd party JMX console for cluster administration.</p>
+							<p>Leverages JConsole from Sun's JDK 1.5+ or any other 3rd party JMX console for cluster administration.</p>
 						</td>
 						<td>
 							<p>Provides custom JMX-based command-line administration console.</p>
@@ -349,14 +332,9 @@
 						</td>
 					</tr>
 					<tr>
-						<th>JDBC 3.0 feature support</th>
+						<th>JDBC 3.0 support</th>
 						<td>
-							<p>
-								Lacks support for:
-							</p>
-							<ul>
-								<li>Updatable Blobs and Clobs</li>
-							</ul>
+							<p>Full support</p>
 						</td>
 						<td>
 							<p>
@@ -372,6 +350,15 @@
 								<li>Queries/Store procedures that return multiple <code>ResultSet</code>s</li>
 								<li>Updatable Blobs and Clobs</li>
 							</ul>
+						</td>
+					</tr>
+					<tr>
+						<th>JDBC 4.0 support</th>
+						<td>
+							<p>Full support</p>
+						</td>
+						<td>
+							<p>None</p>
 						</td>
 					</tr>
 				</table>
