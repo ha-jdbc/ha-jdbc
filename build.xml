@@ -205,7 +205,7 @@
 	
 	<target name="site" depends="javadoc">
 		<delete dir="${doc.build.dir}" quiet="true"></delete>
-		<!-- requires Apache Forrest 0.7 -->
+		<!-- requires Apache Forrest 0.8 -->
 		<ant dir="${doc.dir}" inheritall="false"></ant>
 	</target>
 
