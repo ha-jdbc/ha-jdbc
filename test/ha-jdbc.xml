@@ -19,7 +19,7 @@
  
  Contact: ferraro@users.sourceforge.net
 -->
-<!DOCTYPE ha-jdbc SYSTEM "../doc/src/content/xdocs/dtd/ha-jdbc-2.0.dtd">
+<!--DOCTYPE ha-jdbc SYSTEM "../doc/src/content/xdocs/dtd/ha-jdbc-2.0.dtd"-->
 <!--ha-jdbc xmlns="http://ha-jdbc.sourceforge.net" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ha-jdbc.sourceforge.net ../doc/src/content/xdocs/xsd/ha-jdbc-1.2.xsd"-->
 <ha-jdbc>
 	<sync id="passive" class="net.sf.hajdbc.sync.PassiveSynchronizationStrategy"></sync>
