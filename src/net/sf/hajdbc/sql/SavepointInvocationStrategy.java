@@ -37,7 +37,7 @@ public class SavepointInvocationStrategy<D> extends DatabaseWriteInvocationStrat
 	private Connection connection;
 	
 	/**
-	 * @param executor
+	 * @param connection the connection from which to create savepoints
 	 */
 	public SavepointInvocationStrategy(Connection connection)
 	{

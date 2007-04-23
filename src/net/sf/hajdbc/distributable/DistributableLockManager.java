@@ -59,9 +59,9 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	
 	/**
 	 * Constructs a new DistributableLock.
-	 * @param channel
-	 * @param timeout 
-	 * @param lockManager 
+	 * @param <D> either java.sql.Driver or javax.sql.Datasource
+	 * @param databaseCluster a database cluster
+	 * @param decorator a decorator
 	 * @throws Exception
 	 */
 	public <D> DistributableLockManager(DatabaseCluster<D> databaseCluster, DistributableDatabaseClusterDecorator decorator) throws Exception

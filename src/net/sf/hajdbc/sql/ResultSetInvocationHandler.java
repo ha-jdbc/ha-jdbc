@@ -62,10 +62,11 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 	protected FileSupport fileSupport;
 	
 	/**
-	 * @param object
-	 * @param proxy
-	 * @param invoker
-	 * @param objectMap
+	 * @param statement the statement that created this result set
+	 * @param proxy the invocation handler of the statement that created this result set
+	 * @param invoker the invoker that was used to create this result set
+	 * @param resultSetMap a map of database to underlying result set
+	 * @param fileSupport support for streams
 	 * @throws Exception
 	 */
 	protected ResultSetInvocationHandler(S statement, SQLProxy<D, S> proxy, Invoker<D, S, ResultSet> invoker, Map<Database<D>, ResultSet> resultSetMap, FileSupport fileSupport) throws Exception

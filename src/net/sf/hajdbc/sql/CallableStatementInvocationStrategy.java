@@ -36,7 +36,9 @@ public class CallableStatementInvocationStrategy<D> extends DatabaseWriteInvocat
 	private String sql;
 	
 	/**
-	 * @param executor
+	 * @param connection the connection from which to create statements
+	 * @param fileSupport support for streams
+	 * @param sql the callable SQL
 	 */
 	public CallableStatementInvocationStrategy(Connection connection, FileSupport fileSupport, String sql)
 	{

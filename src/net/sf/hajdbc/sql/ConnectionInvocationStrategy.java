@@ -33,8 +33,7 @@ public class ConnectionInvocationStrategy<D> extends DatabaseWriteInvocationStra
 	private D connectionFactory;
 	
 	/**
-	 * @param executor
-	 * @param lockList
+	 * @param connectionFactory the factory from which to create connections
 	 */
 	public ConnectionInvocationStrategy(D connectionFactory)
 	{

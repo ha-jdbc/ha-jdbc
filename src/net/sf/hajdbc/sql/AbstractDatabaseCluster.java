@@ -214,7 +214,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseClusterMBean#getId()
+	 * @see net.sf.hajdbc.DatabaseCluster#getId()
 	 */
 	public String getId()
 	{

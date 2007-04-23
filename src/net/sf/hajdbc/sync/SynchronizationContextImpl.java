@@ -105,7 +105,7 @@ public class SynchronizationContextImpl<D> implements SynchronizationContext<D>
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.SynchronizationContext#getActiveDatabases()
+	 * @see net.sf.hajdbc.SynchronizationContext#getActiveDatabaseSet()
 	 */
 	public Set<Database<D>> getActiveDatabaseSet()
 	{

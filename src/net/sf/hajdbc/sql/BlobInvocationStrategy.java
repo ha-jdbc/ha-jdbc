@@ -33,7 +33,7 @@ public class BlobInvocationStrategy<D, P> extends DatabaseWriteInvocationStrateg
 	private P parent;
 	
 	/**
-	 * @param lockList
+	 * @param parent the object that created blobs
 	 */
 	public BlobInvocationStrategy(P parent)
 	{

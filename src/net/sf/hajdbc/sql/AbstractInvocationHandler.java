@@ -249,8 +249,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 	}
 	
 	/**
-	 * Records an operation.
-	 * @param operation a database operation
+	 * @see net.sf.hajdbc.sql.SQLProxy#record(net.sf.hajdbc.sql.Invoker)
 	 */
 	public final void record(Invoker<D, E, ?> invoker)
 	{

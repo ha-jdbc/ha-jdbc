@@ -35,10 +35,10 @@ import net.sf.hajdbc.Database;
 public class SavepointInvocationHandler<D> extends AbstractInvocationHandler<D, Connection, Savepoint>
 {
 	/**
-	 * @param object
-	 * @param proxy
-	 * @param invoker
-	 * @param objectMap
+	 * @param connection the connection that created this savepoint
+	 * @param proxy the invocation handler of the connection that created this savepoint
+	 * @param invoker the invoker used to create this savepoint
+	 * @param savepointMap a map of database to underlying savepoint
 	 * @throws Exception
 	 */
 	protected SavepointInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, Savepoint> invoker, Map<Database<D>, Savepoint> savepointMap) throws Exception

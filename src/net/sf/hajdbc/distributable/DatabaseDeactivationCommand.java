@@ -26,7 +26,6 @@ import net.sf.hajdbc.DatabaseCluster;
 /**
  * Command pattern object indicating that a database is to be deactivated.
  * @author  Paul Ferraro
- * @version $Revision$
  * @since   1.0
  */
 public class DatabaseDeactivationCommand extends AbstractDatabaseCommand
@@ -43,7 +42,7 @@ public class DatabaseDeactivationCommand extends AbstractDatabaseCommand
 
 	/**
 	 * Constructs a new DatabaseDeactivationCommand.
-	 * @param database a database descriptor
+	 * @param databaseId a database identifier
 	 */
 	public DatabaseDeactivationCommand(String databaseId)
 	{

@@ -31,7 +31,7 @@ import net.sf.hajdbc.Database;
 public class DriverReadInvocationStrategy<D, T, R> implements InvocationStrategy<D, T, R>
 {
 	/**
-	 * @see net.sf.hajdbc.sql.InvocationStrategy#invoke(net.sf.hajdbc.sql.Invoker)
+	 * @see net.sf.hajdbc.sql.InvocationStrategy#invoke(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker)
 	 */
 	public R invoke(SQLProxy<D, T> proxy, Invoker<D, T, R> invoker) throws Exception
 	{

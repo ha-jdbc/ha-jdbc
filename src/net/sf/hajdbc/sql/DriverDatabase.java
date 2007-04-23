@@ -143,7 +143,7 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Database#getActiveMBeanClass()
+	 * @see net.sf.hajdbc.Database#getActiveMBean()
 	 */
 	public DynamicMBean getActiveMBean()
 	{
@@ -158,7 +158,7 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Database#getInactiveMBeanClass()
+	 * @see net.sf.hajdbc.Database#getInactiveMBean()
 	 */
 	public DynamicMBean getInactiveMBean()
 	{

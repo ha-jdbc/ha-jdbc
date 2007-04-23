@@ -26,7 +26,6 @@ import net.sf.hajdbc.DatabaseCluster;
 /**
  * Command pattern object indicating that a database is to be activated.
  * @author  Paul Ferraro
- * @param <D> either java.sql.Driver or javax.sql.DataSource
  * @since   1.0
  */
 public class DatabaseActivationCommand extends AbstractDatabaseCommand
@@ -43,7 +42,7 @@ public class DatabaseActivationCommand extends AbstractDatabaseCommand
 	
 	/**
 	 * Constructs a new DatabaseActivationCommand.
-	 * @param database a database descriptor
+	 * @param databaseId a database identifier
 	 */
 	public DatabaseActivationCommand(String databaseId)
 	{

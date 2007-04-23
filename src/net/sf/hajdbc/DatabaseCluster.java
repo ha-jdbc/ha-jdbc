@@ -112,7 +112,6 @@ public interface DatabaseCluster<D>
 	
 	/**
 	 * Sets the LockManager implementation capable of acquiring named read/write locks on the specific objects in this database cluster.
-	 * @return a LockManager implementation
 	 * @since 2.0
 	 */
 	public void setLockManager(LockManager lockManager);
@@ -126,7 +125,6 @@ public interface DatabaseCluster<D>
 	
 	/**
 	 * Sets the StateManager implementation for persisting database cluster state.
-	 * @return a StateManager implementation
 	 * @since 2.0
 	 */
 	public void setStateManager(StateManager stateManager);

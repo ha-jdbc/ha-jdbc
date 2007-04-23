@@ -34,7 +34,7 @@ public class LazyResultSetInvocationStrategy<D, S extends Statement> extends Dat
 	private S statement;
 	
 	/**
-	 * @param lockList
+	 * @param statement the statement from which to create result sets
 	 */
 	public LazyResultSetInvocationStrategy(S statement)
 	{

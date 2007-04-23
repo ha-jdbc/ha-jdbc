@@ -27,7 +27,6 @@ import java.io.ObjectOutput;
 /**
  * Represents a database command to be executed on a given database cluster.
  * @author  Paul Ferraro
- * @param <D> either java.sql.Driver or javax.sql.DataSource
  * @since   1.0
  */
 public abstract class AbstractDatabaseCommand implements DatabaseCommand
@@ -44,7 +43,7 @@ public abstract class AbstractDatabaseCommand implements DatabaseCommand
 	
 	/**
 	 * Constructs a new AbstractDatabaseCommand.
-	 * @param database a database descriptor
+	 * @param databaseId a database identifier
 	 */
 	public AbstractDatabaseCommand(String databaseId)
 	{

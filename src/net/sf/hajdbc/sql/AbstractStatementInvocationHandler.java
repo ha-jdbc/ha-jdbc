@@ -57,10 +57,11 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 	protected FileSupport fileSupport;
 	
 	/**
-	 * @param object
-	 * @param proxy
-	 * @param invoker
-	 * @param objectMap
+	 * @param connection the parent connection of this statement
+	 * @param proxy the parent invocation handler
+	 * @param invoker the invoker that created this statement
+	 * @param statementMap a map of database to underlying statement
+	 * @param fileSupport support object for streams
 	 * @throws Exception
 	 */
 	public AbstractStatementInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, S> invoker, Map<Database<D>, S> statementMap, FileSupport fileSupport) throws Exception
@@ -172,7 +173,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.SQLObject#handleExceptions(java.util.Map)
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#handleFailures(java.util.SortedMap)
 	 */
 	@Override
 	public void handleFailures(SortedMap<Database<D>, SQLException> exceptionMap) throws SQLException
