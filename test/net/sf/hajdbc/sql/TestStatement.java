@@ -915,11 +915,7 @@ public class TestStatement implements java.sql.Statement
 		
 		this.expectSelectForUpdateCheck(sql, false);
 		
-		// Locators update copy
-		EasyMock.expect(this.cluster.getDatabaseMetaDataCache()).andReturn(this.metaData);
-		EasyMock.expect(this.metaData.getDatabaseProperties(this.connection)).andReturn(this.databaseProperties);
-		EasyMock.expect(this.databaseProperties.locatorsUpdateCopy()).andReturn(true);
-		
+		// Locators update directly		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
 
@@ -932,37 +928,6 @@ public class TestStatement implements java.sql.Statement
 		this.replay();
 		
 		ResultSet results = this.statement.executeQuery(sql);
-		
-		this.verify();
-		
-		assert results == resultSet2;
-		
-		this.reset();
-		
-		this.expectLocks(sql, null, null);
-		
-		// Read-only result set
-		EasyMock.expect(this.statement1.getResultSetConcurrency()).andReturn(ResultSet.CONCUR_READ_ONLY);
-		
-		this.expectSelectForUpdateCheck(sql, false);
-		
-		// Locators update directly
-		EasyMock.expect(this.cluster.getDatabaseMetaDataCache()).andReturn(this.metaData);
-		EasyMock.expect(this.metaData.getDatabaseProperties(this.connection)).andReturn(this.databaseProperties);
-		EasyMock.expect(this.databaseProperties.locatorsUpdateCopy()).andReturn(false);
-		
-		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
-
-		this.balancer.beforeInvocation(this.database2);
-		
-		EasyMock.expect(this.statement2.executeQuery(sql)).andReturn(resultSet2);
-
-		this.balancer.afterInvocation(this.database2);
-		
-		this.replay();
-		
-		results = this.statement.executeQuery(sql);
 		
 		this.verify();
 		
@@ -1848,11 +1813,6 @@ public class TestStatement implements java.sql.Statement
 		// Read-only
 		EasyMock.expect(this.statement1.getResultSetConcurrency()).andReturn(ResultSet.CONCUR_READ_ONLY);
 
-		// Locators update copy
-		EasyMock.expect(this.cluster.getDatabaseMetaDataCache()).andReturn(this.metaData);
-		EasyMock.expect(this.metaData.getDatabaseProperties(this.connection)).andReturn(this.databaseProperties);
-		EasyMock.expect(this.databaseProperties.locatorsUpdateCopy()).andReturn(true);
-		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
 		
@@ -1865,33 +1825,6 @@ public class TestStatement implements java.sql.Statement
 		this.replay();
 		
 		ResultSet results = this.statement.getResultSet();
-		
-		this.verify();
-		
-		assert results == resultSet2;
-
-		this.reset();
-		
-		// Read-only
-		EasyMock.expect(this.statement1.getResultSetConcurrency()).andReturn(ResultSet.CONCUR_READ_ONLY);
-
-		// Locators update directly
-		EasyMock.expect(this.cluster.getDatabaseMetaDataCache()).andReturn(this.metaData);
-		EasyMock.expect(this.metaData.getDatabaseProperties(this.connection)).andReturn(this.databaseProperties);
-		EasyMock.expect(this.databaseProperties.locatorsUpdateCopy()).andReturn(false);
-		
-		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
-		
-		this.balancer.beforeInvocation(this.database2);
-		
-		EasyMock.expect(this.statement2.getResultSet()).andReturn(resultSet2);
-
-		this.balancer.afterInvocation(this.database2);
-		
-		this.replay();
-		
-		results = this.statement.getResultSet();
 		
 		this.verify();
 		
