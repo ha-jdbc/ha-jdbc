@@ -33,7 +33,5 @@ public interface DatabaseProperties
 
 	public boolean supportsSelectForUpdate() throws SQLException;
 	
-	public boolean locatorsUpdateCopy() throws SQLException;
-
 	public TableProperties findTable(String table) throws SQLException;
 }

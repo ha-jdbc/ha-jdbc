@@ -42,7 +42,6 @@ public class LazyDatabaseProperties implements DatabaseProperties
 	
 	private Map<String, TableProperties> tableMap;
 	private Boolean supportsSelectForUpdate;
-	private Boolean locatorsUpdateCopy;
 	private DatabaseMetaDataSupport support;
 	private List<String> defaultSchemaList;
 	private Dialect dialect;
@@ -127,18 +126,5 @@ public class LazyDatabaseProperties implements DatabaseProperties
 		}
 		
 		return this.supportsSelectForUpdate;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.DatabaseProperties#locatorsUpdateCopy()
-	 */
-	public synchronized boolean locatorsUpdateCopy() throws SQLException
-	{
-		if (this.locatorsUpdateCopy == null)
-		{
-			this.locatorsUpdateCopy = getDatabaseMetaData().locatorsUpdateCopy();
-		}
-		
-		return this.locatorsUpdateCopy;
 	}
 }
