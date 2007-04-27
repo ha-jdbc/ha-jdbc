@@ -116,12 +116,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 			
 			List<Lock> lockList = this.getLockList(sql);
 			
-			if ((lockList.isEmpty() && (statement.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(sql)))
-			{
-				return this.getDatabaseCluster().getDatabaseMetaDataCache().getDatabaseProperties(this.getParent()).locatorsUpdateCopy() ? new DatabaseReadInvocationStrategy<D, S, Object>() : new LazyResultSetInvocationStrategy<D, S>(statement);
-			}
-			
-			return new EagerResultSetInvocationStrategy<D, S>(statement, this.fileSupport, lockList);
+			return (lockList.isEmpty() && (statement.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(sql)) ? new LazyResultSetInvocationStrategy<D, S>(statement) : new EagerResultSetInvocationStrategy<D, S>(statement, this.fileSupport, lockList);
 		}
 		
 		if (method.equals(Statement.class.getMethod("executeBatch")))
@@ -141,7 +136,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 		{
 			if (statement.getResultSetConcurrency() == ResultSet.CONCUR_READ_ONLY)
 			{
-				return this.getDatabaseCluster().getDatabaseMetaDataCache().getDatabaseProperties(this.getParent()).locatorsUpdateCopy() ? new DatabaseReadInvocationStrategy<D, S, Object>() : new LazyResultSetInvocationStrategy<D, S>(statement);
+				return new LazyResultSetInvocationStrategy<D, S>(statement);
 			}
 			
 			List<Lock> lockList = Collections.emptyList();

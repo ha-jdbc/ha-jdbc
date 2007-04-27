@@ -104,12 +104,7 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 		
 		if (method.equals(PreparedStatement.class.getMethod("executeQuery")))
 		{
-			if ((this.lockList.isEmpty() && !this.selectForUpdate && (statement.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY)))
-			{
-				return new DatabaseReadInvocationStrategy<D, S, Object>();
-			}
-			
-			return new EagerResultSetInvocationStrategy<D, S>(statement, this.fileSupport, this.lockList);
+			return (this.lockList.isEmpty() && !this.selectForUpdate && (statement.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY)) ? new DatabaseReadInvocationStrategy<D, S, Object>() : new EagerResultSetInvocationStrategy<D, S>(statement, this.fileSupport, this.lockList);
 		}
 		
 		return super.getInvocationStrategy(statement, method, parameters);
