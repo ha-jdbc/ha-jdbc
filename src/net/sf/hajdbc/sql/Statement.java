@@ -20,6 +20,10 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.util.Map;
@@ -275,7 +279,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 		
-		return ((this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(sql)) ? this.executeReadFromDatabase(operation) : new ResultSet<T>(this, operation);
+		return ((this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(sql)) ? this.wrap(this.executeReadFromDatabase(operation)) : new ResultSet<T>(this, operation);
 	}
 
 	/**
@@ -491,7 +495,7 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 			}
 		};
 
-		return (this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) ? this.executeReadFromDriver(operation) : new ResultSet<T>(this, operation);
+		return (this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) ? this.wrap(this.executeReadFromDriver(operation)) : new ResultSet<T>(this, operation);
 	}
 
 	/**
@@ -728,5 +732,35 @@ public class Statement<T extends java.sql.Statement> extends SQLObject<T, java.s
 	protected void close(java.sql.Connection connection, T statement) throws SQLException
 	{
 		statement.close();
+	}
+	
+	protected java.sql.ResultSet wrap(java.sql.ResultSet resultSet)
+	{
+		return (java.sql.ResultSet) Proxy.newProxyInstance(resultSet.getClass().getClassLoader(), new Class<?>[] { java.sql.ResultSet.class }, new ResultSetInvocationHandler(resultSet));
+	}
+	
+	private class ResultSetInvocationHandler implements InvocationHandler
+	{
+		private java.sql.ResultSet resultSet;
+		
+		public ResultSetInvocationHandler(java.sql.ResultSet resultSet)
+		{
+			this.resultSet = resultSet;
+		}
+		
+		/**
+		 * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+		 */
+		public Object invoke(Object proxy, Method method, Object[] parameters) throws Throwable
+		{
+			try
+			{
+				return method.equals(java.sql.ResultSet.class.getMethod("getStatement")) ? Statement.this : method.invoke(resultSet, parameters);
+			}
+			catch (InvocationTargetException e)
+			{
+				throw e.getTargetException();
+			}
+		}
 	}
 }

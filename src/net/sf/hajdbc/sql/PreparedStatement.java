@@ -129,7 +129,7 @@ public class PreparedStatement<T extends java.sql.PreparedStatement> extends Sta
 			}
 		};
 
-		return ((this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(this.sql)) ? this.executeReadFromDatabase(operation) : new ResultSet<T>(this, operation);
+		return ((this.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(this.sql)) ? this.wrap(this.executeReadFromDatabase(operation)) : new ResultSet<T>(this, operation);
 	}
 
 	/**
