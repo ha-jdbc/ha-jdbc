@@ -103,7 +103,7 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 				}
 				catch (CancellationException e)
 				{
-					// Occurs when scheduled, but not yet executed tasks are cancelled during shutdown
+					// Occurs when scheduled, but not yet executed tasks are canceled during shutdown
 				}
 				catch (InterruptedException e)
 				{
