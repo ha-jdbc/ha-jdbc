@@ -21,6 +21,7 @@
 package net.sf.hajdbc.util;
 
 import java.text.ParseException;
+import java.util.Date;
 
 import org.quartz.CronExpression;
 
@@ -37,7 +38,25 @@ public final class Formatter
 	
 	public static CronExpression deserializeCronExpression(String schedule) throws ParseException
 	{
-		return (schedule != null) ? new CronExpression(schedule) : null;
+		if (schedule == null)
+		{
+			return null;
+		}
+		
+		CronExpression expression = new CronExpression(schedule);
+		
+		// Quartz inappropriately throws an UnsupportedOperationException if both day-of-week
+		// and day-of-month are specified - so we preemptively test the expression here.
+		try
+		{
+			expression.getNextValidTimeAfter(new Date());
+			
+			return expression;
+		}
+		catch (UnsupportedOperationException e)
+		{
+			throw new ParseException(e.getMessage(), schedule.length());
+		}
 	}
 	
 	public static String serializeClass(Class<?> targetClass)
