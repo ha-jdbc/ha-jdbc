@@ -74,8 +74,16 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 		try
 		{
 			trigger.setCronExpression(expression);
+			
+			// Quartz inappropriately throws an UnsupportedOperationException if both day-of-week
+			// and day-of-month are specified - so we preemptively test the expression here.
+			trigger.getFireTimeAfter(new Date());
 		}
 		catch (ParseException e)
+		{
+			throw new RejectedExecutionException(e);
+		}
+		catch (UnsupportedOperationException e)
 		{
 			throw new RejectedExecutionException(e);
 		}
@@ -115,7 +123,7 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 				}
 				catch (CancellationException e)
 				{
-					// Occurs when scheduled, but not yet executed tasks are cancelled during shutdown
+					// Occurs when scheduled, but not yet executed tasks are canceled during shutdown
 				}
 				catch (InterruptedException e)
 				{
