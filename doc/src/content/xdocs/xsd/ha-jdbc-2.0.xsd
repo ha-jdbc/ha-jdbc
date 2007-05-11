@@ -44,9 +44,9 @@
 						<xs:attribute name="class" type="xs:string" use="required"></xs:attribute>
 					</xs:complexType>
 				</xs:element>
-				<xs:choice minOccurs="1" maxOccurs="unbounded">
-					<xs:element name="database-cluster">
-						<xs:complexType>
+				<xs:element name="cluster">
+					<xs:complexType>
+						<xs:choice>
 							<xs:sequence>
 								<xs:element name="database" minOccurs="1" maxOccurs="unbounded">
 									<xs:complexType>
@@ -60,11 +60,6 @@
 									</xs:complexType>
 								</xs:element>
 							</xs:sequence>
-							<xs:attributeGroup ref="cluster"></xs:attributeGroup>
-						</xs:complexType>
-					</xs:element>
-					<xs:element name="datasource-cluster">
-						<xs:complexType>
 							<xs:sequence>
 								<xs:element name="datasource" minOccurs="1" maxOccurs="unbounded">
 									<xs:complexType>
@@ -77,10 +72,45 @@
 									</xs:complexType>
 								</xs:element>
 							</xs:sequence>
-							<xs:attributeGroup ref="cluster"></xs:attributeGroup>
-						</xs:complexType>
-					</xs:element>
-				</xs:choice>
+						</xs:choice>
+						<xs:attribute name="balancer" use="required">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="simple"></xs:enumeration>
+									<xs:enumeration value="random"></xs:enumeration>
+									<xs:enumeration value="round-robin"></xs:enumeration>
+									<xs:enumeration value="load"></xs:enumeration>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+						<xs:attribute name="default-sync" type="xs:IDREF" use="required"></xs:attribute>
+						<xs:attribute name="dialect" type="xs:string" default="standard"></xs:attribute>
+						<xs:attribute name="meta-data-cache" use="required">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="none"></xs:enumeration>
+									<xs:enumeration value="lazy"></xs:enumeration>
+									<xs:enumeration value="eager"></xs:enumeration>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+						<xs:attribute name="transaction-mode" use="required">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="parallel"></xs:enumeration>
+									<xs:enumeration value="serial"></xs:enumeration>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+						<xs:attribute name="auto-activate-schedule" type="xs:string"></xs:attribute>
+						<xs:attribute name="failure-detect-schedule" type="xs:string"></xs:attribute>
+						<xs:attribute name="min-threads" type="xs:nonNegativeInteger" default="0"></xs:attribute>
+						<xs:attribute name="max-threads" type="xs:positiveInteger" default="100"></xs:attribute>
+						<xs:attribute name="max-idle" type="xs:nonNegativeInteger" default="60"></xs:attribute>
+						<xs:attribute name="detect-identity-columns" type="xs:boolean" default="true"></xs:attribute>
+						<xs:attribute name="detect-sequences" type="xs:boolean" default="true"></xs:attribute>
+					</xs:complexType>
+				</xs:element>
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
@@ -103,45 +133,6 @@
 			<xs:element name="password" type="xs:string"></xs:element>
 		</xs:sequence>
 	</xs:group>
-	<xs:attributeGroup name="cluster">
-		<xs:attribute name="id" type="xs:string" use="required"></xs:attribute>
-		<xs:attribute name="balancer" use="required">
-			<xs:simpleType>
-				<xs:restriction base="xs:string">
-					<xs:enumeration value="simple"></xs:enumeration>
-					<xs:enumeration value="random"></xs:enumeration>
-					<xs:enumeration value="round-robin"></xs:enumeration>
-					<xs:enumeration value="load"></xs:enumeration>
-				</xs:restriction>
-			</xs:simpleType>
-		</xs:attribute>
-		<xs:attribute name="default-sync" type="xs:IDREF" use="required"></xs:attribute>
-		<xs:attribute name="dialect" type="xs:string" default="standard"></xs:attribute>
-		<xs:attribute name="meta-data-cache" use="required">
-			<xs:simpleType>
-				<xs:restriction base="xs:string">
-					<xs:enumeration value="none"></xs:enumeration>
-					<xs:enumeration value="lazy"></xs:enumeration>
-					<xs:enumeration value="eager"></xs:enumeration>
-				</xs:restriction>
-			</xs:simpleType>
-		</xs:attribute>
-		<xs:attribute name="transaction-mode" use="required">
-			<xs:simpleType>
-				<xs:restriction base="xs:string">
-					<xs:enumeration value="parallel"></xs:enumeration>
-					<xs:enumeration value="serial"></xs:enumeration>
-				</xs:restriction>
-			</xs:simpleType>
-		</xs:attribute>
-		<xs:attribute name="auto-activate-schedule" type="xs:string"></xs:attribute>
-		<xs:attribute name="failure-detect-schedule" type="xs:string"></xs:attribute>
-		<xs:attribute name="min-threads" type="xs:nonNegativeInteger" default="0"></xs:attribute>
-		<xs:attribute name="max-threads" type="xs:positiveInteger" default="100"></xs:attribute>
-		<xs:attribute name="max-idle" type="xs:nonNegativeInteger" default="60"></xs:attribute>
-		<xs:attribute name="detect-identity-columns" type="xs:boolean" default="true"></xs:attribute>
-		<xs:attribute name="detect-sequences" type="xs:boolean" default="true"></xs:attribute>
-	</xs:attributeGroup>
 	<xs:attributeGroup name="database">
 		<xs:attribute name="id" type="xs:string" use="required"></xs:attribute>
 		<xs:attribute name="weight" type="xs:nonNegativeInteger" default="1"></xs:attribute>

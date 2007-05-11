@@ -25,7 +25,7 @@
 	SYSTEM "http://ha-jdbc.sourceforge.net/dtd/ha-jdbc-2.0.dtd"
 -->
 
-<!ELEMENT ha-jdbc (distributable?,sync+,(database-cluster+|datasource-cluster+))>
+<!ELEMENT ha-jdbc (distributable?,sync+,cluster)>
 
 <!ELEMENT distributable EMPTY>
 <!ATTLIST distributable
@@ -40,27 +40,21 @@
 	class CDATA #REQUIRED
 >
 
-<!ENTITY % cluster "
-	id CDATA #REQUIRED
+<!ELEMENT cluster (database+|datasource+)>
+<!ATTLIST cluster
 	balancer (simple|random|round-robin|load) #REQUIRED
 	default-sync IDREF #REQUIRED
-	dialect CDATA 'standard'
+	dialect CDATA "standard"
 	meta-data-cache (none|lazy|eager) #REQUIRED
 	transaction-mode (parallel|serial) #REQUIRED
 	auto-activate-schedule CDATA #IMPLIED
 	failure-detect-schedule CDATA #IMPLIED
-	min-threads CDATA '0'
-	max-threads CDATA '100'
-	max-idle CDATA '60'
-	detect-identity-columns (true|false) 'true'
-	detect-sequences (true|false) 'true'
-">
-
-<!ELEMENT database-cluster (database+)>
-<!ATTLIST database-cluster %cluster;>
-
-<!ELEMENT datasource-cluster (datasource+)>
-<!ATTLIST datasource-cluster %cluster;>
+	min-threads CDATA "0"
+	max-threads CDATA "100"
+	max-idle CDATA "60"
+	detect-identity-columns (true|false) "true"
+	detect-sequences (true|false) "true"
+>
 
 <!ENTITY % authentication-info "(user, password)?">
 <!ELEMENT user (#PCDATA)>
