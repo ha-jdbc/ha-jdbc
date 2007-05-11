@@ -20,13 +20,16 @@
  */
 package net.sf.hajdbc.sql;
 
+import javax.sql.DataSource;
+
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterMBean;
 
 /**
  * @author Paul Ferraro
  *
  */
-public interface DataSourceDatabaseClusterMBean extends DatabaseClusterMBean
+public interface DataSourceDatabaseClusterMBean extends DatabaseClusterMBean, DatabaseCluster<DataSource>
 {
 	/**
 	 * Adds a new DataSource to this cluster using the specified identifier and JNDI name.

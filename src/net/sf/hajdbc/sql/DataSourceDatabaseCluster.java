@@ -20,10 +20,12 @@
  */
 package net.sf.hajdbc.sql;
 
-import javax.management.DynamicMBean;
-import javax.management.NotCompliantMBeanException;
-import javax.management.StandardMBean;
+import java.net.URL;
+
 import javax.sql.DataSource;
+
+import org.jibx.runtime.IUnmarshallingContext;
+import org.jibx.runtime.impl.UnmarshallingContext;
 
 /**
  * @author Paul Ferraro
@@ -31,14 +33,19 @@ import javax.sql.DataSource;
  */
 public class DataSourceDatabaseCluster extends AbstractDatabaseCluster<DataSource> implements DataSourceDatabaseClusterMBean
 {
-	/**
-	 * @throws NotCompliantMBeanException 
-	 * @see net.sf.hajdbc.sql.AbstractDatabaseCluster#createMBean()
-	 */
-	@Override
-	protected DynamicMBean createMBean() throws NotCompliantMBeanException
+	public static DataSourceDatabaseCluster extractDatabaseCluster(IUnmarshallingContext context)
 	{
-		return new StandardMBean(this, DataSourceDatabaseClusterMBean.class);
+		return DataSourceDatabaseCluster.class.cast(UnmarshallingContext.class.cast(context).getUserContext());
+	}
+	
+	/**
+	 * Constructs a new DataSourceDatabaseCluster
+	 * @param id
+	 * @param url
+	 */
+	public DataSourceDatabaseCluster(String id, URL url)
+	{
+		super(id, url);
 	}
 
 	/**

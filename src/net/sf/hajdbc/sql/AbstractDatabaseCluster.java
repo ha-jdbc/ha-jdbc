@@ -20,11 +20,23 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.lang.management.ManagementFactory;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.WritableByteChannel;
 import java.sql.Connection;
 import java.sql.Statement;
-import java.util.Hashtable;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -38,14 +50,14 @@ import java.util.concurrent.locks.Lock;
 
 import javax.management.DynamicMBean;
 import javax.management.JMException;
+import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.DatabaseClusterDecorator;
 import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.DatabaseClusterMBean;
 import net.sf.hajdbc.DatabaseMetaDataCache;
@@ -61,9 +73,12 @@ import net.sf.hajdbc.local.LocalLockManager;
 import net.sf.hajdbc.local.LocalStateManager;
 import net.sf.hajdbc.sync.SynchronizationContextImpl;
 import net.sf.hajdbc.util.concurrent.CronThreadPoolExecutor;
-import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
 import net.sf.hajdbc.util.concurrent.SynchronousExecutor;
 
+import org.jibx.runtime.BindingDirectory;
+import org.jibx.runtime.IMarshallingContext;
+import org.jibx.runtime.IUnmarshallingContext;
+import org.jibx.runtime.JiBXException;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,50 +88,10 @@ import org.slf4j.LoggerFactory;
  * @param <D> either java.sql.Driver or javax.sql.DataSource
  * @since   1.0
  */
-public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, DatabaseClusterMBean
+public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, DatabaseClusterMBean, MBeanRegistration
 {
-	private static final String MBEAN_DOMAIN = "net.sf.hajdbc";
-	private static final String MBEAN_CLUSTER_KEY = "cluster";
-	private static final String MBEAN_DATABASE_KEY = "database";
+	private static Logger logger = LoggerFactory.getLogger(AbstractDatabaseCluster.class);
 		
-	static Logger logger = LoggerFactory.getLogger(AbstractDatabaseCluster.class);
-	
-	/**
-	 * Convenience method for constructing a standardized mbean ObjectName for this cluster.
-	 * @param databaseClusterId a cluster identifier
-	 * @return an ObjectName for this cluster
-	 * @throws MalformedObjectNameException if the ObjectName could not be constructed
-	 */
-	public static ObjectName getObjectName(String databaseClusterId) throws MalformedObjectNameException
-	{
-		return ObjectName.getInstance(MBEAN_DOMAIN, createProperties(databaseClusterId));
-	}
-
-	/**
-	 * Convenience method for constructing a standardized mbean ObjectName for this database.
-	 * @param databaseClusterId a cluster identifier
-	 * @param databaseId a database identifier
-	 * @return an ObjectName for this cluster
-	 * @throws MalformedObjectNameException if the ObjectName could not be constructed
-	 */
-	public static ObjectName getObjectName(String databaseClusterId, String databaseId) throws MalformedObjectNameException
-	{
-		Hashtable<String, String> properties = createProperties(databaseClusterId);
-		
-		properties.put(MBEAN_DATABASE_KEY, databaseId);
-		
-		return ObjectName.getInstance(MBEAN_DOMAIN, properties);
-	}
-	
-	private static Hashtable<String, String> createProperties(String databaseClusterId)
-	{
-		Hashtable<String, String> properties = new Hashtable<String, String>();
-		
-		properties.put(MBEAN_CLUSTER_KEY, databaseClusterId);
-		
-		return properties;
-	}
-	
 	private String id;
 	private Balancer<D> balancer;
 	private Dialect dialect;
@@ -132,6 +107,9 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	private boolean sequenceDetectionEnabled;
 	
 	private MBeanServer server;
+	private URL url;
+	private Map<String, SynchronizationStrategy> synchronizationStrategyMap = new HashMap<String, SynchronizationStrategy>();
+	private DatabaseClusterDecorator decorator;
 	private Map<String, Database<D>> databaseMap = new ConcurrentHashMap<String, Database<D>>();
 	private Map<Database<D>, D> connectionFactoryMap = new ConcurrentHashMap<Database<D>, D>();
 	private ExecutorService transactionalExecutor;
@@ -140,9 +118,10 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	private LockManager lockManager = new LocalLockManager();
 	private StateManager stateManager = new LocalStateManager(this);
 	
-	public AbstractDatabaseCluster()
+	public AbstractDatabaseCluster(String id, URL url)
 	{
-		this.server = ManagementFactory.getPlatformMBeanServer();
+		this.id = id;
+		this.url = url;
 	}
 
 	/**
@@ -222,6 +201,14 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	}
 	
 	/**
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#getVersion()
+	 */
+	public String getVersion()
+	{
+		return DatabaseClusterFactory.getVersion();
+	}
+	
+	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#activate(net.sf.hajdbc.Database)
 	 */
 	public synchronized boolean activate(Database<D> database)
@@ -232,7 +219,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		
 		if (database.isDirty())
 		{
-			DatabaseClusterFactory.getInstance().exportConfig();
+			this.export();
 			
 			database.clean();
 		}
@@ -305,15 +292,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	 */
 	public Set<String> getSynchronizationStrategies()
 	{
-		return new TreeSet<String>(DatabaseClusterFactory.getInstance().getSynchronizationStrategyMap().keySet());
-	}
-
-	/**
-	 * @see net.sf.hajdbc.DatabaseClusterMBean#getVersion()
-	 */
-	public String getVersion()
-	{
-		return DatabaseClusterFactory.getVersion();
+		return new TreeSet<String>(this.synchronizationStrategyMap.keySet());
 	}
 
 	/**
@@ -396,7 +375,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	 */
 	public final void activate(String databaseId, String strategyId)
 	{
-		SynchronizationStrategy strategy = DatabaseClusterFactory.getInstance().getSynchronizationStrategyMap().get(strategyId);
+		SynchronizationStrategy strategy = this.synchronizationStrategyMap.get(strategyId);
 		
 		if (strategy == null)
 		{
@@ -430,7 +409,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	{
 		try
 		{
-			ObjectName name = getObjectName(this.id, database.getId());
+			ObjectName name = DatabaseClusterFactory.getObjectName(this.id, database.getId());
 			
 			this.server.registerMBean(mbean, name);
 		}
@@ -459,14 +438,14 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		this.databaseMap.remove(id);
 		this.connectionFactoryMap.remove(database);
 		
-		DatabaseClusterFactory.getInstance().exportConfig();
+		this.export();
 	}
 
 	private void unregister(Database<D> database)
 	{
 		try
 		{
-			ObjectName name = getObjectName(this.id, database.getId());
+			ObjectName name = DatabaseClusterFactory.getObjectName(this.id, database.getId());
 			
 			if (this.server.isRegistered(name))
 			{
@@ -486,8 +465,6 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	 */
 	public void start() throws Exception
 	{
-		this.server.registerMBean(this.createMBean(), getObjectName(this.id));
-		
 		for (Database<D> database: this.databaseMap.values())
 		{
 			this.register(database, database.getInactiveMBean());
@@ -521,7 +498,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			}
 		}
 		
-		this.nonTransactionalExecutor = new ThreadPoolExecutor(this.minThreads, this.maxThreads, this.maxIdle, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), DaemonThreadFactory.getInstance(), new ThreadPoolExecutor.CallerRunsPolicy());
+		this.nonTransactionalExecutor = new ThreadPoolExecutor(this.minThreads, this.maxThreads, this.maxIdle, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new ThreadPoolExecutor.CallerRunsPolicy());
 		
 		this.transactionalExecutor = this.transactionMode.equals(TransactionMode.SERIAL) ? new SynchronousExecutor() : this.nonTransactionalExecutor;
 		
@@ -546,8 +523,6 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			this.cronExecutor.schedule(new AutoActivationTask(), this.autoActivationExpression);
 		}
 	}
-	
-	protected abstract DynamicMBean createMBean() throws NotCompliantMBeanException;
 
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#stop()
@@ -557,20 +532,6 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		for (Database<D> database: this.databaseMap.values())
 		{
 			this.unregister(database);
-		}
-		
-		try
-		{
-			ObjectName name = getObjectName(this.id);
-			
-			if (this.server.isRegistered(name))
-			{
-				this.server.unregisterMBean(name);
-			}
-		}
-		catch (JMException e)
-		{
-			logger.warn(e.getMessage(), e);
 		}
 		
 		this.stateManager.stop();
@@ -682,6 +643,16 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		this.defaultSynchronizationStrategyId = builder.getId();
 	}
 	
+	DatabaseClusterDecorator getDecorator()
+	{
+		return this.decorator;
+	}
+	
+	void setDecorator(DatabaseClusterDecorator decorator)
+	{
+		this.decorator = decorator;
+	}
+	
 	protected synchronized void add(Database<D> database)
 	{
 		String id = database.getId();
@@ -722,6 +693,14 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	public void setLockManager(LockManager lockManager)
 	{
 		this.lockManager = lockManager;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getUrl()
+	 */
+	public URL getUrl()
+	{
+		return this.url;
 	}
 
 	private void activate(String databaseId, SynchronizationStrategy strategy)
@@ -803,6 +782,185 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		{
 			lock.unlock();
 		}
+	}
+	
+	/**
+	 * @see javax.management.MBeanRegistration#postDeregister()
+	 */
+	@Override
+	public void postDeregister()
+	{
+		this.stop();
+	}
+
+	/**
+	 * @see javax.management.MBeanRegistration#postRegister(java.lang.Boolean)
+	 */
+	@Override
+	public void postRegister(Boolean registered)
+	{
+		if (!registered)
+		{
+			this.stop();
+		}
+	}
+
+	/**
+	 * @see javax.management.MBeanRegistration#preDeregister()
+	 */
+	@Override
+	public void preDeregister() throws Exception
+	{
+	}
+
+	/**
+	 * @see javax.management.MBeanRegistration#preRegister(javax.management.MBeanServer, javax.management.ObjectName)
+	 */
+	@Override
+	public ObjectName preRegister(MBeanServer server, ObjectName name) throws Exception
+	{
+		this.server = server;
+		
+		InputStream inputStream = null;
+		
+		logger.info(Messages.getMessage(Messages.HA_JDBC_INIT, this.getVersion(), this.url));
+		
+		try
+		{
+			inputStream = url.openStream();
+			
+			IUnmarshallingContext context = BindingDirectory.getFactory(this.getClass()).createUnmarshallingContext();
+	
+			context.setDocument(inputStream, null);
+			
+			context.setUserContext(this);
+			
+			context.unmarshalElement();
+			
+			if (this.decorator != null)
+			{
+				this.decorator.decorate(this);
+			}
+			
+			this.start();
+			
+			return name;
+		}
+		catch (IOException e)
+		{
+			logger.error(Messages.getMessage(Messages.CONFIG_NOT_FOUND, url), e);
+			
+			throw e;
+		}
+		catch (JiBXException e)
+		{
+			logger.error(Messages.getMessage(Messages.CONFIG_LOAD_FAILED, url), e);
+			
+			throw e;
+		}
+		finally
+		{
+			if (inputStream != null)
+			{
+				try
+				{
+					inputStream.close();
+				}
+				catch (IOException e)
+				{
+					logger.warn(e.toString(), e);
+				}
+			}
+		}
+	}
+	
+	private void export()
+	{
+		File file = null;
+		WritableByteChannel outputChannel = null;
+		FileChannel fileChannel = null;
+		
+		try
+		{
+			file = File.createTempFile("ha-jdbc", ".xml");
+			
+			IMarshallingContext context = BindingDirectory.getFactory(DatabaseClusterFactory.class).createMarshallingContext();
+		
+			context.setIndent(1, System.getProperty("line.separator"), '\t');
+			
+			// This method closes the writer
+			context.marshalDocument(this, null, null, new FileWriter(file));
+			
+			fileChannel = new FileInputStream(file).getChannel();
+			
+			// We cannot use URLConnection for files becuase Sun's implementation does not support output.
+			if (this.url.getProtocol().equals("file"))
+			{
+				outputChannel = new FileOutputStream(new File(this.url.getPath())).getChannel();
+			}
+			else
+			{
+				URLConnection connection = this.url.openConnection();
+				
+				connection.connect();
+				
+				outputChannel = Channels.newChannel(connection.getOutputStream());
+			}
+			
+			fileChannel.transferTo(0, file.length(), outputChannel);
+		}
+		catch (Exception e)
+		{
+			logger.warn(Messages.getMessage(Messages.CONFIG_STORE_FAILED, this.url), e);
+		}
+		finally
+		{
+			if (outputChannel != null)
+			{
+				try
+				{
+					outputChannel.close();
+				}
+				catch (IOException e)
+				{
+					logger.warn(e.getMessage(), e);
+				}
+			}
+			
+			if (fileChannel != null)
+			{
+				try
+				{
+					fileChannel.close();
+				}
+				catch (IOException e)
+				{
+					logger.warn(e.getMessage(), e);
+				}
+			}
+			
+			if (file != null)
+			{
+				file.delete();
+			}
+		}
+	}
+	
+	void addSynchronizationStrategyBuilder(SynchronizationStrategyBuilder builder) throws Exception
+	{
+		this.synchronizationStrategyMap.put(builder.getId(), builder.buildStrategy());
+	}
+	
+	Iterator<SynchronizationStrategyBuilder> getSynchronizationStrategyBuilders() throws Exception
+	{
+		List<SynchronizationStrategyBuilder> builderList = new ArrayList<SynchronizationStrategyBuilder>(this.synchronizationStrategyMap.size());
+		
+		for (Map.Entry<String, SynchronizationStrategy> mapEntry: this.synchronizationStrategyMap.entrySet())
+		{
+			builderList.add(SynchronizationStrategyBuilder.getBuilder(mapEntry.getKey(), mapEntry.getValue()));
+		}
+		
+		return builderList.iterator();
 	}
 
 	class FailureDetectionTask implements Runnable

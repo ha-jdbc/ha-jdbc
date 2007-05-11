@@ -41,17 +41,23 @@ import net.sf.hajdbc.util.reflect.ProxyFactory;
  */
 public class DataSource implements Referenceable, ObjectFactory
 {
-	/**	Property that identifies this data source */
-	public static final String DATABASE_CLUSTER = "cluster";
+	private static final String CLUSTER = "cluster";
+	private static final String CONFIG = "config";
 	
 	private String cluster;
+	private String config;
 	
 	/**
 	 * @see javax.naming.Referenceable#getReference()
 	 */
 	public Reference getReference()
 	{
-		return new Reference(javax.sql.DataSource.class.getName(), new StringRefAddr(DATABASE_CLUSTER, this.cluster), this.getClass().getName(), null);
+		Reference reference = new Reference(javax.sql.DataSource.class.getName(), this.getClass().getName(), null);
+		
+		reference.add(new StringRefAddr(CLUSTER, this.getCluster()));
+		reference.add(new StringRefAddr(CONFIG, this.getConfig()));
+		
+		return reference;
 	}
 	
 	/**
@@ -73,6 +79,24 @@ public class DataSource implements Referenceable, ObjectFactory
 	}
 
 	/**
+	 * Returns the resource name of the configuration file used to load the database cluster represented by this DataSource.
+	 * @return a resource name
+	 */
+	public String getConfig()
+	{
+		return this.config;
+	}
+	
+	/**
+	 * Sets the resource name of the configuration file used to load the database cluster represented by this DataSource.
+	 * @param config a resource name
+	 */
+	public void setConfig(String config)
+	{
+		this.config = config;
+	}
+	
+	/**
 	 * @see javax.naming.spi.ObjectFactory#getObjectInstance(java.lang.Object, javax.naming.Name, javax.naming.Context, java.util.Hashtable)
 	 */
 	public Object getObjectInstance(Object object, Name name, Context context, Hashtable<?,?> environment) throws Exception
@@ -89,15 +113,21 @@ public class DataSource implements Referenceable, ObjectFactory
 		
 		if (!javax.sql.DataSource.class.getName().equals(className)) return null;
 		
-		RefAddr addr = reference.get(DataSource.DATABASE_CLUSTER);
+		RefAddr idAddr = reference.get(CLUSTER);
 		
-		if (addr == null) return null;
+		if (idAddr == null) return null;
 		
-		String id = String.class.cast(addr.getContent());
+		String id = String.class.cast(idAddr.getContent());
 
 		if (id == null) return null;
 		
-		DatabaseCluster<javax.sql.DataSource> cluster = DatabaseClusterFactory.getInstance().getDataSourceDatabaseClusterMap().get(id);
+		RefAddr configAddr = reference.get(CONFIG);
+		
+		if (configAddr == null) return null;
+		
+		String config = String.class.cast(configAddr.getContent());
+		
+		DatabaseCluster<javax.sql.DataSource> cluster = DatabaseClusterFactory.getDatabaseCluster(id, DataSourceDatabaseCluster.class, DataSourceDatabaseClusterMBean.class, config);
 		
 		if (cluster == null) return null;
 		

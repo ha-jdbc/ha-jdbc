@@ -20,50 +20,74 @@
  */
 package net.sf.hajdbc;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
+import java.lang.management.ManagementFactory;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
-import java.nio.channels.WritableByteChannel;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.util.Hashtable;
 import java.util.ResourceBundle;
 
-import net.sf.hajdbc.sql.DataSourceDatabaseCluster;
-import net.sf.hajdbc.sql.DriverDatabaseCluster;
-
-import org.jibx.runtime.BindingDirectory;
-import org.jibx.runtime.IMarshallingContext;
-import org.jibx.runtime.IUnmarshallingContext;
-import org.jibx.runtime.JiBXException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.management.JMException;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerInvocationHandler;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 
 /**
- * @author  Paul Ferraro
- * @version $Revision$
- * @since   1.0
+ * @author Paul Ferraro
  */
-public final class DatabaseClusterFactory
+public class DatabaseClusterFactory
 {
 	private static final String CONFIGURATION_PROPERTY = "ha-jdbc.configuration";	
-	private static final String DEFAULT_RESOURCE = "ha-jdbc.xml";
+	private static final String DEFAULT_RESOURCE = "ha-jdbc-{0}.xml";
+	private static final String MBEAN_CLUSTER_KEY = "cluster";
+	private static final String MBEAN_DATABASE_KEY = "database";
 	
-	static Logger logger = LoggerFactory.getLogger(DatabaseClusterFactory.class);
-	
-	private static DatabaseClusterFactory instance = null;
 	private static ResourceBundle resource = ResourceBundle.getBundle(DatabaseClusterFactory.class.getName());
+	
+	/**
+	 * Convenience method for constructing a standardized mbean ObjectName for this cluster.
+	 * @param databaseClusterId a cluster identifier
+	 * @return an ObjectName for this cluster
+	 * @throws MalformedObjectNameException if the ObjectName could not be constructed
+	 */
+	public static ObjectName getObjectName(String clusterId) throws MalformedObjectNameException
+	{
+		return ObjectName.getInstance(getDomain(), createProperties(clusterId));
+	}
+
+	/**
+	 * Convenience method for constructing a standardized mbean ObjectName for this database.
+	 * @param databaseClusterId a cluster identifier
+	 * @param databaseId a database identifier
+	 * @return an ObjectName for this cluster
+	 * @throws MalformedObjectNameException if the ObjectName could not be constructed
+	 */
+	public static ObjectName getObjectName(String clusterId, String databaseId) throws MalformedObjectNameException
+	{
+		Hashtable<String, String> properties = createProperties(clusterId);
 		
+		properties.put(MBEAN_DATABASE_KEY, databaseId);
+		
+		return ObjectName.getInstance(getDomain(), properties);
+	}
+	
+	private static Hashtable<String, String> createProperties(String clusterId)
+	{
+		Hashtable<String, String> properties = new Hashtable<String, String>();
+		
+		properties.put(MBEAN_CLUSTER_KEY, clusterId);
+		
+		return properties;
+	}
+	
+	private static String getDomain()
+	{
+		return DatabaseClusterFactory.class.getPackage().toString();
+	}
+	
 	/**
 	 * Returns the current HA-JDBC version.
 	 * @return a version label
@@ -73,87 +97,49 @@ public final class DatabaseClusterFactory
 		return resource.getString("version");
 	}
 	
-	/**
-	 * Provides access to the singleton instance of this factory object.
-	 * @return a factory for creating database clusters
-	 */
-	public static synchronized DatabaseClusterFactory getInstance()
+	public static synchronized <C extends DatabaseCluster<?>> C getDatabaseCluster(String id, Class<? extends C> targetClass, Class<C> mbeanInterface, String resource) throws SQLException
 	{
-		if (instance == null)
-		{
-			instance = createDatabaseClusterFactory();
-		}
-		
-		return instance;
-	}
-	
-	/**
-	 * Creates a new DatabaseClusterFactory from a configuration file.
-	 * @return a factory for creating database clusters
-	 */
-	private static DatabaseClusterFactory createDatabaseClusterFactory()
-	{
-		String resource = System.getProperty(CONFIGURATION_PROPERTY, DEFAULT_RESOURCE);
-		
-		URL url = getResourceURL(resource);
-		
-		logger.info(Messages.getMessage(Messages.HA_JDBC_INIT, getVersion(), url));
-		
-		InputStream inputStream = null;
-		
 		try
 		{
-			inputStream = url.openStream();
+			ObjectName name = ObjectName.getInstance(DatabaseClusterFactory.class.getPackage().getName(), "cluster", id);
 			
-			IUnmarshallingContext context = BindingDirectory.getFactory(DatabaseClusterFactory.class).createUnmarshallingContext();
-
-			DatabaseClusterFactory factory = DatabaseClusterFactory.class.cast(context.unmarshalDocument(inputStream, null));
-
-			factory.url = url;
+			MBeanServer server = ManagementFactory.getPlatformMBeanServer();
 			
-			return factory;
-		}
-		catch (IOException e)
-		{
-			String message = Messages.getMessage(Messages.CONFIG_NOT_FOUND, url);
-			
-			logger.error(message, e);
-			
-			throw new RuntimeException(message, e);
-		}
-		catch (JiBXException e)
-		{
-			String message = Messages.getMessage(Messages.CONFIG_LOAD_FAILED, url);
-			
-			logger.error(message, e);
-			
-			throw new RuntimeException(message, e);
-		}
-		catch (RuntimeException e)
-		{
-			logger.error(e.getMessage(), e);
-			
-			throw e;
-		}
-		catch (Error e)
-		{
-			logger.error(e.getMessage(), e);
-			
-			throw e;
-		}
-		finally
-		{
-			if (inputStream != null)
+			if (!server.isRegistered(name))
 			{
-				try
+				if (resource == null)
 				{
-					inputStream.close();
+					resource = MessageFormat.format(System.getProperty(CONFIGURATION_PROPERTY, DEFAULT_RESOURCE), id);
 				}
-				catch (IOException e)
-				{
-					logger.warn(e.toString(), e);
-				}
+				
+				URL url = getResourceURL(resource);
+				
+				C cluster = targetClass.getConstructor(String.class, URL.class).newInstance(id, url);
+				
+				server.registerMBean(cluster, name);
 			}
+			
+			return MBeanServerInvocationHandler.newProxyInstance(server, name, mbeanInterface, false);
+		}
+		catch (JMException e)
+		{
+			throw new RuntimeException(e);
+		}
+		catch (InstantiationException e)
+		{
+			throw new RuntimeException(e);
+		}
+		catch (IllegalAccessException e)
+		{
+			throw new RuntimeException(e);
+		}
+		catch (NoSuchMethodException e)
+		{
+			throw new RuntimeException(e);
+		}
+		catch (InvocationTargetException e)
+		{
+			throw new RuntimeException(e.getTargetException());
 		}
 	}
 	
@@ -189,187 +175,5 @@ public final class DatabaseClusterFactory
 			
 			return url;
 		}
-	}
-	
-	private Map<String, DriverDatabaseCluster> driverDatabaseClusterMap = new HashMap<String, DriverDatabaseCluster>();
-	private Map<String, DataSourceDatabaseCluster> dataSourceDatabaseClusterMap = new HashMap<String, DataSourceDatabaseCluster>();
-	private Map<String, SynchronizationStrategy> synchronizationStrategyMap = new HashMap<String, SynchronizationStrategy>();
-	private DatabaseClusterDecorator decorator;
-	private URL url;
-	
-	private DatabaseClusterFactory()
-	{
-		// Do nothing
-	}
-
-	public Map<String, DriverDatabaseCluster> getDriverDatabaseClusterMap()
-	{
-		return this.driverDatabaseClusterMap;
-	}
-	
-	public Map<String, DataSourceDatabaseCluster> getDataSourceDatabaseClusterMap()
-	{
-		return this.dataSourceDatabaseClusterMap;
-	}
-	
-	public Map<String, SynchronizationStrategy> getSynchronizationStrategyMap()
-	{
-		return this.synchronizationStrategyMap;
-	}
-	
-	/**
-	 * Exports the current HA-JDBC configuration.
-	 */
-	public synchronized void exportConfig()
-	{
-		File file = null;
-		WritableByteChannel outputChannel = null;
-		FileChannel fileChannel = null;
-		
-		try
-		{
-			file = this.exportToFile();
-			
-			fileChannel = new FileInputStream(file).getChannel();
-			
-			// We cannot use URLConnection for files becuase Sun's implementation does not support output.
-			if (this.url.getProtocol().equals("file"))
-			{
-				outputChannel = new FileOutputStream(new File(this.url.getPath())).getChannel();
-			}
-			else
-			{
-				URLConnection connection = this.url.openConnection();
-				
-				connection.connect();
-				
-				outputChannel = Channels.newChannel(connection.getOutputStream());
-			}
-			
-			fileChannel.transferTo(0, file.length(), outputChannel);
-		}
-		catch (Exception e)
-		{
-			logger.warn(Messages.getMessage(Messages.CONFIG_STORE_FAILED, this.url), e);
-		}
-		finally
-		{
-			if (outputChannel != null)
-			{
-				try
-				{
-					outputChannel.close();
-				}
-				catch (IOException e)
-				{
-					logger.warn(e.getMessage(), e);
-				}
-			}
-			
-			if (fileChannel != null)
-			{
-				try
-				{
-					fileChannel.close();
-				}
-				catch (IOException e)
-				{
-					logger.warn(e.getMessage(), e);
-				}
-			}
-			
-			if (file != null)
-			{
-				file.delete();
-			}
-		}
-	}
-	
-	private File exportToFile() throws Exception
-	{
-		File file = File.createTempFile("ha-jdbc", ".xml");
-		
-		IMarshallingContext context = BindingDirectory.getFactory(DatabaseClusterFactory.class).createMarshallingContext();
-	
-		context.setIndent(1, System.getProperty("line.separator"), '\t');
-		
-		// This method closes the writer
-		context.marshalDocument(this, null, null, new FileWriter(file));
-		
-		return file;
-	}
-
-	<D> void addDatabaseCluster(DatabaseCluster<D> databaseCluster) throws Exception
-	{
-		if (this.decorator != null)
-		{
-			this.decorator.decorate(databaseCluster);			
-		}
-		
-		if (DriverDatabaseCluster.class.isInstance(databaseCluster))
-		{
-			this.driverDatabaseClusterMap.put(databaseCluster.getId(), DriverDatabaseCluster.class.cast(databaseCluster));
-		}
-		else
-		{
-			this.dataSourceDatabaseClusterMap.put(databaseCluster.getId(), DataSourceDatabaseCluster.class.cast(databaseCluster));
-		}
-		
-		try
-		{
-			databaseCluster.start();
-		}
-		catch (Exception e)
-		{
-			this.stop();
-			
-			throw e;
-		}
-	}
-	
-	void addSynchronizationStrategyBuilder(SynchronizationStrategyBuilder builder) throws Exception
-	{
-		this.synchronizationStrategyMap.put(builder.getId(), builder.buildStrategy());
-	}
-	
-	Iterator<SynchronizationStrategyBuilder> getSynchronizationStrategyBuilders() throws Exception
-	{
-		List<SynchronizationStrategyBuilder> builderList = new ArrayList<SynchronizationStrategyBuilder>(this.synchronizationStrategyMap.size());
-		
-		for (Map.Entry<String, SynchronizationStrategy> mapEntry: this.synchronizationStrategyMap.entrySet())
-		{
-			builderList.add(SynchronizationStrategyBuilder.getBuilder(mapEntry.getKey(), mapEntry.getValue()));
-		}
-		
-		return builderList.iterator();
-	}
-	
-	Iterator<DatabaseCluster<?>> getDatabaseClusters()
-	{
-		List<DatabaseCluster<?>> list = new ArrayList<DatabaseCluster<?>>(this.driverDatabaseClusterMap.size() + this.dataSourceDatabaseClusterMap.size());
-		
-		list.addAll(this.driverDatabaseClusterMap.values());
-		list.addAll(this.dataSourceDatabaseClusterMap.values());
-		
-		return list.iterator();
-	}
-	
-	private void stop()
-	{
-		for (DriverDatabaseCluster cluster: this.driverDatabaseClusterMap.values())
-		{
-			cluster.stop();
-		}
-		
-		for (DataSourceDatabaseCluster cluster: this.dataSourceDatabaseClusterMap.values())
-		{
-			cluster.stop();
-		}
-	}
-	
-	@Override
-	protected void finalize()
-	{
-		this.stop();
 	}
 }

@@ -20,11 +20,11 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.net.URL;
 import java.sql.Driver;
 
-import javax.management.DynamicMBean;
-import javax.management.NotCompliantMBeanException;
-import javax.management.StandardMBean;
+import org.jibx.runtime.IUnmarshallingContext;
+import org.jibx.runtime.impl.UnmarshallingContext;
 
 /**
  * @author Paul Ferraro
@@ -32,13 +32,19 @@ import javax.management.StandardMBean;
  */
 public class DriverDatabaseCluster extends AbstractDatabaseCluster<Driver> implements DriverDatabaseClusterMBean
 {
-	/**
-	 * @see net.sf.hajdbc.sql.AbstractDatabaseCluster#createMBean()
-	 */
-	@Override
-	protected DynamicMBean createMBean() throws NotCompliantMBeanException
+	public static DriverDatabaseCluster extractDatabaseCluster(IUnmarshallingContext context)
 	{
-		return new StandardMBean(this, DriverDatabaseClusterMBean.class);
+		return DriverDatabaseCluster.class.cast(UnmarshallingContext.class.cast(context).getUserContext());
+	}
+	
+	/**
+	 * Constructs a new DriverDatabaseCluster
+	 * @param id
+	 * @param url
+	 */
+	public DriverDatabaseCluster(String id, URL url)
+	{
+		super(id, url);
 	}
 
 	/**

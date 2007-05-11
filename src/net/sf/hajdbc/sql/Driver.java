@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
 public final class Driver implements java.sql.Driver
 {
 	private static final Pattern URL_PATTERN = Pattern.compile("jdbc:ha-jdbc:(.+)");
+	private static final String CONFIG = "config";
 	
 	private static Logger logger = LoggerFactory.getLogger(Driver.class);
 	
@@ -77,7 +78,7 @@ public final class Driver implements java.sql.Driver
 		
 		if (id == null) return null;
 		
-		DatabaseCluster<java.sql.Driver> cluster = this.getDatabaseCluster(id);
+		DatabaseCluster<java.sql.Driver> cluster = this.getDatabaseCluster(id, properties);
 		
 		DriverInvocationHandler handler = new DriverInvocationHandler(cluster);
 		
@@ -126,7 +127,7 @@ public final class Driver implements java.sql.Driver
 		
 		if (id == null) return null;
 		
-		DatabaseCluster<java.sql.Driver> cluster = this.getDatabaseCluster(id);
+		DatabaseCluster<java.sql.Driver> cluster = this.getDatabaseCluster(id, properties);
 		
 		DriverInvocationHandler handler = new DriverInvocationHandler(cluster);
 		
@@ -155,10 +156,10 @@ public final class Driver implements java.sql.Driver
 	{
 		return true;
 	}
-	
-	private DatabaseCluster<java.sql.Driver> getDatabaseCluster(String id) throws SQLException
+
+	private DatabaseCluster<java.sql.Driver> getDatabaseCluster(String id, Properties properties) throws SQLException
 	{
-		DatabaseCluster<java.sql.Driver> cluster = DatabaseClusterFactory.getInstance().getDriverDatabaseClusterMap().get(id);
+		DatabaseCluster<java.sql.Driver> cluster = DatabaseClusterFactory.getDatabaseCluster(id, DriverDatabaseCluster.class, DriverDatabaseClusterMBean.class, properties.getProperty(CONFIG));
 		
 		if (cluster == null)
 		{

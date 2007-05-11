@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc;
 
+import java.net.URL;
 import java.util.Set;
 
 /**
@@ -92,7 +93,21 @@ public interface DatabaseClusterMBean
 	 */
 	public void flushMetaDataCache();
 	
+	/**
+	 * Returns the set of synchronization strategies available to this cluster.
+	 * @return a set of synchronization strategy identifiers
+	 */
 	public Set<String> getSynchronizationStrategies();
 	
+	/**
+	 * Returns the default synchronization strategy used by this cluster.
+	 * @return a synchronization strategy identifier
+	 */
 	public String getDefaultSynchronizationStrategy();
+	
+	/**
+	 * Returns the URL of the configuration file for this cluster.
+	 * @return a URL
+	 */
+	public URL getUrl();
 }

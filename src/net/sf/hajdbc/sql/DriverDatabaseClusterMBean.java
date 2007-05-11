@@ -20,13 +20,16 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.sql.Driver;
+
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterMBean;
 
 /**
  * @author Paul Ferraro
  *
  */
-public interface DriverDatabaseClusterMBean extends DatabaseClusterMBean
+public interface DriverDatabaseClusterMBean extends DatabaseClusterMBean, DatabaseCluster<Driver>
 {
 	/**
 	 * Adds a new database to this cluster using the specified identifier, url, and driver.
