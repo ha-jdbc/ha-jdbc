@@ -74,9 +74,6 @@ public final class Messages
 	public static final String TABLE_LOCK_ACQUIRE = "table-lock-acquire";
 	public static final String TABLE_LOCK_RELEASE = "table-lock-release";
 	public static final String UPDATE_COUNT = "update-count";
-	public static final String VOTE_ERROR_RESPONSE = "vote-error-response";
-	public static final String VOTE_INVALID_RESPONSE = "vote-invalid-response";
-	public static final String VOTE_NO_RESPONSE = "vote-no-response";
 	public static final String WRITE_LOCK_FAILED = "write-lock-failed";
 	
 	private static ResourceBundle resource = ResourceBundle.getBundle(Messages.class.getName());
