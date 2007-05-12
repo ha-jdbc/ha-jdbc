@@ -20,26 +20,19 @@
  */
 package net.sf.hajdbc.distributable;
 
-import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.LockManager;
-import net.sf.hajdbc.Messages;
 
 import org.jgroups.Channel;
 import org.jgroups.ChannelException;
 import org.jgroups.blocks.TwoPhaseVotingAdapter;
 import org.jgroups.blocks.TwoPhaseVotingListener;
 import org.jgroups.blocks.VoteException;
-import org.jgroups.blocks.VoteResponseProcessor;
 import org.jgroups.blocks.VotingAdapter;
-import org.jgroups.blocks.VotingAdapter.FailureVoteResult;
-import org.jgroups.blocks.VotingAdapter.VoteResult;
-import org.jgroups.util.Rsp;
-import org.jgroups.util.RspList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -138,7 +131,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 		return LockDecree.class.cast(object);
 	}
 	
-	private class DistributableLock implements Lock, VoteResponseProcessor
+	private class DistributableLock implements Lock
 	{
 		private String object;
 		
@@ -176,7 +169,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 		{
 			try
 			{
-				return DistributableLockManager.this.votingAdapter.vote(new AcquireLockDecree(this.object), DistributableLockManager.this.timeout, this);
+				return DistributableLockManager.this.votingAdapter.vote(new AcquireLockDecree(this.object), DistributableLockManager.this.timeout);
 			}
 			catch (ChannelException e)
 			{
@@ -209,7 +202,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 		{
 			try
 			{
-				DistributableLockManager.this.votingAdapter.vote(new ReleaseLockDecree(this.object), DistributableLockManager.this.timeout, this);
+				DistributableLockManager.this.votingAdapter.vote(new ReleaseLockDecree(this.object), DistributableLockManager.this.timeout);
 			}
 			catch (ChannelException e)
 			{
@@ -224,54 +217,5 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 		{
 			throw new UnsupportedOperationException();
 		}
-		
-		/**
-		 * @see org.jgroups.blocks.VoteResponseProcessor#processResponses(org.jgroups.util.RspList, int, java.lang.Object)
-		 */
-		public boolean processResponses(RspList responseMap, int consensusType, Object decree) throws ChannelException
-		{
-			if (responseMap == null) return false;
-
-			Iterator<?> responses = responseMap.values().iterator();
-			
-			while (responses.hasNext())
-			{
-				Rsp response = Rsp.class.cast(responses.next());
-				
-				if (response.wasSuspected()) continue;
-				
-				if (!response.wasReceived())
-				{
-					throw new ChannelException(Messages.getMessage(Messages.VOTE_NO_RESPONSE, response.getSender()));
-				}
-				
-				Object value = response.getValue();
-				
-				if (value == null) continue;
-
-				if (Throwable.class.isInstance(value))
-				{
-					throw new ChannelException(Messages.getMessage(Messages.VOTE_ERROR_RESPONSE, response.getSender()), Throwable.class.cast(value));
-				}
-				
-				if (!VoteResult.class.isInstance(value))
-				{
-					throw new ChannelException(Messages.getMessage(Messages.VOTE_INVALID_RESPONSE, response.getSender(), value.getClass().getName()));
-				}
-				
-				VoteResult result = VoteResult.class.cast(value);
-				
-				if (FailureVoteResult.class.isInstance(result))
-				{
-					logger.error(FailureVoteResult.class.cast(value).getReason());
-					
-					return false;
-				}
-				
-				if (result.getNegativeVotes() > 0) return false;
-			}
-			
-			return true;
-		}		
 	}
 }
