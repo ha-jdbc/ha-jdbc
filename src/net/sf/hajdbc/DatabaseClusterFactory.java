@@ -35,6 +35,8 @@ import javax.management.MBeanServerInvocationHandler;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import net.sf.hajdbc.util.SQLExceptionFactory;
+
 /**
  * @author Paul Ferraro
  */
@@ -123,23 +125,23 @@ public class DatabaseClusterFactory
 		}
 		catch (JMException e)
 		{
-			throw new RuntimeException(e);
+			throw SQLExceptionFactory.createSQLException(e);
 		}
 		catch (InstantiationException e)
 		{
-			throw new RuntimeException(e);
+			throw SQLExceptionFactory.createSQLException(e);
 		}
 		catch (IllegalAccessException e)
 		{
-			throw new RuntimeException(e);
+			throw SQLExceptionFactory.createSQLException(e);
 		}
 		catch (NoSuchMethodException e)
 		{
-			throw new RuntimeException(e);
+			throw SQLExceptionFactory.createSQLException(e);
 		}
 		catch (InvocationTargetException e)
 		{
-			throw new RuntimeException(e.getTargetException());
+			throw SQLExceptionFactory.createSQLException(e);
 		}
 	}
 	
