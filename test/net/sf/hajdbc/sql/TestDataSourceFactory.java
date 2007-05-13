@@ -21,7 +21,6 @@
 package net.sf.hajdbc.sql;
 
 import java.lang.reflect.Proxy;
-import java.sql.DriverManager;
 import java.util.Hashtable;
 import java.util.Properties;
 
@@ -53,8 +52,6 @@ public class TestDataSourceFactory implements ObjectFactory
 	@BeforeClass
 	protected void setUp() throws Exception
 	{
-		DriverManager.registerDriver(new MockDriver());
-		
 		Properties properties = new Properties();
 		
 		properties.setProperty(Context.INITIAL_CONTEXT_FACTORY, "net.sf.hajdbc.sql.MockInitialContextFactory");
@@ -78,8 +75,6 @@ public class TestDataSourceFactory implements ObjectFactory
 		
 		this.context.unbind("datasource1");
 		this.context.unbind("datasource2");
-		
-		DriverManager.deregisterDriver(new MockDriver());
 	}
 
 	@DataProvider(name = "factory")
@@ -88,11 +83,11 @@ public class TestDataSourceFactory implements ObjectFactory
 		return new Object[][] {
 			new Object[] { Object.class.cast(null), EasyMock.createMock(Name.class), EasyMock.createMock(Context.class), new Hashtable<Object, Object>() },
 			new Object[] { new Object(), EasyMock.createMock(Name.class), EasyMock.createMock(Context.class), new Hashtable<Object, Object>() },
-			new Object[] { Object.class.cast(new Reference(javax.sql.DataSource.class.getName(), new StringRefAddr(DataSource.DATABASE_CLUSTER, "test-datasource-cluster"))), EasyMock.createMock(Name.class), EasyMock.createMock(Context.class), new Hashtable<Object, Object>() },
-			new Object[] { Object.class.cast(new Reference(javax.sql.DataSource.class.getName(), new StringRefAddr(DataSource.DATABASE_CLUSTER, null))), EasyMock.createMock(Name.class), EasyMock.createMock(Context.class), new Hashtable<Object, Object>() },
-			new Object[] { Object.class.cast(new Reference(java.sql.Driver.class.getName(), new StringRefAddr(DataSource.DATABASE_CLUSTER, "test-datasource-cluster"))), EasyMock.createMock(Name.class), EasyMock.createMock(Context.class), new Hashtable<Object, Object>() },
+			new Object[] { Object.class.cast(new Reference(javax.sql.DataSource.class.getName(), new StringRefAddr("cluster", "test-datasource-cluster"))), EasyMock.createMock(Name.class), EasyMock.createMock(Context.class), new Hashtable<Object, Object>() },
+			new Object[] { Object.class.cast(new Reference(javax.sql.DataSource.class.getName(), new StringRefAddr("cluster", null))), EasyMock.createMock(Name.class), EasyMock.createMock(Context.class), new Hashtable<Object, Object>() },
+			new Object[] { Object.class.cast(new Reference(java.sql.Driver.class.getName(), new StringRefAddr("cluster", "test-datasource-cluster"))), EasyMock.createMock(Name.class), EasyMock.createMock(Context.class), new Hashtable<Object, Object>() },
 			new Object[] { Object.class.cast(new Reference(javax.sql.DataSource.class.getName())), EasyMock.createMock(Name.class), EasyMock.createMock(Context.class), new Hashtable<Object, Object>() },
-			new Object[] { Object.class.cast(new Reference(javax.sql.DataSource.class.getName(), new StringRefAddr(DataSource.DATABASE_CLUSTER, "invalid-cluster"))), EasyMock.createMock(Name.class), EasyMock.createMock(Context.class), new Hashtable<Object, Object>() }
+			new Object[] { Object.class.cast(new Reference(javax.sql.DataSource.class.getName(), new StringRefAddr("cluster", "invalid-cluster"))), EasyMock.createMock(Name.class), EasyMock.createMock(Context.class), new Hashtable<Object, Object>() }
 		};
 	}
 	
@@ -120,7 +115,7 @@ public class TestDataSourceFactory implements ObjectFactory
 			return result;
 		}
 		
-		RefAddr addr = reference.get(DataSource.DATABASE_CLUSTER);
+		RefAddr addr = reference.get("cluster");
 		
 		if ((addr == null) || (addr.getContent() == null))
 		{
