@@ -20,6 +20,8 @@
  */
 package net.sf.hajdbc.distributable;
 
+import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -27,8 +29,11 @@ import java.util.concurrent.locks.Lock;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.LockManager;
 
+import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.ChannelException;
+import org.jgroups.MembershipListener;
+import org.jgroups.View;
 import org.jgroups.blocks.TwoPhaseVotingAdapter;
 import org.jgroups.blocks.TwoPhaseVotingListener;
 import org.jgroups.blocks.VoteException;
@@ -41,14 +46,16 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Paul Ferraro
  */
-public class DistributableLockManager implements LockManager, TwoPhaseVotingListener
+public class DistributableLockManager implements LockManager, TwoPhaseVotingListener, MembershipListener
 {
 	static Logger logger = LoggerFactory.getLogger(DistributableLockManager.class);
 	
 	protected TwoPhaseVotingAdapter votingAdapter;
 	protected int timeout;
+	protected Address address;
 	private Channel channel;
 	private LockManager lockManager;
+	private Set<LockDecree> lockDecreeSet;
 	
 	/**
 	 * Constructs a new DistributableLock.
@@ -60,7 +67,8 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	public <D> DistributableLockManager(DatabaseCluster<D> databaseCluster, DistributableDatabaseClusterDecorator decorator) throws Exception
 	{
 		this.lockManager = databaseCluster.getLockManager();
-		this.channel = decorator.createChannel(databaseCluster.getId() + "lock");
+		this.channel = decorator.createChannel(databaseCluster.getId() + "-lock");
+		this.address = this.channel.getLocalAddress();
 		this.timeout = decorator.getTimeout();
 		
 		this.votingAdapter = new TwoPhaseVotingAdapter(new VotingAdapter(this.channel));
@@ -113,7 +121,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	 */
 	public boolean commit(Object object) throws VoteException
 	{
-		return this.toLockDecree(object).commit(this.lockManager);
+		return this.toLockDecree(object).commit(this.lockManager, this.lockDecreeSet);
 	}
 
 	/**
@@ -131,6 +139,48 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 		return LockDecree.class.cast(object);
 	}
 	
+	/**
+	 * @see org.jgroups.MembershipListener#block()
+	 */
+	@Override
+	public void block()
+	{
+		// Do nothing
+	}
+
+	/**
+	 * @see org.jgroups.MembershipListener#suspect(org.jgroups.Address)
+	 */
+	@Override
+	public void suspect(Address address)
+	{
+		// Do nothing
+	}
+
+	/**
+	 * @see org.jgroups.MembershipListener#viewAccepted(org.jgroups.View)
+	 */
+	@Override
+	public void viewAccepted(View view)
+	{
+		synchronized (this.lockDecreeSet)
+		{
+			Iterator<LockDecree> lockDecrees = this.lockDecreeSet.iterator();
+			
+			while (lockDecrees.hasNext())
+			{
+				LockDecree lockDecree = lockDecrees.next();
+				
+				if (!view.containsMember(lockDecree.getAddress()))
+				{
+					this.lockManager.writeLock(lockDecree.getId()).unlock();
+					
+					lockDecrees.remove();
+				}
+			}
+		}
+	}
+
 	private class DistributableLock implements Lock
 	{
 		private String object;
@@ -169,7 +219,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 		{
 			try
 			{
-				return DistributableLockManager.this.votingAdapter.vote(new AcquireLockDecree(this.object), DistributableLockManager.this.timeout);
+				return DistributableLockManager.this.votingAdapter.vote(new AcquireLockDecree(this.object, DistributableLockManager.this.address), DistributableLockManager.this.timeout);
 			}
 			catch (ChannelException e)
 			{
@@ -202,7 +252,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 		{
 			try
 			{
-				DistributableLockManager.this.votingAdapter.vote(new ReleaseLockDecree(this.object), DistributableLockManager.this.timeout);
+				DistributableLockManager.this.votingAdapter.vote(new ReleaseLockDecree(this.object, DistributableLockManager.this.address), DistributableLockManager.this.timeout);
 			}
 			catch (ChannelException e)
 			{

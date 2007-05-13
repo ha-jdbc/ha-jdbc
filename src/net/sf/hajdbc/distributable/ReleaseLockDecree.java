@@ -20,6 +20,10 @@
  */
 package net.sf.hajdbc.distributable;
 
+import java.util.Set;
+
+import org.jgroups.Address;
+
 import net.sf.hajdbc.LockManager;
 
 /**
@@ -35,9 +39,9 @@ public class ReleaseLockDecree extends LockDecree
 		super();
 	}
 
-	public ReleaseLockDecree(String id)
+	public ReleaseLockDecree(String id, Address address)
 	{
-		super(id);
+		super(id, address);
 	}
 
 	/**
@@ -53,9 +57,14 @@ public class ReleaseLockDecree extends LockDecree
 	 * @see net.sf.hajdbc.distributable.LockDecree#commit(net.sf.hajdbc.LockManager)
 	 */
 	@Override
-	public boolean commit(LockManager lockManager)
+	public boolean commit(LockManager lockManager, Set<LockDecree> lockDecreeSet)
 	{
 		this.getLock(lockManager).unlock();
+		
+		synchronized (lockDecreeSet)
+		{
+			lockDecreeSet.remove(this);
+		}
 		
 		return true;
 	}

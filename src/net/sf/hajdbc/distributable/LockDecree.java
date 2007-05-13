@@ -24,7 +24,10 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
+
+import org.jgroups.Address;
 
 import net.sf.hajdbc.LockManager;
 
@@ -35,8 +38,9 @@ import net.sf.hajdbc.LockManager;
 public abstract class LockDecree implements Externalizable
 {
 	private String id;
+	private Address address;
 	
-	protected LockDecree(String id)
+	protected LockDecree(String id, Address address)
 	{
 		this.id = id;
 	}
@@ -46,20 +50,50 @@ public abstract class LockDecree implements Externalizable
 		// Required for deserialization
 	}
 
+	public String getId()
+	{
+		return this.id;
+	}
+	
+	public Address getAddress()
+	{
+		return this.address;
+	}
+	
+	/**
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object object)
+	{
+		return LockDecree.class.isInstance(object) ? id.equals(LockDecree.class.cast(object).id) : false;
+	}
+
+	/**
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode()
+	{
+		return this.id.hashCode();
+	}
+
 	/**
 	 * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
 	 */
 	public void writeExternal(ObjectOutput output) throws IOException
 	{
 		output.writeUTF(this.id);
+		output.writeObject(address);
 	}
 
 	/**
 	 * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
 	 */
-	public void readExternal(ObjectInput input) throws IOException
+	public void readExternal(ObjectInput input) throws IOException, ClassNotFoundException
 	{
 		this.id = input.readUTF();
+		this.address = Address.class.cast(input.readObject());
 	}
 	
 	/**
@@ -74,7 +108,7 @@ public abstract class LockDecree implements Externalizable
 	 * @param lockManager a lock manager
 	 * @return true if commit phase was successful, false otherwise.
 	 */
-	public abstract boolean commit(LockManager lockManager);
+	public abstract boolean commit(LockManager lockManager, Set<LockDecree> lockDecreeSet);
 	
 	/**
 	 * Called when prepare phase fails.
