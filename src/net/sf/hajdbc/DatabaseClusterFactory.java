@@ -85,7 +85,7 @@ public class DatabaseClusterFactory
 	
 	private static String getDomain()
 	{
-		return DatabaseClusterFactory.class.getPackage().toString();
+		return DatabaseClusterFactory.class.getPackage().getName();
 	}
 	
 	/**
