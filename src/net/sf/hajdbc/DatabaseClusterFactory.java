@@ -150,7 +150,7 @@ public class DatabaseClusterFactory
 	 * @param resource a resource name
 	 * @return a URL for the HA-JDBC configuration resource
 	 */
-	private static URL getResourceURL(String resource)
+	private static URL getResourceURL(String resource) throws SQLException
 	{
 		try
 		{
@@ -172,7 +172,7 @@ public class DatabaseClusterFactory
 			
 			if (url == null)
 			{
-				throw new RuntimeException(Messages.getMessage(Messages.CONFIG_NOT_FOUND, resource));
+				throw new SQLException(Messages.getMessage(Messages.CONFIG_NOT_FOUND, resource));
 			}
 			
 			return url;
