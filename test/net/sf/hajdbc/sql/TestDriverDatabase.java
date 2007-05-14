@@ -44,7 +44,7 @@ public class TestDriverDatabase extends AbstractTestDatabase<DriverDatabase, Dri
 	{
 		try
 		{
-			DriverManager.registerDriver(new MockDriver());
+			DriverManager.registerDriver(new MockDriver(null));
 		}
 		catch (SQLException e)
 		{

@@ -21,8 +21,10 @@
 package net.sf.hajdbc.sql;
 
 import java.lang.reflect.Proxy;
+import java.sql.SQLException;
 import java.util.Hashtable;
 import java.util.Properties;
+import java.util.prefs.Preferences;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -32,7 +34,8 @@ import javax.naming.Reference;
 import javax.naming.StringRefAddr;
 import javax.naming.spi.ObjectFactory;
 
-import org.easymock.EasyMock;
+import net.sf.hajdbc.local.LocalStateManager;
+
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -52,6 +55,8 @@ public class TestDataSourceFactory implements ObjectFactory
 	@BeforeClass
 	protected void setUp() throws Exception
 	{
+		Preferences.userNodeForPackage(LocalStateManager.class).put("test-datasource-cluster", "datasource1,datasource2");
+		
 		Properties properties = new Properties();
 		
 		properties.setProperty(Context.INITIAL_CONTEXT_FACTORY, "net.sf.hajdbc.sql.MockInitialContextFactory");
@@ -60,8 +65,8 @@ public class TestDataSourceFactory implements ObjectFactory
 		
 		Reference reference = new Reference(DataSource.class.toString(), "net.sf.hajdbc.sql.MockDataSourceFactory", null);
 		
-		this.context.rebind("datasource1", reference);
-		this.context.rebind("datasource2", reference);
+		this.context.bind("datasource1", reference);
+		this.context.bind("datasource2", reference);
 		
 		this.dataSource.setCluster("test-datasource-cluster");
 		
@@ -71,23 +76,26 @@ public class TestDataSourceFactory implements ObjectFactory
 	@AfterClass
 	protected void tearDown() throws Exception
 	{
+		System.out.println("tearDown()");
 		this.context.unbind("datasource");
 		
 		this.context.unbind("datasource1");
 		this.context.unbind("datasource2");
+		
+		Preferences.userNodeForPackage(LocalStateManager.class).remove("test-datasource-cluster");
 	}
 
 	@DataProvider(name = "factory")
 	Object[][] objectInstanceProvider()
 	{
 		return new Object[][] {
-			new Object[] { Object.class.cast(null), EasyMock.createMock(Name.class), EasyMock.createMock(Context.class), new Hashtable<Object, Object>() },
-			new Object[] { new Object(), EasyMock.createMock(Name.class), EasyMock.createMock(Context.class), new Hashtable<Object, Object>() },
-			new Object[] { Object.class.cast(new Reference(javax.sql.DataSource.class.getName(), new StringRefAddr("cluster", "test-datasource-cluster"))), EasyMock.createMock(Name.class), EasyMock.createMock(Context.class), new Hashtable<Object, Object>() },
-			new Object[] { Object.class.cast(new Reference(javax.sql.DataSource.class.getName(), new StringRefAddr("cluster", null))), EasyMock.createMock(Name.class), EasyMock.createMock(Context.class), new Hashtable<Object, Object>() },
-			new Object[] { Object.class.cast(new Reference(java.sql.Driver.class.getName(), new StringRefAddr("cluster", "test-datasource-cluster"))), EasyMock.createMock(Name.class), EasyMock.createMock(Context.class), new Hashtable<Object, Object>() },
-			new Object[] { Object.class.cast(new Reference(javax.sql.DataSource.class.getName())), EasyMock.createMock(Name.class), EasyMock.createMock(Context.class), new Hashtable<Object, Object>() },
-			new Object[] { Object.class.cast(new Reference(javax.sql.DataSource.class.getName(), new StringRefAddr("cluster", "invalid-cluster"))), EasyMock.createMock(Name.class), EasyMock.createMock(Context.class), new Hashtable<Object, Object>() }
+			new Object[] { null, null, null, null },
+			new Object[] { new Object(), null, null, null },
+			new Object[] { new Reference(javax.sql.DataSource.class.getName(), new StringRefAddr("cluster", "test-datasource-cluster")), null, null, null },
+			new Object[] { new Reference(javax.sql.DataSource.class.getName(), new StringRefAddr("cluster", null)), null, null, null },
+			new Object[] { new Reference(java.sql.Driver.class.getName(), new StringRefAddr("cluster", "test-datasource-cluster")), null, null, null },
+			new Object[] { new Reference(javax.sql.DataSource.class.getName()), null, null, null },
+			new Object[] { new Reference(javax.sql.DataSource.class.getName(), new StringRefAddr("cluster", "invalid-cluster")), null, null, null }
 		};
 	}
 	
@@ -95,50 +103,61 @@ public class TestDataSourceFactory implements ObjectFactory
 	 * @see javax.naming.spi.ObjectFactory#getObjectInstance(java.lang.Object, javax.naming.Name, javax.naming.Context, java.util.Hashtable)
 	 */
 	@Test(dataProvider = "factory")
-	public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception
+	public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment)
 	{
-		Object result = this.dataSource.getObjectInstance(obj, name, nameCtx, environment);
-		
-		if ((obj == null) || !Reference.class.isInstance(obj))
+		try
 		{
-			assert result == null : result.getClass().getName();
+			Object result = this.dataSource.getObjectInstance(obj, name, nameCtx, environment);
+			
+			if ((obj == null) || !Reference.class.isInstance(obj))
+			{
+				assert result == null : result.getClass().getName();
+				
+				return result;
+			}
+			
+			Reference reference = Reference.class.cast(obj);
+			
+			if ((reference == null) || !reference.getClassName().equals(javax.sql.DataSource.class.getName()))
+			{
+				assert result == null : result.getClass().getName();
+				
+				return result;
+			}
+			
+			RefAddr addr = reference.get("cluster");
+			
+			if ((addr == null) || (addr.getContent() == null))
+			{
+				assert result == null : result.getClass().getName();
+				
+				return result;
+			}
+			
+			String id = String.class.cast(addr.getContent());
+			
+			if ((id == null) || !id.equals("test-datasource-cluster"))
+			{
+				assert result == null : result.getClass().getName();
+			}
+			else
+			{
+				assert result != null;
+				assert Proxy.isProxyClass(result.getClass()) : result.getClass().getName();
+			}
 			
 			return result;
 		}
-		
-		Reference reference = Reference.class.cast(obj);
-		
-		if ((reference == null) || !reference.getClassName().equals(javax.sql.DataSource.class.getName()))
+		catch (SQLException e)
 		{
-			assert result == null : result.getClass().getName();
+			assert Reference.class.cast(obj).get("cluster").getContent().equals("invalid-cluster");
 			
-			return result;
+			return null;
 		}
-		
-		RefAddr addr = reference.get("cluster");
-		
-		if ((addr == null) || (addr.getContent() == null))
+		catch(Throwable e){e.printStackTrace();assert false;return null;}
+		finally
 		{
-			assert result == null : result.getClass().getName();
-			
-			return result;
+			System.out.println(obj);
 		}
-		
-		String id = String.class.cast(addr.getContent());
-		
-		if ((id == null) || !id.equals("test-datasource-cluster"))
-		{
-			assert result == null : result.getClass().getName();
-		}
-		else
-		{
-			assert result != null;
-			assert Proxy.isProxyClass(result.getClass()) : result.getClass().getName();
-			
-			assert id != null;
-			assert id.equals("test-datasource-cluster") : id;
-		}
-		
-		return result;
 	}
 }

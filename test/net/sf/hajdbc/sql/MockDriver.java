@@ -32,12 +32,19 @@ import java.util.Properties;
  */
 public class MockDriver implements Driver
 {
+	private Connection connection;
+	
+	public MockDriver(Connection connection)
+	{
+		this.connection = connection;
+	}
+	
 	/**
 	 * @see java.sql.Driver#connect(java.lang.String, java.util.Properties)
 	 */
 	public Connection connect(String url, Properties properties)
 	{
-		return new MockConnection();
+		return this.connection;
 	}
 
 	/**

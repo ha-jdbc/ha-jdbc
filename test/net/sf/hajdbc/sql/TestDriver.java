@@ -27,7 +27,11 @@ import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Properties;
+import java.util.prefs.Preferences;
 
+import net.sf.hajdbc.local.LocalStateManager;
+
+import org.easymock.EasyMock;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -42,17 +46,20 @@ import org.testng.annotations.Test;
 public class TestDriver implements java.sql.Driver
 {
 	private java.sql.Driver driver = new Driver();
+	private Connection connection = EasyMock.createMock(Connection.class);
 	
 	@BeforeClass
 	protected void setUp() throws Exception
 	{
-		DriverManager.registerDriver(new MockDriver());
+		DriverManager.registerDriver(new MockDriver(this.connection));
+		Preferences.userNodeForPackage(LocalStateManager.class).put("test-database-cluster", "database1,database2");
 	}
 
 	@AfterClass
 	protected void tearDown() throws Exception
 	{
-		DriverManager.deregisterDriver(new MockDriver());
+		DriverManager.deregisterDriver(new MockDriver(this.connection));
+		Preferences.userNodeForPackage(LocalStateManager.class).remove("test-database-cluster");
 	}
 
 	/**
