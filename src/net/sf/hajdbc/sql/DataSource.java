@@ -101,17 +101,13 @@ public class DataSource implements Referenceable, ObjectFactory
 	 */
 	public Object getObjectInstance(Object object, Name name, Context context, Hashtable<?,?> environment) throws Exception
 	{
-		if (object == null) return null;
-		
-		if (!Reference.class.isInstance(object)) return null;
+		if ((object == null) || !Reference.class.isInstance(object)) return null;
 		
 		Reference reference = Reference.class.cast(object);
 		
 		String className = reference.getClassName();
 		
-		if (className == null) return null;
-		
-		if (!javax.sql.DataSource.class.getName().equals(className)) return null;
+		if ((className == null) || !className.equals(javax.sql.DataSource.class.getName())) return null;
 		
 		RefAddr idAddr = reference.get(CLUSTER);
 		
@@ -123,9 +119,7 @@ public class DataSource implements Referenceable, ObjectFactory
 		
 		RefAddr configAddr = reference.get(CONFIG);
 		
-		if (configAddr == null) return null;
-		
-		String config = String.class.cast(configAddr.getContent());
+		String config = (configAddr != null) ? String.class.cast(configAddr.getContent()) : null;
 		
 		DatabaseCluster<javax.sql.DataSource> cluster = DatabaseClusterFactory.getDatabaseCluster(id, DataSourceDatabaseCluster.class, DataSourceDatabaseClusterMBean.class, config);
 		
