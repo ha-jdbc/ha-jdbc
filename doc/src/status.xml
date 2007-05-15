@@ -12,6 +12,34 @@
 	</contexts>
 
 	<changes>
+		<release version="2.0-beta-2" date="???">
+			<action context="src" dev="PF" type="fix">
+				Fixed memory leak with CONCUR_READ_ONLY result sets when using ResultSet.getStatement().close().
+			</action>
+			<action context="src" dev="PF" type="update">
+				Removed problematic singleton references to database clusters in DatabaseClusterFactory.
+			</action>
+			<action context="src" dev="PF" type="update">
+				Require separate XML config file per database cluster.
+			</action>
+			<action context="src" dev="PF" type="update">
+				Consolidated database-cluster and datasource cluster elements into single cluster element, as in 1.1.
+				Removed id attribute from cluster element.
+			</action>
+			<action context="src" dev="PF" type="update">
+				Modified configuration locator logic to first check driver connection properties or datasource config property for resource URL.
+				Default resource name is now <code>ha-jdbc-{0}.xml</code>, where {0} is the cluster id.
+			</action>
+			<action context="src" dev="PF" type="fix" due-to="Hanson Char">
+				Added test for UnsupportedOperationException thrown when Quartz cron expression uses both day-of-week and day-of-month values.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				If a group member leaves, any distributed locks it held must be freed.
+			</action>
+			<action context="src" dev="PF" type="update">
+				DistributableLockManager now uses default vote response processor.
+			</action>
+		</release>
 		<release version="2.0-beta-1" date="April 23, 2007">
 			<action type="fix" context="src" dev="PF" due-to="David Goodenough">
 				Optimized PostgreSQLDialect.getLockTableSQL() by removing unnecessary select statement.
