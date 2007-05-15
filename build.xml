@@ -122,7 +122,7 @@
 		<jar jarfile="${jar.file}" index="true">
 			<fileset dir="${build.dir}"></fileset>
 			<fileset dir="${src.dir}" excludes="**/*.java"></fileset>
-			<metainf dir="${conf.dir}" includes="services/*"></metainf>
+			<service type="java.sql.Driver" provider="net.sf.hajdbc.sql.Driver"></service>
 		</jar>
 	</target>
 	
