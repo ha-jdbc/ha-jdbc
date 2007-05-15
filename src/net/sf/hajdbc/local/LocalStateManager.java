@@ -20,8 +20,10 @@
  */
 package net.sf.hajdbc.local;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.prefs.BackingStoreException;
@@ -29,15 +31,16 @@ import java.util.prefs.Preferences;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.StateManager;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.StateManager;
+import net.sf.hajdbc.util.Strings;
 
 /**
  * @author Paul Ferraro
  */
 public class LocalStateManager implements StateManager
 {
-	private static final String STATE_DELIMITER = ",";
+	private static final String DELIMITER = ",";
 	
 	private static Preferences preferences = Preferences.userNodeForPackage(LocalStateManager.class);
 	
@@ -53,13 +56,13 @@ public class LocalStateManager implements StateManager
 	 */
 	public Set<String> getInitialState()
 	{
-		String state = preferences.get(this.databaseCluster.getId(), null);
+		String state = preferences.get(this.statePreferenceKey(), null);
 		
 		if (state == null) return null;
 		
 		if (state.length() == 0) return Collections.emptySet();
 		
-		return new TreeSet<String>(Arrays.asList(state.split(STATE_DELIMITER)));
+		return new TreeSet<String>(Arrays.asList(state.split(DELIMITER)));
 	}
 	
 	/**
@@ -80,19 +83,14 @@ public class LocalStateManager implements StateManager
 	
 	private void storeState()
 	{
-		StringBuilder builder = new StringBuilder();
-		
-		for (Database<?> database: this.databaseCluster.getBalancer().all())
+		List<String> databaseList = new ArrayList<String>();
+
+ 		for (Database<?> database: this.databaseCluster.getBalancer().all())
 		{
-			builder.append(database.getId()).append(STATE_DELIMITER);
+			databaseList.add(database.getId());
 		}
 		
-		if (builder.length() > 0)
-		{
-			builder.deleteCharAt(builder.length() - 1);
-		}
-		
-		preferences.put(this.databaseCluster.getId(), builder.toString());
+		preferences.put(this.statePreferenceKey(), Strings.join(databaseList, DELIMITER));
 		
 		try
 		{
@@ -117,5 +115,10 @@ public class LocalStateManager implements StateManager
 	 */
 	public void stop()
 	{
+	}
+	
+	private String statePreferenceKey()
+	{
+		return this.databaseCluster.getId();
 	}
 }
