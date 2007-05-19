@@ -39,6 +39,9 @@
 			<action context="src" dev="PF" type="update">
 				DistributableLockManager now uses default vote response processor.
 			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded SLF4J to 1.4.0.
+			</action>
 		</release>
 		<release version="2.0-beta-1" date="April 23, 2007">
 			<action type="fix" context="src" dev="PF" due-to="David Goodenough">
