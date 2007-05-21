@@ -401,7 +401,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		
 		if (this.deactivate(database))
 		{
-			logger.warn(Messages.getMessage(Messages.DATABASE_NOT_ALIVE, database, this), cause);
+			logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this), cause);
 		}
 	}
 	
