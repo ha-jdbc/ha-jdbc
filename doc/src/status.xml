@@ -19,6 +19,12 @@
 			<action context="src" dev="PF" type="fix" due-to="Hanson Char">
 				Added test for UnsupportedOperationException thrown when Quartz cron expression uses both day-of-week and day-of-month values.
 			</action>
+			<action context="src" dev="PF" type="update">
+				Upgraded JiBX to 1.1.5.
+			</action>
+			<action context="src" dev="PF" type="update">
+				Upgraded SLF4J to 1.4.0.
+			</action>
 		</release>
 		<release version="1.1.11" date="April 17, 2007">
 			<action type="add" context="src" dev="PF">
