@@ -41,6 +41,7 @@ import java.util.concurrent.Future;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationContext;
+import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.UniqueConstraint;
 import net.sf.hajdbc.util.SQLExceptionFactory;
@@ -77,12 +78,28 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$
  * @since   1.0
  */
-public class DifferentialSynchronizationStrategy extends LockingSynchronizationStrategy
+public class DifferentialSynchronizationStrategy implements SynchronizationStrategy
 {
 	private static Logger logger = LoggerFactory.getLogger(DifferentialSynchronizationStrategy.class);
 
 	private int fetchSize = 0;
 	private int maxBatchSize = 100;
+	
+	/**
+	 * @see net.sf.hajdbc.SynchronizationStrategy#cleanup(net.sf.hajdbc.SynchronizationContext)
+	 */
+	public <D> void cleanup(SynchronizationContext<D> context)
+	{
+		SynchronizationSupport.unlock(context);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.SynchronizationStrategy#prepare(net.sf.hajdbc.SynchronizationContext)
+	 */
+	public <D> void prepare(SynchronizationContext<D> context) throws SQLException
+	{
+		SynchronizationSupport.lock(context);
+	}
 	
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.SynchronizationContext)

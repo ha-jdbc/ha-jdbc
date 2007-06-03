@@ -67,12 +67,28 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$
  * @since   1.0
  */
-public class FullSynchronizationStrategy extends LockingSynchronizationStrategy implements SynchronizationStrategy
+public class FullSynchronizationStrategy implements SynchronizationStrategy
 {
 	private static Logger logger = LoggerFactory.getLogger(FullSynchronizationStrategy.class);
 
 	private int maxBatchSize = 100;
 	private int fetchSize = 0;
+	
+	/**
+	 * @see net.sf.hajdbc.SynchronizationStrategy#cleanup(net.sf.hajdbc.SynchronizationContext)
+	 */
+	public <D> void cleanup(SynchronizationContext<D> context)
+	{
+		SynchronizationSupport.unlock(context);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.SynchronizationStrategy#prepare(net.sf.hajdbc.SynchronizationContext)
+	 */
+	public <D> void prepare(SynchronizationContext<D> context) throws SQLException
+	{
+		SynchronizationSupport.lock(context);
+	}
 	
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.SynchronizationContext)
