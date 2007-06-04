@@ -33,7 +33,6 @@ public interface DatabaseCommand extends Externalizable
 	 * Execute this command on the specified database cluster.
 	 * @param <D> either java.sql.Driver or javax.sql.DataSource
 	 * @param databaseCluster a database cluster
-	 * @throws java.sql.SQLException if command failed to execute
 	 */
 	public <D> void execute(DatabaseCluster<D> databaseCluster);
 }
