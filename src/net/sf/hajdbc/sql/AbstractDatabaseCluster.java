@@ -736,7 +736,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	
 	private boolean activate(Database<D> database, SynchronizationStrategy strategy) throws java.sql.SQLException, InterruptedException
 	{
-		if (this.getBalancer().contains(database))
+		if (this.balancer.contains(database))
 		{
 			return false;
 		}
@@ -756,16 +756,13 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			
 			try
 			{
-				if (!context.getActiveDatabaseSet().isEmpty())
-				{
-					strategy.prepare(context);
-					
-					logger.info(Messages.getMessage(Messages.DATABASE_SYNC_START, database, this));
-					
-					strategy.synchronize(context);
-					
-					logger.info(Messages.getMessage(Messages.DATABASE_SYNC_END, database, this));
-				}
+				strategy.prepare(context);
+				
+				logger.info(Messages.getMessage(Messages.DATABASE_SYNC_START, database, this));
+				
+				strategy.synchronize(context);
+				
+				logger.info(Messages.getMessage(Messages.DATABASE_SYNC_END, database, this));
 				
 				boolean activated = this.activate(database);
 				
@@ -777,6 +774,10 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			{
 				context.close();
 			}
+		}
+		catch (NoSuchElementException e)
+		{
+			return this.activate(database);
 		}
 		finally
 		{
