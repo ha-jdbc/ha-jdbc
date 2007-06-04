@@ -420,7 +420,7 @@ public final class SynchronizationSupport
 			connection.rollback();
 			connection.setAutoCommit(true);
 		}
-		catch (java.sql.SQLException e)
+		catch (SQLException e)
 		{
 			logger.warn(e.toString(), e);
 		}

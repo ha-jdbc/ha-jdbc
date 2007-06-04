@@ -213,14 +213,14 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 				{
 					if (this.parentProxy == null)
 					{
-						throw new java.sql.SQLException();
+						throw new SQLException();
 					}
 					
 					P parentObject = this.parentProxy.getObject(database);
 					
 					if (parentObject == null)
 					{
-						throw new java.sql.SQLException();
+						throw new SQLException();
 					}
 					
 					object = this.parentInvoker.invoke(database, parentObject);
@@ -339,15 +339,15 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 	
 	/**
 	 * @param exceptionMap
-	 * @throws java.sql.SQLException
+	 * @throws SQLException
 	 */
 	@SuppressWarnings("unused")
 	public void handleFailures(SortedMap<Database<D>, SQLException> exceptionMap) throws SQLException
 	{
-		for (Map.Entry<Database<D>, java.sql.SQLException> exceptionMapEntry: exceptionMap.entrySet())
+		for (Map.Entry<Database<D>, SQLException> exceptionMapEntry: exceptionMap.entrySet())
 		{
 			Database<D> database = exceptionMapEntry.getKey();
-			java.sql.SQLException exception = exceptionMapEntry.getValue();
+			SQLException exception = exceptionMapEntry.getValue();
 			
 			if (this.databaseCluster.deactivate(database))
 			{

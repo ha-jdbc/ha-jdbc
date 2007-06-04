@@ -172,7 +172,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				
 				Callable<ResultSet> callable = new Callable<ResultSet>()
 				{
-					public ResultSet call() throws java.sql.SQLException
+					public ResultSet call() throws SQLException
 					{
 						return targetStatement.executeQuery(selectSQL);
 					}

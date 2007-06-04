@@ -21,6 +21,7 @@
 package net.sf.hajdbc.sql;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import javax.management.DynamicMBean;
 import javax.management.NotCompliantMBeanException;
@@ -62,10 +63,10 @@ public class DataSourceDatabase extends AbstractDatabase<DataSource> implements 
 	/**
 	 * @param dataSource A DataSource
 	 * @return a database connection
-	 * @throws java.sql.SQLException if a database connection could not be made
+	 * @throws SQLException if a database connection could not be made
 	 * @see net.sf.hajdbc.Database#connect(Object)
 	 */
-	public Connection connect(DataSource dataSource) throws java.sql.SQLException
+	public Connection connect(DataSource dataSource) throws SQLException
 	{
 		return (this.user != null) ? dataSource.getConnection(this.user, this.password) : dataSource.getConnection();
 	}

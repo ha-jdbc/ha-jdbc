@@ -20,6 +20,8 @@
  */
 package net.sf.hajdbc;
 
+import java.sql.SQLException;
+
 
 /**
  * @author  Paul Ferraro
@@ -31,21 +33,21 @@ public interface SynchronizationStrategy
 	/**
 	 * Prepares the specified synchronization context for actual synchronization.
 	 * @param context a synchronization context
-	 * @throws java.sql.SQLException if prepare fails
+	 * @throws SQLException if prepare fails
 	 */
-	public <D> void prepare(SynchronizationContext<D> context) throws java.sql.SQLException;
+	public <D> void prepare(SynchronizationContext<D> context) throws SQLException;
 	
 	/**
 	 * Cleans up the specified synchronization context after synchronization.
 	 * @param context a synchronization context
-	 * @throws java.sql.SQLException if cleanup fails
+	 * @throws SQLException if cleanup fails
 	 */
 	public <D> void cleanup(SynchronizationContext<D> context);
 	
 	/**
 	 * Synchronizes a target database with a source database as defined by the synchronization context.
 	 * @param context a synchronization context
-	 * @throws java.sql.SQLException if synchronization fails
+	 * @throws SQLException if synchronization fails
 	 */
-	public <D> void synchronize(SynchronizationContext<D> context) throws java.sql.SQLException;
+	public <D> void synchronize(SynchronizationContext<D> context) throws SQLException;
 }

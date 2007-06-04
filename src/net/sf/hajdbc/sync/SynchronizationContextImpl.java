@@ -152,7 +152,7 @@ public class SynchronizationContextImpl<D> implements SynchronizationContext<D>
 						connection.close();
 					}
 				}
-				catch (java.sql.SQLException e)
+				catch (SQLException e)
 				{
 					logger.warn(e.toString(), e);
 				}

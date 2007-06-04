@@ -39,7 +39,7 @@ public interface FileSupport
 	 * Create a file from the specified binary input stream.
 	 * @param inputStream a binary stream of data
 	 * @return a temporary file
-	 * @throws java.sql.SQLException if an IO error occurs
+	 * @throws SQLException if an IO error occurs
 	 */
 	public File createFile(InputStream inputStream) throws SQLException;
 	
@@ -47,7 +47,7 @@ public interface FileSupport
 	 * Create a file from the specified character input stream
 	 * @param reader a character stream of data
 	 * @return a temporary file
-	 * @throws java.sql.SQLException if an IO error occurs
+	 * @throws SQLException if an IO error occurs
 	 */
 	public File createFile(Reader reader) throws SQLException;
 
@@ -55,7 +55,7 @@ public interface FileSupport
 	 * Returns a reader for the specified file.
 	 * @param file a temp file
 	 * @return a reader
-	 * @throws java.sql.SQLException if IO error occurs
+	 * @throws SQLException if IO error occurs
 	 */
 	public Reader getReader(File file) throws SQLException;
 	
@@ -63,7 +63,7 @@ public interface FileSupport
 	 * Returns an input stream for the specified file.
 	 * @param file a temp file
 	 * @return an input stream
-	 * @throws java.sql.SQLException if IO error occurs
+	 * @throws SQLException if IO error occurs
 	 */
 	public InputStream getInputStream(File file) throws SQLException;
 	

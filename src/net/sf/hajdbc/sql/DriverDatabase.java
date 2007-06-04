@@ -23,6 +23,7 @@ package net.sf.hajdbc.sql;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Properties;
 
 import javax.management.DynamicMBean;
@@ -102,10 +103,10 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	/**
 	 * @param driver a JDBC driver
 	 * @return a database connection
-	 * @throws java.sql.SQLException if a database connection could not be made
+	 * @throws SQLException if a database connection could not be made
 	 * @see net.sf.hajdbc.Database#connect(Object)
 	 */
-	public Connection connect(Driver driver) throws java.sql.SQLException
+	public Connection connect(Driver driver) throws SQLException
 	{
 		Properties properties = new Properties(this.getProperties());
 		
@@ -136,7 +137,7 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 		{
 			return DriverManager.getDriver(url);
 		}
-		catch (java.sql.SQLException e)
+		catch (SQLException e)
 		{
 			throw new IllegalArgumentException(Messages.getMessage(Messages.JDBC_URL_REJECTED, url), e);
 		}

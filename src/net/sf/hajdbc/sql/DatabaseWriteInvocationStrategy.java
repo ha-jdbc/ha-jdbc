@@ -129,7 +129,7 @@ public class DatabaseWriteInvocationStrategy<D, T, R> implements InvocationStrat
 					{
 						cluster.handleFailure(database, cause);
 					}
-					catch (java.sql.SQLException sqle)
+					catch (SQLException sqle)
 					{
 						exceptionMap.put(database, sqle);
 					}

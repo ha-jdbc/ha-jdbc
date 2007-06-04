@@ -32,6 +32,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -151,7 +152,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			
 			return true;
 		}
-		catch (java.sql.SQLException e)
+		catch (SQLException e)
 		{
 			logger.info(Messages.getMessage(Messages.DATABASE_NOT_ALIVE, database, this), e);
 			
@@ -165,7 +166,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 				{
 					connection.close();
 				}
-				catch (java.sql.SQLException e)
+				catch (SQLException e)
 				{
 					logger.warn(e.toString(), e);
 				}
@@ -390,9 +391,9 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	 * If the database is not alive, then it is deactivated, otherwise an exception is thrown back to the caller.
 	 * @param database a database descriptor
 	 * @param cause the cause of the failure
-	 * @throws java.sql.SQLException if the database is alive
+	 * @throws SQLException if the database is alive
 	 */
-	public final void handleFailure(Database<D> database, java.sql.SQLException cause) throws java.sql.SQLException
+	public final void handleFailure(Database<D> database, SQLException cause) throws SQLException
 	{
 		if (this.isAlive(database))
 		{
@@ -570,7 +571,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		{
 			throw new IllegalStateException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this));
 		}
-		catch (java.sql.SQLException e)
+		catch (SQLException e)
 		{
 			throw new IllegalStateException(e.toString(), e);
 		}
@@ -582,7 +583,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 				{
 					connection.close();
 				}
-				catch (java.sql.SQLException e)
+				catch (SQLException e)
 				{
 					logger.warn(e.toString(), e);
 				}
@@ -712,11 +713,11 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 				logger.info(Messages.getMessage(Messages.DATABASE_ACTIVATED, databaseId, this));
 			}
 		}
-		catch (java.sql.SQLException e)
+		catch (SQLException e)
 		{
 			logger.error(Messages.getMessage(Messages.DATABASE_ACTIVATE_FAILED, databaseId, this), e);
 			
-			java.sql.SQLException exception = e.getNextException();
+			SQLException exception = e.getNextException();
 			
 			while (exception != null)
 			{
@@ -730,11 +731,12 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		catch (InterruptedException e)
 		{
 			logger.warn(e.toString(), e);
+			
 			throw new IllegalMonitorStateException(e.toString());
 		}
 	}
 	
-	private boolean activate(Database<D> database, SynchronizationStrategy strategy) throws java.sql.SQLException, InterruptedException
+	private boolean activate(Database<D> database, SynchronizationStrategy strategy) throws SQLException, InterruptedException
 	{
 		if (this.balancer.contains(database))
 		{
