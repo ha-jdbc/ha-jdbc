@@ -133,10 +133,23 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		return this.connectionFactoryMap;
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#isAlive(net.sf.hajdbc.Database)
-	 */
-	public boolean isAlive(Database<D> database)
+	private boolean isAlive(Database<D> database)
+	{
+		try
+		{
+			this.test(database);
+			
+			return true;
+		}
+		catch (SQLException e)
+		{
+			logger.info(Messages.getMessage(Messages.DATABASE_NOT_ALIVE, database, this), e);
+			
+			return false;
+		}
+	}
+	
+	private void test(Database<D> database) throws SQLException
 	{
 		Connection connection = null;
 		
@@ -149,14 +162,6 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			statement.execute(this.dialect.getSimpleSQL());
 
 			statement.close();
-			
-			return true;
-		}
-		catch (SQLException e)
-		{
-			logger.info(Messages.getMessage(Messages.DATABASE_NOT_ALIVE, database, this), e);
-			
-			return false;
 		}
 		finally
 		{
@@ -347,7 +352,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#isAlive(java.lang.String)
 	 */
-	public final boolean isAlive(String id)
+	public boolean isAlive(String id)
 	{
 		return this.isAlive(this.getDatabase(id));
 	}
@@ -355,7 +360,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#deactivate(java.lang.String)
 	 */
-	public final void deactivate(String databaseId)
+	public void deactivate(String databaseId)
 	{
 		if (this.deactivate(this.getDatabase(databaseId)))
 		{
@@ -366,7 +371,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#activate(java.lang.String)
 	 */
-	public final void activate(String databaseId)
+	public void activate(String databaseId)
 	{
 		this.activate(databaseId, this.getDefaultSynchronizationStrategy());
 	}
@@ -374,7 +379,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#activate(java.lang.String, java.lang.String)
 	 */
-	public final void activate(String databaseId, String strategyId)
+	public void activate(String databaseId, String strategyId)
 	{
 		SynchronizationStrategy strategy = this.synchronizationStrategyMap.get(strategyId);
 		
@@ -393,7 +398,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	 * @param cause the cause of the failure
 	 * @throws SQLException if the database is alive
 	 */
-	public final void handleFailure(Database<D> database, SQLException cause) throws SQLException
+	public void handleFailure(Database<D> database, SQLException cause) throws SQLException
 	{
 		if (this.isAlive(database))
 		{
@@ -611,7 +616,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
-	public final String toString()
+	public String toString()
 	{
 		return this.getId();
 	}
@@ -620,7 +625,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public final boolean equals(Object object)
+	public boolean equals(Object object)
 	{
 		return (object != null) && DatabaseCluster.class.isInstance(object) && this.id.equals(DatabaseCluster.class.cast(object).getId());
 	}
@@ -629,7 +634,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
-	public final int hashCode()
+	public int hashCode()
 	{
 		return this.id.hashCode();
 	}
@@ -738,22 +743,19 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	
 	private boolean activate(Database<D> database, SynchronizationStrategy strategy) throws SQLException, InterruptedException
 	{
-		if (this.balancer.contains(database))
-		{
-			return false;
-		}
-		
-		if (!this.isAlive(database))
-		{
-			return false;
-		}
-		
 		Lock lock = this.lockManager.writeLock(LockManager.GLOBAL);
 		
 		lock.lockInterruptibly();
 		
 		try
 		{
+			if (this.balancer.contains(database))
+			{
+				return false;
+			}
+			
+			this.test(database);
+			
 			SynchronizationContext<D> context = new SynchronizationContextImpl<D>(this, database);
 			
 			try
