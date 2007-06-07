@@ -30,6 +30,10 @@ import java.util.concurrent.ExecutorService;
  */
 public interface DatabaseCluster<D>
 {
+	/**
+	 * Returns the identifier of this cluster.
+	 * @return an identifier
+	 */
 	public String getId();
 	
 	/**
@@ -51,13 +55,6 @@ public interface DatabaseCluster<D>
 	 * @return a connection factory map
 	 */
 	public Map<Database<D>, D> getConnectionFactoryMap();
-	
-	/**
-	 * Determines whether or not the specified database is responding
-	 * @param database a database descriptor
-	 * @return true, if the database is responding, false if it appears down
-	 */
-	public boolean isAlive(Database<D> database);
 	
 	/**
 	 * Returns the database identified by the specified id
@@ -85,71 +82,58 @@ public interface DatabaseCluster<D>
 	/**
 	 * Returns an executor service used to execute transactional database writes.
 	 * @return an implementation of <code>ExecutorService</code>
-	 * @since 1.1
 	 */
 	public ExecutorService getTransactionalExecutor();
 	
 	/**
 	 * Returns an executor service used to execute non-transactional database writes.
 	 * @return an implementation of <code>ExecutorService</code>
-	 * @since 1.1
 	 */
 	public ExecutorService getNonTransactionalExecutor();
 	
 	/**
 	 * Returns a dialect capable of returning database vendor specific values.
 	 * @return an implementation of <code>Dialect</code>
-	 * @since 1.1
 	 */
 	public Dialect getDialect();
 	
 	/**
 	 * Returns a LockManager capable of acquiring named read/write locks on the specific objects in this database cluster.
 	 * @return a LockManager implementation
-	 * @since 2.0
 	 */
 	public LockManager getLockManager();
 	
 	/**
 	 * Sets the LockManager implementation capable of acquiring named read/write locks on the specific objects in this database cluster.
-	 * @since 2.0
 	 */
 	public void setLockManager(LockManager lockManager);
 	
 	/**
 	 * Returns a StateManager for persisting database cluster state.
 	 * @return a StateManager implementation
-	 * @since 2.0
 	 */
 	public StateManager getStateManager();
 	
 	/**
 	 * Sets the StateManager implementation for persisting database cluster state.
-	 * @since 2.0
 	 */
 	public void setStateManager(StateManager stateManager);
 	
 	/**
-	 * Starts this database cluster.
-	 * @throws Exception if database cluster fails to start
-	 * @since 1.1
-	 */
-	public void start() throws Exception;
-	
-	/**
-	 * Stops this database cluster.
-	 * @since 1.1
-	 */
-	public void stop();
-	
-	/**
 	 * Returns a DatabaseMetaData cache.
 	 * @return a <code>DatabaseMetaDataCache</code> implementation
-	 * @since 2.0
 	 */
 	public DatabaseMetaDataCache getDatabaseMetaDataCache();
 	
+	/**
+	 * Indicates whether or not sequence detection is enabled for this cluster.
+	 * @return true, if sequence detection is enabled, false otherwise.
+	 */
 	public boolean isSequenceDetectionEnabled();
 	
+	/**
+	 * Indicates whether or not identity column detection is enabled for this cluster.
+	 * @return true, if identity column detection is enabled, false otherwise.
+	 */
 	public boolean isIdentityColumnDetectionEnabled();
 }
