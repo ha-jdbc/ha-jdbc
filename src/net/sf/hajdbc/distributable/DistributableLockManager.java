@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc.distributable;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -55,7 +56,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	protected Address address;
 	private Channel channel;
 	private LockManager lockManager;
-	private Set<LockDecree> lockDecreeSet;
+	private Set<LockDecree> lockDecreeSet = new HashSet<LockDecree>();
 	
 	/**
 	 * Constructs a new DistributableLock.
@@ -134,9 +135,9 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	
 	private LockDecree toLockDecree(Object object) throws VoteException
 	{
-		if (LockDecree.class.isInstance(object)) throw new VoteException("");
+		if (AbstractLockDecree.class.isInstance(object)) throw new VoteException("");
 		
-		return LockDecree.class.cast(object);
+		return AbstractLockDecree.class.cast(object);
 	}
 	
 	/**

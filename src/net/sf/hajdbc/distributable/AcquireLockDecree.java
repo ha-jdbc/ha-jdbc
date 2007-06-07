@@ -30,7 +30,7 @@ import net.sf.hajdbc.LockManager;
  * @author Paul Ferraro
  * @since 2.0
  */
-public class AcquireLockDecree extends LockDecree
+public class AcquireLockDecree extends AbstractLockDecree
 {
 	private static final long serialVersionUID = 9016576896686385467L;
 
@@ -45,7 +45,7 @@ public class AcquireLockDecree extends LockDecree
 	}
 
 	/**
-	 * @see net.sf.hajdbc.distributable.LockDecree#prepare(net.sf.hajdbc.LockManager)
+	 * @see net.sf.hajdbc.distributable.AbstractLockDecree#prepare(net.sf.hajdbc.LockManager)
 	 */
 	@Override
 	public boolean prepare(LockManager lockManager)
@@ -54,7 +54,7 @@ public class AcquireLockDecree extends LockDecree
 	}
 
 	/**
-	 * @see net.sf.hajdbc.distributable.LockDecree#commit(net.sf.hajdbc.LockManager)
+	 * @see net.sf.hajdbc.distributable.AbstractLockDecree#commit(net.sf.hajdbc.LockManager)
 	 */
 	@Override
 	public boolean commit(LockManager lockManager, Set<LockDecree> lockDecreeSet)
@@ -68,7 +68,7 @@ public class AcquireLockDecree extends LockDecree
 	}
 
 	/**
-	 * @see net.sf.hajdbc.distributable.LockDecree#abort(net.sf.hajdbc.LockManager)
+	 * @see net.sf.hajdbc.distributable.AbstractLockDecree#abort(net.sf.hajdbc.LockManager)
 	 */
 	@Override
 	public void abort(LockManager lockManager)
