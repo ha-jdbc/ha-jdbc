@@ -79,4 +79,13 @@ public class QueryInitialStateCommand implements Command<Set<String>>
 		
 		return set;
 	}
+	
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString()
+	{
+		return this.getClass().getName();
+	}
 }
