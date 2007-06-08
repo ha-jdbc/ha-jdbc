@@ -20,19 +20,23 @@
  */
 package net.sf.hajdbc.distributable;
 
-import java.io.Externalizable;
+import java.io.Serializable;
 
 import net.sf.hajdbc.DatabaseCluster;
 
 /**
  * @author Paul Ferraro
  */
-public interface DatabaseCommand extends Externalizable
+public interface Command<R> extends Serializable
 {
 	/**
 	 * Execute this command on the specified database cluster.
 	 * @param <D> either java.sql.Driver or javax.sql.DataSource
 	 * @param databaseCluster a database cluster
 	 */
-	public <D> void execute(DatabaseCluster<D> databaseCluster);
+	public <D> R execute(DatabaseCluster<D> databaseCluster);
+	
+	public R unmarshalResult(Object object);
+	
+	public Object marshalResult(R result);
 }

@@ -28,14 +28,14 @@ import net.sf.hajdbc.DatabaseCluster;
  * @author  Paul Ferraro
  * @since   1.0
  */
-public class DatabaseDeactivationCommand extends AbstractDatabaseCommand
+public class DeactivateCommand extends AbstractCommand
 {
 	private static final long serialVersionUID = 3257006574802647092L;
 
 	/**
 	 * Constructs a new DatabaseDeactivationCommand.
 	 */
-	public DatabaseDeactivationCommand()
+	public DeactivateCommand()
 	{
 		super();
 	}
@@ -44,16 +44,17 @@ public class DatabaseDeactivationCommand extends AbstractDatabaseCommand
 	 * Constructs a new DatabaseDeactivationCommand.
 	 * @param databaseId a database identifier
 	 */
-	public DatabaseDeactivationCommand(String databaseId)
+	public DeactivateCommand(String databaseId)
 	{
 		super(databaseId);
 	}
 
 	/**
-	 * @see net.sf.hajdbc.distributable.DatabaseCommand#execute(net.sf.hajdbc.DatabaseCluster)
+	 * @see net.sf.hajdbc.distributable.Command#execute(net.sf.hajdbc.DatabaseCluster)
 	 */
-	public <D> void execute(DatabaseCluster<D> databaseCluster)
+	@Override
+	public <D> Boolean execute(DatabaseCluster<D> databaseCluster)
 	{
-		databaseCluster.deactivate(databaseCluster.getDatabase(this.databaseId));
+		return databaseCluster.deactivate(databaseCluster.getDatabase(this.databaseId));
 	}
 }

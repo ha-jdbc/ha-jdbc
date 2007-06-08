@@ -34,13 +34,13 @@ public final class Messages
 {
 	public static final String CLUSTER_STATE_LOAD_FAILED = "cluster-state-load-failed";
 	public static final String CLUSTER_STATE_STORE_FAILED = "cluster-state-store-failed";
+	public static final String COMMAND_RECEIVED = "command-received";
 	public static final String CONFIG_LOAD_FAILED = "config-load-failed";
 	public static final String CONFIG_STORE_FAILED = "config-store-failed";
 	public static final String CONFIG_NOT_FOUND = "config-not-found";
 	public static final String DATABASE_ACTIVATE_FAILED = "database-activate-failed";
 	public static final String DATABASE_ACTIVATED = "database-activated";
 	public static final String DATABASE_ALREADY_EXISTS = "database-already-exists";
-	public static final String DATABASE_COMMAND_RECEIVED = "database-command-received";
 	public static final String DATABASE_DEACTIVATED = "database-deactivated";
 	public static final String DATABASE_NOT_ACTIVE = "database-not-active";
 	public static final String DATABASE_NOT_ALIVE = "database-not-alive";

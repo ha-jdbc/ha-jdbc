@@ -20,48 +20,76 @@
  */
 package net.sf.hajdbc.distributable;
 
-import java.io.Serializable;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.Vector;
 
-import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.StateManager;
 
 import org.jgroups.Address;
 import org.jgroups.Channel;
-import org.jgroups.blocks.NotificationBus;
+import org.jgroups.MembershipListener;
+import org.jgroups.Message;
+import org.jgroups.MessageListener;
+import org.jgroups.SuspectedException;
+import org.jgroups.TimeoutException;
+import org.jgroups.View;
+import org.jgroups.blocks.GroupRequest;
+import org.jgroups.blocks.MessageDispatcher;
+import org.jgroups.blocks.RequestHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * StateManager implementation that broadcasts database activations and deactivations to other group members
+ * and retrieves initial state from another group member.
+ * 
  * @author Paul Ferraro
- *
  */
-public class DistributableStateManager implements StateManager, NotificationBus.Consumer
+public class DistributableStateManager implements StateManager, MessageListener, MembershipListener, RequestHandler
 {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	
-	private Channel channel;
 	private int timeout;
-	private NotificationBus notificationBus;
+	private MessageDispatcher dispatcher;
 	private DatabaseCluster<?> databaseCluster;
 	private StateManager stateManager;
+	private List<Address> addressList = new LinkedList<Address>();
 	
 	public DistributableStateManager(DatabaseCluster<?> databaseCluster, DistributableDatabaseClusterDecorator decorator) throws Exception
 	{
 		this.databaseCluster = databaseCluster;
-		this.channel = decorator.createChannel(databaseCluster.getId());
 		
-		this.notificationBus = new NotificationBus(this.channel, this.databaseCluster.getId());
-		this.notificationBus.setConsumer(this);
+		this.dispatcher = new MessageDispatcher(decorator.createChannel(databaseCluster.getId() + "-state"), this, this, this);
 		
 		this.timeout = decorator.getTimeout();
 		this.stateManager = databaseCluster.getStateManager();
+	}
+
+	/**
+	 * @see org.jgroups.blocks.RequestHandler#handle(org.jgroups.Message)
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public Object handle(Message message)
+	{
+		try
+		{
+			Command<Object> command = Command.class.cast(message.getObject());
+	
+			this.logger.info(Messages.getMessage(Messages.COMMAND_RECEIVED, command));
+			
+			return command.marshalResult(command.execute(this.databaseCluster));
+		}
+		catch (Throwable e)
+		{
+			logger.error(e.getMessage(), e);
+			
+			return e;
+		}
 	}
 
 	/**
@@ -69,9 +97,39 @@ public class DistributableStateManager implements StateManager, NotificationBus.
 	 */
 	public Set<String> getInitialState()
 	{
-		String[] state = String[].class.cast(this.notificationBus.getCacheFromCoordinator(this.timeout, 1));
+		Address coordinator = this.getCoordinator();
 		
-		return (state != null) ? new TreeSet<String>(Arrays.asList(state)) : this.stateManager.getInitialState();
+		if (coordinator.equals(this.dispatcher.getChannel().getLocalAddress()))
+		{
+			return this.stateManager.getInitialState();
+		}
+
+		Command<Set<String>> command = new QueryInitialStateCommand();
+
+		Message message = new Message(coordinator, this.dispatcher.getChannel().getLocalAddress(), command);
+		
+		try
+		{
+			Object result = this.dispatcher.sendMessage(message, GroupRequest.GET_FIRST, this.timeout);
+
+			return command.unmarshalResult(String.class.cast(result));
+		}
+		catch (TimeoutException e)
+		{
+			return this.stateManager.getInitialState();
+		}
+		catch (SuspectedException e)
+		{
+			return this.stateManager.getInitialState();
+		}
+	}
+	
+	private Address getCoordinator()
+	{
+		synchronized (this.addressList)
+		{
+			return this.addressList.isEmpty() ? this.dispatcher.getChannel().getLocalAddress() : this.addressList.get(0);
+		}
 	}
 	
 	/**
@@ -79,7 +137,7 @@ public class DistributableStateManager implements StateManager, NotificationBus.
 	 */
 	public void add(String databaseId)
 	{
-		this.notificationBus.sendNotification(new DatabaseActivationCommand(databaseId));
+		this.send(new ActivateCommand(databaseId));
 		
 		this.stateManager.add(databaseId);
 	}
@@ -89,50 +147,16 @@ public class DistributableStateManager implements StateManager, NotificationBus.
 	 */
 	public void remove(String databaseId)
 	{
-		this.notificationBus.sendNotification(new DatabaseDeactivationCommand(databaseId));
+		this.send(new DeactivateCommand(databaseId));
 		
 		this.stateManager.remove(databaseId);
 	}
 
-	/**
-	 * @see org.jgroups.blocks.NotificationBus.Consumer#getCache()
-	 */
-	public Serializable getCache()
+	private void send(Command<?> command)
 	{
-		List<String> list = new LinkedList<String>();
-		
-		for (Database<?> database: this.databaseCluster.getBalancer().all())
-		{
-			list.add(database.getId());
-		}
-		
-		return list.toArray(new String[list.size()]);
-	}
+		Message message = new Message(null, null, command);
 
-	/**
-	 * @see org.jgroups.blocks.NotificationBus.Consumer#handleNotification(java.io.Serializable)
-	 */
-	public void handleNotification(Serializable command)
-	{
-		this.logger.info(Messages.getMessage(Messages.DATABASE_COMMAND_RECEIVED, command));
-		
-		DatabaseCommand.class.cast(command).execute(this.databaseCluster);
-	}
-
-	/**
-	 * @see org.jgroups.blocks.NotificationBus.Consumer#memberJoined(org.jgroups.Address)
-	 */
-	public void memberJoined(Address address)
-	{
-		this.logger.info(Messages.getMessage(Messages.GROUP_MEMBER_JOINED, address, this.databaseCluster));
-	}
-
-	/**
-	 * @see org.jgroups.blocks.NotificationBus.Consumer#memberLeft(org.jgroups.Address)
-	 */
-	public void memberLeft(Address address)
-	{
-		this.logger.info(Messages.getMessage(Messages.GROUP_MEMBER_LEFT, address, this.databaseCluster));
+		this.dispatcher.castMessage(null, message, GroupRequest.GET_ALL, this.timeout);
 	}
 
 	/**
@@ -140,7 +164,11 @@ public class DistributableStateManager implements StateManager, NotificationBus.
 	 */
 	public void start() throws Exception
 	{
-		this.channel.connect(this.channel.getClusterName());
+		Channel channel = this.dispatcher.getChannel();
+		
+		channel.connect(channel.getClusterName());
+
+		this.dispatcher.start();
 		
 		this.stateManager.start();
 	}
@@ -150,8 +178,86 @@ public class DistributableStateManager implements StateManager, NotificationBus.
 	 */
 	public void stop()
 	{
-		this.channel.close();
+		this.dispatcher.stop();
+		
+		this.dispatcher.getChannel().close();
 		
 		this.stateManager.stop();
+	}
+
+	/**
+	 * @see org.jgroups.MembershipListener#block()
+	 */
+	@Override
+	public void block()
+	{
+		// Ignore
+	}
+
+	/**
+	 * @see org.jgroups.MembershipListener#suspect(org.jgroups.Address)
+	 */
+	@Override
+	public void suspect(Address address)
+	{
+		// Ignore
+	}
+
+	/**
+	 * @see org.jgroups.MembershipListener#viewAccepted(org.jgroups.View)
+	 */
+	@Override
+	public void viewAccepted(View view)
+	{
+		Vector<Address> addresses = view.getMembers();
+		
+		synchronized (this.addressList)
+		{
+			for (Address address: this.addressList)
+			{
+				if (!view.containsMember(address))
+				{
+					logger.info(Messages.getMessage(Messages.GROUP_MEMBER_LEFT, address, this.databaseCluster));
+				}
+			}
+
+			for (Address address: addresses)
+			{
+				if (!this.addressList.contains(address))
+				{
+					logger.info(Messages.getMessage(Messages.GROUP_MEMBER_JOINED, address, this.databaseCluster));
+				}
+			}
+			
+			this.addressList.clear();
+			this.addressList.addAll(addresses);
+		}
+	}
+
+	/**
+	 * @see org.jgroups.MessageListener#getState()
+	 */
+	@Override
+	public byte[] getState()
+	{
+		return null;
+	}
+
+	/**
+	 * @see org.jgroups.MessageListener#setState(byte[])
+	 */
+	@Override
+	public void setState(byte[] state)
+	{
+		// Do nothing
+	}
+
+	/**
+	 * @see org.jgroups.MessageListener#receive(org.jgroups.Message)
+	 */
+	@Override
+	public void receive(Message message)
+	{
+		// Do nothing
 	}
 }
