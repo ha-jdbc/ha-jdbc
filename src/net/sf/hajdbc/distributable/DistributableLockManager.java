@@ -37,7 +37,6 @@ import org.jgroups.MembershipListener;
 import org.jgroups.View;
 import org.jgroups.blocks.TwoPhaseVotingAdapter;
 import org.jgroups.blocks.TwoPhaseVotingListener;
-import org.jgroups.blocks.VoteException;
 import org.jgroups.blocks.VotingAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,9 +70,9 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 		this.channel = decorator.createChannel(databaseCluster.getId() + "-lock");
 		this.address = this.channel.getLocalAddress();
 		this.timeout = decorator.getTimeout();
-		
+
 		this.votingAdapter = new TwoPhaseVotingAdapter(new VotingAdapter(this.channel));
-		
+
 		this.votingAdapter.addListener(this);
 	}
 
@@ -112,32 +111,25 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	/**
 	 * @see org.jgroups.blocks.TwoPhaseVotingListener#prepare(java.lang.Object)
 	 */
-	public boolean prepare(Object object) throws VoteException
+	public boolean prepare(Object object)
 	{
-		return this.toLockDecree(object).prepare(this.lockManager);
+		return LockDecree.class.cast(object).prepare(this.lockManager);
 	}
 
 	/**
 	 * @see org.jgroups.blocks.TwoPhaseVotingListener#commit(java.lang.Object)
 	 */
-	public boolean commit(Object object) throws VoteException
+	public boolean commit(Object object)
 	{
-		return this.toLockDecree(object).commit(this.lockManager, this.lockDecreeSet);
+		return LockDecree.class.cast(object).commit(this.lockManager, this.lockDecreeSet);
 	}
 
 	/**
 	 * @see org.jgroups.blocks.TwoPhaseVotingListener#abort(java.lang.Object)
 	 */
-	public void abort(Object object) throws VoteException
+	public void abort(Object object)
 	{
-		this.toLockDecree(object).abort(this.lockManager);
-	}
-	
-	private LockDecree toLockDecree(Object object) throws VoteException
-	{
-		if (AbstractLockDecree.class.isInstance(object)) throw new VoteException("");
-		
-		return AbstractLockDecree.class.cast(object);
+		LockDecree.class.cast(object).abort(this.lockManager);
 	}
 	
 	/**
