@@ -59,11 +59,12 @@ public class ReleaseLockDecree extends AbstractLockDecree
 	@Override
 	public boolean commit(LockManager lockManager, Set<LockDecree> lockDecreeSet)
 	{
-		this.getLock(lockManager).unlock();
-		
 		synchronized (lockDecreeSet)
 		{
-			lockDecreeSet.remove(this);
+			if (lockDecreeSet.remove(this))
+			{
+				this.getLock(lockManager).unlock();
+			}
 		}
 		
 		return true;
