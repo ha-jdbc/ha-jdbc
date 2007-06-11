@@ -87,7 +87,7 @@ public class AcquireLockDecree extends AbstractLockDecree
 	}
 	
 	/**
-	 * Adapts a lock so that it can be controlled by different threads.
+	 * Adapts a lock so that it can be manipulated by different threads.
 	 */
 	private class DistributableLockAdapter implements Lock
 	{
@@ -269,8 +269,9 @@ public class AcquireLockDecree extends AbstractLockDecree
 		}
 		
 		/**
-		 * Thread that attempts to lock the specified lock upon starting.
+		 * Thread that locks the specified lock upon starting.
 		 * Lock is unlocked by interrupting the running thread.
+		 * Caller must call setMethod(...) before starting.
 		 */
 		private class LockThread extends Thread
 		{
