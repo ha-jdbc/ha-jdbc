@@ -119,9 +119,9 @@ public class AcquireLockDecree extends AbstractLockDecree
 			this.thread.setMethod(method);
 			this.thread.start();
 			
-			while (!this.thread.isReady())
+			synchronized (this.thread)
 			{
-				synchronized (this.thread)
+				while (!this.thread.isReady())
 				{
 					try
 					{
@@ -155,9 +155,9 @@ public class AcquireLockDecree extends AbstractLockDecree
 			this.thread.setMethod(method);
 			this.thread.start();
 			
-			while (!this.thread.isReady())
+			synchronized (this.thread)
 			{
-				synchronized (this.thread)
+				while (!this.thread.isReady())
 				{
 					try
 					{
@@ -191,9 +191,9 @@ public class AcquireLockDecree extends AbstractLockDecree
 			this.thread.setMethod(method);
 			this.thread.start();
 			
-			while (!this.thread.isReady())
+			synchronized (this.thread)
 			{
-				synchronized (this.thread)
+				while (!this.thread.isReady())
 				{
 					try
 					{
@@ -227,9 +227,9 @@ public class AcquireLockDecree extends AbstractLockDecree
 			this.thread.setMethod(method);
 			this.thread.start();
 			
-			while (!this.thread.isReady())
+			synchronized (this.thread)
 			{
-				synchronized (this.thread)
+				while (!this.thread.isReady())
 				{
 					try
 					{
@@ -276,9 +276,8 @@ public class AcquireLockDecree extends AbstractLockDecree
 		{
 			private Lock lock;
 			private LockMethod method;
-			
-			private volatile boolean locked = false;
-			private volatile boolean ready = false;
+			private boolean ready = false;
+			private boolean locked = false;
 			
 			public LockThread(Lock lock)
 			{
@@ -306,7 +305,7 @@ public class AcquireLockDecree extends AbstractLockDecree
 			 * @see java.lang.Runnable#run()
 			 */
 			@Override
-			public void run()
+			public synchronized void run()
 			{
 				try
 				{
