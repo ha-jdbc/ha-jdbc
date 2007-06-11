@@ -39,8 +39,19 @@
 			<action context="src" dev="PF" type="update">
 				DistributableLockManager now uses default vote response processor.
 			</action>
-			<action context="src" dev="PF" type="update">
-				Ant build now requires version 1.7.x.
+			<action context="src" dev="PF" type="remove">
+				Removed quoting of cluster ID and database ID in mbean ObjectName.
+				JBoss users no longer need to hopelessly wait for  <a href="http://jira.jboss.com/jira/browse/JBAS-2037">this long standing jmx-console bug</a> to be fixed.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed NoSuchElementException thrown during database activation when there are no active databases.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed IllegalMonitorExceptions in DistributableLockManager resulting from improper use of reentrant locks by multiple threads.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Re-implemented DistributableStateManager to use synchronous MessageDispatcher instead of asynchronous NotificationBus.
+				This will prevent synchronization strategies from unlocking database tables until all nodes are notified of database activation.
 			</action>
 			<action context="lib" dev="PF" type="update">
 				Upgraded SLF4J to 1.4.0.
