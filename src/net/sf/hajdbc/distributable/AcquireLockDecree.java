@@ -20,7 +20,10 @@
  */
 package net.sf.hajdbc.distributable;
 
-import java.util.Set;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
 
 import org.jgroups.Address;
 
@@ -48,22 +51,29 @@ public class AcquireLockDecree extends AbstractLockDecree
 	 * @see net.sf.hajdbc.distributable.AbstractLockDecree#prepare(net.sf.hajdbc.LockManager)
 	 */
 	@Override
-	public boolean prepare(LockManager lockManager)
+	public boolean prepare(LockManager lockManager, Map<LockDecree, Lock> lockMap)
 	{
-		return this.getLock(lockManager).tryLock();
+		Lock lock = new DistributableLockAdapter(lockManager.writeLock(this.getId()));
+		
+		boolean locked = lock.tryLock();
+		
+		if (locked)
+		{
+			synchronized (lockMap)
+			{
+				lockMap.put(this, lock);
+			}
+		}
+		
+		return locked;
 	}
 
 	/**
 	 * @see net.sf.hajdbc.distributable.AbstractLockDecree#commit(net.sf.hajdbc.LockManager)
 	 */
 	@Override
-	public boolean commit(LockManager lockManager, Set<LockDecree> lockDecreeSet)
+	public boolean commit(Map<LockDecree, Lock> lockMap)
 	{
-		synchronized (lockDecreeSet)
-		{
-			lockDecreeSet.add(this);
-		}
-		
 		return true;
 	}
 
@@ -71,8 +81,270 @@ public class AcquireLockDecree extends AbstractLockDecree
 	 * @see net.sf.hajdbc.distributable.AbstractLockDecree#abort(net.sf.hajdbc.LockManager)
 	 */
 	@Override
-	public void abort(LockManager lockManager)
+	public void abort(Map<LockDecree, Lock> lockMap)
 	{
-		this.getLock(lockManager).unlock();
+		this.unlock(lockMap);
+	}
+	
+	/**
+	 * Adapts a lock so that it can be controlled by different threads.
+	 */
+	private class DistributableLockAdapter implements Lock
+	{
+		private LockThread thread;
+		
+		public DistributableLockAdapter(Lock lock)
+		{
+			this.thread = new LockThread(lock);
+			this.thread.setDaemon(true);
+		}
+		
+		/**
+		 * @see java.util.concurrent.locks.Lock#lock()
+		 */
+		@Override
+		public void lock()
+		{
+			LockMethod method = new LockMethod()
+			{
+				@Override
+				public boolean lock(Lock lock)
+				{
+					lock.lock();
+					
+					return true;
+				}
+			};
+			
+			this.thread.setMethod(method);
+			this.thread.start();
+			
+			while (!this.thread.isReady())
+			{
+				synchronized (this.thread)
+				{
+					try
+					{
+						this.thread.wait();
+					}
+					catch (InterruptedException e)
+					{
+						// Ignore
+					}
+				}
+			}
+		}
+
+		/**
+		 * @see java.util.concurrent.locks.Lock#lockInterruptibly()
+		 */
+		@Override
+		public void lockInterruptibly() throws InterruptedException
+		{
+			LockMethod method = new LockMethod()
+			{
+				@Override
+				public boolean lock(Lock lock) throws InterruptedException
+				{
+					lock.lockInterruptibly();
+					
+					return true;
+				}
+			};
+			
+			this.thread.setMethod(method);
+			this.thread.start();
+			
+			while (!this.thread.isReady())
+			{
+				synchronized (this.thread)
+				{
+					try
+					{
+						this.thread.wait();
+					}
+					catch (InterruptedException e)
+					{
+						this.thread.interrupt();
+						
+						throw e;
+					}
+				}
+			}
+		}
+
+		/**
+		 * @see java.util.concurrent.locks.Lock#tryLock()
+		 */
+		@Override
+		public boolean tryLock()
+		{
+			LockMethod method = new LockMethod()
+			{
+				@Override
+				public boolean lock(Lock lock)
+				{
+					return lock.tryLock();
+				}
+			};
+			
+			this.thread.setMethod(method);
+			this.thread.start();
+			
+			while (!this.thread.isReady())
+			{
+				synchronized (this.thread)
+				{
+					try
+					{
+						this.thread.wait();
+					}
+					catch (InterruptedException e)
+					{
+						// Ignore
+					}
+				}
+			}
+
+			return this.thread.isLocked();
+		}
+
+		/**
+		 * @see java.util.concurrent.locks.Lock#tryLock(long, java.util.concurrent.TimeUnit)
+		 */
+		@Override
+		public boolean tryLock(final long time, final TimeUnit unit) throws InterruptedException
+		{
+			LockMethod method = new LockMethod()
+			{
+				@Override
+				public boolean lock(Lock lock) throws InterruptedException
+				{
+					return lock.tryLock(time, unit);
+				}
+			};
+			
+			this.thread.setMethod(method);
+			this.thread.start();
+			
+			while (!this.thread.isReady())
+			{
+				synchronized (this.thread)
+				{
+					try
+					{
+						this.thread.wait();
+					}
+					catch (InterruptedException e)
+					{
+						this.thread.interrupt();
+						
+						throw e;
+					}
+				}
+			}
+			
+			return this.thread.isLocked();
+		}
+
+		/**
+		 * @see java.util.concurrent.locks.Lock#unlock()
+		 */
+		@Override
+		public void unlock()
+		{
+			if (this.thread.isLocked())
+			{
+				this.thread.interrupt();
+			}
+		}
+
+		/**
+		 * @see java.util.concurrent.locks.Lock#newCondition()
+		 */
+		@Override
+		public Condition newCondition()
+		{
+			return null;
+		}
+		
+		/**
+		 * Thread that attempts to lock the specified lock upon starting.
+		 * Lock is unlocked by interrupting the running thread.
+		 */
+		private class LockThread extends Thread
+		{
+			private Lock lock;
+			private LockMethod method;
+			
+			private volatile boolean locked = false;
+			private volatile boolean ready = false;
+			
+			public LockThread(Lock lock)
+			{
+				super();
+				
+				this.lock = lock;
+			}
+			
+			public void setMethod(LockMethod method)
+			{
+				this.method = method;
+			}
+			
+			public boolean isLocked()
+			{
+				return this.locked;
+			}
+			
+			public boolean isReady()
+			{
+				return this.ready;
+			}
+			
+			/**
+			 * @see java.lang.Runnable#run()
+			 */
+			@Override
+			public void run()
+			{
+				try
+				{
+					this.locked = this.method.lock(this.lock);
+				}
+				catch (InterruptedException e)
+				{
+					this.interrupt();
+				}
+				
+				this.ready = true;
+				
+				this.notify();
+				
+				if (this.locked)
+				{
+					// Wait for interrupt
+					while (!this.isInterrupted())
+					{
+						try
+						{
+							this.wait();
+						}
+						catch (InterruptedException e)
+						{
+							this.interrupt();
+						}
+					}
+					
+					this.lock.unlock();
+					this.locked = false;
+				}
+			}
+		}
+	}
+	
+	private interface LockMethod
+	{
+		public boolean lock(Lock lock) throws InterruptedException;
 	}
 }

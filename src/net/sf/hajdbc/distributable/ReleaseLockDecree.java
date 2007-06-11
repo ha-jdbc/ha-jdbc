@@ -20,7 +20,8 @@
  */
 package net.sf.hajdbc.distributable;
 
-import java.util.Set;
+import java.util.Map;
+import java.util.concurrent.locks.Lock;
 
 import org.jgroups.Address;
 
@@ -48,7 +49,7 @@ public class ReleaseLockDecree extends AbstractLockDecree
 	 * @see net.sf.hajdbc.distributable.AbstractLockDecree#prepare(net.sf.hajdbc.LockManager)
 	 */
 	@Override
-	public boolean prepare(LockManager lockManager)
+	public boolean prepare(LockManager lockManager, Map<LockDecree, Lock> lockMap)
 	{
 		return true;
 	}
@@ -57,15 +58,9 @@ public class ReleaseLockDecree extends AbstractLockDecree
 	 * @see net.sf.hajdbc.distributable.AbstractLockDecree#commit(net.sf.hajdbc.LockManager)
 	 */
 	@Override
-	public boolean commit(LockManager lockManager, Set<LockDecree> lockDecreeSet)
+	public boolean commit(Map<LockDecree, Lock> lockMap)
 	{
-		synchronized (lockDecreeSet)
-		{
-			if (lockDecreeSet.remove(this))
-			{
-				this.getLock(lockManager).unlock();
-			}
-		}
+		this.unlock(lockMap);
 		
 		return true;
 	}
@@ -74,7 +69,7 @@ public class ReleaseLockDecree extends AbstractLockDecree
 	 * @see net.sf.hajdbc.distributable.AbstractLockDecree#abort(net.sf.hajdbc.LockManager)
 	 */
 	@Override
-	public void abort(LockManager lockManager)
+	public void abort(Map<LockDecree, Lock> lockMap)
 	{
 		// Do nothing
 	}

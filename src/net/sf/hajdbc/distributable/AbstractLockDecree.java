@@ -20,12 +20,12 @@
  */
 package net.sf.hajdbc.distributable;
 
+import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Map;
 import java.util.concurrent.locks.Lock;
-
-import net.sf.hajdbc.LockManager;
 
 import org.jgroups.Address;
 
@@ -33,7 +33,7 @@ import org.jgroups.Address;
  * @author Paul Ferraro
  * @since 2.0
  */
-public abstract class AbstractLockDecree implements LockDecree
+public abstract class AbstractLockDecree implements LockDecree, Externalizable
 {
 	private String id;
 	private Address address;
@@ -64,6 +64,19 @@ public abstract class AbstractLockDecree implements LockDecree
 		return this.address;
 	}
 	
+	protected void unlock(Map<LockDecree, Lock> lockMap)
+	{
+		synchronized (lockMap)
+		{
+			Lock lock = lockMap.remove(this);
+			
+			if (lock != null)
+			{
+				lock.unlock();
+			}
+		}
+	}
+	
 	/**
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
@@ -85,6 +98,7 @@ public abstract class AbstractLockDecree implements LockDecree
 	/**
 	 * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
 	 */
+	@Override
 	public void writeExternal(ObjectOutput output) throws IOException
 	{
 		output.writeUTF(this.id);
@@ -94,14 +108,10 @@ public abstract class AbstractLockDecree implements LockDecree
 	/**
 	 * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
 	 */
+	@Override
 	public void readExternal(ObjectInput input) throws IOException, ClassNotFoundException
 	{
 		this.id = input.readUTF();
 		this.address = Address.class.cast(input.readObject());
-	}
-	
-	protected Lock getLock(LockManager lockManager)
-	{
-		return lockManager.writeLock(this.id);
 	}
 }

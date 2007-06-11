@@ -20,9 +20,9 @@
  */
 package net.sf.hajdbc.distributable;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -55,7 +55,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	protected Address address;
 	private Channel channel;
 	private LockManager lockManager;
-	private Set<LockDecree> lockDecreeSet = new HashSet<LockDecree>();
+	private Map<LockDecree, Lock> lockMap = new HashMap<LockDecree, Lock>();
 	
 	/**
 	 * Constructs a new DistributableLock.
@@ -113,7 +113,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	 */
 	public boolean prepare(Object object)
 	{
-		return LockDecree.class.cast(object).prepare(this.lockManager);
+		return LockDecree.class.cast(object).prepare(this.lockManager, this.lockMap);
 	}
 
 	/**
@@ -121,7 +121,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	 */
 	public boolean commit(Object object)
 	{
-		return LockDecree.class.cast(object).commit(this.lockManager, this.lockDecreeSet);
+		return LockDecree.class.cast(object).commit(this.lockMap);
 	}
 
 	/**
@@ -129,7 +129,7 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	 */
 	public void abort(Object object)
 	{
-		LockDecree.class.cast(object).abort(this.lockManager);
+		LockDecree.class.cast(object).abort(this.lockMap);
 	}
 	
 	/**
@@ -156,19 +156,19 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	@Override
 	public void viewAccepted(View view)
 	{
-		synchronized (this.lockDecreeSet)
+		synchronized (this.lockMap)
 		{
-			Iterator<LockDecree> lockDecrees = this.lockDecreeSet.iterator();
+			Iterator<Map.Entry<LockDecree, Lock>> lockMapEntries = this.lockMap.entrySet().iterator();
 			
-			while (lockDecrees.hasNext())
+			while (lockMapEntries.hasNext())
 			{
-				LockDecree lockDecree = lockDecrees.next();
+				Map.Entry<LockDecree, Lock> lockMapEntry = lockMapEntries.next();
 				
-				if (!view.containsMember(lockDecree.getAddress()))
+				if (!view.containsMember(lockMapEntry.getKey().getAddress()))
 				{
-					this.lockManager.writeLock(lockDecree.getId()).unlock();
+					lockMapEntry.getValue().unlock();
 					
-					lockDecrees.remove();
+					lockMapEntries.remove();
 				}
 			}
 		}
