@@ -35,7 +35,7 @@ import java.util.Properties;
 public class SynchronizationStrategyBuilder
 {
 	private String id;
-	private String className;
+	private Class<? extends SynchronizationStrategy> targetClass;
 	private Properties properties;
 	
 	/**
@@ -58,17 +58,17 @@ public class SynchronizationStrategyBuilder
 	/**
 	 * @return the className.
 	 */
-	public String getClassName()
+	public Class<? extends SynchronizationStrategy> getTargetClass()
 	{
-		return this.className;
+		return this.targetClass;
 	}
 	
 	/**
 	 * @param className the className to set.
 	 */
-	public void setClassName(String className)
+	public void setTargetClass(Class<? extends SynchronizationStrategy> targetClass)
 	{
-		this.className = className;
+		this.targetClass = targetClass;
 	}
 	
 	/**
@@ -109,11 +109,9 @@ public class SynchronizationStrategyBuilder
 	 */
 	public SynchronizationStrategy buildStrategy() throws Exception
 	{
-		Class<?> strategyClass = Class.forName(this.className);
+		SynchronizationStrategy strategy = this.targetClass.asSubclass(SynchronizationStrategy.class).newInstance();
 		
-		SynchronizationStrategy strategy = strategyClass.asSubclass(SynchronizationStrategy.class).newInstance();
-		
-		PropertyDescriptor[] descriptors = Introspector.getBeanInfo(strategyClass).getPropertyDescriptors();
+		PropertyDescriptor[] descriptors = Introspector.getBeanInfo(this.targetClass).getPropertyDescriptors();
 		
 		Map<String, PropertyDescriptor> propertyDescriptorMap = new HashMap<String, PropertyDescriptor>();
 		
@@ -150,7 +148,7 @@ public class SynchronizationStrategyBuilder
 			}
 			catch (Exception e)
 			{
-				throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_PROPERTY_VALUE, textValue, name, this.className));
+				throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_PROPERTY_VALUE, textValue, name, this.targetClass.getName()));
 			}
 			
 			descriptor.getWriteMethod().invoke(strategy, editor.getValue());
@@ -173,7 +171,7 @@ public class SynchronizationStrategyBuilder
 		
 		Class<? extends SynchronizationStrategy> strategyClass = strategy.getClass();
 		
-		builder.setClassName(strategyClass.getName());
+		builder.setTargetClass(strategyClass);
 		
 		Properties properties = new Properties();
 		
