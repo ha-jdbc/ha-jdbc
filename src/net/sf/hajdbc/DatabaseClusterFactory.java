@@ -42,7 +42,6 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 
 import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
