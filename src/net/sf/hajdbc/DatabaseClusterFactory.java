@@ -26,6 +26,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -137,16 +138,7 @@ public final class DatabaseClusterFactory
 	 */
 	public static MBeanServer getMBeanServer()
 	{
-		String agent = System.getProperty(JMX_AGENT_PROPERTY);
-		
-		List serverList = MBeanServerFactory.findMBeanServer(agent);
-		
-		if (serverList.isEmpty())
-		{
-			throw new IllegalStateException(Messages.getMessage(Messages.MBEAN_SERVER_NOT_FOUND));
-		}
-		
-		return MBeanServer.class.cast(serverList.get(0));
+		return ManagementFactory.getPlatformMBeanServer();
 	}
 	
 	/**
