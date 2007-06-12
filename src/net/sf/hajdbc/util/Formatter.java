@@ -66,6 +66,6 @@ public final class Formatter
 	
 	public static Class<?> deserializeClass(String className) throws ClassNotFoundException
 	{
-		return (className != null) ? Class.forName(className) : null;
+		return (className != null) ? Thread.currentThread().getContextClassLoader().loadClass(className) : null;
 	}
 }
