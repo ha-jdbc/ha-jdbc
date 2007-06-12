@@ -54,7 +54,6 @@
 	
 	<path id="src.classpath">
 		<fileset dir="${lib.dir}" includes="*.jar"></fileset>
-		<fileset dir="${lib.compile.dir}" includes="*.jar"></fileset>
 	</path>
 
 	<path id="build.classpath">
@@ -62,13 +61,14 @@
 		<dirset dir="${build.dir}"></dirset>
 	</path>
 
+	<path id="bind.classpath">
+		<path refid="build.classpath"></path>
+		<fileset dir="${lib.test.dir}" includes="slf4j-nop-*.jar"></fileset>
+	</path>
+
 	<path id="build-1.4.classpath">
 		<path refid="src.classpath"></path>
 		<dirset dir="${build-1.4.dir}"></dirset>
-	</path>
-
-	<path id="testng.classpath">
-		<fileset dir="${lib.test.dir}" includes="testng-*.jar"></fileset>
 	</path>
 
 	<path id="test.classpath">
@@ -76,28 +76,19 @@
 		<dirset dir="${src.dir}"></dirset>
 		<dirset dir="${test.dir}"></dirset>
 		<fileset dir="${lib.test.dir}" includes="*.jar"></fileset>
-		<fileset dir="${lib.runtime.dir}">
-			<include name="stax-api-*.jar"/>
-			<include name="wstx-*.jar"/>
-		</fileset>
+	</path>
+
+	<path id="testng.classpath">
+		<fileset dir="${lib.test.dir}" includes="testng-*.jar"></fileset>
 	</path>
 	
-	<path id="bind.classpath">
-		<fileset dir="${lib.dir}">
-			<include name="jibx-run-*.jar"/>
-		</fileset>
-		<fileset dir="${lib.compile.dir}">
-			<include name="jibx-bind-*.jar"/>
-			<include name="bcel-*.jar"/>
-		</fileset>
-		<fileset dir="${lib.runtime.dir}">
-			<include name="stax-api-*.jar"/>
-			<include name="wstx-*.jar"/>
-		</fileset>
+	<path id="jibx.classpath">
+		<fileset dir="${lib.compile.dir}" includes="*.jar"></fileset>
+		<fileset dir="${lib.dir}" includes="jibx-run-*.jar"></fileset>
 	</path>
 	
 	<taskdef name="testng" classname="org.testng.TestNGAntTask" classpathref="testng.classpath"></taskdef>
-	<taskdef name="bind" classname="org.jibx.binding.ant.CompileTask" classpathref="bind.classpath"></taskdef>
+	<taskdef name="bind" classname="org.jibx.binding.ant.CompileTask" classpathref="jibx.classpath"></taskdef>
 	
 	<target name="clean">
 		<delete dir="${build.dir}" quiet="true"></delete>
@@ -114,7 +105,7 @@
 	<target name="bind" depends="compile">
 		<bind verbose="false" load="true">
 			<bindingfileset dir="${conf.jibx.dir}" includes="*.xml"/>
-			<classpath refid="build.classpath"></classpath>
+			<classpath refid="bind.classpath"></classpath>
 		</bind> 
 	</target>
 

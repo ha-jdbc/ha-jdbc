@@ -8,13 +8,13 @@
 		<value name="config" field="config" style="attribute" usage="optional" default="stacks.xml"/>
 		<value name="stack" field="stack" style="attribute" usage="optional" default="udp"/>
 		<value name="timeout" field="timeout" style="attribute" usage="optional" default="1000"/>
-		<value name="lock-manager" field="lockManagerClass" style="attribute" usage="optional" default="net.sf.hajdbc.distributable.DistributableLockManager"/>
-		<value name="state-manager" field="stateManagerClass" style="attribute" usage="optional" default="net.sf.hajdbc.distributable.DistributableStateManager"/>
+		<value name="lock-manager" field="lockManagerClass" style="attribute" usage="optional" default="net.sf.hajdbc.distributable.DistributableLockManager" deserializer="net.sf.hajdbc.util.Formatter.deserializeClass"/>
+		<value name="state-manager" field="stateManagerClass" style="attribute" usage="optional" default="net.sf.hajdbc.distributable.DistributableStateManager" deserializer="net.sf.hajdbc.util.Formatter.deserializeClass"/>
 	</mapping>
 
 	<mapping name="sync" class="net.sf.hajdbc.SynchronizationStrategyBuilder">
 		<value name="id" field="id" style="attribute"/>
-		<value name="class" field="className" style="attribute"/>
+		<value name="class" field="targetClass" style="attribute"/>
 		<structure field="properties" unmarshaller="net.sf.hajdbc.util.PropertiesMapper" marshaller="net.sf.hajdbc.util.PropertiesMapper"></structure>
 	</mapping>
 
