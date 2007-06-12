@@ -15,22 +15,10 @@ public interface LockDecree extends Serializable
 	public Address getAddress();
 
 	/**
-	 * Prepare phase of 2-phase vote
+	 * Execute lock operation.
 	 * @param lockManager a lock manager
-	 * @return true if prepare phase was successful, false otherwise.
+	 * @param lockMap a map of decree to lock
+	 * @return true if operation was successful, false otherwise.
 	 */
-	public boolean prepare(LockManager lockManager, Map<LockDecree, Lock> lockMap);
-
-	/**
-	 * Commit phase of 2-phase vote
-	 * @param lockManager a lock manager
-	 * @return true if commit phase was successful, false otherwise.
-	 */
-	public boolean commit(Map<LockDecree, Lock> lockMap);
-
-	/**
-	 * Called when prepare phase fails.
-	 * @param lockManager
-	 */
-	public void abort(Map<LockDecree, Lock> lockMap);
+	public boolean vote(LockManager lockManager, Map<LockDecree, Lock> lockMap);
 }

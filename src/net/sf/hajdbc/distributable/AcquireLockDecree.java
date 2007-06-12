@@ -48,10 +48,10 @@ public class AcquireLockDecree extends AbstractLockDecree
 	}
 
 	/**
-	 * @see net.sf.hajdbc.distributable.AbstractLockDecree#prepare(net.sf.hajdbc.LockManager)
+	 * @see net.sf.hajdbc.distributable.LockDecree#vote(net.sf.hajdbc.LockManager, java.util.Map)
 	 */
 	@Override
-	public boolean prepare(LockManager lockManager, Map<LockDecree, Lock> lockMap)
+	public boolean vote(LockManager lockManager, Map<LockDecree, Lock> lockMap)
 	{
 		Lock lock = new DistributableLockAdapter(lockManager.writeLock(this.getId()));
 		
@@ -66,24 +66,6 @@ public class AcquireLockDecree extends AbstractLockDecree
 		}
 		
 		return locked;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.distributable.AbstractLockDecree#commit(net.sf.hajdbc.LockManager)
-	 */
-	@Override
-	public boolean commit(Map<LockDecree, Lock> lockMap)
-	{
-		return true;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.distributable.AbstractLockDecree#abort(net.sf.hajdbc.LockManager)
-	 */
-	@Override
-	public void abort(Map<LockDecree, Lock> lockMap)
-	{
-		this.unlock(lockMap);
 	}
 	
 	/**
