@@ -22,6 +22,8 @@ package net.sf.hajdbc.distributable;
 
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterDecorator;
+import net.sf.hajdbc.LockManager;
+import net.sf.hajdbc.StateManager;
 
 import org.jgroups.Channel;
 import org.jgroups.JChannelFactory;
@@ -36,6 +38,8 @@ public class DistributableDatabaseClusterDecorator implements DatabaseClusterDec
 	private String config = "stacks.xml";
 	private String stack = "udp";
 	private int timeout = 1000;
+	private Class<? extends StateManager> stateManagerClass = DistributableStateManager.class;
+	private Class<? extends LockManager> lockManagerClass = DistributableLockManager.class;
 	
 	public Channel createChannel(String name) throws Exception
 	{
@@ -65,8 +69,8 @@ public class DistributableDatabaseClusterDecorator implements DatabaseClusterDec
 			this.factory.create();
 		}
 		
-		databaseCluster.setLockManager(new DistributableLockManager(databaseCluster, this));
-		databaseCluster.setStateManager(new DistributableStateManager(databaseCluster, this));
+		databaseCluster.setLockManager(this.lockManagerClass.getConstructor(DatabaseCluster.class, this.getClass()).newInstance(databaseCluster, this));
+		databaseCluster.setStateManager(this.stateManagerClass.getConstructor(DatabaseCluster.class, this.getClass()).newInstance(databaseCluster, this));
 	}
 
 	@Override
