@@ -138,7 +138,7 @@ public class DistributableStateManager implements StateManager, MessageListener,
 	public void add(String databaseId)
 	{
 		// Send synchronous notification
-		this.send(new ActivateCommand(databaseId), GroupRequest.GET_ALL);
+		this.send(new ActivateCommand(databaseId), GroupRequest.GET_ALL, 0);
 		
 		this.stateManager.add(databaseId);
 	}
@@ -149,16 +149,16 @@ public class DistributableStateManager implements StateManager, MessageListener,
 	public void remove(String databaseId)
 	{
 		// Send asynchronous notification
-		this.send(new DeactivateCommand(databaseId), GroupRequest.GET_NONE);
+		this.send(new DeactivateCommand(databaseId), GroupRequest.GET_NONE, this.timeout);
 		
 		this.stateManager.remove(databaseId);
 	}
 
-	private void send(Command<?> command, int mode)
+	private void send(Command<?> command, int mode, long timeout)
 	{
 		Message message = new Message(null, null, command);
 
-		this.dispatcher.castMessage(null, message, mode, this.timeout);
+		this.dispatcher.castMessage(null, message, mode, timeout);
 	}
 
 	/**
