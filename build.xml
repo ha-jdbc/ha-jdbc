@@ -61,11 +61,6 @@
 		<dirset dir="${build.dir}"></dirset>
 	</path>
 
-	<path id="bind.classpath">
-		<path refid="build.classpath"></path>
-		<fileset dir="${lib.test.dir}" includes="slf4j-nop-*.jar"></fileset>
-	</path>
-
 	<path id="build-1.4.classpath">
 		<path refid="src.classpath"></path>
 		<dirset dir="${build-1.4.dir}"></dirset>
@@ -105,7 +100,7 @@
 	<target name="bind" depends="compile">
 		<bind verbose="false" load="true">
 			<bindingfileset dir="${conf.jibx.dir}" includes="*.xml"/>
-			<classpath refid="bind.classpath"></classpath>
+			<classpath refid="build.classpath"></classpath>
 		</bind> 
 	</target>
 
