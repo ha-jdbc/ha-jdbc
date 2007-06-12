@@ -59,6 +59,9 @@
 			<action context="lib" dev="PF" type="update">
 				Upgraded JiBX to 1.1.5.
 			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded JGroups to 2.5.0-cr1.
+			</action>
 		</release>
 		<release version="2.0-beta-1" date="April 23, 2007">
 			<action type="fix" context="src" dev="PF" due-to="David Goodenough">
