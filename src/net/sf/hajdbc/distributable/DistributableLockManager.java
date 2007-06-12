@@ -35,9 +35,9 @@ import org.jgroups.Channel;
 import org.jgroups.ChannelException;
 import org.jgroups.MembershipListener;
 import org.jgroups.View;
-import org.jgroups.blocks.TwoPhaseVotingAdapter;
-import org.jgroups.blocks.TwoPhaseVotingListener;
+import org.jgroups.blocks.VoteException;
 import org.jgroups.blocks.VotingAdapter;
+import org.jgroups.blocks.VotingListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,11 +46,11 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Paul Ferraro
  */
-public class DistributableLockManager implements LockManager, TwoPhaseVotingListener, MembershipListener
+public class DistributableLockManager implements LockManager, VotingListener, MembershipListener
 {
 	static Logger logger = LoggerFactory.getLogger(DistributableLockManager.class);
 	
-	protected TwoPhaseVotingAdapter votingAdapter;
+	protected VotingAdapter votingAdapter;
 	protected int timeout;
 	protected Address address;
 	private Channel channel;
@@ -71,9 +71,9 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 		this.address = this.channel.getLocalAddress();
 		this.timeout = decorator.getTimeout();
 
-		this.votingAdapter = new TwoPhaseVotingAdapter(new VotingAdapter(this.channel));
+		this.votingAdapter = new VotingAdapter(this.channel);
 
-		this.votingAdapter.addListener(this);
+		this.votingAdapter.addVoteListener(this);
 	}
 
 	public void start() throws Exception
@@ -109,27 +109,12 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 	}
 
 	/**
-	 * @see org.jgroups.blocks.TwoPhaseVotingListener#prepare(java.lang.Object)
+	 * @see org.jgroups.blocks.VotingListener#vote(java.lang.Object)
 	 */
-	public boolean prepare(Object object)
+	@Override
+	public boolean vote(Object decree) throws VoteException
 	{
-		return LockDecree.class.cast(object).prepare(this.lockManager, this.lockMap);
-	}
-
-	/**
-	 * @see org.jgroups.blocks.TwoPhaseVotingListener#commit(java.lang.Object)
-	 */
-	public boolean commit(Object object)
-	{
-		return LockDecree.class.cast(object).commit(this.lockMap);
-	}
-
-	/**
-	 * @see org.jgroups.blocks.TwoPhaseVotingListener#abort(java.lang.Object)
-	 */
-	public void abort(Object object)
-	{
-		LockDecree.class.cast(object).abort(this.lockMap);
+		return LockDecree.class.cast(decree).vote(this.lockManager, this.lockMap);
 	}
 	
 	/**
@@ -212,7 +197,14 @@ public class DistributableLockManager implements LockManager, TwoPhaseVotingList
 		{
 			try
 			{
-				return DistributableLockManager.this.votingAdapter.vote(new AcquireLockDecree(this.object, DistributableLockManager.this.address), DistributableLockManager.this.timeout);
+				boolean locked = DistributableLockManager.this.votingAdapter.vote(new AcquireLockDecree(this.object, DistributableLockManager.this.address), DistributableLockManager.this.timeout);
+				
+				if (!locked)
+				{
+					this.unlock();
+				}
+				
+				return locked;
 			}
 			catch (ChannelException e)
 			{
