@@ -49,6 +49,9 @@
 			<action context="src" dev="PF" type="fix">
 				Fixed IllegalMonitorExceptions in DistributableLockManager resulting from improper use of reentrant locks by multiple threads.
 			</action>
+			<action context="src" dev="PF" type="update">
+				Optimized DistributableLockManager using a single phase VotingAdapter.
+			</action>
 			<action context="src" dev="PF" type="fix">
 				Re-implemented DistributableStateManager to use synchronous MessageDispatcher instead of asynchronous NotificationBus.
 				This will prevent synchronization strategies from unlocking database tables until all nodes are notified of database activation.
@@ -61,6 +64,9 @@
 			</action>
 			<action context="lib" dev="PF" type="update">
 				Upgraded JGroups to 2.5.0-cr1.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded TestNG to 5.6.
 			</action>
 		</release>
 		<release version="2.0-beta-1" date="April 23, 2007">
