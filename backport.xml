@@ -23,9 +23,10 @@
 	
 	<property name="build.dir" location="${basedir}/build"></property>
 	<property name="build-1.4.dir" location="${basedir}/build-1.4"></property>
+	<property name="lib.dir" location="${basedir}/lib"></property>
 	<property name="lib-1.4.dir" location="${basedir}/lib-1.4"></property>
 	<property name="lib-1.4.compile.dir" location="${lib-1.4.dir}/compile"></property>
-	
+
 	<path id="retrotranslate.classpath">
 		<fileset dir="${lib-1.4.dir}"></fileset>
 		<fileset dir="${lib-1.4.compile.dir}"></fileset>
@@ -35,6 +36,12 @@
 	<taskdef name="retrotranslate" classname="net.sf.retrotranslator.transformer.RetrotranslatorTask" classpathref="retrotranslate.classpath"></taskdef>
 
 	<target name="backport">
+		<copy todir="${lib-1.4.dir}">
+			<fileset dir="${lib.dir}" includes="jgroups-*.jar"></fileset>
+		</copy>
+		<retrotranslate>
+			<jarfileset dir="${lib-1.4.dir}" includes="jgroups-*.jar"/>
+		</retrotranslate>
 		<retrotranslate srcdir="${build.dir}" destdir="${build-1.4.dir}" backport="net.sf.hajdbc.backport"></retrotranslate>
 	</target>
 	
