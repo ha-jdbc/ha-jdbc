@@ -34,7 +34,7 @@ public class DistributableDatabaseClusterDecorator implements DatabaseClusterDec
 {
 	private JChannelFactory factory;
 	private String config = "stacks.xml";
-	private String stack = "udp";
+	private String stack = "udp-sync";
 	private int timeout = 1000;
 	
 	public Channel createChannel(String name) throws Exception

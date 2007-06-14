@@ -6,7 +6,7 @@
 
 	<mapping name="distributable" class="net.sf.hajdbc.distributable.DistributableDatabaseClusterDecorator">
 		<value name="config" field="config" style="attribute" usage="optional" default="stacks.xml"/>
-		<value name="stack" field="stack" style="attribute" usage="optional" default="udp"/>
+		<value name="stack" field="stack" style="attribute" usage="optional" default="udp-sync"/>
 		<value name="timeout" field="timeout" style="attribute" usage="optional" default="1000"/>
 	</mapping>
 
