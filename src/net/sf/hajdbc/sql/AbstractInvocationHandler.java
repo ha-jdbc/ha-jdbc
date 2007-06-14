@@ -237,7 +237,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 				}
 				catch (Exception e)
 				{
-					if (this.databaseCluster.deactivate(database))
+					if ((this.databaseCluster.getBalancer().size() > 1) && this.databaseCluster.deactivate(database))
 					{
 						this.logger.warn(Messages.getMessage(Messages.SQL_OBJECT_INIT_FAILED, this.getClass().getName(), database), e);
 					}
@@ -349,7 +349,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 			Database<D> database = exceptionMapEntry.getKey();
 			SQLException exception = exceptionMapEntry.getValue();
 			
-			if (this.databaseCluster.deactivate(database))
+			if ((this.databaseCluster.getBalancer().size() > 1) && this.databaseCluster.deactivate(database))
 			{
 				this.logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this.databaseCluster), exception);
 			}

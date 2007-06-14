@@ -400,7 +400,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	 */
 	public void handleFailure(Database<D> database, SQLException cause) throws SQLException
 	{
-		if (this.isAlive(database))
+		if ((this.balancer.size() <= 1) || this.isAlive(database))
 		{
 			throw cause;
 		}
@@ -720,7 +720,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		}
 		catch (SQLException e)
 		{
-			logger.error(Messages.getMessage(Messages.DATABASE_ACTIVATE_FAILED, databaseId, this), e);
+			logger.warn(Messages.getMessage(Messages.DATABASE_ACTIVATE_FAILED, databaseId, this), e);
 			
 			SQLException exception = e.getNextException();
 			
@@ -975,11 +975,16 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		 */
 		public void run()
 		{
-			for (String databaseId: AbstractDatabaseCluster.this.getActiveDatabases())
+			Balancer<D> balancer = AbstractDatabaseCluster.this.getBalancer();
+			
+			for (Database<D> database: AbstractDatabaseCluster.this.getBalancer().all())
 			{
-				if (!AbstractDatabaseCluster.this.isAlive(databaseId))
+				if ((balancer.size() > 1) && !AbstractDatabaseCluster.this.isAlive(database))
 				{
-					AbstractDatabaseCluster.this.deactivate(databaseId);
+					if (AbstractDatabaseCluster.this.deactivate(database))
+					{
+						logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this));
+					}
 				}
 			}
 		}
