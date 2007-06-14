@@ -73,4 +73,10 @@ public interface Balancer<D>
 	 * @param database a database descriptor
 	 */
 	public void afterInvocation(Database<D> database);
+	
+	/**
+	 * Returns the number of databases in this balancer.
+	 * @return a positive integer
+	 */
+	public int size();
 }

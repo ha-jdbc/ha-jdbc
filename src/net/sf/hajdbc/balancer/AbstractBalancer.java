@@ -87,6 +87,15 @@ public abstract class AbstractBalancer<D> implements Balancer<D>
 	}
 	
 	/**
+	 * @see net.sf.hajdbc.Balancer#size()
+	 */
+	@Override
+	public synchronized int size()
+	{
+		return this.collect().size();
+	}
+
+	/**
 	 * Exposes a view of the underlying collection of Databases.
 	 * @return a Collection of databases
 	 */
