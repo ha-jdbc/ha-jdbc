@@ -112,7 +112,7 @@
 		</jar>
 	</target>
 	
-	<target name="clean-1.4">
+	<target name="clean-1.4" depends="clean">
 		<delete dir="${build-1.4.dir}" quiet="true"></delete>
 	</target>
 
