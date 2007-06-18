@@ -195,6 +195,7 @@
 			<tarfileset dir="${lib.dir}" prefix="${dist.version.name}/lib" includes="**">
 				<exclude name="compile/**"/>
 				<exclude name="test/**"/>
+				<exclude name="jgroups-*.jar"/>
 			</tarfileset>
 			<tarfileset dir="${lib-1.5.dir}" prefix="${dist.version.name}/lib" includes="**">
 				<exclude name="compile/**"/>
