@@ -12,18 +12,21 @@
 	</contexts>
 
 	<changes>
-		<release version="1.1.12" date="???">
+		<release version="1.1.12" date="June 18, 2007">
 			<action context="src" dev="PF" type="fix">
 				Fixed memory leak with CONCUR_READ_ONLY result sets when using ResultSet.getStatement().close().
 			</action>
 			<action context="src" dev="PF" type="fix" due-to="Hanson Char">
 				Added test for UnsupportedOperationException thrown when Quartz cron expression uses both day-of-week and day-of-month values.
 			</action>
-			<action context="src" dev="PF" type="update">
+			<action context="lib" dev="PF" type="update">
 				Upgraded JiBX to 1.1.5.
 			</action>
-			<action context="src" dev="PF" type="update">
+			<action context="lib" dev="PF" type="update">
 				Upgraded SLF4J to 1.4.0.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded TestNG to 5.6.
 			</action>
 		</release>
 		<release version="1.1.11" date="April 17, 2007">
