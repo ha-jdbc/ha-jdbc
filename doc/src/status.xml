@@ -19,6 +19,10 @@
 			<action context="src" dev="PF" type="fix" due-to="Hanson Char">
 				Added test for UnsupportedOperationException thrown when Quartz cron expression uses both day-of-week and day-of-month values.
 			</action>
+			<action context="src" dev="PF" type="fix">
+				Use platform mbean server for cluster/database mbean registration.
+				This fixes an incomplete update from 1.1.11.
+			</action>
 			<action context="lib" dev="PF" type="update">
 				Upgraded JiBX to 1.1.5.
 			</action>
