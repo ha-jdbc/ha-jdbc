@@ -21,6 +21,7 @@ See http://xml.apache.org/forrest/linking.html for more info
 		<faq label="FAQ" href="faq.html"/>
 		<api label="JavaDoc" href="api/index.html"/>
 		<dtd label="DTD" href="dtd.html"/>
+		<xsd label="XSD" href="xsd.html"/>
 		<download label="Download" href="http://sourceforge.net/project/showfiles.php?group_id=111957"/>
 		<changes label="Change Log" href="changes.html"/>
 		<todo label="To Do" href="todo.html"/>
