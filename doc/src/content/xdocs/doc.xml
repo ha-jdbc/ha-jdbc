@@ -5,34 +5,39 @@
 		<title>Documentation</title>
 	</header>
 	<body>
+		<!--section>
+			<title>Introduction</title>
+			<p>
+				
+			</p>
+		</section-->
 		<section>
 			<title>Requirements</title>
-			<section id="Java1.6">
+			<section>
 				<title>Java 1.6</title>
 				<ul>
 					<li>Type IV <acronym title="Java Database Connectivity">JDBC</acronym> 4.0 driver</li>
 				</ul>
 			</section>
-			<section id="Java1.5">
+			<section>
 				<title>Java 1.5</title>
 				<ul>
 					<li>Type IV <acronym title="Java Database Connectivity">JDBC</acronym> 3.0 driver</li>
 				</ul>
 			</section>
-			<section id="Java1.4">
+			<section>
 				<title>Java 1.4</title>
 				<p>A separate Java 1.4-compatible binary distribution is generated using <a href="http://retrotranslator.sourceforge.net">Retrotranslator</a>.</p>
 				<ul>
 					<li>Type IV <acronym title="Java Database Connectivity">JDBC</acronym> 3.0 driver</li>
 					<li>A <acronym title="Java Management eXtensions">JMX</acronym> 1.2+ compliant MBean server</li>
-					<li>Additional runtime dependency libraries, defined <a href="#dependencies">here</a></li>
 				</ul>
 			</section>
 		</section>
 		<section id="dependencies">
 			<title>Dependencies</title>
 			<p>
-				HA-JDBC depencency libraries are contained in the /lib directory of the distribution:
+				HA-JDBC depencency libraries are contained in the /lib directory of each binary distribution:
 			</p>
 			<dl>
 				<dt>/lib : Libraries used both for compiling and during runtime</dt>
@@ -50,6 +55,7 @@
 				</dd>
 				<dt>/lib/runtime : Libraries used during runtime</dt>
 				<dd>
+					<p>NB: You should include only one slf4j library in your classpath.</p>
 					<dl>
 						<dt>jcl104-over-slf4j-*.jar : <a href="http://slf4j.org">SLF4J</a> drop-in replacement for commons-logging-1.0.4.jar</dt>
 						<dd>Optional.  Replaces commons-logging.jar.  Commons-logging is a required dependency of JGroups and Quartz.  Provided for <a href="http://www.slf4j.org/manual.html#gradual">gradual migration</a> from commons-logging to SLF4J.</dd>
@@ -61,10 +67,6 @@
 						<dd>Optional.  Use only if Log4J is your logging provider.</dd>
 						<dt>slf4j-simple-*.jar : System.out provider for <a href="http://slf4j.org">SLF4J</a>.</dt>
 						<dd>Optional.  Use only if no logging provider exists.  Log messages will be directed to System.err.</dd>
-						<dt>stax-api-*.jar : Streaming API for XML</dt>
-						<dd>Required for Java 1.5 only.  Java 1.6 already includes the StAX API.  Dependency of JiBX.</dd>
-						<dt>wstx-*.jar : Woodstox StAX implementation</dt>
-						<dd>Required for Java 1.5 only.  Optional for Java 1.6, since it already includes the <a href="https://sjsxp.dev.java.net/">SJSXP</a> StAX implementation.  Dependency of JiBX.</dd>
 					</dl>
 				</dd>
 				<dt>/lib/compile : Libraries used during compilation</dt>
@@ -84,6 +86,20 @@
 				</dd>
 			</dl>
 			<p>
+				The Java 1.5 distribution contains some additional libraries:
+			</p>
+			<dl>
+				<dt>/lib-1.5/runtime : Libraries used during runtime with Java 1.5 and Java 1.4 only</dt>
+				<dd>
+					<dl>
+						<dt>stax-api-*.jar : Streaming API for XML</dt>
+						<dd>Required.  Dependency of JiBX.</dd>
+						<dt>wstx-*.jar : Woodstox StAX implementation</dt>
+						<dd>Required.  Dependency of JiBX.</dd>
+					</dl>
+				</dd>
+			</dl>
+			<p>
 				The Java 1.4 distribution contains some additional libraries:
 			</p>
 			<dl>
@@ -92,9 +108,9 @@
 					<dl>
 						<dt>backport-util-concurrent-*.jar : JDK 1.4 <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent">backport of java.util.concurrent</a> package</dt>
 						<dd>Required.  Runtime dependency of Retrotranslator.</dd>
-						<dt>jdbc-rowset-*.jar : JDBC RowSet Implementations</dt>
+						<dt>jdbc-rowset-*.jar : JDBC RowSet API and implementations</dt>
 						<dd>Required.</dd>
-						<dt>jmx-*.jar : JMX reference implementation</dt>
+						<dt>jmx-*.jar : JMX API and reference implementation</dt>
 						<dd>Optional.  Required if your application server does not already include a JMX implementation.</dd>
 						<dt>retrotranslator-runtime-*.jar : <a href="http://retrotranslator.sourceforge.net">Retrotranslator</a></dt>
 						<dd>Required.</dd>
@@ -122,12 +138,20 @@
 		<section>
 			<title>&lt;ha-jdbc&gt; Configuration</title>
 			<p>
-				Configuration for HA-JDBC managed database clusters is contained in a single XML file.
+				Configuration for an HA-JDBC managed database cluster is contained in an XML file.
 				The algorithm used to locate the configuration file resource at runtime is as follows:
 			</p>
 			<ol>
 				<li>
-					<p>Read the resource name from the <code>ha-jdbc.configuration</code> system property.  If not defined, the default value "<code>ha-jdbc.xml</code>" is used.</p>
+					<p>Obtain resource name from one of the following sources:</p>
+					<ol>
+						<li>A "config" property passed to DriverManager.getConnection(String, Properties), or the getConfig() property of the DataSource</li>
+						<li>The ha-jdbc.configuration system property</li>
+						<li>Use default value of "ha-jdbc-{0}.xml"</li>
+					</ol>
+				</li>
+				<li>
+					<p>Format the parameterized resource name using the identifier of the cluster.</p>
 				</li>
 				<li>
 					<p>Attempt to interpret the resource name as a URL.</p>
@@ -136,8 +160,8 @@
 					<p>If the resource name cannot be converted to a URL, then search for the resource in the classpath using the following algorithm:</p>
 					<ol>
 						<li>Search for resource using the thread context class loader.</li>
-						<li>If not found, search for resource using the class loader of the current class.</li>
-						<li>If not found, search for resource using the system class loader.</li>
+						<li>Search for resource using the class loader of the current class.</li>
+						<li>Search for resource using the system class loader.</li>
 					</ol>
 				</li>
 				<li>
@@ -147,7 +171,7 @@
 			<p>
 				The root element of the configuration file has the following definition:
 			</p>
-			<source id="ha-jdbc">&lt;!ELEMENT ha-jdbc (<a href="#distributable">distributable</a>?,<a href="#sync">sync</a>+,<a href="#cluster">database-cluster</a>+|<a href="#cluster">database-cluster</a>)&gt;</source>
+			<source id="ha-jdbc">&lt;!ELEMENT ha-jdbc (<a href="#distributable">distributable</a>?,<a href="#sync">sync</a>+,<a href="#cluster">cluster</a>)&gt;</source>
 			<section id="distributable">
 				<title>&lt;distributable&gt;</title>
 				<p>
@@ -226,40 +250,28 @@
 				</section>
 			</section>
 			<section id="cluster">
-				<title>&lt;database-cluster&gt; or &lt;datasource-cluster&gt;</title>
+				<title>&lt;cluster&gt;</title>
 				<p>
 					Defines the nodes and behavior of a database cluster.
 				</p>
-				<source>&lt;!ELEMENT database-cluster (<a href="#database">database</a>+)&gt;</source>
-				<source>&lt;!ELEMENT datasource-cluster (<a href="#datasource">datasource</a>+)&gt;</source>
-				<p>
-					An HA-JDBC database cluster is accessed in one of two ways: either via the <code>java.sql.DriverManager</code>, or via a <code>javax.sql.DataSource</code>.
-				</p>
+				<source>&lt;!ELEMENT cluster (<a href="#database">database</a>+|<a href="#datasource">datasource</a>+)&gt;</source>
 				<source><![CDATA[
-<!ATTLIST database-cluster %cluster;>
-<!ATTLIST datasource-cluster %cluster;>
-
-<!ENTITY % cluster "
-  id                      CDATA                            #REQUIRED
+<!ATTLIST cluster
   balancer                (simple|random|round-robin|load) #REQUIRED
   default-sync            IDREF                            #REQUIRED
-  dialect                 CDATA                            'standard'
+  dialect                 CDATA                            "standard"
   meta-data-cache         (none|lazy|eager)                #REQUIRED
   transaction-mode        (parallel|serial)                #REQUIRED
   auto-activate-schedule  CDATA                            #IMPLIED
   failure-detect-schedule CDATA                            #IMPLIED
-  min-threads             CDATA                            '0'
-  max-threads             CDATA                            '100'
-  max-idle                CDATA                            '60'
-  detect-identity-columns (true|false)                     'true'
-  detect-sequences        (true|false)                     'true'
-">
+  min-threads             CDATA                            "0"
+  max-threads             CDATA                            "100"
+  max-idle                CDATA                            "60"
+  detect-identity-columns (true|false)                     "true"
+  detect-sequences        (true|false)                     "true"
+>
 ]]></source>
 				<dl>
-					<dt>id</dt>
-					<dd>
-						Uniquely identifies this database cluster.
-					</dd>
 					<dt><a href="#balancer">balancer</a></dt>
 					<dd>
 						Defines the balancer implementation used to distribute read operations among the active nodes of this cluster.
@@ -630,7 +642,7 @@ public class FasterFullSynchronizationStrategy extends net.sf.hajdbc.sync.FullSy
 				<source><![CDATA[
 <ha-jdbc>
   <!-- ... -->
-  <database-cluster id="cluster1" balancer="..." dialect="PostgreSQL" default-sync="..." transaction-mode="...">
+  <cluster balancer="..." dialect="PostgreSQL" default-sync="..." transaction-mode="...">
     <database id="database1">
       <driver>org.postgresql.Driver</driver>
       <url>jdbc:postgresql://server1/database</url>
@@ -643,7 +655,7 @@ public class FasterFullSynchronizationStrategy extends net.sf.hajdbc.sync.FullSy
       <user>postgres</user>
       <password>password</password>
     </datasource>
-  </database-cluster>
+  </cluster>
 </ha-jdbc>
 ]]></source>
 				<p>
@@ -694,14 +706,14 @@ Connection connection = DriverManager.getConnection("jdbc:ha-jdbc:cluster1", "po
 				<source><![CDATA[
 <ha-jdbc>
   <!-- ... -->
-  <datasource-cluster id="cluster2" balancer="..." dialect="PostgreSQL" default-sync="..." transaction-mode="...">
+  <cluster balancer="..." dialect="PostgreSQL" default-sync="..." transaction-mode="...">
     <datasource id="database1">
       <name>java:comp/env/jdbc/database1</name>
     </datasource>
     <datasource id="database2">
       <name>java:comp/env/jdbc/database1</name>
     </datasource>
-  </datasource-cluster>
+  </cluster>
 </ha-jdbc>
 ]]></source>
 				<p>
@@ -804,9 +816,9 @@ Connection connection = dataSource.getConnection();
 <ha-jdbc>
   <!-- ... -->
   <!-- Failure detection will run every minute -->
-  <database-cluster id="..." balancer="..." default-sync="..." transaction-mode="..." failure-detect-schedule="0 * * ? * *">
+  <cluster balancer="..." default-sync="..." transaction-mode="..." failure-detect-schedule="0 * * ? * *">
     <!-- ... -->
-  </database-cluster>
+  </cluster>
 </ha-jdbc>
 ]]></source>
 			</section>
@@ -843,7 +855,7 @@ String clusterId = "cluster1";
 String databaseId = "database1";
 
 MBeanServer server = ManagementFactory.getPlatformMBeanServer();
-ObjectName name = net.sf.hajdbc.DatabaseClusterFactory.getObjectName(clusterId);
+ObjectName name = ObjectName.getInstance("net.sf.hajdbc", "cluster", clusterId);
 
 // There are 2 ways to programatically invoke methods on an mbean:
 
@@ -881,9 +893,9 @@ cluster.activate(databaseId);
 <ha-jdbc>
   <!-- ... -->
   <!-- Auto-activation will run every day at 2:00 AM -->
-  <database-cluster id="..." balancer="..." default-sync="..." transaction-mode="..." auto-activate-schedule="0 0 2 ? * *">
+  <cluster balancer="..." default-sync="..." transaction-mode="..." auto-activate-schedule="0 0 2 ? * *">
     <!-- ... -->
-  </database-cluster>
+  </cluster>
 </ha-jdbc>
 ]]></source>
 					<note>
@@ -952,6 +964,55 @@ cluster.activate(databaseId);
 						These cluster modifications must be made on each server.
 					</warning>
 				</section>
+			</section>
+		</section>
+		<section>
+			<title>Migrating from HA-JDBC 1.1</title>
+			<section>
+				<title>Environment</title>
+				<ul>
+					<li>
+						HA-JDBC is now compatible with JDBC 4.0 found in Java 1.6.
+					</li>
+					<li>
+						HA-JDBC now supports sequences and identity columns.
+						Users should be aware of the <a href="#unique-id">performance implications</a> of these mechanisms.
+					</li>
+					<li>
+						HA-JDBC now fully supports large objects implemented as SQL locators.
+					</li>
+				</ul>
+			</section>
+			<section>
+				<title>Configuration</title>
+				<ul>
+					<li>
+						Prior to version 2.0, the ha-jdbc.xml file could contain many <code><![CDATA[<cluster>]]>s</code> distinguished by an <code>id</code> attribute.
+						As of version 2.0, each cluster is defined in its own XML file, named according to the pattern: ha-jdbc-{0}.xml.
+					</li>
+					<li>
+						The <code><![CDATA[<cluster>]]></code> element no longer defines an <code>id</code> attribute.
+					</li>
+					<li>
+						The <code>transaction-mode="parallel|serial"</code> attribute replaces the <code>transactions="local|xa"</code> attribute of <code><![CDATA[<cluster>]]></code>
+					</li>
+					<li>
+						<code><![CDATA[<distributable>]]></code> mode now uses JGroups channel multiplexing.
+						The old <code>protocol</code> attribute is superceded by the new <code>config</code> and <code>stack</code> attributes.
+					</li>
+					<li>
+						<code>dialect="default"</code> is renamed <code>dialect="standard"</code>.
+					</li>
+					<li>
+						Clusters of Firebird, Mckoi, or Ingres databases should use the respective dialects, instead of the default dialect.
+					</li>
+				</ul>
+			</section>
+			<section>
+				<title>JMX</title>
+				<ul>
+					<li>HA-JDBC no longer quotes identifiers when constructing the names for cluster and database mbeans.</li>
+				</ul>
 			</section>
 		</section>
 	</body>
