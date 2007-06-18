@@ -154,7 +154,7 @@
 		</jar>
 	</target>
 	
-	<target name="dist-bin" depends="jar-1.6, jar-1.5, jar-1.4, site" description="Creates all binary distribution tarballs">
+	<target name="dist-1.6" depends="jar-1.6, site" description="Creates Java 1.6 binary distribution tarball">
 		<tar tarfile="${dist-1.6.bin.file}" compression="gzip">
 			<tarfileset dir="${basedir}" prefix="${dist.version.name}">
 				<include name="${dist-1.6.version.name}.jar"/>
@@ -166,6 +166,9 @@
 			</tarfileset>
 			<tarfileset dir="${doc.build.dir}/site" prefix="${dist.version.name}/doc" includes="**"></tarfileset>
 		</tar>
+	</target>
+	
+	<target name="dist-1.5" depends="jar-1.5, site" description="Creates Java 1.5 binary distribution tarball">
 		<tar tarfile="${dist-1.5.bin.file}" compression="gzip">
 			<tarfileset dir="${basedir}" prefix="${dist.version.name}">
 				<include name="${dist-1.5.version.name}.jar"/>
@@ -181,6 +184,9 @@
 			</tarfileset>
 			<tarfileset dir="${doc.build.dir}/site" prefix="${dist.version.name}/doc" includes="**"></tarfileset>
 		</tar>
+	</target>
+	
+	<target name="dist-1.4" depends="jar-1.4, site" description="Creates Java 1.4 binary distribution tarball">
 		<tar tarfile="${dist-1.4.bin.file}" compression="gzip">
 			<tarfileset dir="${basedir}" prefix="${dist.version.name}">
 				<include name="${dist-1.4.version.name}.jar"/>
@@ -200,7 +206,7 @@
 			<tarfileset dir="${doc.build.dir}/site" prefix="${dist.version.name}/doc" includes="**"></tarfileset>
 		</tar>
 	</target>
-	
+
 	<target name="dist-src" description="Creates source distribution tarball">
 		<tar tarfile="${dist.src.file}" compression="gzip">
 			<tarfileset dir="${basedir}" prefix="${dist.version.name}">
@@ -219,6 +225,8 @@
 			</tarfileset>
 		</tar>
 	</target>
+	
+	<target name="dist-all" depends="dist-1.6, dist-1.5, dist-1.4, dist-src" description="Creates all distribution tarballs"></target>
 	
 	<target name="javadoc" description="Generated Java API documentation">
 		<delete dir="${doc.api.dir}" quiet="true"></delete>
