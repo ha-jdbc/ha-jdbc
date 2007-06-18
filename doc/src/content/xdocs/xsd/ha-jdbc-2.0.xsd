@@ -31,7 +31,7 @@
 				<xs:element name="distributable" minOccurs="0">
 					<xs:complexType>
 						<xs:attribute name="config" type="xs:anyURI" default="stacks.xml"></xs:attribute>
-						<xs:attribute name="stack" type="xs:string" default="udp"></xs:attribute>
+						<xs:attribute name="stack" type="xs:string" default="udp-sync"></xs:attribute>
 						<xs:attribute name="timeout" type="xs:nonNegativeInteger" default="1000"></xs:attribute>
 					</xs:complexType>
 				</xs:element>

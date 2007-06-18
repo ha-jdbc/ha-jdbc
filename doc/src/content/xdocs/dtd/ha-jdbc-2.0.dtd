@@ -30,7 +30,7 @@
 <!ELEMENT distributable EMPTY>
 <!ATTLIST distributable
 	config CDATA "stacks.xml"
-	stack CDATA "udp"
+	stack CDATA "udp-sync"
 	timeout CDATA "1000"
 >
 
