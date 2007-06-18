@@ -12,7 +12,7 @@
 	</contexts>
 
 	<changes>
-		<release version="2.0-beta-2" date="???">
+		<release version="2.0-rc-1" date="June 18, 2007">
 			<action context="src" dev="PF" type="fix">
 				Fixed memory leak with CONCUR_READ_ONLY result sets when using ResultSet.getStatement().close().
 			</action>
@@ -37,7 +37,7 @@
 				If a group member leaves, any distributed locks it held must be freed.
 			</action>
 			<action context="src" dev="PF" type="update">
-				DistributableLockManager now uses default vote response processor.
+				DistributableLockManager uses default vote response processor instead of its own implementation.
 			</action>
 			<action context="src" dev="PF" type="remove">
 				Removed quoting of cluster ID and database ID in mbean ObjectName.
@@ -47,14 +47,24 @@
 				Fixed NoSuchElementException thrown during database activation when there are no active databases.
 			</action>
 			<action context="src" dev="PF" type="fix">
-				Fixed IllegalMonitorExceptions in DistributableLockManager resulting from improper use of reentrant locks by multiple threads.
+				Fixed IllegalMonitorStateExceptions in DistributableLockManager resulting from improper use of reentrant locks by multiple threads.
 			</action>
 			<action context="src" dev="PF" type="update">
 				Optimized DistributableLockManager using a single phase VotingAdapter.
 			</action>
 			<action context="src" dev="PF" type="fix">
 				Re-implemented DistributableStateManager to use synchronous MessageDispatcher instead of asynchronous NotificationBus.
-				This will prevent synchronization strategies from unlocking database tables until all nodes are notified of database activation.
+				This will ensure that all nodes are notified of database activation prior to unlocking database tables during synchronization.
+				Changed default jgroups protocol stack to "udp-sync".
+			</action>
+			<action context="src" dev="PF" type="update">
+				Do not auto-deactivate the last database of a cluster.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				JGroups 2.5 uses Java 1.5 as a baseline, so retrotranslate this jar as part of 1.4 build.
+			</action>
+			<action context="src" dev="PF" type="update">
+				Modified build to produce 3 different binary distributions, for Java 1.4, 1.5, and 1.6.
 			</action>
 			<action context="lib" dev="PF" type="update">
 				Upgraded SLF4J to 1.4.0.
@@ -950,6 +960,9 @@
 	<todo>
 		<actions priority="high">
 			<action type="update" context="src" dev="PF">
+				Improve network failure handling of distributable cluster configurations where databases co-reside on peer nodes.
+			</action>
+			<action type="update" context="src" dev="PF">
 				Minimize table/row locking during diff and full synchronization strategies.
 			</action>
 			<action type="add" context="src" dev="PF">
@@ -957,9 +970,6 @@
 			</action>
 		</actions>
 		<actions priority="medium">
-			<action type="update" context="" dev="">
-				Require separate configuration file per cluster.
-			</action>
 			<action type="add" context="doc" dev="PF">
 				Update performance graphs with results from latest version.
 			</action>
