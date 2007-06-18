@@ -64,7 +64,7 @@ public class SynchronizationStrategyBuilder
 	}
 	
 	/**
-	 * @param className the className to set.
+	 * @param targetClass the class of the synchronization strategy to build.
 	 */
 	public void setTargetClass(Class<? extends SynchronizationStrategy> targetClass)
 	{

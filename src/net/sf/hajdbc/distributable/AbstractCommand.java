@@ -88,7 +88,7 @@ public abstract class AbstractCommand implements Command<Boolean>, Externalizabl
 	}
 
 	/**
-	 * @see net.sf.hajdbc.distributable.Command#unmarshalResult(java.io.Serializable)
+	 * @see net.sf.hajdbc.distributable.Command#unmarshalResult(java.lang.Object)
 	 */
 	@Override
 	public Boolean unmarshalResult(Object result)

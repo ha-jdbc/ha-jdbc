@@ -467,9 +467,10 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#start()
+	 * Starts this database cluster
+	 * @throws Exception if database cluster start fails
 	 */
-	public void start() throws Exception
+	public synchronized void start() throws Exception
 	{
 		for (Database<D> database: this.databaseMap.values())
 		{
@@ -531,7 +532,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#stop()
+	 * Stops this database cluster
 	 */
 	public synchronized void stop()
 	{
@@ -702,7 +703,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getUrl()
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#getUrl()
 	 */
 	public URL getUrl()
 	{

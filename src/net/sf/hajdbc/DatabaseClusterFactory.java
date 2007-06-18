@@ -51,7 +51,7 @@ public class DatabaseClusterFactory
 	
 	/**
 	 * Convenience method for constructing a standardized mbean ObjectName for this cluster.
-	 * @param databaseClusterId a cluster identifier
+	 * @param clusterId a cluster identifier
 	 * @return an ObjectName for this cluster
 	 * @throws MalformedObjectNameException if the ObjectName could not be constructed
 	 */
@@ -62,7 +62,7 @@ public class DatabaseClusterFactory
 
 	/**
 	 * Convenience method for constructing a standardized mbean ObjectName for this database.
-	 * @param databaseClusterId a cluster identifier
+	 * @param clusterId a cluster identifier
 	 * @param databaseId a database identifier
 	 * @return an ObjectName for this cluster
 	 * @throws MalformedObjectNameException if the ObjectName could not be constructed
