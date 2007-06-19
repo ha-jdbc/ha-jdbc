@@ -76,6 +76,8 @@ public class DistributableStateManager implements StateManager, MessageListener,
 	@Override
 	public Object handle(Message message)
 	{
+		if (!message.getSrc().equals(this.dispatcher.getChannel().getLocalAddress())) return null;
+
 		try
 		{
 			Command<Object> command = Command.class.cast(message.getObject());
