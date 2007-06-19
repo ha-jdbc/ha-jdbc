@@ -890,7 +890,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		{
 			file = File.createTempFile("ha-jdbc", ".xml");
 			
-			IMarshallingContext context = BindingDirectory.getFactory(DatabaseClusterFactory.class).createMarshallingContext();
+			IMarshallingContext context = BindingDirectory.getFactory(this.getClass()).createMarshallingContext();
 		
 			context.setIndent(1, System.getProperty("line.separator"), '\t');
 			
