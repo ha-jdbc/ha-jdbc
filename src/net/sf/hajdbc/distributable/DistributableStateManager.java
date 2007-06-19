@@ -158,7 +158,7 @@ public class DistributableStateManager implements StateManager, MessageListener,
 
 	private void send(Command<?> command, int mode, long timeout)
 	{
-		Message message = new Message(null, null, command);
+		Message message = new Message(null, this.dispatcher.getChannel().getLocalAddress(), command);
 
 		this.dispatcher.castMessage(null, message, mode, timeout);
 	}
