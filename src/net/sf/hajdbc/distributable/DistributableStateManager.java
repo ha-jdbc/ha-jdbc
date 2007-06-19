@@ -108,11 +108,9 @@ public class DistributableStateManager implements StateManager, MessageListener,
 
 		Command<Set<String>> command = new QueryInitialStateCommand();
 
-		Message message = new Message(coordinator, this.dispatcher.getChannel().getLocalAddress(), command);
-		
 		try
 		{
-			Object result = this.dispatcher.sendMessage(message, GroupRequest.GET_FIRST, this.timeout);
+			Object result = this.dispatcher.sendMessage(this.createMessage(coordinator, command), GroupRequest.GET_FIRST, this.timeout);
 
 			return command.unmarshalResult(String.class.cast(result));
 		}
@@ -158,11 +156,14 @@ public class DistributableStateManager implements StateManager, MessageListener,
 
 	private void send(Command<?> command, int mode, long timeout)
 	{
-		Message message = new Message(null, this.dispatcher.getChannel().getLocalAddress(), command);
-
-		this.dispatcher.castMessage(null, message, mode, timeout);
+		this.dispatcher.castMessage(null, this.createMessage(null, command), mode, timeout);
 	}
 
+	private Message createMessage(Address dest, Command<?> command)
+	{
+		return new Message(dest, this.dispatcher.getChannel().getLocalAddress(), command);
+	}
+	
 	/**
 	 * @see net.sf.hajdbc.StateManager#start()
 	 */
