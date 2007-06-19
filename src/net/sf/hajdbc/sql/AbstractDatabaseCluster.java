@@ -899,7 +899,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			
 			fileChannel = new FileInputStream(file).getChannel();
 			
-			// We cannot use URLConnection for files becuase Sun's implementation does not support output.
+			// We cannot use URLConnection for files because Sun's implementation does not support output.
 			if (this.url.getProtocol().equals("file"))
 			{
 				outputChannel = new FileOutputStream(new File(this.url.getPath())).getChannel();
