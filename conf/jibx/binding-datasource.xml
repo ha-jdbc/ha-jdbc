@@ -10,4 +10,9 @@
 			<collection add-method="add" iter-method="getDatabases" item-type="net.sf.hajdbc.sql.DataSourceDatabase"></collection>
 		</structure>
 	</mapping>
+	
+	<mapping name="datasource" class="net.sf.hajdbc.sql.DataSourceDatabase" extends="net.sf.hajdbc.sql.AbstractDatabase">
+		<value name="name" field="name"/>
+		<structure map-as="net.sf.hajdbc.sql.AbstractDatabase"></structure>
+	</mapping>
 </binding>
