@@ -34,6 +34,7 @@ import java.util.Properties;
  */
 public class SynchronizationStrategyBuilder
 {
+	@SuppressWarnings("unused")
 	private String id;
 	private Class<? extends SynchronizationStrategy> targetClass;
 	private Properties properties;
@@ -55,52 +56,14 @@ public class SynchronizationStrategyBuilder
 		this.id = id;
 	}
 	
-	/**
-	 * @return the className.
-	 */
-	public Class<? extends SynchronizationStrategy> getTargetClass()
-	{
-		return this.targetClass;
-	}
-	
-	/**
-	 * @param targetClass the class of the synchronization strategy to build.
-	 */
-	public void setTargetClass(Class<? extends SynchronizationStrategy> targetClass)
-	{
-		this.targetClass = targetClass;
-	}
-	
-	/**
-	 * @return the id.
-	 */
 	public String getId()
 	{
 		return this.id;
 	}
 	
-	/**
-	 * @param id the id to set.
-	 */
 	public void setId(String id)
 	{
 		this.id = id;
-	}
-	
-	/**
-	 * @return the properties.
-	 */
-	public Properties getProperties()
-	{
-		return this.properties;
-	}
-	
-	/**
-	 * @param properties the properties to set.
-	 */
-	public void setProperties(Properties properties)
-	{
-		this.properties = properties;
 	}
 	
 	/**
@@ -167,13 +130,13 @@ public class SynchronizationStrategyBuilder
 	{
 		SynchronizationStrategyBuilder builder = new SynchronizationStrategyBuilder();
 		
-		builder.setId(id);
+		builder.id = id;
 		
 		Class<? extends SynchronizationStrategy> strategyClass = strategy.getClass();
 		
-		builder.setTargetClass(strategyClass);
+		builder.targetClass = strategyClass;
 		
-		Properties properties = new Properties();
+		builder.properties = new Properties();
 		
 		PropertyDescriptor[] descriptors = Introspector.getBeanInfo(strategyClass).getPropertyDescriptors();
 		
@@ -187,10 +150,8 @@ public class SynchronizationStrategyBuilder
 			
 			editor.setValue(descriptor.getReadMethod().invoke(strategy));
 			
-			properties.setProperty(descriptor.getName(), editor.getAsText());
+			builder.properties.setProperty(descriptor.getName(), editor.getAsText());
 		}
-		
-		builder.setProperties(properties);
 		
 		return builder;
 	}

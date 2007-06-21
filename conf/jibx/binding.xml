@@ -11,7 +11,7 @@
 	</mapping>
 
 	<mapping name="sync" class="net.sf.hajdbc.SynchronizationStrategyBuilder">
-		<value name="id" field="id" style="attribute"/>
+		<value name="id" get-method="getId" set-method="setId" style="attribute"/>
 		<value name="class" field="targetClass" style="attribute"/>
 		<structure field="properties" unmarshaller="net.sf.hajdbc.util.PropertiesMapper" marshaller="net.sf.hajdbc.util.PropertiesMapper"></structure>
 	</mapping>
@@ -34,7 +34,7 @@
 	<mapping class="net.sf.hajdbc.sql.AbstractDatabase" abstract="true">
 		<value name="id" get-method="getId" set-method="setId" style="attribute"/>
 		<value name="weight" get-method="getWeight" set-method="setWeight" style="attribute" usage="optional" default="1"/>
-		<structure field="properties" unmarshaller="net.sf.hajdbc.util.PropertiesMapper" marshaller="net.sf.hajdbc.util.PropertiesMapper"></structure>
+		<structure get-method="getProperties" set-method="setProperties" unmarshaller="net.sf.hajdbc.util.PropertiesMapper" marshaller="net.sf.hajdbc.util.PropertiesMapper"></structure>
 		<value name="user" get-method="getUser" set-method="setUser" usage="optional"/>
 		<value name="password" get-method="getPassword" set-method="setPassword" usage="optional"/>
 	</mapping>

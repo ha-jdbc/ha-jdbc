@@ -51,7 +51,7 @@ public class DistributableDatabaseClusterDecorator implements DatabaseClusterDec
 		return this.timeout;
 	}
 	
-	void setTimeout(int timeout)
+	public void setTimeout(int timeout)
 	{
 		this.timeout = timeout;
 	}

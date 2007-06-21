@@ -12,6 +12,14 @@
 	</contexts>
 
 	<changes>
+		<release version="2.0-rc-2" date="?">
+			<action context="src" dev="PF" type="fix">
+				Added toString() to DatabaseClusterMBean interface so that log messages will display cluster id properly.
+			</action>
+			<action context="src" dev="PF" type="fix" due-to="David White">
+				Fixed IllegalAccessError in JiBX marshalling during configuration export.
+			</action>
+		</release>
 		<release version="2.0-rc-1" date="June 18, 2007">
 			<action context="src" dev="PF" type="fix">
 				Fixed memory leak with CONCUR_READ_ONLY result sets when using ResultSet.getStatement().close().
