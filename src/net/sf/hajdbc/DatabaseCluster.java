@@ -136,4 +136,10 @@ public interface DatabaseCluster<D>
 	 * @return true, if identity column detection is enabled, false otherwise.
 	 */
 	public boolean isIdentityColumnDetectionEnabled();
+	
+	/**
+	 * Provided so that mbean proxies will use mbean toString() implementation
+	 * @return string representation of this cluster
+	 */
+	public String toString();
 }
