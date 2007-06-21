@@ -110,4 +110,10 @@ public interface DatabaseClusterMBean
 	 * @return a URL
 	 */
 	public URL getUrl();
+	
+	/**
+	 * Provided so that mbean proxies will use mbean toString() implementation
+	 * @return string representation of this cluster
+	 */
+	public String toString();
 }
