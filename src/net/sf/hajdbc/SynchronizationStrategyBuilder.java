@@ -58,22 +58,6 @@ public class SynchronizationStrategyBuilder
 	}
 	
 	/**
-	 * @return the className.
-	 */
-	public String getClassName()
-	{
-		return this.className;
-	}
-	
-	/**
-	 * @param className the className to set.
-	 */
-	public void setClassName(String className)
-	{
-		this.className = className;
-	}
-	
-	/**
 	 * @return the id.
 	 */
 	public String getId()
@@ -87,22 +71,6 @@ public class SynchronizationStrategyBuilder
 	public void setId(String id)
 	{
 		this.id = id;
-	}
-	
-	/**
-	 * @return the properties.
-	 */
-	public Properties getProperties()
-	{
-		return this.properties;
-	}
-	
-	/**
-	 * @param properties the properties to set.
-	 */
-	public void setProperties(Properties properties)
-	{
-		this.properties = properties;
 	}
 	
 	/**
@@ -171,11 +139,11 @@ public class SynchronizationStrategyBuilder
 		
 		builder.setId(id);
 		
-		Class strategyClass = strategy.getClass();
+		Class<?> strategyClass = strategy.getClass();
 		
-		builder.setClassName(strategyClass.getName());
+		builder.className = strategyClass.getName();
 		
-		Properties properties = new Properties();
+		builder.properties = new Properties();
 		
 		PropertyDescriptor[] descriptors = Introspector.getBeanInfo(strategyClass).getPropertyDescriptors();
 		
@@ -189,10 +157,8 @@ public class SynchronizationStrategyBuilder
 			
 			editor.setValue(descriptor.getReadMethod().invoke(strategy));
 			
-			properties.setProperty(descriptor.getName(), editor.getAsText());
+			builder.properties.setProperty(descriptor.getName(), editor.getAsText());
 		}
-		
-		builder.setProperties(properties);
 		
 		return builder;
 	}

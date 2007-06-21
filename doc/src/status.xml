@@ -23,6 +23,9 @@
 				Use platform mbean server for cluster/database mbean registration.
 				This fixes an incomplete update from 1.1.11.
 			</action>
+			<action context="src" dev="PF" type="fix" due-to="David White">
+				Fixed IllegalAccessError in JiBX marshalling during configuration export.
+			</action>
 			<action context="lib" dev="PF" type="update">
 				Upgraded JiBX to 1.1.5.
 			</action>
