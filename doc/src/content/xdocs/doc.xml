@@ -182,7 +182,7 @@
 <!ELEMENT distributable EMPTY>
 <!ATTLIST distributable
   config  CDATA "stacks.xml"
-  stack   CDATA "udp"
+  stack   CDATA "udp-sync"
   timeout CDATA "1000"
 >
 ]]></source>
@@ -865,7 +865,7 @@ ObjectName name = ObjectName.getInstance("net.sf.hajdbc", "cluster", clusterId);
 
 // 1. Generic invoke
 Object[] parameterValues = new Object[] { databaseId };
-String[] parameterTypes = new String[] { databaseId.getClass().getName() };
+String[] parameterTypes = new String[] { String.class };
 server.invoke(name, "activate", parameterValues, parameterTypes);
 
 // 2. Dynamic proxy
@@ -926,22 +926,18 @@ cluster.activate(databaseId);
 						In HA-JDBC 1.0, the database nodes in a cluster were static.  They could not be changed while the application/server was running.
 					</p>
 					<p>
-						As of HA-JDBC 1.1, database nodes can be added, updated, or removed during runtime.  The JMX interfaces include the following methods:
+						As of HA-JDBC 1.1, database nodes can be added, updated, or removed during runtime.
 					</p>
-					<p>net.sf.hajdbc.sql.DriverDatabaseClusterMBean</p>
-					<dl>
-						<dt><a href="api/net/sf/hajdbc/sql/DriverDatabaseClusterMBean.html#add(java.lang.String, java.lang.String, java.lang.String)"><code>DriverDatabaseClusterMBean.add(String databaseId, String driver, String url)</code></a></dt>
-						<dd>Adds a new database to the cluster.</dd>
-						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#remove(java.lang.String)"><code>remove(String databaseId)</code></a></dt>
-						<dd>Removes a database node from the cluster.</dd>
-					</dl>
+					<p>net.sf.hajdbc.sql.DriverDatabaseClusterMBean:</p>
+					<ul>
+						<li><a href="api/net/sf/hajdbc/sql/DriverDatabaseClusterMBean.html#add(java.lang.String, java.lang.String, java.lang.String)"><code>add(String databaseId, String driver, String url)</code></a></li>
+						<li><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#remove(java.lang.String)"><code>remove(String databaseId)</code></a></li>
+					</ul>
 					<p>net.sf.hajdbc.sql.DataSourceDatabaseClusterMBean</p>
-					<dl>
-						<dt><a href="api/net/sf/hajdbc/sql/DataSourceDatabaseClusterMBean.html#add(java.lang.String, java.lang.String)"><code>DataSourceDatabaseClusterMBean.add(String databaseId, String name)</code></a></dt>
-						<dd>Adds a new DataSource-based database cluster.</dd>
-						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#remove(java.lang.String)"><code>remove(String databaseId)</code></a></dt>
-						<dd>Removes a database node from the cluster.</dd>
-					</dl>
+					<ul>
+						<li><a href="api/net/sf/hajdbc/sql/DataSourceDatabaseClusterMBean.html#add(java.lang.String, java.lang.String)"><code>DataSourceDatabaseClusterMBean.add(String databaseId, String name)</code></a></li>
+						<li><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#remove(java.lang.String)"><code>remove(String databaseId)</code></a></li>
+					</ul>
 					<p>
 						When a new database is added, it is initially inactive.
 						Database nodes may also be removed from the cluster.
@@ -1019,7 +1015,8 @@ cluster.activate(databaseId);
 				</ul>
 			</section>
 			<section>
-				<title>JMX</title>
+				<title>JMX</title>#  dialect="default" is renamed dialect="standard".
+				
 				<ul>
 					<li>HA-JDBC no longer quotes identifiers when constructing the names for cluster and database mbeans.</li>
 				</ul>
