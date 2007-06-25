@@ -12,7 +12,7 @@
 	</contexts>
 
 	<changes>
-		<release version="2.0-rc-2" date="?">
+		<release version="2.0-rc-2" date="June 25, 2007">
 			<action context="src" dev="PF" type="fix">
 				Added toString() to DatabaseClusterMBean interface so that log messages will display cluster id properly.
 			</action>
@@ -20,7 +20,8 @@
 				Fixed IllegalAccessError in JiBX marshalling during configuration export.
 			</action>
 			<action context="src" dev="PF" type="remove">
-				Removed ManagementFactory Retrotranslator plugin.
+				Removed Retrotranslator plugin for java.lang.management.ManagementFactory.
+				This is now natively supported by Retrotranslator.
 			</action>
 			<action context="lib" dev="PF" type="update">
 				Upgraded Retrotranslator to 1.2.2.
