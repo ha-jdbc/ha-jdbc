@@ -816,7 +816,7 @@ Connection connection = dataSource.getConnection();
 <ha-jdbc>
   <!-- ... -->
   <!-- Failure detection will run every minute -->
-  <cluster balancer="..." default-sync="..." transaction-mode="..." failure-detect-schedule="0 * * ? * *">
+  <cluster ... failure-detect-schedule="0 * * ? * *">
     <!-- ... -->
   </cluster>
 </ha-jdbc>
@@ -825,16 +825,20 @@ Connection connection = dataSource.getConnection();
 			<section id="jmx">
 				<title>Database Cluster Administration</title>
 				<p>
-					HA-JDBC database clusters are administered via a <acronym title="Java Management eXtensions">JMX</acronym> interface: <a href="api/net/sf/hajdbc/DatabaseClusterMBean.html">net.sf.hajdbc.DatabaseClusterMBean</a>
+					HA-JDBC database clusters are administered via one of two <acronym title="Java Management eXtensions">JMX</acronym> interfaces:
 				</p>
+				<ul>
+					<li><a href="api/net/sf/hajdbc/sql/DriverDatabaseClusterMBean.html">net.sf.hajdbc.sql.DriverDatabaseClusterMBean</a></li>
+					<li><a href="api/net/sf/hajdbc/sql/DataSourceDatabaseClusterMBean.html">net.sf.hajdbc.sql.DataSourceDatabaseClusterMBean</a></li>
+				</ul>
 				<p>
 					A database cluster mbean is registered using the following object-name:
 				</p>
 				<p>
-					net.sf.ha-jdbc:cluster="<em>database-cluster-id</em>"
+					net.sf.ha-jdbc:cluster=<em>database-cluster-id</em>
 				</p>
 				<p>
-					<acronym title="Java Management eXtensions">JMX</acronym> operations can be executed from the <a href="http://java.sun.com/j2se/1.5.0/docs/guide/management/jconsole.html">JConsole</a> interface packaged with JDK 1.5.
+					<acronym title="Java Management eXtensions">JMX</acronym> operations can be executed from the <a href="http://java.sun.com/j2se/1.5.0/docs/guide/management/jconsole.html">JConsole</a> interface packaged with JDK 1.5+.
 				</p>
 				<p>
 					As an alternative to JConsole (or for Java 1.4 deployments), you can use any of several 3rd-party <acronym title="Java Management eXtensions">JMX</acronym> clients:
@@ -844,7 +848,7 @@ Connection connection = dataSource.getConnection();
 					<li><a href="http://www.jmanage.org/">jManage</a></li>
 					<li><a href="http://ejtools.sourceforge.net/applications/jmx.browser/">EJTools JMX Browser</a></li>
 					<li><a href="http://panoptesmgmt.sourceforge.net/">Panoptes</a></li>
-					<li><a href="http://www.hta-bi.bfh.ch/Projects/ejbplug/">EJAM - Environment for Java Application Management</a></li>
+					<li><a href="http://code.google.com/p/eclipse-jmx/">Eclipse-JMX</a></li>
 				</ul>
 				<p>
 					HA-JDBC database clusters may also be administered programatically:
@@ -865,7 +869,7 @@ String[] parameterTypes = new String[] { databaseId.getClass().getName() };
 server.invoke(name, "activate", parameterValues, parameterTypes);
 
 // 2. Dynamic proxy
-DatabaseClusterMBean cluster = JMX.newMBeanProxy(server, name, DatabaseClusterMBean.class);
+DriverDatabaseClusterMBean cluster = JMX.newMBeanProxy(server, name, DriverDatabaseClusterMBean.class);
 cluster.activate(databaseId);
 ]]></source>
 				<section>
@@ -876,7 +880,7 @@ cluster.activate(databaseId);
 					<dl>
 						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#activate(java.lang.String)"><code>activate(String databaseId)</code></a></dt>
 						<dd>Synchronizes, using the default synchronization strategy, and activates the specified database.</dd>
-						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#activate(java.lang.String, java.lang.String)"><code>activate(String databaseId, String sync)</code></a></dt>
+						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#activate(java.lang.String, java.lang.String)"><code>activate(String databaseId, String strategyId)</code></a></dt>
 						<dd>Synchronizes, using the specified synchronization strategy, and activates the specified database.</dd>
 					</dl>
 					<p>
@@ -893,7 +897,7 @@ cluster.activate(databaseId);
 <ha-jdbc>
   <!-- ... -->
   <!-- Auto-activation will run every day at 2:00 AM -->
-  <cluster balancer="..." default-sync="..." transaction-mode="..." auto-activate-schedule="0 0 2 ? * *">
+  <cluster ... auto-activate-schedule="0 0 2 ? * *">
     <!-- ... -->
   </cluster>
 </ha-jdbc>
@@ -922,12 +926,18 @@ cluster.activate(databaseId);
 						In HA-JDBC 1.0, the database nodes in a cluster were static.  They could not be changed while the application/server was running.
 					</p>
 					<p>
-						As of HA-JDBC 1.1, database nodes can be added, updated, or removed during runtime.  The cluster's JMX interface includes the following methods:
+						As of HA-JDBC 1.1, database nodes can be added, updated, or removed during runtime.  The JMX interfaces include the following methods:
 					</p>
+					<p>net.sf.hajdbc.sql.DriverDatabaseClusterMBean</p>
 					<dl>
-						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#add(java.lang.String, java.lang.String, java.lang.String)"><code>add(String databaseId, String driver, String url)</code></a></dt>
-						<dd>Adds a new JDBC url-based database to the cluster.</dd>
-						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#add(java.lang.String, java.lang.String)"><code>add(String databaseId, String name)</code></a></dt>
+						<dt><a href="api/net/sf/hajdbc/sql/DriverDatabaseClusterMBean.html#add(java.lang.String, java.lang.String, java.lang.String)"><code>DriverDatabaseClusterMBean.add(String databaseId, String driver, String url)</code></a></dt>
+						<dd>Adds a new database to the cluster.</dd>
+						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#remove(java.lang.String)"><code>remove(String databaseId)</code></a></dt>
+						<dd>Removes a database node from the cluster.</dd>
+					</dl>
+					<p>net.sf.hajdbc.sql.DataSourceDatabaseClusterMBean</p>
+					<dl>
+						<dt><a href="api/net/sf/hajdbc/sql/DataSourceDatabaseClusterMBean.html#add(java.lang.String, java.lang.String)"><code>DataSourceDatabaseClusterMBean.add(String databaseId, String name)</code></a></dt>
 						<dd>Adds a new DataSource-based database cluster.</dd>
 						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#remove(java.lang.String)"><code>remove(String databaseId)</code></a></dt>
 						<dd>Removes a database node from the cluster.</dd>
@@ -950,7 +960,7 @@ cluster.activate(databaseId);
 						Database mbeans are registered using the following object-name:
 					</p>
 					<p>
-						net.sf.ha-jdbc:cluster="<em>cluster-id</em>",database="<em>database-id</em>"
+						net.sf.ha-jdbc:cluster=<em>cluster-id</em>,database=<em>database-id</em>
 					</p>
 					<p>
 						While inactive, a database node's connection properties (e.g. user, password, etc.) may be modified.
