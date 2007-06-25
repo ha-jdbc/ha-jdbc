@@ -20,7 +20,6 @@
  */
 package net.sf.hajdbc;
 
-import java.sql.SQLException;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
@@ -63,15 +62,6 @@ public interface DatabaseCluster<D>
 	 * @throws IllegalArgumentException if no database exists with the specified identifier
 	 */
 	public Database<D> getDatabase(String id);
-
-	/**
-	 * Handles a failure caused by the specified cause on the specified database.
-	 * If the database is not alive, then it is deactivated, otherwise an exception is thrown back to the caller.
-	 * @param database a database descriptor
-	 * @param cause the cause of the failure
-	 * @throws SQLException if the database is alive
-	 */
-	public void handleFailure(Database<D> database, SQLException cause) throws SQLException;
 	
 	/**
 	 * Returns the Balancer implementation used by this database cluster.
@@ -124,6 +114,13 @@ public interface DatabaseCluster<D>
 	 * @return a <code>DatabaseMetaDataCache</code> implementation
 	 */
 	public DatabaseMetaDataCache getDatabaseMetaDataCache();
+	
+	/**
+	 * Determines whether the specified database is alive.
+	 * @param database a database descriptor
+	 * @return true, if the database is alive, false otherwise
+	 */
+	public boolean isAlive(Database<D> database);
 	
 	/**
 	 * Indicates whether or not sequence detection is enabled for this cluster.

@@ -337,6 +337,19 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 		return this.databaseCluster;
 	}
 	
+	public void handleFailure(Database<D> database, SQLException cause) throws SQLException
+	{
+		if (!this.isBalancerFull() || this.databaseCluster.isAlive(database))
+		{
+			throw cause;
+		}
+		
+		if (this.databaseCluster.deactivate(database))
+		{
+			logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this), cause);
+		}
+	}
+	
 	/**
 	 * @param exceptionMap
 	 * @throws SQLException
@@ -349,11 +362,16 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 			Database<D> database = exceptionMapEntry.getKey();
 			SQLException exception = exceptionMapEntry.getValue();
 			
-			if ((this.databaseCluster.getBalancer().size() > 1) && this.databaseCluster.deactivate(database))
+			if (this.isBalancerFull() && this.databaseCluster.deactivate(database))
 			{
 				this.logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this.databaseCluster), exception);
 			}
 		}
+	}
+	
+	private boolean isBalancerFull()
+	{
+		return this.databaseCluster.getBalancer().size() > 1;
 	}
 	
 	protected class DynamicInvoker implements Invoker<D, E, Object>

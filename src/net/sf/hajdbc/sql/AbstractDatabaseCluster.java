@@ -133,7 +133,10 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		return this.connectionFactoryMap;
 	}
 	
-	private boolean isAlive(Database<D> database)
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#isAlive(net.sf.hajdbc.Database)
+	 */
+	public boolean isAlive(Database<D> database)
 	{
 		try
 		{
@@ -143,7 +146,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		}
 		catch (SQLException e)
 		{
-			logger.info(Messages.getMessage(Messages.DATABASE_NOT_ALIVE, database, this), e);
+			logger.warn(Messages.getMessage(Messages.DATABASE_NOT_ALIVE, database, this), e);
 			
 			return false;
 		}
@@ -389,26 +392,6 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		}
 		
 		this.activate(databaseId, strategy);
-	}
-
-	/**
-	 * Handles a failure caused by the specified cause on the specified database.
-	 * If the database is not alive, then it is deactivated, otherwise an exception is thrown back to the caller.
-	 * @param database a database descriptor
-	 * @param cause the cause of the failure
-	 * @throws SQLException if the database is alive
-	 */
-	public void handleFailure(Database<D> database, SQLException cause) throws SQLException
-	{
-		if ((this.balancer.size() <= 1) || this.isAlive(database))
-		{
-			throw cause;
-		}
-		
-		if (this.deactivate(database))
-		{
-			logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this), cause);
-		}
 	}
 	
 	protected void register(Database<D> database, DynamicMBean mbean)

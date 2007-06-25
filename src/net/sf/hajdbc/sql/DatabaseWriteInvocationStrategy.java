@@ -127,7 +127,7 @@ public class DatabaseWriteInvocationStrategy<D, T, R> implements InvocationStrat
 	
 					try
 					{
-						cluster.handleFailure(database, cause);
+						proxy.handleFailure(database, cause);
 					}
 					catch (SQLException sqle)
 					{

@@ -72,7 +72,7 @@ public class DatabaseReadInvocationStrategy<D, T, R> implements InvocationStrate
 				}
 				catch (SQLException e)
 				{
-					cluster.handleFailure(database, e);
+					proxy.handleFailure(database, e);
 				}
 				finally
 				{
