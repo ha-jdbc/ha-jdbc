@@ -19,6 +19,12 @@
 			<action context="src" dev="PF" type="fix" due-to="David White">
 				Fixed IllegalAccessError in JiBX marshalling during configuration export.
 			</action>
+			<action context="src" dev="PF" type="remove">
+				Removed ManagementFactory Retrotranslator plugin.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded Retrotranslator to 1.2.2.
+			</action>
 		</release>
 		<release version="2.0-rc-1" date="June 18, 2007">
 			<action context="src" dev="PF" type="fix">

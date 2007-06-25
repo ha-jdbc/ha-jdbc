@@ -56,8 +56,6 @@
 	<property name="dist-1.4.bin.file" location="${basedir}/${dist-1.4.version.name}-bin.tar.gz"></property>
 	<property name="dist.src.file" location="${basedir}/${dist.version.name}-src.tar.gz"></property>
 	
-	<property name="backport.path" value="net/sf/hajdbc/backport/**"></property>
-	
 	<path id="src.classpath">
 		<fileset dir="${lib.dir}" includes="*.jar"></fileset>
 	</path>
@@ -87,6 +85,13 @@
 		<fileset dir="${lib.compile.dir}" includes="*.jar"></fileset>
 		<fileset dir="${lib.dir}" includes="jibx-run-*.jar"></fileset>
 	</path>
+
+	<path id="retrotranslate.classpath">
+		<fileset dir="${lib-1.4.dir}"></fileset>
+		<fileset dir="${lib-1.4.compile.dir}"></fileset>
+	</path>
+	
+	<taskdef name="retrotranslate" classname="net.sf.retrotranslator.transformer.RetrotranslatorTask" classpathref="retrotranslate.classpath"></taskdef>
 	
 	<taskdef name="testng" classname="org.testng.TestNGAntTask" classpathref="testng.classpath"></taskdef>
 	<taskdef name="bind" classname="org.jibx.binding.ant.CompileTask" classpathref="jibx.classpath"></taskdef>
@@ -112,7 +117,7 @@
 	</target>
 
 	<target name="compile" depends="clean, init">
-		<javac srcdir="${src.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="build.classpath" source="1.5" target="${target}" excludes="${backport.path}"></javac>
+		<javac srcdir="${src.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="build.classpath" source="1.5" target="${target}"></javac>
 		<bind verbose="false" load="true">
 			<bindingfileset dir="${conf.jibx.dir}" includes="*.xml"/>
 			<classpath refid="build.classpath"></classpath>
@@ -143,8 +148,13 @@
 	</target>
 
 	<target name="compile-1.4" depends="init-1.4, compile-1.5" description="Compile for Java 1.4">
-		<javac srcdir="${src.dir}" destdir="${build-1.4.dir}" optimize="yes" debug="on" classpathref="build.classpath" source="1.4" target="1.4" includes="${backport.path}"></javac>
-		<ant antfile="backport.xml" inheritall="false"></ant>
+		<retrotranslate srcdir="${build.dir}" destdir="${build-1.4.dir}"></retrotranslate>
+		<copy todir="${lib-1.4.dir}">
+			<fileset dir="${lib.dir}" includes="jgroups-*.jar"></fileset>
+		</copy>
+		<retrotranslate>
+			<jarfileset dir="${lib-1.4.dir}" includes="jgroups-*.jar"/>
+		</retrotranslate>
 	</target>
 
 	<target name="jar-1.4" depends="clean-1.4, compile-1.4" description="Creates JAR for Java 1.4">
