@@ -12,7 +12,7 @@
 	</contexts>
 
 	<changes>
-		<release version="1.1.12" date="June 18, 2007">
+		<release version="1.1.12" date="June 25, 2007">
 			<action context="src" dev="PF" type="fix">
 				Fixed memory leak with CONCUR_READ_ONLY result sets when using ResultSet.getStatement().close().
 			</action>
@@ -26,6 +26,13 @@
 			<action context="src" dev="PF" type="fix" due-to="David White">
 				Fixed IllegalAccessError in JiBX marshalling during configuration export.
 			</action>
+			<action context="src" dev="PF" type="update">
+				Changed log level in LocalDatabaseCluster.handleFailure(...) to ERROR.
+			</action>
+			<action context="src" dev="PF" type="remove">
+				Removed Retrotranslator plugin for java.lang.management.ManagementFactory.
+				This is now natively supported by Retrotranslator.
+			</action>
 			<action context="lib" dev="PF" type="update">
 				Upgraded JiBX to 1.1.5.
 			</action>
@@ -34,6 +41,9 @@
 			</action>
 			<action context="lib" dev="PF" type="update">
 				Upgraded TestNG to 5.6.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded Retrotranslator to 1.2.2.
 			</action>
 		</release>
 		<release version="1.1.11" date="April 17, 2007">

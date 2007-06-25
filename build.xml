@@ -29,8 +29,6 @@
 	<property name="jar-1.4.file" location="${basedir}/${dist-1.4.version.name}.jar"></property>
 	<property name="dist-1.4.bin.file" location="${basedir}/${dist-1.4.version.name}-bin.tar.gz"></property>
 	
-	<property name="backport.path" value="net/sf/hajdbc/backport/**"></property>
-	
 	<path id="src.classpath">
 		<fileset dir="${lib.dir}" includes="*.jar"></fileset>
 		<fileset dir="${lib.compile.dir}" includes="*.jar"></fileset>
@@ -71,6 +69,14 @@
 		</fileset>
 	</path>
 	
+	<path id="retrotranslate.classpath">
+		<fileset dir="${lib.runtime-1.4.dir}"></fileset>
+		<fileset dir="${lib.compile-1.4.dir}"></fileset>
+		<dirset dir="${build-1.4.dir}"></dirset>
+	</path>
+	
+	<taskdef name="retrotranslate" classname="net.sf.retrotranslator.transformer.RetrotranslatorTask" classpathref="retrotranslate.classpath"></taskdef>
+	
 	<taskdef name="testng" classname="org.testng.TestNGAntTask" classpathref="testng.classpath"></taskdef>
 	<taskdef name="bind" classname="org.jibx.binding.ant.CompileTask" classpathref="bind.classpath"></taskdef>
 	
@@ -83,7 +89,7 @@
 	</target>
 	
 	<target name="compile" depends="init">
-		<javac srcdir="${src.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="build.classpath" source="1.5" target="1.5" excludes="${backport.path}"></javac>
+		<javac srcdir="${src.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="build.classpath" source="1.5" target="1.5"></javac>
 		<copy todir="${build.dir}">
 			<fileset dir="${src.dir}" excludes="**/*.java"></fileset>
 		</copy>
@@ -112,8 +118,7 @@
 	</target>
 
 	<target name="compile-1.4" depends="clean-1.4, init-1.4, bind">
-		<javac srcdir="${src.dir}" destdir="${build-1.4.dir}" optimize="yes" debug="on" classpathref="build.classpath" source="1.4" target="1.4" includes="${backport.path}"></javac>
-		<ant antfile="backport.xml" inheritall="false"></ant>
+		<retrotranslate srcdir="${build.dir}" destdir="${build-1.4.dir}"></retrotranslate>
 		<copy todir="${build-1.4.dir}">
 			<fileset dir="${src.dir}" excludes="**/*.java"></fileset>
 		</copy>
