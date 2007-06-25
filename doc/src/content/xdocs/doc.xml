@@ -933,7 +933,7 @@ cluster.activate(databaseId);
 						<li><a href="api/net/sf/hajdbc/sql/DriverDatabaseClusterMBean.html#add(java.lang.String, java.lang.String, java.lang.String)"><code>add(String databaseId, String driver, String url)</code></a></li>
 						<li><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#remove(java.lang.String)"><code>remove(String databaseId)</code></a></li>
 					</ul>
-					<p>net.sf.hajdbc.sql.DataSourceDatabaseClusterMBean</p>
+					<p>net.sf.hajdbc.sql.DataSourceDatabaseClusterMBean:</p>
 					<ul>
 						<li><a href="api/net/sf/hajdbc/sql/DataSourceDatabaseClusterMBean.html#add(java.lang.String, java.lang.String)"><code>DataSourceDatabaseClusterMBean.add(String databaseId, String name)</code></a></li>
 						<li><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#remove(java.lang.String)"><code>remove(String databaseId)</code></a></li>
@@ -1015,8 +1015,7 @@ cluster.activate(databaseId);
 				</ul>
 			</section>
 			<section>
-				<title>JMX</title>#  dialect="default" is renamed dialect="standard".
-				
+				<title>JMX</title>
 				<ul>
 					<li>HA-JDBC no longer quotes identifiers when constructing the names for cluster and database mbeans.</li>
 				</ul>
