@@ -484,7 +484,7 @@ public class LocalDatabaseCluster implements DatabaseCluster
 		
 		if (this.deactivate(database))
 		{
-			logger.warn(Messages.getMessage(Messages.DATABASE_NOT_ALIVE, database, this), cause);
+			logger.error(Messages.getMessage(Messages.DATABASE_NOT_ALIVE, database, this), cause);
 		}
 	}
 	
