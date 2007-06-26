@@ -959,15 +959,32 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		 */
 		public void run()
 		{
-			Balancer<D> balancer = AbstractDatabaseCluster.this.getBalancer();
+			Set<Database<D>> databaseSet = AbstractDatabaseCluster.this.getBalancer().all();
 			
-			for (Database<D> database: AbstractDatabaseCluster.this.getBalancer().all())
+			int size = databaseSet.size();
+			
+			if (size > 1)
 			{
-				if ((balancer.size() > 1) && !AbstractDatabaseCluster.this.isAlive(database))
+				Iterator<Database<D>> databases = databaseSet.iterator();
+				
+				// Remove databases that are still alive leaving only the dead ones
+				while (databases.hasNext())
 				{
-					if (AbstractDatabaseCluster.this.deactivate(database))
+					if (AbstractDatabaseCluster.this.isAlive(databases.next()))
 					{
-						logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this));
+						databases.remove();
+					}
+				}
+				
+				// Deactivate the dead ones, so long as at least one is alive
+				if (databaseSet.size() < size)
+				{
+					for (Database<D> database: databaseSet)
+					{
+						if (AbstractDatabaseCluster.this.deactivate(database))
+						{
+							logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this));
+						}
 					}
 				}
 			}
