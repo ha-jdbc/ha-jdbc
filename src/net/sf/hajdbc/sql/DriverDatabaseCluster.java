@@ -24,7 +24,6 @@ import java.net.URL;
 import java.sql.Driver;
 
 import org.jibx.runtime.IUnmarshallingContext;
-import org.jibx.runtime.impl.UnmarshallingContext;
 
 /**
  * @author Paul Ferraro
@@ -34,7 +33,7 @@ public class DriverDatabaseCluster extends AbstractDatabaseCluster<Driver> imple
 {
 	public static DriverDatabaseCluster extractDatabaseCluster(IUnmarshallingContext context)
 	{
-		return DriverDatabaseCluster.class.cast(UnmarshallingContext.class.cast(context).getUserContext());
+		return (DriverDatabaseCluster) context.getUserContext();
 	}
 	
 	/**

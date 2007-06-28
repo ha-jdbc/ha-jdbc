@@ -34,7 +34,11 @@ public abstract class AbstractTableProperties implements TableProperties
 	@Override
 	public boolean equals(Object object)
 	{
-		return (object != null) && TableProperties.class.isInstance(object) && this.getName().equals(TableProperties.class.cast(object).getName());
+		if ((object == null) || !(object instanceof TableProperties)) return false;
+			
+		String name = ((TableProperties) object).getName();
+		
+		return (name != null) && name.equals(this.getName());
 	}
 
 	/**

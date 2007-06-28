@@ -123,10 +123,15 @@ public abstract class AbstractDatabase<D> implements Database<D>
 	/**
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public boolean equals(Object object)
 	{
-		return (object != null) && Database.class.isInstance(object) && this.id.equals(Database.class.cast(object).getId());
+		if ((object == null) || !(object instanceof Database)) return false;
+		
+		String id = ((Database) object).getId();
+		
+		return (id != null) && id.equals(this.id);
 	}
 	
 	/**

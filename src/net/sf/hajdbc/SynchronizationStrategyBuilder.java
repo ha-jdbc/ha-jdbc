@@ -87,7 +87,7 @@ public class SynchronizationStrategyBuilder
 		
 		for (Object key: this.properties.keySet())
 		{
-			String name = String.class.cast(key);
+			String name = (String) key;
 			
 			PropertyDescriptor descriptor = propertyDescriptorMap.get(name);
 			

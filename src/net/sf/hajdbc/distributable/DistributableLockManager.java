@@ -114,7 +114,9 @@ public class DistributableLockManager implements LockManager, VotingListener, Me
 	@Override
 	public boolean vote(Object decree) throws VoteException
 	{
-		return LockDecree.class.cast(decree).vote(this.lockManager, this.lockMap);
+		if ((decree == null) || !(decree instanceof LockDecree)) throw new VoteException("");
+		
+		return ((LockDecree) decree).vote(this.lockManager, this.lockMap);
 	}
 	
 	/**

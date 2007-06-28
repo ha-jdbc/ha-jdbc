@@ -39,9 +39,9 @@ public class SQLExceptionFactory
 	
 	public static SQLException createSQLException(Throwable cause)
 	{
-		if (SQLException.class.isInstance(cause))
+		if (cause instanceof SQLException)
 		{
-			return SQLException.class.cast(cause);
+			return (SQLException) cause;
 		}
 		
 		SQLException exception = new SQLException();

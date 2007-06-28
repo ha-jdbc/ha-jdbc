@@ -80,9 +80,7 @@ public class DataSourceDatabase extends AbstractDatabase<DataSource> implements 
 		{
 			Context context = new InitialContext(this.properties);
 	
-			Object object = context.lookup(this.name);
-			
-			return DataSource.class.cast(object);
+			return (DataSource) context.lookup(this.name);
 		}
 		catch (ClassCastException e)
 		{

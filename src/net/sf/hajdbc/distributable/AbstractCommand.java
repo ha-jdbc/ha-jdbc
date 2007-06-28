@@ -93,6 +93,6 @@ public abstract class AbstractCommand implements Command<Boolean>, Externalizabl
 	@Override
 	public Boolean unmarshalResult(Object result)
 	{
-		return Boolean.class.cast(result);
+		return (Boolean) result;
 	}
 }

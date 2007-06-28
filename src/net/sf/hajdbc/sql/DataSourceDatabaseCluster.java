@@ -25,7 +25,6 @@ import java.net.URL;
 import javax.sql.DataSource;
 
 import org.jibx.runtime.IUnmarshallingContext;
-import org.jibx.runtime.impl.UnmarshallingContext;
 
 /**
  * @author Paul Ferraro
@@ -35,7 +34,7 @@ public class DataSourceDatabaseCluster extends AbstractDatabaseCluster<DataSourc
 {
 	public static DataSourceDatabaseCluster extractDatabaseCluster(IUnmarshallingContext context)
 	{
-		return DataSourceDatabaseCluster.class.cast(UnmarshallingContext.class.cast(context).getUserContext());
+		return (DataSourceDatabaseCluster) context.getUserContext();
 	}
 	
 	/**

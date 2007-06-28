@@ -70,7 +70,7 @@ public class PropertiesMapper extends AbstractMapper<Properties>
 			
 			for (Object key: properties.keySet())
 			{
-				String name = String.class.cast(key);
+				String name = (String) key;
 				
 				context.startTagAttributes(this.index, ELEMENT).attribute(this.index, ATTRIBUTE, name).closeStartContent().content(properties.getProperty(name)).endTag(this.index, ELEMENT);
 			}

@@ -28,15 +28,15 @@ import net.sf.hajdbc.ColumnProperties;
  */
 public class ColumnPropertiesImpl implements ColumnProperties
 {
-	private String column;
+	private String name;
 	private int type;
 	private String nativeType;
 	private String remarks;
 	private Boolean autoIncrement;
 	
-	public ColumnPropertiesImpl(String column, int type, String nativeType, String remarks, Boolean autoIncrement)
+	public ColumnPropertiesImpl(String name, int type, String nativeType, String remarks, Boolean autoIncrement)
 	{
-		this.column = column;
+		this.name = name;
 		this.type = type;
 		this.nativeType = nativeType;
 		this.remarks = remarks;
@@ -48,7 +48,7 @@ public class ColumnPropertiesImpl implements ColumnProperties
 	 */
 	public String getName()
 	{
-		return this.column;
+		return this.name;
 	}
 	
 	/**
@@ -89,7 +89,11 @@ public class ColumnPropertiesImpl implements ColumnProperties
 	@Override
 	public boolean equals(Object object)
 	{
-		return ColumnProperties.class.cast(object).getName().equals(this.column);
+		if ((object == null) || !(object instanceof ColumnProperties)) return false;
+		
+		String name = ((ColumnProperties) object).getName();
+		
+		return (name != null) && name.equals(this.name);
 	}
 
 	/**
@@ -98,6 +102,6 @@ public class ColumnPropertiesImpl implements ColumnProperties
 	@Override
 	public int hashCode()
 	{
-		return this.column.hashCode();
+		return this.name.hashCode();
 	}
 }

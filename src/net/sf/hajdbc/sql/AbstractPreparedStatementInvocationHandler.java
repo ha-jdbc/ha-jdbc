@@ -124,7 +124,7 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 		{
 			if (types[1].equals(InputStream.class))
 			{
-				final File file = this.fileSupport.createFile(InputStream.class.cast(parameters[1]));
+				final File file = this.fileSupport.createFile((InputStream) parameters[1]);
 				
 				return new Invoker<D, S, Object>()
 				{
@@ -152,7 +152,7 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 			
 			if (types[1].equals(Reader.class))
 			{
-				final File file = this.fileSupport.createFile(Reader.class.cast(parameters[1]));
+				final File file = this.fileSupport.createFile((Reader) parameters[1]);
 				
 				return new Invoker<D, S, Object>()
 				{
@@ -182,7 +182,7 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 			{
 				if (Proxy.isProxyClass(parameters[1].getClass()))
 				{
-					final BlobInvocationHandler<D, ?> proxy = BlobInvocationHandler.class.cast(Proxy.getInvocationHandler(parameters[1]));
+					final BlobInvocationHandler<D, ?> proxy = (BlobInvocationHandler) Proxy.getInvocationHandler(parameters[1]);
 					
 					return new Invoker<D, S, Object>()
 					{
@@ -208,7 +208,7 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 					};
 				}
 
-				parameters[1] = new SerialBlob(Blob.class.cast(parameters[1]));
+				parameters[1] = new SerialBlob((Blob) parameters[1]);
 			}
 		
 			// Handle both clob and nclob
@@ -216,7 +216,7 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 			{
 				if (Proxy.isProxyClass(parameters[1].getClass()))
 				{
-					final ClobInvocationHandler<D, ?> proxy = ClobInvocationHandler.class.cast(Proxy.getInvocationHandler(parameters[1]));
+					final ClobInvocationHandler<D, ?> proxy = (ClobInvocationHandler) Proxy.getInvocationHandler(parameters[1]);
 					
 					return new Invoker<D, S, Object>()
 					{
@@ -242,7 +242,7 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 					};
 				}
 
-				Clob clob = new SerialClob(Clob.class.cast(parameters[1]));
+				Clob clob = new SerialClob((Clob) parameters[1]);
 				
 				parameters[1] = types[1].equals(Clob.class) ? clob : ProxyFactory.createProxy(types[1], new SimpleInvocationHandler(clob));
 			}

@@ -105,11 +105,11 @@ public class ConnectionInvocationHandler<D> extends AbstractInvocationHandler<D,
 			
 			if (methodName.equals("prepareStatement"))
 			{
-				return new PreparedStatementInvocationStrategy<D>(connection, this.fileSupport, String.class.cast(parameters[0]));
+				return new PreparedStatementInvocationStrategy<D>(connection, this.fileSupport, (String) parameters[0]);
 			}
 			else if (methodName.equals("prepareCall"))
 			{
-				return new CallableStatementInvocationStrategy<D>(connection, this.fileSupport, String.class.cast(parameters[0]));
+				return new CallableStatementInvocationStrategy<D>(connection, this.fileSupport, (String) parameters[0]);
 			}
 		}
 		
@@ -140,7 +140,7 @@ public class ConnectionInvocationHandler<D> extends AbstractInvocationHandler<D,
 	{
 		if (method.equals(Connection.class.getMethod("releaseSavepoint", Savepoint.class)))
 		{
-			final SQLProxy<D, Savepoint> proxy = SQLProxy.class.cast(Proxy.getInvocationHandler(parameters[0]));
+			final SQLProxy<D, Savepoint> proxy = (SQLProxy) Proxy.getInvocationHandler(parameters[0]);
 			
 			return new Invoker<D, Connection, Void>()
 			{
@@ -155,7 +155,7 @@ public class ConnectionInvocationHandler<D> extends AbstractInvocationHandler<D,
 		
 		if (method.equals(Connection.class.getMethod("rollback", Savepoint.class)))
 		{
-			final SQLProxy<D, Savepoint> proxy = SQLProxy.class.cast(Proxy.getInvocationHandler(parameters[0]));
+			final SQLProxy<D, Savepoint> proxy = (SQLProxy) Proxy.getInvocationHandler(parameters[0]);
 			
 			return new Invoker<D, Connection, Void>()
 			{
@@ -186,7 +186,7 @@ public class ConnectionInvocationHandler<D> extends AbstractInvocationHandler<D,
 		}
 		else if (method.equals(Connection.class.getMethod("releaseSavepoint", Savepoint.class)))
 		{
-			SQLProxy<D, Savepoint> proxy = SQLProxy.class.cast(Proxy.getInvocationHandler(parameters[0]));
+			SQLProxy<D, Savepoint> proxy = (SQLProxy) Proxy.getInvocationHandler(parameters[0]);
 			
 			this.removeChild(proxy);
 		}

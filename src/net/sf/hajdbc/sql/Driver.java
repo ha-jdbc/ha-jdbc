@@ -88,7 +88,9 @@ public final class Driver implements java.sql.Driver
 		{
 			public Connection invoke(Database<java.sql.Driver> database, java.sql.Driver driver) throws SQLException
 			{
-				return driver.connect(DriverDatabase.class.cast(database).getUrl(), properties);
+				String url = ((DriverDatabase) database).getUrl();
+				
+				return driver.connect(url, properties);
 			}
 		};
 		
@@ -135,7 +137,9 @@ public final class Driver implements java.sql.Driver
 		{
 			public DriverPropertyInfo[] invoke(Database<java.sql.Driver> database, java.sql.Driver driver) throws SQLException
 			{
-				return driver.getPropertyInfo(DriverDatabase.class.cast(database).getUrl(), properties);
+				String url = ((DriverDatabase) database).getUrl();
+				
+				return driver.getPropertyInfo(url, properties);
 			}			
 		};
 		

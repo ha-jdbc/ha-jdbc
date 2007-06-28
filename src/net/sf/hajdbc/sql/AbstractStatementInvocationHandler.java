@@ -95,7 +95,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 			
 			if ((types != null) && (types.length > 0) && types[0].equals(String.class))
 			{
-				return new DatabaseWriteInvocationStrategy<D, S, Object>(this.getLockList(String.class.cast(parameters[0])));
+				return new DatabaseWriteInvocationStrategy<D, S, Object>(this.getLockList((String) parameters[0]));
 			}
 		}
 		
@@ -112,7 +112,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 		
 		if (method.equals(Statement.class.getMethod("executeQuery", String.class)))
 		{
-			String sql = String.class.cast(parameters[0]);
+			String sql = (String) parameters[0];
 			
 			List<Lock> lockList = this.getLockList(sql);
 			
@@ -155,7 +155,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 	{
 		if (method.equals(Statement.class.getMethod("addBatch", String.class)))
 		{
-			this.sqlList.add(String.class.cast(parameters[0]));
+			this.sqlList.add((String) parameters[0]);
 		}
 		else if (method.equals(Statement.class.getMethod("clearBatch")))
 		{

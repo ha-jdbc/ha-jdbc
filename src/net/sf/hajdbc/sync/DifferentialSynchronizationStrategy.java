@@ -426,7 +426,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 
 	private boolean equals(Object object1, Object object2)
 	{
-		if (byte[].class.isInstance(object1) && byte[].class.isInstance(object2))
+		if ((object1 instanceof byte[]) && (object2 instanceof byte[]))
 		{
 			byte[] bytes1 = (byte[]) object1;
 			byte[] bytes2 = (byte[]) object2;
@@ -445,7 +445,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 	@SuppressWarnings("unchecked")
 	private int compare(Object object1, Object object2)
 	{
-		return Comparable.class.cast(object1).compareTo(object2);
+		return ((Comparable) object1).compareTo(object2);
 	}
 
 	/**

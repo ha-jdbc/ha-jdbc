@@ -83,7 +83,11 @@ public abstract class AbstractLockDecree implements LockDecree, Externalizable
 	@Override
 	public boolean equals(Object object)
 	{
-		return AbstractLockDecree.class.isInstance(object) ? id.equals(AbstractLockDecree.class.cast(object).id) : false;
+		if ((object == null) || !(object instanceof LockDecree)) return false;
+		
+		String id = ((LockDecree) object).getId();
+		
+		return (id != null) && id.equals(this.id);
 	}
 
 	/**
@@ -112,6 +116,6 @@ public abstract class AbstractLockDecree implements LockDecree, Externalizable
 	public void readExternal(ObjectInput input) throws IOException, ClassNotFoundException
 	{
 		this.id = input.readUTF();
-		this.address = Address.class.cast(input.readObject());
+		this.address = (Address) input.readObject();
 	}
 }

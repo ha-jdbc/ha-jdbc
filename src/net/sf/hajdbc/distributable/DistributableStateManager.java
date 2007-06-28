@@ -80,7 +80,7 @@ public class DistributableStateManager implements StateManager, MessageListener,
 
 		try
 		{
-			Command<Object> command = Command.class.cast(message.getObject());
+			Command<Object> command = (Command) message.getObject();
 	
 			this.logger.info(Messages.getMessage(Messages.COMMAND_RECEIVED, command));
 			
@@ -112,7 +112,7 @@ public class DistributableStateManager implements StateManager, MessageListener,
 		{
 			Object result = this.dispatcher.sendMessage(this.createMessage(coordinator, command), GroupRequest.GET_FIRST, this.timeout);
 
-			return command.unmarshalResult(String.class.cast(result));
+			return command.unmarshalResult(result);
 		}
 		catch (TimeoutException e)
 		{

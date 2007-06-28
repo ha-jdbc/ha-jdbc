@@ -608,10 +608,15 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public boolean equals(Object object)
 	{
-		return (object != null) && DatabaseCluster.class.isInstance(object) && this.id.equals(DatabaseCluster.class.cast(object).getId());
+		if ((object == null) || !(object instanceof DatabaseCluster)) return false;
+		
+		String id = ((DatabaseCluster) object).getId();
+		
+		return (id != null) && id.equals(this.id);
 	}
 	
 	/**

@@ -402,17 +402,17 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 			{
 				Throwable target = e.getTargetException();
 				
-				if (SQLException.class.isInstance(target))
+				if (target instanceof SQLException)
 				{
-					throw SQLException.class.cast(target);
+					throw (SQLException) target;
 				}
-				else if (RuntimeException.class.isInstance(target))
+				else if (target instanceof RuntimeException)
 				{
-					throw RuntimeException.class.cast(target);
+					throw (RuntimeException) target;
 				}
-				else if (Error.class.isInstance(target))
+				else if (target instanceof Error)
 				{
-					throw Error.class.cast(target);
+					throw (Error) target;
 				}
 				
 				throw SQLExceptionFactory.createSQLException(target);
@@ -435,7 +435,11 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 		@Override
 		public boolean equals(Object object)
 		{
-			return (object != null) && DynamicInvoker.class.isInstance(object) && DynamicInvoker.class.cast(object).method.equals(this.method);
+			if ((object == null) || !DynamicInvoker.class.isInstance(object)) return false;
+			
+			Method method = ((DynamicInvoker) object).method;
+			
+			return (method != null) && method.equals(this.method);
 		}
 
 		/**
