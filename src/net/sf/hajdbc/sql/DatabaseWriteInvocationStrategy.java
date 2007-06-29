@@ -113,13 +113,13 @@ public class DatabaseWriteInvocationStrategy<D, T, R> implements InvocationStrat
 				futureMap.put(database, executor.submit(task));
 			}
 
-			for (Database<D> database: databaseSet)
+			for (Map.Entry<Database<D>, Future<R>> futureMapEntry: futureMap.entrySet())
 			{
-				Future<R> future = futureMap.get(database);
+				Database<D> database = futureMapEntry.getKey();
 				
 				try
 				{
-					resultMap.put(database, future.get());
+					resultMap.put(database, futureMapEntry.getValue().get());
 				}
 				catch (ExecutionException e)
 				{
@@ -162,7 +162,7 @@ public class DatabaseWriteInvocationStrategy<D, T, R> implements InvocationStrat
 			throw exceptionMap.get(exceptionMap.firstKey());
 		}
 		
-		// If any databases failed, while others succeeded, deactivate them
+		// If any databases failed, while others succeeded, handle the failures
 		if (!exceptionMap.isEmpty())
 		{
 			proxy.handleFailures(exceptionMap);
