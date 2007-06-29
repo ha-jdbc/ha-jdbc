@@ -237,7 +237,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 				}
 				catch (Exception e)
 				{
-					if ((this.databaseCluster.getBalancer().size() > 1) && this.databaseCluster.deactivate(database))
+					if (!this.objectMap.isEmpty() && this.databaseCluster.deactivate(database))
 					{
 						this.logger.warn(Messages.getMessage(Messages.SQL_OBJECT_INIT_FAILED, this.getClass().getName(), database), e);
 					}
@@ -339,11 +339,42 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 	
 	public void handleFailure(Database<D> database, SQLException cause) throws SQLException
 	{
-		if (!this.isBalancerFull() || this.databaseCluster.isAlive(database))
+		Set<Database<D>> databaseSet = this.databaseCluster.getBalancer().all();
+		
+		// If cluster has only one database left, don't deactivate
+		if (databaseSet.size() <= 1)
+		{
+			throw cause;
+		}
+
+		Map<Database<D>, Boolean> aliveMap = this.databaseCluster.getAliveMap(databaseSet);
+		
+		Boolean alive = aliveMap.get(database);
+		
+		// If failed database is alive, then throw caught exception
+		if ((alive != null) && alive)
+		{
+			throw cause;
+		}
+
+		// Detect whether all database are dead
+		Iterator<Boolean> aliveMapValues = aliveMap.values().iterator();
+		
+		while (aliveMapValues.hasNext())
+		{
+			if (!aliveMapValues.next())
+			{
+				aliveMapValues.remove();
+			}
+		}
+		
+		// If all are dead, assume the worst and throw caught exception
+		if (aliveMap.isEmpty())
 		{
 			throw cause;
 		}
 		
+		// Otherwise deactivate failed database
 		if (this.databaseCluster.deactivate(database))
 		{
 			logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this), cause);
@@ -351,6 +382,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 	}
 	
 	/**
+	 * Deactivates the failed databases.
 	 * @param exceptionMap
 	 * @throws SQLException
 	 */
@@ -362,16 +394,11 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 			Database<D> database = exceptionMapEntry.getKey();
 			SQLException exception = exceptionMapEntry.getValue();
 			
-			if (this.isBalancerFull() && this.databaseCluster.deactivate(database))
+			if (this.databaseCluster.deactivate(database))
 			{
 				this.logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this.databaseCluster), exception);
 			}
 		}
-	}
-	
-	private boolean isBalancerFull()
-	{
-		return this.databaseCluster.getBalancer().size() > 1;
 	}
 	
 	protected class DynamicInvoker implements Invoker<D, E, Object>

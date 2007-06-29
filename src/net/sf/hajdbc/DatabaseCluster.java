@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
@@ -116,13 +117,6 @@ public interface DatabaseCluster<D>
 	public DatabaseMetaDataCache getDatabaseMetaDataCache();
 	
 	/**
-	 * Determines whether the specified database is alive.
-	 * @param database a database descriptor
-	 * @return true, if the database is alive, false otherwise
-	 */
-	public boolean isAlive(Database<D> database);
-	
-	/**
 	 * Indicates whether or not sequence detection is enabled for this cluster.
 	 * @return true, if sequence detection is enabled, false otherwise.
 	 */
@@ -133,4 +127,11 @@ public interface DatabaseCluster<D>
 	 * @return true, if identity column detection is enabled, false otherwise.
 	 */
 	public boolean isIdentityColumnDetectionEnabled();
+	
+	/**
+	 * Determines whether the specified databases are alive.
+	 * @param databases a collection of database descriptors
+	 * @return a map of database descriptor to true, if alive, false otherwise
+	 */
+	public Map<Database<D>, Boolean> getAliveMap(Collection<Database<D>> databases);
 }

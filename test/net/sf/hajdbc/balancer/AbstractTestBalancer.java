@@ -96,25 +96,6 @@ public abstract class AbstractTestBalancer implements Balancer<Void>
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Balancer#contains(net.sf.hajdbc.Database)
-	 */
-	@Test(dataProvider = "database")
-	public boolean contains(Database<Void> database)
-	{
-		boolean contains = this.balancer.contains(database);
-		
-		assert !contains;
-		
-		this.balancer.add(database);
-		
-		contains = this.balancer.contains(database);
-		
-		assert contains;
-		
-		return contains;
-	}
-
-	/**
 	 * @see net.sf.hajdbc.Balancer#list()
 	 */
 	@Test
@@ -213,44 +194,5 @@ public abstract class AbstractTestBalancer implements Balancer<Void>
 		assert !removed;
 		
 		return removed;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.Balancer#size()
-	 */
-	@Override
-	@Test
-	public int size()
-	{
-		Database<Void> database1 = new MockDatabase("1", 1);
-		Database<Void> database2 = new MockDatabase("2", 1);
-		
-		int size = this.balancer.size();
-		
-		assert size == 0;
-		
-		this.balancer.add(database1);
-		
-		size = this.balancer.size();
-		
-		assert size == 1;
-		
-		this.balancer.add(database2);
-		
-		assert size == 2;
-		
-		this.balancer.remove(database1);
-		
-		size = this.balancer.size();
-
-		assert size == 1;
-		
-		this.balancer.remove(database2);
-		
-		size = this.balancer.size();
-
-		assert size == 0;
-		
-		return size;
 	}
 }

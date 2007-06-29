@@ -54,13 +54,6 @@ public interface Balancer<D>
 	 * @return a collection of database descriptors
 	 */
 	public Set<Database<D>> all();
-
-	/**
-	 * Check whether the specified database is known to this balancer
-	 * @param database a database descriptor
-	 * @return true, if the database is known to this balancer, false otherwise
-	 */
-	public boolean contains(Database<D> database);
 	
 	/**
 	 * Called before an operation is performed on the specified database retrieved via {@link #next()}.
@@ -73,10 +66,4 @@ public interface Balancer<D>
 	 * @param database a database descriptor
 	 */
 	public void afterInvocation(Database<D> database);
-	
-	/**
-	 * Returns the number of databases in this balancer.
-	 * @return a positive integer
-	 */
-	public int size();
 }

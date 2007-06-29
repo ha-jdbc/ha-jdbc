@@ -85,15 +85,6 @@ public abstract class AbstractBalancer<D> implements Balancer<D>
 		
 		return Collections.unmodifiableSet(databaseSet);
 	}
-	
-	/**
-	 * @see net.sf.hajdbc.Balancer#size()
-	 */
-	@Override
-	public synchronized int size()
-	{
-		return this.collect().size();
-	}
 
 	/**
 	 * Exposes a view of the underlying collection of Databases.

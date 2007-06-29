@@ -35,15 +35,20 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -134,9 +139,48 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#isAlive(net.sf.hajdbc.Database)
+	 * @see net.sf.hajdbc.DatabaseCluster#getAliveMap(java.util.Set)
 	 */
-	public boolean isAlive(Database<D> database)
+	@Override
+	public Map<Database<D>, Boolean> getAliveMap(Collection<Database<D>> databases)
+	{
+		Map<Database<D>, Future<Boolean>> futureMap = new TreeMap<Database<D>, Future<Boolean>>();
+
+		for (final Database<D> database: databases)
+		{
+			Callable<Boolean> task = new Callable<Boolean>()
+			{
+				public Boolean call() throws Exception
+				{
+					return AbstractDatabaseCluster.this.isAlive(database);
+				}
+			};
+
+			futureMap.put(database, this.nonTransactionalExecutor.submit(task));
+		}
+
+		Map<Database<D>, Boolean> aliveMap = new TreeMap<Database<D>, Boolean>();
+		
+		for (Map.Entry<Database<D>, Future<Boolean>> futureMapEntry: futureMap.entrySet())
+		{
+			try
+			{
+				aliveMap.put(futureMapEntry.getKey(), futureMapEntry.getValue().get());
+			}
+			catch (ExecutionException e)
+			{
+				// Is alive does not throw an exception
+			}
+			catch (InterruptedException e)
+			{
+				// Ignore
+			}
+		}
+		
+		return aliveMap;
+	}
+	
+	private boolean isAlive(Database<D> database)
 	{
 		try
 		{
@@ -151,7 +195,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			return false;
 		}
 	}
-	
+
 	private void test(Database<D> database) throws SQLException
 	{
 		Connection connection = null;
@@ -417,7 +461,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	{
 		Database<D> database = this.getDatabase(id);
 		
-		if (this.balancer.contains(database))
+		if (this.balancer.all().contains(database))
 		{
 			throw new IllegalStateException(Messages.getMessage(Messages.DATABASE_STILL_ACTIVE, id, this));
 		}
@@ -463,6 +507,10 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		this.lockManager.start();
 		this.stateManager.start();
 		
+		this.nonTransactionalExecutor = new ThreadPoolExecutor(this.minThreads, this.maxThreads, this.maxIdle, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new ThreadPoolExecutor.CallerRunsPolicy());
+		
+		this.transactionalExecutor = this.transactionMode.equals(TransactionMode.SERIAL) ? new SynchronousExecutor() : this.nonTransactionalExecutor;
+		
 		Set<String> databaseSet = this.stateManager.getInitialState();
 		
 		if (databaseSet != null)
@@ -479,18 +527,16 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		}
 		else
 		{
-			for (Database<D> database: this.databaseMap.values())
+			Map<Database<D>, Boolean> aliveMap = this.getAliveMap(this.databaseMap.values());
+			
+			for (Map.Entry<Database<D>, Boolean> aliveMapEntry: aliveMap.entrySet())
 			{
-				if (this.isAlive(database))
+				if (aliveMapEntry.getValue())
 				{
-					this.activate(database);
+					this.activate(aliveMapEntry.getKey());
 				}
 			}
 		}
-		
-		this.nonTransactionalExecutor = new ThreadPoolExecutor(this.minThreads, this.maxThreads, this.maxIdle, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new ThreadPoolExecutor.CallerRunsPolicy());
-		
-		this.transactionalExecutor = this.transactionMode.equals(TransactionMode.SERIAL) ? new SynchronousExecutor() : this.nonTransactionalExecutor;
 		
 		this.databaseMetaDataCache.setDialect(this.dialect);
 		
@@ -738,14 +784,14 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		
 		try
 		{
-			if (this.balancer.contains(database))
+			SynchronizationContext<D> context = new SynchronizationContextImpl<D>(this, database);
+			
+			if (context.getActiveDatabaseSet().contains(database))
 			{
 				return false;
 			}
 			
 			this.test(database);
-			
-			SynchronizationContext<D> context = new SynchronizationContextImpl<D>(this, database);
 			
 			try
 			{
@@ -970,21 +1016,23 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			
 			if (size > 1)
 			{
-				Iterator<Database<D>> databases = databaseSet.iterator();
+				Map<Database<D>, Boolean> aliveMap = AbstractDatabaseCluster.this.getAliveMap(databaseSet);
+				
+				Iterator<Boolean> aliveMapValues = aliveMap.values().iterator();
 				
 				// Remove databases that are still alive leaving only the dead ones
-				while (databases.hasNext())
+				while (aliveMapValues.hasNext())
 				{
-					if (AbstractDatabaseCluster.this.isAlive(databases.next()))
+					if (aliveMapValues.next())
 					{
-						databases.remove();
+						aliveMapValues.remove();
 					}
 				}
 				
 				// Deactivate the dead ones, so long as at least one is alive
-				if (databaseSet.size() < size)
+				if (aliveMap.size() < size)
 				{
-					for (Database<D> database: databaseSet)
+					for (Database<D> database: aliveMap.keySet())
 					{
 						if (AbstractDatabaseCluster.this.deactivate(database))
 						{
