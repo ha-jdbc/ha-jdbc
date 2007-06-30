@@ -76,7 +76,6 @@ public class TestDataSourceFactory implements ObjectFactory
 	@AfterClass
 	protected void tearDown() throws Exception
 	{
-		System.out.println("tearDown()");
 		this.context.unbind("datasource");
 		
 		this.context.unbind("datasource1");
@@ -154,10 +153,11 @@ public class TestDataSourceFactory implements ObjectFactory
 			
 			return null;
 		}
-		catch(Throwable e){e.printStackTrace();assert false;return null;}
-		finally
+		catch (Exception e)
 		{
-			System.out.println(obj);
+			assert false : e;
+		
+			return null;
 		}
 	}
 }
