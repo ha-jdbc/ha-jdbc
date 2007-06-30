@@ -694,6 +694,13 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		this.decorator = decorator;
 	}
 	
+	void addClean(Database<D> database)
+	{
+		database.clean();
+		
+		this.add(database);
+	}
+	
 	protected synchronized void add(Database<D> database)
 	{
 		String id = database.getId();

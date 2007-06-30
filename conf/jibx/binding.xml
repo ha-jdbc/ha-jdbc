@@ -7,11 +7,11 @@
 	<mapping name="distributable" class="net.sf.hajdbc.distributable.DistributableDatabaseClusterDecorator">
 		<value name="config" field="config" style="attribute" usage="optional" default="stacks.xml"/>
 		<value name="stack" field="stack" style="attribute" usage="optional" default="udp-sync"/>
-		<value name="timeout" get-method="getTimeout" set-method="setTimeout" style="attribute" usage="optional" default="1000"/>
+		<value name="timeout" field="timeout" style="attribute" usage="optional" default="1000"/>
 	</mapping>
 
 	<mapping name="sync" class="net.sf.hajdbc.SynchronizationStrategyBuilder">
-		<value name="id" get-method="getId" set-method="setId" style="attribute"/>
+		<value name="id" field="id" style="attribute"/>
 		<value name="class" field="targetClass" style="attribute"/>
 		<structure field="properties" unmarshaller="net.sf.hajdbc.util.PropertiesMapper" marshaller="net.sf.hajdbc.util.PropertiesMapper"></structure>
 	</mapping>
@@ -32,10 +32,10 @@
 	</mapping>
 	
 	<mapping class="net.sf.hajdbc.sql.AbstractDatabase" abstract="true">
-		<value name="id" get-method="getId" set-method="setId" style="attribute"/>
-		<value name="weight" get-method="getWeight" set-method="setWeight" style="attribute" usage="optional" default="1"/>
-		<structure get-method="getProperties" set-method="setProperties" unmarshaller="net.sf.hajdbc.util.PropertiesMapper" marshaller="net.sf.hajdbc.util.PropertiesMapper"></structure>
-		<value name="user" get-method="getUser" set-method="setUser" usage="optional"/>
-		<value name="password" get-method="getPassword" set-method="setPassword" usage="optional"/>
+		<value name="id" field="id" style="attribute"/>
+		<value name="weight" field="weight" style="attribute" usage="optional" default="1"/>
+		<structure field="properties" unmarshaller="net.sf.hajdbc.util.PropertiesMapper" marshaller="net.sf.hajdbc.util.PropertiesMapper"></structure>
+		<value name="user" field="user" usage="optional"/>
+		<value name="password" field="password" usage="optional"/>
 	</mapping>
 </binding>

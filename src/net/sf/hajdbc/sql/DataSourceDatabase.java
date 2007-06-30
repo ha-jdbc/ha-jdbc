@@ -40,7 +40,7 @@ import net.sf.hajdbc.Messages;
  */
 public class DataSourceDatabase extends AbstractDatabase<DataSource> implements InactiveDataSourceDatabaseMBean
 {
-	protected String name;
+	String name;
 	
 	/**
 	 * @see net.sf.hajdbc.sql.ActiveDataSourceDatabaseMBean#getName()

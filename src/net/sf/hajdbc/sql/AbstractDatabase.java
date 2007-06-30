@@ -31,12 +31,12 @@ import net.sf.hajdbc.Database;
  */
 public abstract class AbstractDatabase<D> implements Database<D>
 {
-	protected String id;
-	protected String user;
-	protected String password;
-	protected Properties properties = new Properties();
-	protected int weight = 1;
-	protected boolean dirty = false;
+	String id;
+	String user;
+	String password;
+	Properties properties = new Properties();
+	int weight = 1;
+	private boolean dirty = false;
 
 	/**
 	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getId()

@@ -35,9 +35,9 @@ import java.util.Properties;
 public class SynchronizationStrategyBuilder
 {
 	@SuppressWarnings("unused")
-	private String id;
-	private Class<? extends SynchronizationStrategy> targetClass;
-	private Properties properties;
+	String id;
+	Class<? extends SynchronizationStrategy> targetClass;
+	Properties properties;
 	
 	/**
 	 * Constructs a new SynchronizationStrategyBuilder.
@@ -59,11 +59,6 @@ public class SynchronizationStrategyBuilder
 	public String getId()
 	{
 		return this.id;
-	}
-	
-	public void setId(String id)
-	{
-		this.id = id;
 	}
 	
 	/**

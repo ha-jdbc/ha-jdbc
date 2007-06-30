@@ -45,8 +45,9 @@ public class MockDatabase extends AbstractDatabase<Void>
 	
 	public MockDatabase(String id, int weight)
 	{
-		this.id = id;
-		this.weight = weight;
+		this.setId(id);
+		this.setWeight(weight);
+		this.clean();
 	}
 
 	/**

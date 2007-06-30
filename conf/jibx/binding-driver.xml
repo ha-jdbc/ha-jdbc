@@ -12,8 +12,8 @@
 	</mapping>
 	
 	<mapping name="database" class="net.sf.hajdbc.sql.DriverDatabase" extends="net.sf.hajdbc.sql.AbstractDatabase">
-		<value name="driver" get-method="getDriver" set-method="setDriver" usage="optional"/>
-		<value name="url" get-method="getUrl" set-method="setUrl"/>
+		<value name="driver" field="driverClass" usage="optional"/>
+		<value name="url" field="url"/>
 		<structure map-as="net.sf.hajdbc.sql.AbstractDatabase"></structure>
 	</mapping>
 	

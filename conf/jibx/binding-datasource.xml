@@ -12,7 +12,7 @@
 	</mapping>
 	
 	<mapping name="datasource" class="net.sf.hajdbc.sql.DataSourceDatabase" extends="net.sf.hajdbc.sql.AbstractDatabase">
-		<value name="name" get-method="getName" set-method="setName"/>
+		<value name="name" field="name"/>
 		<structure map-as="net.sf.hajdbc.sql.AbstractDatabase"></structure>
 	</mapping>
 </binding>
