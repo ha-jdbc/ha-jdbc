@@ -34,10 +34,9 @@ import java.util.Properties;
  */
 public class SynchronizationStrategyBuilder
 {
-	@SuppressWarnings("unused")
-	String id;
-	Class<? extends SynchronizationStrategy> targetClass;
-	Properties properties;
+	private String id;
+	private Class<? extends SynchronizationStrategy> targetClass;
+	private Properties properties;
 	
 	/**
 	 * Constructs a new SynchronizationStrategyBuilder.
