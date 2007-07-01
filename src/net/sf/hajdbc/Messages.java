@@ -44,7 +44,7 @@ public final class Messages
 	public static final String DATABASE_DEACTIVATED = "database-deactivated";
 	public static final String DATABASE_NOT_ACTIVE = "database-not-active";
 	public static final String DATABASE_NOT_ALIVE = "database-not-alive";
-	public static final String DATABASE_STILL_ACTIVE = "database-remove-failed";
+	public static final String DATABASE_STILL_ACTIVE = "database-still-active";
 	public static final String DATABASE_SYNC_END = "database-sync-end";
 	public static final String DATABASE_SYNC_START = "database-sync-start";
 	public static final String DELETE_COUNT = "delete-count";
