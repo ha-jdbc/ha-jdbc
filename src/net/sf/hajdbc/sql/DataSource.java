@@ -54,8 +54,8 @@ public class DataSource implements Referenceable, ObjectFactory
 	{
 		Reference reference = new Reference(javax.sql.DataSource.class.getName(), this.getClass().getName(), null);
 		
-		reference.add(new StringRefAddr(CLUSTER, this.getCluster()));
-		reference.add(new StringRefAddr(CONFIG, this.getConfig()));
+		reference.add(new StringRefAddr(CLUSTER, this.cluster));
+		reference.add(new StringRefAddr(CONFIG, this.config));
 		
 		return reference;
 	}
