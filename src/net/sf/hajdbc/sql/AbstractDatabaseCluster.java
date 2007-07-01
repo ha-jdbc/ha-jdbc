@@ -499,11 +499,6 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	 */
 	public synchronized void start() throws Exception
 	{
-		for (Database<D> database: this.databaseMap.values())
-		{
-			this.register(database, database.getInactiveMBean());
-		}
-		
 		this.lockManager.start();
 		this.stateManager.start();
 		
@@ -694,13 +689,6 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		this.decorator = decorator;
 	}
 	
-	void addClean(Database<D> database)
-	{
-		database.clean();
-		
-		this.add(database);
-	}
-	
 	protected synchronized void add(Database<D> database)
 	{
 		String id = database.getId();
@@ -712,6 +700,8 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		
 		this.connectionFactoryMap.put(database, database.createConnectionFactory());
 		this.databaseMap.put(id, database);
+		
+		this.register(database, database.getInactiveMBean());
 	}
 	
 	Iterator<Database<D>> getDatabases()
