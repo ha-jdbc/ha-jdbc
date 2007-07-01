@@ -57,8 +57,6 @@ public class DataSourceDatabaseCluster extends AbstractDatabaseCluster<DataSourc
 		database.setId(databaseId);
 		database.setName(name);
 		
-		this.register(database, database.getInactiveMBean());
-		
 		this.add(database);
 	}
 }

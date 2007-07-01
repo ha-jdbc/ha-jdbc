@@ -57,8 +57,6 @@ public class DriverDatabaseCluster extends AbstractDatabaseCluster<Driver> imple
 		database.setDriver(driver);
 		database.setUrl(url);
 		
-		this.register(database, database.getInactiveMBean());
-		
 		this.add(database);
 	}
 }
