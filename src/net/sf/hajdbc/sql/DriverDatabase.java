@@ -42,8 +42,8 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	private static final String USER = "user";
 	private static final String PASSWORD = "password";
 	
-	String url;
-	Class<? extends Driver> driverClass;
+	private String url;
+	private Class<? extends Driver> driverClass;
 	
 	/**
 	 * @see net.sf.hajdbc.sql.ActiveDriverDatabaseMBean#getUrl()
