@@ -46,15 +46,6 @@ public class SynchronizationStrategyBuilder
 		// Do nothing
 	}
 	
-	/**
-	 * Constructs a new SynchronizationStrategyBuilder.
-	 * @param id
-	 */
-	public SynchronizationStrategyBuilder(String id)
-	{
-		this.id = id;
-	}
-	
 	public String getId()
 	{
 		return this.id;

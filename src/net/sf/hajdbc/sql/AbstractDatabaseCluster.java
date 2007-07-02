@@ -668,16 +668,6 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	{
 		return this.id.hashCode();
 	}
-
-	SynchronizationStrategyBuilder getDefaultSynchronizationStrategyBuilder()
-	{
-		return new SynchronizationStrategyBuilder(this.defaultSynchronizationStrategyId);
-	}
-	
-	void setDefaultSynchronizationStrategyBuilder(SynchronizationStrategyBuilder builder)
-	{
-		this.defaultSynchronizationStrategyId = builder.getId();
-	}
 	
 	DatabaseClusterDecorator getDecorator()
 	{
