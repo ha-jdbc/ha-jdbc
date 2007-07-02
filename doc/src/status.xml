@@ -12,6 +12,11 @@
 	</contexts>
 
 	<changes>
+		<release version="1.1.13" date="July 2, 2007">
+			<action context="src" dev="PF" type="fix">
+				Fixed bug during initialization where databases are added as dirty, triggering export of configuration file.
+			</action>
+		</release>
 		<release version="1.1.12" date="June 25, 2007">
 			<action context="src" dev="PF" type="fix">
 				Fixed memory leak with CONCUR_READ_ONLY result sets when using ResultSet.getStatement().close().
