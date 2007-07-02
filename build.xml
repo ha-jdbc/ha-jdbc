@@ -98,7 +98,6 @@
 	
 	<target name="clean" description="Clean build artifacts">
 		<delete dir="${build.dir}" quiet="true"></delete>
-		<delete dir="${basedir}" includes="${dist.name}-*" quiet="true"></delete>
 	</target>
 
 	<target name="init">
