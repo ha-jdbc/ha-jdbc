@@ -12,12 +12,29 @@
 	</contexts>
 
 	<changes>
+		<release version="2.0-rc-3" date="July 2, 2007">
+			<action context="src" dev="PF" type="update">
+				FailureDetectionTask and SQLProxy.handleFailure() will not deactivate any databases if they all appear to be dead.
+			</action>
+			<action context="src" dev="PF" type="update">
+				Convert dynamic Class.cast() and Class.isInstance() to static cast and instanceof expressions wherever possible.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed bug during initialization where databases are added as dirty, triggering export of configuration file.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				When adding a database to the cluster, perform duplicate id check before registering database to avoid InstanceAlreadyExistsException.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed broken error message when attempting to remove a database that is still active.
+			</action>
+		</release>
 		<release version="2.0-rc-2" date="June 25, 2007">
 			<action context="src" dev="PF" type="fix">
 				Added toString() to DatabaseClusterMBean interface so that log messages will display cluster id properly.
 			</action>
 			<action context="src" dev="PF" type="fix" due-to="David White">
-				Fixed IllegalAccessError in JiBX marshalling during configuration export.
+				Fixed IllegalAccessError in JiBX marshalling during configuration export.n
 			</action>
 			<action context="src" dev="PF" type="remove">
 				Removed Retrotranslator plugin for java.lang.management.ManagementFactory.
