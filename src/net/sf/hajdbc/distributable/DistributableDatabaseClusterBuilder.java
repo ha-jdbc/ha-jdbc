@@ -42,28 +42,12 @@ public class DistributableDatabaseClusterBuilder implements DatabaseClusterBuild
 	}
 	
 	/**
-	 * @param protocol 
-	 */
-	public void setProtocol(String protocol)
-	{
-		this.protocol = protocol;
-	}
-	
-	/**
 	 * Returns the number of milliseconds to allow for jgroups cluster operations
 	 * @return a number of milliseconds
 	 */
 	public int getTimeout()
 	{
 		return this.timeout;
-	}
-	
-	/**
-	 * @param timeout
-	 */
-	public void setTimeout(int timeout)
-	{
-		this.timeout = timeout;
 	}
 	
 	/**

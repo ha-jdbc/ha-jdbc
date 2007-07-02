@@ -4,13 +4,13 @@
 	<mapping name="ha-jdbc" class="net.sf.hajdbc.DatabaseClusterFactory">
 		<structure name="distributable" field="builder" type="net.sf.hajdbc.distributable.DistributableDatabaseClusterBuilder" usage="optional">
 			<value name="protocol" field="protocol" style="attribute" usage="optional" default="fc-fast-minimalthreads.xml"/>
-			<value name="timeout" get-method="getTimeout" set-method="setTimeout" style="attribute" usage="optional" default="1000"/>
+			<value name="timeout" field="timeout" style="attribute" usage="optional" default="1000"/>
 		</structure>
 		<collection add-method="addSynchronizationStrategyBuilder" iter-method="getSynchronizationStrategyBuilders" item-type="net.sf.hajdbc.SynchronizationStrategyBuilder"></collection>
 		<collection add-method="addDatabaseCluster" iter-method="getDatabaseClusters" item-type="net.sf.hajdbc.DatabaseCluster"></collection>
 	</mapping>
 	<mapping name="sync" class="net.sf.hajdbc.SynchronizationStrategyBuilder">
-		<value name="id" get-method="getId" set-method="setId" style="attribute" ident="def"/>
+		<value name="id" field="id" style="attribute" ident="def"/>
 		<value name="class" field="className" style="attribute"/>
 		<structure field="properties" unmarshaller="net.sf.hajdbc.util.PropertiesMapper" marshaller="net.sf.hajdbc.util.PropertiesMapper"></structure>
 	</mapping>
@@ -29,19 +29,19 @@
 		<collection add-method="add" iter-method="getDataSourceDatabases" item-type="net.sf.hajdbc.sql.DataSourceDatabase"></collection>
 	</mapping>
 	<mapping class="net.sf.hajdbc.sql.AbstractDatabase" abstract="true">
-		<value name="id" get-method="getId" set-method="setId" style="attribute"/>
-		<value name="weight" get-method="getWeight" set-method="setWeight" style="attribute" usage="optional" default="1"/>
-		<structure get-method="getProperties" set-method="setProperties" unmarshaller="net.sf.hajdbc.util.PropertiesMapper" marshaller="net.sf.hajdbc.util.PropertiesMapper"></structure>
-		<value name="user" get-method="getUser" set-method="setUser" usage="optional"/>
-		<value name="password" get-method="getPassword" set-method="setPassword" usage="optional"/>
+		<value name="id" field="id" style="attribute"/>
+		<value name="weight" field="weight" style="attribute" usage="optional" default="1"/>
+		<structure field="properties" unmarshaller="net.sf.hajdbc.util.PropertiesMapper" marshaller="net.sf.hajdbc.util.PropertiesMapper"></structure>
+		<value name="user" field="user" usage="optional"/>
+		<value name="password" field="password" usage="optional"/>
 	</mapping>
 	<mapping name="database" class="net.sf.hajdbc.sql.DriverDatabase" extends="net.sf.hajdbc.sql.AbstractDatabase">
-		<value name="driver" get-method="getDriver" set-method="setDriver" usage="optional"/>
-		<value name="url" get-method="getUrl" set-method="setUrl"/>
+		<value name="driver" field="driverClass" usage="optional" serializer="net.sf.hajdbc.sql.DriverDatabase.getClassName" deserializer="net.sf.hajdbc.sql.DriverDatabase.forName"/>
+		<value name="url" field="url"/>
 		<structure map-as="net.sf.hajdbc.sql.AbstractDatabase"></structure>
 	</mapping>
 	<mapping name="datasource" class="net.sf.hajdbc.sql.DataSourceDatabase" extends="net.sf.hajdbc.sql.AbstractDatabase">
-		<value name="name" get-method="getName" set-method="setName"/>
+		<value name="name" field="name"/>
 		<structure map-as="net.sf.hajdbc.sql.AbstractDatabase"></structure>
 	</mapping>
 </binding>
