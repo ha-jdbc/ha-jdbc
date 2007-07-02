@@ -49,6 +49,7 @@ public class DriverDatabaseCluster extends AbstractDatabaseCluster<Driver> imple
 	/**
 	 * @see net.sf.hajdbc.sql.DriverDatabaseClusterMBean#add(java.lang.String, java.lang.String, java.lang.String)
 	 */
+	@Override
 	public void add(String databaseId, String driver, String url)
 	{
 		DriverDatabase database = new DriverDatabase();

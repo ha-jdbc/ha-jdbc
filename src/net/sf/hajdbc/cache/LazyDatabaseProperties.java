@@ -65,6 +65,7 @@ public class LazyDatabaseProperties implements DatabaseProperties
 	/**
 	 * @see net.sf.hajdbc.DatabaseProperties#getTables()
 	 */
+	@Override
 	public synchronized Collection<TableProperties> getTables() throws SQLException
 	{
 		return this.getTableMap().values();
@@ -110,6 +111,7 @@ public class LazyDatabaseProperties implements DatabaseProperties
 	/**
 	 * @see net.sf.hajdbc.DatabaseProperties#findTable(java.lang.String)
 	 */
+	@Override
 	public TableProperties findTable(String table) throws SQLException
 	{
 		return this.support.findTable(this.getTableMap(), table, this.getDefaultSchemaList(), this.dialect.getClass());
@@ -118,6 +120,7 @@ public class LazyDatabaseProperties implements DatabaseProperties
 	/**
 	 * @see net.sf.hajdbc.DatabaseProperties#supportsSelectForUpdate()
 	 */
+	@Override
 	public synchronized boolean supportsSelectForUpdate() throws SQLException
 	{
 		if (this.supportsSelectForUpdate == null)

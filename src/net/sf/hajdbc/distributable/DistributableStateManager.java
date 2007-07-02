@@ -97,6 +97,7 @@ public class DistributableStateManager implements StateManager, MessageListener,
 	/**
 	 * @see net.sf.hajdbc.StateManager#getInitialState()
 	 */
+	@Override
 	public Set<String> getInitialState()
 	{
 		Address coordinator = this.getCoordinator();
@@ -135,6 +136,7 @@ public class DistributableStateManager implements StateManager, MessageListener,
 	/**
 	 * @see net.sf.hajdbc.StateManager#add(java.lang.String)
 	 */
+	@Override
 	public void add(String databaseId)
 	{
 		// Send synchronous notification
@@ -146,6 +148,7 @@ public class DistributableStateManager implements StateManager, MessageListener,
 	/**
 	 * @see net.sf.hajdbc.StateManager#remove(java.lang.String)
 	 */
+	@Override
 	public void remove(String databaseId)
 	{
 		// Send asynchronous notification
@@ -167,6 +170,7 @@ public class DistributableStateManager implements StateManager, MessageListener,
 	/**
 	 * @see net.sf.hajdbc.StateManager#start()
 	 */
+	@Override
 	public void start() throws Exception
 	{
 		Channel channel = this.dispatcher.getChannel();
@@ -181,6 +185,7 @@ public class DistributableStateManager implements StateManager, MessageListener,
 	/**
 	 * @see net.sf.hajdbc.StateManager#stop()
 	 */
+	@Override
 	public void stop()
 	{
 		this.dispatcher.stop();

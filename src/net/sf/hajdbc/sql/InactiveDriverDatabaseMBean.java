@@ -34,4 +34,11 @@ public interface InactiveDriverDatabaseMBean extends ActiveDriverDatabaseMBean, 
 	 * @throws IllegalArgumentException if url is not accepted by any driver
 	 */
 	public void setUrl(String url);
+	
+	/**
+	 * Set the driver class for this database.
+	 * @param driver the driver class name
+	 * @throws IllegalArgumentException if driver class could not be found or does not implement <code>java.sql.Driver</code>
+	 */
+	public void setDriver(String driver);
 }

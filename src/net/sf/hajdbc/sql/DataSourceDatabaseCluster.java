@@ -50,6 +50,7 @@ public class DataSourceDatabaseCluster extends AbstractDatabaseCluster<DataSourc
 	/**
 	 * @see net.sf.hajdbc.sql.DataSourceDatabaseClusterMBean#add(java.lang.String, java.lang.String)
 	 */
+	@Override
 	public void add(String databaseId, String name)
 	{
 		DataSourceDatabase database = new DataSourceDatabase();

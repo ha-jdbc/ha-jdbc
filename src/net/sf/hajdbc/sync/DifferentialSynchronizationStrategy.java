@@ -88,6 +88,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#cleanup(net.sf.hajdbc.SynchronizationContext)
 	 */
+	@Override
 	public <D> void cleanup(SynchronizationContext<D> context)
 	{
 		SynchronizationSupport.unlock(context);
@@ -96,6 +97,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#prepare(net.sf.hajdbc.SynchronizationContext)
 	 */
+	@Override
 	public <D> void prepare(SynchronizationContext<D> context) throws SQLException
 	{
 		SynchronizationSupport.lock(context);
@@ -104,6 +106,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.SynchronizationContext)
 	 */
+	@Override
 	public <D> void synchronize(SynchronizationContext<D> context) throws SQLException
 	{
 		Map<Short, String> primaryKeyColumnMap = new TreeMap<Short, String>();

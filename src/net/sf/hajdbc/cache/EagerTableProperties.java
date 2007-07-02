@@ -53,6 +53,7 @@ public class EagerTableProperties extends AbstractTableProperties
 	/**
 	 * @see net.sf.hajdbc.TableProperties#getColumns()
 	 */
+	@Override
 	public Collection<String> getColumns()
 	{
 		return this.columnMap.keySet();
@@ -61,6 +62,7 @@ public class EagerTableProperties extends AbstractTableProperties
 	/**
 	 * @see net.sf.hajdbc.TableProperties#getColumnProperties(java.lang.String)
 	 */
+	@Override
 	public ColumnProperties getColumnProperties(String column)
 	{
 		return this.columnMap.get(column);
@@ -69,6 +71,7 @@ public class EagerTableProperties extends AbstractTableProperties
 	/**
 	 * @see net.sf.hajdbc.TableProperties#getPrimaryKey()
 	 */
+	@Override
 	public UniqueConstraint getPrimaryKey()
 	{
 		return this.primaryKey;
@@ -77,6 +80,7 @@ public class EagerTableProperties extends AbstractTableProperties
 	/**
 	 * @see net.sf.hajdbc.TableProperties#getForeignKeyConstraints()
 	 */
+	@Override
 	public Collection<ForeignKeyConstraint> getForeignKeyConstraints()
 	{
 		return this.foreignKeyConstraints;
@@ -85,6 +89,7 @@ public class EagerTableProperties extends AbstractTableProperties
 	/**
 	 * @see net.sf.hajdbc.TableProperties#getUniqueConstraints()
 	 */
+	@Override
 	public Collection<UniqueConstraint> getUniqueConstraints()
 	{
 		return this.uniqueConstraints;
@@ -93,6 +98,7 @@ public class EagerTableProperties extends AbstractTableProperties
 	/**
 	 * @see net.sf.hajdbc.TableProperties#getName()
 	 */
+	@Override
 	public String getName()
 	{
 		return this.name;

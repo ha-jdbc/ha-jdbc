@@ -76,6 +76,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 	 * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@SuppressWarnings("unchecked")
+	@Override
 	public final Object invoke(Object object, Method method, Object[] parameters) throws Exception
 	{
 		E proxy = (E) object;
@@ -139,6 +140,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 	/**
 	 * @see net.sf.hajdbc.sql.SQLProxy#entry()
 	 */
+	@Override
 	public Map.Entry<Database<D>, E> entry()
 	{
 		synchronized (this.objectMap)
@@ -150,6 +152,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 	/**
 	 * @see net.sf.hajdbc.sql.SQLProxy#entries()
 	 */
+	@Override
 	public Set<Map.Entry<Database<D>, E>> entries()
 	{
 		synchronized (this.objectMap)
@@ -161,6 +164,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 	/**
 	 * @see net.sf.hajdbc.sql.SQLProxy#addChild(net.sf.hajdbc.sql.SQLProxy)
 	 */
+	@Override
 	public final void addChild(SQLProxy<D, ?> child)
 	{
 		synchronized (this.childList)
@@ -172,6 +176,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 	/**
 	 * @see net.sf.hajdbc.sql.SQLProxy#removeChildren()
 	 */
+	@Override
 	public final void removeChildren()
 	{
 		synchronized (this.childList)
@@ -183,6 +188,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 	/**
 	 * @see net.sf.hajdbc.sql.SQLProxy#removeChild(net.sf.hajdbc.sql.SQLProxy)
 	 */
+	@Override
 	public final void removeChild(SQLProxy<D, ?> child)
 	{
 		synchronized (this.childList)
@@ -200,7 +206,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 	 * @param database a database descriptor.
 	 * @return an underlying SQL object
 	 */
-	@SuppressWarnings("unchecked")
+	@Override
 	public final E getObject(Database<D> database)
 	{
 		synchronized (this.objectMap)
@@ -251,6 +257,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 	/**
 	 * @see net.sf.hajdbc.sql.SQLProxy#record(net.sf.hajdbc.sql.Invoker)
 	 */
+	@Override
 	public final void record(Invoker<D, E, ?> invoker)
 	{
 		synchronized (this.invokerSet)
@@ -262,6 +269,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 	/**
 	 * @see net.sf.hajdbc.sql.SQLProxy#retain(java.util.Set)
 	 */
+	@Override
 	public final void retain(Set<Database<D>> databaseSet)
 	{
 		synchronized (this.childList)
@@ -313,6 +321,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 	/**
 	 * @see net.sf.hajdbc.sql.SQLProxy#getRoot()
 	 */
+	@Override
 	public final SQLProxy<D, ?> getRoot()
 	{
 		return (this.parentProxy == null) ? this : this.parentProxy.getRoot();
@@ -329,14 +338,18 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 	}
 	
 	/**
-	 * Returns the database cluster to which this proxy is associated.
-	 * @return a database cluster
+	 * @see net.sf.hajdbc.sql.SQLProxy#getDatabaseCluster()
 	 */
+	@Override
 	public final DatabaseCluster<D> getDatabaseCluster()
 	{
 		return this.databaseCluster;
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.sql.SQLProxy#handleFailure(net.sf.hajdbc.Database, java.sql.SQLException)
+	 */
+	@Override
 	public void handleFailure(Database<D> database, SQLException cause) throws SQLException
 	{
 		Set<Database<D>> databaseSet = this.databaseCluster.getBalancer().all();
@@ -382,11 +395,9 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 	}
 	
 	/**
-	 * Deactivates the failed databases.
-	 * @param exceptionMap
-	 * @throws SQLException
+	 * @see net.sf.hajdbc.sql.SQLProxy#handleFailures(java.util.SortedMap)
 	 */
-	@SuppressWarnings("unused")
+	@Override
 	public void handleFailures(SortedMap<Database<D>, SQLException> exceptionMap) throws SQLException
 	{
 		for (Map.Entry<Database<D>, SQLException> exceptionMapEntry: exceptionMap.entrySet())
@@ -415,6 +426,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 		/**
 		 * @see net.sf.hajdbc.sql.Invoker#invoke(net.sf.hajdbc.Database, java.lang.Object)
 		 */
+		@Override
 		public Object invoke(Database<D> database, E object) throws SQLException
 		{
 			try

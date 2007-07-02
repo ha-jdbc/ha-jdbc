@@ -33,6 +33,7 @@ public class DriverReadInvocationStrategy<D, T, R> implements InvocationStrategy
 	/**
 	 * @see net.sf.hajdbc.sql.InvocationStrategy#invoke(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker)
 	 */
+	@Override
 	public R invoke(SQLProxy<D, T> proxy, Invoker<D, T, R> invoker) throws Exception
 	{
 		Map.Entry<Database<D>, T> entry = proxy.entry();

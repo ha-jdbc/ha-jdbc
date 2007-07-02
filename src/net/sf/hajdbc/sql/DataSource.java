@@ -50,6 +50,7 @@ public class DataSource implements Referenceable, ObjectFactory
 	/**
 	 * @see javax.naming.Referenceable#getReference()
 	 */
+	@Override
 	public Reference getReference()
 	{
 		Reference reference = new Reference(javax.sql.DataSource.class.getName(), this.getClass().getName(), null);
@@ -99,6 +100,7 @@ public class DataSource implements Referenceable, ObjectFactory
 	/**
 	 * @see javax.naming.spi.ObjectFactory#getObjectInstance(java.lang.Object, javax.naming.Name, javax.naming.Context, java.util.Hashtable)
 	 */
+	@Override
 	public Object getObjectInstance(Object object, Name name, Context context, Hashtable<?,?> environment) throws Exception
 	{
 		if ((object == null) || !(object instanceof Reference)) return null;

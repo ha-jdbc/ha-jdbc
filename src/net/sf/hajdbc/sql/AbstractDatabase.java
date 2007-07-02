@@ -41,6 +41,7 @@ public abstract class AbstractDatabase<D> implements Database<D>
 	/**
 	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getId()
 	 */
+	@Override
 	public String getId()
 	{
 		return this.id;
@@ -58,6 +59,7 @@ public abstract class AbstractDatabase<D> implements Database<D>
 	/**
 	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getUser()
 	 */
+	@Override
 	public String getUser()
 	{
 		return this.user;
@@ -66,6 +68,7 @@ public abstract class AbstractDatabase<D> implements Database<D>
 	/**
 	 * @see net.sf.hajdbc.InactiveDatabaseMBean#setUser(java.lang.String)
 	 */
+	@Override
 	public void setUser(String user)
 	{
 		this.checkDirty(this.user, user);
@@ -75,6 +78,7 @@ public abstract class AbstractDatabase<D> implements Database<D>
 	/**
 	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getPassword()
 	 */
+	@Override
 	public String getPassword()
 	{
 		return this.password;
@@ -83,6 +87,7 @@ public abstract class AbstractDatabase<D> implements Database<D>
 	/**
 	 * @see net.sf.hajdbc.InactiveDatabaseMBean#setPassword(java.lang.String)
 	 */
+	@Override
 	public void setPassword(String password)
 	{
 		this.checkDirty(this.password, password);
@@ -92,6 +97,7 @@ public abstract class AbstractDatabase<D> implements Database<D>
 	/**
 	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getWeight()
 	 */
+	@Override
 	public int getWeight()
 	{
 		return this.weight;
@@ -100,6 +106,7 @@ public abstract class AbstractDatabase<D> implements Database<D>
 	/**
 	 * @see net.sf.hajdbc.InactiveDatabaseMBean#setWeight(int)
 	 */
+	@Override
 	public void setWeight(int weight)
 	{
 		if (weight < 0)
@@ -146,6 +153,7 @@ public abstract class AbstractDatabase<D> implements Database<D>
 	/**
 	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getProperties()
 	 */
+	@Override
 	public Properties getProperties()
 	{
 		return this.properties;
@@ -163,6 +171,7 @@ public abstract class AbstractDatabase<D> implements Database<D>
 	/**
 	 * @see net.sf.hajdbc.InactiveDatabaseMBean#removeProperty(java.lang.String)
 	 */
+	@Override
 	public void removeProperty(String name)
 	{
 		this.dirty |= this.properties.containsKey(name);
@@ -172,6 +181,7 @@ public abstract class AbstractDatabase<D> implements Database<D>
 	/**
 	 * @see net.sf.hajdbc.InactiveDatabaseMBean#setProperty(java.lang.String, java.lang.String)
 	 */
+	@Override
 	public void setProperty(String name, String value)
 	{
 		if ((name == null) || (value == null))
@@ -186,6 +196,7 @@ public abstract class AbstractDatabase<D> implements Database<D>
 	/**
 	 * @see net.sf.hajdbc.Database#clean()
 	 */
+	@Override
 	public void clean()
 	{
 		this.dirty = false;
@@ -194,6 +205,7 @@ public abstract class AbstractDatabase<D> implements Database<D>
 	/**
 	 * @see net.sf.hajdbc.Database#isDirty()
 	 */
+	@Override
 	public boolean isDirty()
 	{
 		return this.dirty;
@@ -212,6 +224,7 @@ public abstract class AbstractDatabase<D> implements Database<D>
 	/**
 	 * @see java.lang.Comparable#compareTo(Object)
 	 */
+	@Override
 	public int compareTo(Database<D> database)
 	{
 		return this.id.compareTo(database.getId());

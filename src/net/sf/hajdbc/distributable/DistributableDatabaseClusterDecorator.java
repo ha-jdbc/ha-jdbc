@@ -54,6 +54,7 @@ public class DistributableDatabaseClusterDecorator implements DatabaseClusterDec
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterDecorator#decorate(net.sf.hajdbc.DatabaseCluster)
 	 */
+	@Override
 	public <D> void decorate(DatabaseCluster<D> databaseCluster) throws Exception
 	{
 		if (this.factory == null)

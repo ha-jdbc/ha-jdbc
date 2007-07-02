@@ -64,6 +64,7 @@ public final class Driver implements java.sql.Driver
 	/**
 	 * @see java.sql.Driver#acceptsURL(java.lang.String)
 	 */
+	@Override
 	public boolean acceptsURL(String url)
 	{
 		return (this.parse(url) != null);
@@ -72,6 +73,7 @@ public final class Driver implements java.sql.Driver
 	/**
 	 * @see java.sql.Driver#connect(java.lang.String, java.util.Properties)
 	 */
+	@Override
 	public Connection connect(String url, final Properties properties) throws SQLException
 	{
 		String id = this.parse(url);
@@ -107,6 +109,7 @@ public final class Driver implements java.sql.Driver
 	/**
 	 * @see java.sql.Driver#getMajorVersion()
 	 */
+	@Override
 	public int getMajorVersion()
 	{
 		return Integer.parseInt(DatabaseClusterFactory.getVersion().split(Pattern.quote("."))[0]);
@@ -115,6 +118,7 @@ public final class Driver implements java.sql.Driver
 	/**
 	 * @see java.sql.Driver#getMinorVersion()
 	 */
+	@Override
 	public int getMinorVersion()
 	{
 		return Integer.parseInt(DatabaseClusterFactory.getVersion().split(Pattern.quote("."))[1].split("-")[0]);
@@ -123,6 +127,7 @@ public final class Driver implements java.sql.Driver
 	/**
 	 * @see java.sql.Driver#getPropertyInfo(java.lang.String, java.util.Properties)
 	 */
+	@Override
 	public DriverPropertyInfo[] getPropertyInfo(String url, final Properties properties) throws SQLException
 	{
 		String id = this.parse(url);
@@ -156,6 +161,7 @@ public final class Driver implements java.sql.Driver
 	/**
 	 * @see java.sql.Driver#jdbcCompliant()
 	 */
+	@Override
 	public boolean jdbcCompliant()
 	{
 		return true;

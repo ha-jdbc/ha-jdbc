@@ -77,6 +77,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#cleanup(net.sf.hajdbc.SynchronizationContext)
 	 */
+	@Override
 	public <D> void cleanup(SynchronizationContext<D> context)
 	{
 		SynchronizationSupport.unlock(context);
@@ -85,6 +86,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#prepare(net.sf.hajdbc.SynchronizationContext)
 	 */
+	@Override
 	public <D> void prepare(SynchronizationContext<D> context) throws SQLException
 	{
 		SynchronizationSupport.lock(context);
@@ -93,6 +95,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.SynchronizationContext)
 	 */
+	@Override
 	public <D> void synchronize(SynchronizationContext<D> context) throws SQLException
 	{
 		Connection sourceConnection = context.getConnection(context.getSourceDatabase());

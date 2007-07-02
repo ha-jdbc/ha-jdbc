@@ -62,6 +62,7 @@ public abstract class AbstractMapper<T> implements IMarshaller, IUnmarshaller, I
 	/**
 	 * @see org.jibx.runtime.IMarshaller#isExtension(int)
 	 */
+	@Override
 	public boolean isExtension(int arg0)
 	{
 		return false;
@@ -71,6 +72,7 @@ public abstract class AbstractMapper<T> implements IMarshaller, IUnmarshaller, I
 	 * @see org.jibx.runtime.IMarshaller#marshal(java.lang.Object, org.jibx.runtime.IMarshallingContext)
 	 */
 	@SuppressWarnings("unchecked")
+	@Override
 	public void marshal(Object object, IMarshallingContext context) throws JiBXException
 	{
 		this.marshal((T) object, (MarshallingContext) context);
@@ -81,6 +83,7 @@ public abstract class AbstractMapper<T> implements IMarshaller, IUnmarshaller, I
 	/**
 	 * @see org.jibx.runtime.IUnmarshaller#isPresent(org.jibx.runtime.IUnmarshallingContext)
 	 */
+	@Override
 	public boolean isPresent(IUnmarshallingContext context) throws JiBXException
 	{
 		return context.isAt(this.uri, this.name);
@@ -90,6 +93,7 @@ public abstract class AbstractMapper<T> implements IMarshaller, IUnmarshaller, I
 	 * @see org.jibx.runtime.IUnmarshaller#unmarshal(java.lang.Object, org.jibx.runtime.IUnmarshallingContext)
 	 */
 	@SuppressWarnings("unchecked")
+	@Override
 	public Object unmarshal(Object object, IUnmarshallingContext context) throws JiBXException
 	{
 		return this.unmarshal((T) object, (UnmarshallingContext) context);

@@ -76,6 +76,7 @@ public class DistributableLockManager implements LockManager, VotingListener, Me
 		this.votingAdapter.addVoteListener(this);
 	}
 
+	@Override
 	public void start() throws Exception
 	{
 		this.channel.connect(this.channel.getClusterName());
@@ -83,6 +84,7 @@ public class DistributableLockManager implements LockManager, VotingListener, Me
 		this.lockManager.start();
 	}
 	
+	@Override
 	public void stop()
 	{
 		this.channel.close();
@@ -94,6 +96,7 @@ public class DistributableLockManager implements LockManager, VotingListener, Me
 	 * Read locks are local.
 	 * @see net.sf.hajdbc.LockManager#readLock(java.lang.String)
 	 */
+	@Override
 	public Lock readLock(String object)
 	{
 		return this.lockManager.readLock(object);
@@ -103,6 +106,7 @@ public class DistributableLockManager implements LockManager, VotingListener, Me
 	 * Write locks are distributed.
 	 * @see net.sf.hajdbc.LockManager#writeLock(java.lang.String)
 	 */
+	@Override
 	public Lock writeLock(String object)
 	{
 		return new DistributableLock(object);
@@ -173,6 +177,7 @@ public class DistributableLockManager implements LockManager, VotingListener, Me
 		/**
 		 * @see java.util.concurrent.locks.Lock#lock()
 		 */
+		@Override
 		public void lock()
 		{
 			while (!this.tryLock());
@@ -181,6 +186,7 @@ public class DistributableLockManager implements LockManager, VotingListener, Me
 		/**
 		 * @see java.util.concurrent.locks.Lock#lockInterruptibly()
 		 */
+		@Override
 		public void lockInterruptibly() throws InterruptedException
 		{
 			while (!this.tryLock())
@@ -195,6 +201,7 @@ public class DistributableLockManager implements LockManager, VotingListener, Me
 		/**
 		 * @see java.util.concurrent.locks.Lock#tryLock()
 		 */
+		@Override
 		public boolean tryLock()
 		{
 			try
@@ -217,6 +224,7 @@ public class DistributableLockManager implements LockManager, VotingListener, Me
 		/**
 		 * @see java.util.concurrent.locks.Lock#tryLock(long, java.util.concurrent.TimeUnit)
 		 */
+		@Override
 		public boolean tryLock(long timeout, TimeUnit unit)
 		{
 			long stopTime = System.currentTimeMillis() + unit.toMillis(timeout);
@@ -235,6 +243,7 @@ public class DistributableLockManager implements LockManager, VotingListener, Me
 		/**
 		 * @see java.util.concurrent.locks.Lock#unlock()
 		 */
+		@Override
 		public void unlock()
 		{
 			try
@@ -250,6 +259,7 @@ public class DistributableLockManager implements LockManager, VotingListener, Me
 		/**
 		 * @see java.util.concurrent.locks.Lock#newCondition()
 		 */
+		@Override
 		public Condition newCondition()
 		{
 			throw new UnsupportedOperationException();

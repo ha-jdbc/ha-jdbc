@@ -27,7 +27,6 @@ import net.sf.hajdbc.ForeignKeyConstraint;
 
 /**
  * @author Paul Ferraro
- *
  */
 public class ForeignKeyConstraintImpl extends UniqueConstraintImpl implements ForeignKeyConstraint
 {
@@ -48,72 +47,81 @@ public class ForeignKeyConstraintImpl extends UniqueConstraintImpl implements Fo
 	}
 	
 	/**
-	 * @return the foreign table of this foreign key
+	 * @see net.sf.hajdbc.ForeignKeyConstraint#getForeignTable()
 	 */
+	@Override
 	public String getForeignTable()
 	{
 		return this.foreignTable;
 	}
 	
 	/**
-	 * @return the foreign column of this foreign key
+	 * @see net.sf.hajdbc.ForeignKeyConstraint#getForeignColumnList()
 	 */
+	@Override
 	public List<String> getForeignColumnList()
 	{
 		return this.foreignColumnList;
 	}
 	
 	/**
-	 * @return Returns the deleteRule.
+	 * @see net.sf.hajdbc.ForeignKeyConstraint#getDeleteRule()
 	 */
+	@Override
 	public int getDeleteRule()
 	{
 		return this.deleteRule;
 	}
 
 	/**
-	 * @return Returns the updateRule.
+	 * @see net.sf.hajdbc.ForeignKeyConstraint#getUpdateRule()
 	 */
+	@Override
 	public int getUpdateRule()
 	{
 		return this.updateRule;
 	}
 
 	/**
-	 * @return Returns the deferrability.
+	 * @see net.sf.hajdbc.ForeignKeyConstraint#getDeferrability()
 	 */
+	@Override
 	public int getDeferrability()
 	{
 		return this.deferrability;
 	}
 
 	/**
-	 * @param deferrability The deferrability to set.
+	 * @see net.sf.hajdbc.ForeignKeyConstraint#setDeferrability(int)
 	 */
+	@Override
 	public void setDeferrability(int deferrability)
 	{
 		this.deferrability = deferrability;
 	}
 
 	/**
-	 * @param deleteRule The deleteRule to set.
+	 * @see net.sf.hajdbc.ForeignKeyConstraint#setDeleteRule(int)
 	 */
+	@Override
 	public void setDeleteRule(int deleteRule)
 	{
 		this.deleteRule = deleteRule;
 	}
 
 	/**
-	 * @param foreignTable The foreignTable to set.
+	 * @see net.sf.hajdbc.ForeignKeyConstraint#setForeignTable(java.lang.String)
 	 */
+	@Override
 	public void setForeignTable(String foreignTable)
 	{
 		this.foreignTable = foreignTable;
 	}
 
 	/**
-	 * @param updateRule The updateRule to set.
+	 * @see net.sf.hajdbc.ForeignKeyConstraint#setUpdateRule(int)
 	 */
+	@Override
 	public void setUpdateRule(int updateRule)
 	{
 		this.updateRule = updateRule;

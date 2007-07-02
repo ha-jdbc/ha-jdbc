@@ -37,6 +37,7 @@ public class SynchronousExecutor extends AbstractExecutorService
 	/**
 	 * @see java.util.concurrent.ExecutorService#awaitTermination(long, java.util.concurrent.TimeUnit)
 	 */
+	@Override
 	public boolean awaitTermination(long time, TimeUnit unit)
 	{
 		return true;
@@ -45,6 +46,7 @@ public class SynchronousExecutor extends AbstractExecutorService
 	/**
 	 * @see java.util.concurrent.ExecutorService#isShutdown()
 	 */
+	@Override
 	public boolean isShutdown()
 	{
 		return this.shutdown;
@@ -53,6 +55,7 @@ public class SynchronousExecutor extends AbstractExecutorService
 	/**
 	 * @see java.util.concurrent.ExecutorService#isTerminated()
 	 */
+	@Override
 	public boolean isTerminated()
 	{
 		return this.shutdown;
@@ -61,6 +64,7 @@ public class SynchronousExecutor extends AbstractExecutorService
 	/**
 	 * @see java.util.concurrent.ExecutorService#shutdown()
 	 */
+	@Override
 	public void shutdown()
 	{
 		this.shutdown = true;
@@ -69,6 +73,7 @@ public class SynchronousExecutor extends AbstractExecutorService
 	/**
 	 * @see java.util.concurrent.ExecutorService#shutdownNow()
 	 */
+	@Override
 	public List<Runnable> shutdownNow()
 	{
 		this.shutdown();
@@ -79,6 +84,7 @@ public class SynchronousExecutor extends AbstractExecutorService
 	/**
 	 * @see java.util.concurrent.Executor#execute(java.lang.Runnable)
 	 */
+	@Override
 	public void execute(Runnable task)
 	{
 		task.run();

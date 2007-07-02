@@ -133,6 +133,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getConnectionFactoryMap()
 	 */
+	@Override
 	public Map<Database<D>, D> getConnectionFactoryMap()
 	{
 		return this.connectionFactoryMap;
@@ -229,6 +230,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#deactivate(net.sf.hajdbc.Database)
 	 */
+	@Override
 	public synchronized boolean deactivate(Database<D> database)
 	{
 		this.unregister(database);
@@ -248,6 +250,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getId()
 	 */
+	@Override
 	public String getId()
 	{
 		return this.id;
@@ -256,6 +259,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#getVersion()
 	 */
+	@Override
 	public String getVersion()
 	{
 		return DatabaseClusterFactory.getVersion();
@@ -264,6 +268,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#activate(net.sf.hajdbc.Database)
 	 */
+	@Override
 	public synchronized boolean activate(Database<D> database)
 	{
 		this.unregister(database);
@@ -290,6 +295,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#getActiveDatabases()
 	 */
+	@Override
 	public Set<String> getActiveDatabases()
 	{
 		Set<String> databaseSet = new TreeSet<String>();
@@ -305,6 +311,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#getInactiveDatabases()
 	 */
+	@Override
 	public Set<String> getInactiveDatabases()
 	{
 		Set<String> databaseSet = new TreeSet<String>(this.databaseMap.keySet());
@@ -320,6 +327,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getDatabase(java.lang.String)
 	 */
+	@Override
 	public Database<D> getDatabase(String id)
 	{
 		Database<D> database = this.databaseMap.get(id);
@@ -335,6 +343,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#getDefaultSynchronizationStrategy()
 	 */
+	@Override
 	public String getDefaultSynchronizationStrategy()
 	{
 		return this.defaultSynchronizationStrategyId;
@@ -343,6 +352,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#getSynchronizationStrategies()
 	 */
+	@Override
 	public Set<String> getSynchronizationStrategies()
 	{
 		return new TreeSet<String>(this.synchronizationStrategyMap.keySet());
@@ -351,6 +361,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getBalancer()
 	 */
+	@Override
 	public Balancer<D> getBalancer()
 	{
 		return this.balancer;
@@ -359,6 +370,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getTransactionalExecutor()
 	 */
+	@Override
 	public ExecutorService getTransactionalExecutor()
 	{
 		return this.transactionalExecutor;
@@ -367,6 +379,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getNonTransactionalExecutor()
 	 */
+	@Override
 	public ExecutorService getNonTransactionalExecutor()
 	{
 		return this.nonTransactionalExecutor;
@@ -375,6 +388,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getDialect()
 	 */
+	@Override
 	public Dialect getDialect()
 	{
 		return this.dialect;
@@ -383,6 +397,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getDatabaseMetaDataCache()
 	 */
+	@Override
 	public DatabaseMetaDataCache getDatabaseMetaDataCache()
 	{
 		return this.databaseMetaDataCache;
@@ -391,6 +406,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getLockManager()
 	 */
+	@Override
 	public LockManager getLockManager()
 	{
 		return this.lockManager;
@@ -399,6 +415,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#isAlive(java.lang.String)
 	 */
+	@Override
 	public boolean isAlive(String id)
 	{
 		return this.isAlive(this.getDatabase(id));
@@ -407,6 +424,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#deactivate(java.lang.String)
 	 */
+	@Override
 	public void deactivate(String databaseId)
 	{
 		if (this.deactivate(this.getDatabase(databaseId)))
@@ -418,6 +436,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#activate(java.lang.String)
 	 */
+	@Override
 	public void activate(String databaseId)
 	{
 		this.activate(databaseId, this.getDefaultSynchronizationStrategy());
@@ -426,6 +445,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#activate(java.lang.String, java.lang.String)
 	 */
+	@Override
 	public void activate(String databaseId, String strategyId)
 	{
 		SynchronizationStrategy strategy = this.synchronizationStrategyMap.get(strategyId);
@@ -457,6 +477,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#remove(java.lang.String)
 	 */
+	@Override
 	public synchronized void remove(String id)
 	{
 		Database<D> database = this.getDatabase(id);
@@ -497,7 +518,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	 * Starts this database cluster
 	 * @throws Exception if database cluster start fails
 	 */
-	public synchronized void start() throws Exception
+	private synchronized void start() throws Exception
 	{
 		this.lockManager.start();
 		this.stateManager.start();
@@ -558,7 +579,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * Stops this database cluster
 	 */
-	public synchronized void stop()
+	private synchronized void stop()
 	{
 		for (Database<D> database: this.databaseMap.values())
 		{
@@ -584,14 +605,14 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#flushMetaDataCache()
 	 */
-	@SuppressWarnings("unchecked")
+	@Override
 	public void flushMetaDataCache()
 	{
 		Connection connection = null;
 		
 		try
 		{
-			Database database = this.balancer.next();
+			Database<D> database = this.balancer.next();
 			
 			connection = database.connect(this.connectionFactoryMap.get(database));
 			
@@ -624,6 +645,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#isIdentityColumnDetectionEnabled()
 	 */
+	@Override
 	public boolean isIdentityColumnDetectionEnabled()
 	{
 		return this.identityColumnDetectionEnabled;
@@ -632,6 +654,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#isSequenceDetectionEnabled()
 	 */
+	@Override
 	public boolean isSequenceDetectionEnabled()
 	{
 		return this.sequenceDetectionEnabled;
@@ -702,6 +725,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getStateManager()
 	 */
+	@Override
 	public StateManager getStateManager()
 	{
 		return this.stateManager;
@@ -710,6 +734,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#setStateManager(net.sf.hajdbc.StateManager)
 	 */
+	@Override
 	public void setStateManager(StateManager stateManager)
 	{
 		this.stateManager = stateManager;
@@ -718,6 +743,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#setLockManager(net.sf.hajdbc.LockManager)
 	 */
+	@Override
 	public void setLockManager(LockManager lockManager)
 	{
 		this.lockManager = lockManager;
@@ -726,6 +752,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#getUrl()
 	 */
+	@Override
 	public URL getUrl()
 	{
 		return this.url;
@@ -995,6 +1022,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		/**
 		 * @see java.lang.Runnable#run()
 		 */
+		@Override
 		public void run()
 		{
 			Set<Database<D>> databaseSet = AbstractDatabaseCluster.this.getBalancer().all();
@@ -1036,6 +1064,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		/**
 		 * @see java.lang.Runnable#run()
 		 */
+		@Override
 		public void run()
 		{
 			for (String databaseId: AbstractDatabaseCluster.this.getInactiveDatabases())

@@ -47,24 +47,27 @@ public class UniqueConstraintImpl implements UniqueConstraint
 	}
 	
 	/**
-	 * @return the list of columns in this unique constraint
+	 * @see net.sf.hajdbc.UniqueConstraint#getColumnList()
 	 */
+	@Override
 	public List<String> getColumnList()
 	{
 		return this.columnList;
 	}
 	
 	/**
-	 * @return the name of this constraint
+	 * @see net.sf.hajdbc.UniqueConstraint#getName()
 	 */
+	@Override
 	public String getName()
 	{
 		return this.name;
 	}
 
 	/**
-	 * @return the table of this constraint
+	 * @see net.sf.hajdbc.UniqueConstraint#getTable()
 	 */
+	@Override
 	public String getTable()
 	{
 		return this.table;
@@ -95,6 +98,7 @@ public class UniqueConstraintImpl implements UniqueConstraint
 	/**
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
+	@Override
 	public int compareTo(UniqueConstraint constraint)
 	{
 		return this.name.compareTo(constraint.getName());

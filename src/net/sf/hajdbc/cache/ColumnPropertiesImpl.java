@@ -46,6 +46,7 @@ public class ColumnPropertiesImpl implements ColumnProperties
 	/**
 	 * @see net.sf.hajdbc.ColumnProperties#getName()
 	 */
+	@Override
 	public String getName()
 	{
 		return this.name;
@@ -54,6 +55,7 @@ public class ColumnPropertiesImpl implements ColumnProperties
 	/**
 	 * @see net.sf.hajdbc.ColumnProperties#getType()
 	 */
+	@Override
 	public int getType()
 	{
 		return this.type;
@@ -62,6 +64,7 @@ public class ColumnPropertiesImpl implements ColumnProperties
 	/**
 	 * @see net.sf.hajdbc.ColumnProperties#getNativeType()
 	 */
+	@Override
 	public String getNativeType()
 	{
 		return this.nativeType;
@@ -70,6 +73,7 @@ public class ColumnPropertiesImpl implements ColumnProperties
 	/**
 	 * @see net.sf.hajdbc.ColumnProperties#getRemarks()
 	 */
+	@Override
 	public String getRemarks()
 	{
 		return this.remarks;
@@ -78,6 +82,7 @@ public class ColumnPropertiesImpl implements ColumnProperties
 	/**
 	 * @see net.sf.hajdbc.ColumnProperties#isAutoIncrement()
 	 */
+	@Override
 	public Boolean isAutoIncrement()
 	{
 		return this.autoIncrement;

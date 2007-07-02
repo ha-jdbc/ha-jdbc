@@ -47,6 +47,7 @@ public class DaemonThreadFactory implements ThreadFactory
 	/**
 	 * @see java.util.concurrent.ThreadFactory#newThread(java.lang.Runnable)
 	 */
+	@Override
 	public Thread newThread(Runnable runnable)
 	{
 		Thread thread = this.factory.newThread(runnable);

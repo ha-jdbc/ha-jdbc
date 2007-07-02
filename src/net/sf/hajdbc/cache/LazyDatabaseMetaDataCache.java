@@ -40,6 +40,7 @@ public class LazyDatabaseMetaDataCache extends AbstractDatabaseMetaDataCache
 	/**
 	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush(java.sql.Connection)
 	 */
+	@Override
 	public synchronized void flush(Connection connection) throws SQLException
 	{
 		LazyDatabaseProperties.setConnection(connection);
@@ -50,6 +51,7 @@ public class LazyDatabaseMetaDataCache extends AbstractDatabaseMetaDataCache
 	/**
 	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getDatabaseProperties(java.sql.Connection)
 	 */
+	@Override
 	public synchronized DatabaseProperties getDatabaseProperties(Connection connection) throws SQLException
 	{
 		LazyDatabaseProperties.setConnection(connection);

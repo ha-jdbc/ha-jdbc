@@ -56,6 +56,7 @@ public class DatabaseWriteInvocationStrategy<D, T, R> implements InvocationStrat
 	/**
 	 * @see net.sf.hajdbc.sql.InvocationStrategy#invoke(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker)
 	 */
+	@Override
 	public R invoke(SQLProxy<D, T> proxy, Invoker<D, T, R> invoker) throws Exception
 	{
 		SortedMap<Database<D>, R> map = this.invokeAll(proxy, invoker);

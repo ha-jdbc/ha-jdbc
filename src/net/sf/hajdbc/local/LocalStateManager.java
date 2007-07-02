@@ -54,6 +54,7 @@ public class LocalStateManager implements StateManager
 	/**
 	 * @see net.sf.hajdbc.StateManager#getInitialState()
 	 */
+	@Override
 	public Set<String> getInitialState()
 	{
 		String state = preferences.get(this.statePreferenceKey(), null);
@@ -68,6 +69,7 @@ public class LocalStateManager implements StateManager
 	/**
 	 * @see net.sf.hajdbc.StateManager#add(java.lang.String)
 	 */
+	@Override
 	public void add(String databaseId)
 	{
 		this.storeState();
@@ -76,6 +78,7 @@ public class LocalStateManager implements StateManager
 	/**
 	 * @see net.sf.hajdbc.StateManager#remove(java.lang.String)
 	 */
+	@Override
 	public void remove(String databaseId)
 	{
 		this.storeState();
@@ -105,6 +108,7 @@ public class LocalStateManager implements StateManager
 	/**
 	 * @see net.sf.hajdbc.StateManager#start()
 	 */
+	@Override
 	public void start() throws Exception
 	{
 		preferences.sync();
@@ -113,6 +117,7 @@ public class LocalStateManager implements StateManager
 	/**
 	 * @see net.sf.hajdbc.StateManager#stop()
 	 */
+	@Override
 	public void stop()
 	{
 	}

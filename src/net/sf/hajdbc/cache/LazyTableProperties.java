@@ -53,6 +53,7 @@ public class LazyTableProperties extends AbstractTableProperties
 	/**
 	 * @see net.sf.hajdbc.TableProperties#getColumns()
 	 */
+	@Override
 	public synchronized Collection<String> getColumns() throws SQLException
 	{
 		if (this.columnMap == null)
@@ -66,6 +67,7 @@ public class LazyTableProperties extends AbstractTableProperties
 	/**
 	 * @see net.sf.hajdbc.TableProperties#getColumnProperties(java.lang.String)
 	 */
+	@Override
 	public synchronized ColumnProperties getColumnProperties(String column) throws SQLException
 	{
 		if (this.columnMap == null)
@@ -79,6 +81,7 @@ public class LazyTableProperties extends AbstractTableProperties
 	/**
 	 * @see net.sf.hajdbc.TableProperties#getPrimaryKey()
 	 */
+	@Override
 	public synchronized UniqueConstraint getPrimaryKey() throws SQLException
 	{
 		if (this.primaryKey == null)
@@ -92,6 +95,7 @@ public class LazyTableProperties extends AbstractTableProperties
 	/**
 	 * @see net.sf.hajdbc.TableProperties#getForeignKeyConstraints()
 	 */
+	@Override
 	public synchronized Collection<ForeignKeyConstraint> getForeignKeyConstraints() throws SQLException
 	{
 		if (this.foreignKeyConstraints == null)
@@ -105,6 +109,7 @@ public class LazyTableProperties extends AbstractTableProperties
 	/**
 	 * @see net.sf.hajdbc.TableProperties#getUniqueConstraints()
 	 */
+	@Override
 	public synchronized Collection<UniqueConstraint> getUniqueConstraints() throws SQLException
 	{
 		if (this.uniqueConstraints == null)
@@ -118,6 +123,7 @@ public class LazyTableProperties extends AbstractTableProperties
 	/**
 	 * @see net.sf.hajdbc.TableProperties#getName()
 	 */
+	@Override
 	public synchronized String getName()
 	{
 		if (this.name == null)

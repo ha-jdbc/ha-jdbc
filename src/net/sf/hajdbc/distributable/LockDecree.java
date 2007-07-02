@@ -10,8 +10,16 @@ import org.jgroups.Address;
 
 public interface LockDecree extends Serializable
 {
+	/**
+	 * Returns the identifer of the object to lock
+	 * @return an object identifier
+	 */
 	public String getId();
 
+	/**
+	 * Returns the address of the node that requested the lock
+	 * @return a node address
+	 */
 	public Address getAddress();
 
 	/**

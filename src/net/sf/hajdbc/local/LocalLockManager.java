@@ -40,6 +40,7 @@ public class LocalLockManager implements LockManager
 	/**
 	 * @see net.sf.hajdbc.LockManager#readLock(java.lang.String)
 	 */
+	@Override
 	public Lock readLock(String object)
 	{
 		Lock lock = this.getReadWriteLock(null).readLock();
@@ -50,6 +51,7 @@ public class LocalLockManager implements LockManager
 	/**
 	 * @see net.sf.hajdbc.LockManager#writeLock(java.lang.String)
 	 */
+	@Override
 	public Lock writeLock(String object)
 	{
 		ReadWriteLock readWriteLock = this.getReadWriteLock(null);
@@ -98,12 +100,14 @@ public class LocalLockManager implements LockManager
 			this.lock = lock;
 		}
 		
+		@Override
 		public void lock()
 		{
 			this.globalLock.lock();
 			this.lock.lock();
 		}
 
+		@Override
 		public void lockInterruptibly() throws InterruptedException
 		{
 			this.globalLock.lockInterruptibly();
@@ -119,6 +123,7 @@ public class LocalLockManager implements LockManager
 			}
 		}
 
+		@Override
 		public boolean tryLock()
 		{
 			if (this.globalLock.tryLock())
@@ -134,6 +139,7 @@ public class LocalLockManager implements LockManager
 			return false;
 		}
 
+		@Override
 		public boolean tryLock(long time, TimeUnit unit) throws InterruptedException
 		{
 			if (this.globalLock.tryLock(time, unit))
@@ -149,12 +155,14 @@ public class LocalLockManager implements LockManager
 			return false;
 		}
 
+		@Override
 		public void unlock()
 		{
 			this.lock.unlock();
 			this.globalLock.unlock();
 		}
 
+		@Override
 		public Condition newCondition()
 		{
 			throw new UnsupportedOperationException();
@@ -164,6 +172,7 @@ public class LocalLockManager implements LockManager
 	/**
 	 * @see net.sf.hajdbc.LockManager#start()
 	 */
+	@Override
 	public void start() throws Exception
 	{
 		// Do nothing
@@ -172,6 +181,7 @@ public class LocalLockManager implements LockManager
 	/**
 	 * @see net.sf.hajdbc.LockManager#stop()
 	 */
+	@Override
 	public void stop()
 	{
 		// Do nothing

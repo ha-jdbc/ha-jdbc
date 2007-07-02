@@ -70,8 +70,8 @@ public class SynchronizationContextImpl<D> implements SynchronizationContext<D>
 	/**
 	 * @see net.sf.hajdbc.SynchronizationContext#getConnection(net.sf.hajdbc.Database)
 	 */
-	@SuppressWarnings("unchecked")
-	public Connection getConnection(Database database) throws SQLException
+	@Override
+	public Connection getConnection(Database<D> database) throws SQLException
 	{
 		synchronized (this.connectionMap)
 		{
@@ -91,6 +91,7 @@ public class SynchronizationContextImpl<D> implements SynchronizationContext<D>
 	/**
 	 * @see net.sf.hajdbc.SynchronizationContext#getSourceDatabase()
 	 */
+	@Override
 	public Database<D> getSourceDatabase()
 	{
 		return this.sourceDatabase;
@@ -99,6 +100,7 @@ public class SynchronizationContextImpl<D> implements SynchronizationContext<D>
 	/**
 	 * @see net.sf.hajdbc.SynchronizationContext#getTargetDatabase()
 	 */
+	@Override
 	public Database<D> getTargetDatabase()
 	{
 		return this.targetDatabase;
@@ -107,6 +109,7 @@ public class SynchronizationContextImpl<D> implements SynchronizationContext<D>
 	/**
 	 * @see net.sf.hajdbc.SynchronizationContext#getActiveDatabaseSet()
 	 */
+	@Override
 	public Set<Database<D>> getActiveDatabaseSet()
 	{
 		return this.activeDatabaseSet;
@@ -115,6 +118,7 @@ public class SynchronizationContextImpl<D> implements SynchronizationContext<D>
 	/**
 	 * @see net.sf.hajdbc.SynchronizationContext#getDatabaseMetaDataCache()
 	 */
+	@Override
 	public DatabaseMetaDataCache getDatabaseMetaDataCache()
 	{
 		return this.cluster.getDatabaseMetaDataCache();
@@ -123,6 +127,7 @@ public class SynchronizationContextImpl<D> implements SynchronizationContext<D>
 	/**
 	 * @see net.sf.hajdbc.SynchronizationContext#getDialect()
 	 */
+	@Override
 	public Dialect getDialect()
 	{
 		return this.cluster.getDialect();
@@ -131,6 +136,7 @@ public class SynchronizationContextImpl<D> implements SynchronizationContext<D>
 	/**
 	 * @see net.sf.hajdbc.SynchronizationContext#getExecutor()
 	 */
+	@Override
 	public ExecutorService getExecutor()
 	{
 		return this.executor;
@@ -139,6 +145,7 @@ public class SynchronizationContextImpl<D> implements SynchronizationContext<D>
 	/**
 	 * @see net.sf.hajdbc.SynchronizationContext#close()
 	 */
+	@Override
 	public void close()
 	{
 		for (Connection connection: this.connectionMap.values())

@@ -64,6 +64,7 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 	/**
 	 * @see net.sf.hajdbc.util.concurrent.CronExecutorService#schedule(java.lang.Runnable, org.quartz.CronExpression)
 	 */
+	@Override
 	public void schedule(final Runnable task, final CronExpression expression)
 	{
 		if (task == null) throw new NullPointerException();

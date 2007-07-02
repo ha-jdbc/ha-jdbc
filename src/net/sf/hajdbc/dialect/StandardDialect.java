@@ -53,6 +53,7 @@ public class StandardDialect implements Dialect
 	/**
 	 * @see net.sf.hajdbc.Dialect#getSimpleSQL()
 	 */
+	@Override
 	public String getSimpleSQL()
 	{
 		return this.executeFunctionSQL(this.currentTimestampFunction());
@@ -90,6 +91,7 @@ public class StandardDialect implements Dialect
 	/**
 	 * @see net.sf.hajdbc.Dialect#getLockTableSQL(net.sf.hajdbc.TableProperties)
 	 */
+	@Override
 	public String getLockTableSQL(TableProperties properties) throws SQLException
 	{
 		StringBuilder builder = new StringBuilder("UPDATE ").append(properties.getName()).append(" SET ");
@@ -118,6 +120,7 @@ public class StandardDialect implements Dialect
 	/**
 	 * @see net.sf.hajdbc.Dialect#getTruncateTableSQL(net.sf.hajdbc.TableProperties)
 	 */
+	@Override
 	public String getTruncateTableSQL(TableProperties properties)
 	{
 		return MessageFormat.format(this.truncateTableFormat(), properties.getName());
@@ -126,6 +129,7 @@ public class StandardDialect implements Dialect
 	/**
 	 * @see net.sf.hajdbc.Dialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
 	 */
+	@Override
 	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint key)
 	{
 		return MessageFormat.format(this.createForeignKeyConstraintFormat(), key.getName(), key.getTable(), Strings.join(key.getColumnList(), ", "), key.getForeignTable(), Strings.join(key.getForeignColumnList(), ", "), key.getDeleteRule(), key.getUpdateRule(), key.getDeferrability());
@@ -134,6 +138,7 @@ public class StandardDialect implements Dialect
 	/**
 	 * @see net.sf.hajdbc.Dialect#getDropForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
 	 */
+	@Override
 	public String getDropForeignKeyConstraintSQL(ForeignKeyConstraint key)
 	{
 		return MessageFormat.format(this.dropForeignKeyConstraintFormat(), key.getName(), key.getTable());
@@ -142,6 +147,7 @@ public class StandardDialect implements Dialect
 	/**
 	 * @see net.sf.hajdbc.Dialect#getCreateUniqueConstraintSQL(net.sf.hajdbc.UniqueConstraint)
 	 */
+	@Override
 	public String getCreateUniqueConstraintSQL(UniqueConstraint constraint)
 	{
 		return MessageFormat.format(this.createUniqueConstraintFormat(), constraint.getName(), constraint.getTable(), Strings.join(constraint.getColumnList(), ", "));
@@ -150,6 +156,7 @@ public class StandardDialect implements Dialect
 	/**
 	 * @see net.sf.hajdbc.Dialect#getDropUniqueConstraintSQL(net.sf.hajdbc.UniqueConstraint)
 	 */
+	@Override
 	public String getDropUniqueConstraintSQL(UniqueConstraint constraint)
 	{
 		return MessageFormat.format(this.dropUniqueConstraintFormat(), constraint.getName(), constraint.getTable());
@@ -158,6 +165,7 @@ public class StandardDialect implements Dialect
 	/**
 	 * @see net.sf.hajdbc.Dialect#isIdentity(net.sf.hajdbc.ColumnProperties)
 	 */
+	@Override
 	public boolean isIdentity(ColumnProperties properties)
 	{
 		String remarks = properties.getRemarks();
@@ -168,6 +176,7 @@ public class StandardDialect implements Dialect
 	/**
 	 * @see net.sf.hajdbc.Dialect#isSelectForUpdate(java.lang.String)
 	 */
+	@Override
 	public boolean isSelectForUpdate(String sql)
 	{
 		return this.selectForUpdatePattern.matcher(sql).find();
@@ -176,6 +185,7 @@ public class StandardDialect implements Dialect
 	/**
 	 * @see net.sf.hajdbc.Dialect#parseInsertTable(java.lang.String)
 	 */
+	@Override
 	public String parseInsertTable(String sql)
 	{
 		return this.parse(this.insertIntoTablePattern, sql);
@@ -184,6 +194,7 @@ public class StandardDialect implements Dialect
 	/**
 	 * @see net.sf.hajdbc.Dialect#getDefaultSchemas(java.sql.Connection)
 	 */
+	@Override
 	public List<String> getDefaultSchemas(Connection connection) throws SQLException
 	{
 		return Collections.singletonList(this.getCurrentUser(connection));
@@ -218,6 +229,7 @@ public class StandardDialect implements Dialect
 	/**
 	 * @see net.sf.hajdbc.Dialect#parseSequence(java.lang.String)
 	 */
+	@Override
 	public String parseSequence(String sql)
 	{
 		return this.parse(this.sequencePattern, sql);
@@ -226,6 +238,7 @@ public class StandardDialect implements Dialect
 	/**
 	 * @see net.sf.hajdbc.Dialect#getColumnType(net.sf.hajdbc.ColumnProperties)
 	 */
+	@Override
 	public int getColumnType(ColumnProperties properties)
 	{
 		return properties.getType();
@@ -234,6 +247,7 @@ public class StandardDialect implements Dialect
 	/**
 	 * @see net.sf.hajdbc.Dialect#getSequences(java.sql.Connection)
 	 */
+	@Override
 	public Collection<String> getSequences(Connection connection) throws SQLException
 	{
 		List<String> sequenceList = new LinkedList<String>();
@@ -267,6 +281,7 @@ public class StandardDialect implements Dialect
 	/**
 	 * @see net.sf.hajdbc.Dialect#getNextSequenceValueSQL(java.lang.String)
 	 */
+	@Override
 	public String getNextSequenceValueSQL(String sequence)
 	{
 		return this.executeFunctionSQL(MessageFormat.format(this.nextSequenceValueFormat(), sequence));
@@ -275,6 +290,7 @@ public class StandardDialect implements Dialect
 	/**
 	 * @see net.sf.hajdbc.Dialect#getAlterSequenceSQL(java.lang.String, long)
 	 */
+	@Override
 	public String getAlterSequenceSQL(String sequence, long value)
 	{
 		return MessageFormat.format(this.alterSequenceFormat(), sequence, value);
@@ -283,6 +299,7 @@ public class StandardDialect implements Dialect
 	/**
 	 * @see net.sf.hajdbc.Dialect#supportsIdentityColumns()
 	 */
+	@Override
 	public boolean supportsIdentityColumns()
 	{
 		return true;
@@ -291,6 +308,7 @@ public class StandardDialect implements Dialect
 	/**
 	 * @see net.sf.hajdbc.Dialect#supportsSequences()
 	 */
+	@Override
 	public boolean supportsSequences()
 	{
 		return true;

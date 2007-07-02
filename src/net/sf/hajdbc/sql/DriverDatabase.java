@@ -48,6 +48,7 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	/**
 	 * @see net.sf.hajdbc.sql.ActiveDriverDatabaseMBean#getUrl()
 	 */
+	@Override
 	public String getUrl()
 	{
 		return this.url;
@@ -56,6 +57,7 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	/**
 	 * @see net.sf.hajdbc.sql.InactiveDriverDatabaseMBean#setUrl(java.lang.String)
 	 */
+	@Override
 	public void setUrl(String url)
 	{
 		this.getDriver(url);
@@ -66,16 +68,16 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	/**
 	 * @see net.sf.hajdbc.sql.ActiveDriverDatabaseMBean#getDriver()
 	 */
+	@Override
 	public String getDriver()
 	{
 		return (this.driverClass != null) ? this.driverClass.getName() : null;
 	}
 	
 	/**
-	 * Set the driver class for this database.
-	 * @param driver the driver class name
-	 * @throws IllegalArgumentException if driver class could not be found or does not implement <code>java.sql.Driver</code>
+	 * @see net.sf.hajdbc.sql.InactiveDriverDatabaseMBean#setDriver(java.lang.String)
 	 */
+	@Override
 	public void setDriver(String driver)
 	{
 		try
@@ -101,11 +103,9 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	}
 	
 	/**
-	 * @param driver a JDBC driver
-	 * @return a database connection
-	 * @throws SQLException if a database connection could not be made
-	 * @see net.sf.hajdbc.Database#connect(Object)
+	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
 	 */
+	@Override
 	public Connection connect(Driver driver) throws SQLException
 	{
 		Properties properties = new Properties(this.getProperties());
@@ -126,6 +126,7 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	/**
 	 * @see net.sf.hajdbc.Database#createConnectionFactory()
 	 */
+	@Override
 	public Driver createConnectionFactory()
 	{
 		return this.getDriver(this.url);
@@ -146,6 +147,7 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	/**
 	 * @see net.sf.hajdbc.Database#getActiveMBean()
 	 */
+	@Override
 	public DynamicMBean getActiveMBean()
 	{
 		try
@@ -161,6 +163,7 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	/**
 	 * @see net.sf.hajdbc.Database#getInactiveMBean()
 	 */
+	@Override
 	public DynamicMBean getInactiveMBean()
 	{
 		try

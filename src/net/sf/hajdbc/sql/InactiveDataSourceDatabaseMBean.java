@@ -28,4 +28,5 @@ import net.sf.hajdbc.InactiveDatabaseMBean;
  */
 public interface InactiveDataSourceDatabaseMBean extends ActiveDataSourceDatabaseMBean, InactiveDatabaseMBean
 {
+	public void setName(String name);
 }

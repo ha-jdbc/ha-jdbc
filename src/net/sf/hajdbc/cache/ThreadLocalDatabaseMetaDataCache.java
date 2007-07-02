@@ -40,6 +40,7 @@ public class ThreadLocalDatabaseMetaDataCache extends AbstractDatabaseMetaDataCa
 	/**
 	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush(java.sql.Connection)
 	 */
+	@Override
 	public void flush(Connection connection)
 	{
 		// Nothing to flush
@@ -48,6 +49,7 @@ public class ThreadLocalDatabaseMetaDataCache extends AbstractDatabaseMetaDataCa
 	/**
 	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getDatabaseProperties(java.sql.Connection)
 	 */
+	@Override
 	public DatabaseProperties getDatabaseProperties(Connection connection) throws SQLException
 	{
 		LazyDatabaseProperties.setConnection(connection);

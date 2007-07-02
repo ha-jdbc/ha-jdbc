@@ -45,15 +45,16 @@ public class DataSourceDatabase extends AbstractDatabase<DataSource> implements 
 	/**
 	 * @see net.sf.hajdbc.sql.ActiveDataSourceDatabaseMBean#getName()
 	 */
+	@Override
 	public String getName()
 	{
 		return this.name;
 	}
 	
 	/**
-	 * Sets the JNDI name of this DataSource
-	 * @param name a JNDI name
+	 * @see net.sf.hajdbc.sql.InactiveDataSourceDatabaseMBean#setName(java.lang.String)
 	 */
+	@Override
 	public void setName(String name)
 	{
 		this.checkDirty(this.name, name);
@@ -66,6 +67,7 @@ public class DataSourceDatabase extends AbstractDatabase<DataSource> implements 
 	 * @throws SQLException if a database connection could not be made
 	 * @see net.sf.hajdbc.Database#connect(Object)
 	 */
+	@Override
 	public Connection connect(DataSource dataSource) throws SQLException
 	{
 		return (this.user != null) ? dataSource.getConnection(this.user, this.password) : dataSource.getConnection();
@@ -74,6 +76,7 @@ public class DataSourceDatabase extends AbstractDatabase<DataSource> implements 
 	/**
 	 * @see net.sf.hajdbc.Database#createConnectionFactory()
 	 */
+	@Override
 	public DataSource createConnectionFactory()
 	{
 		try
@@ -93,9 +96,9 @@ public class DataSourceDatabase extends AbstractDatabase<DataSource> implements 
 	}
 
 	/**
-	 * @throws NotCompliantMBeanException 
 	 * @see net.sf.hajdbc.Database#getActiveMBean()
 	 */
+	@Override
 	public DynamicMBean getActiveMBean()
 	{
 		try
@@ -109,9 +112,9 @@ public class DataSourceDatabase extends AbstractDatabase<DataSource> implements 
 	}
 
 	/**
-	 * @throws NotCompliantMBeanException 
 	 * @see net.sf.hajdbc.Database#getInactiveMBean()
 	 */
+	@Override
 	public DynamicMBean getInactiveMBean()
 	{
 		try

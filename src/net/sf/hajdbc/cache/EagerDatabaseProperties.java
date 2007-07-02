@@ -73,6 +73,7 @@ public class EagerDatabaseProperties implements DatabaseProperties
 	/**
 	 * @see net.sf.hajdbc.DatabaseProperties#getTables()
 	 */
+	@Override
 	public Collection<TableProperties> getTables()
 	{
 		return this.tableMap.values();
@@ -81,6 +82,7 @@ public class EagerDatabaseProperties implements DatabaseProperties
 	/**
 	 * @see net.sf.hajdbc.DatabaseProperties#findTable(java.lang.String)
 	 */
+	@Override
 	public TableProperties findTable(String table) throws SQLException
 	{
 		return this.support.findTable(this.tableMap, table, this.defaultSchemaList, this.dialectClass);
@@ -89,6 +91,7 @@ public class EagerDatabaseProperties implements DatabaseProperties
 	/**
 	 * @see net.sf.hajdbc.DatabaseProperties#supportsSelectForUpdate()
 	 */
+	@Override
 	public boolean supportsSelectForUpdate()
 	{
 		return this.supportsSelectForUpdate;

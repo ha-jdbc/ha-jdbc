@@ -34,6 +34,7 @@ public abstract class AbstractDatabaseMetaDataCache implements DatabaseMetaDataC
 	/**
 	 * @see net.sf.hajdbc.DatabaseMetaDataCache#setDialect(net.sf.hajdbc.Dialect)
 	 */
+	@Override
 	public void setDialect(Dialect dialect)
 	{
 		this.dialect = dialect;

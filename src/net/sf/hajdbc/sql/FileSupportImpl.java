@@ -56,6 +56,7 @@ public class FileSupportImpl implements FileSupport
 	/**
 	 * @see net.sf.hajdbc.sql.FileSupport#createFile(java.io.InputStream)
 	 */
+	@Override
 	public File createFile(InputStream inputStream) throws SQLException
 	{
 		File file = this.createTempFile();
@@ -89,6 +90,7 @@ public class FileSupportImpl implements FileSupport
 	/**
 	 * @see net.sf.hajdbc.sql.FileSupport#createFile(java.io.Reader)
 	 */
+	@Override
 	public File createFile(Reader reader) throws SQLException
 	{
 		File file = this.createTempFile();
@@ -121,6 +123,7 @@ public class FileSupportImpl implements FileSupport
 	/**
 	 * @see net.sf.hajdbc.sql.FileSupport#getReader(java.io.File)
 	 */
+	@Override
 	public Reader getReader(File file) throws SQLException
 	{
 		try
@@ -136,6 +139,7 @@ public class FileSupportImpl implements FileSupport
 	/**
 	 * @see net.sf.hajdbc.sql.FileSupport#getInputStream(java.io.File)
 	 */
+	@Override
 	public InputStream getInputStream(File file) throws SQLException
 	{
 		try
@@ -172,6 +176,7 @@ public class FileSupportImpl implements FileSupport
 	/**
 	 * @see net.sf.hajdbc.sql.FileSupport#close()
 	 */
+	@Override
 	public void close()
 	{
 		for (File file: this.fileList)
