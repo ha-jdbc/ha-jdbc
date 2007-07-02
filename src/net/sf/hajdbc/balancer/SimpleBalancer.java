@@ -47,6 +47,7 @@ public class SimpleBalancer<D> extends AbstractBalancer<D>
 	/**
 	 * @see net.sf.hajdbc.Balancer#next()
 	 */
+	@Override
 	public synchronized Database<D> next()
 	{
 		return this.databaseQueue.element();

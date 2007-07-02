@@ -39,6 +39,7 @@ public abstract class AbstractBalancer<D> implements Balancer<D>
 	/**
 	 * @see net.sf.hajdbc.Balancer#beforeInvocation(net.sf.hajdbc.Database)
 	 */
+	@Override
 	public void beforeInvocation(Database<D> database)
 	{
 		// Do nothing
@@ -47,6 +48,7 @@ public abstract class AbstractBalancer<D> implements Balancer<D>
 	/**
 	 * @see net.sf.hajdbc.Balancer#afterInvocation(net.sf.hajdbc.Database)
 	 */
+	@Override
 	public void afterInvocation(Database<D> database)
 	{
 		// Do nothing
@@ -55,6 +57,7 @@ public abstract class AbstractBalancer<D> implements Balancer<D>
 	/**
 	 * @see net.sf.hajdbc.Balancer#remove(net.sf.hajdbc.Database)
 	 */
+	@Override
 	public synchronized boolean remove(Database<D> database)
 	{
 		return this.collect().remove(database);
@@ -63,22 +66,16 @@ public abstract class AbstractBalancer<D> implements Balancer<D>
 	/**
 	 * @see net.sf.hajdbc.Balancer#add(net.sf.hajdbc.Database)
 	 */
+	@Override
 	public synchronized boolean add(Database<D> database)
 	{
 		return this.collect().contains(database) ? false : this.collect().add(database);
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Balancer#contains(net.sf.hajdbc.Database)
-	 */
-	public synchronized boolean contains(Database<D> database)
-	{
-		return this.collect().contains(database);
-	}
-	
-	/**
 	 * @see net.sf.hajdbc.Balancer#all()
 	 */
+	@Override
 	public synchronized Set<Database<D>> all()
 	{
 		Set<Database<D>> databaseSet = new TreeSet<Database<D>>(this.collect());

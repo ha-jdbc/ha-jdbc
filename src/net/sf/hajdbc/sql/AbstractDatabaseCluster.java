@@ -139,7 +139,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getAliveMap(java.util.Set)
+	 * @see net.sf.hajdbc.DatabaseCluster#getAliveMap(java.util.Collection)
 	 */
 	@Override
 	public Map<Database<D>, Boolean> getAliveMap(Collection<Database<D>> databases)

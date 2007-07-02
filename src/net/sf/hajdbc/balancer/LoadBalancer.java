@@ -67,6 +67,7 @@ public class LoadBalancer<D> extends AbstractBalancer<D>
 	/**
 	 * @see net.sf.hajdbc.Balancer#next()
 	 */
+	@Override
 	public synchronized Database<D> next()
 	{
 		if (this.databaseMap.size() <= 1)

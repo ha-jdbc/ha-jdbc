@@ -92,6 +92,7 @@ public class RandomBalancer<D> extends AbstractBalancer<D>
 	/**
 	 * @see net.sf.hajdbc.Balancer#next()
 	 */
+	@Override
 	public synchronized Database<D> next()
 	{
 		if (this.databaseList.isEmpty())
