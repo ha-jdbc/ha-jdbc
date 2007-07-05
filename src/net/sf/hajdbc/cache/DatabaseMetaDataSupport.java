@@ -387,7 +387,7 @@ public class DatabaseMetaDataSupport
 		return this.getQualifiedNameForDML(schema, table);
 	}
 	
-	public TableProperties findTable(Map<String, TableProperties> tableMap, String table, List<String> defaultSchemaList, Class<? extends Dialect> dialectClass) throws SQLException
+	public TableProperties findTable(Map<String, TableProperties> tableMap, String table, List<String> defaultSchemaList, Dialect dialect) throws SQLException
 	{
 		TableProperties properties = tableMap.get(this.normalize(table, null));
 		
@@ -404,7 +404,7 @@ public class DatabaseMetaDataSupport
 		
 		if (properties == null)
 		{
-			throw new SQLException(Messages.getMessage(Messages.TABLE_LOOKUP_FAILED, table, defaultSchemaList, dialectClass.getName() + ".getDefaultSchemas()"));
+			throw new SQLException(Messages.getMessage(Messages.TABLE_LOOKUP_FAILED, table, defaultSchemaList, dialect.getClass().getName() + ".getDefaultSchemas()"));
 		}
 		
 		return properties;

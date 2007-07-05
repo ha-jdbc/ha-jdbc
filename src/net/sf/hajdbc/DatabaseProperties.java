@@ -34,4 +34,6 @@ public interface DatabaseProperties
 	public boolean supportsSelectForUpdate() throws SQLException;
 	
 	public TableProperties findTable(String table) throws SQLException;
+	
+	public Collection<String> getSequences() throws SQLException;
 }

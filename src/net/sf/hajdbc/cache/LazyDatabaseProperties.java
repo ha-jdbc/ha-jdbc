@@ -44,6 +44,7 @@ public class LazyDatabaseProperties implements DatabaseProperties
 	private Boolean supportsSelectForUpdate;
 	private DatabaseMetaDataSupport support;
 	private List<String> defaultSchemaList;
+	private Collection<String> sequences;
 	private Dialect dialect;
 
 	public LazyDatabaseProperties(Dialect dialect) throws SQLException
@@ -114,7 +115,7 @@ public class LazyDatabaseProperties implements DatabaseProperties
 	@Override
 	public TableProperties findTable(String table) throws SQLException
 	{
-		return this.support.findTable(this.getTableMap(), table, this.getDefaultSchemaList(), this.dialect.getClass());
+		return this.support.findTable(this.getTableMap(), table, this.getDefaultSchemaList(), this.dialect);
 	}
 
 	/**
@@ -129,5 +130,19 @@ public class LazyDatabaseProperties implements DatabaseProperties
 		}
 		
 		return this.supportsSelectForUpdate;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseProperties#getSequences()
+	 */
+	@Override
+	public synchronized Collection<String> getSequences() throws SQLException
+	{
+		if (this.sequences == null)
+		{
+			this.sequences = this.dialect.getSequences(threadLocal.get());
+		}
+		
+		return this.sequences;
 	}
 }
