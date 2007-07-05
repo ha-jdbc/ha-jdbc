@@ -67,7 +67,10 @@ public class DistributableLockManager implements LockManager, VotingListener, Me
 	public <D> DistributableLockManager(DatabaseCluster<D> databaseCluster, DistributableDatabaseClusterDecorator decorator) throws Exception
 	{
 		this.lockManager = databaseCluster.getLockManager();
+		
 		this.channel = decorator.createChannel(databaseCluster.getId() + "-lock");
+		this.channel.setOpt(Channel.LOCAL, true);
+		
 		this.address = this.channel.getLocalAddress();
 		this.timeout = decorator.getTimeout();
 

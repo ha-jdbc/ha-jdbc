@@ -20,10 +20,9 @@
  */
 package net.sf.hajdbc.distributable;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
-import java.util.Vector;
 
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Messages;
@@ -56,13 +55,14 @@ public class DistributableStateManager implements StateManager, MessageListener,
 	private MessageDispatcher dispatcher;
 	private DatabaseCluster<?> databaseCluster;
 	private StateManager stateManager;
-	private List<Address> addressList = new LinkedList<Address>();
+	private Set<Address> addressSet = new HashSet<Address>();
 	
 	public DistributableStateManager(DatabaseCluster<?> databaseCluster, DistributableDatabaseClusterDecorator decorator) throws Exception
 	{
 		this.databaseCluster = databaseCluster;
 		
 		this.dispatcher = new MessageDispatcher(decorator.createChannel(databaseCluster.getId()), this, this, this);
+		this.dispatcher.getChannel().setOpt(Channel.LOCAL, false);
 		
 		this.timeout = decorator.getTimeout();
 		this.stateManager = databaseCluster.getStateManager();
@@ -75,8 +75,6 @@ public class DistributableStateManager implements StateManager, MessageListener,
 	@Override
 	public Object handle(Message message)
 	{
-		if (message.getSrc().equals(this.dispatcher.getChannel().getLocalAddress())) return null;
-
 		try
 		{
 			Command<Object> command = (Command) message.getObject();
@@ -99,28 +97,13 @@ public class DistributableStateManager implements StateManager, MessageListener,
 	@Override
 	public Set<String> getInitialState()
 	{
-/*		Address coordinator = this.getCoordinator();
-		
-		if (coordinator.equals(this.dispatcher.getChannel().getLocalAddress()))
-		{
-			return this.stateManager.getInitialState();
-		}
-*/
 		Command<Set<String>> command = new QueryInitialStateCommand();
 
 		Object result = this.send(command, GroupRequest.GET_FIRST, this.timeout).getFirst();
 
 		return (result != null) ? command.unmarshalResult(result) : this.stateManager.getInitialState();
 	}
-/*	
-	private Address getCoordinator()
-	{
-		synchronized (this.addressList)
-		{
-			return this.addressList.isEmpty() ? this.dispatcher.getChannel().getLocalAddress() : this.addressList.get(0);
-		}
-	}
-*/	
+
 	/**
 	 * @see net.sf.hajdbc.StateManager#add(java.lang.String)
 	 */
@@ -149,7 +132,7 @@ public class DistributableStateManager implements StateManager, MessageListener,
 	{
 		return this.dispatcher.castMessage(null, this.createMessage(command), mode, timeout);
 	}
-
+	
 	private Message createMessage(Command<?> command)
 	{
 		return new Message(null, this.dispatcher.getChannel().getLocalAddress(), command);
@@ -207,28 +190,29 @@ public class DistributableStateManager implements StateManager, MessageListener,
 	@Override
 	public void viewAccepted(View view)
 	{
-		Vector<Address> addresses = view.getMembers();
-		
-		synchronized (this.addressList)
+		synchronized (this.addressSet)
 		{
-			for (Address address: this.addressList)
+			Iterator<Address> addresses = this.addressSet.iterator();
+			
+			while (addresses.hasNext())
 			{
+				Address address = addresses.next();
+				
 				if (!view.containsMember(address))
 				{
 					logger.info(Messages.getMessage(Messages.GROUP_MEMBER_LEFT, address, this.databaseCluster));
+					
+					addresses.remove();
 				}
 			}
-
-			for (Address address: addresses)
+			
+			for (Address address: view.getMembers())
 			{
-				if (!this.addressList.contains(address))
+				if (this.addressSet.add(address))
 				{
 					logger.info(Messages.getMessage(Messages.GROUP_MEMBER_JOINED, address, this.databaseCluster));
 				}
 			}
-			
-			this.addressList.clear();
-			this.addressList.addAll(addresses);
 		}
 	}
 
