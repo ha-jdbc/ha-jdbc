@@ -24,8 +24,8 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.StateManager;
 import net.sf.hajdbc.util.Strings;
 
 /**
@@ -41,16 +41,9 @@ public class QueryInitialStateCommand implements Command<Set<String>>
 	 * @see net.sf.hajdbc.distributable.Command#execute(net.sf.hajdbc.DatabaseCluster)
 	 */
 	@Override
-	public <D> Set<String> execute(DatabaseCluster<D> databaseCluster)
+	public <D> Set<String> execute(DatabaseCluster<D> databaseCluster, StateManager stateManager)
 	{
-		Set<String> set = new TreeSet<String>();
-		
-		for (Database<D> database: databaseCluster.getBalancer().all())
-		{
-			set.add(database.getId());
-		}
-		
-		return set;
+		return stateManager.getInitialState();
 	}
 
 	/**

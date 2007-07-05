@@ -21,6 +21,7 @@
 package net.sf.hajdbc.distributable;
 
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.StateManager;
 
 
 /**
@@ -53,8 +54,8 @@ public class ActivateCommand extends AbstractCommand
 	 * @see net.sf.hajdbc.distributable.Command#execute(net.sf.hajdbc.DatabaseCluster)
 	 */
 	@Override
-	public <D> Boolean execute(DatabaseCluster<D> databaseCluster)
+	public <D> Boolean execute(DatabaseCluster<D> databaseCluster, StateManager stateManager)
 	{
-		return databaseCluster.activate(databaseCluster.getDatabase(this.databaseId));
+		return databaseCluster.activate(databaseCluster.getDatabase(this.databaseId), stateManager);
 	}
 }

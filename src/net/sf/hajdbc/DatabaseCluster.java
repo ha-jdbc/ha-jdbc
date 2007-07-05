@@ -41,14 +41,14 @@ public interface DatabaseCluster<D>
 	 * @param database a database descriptor
 	 * @return true, if the database was activated, false it was already active
 	 */
-	public boolean activate(Database<D> database);
+	public boolean activate(Database<D> database, StateManager stateManager);
 	
 	/**
 	 * Deactivates the specified database
 	 * @param database a database descriptor
 	 * @return true, if the database was deactivated, false it was already inactive
 	 */
-	public boolean deactivate(Database<D> database);
+	public boolean deactivate(Database<D> database, StateManager stateManager);
 	
 	/**
 	 * Returns a map of database to connection factory for this obtaining connections to databases in this cluster.

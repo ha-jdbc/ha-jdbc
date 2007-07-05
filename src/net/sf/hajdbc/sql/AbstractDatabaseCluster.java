@@ -231,7 +231,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	 * @see net.sf.hajdbc.DatabaseCluster#deactivate(net.sf.hajdbc.Database)
 	 */
 	@Override
-	public synchronized boolean deactivate(Database<D> database)
+	public synchronized boolean deactivate(Database<D> database, StateManager stateManager)
 	{
 		this.unregister(database);
 		// Reregister database mbean using "inactive" interface
@@ -241,7 +241,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		
 		if (removed)
 		{
-			this.stateManager.remove(database.getId());
+			stateManager.remove(database.getId());
 		}
 		
 		return removed;
@@ -269,7 +269,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	 * @see net.sf.hajdbc.DatabaseCluster#activate(net.sf.hajdbc.Database)
 	 */
 	@Override
-	public synchronized boolean activate(Database<D> database)
+	public synchronized boolean activate(Database<D> database, StateManager stateManager)
 	{
 		this.unregister(database);
 		// Reregister database mbean using "active" interface
@@ -286,7 +286,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		
 		if (added)
 		{
-			this.stateManager.add(database.getId());
+			stateManager.add(database.getId());
 		}
 		
 		return added;
@@ -427,7 +427,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	@Override
 	public void deactivate(String databaseId)
 	{
-		if (this.deactivate(this.getDatabase(databaseId)))
+		if (this.deactivate(this.getDatabase(databaseId), this.stateManager))
 		{
 			logger.info(Messages.getMessage(Messages.DATABASE_DEACTIVATED, databaseId, this));
 		}
@@ -537,7 +537,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 				
 				if (database != null)
 				{
-					this.activate(database);
+					this.activate(database, this.stateManager);
 				}
 			}
 		}
@@ -549,7 +549,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			{
 				if (aliveMapEntry.getValue())
 				{
-					this.activate(aliveMapEntry.getKey());
+					this.activate(aliveMapEntry.getKey(), this.stateManager);
 				}
 			}
 		}
@@ -817,7 +817,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 				
 				logger.info(Messages.getMessage(Messages.DATABASE_SYNC_END, database, this));
 				
-				boolean activated = this.activate(database);
+				boolean activated = this.activate(database, this.stateManager);
 				
 				strategy.cleanup(context);
 				
@@ -830,7 +830,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		}
 		catch (NoSuchElementException e)
 		{
-			return this.activate(database);
+			return this.activate(database, this.stateManager);
 		}
 		finally
 		{
@@ -1049,7 +1049,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 				{
 					for (Database<D> database: aliveMap.keySet())
 					{
-						if (AbstractDatabaseCluster.this.deactivate(database))
+						if (AbstractDatabaseCluster.this.deactivate(database, AbstractDatabaseCluster.this.stateManager))
 						{
 							logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this));
 						}

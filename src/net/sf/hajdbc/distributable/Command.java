@@ -23,6 +23,7 @@ package net.sf.hajdbc.distributable;
 import java.io.Serializable;
 
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.StateManager;
 
 /**
  * @author Paul Ferraro
@@ -33,8 +34,9 @@ public interface Command<R> extends Serializable
 	 * Execute this command on the specified database cluster.
 	 * @param <D> either java.sql.Driver or javax.sql.DataSource
 	 * @param databaseCluster a database cluster
+	 * @param stateManager a state manager
 	 */
-	public <D> R execute(DatabaseCluster<D> databaseCluster);
+	public <D> R execute(DatabaseCluster<D> databaseCluster, StateManager stateManager);
 	
 	public R unmarshalResult(Object object);
 	

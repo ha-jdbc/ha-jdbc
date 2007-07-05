@@ -34,12 +34,11 @@ import org.jgroups.Channel;
 import org.jgroups.MembershipListener;
 import org.jgroups.Message;
 import org.jgroups.MessageListener;
-import org.jgroups.SuspectedException;
-import org.jgroups.TimeoutException;
 import org.jgroups.View;
 import org.jgroups.blocks.GroupRequest;
 import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestHandler;
+import org.jgroups.util.RspList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,7 +83,7 @@ public class DistributableStateManager implements StateManager, MessageListener,
 	
 			this.logger.info(Messages.getMessage(Messages.COMMAND_RECEIVED, command));
 			
-			return command.marshalResult(command.execute(this.databaseCluster));
+			return command.marshalResult(command.execute(this.databaseCluster, this.stateManager));
 		}
 		catch (Throwable e)
 		{
@@ -100,31 +99,20 @@ public class DistributableStateManager implements StateManager, MessageListener,
 	@Override
 	public Set<String> getInitialState()
 	{
-		Address coordinator = this.getCoordinator();
+/*		Address coordinator = this.getCoordinator();
 		
 		if (coordinator.equals(this.dispatcher.getChannel().getLocalAddress()))
 		{
 			return this.stateManager.getInitialState();
 		}
-
+*/
 		Command<Set<String>> command = new QueryInitialStateCommand();
 
-		try
-		{
-			Object result = this.dispatcher.sendMessage(this.createMessage(coordinator, command), GroupRequest.GET_FIRST, this.timeout);
+		Object result = this.send(command, GroupRequest.GET_FIRST, this.timeout).getFirst();
 
-			return command.unmarshalResult(result);
-		}
-		catch (TimeoutException e)
-		{
-			return this.stateManager.getInitialState();
-		}
-		catch (SuspectedException e)
-		{
-			return this.stateManager.getInitialState();
-		}
+		return (result != null) ? command.unmarshalResult(result) : this.stateManager.getInitialState();
 	}
-	
+/*	
 	private Address getCoordinator()
 	{
 		synchronized (this.addressList)
@@ -132,7 +120,7 @@ public class DistributableStateManager implements StateManager, MessageListener,
 			return this.addressList.isEmpty() ? this.dispatcher.getChannel().getLocalAddress() : this.addressList.get(0);
 		}
 	}
-	
+*/	
 	/**
 	 * @see net.sf.hajdbc.StateManager#add(java.lang.String)
 	 */
@@ -157,14 +145,14 @@ public class DistributableStateManager implements StateManager, MessageListener,
 		this.stateManager.remove(databaseId);
 	}
 
-	private void send(Command<?> command, int mode, long timeout)
+	private RspList send(Command<?> command, int mode, long timeout)
 	{
-		this.dispatcher.castMessage(null, this.createMessage(null, command), mode, timeout);
+		return this.dispatcher.castMessage(null, this.createMessage(command), mode, timeout);
 	}
 
-	private Message createMessage(Address dest, Command<?> command)
+	private Message createMessage(Command<?> command)
 	{
-		return new Message(dest, this.dispatcher.getChannel().getLocalAddress(), command);
+		return new Message(null, this.dispatcher.getChannel().getLocalAddress(), command);
 	}
 	
 	/**
