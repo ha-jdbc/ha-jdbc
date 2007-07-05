@@ -42,12 +42,12 @@ public class EagerDatabaseProperties implements DatabaseProperties
 	private Map<String, TableProperties> tableMap = new HashMap<String, TableProperties>();
 	private boolean supportsSelectForUpdate;
 	private List<String> defaultSchemaList;
-	private Collection<String> sequences;
 	private Dialect dialect;
 	
 	public EagerDatabaseProperties(Connection connection, Dialect dialect) throws SQLException
 	{
 		DatabaseMetaData metaData = connection.getMetaData();
+		
 		this.support = new DatabaseMetaDataSupport(metaData);
 		
 		this.supportsSelectForUpdate = metaData.supportsSelectForUpdate();
@@ -67,9 +67,8 @@ public class EagerDatabaseProperties implements DatabaseProperties
 			}
 		}
 		
-		this.sequences = this.dialect.getSequences(connection);
-		
 		this.dialect = dialect;
+		
 		this.defaultSchemaList = dialect.getDefaultSchemas(connection);
 	}
 
@@ -98,14 +97,5 @@ public class EagerDatabaseProperties implements DatabaseProperties
 	public boolean supportsSelectForUpdate()
 	{
 		return this.supportsSelectForUpdate;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.DatabaseProperties#getSequences()
-	 */
-	@Override
-	public Collection<String> getSequences() throws SQLException
-	{
-		return this.sequences;
 	}
 }
