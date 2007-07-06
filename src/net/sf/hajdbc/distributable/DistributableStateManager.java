@@ -110,8 +110,11 @@ public class DistributableStateManager implements StateManager, MessageListener,
 	@Override
 	public void add(String databaseId)
 	{
-		// Send synchronous notification
-		this.send(new ActivateCommand(databaseId), GroupRequest.GET_ALL, 0);
+		if (this.databaseCluster.isActive())
+		{
+			// Send synchronous notification
+			this.send(new ActivateCommand(databaseId), GroupRequest.GET_ALL, 0);
+		}
 		
 		this.stateManager.add(databaseId);
 	}
