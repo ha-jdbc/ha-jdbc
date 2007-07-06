@@ -27,7 +27,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
@@ -981,9 +980,10 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			context.marshalDocument(this, null, null, new FileWriter(file));
 			
 			fileChannel = new FileInputStream(file).getChannel();
-			
+
+			outputChannel = this.getOutputChannel(this.url);
 			// We cannot use URLConnection for files because Sun's implementation does not support output.
-			if (this.url.getProtocol().equals("file"))
+/*			if (this.url.getProtocol().equals("file"))
 			{
 				outputChannel = new FileOutputStream(new File(this.url.getPath())).getChannel();
 			}
@@ -995,7 +995,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 				
 				outputChannel = Channels.newChannel(connection.getOutputStream());
 			}
-			
+*/			
 			fileChannel.transferTo(0, file.length(), outputChannel);
 		}
 		catch (Exception e)
@@ -1033,6 +1033,24 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 				file.delete();
 			}
 		}
+	}
+	
+	/**
+	 * We cannot use URLConnection for files because Sun's implementation does not support output.
+	 */
+	private WritableByteChannel getOutputChannel(URL url) throws IOException
+	{
+		return this.isFile(url) ? new FileOutputStream(this.toFile(url)).getChannel() : Channels.newChannel(url.openConnection().getOutputStream());
+	}
+	
+	private boolean isFile(URL url)
+	{
+		return url.getProtocol().equals("file");
+	}
+	
+	private File toFile(URL url) throws IOException
+	{
+		return new File(url.getPath());
 	}
 	
 	void addSynchronizationStrategyBuilder(SynchronizationStrategyBuilder builder) throws Exception
