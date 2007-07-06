@@ -111,7 +111,7 @@ public class DistributableStateManager implements StateManager, MessageListener,
 			{
 				Set<String> state = command.unmarshalResult(result);
 				
-				logger.info(Messages.INITIAL_CLUSTER_STATE_REMOTE, state, response.getSender());
+				logger.info(Messages.getMessage(Messages.INITIAL_CLUSTER_STATE_REMOTE, state, response.getSender()));
 				
 				return state;
 			}

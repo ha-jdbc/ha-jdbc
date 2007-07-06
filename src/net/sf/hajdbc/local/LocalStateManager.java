@@ -65,7 +65,7 @@ public class LocalStateManager implements StateManager
 		
 		if (state == null)
 		{
-			logger.info(Messages.INITIAL_CLUSTER_STATE_NONE);
+			logger.info(Messages.getMessage(Messages.INITIAL_CLUSTER_STATE_NONE));
 			
 			return null;
 		}
@@ -77,7 +77,7 @@ public class LocalStateManager implements StateManager
 			databaseSet = new TreeSet<String>(Arrays.asList(state.split(DELIMITER)));
 		}
 		
-		logger.info(Messages.INITIAL_CLUSTER_STATE_LOCAL, databaseSet);
+		logger.info(Messages.getMessage(Messages.INITIAL_CLUSTER_STATE_LOCAL, databaseSet));
 
 		return databaseSet;
 	}
