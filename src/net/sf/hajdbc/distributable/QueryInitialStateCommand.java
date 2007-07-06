@@ -43,7 +43,7 @@ public class QueryInitialStateCommand implements Command<Set<String>>
 	@Override
 	public <D> Set<String> execute(DatabaseCluster<D> databaseCluster, StateManager stateManager)
 	{
-		return stateManager.getInitialState();
+		return databaseCluster.isActive() ? stateManager.getInitialState() : null;
 	}
 
 	/**
