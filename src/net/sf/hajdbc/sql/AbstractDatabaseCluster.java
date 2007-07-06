@@ -228,7 +228,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#deactivate(net.sf.hajdbc.Database)
+	 * @see net.sf.hajdbc.DatabaseCluster#deactivate(net.sf.hajdbc.Database, net.sf.hajdbc.StateManager)
 	 */
 	@Override
 	public boolean deactivate(Database<D> database, StateManager stateManager)
@@ -269,7 +269,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#activate(net.sf.hajdbc.Database)
+	 * @see net.sf.hajdbc.DatabaseCluster#activate(net.sf.hajdbc.Database, net.sf.hajdbc.StateManager)
 	 */
 	@Override
 	public boolean activate(Database<D> database, StateManager stateManager)

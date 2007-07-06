@@ -51,7 +51,7 @@ public class DeactivateCommand extends AbstractCommand
 	}
 
 	/**
-	 * @see net.sf.hajdbc.distributable.Command#execute(net.sf.hajdbc.DatabaseCluster)
+	 * @see net.sf.hajdbc.distributable.Command#execute(net.sf.hajdbc.DatabaseCluster, net.sf.hajdbc.StateManager)
 	 */
 	@Override
 	public <D> Boolean execute(DatabaseCluster<D> databaseCluster, StateManager stateManager)

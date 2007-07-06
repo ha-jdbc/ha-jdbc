@@ -39,7 +39,7 @@ public class QueryInitialStateCommand implements Command<Set<String>>
 	private static final String DELIMITER = ",";
 	
 	/**
-	 * @see net.sf.hajdbc.distributable.Command#execute(net.sf.hajdbc.DatabaseCluster)
+	 * @see net.sf.hajdbc.distributable.Command#execute(net.sf.hajdbc.DatabaseCluster, net.sf.hajdbc.StateManager)
 	 */
 	@Override
 	public <D> Set<String> execute(DatabaseCluster<D> databaseCluster, StateManager stateManager)
