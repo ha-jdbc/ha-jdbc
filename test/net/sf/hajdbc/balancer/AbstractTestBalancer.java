@@ -195,4 +195,32 @@ public abstract class AbstractTestBalancer implements Balancer<Void>
 		
 		return removed;
 	}
+
+	/**
+	 * @see net.sf.hajdbc.Balancer#clear()
+	 */
+	@Override
+	public void clear()
+	{
+		int size = this.balancer.all().size();
+		
+		assert size == 0 : size;
+		
+		this.balancer.clear();
+		
+		assert size == 0 : size;
+		
+		this.balancer.add(new MockDatabase("1"));
+		this.balancer.add(new MockDatabase("2"));
+		
+		size = this.balancer.all().size();
+		
+		assert size == 2 : size;
+		
+		this.balancer.clear();
+				
+		size = this.balancer.all().size();
+		
+		assert size == 0 : size;
+	}
 }

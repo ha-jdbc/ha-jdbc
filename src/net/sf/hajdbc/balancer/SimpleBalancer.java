@@ -33,7 +33,7 @@ import net.sf.hajdbc.Database;
  */
 public class SimpleBalancer<D> extends AbstractBalancer<D>
 {
-	private LinkedList<Database<D>> databaseQueue = new LinkedList<Database<D>>();
+	private LinkedList<Database<D>> databaseList = new LinkedList<Database<D>>();
 
 	/**
 	 * @see net.sf.hajdbc.balancer.AbstractBalancer#collect()
@@ -41,7 +41,7 @@ public class SimpleBalancer<D> extends AbstractBalancer<D>
 	@Override
 	protected Collection<Database<D>> collect()
 	{
-		return this.databaseQueue;
+		return this.databaseList;
 	}
 	
 	/**
@@ -50,7 +50,7 @@ public class SimpleBalancer<D> extends AbstractBalancer<D>
 	@Override
 	public synchronized Database<D> next()
 	{
-		return this.databaseQueue.element();
+		return this.databaseList.element();
 	}
 	
 	/**
@@ -64,7 +64,7 @@ public class SimpleBalancer<D> extends AbstractBalancer<D>
 		
 		if (added)
 		{
-			Collections.sort(this.databaseQueue, this.comparator);
+			Collections.sort(this.databaseList, this.comparator);
 		}
 		
 		return added;

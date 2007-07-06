@@ -84,6 +84,15 @@ public abstract class AbstractBalancer<D> implements Balancer<D>
 	}
 
 	/**
+	 * @see net.sf.hajdbc.Balancer#clear()
+	 */
+	@Override
+	public synchronized void clear()
+	{
+		this.collect().clear();
+	}
+
+	/**
 	 * Exposes a view of the underlying collection of Databases.
 	 * @return a Collection of databases
 	 */

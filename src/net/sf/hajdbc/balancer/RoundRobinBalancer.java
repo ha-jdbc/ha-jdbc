@@ -110,4 +110,14 @@ public class RoundRobinBalancer<D> extends AbstractBalancer<D>
 		
 		return database;
 	}
+
+	/**
+	 * @see net.sf.hajdbc.balancer.AbstractBalancer#clear()
+	 */
+	@Override
+	public synchronized void clear()
+	{
+		this.databaseQueue.clear();
+		this.databaseSet.clear();
+	}
 }

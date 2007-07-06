@@ -104,4 +104,14 @@ public class RandomBalancer<D> extends AbstractBalancer<D>
 		
 		return this.databaseList.get(index);
 	}
+
+	/**
+	 * @see net.sf.hajdbc.balancer.AbstractBalancer#clear()
+	 */
+	@Override
+	public synchronized void clear()
+	{
+		this.databaseList.clear();
+		this.databaseSet.clear();
+	}
 }

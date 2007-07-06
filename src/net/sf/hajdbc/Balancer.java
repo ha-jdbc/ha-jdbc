@@ -66,4 +66,9 @@ public interface Balancer<D>
 	 * @param database a database descriptor
 	 */
 	public void afterInvocation(Database<D> database);
+	
+	/**
+	 * Removes all databases from this balancer.
+	 */
+	public void clear();
 }
