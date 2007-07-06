@@ -116,13 +116,14 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	private URL url;
 	private Map<String, SynchronizationStrategy> synchronizationStrategyMap = new HashMap<String, SynchronizationStrategy>();
 	private DatabaseClusterDecorator decorator;
-	private Map<String, Database<D>> databaseMap = new ConcurrentHashMap<String, Database<D>>();
+	private Map<String, Database<D>> databaseMap = new HashMap<String, Database<D>>();
 	private Map<Database<D>, D> connectionFactoryMap = new ConcurrentHashMap<Database<D>, D>();
 	private ExecutorService transactionalExecutor;
 	private ExecutorService nonTransactionalExecutor;
 	private CronThreadPoolExecutor cronExecutor = new CronThreadPoolExecutor(2);
 	private LockManager lockManager = new LocalLockManager();
 	private StateManager stateManager = new LocalStateManager(this);
+	private volatile boolean active = false;
 	
 	public AbstractDatabaseCluster(String id, URL url)
 	{
@@ -170,7 +171,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			}
 			catch (ExecutionException e)
 			{
-				// Is alive does not throw an exception
+				// isAlive does not throw an exception
 			}
 			catch (InterruptedException e)
 			{
@@ -231,20 +232,23 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	 * @see net.sf.hajdbc.DatabaseCluster#deactivate(net.sf.hajdbc.Database)
 	 */
 	@Override
-	public synchronized boolean deactivate(Database<D> database, StateManager stateManager)
+	public boolean deactivate(Database<D> database, StateManager stateManager)
 	{
-		this.unregister(database);
-		// Reregister database mbean using "inactive" interface
-		this.register(database, database.getInactiveMBean());
-		
-		boolean removed = this.balancer.remove(database);
-		
-		if (removed)
+		synchronized (this.balancer)
 		{
-			stateManager.remove(database.getId());
+			this.unregister(database);
+			// Reregister database mbean using "inactive" interface
+			this.register(database, database.getInactiveMBean());
+			
+			boolean removed = this.balancer.remove(database);
+			
+			if (removed)
+			{
+				stateManager.remove(database.getId());
+			}
+			
+			return removed;
 		}
-		
-		return removed;
 	}
 
 	/**
@@ -269,27 +273,30 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	 * @see net.sf.hajdbc.DatabaseCluster#activate(net.sf.hajdbc.Database)
 	 */
 	@Override
-	public synchronized boolean activate(Database<D> database, StateManager stateManager)
+	public boolean activate(Database<D> database, StateManager stateManager)
 	{
-		this.unregister(database);
-		// Reregister database mbean using "active" interface
-		this.register(database, database.getActiveMBean());
-		
-		if (database.isDirty())
+		synchronized (this.balancer)
 		{
-			this.export();
+			this.unregister(database);
+			// Reregister database mbean using "active" interface
+			this.register(database, database.getActiveMBean());
 			
-			database.clean();
+			if (database.isDirty())
+			{
+				this.export();
+				
+				database.clean();
+			}
+			
+			boolean added = this.balancer.add(database);
+			
+			if (added)
+			{
+				stateManager.add(database.getId());
+			}
+			
+			return added;
 		}
-		
-		boolean added = this.balancer.add(database);
-		
-		if (added)
-		{
-			stateManager.add(database.getId());
-		}
-		
-		return added;
 	}
 	
 	/**
@@ -314,14 +321,17 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	@Override
 	public Set<String> getInactiveDatabases()
 	{
-		Set<String> databaseSet = new TreeSet<String>(this.databaseMap.keySet());
-
-		for (Database<D> database: this.balancer.all())
+		synchronized (this.databaseMap)
 		{
-			databaseSet.remove(database.getId());
+			Set<String> databaseSet = new TreeSet<String>(this.databaseMap.keySet());
+
+			for (Database<D> database: this.balancer.all())
+			{
+				databaseSet.remove(database.getId());
+			}
+			
+			return databaseSet;
 		}
-		
-		return databaseSet;
 	}
 
 	/**
@@ -330,14 +340,17 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	@Override
 	public Database<D> getDatabase(String id)
 	{
-		Database<D> database = this.databaseMap.get(id);
-		
-		if (database == null)
+		synchronized (this.databaseMap)
 		{
-			throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_DATABASE, id, this));
+			Database<D> database = this.databaseMap.get(id);
+			
+			if (database == null)
+			{
+				throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_DATABASE, id, this));
+			}
+			
+			return database;
 		}
-		
-		return database;
 	}
 
 	/**
@@ -478,21 +491,24 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	 * @see net.sf.hajdbc.DatabaseClusterMBean#remove(java.lang.String)
 	 */
 	@Override
-	public synchronized void remove(String id)
+	public void remove(String id)
 	{
-		Database<D> database = this.getDatabase(id);
-		
-		if (this.balancer.all().contains(database))
+		synchronized (this.databaseMap)
 		{
-			throw new IllegalStateException(Messages.getMessage(Messages.DATABASE_STILL_ACTIVE, id, this));
+			Database<D> database = this.getDatabase(id);
+			
+			if (this.balancer.all().contains(database))
+			{
+				throw new IllegalStateException(Messages.getMessage(Messages.DATABASE_STILL_ACTIVE, id, this));
+			}
+	
+			this.unregister(database);
+			
+			this.databaseMap.remove(id);
+			this.connectionFactoryMap.remove(database);
+			
+			this.export();
 		}
-
-		this.unregister(database);
-		
-		this.databaseMap.remove(id);
-		this.connectionFactoryMap.remove(database);
-		
-		this.export();
 	}
 
 	private void unregister(Database<D> database)
@@ -515,10 +531,19 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	}
 
 	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#isActive()
+	 */
+	@Override
+	public boolean isActive()
+	{
+		return this.active;
+	}
+
+	/**
 	 * Starts this database cluster
 	 * @throws Exception if database cluster start fails
 	 */
-	private synchronized void start() throws Exception
+	public void start() throws Exception
 	{
 		this.lockManager.start();
 		this.stateManager.start();
@@ -574,17 +599,16 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		{
 			this.cronExecutor.schedule(new AutoActivationTask(), this.autoActivationExpression);
 		}
+		
+		this.active = true;
 	}
 
 	/**
 	 * Stops this database cluster
 	 */
-	private synchronized void stop()
+	public void stop()
 	{
-		for (Database<D> database: this.databaseMap.values())
-		{
-			this.unregister(database);
-		}
+		this.active = false;
 		
 		this.stateManager.stop();
 		this.lockManager.stop();
@@ -702,24 +726,30 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		this.decorator = decorator;
 	}
 	
-	protected synchronized void add(Database<D> database)
+	protected void add(Database<D> database)
 	{
 		String id = database.getId();
 		
-		if (this.databaseMap.containsKey(id))
+		synchronized (this.databaseMap)
 		{
-			throw new IllegalArgumentException(Messages.getMessage(Messages.DATABASE_ALREADY_EXISTS, id, this));
+			if (this.databaseMap.containsKey(id))
+			{
+				throw new IllegalArgumentException(Messages.getMessage(Messages.DATABASE_ALREADY_EXISTS, id, this));
+			}
+			
+			this.connectionFactoryMap.put(database, database.createConnectionFactory());
+			this.databaseMap.put(id, database);
+			
+			this.register(database, database.getInactiveMBean());
 		}
-		
-		this.connectionFactoryMap.put(database, database.createConnectionFactory());
-		this.databaseMap.put(id, database);
-		
-		this.register(database, database.getInactiveMBean());
 	}
 	
 	Iterator<Database<D>> getDatabases()
 	{
-		return this.databaseMap.values().iterator();
+		synchronized (this.databaseMap)
+		{
+			return this.databaseMap.values().iterator();
+		}
 	}
 	
 	/**
@@ -845,6 +875,11 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	public void postDeregister()
 	{
 		this.stop();
+		
+		for (Database<D> database: this.databaseMap.values())
+		{
+			this.unregister(database);
+		}
 	}
 
 	/**
@@ -855,7 +890,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	{
 		if (!registered)
 		{
-			this.stop();
+			this.postDeregister();
 		}
 	}
 

@@ -134,4 +134,21 @@ public interface DatabaseCluster<D>
 	 * @return a map of database descriptor to true, if alive, false otherwise
 	 */
 	public Map<Database<D>, Boolean> getAliveMap(Collection<Database<D>> databases);
+	
+	/**
+	 * Starts this database cluster.
+	 * @throws Exception if cluster could not be started
+	 */
+	public void start() throws Exception;
+	
+	/**
+	 * Stops this database cluster
+	 */
+	public void stop();
+	
+	/**
+	 * Indicates whether or not this cluster is active, i.e. started, but not yet stopped.
+	 * @return true, if this cluster is active, false otherwise.
+	 */
+	public boolean isActive();
 }
