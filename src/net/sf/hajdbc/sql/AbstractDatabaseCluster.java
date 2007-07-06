@@ -609,6 +609,8 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	{
 		this.active = false;
 		
+		this.balancer.clear();
+		
 		this.stateManager.stop();
 		this.lockManager.stop();
 		
