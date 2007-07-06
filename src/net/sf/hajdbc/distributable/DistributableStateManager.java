@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc.distributable;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -37,7 +38,7 @@ import org.jgroups.View;
 import org.jgroups.blocks.GroupRequest;
 import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestHandler;
-import org.jgroups.util.RspList;
+import org.jgroups.util.Rsp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,9 +101,23 @@ public class DistributableStateManager implements StateManager, MessageListener,
 	{
 		Command<Set<String>> command = new QueryInitialStateCommand();
 
-		Object result = this.send(command, GroupRequest.GET_FIRST, this.timeout).getFirst();
+		Collection<Rsp> responses = this.send(command, GroupRequest.GET_FIRST, this.timeout);
+		
+		for (Rsp response: responses)
+		{
+			Object result = response.getValue();
+			
+			if (result != null)
+			{
+				Set<String> state = command.unmarshalResult(result);
+				
+				logger.info(Messages.INITIAL_CLUSTER_STATE_REMOTE, state, response.getSender());
+				
+				return state;
+			}
+		}
 
-		return (result != null) ? command.unmarshalResult(result) : this.stateManager.getInitialState();
+		return this.stateManager.getInitialState();
 	}
 
 	/**
@@ -132,9 +147,10 @@ public class DistributableStateManager implements StateManager, MessageListener,
 		this.stateManager.remove(databaseId);
 	}
 
-	private RspList send(Command<?> command, int mode, long timeout)
+	@SuppressWarnings("unchecked")
+	private Collection<Rsp> send(Command<?> command, int mode, long timeout)
 	{
-		return this.dispatcher.castMessage(null, this.createMessage(command), mode, timeout);
+		return this.dispatcher.castMessage(null, this.createMessage(command), mode, timeout).values();
 	}
 	
 	private Message createMessage(Command<?> command)

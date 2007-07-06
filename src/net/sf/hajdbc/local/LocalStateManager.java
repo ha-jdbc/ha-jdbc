@@ -35,6 +35,9 @@ import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.StateManager;
 import net.sf.hajdbc.util.Strings;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * @author Paul Ferraro
  */
@@ -43,6 +46,7 @@ public class LocalStateManager implements StateManager
 	private static final String DELIMITER = ",";
 	
 	private static Preferences preferences = Preferences.userNodeForPackage(LocalStateManager.class);
+	private static Logger logger = LoggerFactory.getLogger(LocalStateManager.class);
 	
 	private DatabaseCluster<?> databaseCluster;
 	
@@ -59,11 +63,23 @@ public class LocalStateManager implements StateManager
 	{
 		String state = preferences.get(this.statePreferenceKey(), null);
 		
-		if (state == null) return null;
+		if (state == null)
+		{
+			logger.info(Messages.INITIAL_CLUSTER_STATE_NONE);
+			
+			return null;
+		}
 		
-		if (state.length() == 0) return Collections.emptySet();
+		Set<String> databaseSet = Collections.emptySet();
 		
-		return new TreeSet<String>(Arrays.asList(state.split(DELIMITER)));
+		if (state.length() > 0)
+		{
+			databaseSet = new TreeSet<String>(Arrays.asList(state.split(DELIMITER)));
+		}
+		
+		logger.info(Messages.INITIAL_CLUSTER_STATE_LOCAL, databaseSet);
+
+		return databaseSet;
 	}
 	
 	/**

@@ -53,6 +53,9 @@ public final class Messages
 	public static final String GROUP_MEMBER_JOINED = "group-member-joined";
 	public static final String GROUP_MEMBER_LEFT = "group-member-left";
 	public static final String HA_JDBC_INIT = "ha-jdbc-init";
+	public static final String INITIAL_CLUSTER_STATE_LOCAL = "initial-cluster-state-local";
+	public static final String INITIAL_CLUSTER_STATE_NONE = "initial-cluster-state-none";
+	public static final String INITIAL_CLUSTER_STATE_REMOTE = "initial-cluster-state-remote";
 	public static final String INSERT_COUNT = "insert-count";
 	public static final String INVALID_BALANCER = "invalid-balancer";
 	public static final String INVALID_DATABASE = "invalid-database";
