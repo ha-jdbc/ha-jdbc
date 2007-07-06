@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc.distributable;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
@@ -53,7 +54,7 @@ public class QueryInitialStateCommand implements Command<Set<String>>
 	@Override
 	public Object marshalResult(Set<String> set)
 	{
-		return set.isEmpty() ? null : Strings.join(set, DELIMITER);
+		return (set != null) ? Strings.join(set, DELIMITER) : null;
 	}
 
 	/**
@@ -63,16 +64,13 @@ public class QueryInitialStateCommand implements Command<Set<String>>
 	@Override
 	public Set<String> unmarshalResult(Object object)
 	{
-		if (object == null) return Collections.emptySet();
+		String state = (String) object;
 		
-		Set<String> set = new TreeSet<String>();
+		if (state == null) return null;
 		
-		for (String part: ((String) object).split(DELIMITER))
-		{
-			set.add(part);
-		}
+		if (state.length() == 0) return Collections.emptySet();
 		
-		return set;
+		return new TreeSet<String>(Arrays.asList(state.split(DELIMITER)));
 	}
 	
 	/**
