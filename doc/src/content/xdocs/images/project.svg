@@ -4,7 +4,7 @@
 	<defs>
 		<linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
 			<stop style="stop-color:lightblue" offset="0"/>
-			<stop style="stop-color:darkblue" offset="0.6"/>
+			<stop style="stop-color:darkblue" offset="0.65"/>
 			<stop style="stop-color:black" offset="1"/>
 		</linearGradient>
 		<filter id="shadowFilter"  filterUnits="objectBoundingBox">
@@ -19,7 +19,7 @@
 		</filter>
 	</defs>
 	<g filter="url(#shadowFilter)" fill="url(#gradient)">
-		<text x="0" y="42" style="font-size:40pt; font-family:'Palatino Linotype'">
+		<text x="0" y="42" style="font-size:50pt; font-family:'Gentium'">
 			<for:project-name/>
 		</text>
 	</g>
