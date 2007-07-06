@@ -69,6 +69,7 @@ public class DistributableLockManager implements LockManager, VotingListener, Me
 		this.lockManager = databaseCluster.getLockManager();
 		
 		this.channel = decorator.createChannel(databaseCluster.getId() + "-lock");
+		// Send messages to ourselves as well
 		this.channel.setOpt(Channel.LOCAL, true);
 		
 		this.address = this.channel.getLocalAddress();

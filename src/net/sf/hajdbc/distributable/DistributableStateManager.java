@@ -62,6 +62,7 @@ public class DistributableStateManager implements StateManager, MessageListener,
 		this.databaseCluster = databaseCluster;
 		
 		this.dispatcher = new MessageDispatcher(decorator.createChannel(databaseCluster.getId()), this, this, this);
+		// Don't send messages to ourselves
 		this.dispatcher.getChannel().setOpt(Channel.LOCAL, false);
 		
 		this.timeout = decorator.getTimeout();
