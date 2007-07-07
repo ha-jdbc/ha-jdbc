@@ -12,6 +12,23 @@
 	</contexts>
 
 	<changes>
+		<release version="2.0-rc-4" date="July 7, 2007">
+			<action context="src" dev="PF" type="update">
+				In distributable mode, try to retrieve initial state from any remote node, not just "coordinator".
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed deadlocking during activation/deactivation in distributable mode caused by redundant secondary notifications.
+			</action>
+			<action context="src" dev="PF" type="update">
+				In distributable mode, do not send activation notifications to other nodes during cluster startup.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				In distributable mode, do not respond to initial state queries until cluster startup is complete.
+			</action>
+			<action context="src" dev="PF" type="update">
+				Upgraded SLF4J to 1.4.1.
+			</action>
+		</release>
 		<release version="2.0-rc-3" date="July 2, 2007">
 			<action context="src" dev="PF" type="update">
 				FailureDetectionTask and SQLProxy.handleFailure() will not deactivate any databases if they all appear to be dead.
@@ -73,7 +90,7 @@
 			</action>
 			<action context="src" dev="PF" type="remove">
 				Removed quoting of cluster ID and database ID in mbean ObjectName.
-				JBoss users no longer need to hopelessly wait for  <a href="http://jira.jboss.com/jira/browse/JBAS-2037">this long standing jmx-console bug</a> to be fixed.
+				JBoss users no longer need to patiently wait for <link href="http://jira.jboss.com/jira/browse/JBAS-2037">this long standing jmx-console bug</link> to be fixed.
 			</action>
 			<action context="src" dev="PF" type="fix">
 				Fixed NoSuchElementException thrown during database activation when there are no active databases.
