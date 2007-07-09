@@ -393,6 +393,57 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 	}
 	
 	/**
+	 * @see net.sf.hajdbc.sql.SQLProxy#handleFailures(java.util.SortedMap)
+	 */
+	@Override
+	public SQLException handleFailures(SortedMap<Database<D>, SQLException> exceptionMap)
+	{
+		if (exceptionMap.size() == 1)
+		{
+			return exceptionMap.get(exceptionMap.firstKey());
+		}
+		
+		Map<Database<D>, Boolean> aliveMap = this.databaseCluster.getAliveMap(exceptionMap.keySet());
+
+		boolean allDead = true;
+		
+		// Detect whether all database are dead
+		for (Boolean alive: aliveMap.values())
+		{
+			allDead &= !alive;
+		}
+		
+		SQLException exception = null;
+		
+		for (Map.Entry<Database<D>, SQLException> exceptionMapEntry: exceptionMap.entrySet())
+		{
+			Database<D> database = exceptionMapEntry.getKey();
+			SQLException cause = exceptionMapEntry.getValue();
+			
+			if (allDead || aliveMap.get(database))
+			{
+				if (exception == null)
+				{
+					exception = cause;
+				}
+				else
+				{
+					exception.setNextException(cause);
+				}
+			}
+			else
+			{
+				if (this.databaseCluster.deactivate(database, this.databaseCluster.getStateManager()))
+				{
+					logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this.databaseCluster), cause);
+				}
+			}
+		}
+		
+		return exception;
+	}
+
+	/**
 	 * @see net.sf.hajdbc.sql.SQLProxy#handlePartialFailure(java.util.SortedMap, java.util.SortedMap)
 	 */
 	@Override

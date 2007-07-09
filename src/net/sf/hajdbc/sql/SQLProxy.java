@@ -56,5 +56,7 @@ public interface SQLProxy<D, E>
 	
 	public void handleFailure(Database<D> database, SQLException cause) throws SQLException;
 	
+	public SQLException handleFailures(SortedMap<Database<D>, SQLException> exceptionMap);
+	
 	public <R> SortedMap<Database<D>, R> handlePartialFailure(SortedMap<Database<D>, R> resultMap, SortedMap<Database<D>, SQLException> exceptionMap) throws SQLException;
 }

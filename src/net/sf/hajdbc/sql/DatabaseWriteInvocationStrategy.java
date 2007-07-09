@@ -124,22 +124,13 @@ public class DatabaseWriteInvocationStrategy<D, T, R> implements InvocationStrat
 				}
 				catch (ExecutionException e)
 				{
-					SQLException cause = SQLExceptionFactory.createSQLException(e.getCause());
-	
-					try
-					{
-						proxy.handleFailure(database, cause);
-					}
-					catch (SQLException sqle)
-					{
-						exceptionMap.put(database, sqle);
-					}
+					exceptionMap.put(database, SQLExceptionFactory.createSQLException(e.getCause()));
+				}
+				catch (InterruptedException e)
+				{
+					exceptionMap.put(database, SQLExceptionFactory.createSQLException(e));
 				}
 			}
-		}
-		catch (InterruptedException e)
-		{
-			throw SQLExceptionFactory.createSQLException(e);
 		}
 		finally
 		{
@@ -155,12 +146,7 @@ public class DatabaseWriteInvocationStrategy<D, T, R> implements InvocationStrat
 		// If no databases returned successfully, return an exception back to the caller
 		if (resultMap.isEmpty())
 		{
-			if (exceptionMap.isEmpty())
-			{
-				throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, cluster));
-			}
-			
-			throw exceptionMap.get(exceptionMap.firstKey());
+			throw proxy.handleFailures(exceptionMap);
 		}
 		
 		// If any databases failed, while others succeeded, handle the failures
