@@ -362,10 +362,8 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 
 		Map<Database<D>, Boolean> aliveMap = this.databaseCluster.getAliveMap(databaseSet);
 		
-		Boolean alive = aliveMap.get(database);
-		
 		// If failed database is alive, then throw caught exception
-		if ((alive != null) && alive)
+		if (aliveMap.get(database))
 		{
 			throw cause;
 		}
@@ -395,10 +393,10 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.sql.SQLProxy#handleFailures(java.util.SortedMap)
+	 * @see net.sf.hajdbc.sql.SQLProxy#handlePartialFailure(java.util.SortedMap, java.util.SortedMap)
 	 */
 	@Override
-	public void handleFailures(SortedMap<Database<D>, SQLException> exceptionMap) throws SQLException
+	public <R> SortedMap<Database<D>, R> handlePartialFailure(SortedMap<Database<D>, R> resultMap, SortedMap<Database<D>, SQLException> exceptionMap) throws SQLException
 	{
 		for (Map.Entry<Database<D>, SQLException> exceptionMapEntry: exceptionMap.entrySet())
 		{
@@ -410,6 +408,8 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 				this.logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this.databaseCluster), exception);
 			}
 		}
+		
+		return resultMap;
 	}
 	
 	protected class DynamicInvoker implements Invoker<D, E, Object>

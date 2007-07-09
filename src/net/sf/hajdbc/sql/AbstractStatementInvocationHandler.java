@@ -42,6 +42,7 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.LockManager;
+import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.TableProperties;
 
 /**
@@ -168,20 +169,54 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#handleFailures(java.util.SortedMap)
+	 * @see net.sf.hajdbc.sql.SQLProxy#handlePartialFailure(java.util.SortedMap, java.util.SortedMap)
 	 */
 	@Override
-	public void handleFailures(SortedMap<Database<D>, SQLException> exceptionMap) throws SQLException
+	public <R> SortedMap<Database<D>, R> handlePartialFailure(SortedMap<Database<D>, R> resultMap, SortedMap<Database<D>, SQLException> exceptionMap) throws SQLException
 	{
-		// If auto-commit is off, give client the opportunity to rollback the transaction
 		if (this.getParent().getAutoCommit())
 		{
-			super.handleFailures(exceptionMap);
+			return super.handlePartialFailure(resultMap, exceptionMap);
 		}
-		else
+		
+		// If auto-commit is off, throw exception to give client the opportunity to rollback the transaction
+		DatabaseCluster<D> cluster = this.getDatabaseCluster();
+		
+		Map<Database<D>, Boolean> aliveMap = cluster.getAliveMap(exceptionMap.keySet());
+
+		SQLException exception = null;
+		
+		for (Map.Entry<Database<D>, SQLException> exceptionMapEntry: exceptionMap.entrySet())
 		{
-			throw exceptionMap.get(exceptionMap.firstKey());
+			Database<D> database = exceptionMapEntry.getKey();
+			SQLException cause = exceptionMapEntry.getValue();
+			
+			if (aliveMap.get(database))
+			{
+				if (exception == null)
+				{
+					exception = cause;
+				}
+				else
+				{
+					exception.setNextException(cause);
+				}
+			}
+			else
+			{
+				if (cluster.deactivate(database, cluster.getStateManager()))
+				{
+					logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, cluster), cause);
+				}
+			}
 		}
+		
+		if (exception != null)
+		{
+			throw exception;
+		}
+
+		return resultMap;
 	}
 	
 	protected boolean isSelectForUpdate(String sql) throws SQLException

@@ -164,12 +164,6 @@ public class DatabaseWriteInvocationStrategy<D, T, R> implements InvocationStrat
 		}
 		
 		// If any databases failed, while others succeeded, handle the failures
-		if (!exceptionMap.isEmpty())
-		{
-			proxy.handleFailures(exceptionMap);
-		}
-		
-		// Return results from successful operations
-		return resultMap;
+		return exceptionMap.isEmpty() ? resultMap : proxy.handlePartialFailure(resultMap, exceptionMap);
 	}
 }

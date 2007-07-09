@@ -295,9 +295,9 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#handleFailures(java.util.SortedMap)
 	 */
 	@Override
-	public void handleFailures(SortedMap<Database<D>, SQLException> exceptionMap) throws SQLException
+	public <R> SortedMap<Database<D>, R> handlePartialFailure(SortedMap<Database<D>, R> resultMap, SortedMap<Database<D>, SQLException> exceptionMap) throws SQLException
 	{
-		this.getParentProxy().handleFailures(exceptionMap);
+		return this.getParentProxy().handlePartialFailure(resultMap, exceptionMap);
 	}
 
 	/**
