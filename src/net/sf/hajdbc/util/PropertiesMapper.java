@@ -38,21 +38,22 @@ public class PropertiesMapper extends AbstractMapper<Properties>
 	private static final String ATTRIBUTE = "name";
 
 	/**
-	 * 
+	 * Constructs a new PropertiesMapper.
 	 */
 	public PropertiesMapper()
 	{
-		super();
+		super(Properties.class);
 	}
 
 	/**
+	 * Constructs a new PropertiesMapper.
 	 * @param uri
 	 * @param index
 	 * @param name
 	 */
 	public PropertiesMapper(String uri, int index, String name)
 	{
-		super(uri, index, name);
+		super(Properties.class, uri, index, name);
 	}
 
 	/**

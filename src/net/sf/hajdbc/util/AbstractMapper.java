@@ -38,12 +38,14 @@ public abstract class AbstractMapper<T> implements IMarshaller, IUnmarshaller, I
 	protected String uri;
 	protected String name;
 	protected int index;
+	private Class<T> targetClass;
 	
 	/**
 	 * Constructs a new PropertiesMapper.
 	 */
-	protected AbstractMapper()
+	protected AbstractMapper(Class<T> targetClass)
 	{
+		this.targetClass = targetClass;
 	}
 	
 	/**
@@ -52,8 +54,10 @@ public abstract class AbstractMapper<T> implements IMarshaller, IUnmarshaller, I
 	 * @param index 
 	 * @param name
 	 */
-	protected AbstractMapper(String uri, int index, String name)
+	protected AbstractMapper(Class<T> targetClass, String uri, int index, String name)
 	{
+		this(targetClass);
+		
 		this.uri = uri;
 		this.index = index;
 		this.name = name;
@@ -71,11 +75,10 @@ public abstract class AbstractMapper<T> implements IMarshaller, IUnmarshaller, I
 	/**
 	 * @see org.jibx.runtime.IMarshaller#marshal(java.lang.Object, org.jibx.runtime.IMarshallingContext)
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public void marshal(Object object, IMarshallingContext context) throws JiBXException
 	{
-		this.marshal((T) object, (MarshallingContext) context);
+		this.marshal(this.targetClass.cast(object), (MarshallingContext) context);
 	}
 
 	protected abstract void marshal(T object, MarshallingContext context) throws JiBXException;
@@ -92,11 +95,10 @@ public abstract class AbstractMapper<T> implements IMarshaller, IUnmarshaller, I
 	/**
 	 * @see org.jibx.runtime.IUnmarshaller#unmarshal(java.lang.Object, org.jibx.runtime.IUnmarshallingContext)
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public Object unmarshal(Object object, IUnmarshallingContext context) throws JiBXException
 	{
-		return this.unmarshal((T) object, (UnmarshallingContext) context);
+		return this.unmarshal(this.targetClass.cast(object), (UnmarshallingContext) context);
 	}
 
 	protected abstract T unmarshal(T object, UnmarshallingContext context) throws JiBXException;

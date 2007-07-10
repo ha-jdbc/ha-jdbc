@@ -29,9 +29,8 @@ import java.lang.reflect.Proxy;
  */
 public class ProxyFactory
 {
-	@SuppressWarnings("unchecked")
 	public static <T> T createProxy(Class<T> targetInterface, InvocationHandler handler)
 	{
-		return (T) Proxy.newProxyInstance(targetInterface.getClassLoader(), new Class<?>[] { targetInterface }, handler);
+		return targetInterface.cast(Proxy.newProxyInstance(targetInterface.getClassLoader(), new Class<?>[] { targetInterface }, handler));
 	}
 }
