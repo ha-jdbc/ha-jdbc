@@ -51,7 +51,7 @@ public class ConnectionInvocationHandler<D> extends AbstractInvocationHandler<D,
 	
 	public ConnectionInvocationHandler(D proxy, SQLProxy<D, D> handler, Invoker<D, D, Connection> invoker, Map<Database<D>, Connection> connectionMap, FileSupport fileSupport) throws Exception
 	{
-		super(proxy, handler, invoker, connectionMap);
+		super(proxy, handler, invoker, Connection.class, connectionMap);
 		
 		this.fileSupport = fileSupport;
 	}

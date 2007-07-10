@@ -41,6 +41,6 @@ public class PreparedStatementInvocationHandler<D> extends AbstractPreparedState
 	 */
 	public PreparedStatementInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, PreparedStatement> invoker, Map<Database<D>, PreparedStatement> statementMap, FileSupport fileSupport, String sql) throws Exception
 	{
-		super(connection, proxy, invoker, statementMap, fileSupport, sql);
+		super(connection, proxy, invoker, PreparedStatement.class, statementMap, fileSupport, sql);
 	}
 }

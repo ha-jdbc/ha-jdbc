@@ -45,7 +45,7 @@ public class BlobInvocationHandler<D, P> extends AbstractLobInvocationHandler<D,
 	 */
 	protected BlobInvocationHandler(P object, SQLProxy<D, P> proxy, Invoker<D, P, Blob> invoker, Map<Database<D>, Blob> objectMap) throws Exception
 	{
-		super(object, proxy, invoker, objectMap);
+		super(object, proxy, invoker, Blob.class, objectMap);
 	}
 	
 	/**

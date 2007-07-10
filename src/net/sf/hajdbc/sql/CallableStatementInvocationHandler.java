@@ -43,7 +43,7 @@ public class CallableStatementInvocationHandler<D> extends AbstractPreparedState
 	 */
 	public CallableStatementInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, CallableStatement> invoker, Map<Database<D>, CallableStatement> statementMap, FileSupport fileSupport, String sql) throws Exception
 	{
-		super(connection, proxy, invoker, statementMap, fileSupport, sql);
+		super(connection, proxy, invoker, CallableStatement.class, statementMap, fileSupport, sql);
 	}
 
 	/**

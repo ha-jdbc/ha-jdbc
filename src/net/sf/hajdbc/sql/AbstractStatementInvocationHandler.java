@@ -65,9 +65,9 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 	 * @param fileSupport support object for streams
 	 * @throws Exception
 	 */
-	public AbstractStatementInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, S> invoker, Map<Database<D>, S> statementMap, FileSupport fileSupport) throws Exception
+	public AbstractStatementInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, S> invoker, Class<S> statementClass, Map<Database<D>, S> statementMap, FileSupport fileSupport) throws Exception
 	{
-		super(connection, proxy, invoker, statementMap);
+		super(connection, proxy, invoker, statementClass, statementMap);
 		
 		this.fileSupport = fileSupport;
 	}

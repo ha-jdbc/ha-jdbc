@@ -37,7 +37,7 @@ public class DataSourceInvocationHandler extends AbstractInvocationHandler<DataS
 	 */
 	public DataSourceInvocationHandler(DatabaseCluster<DataSource> databaseCluster)
 	{
-		super(databaseCluster, databaseCluster.getConnectionFactoryMap());
+		super(databaseCluster, DataSource.class, databaseCluster.getConnectionFactoryMap());
 	}
 
 	/**

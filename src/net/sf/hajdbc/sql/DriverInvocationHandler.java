@@ -35,7 +35,7 @@ public class DriverInvocationHandler extends AbstractInvocationHandler<Driver, V
 	 */
 	public DriverInvocationHandler(DatabaseCluster<Driver> databaseCluster)
 	{
-		super(databaseCluster, databaseCluster.getConnectionFactoryMap());
+		super(databaseCluster, Driver.class, databaseCluster.getConnectionFactoryMap());
 	}
 
 	/**

@@ -22,9 +22,9 @@ public abstract class AbstractLobInvocationHandler<D, P, E> extends AbstractInvo
 	 * @param objectMap
 	 * @throws Exception
 	 */
-	protected AbstractLobInvocationHandler(P object, SQLProxy<D, P> proxy, Invoker<D, P, E> invoker, Map<Database<D>, E> objectMap) throws Exception
+	protected AbstractLobInvocationHandler(P object, SQLProxy<D, P> proxy, Invoker<D, P, E> invoker, Class<E> proxyClass, Map<Database<D>, E> objectMap) throws Exception
 	{
-		super(object, proxy, invoker, objectMap);
+		super(object, proxy, invoker, proxyClass, objectMap);
 	}
 
 	/**

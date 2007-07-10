@@ -55,16 +55,18 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 	private Map<Database<D>, E> objectMap;
 	private Set<Invoker<D, E, ?>> invokerSet = new LinkedHashSet<Invoker<D, E, ?>>();
 	private List<SQLProxy<D, ?>> childList = new LinkedList<SQLProxy<D, ?>>();
+	private Class<E> proxyClass;
 	
-	protected AbstractInvocationHandler(DatabaseCluster<D> databaseCluster, Map<Database<D>, E> objectMap)
+	protected AbstractInvocationHandler(DatabaseCluster<D> databaseCluster, Class<E> proxyClass, Map<Database<D>, E> objectMap)
 	{
 		this.databaseCluster = databaseCluster;
+		this.proxyClass = proxyClass;
 		this.objectMap = objectMap;
 	}
 
-	protected AbstractInvocationHandler(P object, SQLProxy<D, P> proxy, Invoker<D, P, E> invoker, Map<Database<D>, E> objectMap) throws Exception
+	protected AbstractInvocationHandler(P object, SQLProxy<D, P> proxy, Invoker<D, P, E> invoker, Class<E> proxyClass, Map<Database<D>, E> objectMap) throws Exception
 	{
-		this(proxy.getDatabaseCluster(), objectMap);
+		this(proxy.getDatabaseCluster(), proxyClass, objectMap);
 		
 		this.parentObject = object;
 		this.parentProxy = proxy;
@@ -79,7 +81,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 	@Override
 	public final Object invoke(Object object, Method method, Object[] parameters) throws Exception
 	{
-		E proxy = (E) object;
+		E proxy = this.proxyClass.cast(object);
 		
 		InvocationStrategy strategy = this.getInvocationStrategy(proxy, method, parameters);
 		Invoker invoker = this.getInvoker(proxy, method, parameters);

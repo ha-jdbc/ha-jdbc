@@ -42,6 +42,6 @@ public class StatementInvocationHandler<D> extends AbstractStatementInvocationHa
 	 */
 	public StatementInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, Statement> invoker, Map<Database<D>, Statement> statementMap, FileSupport fileSupport) throws Exception
 	{
-		super(connection, proxy, invoker, statementMap, fileSupport);
+		super(connection, proxy, invoker, Statement.class, statementMap, fileSupport);
 	}
 }

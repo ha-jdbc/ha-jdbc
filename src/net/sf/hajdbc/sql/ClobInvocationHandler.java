@@ -45,7 +45,7 @@ public class ClobInvocationHandler<D, P> extends AbstractLobInvocationHandler<D,
 	 */
 	protected ClobInvocationHandler(P object, SQLProxy<D, P> proxy, Invoker<D, P, Clob> invoker, Map<Database<D>, Clob> objectMap) throws Exception
 	{
-		super(object, proxy, invoker, objectMap);
+		super(object, proxy, invoker, Clob.class, objectMap);
 	}
 
 	/**

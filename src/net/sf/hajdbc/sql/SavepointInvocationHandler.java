@@ -43,7 +43,7 @@ public class SavepointInvocationHandler<D> extends AbstractInvocationHandler<D, 
 	 */
 	protected SavepointInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, Savepoint> invoker, Map<Database<D>, Savepoint> savepointMap) throws Exception
 	{
-		super(connection, proxy, invoker, savepointMap);
+		super(connection, proxy, invoker, Savepoint.class, savepointMap);
 	}
 
 	/**

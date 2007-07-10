@@ -66,9 +66,9 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 	 * @param statementMap
 	 * @throws Exception
 	 */
-	public AbstractPreparedStatementInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, S> invoker, Map<Database<D>, S> statementMap, FileSupport fileSupport, String sql) throws Exception
+	public AbstractPreparedStatementInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, S> invoker, Class<S> statementClass, Map<Database<D>, S> statementMap, FileSupport fileSupport, String sql) throws Exception
 	{
-		super(connection, proxy, invoker, statementMap, fileSupport);
+		super(connection, proxy, invoker, statementClass, statementMap, fileSupport);
 		
 		this.lockList = this.getLockList(sql);
 		this.selectForUpdate = this.isSelectForUpdate(sql);

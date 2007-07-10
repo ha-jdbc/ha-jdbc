@@ -71,7 +71,7 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 	 */
 	protected ResultSetInvocationHandler(S statement, SQLProxy<D, S> proxy, Invoker<D, S, ResultSet> invoker, Map<Database<D>, ResultSet> resultSetMap, FileSupport fileSupport) throws Exception
 	{
-		super(statement, proxy, invoker, resultSetMap);
+		super(statement, proxy, invoker, ResultSet.class, resultSetMap);
 		
 		this.fileSupport = fileSupport;
 	}
