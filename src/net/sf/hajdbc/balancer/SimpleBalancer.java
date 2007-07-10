@@ -56,7 +56,6 @@ public class SimpleBalancer<D> extends AbstractBalancer<D>
 	/**
 	 * @see net.sf.hajdbc.balancer.AbstractBalancer#add(net.sf.hajdbc.Database)
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public synchronized boolean add(Database<D> database)
 	{
