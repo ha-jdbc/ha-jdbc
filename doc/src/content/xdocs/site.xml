@@ -31,6 +31,7 @@ See http://xml.apache.org/forrest/linking.html for more info
 	<project label="Project">
 		<project label="Project Page" href="http://sourceforge.net/projects/ha-jdbc"/>
 		<list label="User Mailing List" href="http://sourceforge.net/mail/?group_id=111957"/>
+		<forums label="Forums" href="http://sourceforge.net/forum/?group_id=111957"/>
 		<bugs label="Report Bugs" href="http://sourceforge.net/tracker/?group_id=111957&amp;atid=660861"/>
 		<support label="Support Requests" href="http://sourceforge.net/tracker/?group_id=111957&amp;atid=660862"/>
 		<patches label="Patches" href="http://sourceforge.net/tracker/?group_id=111957&amp;atid=660863"/>
