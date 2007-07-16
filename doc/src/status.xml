@@ -12,6 +12,26 @@
 	</contexts>
 
 	<changes>
+		<release version="2.0.0" date="July 16, 2007">
+			<action context="src" dev="PF" type="update">
+				Optimized failure handling in DatabaseWriteInvocationStrategy.
+			</action>
+			<action context="src" dev="PF" type="update">
+				Optimized thread synchronization in DistributableLockAdapter.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded EasyMock to 2.3.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded SLF4J to 1.4.2.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded JGroups to 2.5 GA.
+			</action>
+			<action context="doc" dev="PF" type="update">
+				Revised documentation.
+			</action>
+		</release>
 		<release version="2.0-rc-4" date="July 7, 2007">
 			<action context="src" dev="PF" type="update">
 				In distributable mode, try to retrieve initial state from any remote node, not just "coordinator".
@@ -1027,6 +1047,9 @@
 			<action type="add" context="src" dev="PF">
 				Support for using HA-JDBC in conjunction with native database replication capabilities.
 				HA-JDBC would add high-availability to cluster through multiple master support while hiding write-to-master/read-from-slave details from the application.
+			</action>
+			<action type="update" context="src" dev="PF">
+				Investigate the potential of SQLState codes as a replacement for secondary isAlive() queries when determining how to handle failures.
 			</action>
 		</actions>
 	</todo>
