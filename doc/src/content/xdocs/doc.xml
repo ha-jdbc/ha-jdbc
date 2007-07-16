@@ -5,137 +5,203 @@
 		<title>Documentation</title>
 	</header>
 	<body>
-		<!--section>
+		<section>
 			<title>Introduction</title>
 			<p>
-				
+				HA-JDBC is a JDBC proxy that enables a Java application to transparently access a cluster of identical databases through the JDBC API.
 			</p>
-		</section-->
+			<table>
+				<tr>
+					<th>Normal database access via JDBC</th>
+					<th>Database cluster access via HA-JDBC</th>
+				</tr>
+				<tr>
+					<td><br/><figure id="jdbc-diagram" src="images/jdbc.png" alt="JDBC Diagram"/></td>
+					<td><figure id="ha-jdbc-diagram" src="images/ha-jdbc.png" alt="HA-JDBC Diagram"/></td>
+				</tr>
+			</table>
+			<p>
+				HA-JDBC has the following advantages over normal JDBC:
+			</p>
+			<ul>
+				<li>High-Availability: The database cluster is available to service requests so long as at least one database node is active.</li>
+				<li>Fault Tolerance: Because HA-JDBC operates via the JDBC API, it is transaction-aware, and can survive a database node failure without failing or corrupting current transactions.</li>
+				<li>Scalability: By balancing read requests across databases, HA-JDBC can meet increasing load by scaling horizontally (i.e. adding database nodes).</li>
+			</ul>
+			<!--section>
+				<title>Other Solutions for High-Availability</title>
+				<section>
+					<title>Database clusters</title>
+					<p>
+						Database implemented clusters are the "ultimate" solution for database 
+					</p>
+					<p>Pros:</p>
+					<ul>
+					</ul>
+					<p>Cons:</p>
+					<ul>
+						<li>Expensive</li>
+					</ul>
+					<p>Examples:</p>
+					<ul>
+						<li>MySQL Cluster</li>
+						<li>Oracle RAC</li>
+						<li>DB2 Enterprise</li>
+					</ul>
+				</section>
+				<section>
+					<title>Database replication</title>
+					<p>
+						Database replication employs multiple databases, where writes are made to a <em>master</em> database which in turn propagates changes, either synchronously or asynchronously, to one or more <em>slave</em> databases.
+						In the event the <em>master</em> database fails, one of the slave databases (effectively a hot backup) can be promoted, either manually or automatically, to <em>master</em> status with minimal or no data loss.
+					</p>
+					<p>Pros:</p>
+					<ul>
+					</ul>
+					<p>Cons:</p>
+					<ul>
+						<li>Expensive</li>
+					</ul>
+					<p>Examples:</p>
+					<ul>
+						<li>Slony-1 for PostgreSQL</li>
+						<li>MySQL Replication</li>
+						<li>Firebird Replicator</li>
+					</ul>
+				</section>
+				<section>
+					<title>Server clusters</title>
+					<p>Pros:</p>
+					<ul>
+					</ul>
+					<p>Cons:</p>
+					<ul>
+						<li>High overhead</li>
+						<li>Complex</li>
+					</ul>
+					<p>Examples:</p>
+					<ul>
+						<li>Linux-HA</li>
+						<li>Red Hat Cluster Suite</li>
+						<li>Veritas Cluster Server</li>
+					</ul>
+				</section>
+			</section-->
+		</section>
 		<section>
 			<title>Requirements</title>
-			<section>
-				<title>Java 1.6</title>
-				<ul>
-					<li>Type IV <acronym title="Java Database Connectivity">JDBC</acronym> 4.0 driver</li>
-				</ul>
-			</section>
-			<section>
-				<title>Java 1.5</title>
-				<ul>
-					<li>Type IV <acronym title="Java Database Connectivity">JDBC</acronym> 3.0 driver</li>
-				</ul>
-			</section>
-			<section>
-				<title>Java 1.4</title>
-				<p>A separate Java 1.4-compatible binary distribution is generated using <a href="http://retrotranslator.sourceforge.net">Retrotranslator</a>.</p>
-				<ul>
-					<li>Type IV <acronym title="Java Database Connectivity">JDBC</acronym> 3.0 driver</li>
-					<li>A <acronym title="Java Management eXtensions">JMX</acronym> 1.2+ compliant MBean server</li>
-				</ul>
-			</section>
-		</section>
-		<section id="dependencies">
-			<title>Dependencies</title>
-			<p>
-				HA-JDBC depencency libraries are contained in the /lib directory of each binary distribution:
-			</p>
-			<dl>
-				<dt>/lib : Libraries used both for compiling and during runtime</dt>
-				<dd>
-					<dl>
-						<dt>jgroups-*.jar : <a href="http://jgroups.org">JGroups</a></dt>
-						<dd>Optional.  Required for distributable mode.</dd>
-						<dt>jibx-run-*.jar : <a href="http://jibx.sourceforge.net">JiBX</a> runtime</dt>
-						<dd>Required.</dd>
-						<dt>quartz-*.jar : <a href="http://www.opensymphony.com/quartz">Quartz</a></dt>
-						<dd>Required.</dd>
-						<dt>slf4j-api-*.jar : <a href="http://slf4j.org">SLF4J</a></dt>
-						<dd>Required.</dd>
-					</dl>
-				</dd>
-				<dt>/lib/runtime : Libraries used during runtime</dt>
-				<dd>
-					<p>NB: You should include only one slf4j library in your classpath.</p>
-					<dl>
-						<dt>jcl104-over-slf4j-*.jar : <a href="http://slf4j.org">SLF4J</a> drop-in replacement for commons-logging-1.0.4.jar</dt>
-						<dd>Optional.  Replaces commons-logging.jar.  Commons-logging is a required dependency of JGroups and Quartz.  Provided for <a href="http://www.slf4j.org/manual.html#gradual">gradual migration</a> from commons-logging to SLF4J.</dd>
-						<dt>slf4j-jcl-*.jar : Commons-logging provider for <a href="http://slf4j.org">SLF4J</a>.</dt>
-						<dd>Optional.  Use only in conjunction with commons-logging.jar, i.e. when jcl104-over-slf4j-*.jar is not used.</dd>
-						<dt>slf4j-jdk14-*.jar : java.util.logging provider for <a href="http://slf4j.org">SLF4J</a>.</dt>
-						<dd>Optional.  Use only if java.util.logging is your logging provider.</dd>
-						<dt>slf4j-log4j12-*.jar : Log4J 1.2.* provider for <a href="http://slf4j.org">SLF4J</a>.</dt>
-						<dd>Optional.  Use only if Log4J is your logging provider.</dd>
-						<dt>slf4j-simple-*.jar : System.out provider for <a href="http://slf4j.org">SLF4J</a>.</dt>
-						<dd>Optional.  Use only if no logging provider exists.  Log messages will be directed to System.err.</dd>
-					</dl>
-				</dd>
-				<dt>/lib/compile : Libraries used during compilation</dt>
-				<dd>
-					<ul>
-						<li>bcel-*.jar : <a href="http://jakarta.apache.org/bcel">BCEL</a></li>
-						<li>jibx-bind-*.jar : <a href="http://jibx.sourceforge.net">JiBX</a> binding compiler</li>
-					</ul>
-				</dd>
-				<dt>/lib/test : Libraries used during compilation and runtime for the test suite.</dt>
-				<dd>
-					<ul>
-						<li>easymock-*.jar : <a href="http://easymock.org">EasyMock</a></li>
-						<li>slf4j-nop-*.jar : No-op logging privider for <a href="http://slf4j.org">SLF4J</a></li>
-						<li>testng-*.jar : <a href="http://testng.org">TestNG</a></li>
-					</ul>
-				</dd>
-			</dl>
-			<p>
-				The Java 1.5 distribution contains some additional libraries:
-			</p>
-			<dl>
-				<dt>/lib-1.5/runtime : Libraries used during runtime with Java 1.5 and Java 1.4 only</dt>
-				<dd>
-					<dl>
-						<dt>stax-api-*.jar : Streaming API for XML</dt>
-						<dd>Required.  Dependency of JiBX.</dd>
-						<dt>wstx-*.jar : Woodstox StAX implementation</dt>
-						<dd>Required.  Dependency of JiBX.</dd>
-					</dl>
-				</dd>
-			</dl>
-			<p>
-				The Java 1.4 distribution contains some additional libraries:
-			</p>
-			<dl>
-				<dt>/lib-1.4/runtime : Libraries used during runtime with Java 1.4 only</dt>
-				<dd>
-					<dl>
-						<dt>backport-util-concurrent-*.jar : JDK 1.4 <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent">backport of java.util.concurrent</a> package</dt>
-						<dd>Required.  Runtime dependency of Retrotranslator.</dd>
-						<dt>jdbc-rowset-*.jar : JDBC RowSet API and implementations</dt>
-						<dd>Required.</dd>
-						<dt>jmx-*.jar : JMX API and reference implementation</dt>
-						<dd>Optional.  Required if your application server does not already include a JMX implementation.</dd>
-						<dt>retrotranslator-runtime-*.jar : <a href="http://retrotranslator.sourceforge.net">Retrotranslator</a></dt>
-						<dd>Required.</dd>
-					</dl>
-				</dd>
-				<dt>/lib-1.4/compile : Libraries used during compilation for Java 1.4 only</dt>
-				<dd>
-					<ul>
-						<li>retrotranslator-transformer-*.jar : <a href="http://retrotranslator.sourceforge.net">Retrotranslator</a> compiler</li>
-					</ul>
-				</dd>
-			</dl>
-		</section>
-		<section>
-			<title>Limitations</title>
 			<ul>
-				<li>MySQL auto-incrementing columns are not supported.  MySQL does not provide any mechanism for HA-JDBC to reset the counter during synchronization.</li>
-				<li>HA-JDBC does not support stored procedures that update sequences or insert rows containing identity columns.</li>
-				<li>
-					SQL statements should not use database date/time functions (e.g. CURRENT_TIMESTAMP), since HA-JDBC cannot guarantee that each database will generate the same value.
-					Instead, use a prepared statement with client generated new java.sql.Date/Time/Timestamp values.
-				</li>
+				<li>Java Runtime Environment 1.4 or greater</li>
+				<li>Type IV JDBC driver for underlying databases</li>
+				<li>An <a href="#config">XML configuration file</a> for each database cluster.</li>
+				<li>ha-jdbc-*.jar and its <a href="#dependencies">dependencies</a> must exist in the classpath.</li>
 			</ul>
+			<section id="dependencies">
+				<title>Dependencies</title>
+				<table>
+					<caption><em>/lib</em> : Required dependencies</caption>
+					<tr>
+						<th>Library</th>
+						<th>Description</th>
+						<th>Notes</th>
+					</tr>
+					<tr>
+						<td>jgroups-*.jar</td>
+						<td><a href="http://jgroups.org">JGroups</a></td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>jibx-run-*.jar</td>
+						<td><a href="http://jibx.sourceforge.net">JiBX</a></td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>quartz-*.jar</td>
+						<td><a href="http://www.opensymphony.com/quartz">Quartz</a></td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>slf4j-api-*.jar</td>
+						<td><a href="http://slf4j.org">SLF4J</a> API</td>
+						<td></td>
+					</tr>
+					<tr><th colspan="3">Additional dependencies for Java 1.4 and 1.5 only.</th></tr>
+					<tr>
+						<td>stax-api-*.jar</td>
+						<td>Streaming API for XML.</td>
+						<td>Required dependency of JiBX.</td>
+					</tr>
+					<tr><th colspan="3">Additional dependencies for Java 1.4 only.</th></tr>
+					<tr>
+						<td>backport-util-concurrent-*.jar</td>
+						<td>JDK 1.4 <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent">backport of java.util.concurrent</a> package.</td>
+						<td>Required dependency of Retrotranslator.</td>
+					</tr>
+					<tr>
+						<td>jdbc-rowset-*.jar</td>
+						<td>JDBC RowSet API and implementations</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>retrotranslator-runtime-*.jar</td>
+						<td><a href="http://retrotranslator.sourceforge.net">Retrotranslator</a> runtime.</td>
+						<td></td>
+					</tr>
+				</table>
+				<table>
+					<caption><em>/lib/runtime</em> : Optional runtime dependencies</caption>
+					<tr>
+						<th>Library</th>
+						<th>Description</th>
+						<th>Notes</th>
+					</tr>
+					<tr>
+						<td>jcl104-over-slf4j-*.jar</td>
+						<td>An implementation of the <a href="http://jakarta.apache.org/commons/logging">commons-logging</a> api that delegates to SLF4J.  Provides <a href="http://www.slf4j.org/manual.html#gradual">gradual migration</a> from commons-logging to SLF4J.</td>
+						<td>Commons-logging is a required dependency of JGroups and Quartz.</td>
+					</tr>
+					<tr>
+						<td>slf4j-jcl-*.jar</td>
+						<td><a href="http://jakarta.apache.org/commons/logging">Commons-logging</a> provider for SLF4J.</td>
+						<td>Used only in conjunction with commons-logging.jar.</td>
+					</tr>
+					<tr>
+						<td>slf4j-jdk14-*.jar</td>
+						<td><a href="http://java.sun.com/javase/6/docs/api/java/util/logging/package-summary.html">JDK logging</a> provider for SLF4J.</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>slf4j-log4j12-*.jar</td>
+						<td><a href="http://logging.apache.org/log4j">Log4J</a> provider for SLF4J.</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>slf4j-simple-*.jar</td>
+						<td><a href="http://java.sun.com/javase/6/docs/api/java/lang/System.html#err">System.err</a> logging provider for SLF4J.</td>
+						<td></td>
+					</tr>
+					<tr><th colspan="3">Additional runtime dependencies for Java 1.4 and 1.5 only.:</th></tr>
+					<tr>
+						<td>stax-*.jar</td>
+						<td>StAX reference implementation</td>
+						<td>Any StAX implementation will suffice.</td>
+					</tr>
+					<tr><th colspan="3">Additional runtime dependencies for Java 1.4 only:</th></tr>
+					<tr>
+						<td>jmx-*.jar</td>
+						<td>JMX API and reference implementation</td>
+						<td>Needed if your runtime environment does not provide a JMX implementation.  Any JMX implementation will suffice.</td>
+					</tr>
+				</table>
+				<note>
+					You must include <strong>exactly one</strong> SLF4J implementation library (i.e. slf4j-*-*.jar) in your classpath.
+				</note>
+				<warning>
+					Never use jcl104-over-slf4j-*.jar in conjunction with slf4j-jcl-*.jar; this will cause a StackOverflowError.
+				</warning>
+			</section>
 		</section>
-		<section>
+		<section id="config">
 			<title>&lt;ha-jdbc&gt; Configuration</title>
 			<p>
 				Configuration for an HA-JDBC managed database cluster is contained in an XML file.
@@ -143,11 +209,11 @@
 			</p>
 			<ol>
 				<li>
-					<p>Obtain resource name from one of the following sources:</p>
+					<p>Determine the resource name from one of the following sources:</p>
 					<ol>
-						<li>A "config" property passed to DriverManager.getConnection(String, Properties), or the getConfig() property of the DataSource</li>
-						<li>The ha-jdbc.configuration system property</li>
-						<li>Use default value of "ha-jdbc-{0}.xml"</li>
+						<li>A <em>config</em> property passed to DriverManager.getConnection(String, Properties), or the getConfig() property of the DataSource</li>
+						<li>The <em>ha-jdbc.configuration</em> system property</li>
+						<li>Use default value of <em>ha-jdbc-{0}.xml</em></li>
 					</ol>
 				</li>
 				<li>
@@ -157,7 +223,7 @@
 					<p>Attempt to interpret the resource name as a URL.</p>
 				</li>
 				<li>
-					<p>If the resource name cannot be converted to a URL, then search for the resource in the classpath using the following algorithm:</p>
+					<p>If the resource name cannot be converted to a URL, then search for the resource in the classpath using the following class loaders:</p>
 					<ol>
 						<li>Search for resource using the thread context class loader.</li>
 						<li>Search for resource using the class loader of the current class.</li>
@@ -224,7 +290,7 @@
 				<dl>
 					<dt>id</dt>
 					<dd>
-						Uniquely identifies this synchronization strategy.  Used when invoking activation commands.
+						Uniquely identifies this synchronization strategy.  Used when invoking activation methods.
 					</dd>
 					<dt>class</dt>
 					<dd>
@@ -310,7 +376,7 @@
 						If you find that your application suffers unacceptably from SQLExceptions due to concurrent updates of the same data then you might want to use serial mode to improve fault tolerance.
 						<dl>
 							<dt>parallel</dt>
-							<dd>Transactional writes are executed in parallel, for effiency.</dd>
+							<dd>Transactional writes are executed in parallel, for efficiency.</dd>
 							<dt>serial</dt>
 							<dd>Transactional writes are executed in serial, for improved fault tolerance.</dd>
 						</dl>
@@ -343,7 +409,7 @@
 					</dd>
 					<dt id="sequences">detect-sequences</dt>
 					<dd>
-						Indicates that sequences should be detected (if the configured dialect supports them) and measures taken to ensure that they are replicated correctly.
+						Indicates that sequence operations should be detected (if the configured dialect supports them) and measures taken to ensure that they are replicated correctly.
 					</dd>
 				</dl>
 				<section id="database">
@@ -383,7 +449,7 @@
 					<dl>
 						<dt>id</dt>
 						<dd>
-							Unique identifer for this database node.
+							Unique identifier for this database node.
 						</dd>
 						<dt>weight</dt>
 						<dd>
@@ -395,7 +461,7 @@
 				<section id="datasource">
 					<title>&lt;datasource&gt;</title>
 					<p>
-						Defines the databases in this cluster that will be referenced via javax.sql.DataSource.
+						Defines the databases in this cluster that will be referenced via a javax.sql.DataSource.
 					</p>
 					<source><![CDATA[<!ELEMENT datasource (name, property*, (user, password)?>]]></source>
 					<dl>
@@ -425,7 +491,7 @@
 					<dl>
 						<dt>id</dt>
 						<dd>
-							Unique identifer for this database node.
+							Unique identifier for this database node.
 						</dd>
 						<dt>weight</dt>
 						<dd>
@@ -495,7 +561,7 @@
 					</tr>
 					<tr>
 						<td>Standard (SQL-92 compliant)</td>
-						<td><a href="api/net/sf/hajdbc/dialect/DefaultDialect.html">net.sf.hajdbc.dialect.StandardDialect</a></td>
+						<td><a href="api/net/sf/hajdbc/dialect/StandardDialect.html">net.sf.hajdbc.dialect.StandardDialect</a></td>
 						<td>standard</td>
 					</tr>
 				</table>
@@ -595,11 +661,11 @@
 				<source><![CDATA[
 public class FasterFullSynchronizationStrategy extends net.sf.hajdbc.sync.FullSynchronizationStrategy
 {
-    public void synchronize(Connection inactiveConnection, Connection activeConnection, List tableList)
+    public void synchronize(SynchronizationContext context)
     {
         // For each table, drop all indexes
 
-        super.synchronize(inactiveConnection, activeConnection, tableList);
+        super.synchronize(context);
 
         // For each table, recreate all indexes
     }
@@ -626,7 +692,7 @@ public class FasterFullSynchronizationStrategy extends net.sf.hajdbc.sync.FullSy
 					</li>
 					<li>
 						<p>
-							Explicity load the <code>net.sf.hajdbc.sql.Driver</code> class using <code>Class.forName(...)</code>.
+							Explicitly load the <code>net.sf.hajdbc.sql.Driver</code> class using <code>Class.forName(...)</code>.
 						</p>
 						<p>
 							Per the <acronym title="Java Database Connectivity">JDBC</acronym> specification, loading the HA-JDBC driver class automatically registers the driver with the <code>DriverManager</code>.
@@ -659,7 +725,7 @@ public class FasterFullSynchronizationStrategy extends net.sf.hajdbc.sync.FullSy
 </ha-jdbc>
 ]]></source>
 				<p>
-					The URL specified in subsequent calls to <code>DriverManager.getConnection(...)</code> follow the pattern:
+					The URL specified in subsequent calls to <code>DriverManager.getConnection(...)</code> has the following format:
 				</p>
 				<p><code>jdbc:ha-jdbc:</code><em>cluster-id</em></p>
 				<p>e.g.</p>
@@ -711,7 +777,7 @@ Connection connection = DriverManager.getConnection("jdbc:ha-jdbc:cluster1", "po
       <name>java:comp/env/jdbc/database1</name>
     </datasource>
     <datasource id="database2">
-      <name>java:comp/env/jdbc/database1</name>
+      <name>java:comp/env/jdbc/database2</name>
     </datasource>
   </cluster>
 </ha-jdbc>
@@ -775,7 +841,7 @@ Connection connection = dataSource.getConnection();
 				</p>
 				<p>
 					For best performance, HA-JDBC recommends using a table-based high-low or UUID algorithm so that statement parsing and locking costs can be avoided.
-					Object-relation mapping (ORM) frameworks (e.g. Hibernate, OJB, Cayanne) typically include implementations of these mechanisms.
+					Object-relation mapping (ORM) frameworks (e.g. Hibernate, OJB, Cayenne) typically include implementations of these mechanisms.
 				</p>
 			</section>
 			<section>
@@ -802,10 +868,10 @@ Connection connection = dataSource.getConnection();
 				<ol>
 					<li>An ERROR message is logged.</li>
 					<li>The database is removed from the internal registry of active databases.  No more requests will be sent to this database.</li>
-					<li>If the cluster was configured to be "distributable", other servers are notified of the failure.</li>
+					<li>If the cluster was configured to be <em>distributable</em>, other servers are notified of the deactivation.</li>
 				</ol>
 				<p>
-					Databases may also be manually deactivated via the <a href="#jmx"><acronym title="Java Management eXtensions">JMX</acronym> management interface</a>.
+					Databases can also be manually deactivated via the <a href="#jmx"><acronym title="Java Management eXtensions">JMX</acronym> management interface</a>.
 				</p>
 				<p>
 					Optionally, you can configure HA-JDBC to proactively detect database failures via the <code>failure-detect-schedule</code> attribute.
@@ -832,6 +898,9 @@ Connection connection = dataSource.getConnection();
 					<li><a href="api/net/sf/hajdbc/sql/DataSourceDatabaseClusterMBean.html">net.sf.hajdbc.sql.DataSourceDatabaseClusterMBean</a></li>
 				</ul>
 				<p>
+					Most of the management operations are defined the common super interface, <a href="api/net/sf/hajdbc/sql/DriverDatabaseClusterMBean.html">net.sf.hajdbc.DatabaseClusterMBean</a>.
+				</p>
+				<p>
 					A database cluster mbean is registered using the following object-name:
 				</p>
 				<p>
@@ -841,7 +910,7 @@ Connection connection = dataSource.getConnection();
 					<acronym title="Java Management eXtensions">JMX</acronym> operations can be executed from the <a href="http://java.sun.com/j2se/1.5.0/docs/guide/management/jconsole.html">JConsole</a> interface packaged with JDK 1.5+.
 				</p>
 				<p>
-					As an alternative to JConsole (or for Java 1.4 deployments), you can use any of several 3rd-party <acronym title="Java Management eXtensions">JMX</acronym> clients:
+					As an alternative to JConsole (namely, for Java 1.4 deployments), you can use any of several 3rd-party <acronym title="Java Management eXtensions">JMX</acronym> clients:
 				</p>
 				<ul>
 					<li><a href="http://mc4j.org/">MC4J</a></li>
@@ -865,7 +934,7 @@ ObjectName name = ObjectName.getInstance("net.sf.hajdbc", "cluster", clusterId);
 
 // 1. Generic invoke
 Object[] parameterValues = new Object[] { databaseId };
-String[] parameterTypes = new String[] { String.class };
+String[] parameterTypes = new String[] { String.class.getName() };
 server.invoke(name, "activate", parameterValues, parameterTypes);
 
 // 2. Dynamic proxy
@@ -884,9 +953,9 @@ cluster.activate(databaseId);
 						<dd>Synchronizes, using the specified synchronization strategy, and activates the specified database.</dd>
 					</dl>
 					<p>
-						Database synchronization is an intensive and intrusive task.
+						In general, database synchronization is an intensive and intrusive task.
 						To maintain database consistency, each database node in the cluster is read locked (i.e. writes are blocked) until synchronization completes.
-						Since synchronization may take anywhere from seconds to hours (depending on the size of your database and synchronization strategy employed), if your database cluster is used in a high write volume environment, it is recommended that activation is only performed during off-peak hours.
+						Since synchronization may take anywhere from seconds to hours (depending on the size of your database and synchronization strategy employed), if your database cluster is used in a high write volume environment, it is recommended that activation only be performed during off-peak hours.
 					</p>
 					<p>
 						As of version 1.1, HA-JDBC includes a useful database cluster option: "auto-activate-schedule".
@@ -909,7 +978,7 @@ cluster.activate(databaseId);
 				<section>
 					<title>Deactivating a Database</title>
 					<p>
-						There are a number of reasons why you might want to deactivate a database node manually - most commonly to perform some maintenance on the database or the machine itself.
+						There are a number of reasons why you might want to deactivate a database node manually - most commonly, to perform some maintenance on the database or the machine itself.
 						Database nodes are deactivated by executing the following method on the database cluster mbean:
 					</p>
 					<dl>
@@ -923,7 +992,7 @@ cluster.activate(databaseId);
 				<section>
 					<title>Adding a Database</title>
 					<p>
-						In HA-JDBC 1.0, the database nodes in a cluster were static.  They could not be changed while the application/server was running.
+						In HA-JDBC 1.0, the database nodes in a cluster were static.  They could not be altered while the application/server was running.
 					</p>
 					<p>
 						As of HA-JDBC 1.1, database nodes can be added, updated, or removed during runtime.
@@ -973,6 +1042,17 @@ cluster.activate(databaseId);
 			</section>
 		</section>
 		<section>
+			<title>Limitations</title>
+			<ul>
+				<li>MySQL auto-incrementing columns are not supported.  MySQL does not provide any mechanism for HA-JDBC to reset the counter during synchronization.</li>
+				<li>HA-JDBC does not support stored procedures that update sequences or insert rows containing identity columns.</li>
+				<li>
+					SQL statements should not use non-deterministic functions (e.g. CURRENT_TIMESTAMP), since HA-JDBC cannot guarantee that each database will generate the same value.
+					For example, instead CURRENT_TIMESTAMP, use a prepared statement with a client generated java.sql.Timestamp value.
+				</li>
+			</ul>
+		</section>
+		<section>
 			<title>Migrating from HA-JDBC 1.1</title>
 			<section>
 				<title>Environment</title>
@@ -1010,7 +1090,7 @@ cluster.activate(databaseId);
 						<code>dialect="default"</code> is renamed <code>dialect="standard"</code>.
 					</li>
 					<li>
-						Clusters of Firebird, Mckoi, or Ingres databases should use the respective dialects, instead of the default dialect.
+						Clusters of Firebird, Mckoi, or Ingres databases should use the respective dialects, instead of the standard dialect.
 					</li>
 				</ul>
 			</section>
