@@ -18,7 +18,7 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc;
+package net.sf.hajdbc.sync;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -27,6 +27,9 @@ import java.beans.PropertyEditorManager;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.SynchronizationStrategy;
 
 /**
  * @author  Paul Ferraro

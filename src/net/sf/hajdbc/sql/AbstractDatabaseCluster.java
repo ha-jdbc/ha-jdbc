@@ -72,11 +72,11 @@ import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.StateManager;
 import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.SynchronizationStrategy;
-import net.sf.hajdbc.SynchronizationStrategyBuilder;
 import net.sf.hajdbc.TransactionMode;
 import net.sf.hajdbc.local.LocalLockManager;
 import net.sf.hajdbc.local.LocalStateManager;
 import net.sf.hajdbc.sync.SynchronizationContextImpl;
+import net.sf.hajdbc.sync.SynchronizationStrategyBuilder;
 import net.sf.hajdbc.util.concurrent.CronThreadPoolExecutor;
 import net.sf.hajdbc.util.concurrent.SynchronousExecutor;
 
