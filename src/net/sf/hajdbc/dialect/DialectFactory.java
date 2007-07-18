@@ -20,33 +20,32 @@
  */
 package net.sf.hajdbc.dialect;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import net.sf.hajdbc.Dialect;
 
 /**
  * @author  Paul Ferraro
  * @since   1.1
  */
-public class DialectFactory
+public enum DialectFactory
 {
-	private static Map<String, Class<? extends Dialect>> dialectMap = new HashMap<String, Class<? extends Dialect>>();
+	DB2(DB2Dialect.class),
+	DERBY(DerbyDialect.class),
+	FIREBIRD(FirebirdDialect.class),
+	H2(HSQLDBDialect.class),
+	HSQLDB(HSQLDBDialect.class),
+	INGRES(IngresDialect.class),
+	MAXDB(MaxDBDialect.class),
+	MCKOI(MckoiDialect.class),
+	MYSQL(MySQLDialect.class),
+	ORACLE(MaxDBDialect.class),
+	POSTGRESQL(PostgreSQLDialect.class),
+	STANDARD(StandardDialect.class);
 	
-	static
+	private Class<? extends Dialect> dialectClass;
+	
+	private DialectFactory(Class<? extends Dialect> dialectClass)
 	{
-		dialectMap.put("standard", StandardDialect.class);
-		dialectMap.put("db2", DB2Dialect.class);
-		dialectMap.put("derby", DerbyDialect.class);
-		dialectMap.put("firebird", FirebirdDialect.class);
-		dialectMap.put("h2", HSQLDBDialect.class);
-		dialectMap.put("hsqldb", HSQLDBDialect.class);
-		dialectMap.put("ingres", IngresDialect.class);
-		dialectMap.put("maxdb", MaxDBDialect.class);
-		dialectMap.put("mckoi", MckoiDialect.class);
-		dialectMap.put("mysql", MySQLDialect.class);
-		dialectMap.put("oracle", MaxDBDialect.class);
-		dialectMap.put("postgresql", PostgreSQLDialect.class);
+		this.dialectClass = dialectClass;
 	}
 	
 	/**
@@ -57,14 +56,21 @@ public class DialectFactory
 	 */
 	public static Dialect deserialize(String id) throws Exception
 	{
-		Class<? extends Dialect> targetClass = (id != null) ? dialectMap.get(id.toLowerCase()) : StandardDialect.class;
-		
-		if (targetClass == null)
+		return getDialectClass(id).newInstance();
+	}
+	
+	private static Class<? extends Dialect> getDialectClass(String id) throws Exception
+	{
+		try
 		{
-			targetClass = Class.forName(id).asSubclass(Dialect.class);
+			DialectFactory factory = (id != null) ? DialectFactory.valueOf(id.toUpperCase()) : STANDARD;
+			
+			return factory.dialectClass;
 		}
-		
-		return targetClass.newInstance();
+		catch (IllegalArgumentException e)
+		{
+			return Class.forName(id).asSubclass(Dialect.class);
+		}
 	}
 	
 	/**
@@ -74,11 +80,16 @@ public class DialectFactory
 	 */
 	public static String serialize(Dialect dialect)
 	{
-		return dialect.getClass().getName();
-	}
-	
-	private DialectFactory()
-	{
-		// Hide constructor
+		Class<? extends Dialect> dialectClass = dialect.getClass();
+		
+		for (DialectFactory factory: DialectFactory.values())
+		{
+			if (dialectClass.equals(factory.dialectClass))
+			{
+				return factory.name().toLowerCase();
+			}
+		}
+		
+		return dialectClass.getName();
 	}
 }
