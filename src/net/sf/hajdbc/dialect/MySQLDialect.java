@@ -39,7 +39,7 @@ public class MySQLDialect extends StandardDialect
 	@Override
 	public List<String> getDefaultSchemas(Connection connection) throws SQLException
 	{
-		return Collections.singletonList(this.executeFunction(connection, "DATABASE()"));
+		return Collections.singletonList(this.executeFunction(connection, "DATABASE()")); //$NON-NLS-1$
 	}
 	
 	/**
@@ -50,7 +50,7 @@ public class MySQLDialect extends StandardDialect
 	{
 		String remarks = properties.getRemarks();
 		
-		return (remarks != null) && remarks.contains("AUTO_INCREMENT");
+		return (remarks != null) && remarks.contains("AUTO_INCREMENT"); //$NON-NLS-1$
 	}
 
 	/**
@@ -80,7 +80,7 @@ public class MySQLDialect extends StandardDialect
 	@Override
 	protected String createForeignKeyConstraintFormat()
 	{
-		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} ON UPDATE {6,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT}";
+		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} ON UPDATE {6,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT}"; //$NON-NLS-1$
 	}
 
 	/**
@@ -89,7 +89,7 @@ public class MySQLDialect extends StandardDialect
 	@Override
 	protected String createUniqueConstraintFormat()
 	{
-		return "ALTER TABLE {1} ADD UNIQUE {0} ({2})";
+		return "ALTER TABLE {1} ADD UNIQUE {0} ({2})"; //$NON-NLS-1$
 	}
 
 	/**
@@ -98,7 +98,7 @@ public class MySQLDialect extends StandardDialect
 	@Override
 	protected String dropForeignKeyConstraintFormat()
 	{
-		return "ALTER TABLE {1} DROP FOREIGN KEY {0}";
+		return "ALTER TABLE {1} DROP FOREIGN KEY {0}"; //$NON-NLS-1$
 	}
 
 	/**
@@ -107,6 +107,6 @@ public class MySQLDialect extends StandardDialect
 	@Override
 	protected String dropUniqueConstraintFormat()
 	{
-		return "ALTER TABLE {1} DROP INDEX {0}";
+		return "ALTER TABLE {1} DROP INDEX {0}"; //$NON-NLS-1$
 	}
 }

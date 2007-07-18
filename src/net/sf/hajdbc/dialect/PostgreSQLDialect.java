@@ -49,11 +49,11 @@ public class PostgreSQLDialect extends StandardDialect
 	{
 		Statement statement = connection.createStatement();
 		
-		ResultSet resultSet = statement.executeQuery("SHOW search_path");
+		ResultSet resultSet = statement.executeQuery("SHOW search_path"); //$NON-NLS-1$
 		
 		resultSet.next();
 		
-		String[] schemas = resultSet.getString(1).split(",");
+		String[] schemas = resultSet.getString(1).split(","); //$NON-NLS-1$
 		
 		resultSet.close();
 		statement.close();
@@ -62,7 +62,7 @@ public class PostgreSQLDialect extends StandardDialect
 		
 		for (String schema: schemas)
 		{
-			schemaList.add(schema.equals("$user") ? super.getCurrentUser(connection) : schema);
+			schemaList.add(schema.equals("$user") ? super.getCurrentUser(connection) : schema); //$NON-NLS-1$
 		}
 		
 		return schemaList;
@@ -80,7 +80,7 @@ public class PostgreSQLDialect extends StandardDialect
 	@Override
 	public String getLockTableSQL(TableProperties properties)
 	{
-		return MessageFormat.format("LOCK TABLE {0} IN EXCLUSIVE MODE", properties.getName());
+		return MessageFormat.format("LOCK TABLE {0} IN EXCLUSIVE MODE", properties.getName()); //$NON-NLS-1$
 	}
 	
 	/**
@@ -92,7 +92,7 @@ public class PostgreSQLDialect extends StandardDialect
 	@Override
 	public int getColumnType(ColumnProperties properties)
 	{
-		return properties.getNativeType().equalsIgnoreCase("oid") ? Types.BLOB : properties.getType();
+		return properties.getNativeType().equalsIgnoreCase("oid") ? Types.BLOB : properties.getType(); //$NON-NLS-1$
 	}
 	
 	/**
@@ -103,7 +103,7 @@ public class PostgreSQLDialect extends StandardDialect
 	{
 		String type = properties.getNativeType();
 		
-		return type.equalsIgnoreCase("serial") || type.equalsIgnoreCase("bigserial");
+		return type.equalsIgnoreCase("serial") || type.equalsIgnoreCase("bigserial");  //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	/**
@@ -112,7 +112,7 @@ public class PostgreSQLDialect extends StandardDialect
 	@Override
 	protected String truncateTableFormat()
 	{
-		return "TRUNCATE TABLE {0}";
+		return "TRUNCATE TABLE {0}"; //$NON-NLS-1$
 	}
 
 	/**
@@ -121,7 +121,7 @@ public class PostgreSQLDialect extends StandardDialect
 	@Override
 	protected String sequencePattern()
 	{
-		return "(?:(?:CURR)|(?:NEXT))VAL\\s*\\(\\s*'(\\w+)'\\s*\\)";
+		return "(?:(?:CURR)|(?:NEXT))VAL\\s*\\(\\s*'(\\w+)'\\s*\\)"; //$NON-NLS-1$
 	}
 
 	/**
@@ -130,6 +130,6 @@ public class PostgreSQLDialect extends StandardDialect
 	@Override
 	protected String nextSequenceValueFormat()
 	{
-		return "NEXTVAL(''{0}'')";
+		return "NEXTVAL(''{0}'')"; //$NON-NLS-1$
 	}
 }

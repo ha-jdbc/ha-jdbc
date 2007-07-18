@@ -39,7 +39,7 @@ public class DerbyDialect extends StandardDialect
 	@Override
 	protected String executeFunctionFormat()
 	{
-		return "VALUES {0}";
+		return "VALUES {0}"; //$NON-NLS-1$
 	}
 
 	/**
@@ -48,7 +48,7 @@ public class DerbyDialect extends StandardDialect
 	@Override
 	public String getLockTableSQL(TableProperties properties)
 	{
-		return MessageFormat.format("LOCK TABLE {0} IN SHARE MODE", properties.getName());
+		return MessageFormat.format("LOCK TABLE {0} IN SHARE MODE", properties.getName()); //$NON-NLS-1$
 	}
 
 	/**
@@ -59,7 +59,7 @@ public class DerbyDialect extends StandardDialect
 	{
 		String remarks = properties.getRemarks();
 		
-		return (remarks != null) && remarks.contains("GENERATED ALWAYS AS IDENTITY");
+		return (remarks != null) && remarks.contains("GENERATED ALWAYS AS IDENTITY"); //$NON-NLS-1$
 	}
 
 	/**
@@ -78,6 +78,6 @@ public class DerbyDialect extends StandardDialect
 	@Override
 	protected String createForeignKeyConstraintFormat()
 	{
-		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} ON UPDATE {6,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT}";
+		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} ON UPDATE {6,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT}"; //$NON-NLS-1$
 	}
 }

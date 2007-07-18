@@ -41,7 +41,7 @@ public class MaxDBDialect extends StandardDialect
 	@Override
 	protected String dummyTable()
 	{
-		return "DUAL";
+		return "DUAL"; //$NON-NLS-1$
 	}
 
 	/**
@@ -50,7 +50,7 @@ public class MaxDBDialect extends StandardDialect
 	@Override
 	protected String currentTimestampFunction()
 	{
-		return "SYSDATE";
+		return "SYSDATE"; //$NON-NLS-1$
 	}
 
 	/**
@@ -63,7 +63,7 @@ public class MaxDBDialect extends StandardDialect
 		
 		Statement statement = connection.createStatement();
 		
-		ResultSet resultSet = statement.executeQuery("SELECT SEQUENCE_NAME FROM USER_SEQUENCES");
+		ResultSet resultSet = statement.executeQuery("SELECT SEQUENCE_NAME FROM USER_SEQUENCES"); //$NON-NLS-1$
 		
 		while (resultSet.next())
 		{
@@ -91,7 +91,7 @@ public class MaxDBDialect extends StandardDialect
 	@Override
 	protected String truncateTableFormat()
 	{
-		return "TRUNCATE TABLE {0}";
+		return "TRUNCATE TABLE {0}"; //$NON-NLS-1$
 	}
 	
 	/**
@@ -101,7 +101,7 @@ public class MaxDBDialect extends StandardDialect
 	@Override
 	protected String createForeignKeyConstraintFormat()
 	{
-		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT}";
+		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT}"; //$NON-NLS-1$
 	}
 
 	/**
@@ -110,7 +110,7 @@ public class MaxDBDialect extends StandardDialect
 	@Override
 	protected String sequencePattern()
 	{
-		return "(\\w+)\\.(?:(?:CURR)|(?:NEXT))VAL";
+		return "(\\w+)\\.(?:(?:CURR)|(?:NEXT))VAL"; //$NON-NLS-1$
 	}
 
 	/**
@@ -119,6 +119,6 @@ public class MaxDBDialect extends StandardDialect
 	@Override
 	protected String nextSequenceValueFormat()
 	{
-		return "{0}.NEXTVAL";
+		return "{0}.NEXTVAL"; //$NON-NLS-1$
 	}
 }

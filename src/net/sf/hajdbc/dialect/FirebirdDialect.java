@@ -40,7 +40,7 @@ public class FirebirdDialect extends StandardDialect
 	@Override
 	protected String dummyTable()
 	{
-		return "RDB$DATABASE";
+		return "RDB$DATABASE"; //$NON-NLS-1$
 	}
 
 	/**
@@ -50,7 +50,7 @@ public class FirebirdDialect extends StandardDialect
 	@Override
 	protected String alterSequenceFormat()
 	{
-		return "SET GENERATOR {0} TO {1}";
+		return "SET GENERATOR {0} TO {1}"; //$NON-NLS-1$
 	}
 
 	/**
@@ -63,7 +63,7 @@ public class FirebirdDialect extends StandardDialect
 		
 		Statement statement = connection.createStatement();
 		
-		ResultSet resultSet = statement.executeQuery("SELECT RDB$GENERATOR_NAME FROM RDB$GENERATORS");
+		ResultSet resultSet = statement.executeQuery("SELECT RDB$GENERATOR_NAME FROM RDB$GENERATORS"); //$NON-NLS-1$
 		
 		while (resultSet.next())
 		{
@@ -92,7 +92,7 @@ public class FirebirdDialect extends StandardDialect
 	@Override
 	protected String sequencePattern()
 	{
-		return "GEN_ID\\s*\\(\\s*(\\w+)\\s*,\\s*\\d+\\s*\\)";
+		return "GEN_ID\\s*\\(\\s*(\\w+)\\s*,\\s*\\d+\\s*\\)"; //$NON-NLS-1$
 	}
 
 	/**
@@ -101,7 +101,7 @@ public class FirebirdDialect extends StandardDialect
 	@Override
 	protected String selectForUpdatePattern()
 	{
-		return "SELECT\\s+.+\\s+WITH\\s+LOCK";
+		return "SELECT\\s+.+\\s+WITH\\s+LOCK"; //$NON-NLS-1$
 	}
 
 	/**
@@ -110,6 +110,6 @@ public class FirebirdDialect extends StandardDialect
 	@Override
 	protected String nextSequenceValueFormat()
 	{
-		return "GEN_ID({0}, 1)";
+		return "GEN_ID({0}, 1)"; //$NON-NLS-1$
 	}
 }

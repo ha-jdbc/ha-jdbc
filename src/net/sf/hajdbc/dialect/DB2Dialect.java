@@ -41,7 +41,7 @@ public class DB2Dialect extends StandardDialect
 	@Override
 	protected String executeFunctionFormat()
 	{
-		return "VALUES {0}";
+		return "VALUES {0}"; //$NON-NLS-1$
 	}
 
 	/**
@@ -54,7 +54,7 @@ public class DB2Dialect extends StandardDialect
 		
 		Statement statement = connection.createStatement();
 		
-		ResultSet resultSet = statement.executeQuery("SELECT SEQNAME FROM SYSCAT.SEQUENCES");
+		ResultSet resultSet = statement.executeQuery("SELECT SEQNAME FROM SYSCAT.SEQUENCES"); //$NON-NLS-1$
 		
 		while (resultSet.next())
 		{
@@ -73,7 +73,7 @@ public class DB2Dialect extends StandardDialect
 	@Override
 	protected String sequencePattern()
 	{
-		return "(?:(?:NEXT)|(?:PREV))VAL\\s+FOR\\s+\\W?(\\w+)\\W?";
+		return "(?:(?:NEXT)|(?:PREV))VAL\\s+FOR\\s+\\W?(\\w+)\\W?"; //$NON-NLS-1$
 	}
 
 	/**
@@ -82,6 +82,6 @@ public class DB2Dialect extends StandardDialect
 	@Override
 	protected String nextSequenceValueFormat()
 	{
-		return "NEXTVAL FOR {0}";
+		return "NEXTVAL FOR {0}"; //$NON-NLS-1$
 	}
 }

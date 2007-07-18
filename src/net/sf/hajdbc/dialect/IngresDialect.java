@@ -36,7 +36,7 @@ import java.util.regex.Pattern;
  */
 public class IngresDialect extends StandardDialect
 {
-	private Pattern legacySequencePattern = Pattern.compile("(\\S+)\\.(?:(?:CURR)|(?:NEXT))VAL", Pattern.CASE_INSENSITIVE);
+	private Pattern legacySequencePattern = Pattern.compile("(\\S+)\\.(?:(?:CURR)|(?:NEXT))VAL", Pattern.CASE_INSENSITIVE); //$NON-NLS-1$
 	
 	/**
 	 * @see net.sf.hajdbc.dialect.StandardDialect#supportsIdentityColumns()
@@ -57,7 +57,7 @@ public class IngresDialect extends StandardDialect
 		
 		Statement statement = connection.createStatement();
 		
-		ResultSet resultSet = statement.executeQuery("SELECT seq_name FROM iisequence");
+		ResultSet resultSet = statement.executeQuery("SELECT seq_name FROM iisequence"); //$NON-NLS-1$
 		
 		while (resultSet.next())
 		{
@@ -87,6 +87,6 @@ public class IngresDialect extends StandardDialect
 	@Override
 	protected String sequencePattern()
 	{
-		return "(?:(?:NEXT)|(?:CURRENT))\\s+VALUE\\s+FOR\\s+\\W?(\\w+)\\W?";
+		return "(?:(?:NEXT)|(?:CURRENT))\\s+VALUE\\s+FOR\\s+\\W?(\\w+)\\W?"; //$NON-NLS-1$
 	}
 }
