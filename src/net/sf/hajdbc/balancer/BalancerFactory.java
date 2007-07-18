@@ -20,9 +20,6 @@
  */
 package net.sf.hajdbc.balancer;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Messages;
 
@@ -30,21 +27,24 @@ import net.sf.hajdbc.Messages;
  * @author  Paul Ferraro
  * @since   1.1
  */
-public final class BalancerFactory
+public enum BalancerFactory
 {
-	@SuppressWarnings("unchecked")
-	private static Map<String, Class<? extends Balancer>> balancerMap = new HashMap<String, Class<? extends Balancer>>();
+	SIMPLE(SimpleBalancer.class),
+	RANDOM(RandomBalancer.class),
+	ROUND_ROBIN(RoundRobinBalancer.class),
+	LOAD(LoadBalancer.class);
 	
-	static
+	@SuppressWarnings("unchecked")
+	private Class<? extends Balancer> balancerClass;
+	
+	@SuppressWarnings("unchecked")
+	private BalancerFactory(Class<? extends Balancer> balancerClass)
 	{
-		balancerMap.put("simple", SimpleBalancer.class);
-		balancerMap.put("random", RandomBalancer.class);
-		balancerMap.put("round-robin", RoundRobinBalancer.class);
-		balancerMap.put("load", LoadBalancer.class);
+		this.balancerClass = balancerClass;
 	}
 	
 	/**
-	 * Creates a new instance of the Balancer implementation indentified by the specified identifier
+	 * Creates a new instance of the Balancer implementation identified by the specified identifier
 	 * @param id an enumerated balancer identifier
 	 * @return a new Balancer instance
 	 * @throws Exception if specified balancer identifier is invalid
@@ -52,14 +52,14 @@ public final class BalancerFactory
 	@SuppressWarnings("unchecked")
 	public static Balancer deserialize(String id) throws Exception
 	{
-		Class<? extends Balancer> balancerClass = balancerMap.get(id);
-		
-		if (balancerClass == null)
+		try
+		{
+			return BalancerFactory.valueOf(id.toUpperCase().replace('-', '_')).balancerClass.newInstance();
+		}
+		catch (IllegalArgumentException e)
 		{
 			throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_BALANCER, id));
 		}
-		
-		return balancerClass.newInstance();
 	}
 	
 	/**
@@ -70,19 +70,16 @@ public final class BalancerFactory
 	@SuppressWarnings("unchecked")
 	public static String serialize(Balancer balancer)
 	{
-		for (Map.Entry<String, Class<? extends Balancer>> balancerMapEntry: balancerMap.entrySet())
+		Class<? extends Balancer> balancerClass = balancer.getClass();
+		
+		for (BalancerFactory factory: BalancerFactory.values())
 		{
-			if (balancerMapEntry.getValue().isInstance(balancer))
+			if (balancerClass.equals(factory.balancerClass))
 			{
-				return balancerMapEntry.getKey();
+				return factory.name().toLowerCase().replace('_', '-');
 			}
 		}
 		
 		throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_BALANCER, balancer.getClass()));
-	}
-	
-	private BalancerFactory()
-	{
-		// Hide constructor
 	}
 }
