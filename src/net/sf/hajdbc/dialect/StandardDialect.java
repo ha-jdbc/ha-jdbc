@@ -46,8 +46,6 @@ import net.sf.hajdbc.util.Strings;
  */
 public class StandardDialect implements Dialect
 {
-	private static final String COMMA = ", "; //$NON-NLS-1$
-	
 	private Pattern selectForUpdatePattern = Pattern.compile(this.selectForUpdatePattern(), Pattern.CASE_INSENSITIVE);
 	private Pattern insertIntoTablePattern = Pattern.compile(this.insertIntoTablePattern(), Pattern.CASE_INSENSITIVE);
 	private Pattern sequencePattern = Pattern.compile(this.sequencePattern(), Pattern.CASE_INSENSITIVE);
@@ -112,7 +110,7 @@ public class StandardDialect implements Dialect
 			
 			if (columns.hasNext())
 			{
-				builder.append(COMMA);
+				builder.append(Strings.PADDED_COMMA);
 			}
 		}
 		
@@ -134,7 +132,7 @@ public class StandardDialect implements Dialect
 	@Override
 	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint key)
 	{
-		return MessageFormat.format(this.createForeignKeyConstraintFormat(), key.getName(), key.getTable(), Strings.join(key.getColumnList(), COMMA), key.getForeignTable(), Strings.join(key.getForeignColumnList(), COMMA), key.getDeleteRule(), key.getUpdateRule(), key.getDeferrability());
+		return MessageFormat.format(this.createForeignKeyConstraintFormat(), key.getName(), key.getTable(), Strings.join(key.getColumnList(), Strings.PADDED_COMMA), key.getForeignTable(), Strings.join(key.getForeignColumnList(), Strings.PADDED_COMMA), key.getDeleteRule(), key.getUpdateRule(), key.getDeferrability());
 	}
 	
 	/**
@@ -152,7 +150,7 @@ public class StandardDialect implements Dialect
 	@Override
 	public String getCreateUniqueConstraintSQL(UniqueConstraint constraint)
 	{
-		return MessageFormat.format(this.createUniqueConstraintFormat(), constraint.getName(), constraint.getTable(), Strings.join(constraint.getColumnList(), COMMA));
+		return MessageFormat.format(this.createUniqueConstraintFormat(), constraint.getName(), constraint.getTable(), Strings.join(constraint.getColumnList(), Strings.PADDED_COMMA));
 	}
 	
 	/**
@@ -254,7 +252,7 @@ public class StandardDialect implements Dialect
 	{
 		List<String> sequenceList = new LinkedList<String>();
 		
-		ResultSet resultSet = connection.getMetaData().getTables("", null, "%", new String[] { this.sequenceTableType() }); //$NON-NLS-1$ //$NON-NLS-2$
+		ResultSet resultSet = connection.getMetaData().getTables(Strings.EMPTY, null, Strings.ANY, new String[] { this.sequenceTableType() });
 		
 		while (resultSet.next())
 		{
@@ -264,7 +262,7 @@ public class StandardDialect implements Dialect
 			
 			if (schema != null)
 			{
-				builder.append(schema).append("."); //$NON-NLS-1$
+				builder.append(schema).append(Strings.DOT);
 			}
 			
 			sequenceList.add(builder.append(resultSet.getString("TABLE_NAME")).toString()); //$NON-NLS-1$
