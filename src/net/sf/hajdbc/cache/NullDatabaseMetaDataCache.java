@@ -27,16 +27,14 @@ import net.sf.hajdbc.DatabaseProperties;
 
 
 /**
- * DatabaseMetaDataCache that lazily caches data when requested, but only for a single thread.
+ * DatabaseMetaDataCache implementation that does not cache data.
  * To be used when memory usage is more of a concern than performance.
  * 
  * @author Paul Ferraro
  * @since 2.0
  */
-public class ThreadLocalDatabaseMetaDataCache extends AbstractDatabaseMetaDataCache
+public class NullDatabaseMetaDataCache extends AbstractDatabaseMetaDataCache
 {
-	private static ThreadLocal<DatabaseProperties> threadLocal = new ThreadLocal<DatabaseProperties>();
-
 	/**
 	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush(java.sql.Connection)
 	 */
@@ -54,15 +52,6 @@ public class ThreadLocalDatabaseMetaDataCache extends AbstractDatabaseMetaDataCa
 	{
 		LazyDatabaseProperties.setConnection(connection);
 		
-		DatabaseProperties properties = threadLocal.get();
-		
-		if (properties == null)
-		{
-			properties = new LazyDatabaseProperties(this.dialect);
-			
-			threadLocal.set(properties);
-		}
-		
-		return properties;
+		return new LazyDatabaseProperties(this.dialect);
 	}
 }
