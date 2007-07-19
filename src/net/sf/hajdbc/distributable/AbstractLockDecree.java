@@ -106,7 +106,7 @@ public abstract class AbstractLockDecree implements LockDecree, Externalizable
 	public void writeExternal(ObjectOutput output) throws IOException
 	{
 		output.writeUTF(this.id);
-		output.writeObject(address);
+		output.writeObject(this.address);
 	}
 
 	/**

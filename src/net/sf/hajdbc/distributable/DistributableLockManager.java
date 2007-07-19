@@ -29,6 +29,7 @@ import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.LockManager;
+import net.sf.hajdbc.util.Strings;
 
 import org.jgroups.Address;
 import org.jgroups.Channel;
@@ -68,7 +69,7 @@ public class DistributableLockManager implements LockManager, VotingListener, Me
 	{
 		this.lockManager = databaseCluster.getLockManager();
 		
-		this.channel = decorator.createChannel(databaseCluster.getId() + "-lock");
+		this.channel = decorator.createChannel(databaseCluster.getId() + "-lock"); //$NON-NLS-1$
 		// Send messages to ourselves as well
 		this.channel.setOpt(Channel.LOCAL, true);
 		
@@ -122,7 +123,7 @@ public class DistributableLockManager implements LockManager, VotingListener, Me
 	@Override
 	public boolean vote(Object decree) throws VoteException
 	{
-		if ((decree == null) || !(decree instanceof LockDecree)) throw new VoteException("");
+		if ((decree == null) || !(decree instanceof LockDecree)) throw new VoteException(Strings.EMPTY);
 		
 		return ((LockDecree) decree).vote(this.lockManager, this.lockMap);
 	}
@@ -184,7 +185,10 @@ public class DistributableLockManager implements LockManager, VotingListener, Me
 		@Override
 		public void lock()
 		{
-			while (!this.tryLock());
+			while (!this.tryLock())
+			{
+				// Do nothing
+			}
 		}
 
 		/**

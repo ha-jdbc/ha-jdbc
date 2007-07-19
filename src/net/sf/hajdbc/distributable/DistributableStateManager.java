@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
  */
 public class DistributableStateManager implements StateManager, MessageListener, MembershipListener, RequestHandler
 {
-	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	private static Logger logger = LoggerFactory.getLogger(DistributableStateManager.class);
 	
 	private int timeout;
 	private MessageDispatcher dispatcher;
@@ -81,7 +81,7 @@ public class DistributableStateManager implements StateManager, MessageListener,
 		{
 			Command<Object> command = (Command) message.getObject();
 	
-			this.logger.info(Messages.getMessage(Messages.COMMAND_RECEIVED, command));
+			logger.info(Messages.getMessage(Messages.COMMAND_RECEIVED, command));
 			
 			return command.marshalResult(command.execute(this.databaseCluster, this.stateManager));
 		}

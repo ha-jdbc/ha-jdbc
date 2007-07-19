@@ -33,8 +33,8 @@ import org.jgroups.JChannelFactory;
 public class DistributableDatabaseClusterDecorator implements DatabaseClusterDecorator
 {
 	private JChannelFactory factory;
-	private String config = "stacks.xml";
-	private String stack = "udp-sync";
+	private String config = "stacks.xml"; //$NON-NLS-1$
+	private String stack = "udp-sync"; //$NON-NLS-1$
 	private int timeout = 1000;
 	
 	public Channel createChannel(String name) throws Exception
@@ -61,7 +61,7 @@ public class DistributableDatabaseClusterDecorator implements DatabaseClusterDec
 		{
 			this.factory = new JChannelFactory();
 			
-			this.factory.setDomain("org.jgroups");
+			this.factory.setDomain(JChannelFactory.class.getPackage().getName());
 			this.factory.setMultiplexerConfig(this.config);
 			this.factory.create();
 		}

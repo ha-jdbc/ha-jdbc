@@ -36,7 +36,7 @@ public class QueryInitialStateCommand implements Command<Set<String>>
 {
 	private static final long serialVersionUID = -8409746321944635265L;
 
-	private static final String DELIMITER = ",";
+	private static final String DELIMITER = Strings.COMMA;
 	
 	/**
 	 * @see net.sf.hajdbc.distributable.Command#execute(net.sf.hajdbc.DatabaseCluster, net.sf.hajdbc.StateManager)
