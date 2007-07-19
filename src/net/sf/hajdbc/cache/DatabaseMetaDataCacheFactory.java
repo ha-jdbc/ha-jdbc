@@ -20,9 +20,6 @@
  */
 package net.sf.hajdbc.cache;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.Messages;
 
@@ -32,33 +29,35 @@ import net.sf.hajdbc.Messages;
  * @author Paul Ferraro
  * @since 2.0
  */
-public class DatabaseMetaDataCacheFactory
+public enum DatabaseMetaDataCacheFactory
 {
-	private static Map<String, Class<? extends DatabaseMetaDataCache>> cacheMap = new HashMap<String, Class<? extends DatabaseMetaDataCache>>();
+	NONE(NullDatabaseMetaDataCache.class),
+	LAZY(LazyDatabaseMetaDataCache.class),
+	EAGER(EagerDatabaseMetaDataCache.class);
 	
-	static
+	private Class<? extends DatabaseMetaDataCache> cacheClass;
+	
+	private DatabaseMetaDataCacheFactory(Class<? extends DatabaseMetaDataCache> cacheClass)
 	{
-		cacheMap.put("none", ThreadLocalDatabaseMetaDataCache.class);
-		cacheMap.put("lazy", LazyDatabaseMetaDataCache.class);
-		cacheMap.put("eager", EagerDatabaseMetaDataCache.class);
+		this.cacheClass = cacheClass;
 	}
 	
 	/**
-	 * Creates a new instance of the DatabaseMetaDataCache implementation indentified by the specified identifier
+	 * Creates a new instance of the DatabaseMetaDataCache implementation identified by the specified identifier
 	 * @param id an enumerated cache identifier
 	 * @return a new DatabaseMetaDataCache instance
 	 * @throws Exception if specified cache identifier is invalid
 	 */
 	public static DatabaseMetaDataCache deserialize(String id) throws Exception
 	{
-		Class<? extends DatabaseMetaDataCache> cacheClass = cacheMap.get(id);
-		
-		if (cacheClass == null)
+		try
+		{
+			return DatabaseMetaDataCacheFactory.valueOf(id.toUpperCase()).cacheClass.newInstance();
+		}
+		catch (IllegalArgumentException e)
 		{
 			throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_META_DATA_CACHE, id));
 		}
-		
-		return cacheClass.newInstance();
 	}
 	
 	/**
@@ -70,19 +69,14 @@ public class DatabaseMetaDataCacheFactory
 	{
 		Class<? extends DatabaseMetaDataCache> cacheClass = cache.getClass();
 		
-		for (Map.Entry<String, Class<? extends DatabaseMetaDataCache>> cacheMapEntry: cacheMap.entrySet())
+		for (DatabaseMetaDataCacheFactory factory: DatabaseMetaDataCacheFactory.values())
 		{
-			if (cacheClass.equals(cacheMapEntry.getValue()))
+			if (cacheClass.equals(factory.cacheClass))
 			{
-				return cacheMapEntry.getKey();
+				return factory.name().toLowerCase();
 			}
 		}
 		
 		throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_META_DATA_CACHE, cacheClass));
-	}
-	
-	private DatabaseMetaDataCacheFactory()
-	{
-		// Hide constructor
 	}
 }
