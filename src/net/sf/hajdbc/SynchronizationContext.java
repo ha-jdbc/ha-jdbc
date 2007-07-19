@@ -62,7 +62,7 @@ public interface SynchronizationContext<D>
 	 * Returns a cache of database meta data.
 	 * @return a cache of database meta data.
 	 */
-	public DatabaseMetaDataCache getDatabaseMetaDataCache();
+	public DatabaseProperties getDatabaseProperties();
 	
 	/**
 	 * Returns the dialect of the cluster.

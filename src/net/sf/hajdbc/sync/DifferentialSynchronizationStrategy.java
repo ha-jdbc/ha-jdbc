@@ -125,7 +125,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		
 		try
 		{
-			for (TableProperties table: context.getDatabaseMetaDataCache().getDatabaseProperties(targetConnection).getTables())
+			for (TableProperties table: context.getDatabaseProperties().getTables())
 			{
 				SynchronizationSupport.dropUniqueConstraints(context, table);
 				

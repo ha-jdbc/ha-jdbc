@@ -67,11 +67,11 @@ public final class SynchronizationSupport
 	 */
 	public static <D> void dropForeignKeys(SynchronizationContext<D> context) throws SQLException
 	{
-		Connection connection = context.getConnection(context.getTargetDatabase());
-		
-		Collection<TableProperties> tables = context.getDatabaseMetaDataCache().getDatabaseProperties(connection).getTables();
+		Collection<TableProperties> tables = context.getDatabaseProperties().getTables();
 		
 		Dialect dialect = context.getDialect();
+		
+		Connection connection = context.getConnection(context.getTargetDatabase());
 		
 		Statement statement = connection.createStatement();
 		
@@ -98,11 +98,11 @@ public final class SynchronizationSupport
 	 */
 	public static <D> void restoreForeignKeys(SynchronizationContext<D> context) throws SQLException
 	{
-		Connection connection = context.getConnection(context.getTargetDatabase());
-		
-		Collection<TableProperties> tables = context.getDatabaseMetaDataCache().getDatabaseProperties(connection).getTables();
+		Collection<TableProperties> tables = context.getDatabaseProperties().getTables();
 		
 		Dialect dialect = context.getDialect();
+		
+		Connection connection = context.getConnection(context.getTargetDatabase());
 		
 		Statement statement = connection.createStatement();
 		
@@ -252,9 +252,7 @@ public final class SynchronizationSupport
 			futures.add(executor.submit(task));
 		}
 		
-		Connection targetConnection = context.getConnection(context.getTargetDatabase());
-		
-		Collection<TableProperties> tables = context.getDatabaseMetaDataCache().getDatabaseProperties(targetConnection).getTables();
+		Collection<TableProperties> tables = context.getDatabaseProperties().getTables();
 		
 		try
 		{

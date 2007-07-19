@@ -112,7 +112,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		
 		try
 		{
-			for (TableProperties table: context.getDatabaseMetaDataCache().getDatabaseProperties(sourceConnection).getTables())
+			for (TableProperties table: context.getDatabaseProperties().getTables())
 			{
 				String tableName = table.getName();
 				Collection<String> columns = table.getColumns();
