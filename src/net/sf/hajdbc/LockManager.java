@@ -22,6 +22,8 @@ package net.sf.hajdbc;
 
 import java.util.concurrent.locks.Lock;
 
+import net.sf.hajdbc.util.Strings;
+
 /**
  * Manages a set of named read/write locks.  A global lock is represented by an empty name (i.e "").
  * Obtaining a named read or write lock should implicitly obtain a global read lock.
@@ -30,7 +32,7 @@ import java.util.concurrent.locks.Lock;
  */
 public interface LockManager
 {
-	public static final String GLOBAL = "";
+	public static final String GLOBAL = Strings.EMPTY;
 	
 	/**
 	 * Obtains a named read lock.
