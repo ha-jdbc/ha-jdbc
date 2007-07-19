@@ -31,6 +31,7 @@ import java.util.List;
 
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.TableProperties;
+import net.sf.hajdbc.util.Strings;
 
 /**
  * Dialect for <a href="http://postgresql.org">PostgreSQL</a>.
@@ -53,7 +54,7 @@ public class PostgreSQLDialect extends StandardDialect
 		
 		resultSet.next();
 		
-		String[] schemas = resultSet.getString(1).split(","); //$NON-NLS-1$
+		String[] schemas = resultSet.getString(1).split(Strings.COMMA);
 		
 		resultSet.close();
 		statement.close();
