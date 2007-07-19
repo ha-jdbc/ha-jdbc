@@ -4,7 +4,7 @@
 	<include path="binding.xml"/>
 	<mapping name="ha-jdbc" class="net.sf.hajdbc.sql.DriverDatabaseCluster" factory="net.sf.hajdbc.sql.DriverDatabaseCluster.extractDatabaseCluster">
 		<structure get-method="getDecorator" set-method="setDecorator" map-as="net.sf.hajdbc.distributable.DistributableDatabaseClusterDecorator" usage="optional"></structure>
-		<collection add-method="addSynchronizationStrategyBuilder" iter-method="getSynchronizationStrategyBuilders" item-type="net.sf.hajdbc.SynchronizationStrategyBuilder"></collection>
+		<collection add-method="addSynchronizationStrategyBuilder" iter-method="getSynchronizationStrategyBuilders" item-type="net.sf.hajdbc.sync.SynchronizationStrategyBuilder"></collection>
 		<structure name="cluster">
 			<structure map-as="net.sf.hajdbc.sql.AbstractDatabaseCluster"></structure>
 			<collection add-method="add" iter-method="getDatabases" item-type="net.sf.hajdbc.sql.DriverDatabase"></collection>

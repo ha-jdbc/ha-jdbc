@@ -10,7 +10,7 @@
 		<value name="timeout" field="timeout" style="attribute" usage="optional" default="1000"/>
 	</mapping>
 
-	<mapping name="sync" class="net.sf.hajdbc.SynchronizationStrategyBuilder">
+	<mapping name="sync" class="net.sf.hajdbc.sync.SynchronizationStrategyBuilder">
 		<value name="id" field="id" style="attribute"/>
 		<value name="class" field="targetClass" style="attribute"/>
 		<structure field="properties" unmarshaller="net.sf.hajdbc.util.PropertiesMapper" marshaller="net.sf.hajdbc.util.PropertiesMapper"></structure>
