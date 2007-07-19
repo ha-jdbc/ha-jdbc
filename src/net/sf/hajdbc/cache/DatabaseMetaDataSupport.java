@@ -101,7 +101,7 @@ public class DatabaseMetaDataSupport
 	public DatabaseMetaDataSupport(DatabaseMetaData metaData) throws SQLException
 	{
 		this.reservedIdentifierSet = new HashSet<String>(Arrays.asList(SQL_92_RESERVED_WORDS));
-		this.reservedIdentifierSet.addAll(Arrays.asList(metaData.getSQLKeywords().split(","))); //$NON-NLS-1$
+		this.reservedIdentifierSet.addAll(Arrays.asList(metaData.getSQLKeywords().split(Strings.COMMA)));
 		
 		this.identifierPattern = Pattern.compile("[\\w" + Pattern.quote(metaData.getExtraNameCharacters()) + "]+"); //$NON-NLS-1$ //$NON-NLS-2$
 		this.quote = metaData.getIdentifierQuoteString();
