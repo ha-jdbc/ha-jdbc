@@ -30,6 +30,7 @@ import java.util.ResourceBundle;
  * @version $Revision$
  * @since   1.0
  */
+@SuppressWarnings("nls")
 public final class Messages
 {
 	public static final String CLUSTER_STATE_LOAD_FAILED = "cluster-state-load-failed";
