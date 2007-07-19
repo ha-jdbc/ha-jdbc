@@ -99,14 +99,13 @@ public class TestFullSynchronizationStrategy extends TestLockingSynchronizationS
 
 		targetConnection.setAutoCommit(true);
 		
-		EasyMock.expect(context.getTargetDatabase()).andReturn(targetDatabase);
-		EasyMock.expect(context.getConnection(targetDatabase)).andReturn(targetConnection);
-		
-		EasyMock.expect(context.getDatabaseMetaDataCache()).andReturn(metaData);
-		EasyMock.expect(metaData.getDatabaseProperties(targetConnection)).andReturn(database);
+		EasyMock.expect(context.getDatabaseProperties()).andReturn(database);
 		EasyMock.expect(database.getTables()).andReturn(Collections.singleton(table));
 		EasyMock.expect(context.getDialect()).andReturn(dialect);
 
+		EasyMock.expect(context.getTargetDatabase()).andReturn(targetDatabase);
+		EasyMock.expect(context.getConnection(targetDatabase)).andReturn(targetConnection);
+		
 		EasyMock.expect(targetConnection.createStatement()).andReturn(targetStatement);
 		
 		EasyMock.expect(table.getForeignKeyConstraints()).andReturn(Collections.singleton(foreignKey));
@@ -120,8 +119,7 @@ public class TestFullSynchronizationStrategy extends TestLockingSynchronizationS
 		
 		targetConnection.setAutoCommit(false);
 
-		EasyMock.expect(context.getDatabaseMetaDataCache()).andReturn(metaData);
-		EasyMock.expect(metaData.getDatabaseProperties(sourceConnection)).andReturn(database);
+		EasyMock.expect(context.getDatabaseProperties()).andReturn(database);
 		EasyMock.expect(database.getTables()).andReturn(Collections.singleton(table));
 		
 		EasyMock.expect(table.getName()).andReturn("table");
@@ -195,14 +193,13 @@ public class TestFullSynchronizationStrategy extends TestLockingSynchronizationS
 		
 		targetConnection.setAutoCommit(true);
 
-		EasyMock.expect(context.getTargetDatabase()).andReturn(targetDatabase);
-		EasyMock.expect(context.getConnection(targetDatabase)).andReturn(targetConnection);
-		
-		EasyMock.expect(context.getDatabaseMetaDataCache()).andReturn(metaData);
-		EasyMock.expect(metaData.getDatabaseProperties(targetConnection)).andReturn(database);
+		EasyMock.expect(context.getDatabaseProperties()).andReturn(database);
 		EasyMock.expect(database.getTables()).andReturn(Collections.singleton(table));
 		EasyMock.expect(context.getDialect()).andReturn(dialect);
 
+		EasyMock.expect(context.getTargetDatabase()).andReturn(targetDatabase);
+		EasyMock.expect(context.getConnection(targetDatabase)).andReturn(targetConnection);
+		
 		EasyMock.expect(targetConnection.createStatement()).andReturn(targetStatement);
 
 		EasyMock.expect(table.getForeignKeyConstraints()).andReturn(Collections.singleton(foreignKey));

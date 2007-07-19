@@ -115,10 +115,7 @@ public abstract class TestLockingSynchronizationStrategy implements Synchronizat
 		EasyMock.checkOrder(sourceDatabase, false);
 		EasyMock.checkOrder(sourceConnection, false);
 		
-		EasyMock.expect(context.getTargetDatabase()).andReturn(targetDatabase);
-		EasyMock.expect(context.getConnection(targetDatabase)).andReturn(targetConnection);
-		EasyMock.expect(context.getDatabaseMetaDataCache()).andReturn(metaData);
-		EasyMock.expect(metaData.getDatabaseProperties(targetConnection)).andReturn(database);
+		EasyMock.expect(context.getDatabaseProperties()).andReturn(database);
 		EasyMock.expect(database.getTables()).andReturn(Collections.singleton(table));
 		
 		EasyMock.expect(context.getConnection(sourceDatabase)).andReturn(sourceConnection);
