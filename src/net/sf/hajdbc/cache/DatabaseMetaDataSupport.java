@@ -87,7 +87,11 @@ public class DatabaseMetaDataSupport
 	private boolean supportsMixedCaseIdentifiers;
 	private boolean supportsMixedCaseQuotedIdentifiers;
 	private boolean storesLowerCaseIdentifiers;
+	private boolean storesLowerCaseQuotedIdentifiers;
 	private boolean storesUpperCaseIdentifiers;
+	private boolean storesUpperCaseQuotedIdentifiers;
+	private boolean storesMixedCaseIdentifiers;
+	private boolean storesMixedCaseQuotedIdentifiers;
 	private boolean supportsSchemasInDDL;
 	private boolean supportsSchemasInDML;
 	
@@ -106,7 +110,11 @@ public class DatabaseMetaDataSupport
 		this.supportsMixedCaseIdentifiers = metaData.supportsMixedCaseIdentifiers();
 		this.supportsMixedCaseQuotedIdentifiers = metaData.supportsMixedCaseQuotedIdentifiers();
 		this.storesLowerCaseIdentifiers = metaData.storesLowerCaseIdentifiers();
+		this.storesLowerCaseQuotedIdentifiers = metaData.storesLowerCaseQuotedIdentifiers();
 		this.storesUpperCaseIdentifiers = metaData.storesUpperCaseIdentifiers();
+		this.storesUpperCaseQuotedIdentifiers = metaData.storesUpperCaseQuotedIdentifiers();
+		this.storesMixedCaseIdentifiers = metaData.storesMixedCaseIdentifiers();
+		this.storesMixedCaseQuotedIdentifiers = metaData.storesMixedCaseQuotedIdentifiers();
 		this.supportsSchemasInDML = metaData.supportsSchemasInDataManipulation();
 		this.supportsSchemasInDDL = metaData.supportsSchemasInTableDefinitions();
 	}
@@ -367,7 +375,7 @@ public class DatabaseMetaDataSupport
 		if (identifier == null) return null;
 		
 		// Driver may return identifiers already quoted.  If so, exit early.
-		if (identifier.startsWith(this.quote)) return identifier;
+		if (identifier.startsWith(this.quote)) return this.normalizeMixedCaseQuoted(identifier);
 		
 		// Quote reserved identifiers
 		boolean requiresQuoting = this.reservedIdentifierSet.contains(identifier.toLowerCase());
@@ -378,7 +386,17 @@ public class DatabaseMetaDataSupport
 		// Quote mixed-case identifiers if detected and supported by DBMS
 		requiresQuoting |= !this.supportsMixedCaseIdentifiers && this.supportsMixedCaseQuotedIdentifiers && ((this.storesLowerCaseIdentifiers && UPPER_CASE_PATTERN.matcher(identifier).find()) || (this.storesUpperCaseIdentifiers && LOWER_CASE_PATTERN.matcher(identifier).find()));
 		
-		return requiresQuoting ? this.quote + identifier + this.quote : identifier;
+		return requiresQuoting ? this.quote + this.normalizeMixedCaseQuoted(identifier) + this.quote : this.normalizeMixedCase(identifier);
+	}
+	
+	private String normalizeMixedCase(String identifier)
+	{
+		return this.storesMixedCaseIdentifiers ? identifier.toLowerCase() : identifier;
+	}
+	
+	private String normalizeMixedCaseQuoted(String identifier)
+	{
+		return this.storesMixedCaseQuotedIdentifiers ? identifier.toLowerCase() : identifier;
 	}
 	
 	private String normalize(String tableName, String defaultSchema)
@@ -388,13 +406,15 @@ public class DatabaseMetaDataSupport
 		String table = parts[parts.length - 1];
 		String schema = (parts.length > 1) ? parts[parts.length - 2] : defaultSchema;
 
-		if (this.storesLowerCaseIdentifiers)
+		boolean quoted = table.startsWith(this.quote);
+		
+		if ((!quoted && this.storesLowerCaseIdentifiers) || (quoted && this.storesLowerCaseQuotedIdentifiers))
 		{
-			table = table.toLowerCase();
+			table.toLowerCase();
 		}
-		else if (this.storesUpperCaseIdentifiers)
+		else if ((!quoted && this.storesUpperCaseIdentifiers) || (quoted && this.storesUpperCaseQuotedIdentifiers))
 		{
-			table = table.toUpperCase();
+			table.toUpperCase();
 		}
 			
 		return this.getQualifiedNameForDML(schema, table);
