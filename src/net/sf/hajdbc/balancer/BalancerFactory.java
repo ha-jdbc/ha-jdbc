@@ -33,6 +33,9 @@ public enum BalancerFactory
 	RANDOM(RandomBalancer.class),
 	ROUND_ROBIN(RoundRobinBalancer.class),
 	LOAD(LoadBalancer.class);
+
+	private static final char UNDERSCORE = '_';
+	private static final char DASH = '-';
 	
 	@SuppressWarnings("unchecked")
 	private Class<? extends Balancer> balancerClass;
@@ -54,7 +57,7 @@ public enum BalancerFactory
 	{
 		try
 		{
-			return BalancerFactory.valueOf(id.toUpperCase().replace('-', '_')).balancerClass.newInstance();
+			return BalancerFactory.valueOf(id.toUpperCase().replace(DASH, UNDERSCORE)).balancerClass.newInstance();
 		}
 		catch (IllegalArgumentException e)
 		{
@@ -76,7 +79,7 @@ public enum BalancerFactory
 		{
 			if (balancerClass.equals(factory.balancerClass))
 			{
-				return factory.name().toLowerCase().replace('_', '-');
+				return factory.name().toLowerCase().replace(UNDERSCORE, DASH);
 			}
 		}
 		
