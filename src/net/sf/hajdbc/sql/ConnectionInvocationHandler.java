@@ -40,6 +40,7 @@ import net.sf.hajdbc.Database;
  * @author Paul Ferraro
  *
  */
+@SuppressWarnings("nls")
 public class ConnectionInvocationHandler<D> extends AbstractInvocationHandler<D, D, Connection>
 {
 	private static final Set<String> DRIVER_READ_METHOD_SET = new HashSet<String>(Arrays.asList("createArrayOf", "createBlob", "createClob", "createNClob", "createSQLXML", "createStruct", "getAutoCommit", "getCatalog", "getClientInfo", "getHoldability", "getTypeMap", "getWarnings", "isClosed", "isReadOnly", "nativeSQL"));

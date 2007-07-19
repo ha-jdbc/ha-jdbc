@@ -47,8 +47,8 @@ import net.sf.hajdbc.util.SQLExceptionFactory;
  */
 public class FileSupportImpl implements FileSupport
 {
-	private static final String TEMP_FILE_PREFIX = "ha-jdbc-";
-	private static final String TEMP_FILE_SUFFIX = ".lob";
+	private static final String TEMP_FILE_PREFIX = "ha-jdbc-"; //$NON-NLS-1$
+	private static final String TEMP_FILE_SUFFIX = ".lob"; //$NON-NLS-1$
 	private static final int BUFFER_SIZE = 8192;
 	
 	private List<File> fileList = new LinkedList<File>();

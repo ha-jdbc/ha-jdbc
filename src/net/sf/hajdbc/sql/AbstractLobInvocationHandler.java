@@ -48,6 +48,7 @@ public abstract class AbstractLobInvocationHandler<D, P, E> extends AbstractInvo
 	/**
 	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#postInvoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
+	@SuppressWarnings("nls")
 	@Override
 	protected void postInvoke(E object, Method method, Object[] parameters) throws Exception
 	{
@@ -60,6 +61,7 @@ public abstract class AbstractLobInvocationHandler<D, P, E> extends AbstractInvo
 	/**
 	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#close(java.lang.Object, java.lang.Object)
 	 */
+	@SuppressWarnings("nls")
 	@Override
 	protected void close(P parent, E lob)
 	{

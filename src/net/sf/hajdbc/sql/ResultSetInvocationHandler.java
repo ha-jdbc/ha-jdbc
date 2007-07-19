@@ -53,6 +53,7 @@ import net.sf.hajdbc.util.reflect.ProxyFactory;
  * @author Paul Ferraro
  *
  */
+@SuppressWarnings("nls")
 public class ResultSetInvocationHandler<D, S extends Statement> extends AbstractInvocationHandler<D, S, ResultSet>
 {
 	private static final Set<String> DRIVER_READ_METHOD_SET = new HashSet<String>(Arrays.asList("findColumn", "getConcurrency", "getCursorName", "getFetchDirection", "getFetchSize", "getHoldability", "getMetaData", "getRow", "getType", "getWarnings", "isAfterLast", "isBeforeFirst", "isClosed", "isFirst", "isLast", "rowDeleted", "rowInserted", "rowUpdated", "wasNull"));

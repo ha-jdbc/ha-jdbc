@@ -95,7 +95,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, DatabaseClusterMBean, MBeanRegistration
 {
-	private static Logger logger = LoggerFactory.getLogger(AbstractDatabaseCluster.class);
+	static Logger logger = LoggerFactory.getLogger(AbstractDatabaseCluster.class);
 		
 	private String id;
 	private Balancer<D> balancer;
@@ -181,7 +181,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		return aliveMap;
 	}
 	
-	private boolean isAlive(Database<D> database)
+	boolean isAlive(Database<D> database)
 	{
 		try
 		{
@@ -901,6 +901,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	@Override
 	public void preDeregister() throws Exception
 	{
+		// Nothing to do
 	}
 
 	/**
@@ -917,7 +918,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		
 		try
 		{
-			inputStream = url.openStream();
+			inputStream = this.url.openStream();
 			
 			IUnmarshallingContext context = BindingDirectory.getFactory(this.getClass()).createUnmarshallingContext();
 	
@@ -938,13 +939,13 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		}
 		catch (IOException e)
 		{
-			logger.error(Messages.getMessage(Messages.CONFIG_NOT_FOUND, url), e);
+			logger.error(Messages.getMessage(Messages.CONFIG_NOT_FOUND, this.url), e);
 			
 			throw e;
 		}
 		catch (JiBXException e)
 		{
-			logger.error(Messages.getMessage(Messages.CONFIG_LOAD_FAILED, url), e);
+			logger.error(Messages.getMessage(Messages.CONFIG_LOAD_FAILED, this.url), e);
 			
 			throw e;
 		}
@@ -972,11 +973,11 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		
 		try
 		{
-			file = File.createTempFile("ha-jdbc", ".xml");
+			file = File.createTempFile("ha-jdbc", ".xml"); //$NON-NLS-1$ //$NON-NLS-2$
 			
 			IMarshallingContext context = BindingDirectory.getFactory(this.getClass()).createMarshallingContext();
 		
-			context.setIndent(1, System.getProperty("line.separator"), '\t');
+			context.setIndent(1, System.getProperty("line.separator"), '\t'); //$NON-NLS-1$
 			
 			// This method closes the writer
 			context.marshalDocument(this, null, null, new FileWriter(file));
@@ -984,20 +985,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			fileChannel = new FileInputStream(file).getChannel();
 
 			outputChannel = this.getOutputChannel(this.url);
-			// We cannot use URLConnection for files because Sun's implementation does not support output.
-/*			if (this.url.getProtocol().equals("file"))
-			{
-				outputChannel = new FileOutputStream(new File(this.url.getPath())).getChannel();
-			}
-			else
-			{
-				URLConnection connection = this.url.openConnection();
-				
-				connection.connect();
-				
-				outputChannel = Channels.newChannel(connection.getOutputStream());
-			}
-*/			
+
 			fileChannel.transferTo(0, file.length(), outputChannel);
 		}
 		catch (Exception e)
@@ -1047,10 +1035,10 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	
 	private boolean isFile(URL url)
 	{
-		return url.getProtocol().equals("file");
+		return url.getProtocol().equals("file"); //$NON-NLS-1$
 	}
 	
-	private File toFile(URL url) throws IOException
+	private File toFile(URL url)
 	{
 		return new File(url.getPath());
 	}
@@ -1104,7 +1092,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 				{
 					for (Database<D> database: aliveMap.keySet())
 					{
-						if (AbstractDatabaseCluster.this.deactivate(database, AbstractDatabaseCluster.this.stateManager))
+						if (AbstractDatabaseCluster.this.deactivate(database, AbstractDatabaseCluster.this.getStateManager()))
 						{
 							logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this));
 						}

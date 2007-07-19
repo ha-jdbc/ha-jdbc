@@ -30,6 +30,7 @@ import net.sf.hajdbc.DatabaseCluster;
  * @author Paul Ferraro
  *
  */
+@SuppressWarnings("nls")
 public class DataSourceInvocationHandler extends AbstractInvocationHandler<DataSource, Void, DataSource>
 {
 	/**

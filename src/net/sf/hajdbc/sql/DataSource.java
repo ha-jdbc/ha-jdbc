@@ -41,8 +41,8 @@ import net.sf.hajdbc.util.reflect.ProxyFactory;
  */
 public class DataSource implements Referenceable, ObjectFactory
 {
-	private static final String CLUSTER = "cluster";
-	private static final String CONFIG = "config";
+	private static final String CLUSTER = "cluster"; //$NON-NLS-1$
+	private static final String CONFIG = "config"; //$NON-NLS-1$
 	
 	private String cluster;
 	private String config;

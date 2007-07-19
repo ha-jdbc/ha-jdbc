@@ -93,6 +93,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 		return result;
 	}
 	
+	@SuppressWarnings("nls")
 	protected InvocationStrategy<D, E, ?> getInvocationStrategy(final E object, Method method, final Object[] parameters) throws Exception
 	{
 		Class<?> objectClass = method.getDeclaringClass();
@@ -390,7 +391,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 		// Otherwise deactivate failed database
 		if (this.databaseCluster.deactivate(database, this.databaseCluster.getStateManager()))
 		{
-			logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this), cause);
+			this.logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this), cause);
 		}
 	}
 	
@@ -437,7 +438,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 			{
 				if (this.databaseCluster.deactivate(database, this.databaseCluster.getStateManager()))
 				{
-					logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this.databaseCluster), cause);
+					this.logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this.databaseCluster), cause);
 				}
 			}
 		}

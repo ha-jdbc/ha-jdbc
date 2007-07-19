@@ -49,6 +49,7 @@ import net.sf.hajdbc.TableProperties;
  * @author Paul Ferraro
  *
  */
+@SuppressWarnings("nls")
 public abstract class AbstractStatementInvocationHandler<D, S extends Statement> extends AbstractInvocationHandler<D, Connection, S>
 {
 	private static final Set<String> DRIVER_READ_METHOD_SET = new HashSet<String>(Arrays.asList("getFetchDirection", "getFetchSize", "getGeneratedKeys", "getMaxFieldSize", "getMaxRows", "getQueryTimeout", "getResultSetConcurrency", "getResultSetHoldability", "getResultSetType", "getUpdateCount", "getWarnings", "isClosed", "isPoolable"));
@@ -206,7 +207,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 			{
 				if (cluster.deactivate(database, cluster.getStateManager()))
 				{
-					logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, cluster), cause);
+					this.logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, cluster), cause);
 				}
 			}
 		}
