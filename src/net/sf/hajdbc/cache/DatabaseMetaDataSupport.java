@@ -388,6 +388,15 @@ public class DatabaseMetaDataSupport
 		String table = parts[parts.length - 1];
 		String schema = (parts.length > 1) ? parts[parts.length - 2] : defaultSchema;
 
+		if (this.storesLowerCaseIdentifiers)
+		{
+			table = table.toLowerCase();
+		}
+		else if (this.storesUpperCaseIdentifiers)
+		{
+			table = table.toUpperCase();
+		}
+			
 		return this.getQualifiedNameForDML(schema, table);
 	}
 	
