@@ -39,6 +39,7 @@ import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.UniqueConstraint;
+import net.sf.hajdbc.util.Strings;
 
 /**
  * Processes database meta data into useful structures.
@@ -75,9 +76,6 @@ public class DatabaseMetaDataSupport
 		"zone"
 	};
 	
-	private static final String ANY = "%"; //$NON-NLS-1$
-	private static final String DOT = "."; //$NON-NLS-1$
-	private static final String EMPTY = ""; //$NON-NLS-1$
 	private static final Pattern UPPER_CASE_PATTERN = Pattern.compile("[A-Z]"); //$NON-NLS-1$
 	private static final Pattern LOWER_CASE_PATTERN = Pattern.compile("[a-z]"); //$NON-NLS-1$
 	
@@ -129,7 +127,7 @@ public class DatabaseMetaDataSupport
 	{
 		Map<String, Collection<String>> tablesMap = new HashMap<String, Collection<String>>();
 		
-		ResultSet resultSet = metaData.getTables(this.getCatalog(metaData), null, ANY, new String[] { "TABLE" }); //$NON-NLS-1$
+		ResultSet resultSet = metaData.getTables(this.getCatalog(metaData), null, Strings.ANY, new String[] { "TABLE" }); //$NON-NLS-1$
 		
 		while (resultSet.next())
 		{
@@ -165,7 +163,7 @@ public class DatabaseMetaDataSupport
 	{
 		Map<String, ColumnProperties> columnMap = new HashMap<String, ColumnProperties>();
 		
-		ResultSet resultSet = metaData.getColumns(this.getCatalog(metaData), this.getSchema(schema), table, ANY);
+		ResultSet resultSet = metaData.getColumns(this.getCatalog(metaData), this.getSchema(schema), table, Strings.ANY);
 		
 		while (resultSet.next())
 		{
@@ -333,7 +331,7 @@ public class DatabaseMetaDataSupport
 		
 		if (this.supportsSchemasInDML && (schema != null))
 		{
-			builder.append(this.quote(schema)).append(DOT);
+			builder.append(this.quote(schema)).append(Strings.DOT);
 		}
 		
 		return builder.append(this.quote(table)).toString();
@@ -352,7 +350,7 @@ public class DatabaseMetaDataSupport
 		
 		if (this.supportsSchemasInDDL && (schema != null))
 		{
-			builder.append(this.quote(schema)).append(DOT);
+			builder.append(this.quote(schema)).append(Strings.DOT);
 		}
 		
 		return builder.append(this.quote(table)).toString();
@@ -362,12 +360,12 @@ public class DatabaseMetaDataSupport
 	{
 		String catalog = metaData.getConnection().getCatalog();
 		
-		return (catalog != null) ? catalog : EMPTY;
+		return (catalog != null) ? catalog : Strings.EMPTY;
 	}
 	
 	private String getSchema(String schema)
 	{
-		return (schema != null) ? schema : EMPTY;
+		return (schema != null) ? schema : Strings.EMPTY;
 	}
 	
 	private String quote(String identifier)
@@ -401,7 +399,7 @@ public class DatabaseMetaDataSupport
 	
 	private String normalize(String tableName, String defaultSchema)
 	{
-		String parts[] = tableName.split(Pattern.quote(DOT));
+		String parts[] = tableName.split(Pattern.quote(Strings.DOT));
 
 		String table = parts[parts.length - 1];
 		String schema = (parts.length > 1) ? parts[parts.length - 2] : defaultSchema;
