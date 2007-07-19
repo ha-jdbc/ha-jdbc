@@ -136,7 +136,7 @@ public final class SynchronizationSupport
 		
 		Map<String, Long> sequenceMap = new HashMap<String, Long>();
 
-		Collection<String> sequences = context.getDialect().getSequences(sourceConnection);
+		Collection<String> sequences = dialect.getSequences(sourceConnection);
 
 		Set<Database<D>> databases = context.getActiveDatabaseSet();
 
