@@ -43,8 +43,6 @@ import org.slf4j.LoggerFactory;
  */
 public class LocalStateManager implements StateManager
 {
-	private static final String DELIMITER = ",";
-	
 	private static Preferences preferences = Preferences.userNodeForPackage(LocalStateManager.class);
 	private static Logger logger = LoggerFactory.getLogger(LocalStateManager.class);
 	
@@ -74,7 +72,7 @@ public class LocalStateManager implements StateManager
 		
 		if (state.length() > 0)
 		{
-			databaseSet = new TreeSet<String>(Arrays.asList(state.split(DELIMITER)));
+			databaseSet = new TreeSet<String>(Arrays.asList(state.split(Strings.COMMA)));
 		}
 		
 		logger.info(Messages.getMessage(Messages.INITIAL_CLUSTER_STATE_LOCAL, databaseSet));
@@ -109,7 +107,7 @@ public class LocalStateManager implements StateManager
 			databaseList.add(database.getId());
 		}
 		
-		preferences.put(this.statePreferenceKey(), Strings.join(databaseList, DELIMITER));
+		preferences.put(this.statePreferenceKey(), Strings.join(databaseList, Strings.COMMA));
 		
 		try
 		{
@@ -136,6 +134,14 @@ public class LocalStateManager implements StateManager
 	@Override
 	public void stop()
 	{
+		try
+		{
+			preferences.sync();
+		}
+		catch (BackingStoreException e)
+		{
+			logger.warn(e.getMessage(), e);
+		}
 	}
 	
 	private String statePreferenceKey()
