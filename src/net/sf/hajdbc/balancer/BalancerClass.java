@@ -22,28 +22,45 @@ package net.sf.hajdbc.balancer;
 
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.util.ClassEnum;
+import net.sf.hajdbc.util.Strings;
 
 /**
  * @author  Paul Ferraro
  * @since   1.1
  */
-public enum BalancerFactory
+public enum BalancerClass implements ClassEnum<Balancer<?>>
 {
 	SIMPLE(SimpleBalancer.class),
 	RANDOM(RandomBalancer.class),
 	ROUND_ROBIN(RoundRobinBalancer.class),
 	LOAD(LoadBalancer.class);
 
-	private static final char UNDERSCORE = '_';
-	private static final char DASH = '-';
-	
 	@SuppressWarnings("unchecked")
 	private Class<? extends Balancer> balancerClass;
 	
 	@SuppressWarnings("unchecked")
-	private BalancerFactory(Class<? extends Balancer> balancerClass)
+	private BalancerClass(Class<? extends Balancer> balancerClass)
 	{
 		this.balancerClass = balancerClass;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.util.ClassEnum#isInstance(java.lang.Object)
+	 */
+	@Override
+	public boolean isInstance(Balancer<?> balancer)
+	{
+		return this.balancerClass.equals(balancer.getClass());
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.util.ClassEnum#newInstance()
+	 */
+	@Override
+	public Balancer<?> newInstance() throws Exception
+	{
+		return this.balancerClass.newInstance();
 	}
 	
 	/**
@@ -52,12 +69,11 @@ public enum BalancerFactory
 	 * @return a new Balancer instance
 	 * @throws Exception if specified balancer identifier is invalid
 	 */
-	@SuppressWarnings("unchecked")
-	public static Balancer deserialize(String id) throws Exception
+	public static Balancer<?> deserialize(String id) throws Exception
 	{
 		try
 		{
-			return BalancerFactory.valueOf(id.toUpperCase().replace(DASH, UNDERSCORE)).balancerClass.newInstance();
+			return BalancerClass.valueOf(id.toUpperCase().replace(Strings.DASH, Strings.UNDERSCORE)).newInstance();
 		}
 		catch (IllegalArgumentException e)
 		{
@@ -70,16 +86,13 @@ public enum BalancerFactory
 	 * @param balancer a Balancer implementation
 	 * @return the class name of this balancer
 	 */
-	@SuppressWarnings("unchecked")
-	public static String serialize(Balancer balancer)
+	public static String serialize(Balancer<?> balancer)
 	{
-		Class<? extends Balancer> balancerClass = balancer.getClass();
-		
-		for (BalancerFactory factory: BalancerFactory.values())
+		for (BalancerClass balancerClass: BalancerClass.values())
 		{
-			if (balancerClass.equals(factory.balancerClass))
+			if (balancerClass.isInstance(balancer))
 			{
-				return factory.name().toLowerCase().replace(UNDERSCORE, DASH);
+				return balancerClass.name().toLowerCase().replace(Strings.UNDERSCORE, Strings.DASH);
 			}
 		}
 		

@@ -21,12 +21,13 @@
 package net.sf.hajdbc.dialect;
 
 import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.util.ClassEnum;
 
 /**
  * @author  Paul Ferraro
  * @since   1.1
  */
-public enum DialectFactory
+public enum DialectClass implements ClassEnum<Dialect>
 {
 	DB2(DB2Dialect.class),
 	DERBY(DerbyDialect.class),
@@ -43,11 +44,29 @@ public enum DialectFactory
 	
 	private Class<? extends Dialect> dialectClass;
 	
-	private DialectFactory(Class<? extends Dialect> dialectClass)
+	private DialectClass(Class<? extends Dialect> dialectClass)
 	{
 		this.dialectClass = dialectClass;
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.util.ClassEnum#isInstance(java.lang.Object)
+	 */
+	@Override
+	public boolean isInstance(Dialect dialect)
+	{
+		return this.dialectClass.equals(dialect.getClass());
+	}
+
+	/**
+	 * @see net.sf.hajdbc.util.ClassEnum#newInstance()
+	 */
+	@Override
+	public Dialect newInstance() throws Exception
+	{
+		return this.dialectClass.newInstance();
+	}
+
 	/**
 	 * Creates a new instance of the Dialect implementation from the specified class name.
 	 * @param id the class name of a Dialect instance.
@@ -56,20 +75,15 @@ public enum DialectFactory
 	 */
 	public static Dialect deserialize(String id) throws Exception
 	{
-		return getDialectClass(id).newInstance();
-	}
-	
-	private static Class<? extends Dialect> getDialectClass(String id) throws Exception
-	{
 		try
 		{
-			DialectFactory factory = (id != null) ? DialectFactory.valueOf(id.toUpperCase()) : STANDARD;
+			DialectClass dialectClass = (id != null) ? DialectClass.valueOf(id.toUpperCase()) : STANDARD;
 			
-			return factory.dialectClass;
+			return dialectClass.newInstance();
 		}
 		catch (IllegalArgumentException e)
 		{
-			return Class.forName(id).asSubclass(Dialect.class);
+			return Class.forName(id).asSubclass(Dialect.class).newInstance();
 		}
 	}
 	
@@ -80,16 +94,14 @@ public enum DialectFactory
 	 */
 	public static String serialize(Dialect dialect)
 	{
-		Class<? extends Dialect> dialectClass = dialect.getClass();
-		
-		for (DialectFactory factory: DialectFactory.values())
+		for (DialectClass dialectClass: DialectClass.values())
 		{
-			if (dialectClass.equals(factory.dialectClass))
+			if (dialectClass.isInstance(dialect))
 			{
-				return factory.name().toLowerCase();
+				return dialectClass.name().toLowerCase();
 			}
 		}
 		
-		return dialectClass.getName();
+		return dialect.getClass().getName();
 	}
 }

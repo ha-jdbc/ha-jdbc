@@ -22,6 +22,7 @@ package net.sf.hajdbc.cache;
 
 import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.util.ClassEnum;
 
 /**
  * Factory for creating DatabaseMetaDataCache implementations.
@@ -29,7 +30,7 @@ import net.sf.hajdbc.Messages;
  * @author Paul Ferraro
  * @since 2.0
  */
-public enum DatabaseMetaDataCacheFactory
+public enum DatabaseMetaDataCacheClass implements ClassEnum<DatabaseMetaDataCache>
 {
 	NONE(NullDatabaseMetaDataCache.class),
 	LAZY(LazyDatabaseMetaDataCache.class),
@@ -37,9 +38,27 @@ public enum DatabaseMetaDataCacheFactory
 	
 	private Class<? extends DatabaseMetaDataCache> cacheClass;
 	
-	private DatabaseMetaDataCacheFactory(Class<? extends DatabaseMetaDataCache> cacheClass)
+	private DatabaseMetaDataCacheClass(Class<? extends DatabaseMetaDataCache> cacheClass)
 	{
 		this.cacheClass = cacheClass;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.util.ClassEnum#isInstance(java.lang.Object)
+	 */
+	@Override
+	public boolean isInstance(DatabaseMetaDataCache cache)
+	{
+		return this.cacheClass.equals(cache.getClass());
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.util.ClassEnum#newInstance()
+	 */
+	@Override
+	public DatabaseMetaDataCache newInstance() throws Exception
+	{
+		return this.cacheClass.newInstance();
 	}
 	
 	/**
@@ -52,7 +71,7 @@ public enum DatabaseMetaDataCacheFactory
 	{
 		try
 		{
-			return DatabaseMetaDataCacheFactory.valueOf(id.toUpperCase()).cacheClass.newInstance();
+			return DatabaseMetaDataCacheClass.valueOf(id.toUpperCase()).newInstance();
 		}
 		catch (IllegalArgumentException e)
 		{
@@ -67,16 +86,14 @@ public enum DatabaseMetaDataCacheFactory
 	 */
 	public static String serialize(DatabaseMetaDataCache cache)
 	{
-		Class<? extends DatabaseMetaDataCache> cacheClass = cache.getClass();
-		
-		for (DatabaseMetaDataCacheFactory factory: DatabaseMetaDataCacheFactory.values())
+		for (DatabaseMetaDataCacheClass cacheClass: DatabaseMetaDataCacheClass.values())
 		{
-			if (cacheClass.equals(factory.cacheClass))
+			if (cacheClass.isInstance(cache))
 			{
-				return factory.name().toLowerCase();
+				return cacheClass.name().toLowerCase();
 			}
 		}
 		
-		throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_META_DATA_CACHE, cacheClass));
+		throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_META_DATA_CACHE, cache.getClass()));
 	}
 }
