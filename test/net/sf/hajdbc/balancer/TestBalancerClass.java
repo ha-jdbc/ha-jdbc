@@ -31,7 +31,7 @@ import org.testng.annotations.Test;
  */
 @Test
 @SuppressWarnings("unchecked")
-public class TestBalancerFactory
+public class TestBalancerClass
 {
 	public void testSerialize()
 	{
@@ -42,7 +42,7 @@ public class TestBalancerFactory
 		
 		try
 		{
-			String balancer = BalancerFactory.serialize(EasyMock.createMock(Balancer.class));
+			String balancer = BalancerClass.serialize(EasyMock.createMock(Balancer.class));
 			
 			assert false : balancer;
 		}
@@ -54,7 +54,7 @@ public class TestBalancerFactory
 	
 	private void assertBalancer(Balancer balancer, String id)
 	{
-		String name = BalancerFactory.serialize(balancer);
+		String name = BalancerClass.serialize(balancer);
 		
 		assert name.equals(id) : name;
 	}
@@ -68,7 +68,7 @@ public class TestBalancerFactory
 			
 		try
 		{
-			Balancer balancer = BalancerFactory.deserialize("invalid");
+			Balancer balancer = BalancerClass.deserialize("invalid");
 			
 			assert false : balancer.getClass().getName();
 		}
@@ -82,7 +82,7 @@ public class TestBalancerFactory
 	{
 		try
 		{
-			Balancer balancer = BalancerFactory.deserialize("load");
+			Balancer balancer = BalancerClass.deserialize("load");
 			
 			assert LoadBalancer.class.isInstance(balancer);
 		}

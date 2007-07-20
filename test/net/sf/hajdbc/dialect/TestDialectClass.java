@@ -29,7 +29,7 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
-public class TestDialectFactory
+public class TestDialectClass
 {
 	@Test
 	public void testSerialize()
@@ -38,7 +38,7 @@ public class TestDialectFactory
 		
 		EasyMock.replay(dialect);
 		
-		String id = DialectFactory.serialize(dialect);
+		String id = DialectClass.serialize(dialect);
 		
 		EasyMock.verify(dialect);
 		
@@ -69,7 +69,7 @@ public class TestDialectFactory
 
 		try
 		{
-			Dialect dialect = DialectFactory.deserialize("invalid");
+			Dialect dialect = DialectClass.deserialize("invalid");
 			
 			assert false : dialect.getClass().getName();
 		}
@@ -83,7 +83,7 @@ public class TestDialectFactory
 	{
 		try
 		{
-			Dialect dialect = DialectFactory.deserialize(id);
+			Dialect dialect = DialectClass.deserialize(id);
 			
 			assert dialectClass.isInstance(dialect) : dialect.getClass().getName();
 		}
