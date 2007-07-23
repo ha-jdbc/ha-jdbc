@@ -118,7 +118,7 @@ public class SynchronizationContextImpl<D> implements SynchronizationContext<D>
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.SynchronizationContext#getDatabaseMetaDataCache()
+	 * @see net.sf.hajdbc.SynchronizationContext#getDatabaseProperties()
 	 */
 	@Override
 	public DatabaseProperties getDatabaseProperties()
