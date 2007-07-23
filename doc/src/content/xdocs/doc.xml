@@ -25,68 +25,9 @@
 			</p>
 			<ul>
 				<li>High-Availability: The database cluster is available to service requests so long as at least one database node is active.</li>
-				<li>Fault Tolerance: Because HA-JDBC operates via the JDBC API, it is transaction-aware, and can survive a database node failure without failing or corrupting current transactions.</li>
+				<li>Fault Tolerance: Because HA-JDBC operates via the JDBC API, it is transaction-aware and can survive a database node failure without failing or corrupting current transactions.</li>
 				<li>Scalability: By balancing read requests across databases, HA-JDBC can meet increasing load by scaling horizontally (i.e. adding database nodes).</li>
 			</ul>
-			<!--section>
-				<title>Other Solutions for High-Availability</title>
-				<section>
-					<title>Database clusters</title>
-					<p>
-						Database implemented clusters are the "ultimate" solution for database 
-					</p>
-					<p>Pros:</p>
-					<ul>
-					</ul>
-					<p>Cons:</p>
-					<ul>
-						<li>Expensive</li>
-					</ul>
-					<p>Examples:</p>
-					<ul>
-						<li>MySQL Cluster</li>
-						<li>Oracle RAC</li>
-						<li>DB2 Enterprise</li>
-					</ul>
-				</section>
-				<section>
-					<title>Database replication</title>
-					<p>
-						Database replication employs multiple databases, where writes are made to a <em>master</em> database which in turn propagates changes, either synchronously or asynchronously, to one or more <em>slave</em> databases.
-						In the event the <em>master</em> database fails, one of the slave databases (effectively a hot backup) can be promoted, either manually or automatically, to <em>master</em> status with minimal or no data loss.
-					</p>
-					<p>Pros:</p>
-					<ul>
-					</ul>
-					<p>Cons:</p>
-					<ul>
-						<li>Expensive</li>
-					</ul>
-					<p>Examples:</p>
-					<ul>
-						<li>Slony-1 for PostgreSQL</li>
-						<li>MySQL Replication</li>
-						<li>Firebird Replicator</li>
-					</ul>
-				</section>
-				<section>
-					<title>Server clusters</title>
-					<p>Pros:</p>
-					<ul>
-					</ul>
-					<p>Cons:</p>
-					<ul>
-						<li>High overhead</li>
-						<li>Complex</li>
-					</ul>
-					<p>Examples:</p>
-					<ul>
-						<li>Linux-HA</li>
-						<li>Red Hat Cluster Suite</li>
-						<li>Veritas Cluster Server</li>
-					</ul>
-				</section>
-			</section-->
 		</section>
 		<section>
 			<title>Requirements</title>
@@ -406,10 +347,13 @@
 					<dt id="identity-columns">detect-identity-columns</dt>
 					<dd>
 						Indicates that identity columns should be detected (if the configured dialect supports them) and measures taken to ensure that they are replicated correctly.
+						If enabled, you should also use an eager meta-data-cache since identity column detection requires several database meta-data queries.
+						If identity columns are not used then this attribute should be set to false to avoid the cost of detection.
 					</dd>
 					<dt id="sequences">detect-sequences</dt>
 					<dd>
 						Indicates that sequence operations should be detected (if the configured dialect supports them) and measures taken to ensure that they are replicated correctly.
+						If sequences are not used then this attribute should be set to false to avoid cost of detection.
 					</dd>
 				</dl>
 				<section id="database">
@@ -1081,6 +1025,9 @@ cluster.activate(databaseId);
 					</li>
 					<li>
 						The <code>transaction-mode="parallel|serial"</code> attribute replaces the <code>transactions="local|xa"</code> attribute of <code><![CDATA[<cluster>]]></code>
+					</li>
+					<li>
+						New required meta-data-cache="none|lazy|eager" cluster attribute.
 					</li>
 					<li>
 						<code><![CDATA[<distributable>]]></code> mode now uses JGroups channel multiplexing.

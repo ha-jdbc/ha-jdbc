@@ -12,12 +12,36 @@
 	</contexts>
 
 	<changes>
-		<release version="2.0.0" date="July 16, 2007">
-			<action context="src" dev="PF" type="update">
-				Optimized failure handling in DatabaseWriteInvocationStrategy.
+		<release version="2.0.1" date="July 23, 2007">
+			<action context="src" dev="PF" type="fix">
+				<code>LazyDatabaseMetaDataCache</code> now caches <code>DatabaseProperties</code> using a <code>SoftReference</code> to prevent the cache from causing <code>OutOfMemoryErrors</code>.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Refactored <code>ThreadLocalDatabaseMetaDataCache</code> to <code>NullDatabaseMetaDataCache</code> which no long stores its <code>DatabaseProperties</code> instance in a <code>ThreadLocal</code> since this can inadvertently act like a lazy cache if application threads are pooled.
+				Replaced <code>SynchronizationContext.getDatabaseMetaDataCache()</code> with <code>SynchronizationContext.getDatabaseProperties()</code> so that meta data used during synchronization is still cached for the lifetime of the <code>SynchronizationContext</code>, regardless of cache implementation.
 			</action>
 			<action context="src" dev="PF" type="update">
-				Optimized thread synchronization in DistributableLockAdapter.
+				Re-implemented <code>BalancerFactory</code>, <code>DialectFactory</code>, and <code>DatabaseMetaDataCacheFactory</code> using enums.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				In <code>DatabaseMetaDataSupport.normalize(...)</code>, adjust case of table to match the way identifiers are stored in the database.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				In <code>DatabaseMetaDataSupport.quote(...)</code>, normalize identifiers to lower case if database is case-insensitive, yet stores identifiers in mixed case.
+			</action>
+			<action context="src" dev="PF" type="update">
+				Fixed all benign compiler warnings reported by Eclipse.
+			</action>
+			<action context="src" dev="PF" type="update">
+				Migrated simple string constants to <code>Strings</code>.
+			</action>
+		</release>
+		<release version="2.0.0" date="July 16, 2007">
+			<action context="src" dev="PF" type="update">
+				Optimized failure handling in <code>DatabaseWriteInvocationStrategy</code>.
+			</action>
+			<action context="src" dev="PF" type="update">
+				Optimized thread synchronization in <code>DistributableLockAdapter</code>.
 			</action>
 			<action context="lib" dev="PF" type="update">
 				Upgraded EasyMock to 2.3.
