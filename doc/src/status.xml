@@ -12,6 +12,12 @@
 	</contexts>
 
 	<changes>
+		<release version="2.0.2" date="">
+			<action context="src" dev="PF" type="fix">
+				Added <code>Dialect.getIdentifierPattern(...)</code> method to work around buggy <code>DatabaseMetaData.getExtraNameCharacters()</code> in PostgreSQL driver.
+				Bug causes unexpected failures during identity column detection when schema or table name contains non-standard characters.
+			</action>
+		</release>
 		<release version="2.0.1" date="July 23, 2007">
 			<action context="src" dev="PF" type="fix">
 				<code>LazyDatabaseMetaDataCache</code> now caches <code>DatabaseProperties</code> using a <code>SoftReference</code> to prevent the cache from causing <code>OutOfMemoryErrors</code>.
