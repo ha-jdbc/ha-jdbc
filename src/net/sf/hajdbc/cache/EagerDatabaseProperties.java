@@ -48,7 +48,7 @@ public class EagerDatabaseProperties implements DatabaseProperties
 	{
 		DatabaseMetaData metaData = connection.getMetaData();
 		
-		this.support = new DatabaseMetaDataSupport(metaData);
+		this.support = new DatabaseMetaDataSupport(metaData, dialect);
 		
 		this.supportsSelectForUpdate = metaData.supportsSelectForUpdate();
 		

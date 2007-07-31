@@ -48,7 +48,7 @@ public class LazyDatabaseProperties implements DatabaseProperties
 
 	public LazyDatabaseProperties(Dialect dialect) throws SQLException
 	{
-		this.support = new DatabaseMetaDataSupport(getDatabaseMetaData());
+		this.support = new DatabaseMetaDataSupport(getDatabaseMetaData(), dialect);
 		this.dialect = dialect;
 	}
 

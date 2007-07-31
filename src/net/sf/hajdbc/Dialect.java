@@ -21,9 +21,11 @@
 package net.sf.hajdbc;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Encapsulates database vendor specific SQL syntax.  
@@ -177,4 +179,11 @@ public interface Dialect
 	 * @since 2.0
 	 */
 	public List<String> getDefaultSchemas(Connection connection) throws SQLException;
+	
+	/**
+	 * Returns a pattern for identifiers that do not require quoting
+	 * @return a regular expression pattern
+	 * @since 2.0
+	 */
+	public Pattern getIdentifierPattern(DatabaseMetaData metaData) throws SQLException;
 }

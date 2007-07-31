@@ -21,6 +21,7 @@
 package net.sf.hajdbc.dialect;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -28,6 +29,7 @@ import java.sql.Types;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.TableProperties;
@@ -105,6 +107,21 @@ public class PostgreSQLDialect extends StandardDialect
 		String type = properties.getNativeType();
 		
 		return type.equalsIgnoreCase("serial") || type.equalsIgnoreCase("bigserial");  //$NON-NLS-1$ //$NON-NLS-2$
+	}
+
+	/**
+	 * Versions &gt;=8.1 of the PostgreSQL JDBC driver return incorrect values for DatabaseMetaData.getExtraNameCharacters().
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getIdentifierPattern(java.sql.DatabaseMetaData)
+	 */
+	@Override
+	public Pattern getIdentifierPattern(DatabaseMetaData metaData) throws SQLException
+	{
+		if ((metaData.getDriverMajorVersion() >= 8) && (metaData.getDriverMinorVersion() >= 1))
+		{
+			return Pattern.compile("[A-Za-z\\0200-\\0377_][A-Za-z\\0200-\\0377_0-9\\$]*"); // $NON-NLS-1$;
+		}
+		
+		return super.getIdentifierPattern(metaData);
 	}
 
 	/**

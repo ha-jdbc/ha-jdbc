@@ -96,14 +96,15 @@ public class DatabaseMetaDataSupport
 	/**
 	 * Constructs a new DatabaseMetaDataSupport using the specified DatabaseMetaData implementation.
 	 * @param metaData a DatabaseMetaData implementation
+	 * @param dialect the vendor-specific dialect of the cluster
 	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */
-	public DatabaseMetaDataSupport(DatabaseMetaData metaData) throws SQLException
+	public DatabaseMetaDataSupport(DatabaseMetaData metaData, Dialect dialect) throws SQLException
 	{
 		this.reservedIdentifierSet = new HashSet<String>(Arrays.asList(SQL_92_RESERVED_WORDS));
 		this.reservedIdentifierSet.addAll(Arrays.asList(metaData.getSQLKeywords().split(Strings.COMMA)));
 		
-		this.identifierPattern = Pattern.compile("[\\w" + Pattern.quote(metaData.getExtraNameCharacters()) + "]+"); //$NON-NLS-1$ //$NON-NLS-2$
+		this.identifierPattern = dialect.getIdentifierPattern(metaData);
 		this.quote = metaData.getIdentifierQuoteString();
 		this.supportsMixedCaseIdentifiers = metaData.supportsMixedCaseIdentifiers();
 		this.supportsMixedCaseQuotedIdentifiers = metaData.supportsMixedCaseQuotedIdentifiers();

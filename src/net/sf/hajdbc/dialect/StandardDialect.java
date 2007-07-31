@@ -21,6 +21,7 @@
 package net.sf.hajdbc.dialect;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -312,6 +313,15 @@ public class StandardDialect implements Dialect
 	public boolean supportsSequences()
 	{
 		return true;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#getIdentifierPattern(java.sql.Connection)
+	 */
+	@Override
+	public Pattern getIdentifierPattern(DatabaseMetaData metaData) throws SQLException
+	{
+		return Pattern.compile("[\\w" + Pattern.quote(metaData.getExtraNameCharacters()) + "]+"); //$NON-NLS-1$ //$NON-NLS-2$;
 	}
 
 	protected String parse(Pattern pattern, String string)
