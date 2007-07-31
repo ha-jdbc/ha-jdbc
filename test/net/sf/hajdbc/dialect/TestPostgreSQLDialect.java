@@ -21,9 +21,11 @@
 package net.sf.hajdbc.dialect;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.Dialect;
@@ -231,5 +233,38 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		assert !identity;
 		
 		return identity;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.Dialect#getIdentifierPattern(java.sql.DatabaseMetaData)
+	 */
+	@Override
+	@Test(dataProvider = "meta-data")
+	public Pattern getIdentifierPattern(DatabaseMetaData metaData) throws SQLException
+	{
+		EasyMock.expect(metaData.getDriverMajorVersion()).andReturn(8);
+		EasyMock.expect(metaData.getDriverMinorVersion()).andReturn(0);
+		EasyMock.expect(metaData.getExtraNameCharacters()).andReturn("");
+		
+		this.replay();
+		
+		Pattern pattern = this.dialect.getIdentifierPattern(metaData);
+		
+		this.verify();
+		
+		assert pattern.pattern().equals("[\\w]+");
+		
+		EasyMock.expect(metaData.getDriverMajorVersion()).andReturn(8);
+		EasyMock.expect(metaData.getDriverMinorVersion()).andReturn(1);
+		
+		this.replay();
+		
+		pattern = this.dialect.getIdentifierPattern(metaData);
+		
+		this.verify();
+		
+		assert pattern.pattern().equals("[A-Za-z\\0200-\\0377_][A-Za-z\\0200-\\0377_0-9\\$]*");
+		
+		return pattern;
 	}
 }

@@ -29,6 +29,7 @@ import java.sql.Types;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.Dialect;
@@ -553,5 +554,32 @@ public class TestStandardDialect implements Dialect
 		assert supports;
 		
 		return supports;
+	}
+
+	
+	@DataProvider(name = "meta-data")
+	Object[][] metaDataProvider()
+	{
+		return new Object[][] { new Object[] { this.metaData } };
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.Dialect#getIdentifierPattern(java.sql.DatabaseMetaData)
+	 */
+	@Override
+	@Test(dataProvider = "meta-data")
+	public Pattern getIdentifierPattern(DatabaseMetaData metaData) throws SQLException
+	{
+		EasyMock.expect(metaData.getExtraNameCharacters()).andReturn("-");
+		
+		this.replay();
+		
+		Pattern pattern = this.dialect.getIdentifierPattern(metaData);
+		
+		this.verify();
+		
+		assert pattern.pattern().equals("[\\w\\Q-\\E]+");
+		
+		return pattern;
 	}
 }
