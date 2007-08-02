@@ -198,14 +198,9 @@ public class StandardDialect implements Dialect
 	@Override
 	public List<String> getDefaultSchemas(Connection connection) throws SQLException
 	{
-		return Collections.singletonList(this.getCurrentUser(connection));
+		return Collections.singletonList(connection.getMetaData().getUserName());
 	}
-	
-	protected String getCurrentUser(Connection connection) throws SQLException
-	{
-		return this.executeFunction(connection, this.currentUserFunction());
-	}
-	
+
 	protected String executeFunction(Connection connection, String function) throws SQLException
 	{
 		Statement statement = connection.createStatement();
@@ -221,12 +216,26 @@ public class StandardDialect implements Dialect
 		
 		return value;
 	}
-	
-	protected String currentUserFunction()
+
+	protected List<String> executeQuery(Connection connection, String sql) throws SQLException
 	{
-		return "CURRENT_USER"; //$NON-NLS-1$
+		List<String> resultList = new LinkedList<String>();
+		
+		Statement statement = connection.createStatement();
+		
+		ResultSet resultSet = statement.executeQuery(sql);
+		
+		while (resultSet.next())
+		{
+			resultList.add(resultSet.getString(1));
+		}
+		
+		resultSet.close();
+		statement.close();
+		
+		return resultList;
 	}
-	
+
 	/**
 	 * @see net.sf.hajdbc.Dialect#parseSequence(java.lang.String)
 	 */

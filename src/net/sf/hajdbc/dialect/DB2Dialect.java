@@ -21,12 +21,8 @@
 package net.sf.hajdbc.dialect;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Dialect for DB2 (commercial).
@@ -50,21 +46,7 @@ public class DB2Dialect extends StandardDialect
 	@Override
 	public Collection<String> getSequences(Connection connection) throws SQLException
 	{
-		List<String> sequenceList = new LinkedList<String>();
-		
-		Statement statement = connection.createStatement();
-		
-		ResultSet resultSet = statement.executeQuery("SELECT SEQNAME FROM SYSCAT.SEQUENCES"); //$NON-NLS-1$
-		
-		while (resultSet.next())
-		{
-			sequenceList.add(resultSet.getString(1));
-		}
-		
-		resultSet.close();
-		statement.close();
-		
-		return sequenceList;
+		return this.executeQuery(connection, "SELECT SEQNAME FROM SYSCAT.SEQUENCES"); //$NON-NLS-1$
 	}
 
 	/**

@@ -21,12 +21,8 @@
 package net.sf.hajdbc.dialect;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -53,21 +49,7 @@ public class IngresDialect extends StandardDialect
 	@Override
 	public Collection<String> getSequences(Connection connection) throws SQLException
 	{
-		List<String> sequenceList = new LinkedList<String>();
-		
-		Statement statement = connection.createStatement();
-		
-		ResultSet resultSet = statement.executeQuery("SELECT seq_name FROM iisequence"); //$NON-NLS-1$
-		
-		while (resultSet.next())
-		{
-			sequenceList.add(resultSet.getString(1));
-		}
-		
-		resultSet.close();
-		statement.close();
-		
-		return sequenceList;
+		return this.executeQuery(connection, "SELECT seq_name FROM iisequence"); //$NON-NLS-1$
 	}
 
 	/**

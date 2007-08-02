@@ -22,9 +22,7 @@ package net.sf.hajdbc.dialect;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Types;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -50,22 +48,13 @@ public class PostgreSQLDialect extends StandardDialect
 	@Override
 	public List<String> getDefaultSchemas(Connection connection) throws SQLException
 	{
-		Statement statement = connection.createStatement();
-		
-		ResultSet resultSet = statement.executeQuery("SHOW search_path"); //$NON-NLS-1$
-		
-		resultSet.next();
-		
-		String[] schemas = resultSet.getString(1).split(Strings.COMMA);
-		
-		resultSet.close();
-		statement.close();
+		String[] schemas = this.executeFunction(connection, "SHOW search_path").split(Strings.COMMA); //$NON-NLS-1$
 		
 		List<String> schemaList = new ArrayList<String>(schemas.length);
 		
 		for (String schema: schemas)
 		{
-			schemaList.add(schema.equals("$user") ? super.getCurrentUser(connection) : schema); //$NON-NLS-1$
+			schemaList.add(schema.equals("$user") ? connection.getMetaData().getUserName() : schema); //$NON-NLS-1$
 		}
 		
 		return schemaList;
