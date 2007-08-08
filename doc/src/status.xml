@@ -17,6 +17,9 @@
 				Added <code>Dialect.getIdentifierPattern(...)</code> method to work around buggy <code>DatabaseMetaData.getExtraNameCharacters()</code> in PostgreSQL driver since version 8.1.
 				Bug causes unexpected failures during identity column detection when schema or table name contains non-standard characters.
 			</action>
+			<action context="src" dev="PF" type="update">
+				Replaced separate <code>CURRENT_USER</code> query with <code>DatabaseMetaData.getUserName()</code> in <code>StandardDialect.getDefaultSchemas()</code>.
+			</action>
 		</release>
 		<release version="2.0.1" date="July 23, 2007">
 			<action context="src" dev="PF" type="fix">
