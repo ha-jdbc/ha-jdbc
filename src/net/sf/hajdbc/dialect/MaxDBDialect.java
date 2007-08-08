@@ -92,7 +92,7 @@ public class MaxDBDialect extends StandardDialect
 	@Override
 	protected String sequencePattern()
 	{
-		return "(\\w+)\\.(?:(?:CURR)|(?:NEXT))VAL"; //$NON-NLS-1$
+		return "(\\w+)\\.(?:CURR|NEXT)VAL"; //$NON-NLS-1$
 	}
 
 	/**

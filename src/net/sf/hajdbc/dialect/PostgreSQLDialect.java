@@ -128,7 +128,7 @@ public class PostgreSQLDialect extends StandardDialect
 	@Override
 	protected String sequencePattern()
 	{
-		return "(?:(?:CURR)|(?:NEXT))VAL\\s*\\(\\s*'(\\w+)'\\s*\\)"; //$NON-NLS-1$
+		return "(?:CURR|NEXT)VAL\\s*\\(\\s*'(\\w+)'\\s*\\)"; //$NON-NLS-1$
 	}
 
 	/**
