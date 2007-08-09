@@ -733,8 +733,9 @@ Connection connection = DriverManager.getConnection("jdbc:ha-jdbc:cluster1", "po
 				<source><![CDATA[
 <Context>
   <!-- ... -->
-  <Resource name="jdbc/cluster" factory="org.apache.naming.factory.BeanFactory"
-            type="net.sf.hajdbc.sql.DataSource" cluster="cluster2"/>
+  <Resource name="jdbc/cluster" type="javax.sql.DataSource"
+            factory="net.sf.hajdbc.sql.DataSource"
+            cluster="cluster2" config="file:///path/to/ha-jdbc-{0}.xml"/>
   
   <Resource name="jdbc/database1" type="javax.sql.DataSource"
             username="postgres" password="password" driverClassName="org.postgresql.Driver"
