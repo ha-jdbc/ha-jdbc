@@ -177,6 +177,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	/**
 	 * @see java.sql.CallableStatement#getBigDecimal(int, int)
 	 */
+	@SuppressWarnings("deprecation")
 	@Test(dataProvider = "int-int")
 	@Deprecated
 	public BigDecimal getBigDecimal(int index, int scale) throws SQLException

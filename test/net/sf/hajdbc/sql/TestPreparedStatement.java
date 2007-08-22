@@ -1020,6 +1020,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	/**
 	 * @see java.sql.PreparedStatement#setUnicodeStream(int, java.io.InputStream, int)
 	 */
+	@SuppressWarnings("deprecation")
 	@Test(dataProvider = "int-inputStream-int")
 	@Deprecated
 	public void setUnicodeStream(int index, InputStream inputStream, int length) throws SQLException

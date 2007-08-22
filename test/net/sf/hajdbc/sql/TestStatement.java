@@ -2185,11 +2185,9 @@ public class TestStatement implements java.sql.Statement
 	protected void expectLocks(String sql, String sequence, String table) throws SQLException
 	{	
 		EasyMock.expect(this.cluster.getDialect()).andReturn(this.dialect);
-		EasyMock.expect(this.dialect.supportsSequences()).andReturn(true);
 		EasyMock.expect(this.cluster.isSequenceDetectionEnabled()).andReturn(true);
 		EasyMock.expect(this.dialect.parseSequence(sql)).andReturn(sequence);
 		
-		EasyMock.expect(this.dialect.supportsIdentityColumns()).andReturn(true);
 		EasyMock.expect(this.cluster.isIdentityColumnDetectionEnabled()).andReturn(true);
 		EasyMock.expect(this.dialect.parseInsertTable(sql)).andReturn(table);
 		
