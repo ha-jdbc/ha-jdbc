@@ -110,7 +110,7 @@ public class TestDataSourceFactory implements ObjectFactory
 			
 			if ((obj == null) || !Reference.class.isInstance(obj))
 			{
-				assert result == null : result.getClass().getName();
+				assert result == null;
 				
 				return result;
 			}
@@ -119,7 +119,7 @@ public class TestDataSourceFactory implements ObjectFactory
 			
 			if ((reference == null) || !reference.getClassName().equals(javax.sql.DataSource.class.getName()))
 			{
-				assert result == null : result.getClass().getName();
+				assert result == null;
 				
 				return result;
 			}
@@ -128,7 +128,7 @@ public class TestDataSourceFactory implements ObjectFactory
 			
 			if ((addr == null) || (addr.getContent() == null))
 			{
-				assert result == null : result.getClass().getName();
+				assert result == null;
 				
 				return result;
 			}
@@ -137,7 +137,7 @@ public class TestDataSourceFactory implements ObjectFactory
 			
 			if ((id == null) || !id.equals("test-datasource-cluster"))
 			{
-				assert result == null : result.getClass().getName();
+				assert result == null;
 			}
 			else
 			{
