@@ -25,6 +25,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
 /**
+ * Adapts a lock to workaround a limitation of the ReentrantLock, allowing lock() and unlock() to be called by different threads.
  * @author Paul Ferraro
  */
 public class DistributableLockAdapter implements Lock
