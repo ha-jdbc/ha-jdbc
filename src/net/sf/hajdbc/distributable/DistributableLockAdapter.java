@@ -58,20 +58,7 @@ public class DistributableLockAdapter implements Lock
 		this.thread.setMethod(method);
 		this.thread.start();
 		
-		synchronized (this.thread)
-		{
-			while (!this.thread.isReady())
-			{
-				try
-				{
-					this.thread.wait();
-				}
-				catch (InterruptedException e)
-				{
-					this.thread.interrupt();
-				}
-			}
-		}
+		this.thread.isLocked();
 	}
 
 	/**
@@ -94,21 +81,11 @@ public class DistributableLockAdapter implements Lock
 		this.thread.setMethod(method);
 		this.thread.start();
 		
-		synchronized (this.thread)
+		this.thread.isLocked();
+		
+		if (this.thread.isInterrupted())
 		{
-			while (!this.thread.isReady())
-			{
-				try
-				{
-					this.thread.wait();
-				}
-				catch (InterruptedException e)
-				{
-					this.thread.interrupt();
-
-					throw e;
-				}
-			}
+			throw new InterruptedException();
 		}
 	}
 
@@ -130,21 +107,6 @@ public class DistributableLockAdapter implements Lock
 		this.thread.setMethod(method);
 		this.thread.start();
 		
-		synchronized (this.thread)
-		{
-			while (!this.thread.isReady())
-			{
-				try
-				{
-					this.thread.wait();
-				}
-				catch (InterruptedException e)
-				{
-					this.thread.interrupt();
-				}
-			}
-		}
-
 		return this.thread.isLocked();
 	}
 
@@ -166,24 +128,14 @@ public class DistributableLockAdapter implements Lock
 		this.thread.setMethod(method);
 		this.thread.start();
 		
-		synchronized (this.thread)
+		boolean locked = this.thread.isLocked();
+		
+		if (this.thread.isInterrupted())
 		{
-			while (!this.thread.isReady())
-			{
-				try
-				{
-					this.thread.wait();
-				}
-				catch (InterruptedException e)
-				{
-					this.thread.interrupt();
-					
-					throw e;
-				}
-			}
+			throw new InterruptedException();
 		}
 		
-		return this.thread.isLocked();
+		return locked;
 	}
 
 	/**
@@ -216,7 +168,7 @@ public class DistributableLockAdapter implements Lock
 	{
 		private Lock lock;
 		private volatile LockMethod method;
-		private boolean ready = false;
+		private volatile boolean ready = false;
 		private volatile boolean locked = false;
 		
 		public LockThread(Lock lock)
@@ -233,12 +185,22 @@ public class DistributableLockAdapter implements Lock
 		
 		public boolean isLocked()
 		{
+			synchronized (this)
+			{
+				while (!this.ready)
+				{
+					try
+					{
+						this.wait();
+					}
+					catch (InterruptedException e)
+					{
+						this.interrupt();
+					}
+				}
+			}
+			
 			return this.locked;
-		}
-		
-		public boolean isReady()
-		{
-			return this.ready;
 		}
 		
 		public Condition newCondition()
