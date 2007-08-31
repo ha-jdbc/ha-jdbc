@@ -33,12 +33,14 @@ public class ColumnPropertiesImpl implements ColumnProperties
 	private String nativeType;
 	private String remarks;
 	private Boolean autoIncrement;
+	private String defaultValue;
 	
-	public ColumnPropertiesImpl(String name, int type, String nativeType, String remarks, Boolean autoIncrement)
+	public ColumnPropertiesImpl(String name, int type, String nativeType, String defaultValue, String remarks, Boolean autoIncrement)
 	{
 		this.name = name;
 		this.type = type;
 		this.nativeType = nativeType;
+		this.defaultValue = defaultValue;
 		this.remarks = remarks;
 		this.autoIncrement = autoIncrement;
 	}
@@ -86,6 +88,15 @@ public class ColumnPropertiesImpl implements ColumnProperties
 	public Boolean isAutoIncrement()
 	{
 		return this.autoIncrement;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.ColumnProperties#getDefaultValue()
+	 */
+	@Override
+	public String getDefaultValue()
+	{
+		return this.defaultValue;
 	}
 
 	/**

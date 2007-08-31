@@ -171,6 +171,7 @@ public class DatabaseMetaDataSupport
 			String column = this.quote(resultSet.getString("COLUMN_NAME")); //$NON-NLS-1$
 			int type = resultSet.getInt("DATA_TYPE"); //$NON-NLS-1$
 			String nativeType = resultSet.getString("TYPE_NAME"); //$NON-NLS-1$
+			String defaultValue = resultSet.getString("COLUMN_DEF"); //$NON-NLS-1$
 			String remarks = resultSet.getString("REMARKS"); //$NON-NLS-1$
 			Boolean autoIncrement = null;
 			
@@ -192,7 +193,7 @@ public class DatabaseMetaDataSupport
 				// Ignore - this column is new to Java 1.6
 			}
 			
-			columnMap.put(column, new ColumnPropertiesImpl(column, type, nativeType, remarks, autoIncrement));
+			columnMap.put(column, new ColumnPropertiesImpl(column, type, nativeType, defaultValue, remarks, autoIncrement));
 		}
 		
 		resultSet.close();
