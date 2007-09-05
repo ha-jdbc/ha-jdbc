@@ -134,88 +134,90 @@ public final class SynchronizationSupport
 		
 		Dialect dialect = context.getDialect();
 		
-		Map<String, Long> sequenceMap = new HashMap<String, Long>();
-
 		Collection<String> sequences = dialect.getSequences(sourceConnection);
 
-		Set<Database<D>> databases = context.getActiveDatabaseSet();
-
-		ExecutorService executor = context.getExecutor();
-		
-		Map<Database<D>, Future<Long>> futureMap = new HashMap<Database<D>, Future<Long>>();
-
-		for (String sequence: sequences)
+		if (!sequences.isEmpty())
 		{
-			final String sql = dialect.getNextSequenceValueSQL(sequence);
+			Set<Database<D>> databases = context.getActiveDatabaseSet();
+
+			ExecutorService executor = context.getExecutor();
 			
-			logger.debug(sql);
+			Map<String, Long> sequenceMap = new HashMap<String, Long>();
+			Map<Database<D>, Future<Long>> futureMap = new HashMap<Database<D>, Future<Long>>();
 
-			for (final Database<D> database: databases)
+			for (String sequence: sequences)
 			{
-				Callable<Long> task = new Callable<Long>()
-				{
-					public Long call() throws SQLException
-					{
-						Statement statement = context.getConnection(database).createStatement();
-						ResultSet resultSet = statement.executeQuery(sql);
-						
-						resultSet.next();
-						
-						long value = resultSet.getLong(1);
-						
-						resultSet.close();
-						statement.close();
-						
-						return value;
-					}
-				};
+				final String sql = dialect.getNextSequenceValueSQL(sequence);
 				
-				futureMap.put(database, executor.submit(task));				
-			}
+				logger.debug(sql);
 
-			try
-			{
-				Long sourceValue = futureMap.get(sourceDatabase).get();
-				
-				sequenceMap.put(sequence, sourceValue);
-				
-				for (Database<D> database: databases)
+				for (final Database<D> database: databases)
 				{
-					if (!database.equals(sourceDatabase))
+					Callable<Long> task = new Callable<Long>()
 					{
-						Long value = futureMap.get(database).get();
-						
-						if (!value.equals(sourceValue))
+						public Long call() throws SQLException
 						{
-							throw new SQLException(Messages.getMessage(Messages.SEQUENCE_OUT_OF_SYNC, sequence, database, value, sourceDatabase, sourceValue));
+							Statement statement = context.getConnection(database).createStatement();
+							ResultSet resultSet = statement.executeQuery(sql);
+							
+							resultSet.next();
+							
+							long value = resultSet.getLong(1);
+							
+							resultSet.close();
+							statement.close();
+							
+							return value;
+						}
+					};
+					
+					futureMap.put(database, executor.submit(task));				
+				}
+
+				try
+				{
+					Long sourceValue = futureMap.get(sourceDatabase).get();
+					
+					sequenceMap.put(sequence, sourceValue);
+					
+					for (Database<D> database: databases)
+					{
+						if (!database.equals(sourceDatabase))
+						{
+							Long value = futureMap.get(database).get();
+							
+							if (!value.equals(sourceValue))
+							{
+								throw new SQLException(Messages.getMessage(Messages.SEQUENCE_OUT_OF_SYNC, sequence, database, value, sourceDatabase, sourceValue));
+							}
 						}
 					}
 				}
+				catch (InterruptedException e)
+				{
+					throw SQLExceptionFactory.createSQLException(e);
+				}
+				catch (ExecutionException e)
+				{
+					throw SQLExceptionFactory.createSQLException(e.getCause());
+				}
 			}
-			catch (InterruptedException e)
-			{
-				throw SQLExceptionFactory.createSQLException(e);
-			}
-			catch (ExecutionException e)
-			{
-				throw SQLExceptionFactory.createSQLException(e.getCause());
-			}
-		}
-		
-		Connection targetConnection = context.getConnection(context.getTargetDatabase());
-		Statement targetStatement = targetConnection.createStatement();
+			
+			Connection targetConnection = context.getConnection(context.getTargetDatabase());
+			Statement targetStatement = targetConnection.createStatement();
 
-		for (String sequence: sequences)
-		{
-			String sql = dialect.getAlterSequenceSQL(sequence, sequenceMap.get(sequence) + 1);
+			for (String sequence: sequences)
+			{
+				String sql = dialect.getAlterSequenceSQL(sequence, sequenceMap.get(sequence) + 1);
+				
+				logger.debug(sql);
+				
+				targetStatement.addBatch(sql);
+			}
 			
-			logger.debug(sql);
-			
-			targetStatement.addBatch(sql);
+			targetStatement.executeBatch();		
+			targetStatement.close();
 		}
-		
-		targetStatement.executeBatch();		
-		targetStatement.close();
 	}
 	
 	/**

@@ -225,10 +225,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		
 		SynchronizationSupport.restoreForeignKeys(context);
 		
-		if (dialect.supportsSequences())
-		{
-			SynchronizationSupport.synchronizeSequences(context);
-		}
+		SynchronizationSupport.synchronizeSequences(context);
 	}
 
 	/**

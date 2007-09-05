@@ -419,10 +419,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		
 		SynchronizationSupport.restoreForeignKeys(context);
 		
-		if (dialect.supportsSequences())
-		{
-			SynchronizationSupport.synchronizeSequences(context);
-		}
+		SynchronizationSupport.synchronizeSequences(context);
 	}
 
 	private boolean equals(Object object1, Object object2)
