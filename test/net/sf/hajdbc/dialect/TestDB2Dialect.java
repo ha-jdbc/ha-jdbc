@@ -24,7 +24,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 import net.sf.hajdbc.Dialect;
 
@@ -35,6 +34,7 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
+@SuppressWarnings("nls")
 public class TestDB2Dialect extends TestStandardDialect
 {
 	@Override
@@ -149,32 +149,43 @@ public class TestDB2Dialect extends TestStandardDialect
 		
 		return sequence;
 	}
-
-	/**
-	 * @see net.sf.hajdbc.Dialect#getDefaultSchemas(java.sql.Connection)
-	 */
+	
 	@Override
-	@Test(dataProvider = "connection")
-	public List<String> getDefaultSchemas(Connection connection) throws SQLException
+	@Test(dataProvider = "current-date")
+	public String evaluateCurrentDate(String sql, java.sql.Date date)
 	{
-		EasyMock.expect(connection.createStatement()).andReturn(this.statement);
-		EasyMock.expect(this.statement.executeQuery("VALUES CURRENT_USER")).andReturn(this.resultSet);
-		EasyMock.expect(this.resultSet.next()).andReturn(false);
-		EasyMock.expect(this.resultSet.getString(1)).andReturn("user");
+		String expected = sql.contains("success") ? "SELECT '" + date.toString() + "' FROM success" : sql;
+		
+		String evaluated = this.dialect.evaluateCurrentDate(sql, date);
 
-		this.resultSet.close();
-		this.statement.close();
+		assert evaluated.equals(expected) : evaluated;
 		
-		this.replay();
+		return evaluated;
+	}
+	
+	@Override
+	@Test(dataProvider = "current-time")
+	public String evaluateCurrentTime(String sql, java.sql.Time date)
+	{
+		String expected = sql.contains("success") ? "SELECT '" + date.toString() + "' FROM success" : sql;
 		
-		List<String> schemaList = this.dialect.getDefaultSchemas(connection);
+		String evaluated = this.dialect.evaluateCurrentTime(sql, date);
+
+		assert evaluated.equals(expected) : evaluated;
 		
-		this.verify();
+		return evaluated;
+	}
+	
+	@Override
+	@Test(dataProvider = "current-timestamp")
+	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp date)
+	{
+		String expected = sql.contains("success") ? "SELECT '" + date.toString() + "' FROM success" : sql;
 		
-		assert schemaList.size() == 1 : schemaList.size();
+		String evaluated = this.dialect.evaluateCurrentTimestamp(sql, date);
+
+		assert evaluated.equals(expected) : evaluated;
 		
-		assert schemaList.get(0).equals("user") : schemaList.get(0);
-		
-		return schemaList;
+		return evaluated;
 	}
 }

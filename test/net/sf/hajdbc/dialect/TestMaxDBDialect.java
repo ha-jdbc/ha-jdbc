@@ -24,19 +24,20 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.TableProperties;
 
 import org.easymock.EasyMock;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
  * @author Paul Ferraro
  *
  */
+@SuppressWarnings("nls")
 public class TestMaxDBDialect extends TestStandardDialect
 {
 	/**
@@ -141,84 +142,39 @@ public class TestMaxDBDialect extends TestStandardDialect
 		return sql;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#parseSequence(java.lang.String)
-	 */
 	@Override
-	@Test(dataProvider = "null")
-	public String parseSequence(String sql) throws SQLException
+	@DataProvider(name = "sequence-sql")
+	Object[][] sequenceSQLProvider()
 	{
-		this.replay();
-		
-		String sequence = this.dialect.parseSequence("SELECT sequence.nextval FROM DUAL");
-		
-		this.verify();
-		
-		assert sequence.equals("sequence") : sequence;
-		
-		this.replay();
-		
-		sequence = this.dialect.parseSequence("SELECT sequence.currval FROM DUAL");
-		
-		this.verify();
-		
-		assert sequence.equals("sequence") : sequence;
-		
-		this.replay();
-		
-		sequence = this.dialect.parseSequence("SELECT * FROM table");
-		
-		this.verify();
-		
-		assert sequence == null : sequence;
-		
-		return sequence;
+		return new Object[][] {
+			new Object[] { "SELECT success.nextval" },
+			new Object[] { "SELECT success.currval" },
+			new Object[] { "SELECT success.nextval, * FROM table" },
+			new Object[] { "SELECT success.currval, * FROM table" },
+			new Object[] { "INSERT INTO table VALUES (success.nextval, 0)" },
+			new Object[] { "INSERT INTO table VALUES (success.currval, 0)" },
+			new Object[] { "UPDATE table SET id = success.nextval" },
+			new Object[] { "UPDATE table SET id = success.currval" },
+			new Object[] { "SELECT * FROM table" },
+		};
 	}
-
+	
 	/**
-	 * @see net.sf.hajdbc.Dialect#supportsIdentityColumns()
+	 * @see net.sf.hajdbc.Dialect#parseInsertTable(java.lang.String)
 	 */
 	@Override
-	@Test
-	public boolean supportsIdentityColumns()
+	@Test(dataProvider = "insert-table-sql")
+	public String parseInsertTable(String sql) throws SQLException
 	{
 		this.replay();
 		
-		boolean supports = this.dialect.supportsIdentityColumns();
+		String table = this.dialect.parseInsertTable(sql);
 		
 		this.verify();
-		
-		assert !supports;
-		
-		return supports;
-	}
 
-	/**
-	 * @see net.sf.hajdbc.Dialect#getDefaultSchemas(java.sql.Connection)
-	 */
-	@Override
-	@Test(dataProvider = "connection")
-	public List<String> getDefaultSchemas(Connection connection) throws SQLException
-	{
-		EasyMock.expect(connection.createStatement()).andReturn(this.statement);
-		EasyMock.expect(this.statement.executeQuery("SELECT CURRENT_USER FROM DUAL")).andReturn(this.resultSet);
-		EasyMock.expect(this.resultSet.next()).andReturn(false);
-		EasyMock.expect(this.resultSet.getString(1)).andReturn("user");
+		assert (table == null) : table;
 
-		this.resultSet.close();
-		this.statement.close();
-		
-		this.replay();
-		
-		List<String> schemaList = this.dialect.getDefaultSchemas(connection);
-		
-		this.verify();
-		
-		assert schemaList.size() == 1 : schemaList.size();
-		
-		assert schemaList.get(0).equals("user") : schemaList.get(0);
-		
-		return schemaList;
+		return table;
 	}
 	
 	/**

@@ -32,12 +32,14 @@ import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.TableProperties;
 
 import org.easymock.EasyMock;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
  * @author Paul Ferraro
  *
  */
+@SuppressWarnings("nls")
 public class TestPostgreSQLDialect extends TestStandardDialect
 {
 	@Override
@@ -167,6 +169,7 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 	public List<String> getDefaultSchemas(Connection connection) throws SQLException
 	{
 		EasyMock.expect(connection.createStatement()).andReturn(this.statement);
+		
 		EasyMock.expect(this.statement.executeQuery("SHOW search_path")).andReturn(this.resultSet);
 		EasyMock.expect(this.resultSet.next()).andReturn(false);
 		EasyMock.expect(this.resultSet.getString(1)).andReturn("$user,public");
@@ -174,13 +177,8 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		this.resultSet.close();
 		this.statement.close();
 		
-		EasyMock.expect(connection.createStatement()).andReturn(this.statement);
-		EasyMock.expect(this.statement.executeQuery("SELECT CURRENT_USER")).andReturn(this.resultSet);
-		EasyMock.expect(this.resultSet.next()).andReturn(false);
-		EasyMock.expect(this.resultSet.getString(1)).andReturn("user");
-
-		this.resultSet.close();
-		this.statement.close();
+		EasyMock.expect(connection.getMetaData()).andReturn(this.metaData);
+		EasyMock.expect(this.metaData.getUserName()).andReturn("user");
 		
 		this.replay();
 		
@@ -252,7 +250,7 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		
 		this.verify();
 		
-		assert pattern.pattern().equals("[\\w]+");
+		assert pattern.pattern().equals("[\\w\\Q\\E]+") : pattern.pattern();
 		
 		EasyMock.expect(metaData.getDriverMajorVersion()).andReturn(8);
 		EasyMock.expect(metaData.getDriverMinorVersion()).andReturn(1);
@@ -263,8 +261,19 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		
 		this.verify();
 		
-		assert pattern.pattern().equals("[A-Za-z\\0200-\\0377_][A-Za-z\\0200-\\0377_0-9\\$]*");
+		assert pattern.pattern().equals("[A-Za-z\\0200-\\0377_][A-Za-z\\0200-\\0377_0-9\\$]*") : pattern.pattern();
 		
 		return pattern;
+	}
+
+	@Override
+	@DataProvider(name = "random")
+	Object[][] randomProvider()
+	{
+		return new Object[][] {
+			new Object[] { "SELECT RANDOM() FROM success" },
+			new Object[] { "SELECT RANDOM ( ) FROM success" },
+			new Object[] { "SELECT 1 FROM failure" },
+		};
 	}
 }

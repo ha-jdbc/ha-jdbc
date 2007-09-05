@@ -29,20 +29,33 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
+@SuppressWarnings("nls")
 public class TestDialectClass
 {
 	@Test
 	public void testSerialize()
 	{
 		Dialect dialect = EasyMock.createStrictMock(Dialect.class);
+
+		this.assertDialect(dialect, dialect.getClass().getName());
+		this.assertDialect(new DB2Dialect(), "db2");
+		this.assertDialect(new DerbyDialect(), "derby");
+		this.assertDialect(new FirebirdDialect(), "firebird");
+		this.assertDialect(new H2Dialect(), "h2");
+		this.assertDialect(new HSQLDBDialect(), "hsqldb");
+		this.assertDialect(new IngresDialect(), "ingres");
+		this.assertDialect(new MaxDBDialect(), "maxdb");
+		this.assertDialect(new MySQLDialect(), "mysql");
+		this.assertDialect(new OracleDialect(), "oracle");
+		this.assertDialect(new PostgreSQLDialect(), "postgresql");
+		this.assertDialect(new StandardDialect(), "standard");
+	}
+	
+	private void assertDialect(Dialect dialect, String id)
+	{
+		String result = DialectClass.serialize(dialect);
 		
-		EasyMock.replay(dialect);
-		
-		String id = DialectClass.serialize(dialect);
-		
-		EasyMock.verify(dialect);
-		
-		assert id.equals(dialect.getClass().getName()) : id;
+		assert result.equals(id) : result;
 	}
 	
 	@Test
@@ -55,13 +68,13 @@ public class TestDialectClass
 		this.assertDialect("db2", DB2Dialect.class);
 		this.assertDialect("derby", DerbyDialect.class);
 		this.assertDialect("firebird", StandardDialect.class);
-		this.assertDialect("h2", HSQLDBDialect.class);
+		this.assertDialect("h2", H2Dialect.class);
 		this.assertDialect("hsqldb", HSQLDBDialect.class);
 		this.assertDialect("ingres", IngresDialect.class);
 		this.assertDialect("maxdb", MaxDBDialect.class);
 		this.assertDialect("mckoi", MckoiDialect.class);
 		this.assertDialect("mysql", MySQLDialect.class);
-		this.assertDialect("oracle", MaxDBDialect.class);
+		this.assertDialect("oracle", OracleDialect.class);
 		this.assertDialect("postgresql", PostgreSQLDialect.class);
 
 		this.assertDialect("PostgreSQL", PostgreSQLDialect.class);

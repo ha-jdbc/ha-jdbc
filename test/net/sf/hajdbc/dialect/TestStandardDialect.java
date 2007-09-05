@@ -47,6 +47,7 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
+@SuppressWarnings("nls")
 public class TestStandardDialect implements Dialect
 {
 	protected TableProperties tableProperties = EasyMock.createStrictMock(TableProperties.class);
@@ -373,60 +374,65 @@ public class TestStandardDialect implements Dialect
 		return sql;
 	}
 
+	@DataProvider(name = "select-for-update-sql")
+	Object[][] selectForUpdateProvider()
+	{
+		return new Object[][] {
+			new Object[] { "SELECT * FROM success FOR UPDATE" },
+			new Object[] { "SELECT * FROM failure" },
+		};
+	}
+	
 	/**
 	 * @see net.sf.hajdbc.Dialect#isSelectForUpdate(java.lang.String)
 	 */
-	@Test(dataProvider = "null")
+	@Test(dataProvider = "select-for-update-sql")
 	public boolean isSelectForUpdate(String sql) throws SQLException
 	{
 		this.replay();
 		
-		boolean selectForUpdate = this.dialect.isSelectForUpdate("SELECT * FROM table FOR UPDATE");
+		boolean selectForUpdate = this.dialect.isSelectForUpdate(sql);
 		
 		this.verify();
 		
-		assert selectForUpdate;
-		
-		this.replay();
-		
-		selectForUpdate = this.dialect.isSelectForUpdate("SELECT * FROM table");
-		
-		this.verify();
-		
-		assert !selectForUpdate;
+		assert selectForUpdate == sql.contains("success");
 		
 		return selectForUpdate;
 	}
 
+	@DataProvider(name = "sequence-sql")
+	Object[][] sequenceSQLProvider()
+	{
+		return new Object[][] {
+			new Object[] { "SELECT NEXT VALUE FOR success" },
+			new Object[] { "SELECT NEXT VALUE FOR success, * FROM table" },
+			new Object[] { "INSERT INTO table VALUES (NEXT VALUE FOR success, 0)" },
+			new Object[] { "UPDATE table SET id = NEXT VALUE FOR success" },
+			new Object[] { "SELECT * FROM table" },
+		};
+	}
+	
 	/**
 	 * @see net.sf.hajdbc.Dialect#parseSequence(java.lang.String)
 	 */
-	@Test(dataProvider = "null")
+	@Test(dataProvider = "sequence-sql")
 	public String parseSequence(String sql) throws SQLException
 	{
 		this.replay();
 		
-		String sequence = this.dialect.parseSequence("SELECT NEXT VALUE FOR sequence");
+		String sequence = this.dialect.parseSequence(sql);
 		
 		this.verify();
 		
-		assert sequence.equals("sequence") : sequence;
-		
-		this.replay();
-		
-		sequence = this.dialect.parseSequence("SELECT NEXT VALUE FOR sequence, * FROM table");
-		
-		this.verify();
-		
-		assert sequence.equals("sequence") : sequence;
-		
-		this.replay();
-		
-		sequence = this.dialect.parseSequence("SELECT * FROM table");
-		
-		this.verify();
-		
-		assert sequence == null : sequence;
+		if (sql.contains("success"))
+		{
+			assert (sequence != null);
+			assert sequence.equals("success") : sequence;
+		}
+		else
+		{
+			assert (sequence == null) : sequence;
+		}
 		
 		return sequence;
 	}
@@ -437,13 +443,10 @@ public class TestStandardDialect implements Dialect
 	@Test(dataProvider = "connection")
 	public List<String> getDefaultSchemas(Connection connection) throws SQLException
 	{
-		EasyMock.expect(connection.createStatement()).andReturn(this.statement);
-		EasyMock.expect(this.statement.executeQuery("SELECT CURRENT_USER")).andReturn(this.resultSet);
-		EasyMock.expect(this.resultSet.next()).andReturn(false);
-		EasyMock.expect(this.resultSet.getString(1)).andReturn("user");
-
-		this.resultSet.close();
-		this.statement.close();
+		String user = "user";
+		
+		EasyMock.expect(connection.getMetaData()).andReturn(this.metaData);
+		EasyMock.expect(this.metaData.getUserName()).andReturn(user);
 		
 		this.replay();
 		
@@ -453,7 +456,9 @@ public class TestStandardDialect implements Dialect
 		
 		assert schemaList.size() == 1 : schemaList.size();
 		
-		assert schemaList.get(0).equals("user") : schemaList.get(0);
+		String schema = schemaList.get(0);
+		
+		assert schema.equals(user) : schema;
 		
 		return schemaList;
 	}
@@ -487,75 +492,47 @@ public class TestStandardDialect implements Dialect
 		return identity;
 	}
 
+	@DataProvider(name = "insert-table-sql")
+	Object[][] insertTableProvider()
+	{
+		return new Object[][] { 
+			new Object[] { "INSERT INTO success (column1, column2) VALUES (1, 2)" },
+			new Object[] { "INSERT INTO success VALUES (1, 2)" },
+			new Object[] { "INSERT success (column1, column2) VALUES (1, 2)" },
+			new Object[] { "INSERT success VALUES (1, 2)" },
+			new Object[] { "INSERT INTO success (column1, column2) SELECT column1, column2 FROM dummy" },
+			new Object[] { "INSERT INTO success SELECT column1, column2 FROM dummy" },
+			new Object[] { "INSERT success (column1, column2) SELECT column1, column2 FROM dummy" },
+			new Object[] { "INSERT success SELECT column1, column2 FROM dummy" },
+			new Object[] { "SELECT * FROM failure WHERE 0=1" },
+			new Object[] { "UPDATE failure SET column = 0" },
+		};
+	}
+		
 	/**
 	 * @see net.sf.hajdbc.Dialect#parseInsertTable(java.lang.String)
 	 */
-	@Test(dataProvider = "null")
+	@Test(dataProvider = "insert-table-sql")
 	public String parseInsertTable(String sql) throws SQLException
 	{
 		this.replay();
 		
-		String table = this.dialect.parseInsertTable("INSERT INTO test VALUES (1, 2)");
-
-		this.verify();
-		
-		assert table != null;
-		assert table.equals("test") : table;
-
-		this.replay();
-		
-		table = this.dialect.parseInsertTable("INSERT INTO test(column1, column2) VALUES (...)");
-
-		this.verify();
-		
-		assert table != null;
-		assert table.equals("test") : table;
-		
-		this.replay();
-		
-		table = this.dialect.parseInsertTable("SELECT * FROM test WHERE ...");
+		String table = this.dialect.parseInsertTable(sql);
 		
 		this.verify();
 
-		assert table == null : table;
-
+		if (sql.contains("success"))
+		{
+			assert table != null;
+			assert table.equals("success");
+		}
+		else
+		{
+			assert table == null : table;
+		}
+		
 		return table;
 	}
-
-	/**
-	 * @see net.sf.hajdbc.Dialect#supportsIdentityColumns()
-	 */
-	@Test
-	public boolean supportsIdentityColumns()
-	{
-		this.replay();
-		
-		boolean supports = this.dialect.supportsIdentityColumns();
-		
-		this.verify();
-		
-		assert supports;
-		
-		return supports;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.Dialect#supportsSequences()
-	 */
-	@Test
-	public boolean supportsSequences()
-	{
-		this.replay();
-		
-		boolean supports = this.dialect.supportsSequences();
-		
-		this.verify();
-		
-		assert supports;
-		
-		return supports;
-	}
-
 	
 	@DataProvider(name = "meta-data")
 	Object[][] metaDataProvider()
@@ -581,5 +558,115 @@ public class TestStandardDialect implements Dialect
 		assert pattern.pattern().equals("[\\w\\Q-\\E]+");
 		
 		return pattern;
+	}
+
+	@DataProvider(name = "current-date")
+	Object[][] currentDateProvider()
+	{
+		java.sql.Date date = new java.sql.Date(System.currentTimeMillis());
+		
+		return new Object[][] {
+			new Object[] { "SELECT CURRENT_DATE FROM success", date },
+			new Object[] { "SELECT 1 FROM failure", date },
+		};
+	}
+	
+	@Override
+	@Test(dataProvider = "current-date")
+	public String evaluateCurrentDate(String sql, java.sql.Date date)
+	{
+		String expected = sql.contains("success") ? "SELECT DATE '" + date.toString() + "' FROM success" : sql;
+		
+		String evaluated = this.dialect.evaluateCurrentDate(sql, date);
+
+		assert evaluated.equals(expected) : evaluated;
+		
+		return evaluated;
+	}
+
+	@DataProvider(name = "current-time")
+	Object[][] currentTimeProvider()
+	{
+		java.sql.Time date = new java.sql.Time(System.currentTimeMillis());
+		
+		return new Object[][] {
+			new Object[] { "SELECT CURRENT_TIME FROM success", date },
+			new Object[] { "SELECT CURRENT_TIME(2) FROM success", date },
+			new Object[] { "SELECT CURRENT_TIME ( 2 ) FROM success", date },
+			new Object[] { "SELECT LOCALTIME FROM success", date },
+			new Object[] { "SELECT LOCALTIME(2) FROM success", date },
+			new Object[] { "SELECT LOCALTIME ( 2 ) FROM success", date },
+			new Object[] { "SELECT 1 FROM failure", date },
+		};
+	}
+	
+	@Override
+	@Test(dataProvider = "current-time")
+	public String evaluateCurrentTime(String sql, java.sql.Time date)
+	{
+		String expected = sql.contains("success") ? "SELECT TIME '" + date.toString() + "' FROM success" : sql;
+		
+		String evaluated = this.dialect.evaluateCurrentTime(sql, date);
+
+		assert evaluated.equals(expected) : evaluated;
+		
+		return evaluated;
+	}
+
+	@DataProvider(name = "current-timestamp")
+	Object[][] currentTimestampProvider()
+	{
+		java.sql.Timestamp date = new java.sql.Timestamp(System.currentTimeMillis());
+		
+		return new Object[][] {
+			new Object[] { "SELECT CURRENT_TIMESTAMP FROM success", date },
+			new Object[] { "SELECT CURRENT_TIMESTAMP(2) FROM success", date },
+			new Object[] { "SELECT CURRENT_TIMESTAMP ( 2 ) FROM success", date },
+			new Object[] { "SELECT LOCALTIMESTAMP FROM success", date },
+			new Object[] { "SELECT LOCALTIMESTAMP(2) FROM success", date },
+			new Object[] { "SELECT LOCALTIMESTAMP ( 2 ) FROM success", date },
+			new Object[] { "SELECT 1 FROM failure", date },
+		};
+	}
+	
+	@Override
+	@Test(dataProvider = "current-timestamp")
+	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp date)
+	{
+		String expected = sql.contains("success") ? "SELECT TIMESTAMP '" + date.toString() + "' FROM success" : sql;
+		
+		String evaluated = this.dialect.evaluateCurrentTimestamp(sql, date);
+
+		assert evaluated.equals(expected) : evaluated;
+		
+		return evaluated;
+	}
+
+	@DataProvider(name = "random")
+	Object[][] randomProvider()
+	{
+		return new Object[][] {
+			new Object[] { "SELECT RAND() FROM success" },
+			new Object[] { "SELECT RAND ( ) FROM success" },
+			new Object[] { "SELECT 1 FROM failure" },
+		};
+	}
+	
+	@Override
+	@Test(dataProvider = "random")
+	public String evaluateRandom(String sql)
+	{
+		String evaluated = this.dialect.evaluateRandom(sql);
+
+		if (sql.contains("success"))
+		{
+			assert Pattern.matches("SELECT 0\\.\\d+ FROM success", evaluated) : evaluated;
+		}
+		else
+		{
+			assert evaluated.equals(sql) : evaluated;
+		}
+		
+		return evaluated;
 	}
 }

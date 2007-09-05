@@ -22,20 +22,22 @@ package net.sf.hajdbc.dialect;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
-
-import org.easymock.EasyMock;
-import org.testng.annotations.Test;
+import java.util.Collection;
 
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.TableProperties;
 
+import org.easymock.EasyMock;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
+
 /**
  * @author Paul Ferraro
  *
  */
+@SuppressWarnings("nls")
 public class TestDerbyDialect extends TestStandardDialect
 {
 	@Override
@@ -104,12 +106,12 @@ public class TestDerbyDialect extends TestStandardDialect
 	 * @see net.sf.hajdbc.dialect.TestStandardDialect#parseSequence(java.lang.String)
 	 */
 	@Override
-	@Test(dataProvider = "null")
+	@Test(dataProvider = "sequence-sql")
 	public String parseSequence(String sql) throws SQLException
 	{
 		this.replay();
 		
-		String sequence = this.dialect.parseSequence("SELECT NEXT VALUE FROM sequence");
+		String sequence = this.dialect.parseSequence(sql);
 		
 		this.verify();
 		
@@ -119,31 +121,21 @@ public class TestDerbyDialect extends TestStandardDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getDefaultSchemas(java.sql.Connection)
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSequences(java.sql.Connection)
 	 */
 	@Override
 	@Test(dataProvider = "connection")
-	public List<String> getDefaultSchemas(Connection connection) throws SQLException
+	public Collection<String> getSequences(Connection connection) throws SQLException
 	{
-		EasyMock.expect(connection.createStatement()).andReturn(this.statement);
-		EasyMock.expect(this.statement.executeQuery("VALUES CURRENT_USER")).andReturn(this.resultSet);
-		EasyMock.expect(this.resultSet.next()).andReturn(false);
-		EasyMock.expect(this.resultSet.getString(1)).andReturn("user");
-
-		this.resultSet.close();
-		this.statement.close();
-		
 		this.replay();
 		
-		List<String> schemaList = this.dialect.getDefaultSchemas(connection);
+		Collection<String> sequences = this.dialect.getSequences(connection);
 		
 		this.verify();
 		
-		assert schemaList.size() == 1 : schemaList.size();
+		assert sequences.isEmpty() : sequences;
 		
-		assert schemaList.get(0).equals("user") : schemaList.get(0);
-		
-		return schemaList;
+		return sequences;
 	}
 
 	/**
@@ -191,20 +183,84 @@ public class TestDerbyDialect extends TestStandardDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#supportsSequences()
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#currentDateProvider()
 	 */
 	@Override
-	@Test
-	public boolean supportsSequences()
+	@DataProvider(name = "current-date")
+	Object[][] currentDateProvider()
 	{
-		this.replay();
+		java.sql.Date date = new java.sql.Date(System.currentTimeMillis());
 		
-		boolean supports = this.dialect.supportsSequences();
+		return new Object[][] {
+			new Object[] { "SELECT CURRENT_DATE FROM success", date },
+			new Object[] { "SELECT CURRENT DATE FROM success", date },
+			new Object[] { "SELECT 1 FROM failure", date },
+		};
+	}
+	
+	@Override
+	@Test(dataProvider = "current-date")
+	public String evaluateCurrentDate(String sql, java.sql.Date date)
+	{
+		String expected = sql.contains("success") ? "SELECT DATE('" + date.toString() + "') FROM success" : sql;
 		
-		this.verify();
+		String evaluated = this.dialect.evaluateCurrentDate(sql, date);
+
+		assert evaluated.equals(expected) : evaluated;
 		
-		assert !supports;
+		return evaluated;
+	}
+
+
+	@Override
+	@DataProvider(name = "current-time")
+	Object[][] currentTimeProvider()
+	{
+		java.sql.Time date = new java.sql.Time(System.currentTimeMillis());
 		
-		return supports;
+		return new Object[][] {
+			new Object[] { "SELECT CURRENT_TIME FROM success", date },
+			new Object[] { "SELECT CURRENT TIME FROM success", date },
+			new Object[] { "SELECT 1 FROM failure", date },
+		};
+	}
+	
+	@Override
+	@Test(dataProvider = "current-time")
+	public String evaluateCurrentTime(String sql, java.sql.Time date)
+	{
+		String expected = sql.contains("success") ? "SELECT TIME('" + date.toString() + "') FROM success" : sql;
+		
+		String evaluated = this.dialect.evaluateCurrentTime(sql, date);
+
+		assert evaluated.equals(expected) : evaluated;
+		
+		return evaluated;
+	}
+
+	@Override
+	@DataProvider(name = "current-timestamp")
+	Object[][] currentTimestampProvider()
+	{
+		java.sql.Timestamp date = new java.sql.Timestamp(System.currentTimeMillis());
+		
+		return new Object[][] {
+			new Object[] { "SELECT CURRENT_TIMESTAMP FROM success", date },
+			new Object[] { "SELECT CURRENT TIMESTAMP FROM success", date },
+			new Object[] { "SELECT 1 FROM failure", date },
+		};
+	}
+	
+	@Override
+	@Test(dataProvider = "current-timestamp")
+	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp date)
+	{
+		String expected = sql.contains("success") ? "SELECT TIMESTAMP('" + date.toString() + "') FROM success" : sql;
+		
+		String evaluated = this.dialect.evaluateCurrentTimestamp(sql, date);
+
+		assert evaluated.equals(expected) : evaluated;
+		
+		return evaluated;
 	}
 }

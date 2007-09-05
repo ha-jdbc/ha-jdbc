@@ -24,18 +24,19 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ForeignKeyConstraint;
 
 import org.easymock.EasyMock;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
  * @author Paul Ferraro
  *
  */
+@SuppressWarnings("nls")
 public class TestHSQLDBDialect extends TestStandardDialect
 {
 	@Override
@@ -116,34 +117,6 @@ public class TestHSQLDBDialect extends TestStandardDialect
 		
 		return sql;
 	}
-
-	/**
-	 * @see net.sf.hajdbc.Dialect#getDefaultSchemas(java.sql.Connection)
-	 */
-	@Override
-	@Test(dataProvider = "connection")
-	public List<String> getDefaultSchemas(Connection connection) throws SQLException
-	{
-		EasyMock.expect(connection.createStatement()).andReturn(this.statement);
-		EasyMock.expect(this.statement.executeQuery("CALL CURRENT_USER")).andReturn(this.resultSet);
-		EasyMock.expect(this.resultSet.next()).andReturn(false);
-		EasyMock.expect(this.resultSet.getString(1)).andReturn("user");
-
-		this.resultSet.close();
-		this.statement.close();
-		
-		this.replay();
-		
-		List<String> schemaList = this.dialect.getDefaultSchemas(connection);
-		
-		this.verify();
-		
-		assert schemaList.size() == 1 : schemaList.size();
-		
-		assert schemaList.get(0).equals("user") : schemaList.get(0);
-		
-		return schemaList;
-	}
 	
 	/**
 	 * @see net.sf.hajdbc.Dialect#getCurrentSequenceValueSQL(java.lang.String)
@@ -161,5 +134,47 @@ public class TestHSQLDBDialect extends TestStandardDialect
 		assert sql.equals("CALL NEXT VALUE FOR sequence") : sql;
 		
 		return sql;
+	}
+	
+	@Override
+	@DataProvider(name = "current-date")
+	Object[][] currentDateProvider()
+	{
+		java.sql.Date date = new java.sql.Date(System.currentTimeMillis());
+		
+		return new Object[][] {
+			new Object[] { "SELECT CURRENT_DATE FROM success", date },
+			new Object[] { "SELECT CURDATE() FROM success", date },
+			new Object[] { "SELECT CURDATE ( ) FROM success", date },
+			new Object[] { "SELECT 1 FROM failure", date },
+		};
+	}
+
+	@Override
+	@DataProvider(name = "current-time")
+	Object[][] currentTimeProvider()
+	{
+		java.sql.Time date = new java.sql.Time(System.currentTimeMillis());
+		
+		return new Object[][] {
+			new Object[] { "SELECT CURRENT_TIME FROM success", date },
+			new Object[] { "SELECT CURTIME() FROM success", date },
+			new Object[] { "SELECT CURTIME ( ) FROM success", date },
+			new Object[] { "SELECT 1 FROM failure", date },
+		};
+	}
+
+	@Override
+	@DataProvider(name = "current-timestamp")
+	Object[][] currentTimestampProvider()
+	{
+		java.sql.Timestamp date = new java.sql.Timestamp(System.currentTimeMillis());
+		
+		return new Object[][] {
+			new Object[] { "SELECT CURRENT_TIMESTAMP FROM success", date },
+			new Object[] { "SELECT NOW() FROM success", date },
+			new Object[] { "SELECT NOW ( ) FROM success", date },
+			new Object[] { "SELECT 1 FROM failure", date },
+		};
 	}
 }
