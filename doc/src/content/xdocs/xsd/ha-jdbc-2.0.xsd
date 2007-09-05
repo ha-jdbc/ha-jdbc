@@ -107,8 +107,12 @@
 						<xs:attribute name="min-threads" type="xs:nonNegativeInteger" default="0"></xs:attribute>
 						<xs:attribute name="max-threads" type="xs:positiveInteger" default="100"></xs:attribute>
 						<xs:attribute name="max-idle" type="xs:nonNegativeInteger" default="60"></xs:attribute>
-						<xs:attribute name="detect-identity-columns" type="xs:boolean" default="true"></xs:attribute>
-						<xs:attribute name="detect-sequences" type="xs:boolean" default="true"></xs:attribute>
+						<xs:attribute name="detect-identity-columns" type="xs:boolean" default="false"></xs:attribute>
+						<xs:attribute name="detect-sequences" type="xs:boolean" default="false"></xs:attribute>
+						<xs:attribute name="eval-current-date" type="xs:boolean" default="false"></xs:attribute>
+						<xs:attribute name="eval-current-time" type="xs:boolean" default="false"></xs:attribute>
+						<xs:attribute name="eval-current-timestamp" type="xs:boolean" default="false"></xs:attribute>
+						<xs:attribute name="eval-random" type="xs:boolean" default="false"></xs:attribute>
 					</xs:complexType>
 				</xs:element>
 			</xs:sequence>

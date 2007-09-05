@@ -52,8 +52,12 @@
 	min-threads CDATA "0"
 	max-threads CDATA "100"
 	max-idle CDATA "60"
-	detect-identity-columns (true|false) "true"
-	detect-sequences (true|false) "true"
+	detect-identity-columns (true|false) "false"
+	detect-sequences (true|false) "false"
+	eval-current-date (true|false) "false"
+	eval-current-time (true|false) "false"
+	eval-current-timestamp (true|false) "false"
+	eval-random (true|false) "false"
 >
 
 <!ENTITY % authentication-info "(user, password)?">
