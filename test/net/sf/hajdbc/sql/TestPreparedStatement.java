@@ -65,7 +65,7 @@ import org.testng.annotations.Test;
  * @author  Paul Ferraro
  * @since   1.1
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({ "unchecked", "nls" })
 public class TestPreparedStatement extends TestStatement implements java.sql.PreparedStatement
 {
 	protected String sql = "sql";

@@ -38,6 +38,7 @@ import org.testng.annotations.Test;
  * @author  Paul Ferraro
  * @since   1.0
  */
+@SuppressWarnings("nls")
 public class TestDriverDatabase extends AbstractTestDatabase<DriverDatabase, Driver> implements InactiveDriverDatabaseMBean
 {
 	static

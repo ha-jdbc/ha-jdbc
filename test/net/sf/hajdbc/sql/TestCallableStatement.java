@@ -64,7 +64,7 @@ import org.testng.annotations.Test;
  * @author  Paul Ferraro
  * @since   1.1
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({ "unchecked", "nls" })
 public class TestCallableStatement extends TestPreparedStatement implements java.sql.CallableStatement
 {
 	@Override

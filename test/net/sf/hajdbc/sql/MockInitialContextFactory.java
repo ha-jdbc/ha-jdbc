@@ -135,7 +135,7 @@ public class MockInitialContextFactory implements InitialContextFactory
 			}
 			else
 			{
-				throw new NamingException("Must extend javax.naming.Reference or implement javax.naming.Referenceable");
+				throw new NamingException("Must extend javax.naming.Reference or implement javax.naming.Referenceable"); //$NON-NLS-1$
 			}
 			
 			this.referenceMap.put(name, reference);

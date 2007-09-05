@@ -47,6 +47,7 @@ import org.testng.annotations.Test;
  * @author  Paul Ferraro
  * @since   1.1
  */
+@SuppressWarnings("nls")
 public class TestDataSourceFactory implements ObjectFactory
 {
 	private DataSource dataSource = new DataSource();

@@ -43,6 +43,7 @@ import org.testng.annotations.Test;
  * @author  Paul Ferraro
  * @since   1.0
  */
+@SuppressWarnings("nls")
 public class TestDriver implements java.sql.Driver
 {
 	private java.sql.Driver driver = new Driver();

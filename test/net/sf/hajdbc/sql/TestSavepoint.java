@@ -39,7 +39,7 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({ "unchecked", "nls" })
 public class TestSavepoint implements Savepoint
 {
 	private DatabaseCluster cluster = EasyMock.createStrictMock(DatabaseCluster.class);

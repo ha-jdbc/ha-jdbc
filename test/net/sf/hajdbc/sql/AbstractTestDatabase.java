@@ -31,7 +31,7 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({ "unchecked", "nls" })
 public abstract class AbstractTestDatabase<T extends Database, U> implements Database<U>
 {
 	protected abstract T createDatabase(String id);

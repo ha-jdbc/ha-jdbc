@@ -55,7 +55,7 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({ "unchecked", "nls" })
 public class TestClob implements NClob
 {
 	private Balancer balancer = EasyMock.createStrictMock(Balancer.class);

@@ -43,7 +43,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({ "unchecked", "nls" })
 public class TestDataSource implements javax.sql.DataSource
 {
 	private DatabaseCluster cluster = EasyMock.createStrictMock(DatabaseCluster.class);

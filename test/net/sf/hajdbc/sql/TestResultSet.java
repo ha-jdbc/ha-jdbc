@@ -79,7 +79,7 @@ import org.testng.annotations.Test;
  * @author  Paul Ferraro
  * @since   1.0
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({ "unchecked", "nls" })
 public class TestResultSet implements ResultSet
 {
 	private Balancer balancer = EasyMock.createStrictMock(Balancer.class);

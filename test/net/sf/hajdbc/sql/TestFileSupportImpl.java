@@ -43,6 +43,7 @@ import org.testng.annotations.Test;
  * @author  Paul Ferraro
  * @since   1.1
  */
+@SuppressWarnings("nls")
 public class TestFileSupportImpl implements FileSupport
 {
 	private IMocksControl control = EasyMock.createStrictControl();
