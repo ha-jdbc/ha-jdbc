@@ -654,9 +654,9 @@ public class TestStandardDialect implements Dialect
 	
 	@Override
 	@Test(dataProvider = "random")
-	public String evaluateRandom(String sql)
+	public String evaluateRand(String sql)
 	{
-		String evaluated = this.dialect.evaluateRandom(sql);
+		String evaluated = this.dialect.evaluateRand(sql);
 
 		if (sql.contains("success"))
 		{

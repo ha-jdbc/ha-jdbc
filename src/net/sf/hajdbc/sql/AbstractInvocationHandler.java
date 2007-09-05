@@ -157,9 +157,9 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 				parameterList.set(0, cluster.getDialect().evaluateCurrentTime((String) parameterList.get(0), new java.sql.Time(now)));
 			}
 			
-			if (cluster.isRandomEvaluationEnabled())
+			if (cluster.isRandEvaluationEnabled())
 			{
-				parameterList.set(0, cluster.getDialect().evaluateRandom((String) parameterList.get(0)));
+				parameterList.set(0, cluster.getDialect().evaluateRand((String) parameterList.get(0)));
 			}
 			
 			return new DynamicInvoker(method, parameterList.toArray());

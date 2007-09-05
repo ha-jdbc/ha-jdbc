@@ -455,10 +455,10 @@ public class StandardDialect implements Dialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#evaluateRandom(java.lang.String)
+	 * @see net.sf.hajdbc.Dialect#evaluateRand(java.lang.String)
 	 */
 	@Override
-	public String evaluateRandom(String sql)
+	public String evaluateRand(String sql)
 	{	
 		StringBuffer buffer = new StringBuffer();
 		Matcher matcher = this.randomPattern.matcher(sql);

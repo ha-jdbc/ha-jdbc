@@ -150,7 +150,7 @@ public interface DatabaseCluster<D>
 	 * Indicates whether or not non-deterministic RAND() functions will be replaced by evaluated to static values.
 	 * @return true, if temporal SQL replacement is enabled, false otherwise.
 	 */
-	public boolean isRandomEvaluationEnabled();
+	public boolean isRandEvaluationEnabled();
 	
 	/**
 	 * Determines whether the specified databases are alive.

@@ -113,7 +113,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	private boolean currentDateEvaluationEnabled;
 	private boolean currentTimeEvaluationEnabled;
 	private boolean currentTimestampEvaluationEnabled;
-	private boolean randomEvaluationEnabled;
+	private boolean randEvaluationEnabled;
 	
 	private MBeanServer server;
 	private URL url;
@@ -720,9 +720,9 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	 * @see net.sf.hajdbc.DatabaseCluster#isRandEvaluationEnabled()
 	 */
 	@Override
-	public boolean isRandomEvaluationEnabled()
+	public boolean isRandEvaluationEnabled()
 	{
-		return this.randomEvaluationEnabled;
+		return this.randEvaluationEnabled;
 	}
 
 	/**

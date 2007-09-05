@@ -158,7 +158,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.statement1.addBatch(sql);
 		this.statement2.addBatch(sql);
@@ -265,7 +265,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
 		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.readLock);
@@ -301,7 +301,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.sequenceLock.lock();
 		
@@ -334,7 +334,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.tableLock.lock();
 		
@@ -367,7 +367,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.sequenceLock.lock();
 		this.tableLock.lock();
@@ -415,7 +415,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
 		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.readLock);
@@ -451,7 +451,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.sequenceLock.lock();
 		
@@ -485,7 +485,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.tableLock.lock();
 		
@@ -518,7 +518,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.sequenceLock.lock();
 		this.tableLock.lock();
@@ -566,7 +566,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
 		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.readLock);
@@ -602,7 +602,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.sequenceLock.lock();
 		
@@ -635,7 +635,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.tableLock.lock();
 		
@@ -668,7 +668,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.sequenceLock.lock();
 		this.tableLock.lock();
@@ -716,7 +716,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
 		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.readLock);
@@ -754,7 +754,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
@@ -785,7 +785,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.tableLock.lock();
 		
@@ -818,7 +818,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.sequenceLock.lock();
 		this.tableLock.lock();
@@ -1003,7 +1003,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		// Locators update directly		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
@@ -1034,7 +1034,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
 		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.readLock);
@@ -1077,7 +1077,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
 		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.readLock);
@@ -1115,7 +1115,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.sequenceLock.lock();
 		
@@ -1150,7 +1150,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.tableLock.lock();
 		
@@ -1185,7 +1185,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.sequenceLock.lock();
 		this.tableLock.lock();
@@ -1229,7 +1229,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
 		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.readLock);
@@ -1265,7 +1265,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.sequenceLock.lock();
 		
@@ -1298,7 +1298,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.tableLock.lock();
 		
@@ -1331,7 +1331,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.sequenceLock.lock();
 		this.tableLock.lock();
@@ -1373,7 +1373,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
 		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.readLock);
@@ -1409,7 +1409,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.sequenceLock.lock();
 		
@@ -1442,7 +1442,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.tableLock.lock();
 		
@@ -1475,7 +1475,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.sequenceLock.lock();
 		this.tableLock.lock();
@@ -1517,7 +1517,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
 		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.readLock);
@@ -1553,7 +1553,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.sequenceLock.lock();
 		
@@ -1586,7 +1586,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.tableLock.lock();
 		
@@ -1619,7 +1619,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.sequenceLock.lock();
 		this.tableLock.lock();
@@ -1661,7 +1661,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
 		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.readLock);
@@ -1697,7 +1697,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.sequenceLock.lock();
 		
@@ -1730,7 +1730,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.tableLock.lock();
 		
@@ -1763,7 +1763,7 @@ public class TestStatement implements java.sql.Statement
 		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
-		EasyMock.expect(this.cluster.isRandomEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		this.sequenceLock.lock();
 		this.tableLock.lock();

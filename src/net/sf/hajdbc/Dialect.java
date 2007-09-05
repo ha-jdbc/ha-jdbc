@@ -206,5 +206,5 @@ public interface Dialect
 	 * @return an equivalent deterministic SQL statement
 	 * @since 2.0.2
 	 */
-	public String evaluateRandom(String sql);
+	public String evaluateRand(String sql);
 }
