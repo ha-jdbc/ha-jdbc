@@ -106,20 +106,13 @@ public interface Dialect
 	public int getColumnType(ColumnProperties properties) throws SQLException;
 	
 	/**
-	 * Parses a table name from the specified INSERT SQL statement.
+	 * Parses a table name from the specified INSERT SQL statement that may contain identity columns.
 	 * @param sql a SQL statement
-	 * @return the name of a table, or null if this SQL statement is not an INSERT statement
+	 * @return the name of a table, or null if this SQL statement is not an INSERT statement or this dialect does not support identity columns
 	 * @throws SQLException
 	 * @since 2.0
 	 */
 	public String parseInsertTable(String sql) throws SQLException;
-	
-	/**
-	 * Indicates whether or not this dialect supports identity columns.
-	 * @return true, if identity columns are supported, false otherwise.
-	 * @since 2.0
-	 */
-	public boolean supportsIdentityColumns();
 	
 	/**
 	 * Indicates whether or not the specified column is an identity column.
@@ -131,16 +124,9 @@ public interface Dialect
 	public boolean isIdentity(ColumnProperties properties) throws SQLException;
 
 	/**
-	 * Indicates whether or not this dialect supports sequences.
-	 * @return true, if sequences are supported, false otherwise.
-	 * @since 2.0
-	 */
-	public boolean supportsSequences();
-	
-	/**
 	 * Parses a sequence name from the specified SQL statement.
 	 * @param sql a SQL statement
-	 * @return the name of a sequence, or null if this SQL statement does not reference a sequence
+	 * @return the name of a sequence, or null if this SQL statement does not reference a sequence or this dialect does not support sequences
 	 * @throws SQLException
 	 * @since 2.0
 	 */
@@ -183,7 +169,42 @@ public interface Dialect
 	/**
 	 * Returns a pattern for identifiers that do not require quoting
 	 * @return a regular expression pattern
-	 * @since 2.0
+	 * @since 2.0.2
 	 */
 	public Pattern getIdentifierPattern(DatabaseMetaData metaData) throws SQLException;
+	
+	/**
+	 * Replaces non-deterministic CURRENT_DATE functions with deterministic static values.
+	 * @param sql an SQL statement
+	 * @param date the replacement date
+	 * @return an equivalent deterministic SQL statement
+	 * @since 2.0.2
+	 */
+	public String evaluateCurrentDate(String sql, java.sql.Date date);
+	
+	/**
+	 * Replaces non-deterministic CURRENT_TIME functions with deterministic static values.
+	 * @param sql an SQL statement
+	 * @param time the replacement time
+	 * @return an equivalent deterministic SQL statement
+	 * @since 2.0.2
+	 */
+	public String evaluateCurrentTime(String sql, java.sql.Time time);
+	
+	/**
+	 * Replaces non-deterministic CURRENT_TIMESTAMP functions with deterministic static values.
+	 * @param sql an SQL statement
+	 * @param timestamp the replacement timestamp
+	 * @return an equivalent deterministic SQL statement
+	 * @since 2.0.2
+	 */
+	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp timestamp);
+	
+	/**
+	 * Replaces non-deterministic RAND() functions with deterministic static values.
+	 * @param sql an SQL statement
+	 * @return an equivalent deterministic SQL statement
+	 * @since 2.0.2
+	 */
+	public String evaluateRandom(String sql);
 }
