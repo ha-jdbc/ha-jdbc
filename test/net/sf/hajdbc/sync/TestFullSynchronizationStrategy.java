@@ -49,6 +49,7 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
+@SuppressWarnings("nls")
 public class TestFullSynchronizationStrategy extends TestLockingSynchronizationStrategy
 {
 	/**
@@ -211,8 +212,6 @@ public class TestFullSynchronizationStrategy extends TestLockingSynchronizationS
 		
 		targetStatement.close();
 
-		EasyMock.expect(dialect.supportsSequences()).andReturn(true);
-		
 		EasyMock.expect(context.getSourceDatabase()).andReturn(sourceDatabase);
 		EasyMock.expect(context.getConnection(sourceDatabase)).andReturn(sourceConnection);
 

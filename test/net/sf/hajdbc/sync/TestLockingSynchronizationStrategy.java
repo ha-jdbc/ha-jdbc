@@ -43,6 +43,7 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
+@SuppressWarnings("nls")
 public abstract class TestLockingSynchronizationStrategy implements SynchronizationStrategy
 {
 	protected SynchronizationStrategy strategy = this.createSynchronizationStrategy();
