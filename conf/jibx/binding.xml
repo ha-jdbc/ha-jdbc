@@ -27,8 +27,12 @@
 		<value name="min-threads" field="minThreads" usage="optional" default="0"/>
 		<value name="max-threads" field="maxThreads" usage="optional" default="100"/>
 		<value name="max-idle" field="maxIdle" style="attribute" usage="optional" default="60"/>
-		<value name="detect-sequences" field="sequenceDetectionEnabled" style="attribute" usage="optional" default="true"/>
-		<value name="detect-identity-columns" field="identityColumnDetectionEnabled" style="attribute" usage="optional" default="true"/>
+		<value name="detect-sequences" field="sequenceDetectionEnabled" style="attribute" usage="optional" default="false"/>
+		<value name="detect-identity-columns" field="identityColumnDetectionEnabled" style="attribute" usage="optional" default="false"/>
+		<value name="eval-current-date" field="currentDateEvaluationEnabled" style="attribute" usage="optional" default="false"/>
+		<value name="eval-current-time" field="currentTimeEvaluationEnabled" style="attribute" usage="optional" default="false"/>
+		<value name="eval-current-timestamp" field="currentTimestampEvaluationEnabled" style="attribute" usage="optional" default="false"/>
+		<value name="eval-random" field="randomEvaluationEnabled" style="attribute" usage="optional" default="false"/>
 	</mapping>
 	
 	<mapping class="net.sf.hajdbc.sql.AbstractDatabase" abstract="true">
