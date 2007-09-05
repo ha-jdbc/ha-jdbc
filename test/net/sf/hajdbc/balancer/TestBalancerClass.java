@@ -30,7 +30,7 @@ import org.testng.annotations.Test;
  *
  */
 @Test
-@SuppressWarnings("unchecked")
+@SuppressWarnings({ "unchecked", "nls" })
 public class TestBalancerClass
 {
 	public void testSerialize()

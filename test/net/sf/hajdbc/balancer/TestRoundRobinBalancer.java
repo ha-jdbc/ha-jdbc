@@ -31,6 +31,7 @@ import net.sf.hajdbc.MockDatabase;
  * @since   1.0
  */
 @Test
+@SuppressWarnings("nls")
 public class TestRoundRobinBalancer extends AbstractTestBalancer
 {
 	/**
