@@ -129,6 +129,30 @@ public interface DatabaseCluster<D>
 	public boolean isIdentityColumnDetectionEnabled();
 	
 	/**
+	 * Indicates whether or not non-deterministic CURRENT_DATE SQL functions will be evaluated to deterministic static values.
+	 * @return true, if temporal SQL replacement is enabled, false otherwise.
+	 */
+	public boolean isCurrentDateEvaluationEnabled();
+	
+	/**
+	 * Indicates whether or not non-deterministic CURRENT_TIME functions will be evaluated to deterministic static values.
+	 * @return true, if temporal SQL replacement is enabled, false otherwise.
+	 */
+	public boolean isCurrentTimeEvaluationEnabled();
+	
+	/**
+	 * Indicates whether or not non-deterministic CURRENT_TIMESTAMP functions will be evaluated to deterministic static values.
+	 * @return true, if temporal SQL replacement is enabled, false otherwise.
+	 */
+	public boolean isCurrentTimestampEvaluationEnabled();
+	
+	/**
+	 * Indicates whether or not non-deterministic RAND() functions will be replaced by evaluated to static values.
+	 * @return true, if temporal SQL replacement is enabled, false otherwise.
+	 */
+	public boolean isRandomEvaluationEnabled();
+	
+	/**
 	 * Determines whether the specified databases are alive.
 	 * @param databases a collection of database descriptors
 	 * @return a map of database descriptor to true, if alive, false otherwise
