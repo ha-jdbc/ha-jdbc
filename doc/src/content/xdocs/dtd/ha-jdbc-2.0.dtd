@@ -57,7 +57,7 @@
 	eval-current-date (true|false) "false"
 	eval-current-time (true|false) "false"
 	eval-current-timestamp (true|false) "false"
-	eval-random (true|false) "false"
+	eval-rand (true|false) "false"
 >
 
 <!ENTITY % authentication-info "(user, password)?">

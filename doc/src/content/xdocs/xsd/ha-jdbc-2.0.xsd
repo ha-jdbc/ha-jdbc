@@ -112,7 +112,7 @@
 						<xs:attribute name="eval-current-date" type="xs:boolean" default="false"></xs:attribute>
 						<xs:attribute name="eval-current-time" type="xs:boolean" default="false"></xs:attribute>
 						<xs:attribute name="eval-current-timestamp" type="xs:boolean" default="false"></xs:attribute>
-						<xs:attribute name="eval-random" type="xs:boolean" default="false"></xs:attribute>
+						<xs:attribute name="eval-rand" type="xs:boolean" default="false"></xs:attribute>
 					</xs:complexType>
 				</xs:element>
 			</xs:sequence>
