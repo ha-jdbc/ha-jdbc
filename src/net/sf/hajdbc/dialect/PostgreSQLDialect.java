@@ -22,7 +22,9 @@ package net.sf.hajdbc.dialect;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -38,6 +40,7 @@ import net.sf.hajdbc.util.Strings;
  * @author  Paul Ferraro
  * @since   1.1
  */
+@SuppressWarnings("nls")
 public class PostgreSQLDialect extends StandardDialect
 {
 	/**
@@ -48,13 +51,22 @@ public class PostgreSQLDialect extends StandardDialect
 	@Override
 	public List<String> getDefaultSchemas(Connection connection) throws SQLException
 	{
-		String[] schemas = this.executeFunction(connection, "SHOW search_path").split(Strings.COMMA); //$NON-NLS-1$
+		Statement statement = connection.createStatement();
+		
+		ResultSet resultSet = statement.executeQuery("SHOW search_path");
+		
+		resultSet.next();
+		
+		String[] schemas = resultSet.getString(1).split(Strings.COMMA);
+		
+		resultSet.close();
+		statement.close();
 		
 		List<String> schemaList = new ArrayList<String>(schemas.length);
 		
 		for (String schema: schemas)
 		{
-			schemaList.add(schema.equals("$user") ? connection.getMetaData().getUserName() : schema); //$NON-NLS-1$
+			schemaList.add(schema.equals("$user") ? connection.getMetaData().getUserName() : schema);
 		}
 		
 		return schemaList;
@@ -72,7 +84,7 @@ public class PostgreSQLDialect extends StandardDialect
 	@Override
 	public String getLockTableSQL(TableProperties properties)
 	{
-		return MessageFormat.format("LOCK TABLE {0} IN EXCLUSIVE MODE", properties.getName()); //$NON-NLS-1$
+		return MessageFormat.format("LOCK TABLE {0} IN EXCLUSIVE MODE", properties.getName());
 	}
 	
 	/**
@@ -84,7 +96,7 @@ public class PostgreSQLDialect extends StandardDialect
 	@Override
 	public int getColumnType(ColumnProperties properties)
 	{
-		return properties.getNativeType().equalsIgnoreCase("oid") ? Types.BLOB : properties.getType(); //$NON-NLS-1$
+		return properties.getNativeType().equalsIgnoreCase("oid") ? Types.BLOB : properties.getType();
 	}
 	
 	/**
@@ -95,7 +107,7 @@ public class PostgreSQLDialect extends StandardDialect
 	{
 		String type = properties.getNativeType();
 		
-		return type.equalsIgnoreCase("serial") || type.equalsIgnoreCase("bigserial");  //$NON-NLS-1$ //$NON-NLS-2$
+		return type.equalsIgnoreCase("serial") || type.equalsIgnoreCase("bigserial");
 	}
 
 	/**
@@ -107,7 +119,7 @@ public class PostgreSQLDialect extends StandardDialect
 	{
 		if ((metaData.getDriverMajorVersion() >= 8) && (metaData.getDriverMinorVersion() >= 1))
 		{
-			return Pattern.compile("[A-Za-z\\0200-\\0377_][A-Za-z\\0200-\\0377_0-9\\$]*"); // $NON-NLS-1$;
+			return Pattern.compile("[A-Za-z\\0200-\\0377_][A-Za-z\\0200-\\0377_0-9\\$]*");
 		}
 		
 		return super.getIdentifierPattern(metaData);
@@ -119,7 +131,7 @@ public class PostgreSQLDialect extends StandardDialect
 	@Override
 	protected String truncateTableFormat()
 	{
-		return "TRUNCATE TABLE {0}"; //$NON-NLS-1$
+		return "TRUNCATE TABLE {0}";
 	}
 
 	/**
@@ -128,7 +140,7 @@ public class PostgreSQLDialect extends StandardDialect
 	@Override
 	protected String sequencePattern()
 	{
-		return "(?:CURR|NEXT)VAL\\s*\\(\\s*'(\\w+)'\\s*\\)"; //$NON-NLS-1$
+		return "(?:CURR|NEXT)VAL\\s*\\(\\s*'([^']+)'\\s*\\)";
 	}
 
 	/**
@@ -137,6 +149,24 @@ public class PostgreSQLDialect extends StandardDialect
 	@Override
 	protected String nextSequenceValueFormat()
 	{
-		return "NEXTVAL(''{0}'')"; //$NON-NLS-1$
+		return "NEXTVAL(''{0}'')";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentTimestampPattern()
+	 */
+	@Override
+	protected String currentTimestampPattern()
+	{
+		return super.currentTimestampPattern() + "|NOW\\s*\\(\\s*\\)|TRANSACTION_TIMESTAMP\\s*\\(\\s*\\)|STATEMENT_TIMESTAMP\\s*\\(\\s*\\)|CLOCK_TIMESTAMP\\s*\\(\\s*\\)";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#randomPattern()
+	 */
+	@Override
+	protected String randomPattern()
+	{
+		return "RANDOM\\s*\\(\\s*\\)";
 	}
 }

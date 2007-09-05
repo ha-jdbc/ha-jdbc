@@ -22,6 +22,7 @@ package net.sf.hajdbc.dialect;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -31,6 +32,7 @@ import net.sf.hajdbc.ColumnProperties;
  * Dialect for <a href="http://www.mysql.com/products/database/mysql/">MySQL</a>
  * @author Paul Ferraro
  */
+@SuppressWarnings("nls")
 public class MySQLDialect extends StandardDialect
 {
 	/**
@@ -39,7 +41,7 @@ public class MySQLDialect extends StandardDialect
 	@Override
 	public List<String> getDefaultSchemas(Connection connection) throws SQLException
 	{
-		return Collections.singletonList(this.executeFunction(connection, "DATABASE()")); //$NON-NLS-1$
+		return Collections.singletonList(this.executeFunction(connection, "DATABASE()"));
 	}
 	
 	/**
@@ -50,27 +52,25 @@ public class MySQLDialect extends StandardDialect
 	{
 		String remarks = properties.getRemarks();
 		
-		return (remarks != null) && remarks.contains("AUTO_INCREMENT"); //$NON-NLS-1$
+		return (remarks != null) && remarks.contains("AUTO_INCREMENT");
 	}
 
 	/**
-	 * Support for identity columns is disabled.
-	 * Although MySQL supports this feature, its in-memory implementation provides no mechanism to reset the counter during synchronization.
-	 * @see net.sf.hajdbc.dialect.StandardDialect#supportsIdentityColumns()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#parseSequence(java.lang.String)
 	 */
 	@Override
-	public boolean supportsIdentityColumns()
+	public String parseSequence(String sql)
 	{
-		return false;
+		return null;
 	}
-
+	
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#supportsSequences()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.Connection)
 	 */
 	@Override
-	public boolean supportsSequences()
+	public Collection<String> getSequences(Connection connection) throws SQLException
 	{
-		return false;
+		return Collections.emptyList();
 	}
 
 	/**
@@ -80,7 +80,7 @@ public class MySQLDialect extends StandardDialect
 	@Override
 	protected String createForeignKeyConstraintFormat()
 	{
-		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} ON UPDATE {6,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT}"; //$NON-NLS-1$
+		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} ON UPDATE {6,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT}";
 	}
 
 	/**
@@ -89,7 +89,7 @@ public class MySQLDialect extends StandardDialect
 	@Override
 	protected String createUniqueConstraintFormat()
 	{
-		return "ALTER TABLE {1} ADD UNIQUE {0} ({2})"; //$NON-NLS-1$
+		return "ALTER TABLE {1} ADD UNIQUE {0} ({2})";
 	}
 
 	/**
@@ -98,7 +98,7 @@ public class MySQLDialect extends StandardDialect
 	@Override
 	protected String dropForeignKeyConstraintFormat()
 	{
-		return "ALTER TABLE {1} DROP FOREIGN KEY {0}"; //$NON-NLS-1$
+		return "ALTER TABLE {1} DROP FOREIGN KEY {0}";
 	}
 
 	/**
@@ -107,6 +107,60 @@ public class MySQLDialect extends StandardDialect
 	@Override
 	protected String dropUniqueConstraintFormat()
 	{
-		return "ALTER TABLE {1} DROP INDEX {0}"; //$NON-NLS-1$
+		return "ALTER TABLE {1} DROP INDEX {0}";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentDatePattern()
+	 */
+	@Override
+	protected String currentDatePattern()
+	{
+		return super.currentDatePattern() + "|CURDATE\\s*\\(\\s*\\)";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentTimePattern()
+	 */
+	@Override
+	protected String currentTimePattern()
+	{
+		return super.currentTimePattern() + "|CURTIME\\s*\\(\\s*\\)";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentTimestampPattern()
+	 */
+	@Override
+	protected String currentTimestampPattern()
+	{
+		return super.currentTimestampPattern() + "|NOW\\s*\\(\\s*\\)|SYSDATE\\s*\\(\\s*\\)";
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#dateLiteralPattern()
+	 */
+	@Override
+	protected String dateLiteralFormat()
+	{
+		return this.timestampLiteralFormat();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#timeLiteralPattern()
+	 */
+	@Override
+	protected String timeLiteralFormat()
+	{
+		return this.timestampLiteralFormat();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#timestampLiteralPattern()
+	 */
+	@Override
+	protected String timestampLiteralFormat()
+	{
+		return "''{0}''";
 	}
 }

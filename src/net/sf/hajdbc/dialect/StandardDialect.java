@@ -45,11 +45,56 @@ import net.sf.hajdbc.util.Strings;
  * @author  Paul Ferraro
  * @since   1.1
  */
+@SuppressWarnings("nls")
 public class StandardDialect implements Dialect
 {
-	private Pattern selectForUpdatePattern = Pattern.compile(this.selectForUpdatePattern(), Pattern.CASE_INSENSITIVE);
-	private Pattern insertIntoTablePattern = Pattern.compile(this.insertIntoTablePattern(), Pattern.CASE_INSENSITIVE);
-	private Pattern sequencePattern = Pattern.compile(this.sequencePattern(), Pattern.CASE_INSENSITIVE);
+	private Pattern selectForUpdatePattern = this.compile(this.selectForUpdatePattern());
+	private Pattern insertIntoTablePattern = this.compile(this.insertIntoTablePattern());
+	private Pattern sequencePattern = this.compile(this.sequencePattern());
+	private Pattern currentTimestampPattern = this.compile(this.currentTimestampPattern());
+	private Pattern currentDatePattern = this.compile(this.currentDatePattern());
+	private Pattern currentTimePattern = this.compile(this.currentTimePattern());
+	private Pattern randomPattern = this.compile(this.randomPattern());
+	
+	private Pattern compile(String pattern)
+	{
+		return Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+	}
+	
+	protected String selectForUpdatePattern()
+	{
+		return "SELECT\\s+.+\\s+FOR\\s+UPDATE";
+	}
+
+	protected String insertIntoTablePattern()
+	{
+		return "INSERT\\s+(?:INTO\\s+)?'?([^'\\s\\(]+)";
+	}
+
+	protected String sequencePattern()
+	{
+		return "NEXT\\s+VALUE\\s+FOR\\s+'?([^',\\s\\(\\)]+)";
+	}
+	
+	protected String currentDatePattern()
+	{
+		return "CURRENT_DATE";
+	}
+	
+	protected String currentTimePattern()
+	{
+		return "CURRENT_TIME(?:\\s*\\(\\s*\\d+\\s*\\))?|LOCALTIME(?:\\s*\\(\\s*\\d+\\s*\\))?";
+	}
+
+	protected String currentTimestampPattern()
+	{
+		return "CURRENT_TIMESTAMP(?:\\s*\\(\\s*\\d+\\s*\\))?|LOCALTIMESTAMP(?:\\s*\\(\\s*\\d+\\s*\\))?";
+	}
+	
+	protected String randomPattern()
+	{
+		return "RAND\\s*\\(\\s*\\)";
+	}
 
 	/**
 	 * @see net.sf.hajdbc.Dialect#getSimpleSQL()
@@ -62,13 +107,13 @@ public class StandardDialect implements Dialect
 
 	protected String executeFunctionFormat()
 	{
-		StringBuilder builder = new StringBuilder("SELECT {0}"); //$NON-NLS-1$
+		StringBuilder builder = new StringBuilder("SELECT {0}");
 		
 		String dummyTable = this.dummyTable();
 		
 		if (dummyTable != null)
 		{
-			builder.append(" FROM ").append(dummyTable); //$NON-NLS-1$
+			builder.append(" FROM ").append(dummyTable);
 		}
 		
 		return builder.toString();
@@ -81,7 +126,7 @@ public class StandardDialect implements Dialect
 	
 	protected String currentTimestampFunction()
 	{
-		return "CURRENT_TIMESTAMP"; //$NON-NLS-1$
+		return "CURRENT_TIMESTAMP";
 	}
 	
 	protected String dummyTable()
@@ -95,7 +140,7 @@ public class StandardDialect implements Dialect
 	@Override
 	public String getLockTableSQL(TableProperties properties) throws SQLException
 	{
-		StringBuilder builder = new StringBuilder("UPDATE ").append(properties.getName()).append(" SET "); //$NON-NLS-1$ //$NON-NLS-2$
+		StringBuilder builder = new StringBuilder("UPDATE ").append(properties.getName()).append(" SET ");
 		
 		UniqueConstraint primaryKey = properties.getPrimaryKey();
 		
@@ -107,7 +152,7 @@ public class StandardDialect implements Dialect
 		{
 			String column = columns.next();
 			
-			builder.append(column).append(" = ").append(column); //$NON-NLS-1$
+			builder.append(column).append(" = ").append(column);
 			
 			if (columns.hasNext())
 			{
@@ -127,6 +172,11 @@ public class StandardDialect implements Dialect
 		return MessageFormat.format(this.truncateTableFormat(), properties.getName());
 	}
 	
+	protected String truncateTableFormat()
+	{
+		return "DELETE FROM {0}";
+	}
+
 	/**
 	 * @see net.sf.hajdbc.Dialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
 	 */
@@ -134,6 +184,11 @@ public class StandardDialect implements Dialect
 	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint key)
 	{
 		return MessageFormat.format(this.createForeignKeyConstraintFormat(), key.getName(), key.getTable(), Strings.join(key.getColumnList(), Strings.PADDED_COMMA), key.getForeignTable(), Strings.join(key.getForeignColumnList(), Strings.PADDED_COMMA), key.getDeleteRule(), key.getUpdateRule(), key.getDeferrability());
+	}
+	
+	protected String createForeignKeyConstraintFormat()
+	{
+		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} ON UPDATE {6,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} {7,choice,5#DEFERRABLE INITIALLY DEFERRED|6#DEFERRABLE INITIALLY IMMEDIATE|7#NOT DEFERRABLE}";
 	}
 	
 	/**
@@ -145,6 +200,16 @@ public class StandardDialect implements Dialect
 		return MessageFormat.format(this.dropForeignKeyConstraintFormat(), key.getName(), key.getTable());
 	}
 	
+	protected String dropForeignKeyConstraintFormat()
+	{
+		return this.dropConstraintFormat();
+	}
+	
+	protected String dropConstraintFormat()
+	{
+		return "ALTER TABLE {1} DROP CONSTRAINT {0}";
+	}
+
 	/**
 	 * @see net.sf.hajdbc.Dialect#getCreateUniqueConstraintSQL(net.sf.hajdbc.UniqueConstraint)
 	 */
@@ -154,6 +219,11 @@ public class StandardDialect implements Dialect
 		return MessageFormat.format(this.createUniqueConstraintFormat(), constraint.getName(), constraint.getTable(), Strings.join(constraint.getColumnList(), Strings.PADDED_COMMA));
 	}
 	
+	protected String createUniqueConstraintFormat()
+	{
+		return "ALTER TABLE {1} ADD CONSTRAINT {0} UNIQUE ({2})";
+	}
+
 	/**
 	 * @see net.sf.hajdbc.Dialect#getDropUniqueConstraintSQL(net.sf.hajdbc.UniqueConstraint)
 	 */
@@ -161,6 +231,11 @@ public class StandardDialect implements Dialect
 	public String getDropUniqueConstraintSQL(UniqueConstraint constraint)
 	{
 		return MessageFormat.format(this.dropUniqueConstraintFormat(), constraint.getName(), constraint.getTable());
+	}
+	
+	protected String dropUniqueConstraintFormat()
+	{
+		return this.dropConstraintFormat();
 	}
 
 	/**
@@ -171,7 +246,7 @@ public class StandardDialect implements Dialect
 	{
 		String remarks = properties.getRemarks();
 		
-		return (remarks != null) && remarks.contains("GENERATED BY DEFAULT AS IDENTITY"); //$NON-NLS-1$
+		return (remarks != null) && remarks.contains("GENERATED BY DEFAULT AS IDENTITY");
 	}
 
 	/**
@@ -268,14 +343,14 @@ public class StandardDialect implements Dialect
 		{
 			StringBuilder builder = new StringBuilder();
 			
-			String schema = resultSet.getString("TABLE_SCHEM"); //$NON-NLS-1$
+			String schema = resultSet.getString("TABLE_SCHEM");
 			
 			if (schema != null)
 			{
 				builder.append(schema).append(Strings.DOT);
 			}
 			
-			sequenceList.add(builder.append(resultSet.getString("TABLE_NAME")).toString()); //$NON-NLS-1$
+			sequenceList.add(builder.append(resultSet.getString("TABLE_NAME")).toString());
 		}
 		
 		resultSet.close();
@@ -285,7 +360,7 @@ public class StandardDialect implements Dialect
 
 	protected String sequenceTableType()
 	{
-		return "SEQUENCE"; //$NON-NLS-1$
+		return "SEQUENCE";
 	}
 
 	/**
@@ -297,6 +372,11 @@ public class StandardDialect implements Dialect
 		return this.executeFunctionSQL(MessageFormat.format(this.nextSequenceValueFormat(), sequence));
 	}
 	
+	protected String nextSequenceValueFormat()
+	{
+		return "NEXT VALUE FOR {0}";
+	}
+	
 	/**
 	 * @see net.sf.hajdbc.Dialect#getAlterSequenceSQL(java.lang.String, long)
 	 */
@@ -305,23 +385,10 @@ public class StandardDialect implements Dialect
 	{
 		return MessageFormat.format(this.alterSequenceFormat(), sequence, value);
 	}
-
-	/**
-	 * @see net.sf.hajdbc.Dialect#supportsIdentityColumns()
-	 */
-	@Override
-	public boolean supportsIdentityColumns()
+	
+	protected String alterSequenceFormat()
 	{
-		return true;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.Dialect#supportsSequences()
-	 */
-	@Override
-	public boolean supportsSequences()
-	{
-		return true;
+		return "ALTER SEQUENCE {0} RESTART WITH {1}";
 	}
 
 	/**
@@ -330,7 +397,7 @@ public class StandardDialect implements Dialect
 	@Override
 	public Pattern getIdentifierPattern(DatabaseMetaData metaData) throws SQLException
 	{
-		return Pattern.compile("[\\w" + Pattern.quote(metaData.getExtraNameCharacters()) + "]+"); //$NON-NLS-1$ //$NON-NLS-2$;
+		return Pattern.compile(MessageFormat.format("[\\w{0}]+", Pattern.quote(metaData.getExtraNameCharacters())));
 	}
 
 	protected String parse(Pattern pattern, String string)
@@ -339,59 +406,68 @@ public class StandardDialect implements Dialect
 		
 		return matcher.find() ? matcher.group(1) : null;
 	}
-	
-	protected String truncateTableFormat()
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#evaluateCurrentDate(java.lang.String, java.sql.Date)
+	 */
+	@Override
+	public String evaluateCurrentDate(String sql, java.sql.Date date)
 	{
-		return "DELETE FROM {0}"; //$NON-NLS-1$
+		return this.evaluateTemporal(sql, this.currentDatePattern, date, this.dateLiteralFormat());
 	}
 	
-	protected String createForeignKeyConstraintFormat()
+	protected String dateLiteralFormat()
 	{
-		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} ON UPDATE {6,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} {7,choice,5#DEFERRABLE INITIALLY DEFERRED|6#DEFERRABLE INITIALLY IMMEDIATE|7#NOT DEFERRABLE}"; //$NON-NLS-1$
-	}
-	
-	protected String createUniqueConstraintFormat()
-	{
-		return "ALTER TABLE {1} ADD CONSTRAINT {0} UNIQUE ({2})"; //$NON-NLS-1$
-	}
-	
-	protected String dropForeignKeyConstraintFormat()
-	{
-		return this.dropConstraintFormat();
-	}
-	
-	protected String dropUniqueConstraintFormat()
-	{
-		return this.dropConstraintFormat();
-	}
-	
-	protected String dropConstraintFormat()
-	{
-		return "ALTER TABLE {1} DROP CONSTRAINT {0}"; //$NON-NLS-1$
-	}
-	
-	protected String selectForUpdatePattern()
-	{
-		return "SELECT\\s+.+\\s+FOR\\s+UPDATE"; //$NON-NLS-1$
+		return "DATE ''{0}''";
 	}
 
-	protected String insertIntoTablePattern()
+	/**
+	 * @see net.sf.hajdbc.Dialect#evaluateCurrentTime(java.lang.String, java.sql.Time)
+	 */
+	@Override
+	public String evaluateCurrentTime(String sql, java.sql.Time time)
 	{
-		return "INSERT\\s+(?:INTO\\s+)?\\W?(\\w+)\\W?"; //$NON-NLS-1$
+		return this.evaluateTemporal(sql, this.currentTimePattern, time, this.timeLiteralFormat());
+	}
+	
+	protected String timeLiteralFormat()
+	{
+		return "TIME ''{0}''";
 	}
 
-	protected String sequencePattern()
+	/**
+	 * @see net.sf.hajdbc.Dialect#evaluateCurrentTimestamp(java.lang.String, java.sql.Timestamp)
+	 */
+	@Override
+	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp timestamp)
 	{
-		return "NEXT\\s+VALUE\\s+FOR\\s+\\W?(\\w+)\\W?"; //$NON-NLS-1$
+		return this.evaluateTemporal(sql, this.currentTimestampPattern, timestamp, this.timestampLiteralFormat());
 	}
 	
-	protected String alterSequenceFormat()
+	protected String timestampLiteralFormat()
 	{
-		return "ALTER SEQUENCE {0} RESTART WITH {1}"; //$NON-NLS-1$
+		return "TIMESTAMP ''{0}''";
 	}
-	
-	protected String nextSequenceValueFormat()
+
+	private String evaluateTemporal(String sql, Pattern pattern, java.util.Date date, String format)
 	{
-		return "NEXT VALUE FOR {0}"; //$NON-NLS-1$
+		return pattern.matcher(sql).replaceAll(MessageFormat.format(format, date.toString()));
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Dialect#evaluateRandom(java.lang.String)
+	 */
+	@Override
+	public String evaluateRandom(String sql)
+	{	
+		StringBuffer buffer = new StringBuffer();
+		Matcher matcher = this.randomPattern.matcher(sql);
+		
+		while (matcher.find())
+		{
+			matcher.appendReplacement(buffer, Double.toString(Math.random()));
+		}
+		
+		return matcher.appendTail(buffer).toString();
 	}
 }

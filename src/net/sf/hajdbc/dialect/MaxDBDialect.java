@@ -29,6 +29,7 @@ import java.util.Collection;
  * @author  Paul Ferraro
  * @since   1.1
  */
+@SuppressWarnings("nls")
 public class MaxDBDialect extends StandardDialect
 {
 	/**
@@ -37,7 +38,7 @@ public class MaxDBDialect extends StandardDialect
 	@Override
 	protected String dummyTable()
 	{
-		return "DUAL"; //$NON-NLS-1$
+		return "DUAL";
 	}
 
 	/**
@@ -46,7 +47,7 @@ public class MaxDBDialect extends StandardDialect
 	@Override
 	protected String currentTimestampFunction()
 	{
-		return "SYSDATE"; //$NON-NLS-1$
+		return "SYSDATE";
 	}
 
 	/**
@@ -55,16 +56,16 @@ public class MaxDBDialect extends StandardDialect
 	@Override
 	public Collection<String> getSequences(Connection connection) throws SQLException
 	{
-		return this.executeQuery(connection, "SELECT SEQUENCE_NAME FROM USER_SEQUENCES"); //$NON-NLS-1$
+		return this.executeQuery(connection, "SELECT SEQUENCE_NAME FROM USER_SEQUENCES");
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#supportsIdentityColumns()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#parseInsertTable(java.lang.String)
 	 */
 	@Override
-	public boolean supportsIdentityColumns()
+	public String parseInsertTable(String sql)
 	{
-		return false;
+		return null;
 	}
 
 	/**
@@ -73,7 +74,7 @@ public class MaxDBDialect extends StandardDialect
 	@Override
 	protected String truncateTableFormat()
 	{
-		return "TRUNCATE TABLE {0}"; //$NON-NLS-1$
+		return "TRUNCATE TABLE {0}";
 	}
 	
 	/**
@@ -83,7 +84,7 @@ public class MaxDBDialect extends StandardDialect
 	@Override
 	protected String createForeignKeyConstraintFormat()
 	{
-		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT}"; //$NON-NLS-1$
+		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT}";
 	}
 
 	/**
@@ -92,7 +93,7 @@ public class MaxDBDialect extends StandardDialect
 	@Override
 	protected String sequencePattern()
 	{
-		return "(\\w+)\\.(?:CURR|NEXT)VAL"; //$NON-NLS-1$
+		return "'?(\\w+)'?\\.(?:CURR|NEXT)VAL";
 	}
 
 	/**
@@ -101,6 +102,6 @@ public class MaxDBDialect extends StandardDialect
 	@Override
 	protected String nextSequenceValueFormat()
 	{
-		return "{0}.NEXTVAL"; //$NON-NLS-1$
+		return "{0}.NEXTVAL";
 	}
 }

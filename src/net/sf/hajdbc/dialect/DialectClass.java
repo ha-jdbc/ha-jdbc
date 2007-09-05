@@ -32,15 +32,16 @@ public enum DialectClass implements ClassEnum<Dialect>
 	DB2(DB2Dialect.class),
 	DERBY(DerbyDialect.class),
 	FIREBIRD(FirebirdDialect.class),
-	H2(HSQLDBDialect.class),
+	H2(H2Dialect.class),
 	HSQLDB(HSQLDBDialect.class),
 	INGRES(IngresDialect.class),
 	MAXDB(MaxDBDialect.class),
 	MCKOI(MckoiDialect.class),
 	MYSQL(MySQLDialect.class),
-	ORACLE(MaxDBDialect.class),
+	ORACLE(OracleDialect.class),
 	POSTGRESQL(PostgreSQLDialect.class),
-	STANDARD(StandardDialect.class);
+	STANDARD(StandardDialect.class),
+	SYBASE(SybaseDialect.class);
 	
 	private Class<? extends Dialect> dialectClass;
 	

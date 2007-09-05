@@ -30,17 +30,18 @@ import java.util.regex.Pattern;
  * 
  * @author Paul Ferraro
  */
+@SuppressWarnings("nls")
 public class IngresDialect extends StandardDialect
 {
-	private Pattern legacySequencePattern = Pattern.compile("(\\S+)\\.(?:(?:CURR)|(?:NEXT))VAL", Pattern.CASE_INSENSITIVE); //$NON-NLS-1$
+	private Pattern legacySequencePattern = Pattern.compile("'?(\\w+)'?\\.(?:(?:CURR)|(?:NEXT))VAL", Pattern.CASE_INSENSITIVE);
 	
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#supportsIdentityColumns()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#parseInsertTable(java.lang.String)
 	 */
 	@Override
-	public boolean supportsIdentityColumns()
+	public String parseInsertTable(String sql)
 	{
-		return false;
+		return null;
 	}
 
 	/**
@@ -49,7 +50,7 @@ public class IngresDialect extends StandardDialect
 	@Override
 	public Collection<String> getSequences(Connection connection) throws SQLException
 	{
-		return this.executeQuery(connection, "SELECT seq_name FROM iisequence"); //$NON-NLS-1$
+		return this.executeQuery(connection, "SELECT seq_name FROM iisequence");
 	}
 
 	/**
@@ -69,6 +70,42 @@ public class IngresDialect extends StandardDialect
 	@Override
 	protected String sequencePattern()
 	{
-		return "(?:NEXT|CURRENT)\\s+VALUE\\s+FOR\\s+\\W?(\\w+)\\W?"; //$NON-NLS-1$
+		return "(?:NEXT|CURRENT)\\s+VALUE\\s+FOR\\s+'?([^',\\s\\(\\)]+)";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentDatePattern()
+	 */
+	@Override
+	protected String currentDatePattern()
+	{
+		return "CURRENT_DATE|DATE\\s*\\(\\s*'TODAY'\\s*\\)";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentTimePattern()
+	 */
+	@Override
+	protected String currentTimePattern()
+	{
+		return "CURRENT_TIME|LOCAL_TIME";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentTimestampPattern()
+	 */
+	@Override
+	protected String currentTimestampPattern()
+	{
+		return "CURRENT_TIMESTAMP|LOCAL_TIMESTAMP|DATE\\s*\\(\\s*'NOW'\\s*\\)";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#randomPattern()
+	 */
+	@Override
+	protected String randomPattern()
+	{
+		return "RANDOMF\\s*\\(\\s*\\)";
 	}
 }

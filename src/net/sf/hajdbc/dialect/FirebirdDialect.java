@@ -28,6 +28,7 @@ import java.util.Collection;
  * Dialect for <a href="firebird.sourceforge.net">Firebird</a>.
  * @author Paul Ferraro
  */
+@SuppressWarnings("nls")
 public class FirebirdDialect extends StandardDialect
 {
 	/**
@@ -36,7 +37,7 @@ public class FirebirdDialect extends StandardDialect
 	@Override
 	protected String dummyTable()
 	{
-		return "RDB$DATABASE"; //$NON-NLS-1$
+		return "RDB$DATABASE";
 	}
 
 	/**
@@ -46,7 +47,7 @@ public class FirebirdDialect extends StandardDialect
 	@Override
 	protected String alterSequenceFormat()
 	{
-		return "SET GENERATOR {0} TO {1}"; //$NON-NLS-1$
+		return "SET GENERATOR {0} TO {1}";
 	}
 
 	/**
@@ -55,16 +56,16 @@ public class FirebirdDialect extends StandardDialect
 	@Override
 	public Collection<String> getSequences(Connection connection) throws SQLException
 	{
-		return this.executeQuery(connection, "SELECT RDB$GENERATOR_NAME FROM RDB$GENERATORS"); //$NON-NLS-1$
+		return this.executeQuery(connection, "SELECT RDB$GENERATOR_NAME FROM RDB$GENERATORS");
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#supportsIdentityColumns()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#parseInsertTable(java.lang.String)
 	 */
 	@Override
-	public boolean supportsIdentityColumns()
+	public String parseInsertTable(String sql)
 	{
-		return false;
+		return null;
 	}
 
 	/**
@@ -74,7 +75,7 @@ public class FirebirdDialect extends StandardDialect
 	@Override
 	protected String sequencePattern()
 	{
-		return "GEN_ID\\s*\\(\\s*(\\w+)\\s*,\\s*\\d+\\s*\\)"; //$NON-NLS-1$
+		return "GEN_ID\\s*\\(\\s*([^\\s,]+)\\s*,\\s*\\d+\\s*\\)";
 	}
 
 	/**
@@ -83,7 +84,7 @@ public class FirebirdDialect extends StandardDialect
 	@Override
 	protected String selectForUpdatePattern()
 	{
-		return "SELECT\\s+.+\\s+WITH\\s+LOCK"; //$NON-NLS-1$
+		return "SELECT\\s+.+\\s+WITH\\s+LOCK";
 	}
 
 	/**
@@ -92,6 +93,6 @@ public class FirebirdDialect extends StandardDialect
 	@Override
 	protected String nextSequenceValueFormat()
 	{
-		return "GEN_ID({0}, 1)"; //$NON-NLS-1$
+		return "GEN_ID({0}, 1)";
 	}
 }

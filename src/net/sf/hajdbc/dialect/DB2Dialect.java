@@ -29,6 +29,7 @@ import java.util.Collection;
  * @author  Paul Ferraro
  * @since   1.1
  */
+@SuppressWarnings("nls")
 public class DB2Dialect extends StandardDialect
 {
 	/**
@@ -37,7 +38,7 @@ public class DB2Dialect extends StandardDialect
 	@Override
 	protected String executeFunctionFormat()
 	{
-		return "VALUES {0}"; //$NON-NLS-1$
+		return "VALUES {0}";
 	}
 
 	/**
@@ -46,7 +47,7 @@ public class DB2Dialect extends StandardDialect
 	@Override
 	public Collection<String> getSequences(Connection connection) throws SQLException
 	{
-		return this.executeQuery(connection, "SELECT SEQNAME FROM SYSCAT.SEQUENCES"); //$NON-NLS-1$
+		return this.executeQuery(connection, "SELECT SEQNAME FROM SYSCAT.SEQUENCES");
 	}
 
 	/**
@@ -55,7 +56,7 @@ public class DB2Dialect extends StandardDialect
 	@Override
 	protected String sequencePattern()
 	{
-		return "(?:NEXT|PREV)VAL\\s+FOR\\s+\\W?(\\w+)\\W?"; //$NON-NLS-1$
+		return "(?:NEXT|PREV)VAL\\s+FOR\\s+'?([^',\\s\\(\\)]+)";
 	}
 
 	/**
@@ -64,6 +65,33 @@ public class DB2Dialect extends StandardDialect
 	@Override
 	protected String nextSequenceValueFormat()
 	{
-		return "NEXTVAL FOR {0}"; //$NON-NLS-1$
+		return "NEXTVAL FOR {0}";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#dateLiteralPattern()
+	 */
+	@Override
+	protected String dateLiteralFormat()
+	{
+		return this.timestampLiteralFormat();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#timeLiteralPattern()
+	 */
+	@Override
+	protected String timeLiteralFormat()
+	{
+		return this.timestampLiteralFormat();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#timestampLiteralPattern()
+	 */
+	@Override
+	protected String timestampLiteralFormat()
+	{
+		return "''{0}''";
 	}
 }

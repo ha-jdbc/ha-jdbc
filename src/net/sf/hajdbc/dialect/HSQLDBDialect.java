@@ -30,6 +30,7 @@ import java.util.Collection;
  * @author  Paul Ferraro
  * @since   1.1
  */
+@SuppressWarnings("nls")
 public class HSQLDBDialect extends StandardDialect
 {
 	/**
@@ -38,7 +39,7 @@ public class HSQLDBDialect extends StandardDialect
 	@Override
 	protected String executeFunctionFormat()
 	{
-		return "CALL {0}"; //$NON-NLS-1$
+		return "CALL {0}";
 	}
 
 	/**
@@ -47,7 +48,7 @@ public class HSQLDBDialect extends StandardDialect
 	@Override
 	public Collection<String> getSequences(Connection connection) throws SQLException
 	{
-		return this.executeQuery(connection, "SELECT SEQUENCE_NAME FROM INFORMATION_SCHEMA.SYSTEM_SEQUENCES"); //$NON-NLS-1$
+		return this.executeQuery(connection, "SELECT SEQUENCE_NAME FROM INFORMATION_SCHEMA.SYSTEM_SEQUENCES");
 	}
 
 	/**
@@ -57,6 +58,33 @@ public class HSQLDBDialect extends StandardDialect
 	@Override
 	protected String createForeignKeyConstraintFormat()
 	{
-		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} ON UPDATE {6,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT}"; //$NON-NLS-1$
+		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} ON UPDATE {6,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT}";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentDatePattern()
+	 */
+	@Override
+	protected String currentDatePattern()
+	{
+		return "CURRENT_DATE|CURDATE\\s*\\(\\s*\\)";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentTimePattern()
+	 */
+	@Override
+	protected String currentTimePattern()
+	{
+		return "CURRENT_TIME|CURTIME\\s*\\(\\s*\\)";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentTimestampPattern()
+	 */
+	@Override
+	protected String currentTimestampPattern()
+	{
+		return "CURRENT_TIMESTAMP|NOW\\s*\\(\\s*\\)";
 	}
 }
