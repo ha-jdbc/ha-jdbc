@@ -35,7 +35,7 @@ public class MockDatabase extends AbstractDatabase<Void>
 {
 	public MockDatabase()
 	{
-		this("");
+		this(""); //$NON-NLS-1$
 	}
 	
 	public MockDatabase(String id)
