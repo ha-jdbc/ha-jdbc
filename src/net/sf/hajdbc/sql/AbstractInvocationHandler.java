@@ -24,6 +24,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -132,7 +134,48 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 	
 	protected Invoker<D, E, ?> getInvoker(E object, Method method, Object[] parameters) throws Exception
 	{
+		if (this.isSQLMethod(method))
+		{
+			List<Object> parameterList = new ArrayList<Object>(Arrays.asList(parameters));
+			
+			DatabaseCluster<D> cluster = this.getDatabaseCluster();
+			
+			long now = System.currentTimeMillis();
+			
+			if (cluster.isCurrentTimestampEvaluationEnabled())
+			{
+				parameterList.set(0, cluster.getDialect().evaluateCurrentTimestamp((String) parameterList.get(0), new java.sql.Timestamp(now)));
+			}
+			
+			if (cluster.isCurrentDateEvaluationEnabled())
+			{
+				parameterList.set(0, cluster.getDialect().evaluateCurrentDate((String) parameterList.get(0), new java.sql.Date(now)));
+			}
+			
+			if (cluster.isCurrentTimeEvaluationEnabled())
+			{
+				parameterList.set(0, cluster.getDialect().evaluateCurrentTime((String) parameterList.get(0), new java.sql.Time(now)));
+			}
+			
+			if (cluster.isRandomEvaluationEnabled())
+			{
+				parameterList.set(0, cluster.getDialect().evaluateRandom((String) parameterList.get(0)));
+			}
+			
+			return new DynamicInvoker(method, parameterList.toArray());
+		}
+		
 		return new DynamicInvoker(method, parameters);
+	}
+	
+	/**
+	 * Indicates whether or not the specified method accepts a SQL string as its first parameter.
+	 * @param method a method
+	 * @return true, if the specified method accepts a SQL string as its first parameter, false otherwise.
+	 */
+	protected boolean isSQLMethod(Method method)
+	{
+		return false;
 	}
 	
 	protected void postInvoke(E object, Method method, Object[] parameters) throws Exception

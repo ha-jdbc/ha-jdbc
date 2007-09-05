@@ -110,6 +110,10 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	private TransactionMode transactionMode;
 	private boolean identityColumnDetectionEnabled;
 	private boolean sequenceDetectionEnabled;
+	private boolean currentDateEvaluationEnabled;
+	private boolean currentTimeEvaluationEnabled;
+	private boolean currentTimestampEvaluationEnabled;
+	private boolean randomEvaluationEnabled;
 	
 	private MBeanServer server;
 	private URL url;
@@ -683,6 +687,42 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	public boolean isSequenceDetectionEnabled()
 	{
 		return this.sequenceDetectionEnabled;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#isCurrentDateEvaluationEnabled()
+	 */
+	@Override
+	public boolean isCurrentDateEvaluationEnabled()
+	{
+		return this.currentDateEvaluationEnabled;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#isCurrentTimeEvaluationEnabled()
+	 */
+	@Override
+	public boolean isCurrentTimeEvaluationEnabled()
+	{
+		return this.currentTimeEvaluationEnabled;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#isCurrentTimestampEvaluationEnabled()
+	 */
+	@Override
+	public boolean isCurrentTimestampEvaluationEnabled()
+	{
+		return this.currentTimestampEvaluationEnabled;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#isRandEvaluationEnabled()
+	 */
+	@Override
+	public boolean isRandomEvaluationEnabled()
+	{
+		return this.randomEvaluationEnabled;
 	}
 
 	/**

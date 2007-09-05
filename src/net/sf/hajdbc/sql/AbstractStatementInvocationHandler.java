@@ -150,6 +150,18 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 	}
 
 	/**
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#isSQLMethod(java.lang.reflect.Method)
+	 */
+	@Override
+	protected boolean isSQLMethod(Method method)
+	{
+		String methodName = method.getName();
+		Class<?>[] parameterTypes = method.getParameterTypes();
+		
+		return (methodName.equals("addBatch") || methodName.equals("executeQuery") || methodName.equals("execute") || methodName.equals("executeUpdate")) && (parameterTypes.length > 0) && parameterTypes[0].equals(String.class);
+	}
+
+	/**
 	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#postInvoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
@@ -242,7 +254,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 		
 		for (String sql: sqlList)
 		{
-			if (dialect.supportsSequences() && databaseCluster.isSequenceDetectionEnabled())
+			if (databaseCluster.isSequenceDetectionEnabled())
 			{
 				String sequence = dialect.parseSequence(sql);
 				
@@ -252,7 +264,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 				}
 			}
 			
-			if (dialect.supportsIdentityColumns() && databaseCluster.isIdentityColumnDetectionEnabled())
+			if (databaseCluster.isIdentityColumnDetectionEnabled())
 			{
 				String table = dialect.parseInsertTable(sql);
 				

@@ -35,7 +35,6 @@ import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Database;
 
-
 /**
  * @author Paul Ferraro
  *
@@ -137,7 +136,7 @@ public class ConnectionInvocationHandler<D> extends AbstractInvocationHandler<D,
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	protected Invoker<D, Connection, ?> getInvoker(Connection connection, final Method method, final Object[] parameters) throws Exception
+	protected Invoker<D, Connection, ?> getInvoker(Connection connection, Method method, Object[] parameters) throws Exception
 	{
 		if (method.equals(Connection.class.getMethod("releaseSavepoint", Savepoint.class)))
 		{
@@ -170,6 +169,17 @@ public class ConnectionInvocationHandler<D> extends AbstractInvocationHandler<D,
 		}
 		
 		return super.getInvoker(connection, method, parameters);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#isSQLMethod(java.lang.reflect.Method)
+	 */
+	@Override
+	protected boolean isSQLMethod(Method method)
+	{
+		String methodName = method.getName();
+		
+		return methodName.equals("prepareStatement") || methodName.equals("prepareCall");
 	}
 
 	/**
