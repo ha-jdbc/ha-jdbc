@@ -274,8 +274,12 @@
   min-threads             CDATA                            "0"
   max-threads             CDATA                            "100"
   max-idle                CDATA                            "60"
-  detect-identity-columns (true|false)                     "true"
-  detect-sequences        (true|false)                     "true"
+  detect-identity-columns (true|false)                     "false"
+  detect-sequences        (true|false)                     "false"
+  eval-current-date       (true|false)                     "false"
+  eval-current-time       (true|false)                     "false"
+  eval-current-timstamp   (true|false)                     "false"
+  eval-rand               (true|false)                     "false"
 >
 ]]></source>
 				<dl>
@@ -346,14 +350,28 @@
 					</dd>
 					<dt id="identity-columns">detect-identity-columns</dt>
 					<dd>
-						Indicates that identity columns should be detected (if the configured dialect supports them) and measures taken to ensure that they are replicated correctly.
+						Indicates whether or not identity columns should be detected (if the configured dialect supports them) and measures taken to ensure that they are replicated correctly.
 						If enabled, you should also use an eager meta-data-cache since identity column detection requires several database meta-data queries.
-						If identity columns are not used then this attribute should be set to false to avoid the cost of detection.
 					</dd>
 					<dt id="sequences">detect-sequences</dt>
 					<dd>
-						Indicates that sequence operations should be detected (if the configured dialect supports them) and measures taken to ensure that they are replicated correctly.
-						If sequences are not used then this attribute should be set to false to avoid cost of detection.
+						Indicates whether or not sequence operations should be detected (if the configured dialect supports them) and measures taken to ensure that they are replicated correctly.
+					</dd>
+					<dt>eval-current-date</dt>
+					<dd>
+						Indicates whether or not SQL statements containing non-deterministic CURRENT_DATE functions should be replaced with deterministic client-generated values.
+					</dd>
+					<dt>eval-current-time</dt>
+					<dd>
+						Indicates whether or not SQL statements containing non-deterministic CURRENT_TIME functions should be replaced with deterministic client-generated values.
+					</dd>
+					<dt>eval-current-timestamp</dt>
+					<dd>
+						Indicates whether or not SQL statements containing non-deterministic CURRENT_TIMESTAMP functions should be replaced with deterministic client-generated values.
+					</dd>
+					<dt>eval-rand</dt>
+					<dd>
+						Indicates whether or not SQL statements containing non-deterministic RAND() functions should be replaced with deterministic client-generated values.
 					</dd>
 				</dl>
 				<section id="database">
@@ -454,9 +472,9 @@
 				<table>
 					<caption>The HA-JDBC distribution contains the following dialect implementations:</caption>
 					<tr>
-						<th>Vendor</th>
+						<th>Vendor(s)</th>
 						<th>Dialect</th>
-						<th>Aliases</th>
+						<th>Alias</th>
 					</tr>
 					<tr>
 						<td>Apache Derby</td>
@@ -464,14 +482,19 @@
 						<td>derby</td>
 					</tr>
 					<tr>
-						<td>Firebird</td>
+						<td>Firebird, InterBase</td>
 						<td><a href="api/net/sf/hajdbc/dialect/FirebirdDialect.html">net.sf.hajdbc.dialect.FirebirdDialect</a></td>
 						<td>firebird</td>
 					</tr>
 					<tr>
-						<td>HSQLDB, H2</td>
+						<td>H2</td>
+						<td><a href="api/net/sf/hajdbc/dialect/H2Dialect.html">net.sf.hajdbc.dialect.H2Dialect</a></td>
+						<td>h2</td>
+					</tr>
+					<tr>
+						<td>HSQLDB</td>
 						<td><a href="api/net/sf/hajdbc/dialect/HSQLDBDialect.html">net.sf.hajdbc.dialect.HSQLDBDialect</a></td>
-						<td>hsqldb, h2</td>
+						<td>hsqldb</td>
 					</tr>
 					<tr>
 						<td>IBM DB2</td>
@@ -490,18 +513,28 @@
 					</tr>
 					<tr>
 						<td>MySQL</td>
-						<td><a href="api/net/sf/hajdbc/dialect/MaxDBDialect.html">net.sf.hajdbc.dialect.MySQLDialect</a></td>
+						<td><a href="api/net/sf/hajdbc/dialect/MySQLDialect.html">net.sf.hajdbc.dialect.MySQLDialect</a></td>
 						<td>mysql</td>
 					</tr>
 					<tr>
-						<td>MySQL MaxDB, Oracle</td>
+						<td>MySQL MaxDB</td>
 						<td><a href="api/net/sf/hajdbc/dialect/MaxDBDialect.html">net.sf.hajdbc.dialect.MaxDBDialect</a></td>
-						<td>maxdb, oracle</td>
+						<td>maxdb</td>
+					</tr>
+					<tr>
+						<td>Oracle</td>
+						<td><a href="api/net/sf/hajdbc/dialect/OracleDialect.html">net.sf.hajdbc.dialect.OracleDialect</a></td>
+						<td>oracle</td>
 					</tr>
 					<tr>
 						<td>PostgreSQL</td>
 						<td><a href="api/net/sf/hajdbc/dialect/PostgreSQLDialect.html">net.sf.hajdbc.dialect.PostgreSQLDialect</a></td>
 						<td>postgresql</td>
+					</tr>
+					<tr>
+						<td>Sybase</td>
+						<td><a href="api/net/sf/hajdbc/dialect/SybaseDialect.html">net.sf.hajdbc.dialect.SybaseDialect</a></td>
+						<td>sybase</td>
 					</tr>
 					<tr>
 						<td>Standard (SQL-92 compliant)</td>
@@ -733,10 +766,6 @@ Connection connection = DriverManager.getConnection("jdbc:ha-jdbc:cluster1", "po
 				<source><![CDATA[
 <Context>
   <!-- ... -->
-  <Resource name="jdbc/cluster" type="javax.sql.DataSource"
-            factory="net.sf.hajdbc.sql.DataSource"
-            cluster="cluster2" config="file:///path/to/ha-jdbc-{0}.xml"/>
-  
   <Resource name="jdbc/database1" type="javax.sql.DataSource"
             username="postgres" password="password" driverClassName="org.postgresql.Driver"
             url="jdbc:postgresql://server1/database"/>
@@ -744,6 +773,10 @@ Connection connection = DriverManager.getConnection("jdbc:ha-jdbc:cluster1", "po
   <Resource name="jdbc/database2" type="javax.sql.DataSource"
             username="postgres" password="password" driverClassName="org.postgresql.Driver"
             url="jdbc:postgresql://server2/database"/>
+
+  <Resource name="jdbc/cluster" type="javax.sql.DataSource"
+            factory="net.sf.hajdbc.sql.DataSource"
+            cluster="cluster2" config="file:///path/to/ha-jdbc-{0}.xml"/>
   <!-- ... -->
 </Context>
 ]]></source>
@@ -752,15 +785,15 @@ Connection connection = DriverManager.getConnection("jdbc:ha-jdbc:cluster1", "po
 <web-app>
   <!-- ... -->
   <resource-env-ref>
-    <resource-env-ref-name>jdbc/cluster</resource-env-ref-name>
-    <resource-env-ref-type>javax.sql.DataSource</resource-env-ref-type>
-  </resource-env-ref>
-  <resource-env-ref>
     <resource-env-ref-name>jdbc/database1</resource-env-ref-name>
     <resource-env-ref-type>javax.sql.DataSource</resource-env-ref-type>
   </resource-env-ref>
   <resource-env-ref>
     <resource-env-ref-name>jdbc/database2</resource-env-ref-name>
+    <resource-env-ref-type>javax.sql.DataSource</resource-env-ref-type>
+  </resource-env-ref>
+  <resource-env-ref>
+    <resource-env-ref-name>jdbc/cluster</resource-env-ref-name>
     <resource-env-ref-type>javax.sql.DataSource</resource-env-ref-type>
   </resource-env-ref>
   <!-- ... -->
