@@ -27,6 +27,7 @@ import java.util.Map;
 
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.ForeignKeyConstraint;
+import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.UniqueConstraint;
 
 /**
@@ -41,13 +42,13 @@ public class EagerTableProperties extends AbstractTableProperties
 	private Collection<ForeignKeyConstraint> foreignKeyConstraints;
 	private String name;
 	
-	public EagerTableProperties(DatabaseMetaData metaData, DatabaseMetaDataSupport support, String schema, String table) throws SQLException
+	public EagerTableProperties(DatabaseMetaData metaData, DatabaseMetaDataSupport support, QualifiedName table) throws SQLException
 	{
-		this.columnMap = support.getColumns(metaData, schema, table);
-		this.primaryKey = support.getPrimaryKey(metaData, schema, table);
-		this.uniqueConstraints = support.getUniqueConstraints(metaData, schema, table);
-		this.foreignKeyConstraints = support.getForeignKeyConstraints(metaData, schema, table);
-		this.name = support.getQualifiedNameForDML(schema, table);
+		this.columnMap = support.getColumns(metaData, table);
+		this.primaryKey = support.getPrimaryKey(metaData, table);
+		this.uniqueConstraints = support.getUniqueConstraints(metaData, table);
+		this.foreignKeyConstraints = support.getForeignKeyConstraints(metaData, table);
+		this.name = support.qualifyNameForDML(table);
 	}
 
 	/**
@@ -102,5 +103,14 @@ public class EagerTableProperties extends AbstractTableProperties
 	public String getName()
 	{
 		return this.name;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.TableProperties#getIdentityColumns()
+	 */
+	@Override
+	public Collection<String> getIdentityColumns() throws SQLException
+	{
+		return null;
 	}
 }

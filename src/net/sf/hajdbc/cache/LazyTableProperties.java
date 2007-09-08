@@ -26,6 +26,7 @@ import java.util.Map;
 
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.ForeignKeyConstraint;
+import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.UniqueConstraint;
 
 /**
@@ -34,8 +35,7 @@ import net.sf.hajdbc.UniqueConstraint;
  */
 public class LazyTableProperties extends AbstractTableProperties
 {
-	private String schema;
-	private String table;
+	private QualifiedName table;
 	private DatabaseMetaDataSupport support;
 	private Map<String, ColumnProperties> columnMap;
 	private UniqueConstraint primaryKey;
@@ -43,9 +43,8 @@ public class LazyTableProperties extends AbstractTableProperties
 	private Collection<ForeignKeyConstraint> foreignKeyConstraints;
 	private String name;
 	
-	public LazyTableProperties(DatabaseMetaDataSupport support, String schema, String table)
+	public LazyTableProperties(DatabaseMetaDataSupport support, QualifiedName table)
 	{
-		this.schema = schema;
 		this.table = table;
 		this.support = support;
 	}
@@ -56,12 +55,7 @@ public class LazyTableProperties extends AbstractTableProperties
 	@Override
 	public synchronized Collection<String> getColumns() throws SQLException
 	{
-		if (this.columnMap == null)
-		{
-			this.columnMap = this.support.getColumns(LazyDatabaseProperties.getDatabaseMetaData(), this.schema, this.table);
-		}
-		
-		return this.columnMap.keySet();
+		return this.getColumnMap().keySet();
 	}
 
 	/**
@@ -70,14 +64,19 @@ public class LazyTableProperties extends AbstractTableProperties
 	@Override
 	public synchronized ColumnProperties getColumnProperties(String column) throws SQLException
 	{
-		if (this.columnMap == null)
-		{
-			this.columnMap = this.support.getColumns(LazyDatabaseProperties.getDatabaseMetaData(), this.schema, this.table);
-		}
-		
-		return this.columnMap.get(column);
+		return this.getColumnMap().get(column);
 	}
 
+	private synchronized Map<String, ColumnProperties> getColumnMap() throws SQLException
+	{
+		if (this.columnMap == null)
+		{
+			this.columnMap = this.support.getColumns(LazyDatabaseProperties.getDatabaseMetaData(), this.table);
+		}
+		
+		return this.columnMap;
+	}
+	
 	/**
 	 * @see net.sf.hajdbc.TableProperties#getPrimaryKey()
 	 */
@@ -86,7 +85,7 @@ public class LazyTableProperties extends AbstractTableProperties
 	{
 		if (this.primaryKey == null)
 		{
-			this.primaryKey = this.support.getPrimaryKey(LazyDatabaseProperties.getDatabaseMetaData(), this.schema, this.table);
+			this.primaryKey = this.support.getPrimaryKey(LazyDatabaseProperties.getDatabaseMetaData(), this.table);
 		}
 		
 		return this.primaryKey;
@@ -100,7 +99,7 @@ public class LazyTableProperties extends AbstractTableProperties
 	{
 		if (this.foreignKeyConstraints == null)
 		{
-			this.foreignKeyConstraints = this.support.getForeignKeyConstraints(LazyDatabaseProperties.getDatabaseMetaData(), this.schema, this.table);
+			this.foreignKeyConstraints = this.support.getForeignKeyConstraints(LazyDatabaseProperties.getDatabaseMetaData(), this.table);
 		}
 		
 		return this.foreignKeyConstraints;
@@ -114,7 +113,7 @@ public class LazyTableProperties extends AbstractTableProperties
 	{
 		if (this.uniqueConstraints == null)
 		{
-			this.uniqueConstraints = this.support.getUniqueConstraints(LazyDatabaseProperties.getDatabaseMetaData(), this.schema, this.table);
+			this.uniqueConstraints = this.support.getUniqueConstraints(LazyDatabaseProperties.getDatabaseMetaData(), this.table);
 		}
 		
 		return this.uniqueConstraints;
@@ -128,9 +127,18 @@ public class LazyTableProperties extends AbstractTableProperties
 	{
 		if (this.name == null)
 		{
-			this.name = this.support.getQualifiedNameForDML(this.schema, this.table);
+			this.name = this.support.qualifyNameForDML(this.table);
 		}
 		
 		return this.name;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.TableProperties#getIdentityColumns()
+	 */
+	@Override
+	public Collection<String> getIdentityColumns() throws SQLException
+	{
+		return null;
 	}
 }

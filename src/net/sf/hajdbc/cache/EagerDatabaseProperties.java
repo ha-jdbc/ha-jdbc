@@ -23,6 +23,7 @@ package net.sf.hajdbc.cache;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +31,8 @@ import java.util.Map;
 
 import net.sf.hajdbc.DatabaseProperties;
 import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.TableProperties;
 
 /**
@@ -40,9 +43,9 @@ public class EagerDatabaseProperties implements DatabaseProperties
 {
 	private DatabaseMetaDataSupport support;
 	private Map<String, TableProperties> tableMap = new HashMap<String, TableProperties>();
+	private Map<String, SequenceProperties> sequenceMap = new HashMap<String, SequenceProperties>();
 	private boolean supportsSelectForUpdate;
 	private List<String> defaultSchemaList;
-	private Dialect dialect;
 	
 	public EagerDatabaseProperties(Connection connection, Dialect dialect) throws SQLException
 	{
@@ -52,24 +55,23 @@ public class EagerDatabaseProperties implements DatabaseProperties
 		
 		this.supportsSelectForUpdate = metaData.supportsSelectForUpdate();
 		
-		Map<String, Collection<String>> tablesMap = this.support.getTables(metaData);
+		Collection<QualifiedName> tables = this.support.getTables(metaData);
 		
-		for (Map.Entry<String, Collection<String>> tablesMapEntry: tablesMap.entrySet())
+		for (QualifiedName table: tables)
 		{
-			String schema = tablesMapEntry.getKey();
-			Collection<String> tables = tablesMapEntry.getValue();
+			TableProperties properties = new EagerTableProperties(metaData, this.support, table);
 			
-			for (String table: tables)
-			{
-				TableProperties properties = new EagerTableProperties(metaData, this.support, schema, table);
-				
-				this.tableMap.put(properties.getName(), properties);
-			}
+			this.tableMap.put(properties.getName(), properties);
 		}
 		
-		this.dialect = dialect;
+		List<String> defaultSchemaList = dialect.getDefaultSchemas(connection);
 		
-		this.defaultSchemaList = dialect.getDefaultSchemas(connection);
+		this.defaultSchemaList = new ArrayList<String>(defaultSchemaList);
+		
+		for (SequenceProperties sequence: this.support.getSequences(metaData))
+		{
+			this.sequenceMap.put(sequence.getName(), sequence);
+		}
 	}
 
 	/**
@@ -87,7 +89,7 @@ public class EagerDatabaseProperties implements DatabaseProperties
 	@Override
 	public TableProperties findTable(String table) throws SQLException
 	{
-		return this.support.findTable(this.tableMap, table, this.defaultSchemaList, this.dialect);
+		return this.support.find(this.tableMap, table, this.defaultSchemaList);
 	}
 
 	/**
@@ -97,5 +99,23 @@ public class EagerDatabaseProperties implements DatabaseProperties
 	public boolean supportsSelectForUpdate()
 	{
 		return this.supportsSelectForUpdate;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseProperties#findSequence(java.lang.String)
+	 */
+	@Override
+	public SequenceProperties findSequence(String sequence) throws SQLException
+	{
+		return this.support.find(this.sequenceMap, sequence, this.defaultSchemaList);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseProperties#getSequences()
+	 */
+	@Override
+	public Collection<SequenceProperties> getSequences() throws SQLException
+	{
+		return this.sequenceMap.values();
 	}
 }

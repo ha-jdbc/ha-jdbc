@@ -23,6 +23,7 @@ package net.sf.hajdbc.cache;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -37,7 +38,8 @@ import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.Messages;
-import net.sf.hajdbc.TableProperties;
+import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.UniqueConstraint;
 import net.sf.hajdbc.util.Strings;
 
@@ -45,10 +47,10 @@ import net.sf.hajdbc.util.Strings;
  * Processes database meta data into useful structures.
  * @author Paul Ferraro
  */
+@SuppressWarnings("nls")
 public class DatabaseMetaDataSupport
 {
 	// As defined in SQL-92 specification: http://www.andrew.cmu.edu/user/shadow/sql/sql1992.txt
-	@SuppressWarnings("nls")
 	private static final String[] SQL_92_RESERVED_WORDS = new String[] {
 		"absolute", "action", "add", "all", "allocate", "alter", "and", "any", "are", "as", "asc", "assertion", "at", "authorization", "avg",
 		"begin", "between", "bit", "bit_length", "both", "by",
@@ -76,9 +78,10 @@ public class DatabaseMetaDataSupport
 		"zone"
 	};
 	
-	private static final Pattern UPPER_CASE_PATTERN = Pattern.compile("[A-Z]"); //$NON-NLS-1$
-	private static final Pattern LOWER_CASE_PATTERN = Pattern.compile("[a-z]"); //$NON-NLS-1$
+	private static final Pattern UPPER_CASE_PATTERN = Pattern.compile("[A-Z]");
+	private static final Pattern LOWER_CASE_PATTERN = Pattern.compile("[a-z]");
 	
+	private Dialect dialect;
 	private Set<String> reservedIdentifierSet;
 	private Pattern identifierPattern;
 	private String quote;
@@ -101,6 +104,8 @@ public class DatabaseMetaDataSupport
 	 */
 	public DatabaseMetaDataSupport(DatabaseMetaData metaData, Dialect dialect) throws SQLException
 	{
+		this.dialect = dialect;
+		
 		this.reservedIdentifierSet = new HashSet<String>(Arrays.asList(SQL_92_RESERVED_WORDS));
 		this.reservedIdentifierSet.addAll(Arrays.asList(metaData.getSQLKeywords().split(Strings.COMMA)));
 		
@@ -124,32 +129,20 @@ public class DatabaseMetaDataSupport
 	 * @return a Map of schema name to Collection of table names
 	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */
-	public Map<String, Collection<String>> getTables(DatabaseMetaData metaData) throws SQLException
+	public Collection<QualifiedName> getTables(DatabaseMetaData metaData) throws SQLException
 	{
-		Map<String, Collection<String>> tablesMap = new HashMap<String, Collection<String>>();
+		List<QualifiedName> list = new LinkedList<QualifiedName>();
 		
-		ResultSet resultSet = metaData.getTables(this.getCatalog(metaData), null, Strings.ANY, new String[] { "TABLE" }); //$NON-NLS-1$
+		ResultSet resultSet = metaData.getTables(this.getCatalog(metaData), null, Strings.ANY, new String[] { "TABLE" });
 		
 		while (resultSet.next())
 		{
-			String table = resultSet.getString("TABLE_NAME"); //$NON-NLS-1$
-			String schema = resultSet.getString("TABLE_SCHEM"); //$NON-NLS-1$
-
-			Collection<String> tables = tablesMap.get(schema);
-			
-			if (tables == null)
-			{
-				tables = new LinkedList<String>();
-				
-				tablesMap.put(schema, tables);
-			}
-			
-			tables.add(table);
+			list.add(new QualifiedName(resultSet.getString("TABLE_SCHEM"), resultSet.getString("TABLE_NAME")));
 		}
 		
 		resultSet.close();
 		
-		return tablesMap;
+		return list;
 	}
 
 	/**
@@ -160,30 +153,30 @@ public class DatabaseMetaDataSupport
 	 * @return a Map of column name to column properties
 	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */
-	public Map<String, ColumnProperties> getColumns(DatabaseMetaData metaData, String schema, String table) throws SQLException
+	public Map<String, ColumnProperties> getColumns(DatabaseMetaData metaData, QualifiedName table) throws SQLException
 	{
 		Map<String, ColumnProperties> columnMap = new HashMap<String, ColumnProperties>();
 		
-		ResultSet resultSet = metaData.getColumns(this.getCatalog(metaData), this.getSchema(schema), table, Strings.ANY);
+		ResultSet resultSet = metaData.getColumns(this.getCatalog(metaData), this.getSchema(table), table.getName(), Strings.ANY);
 		
 		while (resultSet.next())
 		{
-			String column = this.quote(resultSet.getString("COLUMN_NAME")); //$NON-NLS-1$
-			int type = resultSet.getInt("DATA_TYPE"); //$NON-NLS-1$
-			String nativeType = resultSet.getString("TYPE_NAME"); //$NON-NLS-1$
-			String defaultValue = resultSet.getString("COLUMN_DEF"); //$NON-NLS-1$
-			String remarks = resultSet.getString("REMARKS"); //$NON-NLS-1$
+			String column = this.quote(resultSet.getString("COLUMN_NAME"));
+			int type = resultSet.getInt("DATA_TYPE");
+			String nativeType = resultSet.getString("TYPE_NAME");
+			String defaultValue = resultSet.getString("COLUMN_DEF");
+			String remarks = resultSet.getString("REMARKS");
 			Boolean autoIncrement = null;
 			
 			try
 			{
-				String value = resultSet.getString("IS_AUTOINCREMENT"); //$NON-NLS-1$
+				String value = resultSet.getString("IS_AUTOINCREMENT");
 				
-				if (value.equals("YES")) //$NON-NLS-1$
+				if (value.equals("YES"))
 				{
 					autoIncrement = true;
 				}
-				else if (value.equals("NO")) //$NON-NLS-1$
+				else if (value.equals("NO"))
 				{
 					autoIncrement = false;
 				}
@@ -209,22 +202,22 @@ public class DatabaseMetaDataSupport
 	 * @return a unique constraint
 	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */
-	public UniqueConstraint getPrimaryKey(DatabaseMetaData metaData, String schema, String table) throws SQLException
+	public UniqueConstraint getPrimaryKey(DatabaseMetaData metaData, QualifiedName table) throws SQLException
 	{
 		UniqueConstraint constraint = null;
 
-		ResultSet resultSet = metaData.getPrimaryKeys(this.getCatalog(metaData), this.getSchema(schema), table);
+		ResultSet resultSet = metaData.getPrimaryKeys(this.getCatalog(metaData), this.getSchema(table), table.getName());
 		
 		while (resultSet.next())
 		{
-			String name = this.quote(resultSet.getString("PK_NAME")); //$NON-NLS-1$
+			String name = this.quote(resultSet.getString("PK_NAME"));
 
 			if (constraint == null)
 			{
-				constraint = new UniqueConstraintImpl(name, this.getQualifiedNameForDDL(schema, table));
+				constraint = new UniqueConstraintImpl(name, this.qualifyNameForDDL(table));
 			}
 			
-			String column = this.quote(resultSet.getString("COLUMN_NAME")); //$NON-NLS-1$
+			String column = this.quote(resultSet.getString("COLUMN_NAME"));
 			
 			constraint.getColumnList().add(column);
 		}
@@ -242,35 +235,35 @@ public class DatabaseMetaDataSupport
 	 * @return a Collection of foreign key constraints.
 	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */
-	public Collection<ForeignKeyConstraint> getForeignKeyConstraints(DatabaseMetaData metaData, String schema, String table) throws SQLException
+	public Collection<ForeignKeyConstraint> getForeignKeyConstraints(DatabaseMetaData metaData, QualifiedName table) throws SQLException
 	{
 		Map<String, ForeignKeyConstraint> foreignKeyMap = new HashMap<String, ForeignKeyConstraint>();
 		
-		ResultSet resultSet = metaData.getImportedKeys(this.getCatalog(metaData), this.getSchema(schema), table);
+		ResultSet resultSet = metaData.getImportedKeys(this.getCatalog(metaData), this.getSchema(table), table.getName());
 		
 		while (resultSet.next())
 		{
-			String name = this.quote(resultSet.getString("FK_NAME")); //$NON-NLS-1$
+			String name = this.quote(resultSet.getString("FK_NAME"));
 			
 			ForeignKeyConstraint foreignKey = foreignKeyMap.get(name);
 			
 			if (foreignKey == null)
 			{
-				foreignKey = new ForeignKeyConstraintImpl(name, this.getQualifiedNameForDDL(schema, table));
+				foreignKey = new ForeignKeyConstraintImpl(name, this.qualifyNameForDDL(table));
 				
-				String foreignSchema = this.quote(resultSet.getString("PKTABLE_SCHEM")); //$NON-NLS-1$
-				String foreignTable = this.quote(resultSet.getString("PKTABLE_NAME")); //$NON-NLS-1$
+				String foreignSchema = this.quote(resultSet.getString("PKTABLE_SCHEM"));
+				String foreignTable = this.quote(resultSet.getString("PKTABLE_NAME"));
 				
-				foreignKey.setForeignTable(this.getQualifiedNameForDDL(foreignSchema, foreignTable));
-				foreignKey.setDeleteRule(resultSet.getInt("DELETE_RULE")); //$NON-NLS-1$
-				foreignKey.setUpdateRule(resultSet.getInt("UPDATE_RULE")); //$NON-NLS-1$
-				foreignKey.setDeferrability(resultSet.getInt("DEFERRABILITY")); //$NON-NLS-1$
+				foreignKey.setForeignTable(this.qualifyNameForDDL(new QualifiedName(foreignSchema, foreignTable)));
+				foreignKey.setDeleteRule(resultSet.getInt("DELETE_RULE"));
+				foreignKey.setUpdateRule(resultSet.getInt("UPDATE_RULE"));
+				foreignKey.setDeferrability(resultSet.getInt("DEFERRABILITY"));
 				
 				foreignKeyMap.put(name, foreignKey);
 			}
 			
-			String column = this.quote(resultSet.getString("FKCOLUMN_NAME")); //$NON-NLS-1$
-			String foreignColumn = this.quote(resultSet.getString("PKCOLUMN_NAME")); //$NON-NLS-1$
+			String column = this.quote(resultSet.getString("FKCOLUMN_NAME"));
+			String foreignColumn = this.quote(resultSet.getString("PKCOLUMN_NAME"));
 
 			foreignKey.getColumnList().add(column);
 			foreignKey.getForeignColumnList().add(foreignColumn);
@@ -289,28 +282,28 @@ public class DatabaseMetaDataSupport
 	 * @return a Collection of unique constraints.
 	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */
-	public Collection<UniqueConstraint> getUniqueConstraints(DatabaseMetaData metaData, String schema, String table) throws SQLException
+	public Collection<UniqueConstraint> getUniqueConstraints(DatabaseMetaData metaData, QualifiedName table) throws SQLException
 	{
 		Map<String, UniqueConstraint> keyMap = new HashMap<String, UniqueConstraint>();
 		
-		ResultSet resultSet = metaData.getIndexInfo(this.getCatalog(metaData), this.getSchema(schema), table, true, false);
+		ResultSet resultSet = metaData.getIndexInfo(this.getCatalog(metaData), this.getSchema(table), table.getName(), true, false);
 		
 		while (resultSet.next())
 		{
-			if (resultSet.getInt("TYPE") == DatabaseMetaData.tableIndexStatistic) continue; //$NON-NLS-1$
+			if (resultSet.getInt("TYPE") == DatabaseMetaData.tableIndexStatistic) continue;
 			
-			String name = this.quote(resultSet.getString("INDEX_NAME")); //$NON-NLS-1$
+			String name = this.quote(resultSet.getString("INDEX_NAME"));
 			
 			UniqueConstraint key = keyMap.get(name);
 			
 			if (key == null)
 			{
-				key = new UniqueConstraintImpl(name, this.getQualifiedNameForDDL(schema, table));
+				key = new UniqueConstraintImpl(name, this.qualifyNameForDDL(table));
 				
 				keyMap.put(name, key);
 			}
 			
-			String column = resultSet.getString("COLUMN_NAME"); //$NON-NLS-1$
+			String column = resultSet.getString("COLUMN_NAME");
 			
 			key.getColumnList().add(column);
 		}
@@ -327,16 +320,9 @@ public class DatabaseMetaDataSupport
 	 * @return a Collection of unique constraints.
 	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */
-	public String getQualifiedNameForDML(String schema, String table)
+	public String qualifyNameForDML(QualifiedName name)
 	{
-		StringBuilder builder = new StringBuilder();
-		
-		if (this.supportsSchemasInDML && (schema != null))
-		{
-			builder.append(this.quote(schema)).append(Strings.DOT);
-		}
-		
-		return builder.append(this.quote(table)).toString();
+		return this.qualifyName(name, this.supportsSchemasInDML);
 	}
 
 	/**
@@ -346,18 +332,25 @@ public class DatabaseMetaDataSupport
 	 * @return a Collection of unique constraints.
 	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */
-	public String getQualifiedNameForDDL(String schema, String table)
+	public String qualifyNameForDDL(QualifiedName name)
+	{
+		return this.qualifyName(name, this.supportsSchemasInDDL);
+	}
+
+	private String qualifyName(QualifiedName name, boolean supportsSchemas)
 	{
 		StringBuilder builder = new StringBuilder();
 		
-		if (this.supportsSchemasInDDL && (schema != null))
+		String schema = name.getSchema();
+		
+		if (supportsSchemas && (schema != null))
 		{
 			builder.append(this.quote(schema)).append(Strings.DOT);
 		}
 		
-		return builder.append(this.quote(table)).toString();
+		return builder.append(this.quote(name.getName())).toString();
 	}
-
+	
 	private String getCatalog(DatabaseMetaData metaData) throws SQLException
 	{
 		String catalog = metaData.getConnection().getCatalog();
@@ -365,8 +358,10 @@ public class DatabaseMetaDataSupport
 		return (catalog != null) ? catalog : Strings.EMPTY;
 	}
 	
-	private String getSchema(String schema)
+	private String getSchema(QualifiedName name)
 	{
+		String schema = name.getSchema();
+		
 		return (schema != null) ? schema : Strings.EMPTY;
 	}
 	
@@ -399,30 +394,44 @@ public class DatabaseMetaDataSupport
 		return this.storesMixedCaseQuotedIdentifiers ? identifier.toLowerCase() : identifier;
 	}
 	
-	private String normalize(String tableName, String defaultSchema)
+	private String normalize(String qualifiedName, String defaultSchema)
 	{
-		String parts[] = tableName.split(Pattern.quote(Strings.DOT));
+		String parts[] = qualifiedName.split(Pattern.quote(Strings.DOT));
 
-		String table = parts[parts.length - 1];
+		String name = parts[parts.length - 1];
 		String schema = (parts.length > 1) ? parts[parts.length - 2] : defaultSchema;
 
-		boolean quoted = table.startsWith(this.quote);
+		boolean quoted = name.startsWith(this.quote);
 		
 		if ((!quoted && this.storesLowerCaseIdentifiers) || (quoted && this.storesLowerCaseQuotedIdentifiers))
 		{
-			table.toLowerCase();
+			name.toLowerCase();
 		}
 		else if ((!quoted && this.storesUpperCaseIdentifiers) || (quoted && this.storesUpperCaseQuotedIdentifiers))
 		{
-			table.toUpperCase();
+			name.toUpperCase();
 		}
 			
-		return this.getQualifiedNameForDML(schema, table);
+		return this.qualifyNameForDML(new QualifiedName(schema, name));
 	}
 	
-	public TableProperties findTable(Map<String, TableProperties> tableMap, String table, List<String> defaultSchemaList, Dialect dialect) throws SQLException
+	public Collection<SequenceProperties> getSequences(DatabaseMetaData metaData) throws SQLException
 	{
-		TableProperties properties = tableMap.get(this.normalize(table, null));
+		Collection<QualifiedName> sequences = this.dialect.getSequences(metaData);
+		
+		List<SequenceProperties> sequenceList = new ArrayList<SequenceProperties>(sequences.size());
+		
+		for (QualifiedName sequence: sequences)
+		{
+			sequenceList.add(new SequencePropertiesImpl(this.qualifyNameForDML(sequence)));
+		}
+		
+		return sequenceList;
+	}
+	
+	public <T> T find(Map<String, T> map, String name, List<String> defaultSchemaList) throws SQLException
+	{
+		T properties = map.get(this.normalize(name, null));
 		
 		if (properties == null)
 		{
@@ -430,16 +439,34 @@ public class DatabaseMetaDataSupport
 			{
 				if (properties == null)
 				{
-					properties = tableMap.get(this.normalize(table, schema));
+					properties = map.get(this.normalize(name, schema));
 				}
 			}
 		}
 		
 		if (properties == null)
 		{
-			throw new SQLException(Messages.getMessage(Messages.TABLE_LOOKUP_FAILED, table, defaultSchemaList, dialect.getClass().getName() + ".getDefaultSchemas()")); //$NON-NLS-1$
+			throw new SQLException(Messages.getMessage(Messages.SCHEMA_LOOKUP_FAILED, name, defaultSchemaList, this.dialect.getClass().getName() + ".getDefaultSchemas()"));
 		}
 		
 		return properties;
+	}
+	
+	public Collection<String> getIdentityColumns(Collection<ColumnProperties> columns) throws SQLException
+	{
+		List<String> columnList = new LinkedList<String>();
+		
+		for (ColumnProperties column: columns)
+		{
+			Boolean autoIncrement = column.isAutoIncrement();
+			
+			// Database meta data may have already identified column as identity, if not ask dialect.
+			if ((autoIncrement != null) ? autoIncrement : this.dialect.isIdentity(column))
+			{
+				columnList.add(column.getName());
+			}
+		}
+		
+		return columnList;
 	}
 }
