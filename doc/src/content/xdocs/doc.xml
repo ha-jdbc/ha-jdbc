@@ -1022,12 +1022,7 @@ cluster.activate(databaseId);
 		<section>
 			<title>Limitations</title>
 			<ul>
-				<li>MySQL auto-incrementing columns are not supported.  MySQL does not provide any mechanism for HA-JDBC to reset the counter during synchronization.</li>
-				<li>HA-JDBC does not support stored procedures that update sequences or insert rows containing identity columns.</li>
-				<li>
-					SQL statements should not use non-deterministic functions (e.g. CURRENT_TIMESTAMP), since HA-JDBC cannot guarantee that each database will generate the same value.
-					For example, instead CURRENT_TIMESTAMP, use a prepared statement with a client generated java.sql.Timestamp value.
-				</li>
+				<li>HA-JDBC does not safely support stored procedures that update sequences or insert rows containing identity columns.</li>
 			</ul>
 		</section>
 		<section>
