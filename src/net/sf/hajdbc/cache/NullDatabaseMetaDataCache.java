@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc.cache;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
@@ -39,7 +40,7 @@ public class NullDatabaseMetaDataCache extends AbstractDatabaseMetaDataCache
 	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush(DatabaseMetaData)
 	 */
 	@Override
-	public void flush(DatabaseMetaData metaData)
+	public void flush(Connection connection)
 	{
 		// Nothing to flush
 	}
@@ -48,9 +49,9 @@ public class NullDatabaseMetaDataCache extends AbstractDatabaseMetaDataCache
 	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getDatabaseProperties(DatabaseMetaData)
 	 */
 	@Override
-	public DatabaseProperties getDatabaseProperties(DatabaseMetaData metaData) throws SQLException
+	public DatabaseProperties getDatabaseProperties(Connection connection) throws SQLException
 	{
-		LazyDatabaseProperties.setDatabaseMetaData(metaData);
+		LazyDatabaseProperties.setConnection(connection);
 		
 		return new LazyDatabaseProperties(this.dialect);
 	}

@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc.cache;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
@@ -40,20 +41,20 @@ public class EagerDatabaseMetaDataCache extends AbstractDatabaseMetaDataCache
 	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush(DatabaseMetaData)
 	 */
 	@Override
-	public synchronized void flush(DatabaseMetaData metaData) throws SQLException
+	public synchronized void flush(Connection connection) throws SQLException
 	{
-		this.properties = new EagerDatabaseProperties(metaData, this.dialect);
+		this.properties = new EagerDatabaseProperties(connection.getMetaData(), this.dialect);
 	}
 
 	/**
 	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getDatabaseProperties(DatabaseMetaData)
 	 */
 	@Override
-	public synchronized DatabaseProperties getDatabaseProperties(DatabaseMetaData metaData) throws SQLException
+	public synchronized DatabaseProperties getDatabaseProperties(Connection connection) throws SQLException
 	{
 		if (this.properties == null)
 		{
-			this.flush(metaData);
+			this.flush(connection);
 		}
 		
 		return this.properties;

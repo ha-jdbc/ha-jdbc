@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc.cache;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -39,7 +40,7 @@ import net.sf.hajdbc.TableProperties;
  */
 public class LazyDatabaseProperties implements DatabaseProperties
 {
-	private static ThreadLocal<DatabaseMetaData> threadLocal = new ThreadLocal<DatabaseMetaData>();
+	private static ThreadLocal<Connection> threadLocal = new ThreadLocal<Connection>();
 	
 	private Map<String, TableProperties> tableMap;
 	private Map<String, SequenceProperties> sequenceMap;
@@ -54,14 +55,14 @@ public class LazyDatabaseProperties implements DatabaseProperties
 		this.dialect = dialect;
 	}
 
-	public static void setDatabaseMetaData(DatabaseMetaData metaData)
+	public static void setConnection(Connection connection)
 	{
-		threadLocal.set(metaData);
+		threadLocal.set(connection);
 	}
 	
-	public static DatabaseMetaData getDatabaseMetaData()
+	public static DatabaseMetaData getDatabaseMetaData() throws SQLException
 	{
-		return getDatabaseMetaData();
+		return threadLocal.get().getMetaData();
 	}
 	
 	/**
