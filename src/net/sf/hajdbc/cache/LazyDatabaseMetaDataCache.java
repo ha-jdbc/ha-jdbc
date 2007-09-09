@@ -22,7 +22,7 @@ package net.sf.hajdbc.cache;
 
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
-import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
 import net.sf.hajdbc.DatabaseProperties;
@@ -41,21 +41,21 @@ public class LazyDatabaseMetaDataCache extends AbstractDatabaseMetaDataCache
 	private Reference<DatabaseProperties> propertiesRef = new SoftReference<DatabaseProperties>(null);
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush(java.sql.Connection)
+	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush(DatabaseMetaData)
 	 */
 	@Override
-	public synchronized void flush(Connection connection)
+	public synchronized void flush(DatabaseMetaData metaData)
 	{
 		this.propertiesRef.clear();
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getDatabaseProperties(java.sql.Connection)
+	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getDatabaseProperties(DatabaseMetaData)
 	 */
 	@Override
-	public synchronized DatabaseProperties getDatabaseProperties(Connection connection) throws SQLException
+	public synchronized DatabaseProperties getDatabaseProperties(DatabaseMetaData metaData) throws SQLException
 	{
-		LazyDatabaseProperties.setConnection(connection);
+		LazyDatabaseProperties.setDatabaseMetaData(metaData);
 		
 		DatabaseProperties properties = this.propertiesRef.get();
 		

@@ -20,7 +20,6 @@
  */
 package net.sf.hajdbc.cache;
 
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -47,10 +46,8 @@ public class EagerDatabaseProperties implements DatabaseProperties
 	private boolean supportsSelectForUpdate;
 	private List<String> defaultSchemaList;
 	
-	public EagerDatabaseProperties(Connection connection, Dialect dialect) throws SQLException
+	public EagerDatabaseProperties(DatabaseMetaData metaData, Dialect dialect) throws SQLException
 	{
-		DatabaseMetaData metaData = connection.getMetaData();
-		
 		this.support = new DatabaseMetaDataSupport(metaData, dialect);
 		
 		this.supportsSelectForUpdate = metaData.supportsSelectForUpdate();
@@ -64,7 +61,7 @@ public class EagerDatabaseProperties implements DatabaseProperties
 			this.tableMap.put(properties.getName(), properties);
 		}
 		
-		List<String> defaultSchemaList = dialect.getDefaultSchemas(connection);
+		List<String> defaultSchemaList = dialect.getDefaultSchemas(metaData);
 		
 		this.defaultSchemaList = new ArrayList<String>(defaultSchemaList);
 		
