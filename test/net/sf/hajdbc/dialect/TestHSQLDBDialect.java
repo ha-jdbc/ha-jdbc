@@ -20,13 +20,15 @@
  */
 package net.sf.hajdbc.dialect;
 
-import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Iterator;
 
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ForeignKeyConstraint;
+import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.SequenceProperties;
 
 import org.easymock.EasyMock;
 import org.testng.annotations.DataProvider;
@@ -67,36 +69,44 @@ public class TestHSQLDBDialect extends TestStandardDialect
 	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSequences(java.sql.Connection)
 	 */
 	@Override
-	@Test(dataProvider = "connection")
-	public Collection<String> getSequences(Connection connection) throws SQLException
+	@Test(dataProvider = "meta-data")
+	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
 	{
-		EasyMock.expect(connection.createStatement()).andReturn(this.statement);
-		EasyMock.expect(this.statement.executeQuery("SELECT SEQUENCE_NAME FROM INFORMATION_SCHEMA.SYSTEM_SEQUENCES")).andReturn(this.resultSet);
+		EasyMock.expect(metaData.getConnection()).andReturn(this.connection);
+		EasyMock.expect(this.connection.createStatement()).andReturn(this.statement);
+		EasyMock.expect(this.statement.executeQuery("SELECT SEQUENCE_SCHEMA, SEQUENCE_NAME FROM INFORMATION_SCHEMA.SYSTEM_SEQUENCES")).andReturn(this.resultSet);
 		EasyMock.expect(this.resultSet.next()).andReturn(true);
-		EasyMock.expect(this.resultSet.getString(1)).andReturn("sequence1");
+		EasyMock.expect(this.resultSet.getString(1)).andReturn("schema1");
+		EasyMock.expect(this.resultSet.getString(2)).andReturn("sequence1");
 		EasyMock.expect(this.resultSet.next()).andReturn(true);
-		EasyMock.expect(this.resultSet.getString(1)).andReturn("sequence2");
+		EasyMock.expect(this.resultSet.getString(1)).andReturn("schema2");
+		EasyMock.expect(this.resultSet.getString(2)).andReturn("sequence2");
 		EasyMock.expect(this.resultSet.next()).andReturn(false);
 		
-		this.resultSet.close();
 		this.statement.close();
 		
 		this.replay();
 		
-		Collection<String> sequences = this.dialect.getSequences(connection);
+		Collection<QualifiedName> sequences = this.dialect.getSequences(metaData);
 		
 		this.verify();
 		
 		assert sequences.size() == 2 : sequences;
 		
-		Iterator<String> iterator = sequences.iterator();
-		String sequence = iterator.next();
+		Iterator<QualifiedName> iterator = sequences.iterator();
+		QualifiedName sequence = iterator.next();
+		String schema = sequence.getSchema();
+		String name = sequence.getName();
 		
-		assert sequence.equals("sequence1") : sequence;
+		assert schema.equals("schema1") : schema;
+		assert name.equals("sequence1") : name;
 		
 		sequence = iterator.next();
+		schema = sequence.getSchema();
+		name = sequence.getName();
 		
-		assert sequence.equals("sequence2") : sequence;
+		assert schema.equals("schema2") : schema;
+		assert name.equals("sequence2") : name;
 		
 		return sequences;
 	}
@@ -123,8 +133,10 @@ public class TestHSQLDBDialect extends TestStandardDialect
 	 */
 	@Test(dataProvider = "sequence")
 	@Override
-	public String getNextSequenceValueSQL(String sequence) throws SQLException
+	public String getNextSequenceValueSQL(SequenceProperties sequence) throws SQLException
 	{
+		EasyMock.expect(sequence.getName()).andReturn("sequence");
+		
 		this.replay();
 		
 		String sql = this.dialect.getNextSequenceValueSQL(sequence);

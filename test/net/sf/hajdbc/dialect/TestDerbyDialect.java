@@ -20,13 +20,15 @@
  */
 package net.sf.hajdbc.dialect;
 
-import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Collection;
 
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ForeignKeyConstraint;
+import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.TableProperties;
 
 import org.easymock.EasyMock;
@@ -124,12 +126,12 @@ public class TestDerbyDialect extends TestStandardDialect
 	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSequences(java.sql.Connection)
 	 */
 	@Override
-	@Test(dataProvider = "connection")
-	public Collection<String> getSequences(Connection connection) throws SQLException
+	@Test(dataProvider = "meta-data")
+	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
 	{
 		this.replay();
 		
-		Collection<String> sequences = this.dialect.getSequences(connection);
+		Collection<QualifiedName> sequences = this.dialect.getSequences(metaData);
 		
 		this.verify();
 		
@@ -169,8 +171,10 @@ public class TestDerbyDialect extends TestStandardDialect
 	 */
 	@Override
 	@Test(dataProvider = "sequence")
-	public String getNextSequenceValueSQL(String sequence) throws SQLException
+	public String getNextSequenceValueSQL(SequenceProperties sequence) throws SQLException
 	{
+		EasyMock.expect(sequence.getName()).andReturn("sequence");
+		
 		this.replay();
 		
 		String sql = this.dialect.getNextSequenceValueSQL(sequence);

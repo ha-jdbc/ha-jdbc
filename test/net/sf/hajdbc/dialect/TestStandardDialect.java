@@ -34,12 +34,15 @@ import java.util.regex.Pattern;
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ForeignKeyConstraint;
+import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.UniqueConstraint;
 import net.sf.hajdbc.cache.ForeignKeyConstraintImpl;
 import net.sf.hajdbc.cache.UniqueConstraintImpl;
 
 import org.easymock.EasyMock;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -53,6 +56,7 @@ public class TestStandardDialect implements Dialect
 	protected TableProperties tableProperties = EasyMock.createStrictMock(TableProperties.class);
 	protected Connection connection = EasyMock.createStrictMock(Connection.class);
 	protected ColumnProperties columnProperties = EasyMock.createStrictMock(ColumnProperties.class);
+	protected SequenceProperties sequenceProperties = EasyMock.createStrictMock(SequenceProperties.class);
 	protected DatabaseMetaData metaData = EasyMock.createStrictMock(DatabaseMetaData.class);
 	protected Statement statement = EasyMock.createStrictMock(Statement.class);
 	protected ResultSet resultSet = EasyMock.createStrictMock(ResultSet.class);
@@ -72,12 +76,17 @@ public class TestStandardDialect implements Dialect
 	void verify()
 	{
 		EasyMock.verify(this.getMocks());
+	}
+	
+	@AfterMethod
+	void reset()
+	{
 		EasyMock.reset(this.getMocks());
 	}
-
+	
 	private Object[] getMocks()
 	{
-		return new Object[] { this.tableProperties, this.connection, this.columnProperties, this.metaData, this.statement, this.resultSet };
+		return new Object[] { this.tableProperties, this.connection, this.columnProperties, this.metaData, this.statement, this.resultSet, this.sequenceProperties };
 	}
 	
 	@DataProvider(name = "table")
@@ -115,19 +124,13 @@ public class TestStandardDialect implements Dialect
 	@DataProvider(name = "alter-sequence")
 	Object[][] alterSequenceProvider()
 	{
-		return new Object[][] { new Object[] { "sequence", 1L } };
+		return new Object[][] { new Object[] { this.sequenceProperties, 1L } };
 	}
 	
 	@DataProvider(name = "column")
 	Object[][] columnProvider()
 	{
 		return new Object[][] { new Object[] { this.columnProperties } };
-	}
-
-	@DataProvider(name = "connection")
-	Object[][] connectionProvider()
-	{
-		return new Object[][] { new Object[] { this.connection } };
 	}
 
 	@DataProvider(name = "null")
@@ -139,15 +142,17 @@ public class TestStandardDialect implements Dialect
 	@DataProvider(name = "sequence")
 	Object[][] sequenceProvider()
 	{
-		return new Object[][] { new Object[] { "sequence" } };
+		return new Object[][] { new Object[] { this.sequenceProperties } };
 	}
 
 	/**
 	 * @see net.sf.hajdbc.Dialect#getAlterSequenceSQL(java.lang.String, long)
 	 */
 	@Test(dataProvider = "alter-sequence")
-	public String getAlterSequenceSQL(String sequence, long value) throws SQLException
+	public String getAlterSequenceSQL(SequenceProperties sequence, long value) throws SQLException
 	{
+		EasyMock.expect(sequence.getName()).andReturn("sequence");
+		
 		this.replay();
 		
 		String sql = this.dialect.getAlterSequenceSQL(sequence, value);
@@ -268,6 +273,8 @@ public class TestStandardDialect implements Dialect
 		
 		assert sql.equals("UPDATE table SET column1 = column1, column2 = column2") : sql;
 		
+		this.reset();
+		
 		EasyMock.expect(properties.getName()).andReturn("table");
 		EasyMock.expect(properties.getPrimaryKey()).andReturn(null);
 		EasyMock.expect(properties.getColumns()).andReturn(primaryKey.getColumnList());
@@ -287,8 +294,10 @@ public class TestStandardDialect implements Dialect
 	 * @see net.sf.hajdbc.Dialect#getCurrentSequenceValueSQL(java.lang.String)
 	 */
 	@Test(dataProvider = "sequence")
-	public String getNextSequenceValueSQL(String sequence) throws SQLException
+	public String getNextSequenceValueSQL(SequenceProperties sequence) throws SQLException
 	{
+		EasyMock.expect(sequence.getName()).andReturn("sequence");
+		
 		this.replay();
 		
 		String sql = this.dialect.getNextSequenceValueSQL(sequence);
@@ -299,20 +308,19 @@ public class TestStandardDialect implements Dialect
 		
 		return sql;
 	}
-
+	
 	/**
 	 * @see net.sf.hajdbc.Dialect#getSequences(java.sql.Connection)
 	 */
-	@Test(dataProvider = "connection")
-	public Collection<String> getSequences(Connection connection) throws SQLException
+	@Test(dataProvider = "meta-data")
+	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
 	{
-		EasyMock.expect(connection.getMetaData()).andReturn(this.metaData);
 		EasyMock.expect(this.metaData.getTables(EasyMock.eq(""), EasyMock.eq((String) null), EasyMock.eq("%"), EasyMock.aryEq(new String[] { "SEQUENCE" }))).andReturn(this.resultSet);
 		EasyMock.expect(this.resultSet.next()).andReturn(true);
-		EasyMock.expect(this.resultSet.getString("TABLE_SCHEM")).andReturn("schema");
+		EasyMock.expect(this.resultSet.getString("TABLE_SCHEM")).andReturn("schema1");
 		EasyMock.expect(this.resultSet.getString("TABLE_NAME")).andReturn("sequence1");
 		EasyMock.expect(this.resultSet.next()).andReturn(true);
-		EasyMock.expect(this.resultSet.getString("TABLE_SCHEM")).andReturn("schema");
+		EasyMock.expect(this.resultSet.getString("TABLE_SCHEM")).andReturn("schema2");
 		EasyMock.expect(this.resultSet.getString("TABLE_NAME")).andReturn("sequence2");
 		EasyMock.expect(this.resultSet.next()).andReturn(false);
 		
@@ -320,20 +328,26 @@ public class TestStandardDialect implements Dialect
 		
 		this.replay();
 		
-		Collection<String> sequences = this.dialect.getSequences(connection);
+		Collection<QualifiedName> sequences = this.dialect.getSequences(metaData);
 		
 		this.verify();
 		
 		assert sequences.size() == 2 : sequences;
 		
-		Iterator<String> iterator = sequences.iterator();
-		String sequence = iterator.next();
+		Iterator<QualifiedName> iterator = sequences.iterator();
+		QualifiedName sequence = iterator.next();
+		String schema = sequence.getSchema();
+		String name = sequence.getName();
 		
-		assert sequence.equals("schema.sequence1") : sequence;
+		assert schema.equals("schema1") : schema;
+		assert name.equals("sequence1") : name;
 		
 		sequence = iterator.next();
+		schema = sequence.getSchema();
+		name = sequence.getName();
 		
-		assert sequence.equals("schema.sequence2") : sequence;
+		assert schema.equals("schema2") : schema;
+		assert name.equals("sequence2") : name;
 		
 		return sequences;
 	}
@@ -438,19 +452,18 @@ public class TestStandardDialect implements Dialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getDefaultSchemas(java.sql.Connection)
+	 * @see net.sf.hajdbc.Dialect#getDefaultSchemas(java.sql.DatabaseMetaData)
 	 */
-	@Test(dataProvider = "connection")
-	public List<String> getDefaultSchemas(Connection connection) throws SQLException
+	@Test(dataProvider = "meta-data")
+	public List<String> getDefaultSchemas(DatabaseMetaData metaData) throws SQLException
 	{
 		String user = "user";
 		
-		EasyMock.expect(connection.getMetaData()).andReturn(this.metaData);
 		EasyMock.expect(this.metaData.getUserName()).andReturn(user);
 		
 		this.replay();
 		
-		List<String> schemaList = this.dialect.getDefaultSchemas(connection);
+		List<String> schemaList = this.dialect.getDefaultSchemas(metaData);
 		
 		this.verify();
 		
@@ -478,6 +491,8 @@ public class TestStandardDialect implements Dialect
 		this.verify();
 		
 		assert identity;
+		
+		this.reset();
 		
 		EasyMock.expect(this.columnProperties.getRemarks()).andReturn(null);
 		
@@ -668,5 +683,32 @@ public class TestStandardDialect implements Dialect
 		}
 		
 		return evaluated;
+	}
+
+	@DataProvider(name = "table-column-long")
+	Object[][] tableColumnLongProvider()
+	{
+		return new Object[][] { new Object[] { this.tableProperties, this.columnProperties, 1L } };
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.Dialect#getAlterIdentityColumnSQL(net.sf.hajdbc.TableProperties, net.sf.hajdbc.ColumnProperties, long)
+	 */
+	@Override
+	@Test(dataProvider = "table-column-long")
+	public String getAlterIdentityColumnSQL(TableProperties table, ColumnProperties column, long value) throws SQLException
+	{
+		EasyMock.expect(table.getName()).andReturn("table");
+		EasyMock.expect(column.getName()).andReturn("column");
+		
+		this.replay();
+		
+		String sql = this.dialect.getAlterIdentityColumnSQL(table, column, value);
+		
+		this.verify();
+		
+		assert sql.equals("ALTER TABLE table ALTER COLUMN column RESTART WITH 1") : sql;
+		
+		return sql;
 	}
 }

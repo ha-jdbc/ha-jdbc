@@ -20,7 +20,7 @@
  */
 package net.sf.hajdbc.dialect;
 
-import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
@@ -28,6 +28,8 @@ import java.util.List;
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ForeignKeyConstraint;
+import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.UniqueConstraint;
 
 import org.easymock.EasyMock;
@@ -126,7 +128,7 @@ public class TestMySQLDialect extends TestStandardDialect
 	 * @see net.sf.hajdbc.dialect.TestStandardDialect#parseSequence(java.lang.String)
 	 */
 	@Override
-	@Test(dataProvider = "sequence")
+	@Test(dataProvider = "sequence-sql")
 	public String parseSequence(String sql) throws SQLException
 	{
 		this.replay();
@@ -144,11 +146,12 @@ public class TestMySQLDialect extends TestStandardDialect
 	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSequences(java.sql.Connection)
 	 */
 	@Override
-	public Collection<String> getSequences(Connection connection) throws SQLException
+	@Test(dataProvider = "meta-data")
+	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
 	{
 		this.replay();
 		
-		Collection<String> sequences = this.dialect.getSequences(connection);
+		Collection<QualifiedName> sequences = this.dialect.getSequences(metaData);
 		
 		this.verify();
 		
@@ -161,9 +164,11 @@ public class TestMySQLDialect extends TestStandardDialect
 	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getDefaultSchemas(java.sql.Connection)
 	 */
 	@Override
-	public List<String> getDefaultSchemas(Connection connection) throws SQLException
+	@Test(dataProvider = "meta-data")
+	public List<String> getDefaultSchemas(DatabaseMetaData metaData) throws SQLException
 	{
-		EasyMock.expect(connection.createStatement()).andReturn(this.statement);
+		EasyMock.expect(metaData.getConnection()).andReturn(this.connection);
+		EasyMock.expect(this.connection.createStatement()).andReturn(this.statement);
 		EasyMock.expect(this.statement.executeQuery("SELECT DATABASE()")).andReturn(this.resultSet);
 		EasyMock.expect(this.resultSet.next()).andReturn(false);
 		EasyMock.expect(this.resultSet.getString(1)).andReturn("database");
@@ -173,7 +178,7 @@ public class TestMySQLDialect extends TestStandardDialect
 		
 		this.replay();
 		
-		List<String> schemaList = this.dialect.getDefaultSchemas(connection);
+		List<String> schemaList = this.dialect.getDefaultSchemas(metaData);
 		
 		this.verify();
 		
@@ -188,16 +193,31 @@ public class TestMySQLDialect extends TestStandardDialect
 	 * @see net.sf.hajdbc.dialect.TestStandardDialect#isIdentity(net.sf.hajdbc.ColumnProperties)
 	 */
 	@Override
+	@Test(dataProvider = "column")
 	public boolean isIdentity(ColumnProperties properties) throws SQLException
 	{
-		EasyMock.expect(properties.getRemarks()).andReturn("AUTO_INCREMENT");
+		EasyMock.expect(properties.getNativeType()).andReturn("SERIAL");
 		
 		this.replay();
 		
 		boolean identity = this.dialect.isIdentity(properties);
 		
 		this.verify();
+
+		assert identity;
 		
+		EasyMock.expect(properties.getNativeType()).andReturn("INTEGER");
+		EasyMock.expect(properties.getRemarks()).andReturn("AUTO_INCREMENT");
+		
+		this.replay();
+		
+		identity = this.dialect.isIdentity(properties);
+		
+		this.verify();
+		
+		assert identity;
+		
+		EasyMock.expect(this.columnProperties.getNativeType()).andReturn("INTEGER");
 		EasyMock.expect(this.columnProperties.getRemarks()).andReturn(null);
 		
 		this.replay();
@@ -207,6 +227,27 @@ public class TestMySQLDialect extends TestStandardDialect
 		this.verify();
 		
 		return identity;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.Dialect#getAlterIdentityColumnSQL(net.sf.hajdbc.TableProperties, net.sf.hajdbc.ColumnProperties, long)
+	 */
+	@Override
+	@Test(dataProvider = "table-column-long")
+	public String getAlterIdentityColumnSQL(TableProperties table, ColumnProperties column, long value) throws SQLException
+	{
+		EasyMock.expect(table.getName()).andReturn("table");
+		EasyMock.expect(column.getName()).andReturn("column");
+		
+		this.replay();
+		
+		String sql = this.dialect.getAlterIdentityColumnSQL(table, column, value);
+		
+		this.verify();
+		
+		assert sql.equals("ALTER TABLE table AUTO_INCREMENT = 1") : sql;
+		
+		return sql;
 	}
 
 	@Override

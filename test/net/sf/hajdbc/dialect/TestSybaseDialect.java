@@ -3,13 +3,14 @@
  */
 package net.sf.hajdbc.dialect;
 
-import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Collection;
 
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ForeignKeyConstraint;
+import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.TableProperties;
 
 import org.easymock.EasyMock;
@@ -107,6 +108,20 @@ public class TestSybaseDialect extends TestStandardDialect
 		
 		assert identity;
 		
+		this.reset();
+		
+		EasyMock.expect(properties.getDefaultValue()).andReturn("IDENTITY");
+		
+		this.replay();
+		
+		identity = this.dialect.isIdentity(properties);
+		
+		this.verify();
+		
+		assert identity;
+		
+		this.reset();
+		
 		EasyMock.expect(this.columnProperties.getDefaultValue()).andReturn(null);
 		
 		this.replay();
@@ -142,18 +157,36 @@ public class TestSybaseDialect extends TestStandardDialect
 	 * @see net.sf.hajdbc.Dialect#getSequences(java.sql.Connection)
 	 */
 	@Override
-	@Test(dataProvider = "connection")
-	public Collection<String> getSequences(Connection connection) throws SQLException
+	@Test(dataProvider = "meta-data")
+	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
 	{
 		this.replay();
 		
-		Collection<String> sequences = this.dialect.getSequences(connection);
+		Collection<QualifiedName> sequences = this.dialect.getSequences(metaData);
 		
 		this.verify();
 		
 		assert sequences.isEmpty() : sequences;
 		
 		return sequences;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.Dialect#getAlterIdentityColumnSQL(net.sf.hajdbc.TableProperties, net.sf.hajdbc.ColumnProperties, long)
+	 */
+	@Override
+	@Test(dataProvider = "table-column-long")
+	public String getAlterIdentityColumnSQL(TableProperties table, ColumnProperties column, long value) throws SQLException
+	{
+		this.replay();
+		
+		String sql = this.dialect.getAlterIdentityColumnSQL(table, column, value);
+		
+		this.verify();
+		
+		assert sql == null;
+		
+		return sql;
 	}
 
 	@Override
