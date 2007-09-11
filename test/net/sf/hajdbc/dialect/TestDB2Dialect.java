@@ -30,6 +30,7 @@ import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.SequenceProperties;
 
 import org.easymock.EasyMock;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
@@ -128,38 +129,19 @@ public class TestDB2Dialect extends TestStandardDialect
 		return sql;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#parseSequence(java.lang.String)
-	 */
 	@Override
-	@Test(dataProvider = "null")
-	public String parseSequence(String sql) throws SQLException
+	@DataProvider(name = "sequence-sql")
+	Object[][] sequenceSQLProvider()
 	{
-		this.replay();
-		
-		String sequence = this.dialect.parseSequence("VALUES NEXTVAL FOR sequence");
-		
-		this.verify();
-		
-		assert sequence.equals("sequence") : sequence;
-		
-		this.replay();
-		
-		sequence = this.dialect.parseSequence("VALUES PREVVAL FOR sequence");
-		
-		this.verify();
-		
-		assert sequence.equals("sequence") : sequence;
-		
-		this.replay();
-		
-		sequence = this.dialect.parseSequence("SELECT * FROM table");
-		
-		this.verify();
-		
-		assert sequence == null : sequence;
-		
-		return sequence;
+		return new Object[][] {
+			new Object[] { "VALUES NEXTVAL FOR success" },
+			new Object[] { "VALUES PREVVAL FOR success" },
+			new Object[] { "INSERT INTO table VALUES (NEXTVAL FOR success, 0)" },
+			new Object[] { "INSERT INTO table VALUES (PREVVAL FOR success, 0)" },
+			new Object[] { "UPDATE table SET id = NEXTVAL FOR success" },
+			new Object[] { "UPDATE table SET id = PREVVAL FOR success" },
+			new Object[] { "SELECT * FROM table" },
+		};
 	}
 	
 	@Override

@@ -65,9 +65,20 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		
 		assert type == Types.BLOB : type;
 		
-		EasyMock.expect(properties.getNativeType()).andReturn("int");
+		this.reset();
 		
-		return super.getColumnType(properties);
+		EasyMock.expect(properties.getNativeType()).andReturn("int");		
+		EasyMock.expect(properties.getType()).andReturn(Types.INTEGER);
+		
+		this.replay();
+		
+		type = this.dialect.getColumnType(properties);
+		
+		this.verify();
+		
+		assert type == Types.INTEGER : type;
+		
+		return type;
 	}
 
 	/**
@@ -145,6 +156,7 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		
 		assert sequence.equals("sequence") : sequence;
 		
+		this.reset();
 		this.replay();
 		
 		sequence = this.dialect.parseSequence("SELECT nextval('sequence')");
@@ -153,6 +165,7 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		
 		assert sequence.equals("sequence") : sequence;
 		
+		this.reset();
 		this.replay();
 		
 		sequence = this.dialect.parseSequence("SELECT * FROM table");
@@ -214,6 +227,8 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		
 		assert identity;
 		
+		this.reset();
+		
 		EasyMock.expect(properties.getNativeType()).andReturn("bigserial");
 		
 		this.replay();
@@ -223,6 +238,8 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		this.verify();
 		
 		assert identity;
+		
+		this.reset();
 		
 		EasyMock.expect(this.columnProperties.getNativeType()).andReturn("int");
 		
@@ -276,6 +293,8 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		this.verify();
 		
 		assert pattern.pattern().equals("[\\w\\Q\\E]+") : pattern.pattern();
+		
+		this.reset();
 		
 		EasyMock.expect(metaData.getDriverMajorVersion()).andReturn(8);
 		EasyMock.expect(metaData.getDriverMinorVersion()).andReturn(1);

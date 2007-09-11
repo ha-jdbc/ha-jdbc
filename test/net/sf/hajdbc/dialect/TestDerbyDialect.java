@@ -155,6 +155,10 @@ public class TestDerbyDialect extends TestStandardDialect
 		
 		this.verify();
 		
+		assert identity;
+		
+		this.reset();
+		
 		EasyMock.expect(this.columnProperties.getRemarks()).andReturn(null);
 		
 		this.replay();
@@ -162,6 +166,8 @@ public class TestDerbyDialect extends TestStandardDialect
 		identity = this.dialect.isIdentity(properties);
 		
 		this.verify();
+
+		assert !identity;
 		
 		return identity;
 	}

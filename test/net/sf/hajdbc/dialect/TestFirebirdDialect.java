@@ -85,7 +85,6 @@ public class TestFirebirdDialect extends TestStandardDialect
 		EasyMock.expect(this.resultSet.getString(1)).andReturn("sequence2");
 		EasyMock.expect(this.resultSet.next()).andReturn(false);
 		
-		this.resultSet.close();
 		this.statement.close();
 		
 		this.replay();
@@ -148,30 +147,14 @@ public class TestFirebirdDialect extends TestStandardDialect
 		return sql;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#isSelectForUpdate(java.lang.String)
-	 */
 	@Override
-	@Test(dataProvider = "null")
-	public boolean isSelectForUpdate(String sql) throws SQLException
+	@DataProvider(name = "select-for-update-sql")
+	Object[][] selectForUpdateProvider()
 	{
-		this.replay();
-		
-		boolean selectForUpdate = this.dialect.isSelectForUpdate("SELECT * FROM table FOR UPDATE");
-		
-		this.verify();
-		
-		assert !selectForUpdate;
-		
-		this.replay();
-		
-		selectForUpdate = this.dialect.isSelectForUpdate("SELECT * FROM table FOR UPDATE WITH LOCK");
-		
-		this.verify();
-		
-		assert selectForUpdate;
-		
-		return selectForUpdate;
+		return new Object[][] {
+			new Object[] { "SELECT * FROM success WITH LOCK" },
+			new Object[] { "SELECT * FROM failure" },
+		};
 	}
 
 	@Override

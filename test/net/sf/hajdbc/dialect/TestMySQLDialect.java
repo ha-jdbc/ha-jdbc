@@ -206,6 +206,8 @@ public class TestMySQLDialect extends TestStandardDialect
 
 		assert identity;
 		
+		this.reset();
+		
 		EasyMock.expect(properties.getNativeType()).andReturn("INTEGER");
 		EasyMock.expect(properties.getRemarks()).andReturn("AUTO_INCREMENT");
 		
@@ -216,6 +218,8 @@ public class TestMySQLDialect extends TestStandardDialect
 		this.verify();
 		
 		assert identity;
+
+		this.reset();
 		
 		EasyMock.expect(this.columnProperties.getNativeType()).andReturn("INTEGER");
 		EasyMock.expect(this.columnProperties.getRemarks()).andReturn(null);
