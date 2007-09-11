@@ -2391,10 +2391,7 @@ public class TestStatement implements java.sql.Statement
 			EasyMock.expect(this.cluster.getDatabaseMetaDataCache()).andReturn(this.metaData);
 			EasyMock.expect(this.metaData.getDatabaseProperties(this.connection)).andReturn(this.databaseProperties);
 			EasyMock.expect(this.databaseProperties.findTable(table)).andReturn(this.tableProperties);
-			EasyMock.expect(this.tableProperties.getColumns()).andReturn(Collections.singleton("column"));
-			EasyMock.expect(this.tableProperties.getColumnProperties("column")).andReturn(this.columnProperties);
-			EasyMock.expect(this.columnProperties.isAutoIncrement()).andReturn(null);
-			EasyMock.expect(this.dialect.isIdentity(this.columnProperties)).andReturn(true);
+			EasyMock.expect(this.tableProperties.getIdentityColumns()).andReturn(Collections.singleton("column"));
 			EasyMock.expect(this.tableProperties.getName()).andReturn(table);
 		}
 		
@@ -2404,12 +2401,12 @@ public class TestStatement implements java.sql.Statement
 			
 			if (sequence != null)
 			{
-				EasyMock.expect(this.lockManager.writeLock("sequence")).andReturn(this.sequenceLock);
+				EasyMock.expect(this.lockManager.writeLock(sequence)).andReturn(this.sequenceLock);
 			}
 			
 			if (table != null)
 			{
-				EasyMock.expect(this.lockManager.writeLock("table")).andReturn(this.tableLock);
+				EasyMock.expect(this.lockManager.writeLock(table)).andReturn(this.tableLock);
 			}
 		}
 	}
