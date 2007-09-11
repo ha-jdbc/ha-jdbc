@@ -20,7 +20,6 @@
  */
 package net.sf.hajdbc;
 
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -139,7 +138,7 @@ public interface Dialect
 	 * @throws SQLException
 	 * @since 2.0
 	 */
-	public Collection<String> getSequences(Connection connection) throws SQLException;
+	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException;
 	
 	/**
 	 * Returns a SQL statement for obtaining the next value the specified sequence
@@ -148,7 +147,7 @@ public interface Dialect
 	 * @throws SQLException
 	 * @since 2.0
 	 */
-	public String getNextSequenceValueSQL(String sequence) throws SQLException;
+	public String getNextSequenceValueSQL(SequenceProperties sequence) throws SQLException;
 
 	/**
 	 * Returns a SQL statement used reset the current value of a sequence.
@@ -157,14 +156,24 @@ public interface Dialect
 	 * @return a SQL statement
 	 * @since 2.0
 	 */
-	public String getAlterSequenceSQL(String sequence, long value) throws SQLException;
+	public String getAlterSequenceSQL(SequenceProperties sequence, long value) throws SQLException;
+	
+	/**
+	 * Returns a SQL statement used reset the current value of an identity column.
+	 * @param table a sequence name
+	 * @param column a sequence name
+	 * @param value a sequence value
+	 * @return a SQL statement
+	 * @since 2.0.2
+	 */
+	public String getAlterIdentityColumnSQL(TableProperties table, ColumnProperties column, long value) throws SQLException;
 	
 	/**
 	 * Returns a search path of schemas 
 	 * @return a list of schema names
 	 * @since 2.0
 	 */
-	public List<String> getDefaultSchemas(Connection connection) throws SQLException;
+	public List<String> getDefaultSchemas(DatabaseMetaData metaData) throws SQLException;
 	
 	/**
 	 * Returns a pattern for identifiers that do not require quoting
