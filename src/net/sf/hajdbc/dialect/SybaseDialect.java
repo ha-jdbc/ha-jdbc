@@ -3,13 +3,14 @@
  */
 package net.sf.hajdbc.dialect;
 
-import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
 
 import net.sf.hajdbc.ColumnProperties;
+import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.TableProperties;
 
 /**
@@ -55,7 +56,16 @@ public class SybaseDialect extends StandardDialect
 	{
 		String defaultValue = properties.getDefaultValue();
 		
-		return (defaultValue != null) && defaultValue.equals("AUTOINCREMENT");
+		return (defaultValue != null) && (defaultValue.equalsIgnoreCase("AUTOINCREMENT") || defaultValue.equalsIgnoreCase("IDENTITY"));
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getAlterIdentityColumnSQL(net.sf.hajdbc.TableProperties, net.sf.hajdbc.ColumnProperties, long)
+	 */
+	@Override
+	public String getAlterIdentityColumnSQL(TableProperties table, ColumnProperties column, long value) throws SQLException
+	{
+		return null;
 	}
 
 	/**
@@ -69,12 +79,12 @@ public class SybaseDialect extends StandardDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.Connection)
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.DatabaseMetaData)
 	 */
 	@Override
-	public Collection<String> getSequences(Connection connection) throws SQLException
+	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
 	{
-		return Collections.emptySet();
+		return Collections.emptyList();
 	}
 
 	/**

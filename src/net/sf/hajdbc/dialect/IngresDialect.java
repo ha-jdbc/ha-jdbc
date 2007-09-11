@@ -20,10 +20,16 @@
  */
 package net.sf.hajdbc.dialect;
 
-import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.regex.Pattern;
+
+import net.sf.hajdbc.QualifiedName;
 
 /**
  * Dialect for <a href="http://opensource.ingres.com/projects/ingres/">Ingres</a>.
@@ -45,12 +51,25 @@ public class IngresDialect extends StandardDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.Connection)
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.DatabaseMetaData)
 	 */
 	@Override
-	public Collection<String> getSequences(Connection connection) throws SQLException
+	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
 	{
-		return this.executeQuery(connection, "SELECT seq_name FROM iisequence");
+		List<QualifiedName> sequenceList = new LinkedList<QualifiedName>();
+		
+		Statement statement = metaData.getConnection().createStatement();
+		
+		ResultSet resultSet = statement.executeQuery("SELECT seq_name FROM iisequence");
+		
+		while (resultSet.next())
+		{
+			sequenceList.add(new QualifiedName(resultSet.getString(1)));
+		}
+		
+		statement.close();
+		
+		return sequenceList;
 	}
 
 	/**

@@ -20,13 +20,14 @@
  */
 package net.sf.hajdbc.dialect;
 
-import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import net.sf.hajdbc.ColumnProperties;
+import net.sf.hajdbc.QualifiedName;
 
 /**
  * Dialect for <a href="http://www.mysql.com/products/database/mysql/">MySQL</a>
@@ -36,12 +37,12 @@ import net.sf.hajdbc.ColumnProperties;
 public class MySQLDialect extends StandardDialect
 {
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#getDefaultSchemas(java.sql.Connection)
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getDefaultSchemas(java.sql.DatabaseMetaData)
 	 */
 	@Override
-	public List<String> getDefaultSchemas(Connection connection) throws SQLException
+	public List<String> getDefaultSchemas(DatabaseMetaData metaData) throws SQLException
 	{
-		return Collections.singletonList(this.executeFunction(connection, "DATABASE()"));
+		return Collections.singletonList(this.executeFunction(metaData.getConnection(), "DATABASE()"));
 	}
 	
 	/**
@@ -50,6 +51,8 @@ public class MySQLDialect extends StandardDialect
 	@Override
 	public boolean isIdentity(ColumnProperties properties)
 	{
+		if (properties.getNativeType().equalsIgnoreCase("SERIAL")) return true;
+		
 		String remarks = properties.getRemarks();
 		
 		return (remarks != null) && remarks.contains("AUTO_INCREMENT");
@@ -65,10 +68,10 @@ public class MySQLDialect extends StandardDialect
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.Connection)
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.DatabaseMetaData)
 	 */
 	@Override
-	public Collection<String> getSequences(Connection connection) throws SQLException
+	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
 	{
 		return Collections.emptyList();
 	}
@@ -108,6 +111,15 @@ public class MySQLDialect extends StandardDialect
 	protected String dropUniqueConstraintFormat()
 	{
 		return "ALTER TABLE {1} DROP INDEX {0}";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#resetIdentityColumnFormat()
+	 */
+	@Override
+	protected String alterIdentityColumnFormat()
+	{
+		return "ALTER TABLE {0} AUTO_INCREMENT = {2}";
 	}
 
 	/**

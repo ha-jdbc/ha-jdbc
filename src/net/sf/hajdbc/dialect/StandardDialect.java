@@ -37,6 +37,8 @@ import java.util.regex.Pattern;
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ForeignKeyConstraint;
+import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.UniqueConstraint;
 import net.sf.hajdbc.util.Strings;
@@ -268,12 +270,12 @@ public class StandardDialect implements Dialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getDefaultSchemas(java.sql.Connection)
+	 * @see net.sf.hajdbc.Dialect#getDefaultSchemas(java.sql.DatabaseMetaData)
 	 */
 	@Override
-	public List<String> getDefaultSchemas(Connection connection) throws SQLException
+	public List<String> getDefaultSchemas(DatabaseMetaData metaData) throws SQLException
 	{
-		return Collections.singletonList(connection.getMetaData().getUserName());
+		return Collections.singletonList(metaData.getUserName());
 	}
 
 	protected String executeFunction(Connection connection, String function) throws SQLException
@@ -333,24 +335,15 @@ public class StandardDialect implements Dialect
 	 * @see net.sf.hajdbc.Dialect#getSequences(java.sql.Connection)
 	 */
 	@Override
-	public Collection<String> getSequences(Connection connection) throws SQLException
+	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
 	{
-		List<String> sequenceList = new LinkedList<String>();
+		List<QualifiedName> sequenceList = new LinkedList<QualifiedName>();
 		
-		ResultSet resultSet = connection.getMetaData().getTables(Strings.EMPTY, null, Strings.ANY, new String[] { this.sequenceTableType() });
+		ResultSet resultSet = metaData.getTables(Strings.EMPTY, null, Strings.ANY, new String[] { this.sequenceTableType() });
 		
 		while (resultSet.next())
 		{
-			StringBuilder builder = new StringBuilder();
-			
-			String schema = resultSet.getString("TABLE_SCHEM");
-			
-			if (schema != null)
-			{
-				builder.append(schema).append(Strings.DOT);
-			}
-			
-			sequenceList.add(builder.append(resultSet.getString("TABLE_NAME")).toString());
+			sequenceList.add(new QualifiedName(resultSet.getString("TABLE_SCHEM"), resultSet.getString("TABLE_NAME")));
 		}
 		
 		resultSet.close();
@@ -367,9 +360,9 @@ public class StandardDialect implements Dialect
 	 * @see net.sf.hajdbc.Dialect#getNextSequenceValueSQL(java.lang.String)
 	 */
 	@Override
-	public String getNextSequenceValueSQL(String sequence)
+	public String getNextSequenceValueSQL(SequenceProperties sequence)
 	{
-		return this.executeFunctionSQL(MessageFormat.format(this.nextSequenceValueFormat(), sequence));
+		return this.executeFunctionSQL(MessageFormat.format(this.nextSequenceValueFormat(), sequence.getName()));
 	}
 	
 	protected String nextSequenceValueFormat()
@@ -381,9 +374,9 @@ public class StandardDialect implements Dialect
 	 * @see net.sf.hajdbc.Dialect#getAlterSequenceSQL(java.lang.String, long)
 	 */
 	@Override
-	public String getAlterSequenceSQL(String sequence, long value)
+	public String getAlterSequenceSQL(SequenceProperties sequence, long value)
 	{
-		return MessageFormat.format(this.alterSequenceFormat(), sequence, value);
+		return MessageFormat.format(this.alterSequenceFormat(), sequence.getName(), value);
 	}
 	
 	protected String alterSequenceFormat()
@@ -391,6 +384,17 @@ public class StandardDialect implements Dialect
 		return "ALTER SEQUENCE {0} RESTART WITH {1}";
 	}
 
+	@Override
+	public String getAlterIdentityColumnSQL(TableProperties table, ColumnProperties column, long value) throws SQLException
+	{
+		return MessageFormat.format(this.alterIdentityColumnFormat(), table.getName(), column.getName(), value);
+	}
+
+	protected String alterIdentityColumnFormat()
+	{
+		return "ALTER TABLE {0} ALTER COLUMN {1} RESTART WITH {2}";
+	}
+	
 	/**
 	 * @see net.sf.hajdbc.Dialect#getIdentifierPattern(java.sql.Connection)
 	 */

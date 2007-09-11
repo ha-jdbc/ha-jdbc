@@ -46,11 +46,12 @@ public class PostgreSQLDialect extends StandardDialect
 	/**
 	 * PostgreSQL uses a schema search path to locate unqualified table names.
 	 * The default search path is [$user,public], where $user is the current user.
-	 * @see net.sf.hajdbc.dialect.StandardDialect#getDefaultSchemas(java.sql.Connection)
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getDefaultSchemas(java.sql.DatabaseMetaData)
 	 */
 	@Override
-	public List<String> getDefaultSchemas(Connection connection) throws SQLException
+	public List<String> getDefaultSchemas(DatabaseMetaData metaData) throws SQLException
 	{
+		Connection connection = metaData.getConnection();
 		Statement statement = connection.createStatement();
 		
 		ResultSet resultSet = statement.executeQuery("SHOW search_path");
@@ -66,7 +67,7 @@ public class PostgreSQLDialect extends StandardDialect
 		
 		for (String schema: schemas)
 		{
-			schemaList.add(schema.equals("$user") ? connection.getMetaData().getUserName() : schema);
+			schemaList.add(schema.equals("$user") ? metaData.getUserName() : schema);
 		}
 		
 		return schemaList;
@@ -150,6 +151,15 @@ public class PostgreSQLDialect extends StandardDialect
 	protected String nextSequenceValueFormat()
 	{
 		return "NEXTVAL(''{0}'')";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#alterIdentityColumnFormat()
+	 */
+	@Override
+	protected String alterIdentityColumnFormat()
+	{
+		return "ALTER SEQUENCE {0}_{1}_seq RESTART WITH {2}";
 	}
 
 	/**
