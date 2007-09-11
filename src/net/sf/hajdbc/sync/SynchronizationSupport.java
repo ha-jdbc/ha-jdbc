@@ -25,6 +25,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -39,10 +40,12 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.UniqueConstraint;
 import net.sf.hajdbc.util.SQLExceptionFactory;
+import net.sf.hajdbc.util.Strings;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -129,23 +132,22 @@ public final class SynchronizationSupport
 	 */
 	public static <D> void synchronizeSequences(final SynchronizationContext<D> context) throws SQLException
 	{
-		Database<D> sourceDatabase = context.getSourceDatabase();		
-		Connection sourceConnection = context.getConnection(sourceDatabase);
-		
-		Dialect dialect = context.getDialect();
-		
-		Collection<String> sequences = dialect.getSequences(sourceConnection);
+		Collection<SequenceProperties> sequences = context.getDatabaseProperties().getSequences();
 
 		if (!sequences.isEmpty())
 		{
+			Database<D> sourceDatabase = context.getSourceDatabase();
+			
 			Set<Database<D>> databases = context.getActiveDatabaseSet();
 
 			ExecutorService executor = context.getExecutor();
 			
-			Map<String, Long> sequenceMap = new HashMap<String, Long>();
+			Dialect dialect = context.getDialect();
+			
+			Map<SequenceProperties, Long> sequenceMap = new HashMap<SequenceProperties, Long>();
 			Map<Database<D>, Future<Long>> futureMap = new HashMap<Database<D>, Future<Long>>();
 
-			for (String sequence: sequences)
+			for (SequenceProperties sequence: sequences)
 			{
 				final String sql = dialect.getNextSequenceValueSQL(sequence);
 				
@@ -164,7 +166,6 @@ public final class SynchronizationSupport
 							
 							long value = resultSet.getLong(1);
 							
-							resultSet.close();
 							statement.close();
 							
 							return value;
@@ -206,7 +207,7 @@ public final class SynchronizationSupport
 			Connection targetConnection = context.getConnection(context.getTargetDatabase());
 			Statement targetStatement = targetConnection.createStatement();
 
-			for (String sequence: sequences)
+			for (SequenceProperties sequence: sequences)
 			{
 				String sql = dialect.getAlterSequenceSQL(sequence, sequenceMap.get(sequence) + 1);
 				
@@ -218,6 +219,62 @@ public final class SynchronizationSupport
 			targetStatement.executeBatch();		
 			targetStatement.close();
 		}
+	}
+	
+	public static <D> void synchronizeIdentityColumns(SynchronizationContext<D> context) throws SQLException
+	{
+		Statement sourceStatement = context.getConnection(context.getSourceDatabase()).createStatement();
+		Statement targetStatement = context.getConnection(context.getTargetDatabase()).createStatement();
+		
+		Dialect dialect = context.getDialect();
+		
+		for (TableProperties table: context.getDatabaseProperties().getTables())
+		{
+			Collection<String> columns = table.getIdentityColumns();
+			
+			if (!columns.isEmpty())
+			{
+				String selectSQL = MessageFormat.format("SELECT max({0}) FROM {1}", Strings.join(columns, "), max("), table.getName()); //$NON-NLS-1$ //$NON-NLS-2$
+				
+				logger.debug(selectSQL);
+				
+				Map<String, Long> map = new HashMap<String, Long>();
+				
+				ResultSet resultSet = sourceStatement.executeQuery(selectSQL);
+				
+				if (resultSet.next())
+				{
+					int i = 0;
+					
+					for (String column: columns)
+					{
+						map.put(column, resultSet.getLong(++i));
+					}
+				}
+				
+				resultSet.close();
+				
+				if (!map.isEmpty())
+				{
+					for (Map.Entry<String, Long> mapEntry: map.entrySet())
+					{
+						String alterSQL = dialect.getAlterIdentityColumnSQL(table, table.getColumnProperties(mapEntry.getKey()), mapEntry.getValue() + 1);
+						
+						if (alterSQL != null)
+						{
+							logger.debug(alterSQL);
+							
+							targetStatement.addBatch(alterSQL);
+						}
+					}
+					
+					targetStatement.executeBatch();
+				}
+			}
+		}
+		
+		sourceStatement.close();
+		targetStatement.close();
 	}
 	
 	/**

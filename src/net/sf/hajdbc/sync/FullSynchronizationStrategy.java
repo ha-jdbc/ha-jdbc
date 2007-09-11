@@ -225,6 +225,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		
 		SynchronizationSupport.restoreForeignKeys(context);
 		
+		SynchronizationSupport.synchronizeIdentityColumns(context);
 		SynchronizationSupport.synchronizeSequences(context);
 	}
 

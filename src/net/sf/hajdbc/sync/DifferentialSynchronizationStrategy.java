@@ -419,6 +419,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		
 		SynchronizationSupport.restoreForeignKeys(context);
 		
+		SynchronizationSupport.synchronizeIdentityColumns(context);
 		SynchronizationSupport.synchronizeSequences(context);
 	}
 
