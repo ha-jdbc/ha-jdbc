@@ -32,7 +32,7 @@
 		<value name="eval-current-date" field="currentDateEvaluationEnabled" style="attribute" usage="optional" default="false"/>
 		<value name="eval-current-time" field="currentTimeEvaluationEnabled" style="attribute" usage="optional" default="false"/>
 		<value name="eval-current-timestamp" field="currentTimestampEvaluationEnabled" style="attribute" usage="optional" default="false"/>
-		<value name="eval-rand" field="randomEvaluationEnabled" style="attribute" usage="optional" default="false"/>
+		<value name="eval-rand" field="randEvaluationEnabled" style="attribute" usage="optional" default="false"/>
 	</mapping>
 	
 	<mapping class="net.sf.hajdbc.sql.AbstractDatabase" abstract="true">
