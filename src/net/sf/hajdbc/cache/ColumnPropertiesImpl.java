@@ -107,9 +107,9 @@ public class ColumnPropertiesImpl implements ColumnProperties
 	{
 		if ((object == null) || !(object instanceof ColumnProperties)) return false;
 		
-		String name = ((ColumnProperties) object).getName();
+		ColumnProperties column = (ColumnProperties) object;
 		
-		return (name != null) && name.equals(this.name);
+		return this.name.equals(column.getName());
 	}
 
 	/**
@@ -120,4 +120,5 @@ public class ColumnPropertiesImpl implements ColumnProperties
 	{
 		return this.name.hashCode();
 	}
+	
 }
