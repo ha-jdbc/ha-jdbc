@@ -37,7 +37,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.locks.Lock;
 
-import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Dialect;
@@ -272,18 +271,9 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 				{
 					TableProperties tableProperties = databaseCluster.getDatabaseMetaDataCache().getDatabaseProperties(this.getParent()).findTable(table);
 					
-					for (String column: tableProperties.getColumns())
+					if (!tableProperties.getIdentityColumns().isEmpty())
 					{
-						ColumnProperties columnProperties = tableProperties.getColumnProperties(column);
-						
-						Boolean autoIncrement = columnProperties.isAutoIncrement();
-						
-						if ((autoIncrement != null) ? autoIncrement : dialect.isIdentity(columnProperties))
-						{
-							identifierSet.add(tableProperties.getName());
-							
-							break;
-						}
+						identifierSet.add(tableProperties.getName());
 					}
 				}
 			}
