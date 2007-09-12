@@ -18,7 +18,7 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc;
+package net.sf.hajdbc.sql;
 
 /**
  * @author Paul Ferraro
@@ -26,7 +26,7 @@ package net.sf.hajdbc;
  */
 public enum TransactionMode
 {
-	PARALLEL, SERIAL;
+	BALANCED, PARALLEL, SERIAL;
 	
 	public static TransactionMode deserialize(String value)
 	{

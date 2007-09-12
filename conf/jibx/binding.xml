@@ -21,7 +21,7 @@
 		<value name="default-sync" field="defaultSynchronizationStrategyId" style="attribute"/>
 		<value name="dialect" field="dialect" style="attribute" deserializer="net.sf.hajdbc.dialect.DialectClass.deserialize" serializer="net.sf.hajdbc.dialect.DialectClass.serialize" usage="optional"/>
 		<value name="meta-data-cache" field="databaseMetaDataCache" style="attribute" deserializer="net.sf.hajdbc.cache.DatabaseMetaDataCacheClass.deserialize" serializer="net.sf.hajdbc.cache.DatabaseMetaDataCacheClass.serialize" usage="required"/>
-		<value name="transaction-mode" field="transactionMode" style="attribute" deserializer="net.sf.hajdbc.TransactionMode.deserialize" serializer="net.sf.hajdbc.TransactionMode.serialize"/>
+		<value name="transaction-mode" field="transactionMode" style="attribute" deserializer="net.sf.hajdbc.sql.TransactionMode.deserialize" serializer="net.sf.hajdbc.sql.TransactionMode.serialize"/>
 		<value name="auto-activate-schedule" field="autoActivationExpression" style="attribute" usage="optional"/>
 		<value name="failure-detect-schedule" field="failureDetectionExpression" style="attribute" usage="optional"/>
 		<value name="min-threads" field="minThreads" usage="optional" default="0"/>

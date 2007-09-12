@@ -72,7 +72,6 @@ import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.StateManager;
 import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.SynchronizationStrategy;
-import net.sf.hajdbc.TransactionMode;
 import net.sf.hajdbc.local.LocalLockManager;
 import net.sf.hajdbc.local.LocalStateManager;
 import net.sf.hajdbc.sync.SynchronizationContextImpl;
