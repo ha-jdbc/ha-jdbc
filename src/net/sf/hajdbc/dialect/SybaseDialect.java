@@ -60,15 +60,6 @@ public class SybaseDialect extends StandardDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#getAlterIdentityColumnSQL(net.sf.hajdbc.TableProperties, net.sf.hajdbc.ColumnProperties, long)
-	 */
-	@Override
-	public String getAlterIdentityColumnSQL(TableProperties table, ColumnProperties column, long value) throws SQLException
-	{
-		return null;
-	}
-
-	/**
 	 * Sybase does not support sequences.
 	 * @see net.sf.hajdbc.dialect.StandardDialect#parseSequence(java.lang.String)
 	 */

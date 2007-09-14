@@ -170,24 +170,6 @@ public class TestSybaseDialect extends TestStandardDialect
 		
 		return sequences;
 	}
-	
-	/**
-	 * @see net.sf.hajdbc.Dialect#getAlterIdentityColumnSQL(net.sf.hajdbc.TableProperties, net.sf.hajdbc.ColumnProperties, long)
-	 */
-	@Override
-	@Test(dataProvider = "table-column-long")
-	public String getAlterIdentityColumnSQL(TableProperties table, ColumnProperties column, long value) throws SQLException
-	{
-		this.replay();
-		
-		String sql = this.dialect.getAlterIdentityColumnSQL(table, column, value);
-		
-		this.verify();
-		
-		assert sql == null;
-		
-		return sql;
-	}
 
 	@Override
 	@DataProvider(name = "current-date")
