@@ -12,16 +12,52 @@
 	</contexts>
 
 	<changes>
-		<release version="2.0.2" date="">
+		<release version="2.0.2" date="September 14, 2007">
 			<action context="src" dev="PF" type="fix">
 				Added <code>Dialect.getIdentifierPattern(...)</code> method to work around buggy <code>DatabaseMetaData.getExtraNameCharacters()</code> in PostgreSQL driver since version 8.1.
 				Bug causes unexpected failures during identity column detection when schema or table name contains non-standard characters.
 			</action>
 			<action context="src" dev="PF" type="update">
-				Replaced separate <code>CURRENT_USER</code> query with <code>DatabaseMetaData.getUserName()</code> in <code>StandardDialect.getDefaultSchemas()</code>.
+				Optimized <code>StandardDialect.getDefaultSchemas()</code> by replacing separate <code>CURRENT_USER</code> query with <code>DatabaseMetaData.getUserName()</code>.
 			</action>
 			<action context="doc" dev="PF" type="fix">
 				Fixed example Tomcat DataSource configuration.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed <code>currentTimestampFunction()</code> method of MaxDBDialect.
+			</action>
+			<action context="src" dev="PF" type="add">
+				Created separate OracleDialect, formerly an alias of MaxDBDialect.
+			</action>
+			<action context="src" dev="PF" type="add">
+				Created separate H2Dialect, formerly an alias of HSQLDBDialect.
+			</action>
+			<action context="src" dev="PF" type="add">
+				Added new dialect for Sybase.
+			</action>
+			<action context="src" dev="PF" type="add">
+				Added <code>evaluateCurrentDate(String, java.sql.Date)</code>, <code>evaluateCurrentTime(String, java.sql.Time)</code>, <code>evaluateCurrentTimestamp(String, java.sql.Timestamp)</code>, and <code>evaluateRandom(String)</code> to Dialect interface to replace non-deterministic SQL functions (e.g. CURRENT_TIMESTAMP, RAND()) with deterministic static values.
+				Added optional <code>eval-current-date</code>, <code>eval-current-time</code>, <code>eval-current-timestamp</code>, and <code>eval-rand</code> cluster attribute to enable these behaviors.
+			</action>
+			<action context="src" dev="PF" type="update">
+				Both sequence and identity column detection are no longer enabled by default.
+			</action>
+			<action context="src" dev="PF" type="remove">
+				Removed <code>supportsSequences()</code> and <code>supportsIdentityColumns()</code> methods from Dialect interface.
+				The corresponding <code>parseSequence(String)</code> and <code>parseInsertTable(String)</code> methods now return null for dialects that do not support these features.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed race condition in DistributableLockAdapter that may prevent a lock from being released.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded SLF4J to 1.4.3.
+			</action>
+			<action context="src" dev="PF" type="add">
+				Added SynchronizationSupport.synchronizeIdentityColumns(...).
+				Consequently, MySQL AUTO_INCREMENT columns are now fully supported.
+			</action>
+			<action context="src" dev="PF" type="add">
+				Added DatabaseProperties.getSequences() and TableProperties.getIdentityColumns() to meta data cache facility.
 			</action>
 		</release>
 		<release version="2.0.1" date="July 23, 2007">
