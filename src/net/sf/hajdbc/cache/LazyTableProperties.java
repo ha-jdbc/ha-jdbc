@@ -41,6 +41,7 @@ public class LazyTableProperties extends AbstractTableProperties
 	private UniqueConstraint primaryKey;
 	private Collection<UniqueConstraint> uniqueConstraints;
 	private Collection<ForeignKeyConstraint> foreignKeyConstraints;
+	private Collection<String> identityColumns;
 	private String name;
 	
 	public LazyTableProperties(DatabaseMetaDataSupport support, QualifiedName table)
@@ -137,8 +138,13 @@ public class LazyTableProperties extends AbstractTableProperties
 	 * @see net.sf.hajdbc.TableProperties#getIdentityColumns()
 	 */
 	@Override
-	public Collection<String> getIdentityColumns() throws SQLException
+	public synchronized Collection<String> getIdentityColumns() throws SQLException
 	{
-		return null;
+		if (this.identityColumns == null)
+		{
+			this.identityColumns = this.support.getIdentityColumns(this.getColumnMap().values());
+		}
+		
+		return this.identityColumns;
 	}
 }

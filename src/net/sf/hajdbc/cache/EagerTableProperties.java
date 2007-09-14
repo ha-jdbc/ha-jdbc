@@ -40,6 +40,7 @@ public class EagerTableProperties extends AbstractTableProperties
 	private UniqueConstraint primaryKey;
 	private Collection<UniqueConstraint> uniqueConstraints;
 	private Collection<ForeignKeyConstraint> foreignKeyConstraints;
+	private Collection<String> identityColumns;
 	private String name;
 	
 	public EagerTableProperties(DatabaseMetaData metaData, DatabaseMetaDataSupport support, QualifiedName table) throws SQLException
@@ -48,6 +49,7 @@ public class EagerTableProperties extends AbstractTableProperties
 		this.primaryKey = support.getPrimaryKey(metaData, table);
 		this.uniqueConstraints = support.getUniqueConstraints(metaData, table);
 		this.foreignKeyConstraints = support.getForeignKeyConstraints(metaData, table);
+		this.identityColumns = support.getIdentityColumns(this.columnMap.values());
 		this.name = support.qualifyNameForDML(table);
 	}
 
@@ -111,6 +113,6 @@ public class EagerTableProperties extends AbstractTableProperties
 	@Override
 	public Collection<String> getIdentityColumns() throws SQLException
 	{
-		return null;
+		return this.identityColumns;
 	}
 }
