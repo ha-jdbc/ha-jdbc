@@ -51,12 +51,6 @@ public interface DatabaseCluster<D>
 	public boolean deactivate(Database<D> database, StateManager stateManager);
 	
 	/**
-	 * Returns a map of database to connection factory for this obtaining connections to databases in this cluster.
-	 * @return a connection factory map
-	 */
-	public Map<Database<D>, D> getConnectionFactoryMap();
-	
-	/**
 	 * Returns the database identified by the specified id
 	 * @param id a database identifier
 	 * @return a database descriptor
