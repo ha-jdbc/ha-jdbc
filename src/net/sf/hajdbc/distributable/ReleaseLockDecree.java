@@ -49,16 +49,18 @@ public class ReleaseLockDecree extends AbstractLockDecree
 	 * @see net.sf.hajdbc.distributable.LockDecree#vote(net.sf.hajdbc.LockManager, java.util.Map)
 	 */
 	@Override
-	public boolean vote(LockManager lockManager, Map<LockDecree, Lock> lockMap)
+	public boolean vote(LockManager lockManager, Map<String, Lock> lockMap)
 	{
+		Lock lock = null;
+		
 		synchronized (lockMap)
 		{
-			Lock lock = lockMap.remove(this);
-			
-			if (lock != null)
-			{
-				lock.unlock();
-			}
+			lock = lockMap.remove(this.id);
+		}
+		
+		if (lock != null)
+		{
+			lock.unlock();
 		}
 		
 		return true;
