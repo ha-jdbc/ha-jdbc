@@ -4,7 +4,7 @@
 package net.sf.hajdbc.sql;
 
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.TreeMap;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
@@ -22,7 +22,12 @@ public class AbstractRootInvocationHandler<D> extends AbstractInvocationHandler<
 	 */
 	protected AbstractRootInvocationHandler(DatabaseCluster<D> databaseCluster, Class<D> proxyClass)
 	{
-		super(databaseCluster, proxyClass, new HashMap<Database<D>, D>());
+		super(databaseCluster, proxyClass, new TreeMap<Database<D>, D>());
+		
+		for (Database<D> database: databaseCluster.getBalancer().all())
+		{
+			this.getObject(database);
+		}
 	}
 
 	/**
