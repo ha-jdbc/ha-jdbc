@@ -12,6 +12,20 @@
 	</contexts>
 
 	<changes>
+		<release version="2.0.3" date="September 24, 2007">
+			<action context="lib" dev="PF" type="update">
+				Upgraded JGroups to 2.5.1.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed infinite loop in DistributableLockManager while acquiring a lock when only one peer node is present.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed missing membership listener registration in DistributableLockManager preventing proper lock cleanup.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Defer creation of connection factories until needed since DataSource creation relies on JNDI environment properties that may not yet be established.
+			</action>
+		</release>
 		<release version="2.0.2" date="September 14, 2007">
 			<action context="src" dev="PF" type="fix">
 				Added <code>Dialect.getIdentifierPattern(...)</code> method to work around buggy <code>DatabaseMetaData.getExtraNameCharacters()</code> in PostgreSQL driver since version 8.1.
