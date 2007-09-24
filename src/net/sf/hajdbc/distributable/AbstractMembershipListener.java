@@ -17,8 +17,8 @@ import org.jgroups.View;
  */
 public abstract class AbstractMembershipListener implements MembershipListener
 {
-	protected Set<Address> addressSet = new HashSet<Address>();
 	protected Channel channel;
+	private Set<Address> addressSet = new HashSet<Address>();
 
 	public AbstractMembershipListener(Channel channel)
 	{
@@ -33,6 +33,7 @@ public abstract class AbstractMembershipListener implements MembershipListener
 	@Override
 	public final void block()
 	{
+		// Do nothing
 	}
 
 	/**
@@ -41,8 +42,9 @@ public abstract class AbstractMembershipListener implements MembershipListener
 	@Override
 	public final void suspect(Address address)
 	{
+		// Do nothing
 	}
-
+	
 	/**
 	 * @see org.jgroups.MembershipListener#viewAccepted(org.jgroups.View)
 	 */
@@ -75,6 +77,14 @@ public abstract class AbstractMembershipListener implements MembershipListener
 					this.memberJoined(address);
 				}
 			}
+		}
+	}
+
+	protected boolean hasNoMembers()
+	{
+		synchronized (this.addressSet)
+		{
+			return this.addressSet.isEmpty();
 		}
 	}
 
