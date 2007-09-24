@@ -18,7 +18,6 @@ public class AbstractRootInvocationHandler<D> extends AbstractInvocationHandler<
 	 * Constructs a new AbstractRootInvocationHandler.
 	 * @param databaseCluster
 	 * @param proxyClass
-	 * @param objectMap
 	 */
 	protected AbstractRootInvocationHandler(DatabaseCluster<D> databaseCluster, Class<D> proxyClass)
 	{

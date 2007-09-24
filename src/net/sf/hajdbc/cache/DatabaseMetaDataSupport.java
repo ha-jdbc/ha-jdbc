@@ -148,8 +148,7 @@ public class DatabaseMetaDataSupport
 	/**
 	 * Returns the columns of the specified table.
 	 * @param metaData a DatabaseMetaData implementation
-	 * @param schema a schema name, possibly null
-	 * @param table a table name
+	 * @param table a schema qualified table name
 	 * @return a Map of column name to column properties
 	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */
@@ -197,8 +196,7 @@ public class DatabaseMetaDataSupport
 	/**
 	 * Returns the primary key of the specified table.
 	 * @param metaData a DatabaseMetaData implementation
-	 * @param schema a schema name, possibly null
-	 * @param table a table name
+	 * @param table a schema qualified table name
 	 * @return a unique constraint
 	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */
@@ -230,8 +228,7 @@ public class DatabaseMetaDataSupport
 	/**
 	 * Returns the foreign key constraints on the specified table.
 	 * @param metaData a DatabaseMetaData implementation
-	 * @param schema a schema name, possibly null
-	 * @param table a table name
+	 * @param table a schema qualified table name
 	 * @return a Collection of foreign key constraints.
 	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */
@@ -276,9 +273,7 @@ public class DatabaseMetaDataSupport
 
 	/**
 	 * Returns the unique constraints on the specified table.  This may include the primary key of the table.
-	 * @param metaData a DatabaseMetaData implementation
-	 * @param schema a schema name, possibly null
-	 * @param table a table name
+	 * @param metaData a schema qualified table name
 	 * @return a Collection of unique constraints.
 	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */
@@ -315,8 +310,7 @@ public class DatabaseMetaDataSupport
 
 	/**
 	 * Returns the schema qualified name of the specified table suitable for use in a data modification language (DML) statement.
-	 * @param schema a schema name, possibly null
-	 * @param table a table name
+	 * @param name a schema qualified name
 	 * @return a Collection of unique constraints.
 	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */
@@ -327,8 +321,7 @@ public class DatabaseMetaDataSupport
 
 	/**
 	 * Returns the schema qualified name of the specified table suitable for use in a data definition language (DDL) statement.
-	 * @param schema a schema name, possibly null
-	 * @param table a table name
+	 * @param name a schema qualified name
 	 * @return a Collection of unique constraints.
 	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */

@@ -21,7 +21,6 @@
 package net.sf.hajdbc.cache;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
 import net.sf.hajdbc.DatabaseProperties;
@@ -38,7 +37,7 @@ public class EagerDatabaseMetaDataCache extends AbstractDatabaseMetaDataCache
 	private DatabaseProperties properties;
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush(DatabaseMetaData)
+	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush(java.sql.Connection)
 	 */
 	@Override
 	public synchronized void flush(Connection connection) throws SQLException
@@ -47,7 +46,7 @@ public class EagerDatabaseMetaDataCache extends AbstractDatabaseMetaDataCache
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getDatabaseProperties(DatabaseMetaData)
+	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getDatabaseProperties(java.sql.Connection)
 	 */
 	@Override
 	public synchronized DatabaseProperties getDatabaseProperties(Connection connection) throws SQLException

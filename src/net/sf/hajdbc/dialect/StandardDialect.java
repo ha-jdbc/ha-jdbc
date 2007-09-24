@@ -332,7 +332,7 @@ public class StandardDialect implements Dialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getSequences(java.sql.Connection)
+	 * @see net.sf.hajdbc.Dialect#getSequences(java.sql.DatabaseMetaData)
 	 */
 	@Override
 	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
@@ -357,7 +357,7 @@ public class StandardDialect implements Dialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getNextSequenceValueSQL(java.lang.String)
+	 * @see net.sf.hajdbc.Dialect#getNextSequenceValueSQL(net.sf.hajdbc.SequenceProperties)
 	 */
 	@Override
 	public String getNextSequenceValueSQL(SequenceProperties sequence)
@@ -371,7 +371,7 @@ public class StandardDialect implements Dialect
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Dialect#getAlterSequenceSQL(java.lang.String, long)
+	 * @see net.sf.hajdbc.Dialect#getAlterSequenceSQL(net.sf.hajdbc.SequenceProperties, long)
 	 */
 	@Override
 	public String getAlterSequenceSQL(SequenceProperties sequence, long value)
@@ -396,7 +396,7 @@ public class StandardDialect implements Dialect
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Dialect#getIdentifierPattern(java.sql.Connection)
+	 * @see net.sf.hajdbc.Dialect#getIdentifierPattern(java.sql.DatabaseMetaData)
 	 */
 	@Override
 	public Pattern getIdentifierPattern(DatabaseMetaData metaData) throws SQLException

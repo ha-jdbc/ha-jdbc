@@ -133,8 +133,8 @@ public interface Dialect
 	
 	/**
 	 * Returns a collection of all sequences in this database.
-	 * @param connection a database connection
-	 * @return a Map of sequence name to current value
+	 * @param metaData database meta data
+	 * @return a collection of sequence names
 	 * @throws SQLException
 	 * @since 2.0
 	 */

@@ -114,7 +114,7 @@ public class MySQLDialect extends StandardDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#resetIdentityColumnFormat()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#alterIdentityColumnFormat()
 	 */
 	@Override
 	protected String alterIdentityColumnFormat()
@@ -150,7 +150,7 @@ public class MySQLDialect extends StandardDialect
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#dateLiteralPattern()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#dateLiteralFormat()
 	 */
 	@Override
 	protected String dateLiteralFormat()
@@ -159,7 +159,7 @@ public class MySQLDialect extends StandardDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#timeLiteralPattern()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#timeLiteralFormat()
 	 */
 	@Override
 	protected String timeLiteralFormat()
@@ -168,7 +168,7 @@ public class MySQLDialect extends StandardDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#timestampLiteralPattern()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#timestampLiteralFormat()
 	 */
 	@Override
 	protected String timestampLiteralFormat()
