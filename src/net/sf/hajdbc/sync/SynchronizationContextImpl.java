@@ -81,7 +81,7 @@ public class SynchronizationContextImpl<D> implements SynchronizationContext<D>
 			
 			if (connection == null)
 			{
-				connection = database.connect(this.cluster.getConnectionFactoryMap().get(database));
+				connection = database.connect(database.createConnectionFactory());
 				
 				this.connectionMap.put(database, connection);
 			}
