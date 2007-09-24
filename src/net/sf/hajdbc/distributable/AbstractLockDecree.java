@@ -24,8 +24,6 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Map;
-import java.util.concurrent.locks.Lock;
 
 import org.jgroups.Address;
 
@@ -35,7 +33,7 @@ import org.jgroups.Address;
  */
 public abstract class AbstractLockDecree implements LockDecree, Externalizable
 {
-	private String id;
+	protected String id;
 	private Address address;
 	
 	protected AbstractLockDecree(String id, Address address)
@@ -47,14 +45,6 @@ public abstract class AbstractLockDecree implements LockDecree, Externalizable
 	{
 		// Required for deserialization
 	}
-
-	/**
-	 * @see net.sf.hajdbc.distributable.LockDecree#getId()
-	 */
-	public String getId()
-	{
-		return this.id;
-	}
 	
 	/**
 	 * @see net.sf.hajdbc.distributable.LockDecree#getAddress()
@@ -62,41 +52,6 @@ public abstract class AbstractLockDecree implements LockDecree, Externalizable
 	public Address getAddress()
 	{
 		return this.address;
-	}
-	
-	protected void unlock(Map<LockDecree, Lock> lockMap)
-	{
-		synchronized (lockMap)
-		{
-			Lock lock = lockMap.remove(this);
-			
-			if (lock != null)
-			{
-				lock.unlock();
-			}
-		}
-	}
-	
-	/**
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object object)
-	{
-		if ((object == null) || !(object instanceof LockDecree)) return false;
-		
-		String id = ((LockDecree) object).getId();
-		
-		return (id != null) && id.equals(this.id);
-	}
-
-	/**
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode()
-	{
-		return this.id.hashCode();
 	}
 
 	/**
