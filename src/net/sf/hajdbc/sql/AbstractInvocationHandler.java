@@ -1,22 +1,5 @@
 /*
- * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2007 Paul Ferraro
- * 
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by the 
- * Free Software Foundation; either version 2.1 of the License, or (at your 
- * option) any later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
- * for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * 
- * Contact: ferraro@users.sourceforge.net
+ * Copyright (c) 2004-2007, Identity Theft 911, LLC.  All rights reserved.
  */
 package net.sf.hajdbc.sql;
 
@@ -44,36 +27,22 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Paul Ferraro
- *
  */
-public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHandler, SQLProxy<D, E>
+public abstract class AbstractInvocationHandler<D, E> implements InvocationHandler, SQLProxy<D, E>
 {
 	protected Logger logger = LoggerFactory.getLogger(this.getClass());
 	
-	private DatabaseCluster<D> databaseCluster;
-	private P parentObject;
-	private SQLProxy<D, P> parentProxy;
-	private Invoker<D, P, E> parentInvoker;
+	protected DatabaseCluster<D> databaseCluster;
+	private Class<E> proxyClass;
 	private Map<Database<D>, E> objectMap;
 	private Set<Invoker<D, E, ?>> invokerSet = new LinkedHashSet<Invoker<D, E, ?>>();
 	private List<SQLProxy<D, ?>> childList = new LinkedList<SQLProxy<D, ?>>();
-	private Class<E> proxyClass;
 	
 	protected AbstractInvocationHandler(DatabaseCluster<D> databaseCluster, Class<E> proxyClass, Map<Database<D>, E> objectMap)
 	{
 		this.databaseCluster = databaseCluster;
 		this.proxyClass = proxyClass;
 		this.objectMap = objectMap;
-	}
-
-	protected AbstractInvocationHandler(P object, SQLProxy<D, P> proxy, Invoker<D, P, E> invoker, Class<E> proxyClass, Map<Database<D>, E> objectMap) throws Exception
-	{
-		this(proxy.getDatabaseCluster(), proxyClass, objectMap);
-		
-		this.parentObject = object;
-		this.parentProxy = proxy;
-		this.parentInvoker = invoker;
-		this.parentProxy.addChild(this);
 	}
 	
 	/**
@@ -263,19 +232,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 			{
 				try
 				{
-					if (this.parentProxy == null)
-					{
-						throw new SQLException();
-					}
-					
-					P parentObject = this.parentProxy.getObject(database);
-					
-					if (parentObject == null)
-					{
-						throw new SQLException();
-					}
-					
-					object = this.parentInvoker.invoke(database, parentObject);
+					object = this.createObject(database);
 					
 					synchronized (this.invokerSet)
 					{
@@ -300,6 +257,8 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 		}
 	}
 	
+	protected abstract E createObject(Database<D> database) throws SQLException;
+
 	/**
 	 * @see net.sf.hajdbc.sql.SQLProxy#record(net.sf.hajdbc.sql.Invoker)
 	 */
@@ -326,8 +285,6 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 			}
 		}
 		
-		if (this.parentProxy == null) return;
-		
 		synchronized (this.objectMap)
 		{
 			Iterator<Map.Entry<Database<D>, E>> mapEntries = this.objectMap.entrySet().iterator();
@@ -344,16 +301,7 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 					
 					if (object != null)
 					{
-						P parent = this.parentProxy.getObject(database);
-						
-						try
-						{
-							this.close(parent, object);
-						}
-						catch (SQLException e)
-						{
-							this.logger.info(e.getMessage(), e);
-						}
+						this.close(database, object);
 					}
 					
 					mapEntries.remove();
@@ -361,27 +309,8 @@ public abstract class AbstractInvocationHandler<D, P, E> implements InvocationHa
 			}
 		}
 	}
-	
-	protected abstract void close(P parent, E object) throws SQLException;
-	
-	/**
-	 * @see net.sf.hajdbc.sql.SQLProxy#getRoot()
-	 */
-	@Override
-	public final SQLProxy<D, ?> getRoot()
-	{
-		return (this.parentProxy == null) ? this : this.parentProxy.getRoot();
-	}
-	
-	protected P getParent()
-	{
-		return this.parentObject;
-	}
-	
-	protected SQLProxy<D, P> getParentProxy()
-	{
-		return this.parentProxy;
-	}
+
+	protected abstract void close(Database<D> database, E object);
 	
 	/**
 	 * @see net.sf.hajdbc.sql.SQLProxy#getDatabaseCluster()
