@@ -44,7 +44,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -119,7 +118,6 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	private Map<String, SynchronizationStrategy> synchronizationStrategyMap = new HashMap<String, SynchronizationStrategy>();
 	private DatabaseClusterDecorator decorator;
 	private Map<String, Database<D>> databaseMap = new HashMap<String, Database<D>>();
-	private Map<Database<D>, D> connectionFactoryMap = new ConcurrentHashMap<Database<D>, D>();
 	private ExecutorService transactionalExecutor;
 	private ExecutorService nonTransactionalExecutor;
 	private CronThreadPoolExecutor cronExecutor = new CronThreadPoolExecutor(2);
@@ -131,15 +129,6 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	{
 		this.id = id;
 		this.url = url;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getConnectionFactoryMap()
-	 */
-	@Override
-	public Map<Database<D>, D> getConnectionFactoryMap()
-	{
-		return this.connectionFactoryMap;
 	}
 	
 	/**
@@ -206,7 +195,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		
 		try
 		{
-			connection = database.connect(this.connectionFactoryMap.get(database));
+			connection = database.connect(database.createConnectionFactory());
 			
 			Statement statement = connection.createStatement();
 			
@@ -507,7 +496,6 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			this.unregister(database);
 			
 			this.databaseMap.remove(id);
-			this.connectionFactoryMap.remove(database);
 			
 			this.export();
 		}
@@ -642,7 +630,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		{
 			Database<D> database = this.balancer.next();
 			
-			connection = database.connect(this.connectionFactoryMap.get(database));
+			connection = database.connect(database.createConnectionFactory());
 			
 			this.databaseMetaDataCache.flush(connection);
 		}
@@ -777,7 +765,6 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 				throw new IllegalArgumentException(Messages.getMessage(Messages.DATABASE_ALREADY_EXISTS, id, this));
 			}
 			
-			this.connectionFactoryMap.put(database, database.createConnectionFactory());
 			this.databaseMap.put(id, database);
 			
 			this.register(database, database.getInactiveMBean());
@@ -916,9 +903,12 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	{
 		this.stop();
 		
-		for (Database<D> database: this.databaseMap.values())
+		synchronized (this.databaseMap)
 		{
-			this.unregister(database);
+			for (Database<D> database: this.databaseMap.values())
+			{
+				this.unregister(database);
+			}
 		}
 	}
 
