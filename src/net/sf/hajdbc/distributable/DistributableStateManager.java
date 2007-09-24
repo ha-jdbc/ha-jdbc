@@ -187,7 +187,7 @@ public class DistributableStateManager extends AbstractMembershipListener implem
 	@Override
 	protected void memberJoined(Address address)
 	{
-		logger.info(Messages.getMessage(Messages.GROUP_MEMBER_LEFT, address, this.databaseCluster));
+		logger.info(Messages.getMessage(Messages.GROUP_MEMBER_JOINED, address, this.databaseCluster));
 	}
 
 	/**
@@ -196,7 +196,7 @@ public class DistributableStateManager extends AbstractMembershipListener implem
 	@Override
 	protected void memberLeft(Address address)
 	{
-		logger.info(Messages.getMessage(Messages.GROUP_MEMBER_JOINED, address, this.databaseCluster));
+		logger.info(Messages.getMessage(Messages.GROUP_MEMBER_LEFT, address, this.databaseCluster));
 	}
 
 	/**
