@@ -28,22 +28,13 @@ import net.sf.hajdbc.DatabaseCluster;
  * @author Paul Ferraro
  *
  */
-public class DriverInvocationHandler extends AbstractInvocationHandler<Driver, Void, Driver>
+public class DriverInvocationHandler extends AbstractRootInvocationHandler<Driver>
 {
 	/**
 	 * @param databaseCluster
 	 */
 	public DriverInvocationHandler(DatabaseCluster<Driver> databaseCluster)
 	{
-		super(databaseCluster, Driver.class, databaseCluster.getConnectionFactoryMap());
-	}
-
-	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#close(java.lang.Object, java.lang.Object)
-	 */
-	@Override
-	protected void close(Void parent, Driver driver)
-	{
-		// Do nothing
+		super(databaseCluster, Driver.class);
 	}
 }
