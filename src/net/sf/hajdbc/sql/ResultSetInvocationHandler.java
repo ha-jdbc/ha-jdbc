@@ -54,7 +54,7 @@ import net.sf.hajdbc.util.reflect.ProxyFactory;
  *
  */
 @SuppressWarnings("nls")
-public class ResultSetInvocationHandler<D, S extends Statement> extends AbstractInvocationHandler<D, S, ResultSet>
+public class ResultSetInvocationHandler<D, S extends Statement> extends AbstractChildInvocationHandler<D, S, ResultSet>
 {
 	private static final Set<String> DRIVER_READ_METHOD_SET = new HashSet<String>(Arrays.asList("findColumn", "getConcurrency", "getCursorName", "getFetchDirection", "getFetchSize", "getHoldability", "getMetaData", "getRow", "getType", "getWarnings", "isAfterLast", "isBeforeFirst", "isClosed", "isFirst", "isLast", "rowDeleted", "rowInserted", "rowUpdated", "wasNull"));
 	private static final Set<String> DRIVER_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList("absolute", "afterLast", "beforeFirst", "cancelRowUpdates", "clearWarnings", "first", "last", "moveToCurrentRow", "moveToInsertRow", "next", "previous", "relative", "setFetchDirection", "setFetchSize"));
@@ -78,7 +78,7 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
 	protected InvocationStrategy<D, ResultSet, ?> getInvocationStrategy(ResultSet resultSet, Method method, Object[] parameters) throws Exception
@@ -140,7 +140,7 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvoker(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvoker(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
@@ -281,7 +281,7 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#postInvoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#postInvoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
 	protected void postInvoke(ResultSet object, Method method, Object[] parameters) throws Exception
@@ -293,7 +293,7 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#handleFailures(java.util.SortedMap)
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#handleFailures(java.util.SortedMap)
 	 */
 	@Override
 	public <R> SortedMap<Database<D>, R> handlePartialFailure(SortedMap<Database<D>, R> resultMap, SortedMap<Database<D>, SQLException> exceptionMap) throws SQLException
@@ -302,7 +302,7 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#close(java.lang.Object, java.lang.Object)
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#close(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	protected void close(S statement, ResultSet resultSet) throws SQLException

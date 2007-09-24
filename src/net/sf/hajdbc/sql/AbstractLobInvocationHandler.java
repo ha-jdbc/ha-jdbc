@@ -30,7 +30,7 @@ import net.sf.hajdbc.Database;
  * @author Paul Ferraro
  *
  */
-public abstract class AbstractLobInvocationHandler<D, P, E> extends AbstractInvocationHandler<D, P, E>
+public abstract class AbstractLobInvocationHandler<D, P, E> extends AbstractChildInvocationHandler<D, P, E>
 {
 	/**
 	 * @param object
@@ -45,7 +45,7 @@ public abstract class AbstractLobInvocationHandler<D, P, E> extends AbstractInvo
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
 	protected InvocationStrategy<D, E, ?> getInvocationStrategy(E object, Method method, Object[] parameters) throws Exception
@@ -63,7 +63,7 @@ public abstract class AbstractLobInvocationHandler<D, P, E> extends AbstractInvo
 	protected abstract Set<String> getDatabaseReadMethodSet();
 	
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#postInvoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#postInvoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@SuppressWarnings("nls")
 	@Override
@@ -76,7 +76,7 @@ public abstract class AbstractLobInvocationHandler<D, P, E> extends AbstractInvo
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#close(java.lang.Object, java.lang.Object)
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#close(java.lang.Object, java.lang.Object)
 	 */
 	@SuppressWarnings("nls")
 	@Override

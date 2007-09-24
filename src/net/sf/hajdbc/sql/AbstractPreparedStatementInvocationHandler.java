@@ -112,7 +112,7 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvoker(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvoker(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@SuppressWarnings("unchecked")
 	@Override

@@ -32,7 +32,7 @@ import net.sf.hajdbc.Database;
  * @author Paul Ferraro
  *
  */
-public class SavepointInvocationHandler<D> extends AbstractInvocationHandler<D, Connection, Savepoint>
+public class SavepointInvocationHandler<D> extends AbstractChildInvocationHandler<D, Connection, Savepoint>
 {
 	/**
 	 * @param connection the connection that created this savepoint
@@ -47,7 +47,7 @@ public class SavepointInvocationHandler<D> extends AbstractInvocationHandler<D, 
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
 	protected InvocationStrategy<D, Savepoint, ?> getInvocationStrategy(Savepoint object, Method method, Object[] parameters)
@@ -56,7 +56,7 @@ public class SavepointInvocationHandler<D> extends AbstractInvocationHandler<D, 
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#close(java.lang.Object, java.lang.Object)
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#close(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	protected void close(Connection connection, Savepoint savepoint) throws SQLException

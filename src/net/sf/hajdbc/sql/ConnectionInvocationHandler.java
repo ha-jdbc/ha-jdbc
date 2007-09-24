@@ -40,7 +40,7 @@ import net.sf.hajdbc.Database;
  *
  */
 @SuppressWarnings("nls")
-public class ConnectionInvocationHandler<D> extends AbstractInvocationHandler<D, D, Connection>
+public class ConnectionInvocationHandler<D> extends AbstractChildInvocationHandler<D, D, Connection>
 {
 	private static final Set<String> DRIVER_READ_METHOD_SET = new HashSet<String>(Arrays.asList("createArrayOf", "createBlob", "createClob", "createNClob", "createSQLXML", "createStruct", "getAutoCommit", "getCatalog", "getClientInfo", "getHoldability", "getTypeMap", "getWarnings", "isClosed", "isReadOnly", "nativeSQL"));
 	private static final Set<String> DATABASE_READ_METHOD_SET = new HashSet<String>(Arrays.asList("getMetaData", "getTransactionIsolation", "isValid"));
@@ -57,7 +57,7 @@ public class ConnectionInvocationHandler<D> extends AbstractInvocationHandler<D,
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
 	protected InvocationStrategy<D, Connection, ?> getInvocationStrategy(Connection connection, Method method, Object[] parameters) throws Exception
@@ -132,7 +132,7 @@ public class ConnectionInvocationHandler<D> extends AbstractInvocationHandler<D,
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvoker(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvoker(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
@@ -172,7 +172,7 @@ public class ConnectionInvocationHandler<D> extends AbstractInvocationHandler<D,
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#isSQLMethod(java.lang.reflect.Method)
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#isSQLMethod(java.lang.reflect.Method)
 	 */
 	@Override
 	protected boolean isSQLMethod(Method method)
@@ -183,7 +183,7 @@ public class ConnectionInvocationHandler<D> extends AbstractInvocationHandler<D,
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#postInvoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#postInvoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
@@ -204,7 +204,7 @@ public class ConnectionInvocationHandler<D> extends AbstractInvocationHandler<D,
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#close(java.lang.Object, java.lang.Object)
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#close(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	protected void close(D parent, Connection connection) throws SQLException

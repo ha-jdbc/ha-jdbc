@@ -49,7 +49,7 @@ import net.sf.hajdbc.TableProperties;
  *
  */
 @SuppressWarnings("nls")
-public abstract class AbstractStatementInvocationHandler<D, S extends Statement> extends AbstractInvocationHandler<D, Connection, S>
+public abstract class AbstractStatementInvocationHandler<D, S extends Statement> extends AbstractChildInvocationHandler<D, Connection, S>
 {
 	private static final Set<String> DRIVER_READ_METHOD_SET = new HashSet<String>(Arrays.asList("getFetchDirection", "getFetchSize", "getGeneratedKeys", "getMaxFieldSize", "getMaxRows", "getQueryTimeout", "getResultSetConcurrency", "getResultSetHoldability", "getResultSetType", "getUpdateCount", "getWarnings", "isClosed", "isPoolable"));
 	private static final Set<String> DRIVER_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList("addBatch", "clearBatch", "clearWarnings", "setCursorName", "setEscapeProcessing", "setFetchDirection", "setFetchSize", "setMaxFieldSize", "setMaxRows", "setPoolable", "setQueryTimeout"));
@@ -73,7 +73,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
 	protected InvocationStrategy<D, S, ?> getInvocationStrategy(S statement, Method method, Object[] parameters) throws Exception
@@ -149,7 +149,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#isSQLMethod(java.lang.reflect.Method)
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#isSQLMethod(java.lang.reflect.Method)
 	 */
 	@Override
 	protected boolean isSQLMethod(Method method)
@@ -161,7 +161,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#postInvoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#postInvoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
 	protected void postInvoke(S statement, Method method, Object[] parameters) throws Exception
@@ -295,7 +295,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#close(java.lang.Object, java.lang.Object)
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#close(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	protected void close(Connection connection, S statement) throws SQLException
