@@ -178,7 +178,7 @@ public class TestIngresDialect extends TestStandardDialect
 		return new Object[][] {
 			new Object[] { "SELECT RANDOMF() FROM success" },
 			new Object[] { "SELECT RANDOMF ( ) FROM success" },
-			new Object[] { "SELECT OPERANDOMF( ) FROM success" },
+			new Object[] { "SELECT OPERANDOMF( ) FROM failure" },
 			new Object[] { "SELECT RAND() FROM failure" },
 			new Object[] { "SELECT 1 FROM failure" },
 		};
