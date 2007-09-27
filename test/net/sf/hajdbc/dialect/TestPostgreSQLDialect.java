@@ -317,6 +317,7 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		return new Object[][] {
 			new Object[] { "SELECT RANDOM() FROM success" },
 			new Object[] { "SELECT RANDOM ( ) FROM success" },
+			new Object[] { "SELECT OPERANDOM() FROM failure" },
 			new Object[] { "SELECT 1 FROM failure" },
 		};
 	}

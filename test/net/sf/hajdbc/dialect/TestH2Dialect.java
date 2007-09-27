@@ -142,6 +142,9 @@ public class TestH2Dialect extends TestStandardDialect
 			new Object[] { "SELECT CURRENT_DATE ( ) FROM success", date },
 			new Object[] { "SELECT CURDATE() FROM success", date },
 			new Object[] { "SELECT CURDATE ( ) FROM success", date },
+			new Object[] { "SELECT CURRENT_DATES FROM failure", date },
+			new Object[] { "SELECT CCURRENT_DATE FROM failure", date },
+			new Object[] { "SELECT CCURDATE() FROM failure", date },
 			new Object[] { "SELECT 1 FROM failure", date },
 		};
 	}
@@ -158,6 +161,9 @@ public class TestH2Dialect extends TestStandardDialect
 			new Object[] { "SELECT CURRENT_TIME ( ) FROM success", date },
 			new Object[] { "SELECT CURTIME() FROM success", date },
 			new Object[] { "SELECT CURTIME ( ) FROM success", date },
+			new Object[] { "SELECT CCURRENT_TIME FROM failure", date },
+			new Object[] { "SELECT CURRENT_TIMESTAMP FROM failure", date },
+			new Object[] { "SELECT CCURTIME() FROM failure", date },
 			new Object[] { "SELECT 1 FROM failure", date },
 		};
 	}
@@ -174,6 +180,9 @@ public class TestH2Dialect extends TestStandardDialect
 			new Object[] { "SELECT CURRENT_TIMESTAMP ( ) FROM success", date },
 			new Object[] { "SELECT NOW() FROM success", date },
 			new Object[] { "SELECT NOW ( ) FROM success", date },
+			new Object[] { "SELECT CURRENT_TIMESTAMPS FROM failure", date },
+			new Object[] { "SELECT CCURRENT_TIMESTAMP FROM failure", date },
+			new Object[] { "SELECT NNOW() FROM failure", date },
 			new Object[] { "SELECT 1 FROM failure", date },
 		};
 	}

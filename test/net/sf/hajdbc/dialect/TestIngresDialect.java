@@ -127,6 +127,9 @@ public class TestIngresDialect extends TestStandardDialect
 			new Object[] { "SELECT CURRENT_DATE FROM success", date },
 			new Object[] { "SELECT DATE('TODAY') FROM success", date },
 			new Object[] { "SELECT DATE ( 'TODAY' ) FROM success", date },
+			new Object[] { "SELECT CURRENT_DATES FROM failure", date },
+			new Object[] { "SELECT CCURRENT_DATE FROM failure", date },
+			new Object[] { "SELECT DDATE('TODAY') FROM failure", date },
 			new Object[] { "SELECT 1 FROM failure", date },
 		};
 	}
@@ -140,6 +143,10 @@ public class TestIngresDialect extends TestStandardDialect
 		return new Object[][] {
 			new Object[] { "SELECT CURRENT_TIME FROM success", date },
 			new Object[] { "SELECT LOCAL_TIME FROM success", date },
+			new Object[] { "SELECT CURRENT_TIMESTAMP FROM failure", date },
+			new Object[] { "SELECT CCURRENT_TIME FROM failure", date },
+			new Object[] { "SELECT LOCAL_TIMESTAMP FROM failure", date },
+			new Object[] { "SELECT LLOCAL_TIME FROM failure", date },
 			new Object[] { "SELECT 1 FROM failure", date },
 		};
 	}
@@ -155,6 +162,11 @@ public class TestIngresDialect extends TestStandardDialect
 			new Object[] { "SELECT LOCAL_TIMESTAMP FROM success", date },
 			new Object[] { "SELECT DATE('NOW') FROM success", date },
 			new Object[] { "SELECT DATE( 'NOW' ) FROM success", date },
+			new Object[] { "SELECT CURRENT_TIMESTAMPS FROM failure", date },
+			new Object[] { "SELECT CCURRENT_TIMESTAMP FROM failure", date },
+			new Object[] { "SELECT LOCAL_TIMESTAMPS FROM failure", date },
+			new Object[] { "SELECT LLOCAL_TIMESTAMP FROM failure", date },
+			new Object[] { "SELECT DDATE('NOW') FROM failure", date },
 			new Object[] { "SELECT 1 FROM failure", date },
 		};
 	}
@@ -166,6 +178,8 @@ public class TestIngresDialect extends TestStandardDialect
 		return new Object[][] {
 			new Object[] { "SELECT RANDOMF() FROM success" },
 			new Object[] { "SELECT RANDOMF ( ) FROM success" },
+			new Object[] { "SELECT OPERANDOMF( ) FROM success" },
+			new Object[] { "SELECT RAND() FROM failure" },
 			new Object[] { "SELECT 1 FROM failure" },
 		};
 	}

@@ -181,6 +181,9 @@ public class TestSybaseDialect extends TestStandardDialect
 			new Object[] { "SELECT CURRENT DATE FROM success", date },
 			new Object[] { "SELECT TODAY(*) FROM success", date },
 			new Object[] { "SELECT TODAY ( * ) FROM success", date },
+			new Object[] { "SELECT CURRENT DATES FROM failure", date },
+			new Object[] { "SELECT CCURRENT DATE FROM failure", date },
+			new Object[] { "SELECT NOTTODAY(*) FROM failure", date },
 			new Object[] { "SELECT 1 FROM failure", date },
 		};
 	}
@@ -206,6 +209,8 @@ public class TestSybaseDialect extends TestStandardDialect
 		
 		return new Object[][] {
 			new Object[] { "SELECT CURRENT TIME FROM success", date },
+			new Object[] { "SELECT CCURRENT TIME FROM failure", date },
+			new Object[] { "SELECT CURRENT TIMESTAMP FROM failure", date },
 			new Object[] { "SELECT 1 FROM failure", date },
 		};
 	}
@@ -235,6 +240,10 @@ public class TestSybaseDialect extends TestStandardDialect
 			new Object[] { "SELECT GETDATE ( ) FROM success", date },
 			new Object[] { "SELECT NOW(*) FROM success", date },
 			new Object[] { "SELECT NOW ( * ) FROM success", date },
+			new Object[] { "SELECT CCURRENT TIMESTAMP FROM failure", date },
+			new Object[] { "SELECT CURRENT TIMESTAMPS FROM failure", date },
+			new Object[] { "SELECT FORGETDATE() FROM failure", date },
+			new Object[] { "SELECT NNOW(*) FROM failure", date },
 			new Object[] { "SELECT 1 FROM failure", date },
 		};
 	}

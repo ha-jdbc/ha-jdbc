@@ -204,6 +204,8 @@ public class TestDerbyDialect extends TestStandardDialect
 		return new Object[][] {
 			new Object[] { "SELECT CURRENT_DATE FROM success", date },
 			new Object[] { "SELECT CURRENT DATE FROM success", date },
+			new Object[] { "SELECT CCURRENT_DATE FROM failure", date },
+			new Object[] { "SELECT CURRENT_DATES FROM failure", date },
 			new Object[] { "SELECT 1 FROM failure", date },
 		};
 	}
@@ -231,6 +233,8 @@ public class TestDerbyDialect extends TestStandardDialect
 		return new Object[][] {
 			new Object[] { "SELECT CURRENT_TIME FROM success", date },
 			new Object[] { "SELECT CURRENT TIME FROM success", date },
+			new Object[] { "SELECT CCURRENT_TIME FROM failure", date },
+			new Object[] { "SELECT CURRENT_TIMESTAMP FROM failure", date },
 			new Object[] { "SELECT 1 FROM failure", date },
 		};
 	}
@@ -257,6 +261,8 @@ public class TestDerbyDialect extends TestStandardDialect
 		return new Object[][] {
 			new Object[] { "SELECT CURRENT_TIMESTAMP FROM success", date },
 			new Object[] { "SELECT CURRENT TIMESTAMP FROM success", date },
+			new Object[] { "SELECT CCURRENT_TIMESTAMP FROM failure", date },
+			new Object[] { "SELECT CURRENT_TIMESTAMPS FROM failure", date },
 			new Object[] { "SELECT 1 FROM failure", date },
 		};
 	}

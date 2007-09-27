@@ -582,6 +582,8 @@ public class TestStandardDialect implements Dialect
 		
 		return new Object[][] {
 			new Object[] { "SELECT CURRENT_DATE FROM success", date },
+			new Object[] { "SELECT CCURRENT_DATE FROM failure", date },
+			new Object[] { "SELECT CURRENT_DATES FROM failure", date },
 			new Object[] { "SELECT 1 FROM failure", date },
 		};
 	}
@@ -611,6 +613,10 @@ public class TestStandardDialect implements Dialect
 			new Object[] { "SELECT LOCALTIME FROM success", date },
 			new Object[] { "SELECT LOCALTIME(2) FROM success", date },
 			new Object[] { "SELECT LOCALTIME ( 2 ) FROM success", date },
+			new Object[] { "SELECT CCURRENT_TIME FROM failure", date },
+			new Object[] { "SELECT LLOCALTIME FROM failure", date },
+			new Object[] { "SELECT CURRENT_TIMESTAMP FROM failure", date },
+			new Object[] { "SELECT LOCALTIMESTAMP FROM failure", date },
 			new Object[] { "SELECT 1 FROM failure", date },
 		};
 	}
@@ -640,6 +646,10 @@ public class TestStandardDialect implements Dialect
 			new Object[] { "SELECT LOCALTIMESTAMP FROM success", date },
 			new Object[] { "SELECT LOCALTIMESTAMP(2) FROM success", date },
 			new Object[] { "SELECT LOCALTIMESTAMP ( 2 ) FROM success", date },
+			new Object[] { "SELECT CURRENT_TIMESTAMPS FROM failure", date },
+			new Object[] { "SELECT CCURRENT_TIMESTAMP FROM failure", date },
+			new Object[] { "SELECT LOCALTIMESTAMPS FROM failure", date },
+			new Object[] { "SELECT LLOCALTIMESTAMP FROM failure", date },
 			new Object[] { "SELECT 1 FROM failure", date },
 		};
 	}
@@ -663,6 +673,8 @@ public class TestStandardDialect implements Dialect
 		return new Object[][] {
 			new Object[] { "SELECT RAND() FROM success" },
 			new Object[] { "SELECT RAND ( ) FROM success" },
+			new Object[] { "SELECT RAND FROM failure" },
+			new Object[] { "SELECT OPERAND() FROM failure" },
 			new Object[] { "SELECT 1 FROM failure" },
 		};
 	}

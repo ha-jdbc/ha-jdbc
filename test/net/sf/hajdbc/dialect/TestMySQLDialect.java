@@ -264,6 +264,9 @@ public class TestMySQLDialect extends TestStandardDialect
 			new Object[] { "SELECT CURRENT_DATE FROM success", date },
 			new Object[] { "SELECT CURDATE() FROM success", date },
 			new Object[] { "SELECT CURDATE ( ) FROM success", date },
+			new Object[] { "SELECT CCURRENT_DATE FROM failure", date },
+			new Object[] { "SELECT CURRENT_DATES FROM failure", date },
+			new Object[] { "SELECT CCURDATE() FROM failure", date },
 			new Object[] { "SELECT 1 FROM failure", date },
 		};
 	}
@@ -296,6 +299,11 @@ public class TestMySQLDialect extends TestStandardDialect
 			new Object[] { "SELECT LOCALTIME ( 2 ) FROM success", date },
 			new Object[] { "SELECT CURTIME() FROM success", date },
 			new Object[] { "SELECT CURTIME ( ) FROM success", date },
+			new Object[] { "SELECT CCURRENT_TIME FROM failure", date },
+			new Object[] { "SELECT CURRENT_TIMESTAMP FROM failure", date },
+			new Object[] { "SELECT LLOCALTIME FROM failure", date },
+			new Object[] { "SELECT LOCALTIMESTAMP FROM failure", date },
+			new Object[] { "SELECT CCURTIME() FROM failure", date },
 			new Object[] { "SELECT 1 FROM failure", date },
 		};
 	}
@@ -330,6 +338,12 @@ public class TestMySQLDialect extends TestStandardDialect
 			new Object[] { "SELECT NOW ( ) FROM success", date },
 			new Object[] { "SELECT SYSDATE() FROM success", date },
 			new Object[] { "SELECT SYSDATE ( ) FROM success", date },
+			new Object[] { "SELECT CCURRENT_TIMESTAMP FROM failure", date },
+			new Object[] { "SELECT CURRENT_TIMESTAMPS FROM failure", date },
+			new Object[] { "SELECT LLOCALTIMESTAMP FROM failure", date },
+			new Object[] { "SELECT LOCALTIMESTAMPS FROM failure", date },
+			new Object[] { "SELECT NNOW() FROM failure", date },
+			new Object[] { "SELECT SSYSDATE() FROM failure", date },
 			new Object[] { "SELECT 1 FROM failure", date },
 		};
 	}
