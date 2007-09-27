@@ -168,7 +168,7 @@ public class PostgreSQLDialect extends StandardDialect
 	@Override
 	protected String currentTimestampPattern()
 	{
-		return super.currentTimestampPattern() + "|NOW\\s*\\(\\s*\\)|TRANSACTION_TIMESTAMP\\s*\\(\\s*\\)|STATEMENT_TIMESTAMP\\s*\\(\\s*\\)|CLOCK_TIMESTAMP\\s*\\(\\s*\\)";
+		return super.currentTimestampPattern() + "|(?<=\\W)NOW\\s*\\(\\s*\\)|(?<=\\W)TRANSACTION_TIMESTAMP\\s*\\(\\s*\\)|(?<=\\W)STATEMENT_TIMESTAMP\\s*\\(\\s*\\)|(?<=\\W)CLOCK_TIMESTAMP\\s*\\(\\s*\\)";
 	}
 
 	/**
@@ -177,6 +177,6 @@ public class PostgreSQLDialect extends StandardDialect
 	@Override
 	protected String randomPattern()
 	{
-		return "RANDOM\\s*\\(\\s*\\)";
+		return "(?<=\\W)RANDOM\\s*\\(\\s*\\)";
 	}
 }

@@ -52,6 +52,6 @@ public class MckoiDialect extends StandardDialect
 	@Override
 	protected String currentTimestampPattern()
 	{
-		return super.currentTimestampPattern() + "|DATEOB\\s*\\(\\s*\\)";
+		return super.currentTimestampPattern() + "|(?<=\\W)DATEOB\\s*\\(\\s*\\)";
 	}
 }

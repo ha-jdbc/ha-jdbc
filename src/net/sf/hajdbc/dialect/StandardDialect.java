@@ -80,22 +80,22 @@ public class StandardDialect implements Dialect
 	
 	protected String currentDatePattern()
 	{
-		return "CURRENT_DATE";
+		return "(?<=\\W)CURRENT_DATE(?=\\W)";
 	}
 	
 	protected String currentTimePattern()
 	{
-		return "CURRENT_TIME(?:\\s*\\(\\s*\\d+\\s*\\))?|LOCALTIME(?:\\s*\\(\\s*\\d+\\s*\\))?";
+		return "(?<=\\W)CURRENT_TIME(?:\\s*\\(\\s*\\d+\\s*\\))?(?=\\W)|(?<=\\W)LOCALTIME(?:\\s*\\(\\s*\\d+\\s*\\))?(?=\\W)";
 	}
 
 	protected String currentTimestampPattern()
 	{
-		return "CURRENT_TIMESTAMP(?:\\s*\\(\\s*\\d+\\s*\\))?|LOCALTIMESTAMP(?:\\s*\\(\\s*\\d+\\s*\\))?";
+		return "(?<=\\W)CURRENT_TIMESTAMP(?:\\s*\\(\\s*\\d+\\s*\\))?(?=\\W)|(?<=\\W)LOCALTIMESTAMP(?:\\s*\\(\\s*\\d+\\s*\\))?(?=\\W)";
 	}
 	
 	protected String randomPattern()
 	{
-		return "RAND\\s*\\(\\s*\\)";
+		return "(?<=\\W)RAND\\s*\\(\\s*\\)";
 	}
 
 	/**

@@ -67,7 +67,7 @@ public class H2Dialect extends StandardDialect
 	@Override
 	protected String currentDatePattern()
 	{
-		return "CURRENT_DATE(?:\\s*\\(\\s*\\))?|CURDATE\\s*\\(\\s*\\)|SYSDATE|TODAY";
+		return "(?<=\\W)CURRENT_DATE(?:\\s*\\(\\s*\\))?(?=\\W)|(?<=\\W)CURDATE\\s*\\(\\s*\\)|(?<=\\W)SYSDATE(?=\\W)|(?<=\\W)TODAY(?=\\W)";
 	}
 
 	/**
@@ -76,7 +76,7 @@ public class H2Dialect extends StandardDialect
 	@Override
 	protected String currentTimePattern()
 	{
-		return "CURRENT_TIME(?:\\s*\\(\\s*\\))?|CURTIME\\s*\\(\\s*\\)";
+		return "(?<=\\W)CURRENT_TIME(?:\\s*\\(\\s*\\))?(?=\\W)|(?<=\\W)CURTIME\\s*\\(\\s*\\)";
 	}
 
 	/**
@@ -85,7 +85,7 @@ public class H2Dialect extends StandardDialect
 	@Override
 	protected String currentTimestampPattern()
 	{
-		return "CURRENT_TIMESTAMP(?:\\s*\\(\\s*\\d*\\s*\\))?|NOW\\s*\\(\\s*\\d*\\s*\\)";
+		return "(?<=\\W)CURRENT_TIMESTAMP(?:\\s*\\(\\s*\\d*\\s*\\))?(?=\\W)|(?<=\\W)NOW\\s*\\(\\s*\\d*\\s*\\)";
 	}
 
 	/**
@@ -94,6 +94,6 @@ public class H2Dialect extends StandardDialect
 	@Override
 	protected String randomPattern()
 	{
-		return "RAND\\s*\\(\\s*\\d*\\s*\\)";
+		return "(?<=\\W)RAND\\s*\\(\\s*\\d*\\s*\\)";
 	}
 }

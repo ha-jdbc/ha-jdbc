@@ -84,7 +84,7 @@ public class SybaseDialect extends StandardDialect
 	@Override
 	protected String currentDatePattern()
 	{
-		return "CURRENT\\s+DATE|TODAY\\s*\\(\\s*\\*\\s*\\)";
+		return "(?<=\\W)CURRENT\\s+DATE(?=\\W)|(?<=\\W)TODAY\\s*\\(\\s*\\*\\s*\\)";
 	}
 
 	/**
@@ -93,7 +93,7 @@ public class SybaseDialect extends StandardDialect
 	@Override
 	protected String currentTimePattern()
 	{
-		return "CURRENT\\s+TIME";
+		return "(?<=\\W)CURRENT\\s+TIME(?=\\W)";
 	}
 
 	/**
@@ -102,7 +102,7 @@ public class SybaseDialect extends StandardDialect
 	@Override
 	protected String currentTimestampPattern()
 	{
-		return "CURRENT\\s+TIMESTAMP|GETDATE\\s*\\(\\s*\\)|NOW\\s*\\(\\s*\\*\\s*\\)";
+		return "(?<=\\W)CURRENT\\s+TIMESTAMP(?=\\W)|(?<=\\W)GETDATE\\s*\\(\\s*\\)|(?<=\\W)NOW\\s*\\(\\s*\\*\\s*\\)";
 	}
 
 	/**
@@ -138,6 +138,6 @@ public class SybaseDialect extends StandardDialect
 	@Override
 	protected String randomPattern()
 	{
-		return "RAND\\s*\\(\\s*\\d*\\s*\\)";
+		return "(?<=\\W)RAND\\s*\\(\\s*\\d*\\s*\\)";
 	}	
 }

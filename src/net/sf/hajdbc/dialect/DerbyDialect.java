@@ -102,7 +102,7 @@ public class DerbyDialect extends StandardDialect
 	@Override
 	protected String currentDatePattern()
 	{
-		return super.currentDatePattern() + "|CURRENT\\s+DATE";
+		return super.currentDatePattern() + "|(?<=\\W)CURRENT\\s+DATE(?=\\W)";
 	}
 
 	/**
@@ -111,7 +111,7 @@ public class DerbyDialect extends StandardDialect
 	@Override
 	protected String currentTimePattern()
 	{
-		return super.currentTimePattern() + "|CURRENT\\s+TIME";
+		return super.currentTimePattern() + "|(?<=\\W)CURRENT\\s+TIME(?=\\W)";
 	}
 
 	/**
@@ -120,7 +120,7 @@ public class DerbyDialect extends StandardDialect
 	@Override
 	protected String currentTimestampPattern()
 	{
-		return super.currentTimestampPattern() + "|CURRENT\\s+TIMESTAMP";
+		return super.currentTimestampPattern() + "|(?<=\\W)CURRENT\\s+TIMESTAMP(?=\\W)";
 	}
 
 	/**

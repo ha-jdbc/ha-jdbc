@@ -128,7 +128,7 @@ public class MySQLDialect extends StandardDialect
 	@Override
 	protected String currentDatePattern()
 	{
-		return super.currentDatePattern() + "|CURDATE\\s*\\(\\s*\\)";
+		return super.currentDatePattern() + "|(?<=\\W)CURDATE\\s*\\(\\s*\\)";
 	}
 
 	/**
@@ -137,7 +137,7 @@ public class MySQLDialect extends StandardDialect
 	@Override
 	protected String currentTimePattern()
 	{
-		return super.currentTimePattern() + "|CURTIME\\s*\\(\\s*\\)";
+		return super.currentTimePattern() + "|(?<=\\W)CURTIME\\s*\\(\\s*\\)";
 	}
 
 	/**
@@ -146,7 +146,7 @@ public class MySQLDialect extends StandardDialect
 	@Override
 	protected String currentTimestampPattern()
 	{
-		return super.currentTimestampPattern() + "|NOW\\s*\\(\\s*\\)|SYSDATE\\s*\\(\\s*\\)";
+		return super.currentTimestampPattern() + "|(?<=\\W)NOW\\s*\\(\\s*\\)|(?<=\\W)SYSDATE\\s*\\(\\s*\\)";
 	}
 	
 	/**

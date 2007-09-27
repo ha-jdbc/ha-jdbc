@@ -86,7 +86,7 @@ public class HSQLDBDialect extends StandardDialect
 	@Override
 	protected String currentDatePattern()
 	{
-		return "CURRENT_DATE|CURDATE\\s*\\(\\s*\\)";
+		return "(?<=\\W)CURRENT_DATE(?=\\W)|(?<=\\W)CURDATE\\s*\\(\\s*\\)";
 	}
 
 	/**
@@ -95,7 +95,7 @@ public class HSQLDBDialect extends StandardDialect
 	@Override
 	protected String currentTimePattern()
 	{
-		return "CURRENT_TIME|CURTIME\\s*\\(\\s*\\)";
+		return "(?<=\\W)CURRENT_TIME(?=\\W)|(?<=\\W)CURTIME\\s*\\(\\s*\\)";
 	}
 
 	/**
@@ -104,6 +104,6 @@ public class HSQLDBDialect extends StandardDialect
 	@Override
 	protected String currentTimestampPattern()
 	{
-		return "CURRENT_TIMESTAMP|NOW\\s*\\(\\s*\\)";
+		return "(?<=\\W)CURRENT_TIMESTAMP(?=\\W)|(?<=\\W)NOW\\s*\\(\\s*\\)";
 	}
 }

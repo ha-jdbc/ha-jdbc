@@ -98,7 +98,7 @@ public class IngresDialect extends StandardDialect
 	@Override
 	protected String currentDatePattern()
 	{
-		return "CURRENT_DATE|DATE\\s*\\(\\s*'TODAY'\\s*\\)";
+		return "(?<=\\W)CURRENT_DATE(?=\\W)|(?<=\\W)DATE\\s*\\(\\s*'TODAY'\\s*\\)";
 	}
 
 	/**
@@ -107,7 +107,7 @@ public class IngresDialect extends StandardDialect
 	@Override
 	protected String currentTimePattern()
 	{
-		return "CURRENT_TIME|LOCAL_TIME";
+		return "(?<=\\W)CURRENT_TIME(?=\\W)|(?<=\\W)LOCAL_TIME(?=\\W)";
 	}
 
 	/**
@@ -116,7 +116,7 @@ public class IngresDialect extends StandardDialect
 	@Override
 	protected String currentTimestampPattern()
 	{
-		return "CURRENT_TIMESTAMP|LOCAL_TIMESTAMP|DATE\\s*\\(\\s*'NOW'\\s*\\)";
+		return "(?<=\\W)CURRENT_TIMESTAMP(?=\\W)|(?<=\\W)LOCAL_TIMESTAMP(?=\\W)|(?<=\\W)DATE\\s*\\(\\s*'NOW'\\s*\\)";
 	}
 
 	/**
@@ -125,6 +125,6 @@ public class IngresDialect extends StandardDialect
 	@Override
 	protected String randomPattern()
 	{
-		return "RANDOMF\\s*\\(\\s*\\)";
+		return "(?<=\\W)RANDOMF\\s*\\(\\s*\\)";
 	}
 }
