@@ -39,6 +39,7 @@ public abstract class AbstractLockDecree implements LockDecree, Externalizable
 	protected AbstractLockDecree(String id, Address address)
 	{
 		this.id = id;
+		this.address = address;
 	}
 
 	protected AbstractLockDecree()
