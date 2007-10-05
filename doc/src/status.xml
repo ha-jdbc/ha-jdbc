@@ -19,6 +19,9 @@
 			<action context="src" dev="PF" type="fix">
 				Fixed NullPointerException regression in DistributableLockManager preventing database activation in distributable mode.
 			</action>
+			<action context="src" dev="PF" type="update">
+				Use new official JDK 1.4 backport of JGroups instead of retrotranslating our own.
+			</action>
 		</release>
 		<release version="2.0.3" date="September 24, 2007">
 			<action context="lib" dev="PF" type="update">
