@@ -12,6 +12,14 @@
 	</contexts>
 
 	<changes>
+		<release version="2.0.4" date="October 4, 2007">
+			<action context="src" dev="PF" type="fix">
+				Added look-ahead and to Dialect.evaluateCurrentTime() regular expression so that it does not match CURRENT_TIMESTAMP functions.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed NullPointerException regression in DistributableLockManager preventing database activation in distributable mode.
+			</action>
+		</release>
 		<release version="2.0.3" date="September 24, 2007">
 			<action context="lib" dev="PF" type="update">
 				Upgraded JGroups to 2.5.1.
