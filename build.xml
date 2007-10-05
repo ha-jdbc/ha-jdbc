@@ -149,12 +149,6 @@
 
 	<target name="compile-1.4" depends="init-1.4, compile-1.5" description="Compile for Java 1.4">
 		<retrotranslate srcdir="${build.dir}" destdir="${build-1.4.dir}"></retrotranslate>
-		<copy todir="${lib-1.4.dir}">
-			<fileset dir="${lib.dir}" includes="jgroups-*.jar"></fileset>
-		</copy>
-		<retrotranslate>
-			<jarfileset dir="${lib-1.4.dir}" includes="jgroups-*.jar"/>
-		</retrotranslate>
 	</target>
 
 	<target name="jar-1.4" depends="clean-1.4, compile-1.4" description="Creates JAR for Java 1.4">
