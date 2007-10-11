@@ -146,7 +146,7 @@ public class DatabaseWriteInvocationStrategy<D, T, R> implements InvocationStrat
 		// If no databases returned successfully, return an exception back to the caller
 		if (resultMap.isEmpty())
 		{
-			throw proxy.handleFailures(exceptionMap);
+			proxy.handleFailures(exceptionMap);
 		}
 		
 		// If any databases failed, while others succeeded, handle the failures
