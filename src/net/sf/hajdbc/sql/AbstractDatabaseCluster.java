@@ -135,7 +135,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	 * @see net.sf.hajdbc.DatabaseCluster#getAliveMap(java.util.Collection)
 	 */
 	@Override
-	public Map<Database<D>, Boolean> getAliveMap(Collection<Database<D>> databases)
+	public Map<Boolean, List<Database<D>>> getAliveMap(Collection<Database<D>> databases)
 	{
 		Map<Database<D>, Future<Boolean>> futureMap = new TreeMap<Database<D>, Future<Boolean>>();
 
@@ -152,13 +152,19 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			futureMap.put(database, this.nonTransactionalExecutor.submit(task));
 		}
 
-		Map<Database<D>, Boolean> aliveMap = new TreeMap<Database<D>, Boolean>();
+		List<Database<D>> aliveList = new ArrayList<Database<D>>(databases.size());
+		List<Database<D>> deadList = new ArrayList<Database<D>>(databases.size());
+
+		Map<Boolean, List<Database<D>>> map = new TreeMap<Boolean, List<Database<D>>>();
+		
+		map.put(false, deadList);
+		map.put(true, aliveList);
 		
 		for (Map.Entry<Database<D>, Future<Boolean>> futureMapEntry: futureMap.entrySet())
 		{
 			try
 			{
-				aliveMap.put(futureMapEntry.getKey(), futureMapEntry.getValue().get());
+				(futureMapEntry.getValue().get() ? aliveList : deadList).add(futureMapEntry.getKey());
 			}
 			catch (ExecutionException e)
 			{
@@ -169,8 +175,8 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 				// Ignore
 			}
 		}
-		
-		return aliveMap;
+
+		return map;
 	}
 	
 	boolean isAlive(Database<D> database)
@@ -558,14 +564,9 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		}
 		else
 		{
-			Map<Database<D>, Boolean> aliveMap = this.getAliveMap(this.databaseMap.values());
-			
-			for (Map.Entry<Database<D>, Boolean> aliveMapEntry: aliveMap.entrySet())
+			for (Database<D> database: this.getAliveMap(this.databaseMap.values()).get(true))
 			{
-				if (aliveMapEntry.getValue())
-				{
-					this.activate(aliveMapEntry.getKey(), this.stateManager);
-				}
+				this.activate(database, this.stateManager);
 			}
 		}
 		
@@ -1099,27 +1100,15 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		{
 			Set<Database<D>> databaseSet = AbstractDatabaseCluster.this.getBalancer().all();
 			
-			int size = databaseSet.size();
-			
-			if (size > 1)
+			if (databaseSet.size() > 1)
 			{
-				Map<Database<D>, Boolean> aliveMap = AbstractDatabaseCluster.this.getAliveMap(databaseSet);
+				Map<Boolean, List<Database<D>>> aliveMap = AbstractDatabaseCluster.this.getAliveMap(databaseSet);
 				
-				Iterator<Boolean> aliveMapValues = aliveMap.values().iterator();
-				
-				// Remove databases that are still alive leaving only the dead ones
-				while (aliveMapValues.hasNext())
+				// Deactivate the dead databases, so long as at least one is alive
+				// Skip deactivation if membership is empty in case of cluster panic
+				if (!aliveMap.get(true).isEmpty() && !AbstractDatabaseCluster.this.getStateManager().isMembershipEmpty())
 				{
-					if (aliveMapValues.next())
-					{
-						aliveMapValues.remove();
-					}
-				}
-				
-				// Deactivate the dead ones, so long as at least one is alive
-				if (aliveMap.size() < size)
-				{
-					for (Database<D> database: aliveMap.keySet())
+					for (Database<D> database: aliveMap.get(false))
 					{
 						if (AbstractDatabaseCluster.this.deactivate(database, AbstractDatabaseCluster.this.getStateManager()))
 						{
