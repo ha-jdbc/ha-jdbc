@@ -148,4 +148,13 @@ public class LocalStateManager implements StateManager
 	{
 		return this.databaseCluster.getId();
 	}
+
+	/**
+	 * @see net.sf.hajdbc.StateManager#hasNoMembers()
+	 */
+	@Override
+	public boolean isMembershipEmpty()
+	{
+		return false;
+	}
 }

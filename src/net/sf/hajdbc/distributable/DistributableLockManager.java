@@ -235,7 +235,7 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 		private boolean vote(LockDecree decree, long timeout)
 		{
 			// Voting adapter return false if no members - so reverse this behavior
-			if (DistributableLockManager.this.hasNoMembers()) return true;
+			if (DistributableLockManager.this.isMembershipEmpty()) return true;
 			
 			try
 			{

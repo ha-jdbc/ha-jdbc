@@ -80,7 +80,7 @@ public abstract class AbstractMembershipListener implements MembershipListener
 		}
 	}
 
-	protected boolean hasNoMembers()
+	public boolean isMembershipEmpty()
 	{
 		synchronized (this.addressSet)
 		{
