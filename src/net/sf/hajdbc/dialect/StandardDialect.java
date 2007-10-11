@@ -376,7 +376,7 @@ public class StandardDialect implements Dialect
 	@Override
 	public String getAlterSequenceSQL(SequenceProperties sequence, long value)
 	{
-		return MessageFormat.format(this.alterSequenceFormat(), sequence.getName(), value);
+		return MessageFormat.format(this.alterSequenceFormat(), sequence.getName(), String.valueOf(value));
 	}
 	
 	protected String alterSequenceFormat()
@@ -387,7 +387,7 @@ public class StandardDialect implements Dialect
 	@Override
 	public String getAlterIdentityColumnSQL(TableProperties table, ColumnProperties column, long value) throws SQLException
 	{
-		return MessageFormat.format(this.alterIdentityColumnFormat(), table.getName(), column.getName(), value);
+		return MessageFormat.format(this.alterIdentityColumnFormat(), table.getName(), column.getName(), String.valueOf(value));
 	}
 
 	protected String alterIdentityColumnFormat()
