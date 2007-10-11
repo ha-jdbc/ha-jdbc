@@ -53,7 +53,7 @@ public class TestFirebirdDialect extends TestStandardDialect
 	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getAlterSequenceSQL(java.lang.String, long)
 	 */
 	@Override
-	@Test(dataProvider = "alter-sequence")
+	@Test(dataProvider = "sequence-long")
 	public String getAlterSequenceSQL(SequenceProperties sequence, long value) throws SQLException
 	{
 		EasyMock.expect(sequence.getName()).andReturn("sequence");
@@ -64,7 +64,7 @@ public class TestFirebirdDialect extends TestStandardDialect
 		
 		this.verify();
 		
-		assert sql.equals("SET GENERATOR sequence TO 1") : sql;
+		assert sql.equals("SET GENERATOR sequence TO 1000") : sql;
 		
 		return sql;
 	}

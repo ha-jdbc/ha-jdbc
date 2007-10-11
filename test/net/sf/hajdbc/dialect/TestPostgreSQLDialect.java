@@ -270,7 +270,7 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		
 		this.verify();
 		
-		assert sql.equals("ALTER SEQUENCE table_column_seq RESTART WITH 1") : sql;
+		assert sql.equals("ALTER SEQUENCE table_column_seq RESTART WITH 1000") : sql;
 		
 		return sql;
 	}

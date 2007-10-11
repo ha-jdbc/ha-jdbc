@@ -249,7 +249,7 @@ public class TestMySQLDialect extends TestStandardDialect
 		
 		this.verify();
 		
-		assert sql.equals("ALTER TABLE table AUTO_INCREMENT = 1") : sql;
+		assert sql.equals("ALTER TABLE table AUTO_INCREMENT = 1000") : sql;
 		
 		return sql;
 	}

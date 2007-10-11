@@ -115,6 +115,7 @@ public class TestHSQLDBDialect extends TestStandardDialect
 	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSimpleSQL()
 	 */
 	@Override
+	@Test
 	public String getSimpleSQL() throws SQLException
 	{
 		this.replay();

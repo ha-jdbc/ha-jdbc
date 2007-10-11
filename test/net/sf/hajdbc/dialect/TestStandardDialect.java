@@ -121,12 +121,6 @@ public class TestStandardDialect implements Dialect
 		return new Object[][] { new Object[] { uniqueKey } };
 	}
 	
-	@DataProvider(name = "alter-sequence")
-	Object[][] alterSequenceProvider()
-	{
-		return new Object[][] { new Object[] { this.sequenceProperties, 1L } };
-	}
-	
 	@DataProvider(name = "column")
 	Object[][] columnProvider()
 	{
@@ -144,11 +138,17 @@ public class TestStandardDialect implements Dialect
 	{
 		return new Object[][] { new Object[] { this.sequenceProperties } };
 	}
+	
+	@DataProvider(name = "sequence-long")
+	Object[][] alterSequenceProvider()
+	{
+		return new Object[][] { new Object[] { this.sequenceProperties, 1000L } };
+	}
 
 	/**
 	 * @see net.sf.hajdbc.Dialect#getAlterSequenceSQL(java.lang.String, long)
 	 */
-	@Test(dataProvider = "alter-sequence")
+	@Test(dataProvider = "sequence-long")
 	public String getAlterSequenceSQL(SequenceProperties sequence, long value) throws SQLException
 	{
 		EasyMock.expect(sequence.getName()).andReturn("sequence");
@@ -159,7 +159,7 @@ public class TestStandardDialect implements Dialect
 
 		this.verify();
 		
-		assert sql.equals("ALTER SEQUENCE sequence RESTART WITH 1") : sql;
+		assert sql.equals("ALTER SEQUENCE sequence RESTART WITH 1000") : sql;
 		
 		return sql;
 	}
@@ -700,7 +700,7 @@ public class TestStandardDialect implements Dialect
 	@DataProvider(name = "table-column-long")
 	Object[][] tableColumnLongProvider()
 	{
-		return new Object[][] { new Object[] { this.tableProperties, this.columnProperties, 1L } };
+		return new Object[][] { new Object[] { this.tableProperties, this.columnProperties, 1000L } };
 	}
 	
 	/**
@@ -719,7 +719,7 @@ public class TestStandardDialect implements Dialect
 		
 		this.verify();
 		
-		assert sql.equals("ALTER TABLE table ALTER COLUMN column RESTART WITH 1") : sql;
+		assert sql.equals("ALTER TABLE table ALTER COLUMN column RESTART WITH 1000") : sql;
 		
 		return sql;
 	}
