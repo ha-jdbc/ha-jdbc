@@ -21,6 +21,7 @@
 package net.sf.hajdbc;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
@@ -149,9 +150,9 @@ public interface DatabaseCluster<D>
 	/**
 	 * Determines whether the specified databases are alive.
 	 * @param databases a collection of database descriptors
-	 * @return a map of database descriptor to true, if alive, false otherwise
+	 * @return a map of alive status to set of database descriptors
 	 */
-	public Map<Database<D>, Boolean> getAliveMap(Collection<Database<D>> databases);
+	public Map<Boolean, List<Database<D>>> getAliveMap(Collection<Database<D>> databases);
 	
 	/**
 	 * Starts this database cluster.
