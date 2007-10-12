@@ -194,41 +194,42 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 		// If auto-commit is off, throw exception to give client the opportunity to rollback the transaction
 		DatabaseCluster<D> cluster = this.getDatabaseCluster();
 		
-		Map<Database<D>, Boolean> aliveMap = cluster.getAliveMap(exceptionMap.keySet());
+		Map<Boolean, List<Database<D>>> aliveMap = cluster.getAliveMap(exceptionMap.keySet());
 
-		SQLException exception = null;
+		List<Database<D>> aliveList = aliveMap.get(true);
+
+		int size = aliveList.size();
 		
-		for (Map.Entry<Database<D>, SQLException> exceptionMapEntry: exceptionMap.entrySet())
+		// Assume successful databases are alive
+		aliveList.addAll(resultMap.keySet());
+		
+		this.detectClusterPanic(aliveMap);
+		
+		List<Database<D>> deadList = aliveMap.get(false);
+		
+		for (Database<D> database: deadList)
 		{
-			Database<D> database = exceptionMapEntry.getKey();
-			SQLException cause = exceptionMapEntry.getValue();
-			
-			if (aliveMap.get(database))
+			if (cluster.deactivate(database, cluster.getStateManager()))
 			{
-				if (exception == null)
-				{
-					exception = cause;
-				}
-				else
-				{
-					exception.setNextException(cause);
-				}
-			}
-			else
-			{
-				if (cluster.deactivate(database, cluster.getStateManager()))
-				{
-					this.logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, cluster), cause);
-				}
+				this.logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, cluster), exceptionMap.get(database));
 			}
 		}
-		
-		if (exception != null)
-		{
-			throw exception;
-		}
 
-		return resultMap;
+		// If failed databases are all dead
+		if (size == 0)
+		{
+			return resultMap;
+		}
+		
+		// Chain exceptions from alive databases
+		SQLException exception = exceptionMap.get(aliveList.get(0));
+		
+		for (Database<D> database: aliveList.subList(1, size))
+		{
+			exception.setNextException(exceptionMap.get(database));
+		}
+		
+		throw exception;
 	}
 	
 	protected boolean isSelectForUpdate(String sql) throws SQLException
