@@ -539,8 +539,10 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	 * Starts this database cluster
 	 * @throws Exception if database cluster start fails
 	 */
-	public void start() throws Exception
+	public synchronized void start() throws Exception
 	{
+		if (this.active) return;
+		
 		this.lockManager.start();
 		this.stateManager.start();
 		
@@ -597,8 +599,10 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * Stops this database cluster
 	 */
-	public void stop()
+	public synchronized void stop()
 	{
+		if (!this.active) return;
+
 		this.active = false;
 		
 		this.balancer.clear();
