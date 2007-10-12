@@ -175,19 +175,6 @@
 				</p>
 			</answer>
 		</faq>
-		<faq>
-			<question>
-				JBoss throws a javax.management.MalformedObjectNameException when I try to execute any HA-JDBC mbean method via the JBoss jmx-console.
-				What is wrong here?
-			</question>
-			<answer>
-				<p>This is a known issue with JBoss 4.0.X.</p>
-				<p><a href="http://jira.jboss.com/jira/browse/JBAS-2037">http://jira.jboss.com/jira/browse/JBAS-2037</a></p>
-				<p>
-					JBoss users should use Sun's JConsole or <a href="doc.html#jmx">other</a> 3rd-party JMX administration console instead.
-				</p>
-			</answer>
-		</faq>
 	</faqsection>
 	<faqsection>
 		<title>About HA-JDBC</title>
