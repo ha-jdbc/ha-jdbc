@@ -33,6 +33,8 @@ import java.util.ResourceBundle;
 @SuppressWarnings("nls")
 public final class Messages
 {
+	public static final String CLUSTER_NOT_ACTIVE = "cluster-not-active";
+	public static final String CLUSTER_PANIC_DETECTED = "cluster-panic-detected";
 	public static final String CLUSTER_STATE_LOAD_FAILED = "cluster-state-load-failed";
 	public static final String CLUSTER_STATE_STORE_FAILED = "cluster-state-store-failed";
 	public static final String COMMAND_RECEIVED = "command-received";
