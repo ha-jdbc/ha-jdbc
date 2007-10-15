@@ -798,9 +798,9 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 				throw new IllegalArgumentException(Messages.getMessage(Messages.DATABASE_ALREADY_EXISTS, id, this));
 			}
 			
-			this.databaseMap.put(id, database);
-			
 			this.register(database, database.getInactiveMBean());
+			
+			this.databaseMap.put(id, database);
 		}
 	}
 	
@@ -904,15 +904,24 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	{
 		this.stop();
 		
+		this.unregisterDatabases();
+	}
+
+	private void unregisterDatabases()
+	{
 		synchronized (this.databaseMap)
 		{
-			for (Database<D> database: this.databaseMap.values())
+			Iterator<Database<D>> databases = this.databaseMap.values().iterator();
+			
+			while (databases.hasNext())
 			{
-				this.unregister(database);
+				this.unregister(databases.next());
+				
+				databases.remove();
 			}
 		}
 	}
-
+	
 	/**
 	 * @see javax.management.MBeanRegistration#postRegister(java.lang.Boolean)
 	 */
@@ -957,6 +966,15 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			context.setUserContext(this);
 			
 			context.unmarshalElement();
+			
+			if (this.decorator != null)
+			{
+				this.decorator.decorate(this);
+			}
+			
+			this.start();
+			
+			return name;
 		}
 		catch (IOException e)
 		{
@@ -967,6 +985,16 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		catch (JiBXException e)
 		{
 			logger.error(Messages.getMessage(Messages.CONFIG_LOAD_FAILED, this.url), e);
+			
+			this.unregisterDatabases();
+			
+			throw e;
+		}
+		catch (Exception e)
+		{
+			logger.error(Messages.getMessage(Messages.CLUSTER_START_FAILED, this), e);
+			
+			this.postDeregister();
 			
 			throw e;
 		}
@@ -983,24 +1011,6 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 					logger.warn(e.toString(), e);
 				}
 			}
-		}
-		
-		if (this.decorator != null)
-		{
-			this.decorator.decorate(this);
-		}
-
-		try
-		{
-			this.start();
-			
-			return name;
-		}
-		catch (Exception e)
-		{
-			this.postDeregister();
-			
-			throw e;
 		}
 	}
 	
