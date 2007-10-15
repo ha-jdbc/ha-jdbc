@@ -150,7 +150,7 @@ public class LocalStateManager implements StateManager
 	}
 
 	/**
-	 * @see net.sf.hajdbc.StateManager#hasNoMembers()
+	 * @see net.sf.hajdbc.StateManager#isMembershipEmpty()
 	 */
 	@Override
 	public boolean isMembershipEmpty()
