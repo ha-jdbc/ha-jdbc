@@ -12,6 +12,11 @@
 	</contexts>
 
 	<changes>
+		<release version="2.0.6" date="">
+			<action context="src" dev="PF" type="fix">
+				Fixed exception handling during startup to prevent subsequent <code>javax.management.InstanceAlreadyExistsException</code>s if database cluster fails to start.
+			</action>
+		</release>
 		<release version="2.0.5" date="October 15, 2007">
 			<action context="src" dev="PF" type="fix" fixes-bug="1811698">
 				Fixed bug in Dialect.getAlterSequenceSQL(...) and Dialect.getAlterIdentityColumnSQL(...) causing values > 999 to get formatted with grouping separators.
