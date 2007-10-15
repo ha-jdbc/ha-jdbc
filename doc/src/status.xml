@@ -12,6 +12,17 @@
 	</contexts>
 
 	<changes>
+		<release version="2.0.5" date="October 15, 2007">
+			<action context="src" dev="PF" type="fix" fixes-bug="1811698">
+				Fixed bug in Dialect.getAlterSequenceSQL(...) and Dialect.getAlterIdentityColumnSQL(...) causing values > 999 to get formatted with grouping separators.
+			</action>
+			<action context="src" dev="PF" type="fix" fixes-bug="1738533">
+				Added "cluster panic" detection to prevent asymmetric deactivation during a network fragmentation when in distributable mode where databases are colocated on peer nodes.
+			</action>
+			<action context="doc" dev="PF" type="remove">
+				Removed obsolete JBoss jmx-console FAQ entry.
+			</action>
+		</release>
 		<release version="2.0.4" date="October 4, 2007">
 			<action context="src" dev="PF" type="fix">
 				Added look-ahead and to Dialect.evaluateCurrentTime() regular expression so that it does not match CURRENT_TIMESTAMP functions.
@@ -27,13 +38,13 @@
 			<action context="lib" dev="PF" type="update">
 				Upgraded JGroups to 2.5.1.
 			</action>
-			<action context="src" dev="PF" type="fix">
+			<action context="src" dev="PF" type="fix" fixes-bug="1799618">
 				Fixed infinite loop in DistributableLockManager while acquiring a lock when only one peer node is present.
 			</action>
 			<action context="src" dev="PF" type="fix">
 				Fixed missing membership listener registration in DistributableLockManager preventing proper lock cleanup.
 			</action>
-			<action context="src" dev="PF" type="fix">
+			<action context="src" dev="PF" type="fix" fixes-bug="1796975">
 				Defer creation of connection factories until needed since DataSource creation relies on JNDI environment properties that may not yet be established.
 			</action>
 		</release>
