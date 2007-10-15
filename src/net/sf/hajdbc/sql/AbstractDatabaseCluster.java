@@ -169,10 +169,11 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			catch (ExecutionException e)
 			{
 				// isAlive does not throw an exception
+				throw new IllegalStateException(e);
 			}
 			catch (InterruptedException e)
 			{
-				// Ignore
+				Thread.currentThread().interrupt();
 			}
 		}
 
@@ -465,7 +466,34 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_SYNC_STRATEGY, strategyId));
 		}
 		
-		this.activate(databaseId, strategy);
+		try
+		{
+			if (this.activate(this.getDatabase(databaseId), strategy))
+			{
+				logger.info(Messages.getMessage(Messages.DATABASE_ACTIVATED, databaseId, this));
+			}
+		}
+		catch (SQLException e)
+		{
+			logger.warn(Messages.getMessage(Messages.DATABASE_ACTIVATE_FAILED, databaseId, this), e);
+			
+			SQLException exception = e.getNextException();
+			
+			while (exception != null)
+			{
+				logger.error(exception.getMessage(), e);
+				
+				exception = exception.getNextException();
+			}
+
+			throw new IllegalStateException(e.toString());
+		}
+		catch (InterruptedException e)
+		{
+			logger.warn(e.toString(), e);
+			
+			Thread.currentThread().interrupt();
+		}
 	}
 	
 	protected void register(Database<D> database, DynamicMBean mbean)
@@ -820,38 +848,6 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		return this.url;
 	}
 
-	private void activate(String databaseId, SynchronizationStrategy strategy)
-	{
-		try
-		{
-			if (this.activate(this.getDatabase(databaseId), strategy))
-			{
-				logger.info(Messages.getMessage(Messages.DATABASE_ACTIVATED, databaseId, this));
-			}
-		}
-		catch (SQLException e)
-		{
-			logger.warn(Messages.getMessage(Messages.DATABASE_ACTIVATE_FAILED, databaseId, this), e);
-			
-			SQLException exception = e.getNextException();
-			
-			while (exception != null)
-			{
-				logger.error(exception.getMessage(), e);
-				
-				exception = exception.getNextException();
-			}
-
-			throw new IllegalStateException(e.toString());
-		}
-		catch (InterruptedException e)
-		{
-			logger.warn(e.toString(), e);
-			
-			throw new IllegalMonitorStateException(e.toString());
-		}
-	}
-	
 	private boolean activate(Database<D> database, SynchronizationStrategy strategy) throws SQLException, InterruptedException
 	{
 		Lock lock = this.lockManager.writeLock(LockManager.GLOBAL);
