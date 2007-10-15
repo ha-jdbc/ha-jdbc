@@ -998,8 +998,6 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		}
 		catch (Exception e)
 		{
-			logger.error(e.getMessage(), e);
-			
 			this.postDeregister();
 			
 			throw e;
