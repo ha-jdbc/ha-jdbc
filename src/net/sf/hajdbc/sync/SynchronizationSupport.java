@@ -402,20 +402,22 @@ public final class SynchronizationSupport
 			futures.add(executor.submit(task));
 		}
 		
-		try
+		for (Future<Void> future: futures)
 		{
-			for (Future<Void> future: futures)
+			try
 			{
 				future.get();
 			}
-		}
-		catch (InterruptedException e)
-		{
-			logger.warn(e.toString(), e);
-		}
-		catch (ExecutionException e)
-		{
-			logger.warn(e.toString(), e);
+			catch (InterruptedException e)
+			{
+				Thread.currentThread().interrupt();
+				
+				logger.warn(e.getMessage(), e);
+			}
+			catch (ExecutionException e)
+			{
+				logger.warn(e.getMessage(), e.getCause());
+			}
 		}
 	}
 	
