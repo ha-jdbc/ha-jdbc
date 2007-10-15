@@ -17,7 +17,7 @@
 				Fixed bug in Dialect.getAlterSequenceSQL(...) and Dialect.getAlterIdentityColumnSQL(...) causing values > 999 to get formatted with grouping separators.
 			</action>
 			<action context="src" dev="PF" type="fix" fixes-bug="1738533">
-				Added "cluster panic" detection to prevent asymmetric deactivation during a network fragmentation when in distributable mode where databases are colocated on peer nodes.
+				Added "cluster panic" detection to prevent asymmetric database deactivation during a network fragmentation when in distributable mode where databases are colocated on peer nodes.
 				If HA-JDBC detects a cluster panic, the cluster is stopped.
 				Manual intervention is required to resolve any consequent synchronization problems and to start the cluster.
 			</action>
