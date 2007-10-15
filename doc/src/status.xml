@@ -18,7 +18,8 @@
 			</action>
 			<action context="src" dev="PF" type="fix" fixes-bug="1738533">
 				Added "cluster panic" detection to prevent asymmetric deactivation during a network fragmentation when in distributable mode where databases are colocated on peer nodes.
-				When HA-JDBC detect a cluster panic, the cluster is stopped.  Manual intervention is required to resolve any consequent synchronization problems and to start the cluster.
+				If HA-JDBC detects a cluster panic, the cluster is stopped.
+				Manual intervention is required to resolve any consequent synchronization problems and to start the cluster.
 			</action>
 			<action context="doc" dev="PF" type="remove">
 				Removed obsolete JBoss jmx-console FAQ entry.
