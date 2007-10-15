@@ -128,6 +128,8 @@ public class DatabaseWriteInvocationStrategy<D, T, R> implements InvocationStrat
 				}
 				catch (InterruptedException e)
 				{
+					Thread.currentThread().interrupt();
+					
 					exceptionMap.put(database, SQLExceptionFactory.createSQLException(e));
 				}
 			}
