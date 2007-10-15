@@ -957,15 +957,6 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			context.setUserContext(this);
 			
 			context.unmarshalElement();
-			
-			if (this.decorator != null)
-			{
-				this.decorator.decorate(this);
-			}
-			
-			this.start();
-			
-			return name;
 		}
 		catch (IOException e)
 		{
@@ -992,6 +983,26 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 					logger.warn(e.toString(), e);
 				}
 			}
+		}
+		
+		if (this.decorator != null)
+		{
+			this.decorator.decorate(this);
+		}
+
+		try
+		{
+			this.start();
+			
+			return name;
+		}
+		catch (Exception e)
+		{
+			logger.error(e.getMessage(), e);
+			
+			this.postDeregister();
+			
+			throw e;
 		}
 	}
 	
