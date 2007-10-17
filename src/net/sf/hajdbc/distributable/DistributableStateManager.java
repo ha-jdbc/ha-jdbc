@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc.distributable;
 
+import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Set;
 
@@ -46,6 +47,8 @@ import org.slf4j.LoggerFactory;
  */
 public class DistributableStateManager extends AbstractMembershipListener implements StateManager, MessageListener, RequestHandler
 {
+	private static final String CHANNEL = "{0}-state"; //$NON-NLS-1$
+	
 	private static Logger logger = LoggerFactory.getLogger(DistributableStateManager.class);
 	
 	private int timeout;
@@ -55,7 +58,7 @@ public class DistributableStateManager extends AbstractMembershipListener implem
 	
 	public DistributableStateManager(DatabaseCluster<?> databaseCluster, DistributableDatabaseClusterDecorator decorator) throws Exception
 	{
-		super(decorator.createChannel(databaseCluster.getId()));
+		super(decorator.createChannel(MessageFormat.format(CHANNEL, databaseCluster.getId())));
 		
 		this.databaseCluster = databaseCluster;
 		
