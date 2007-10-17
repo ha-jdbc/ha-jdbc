@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc.distributable;
 
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,6 +47,8 @@ import org.slf4j.LoggerFactory;
  */
 public class DistributableLockManager extends AbstractMembershipListener implements LockManager, VotingListener
 {
+	private static final String CHANNEL = "{0}-lock"; //$NON-NLS-1$
+	
 	static Logger logger = LoggerFactory.getLogger(DistributableLockManager.class);
 	
 	protected VotingAdapter votingAdapter;
@@ -62,7 +65,7 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 	 */
 	public <D> DistributableLockManager(DatabaseCluster<D> databaseCluster, DistributableDatabaseClusterDecorator decorator) throws Exception
 	{
-		super(decorator.createChannel(databaseCluster.getId() + "-lock")); //$NON-NLS-1$
+		super(decorator.createChannel(MessageFormat.format(CHANNEL, databaseCluster.getId())));
 		
 		this.lockManager = databaseCluster.getLockManager();
 		
@@ -163,10 +166,25 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 		@Override
 		public void lock()
 		{
-			while (!this.tryLock())
+			boolean locked = false;
+			
+			do
 			{
-				// Do nothing
+				this.lock.lock();
+				
+				try
+				{
+					locked = this.tryRemoteLock();
+				}
+				finally
+				{
+					if (!locked)
+					{
+						this.unlock();
+					}
+				}
 			}
+			while (!locked);
 		}
 
 		/**
@@ -175,13 +193,30 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 		@Override
 		public void lockInterruptibly() throws InterruptedException
 		{
-			while (!this.tryLock())
+			boolean locked = false;
+			
+			do
 			{
 				if (Thread.currentThread().isInterrupted())
 				{
 					throw new InterruptedException();
 				}
+				
+				this.lock.lockInterruptibly();
+					
+				try
+				{
+					locked = this.tryRemoteLock();					
+				}
+				finally
+				{
+					if (!locked)
+					{
+						this.unlock();
+					}
+				}
 			}
+			while (!locked);
 		}
 
 		/**
@@ -190,35 +225,60 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 		@Override
 		public boolean tryLock()
 		{
-			if (!this.lock.tryLock()) return false;
-			
-			boolean locked = this.vote(new AcquireLockDecree(this.object, DistributableLockManager.this.channel.getLocalAddress()), DistributableLockManager.this.timeout);
-			
-			if (!locked)
+			if (this.lock.tryLock())
 			{
-				this.unlock();
+				try
+				{
+					if (this.tryRemoteLock())
+					{
+						return true;
+					}
+				}
+				finally
+				{
+					this.unlock();
+				}
 			}
 			
-			return locked;
+			return false;
 		}
 
 		/**
 		 * @see java.util.concurrent.locks.Lock#tryLock(long, java.util.concurrent.TimeUnit)
 		 */
 		@Override
-		public boolean tryLock(long timeout, TimeUnit unit)
+		public boolean tryLock(long timeout, TimeUnit unit) throws InterruptedException
 		{
-			long stopTime = System.currentTimeMillis() + unit.toMillis(timeout);
+			long ms = unit.toMillis(timeout);
 			
-			while (!this.tryLock())
+			long stopTime = System.currentTimeMillis() + ms;
+			
+			while (ms >= 0)
 			{
-				if (System.currentTimeMillis() >= stopTime)
+				if (Thread.currentThread().isInterrupted())
 				{
-					return false;
+					throw new InterruptedException();
 				}
+				
+				if (this.lock.tryLock(ms, TimeUnit.MILLISECONDS))
+				{
+					try
+					{
+						if (this.tryRemoteLock())
+						{
+							return true;
+						}
+					}
+					finally
+					{
+						this.unlock();
+					}
+				}
+
+				ms = System.currentTimeMillis() - stopTime;
 			}
 			
-			return true;
+			return false;
 		}
 
 		/**
@@ -232,9 +292,14 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 			this.vote(new ReleaseLockDecree(this.object, DistributableLockManager.this.channel.getLocalAddress()), 0);
 		}
 
+		private boolean tryRemoteLock()
+		{
+			return this.vote(new AcquireLockDecree(this.object, DistributableLockManager.this.channel.getLocalAddress()), DistributableLockManager.this.timeout);
+		}
+		
 		private boolean vote(LockDecree decree, long timeout)
 		{
-			// Voting adapter return false if no members - so reverse this behavior
+			// Voting adapter returns false if no members - so reverse this behavior
 			if (DistributableLockManager.this.isMembershipEmpty()) return true;
 			
 			try
