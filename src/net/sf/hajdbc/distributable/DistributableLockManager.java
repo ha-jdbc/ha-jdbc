@@ -172,17 +172,7 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 			{
 				this.lock.lock();
 				
-				try
-				{
-					locked = this.tryRemoteLock();
-				}
-				finally
-				{
-					if (!locked)
-					{
-						this.unlock();
-					}
-				}
+				locked = this.tryRemoteLock();
 			}
 			while (!locked);
 		}
@@ -197,23 +187,13 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 			
 			do
 			{
+				this.lock.lockInterruptibly();
+					
+				locked = this.tryRemoteLock();	
+				
 				if (Thread.currentThread().isInterrupted())
 				{
 					throw new InterruptedException();
-				}
-				
-				this.lock.lockInterruptibly();
-					
-				try
-				{
-					locked = this.tryRemoteLock();					
-				}
-				finally
-				{
-					if (!locked)
-					{
-						this.unlock();
-					}
 				}
 			}
 			while (!locked);
@@ -225,22 +205,7 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 		@Override
 		public boolean tryLock()
 		{
-			if (this.lock.tryLock())
-			{
-				try
-				{
-					if (this.tryRemoteLock())
-					{
-						return true;
-					}
-				}
-				finally
-				{
-					this.unlock();
-				}
-			}
-			
-			return false;
+			return this.lock.tryLock() && this.tryRemoteLock();
 		}
 
 		/**
@@ -249,34 +214,26 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 		@Override
 		public boolean tryLock(long timeout, TimeUnit unit) throws InterruptedException
 		{
+			// Convert timeout to milliseconds
 			long ms = unit.toMillis(timeout);
 			
 			long stopTime = System.currentTimeMillis() + ms;
 			
-			while (ms >= 0)
+			do
 			{
+				if (this.lock.tryLock(ms, TimeUnit.MILLISECONDS) && this.tryRemoteLock())
+				{
+					return true;
+				}
+
 				if (Thread.currentThread().isInterrupted())
 				{
 					throw new InterruptedException();
 				}
 				
-				if (this.lock.tryLock(ms, TimeUnit.MILLISECONDS))
-				{
-					try
-					{
-						if (this.tryRemoteLock())
-						{
-							return true;
-						}
-					}
-					finally
-					{
-						this.unlock();
-					}
-				}
-
-				ms = System.currentTimeMillis() - stopTime;
+				ms = stopTime - System.currentTimeMillis();
 			}
+			while (ms >= 0);
 			
 			return false;
 		}
@@ -294,7 +251,21 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 
 		private boolean tryRemoteLock()
 		{
-			return this.vote(new AcquireLockDecree(this.object, DistributableLockManager.this.channel.getLocalAddress()), DistributableLockManager.this.timeout);
+			boolean locked = false;
+			
+			try
+			{
+				locked = this.vote(new AcquireLockDecree(this.object, DistributableLockManager.this.channel.getLocalAddress()), DistributableLockManager.this.timeout);
+				
+				return locked;
+			}
+			finally
+			{
+				if (!locked)
+				{
+					this.unlock();
+				}
+			}
 		}
 		
 		private boolean vote(LockDecree decree, long timeout)
