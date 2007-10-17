@@ -189,9 +189,9 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 			{
 				this.lock.lockInterruptibly();
 					
-				locked = this.tryRemoteLock();	
+				locked = this.tryRemoteLock();
 				
-				if (Thread.currentThread().isInterrupted())
+				if (!locked && Thread.currentThread().isInterrupted())
 				{
 					throw new InterruptedException();
 				}
