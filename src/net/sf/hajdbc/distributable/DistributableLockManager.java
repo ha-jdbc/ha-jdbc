@@ -249,6 +249,9 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 			this.vote(new ReleaseLockDecree(this.object, DistributableLockManager.this.channel.getLocalAddress()), 0);
 		}
 
+		/**
+		 * Assumes lock lock is already acquired.
+		 */
 		private boolean tryRemoteLock()
 		{
 			boolean locked = false;
