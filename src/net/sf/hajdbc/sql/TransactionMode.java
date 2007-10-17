@@ -26,7 +26,7 @@ package net.sf.hajdbc.sql;
  */
 public enum TransactionMode
 {
-	BALANCED, PARALLEL, SERIAL;
+	PARALLEL, SERIAL;
 	
 	public static TransactionMode deserialize(String value)
 	{
