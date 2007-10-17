@@ -12,9 +12,12 @@
 	</contexts>
 
 	<changes>
-		<release version="2.0.6" date="">
+		<release version="2.0.6" date="October 17, 2007">
 			<action context="src" dev="PF" type="fix">
 				Fixed exception handling during startup to prevent subsequent <code>javax.management.InstanceAlreadyExistsException</code>s if database cluster fails to start.
+			</action>
+			<action context="src" dev="PF" type="fix" fixes-bug="1814865">
+				Fixed potential deadlocking sources and improved cpu friendliness of DistributableLockManger.
 			</action>
 		</release>
 		<release version="2.0.5" date="October 15, 2007">
