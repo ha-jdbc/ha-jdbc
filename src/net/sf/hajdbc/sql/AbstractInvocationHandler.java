@@ -428,39 +428,47 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 		return resultMap;
 	}
 
+	/**
+	 * Detect cluster panic if all conditions are met:
+	 * <ul>
+	 * <li>We're in distributable mode</li>
+	 * <li>We're the only group member</li>
+	 * <li>All alive databases are local</li>
+	 * <li>All dead databases are remote</li>
+	 * </ul>
+	 * @param aliveMap
+	 * @throws SQLException
+	 */
 	protected void detectClusterPanic(Map<Boolean, List<Database<D>>> aliveMap) throws SQLException
 	{
 		if (this.databaseCluster.getStateManager().isMembershipEmpty())
 		{
 			List<Database<D>> aliveList = aliveMap.get(true);
+			List<Database<D>> deadList = aliveMap.get(false);
 			
-			if ((aliveList.size() == 1) && (aliveList.get(0).getWeight() > 0))
+			if (!aliveList.isEmpty() && !deadList.isEmpty() && sameProximity(aliveList, true) && sameProximity(deadList, false))
 			{
-				List<Database<D>> deadList = aliveMap.get(false);
+				this.databaseCluster.stop();
 				
-				if (!deadList.isEmpty())
-				{
-					// Tally dead weight
-					int deadWeight = 0;
-					
-					for (Database<D> database: aliveMap.get(false))
-					{
-						deadWeight += database.getWeight();
-					}
-					
-					if (deadWeight == 0)
-					{
-						this.databaseCluster.stop();
-						
-						String message = Messages.getMessage(Messages.CLUSTER_PANIC_DETECTED, this.databaseCluster);
-						
-						this.logger.error(message);
-						
-						throw new SQLException(message);
-					}
-				}
+				String message = Messages.getMessage(Messages.CLUSTER_PANIC_DETECTED, this.databaseCluster);
+				
+				this.logger.error(message);
+				
+				throw new SQLException(message);
 			}
 		}
+	}
+	
+	private boolean sameProximity(List<Database<D>> databaseList, boolean local)
+	{
+		boolean same = true;
+		
+		for (Database<D> database: databaseList)
+		{
+			same &= (database.isLocal() == local);
+		}
+		
+		return same;
 	}
 	
 	protected class DynamicInvoker implements Invoker<D, E, Object>
