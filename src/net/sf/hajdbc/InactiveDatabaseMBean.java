@@ -57,4 +57,10 @@ public interface InactiveDatabaseMBean extends ActiveDatabaseMBean
 	 * @param name a property name
 	 */
 	public void removeProperty(String name);
+	
+	/**
+	 * Sets whether or not this database is local to the machine on which the JVM resides.
+	 * @param local true if local, false if remote
+	 */
+	public void setLocal(boolean local);
 }
