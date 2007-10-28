@@ -278,7 +278,7 @@
   detect-sequences        (true|false)                     "false"
   eval-current-date       (true|false)                     "false"
   eval-current-time       (true|false)                     "false"
-  eval-current-timstamp   (true|false)                     "false"
+  eval-current-timestamp  (true|false)                     "false"
   eval-rand               (true|false)                     "false"
 >
 ]]></source>
