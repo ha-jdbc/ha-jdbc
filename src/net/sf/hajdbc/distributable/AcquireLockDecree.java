@@ -51,7 +51,7 @@ public class AcquireLockDecree extends AbstractLockDecree
 	@Override
 	public boolean vote(LockManager lockManager, Map<String, Lock> lockMap)
 	{
-		Lock lock = new DistributableLockAdapter(lockManager.readLock(this.id));
+		Lock lock = lockManager.readLock(this.id);
 		
 		boolean locked = lock.tryLock();
 		
