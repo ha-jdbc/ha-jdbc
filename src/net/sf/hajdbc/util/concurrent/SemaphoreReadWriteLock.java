@@ -14,11 +14,9 @@ import java.util.concurrent.locks.ReadWriteLock;
  */
 public class SemaphoreReadWriteLock implements ReadWriteLock
 {
-	private static final int TOTAL_PERMITS = Integer.MAX_VALUE;
-	
-	Semaphore semaphore = new Semaphore(TOTAL_PERMITS, true);
+	Semaphore semaphore = new Semaphore(Integer.MAX_VALUE, true);
 	private Lock readLock = new SemaphoreLock(1);
-	private Lock writeLock = new SemaphoreLock(TOTAL_PERMITS);
+	private Lock writeLock = new SemaphoreLock(Integer.MAX_VALUE);
 	
 	/**
 	 * @see java.util.concurrent.locks.ReadWriteLock#readLock()
