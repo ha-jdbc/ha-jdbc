@@ -152,8 +152,10 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			futureMap.put(database, this.nonTransactionalExecutor.submit(task));
 		}
 
-		List<Database<D>> aliveList = new ArrayList<Database<D>>(databases.size());
-		List<Database<D>> deadList = new ArrayList<Database<D>>(databases.size());
+		int size = databases.size();
+		
+		List<Database<D>> aliveList = new ArrayList<Database<D>>(size);
+		List<Database<D>> deadList = new ArrayList<Database<D>>(size);
 
 		Map<Boolean, List<Database<D>>> map = new TreeMap<Boolean, List<Database<D>>>();
 		
