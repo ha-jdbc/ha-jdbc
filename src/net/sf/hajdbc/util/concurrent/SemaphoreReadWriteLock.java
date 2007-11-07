@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2004-2007, Identity Theft 911, LLC.  All rights reserved.
  */
-package net.sf.hajdbc.local;
+package net.sf.hajdbc.util.concurrent;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;

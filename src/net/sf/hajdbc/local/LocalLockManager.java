@@ -28,6 +28,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 
 import net.sf.hajdbc.LockManager;
+import net.sf.hajdbc.util.concurrent.SemaphoreReadWriteLock;
 
 /**
  * @author Paul Ferraro
