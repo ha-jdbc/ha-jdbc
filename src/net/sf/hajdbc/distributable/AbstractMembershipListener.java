@@ -97,6 +97,14 @@ public abstract class AbstractMembershipListener implements MembershipListener
 		}
 	}
 
+	public int getMembershipSize()
+	{
+		synchronized (this.addressSet)
+		{
+			return this.addressSet.size();
+		}
+	}
+	
 	public boolean isMembershipEmpty()
 	{
 		synchronized (this.addressSet)
