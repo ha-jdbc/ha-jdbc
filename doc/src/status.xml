@@ -30,6 +30,9 @@
 			<action context="lib" dev="PF" type="update">
 				Upgraded Retrotranslator to 1.2.3.
 			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded TestNG to 5.7.
+			</action>
 		</release>
 		<release version="2.0.6" date="October 17, 2007">
 			<action context="src" dev="PF" type="fix">
