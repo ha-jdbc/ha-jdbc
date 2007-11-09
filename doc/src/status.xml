@@ -12,6 +12,25 @@
 	</contexts>
 
 	<changes>
+		<release version="2.0.7" date="November 9, 2007">
+			<action context="src" dev="PF" type="update">
+				Added local="true|false" attribute to database/datasource.
+				Cluster panic detection now consults this flag instead of weight to determine whether a database is local or remote.
+			</action>
+			<action context="src" dev="PF" type="update">
+				LocalLockManager now uses a custom semaphore-based <code>ReadWriteLock</code> implementation instead of <code>ReentrantReadWriteLock</code>.
+				Removed obsolete <code>DistributableLockAdapter</code> hack.
+			</action>
+			<action context="src" dev="PF" type="update">
+				Optimized <code>DistributableLockManager</code> using <code>RpcDispatcher</code> instead <code>VotingAdapter</code>.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed deadlocking in DistributableLockManager when simultaneous voting occurs for he same resource from different peers.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded Retrotranslator to 1.2.3.
+			</action>
+		</release>
 		<release version="2.0.6" date="October 17, 2007">
 			<action context="src" dev="PF" type="fix">
 				Fixed exception handling during startup to prevent subsequent <code>javax.management.InstanceAlreadyExistsException</code>s if database cluster fails to start.
