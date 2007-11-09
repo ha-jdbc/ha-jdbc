@@ -404,8 +404,9 @@
 					</dl>
 					<source><![CDATA[
 <!ATTLIST database
-	id     CDATA #REQUIRED
-	weight CDATA "1"
+	id     CDATA        #REQUIRED
+	weight CDATA        "1"
+	local  (true|false) "false"
 >
 ]]></source>
 					<dl>
@@ -417,6 +418,10 @@
 						<dd>
 							Defines the relative weight of this database node.
 							The weight is used by the balancer implementation to determine which node will service a read request.
+						</dd>
+						<dt>local</dt>
+						<dd>
+							Indicates that this database resides on the local machine.
 						</dd>
 					</dl>
 				</section>
@@ -446,8 +451,9 @@
 					</dl>
 					<source><![CDATA[
 <!ATTLIST datasource
-	id     CDATA #REQUIRED
-	weight CDATA "1"
+	id     CDATA        #REQUIRED
+	weight CDATA        "1"
+	local  (true|false) "false"
 >
 ]]></source>
 					<dl>
@@ -459,6 +465,10 @@
 						<dd>
 							Defines the relative weight of this database node.
 							The weight is used by the balancer implementation to determine which node will service a read request.
+						</dd>
+						<dt>local</dt>
+						<dd>
+							Indicates that this database resides on the local machine.
 						</dd>
 					</dl>
 				</section>

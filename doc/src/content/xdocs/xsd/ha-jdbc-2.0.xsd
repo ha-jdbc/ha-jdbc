@@ -140,5 +140,6 @@
 	<xs:attributeGroup name="database">
 		<xs:attribute name="id" type="xs:string" use="required"></xs:attribute>
 		<xs:attribute name="weight" type="xs:nonNegativeInteger" default="1"></xs:attribute>
+		<xs:attribute name="local" type="xs:boolean" default="false"></xs:attribute>
 	</xs:attributeGroup>
 </xs:schema>
