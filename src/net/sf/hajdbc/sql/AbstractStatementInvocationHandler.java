@@ -29,12 +29,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.TreeSet;
 import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Database;
@@ -250,7 +250,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 		
 		Dialect dialect = databaseCluster.getDialect();
 		
-		Set<String> identifierSet = new LinkedHashSet<String>(sqlList.size());
+		Set<String> identifierSet = new TreeSet<String>();
 		
 		for (String sql: sqlList)
 		{
