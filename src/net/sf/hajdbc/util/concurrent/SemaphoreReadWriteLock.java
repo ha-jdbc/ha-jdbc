@@ -27,6 +27,11 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 
 /**
+ * Simple {@link java.util.concurrent.lock.ReadWriteLock} implementation that uses a semaphore that grants up to {@link java.lang.Integer#MAX_VALUE} permits using a fair FIFO policy.
+ * A read lock requires 1 permit, while a write lock requires all the permits.
+ * Unlike the {@link java.util.concurrent.lock.ReentrantLock}, the read and write locks returned by this object can be locked and unlocked by different threads.
+ * Lock upgrading and downgrading are not supported.  Conditions are also not supported.
+ * 
  * @author Paul Ferraro
  */
 public class SemaphoreReadWriteLock implements ReadWriteLock
