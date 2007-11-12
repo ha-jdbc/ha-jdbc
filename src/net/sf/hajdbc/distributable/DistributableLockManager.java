@@ -342,7 +342,6 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
 	public Map<Boolean, Vector<Address>> remoteVote(LockDecree decree, Vector<Address> addresses, long timeout)
 	{
 		Map<Boolean, Vector<Address>> map = new TreeMap<Boolean, Vector<Address>>();

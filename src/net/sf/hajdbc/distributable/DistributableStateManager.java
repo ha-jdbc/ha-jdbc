@@ -145,7 +145,6 @@ public class DistributableStateManager extends AbstractMembershipListener implem
 		this.stateManager.remove(databaseId);
 	}
 
-	@SuppressWarnings("unchecked")
 	private Collection<Rsp> send(Command<?> command, int mode, long timeout)
 	{
 		return this.dispatcher.castMessage(null, this.createMessage(command), mode, timeout).values();
