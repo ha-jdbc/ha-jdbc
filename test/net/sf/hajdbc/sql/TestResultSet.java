@@ -79,7 +79,7 @@ import org.testng.annotations.Test;
  * @author  Paul Ferraro
  * @since   1.0
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({ "unchecked", "nls" })
 public class TestResultSet implements ResultSet
 {
 	private Balancer balancer = EasyMock.createStrictMock(Balancer.class);
@@ -485,6 +485,7 @@ public class TestResultSet implements ResultSet
 	/**
 	 * @see java.sql.ResultSet#getBigDecimal(int, int)
 	 */
+	@SuppressWarnings("deprecation")
 	@Test(dataProvider = "int-int")
 	@Deprecated
 	public BigDecimal getBigDecimal(int index, int scale) throws SQLException
@@ -513,6 +514,7 @@ public class TestResultSet implements ResultSet
 	/**
 	 * @see java.sql.ResultSet#getBigDecimal(java.lang.String, int)
 	 */
+	@SuppressWarnings("deprecation")
 	@Test(dataProvider = "string-int")
 	@Deprecated
 	public BigDecimal getBigDecimal(String name, int scale) throws SQLException
@@ -1765,6 +1767,7 @@ public class TestResultSet implements ResultSet
 	/**
 	 * @see java.sql.ResultSet#getUnicodeStream(int)
 	 */
+	@SuppressWarnings("deprecation")
 	@Test(dataProvider = "int")
 	@Deprecated
 	public InputStream getUnicodeStream(int index) throws SQLException
@@ -1787,6 +1790,7 @@ public class TestResultSet implements ResultSet
 	/**
 	 * @see java.sql.ResultSet#getUnicodeStream(java.lang.String)
 	 */
+	@SuppressWarnings("deprecation")
 	@Test(dataProvider = "string")
 	@Deprecated
 	public InputStream getUnicodeStream(String name) throws SQLException

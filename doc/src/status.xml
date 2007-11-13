@@ -12,12 +12,157 @@
 	</contexts>
 
 	<changes>
-		<release version="2.0.0" date="July 16, 2007">
+		<release version="2.0.8" date="?">
+			<action context="lib" dev="PF" type="update">
+				Upgraded JGroups to 2.6.0.
+			</action>
+		</release>
+		<release version="2.0.7" date="November 9, 2007">
 			<action context="src" dev="PF" type="update">
-				Optimized failure handling in DatabaseWriteInvocationStrategy.
+				Added local="true|false" attribute to database/datasource.
+				Cluster panic detection now consults this flag instead of weight to determine whether a database is local or remote.
 			</action>
 			<action context="src" dev="PF" type="update">
-				Optimized thread synchronization in DistributableLockAdapter.
+				LocalLockManager now uses a custom semaphore-based <code>ReadWriteLock</code> implementation instead of <code>ReentrantReadWriteLock</code>.
+				Removed obsolete <code>DistributableLockAdapter</code> hack.
+			</action>
+			<action context="src" dev="PF" type="update">
+				Optimized <code>DistributableLockManager</code> using <code>RpcDispatcher</code> instead <code>VotingAdapter</code>.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed deadlocking in DistributableLockManager when simultaneous voting occurs for he same resource from different peers.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded Retrotranslator to 1.2.3.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded TestNG to 5.7.
+			</action>
+		</release>
+		<release version="2.0.6" date="October 17, 2007">
+			<action context="src" dev="PF" type="fix">
+				Fixed exception handling during startup to prevent subsequent <code>javax.management.InstanceAlreadyExistsException</code>s if database cluster fails to start.
+			</action>
+			<action context="src" dev="PF" type="fix" fixes-bug="1814865">
+				Fixed potential deadlocking sources and improved cpu friendliness of DistributableLockManger.
+			</action>
+		</release>
+		<release version="2.0.5" date="October 15, 2007">
+			<action context="src" dev="PF" type="fix" fixes-bug="1811698">
+				Fixed bug in Dialect.getAlterSequenceSQL(...) and Dialect.getAlterIdentityColumnSQL(...) causing values > 999 to get formatted with grouping separators.
+			</action>
+			<action context="src" dev="PF" type="fix" fixes-bug="1738533">
+				Added "cluster panic" detection to prevent asymmetric database deactivation during a network fragmentation when in distributable mode where databases are colocated on peer nodes.
+				If HA-JDBC detects a cluster panic, the cluster is stopped.
+				Manual intervention is required to resolve any consequent synchronization problems and to start the cluster.
+			</action>
+			<action context="doc" dev="PF" type="remove">
+				Removed obsolete JBoss jmx-console FAQ entry.
+			</action>
+		</release>
+		<release version="2.0.4" date="October 4, 2007">
+			<action context="src" dev="PF" type="fix">
+				Added look-ahead and to Dialect.evaluateCurrentTime() regular expression so that it does not match CURRENT_TIMESTAMP functions.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed NullPointerException regression in DistributableLockManager preventing database activation in distributable mode.
+			</action>
+			<action context="src" dev="PF" type="update">
+				Use new official JDK 1.4 backport of JGroups instead of retrotranslating our own.
+			</action>
+		</release>
+		<release version="2.0.3" date="September 24, 2007">
+			<action context="lib" dev="PF" type="update">
+				Upgraded JGroups to 2.5.1.
+			</action>
+			<action context="src" dev="PF" type="fix" fixes-bug="1799618">
+				Fixed infinite loop in DistributableLockManager while acquiring a lock when only one peer node is present.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed missing membership listener registration in DistributableLockManager preventing proper lock cleanup.
+			</action>
+			<action context="src" dev="PF" type="fix" fixes-bug="1796975">
+				Defer creation of connection factories until needed since DataSource creation relies on JNDI environment properties that may not yet be established.
+			</action>
+		</release>
+		<release version="2.0.2" date="September 14, 2007">
+			<action context="src" dev="PF" type="fix">
+				Added <code>Dialect.getIdentifierPattern(...)</code> method to work around buggy <code>DatabaseMetaData.getExtraNameCharacters()</code> in PostgreSQL driver since version 8.1.
+				Bug causes unexpected failures during identity column detection when schema or table name contains non-standard characters.
+			</action>
+			<action context="src" dev="PF" type="update">
+				Optimized <code>StandardDialect.getDefaultSchemas()</code> by replacing separate <code>CURRENT_USER</code> query with <code>DatabaseMetaData.getUserName()</code>.
+			</action>
+			<action context="doc" dev="PF" type="fix">
+				Fixed example Tomcat DataSource configuration.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed <code>currentTimestampFunction()</code> method of MaxDBDialect.
+			</action>
+			<action context="src" dev="PF" type="add">
+				Created separate OracleDialect, formerly an alias of MaxDBDialect.
+			</action>
+			<action context="src" dev="PF" type="add">
+				Created separate H2Dialect, formerly an alias of HSQLDBDialect.
+			</action>
+			<action context="src" dev="PF" type="add">
+				Added new dialect for Sybase.
+			</action>
+			<action context="src" dev="PF" type="add">
+				Added <code>evaluateCurrentDate(String, java.sql.Date)</code>, <code>evaluateCurrentTime(String, java.sql.Time)</code>, <code>evaluateCurrentTimestamp(String, java.sql.Timestamp)</code>, and <code>evaluateRandom(String)</code> to Dialect interface to replace non-deterministic SQL functions (e.g. CURRENT_TIMESTAMP, RAND()) with deterministic static values.
+				Added optional <code>eval-current-date</code>, <code>eval-current-time</code>, <code>eval-current-timestamp</code>, and <code>eval-rand</code> cluster attribute to enable these behaviors.
+			</action>
+			<action context="src" dev="PF" type="update">
+				Both sequence and identity column detection are no longer enabled by default.
+			</action>
+			<action context="src" dev="PF" type="remove">
+				Removed <code>supportsSequences()</code> and <code>supportsIdentityColumns()</code> methods from Dialect interface.
+				The corresponding <code>parseSequence(String)</code> and <code>parseInsertTable(String)</code> methods now return null for dialects that do not support these features.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed race condition in DistributableLockAdapter that may prevent a lock from being released.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded SLF4J to 1.4.3.
+			</action>
+			<action context="src" dev="PF" type="add">
+				Added SynchronizationSupport.synchronizeIdentityColumns(...).
+				Consequently, MySQL AUTO_INCREMENT columns are now fully supported.
+			</action>
+			<action context="src" dev="PF" type="add">
+				Added DatabaseProperties.getSequences() and TableProperties.getIdentityColumns() to meta data cache facility.
+			</action>
+		</release>
+		<release version="2.0.1" date="July 23, 2007">
+			<action context="src" dev="PF" type="fix">
+				<code>LazyDatabaseMetaDataCache</code> now caches <code>DatabaseProperties</code> using a <code>SoftReference</code> to prevent the cache from causing <code>OutOfMemoryErrors</code>.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Refactored <code>ThreadLocalDatabaseMetaDataCache</code> to <code>NullDatabaseMetaDataCache</code> which no long stores its <code>DatabaseProperties</code> instance in a <code>ThreadLocal</code> since this can inadvertently act like a lazy cache if application threads are pooled.
+				Replaced <code>SynchronizationContext.getDatabaseMetaDataCache()</code> with <code>SynchronizationContext.getDatabaseProperties()</code> so that meta data used during synchronization is still cached for the lifetime of the <code>SynchronizationContext</code>, regardless of cache implementation.
+			</action>
+			<action context="src" dev="PF" type="update">
+				Re-implemented <code>BalancerFactory</code>, <code>DialectFactory</code>, and <code>DatabaseMetaDataCacheFactory</code> using enums.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				In <code>DatabaseMetaDataSupport.normalize(...)</code>, adjust case of table to match the way identifiers are stored in the database.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				In <code>DatabaseMetaDataSupport.quote(...)</code>, normalize identifiers to lower case if database is case-insensitive, yet stores identifiers in mixed case.
+			</action>
+			<action context="src" dev="PF" type="update">
+				Fixed all benign compiler warnings reported by Eclipse.
+			</action>
+			<action context="src" dev="PF" type="update">
+				Migrated simple string constants to <code>Strings</code>.
+			</action>
+		</release>
+		<release version="2.0.0" date="July 16, 2007">
+			<action context="src" dev="PF" type="update">
+				Optimized failure handling in <code>DatabaseWriteInvocationStrategy</code>.
+			</action>
+			<action context="src" dev="PF" type="update">
+				Optimized thread synchronization in <code>DistributableLockAdapter</code>.
 			</action>
 			<action context="lib" dev="PF" type="update">
 				Upgraded EasyMock to 2.3.

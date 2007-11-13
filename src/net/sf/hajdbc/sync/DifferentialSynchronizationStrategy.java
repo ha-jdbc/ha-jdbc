@@ -28,6 +28,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -125,7 +126,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		
 		try
 		{
-			for (TableProperties table: context.getDatabaseMetaDataCache().getDatabaseProperties(targetConnection).getTables())
+			for (TableProperties table: context.getDatabaseProperties().getTables())
 			{
 				SynchronizationSupport.dropUniqueConstraints(context, table);
 				
@@ -162,10 +163,10 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				
 				List<String> nonPrimaryKeyColumnList = columnList.subList(primaryKeyColumnList.size(), columnList.size());
 				
-				String commaDelimitedColumns = Strings.join(columnList, ", ");
+				String commaDelimitedColumns = Strings.join(columnList, Strings.PADDED_COMMA);
 				
 				// Retrieve table rows in primary key order
-				final String selectSQL = "SELECT " + commaDelimitedColumns + " FROM " + tableName + " ORDER BY " + Strings.join(primaryKeyColumnList, ", ");
+				final String selectSQL = "SELECT " + commaDelimitedColumns + " FROM " + tableName + " ORDER BY " + Strings.join(primaryKeyColumnList, Strings.PADDED_COMMA); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				
 				final Statement targetStatement = targetConnection.createStatement();
 
@@ -190,27 +191,24 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 
 				ResultSet inactiveResultSet = future.get();
 				
-				String primaryKeyWhereClause = " WHERE " + Strings.join(primaryKeyColumnList, " = ? AND ") + " = ?";
+				String primaryKeyWhereClause = " WHERE " + Strings.join(primaryKeyColumnList, " = ? AND ") + " = ?"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				
 				// Construct DELETE SQL
-				String deleteSQL = "DELETE FROM " + tableName + primaryKeyWhereClause;
+				String deleteSQL = "DELETE FROM " + tableName + primaryKeyWhereClause; //$NON-NLS-1$
 				
 				logger.debug(deleteSQL);
 				
 				PreparedStatement deleteStatement = targetConnection.prepareStatement(deleteSQL);
 				
-				String[] parameters = new String[columnList.size()];
-				Arrays.fill(parameters, "?");
-				
 				// Construct INSERT SQL
-				String insertSQL = "INSERT INTO " + tableName + " (" + commaDelimitedColumns + ") VALUES (" + Strings.join(Arrays.asList(parameters), ", ") + ")";
+				String insertSQL = "INSERT INTO " + tableName + " (" + commaDelimitedColumns + ") VALUES (" + Strings.join(Collections.nCopies(columnList.size(), Strings.QUESTION), Strings.PADDED_COMMA) + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 				
 				logger.debug(insertSQL);
 				
 				PreparedStatement insertStatement = targetConnection.prepareStatement(insertSQL);
 				
 				// Construct UPDATE SQL
-				String updateSQL = "UPDATE " + tableName + " SET " + Strings.join(nonPrimaryKeyColumnList, " = ?, ") + " = ?" + primaryKeyWhereClause;
+				String updateSQL = "UPDATE " + tableName + " SET " + Strings.join(nonPrimaryKeyColumnList, " = ?, ") + " = ?" + primaryKeyWhereClause; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 				
 				logger.debug(updateSQL);
 				
@@ -421,10 +419,8 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		
 		SynchronizationSupport.restoreForeignKeys(context);
 		
-		if (dialect.supportsSequences())
-		{
-			SynchronizationSupport.synchronizeSequences(context);
-		}
+		SynchronizationSupport.synchronizeIdentityColumns(context);
+		SynchronizationSupport.synchronizeSequences(context);
 	}
 
 	private boolean equals(Object object1, Object object2)

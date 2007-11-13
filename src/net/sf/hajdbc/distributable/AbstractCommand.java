@@ -75,7 +75,7 @@ public abstract class AbstractCommand implements Command<Boolean>, Externalizabl
 	@Override
 	public String toString()
 	{
-		return this.getClass().getName() + " [" + this.databaseId + "]";
+		return this.getClass().getName() + " [" + this.databaseId + "]"; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	/**

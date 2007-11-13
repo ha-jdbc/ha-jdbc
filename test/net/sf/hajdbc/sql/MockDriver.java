@@ -30,6 +30,7 @@ import java.util.Properties;
  * @author  Paul Ferraro
  * @since   1.1
  */
+@SuppressWarnings("nls")
 public class MockDriver implements Driver
 {
 	private Connection connection;

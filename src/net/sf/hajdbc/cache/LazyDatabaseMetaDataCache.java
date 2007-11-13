@@ -20,6 +20,8 @@
  */
 package net.sf.hajdbc.cache;
 
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -27,25 +29,24 @@ import net.sf.hajdbc.DatabaseProperties;
 
 
 /**
- * DatabaseMetaDataCache that lazily caches data when requested.
- * To be used when performance is more of a concern than memory usage, but 
+ * DatabaseMetaDataCache implementation that lazily caches data when requested.
+ * Used when a compromise between memory usage and performance is desired.
+ * Caches DatabaseProperties using a soft reference to prevent <code>OutOfMemoryError</code>s.
  * 
  * @author Paul Ferraro
  * @since 2.0
  */
 public class LazyDatabaseMetaDataCache extends AbstractDatabaseMetaDataCache
 {
-	private DatabaseProperties properties;
+	private Reference<DatabaseProperties> propertiesRef = new SoftReference<DatabaseProperties>(null);
 	
 	/**
 	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush(java.sql.Connection)
 	 */
 	@Override
-	public synchronized void flush(Connection connection) throws SQLException
+	public synchronized void flush(Connection connection)
 	{
-		LazyDatabaseProperties.setConnection(connection);
-		
-		this.properties = new LazyDatabaseProperties(this.dialect);
+		this.propertiesRef.clear();
 	}
 
 	/**
@@ -56,11 +57,15 @@ public class LazyDatabaseMetaDataCache extends AbstractDatabaseMetaDataCache
 	{
 		LazyDatabaseProperties.setConnection(connection);
 		
-		if (this.properties == null)
+		DatabaseProperties properties = this.propertiesRef.get();
+		
+		if (properties == null)
 		{
-			this.flush(connection);
+			properties = new LazyDatabaseProperties(this.dialect);
+		
+			this.propertiesRef = new SoftReference<DatabaseProperties>(properties);
 		}
 		
-		return this.properties;
+		return properties;
 	}
 }

@@ -30,18 +30,19 @@ import net.sf.hajdbc.DatabaseCluster;
  * @author Paul Ferraro
  *
  */
-public class DataSourceInvocationHandler extends AbstractInvocationHandler<DataSource, Void, DataSource>
+@SuppressWarnings("nls")
+public class DataSourceInvocationHandler extends AbstractRootInvocationHandler<DataSource>
 {
 	/**
 	 * @param databaseCluster
 	 */
 	public DataSourceInvocationHandler(DatabaseCluster<DataSource> databaseCluster)
 	{
-		super(databaseCluster, DataSource.class, databaseCluster.getConnectionFactoryMap());
+		super(databaseCluster, DataSource.class);
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
 	protected InvocationStrategy<DataSource, DataSource, ?> getInvocationStrategy(DataSource dataSource, Method method, Object[] parameters) throws Exception
@@ -64,14 +65,5 @@ public class DataSourceInvocationHandler extends AbstractInvocationHandler<DataS
 		}
 		
 		return super.getInvocationStrategy(dataSource, method, parameters);
-	}
-
-	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#close(java.lang.Object, java.lang.Object)
-	 */
-	@Override
-	protected void close(Void parent, DataSource dataSource)
-	{
-		// Do nothing
 	}
 }

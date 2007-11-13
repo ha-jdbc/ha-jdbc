@@ -20,7 +20,7 @@
  */
 package net.sf.hajdbc.dialect;
 
-import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -28,10 +28,13 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.sf.hajdbc.QualifiedName;
+
 /**
  * Dialect for <a href="firebird.sourceforge.net">Firebird</a>.
  * @author Paul Ferraro
  */
+@SuppressWarnings("nls")
 public class FirebirdDialect extends StandardDialect
 {
 	/**
@@ -54,35 +57,34 @@ public class FirebirdDialect extends StandardDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.Connection)
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.DatabaseMetaData)
 	 */
 	@Override
-	public Collection<String> getSequences(Connection connection) throws SQLException
+	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
 	{
-		List<String> sequenceList = new LinkedList<String>();
+		List<QualifiedName> sequenceList = new LinkedList<QualifiedName>();
 		
-		Statement statement = connection.createStatement();
+		Statement statement = metaData.getConnection().createStatement();
 		
 		ResultSet resultSet = statement.executeQuery("SELECT RDB$GENERATOR_NAME FROM RDB$GENERATORS");
 		
 		while (resultSet.next())
 		{
-			sequenceList.add(resultSet.getString(1));
+			sequenceList.add(new QualifiedName(resultSet.getString(1)));
 		}
 		
-		resultSet.close();
 		statement.close();
 		
 		return sequenceList;
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#supportsIdentityColumns()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#parseInsertTable(java.lang.String)
 	 */
 	@Override
-	public boolean supportsIdentityColumns()
+	public String parseInsertTable(String sql)
 	{
-		return false;
+		return null;
 	}
 
 	/**
@@ -92,7 +94,7 @@ public class FirebirdDialect extends StandardDialect
 	@Override
 	protected String sequencePattern()
 	{
-		return "GEN_ID\\s*\\(\\s*(\\w+)\\s*,\\s*\\d+\\s*\\)";
+		return "GEN_ID\\s*\\(\\s*([^\\s,]+)\\s*,\\s*\\d+\\s*\\)";
 	}
 
 	/**

@@ -25,8 +25,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -112,14 +112,14 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		
 		try
 		{
-			for (TableProperties table: context.getDatabaseMetaDataCache().getDatabaseProperties(sourceConnection).getTables())
+			for (TableProperties table: context.getDatabaseProperties().getTables())
 			{
 				String tableName = table.getName();
 				Collection<String> columns = table.getColumns();
 				
-				String commaDelimitedColumns = Strings.join(columns, ", ");
+				String commaDelimitedColumns = Strings.join(columns, Strings.PADDED_COMMA);
 				
-				final String selectSQL = "SELECT " + commaDelimitedColumns + " FROM " + tableName;
+				final String selectSQL = "SELECT " + commaDelimitedColumns + " FROM " + tableName; //$NON-NLS-1$ //$NON-NLS-2$
 				
 				final Statement selectStatement = sourceConnection.createStatement();
 				selectStatement.setFetchSize(this.fetchSize);
@@ -148,10 +148,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 				
 				ResultSet resultSet = future.get();
 				
-				String[] parameters = new String[columns.size()];
-				Arrays.fill(parameters, "?");
-				
-				String insertSQL = "INSERT INTO " + tableName + " (" + commaDelimitedColumns + ") VALUES (" + Strings.join(Arrays.asList(parameters), ", ") + ")";
+				String insertSQL = "INSERT INTO " + tableName + " (" + commaDelimitedColumns + ") VALUES (" + Strings.join(Collections.nCopies(columns.size(), Strings.QUESTION), Strings.PADDED_COMMA) + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 				
 				logger.debug(insertSQL);
 				
@@ -228,10 +225,8 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		
 		SynchronizationSupport.restoreForeignKeys(context);
 		
-		if (dialect.supportsSequences())
-		{
-			SynchronizationSupport.synchronizeSequences(context);
-		}
+		SynchronizationSupport.synchronizeIdentityColumns(context);
+		SynchronizationSupport.synchronizeSequences(context);
 	}
 
 	/**

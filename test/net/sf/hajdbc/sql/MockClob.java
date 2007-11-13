@@ -55,7 +55,7 @@ public class MockClob implements NClob
 	 */
 	public Reader getCharacterStream()
 	{
-		return new StringReader("");
+		return new StringReader(""); //$NON-NLS-1$
 	}
 
 	/**
@@ -63,7 +63,7 @@ public class MockClob implements NClob
 	 */
 	public Reader getCharacterStream(long arg0, long arg1)
 	{
-		return new StringReader("");
+		return new StringReader(""); //$NON-NLS-1$
 	}
 
 	/**

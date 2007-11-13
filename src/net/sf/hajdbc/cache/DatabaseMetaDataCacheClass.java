@@ -20,11 +20,9 @@
  */
 package net.sf.hajdbc.cache;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.util.ClassEnum;
 
 /**
  * Factory for creating DatabaseMetaDataCache implementations.
@@ -32,33 +30,53 @@ import net.sf.hajdbc.Messages;
  * @author Paul Ferraro
  * @since 2.0
  */
-public class DatabaseMetaDataCacheFactory
+public enum DatabaseMetaDataCacheClass implements ClassEnum<DatabaseMetaDataCache>
 {
-	private static Map<String, Class<? extends DatabaseMetaDataCache>> cacheMap = new HashMap<String, Class<? extends DatabaseMetaDataCache>>();
+	NONE(NullDatabaseMetaDataCache.class),
+	LAZY(LazyDatabaseMetaDataCache.class),
+	EAGER(EagerDatabaseMetaDataCache.class);
 	
-	static
+	private Class<? extends DatabaseMetaDataCache> cacheClass;
+	
+	private DatabaseMetaDataCacheClass(Class<? extends DatabaseMetaDataCache> cacheClass)
 	{
-		cacheMap.put("none", ThreadLocalDatabaseMetaDataCache.class);
-		cacheMap.put("lazy", LazyDatabaseMetaDataCache.class);
-		cacheMap.put("eager", EagerDatabaseMetaDataCache.class);
+		this.cacheClass = cacheClass;
 	}
 	
 	/**
-	 * Creates a new instance of the DatabaseMetaDataCache implementation indentified by the specified identifier
+	 * @see net.sf.hajdbc.util.ClassEnum#isInstance(java.lang.Object)
+	 */
+	@Override
+	public boolean isInstance(DatabaseMetaDataCache cache)
+	{
+		return this.cacheClass.equals(cache.getClass());
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.util.ClassEnum#newInstance()
+	 */
+	@Override
+	public DatabaseMetaDataCache newInstance() throws Exception
+	{
+		return this.cacheClass.newInstance();
+	}
+	
+	/**
+	 * Creates a new instance of the DatabaseMetaDataCache implementation identified by the specified identifier
 	 * @param id an enumerated cache identifier
 	 * @return a new DatabaseMetaDataCache instance
 	 * @throws Exception if specified cache identifier is invalid
 	 */
 	public static DatabaseMetaDataCache deserialize(String id) throws Exception
 	{
-		Class<? extends DatabaseMetaDataCache> cacheClass = cacheMap.get(id);
-		
-		if (cacheClass == null)
+		try
+		{
+			return DatabaseMetaDataCacheClass.valueOf(id.toUpperCase()).newInstance();
+		}
+		catch (IllegalArgumentException e)
 		{
 			throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_META_DATA_CACHE, id));
 		}
-		
-		return cacheClass.newInstance();
 	}
 	
 	/**
@@ -68,21 +86,14 @@ public class DatabaseMetaDataCacheFactory
 	 */
 	public static String serialize(DatabaseMetaDataCache cache)
 	{
-		Class<? extends DatabaseMetaDataCache> cacheClass = cache.getClass();
-		
-		for (Map.Entry<String, Class<? extends DatabaseMetaDataCache>> cacheMapEntry: cacheMap.entrySet())
+		for (DatabaseMetaDataCacheClass cacheClass: DatabaseMetaDataCacheClass.values())
 		{
-			if (cacheClass.equals(cacheMapEntry.getValue()))
+			if (cacheClass.isInstance(cache))
 			{
-				return cacheMapEntry.getKey();
+				return cacheClass.name().toLowerCase();
 			}
 		}
 		
-		throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_META_DATA_CACHE, cacheClass));
-	}
-	
-	private DatabaseMetaDataCacheFactory()
-	{
-		// Hide constructor
+		throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_META_DATA_CACHE, cache.getClass()));
 	}
 }

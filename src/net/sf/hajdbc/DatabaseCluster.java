@@ -21,6 +21,7 @@
 package net.sf.hajdbc;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
@@ -49,12 +50,6 @@ public interface DatabaseCluster<D>
 	 * @return true, if the database was deactivated, false it was already inactive
 	 */
 	public boolean deactivate(Database<D> database, StateManager stateManager);
-	
-	/**
-	 * Returns a map of database to connection factory for this obtaining connections to databases in this cluster.
-	 * @return a connection factory map
-	 */
-	public Map<Database<D>, D> getConnectionFactoryMap();
 	
 	/**
 	 * Returns the database identified by the specified id
@@ -129,11 +124,35 @@ public interface DatabaseCluster<D>
 	public boolean isIdentityColumnDetectionEnabled();
 	
 	/**
+	 * Indicates whether or not non-deterministic CURRENT_DATE SQL functions will be evaluated to deterministic static values.
+	 * @return true, if temporal SQL replacement is enabled, false otherwise.
+	 */
+	public boolean isCurrentDateEvaluationEnabled();
+	
+	/**
+	 * Indicates whether or not non-deterministic CURRENT_TIME functions will be evaluated to deterministic static values.
+	 * @return true, if temporal SQL replacement is enabled, false otherwise.
+	 */
+	public boolean isCurrentTimeEvaluationEnabled();
+	
+	/**
+	 * Indicates whether or not non-deterministic CURRENT_TIMESTAMP functions will be evaluated to deterministic static values.
+	 * @return true, if temporal SQL replacement is enabled, false otherwise.
+	 */
+	public boolean isCurrentTimestampEvaluationEnabled();
+	
+	/**
+	 * Indicates whether or not non-deterministic RAND() functions will be replaced by evaluated to static values.
+	 * @return true, if temporal SQL replacement is enabled, false otherwise.
+	 */
+	public boolean isRandEvaluationEnabled();
+	
+	/**
 	 * Determines whether the specified databases are alive.
 	 * @param databases a collection of database descriptors
-	 * @return a map of database descriptor to true, if alive, false otherwise
+	 * @return a map of alive status to set of database descriptors
 	 */
-	public Map<Database<D>, Boolean> getAliveMap(Collection<Database<D>> databases);
+	public Map<Boolean, List<Database<D>>> getAliveMap(Collection<Database<D>> databases);
 	
 	/**
 	 * Starts this database cluster.

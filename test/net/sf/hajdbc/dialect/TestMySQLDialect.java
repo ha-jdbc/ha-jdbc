@@ -20,22 +20,27 @@
  */
 package net.sf.hajdbc.dialect;
 
-import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
-
-import org.easymock.EasyMock;
-import org.testng.annotations.Test;
 
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ForeignKeyConstraint;
+import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.UniqueConstraint;
+
+import org.easymock.EasyMock;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
 
 /**
  * @author Paul Ferraro
  *
  */
+@SuppressWarnings("nls")
 public class TestMySQLDialect extends TestStandardDialect
 {
 	/**
@@ -123,12 +128,12 @@ public class TestMySQLDialect extends TestStandardDialect
 	 * @see net.sf.hajdbc.dialect.TestStandardDialect#parseSequence(java.lang.String)
 	 */
 	@Override
-	@Test(dataProvider = "null")
+	@Test(dataProvider = "sequence-sql")
 	public String parseSequence(String sql) throws SQLException
 	{
 		this.replay();
 		
-		String sequence = this.dialect.parseSequence("SELECT NEXT VALUE FROM sequence");
+		String sequence = this.dialect.parseSequence(sql);
 		
 		this.verify();
 		
@@ -138,12 +143,32 @@ public class TestMySQLDialect extends TestStandardDialect
 	}
 
 	/**
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSequences(java.sql.Connection)
+	 */
+	@Override
+	@Test(dataProvider = "meta-data")
+	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
+	{
+		this.replay();
+		
+		Collection<QualifiedName> sequences = this.dialect.getSequences(metaData);
+		
+		this.verify();
+		
+		assert sequences.isEmpty() : sequences;
+		
+		return sequences;
+	}
+
+	/**
 	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getDefaultSchemas(java.sql.Connection)
 	 */
 	@Override
-	public List<String> getDefaultSchemas(Connection connection) throws SQLException
+	@Test(dataProvider = "meta-data")
+	public List<String> getDefaultSchemas(DatabaseMetaData metaData) throws SQLException
 	{
-		EasyMock.expect(connection.createStatement()).andReturn(this.statement);
+		EasyMock.expect(metaData.getConnection()).andReturn(this.connection);
+		EasyMock.expect(this.connection.createStatement()).andReturn(this.statement);
 		EasyMock.expect(this.statement.executeQuery("SELECT DATABASE()")).andReturn(this.resultSet);
 		EasyMock.expect(this.resultSet.next()).andReturn(false);
 		EasyMock.expect(this.resultSet.getString(1)).andReturn("database");
@@ -153,7 +178,7 @@ public class TestMySQLDialect extends TestStandardDialect
 		
 		this.replay();
 		
-		List<String> schemaList = this.dialect.getDefaultSchemas(connection);
+		List<String> schemaList = this.dialect.getDefaultSchemas(metaData);
 		
 		this.verify();
 		
@@ -165,36 +190,38 @@ public class TestMySQLDialect extends TestStandardDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#supportsSequences()
-	 */
-	@Override
-	public boolean supportsSequences()
-	{
-		this.replay();
-		
-		boolean supports = this.dialect.supportsSequences();
-		
-		this.verify();
-		
-		assert !supports;
-		
-		return supports;
-	}
-
-	/**
 	 * @see net.sf.hajdbc.dialect.TestStandardDialect#isIdentity(net.sf.hajdbc.ColumnProperties)
 	 */
 	@Override
+	@Test(dataProvider = "column")
 	public boolean isIdentity(ColumnProperties properties) throws SQLException
 	{
-		EasyMock.expect(properties.getRemarks()).andReturn("AUTO_INCREMENT");
+		EasyMock.expect(properties.getNativeType()).andReturn("SERIAL");
 		
 		this.replay();
 		
 		boolean identity = this.dialect.isIdentity(properties);
 		
 		this.verify();
+
+		assert identity;
 		
+		this.reset();
+		
+		EasyMock.expect(properties.getNativeType()).andReturn("INTEGER");
+		EasyMock.expect(properties.getRemarks()).andReturn("AUTO_INCREMENT");
+		
+		this.replay();
+		
+		identity = this.dialect.isIdentity(properties);
+		
+		this.verify();
+		
+		assert identity;
+
+		this.reset();
+		
+		EasyMock.expect(this.columnProperties.getNativeType()).andReturn("INTEGER");
 		EasyMock.expect(this.columnProperties.getRemarks()).andReturn(null);
 		
 		this.replay();
@@ -205,21 +232,132 @@ public class TestMySQLDialect extends TestStandardDialect
 		
 		return identity;
 	}
-
+	
 	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#supportsIdentityColumns()
+	 * @see net.sf.hajdbc.Dialect#getAlterIdentityColumnSQL(net.sf.hajdbc.TableProperties, net.sf.hajdbc.ColumnProperties, long)
 	 */
 	@Override
-	public boolean supportsIdentityColumns()
+	@Test(dataProvider = "table-column-long")
+	public String getAlterIdentityColumnSQL(TableProperties table, ColumnProperties column, long value) throws SQLException
 	{
+		EasyMock.expect(table.getName()).andReturn("table");
+		EasyMock.expect(column.getName()).andReturn("column");
+		
 		this.replay();
 		
-		boolean supports = this.dialect.supportsIdentityColumns();
+		String sql = this.dialect.getAlterIdentityColumnSQL(table, column, value);
 		
 		this.verify();
 		
-		assert !supports;
+		assert sql.equals("ALTER TABLE table AUTO_INCREMENT = 1000") : sql;
 		
-		return supports;
+		return sql;
+	}
+
+	@Override
+	@DataProvider(name = "current-date")
+	Object[][] currentDateProvider()
+	{
+		java.sql.Date date = new java.sql.Date(System.currentTimeMillis());
+		
+		return new Object[][] {
+			new Object[] { "SELECT CURRENT_DATE FROM success", date },
+			new Object[] { "SELECT CURDATE() FROM success", date },
+			new Object[] { "SELECT CURDATE ( ) FROM success", date },
+			new Object[] { "SELECT CCURRENT_DATE FROM failure", date },
+			new Object[] { "SELECT CURRENT_DATES FROM failure", date },
+			new Object[] { "SELECT CCURDATE() FROM failure", date },
+			new Object[] { "SELECT 1 FROM failure", date },
+		};
+	}
+	
+	@Override
+	@Test(dataProvider = "current-date")
+	public String evaluateCurrentDate(String sql, java.sql.Date date)
+	{
+		String expected = sql.contains("success") ? "SELECT '" + date.toString() + "' FROM success" : sql;
+		
+		String evaluated = this.dialect.evaluateCurrentDate(sql, date);
+
+		assert evaluated.equals(expected) : evaluated;
+		
+		return evaluated;
+	}
+
+	@Override
+	@DataProvider(name = "current-time")
+	Object[][] currentTimeProvider()
+	{
+		java.sql.Time date = new java.sql.Time(System.currentTimeMillis());
+		
+		return new Object[][] {
+			new Object[] { "SELECT CURRENT_TIME FROM success", date },
+			new Object[] { "SELECT CURRENT_TIME(2) FROM success", date },
+			new Object[] { "SELECT CURRENT_TIME ( 2 ) FROM success", date },
+			new Object[] { "SELECT LOCALTIME FROM success", date },
+			new Object[] { "SELECT LOCALTIME(2) FROM success", date },
+			new Object[] { "SELECT LOCALTIME ( 2 ) FROM success", date },
+			new Object[] { "SELECT CURTIME() FROM success", date },
+			new Object[] { "SELECT CURTIME ( ) FROM success", date },
+			new Object[] { "SELECT CCURRENT_TIME FROM failure", date },
+			new Object[] { "SELECT CURRENT_TIMESTAMP FROM failure", date },
+			new Object[] { "SELECT LLOCALTIME FROM failure", date },
+			new Object[] { "SELECT LOCALTIMESTAMP FROM failure", date },
+			new Object[] { "SELECT CCURTIME() FROM failure", date },
+			new Object[] { "SELECT 1 FROM failure", date },
+		};
+	}
+	
+	@Override
+	@Test(dataProvider = "current-time")
+	public String evaluateCurrentTime(String sql, java.sql.Time date)
+	{
+		String expected = sql.contains("success") ? "SELECT '" + date.toString() + "' FROM success" : sql;
+		
+		String evaluated = this.dialect.evaluateCurrentTime(sql, date);
+
+		assert evaluated.equals(expected) : evaluated;
+		
+		return evaluated;
+	}
+
+	@Override
+	@DataProvider(name = "current-timestamp")
+	Object[][] currentTimestampProvider()
+	{
+		java.sql.Timestamp date = new java.sql.Timestamp(System.currentTimeMillis());
+		
+		return new Object[][] {
+			new Object[] { "SELECT CURRENT_TIMESTAMP FROM success", date },
+			new Object[] { "SELECT CURRENT_TIMESTAMP(2) FROM success", date },
+			new Object[] { "SELECT CURRENT_TIMESTAMP ( 2 ) FROM success", date },
+			new Object[] { "SELECT LOCALTIMESTAMP FROM success", date },
+			new Object[] { "SELECT LOCALTIMESTAMP(2) FROM success", date },
+			new Object[] { "SELECT LOCALTIMESTAMP ( 2 ) FROM success", date },
+			new Object[] { "SELECT NOW() FROM success", date },
+			new Object[] { "SELECT NOW ( ) FROM success", date },
+			new Object[] { "SELECT SYSDATE() FROM success", date },
+			new Object[] { "SELECT SYSDATE ( ) FROM success", date },
+			new Object[] { "SELECT CCURRENT_TIMESTAMP FROM failure", date },
+			new Object[] { "SELECT CURRENT_TIMESTAMPS FROM failure", date },
+			new Object[] { "SELECT LLOCALTIMESTAMP FROM failure", date },
+			new Object[] { "SELECT LOCALTIMESTAMPS FROM failure", date },
+			new Object[] { "SELECT NNOW() FROM failure", date },
+			new Object[] { "SELECT SSYSDATE() FROM failure", date },
+			new Object[] { "SELECT 1 FROM failure", date },
+		};
+	}
+	
+	@Override
+	@Test(dataProvider = "current-timestamp")
+	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp date)
+	{
+		String expected = sql.contains("success") ? "SELECT '" + date.toString() + "' FROM success" : sql;
+		
+		String evaluated = this.dialect.evaluateCurrentTimestamp(sql, date);
+
+		assert evaluated.equals(expected) : evaluated;
+		
+		return evaluated;
 	}
 }

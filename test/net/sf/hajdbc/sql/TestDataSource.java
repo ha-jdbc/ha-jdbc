@@ -34,7 +34,6 @@ import java.util.concurrent.Executors;
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.MockDatabase;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 import org.easymock.EasyMock;
@@ -43,7 +42,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({ "unchecked", "nls" })
 public class TestDataSource implements javax.sql.DataSource
 {
 	private DatabaseCluster cluster = EasyMock.createStrictMock(DatabaseCluster.class);
@@ -51,8 +50,8 @@ public class TestDataSource implements javax.sql.DataSource
 	private javax.sql.DataSource dataSource1 = EasyMock.createStrictMock(javax.sql.DataSource.class);
 	private javax.sql.DataSource dataSource2 = EasyMock.createStrictMock(javax.sql.DataSource.class);
 
-	private Database database1 = new MockDatabase("1");
-	private Database database2 = new MockDatabase("2");
+	private Database database1 = new MockDataSourceDatabase("1", this.dataSource1);
+	private Database database2 = new MockDataSourceDatabase("2", this.dataSource2);
 	private Set<Database> databaseSet;
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
 	
@@ -67,7 +66,8 @@ public class TestDataSource implements javax.sql.DataSource
 		
 		this.databaseSet = map.keySet();
 		
-		EasyMock.expect(this.cluster.getConnectionFactoryMap()).andReturn(map);
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
 		this.replay();
 		

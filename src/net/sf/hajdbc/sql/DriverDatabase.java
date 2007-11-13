@@ -39,8 +39,8 @@ import net.sf.hajdbc.Messages;
  */
 public class DriverDatabase extends AbstractDatabase<Driver> implements InactiveDriverDatabaseMBean
 {
-	private static final String USER = "user";
-	private static final String PASSWORD = "password";
+	private static final String USER = "user"; //$NON-NLS-1$
+	private static final String PASSWORD = "password"; //$NON-NLS-1$
 	
 	private String url;
 	private Class<? extends Driver> driverClass;

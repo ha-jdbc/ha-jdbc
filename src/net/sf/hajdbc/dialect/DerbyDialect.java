@@ -20,9 +20,14 @@
  */
 package net.sf.hajdbc.dialect;
 
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.Collections;
 
 import net.sf.hajdbc.ColumnProperties;
+import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.TableProperties;
 
 /**
@@ -31,6 +36,7 @@ import net.sf.hajdbc.TableProperties;
  * @author  Paul Ferraro
  * @since   1.1
  */
+@SuppressWarnings("nls")
 public class DerbyDialect extends StandardDialect
 {
 	/**
@@ -59,16 +65,25 @@ public class DerbyDialect extends StandardDialect
 	{
 		String remarks = properties.getRemarks();
 		
-		return (remarks != null) && remarks.contains("GENERATED ALWAYS AS IDENTITY");
+		return (remarks != null) && remarks.contains("AS IDENTITY");
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#supportsSequences()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#parseSequence(java.lang.String)
 	 */
 	@Override
-	public boolean supportsSequences()
+	public String parseSequence(String sql)
 	{
-		return false;
+		return null;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.DatabaseMetaData)
+	 */
+	@Override
+	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
+	{
+		return Collections.emptyList();
 	}
 
 	/**
@@ -79,5 +94,59 @@ public class DerbyDialect extends StandardDialect
 	protected String createForeignKeyConstraintFormat()
 	{
 		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} ON UPDATE {6,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT}";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentDatePattern()
+	 */
+	@Override
+	protected String currentDatePattern()
+	{
+		return super.currentDatePattern() + "|(?<=\\W)CURRENT\\s+DATE(?=\\W)";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentTimePattern()
+	 */
+	@Override
+	protected String currentTimePattern()
+	{
+		return super.currentTimePattern() + "|(?<=\\W)CURRENT\\s+TIME(?=\\W)";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentTimestampPattern()
+	 */
+	@Override
+	protected String currentTimestampPattern()
+	{
+		return super.currentTimestampPattern() + "|(?<=\\W)CURRENT\\s+TIMESTAMP(?=\\W)";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#dateLiteralFormat()
+	 */
+	@Override
+	protected String dateLiteralFormat()
+	{
+		return "DATE(''{0}'')";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#timeLiteralFormat()
+	 */
+	@Override
+	protected String timeLiteralFormat()
+	{
+		return "TIME(''{0}'')";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#timestampLiteralFormat()
+	 */
+	@Override
+	protected String timestampLiteralFormat()
+	{
+		return "TIMESTAMP(''{0}'')";
 	}
 }

@@ -42,10 +42,11 @@ import net.sf.hajdbc.util.SQLExceptionFactory;
  */
 public class DatabaseClusterFactory
 {
-	private static final String CONFIGURATION_PROPERTY = "ha-jdbc.configuration";	
-	private static final String DEFAULT_RESOURCE = "ha-jdbc-{0}.xml";
-	private static final String MBEAN_CLUSTER_KEY = "cluster";
-	private static final String MBEAN_DATABASE_KEY = "database";
+	private static final String CONFIGURATION_PROPERTY = "ha-jdbc.configuration"; //$NON-NLS-1$
+	private static final String DEFAULT_RESOURCE = "ha-jdbc-{0}.xml"; //$NON-NLS-1$
+	private static final String MBEAN_CLUSTER_KEY = "cluster"; //$NON-NLS-1$
+	private static final String MBEAN_DATABASE_KEY = "database"; //$NON-NLS-1$
+	private static final String VERSION = "version"; //$NON-NLS-1$
 	
 	private static ResourceBundle resource = ResourceBundle.getBundle(DatabaseClusterFactory.class.getName());
 	
@@ -96,25 +97,20 @@ public class DatabaseClusterFactory
 	 */
 	public static String getVersion()
 	{
-		return resource.getString("version");
+		return resource.getString(VERSION);
 	}
 	
 	public static synchronized <C extends DatabaseCluster<?>> C getDatabaseCluster(String id, Class<? extends C> targetClass, Class<C> mbeanInterface, String resource) throws SQLException
 	{
 		try
 		{
-			ObjectName name = ObjectName.getInstance(DatabaseClusterFactory.class.getPackage().getName(), "cluster", id);
+			ObjectName name = getObjectName(id);
 			
 			MBeanServer server = ManagementFactory.getPlatformMBeanServer();
 			
 			if (!server.isRegistered(name))
 			{
-				if (resource == null)
-				{
-					resource = MessageFormat.format(System.getProperty(CONFIGURATION_PROPERTY, DEFAULT_RESOURCE), id);
-				}
-				
-				URL url = getResourceURL(resource);
+				URL url = getResourceURL((resource == null) ? MessageFormat.format(System.getProperty(CONFIGURATION_PROPERTY, DEFAULT_RESOURCE), id) : resource);
 				
 				C cluster = targetClass.getConstructor(String.class, URL.class).newInstance(id, url);
 				

@@ -20,7 +20,7 @@
  */
 package net.sf.hajdbc.dialect;
 
-import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -29,42 +29,44 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import net.sf.hajdbc.QualifiedName;
+
 /**
  * Dialect for <a href="http://opensource.ingres.com/projects/ingres/">Ingres</a>.
  * 
  * @author Paul Ferraro
  */
+@SuppressWarnings("nls")
 public class IngresDialect extends StandardDialect
 {
-	private Pattern legacySequencePattern = Pattern.compile("(\\S+)\\.(?:(?:CURR)|(?:NEXT))VAL", Pattern.CASE_INSENSITIVE);
+	private Pattern legacySequencePattern = Pattern.compile("'?(\\w+)'?\\.(?:(?:CURR)|(?:NEXT))VAL", Pattern.CASE_INSENSITIVE);
 	
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#supportsIdentityColumns()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#parseInsertTable(java.lang.String)
 	 */
 	@Override
-	public boolean supportsIdentityColumns()
+	public String parseInsertTable(String sql)
 	{
-		return false;
+		return null;
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.Connection)
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.DatabaseMetaData)
 	 */
 	@Override
-	public Collection<String> getSequences(Connection connection) throws SQLException
+	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
 	{
-		List<String> sequenceList = new LinkedList<String>();
+		List<QualifiedName> sequenceList = new LinkedList<QualifiedName>();
 		
-		Statement statement = connection.createStatement();
+		Statement statement = metaData.getConnection().createStatement();
 		
 		ResultSet resultSet = statement.executeQuery("SELECT seq_name FROM iisequence");
 		
 		while (resultSet.next())
 		{
-			sequenceList.add(resultSet.getString(1));
+			sequenceList.add(new QualifiedName(resultSet.getString(1)));
 		}
 		
-		resultSet.close();
 		statement.close();
 		
 		return sequenceList;
@@ -87,6 +89,42 @@ public class IngresDialect extends StandardDialect
 	@Override
 	protected String sequencePattern()
 	{
-		return "(?:(?:NEXT)|(?:CURRENT))\\s+VALUE\\s+FOR\\s+\\W?(\\w+)\\W?";
+		return "(?:NEXT|CURRENT)\\s+VALUE\\s+FOR\\s+'?([^',\\s\\(\\)]+)";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentDatePattern()
+	 */
+	@Override
+	protected String currentDatePattern()
+	{
+		return "(?<=\\W)CURRENT_DATE(?=\\W)|(?<=\\W)DATE\\s*\\(\\s*'TODAY'\\s*\\)";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentTimePattern()
+	 */
+	@Override
+	protected String currentTimePattern()
+	{
+		return "(?<=\\W)CURRENT_TIME(?=\\W)|(?<=\\W)LOCAL_TIME(?=\\W)";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentTimestampPattern()
+	 */
+	@Override
+	protected String currentTimestampPattern()
+	{
+		return "(?<=\\W)CURRENT_TIMESTAMP(?=\\W)|(?<=\\W)LOCAL_TIMESTAMP(?=\\W)|(?<=\\W)DATE\\s*\\(\\s*'NOW'\\s*\\)";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#randomPattern()
+	 */
+	@Override
+	protected String randomPattern()
+	{
+		return "(?<=\\W)RANDOMF\\s*\\(\\s*\\)";
 	}
 }

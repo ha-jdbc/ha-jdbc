@@ -37,6 +37,7 @@ public abstract class AbstractDatabase<D> implements Database<D>
 	protected Properties properties = new Properties();
 	private int weight = 1;
 	private boolean dirty = false;
+	private boolean local = false;
 
 	/**
 	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getId()
@@ -191,6 +192,25 @@ public abstract class AbstractDatabase<D> implements Database<D>
 		
 		this.checkDirty(this.properties.getProperty(name), value);
 		this.properties.setProperty(name, value);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.InactiveDatabaseMBean#setLocal(boolean)
+	 */
+	@Override
+	public void setLocal(boolean local)
+	{
+		this.checkDirty(this.local, local);
+		this.local = local;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.ActiveDatabaseMBean#isLocal()
+	 */
+	@Override
+	public boolean isLocal()
+	{
+		return this.local;
 	}
 
 	/**

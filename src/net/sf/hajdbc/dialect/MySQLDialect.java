@@ -20,26 +20,29 @@
  */
 package net.sf.hajdbc.dialect;
 
-import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import net.sf.hajdbc.ColumnProperties;
+import net.sf.hajdbc.QualifiedName;
 
 /**
  * Dialect for <a href="http://www.mysql.com/products/database/mysql/">MySQL</a>
  * @author Paul Ferraro
  */
+@SuppressWarnings("nls")
 public class MySQLDialect extends StandardDialect
 {
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#getDefaultSchemas(java.sql.Connection)
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getDefaultSchemas(java.sql.DatabaseMetaData)
 	 */
 	@Override
-	public List<String> getDefaultSchemas(Connection connection) throws SQLException
+	public List<String> getDefaultSchemas(DatabaseMetaData metaData) throws SQLException
 	{
-		return Collections.singletonList(this.executeFunction(connection, "DATABASE()"));
+		return Collections.singletonList(this.executeFunction(metaData.getConnection(), "DATABASE()"));
 	}
 	
 	/**
@@ -48,29 +51,29 @@ public class MySQLDialect extends StandardDialect
 	@Override
 	public boolean isIdentity(ColumnProperties properties)
 	{
+		if (properties.getNativeType().equalsIgnoreCase("SERIAL")) return true;
+		
 		String remarks = properties.getRemarks();
 		
 		return (remarks != null) && remarks.contains("AUTO_INCREMENT");
 	}
 
 	/**
-	 * Support for identity columns is disabled.
-	 * Although MySQL supports this feature, its in-memory implementation provides no mechanism to reset the counter during synchronization.
-	 * @see net.sf.hajdbc.dialect.StandardDialect#supportsIdentityColumns()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#parseSequence(java.lang.String)
 	 */
 	@Override
-	public boolean supportsIdentityColumns()
+	public String parseSequence(String sql)
 	{
-		return false;
+		return null;
 	}
-
+	
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#supportsSequences()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.DatabaseMetaData)
 	 */
 	@Override
-	public boolean supportsSequences()
+	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
 	{
-		return false;
+		return Collections.emptyList();
 	}
 
 	/**
@@ -108,5 +111,68 @@ public class MySQLDialect extends StandardDialect
 	protected String dropUniqueConstraintFormat()
 	{
 		return "ALTER TABLE {1} DROP INDEX {0}";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#alterIdentityColumnFormat()
+	 */
+	@Override
+	protected String alterIdentityColumnFormat()
+	{
+		return "ALTER TABLE {0} AUTO_INCREMENT = {2}";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentDatePattern()
+	 */
+	@Override
+	protected String currentDatePattern()
+	{
+		return super.currentDatePattern() + "|(?<=\\W)CURDATE\\s*\\(\\s*\\)";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentTimePattern()
+	 */
+	@Override
+	protected String currentTimePattern()
+	{
+		return super.currentTimePattern() + "|(?<=\\W)CURTIME\\s*\\(\\s*\\)";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentTimestampPattern()
+	 */
+	@Override
+	protected String currentTimestampPattern()
+	{
+		return super.currentTimestampPattern() + "|(?<=\\W)NOW\\s*\\(\\s*\\)|(?<=\\W)SYSDATE\\s*\\(\\s*\\)";
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#dateLiteralFormat()
+	 */
+	@Override
+	protected String dateLiteralFormat()
+	{
+		return this.timestampLiteralFormat();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#timeLiteralFormat()
+	 */
+	@Override
+	protected String timeLiteralFormat()
+	{
+		return this.timestampLiteralFormat();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#timestampLiteralFormat()
+	 */
+	@Override
+	protected String timestampLiteralFormat()
+	{
+		return "''{0}''";
 	}
 }

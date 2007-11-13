@@ -43,6 +43,7 @@ import org.testng.annotations.Test;
  * @author  Paul Ferraro
  * @since   1.0
  */
+@SuppressWarnings("nls")
 public class TestDriver implements java.sql.Driver
 {
 	private java.sql.Driver driver = new Driver();
@@ -97,22 +98,21 @@ public class TestDriver implements java.sql.Driver
 		{
 			Connection connection = this.driver.connect(url, properties);
 			
-			if (this.driver.acceptsURL(url))
+			if (url.equals("jdbc:mock"))
 			{
-				assert connection != null;
+				assert connection == null : url;
+			}
+			else
+			{
+				assert connection != null : url;
 				
 				assert Proxy.isProxyClass(connection.getClass());
 				assert Proxy.getInvocationHandler(connection).getClass().equals(ConnectionInvocationHandler.class);
 			}
-			else
-			{
-				assert connection == null;
-			}
 		}
 		catch (SQLException e)
 		{
-			assert !url.equals("jdbc:ha-jdbc:test-database-cluster") : e.getMessage();
-//			e.printStackTrace();
+			assert !url.equals("jdbc:ha-jdbc:test-database-cluster") : url;
 		}
 		
 		return null;
@@ -149,13 +149,13 @@ public class TestDriver implements java.sql.Driver
 		{
 			DriverPropertyInfo[] info = this.driver.getPropertyInfo(url, properties);
 			
-			if (this.driver.acceptsURL(url))
+			if (url.equals("jdbc:mock"))
 			{
-				assert info != null;
+				assert info == null : url;
 			}
 			else
 			{
-				assert info == null;
+				assert info != null : url;
 			}
 		}
 		catch (SQLException e)

@@ -11,12 +11,6 @@ import org.jgroups.Address;
 public interface LockDecree extends Serializable
 {
 	/**
-	 * Returns the identifer of the object to lock
-	 * @return an object identifier
-	 */
-	public String getId();
-
-	/**
 	 * Returns the address of the node that requested the lock
 	 * @return a node address
 	 */
@@ -25,8 +19,8 @@ public interface LockDecree extends Serializable
 	/**
 	 * Execute lock operation.
 	 * @param lockManager a lock manager
-	 * @param lockMap a map of decree to lock
+	 * @param lockMap a map of object identifier to lock
 	 * @return true if operation was successful, false otherwise.
 	 */
-	public boolean vote(LockManager lockManager, Map<LockDecree, Lock> lockMap);
+	public boolean vote(LockManager lockManager, Map<String, Lock> lockMap);
 }

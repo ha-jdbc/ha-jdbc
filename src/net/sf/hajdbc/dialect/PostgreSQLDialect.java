@@ -21,6 +21,7 @@
 package net.sf.hajdbc.dialect;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -28,32 +29,36 @@ import java.sql.Types;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.TableProperties;
+import net.sf.hajdbc.util.Strings;
 
 /**
  * Dialect for <a href="http://postgresql.org">PostgreSQL</a>.
  * @author  Paul Ferraro
  * @since   1.1
  */
+@SuppressWarnings("nls")
 public class PostgreSQLDialect extends StandardDialect
 {
 	/**
 	 * PostgreSQL uses a schema search path to locate unqualified table names.
 	 * The default search path is [$user,public], where $user is the current user.
-	 * @see net.sf.hajdbc.dialect.StandardDialect#getDefaultSchemas(java.sql.Connection)
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getDefaultSchemas(java.sql.DatabaseMetaData)
 	 */
 	@Override
-	public List<String> getDefaultSchemas(Connection connection) throws SQLException
+	public List<String> getDefaultSchemas(DatabaseMetaData metaData) throws SQLException
 	{
+		Connection connection = metaData.getConnection();
 		Statement statement = connection.createStatement();
 		
 		ResultSet resultSet = statement.executeQuery("SHOW search_path");
 		
 		resultSet.next();
 		
-		String[] schemas = resultSet.getString(1).split(",");
+		String[] schemas = resultSet.getString(1).split(Strings.COMMA);
 		
 		resultSet.close();
 		statement.close();
@@ -62,7 +67,7 @@ public class PostgreSQLDialect extends StandardDialect
 		
 		for (String schema: schemas)
 		{
-			schemaList.add(schema.equals("$user") ? super.getCurrentUser(connection) : schema);
+			schemaList.add(schema.equals("$user") ? metaData.getUserName() : schema);
 		}
 		
 		return schemaList;
@@ -107,6 +112,21 @@ public class PostgreSQLDialect extends StandardDialect
 	}
 
 	/**
+	 * Versions &gt;=8.1 of the PostgreSQL JDBC driver return incorrect values for DatabaseMetaData.getExtraNameCharacters().
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getIdentifierPattern(java.sql.DatabaseMetaData)
+	 */
+	@Override
+	public Pattern getIdentifierPattern(DatabaseMetaData metaData) throws SQLException
+	{
+		if ((metaData.getDriverMajorVersion() >= 8) && (metaData.getDriverMinorVersion() >= 1))
+		{
+			return Pattern.compile("[A-Za-z\\0200-\\0377_][A-Za-z\\0200-\\0377_0-9\\$]*");
+		}
+		
+		return super.getIdentifierPattern(metaData);
+	}
+
+	/**
 	 * @see net.sf.hajdbc.dialect.StandardDialect#truncateTableFormat()
 	 */
 	@Override
@@ -121,7 +141,7 @@ public class PostgreSQLDialect extends StandardDialect
 	@Override
 	protected String sequencePattern()
 	{
-		return "(?:(?:CURR)|(?:NEXT))VAL\\s*\\(\\s*'(\\w+)'\\s*\\)";
+		return "(?:CURR|NEXT)VAL\\s*\\(\\s*'([^']+)'\\s*\\)";
 	}
 
 	/**
@@ -131,5 +151,32 @@ public class PostgreSQLDialect extends StandardDialect
 	protected String nextSequenceValueFormat()
 	{
 		return "NEXTVAL(''{0}'')";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#alterIdentityColumnFormat()
+	 */
+	@Override
+	protected String alterIdentityColumnFormat()
+	{
+		return "ALTER SEQUENCE {0}_{1}_seq RESTART WITH {2}";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentTimestampPattern()
+	 */
+	@Override
+	protected String currentTimestampPattern()
+	{
+		return super.currentTimestampPattern() + "|(?<=\\W)NOW\\s*\\(\\s*\\)|(?<=\\W)TRANSACTION_TIMESTAMP\\s*\\(\\s*\\)|(?<=\\W)STATEMENT_TIMESTAMP\\s*\\(\\s*\\)|(?<=\\W)CLOCK_TIMESTAMP\\s*\\(\\s*\\)";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#randomPattern()
+	 */
+	@Override
+	protected String randomPattern()
+	{
+		return "(?<=\\W)RANDOM\\s*\\(\\s*\\)";
 	}
 }

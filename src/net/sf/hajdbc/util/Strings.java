@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc.util;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -30,6 +31,15 @@ import java.util.Iterator;
  */
 public final class Strings
 {
+	public static final String ANY = "%"; //$NON-NLS-1$
+	public static final String COMMA = ","; //$NON-NLS-1$
+	public static final String DASH = "-"; //$NON-NLS-1$
+	public static final String DOT = "."; //$NON-NLS-1$
+	public static final String EMPTY = ""; //$NON-NLS-1$
+	public static final String PADDED_COMMA = ", "; //$NON-NLS-1$
+	public static final String QUESTION = "?"; //$NON-NLS-1$
+	public static final String UNDERSCORE = "_"; //$NON-NLS-1$
+	
 	/**
 	 * Performs the reverse of a split operation, joining the elements of the specified collection using the specified delimiter.
 	 * @param collection a collection of strings
@@ -53,5 +63,16 @@ public final class Strings
 		}
 		
 		return builder.toString();
+	}
+	
+	/**
+	 * Performs the reverse of a split operation, joining the elements of the specified collection using the specified delimiter.
+	 * @param strings an array of strings
+	 * @param delimiter a string to insert between each array element
+	 * @return a new String
+	 */
+	public static String join(String[] strings, String delimiter)
+	{
+		return join(Arrays.asList(strings), delimiter);
 	}
 }

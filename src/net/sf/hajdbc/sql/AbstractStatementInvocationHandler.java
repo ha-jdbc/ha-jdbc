@@ -29,15 +29,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.TreeSet;
 import java.util.concurrent.locks.Lock;
 
-import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Dialect;
@@ -49,7 +48,8 @@ import net.sf.hajdbc.TableProperties;
  * @author Paul Ferraro
  *
  */
-public abstract class AbstractStatementInvocationHandler<D, S extends Statement> extends AbstractInvocationHandler<D, Connection, S>
+@SuppressWarnings("nls")
+public abstract class AbstractStatementInvocationHandler<D, S extends Statement> extends AbstractChildInvocationHandler<D, Connection, S>
 {
 	private static final Set<String> DRIVER_READ_METHOD_SET = new HashSet<String>(Arrays.asList("getFetchDirection", "getFetchSize", "getGeneratedKeys", "getMaxFieldSize", "getMaxRows", "getQueryTimeout", "getResultSetConcurrency", "getResultSetHoldability", "getResultSetType", "getUpdateCount", "getWarnings", "isClosed", "isPoolable"));
 	private static final Set<String> DRIVER_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList("addBatch", "clearBatch", "clearWarnings", "setCursorName", "setEscapeProcessing", "setFetchDirection", "setFetchSize", "setMaxFieldSize", "setMaxRows", "setPoolable", "setQueryTimeout"));
@@ -73,7 +73,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
 	protected InvocationStrategy<D, S, ?> getInvocationStrategy(S statement, Method method, Object[] parameters) throws Exception
@@ -149,7 +149,19 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#postInvoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#isSQLMethod(java.lang.reflect.Method)
+	 */
+	@Override
+	protected boolean isSQLMethod(Method method)
+	{
+		String methodName = method.getName();
+		Class<?>[] parameterTypes = method.getParameterTypes();
+		
+		return (methodName.equals("addBatch") || methodName.equals("executeQuery") || methodName.equals("execute") || methodName.equals("executeUpdate")) && (parameterTypes.length > 0) && parameterTypes[0].equals(String.class);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#postInvoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
 	protected void postInvoke(S statement, Method method, Object[] parameters) throws Exception
@@ -182,41 +194,42 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 		// If auto-commit is off, throw exception to give client the opportunity to rollback the transaction
 		DatabaseCluster<D> cluster = this.getDatabaseCluster();
 		
-		Map<Database<D>, Boolean> aliveMap = cluster.getAliveMap(exceptionMap.keySet());
+		Map<Boolean, List<Database<D>>> aliveMap = cluster.getAliveMap(exceptionMap.keySet());
 
-		SQLException exception = null;
+		List<Database<D>> aliveList = aliveMap.get(true);
+
+		int size = aliveList.size();
 		
-		for (Map.Entry<Database<D>, SQLException> exceptionMapEntry: exceptionMap.entrySet())
+		// Assume successful databases are alive
+		aliveList.addAll(resultMap.keySet());
+		
+		this.detectClusterPanic(aliveMap);
+		
+		List<Database<D>> deadList = aliveMap.get(false);
+		
+		for (Database<D> database: deadList)
 		{
-			Database<D> database = exceptionMapEntry.getKey();
-			SQLException cause = exceptionMapEntry.getValue();
-			
-			if (aliveMap.get(database))
+			if (cluster.deactivate(database, cluster.getStateManager()))
 			{
-				if (exception == null)
-				{
-					exception = cause;
-				}
-				else
-				{
-					exception.setNextException(cause);
-				}
-			}
-			else
-			{
-				if (cluster.deactivate(database, cluster.getStateManager()))
-				{
-					logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, cluster), cause);
-				}
+				this.logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, cluster), exceptionMap.get(database));
 			}
 		}
-		
-		if (exception != null)
-		{
-			throw exception;
-		}
 
-		return resultMap;
+		// If failed databases are all dead
+		if (size == 0)
+		{
+			return resultMap;
+		}
+		
+		// Chain exceptions from alive databases
+		SQLException exception = exceptionMap.get(aliveList.get(0));
+		
+		for (Database<D> database: aliveList.subList(1, size))
+		{
+			exception.setNextException(exceptionMap.get(database));
+		}
+		
+		throw exception;
 	}
 	
 	protected boolean isSelectForUpdate(String sql) throws SQLException
@@ -237,11 +250,11 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 		
 		Dialect dialect = databaseCluster.getDialect();
 		
-		Set<String> identifierSet = new LinkedHashSet<String>(sqlList.size());
+		Set<String> identifierSet = new TreeSet<String>();
 		
 		for (String sql: sqlList)
 		{
-			if (dialect.supportsSequences() && databaseCluster.isSequenceDetectionEnabled())
+			if (databaseCluster.isSequenceDetectionEnabled())
 			{
 				String sequence = dialect.parseSequence(sql);
 				
@@ -251,7 +264,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 				}
 			}
 			
-			if (dialect.supportsIdentityColumns() && databaseCluster.isIdentityColumnDetectionEnabled())
+			if (databaseCluster.isIdentityColumnDetectionEnabled())
 			{
 				String table = dialect.parseInsertTable(sql);
 				
@@ -259,18 +272,9 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 				{
 					TableProperties tableProperties = databaseCluster.getDatabaseMetaDataCache().getDatabaseProperties(this.getParent()).findTable(table);
 					
-					for (String column: tableProperties.getColumns())
+					if (!tableProperties.getIdentityColumns().isEmpty())
 					{
-						ColumnProperties columnProperties = tableProperties.getColumnProperties(column);
-						
-						Boolean autoIncrement = columnProperties.isAutoIncrement();
-						
-						if ((autoIncrement != null) ? autoIncrement : dialect.isIdentity(columnProperties))
-						{
-							identifierSet.add(tableProperties.getName());
-							
-							break;
-						}
+						identifierSet.add(tableProperties.getName());
 					}
 				}
 			}
@@ -292,7 +296,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#close(java.lang.Object, java.lang.Object)
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#close(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	protected void close(Connection connection, S statement) throws SQLException

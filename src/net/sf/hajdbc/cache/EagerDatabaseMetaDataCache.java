@@ -27,6 +27,7 @@ import net.sf.hajdbc.DatabaseProperties;
 
 /**
  * DatabaseMetaDataCache implementation that eagerly caches data when first flushed.
+ * To be used when performance more of a concern than memory usage.
  * 
  * @author Paul Ferraro
  * @since 2.0
@@ -41,7 +42,7 @@ public class EagerDatabaseMetaDataCache extends AbstractDatabaseMetaDataCache
 	@Override
 	public synchronized void flush(Connection connection) throws SQLException
 	{
-		this.properties = new EagerDatabaseProperties(connection, this.dialect);
+		this.properties = new EagerDatabaseProperties(connection.getMetaData(), this.dialect);
 	}
 
 	/**

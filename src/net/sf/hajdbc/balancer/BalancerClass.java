@@ -20,46 +20,65 @@
  */
 package net.sf.hajdbc.balancer;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.util.ClassEnum;
+import net.sf.hajdbc.util.Strings;
 
 /**
  * @author  Paul Ferraro
  * @since   1.1
  */
-public final class BalancerFactory
+public enum BalancerClass implements ClassEnum<Balancer<?>>
 {
+	SIMPLE(SimpleBalancer.class),
+	RANDOM(RandomBalancer.class),
+	ROUND_ROBIN(RoundRobinBalancer.class),
+	LOAD(LoadBalancer.class);
+
 	@SuppressWarnings("unchecked")
-	private static Map<String, Class<? extends Balancer>> balancerMap = new HashMap<String, Class<? extends Balancer>>();
+	private Class<? extends Balancer> balancerClass;
 	
-	static
+	@SuppressWarnings("unchecked")
+	private BalancerClass(Class<? extends Balancer> balancerClass)
 	{
-		balancerMap.put("simple", SimpleBalancer.class);
-		balancerMap.put("random", RandomBalancer.class);
-		balancerMap.put("round-robin", RoundRobinBalancer.class);
-		balancerMap.put("load", LoadBalancer.class);
+		this.balancerClass = balancerClass;
 	}
 	
 	/**
-	 * Creates a new instance of the Balancer implementation indentified by the specified identifier
+	 * @see net.sf.hajdbc.util.ClassEnum#isInstance(java.lang.Object)
+	 */
+	@Override
+	public boolean isInstance(Balancer<?> balancer)
+	{
+		return this.balancerClass.equals(balancer.getClass());
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.util.ClassEnum#newInstance()
+	 */
+	@Override
+	public Balancer<?> newInstance() throws Exception
+	{
+		return this.balancerClass.newInstance();
+	}
+	
+	/**
+	 * Creates a new instance of the Balancer implementation identified by the specified identifier
 	 * @param id an enumerated balancer identifier
 	 * @return a new Balancer instance
 	 * @throws Exception if specified balancer identifier is invalid
 	 */
-	@SuppressWarnings("unchecked")
-	public static Balancer deserialize(String id) throws Exception
+	public static Balancer<?> deserialize(String id) throws Exception
 	{
-		Class<? extends Balancer> balancerClass = balancerMap.get(id);
-		
-		if (balancerClass == null)
+		try
+		{
+			return BalancerClass.valueOf(id.toUpperCase().replace(Strings.DASH, Strings.UNDERSCORE)).newInstance();
+		}
+		catch (IllegalArgumentException e)
 		{
 			throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_BALANCER, id));
 		}
-		
-		return balancerClass.newInstance();
 	}
 	
 	/**
@@ -67,22 +86,16 @@ public final class BalancerFactory
 	 * @param balancer a Balancer implementation
 	 * @return the class name of this balancer
 	 */
-	@SuppressWarnings("unchecked")
-	public static String serialize(Balancer balancer)
+	public static String serialize(Balancer<?> balancer)
 	{
-		for (Map.Entry<String, Class<? extends Balancer>> balancerMapEntry: balancerMap.entrySet())
+		for (BalancerClass balancerClass: BalancerClass.values())
 		{
-			if (balancerMapEntry.getValue().isInstance(balancer))
+			if (balancerClass.isInstance(balancer))
 			{
-				return balancerMapEntry.getKey();
+				return balancerClass.name().toLowerCase().replace(Strings.UNDERSCORE, Strings.DASH);
 			}
 		}
 		
 		throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_BALANCER, balancer.getClass()));
-	}
-	
-	private BalancerFactory()
-	{
-		// Hide constructor
 	}
 }

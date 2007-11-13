@@ -32,6 +32,7 @@ import net.sf.hajdbc.Database;
  * @author Paul Ferraro
  *
  */
+@SuppressWarnings("nls")
 public class CallableStatementInvocationHandler<D> extends AbstractPreparedStatementInvocationHandler<D, CallableStatement>
 {
 	/**

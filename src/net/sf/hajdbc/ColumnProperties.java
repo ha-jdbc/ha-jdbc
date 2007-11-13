@@ -35,4 +35,6 @@ public interface ColumnProperties
 	public String getRemarks();
 	
 	public Boolean isAutoIncrement();
+	
+	public String getDefaultValue();
 }

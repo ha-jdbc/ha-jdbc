@@ -34,8 +34,8 @@ import org.jibx.runtime.impl.UnmarshallingContext;
  */
 public class PropertiesMapper extends AbstractMapper<Properties>
 {
-	private static final String ELEMENT = "property";
-	private static final String ATTRIBUTE = "name";
+	private static final String ELEMENT = "property"; //$NON-NLS-1$
+	private static final String ATTRIBUTE = "name"; //$NON-NLS-1$
 
 	/**
 	 * Constructs a new PropertiesMapper.
@@ -87,12 +87,9 @@ public class PropertiesMapper extends AbstractMapper<Properties>
 	 * @see net.sf.hajdbc.util.AbstractMapper#unmarshal(java.lang.Object, org.jibx.runtime.impl.UnmarshallingContext)
 	 */
 	@Override
-	protected Properties unmarshal(Properties properties, UnmarshallingContext context) throws JiBXException
+	protected Properties unmarshal(Properties existingProperties, UnmarshallingContext context) throws JiBXException
 	{
-		if (properties == null)
-		{
-			properties = new Properties();
-		}
+		Properties properties = (existingProperties != null) ? existingProperties : new Properties();
 		
 		if (this.name != null)
 		{

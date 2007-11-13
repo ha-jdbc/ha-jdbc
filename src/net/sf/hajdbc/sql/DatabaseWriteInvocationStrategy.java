@@ -71,6 +71,19 @@ public class DatabaseWriteInvocationStrategy<D, T, R> implements InvocationStrat
 		
 		DatabaseCluster<D> cluster = proxy.getDatabaseCluster();
 		
+		Set<Database<D>> databaseSet = cluster.getBalancer().all();
+		
+		proxy.getRoot().retain(databaseSet);
+		
+		if (databaseSet.isEmpty())
+		{
+			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, cluster));
+		}
+		
+		ExecutorService executor = (this.lockList == null) ? cluster.getNonTransactionalExecutor() : cluster.getTransactionalExecutor();
+		
+		Map<Database<D>, Future<R>> futureMap = new HashMap<Database<D>, Future<R>>();
+
 		if (this.lockList != null)
 		{
 			if (this.lockList.isEmpty())
@@ -86,19 +99,6 @@ public class DatabaseWriteInvocationStrategy<D, T, R> implements InvocationStrat
 		
 		try
 		{
-			Set<Database<D>> databaseSet = cluster.getBalancer().all();
-			
-			proxy.getRoot().retain(databaseSet);
-			
-			if (databaseSet.isEmpty())
-			{
-				throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, cluster));
-			}
-			
-			ExecutorService executor = (this.lockList == null) ? cluster.getNonTransactionalExecutor() : cluster.getTransactionalExecutor();
-			
-			Map<Database<D>, Future<R>> futureMap = new HashMap<Database<D>, Future<R>>();
-
 			for (final Database<D> database: databaseSet)
 			{
 				final T object = proxy.getObject(database);
@@ -128,6 +128,8 @@ public class DatabaseWriteInvocationStrategy<D, T, R> implements InvocationStrat
 				}
 				catch (InterruptedException e)
 				{
+					Thread.currentThread().interrupt();
+					
 					exceptionMap.put(database, SQLExceptionFactory.createSQLException(e));
 				}
 			}
@@ -146,7 +148,7 @@ public class DatabaseWriteInvocationStrategy<D, T, R> implements InvocationStrat
 		// If no databases returned successfully, return an exception back to the caller
 		if (resultMap.isEmpty())
 		{
-			throw proxy.handleFailures(exceptionMap);
+			proxy.handleFailures(exceptionMap);
 		}
 		
 		// If any databases failed, while others succeeded, handle the failures

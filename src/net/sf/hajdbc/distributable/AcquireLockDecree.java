@@ -49,9 +49,9 @@ public class AcquireLockDecree extends AbstractLockDecree
 	 * @see net.sf.hajdbc.distributable.LockDecree#vote(net.sf.hajdbc.LockManager, java.util.Map)
 	 */
 	@Override
-	public boolean vote(LockManager lockManager, Map<LockDecree, Lock> lockMap)
+	public boolean vote(LockManager lockManager, Map<String, Lock> lockMap)
 	{
-		Lock lock = new DistributableLockAdapter(lockManager.writeLock(this.getId()));
+		Lock lock = lockManager.readLock(this.id);
 		
 		boolean locked = lock.tryLock();
 		
@@ -59,7 +59,7 @@ public class AcquireLockDecree extends AbstractLockDecree
 		{
 			synchronized (lockMap)
 			{
-				lockMap.put(this, lock);
+				lockMap.put(this.id, lock);
 			}
 		}
 		

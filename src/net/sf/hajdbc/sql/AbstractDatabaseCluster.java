@@ -44,7 +44,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -72,11 +71,10 @@ import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.StateManager;
 import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.SynchronizationStrategy;
-import net.sf.hajdbc.SynchronizationStrategyBuilder;
-import net.sf.hajdbc.TransactionMode;
 import net.sf.hajdbc.local.LocalLockManager;
 import net.sf.hajdbc.local.LocalStateManager;
 import net.sf.hajdbc.sync.SynchronizationContextImpl;
+import net.sf.hajdbc.sync.SynchronizationStrategyBuilder;
 import net.sf.hajdbc.util.concurrent.CronThreadPoolExecutor;
 import net.sf.hajdbc.util.concurrent.SynchronousExecutor;
 
@@ -95,7 +93,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, DatabaseClusterMBean, MBeanRegistration
 {
-	private static Logger logger = LoggerFactory.getLogger(AbstractDatabaseCluster.class);
+	static Logger logger = LoggerFactory.getLogger(AbstractDatabaseCluster.class);
 		
 	private String id;
 	private Balancer<D> balancer;
@@ -110,13 +108,16 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	private TransactionMode transactionMode;
 	private boolean identityColumnDetectionEnabled;
 	private boolean sequenceDetectionEnabled;
+	private boolean currentDateEvaluationEnabled;
+	private boolean currentTimeEvaluationEnabled;
+	private boolean currentTimestampEvaluationEnabled;
+	private boolean randEvaluationEnabled;
 	
 	private MBeanServer server;
 	private URL url;
 	private Map<String, SynchronizationStrategy> synchronizationStrategyMap = new HashMap<String, SynchronizationStrategy>();
 	private DatabaseClusterDecorator decorator;
 	private Map<String, Database<D>> databaseMap = new HashMap<String, Database<D>>();
-	private Map<Database<D>, D> connectionFactoryMap = new ConcurrentHashMap<Database<D>, D>();
 	private ExecutorService transactionalExecutor;
 	private ExecutorService nonTransactionalExecutor;
 	private CronThreadPoolExecutor cronExecutor = new CronThreadPoolExecutor(2);
@@ -129,21 +130,12 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		this.id = id;
 		this.url = url;
 	}
-
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getConnectionFactoryMap()
-	 */
-	@Override
-	public Map<Database<D>, D> getConnectionFactoryMap()
-	{
-		return this.connectionFactoryMap;
-	}
 	
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#getAliveMap(java.util.Collection)
 	 */
 	@Override
-	public Map<Database<D>, Boolean> getAliveMap(Collection<Database<D>> databases)
+	public Map<Boolean, List<Database<D>>> getAliveMap(Collection<Database<D>> databases)
 	{
 		Map<Database<D>, Future<Boolean>> futureMap = new TreeMap<Database<D>, Future<Boolean>>();
 
@@ -160,28 +152,34 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			futureMap.put(database, this.nonTransactionalExecutor.submit(task));
 		}
 
-		Map<Database<D>, Boolean> aliveMap = new TreeMap<Database<D>, Boolean>();
+		Map<Boolean, List<Database<D>>> map = new TreeMap<Boolean, List<Database<D>>>();
+		
+		int size = databases.size();
+		
+		map.put(false, new ArrayList<Database<D>>(size));
+		map.put(true, new ArrayList<Database<D>>(size));
 		
 		for (Map.Entry<Database<D>, Future<Boolean>> futureMapEntry: futureMap.entrySet())
 		{
 			try
 			{
-				aliveMap.put(futureMapEntry.getKey(), futureMapEntry.getValue().get());
+				map.get(futureMapEntry.getValue().get()).add(futureMapEntry.getKey());
 			}
 			catch (ExecutionException e)
 			{
 				// isAlive does not throw an exception
+				throw new IllegalStateException(e);
 			}
 			catch (InterruptedException e)
 			{
-				// Ignore
+				Thread.currentThread().interrupt();
 			}
 		}
-		
-		return aliveMap;
+
+		return map;
 	}
 	
-	private boolean isAlive(Database<D> database)
+	boolean isAlive(Database<D> database)
 	{
 		try
 		{
@@ -203,7 +201,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		
 		try
 		{
-			connection = database.connect(this.connectionFactoryMap.get(database));
+			connection = database.connect(database.createConnectionFactory());
 			
 			Statement statement = connection.createStatement();
 			
@@ -467,7 +465,34 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_SYNC_STRATEGY, strategyId));
 		}
 		
-		this.activate(databaseId, strategy);
+		try
+		{
+			if (this.activate(this.getDatabase(databaseId), strategy))
+			{
+				logger.info(Messages.getMessage(Messages.DATABASE_ACTIVATED, databaseId, this));
+			}
+		}
+		catch (SQLException e)
+		{
+			logger.warn(Messages.getMessage(Messages.DATABASE_ACTIVATE_FAILED, databaseId, this), e);
+			
+			SQLException exception = e.getNextException();
+			
+			while (exception != null)
+			{
+				logger.error(exception.getMessage(), e);
+				
+				exception = exception.getNextException();
+			}
+
+			throw new IllegalStateException(e.toString());
+		}
+		catch (InterruptedException e)
+		{
+			logger.warn(e.toString(), e);
+			
+			Thread.currentThread().interrupt();
+		}
 	}
 	
 	protected void register(Database<D> database, DynamicMBean mbean)
@@ -504,7 +529,6 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			this.unregister(database);
 			
 			this.databaseMap.remove(id);
-			this.connectionFactoryMap.remove(database);
 			
 			this.export();
 		}
@@ -542,8 +566,10 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	 * Starts this database cluster
 	 * @throws Exception if database cluster start fails
 	 */
-	public void start() throws Exception
+	public synchronized void start() throws Exception
 	{
+		if (this.active) return;
+		
 		this.lockManager.start();
 		this.stateManager.start();
 		
@@ -567,14 +593,9 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		}
 		else
 		{
-			Map<Database<D>, Boolean> aliveMap = this.getAliveMap(this.databaseMap.values());
-			
-			for (Map.Entry<Database<D>, Boolean> aliveMapEntry: aliveMap.entrySet())
+			for (Database<D> database: this.getAliveMap(this.databaseMap.values()).get(true))
 			{
-				if (aliveMapEntry.getValue())
-				{
-					this.activate(aliveMapEntry.getKey(), this.stateManager);
-				}
+				this.activate(database, this.stateManager);
 			}
 		}
 		
@@ -605,8 +626,10 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	/**
 	 * Stops this database cluster
 	 */
-	public void stop()
+	public synchronized void stop()
 	{
+		if (!this.active) return;
+
 		this.active = false;
 		
 		this.balancer.clear();
@@ -639,7 +662,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		{
 			Database<D> database = this.balancer.next();
 			
-			connection = database.connect(this.connectionFactoryMap.get(database));
+			connection = database.connect(database.createConnectionFactory());
 			
 			this.databaseMetaDataCache.flush(connection);
 		}
@@ -683,6 +706,42 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	public boolean isSequenceDetectionEnabled()
 	{
 		return this.sequenceDetectionEnabled;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#isCurrentDateEvaluationEnabled()
+	 */
+	@Override
+	public boolean isCurrentDateEvaluationEnabled()
+	{
+		return this.currentDateEvaluationEnabled;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#isCurrentTimeEvaluationEnabled()
+	 */
+	@Override
+	public boolean isCurrentTimeEvaluationEnabled()
+	{
+		return this.currentTimeEvaluationEnabled;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#isCurrentTimestampEvaluationEnabled()
+	 */
+	@Override
+	public boolean isCurrentTimestampEvaluationEnabled()
+	{
+		return this.currentTimestampEvaluationEnabled;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#isRandEvaluationEnabled()
+	 */
+	@Override
+	public boolean isRandEvaluationEnabled()
+	{
+		return this.randEvaluationEnabled;
 	}
 
 	/**
@@ -738,10 +797,9 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 				throw new IllegalArgumentException(Messages.getMessage(Messages.DATABASE_ALREADY_EXISTS, id, this));
 			}
 			
-			this.connectionFactoryMap.put(database, database.createConnectionFactory());
-			this.databaseMap.put(id, database);
-			
 			this.register(database, database.getInactiveMBean());
+			
+			this.databaseMap.put(id, database);
 		}
 	}
 	
@@ -789,38 +847,6 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		return this.url;
 	}
 
-	private void activate(String databaseId, SynchronizationStrategy strategy)
-	{
-		try
-		{
-			if (this.activate(this.getDatabase(databaseId), strategy))
-			{
-				logger.info(Messages.getMessage(Messages.DATABASE_ACTIVATED, databaseId, this));
-			}
-		}
-		catch (SQLException e)
-		{
-			logger.warn(Messages.getMessage(Messages.DATABASE_ACTIVATE_FAILED, databaseId, this), e);
-			
-			SQLException exception = e.getNextException();
-			
-			while (exception != null)
-			{
-				logger.error(exception.getMessage(), e);
-				
-				exception = exception.getNextException();
-			}
-
-			throw new IllegalStateException(e.toString());
-		}
-		catch (InterruptedException e)
-		{
-			logger.warn(e.toString(), e);
-			
-			throw new IllegalMonitorStateException(e.toString());
-		}
-	}
-	
 	private boolean activate(Database<D> database, SynchronizationStrategy strategy) throws SQLException, InterruptedException
 	{
 		Lock lock = this.lockManager.writeLock(LockManager.GLOBAL);
@@ -877,12 +903,24 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	{
 		this.stop();
 		
-		for (Database<D> database: this.databaseMap.values())
-		{
-			this.unregister(database);
-		}
+		this.unregisterDatabases();
 	}
 
+	private void unregisterDatabases()
+	{
+		synchronized (this.databaseMap)
+		{
+			Iterator<Database<D>> databases = this.databaseMap.values().iterator();
+			
+			while (databases.hasNext())
+			{
+				this.unregister(databases.next());
+				
+				databases.remove();
+			}
+		}
+	}
+	
 	/**
 	 * @see javax.management.MBeanRegistration#postRegister(java.lang.Boolean)
 	 */
@@ -901,6 +939,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	@Override
 	public void preDeregister() throws Exception
 	{
+		// Nothing to do
 	}
 
 	/**
@@ -917,7 +956,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		
 		try
 		{
-			inputStream = url.openStream();
+			inputStream = this.url.openStream();
 			
 			IUnmarshallingContext context = BindingDirectory.getFactory(this.getClass()).createUnmarshallingContext();
 	
@@ -938,13 +977,23 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		}
 		catch (IOException e)
 		{
-			logger.error(Messages.getMessage(Messages.CONFIG_NOT_FOUND, url), e);
+			logger.error(Messages.getMessage(Messages.CONFIG_NOT_FOUND, this.url), e);
 			
 			throw e;
 		}
 		catch (JiBXException e)
 		{
-			logger.error(Messages.getMessage(Messages.CONFIG_LOAD_FAILED, url), e);
+			logger.error(Messages.getMessage(Messages.CONFIG_LOAD_FAILED, this.url), e);
+			
+			this.unregisterDatabases();
+			
+			throw e;
+		}
+		catch (Exception e)
+		{
+			logger.error(Messages.getMessage(Messages.CLUSTER_START_FAILED, this), e);
+			
+			this.postDeregister();
 			
 			throw e;
 		}
@@ -972,11 +1021,11 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		
 		try
 		{
-			file = File.createTempFile("ha-jdbc", ".xml");
+			file = File.createTempFile("ha-jdbc", ".xml"); //$NON-NLS-1$ //$NON-NLS-2$
 			
 			IMarshallingContext context = BindingDirectory.getFactory(this.getClass()).createMarshallingContext();
 		
-			context.setIndent(1, System.getProperty("line.separator"), '\t');
+			context.setIndent(1, System.getProperty("line.separator"), '\t'); //$NON-NLS-1$
 			
 			// This method closes the writer
 			context.marshalDocument(this, null, null, new FileWriter(file));
@@ -984,20 +1033,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			fileChannel = new FileInputStream(file).getChannel();
 
 			outputChannel = this.getOutputChannel(this.url);
-			// We cannot use URLConnection for files because Sun's implementation does not support output.
-/*			if (this.url.getProtocol().equals("file"))
-			{
-				outputChannel = new FileOutputStream(new File(this.url.getPath())).getChannel();
-			}
-			else
-			{
-				URLConnection connection = this.url.openConnection();
-				
-				connection.connect();
-				
-				outputChannel = Channels.newChannel(connection.getOutputStream());
-			}
-*/			
+
 			fileChannel.transferTo(0, file.length(), outputChannel);
 		}
 		catch (Exception e)
@@ -1047,10 +1083,10 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	
 	private boolean isFile(URL url)
 	{
-		return url.getProtocol().equals("file");
+		return url.getProtocol().equals("file"); //$NON-NLS-1$
 	}
 	
-	private File toFile(URL url) throws IOException
+	private File toFile(URL url)
 	{
 		return new File(url.getPath());
 	}
@@ -1082,29 +1118,17 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		{
 			Set<Database<D>> databaseSet = AbstractDatabaseCluster.this.getBalancer().all();
 			
-			int size = databaseSet.size();
-			
-			if (size > 1)
+			if (databaseSet.size() > 1)
 			{
-				Map<Database<D>, Boolean> aliveMap = AbstractDatabaseCluster.this.getAliveMap(databaseSet);
+				Map<Boolean, List<Database<D>>> aliveMap = AbstractDatabaseCluster.this.getAliveMap(databaseSet);
 				
-				Iterator<Boolean> aliveMapValues = aliveMap.values().iterator();
-				
-				// Remove databases that are still alive leaving only the dead ones
-				while (aliveMapValues.hasNext())
+				// Deactivate the dead databases, so long as at least one is alive
+				// Skip deactivation if membership is empty in case of cluster panic
+				if (!aliveMap.get(true).isEmpty() && !AbstractDatabaseCluster.this.getStateManager().isMembershipEmpty())
 				{
-					if (aliveMapValues.next())
+					for (Database<D> database: aliveMap.get(false))
 					{
-						aliveMapValues.remove();
-					}
-				}
-				
-				// Deactivate the dead ones, so long as at least one is alive
-				if (aliveMap.size() < size)
-				{
-					for (Database<D> database: aliveMap.keySet())
-					{
-						if (AbstractDatabaseCluster.this.deactivate(database, AbstractDatabaseCluster.this.stateManager))
+						if (AbstractDatabaseCluster.this.deactivate(database, AbstractDatabaseCluster.this.getStateManager()))
 						{
 							logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this));
 						}

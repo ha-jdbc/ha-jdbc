@@ -58,4 +58,10 @@ public interface ActiveDatabaseMBean
 	 * @return additional properties of this database
 	 */
 	public Properties getProperties();
+	
+	/**
+	 * Indicates whether or not this database is local to the machine on which the JVM resides.
+	 * @return true if local, false if remote
+	 */
+	public boolean isLocal();
 }

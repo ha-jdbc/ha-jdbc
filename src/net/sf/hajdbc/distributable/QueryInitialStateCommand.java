@@ -36,8 +36,6 @@ public class QueryInitialStateCommand implements Command<Set<String>>
 {
 	private static final long serialVersionUID = -8409746321944635265L;
 
-	private static final String DELIMITER = ",";
-	
 	/**
 	 * @see net.sf.hajdbc.distributable.Command#execute(net.sf.hajdbc.DatabaseCluster, net.sf.hajdbc.StateManager)
 	 */
@@ -54,7 +52,7 @@ public class QueryInitialStateCommand implements Command<Set<String>>
 	@Override
 	public Object marshalResult(Set<String> set)
 	{
-		return (set != null) ? Strings.join(set, DELIMITER) : null;
+		return (set != null) ? Strings.join(set, Strings.COMMA) : null;
 	}
 
 	/**
@@ -70,7 +68,7 @@ public class QueryInitialStateCommand implements Command<Set<String>>
 		
 		if (state.length() == 0) return Collections.emptySet();
 		
-		return new TreeSet<String>(Arrays.asList(state.split(DELIMITER)));
+		return new TreeSet<String>(Arrays.asList(state.split(Strings.COMMA)));
 	}
 	
 	/**

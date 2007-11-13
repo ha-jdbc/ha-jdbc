@@ -20,9 +20,14 @@
  */
 package net.sf.hajdbc.distributable;
 
+import java.lang.reflect.Method;
+import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -31,13 +36,12 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.LockManager;
 
 import org.jgroups.Address;
-import org.jgroups.Channel;
-import org.jgroups.ChannelException;
-import org.jgroups.MembershipListener;
-import org.jgroups.View;
-import org.jgroups.blocks.VoteException;
-import org.jgroups.blocks.VotingAdapter;
-import org.jgroups.blocks.VotingListener;
+import org.jgroups.Message;
+import org.jgroups.MessageListener;
+import org.jgroups.blocks.GroupRequest;
+import org.jgroups.blocks.MethodCall;
+import org.jgroups.blocks.RpcDispatcher;
+import org.jgroups.util.Rsp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,16 +50,16 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Paul Ferraro
  */
-public class DistributableLockManager implements LockManager, VotingListener, MembershipListener
+public class DistributableLockManager extends AbstractMembershipListener implements LockManager, MessageListener
 {
+	private static final String CHANNEL = "{0}-lock"; //$NON-NLS-1$
+	
 	static Logger logger = LoggerFactory.getLogger(DistributableLockManager.class);
 	
-	protected VotingAdapter votingAdapter;
+	protected RpcDispatcher dispatcher;
 	protected int timeout;
-	protected Address address;
-	private Channel channel;
 	private LockManager lockManager;
-	private Map<LockDecree, Lock> lockMap = new HashMap<LockDecree, Lock>();
+	private Map<Address, Map<String, Lock>> addressMap = new ConcurrentHashMap<Address, Map<String, Lock>>();
 	
 	/**
 	 * Constructs a new DistributableLock.
@@ -66,18 +70,13 @@ public class DistributableLockManager implements LockManager, VotingListener, Me
 	 */
 	public <D> DistributableLockManager(DatabaseCluster<D> databaseCluster, DistributableDatabaseClusterDecorator decorator) throws Exception
 	{
+		super(decorator.createChannel(MessageFormat.format(CHANNEL, databaseCluster.getId())));
+		
 		this.lockManager = databaseCluster.getLockManager();
 		
-		this.channel = decorator.createChannel(databaseCluster.getId() + "-lock");
-		// Send messages to ourselves as well
-		this.channel.setOpt(Channel.LOCAL, true);
-		
-		this.address = this.channel.getLocalAddress();
 		this.timeout = decorator.getTimeout();
 
-		this.votingAdapter = new VotingAdapter(this.channel);
-
-		this.votingAdapter.addVoteListener(this);
+		this.dispatcher = new RpcDispatcher(this.channel, this, this, this);
 	}
 
 	@Override
@@ -113,69 +112,86 @@ public class DistributableLockManager implements LockManager, VotingListener, Me
 	@Override
 	public Lock writeLock(String object)
 	{
-		return new DistributableLock(object);
+		return new DistributableLock(object, this.lockManager.writeLock(object));
 	}
 
-	/**
-	 * @see org.jgroups.blocks.VotingListener#vote(java.lang.Object)
-	 */
-	@Override
-	public boolean vote(Object decree) throws VoteException
+	public boolean vote(LockDecree decree)
 	{
-		if ((decree == null) || !(decree instanceof LockDecree)) throw new VoteException("");
+		Map<String, Lock> lockMap = this.addressMap.get(decree.getAddress());
 		
-		return ((LockDecree) decree).vote(this.lockManager, this.lockMap);
+		// Vote negatively for decrees from non-members
+		if (lockMap == null)
+		{
+			return false;
+		}
+		
+		return decree.vote(this.lockManager, lockMap);
 	}
 	
 	/**
-	 * @see org.jgroups.MembershipListener#block()
+	 * @see net.sf.hajdbc.distributable.AbstractMembershipListener#memberJoined(org.jgroups.Address)
 	 */
 	@Override
-	public void block()
+	protected void memberJoined(Address address)
 	{
-		// Do nothing
+		this.addressMap.put(address, new HashMap<String, Lock>());
 	}
 
 	/**
-	 * @see org.jgroups.MembershipListener#suspect(org.jgroups.Address)
+	 * @see net.sf.hajdbc.distributable.AbstractMembershipListener#memberLeft(org.jgroups.Address)
 	 */
 	@Override
-	public void suspect(Address address)
+	protected void memberLeft(Address address)
 	{
-		// Do nothing
-	}
-
-	/**
-	 * @see org.jgroups.MembershipListener#viewAccepted(org.jgroups.View)
-	 */
-	@Override
-	public void viewAccepted(View view)
-	{
-		synchronized (this.lockMap)
+		Map<String, Lock> lockMap = this.addressMap.remove(address);
+		
+		for (Lock lock: lockMap.values())
 		{
-			Iterator<Map.Entry<LockDecree, Lock>> lockMapEntries = this.lockMap.entrySet().iterator();
-			
-			while (lockMapEntries.hasNext())
-			{
-				Map.Entry<LockDecree, Lock> lockMapEntry = lockMapEntries.next();
-				
-				if (!view.containsMember(lockMapEntry.getKey().getAddress()))
-				{
-					lockMapEntry.getValue().unlock();
-					
-					lockMapEntries.remove();
-				}
-			}
+			lock.unlock();
 		}
+	}
+
+	/**
+	 * @see org.jgroups.MessageListener#getState()
+	 */
+	@Override
+	public byte[] getState()
+	{
+		return null;
+	}
+
+	/**
+	 * @see org.jgroups.MessageListener#receive(org.jgroups.Message)
+	 */
+	@Override
+	public void receive(Message message)
+	{
+		// Do nothing
+	}
+
+	/**
+	 * @see org.jgroups.MessageListener#setState(byte[])
+	 */
+	@Override
+	public void setState(byte[] arg0)
+	{
+		// Do nothing
 	}
 
 	private class DistributableLock implements Lock
 	{
-		private String object;
+		private LockDecree acquireDecree;
+		private LockDecree releaseDecree;
+		private Lock lock;
 		
-		public DistributableLock(String object)
+		public DistributableLock(String object, Lock lock)
 		{
-			this.object = object;
+			Address address = DistributableLockManager.this.channel.getLocalAddress();
+			
+			this.acquireDecree = new AcquireLockDecree(object, address);
+			this.releaseDecree = new ReleaseLockDecree(object, address);
+			
+			this.lock = lock;
 		}
 		
 		/**
@@ -184,7 +200,15 @@ public class DistributableLockManager implements LockManager, VotingListener, Me
 		@Override
 		public void lock()
 		{
-			while (!this.tryLock());
+			while (!DistributableLockManager.this.isMembershipEmpty())
+			{
+				if (this.tryLock())
+				{
+					return;
+				}
+			}
+			
+			this.lock.lock();
 		}
 
 		/**
@@ -193,13 +217,20 @@ public class DistributableLockManager implements LockManager, VotingListener, Me
 		@Override
 		public void lockInterruptibly() throws InterruptedException
 		{
-			while (!this.tryLock())
-			{
+			while (!DistributableLockManager.this.isMembershipEmpty())
+			{				
+				if (this.tryLock())
+				{
+					return;
+				}
+				
 				if (Thread.currentThread().isInterrupted())
 				{
 					throw new InterruptedException();
 				}
 			}
+			
+			this.lock.lockInterruptibly();
 		}
 
 		/**
@@ -208,40 +239,52 @@ public class DistributableLockManager implements LockManager, VotingListener, Me
 		@Override
 		public boolean tryLock()
 		{
-			try
+			if (this.lock.tryLock())
 			{
-				boolean locked = DistributableLockManager.this.votingAdapter.vote(new AcquireLockDecree(this.object, DistributableLockManager.this.address), DistributableLockManager.this.timeout);
-				
-				if (!locked)
+				if (this.tryRemoteLock())
 				{
-					this.unlock();
+					return true;
 				}
 				
-				return locked;
+				this.lock.unlock();
 			}
-			catch (ChannelException e)
-			{
-				throw new IllegalStateException(e);
-			}
+			
+			return false;
 		}
 
 		/**
 		 * @see java.util.concurrent.locks.Lock#tryLock(long, java.util.concurrent.TimeUnit)
 		 */
 		@Override
-		public boolean tryLock(long timeout, TimeUnit unit)
+		public boolean tryLock(long timeout, TimeUnit unit) throws InterruptedException
 		{
-			long stopTime = System.currentTimeMillis() + unit.toMillis(timeout);
+			// Convert timeout to milliseconds
+			long ms = unit.toMillis(timeout);
 			
-			while (!this.tryLock())
+			long stopTime = System.currentTimeMillis() + ms;
+			
+			do
 			{
-				if (System.currentTimeMillis() >= stopTime)
+				if (DistributableLockManager.this.isMembershipEmpty())
 				{
-					return false;
+					return this.lock.tryLock(ms, TimeUnit.MILLISECONDS);
 				}
+				
+				if (this.tryLock())
+				{
+					return true;
+				}
+
+				if (Thread.currentThread().isInterrupted())
+				{
+					throw new InterruptedException();
+				}
+				
+				ms = stopTime - System.currentTimeMillis();
 			}
+			while (ms >= 0);
 			
-			return true;
+			return false;
 		}
 
 		/**
@@ -250,16 +293,45 @@ public class DistributableLockManager implements LockManager, VotingListener, Me
 		@Override
 		public void unlock()
 		{
+			this.remoteUnlock();
+
+			this.lock.unlock();
+		}
+		
+		private boolean tryRemoteLock()
+		{
+			Map<Boolean, Vector<Address>> map = null;
+			
 			try
 			{
-				DistributableLockManager.this.votingAdapter.vote(new ReleaseLockDecree(this.object, DistributableLockManager.this.address), DistributableLockManager.this.timeout);
+				map = this.remoteLock();
+				
+				return map.get(false).isEmpty();
 			}
-			catch (ChannelException e)
+			finally
 			{
-				throw new IllegalStateException(e);
+				if (map != null)
+				{
+					this.remoteUnlock(map.get(true));
+				}
 			}
 		}
+		
+		private Map<Boolean, Vector<Address>> remoteLock()
+		{
+			return DistributableLockManager.this.remoteVote(this.acquireDecree, null, DistributableLockManager.this.timeout);
+		}
 
+		private Map<Boolean, Vector<Address>> remoteUnlock()
+		{
+			return this.remoteUnlock(null);
+		}
+		
+		private Map<Boolean, Vector<Address>> remoteUnlock(Vector<Address> address)
+		{
+			return DistributableLockManager.this.remoteVote(this.releaseDecree, address, 0);
+		}
+		
 		/**
 		 * @see java.util.concurrent.locks.Lock#newCondition()
 		 */
@@ -268,5 +340,40 @@ public class DistributableLockManager implements LockManager, VotingListener, Me
 		{
 			throw new UnsupportedOperationException();
 		}
+	}
+	
+	public Map<Boolean, Vector<Address>> remoteVote(LockDecree decree, Vector<Address> addresses, long timeout)
+	{
+		Map<Boolean, Vector<Address>> map = new TreeMap<Boolean, Vector<Address>>();
+		
+		int size = (addresses != null) ? addresses.size() : this.getMembershipSize();
+		
+		map.put(true, new Vector<Address>(size));
+		map.put(false, new Vector<Address>(size));
+		
+		if (size > 0)
+		{
+			try
+			{
+				Method method = this.getClass().getMethod("vote", LockDecree.class); //$NON-NLS-1$
+				
+				MethodCall call = new MethodCall(method, new Object[] { decree });
+				
+				Collection<Rsp> responses = this.dispatcher.callRemoteMethods(addresses, call, GroupRequest.GET_ALL, timeout).values();
+				
+				for (Rsp response: responses)
+				{
+					Object value = response.wasReceived() ? response.getValue() : false;
+					
+					map.get((value != null) ? value : false).add(response.getSender());
+				}
+			}
+			catch (NoSuchMethodException e)
+			{
+				throw new IllegalStateException(e);
+			}
+		}
+		
+		return map;
 	}
 }

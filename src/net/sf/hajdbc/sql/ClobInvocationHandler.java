@@ -32,6 +32,7 @@ import net.sf.hajdbc.Database;
  * @author Paul Ferraro
  *
  */
+@SuppressWarnings("nls")
 public class ClobInvocationHandler<D, P> extends AbstractLobInvocationHandler<D, P, Clob>
 {
 	private static final Set<String> DATABASE_READ_METHOD_SET = new HashSet<String>(Arrays.asList("getAsciiStream", "getCharacterStream", "getSubString", "length", "position"));

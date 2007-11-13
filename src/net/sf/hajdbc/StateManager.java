@@ -37,4 +37,6 @@ public interface StateManager
 	public void start() throws Exception;
 	
 	public void stop();
+	
+	public boolean isMembershipEmpty();
 }

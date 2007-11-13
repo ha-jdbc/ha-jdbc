@@ -20,35 +20,54 @@
  */
 package net.sf.hajdbc.dialect;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.util.ClassEnum;
 
 /**
  * @author  Paul Ferraro
  * @since   1.1
  */
-public class DialectFactory
+public enum DialectClass implements ClassEnum<Dialect>
 {
-	private static Map<String, Class<? extends Dialect>> dialectMap = new HashMap<String, Class<? extends Dialect>>();
+	DB2(DB2Dialect.class),
+	DERBY(DerbyDialect.class),
+	FIREBIRD(FirebirdDialect.class),
+	H2(H2Dialect.class),
+	HSQLDB(HSQLDBDialect.class),
+	INGRES(IngresDialect.class),
+	MAXDB(MaxDBDialect.class),
+	MCKOI(MckoiDialect.class),
+	MYSQL(MySQLDialect.class),
+	ORACLE(OracleDialect.class),
+	POSTGRESQL(PostgreSQLDialect.class),
+	STANDARD(StandardDialect.class),
+	SYBASE(SybaseDialect.class);
 	
-	static
+	private Class<? extends Dialect> dialectClass;
+	
+	private DialectClass(Class<? extends Dialect> dialectClass)
 	{
-		dialectMap.put("standard", StandardDialect.class);
-		dialectMap.put("db2", DB2Dialect.class);
-		dialectMap.put("derby", DerbyDialect.class);
-		dialectMap.put("firebird", FirebirdDialect.class);
-		dialectMap.put("h2", HSQLDBDialect.class);
-		dialectMap.put("hsqldb", HSQLDBDialect.class);
-		dialectMap.put("ingres", IngresDialect.class);
-		dialectMap.put("maxdb", MaxDBDialect.class);
-		dialectMap.put("mckoi", MckoiDialect.class);
-		dialectMap.put("mysql", MySQLDialect.class);
-		dialectMap.put("oracle", MaxDBDialect.class);
-		dialectMap.put("postgresql", PostgreSQLDialect.class);
+		this.dialectClass = dialectClass;
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.util.ClassEnum#isInstance(java.lang.Object)
+	 */
+	@Override
+	public boolean isInstance(Dialect dialect)
+	{
+		return this.dialectClass.equals(dialect.getClass());
+	}
+
+	/**
+	 * @see net.sf.hajdbc.util.ClassEnum#newInstance()
+	 */
+	@Override
+	public Dialect newInstance() throws Exception
+	{
+		return this.dialectClass.newInstance();
+	}
+
 	/**
 	 * Creates a new instance of the Dialect implementation from the specified class name.
 	 * @param id the class name of a Dialect instance.
@@ -57,14 +76,16 @@ public class DialectFactory
 	 */
 	public static Dialect deserialize(String id) throws Exception
 	{
-		Class<? extends Dialect> targetClass = (id != null) ? dialectMap.get(id.toLowerCase()) : StandardDialect.class;
-		
-		if (targetClass == null)
+		try
 		{
-			targetClass = Class.forName(id).asSubclass(Dialect.class);
+			DialectClass dialectClass = (id != null) ? DialectClass.valueOf(id.toUpperCase()) : STANDARD;
+			
+			return dialectClass.newInstance();
 		}
-		
-		return targetClass.newInstance();
+		catch (IllegalArgumentException e)
+		{
+			return Class.forName(id).asSubclass(Dialect.class).newInstance();
+		}
 	}
 	
 	/**
@@ -74,11 +95,14 @@ public class DialectFactory
 	 */
 	public static String serialize(Dialect dialect)
 	{
+		for (DialectClass dialectClass: DialectClass.values())
+		{
+			if (dialectClass.isInstance(dialect))
+			{
+				return dialectClass.name().toLowerCase();
+			}
+		}
+		
 		return dialect.getClass().getName();
-	}
-	
-	private DialectFactory()
-	{
-		// Hide constructor
 	}
 }

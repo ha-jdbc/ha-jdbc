@@ -263,7 +263,7 @@ public class MockConnection implements Connection
 
 			public String getSQLKeywords()
 			{
-				return "";
+				return ""; //$NON-NLS-1$
 			}
 
 			public String getNumericFunctions()
@@ -293,7 +293,7 @@ public class MockConnection implements Connection
 
 			public String getExtraNameCharacters()
 			{
-				return "";
+				return ""; //$NON-NLS-1$
 			}
 
 			public boolean supportsAlterTableWithAddColumn()

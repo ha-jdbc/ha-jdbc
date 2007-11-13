@@ -18,51 +18,61 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.cache;
+package net.sf.hajdbc.sql;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import net.sf.hajdbc.DatabaseProperties;
-
+import javax.management.DynamicMBean;
+import javax.sql.DataSource;
 
 /**
- * DatabaseMetaDataCache that lazily caches data when requested, but only for a single thread.
- * To be used when memory usage is more of a concern than performance.
- * 
  * @author Paul Ferraro
- * @since 2.0
  */
-public class ThreadLocalDatabaseMetaDataCache extends AbstractDatabaseMetaDataCache
+public class MockDataSourceDatabase extends AbstractDatabase<DataSource>
 {
-	private static ThreadLocal<DatabaseProperties> threadLocal = new ThreadLocal<DatabaseProperties>();
-
+	private DataSource dataSource;
+	
+	public MockDataSourceDatabase(String id, DataSource dataSource)
+	{
+		this.setId(id);
+		this.clean();
+		this.dataSource = dataSource;
+	}
+	
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush(java.sql.Connection)
+	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
 	 */
 	@Override
-	public void flush(Connection connection)
+	public Connection connect(DataSource dataSource) throws SQLException
 	{
-		// Nothing to flush
+		return dataSource.getConnection();
 	}
 
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getDatabaseProperties(java.sql.Connection)
+	 * @see net.sf.hajdbc.Database#createConnectionFactory()
 	 */
 	@Override
-	public DatabaseProperties getDatabaseProperties(Connection connection) throws SQLException
+	public DataSource createConnectionFactory()
 	{
-		LazyDatabaseProperties.setConnection(connection);
-		
-		DatabaseProperties properties = threadLocal.get();
-		
-		if (properties == null)
-		{
-			properties = new LazyDatabaseProperties(this.dialect);
-			
-			threadLocal.set(properties);
-		}
-		
-		return properties;
+		return this.dataSource;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Database#getActiveMBean()
+	 */
+	@Override
+	public DynamicMBean getActiveMBean()
+	{
+		return null;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Database#getInactiveMBean()
+	 */
+	@Override
+	public DynamicMBean getInactiveMBean()
+	{
+		return null;
 	}
 }

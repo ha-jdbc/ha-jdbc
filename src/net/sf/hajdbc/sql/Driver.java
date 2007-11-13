@@ -33,6 +33,7 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.util.SQLExceptionFactory;
+import net.sf.hajdbc.util.Strings;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 import org.slf4j.Logger;
@@ -44,8 +45,8 @@ import org.slf4j.LoggerFactory;
  */
 public final class Driver implements java.sql.Driver
 {
-	private static final Pattern URL_PATTERN = Pattern.compile("jdbc:ha-jdbc:(.+)");
-	private static final String CONFIG = "config";
+	private static final Pattern URL_PATTERN = Pattern.compile("jdbc:ha-jdbc:(.+)"); //$NON-NLS-1$
+	private static final String CONFIG = "config"; //$NON-NLS-1$
 	
 	private static Logger logger = LoggerFactory.getLogger(Driver.class);
 	
@@ -112,7 +113,7 @@ public final class Driver implements java.sql.Driver
 	@Override
 	public int getMajorVersion()
 	{
-		return Integer.parseInt(DatabaseClusterFactory.getVersion().split(Pattern.quote("."))[0]);
+		return Integer.parseInt(version()[0]);
 	}
 	
 	/**
@@ -121,9 +122,14 @@ public final class Driver implements java.sql.Driver
 	@Override
 	public int getMinorVersion()
 	{
-		return Integer.parseInt(DatabaseClusterFactory.getVersion().split(Pattern.quote("."))[1].split("-")[0]);
+		return Integer.parseInt(version()[1]);
 	}
 
+	private String[] version()
+	{
+		return DatabaseClusterFactory.getVersion().split(Strings.DASH)[0].split(Pattern.quote(Strings.DOT));
+	}
+	
 	/**
 	 * @see java.sql.Driver#getPropertyInfo(java.lang.String, java.util.Properties)
 	 */

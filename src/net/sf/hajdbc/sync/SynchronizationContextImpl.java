@@ -31,7 +31,7 @@ import java.util.concurrent.Executors;
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.DatabaseMetaDataCache;
+import net.sf.hajdbc.DatabaseProperties;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
@@ -52,10 +52,11 @@ public class SynchronizationContextImpl<D> implements SynchronizationContext<D>
 	private Database<D> sourceDatabase;
 	private Database<D> targetDatabase;
 	private DatabaseCluster<D> cluster;
+	private DatabaseProperties databaseProperties;
 	private Map<Database<D>, Connection> connectionMap = new HashMap<Database<D>, Connection>();
 	private ExecutorService executor;
 	
-	public SynchronizationContextImpl(DatabaseCluster<D> cluster, Database<D> database)
+	public SynchronizationContextImpl(DatabaseCluster<D> cluster, Database<D> database) throws SQLException
 	{
 		this.cluster = cluster;
 		
@@ -65,6 +66,7 @@ public class SynchronizationContextImpl<D> implements SynchronizationContext<D>
 		this.activeDatabaseSet = balancer.all();
 		this.targetDatabase = database;
 		this.executor = Executors.newFixedThreadPool(this.activeDatabaseSet.size(), DaemonThreadFactory.getInstance());
+		this.databaseProperties = cluster.getDatabaseMetaDataCache().getDatabaseProperties(this.getConnection(this.targetDatabase));
 	}
 	
 	/**
@@ -79,7 +81,7 @@ public class SynchronizationContextImpl<D> implements SynchronizationContext<D>
 			
 			if (connection == null)
 			{
-				connection = database.connect(this.cluster.getConnectionFactoryMap().get(database));
+				connection = database.connect(database.createConnectionFactory());
 				
 				this.connectionMap.put(database, connection);
 			}
@@ -116,12 +118,12 @@ public class SynchronizationContextImpl<D> implements SynchronizationContext<D>
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.SynchronizationContext#getDatabaseMetaDataCache()
+	 * @see net.sf.hajdbc.SynchronizationContext#getDatabaseProperties()
 	 */
 	@Override
-	public DatabaseMetaDataCache getDatabaseMetaDataCache()
+	public DatabaseProperties getDatabaseProperties()
 	{
-		return this.cluster.getDatabaseMetaDataCache();
+		return this.databaseProperties;
 	}
 	
 	/**

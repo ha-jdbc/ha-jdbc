@@ -26,9 +26,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import net.sf.hajdbc.LockManager;
+import net.sf.hajdbc.util.concurrent.SemaphoreReadWriteLock;
 
 /**
  * @author Paul Ferraro
@@ -65,28 +65,12 @@ public class LocalLockManager implements LockManager
 		
 		if (lock == null)
 		{
-			lock = createReadWriteLock();
+			lock = new SemaphoreReadWriteLock();
 			
 			this.lockMap.put(object, lock);
 		}
 		
 		return lock;
-	}
-	
-	/**
-	 * Work around for missing constructor in backport-util-concurrent package.
-	 * @return ReadWriteLock implementation
-	 */
-	private ReadWriteLock createReadWriteLock()
-	{
-		try
-		{
-			return new ReentrantReadWriteLock(true);
-		}
-		catch (NoSuchMethodError e)
-		{
-			return new ReentrantReadWriteLock();
-		}
 	}
 	
 	private static class GlobalLock implements Lock

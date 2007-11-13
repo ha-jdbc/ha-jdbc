@@ -18,7 +18,7 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc;
+package net.sf.hajdbc.sync;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -28,12 +28,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.SynchronizationStrategy;
+
 /**
  * @author  Paul Ferraro
  * @since   1.1
  */
 public class SynchronizationStrategyBuilder
 {
+	private static final String CLASS = "class"; //$NON-NLS-1$
+	
 	private String id;
 	private Class<? extends SynchronizationStrategy> targetClass;
 	private Properties properties;
@@ -65,7 +70,8 @@ public class SynchronizationStrategyBuilder
 		
 		for (PropertyDescriptor descriptor: descriptors)
 		{
-			if (descriptor.getName().equals("class")) continue;
+			// Prevent Object.getClass() from being read as a property
+			if (descriptor.getName().equals(CLASS)) continue;
 			
 			propertyDescriptorMap.put(descriptor.getName(), descriptor);
 		}
@@ -127,7 +133,8 @@ public class SynchronizationStrategyBuilder
 		
 		for (PropertyDescriptor descriptor: descriptors)
 		{
-			if (descriptor.getName().equals("class")) continue;
+			// Prevent Object.getClass() from being written as a property
+			if (descriptor.getName().equals(CLASS)) continue;
 			
 			PropertyEditor editor = PropertyEditorManager.findEditor(descriptor.getPropertyType());
 			

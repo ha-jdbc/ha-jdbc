@@ -39,5 +39,7 @@ public interface TableProperties
 	
 	public Collection<ForeignKeyConstraint> getForeignKeyConstraints() throws SQLException;
 	
-	public Collection<UniqueConstraint> getUniqueConstraints() throws SQLException;	
+	public Collection<UniqueConstraint> getUniqueConstraints() throws SQLException;
+	
+	public Collection<String> getIdentityColumns() throws SQLException;
 }

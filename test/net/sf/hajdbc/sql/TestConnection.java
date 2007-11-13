@@ -64,7 +64,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({ "unchecked", "nls" })
 public class TestConnection implements Connection
 {
 	private Balancer balancer = EasyMock.createStrictMock(Balancer.class);
@@ -596,6 +596,11 @@ public class TestConnection implements Connection
 		
 		EasyMock.expect(this.connection1.isReadOnly()).andReturn(false);
 		
+		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
@@ -627,6 +632,11 @@ public class TestConnection implements Connection
 		
 		// Read-only connection
 		EasyMock.expect(this.connection1.isReadOnly()).andReturn(true);
+		
+		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
@@ -666,6 +676,11 @@ public class TestConnection implements Connection
 		
 		EasyMock.expect(this.connection1.isReadOnly()).andReturn(false);
 		
+		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
@@ -697,6 +712,11 @@ public class TestConnection implements Connection
 		
 		// Read-only connection
 		EasyMock.expect(this.connection1.isReadOnly()).andReturn(true);
+		
+		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
@@ -736,6 +756,11 @@ public class TestConnection implements Connection
 		
 		EasyMock.expect(this.connection1.isReadOnly()).andReturn(false);
 		
+		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
@@ -767,6 +792,11 @@ public class TestConnection implements Connection
 		
 		// Read-only connection
 		EasyMock.expect(this.connection1.isReadOnly()).andReturn(true);
+		
+		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
@@ -800,6 +830,11 @@ public class TestConnection implements Connection
 		
 		EasyMock.expect(this.connection1.isReadOnly()).andReturn(false);
 		
+		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
@@ -831,6 +866,11 @@ public class TestConnection implements Connection
 		
 		// Read-only connection
 		EasyMock.expect(this.connection1.isReadOnly()).andReturn(true);
+		
+		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
@@ -870,6 +910,11 @@ public class TestConnection implements Connection
 		
 		EasyMock.expect(this.connection1.isReadOnly()).andReturn(false);
 		
+		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
@@ -901,6 +946,11 @@ public class TestConnection implements Connection
 		
 		// Read-only connection
 		EasyMock.expect(this.connection1.isReadOnly()).andReturn(true);
+		
+		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
@@ -934,6 +984,11 @@ public class TestConnection implements Connection
 		
 		EasyMock.expect(this.connection1.isReadOnly()).andReturn(false);
 		
+		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
@@ -965,6 +1020,11 @@ public class TestConnection implements Connection
 		
 		// Read-only connection
 		EasyMock.expect(this.connection1.isReadOnly()).andReturn(true);
+		
+		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
@@ -998,6 +1058,11 @@ public class TestConnection implements Connection
 		
 		EasyMock.expect(this.connection1.isReadOnly()).andReturn(false);
 		
+		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
@@ -1029,6 +1094,11 @@ public class TestConnection implements Connection
 		
 		// Read-only connection
 		EasyMock.expect(this.connection1.isReadOnly()).andReturn(true);
+		
+		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
@@ -1068,6 +1138,11 @@ public class TestConnection implements Connection
 		
 		EasyMock.expect(this.connection1.isReadOnly()).andReturn(false);
 		
+		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
@@ -1099,6 +1174,11 @@ public class TestConnection implements Connection
 		
 		// Read-only connection
 		EasyMock.expect(this.connection1.isReadOnly()).andReturn(true);
+		
+		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
@@ -1138,6 +1218,11 @@ public class TestConnection implements Connection
 		
 		EasyMock.expect(this.connection1.isReadOnly()).andReturn(false);
 		
+		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
@@ -1169,6 +1254,11 @@ public class TestConnection implements Connection
 		
 		// Read-only connection
 		EasyMock.expect(this.connection1.isReadOnly()).andReturn(true);
+		
+		EasyMock.expect(this.cluster.isCurrentTimestampEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentDateEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isCurrentTimeEvaluationEnabled()).andReturn(false);
+		EasyMock.expect(this.cluster.isRandEvaluationEnabled()).andReturn(false);
 		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
@@ -1821,20 +1911,15 @@ public class TestConnection implements Connection
 	protected void getLockList(String sql) throws SQLException
 	{	
 		EasyMock.expect(this.cluster.getDialect()).andReturn(this.dialect);
-		EasyMock.expect(this.dialect.supportsSequences()).andReturn(true);
 		EasyMock.expect(this.cluster.isSequenceDetectionEnabled()).andReturn(true);
 		EasyMock.expect(this.dialect.parseSequence(sql)).andReturn("sequence");
 		
-		EasyMock.expect(this.dialect.supportsIdentityColumns()).andReturn(true);
 		EasyMock.expect(this.cluster.isIdentityColumnDetectionEnabled()).andReturn(true);
 		EasyMock.expect(this.dialect.parseInsertTable(sql)).andReturn("table");
 		EasyMock.expect(this.cluster.getDatabaseMetaDataCache()).andReturn(this.metaData);
 		EasyMock.expect(this.metaData.getDatabaseProperties(this.connection)).andReturn(this.databaseProperties);
 		EasyMock.expect(this.databaseProperties.findTable("table")).andReturn(this.tableProperties);
-		EasyMock.expect(this.tableProperties.getColumns()).andReturn(Collections.singleton("column"));
-		EasyMock.expect(this.tableProperties.getColumnProperties("column")).andReturn(this.columnProperties);
-		EasyMock.expect(this.columnProperties.isAutoIncrement()).andReturn(null);
-		EasyMock.expect(this.dialect.isIdentity(this.columnProperties)).andReturn(true);
+		EasyMock.expect(this.tableProperties.getIdentityColumns()).andReturn(Collections.singleton("column"));
 		EasyMock.expect(this.tableProperties.getName()).andReturn("table");
 		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
 		EasyMock.expect(this.lockManager.writeLock("sequence")).andReturn(this.writeLock1);

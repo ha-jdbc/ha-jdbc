@@ -10,25 +10,29 @@
 		<value name="timeout" field="timeout" style="attribute" usage="optional" default="1000"/>
 	</mapping>
 
-	<mapping name="sync" class="net.sf.hajdbc.SynchronizationStrategyBuilder">
+	<mapping name="sync" class="net.sf.hajdbc.sync.SynchronizationStrategyBuilder">
 		<value name="id" field="id" style="attribute"/>
 		<value name="class" field="targetClass" style="attribute"/>
 		<structure field="properties" unmarshaller="net.sf.hajdbc.util.PropertiesMapper" marshaller="net.sf.hajdbc.util.PropertiesMapper"></structure>
 	</mapping>
 
 	<mapping class="net.sf.hajdbc.sql.AbstractDatabaseCluster" abstract="true">
-		<value name="balancer" field="balancer" style="attribute" deserializer="net.sf.hajdbc.balancer.BalancerFactory.deserialize" serializer="net.sf.hajdbc.balancer.BalancerFactory.serialize"/>
+		<value name="balancer" field="balancer" style="attribute" deserializer="net.sf.hajdbc.balancer.BalancerClass.deserialize" serializer="net.sf.hajdbc.balancer.BalancerClass.serialize"/>
 		<value name="default-sync" field="defaultSynchronizationStrategyId" style="attribute"/>
-		<value name="dialect" field="dialect" style="attribute" deserializer="net.sf.hajdbc.dialect.DialectFactory.deserialize" serializer="net.sf.hajdbc.dialect.DialectFactory.serialize" usage="optional"/>
-		<value name="meta-data-cache" field="databaseMetaDataCache" style="attribute" deserializer="net.sf.hajdbc.cache.DatabaseMetaDataCacheFactory.deserialize" serializer="net.sf.hajdbc.cache.DatabaseMetaDataCacheFactory.serialize" usage="required"/>
-		<value name="transaction-mode" field="transactionMode" style="attribute" deserializer="net.sf.hajdbc.TransactionMode.deserialize" serializer="net.sf.hajdbc.TransactionMode.serialize"/>
+		<value name="dialect" field="dialect" style="attribute" deserializer="net.sf.hajdbc.dialect.DialectClass.deserialize" serializer="net.sf.hajdbc.dialect.DialectClass.serialize" usage="optional"/>
+		<value name="meta-data-cache" field="databaseMetaDataCache" style="attribute" deserializer="net.sf.hajdbc.cache.DatabaseMetaDataCacheClass.deserialize" serializer="net.sf.hajdbc.cache.DatabaseMetaDataCacheClass.serialize" usage="required"/>
+		<value name="transaction-mode" field="transactionMode" style="attribute" deserializer="net.sf.hajdbc.sql.TransactionMode.deserialize" serializer="net.sf.hajdbc.sql.TransactionMode.serialize"/>
 		<value name="auto-activate-schedule" field="autoActivationExpression" style="attribute" usage="optional"/>
 		<value name="failure-detect-schedule" field="failureDetectionExpression" style="attribute" usage="optional"/>
 		<value name="min-threads" field="minThreads" usage="optional" default="0"/>
 		<value name="max-threads" field="maxThreads" usage="optional" default="100"/>
 		<value name="max-idle" field="maxIdle" style="attribute" usage="optional" default="60"/>
-		<value name="detect-sequences" field="sequenceDetectionEnabled" style="attribute" usage="optional" default="true"/>
-		<value name="detect-identity-columns" field="identityColumnDetectionEnabled" style="attribute" usage="optional" default="true"/>
+		<value name="detect-sequences" field="sequenceDetectionEnabled" style="attribute" usage="optional" default="false"/>
+		<value name="detect-identity-columns" field="identityColumnDetectionEnabled" style="attribute" usage="optional" default="false"/>
+		<value name="eval-current-date" field="currentDateEvaluationEnabled" style="attribute" usage="optional" default="false"/>
+		<value name="eval-current-time" field="currentTimeEvaluationEnabled" style="attribute" usage="optional" default="false"/>
+		<value name="eval-current-timestamp" field="currentTimestampEvaluationEnabled" style="attribute" usage="optional" default="false"/>
+		<value name="eval-rand" field="randEvaluationEnabled" style="attribute" usage="optional" default="false"/>
 	</mapping>
 	
 	<mapping class="net.sf.hajdbc.sql.AbstractDatabase" abstract="true">

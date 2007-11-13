@@ -30,6 +30,8 @@ import java.util.Map;
 
 import net.sf.hajdbc.DatabaseProperties;
 import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.TableProperties;
 
 /**
@@ -41,6 +43,7 @@ public class LazyDatabaseProperties implements DatabaseProperties
 	private static ThreadLocal<Connection> threadLocal = new ThreadLocal<Connection>();
 	
 	private Map<String, TableProperties> tableMap;
+	private Map<String, SequenceProperties> sequenceMap;
 	private Boolean supportsSelectForUpdate;
 	private DatabaseMetaDataSupport support;
 	private List<String> defaultSchemaList;
@@ -48,7 +51,7 @@ public class LazyDatabaseProperties implements DatabaseProperties
 
 	public LazyDatabaseProperties(Dialect dialect) throws SQLException
 	{
-		this.support = new DatabaseMetaDataSupport(getDatabaseMetaData());
+		this.support = new DatabaseMetaDataSupport(getDatabaseMetaData(), dialect);
 		this.dialect = dialect;
 	}
 
@@ -73,36 +76,41 @@ public class LazyDatabaseProperties implements DatabaseProperties
 
 	private synchronized Map<String, TableProperties> getTableMap() throws SQLException
 	{
-		DatabaseMetaData metaData = getDatabaseMetaData();
-		
 		if (this.tableMap == null)
 		{
 			this.tableMap = new HashMap<String, TableProperties>();
 			
-			Map<String, Collection<String>> tablesMap = this.support.getTables(metaData);
-			
-			for (Map.Entry<String, Collection<String>> tablesMapEntry: tablesMap.entrySet())
+			for (QualifiedName table: this.support.getTables(getDatabaseMetaData()))
 			{
-				String schema = tablesMapEntry.getKey();
-				Collection<String> tables = tablesMapEntry.getValue();
+				TableProperties properties = new LazyTableProperties(this.support, table);
 				
-				for (String table: tables)
-				{
-					TableProperties properties = new LazyTableProperties(this.support, schema, table);
-					
-					this.tableMap.put(properties.getName(), properties);
-				}
+				this.tableMap.put(properties.getName(), properties);
 			}
 		}
 		
 		return this.tableMap;
 	}
 	
+	private synchronized Map<String, SequenceProperties> getSequenceMap() throws SQLException
+	{
+		if (this.sequenceMap == null)
+		{
+			this.sequenceMap = new HashMap<String, SequenceProperties>();
+			
+			for (SequenceProperties sequence: this.support.getSequences(getDatabaseMetaData()))
+			{
+				this.sequenceMap.put(sequence.getName(), sequence);
+			}
+		}
+		
+		return this.sequenceMap;
+	}
+	
 	private synchronized List<String> getDefaultSchemaList() throws SQLException
 	{
 		if (this.defaultSchemaList == null)
 		{
-			this.defaultSchemaList = this.dialect.getDefaultSchemas(threadLocal.get());
+			this.defaultSchemaList = this.dialect.getDefaultSchemas(getDatabaseMetaData());
 		}
 		
 		return this.defaultSchemaList;
@@ -114,7 +122,7 @@ public class LazyDatabaseProperties implements DatabaseProperties
 	@Override
 	public TableProperties findTable(String table) throws SQLException
 	{
-		return this.support.findTable(this.getTableMap(), table, this.getDefaultSchemaList(), this.dialect);
+		return this.support.find(this.getTableMap(), table, this.getDefaultSchemaList());
 	}
 
 	/**
@@ -129,5 +137,23 @@ public class LazyDatabaseProperties implements DatabaseProperties
 		}
 		
 		return this.supportsSelectForUpdate;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseProperties#findSequence(java.lang.String)
+	 */
+	@Override
+	public SequenceProperties findSequence(String sequence) throws SQLException
+	{
+		return this.support.find(this.getSequenceMap(), sequence, this.getDefaultSchemaList());
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseProperties#getSequences()
+	 */
+	@Override
+	public Collection<SequenceProperties> getSequences() throws SQLException
+	{
+		return this.getSequenceMap().values();
 	}
 }

@@ -22,19 +22,8 @@ package net.sf.hajdbc;
 
 /**
  * @author Paul Ferraro
- *
  */
-public enum TransactionMode
+public interface SequenceProperties
 {
-	PARALLEL, SERIAL;
-	
-	public static TransactionMode deserialize(String value)
-	{
-		return TransactionMode.valueOf(value.toUpperCase());
-	}
-	
-	public static String serialize(TransactionMode transaction)
-	{
-		return transaction.name().toLowerCase();
-	}
+	public String getName();
 }

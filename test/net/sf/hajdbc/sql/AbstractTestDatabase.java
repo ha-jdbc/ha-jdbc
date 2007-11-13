@@ -31,7 +31,7 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({ "unchecked", "nls" })
 public abstract class AbstractTestDatabase<T extends Database, U> implements Database<U>
 {
 	protected abstract T createDatabase(String id);
@@ -315,7 +315,7 @@ public abstract class AbstractTestDatabase<T extends Database, U> implements Dat
 
 		value = database.getWeight();
 		
-		assert value == weight;
+		assert value == weight : value;
 		
 		assert !database.isDirty();
 		
@@ -342,7 +342,48 @@ public abstract class AbstractTestDatabase<T extends Database, U> implements Dat
 		
 		assert !database.isDirty();
 	}
+	
+	@DataProvider(name = "boolean")
+	public Object[][] booleanProvider()
+	{
+		return new Object[][] { new Object[] { true } };
+	}
 
+	/**
+	 * @see net.sf.hajdbc.InactiveDatabaseMBean#setLocal(boolean)
+	 */
+	@Test(dataProvider = "boolean")
+	public void setLocal(boolean local)
+	{
+		Database database = this.createDatabase("1");
+		
+		database.setLocal(local);
+
+		boolean value = database.isLocal();
+		
+		assert value == local : value;
+		
+		database.clean();
+
+		database.setLocal(local);
+
+		value = database.isLocal();
+		
+		assert value == local : value;
+		
+		assert !database.isDirty();
+		
+		database.setLocal(false);
+		
+		assert database.isDirty();
+		
+		value = database.isLocal();
+		
+		assert !value;
+		
+		database.clean();
+	}
+	
 	@DataProvider(name = "database")
 	Object[][] databaseProvider()
 	{
@@ -474,5 +515,26 @@ public abstract class AbstractTestDatabase<T extends Database, U> implements Dat
 		assert weight == 0 : weight;
 		
 		return weight;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.ActiveDatabaseMBean#isLocal()
+	 */
+	@Test
+	public boolean isLocal()
+	{
+		Database database = this.createDatabase("1");
+
+		boolean local = database.isLocal();
+
+		assert !local;
+		
+		database.setLocal(true);
+		
+		local = database.isLocal();
+		
+		assert local;
+		
+		return local;
 	}
 }

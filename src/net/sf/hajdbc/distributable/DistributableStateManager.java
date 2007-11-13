@@ -20,9 +20,8 @@
  */
 package net.sf.hajdbc.distributable;
 
+import java.text.MessageFormat;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import net.sf.hajdbc.DatabaseCluster;
@@ -31,10 +30,8 @@ import net.sf.hajdbc.StateManager;
 
 import org.jgroups.Address;
 import org.jgroups.Channel;
-import org.jgroups.MembershipListener;
 import org.jgroups.Message;
 import org.jgroups.MessageListener;
-import org.jgroups.View;
 import org.jgroups.blocks.GroupRequest;
 import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestHandler;
@@ -48,24 +45,25 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Paul Ferraro
  */
-public class DistributableStateManager implements StateManager, MessageListener, MembershipListener, RequestHandler
+public class DistributableStateManager extends AbstractMembershipListener implements StateManager, MessageListener, RequestHandler
 {
-	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	private static final String CHANNEL = "{0}-state"; //$NON-NLS-1$
+	
+	private static Logger logger = LoggerFactory.getLogger(DistributableStateManager.class);
 	
 	private int timeout;
 	private MessageDispatcher dispatcher;
 	private DatabaseCluster<?> databaseCluster;
 	private StateManager stateManager;
-	private Set<Address> addressSet = new HashSet<Address>();
 	
 	public DistributableStateManager(DatabaseCluster<?> databaseCluster, DistributableDatabaseClusterDecorator decorator) throws Exception
 	{
+		super(decorator.createChannel(MessageFormat.format(CHANNEL, databaseCluster.getId())));
+		
 		this.databaseCluster = databaseCluster;
 		
-		this.dispatcher = new MessageDispatcher(decorator.createChannel(databaseCluster.getId()), this, this, this);
-		// Don't send messages to ourselves
-		this.dispatcher.getChannel().setOpt(Channel.LOCAL, false);
-		
+		this.dispatcher = new MessageDispatcher(this.channel, this, this, this);
+
 		this.timeout = decorator.getTimeout();
 		this.stateManager = databaseCluster.getStateManager();
 	}
@@ -81,7 +79,7 @@ public class DistributableStateManager implements StateManager, MessageListener,
 		{
 			Command<Object> command = (Command) message.getObject();
 	
-			this.logger.info(Messages.getMessage(Messages.COMMAND_RECEIVED, command));
+			logger.info(Messages.getMessage(Messages.COMMAND_RECEIVED, command));
 			
 			return command.marshalResult(command.execute(this.databaseCluster, this.stateManager));
 		}
@@ -147,7 +145,6 @@ public class DistributableStateManager implements StateManager, MessageListener,
 		this.stateManager.remove(databaseId);
 	}
 
-	@SuppressWarnings("unchecked")
 	private Collection<Rsp> send(Command<?> command, int mode, long timeout)
 	{
 		return this.dispatcher.castMessage(null, this.createMessage(command), mode, timeout).values();
@@ -187,53 +184,21 @@ public class DistributableStateManager implements StateManager, MessageListener,
 	}
 
 	/**
-	 * @see org.jgroups.MembershipListener#block()
+	 * @see net.sf.hajdbc.distributable.AbstractMembershipListener#memberJoined(org.jgroups.Address)
 	 */
 	@Override
-	public void block()
+	protected void memberJoined(Address address)
 	{
-		// Ignore
+		logger.info(Messages.getMessage(Messages.GROUP_MEMBER_JOINED, address, this.databaseCluster));
 	}
 
 	/**
-	 * @see org.jgroups.MembershipListener#suspect(org.jgroups.Address)
+	 * @see net.sf.hajdbc.distributable.AbstractMembershipListener#memberLeft(org.jgroups.Address)
 	 */
 	@Override
-	public void suspect(Address address)
+	protected void memberLeft(Address address)
 	{
-		// Ignore
-	}
-
-	/**
-	 * @see org.jgroups.MembershipListener#viewAccepted(org.jgroups.View)
-	 */
-	@Override
-	public void viewAccepted(View view)
-	{
-		synchronized (this.addressSet)
-		{
-			Iterator<Address> addresses = this.addressSet.iterator();
-			
-			while (addresses.hasNext())
-			{
-				Address address = addresses.next();
-				
-				if (!view.containsMember(address))
-				{
-					logger.info(Messages.getMessage(Messages.GROUP_MEMBER_LEFT, address, this.databaseCluster));
-					
-					addresses.remove();
-				}
-			}
-			
-			for (Address address: view.getMembers())
-			{
-				if (this.addressSet.add(address))
-				{
-					logger.info(Messages.getMessage(Messages.GROUP_MEMBER_JOINED, address, this.databaseCluster));
-				}
-			}
-		}
+		logger.info(Messages.getMessage(Messages.GROUP_MEMBER_LEFT, address, this.databaseCluster));
 	}
 
 	/**

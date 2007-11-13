@@ -30,8 +30,12 @@ import java.util.ResourceBundle;
  * @version $Revision$
  * @since   1.0
  */
+@SuppressWarnings("nls")
 public final class Messages
 {
+	public static final String CLUSTER_NOT_ACTIVE = "cluster-not-active";
+	public static final String CLUSTER_PANIC_DETECTED = "cluster-panic-detected";
+	public static final String CLUSTER_START_FAILED = "cluster-start-failed";
 	public static final String CLUSTER_STATE_LOAD_FAILED = "cluster-state-load-failed";
 	public static final String CLUSTER_STATE_STORE_FAILED = "cluster-state-store-failed";
 	public static final String COMMAND_RECEIVED = "command-received";
@@ -69,11 +73,11 @@ public final class Messages
 	public static final String MBEAN_SERVER_NOT_FOUND = "mbean-server-not-found";
 	public static final String NO_ACTIVE_DATABASES = "no-active-databases";
 	public static final String PRIMARY_KEY_REQUIRED = "primary-key-required";
+	public static final String SCHEMA_LOOKUP_FAILED = "schema-lookup-failed";
 	public static final String SEQUENCE_OUT_OF_SYNC = "sequence-out-of-sync";
 	public static final String SHUT_DOWN = "shut-down";
 	public static final String SQL_OBJECT_INIT_FAILED = "sql-object-init-failed";
 	public static final String STATEMENT_FAILED = "statement-failed";
-	public static final String TABLE_LOOKUP_FAILED = "table-lookup-failed";
 	public static final String TABLE_LOCK_ACQUIRE = "table-lock-acquire";
 	public static final String TABLE_LOCK_RELEASE = "table-lock-release";
 	public static final String UPDATE_COUNT = "update-count";

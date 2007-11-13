@@ -20,7 +20,7 @@
  */
 package net.sf.hajdbc.dialect;
 
-import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -28,12 +28,15 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.sf.hajdbc.QualifiedName;
+
 /**
  * Dialect for <a href="http://www.hsqldb.org">HSQLDB</a>.
  * 
  * @author  Paul Ferraro
  * @since   1.1
  */
+@SuppressWarnings("nls")
 public class HSQLDBDialect extends StandardDialect
 {
 	/**
@@ -46,23 +49,22 @@ public class HSQLDBDialect extends StandardDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.Connection)
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.DatabaseMetaData)
 	 */
 	@Override
-	public Collection<String> getSequences(Connection connection) throws SQLException
+	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
 	{
-		List<String> sequenceList = new LinkedList<String>();
+		List<QualifiedName> sequenceList = new LinkedList<QualifiedName>();
 		
-		Statement statement = connection.createStatement();
+		Statement statement = metaData.getConnection().createStatement();
 		
-		ResultSet resultSet = statement.executeQuery("SELECT SEQUENCE_NAME FROM INFORMATION_SCHEMA.SYSTEM_SEQUENCES");
+		ResultSet resultSet = statement.executeQuery("SELECT SEQUENCE_SCHEMA, SEQUENCE_NAME FROM INFORMATION_SCHEMA.SYSTEM_SEQUENCES");
 		
 		while (resultSet.next())
 		{
-			sequenceList.add(resultSet.getString(1));
+			sequenceList.add(new QualifiedName(resultSet.getString(1), resultSet.getString(2)));
 		}
-
-		resultSet.close();
+		
 		statement.close();
 		
 		return sequenceList;
@@ -76,5 +78,32 @@ public class HSQLDBDialect extends StandardDialect
 	protected String createForeignKeyConstraintFormat()
 	{
 		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} ON UPDATE {6,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT}";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentDatePattern()
+	 */
+	@Override
+	protected String currentDatePattern()
+	{
+		return "(?<=\\W)CURRENT_DATE(?=\\W)|(?<=\\W)CURDATE\\s*\\(\\s*\\)";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentTimePattern()
+	 */
+	@Override
+	protected String currentTimePattern()
+	{
+		return "(?<=\\W)CURRENT_TIME(?=\\W)|(?<=\\W)CURTIME\\s*\\(\\s*\\)";
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.StandardDialect#currentTimestampPattern()
+	 */
+	@Override
+	protected String currentTimestampPattern()
+	{
+		return "(?<=\\W)CURRENT_TIMESTAMP(?=\\W)|(?<=\\W)NOW\\s*\\(\\s*\\)";
 	}
 }

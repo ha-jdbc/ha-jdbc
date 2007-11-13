@@ -35,6 +35,7 @@ import org.testng.annotations.Test;
  * @author  Paul Ferraro
  * @since   1.0
  */
+@SuppressWarnings("nls")
 public abstract class AbstractTestBalancer implements Balancer<Void>
 {
 	private Balancer<Void> balancer = createBalancer();
