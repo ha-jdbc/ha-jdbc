@@ -12,6 +12,11 @@
 	</contexts>
 
 	<changes>
+		<release version="2.0.8" date="?">
+			<action context="lib" dev="PF" type="update">
+				Upgraded JGroups to 2.6.0.
+			</action>
+		</release>
 		<release version="2.0.7" date="November 9, 2007">
 			<action context="src" dev="PF" type="update">
 				Added local="true|false" attribute to database/datasource.
