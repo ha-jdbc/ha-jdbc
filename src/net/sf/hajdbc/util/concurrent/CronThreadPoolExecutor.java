@@ -89,13 +89,13 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 						try
 						{
 							CronThreadPoolExecutor.this.schedule(task, delay, TimeUnit.MILLISECONDS).get();
-							
-							time = expression.getNextValidTimeAfter(new Date());
 						}
 						catch (ExecutionException e)
 						{
 							logger.warn(e.toString(), e.getCause());
 						}
+						
+						time = expression.getNextValidTimeAfter(new Date());
 					}
 				}
 				catch (RejectedExecutionException e)
