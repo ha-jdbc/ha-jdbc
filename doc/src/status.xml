@@ -13,6 +13,9 @@
 
 	<changes>
 		<release version="2.0.8" date="?">
+			<action context="src" dev="PF" type="fix" fixes-bug="1832392" due-to="gamani">
+				Fixed infinite loop in <code>CronThreadPoolExecutor</code> when scheduled task throws an <code>ExecutionException</code>.
+			</action>
 			<action context="lib" dev="PF" type="update">
 				Upgraded JGroups to 2.6.0.
 			</action>
