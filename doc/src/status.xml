@@ -12,6 +12,11 @@
 	</contexts>
 
 	<changes>
+		<release version="2.0.9" date="...">
+			<action context="lib" dev="PF" type="update">
+				Upgraded JGroups to 2.6.1.
+			</action>
+		</release>
 		<release version="2.0.8" date="November 19, 2007">
 			<action context="src" dev="PF" type="fix" fixes-bug="1832392" due-to="gamani">
 				Fixed infinite loop in <code>CronThreadPoolExecutor</code> when scheduled task throws an <code>ExecutionException</code>.
