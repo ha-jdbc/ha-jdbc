@@ -12,7 +12,10 @@
 	</contexts>
 
 	<changes>
-		<release version="2.0.9" date="...">
+		<release version="2.0.9" date="December 28, 2007">
+			<action context="src" dev="PF" type="fix">
+				In DatabaseWriteInvocationStrategy, acquire read locks before Balancer.all() so that a newly activated database will not miss any pending write statements.
+			</action>
 			<action context="lib" dev="PF" type="update">
 				Upgraded JGroups to 2.6.1.
 			</action>
