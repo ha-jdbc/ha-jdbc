@@ -71,15 +71,6 @@ public class DatabaseWriteInvocationStrategy<D, T, R> implements InvocationStrat
 		
 		DatabaseCluster<D> cluster = proxy.getDatabaseCluster();
 		
-		Set<Database<D>> databaseSet = cluster.getBalancer().all();
-		
-		proxy.getRoot().retain(databaseSet);
-		
-		if (databaseSet.isEmpty())
-		{
-			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, cluster));
-		}
-		
 		ExecutorService executor = (this.lockList == null) ? cluster.getNonTransactionalExecutor() : cluster.getTransactionalExecutor();
 		
 		Map<Database<D>, Future<R>> futureMap = new HashMap<Database<D>, Future<R>>();
@@ -99,6 +90,15 @@ public class DatabaseWriteInvocationStrategy<D, T, R> implements InvocationStrat
 		
 		try
 		{
+			Set<Database<D>> databaseSet = cluster.getBalancer().all();
+			
+			proxy.getRoot().retain(databaseSet);
+			
+			if (databaseSet.isEmpty())
+			{
+				throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, cluster));
+			}
+			
 			for (final Database<D> database: databaseSet)
 			{
 				final T object = proxy.getObject(database);
