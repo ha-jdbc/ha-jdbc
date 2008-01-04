@@ -21,13 +21,12 @@
 package net.sf.hajdbc.sql;
 
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +36,7 @@ import java.util.SortedMap;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Messages;
-import net.sf.hajdbc.util.SQLExceptionFactory;
+import net.sf.hajdbc.util.reflect.Methods;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,8 +51,8 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 	protected DatabaseCluster<D> databaseCluster;
 	private Class<E> proxyClass;
 	private Map<Database<D>, E> objectMap;
-	private Set<Invoker<D, E, ?>> invokerSet = new LinkedHashSet<Invoker<D, E, ?>>();
 	private List<SQLProxy<D, ?>> childList = new LinkedList<SQLProxy<D, ?>>();
+	private Map<Method, Invoker<D, E, ?>> invokerMap = new HashMap<Method, Invoker<D, E, ?>>();
 	
 	protected AbstractInvocationHandler(DatabaseCluster<D> databaseCluster, Class<E> proxyClass, Map<Database<D>, E> objectMap)
 	{
@@ -81,6 +80,8 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 		
 		Object result = strategy.invoke(this, invoker);
 		
+		this.record(method, invoker);
+		
 		this.postInvoke(proxy, method, parameters);
 		
 		return result;
@@ -101,7 +102,7 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 		}
 		catch (NoSuchMethodException e)
 		{
-			// Ignore
+			// Ignore - Java 1.4 or 1.5
 		}
 		
 		if (method.equals(Object.class.getMethod("equals", Object.class)))
@@ -153,10 +154,10 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 				parameterList.set(0, cluster.getDialect().evaluateRand((String) parameterList.get(0)));
 			}
 			
-			return new DynamicInvoker(method, parameterList.toArray());
+			return new SimpleInvoker(method, parameterList.toArray());
 		}
 		
-		return new DynamicInvoker(method, parameters);
+		return new SimpleInvoker(method, parameters);
 	}
 	
 	/**
@@ -256,17 +257,11 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 				{
 					object = this.createObject(database);
 					
-					synchronized (this.invokerSet)
-					{
-						for (Invoker<D, E, ?> invoker: this.invokerSet)
-						{
-							invoker.invoke(database, object);
-						}
-					}
+					this.replay(database, object);
 					
 					this.objectMap.put(database, object);
 				}
-				catch (Exception e)
+				catch (SQLException e)
 				{
 					if (!this.objectMap.isEmpty() && this.databaseCluster.deactivate(database, this.databaseCluster.getStateManager()))
 					{
@@ -281,15 +276,31 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 	
 	protected abstract E createObject(Database<D> database) throws SQLException;
 
-	/**
-	 * @see net.sf.hajdbc.sql.SQLProxy#record(net.sf.hajdbc.sql.Invoker)
-	 */
-	@Override
-	public final void record(Invoker<D, E, ?> invoker)
+	protected void record(Method method, Invoker<D, E, ?> invoker)
 	{
-		synchronized (this.invokerSet)
+		if (this.isSetMethod(method) && (method.getTypeParameters().length == 1))
 		{
-			this.invokerSet.add(invoker);
+			synchronized (this.invokerMap)
+			{
+				this.invokerMap.put(method, invoker);
+			}
+		}
+	}
+	
+	@SuppressWarnings("nls")
+	protected boolean isSetMethod(Method method)
+	{
+		return method.getName().startsWith("set") && (method.getTypeParameters() != null);
+	}
+	
+	protected void replay(Database<D> database, E object) throws SQLException
+	{
+		synchronized (this.invokerMap)
+		{
+			for (Invoker<D, E, ?> invoker: this.invokerMap.values())
+			{
+				invoker.invoke(database, object);
+			}
 		}
 	}
 	
@@ -488,12 +499,12 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 		return same;
 	}
 	
-	protected class DynamicInvoker implements Invoker<D, E, Object>
+	protected class SimpleInvoker implements Invoker<D, E, Object>
 	{
 		private Method method;
 		private Object[] parameters;
 		
-		public DynamicInvoker(Method method, Object[] parameters)
+		public SimpleInvoker(Method method, Object[] parameters)
 		{
 			this.method = method;
 			this.parameters = parameters;
@@ -505,65 +516,7 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 		@Override
 		public Object invoke(Database<D> database, E object) throws SQLException
 		{
-			try
-			{
-				return this.method.invoke(object, this.parameters);
-			}
-			catch (IllegalAccessException e)
-			{
-				throw new IllegalStateException(e);
-			}
-			catch (InvocationTargetException e)
-			{
-				Throwable target = e.getTargetException();
-				
-				if (target instanceof SQLException)
-				{
-					throw (SQLException) target;
-				}
-				else if (target instanceof RuntimeException)
-				{
-					throw (RuntimeException) target;
-				}
-				else if (target instanceof Error)
-				{
-					throw (Error) target;
-				}
-				
-				throw SQLExceptionFactory.createSQLException(target);
-			}
-		}
-
-		public Method getMethod()
-		{
-			return this.method;
-		}
-		
-		public Object[] getParameters()
-		{
-			return this.parameters;
-		}
-		
-		/**
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
-		@Override
-		public boolean equals(Object object)
-		{
-			if ((object == null) || !DynamicInvoker.class.isInstance(object)) return false;
-			
-			Method method = ((DynamicInvoker) object).method;
-			
-			return (method != null) && method.equals(this.method);
-		}
-
-		/**
-		 * @see java.lang.Object#hashCode()
-		 */
-		@Override
-		public int hashCode()
-		{
-			return this.method.hashCode();
+			return Methods.invoke(this.method, object, this.parameters);
 		}
 	}
 }
