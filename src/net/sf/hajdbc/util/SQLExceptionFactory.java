@@ -26,7 +26,7 @@ import java.sql.SQLException;
  * @author Paul Ferraro
  *
  */
-public class SQLExceptionFactory
+public final class SQLExceptionFactory
 {
 	public static SQLException createSQLException(String message, Throwable cause)
 	{

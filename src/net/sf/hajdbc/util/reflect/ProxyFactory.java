@@ -27,7 +27,7 @@ import java.lang.reflect.Proxy;
  * @author Paul Ferraro
  *
  */
-public class ProxyFactory
+public final class ProxyFactory
 {
 	public static <T> T createProxy(Class<T> targetInterface, InvocationHandler handler)
 	{
