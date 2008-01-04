@@ -52,7 +52,7 @@ public abstract class AbstractChildInvocationHandler<D, P, E> extends AbstractIn
 		
 		if (parentObject == null)
 		{
-			throw new SQLException();
+			throw new IllegalStateException();
 		}
 		
 		return this.parentInvoker.invoke(database, parentObject);
