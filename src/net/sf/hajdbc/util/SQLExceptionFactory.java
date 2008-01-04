@@ -28,6 +28,12 @@ import java.sql.SQLException;
  */
 public final class SQLExceptionFactory
 {
+	/**
+	 * Helper method for missing SQLException(String, Throwable) constructor in Java < 1.6
+	 * @param message the description of the exception
+	 * @param cause the exception to wrap
+	 * @return an SQLException wrapping the given cause
+	 */
 	public static SQLException createSQLException(String message, Throwable cause)
 	{
 		SQLException exception = new SQLException(message);
@@ -37,6 +43,11 @@ public final class SQLExceptionFactory
 		return exception;
 	}
 	
+	/**
+	 * Helper method for missing SQLException(Throwable) constructor in Java < 1.6
+	 * @param cause the exception to wrap
+	 * @return an SQLException wrapping the given cause
+	 */
 	public static SQLException createSQLException(Throwable cause)
 	{
 		if (cause instanceof SQLException)
