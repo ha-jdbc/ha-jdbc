@@ -53,9 +53,11 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 {
 	private static final Set<String> DRIVER_READ_METHOD_SET = new HashSet<String>(Arrays.asList("getFetchDirection", "getFetchSize", "getGeneratedKeys", "getMaxFieldSize", "getMaxRows", "getQueryTimeout", "getResultSetConcurrency", "getResultSetHoldability", "getResultSetType", "getUpdateCount", "getWarnings", "isClosed", "isPoolable"));
 	private static final Set<String> DRIVER_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList("addBatch", "clearBatch", "clearWarnings", "setCursorName", "setEscapeProcessing", "setFetchDirection", "setFetchSize", "setMaxFieldSize", "setMaxRows", "setPoolable", "setQueryTimeout"));
+	private static final Set<String> SQL_METHOD_SET = new HashSet<String>(Arrays.asList("addBatch", "executeQuery", "execute", "executeUpdate"));
 	
 	private List<String> sqlList = new LinkedList<String>();
 	protected FileSupport fileSupport;
+	private List<Invoker<D, S, ?>> invokerList = new LinkedList<Invoker<D, S, ?>>();
 	
 	/**
 	 * @param connection the parent connection of this statement
@@ -154,10 +156,9 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 	@Override
 	protected boolean isSQLMethod(Method method)
 	{
-		String methodName = method.getName();
 		Class<?>[] parameterTypes = method.getParameterTypes();
 		
-		return (methodName.equals("addBatch") || methodName.equals("executeQuery") || methodName.equals("execute") || methodName.equals("executeUpdate")) && (parameterTypes.length > 0) && parameterTypes[0].equals(String.class);
+		return SQL_METHOD_SET.contains(method.getName()) && (parameterTypes.length > 0) && parameterTypes[0].equals(String.class);
 	}
 
 	/**
@@ -170,7 +171,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 		{
 			this.sqlList.add((String) parameters[0]);
 		}
-		else if (method.equals(Statement.class.getMethod("clearBatch")))
+		else if (method.equals(Statement.class.getMethod("clearBatch")) || method.equals(Statement.class.getMethod("executeBatch")))
 		{
 			this.sqlList.clear();
 		}
@@ -302,5 +303,55 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 	protected void close(Connection connection, S statement) throws SQLException
 	{
 		statement.close();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#record(java.lang.reflect.Method, net.sf.hajdbc.sql.Invoker)
+	 */
+	@Override
+	protected void record(Method method, Invoker<D, S, ?> invoker)
+	{
+		String methodName = method.getName();
+		
+		if (this.isRecordable(method))
+		{
+			synchronized (this.invokerList)
+			{
+				this.invokerList.add(invoker);
+			}
+		}
+		else if (methodName.equals("clearBatch") || methodName.equals("executeBatch"))
+		{
+			synchronized (this.invokerList)
+			{
+				this.invokerList.clear();
+			}
+		}
+		else
+		{
+			super.record(method, invoker);
+		}
+	}
+
+	protected boolean isRecordable(Method method)
+	{
+		return method.getName().equals("addBatch");
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#replay(net.sf.hajdbc.Database, java.lang.Object)
+	 */
+	@Override
+	protected void replay(Database<D> database, S statement) throws SQLException
+	{
+		super.replay(database, statement);
+		
+		synchronized (this.invokerList)
+		{
+			for (Invoker<D, S, ?> invoker: this.invokerList)
+			{
+				invoker.invoke(database, statement);
+			}
+		}
 	}
 }
