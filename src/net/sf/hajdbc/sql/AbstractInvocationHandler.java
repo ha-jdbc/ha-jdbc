@@ -278,6 +278,7 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 
 	protected void record(Method method, Invoker<D, E, ?> invoker)
 	{
+		// Record only the last invocation of a given set*(...) method
 		if (this.isSetMethod(method) && (method.getTypeParameters().length == 1))
 		{
 			synchronized (this.invokerMap)
