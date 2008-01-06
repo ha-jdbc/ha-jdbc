@@ -32,12 +32,13 @@ import net.sf.hajdbc.util.SQLExceptionFactory;
 public final class Methods
 {
 	/**
-	 * Helper method for Method.invoke(Object, Object...) that performs the necessary exception handling and throws an SQLException.
+	 * Helper method for <code>Method.invoke(Object, Object...)</code> that performs the necessary exception handling and throws an SQLException.
 	 * @param method a method to invoke
 	 * @param object the object on which to invoke the given method
 	 * @param parameters the method parameters
 	 * @return the return value of the method invocation
 	 * @throws SQLException the target exception of the method invocation
+	 * @throws IllegalArgumentException if the the underlying method is inaccessible
 	 */
 	public static Object invoke(Method method, Object object, Object... parameters) throws SQLException
 	{
