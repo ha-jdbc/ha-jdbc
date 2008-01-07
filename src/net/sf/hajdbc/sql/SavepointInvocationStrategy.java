@@ -22,9 +22,6 @@ package net.sf.hajdbc.sql;
 
 import java.sql.Connection;
 import java.sql.Savepoint;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.util.reflect.ProxyFactory;
 
@@ -32,7 +29,7 @@ import net.sf.hajdbc.util.reflect.ProxyFactory;
  * @author Paul Ferraro
  *
  */
-public class SavepointInvocationStrategy<D> extends DatabaseWriteInvocationStrategy<D, Connection, Savepoint>
+public class SavepointInvocationStrategy<D> extends TransactionalDatabaseWriteInvocationStrategy<D, Connection, Savepoint>
 {
 	private Connection connection;
 	
@@ -41,14 +38,7 @@ public class SavepointInvocationStrategy<D> extends DatabaseWriteInvocationStrat
 	 */
 	public SavepointInvocationStrategy(Connection connection)
 	{
-		super(emptyLockList());
-		
 		this.connection = connection;
-	}
-
-	private static List<Lock> emptyLockList()
-	{
-		return Collections.emptyList();
 	}
 	
 	/**

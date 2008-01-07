@@ -36,7 +36,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
 
 import javax.sql.rowset.serial.SerialBlob;
 import javax.sql.rowset.serial.SerialClob;
@@ -56,7 +55,7 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 	private static final Set<String> DATABASE_READ_METHOD_SET = new HashSet<String>(Arrays.asList("getMetaData", "getParameterMetaData"));
 	private static final Set<String> DRIVER_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList("addBatch", "clearParameters"));
 	
-	protected List<Lock> lockList;
+	protected Set<String> identifierSet;
 	protected boolean selectForUpdate;
 	
 	/**
@@ -69,8 +68,8 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 	public AbstractPreparedStatementInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, S> invoker, Class<S> statementClass, Map<Database<D>, S> statementMap, FileSupport fileSupport, String sql) throws Exception
 	{
 		super(connection, proxy, invoker, statementClass, statementMap, fileSupport);
-		
-		this.lockList = this.getLockList(sql);
+
+		this.identifierSet = this.extractIdentifiers(sql);
 		this.selectForUpdate = this.isSelectForUpdate(sql);
 	}
 
@@ -99,12 +98,12 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 		
 		if (method.equals(PreparedStatement.class.getMethod("execute")) || method.equals(PreparedStatement.class.getMethod("executeUpdate")))
 		{
-			return new DatabaseWriteInvocationStrategy<D, S, Object>(this.lockList);
+			return new TransactionalDatabaseWriteInvocationStrategy<D, S, Object>(this.identifierSet);
 		}
 		
 		if (method.equals(PreparedStatement.class.getMethod("executeQuery")))
 		{
-			return (this.lockList.isEmpty() && !this.selectForUpdate && (statement.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY)) ? new DatabaseReadInvocationStrategy<D, S, Object>() : new EagerResultSetInvocationStrategy<D, S>(statement, this.fileSupport, this.lockList);
+			return (this.identifierSet.isEmpty() && !this.selectForUpdate && (statement.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY)) ? new DatabaseReadInvocationStrategy<D, S, Object>() : new EagerResultSetInvocationStrategy<D, S>(statement, this.fileSupport, this.identifierSet);
 		}
 		
 		return super.getInvocationStrategy(statement, method, parameters);

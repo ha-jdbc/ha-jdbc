@@ -32,14 +32,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.concurrent.locks.Lock;
 
 import javax.sql.rowset.serial.SerialBlob;
 import javax.sql.rowset.serial.SerialClob;
@@ -98,9 +96,7 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 		
 		if (DATABASE_WRITE_METHOD_SET.contains(methodName))
 		{
-			List<Lock> lockList = Collections.emptyList();
-			
-			return new DatabaseWriteInvocationStrategy<D, ResultSet, Object>(lockList);
+			return new TransactionalDatabaseWriteInvocationStrategy<D, ResultSet, Object>();
 		}
 		
 		if (this.isGetMethod(method))

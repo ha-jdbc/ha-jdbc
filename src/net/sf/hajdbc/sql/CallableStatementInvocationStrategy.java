@@ -29,7 +29,7 @@ import net.sf.hajdbc.util.reflect.ProxyFactory;
  * @author Paul Ferraro
  *
  */
-public class CallableStatementInvocationStrategy<D> extends DatabaseWriteInvocationStrategy<D, Connection, CallableStatement>
+public class CallableStatementInvocationStrategy<D> extends NonTransactionalDatabaseWriteInvocationStrategy<D, Connection, CallableStatement>
 {
 	private Connection connection;
 	private FileSupport fileSupport;
@@ -42,8 +42,6 @@ public class CallableStatementInvocationStrategy<D> extends DatabaseWriteInvocat
 	 */
 	public CallableStatementInvocationStrategy(Connection connection, FileSupport fileSupport, String sql)
 	{
-		super(null);
-		
 		this.connection = connection;
 		this.sql = sql;
 	}

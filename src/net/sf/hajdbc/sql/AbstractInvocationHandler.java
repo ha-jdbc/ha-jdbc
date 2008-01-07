@@ -121,7 +121,7 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 			return new DriverReadInvocationStrategy<D, E, Object>();
 		}
 		
-		return new DatabaseWriteInvocationStrategy<D, E, Object>(null);
+		return new NonTransactionalDatabaseWriteInvocationStrategy<D, E, Object>();
 	}
 	
 	protected Invoker<D, E, ?> getInvoker(E object, Method method, Object[] parameters) throws Exception

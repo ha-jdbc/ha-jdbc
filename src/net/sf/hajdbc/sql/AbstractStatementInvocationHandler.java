@@ -25,7 +25,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -35,12 +34,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeSet;
-import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Dialect;
-import net.sf.hajdbc.LockManager;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.TableProperties;
 
@@ -98,7 +95,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 			
 			if ((types != null) && (types.length > 0) && types[0].equals(String.class))
 			{
-				return new DatabaseWriteInvocationStrategy<D, S, Object>(this.getLockList((String) parameters[0]));
+				return new TransactionalDatabaseWriteInvocationStrategy<D, S, Object>(this.extractIdentifiers((String) parameters[0]));
 			}
 		}
 		
@@ -117,14 +114,14 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 		{
 			String sql = (String) parameters[0];
 			
-			List<Lock> lockList = this.getLockList(sql);
+			Set<String> identifierSet = this.extractIdentifiers(sql);
 			
-			return (lockList.isEmpty() && (statement.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(sql)) ? new LazyResultSetInvocationStrategy<D, S>(statement) : new EagerResultSetInvocationStrategy<D, S>(statement, this.fileSupport, lockList);
+			return (identifierSet.isEmpty() && (statement.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(sql)) ? new LazyResultSetInvocationStrategy<D, S>(statement) : new EagerResultSetInvocationStrategy<D, S>(statement, this.fileSupport, identifierSet);
 		}
 		
 		if (method.equals(Statement.class.getMethod("executeBatch")))
 		{
-			return new DatabaseWriteInvocationStrategy<D, S, Object>(this.getLockList(this.sqlList));
+			return new TransactionalDatabaseWriteInvocationStrategy<D, S, Object>(this.extractIdentifiers(this.sqlList));
 		}
 		
 		if (method.equals(Statement.class.getMethod("getMoreResults", Integer.TYPE)))
@@ -142,9 +139,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 				return new LazyResultSetInvocationStrategy<D, S>(statement);
 			}
 			
-			List<Lock> lockList = Collections.emptyList();
-			
-			return new EagerResultSetInvocationStrategy<D, S>(statement, this.fileSupport, lockList);
+			return new EagerResultSetInvocationStrategy<D, S>(statement, this.fileSupport);
 		}
 		
 		return super.getInvocationStrategy(statement, method, parameters);
@@ -240,12 +235,12 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 		return databaseCluster.getDatabaseMetaDataCache().getDatabaseProperties(this.getParent()).supportsSelectForUpdate() ? databaseCluster.getDialect().isSelectForUpdate(sql) : false;
 	}
 	
-	protected List<Lock> getLockList(String sql) throws SQLException
+	protected Set<String> extractIdentifiers(String sql) throws SQLException
 	{
-		return this.getLockList(Collections.singletonList(sql));
+		return this.extractIdentifiers(Collections.singletonList(sql));
 	}
 	
-	private List<Lock> getLockList(List<String> sqlList) throws SQLException
+	private Set<String> extractIdentifiers(List<String> sqlList) throws SQLException
 	{
 		DatabaseCluster<D> databaseCluster = this.getDatabaseCluster();
 		
@@ -281,19 +276,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 			}
 		}
 		
-		List<Lock> lockList = new ArrayList<Lock>(identifierSet.size());
-
-		if (!identifierSet.isEmpty())
-		{
-			LockManager lockManager = databaseCluster.getLockManager();
-			
-			for (String identifier: identifierSet)
-			{
-				lockList.add(lockManager.writeLock(identifier));
-			}
-		}
-		
-		return lockList;
+		return identifierSet;
 	}
 
 	/**

@@ -28,15 +28,13 @@ import net.sf.hajdbc.util.reflect.ProxyFactory;
  * @author Paul Ferraro
  *
  */
-public class ClobInvocationStrategy<D, P> extends DatabaseWriteInvocationStrategy<D, P, Clob>
+public class ClobInvocationStrategy<D, P> extends NonTransactionalDatabaseWriteInvocationStrategy<D, P, Clob>
 {
 	private P parent;
 	private Class<? extends Clob> clobClass;
 	
 	public ClobInvocationStrategy(P parent, Class<? extends Clob> clobClass)
 	{
-		super(null);
-		
 		this.parent = parent;
 		this.clobClass = clobClass;
 	}
