@@ -28,7 +28,7 @@ import net.sf.hajdbc.util.reflect.ProxyFactory;
  * @author Paul Ferraro
  *
  */
-public class ConnectionInvocationStrategy<D> extends DatabaseWriteInvocationStrategy<D, D, Connection>
+public class ConnectionInvocationStrategy<D> extends NonTransactionalDatabaseWriteInvocationStrategy<D, D, Connection>
 {
 	private D connectionFactory;
 	
@@ -37,8 +37,6 @@ public class ConnectionInvocationStrategy<D> extends DatabaseWriteInvocationStra
 	 */
 	public ConnectionInvocationStrategy(D connectionFactory)
 	{
-		super(null);
-		
 		this.connectionFactory = connectionFactory;
 	}
 

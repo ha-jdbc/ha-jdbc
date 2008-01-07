@@ -22,8 +22,7 @@ package net.sf.hajdbc.sql;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.List;
-import java.util.concurrent.locks.Lock;
+import java.util.Set;
 
 import net.sf.hajdbc.util.reflect.ProxyFactory;
 
@@ -31,7 +30,7 @@ import net.sf.hajdbc.util.reflect.ProxyFactory;
  * @author Paul Ferraro
  *
  */
-public class EagerResultSetInvocationStrategy<D, S extends Statement> extends DatabaseWriteInvocationStrategy<D, S, ResultSet>
+public class EagerResultSetInvocationStrategy<D, S extends Statement> extends TransactionalDatabaseWriteInvocationStrategy<D, S, ResultSet>
 {
 	private S statement;
 	private FileSupport fileSupport;
@@ -39,9 +38,20 @@ public class EagerResultSetInvocationStrategy<D, S extends Statement> extends Da
 	/**
 	 * @param lockList
 	 */
-	public EagerResultSetInvocationStrategy(S statement, FileSupport fileSupport, List<Lock> lockList)
+	public EagerResultSetInvocationStrategy(S statement, FileSupport fileSupport, Set<String> identifierSet)
 	{
-		super(lockList);
+		super(identifierSet);
+		
+		this.statement = statement;
+		this.fileSupport = fileSupport;
+	}
+
+	/**
+	 * @param lockList
+	 */
+	public EagerResultSetInvocationStrategy(S statement, FileSupport fileSupport)
+	{
+		super();
 		
 		this.statement = statement;
 		this.fileSupport = fileSupport;

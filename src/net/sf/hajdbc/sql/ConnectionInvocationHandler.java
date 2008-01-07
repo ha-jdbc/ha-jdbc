@@ -26,12 +26,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Database;
 
@@ -44,7 +41,7 @@ public class ConnectionInvocationHandler<D> extends AbstractChildInvocationHandl
 {
 	private static final Set<String> DRIVER_READ_METHOD_SET = new HashSet<String>(Arrays.asList("createArrayOf", "createBlob", "createClob", "createNClob", "createSQLXML", "createStruct", "getAutoCommit", "getCatalog", "getClientInfo", "getHoldability", "getTypeMap", "getWarnings", "isClosed", "isReadOnly", "nativeSQL"));
 	private static final Set<String> DATABASE_READ_METHOD_SET = new HashSet<String>(Arrays.asList("getMetaData", "getTransactionIsolation", "isValid"));
-	private static final Set<String> DRIVER_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList("clearWarnings", "setAutoCommit", "setClientInfo", "setHoldability", "setReadOnly", "setTypeMap"));
+	private static final Set<String> DRIVER_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList("clearWarnings", "setAutoCommit", "setClientInfo", "setHoldability", "setTypeMap"));
 	private static final Set<String> DATABASE_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList("commit", "releaseSavepoint", "rollback"));
 	
 	private FileSupport fileSupport;
@@ -81,9 +78,7 @@ public class ConnectionInvocationHandler<D> extends AbstractChildInvocationHandl
 		
 		if (DATABASE_WRITE_METHOD_SET.contains(methodName))
 		{
-			List<Lock> lockList = Collections.emptyList();
-			
-			return new DatabaseWriteInvocationStrategy<D, Connection, Object>(lockList);
+			return new TransactionalDatabaseWriteInvocationStrategy<D, Connection, Object>();
 		}
 		
 		if (methodName.startsWith("prepare") || methodName.endsWith("Statement"))

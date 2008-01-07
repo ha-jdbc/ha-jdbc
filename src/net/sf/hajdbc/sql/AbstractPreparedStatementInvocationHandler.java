@@ -23,7 +23,6 @@ package net.sf.hajdbc.sql;
 import java.io.File;
 import java.io.InputStream;
 import java.io.Reader;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.Blob;
@@ -37,14 +36,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
 
 import javax.sql.rowset.serial.SerialBlob;
 import javax.sql.rowset.serial.SerialClob;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.util.SQLExceptionFactory;
 import net.sf.hajdbc.util.SimpleInvocationHandler;
+import net.sf.hajdbc.util.reflect.Methods;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 /**
@@ -57,7 +55,7 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 	private static final Set<String> DATABASE_READ_METHOD_SET = new HashSet<String>(Arrays.asList("getMetaData", "getParameterMetaData"));
 	private static final Set<String> DRIVER_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList("addBatch", "clearParameters"));
 	
-	protected List<Lock> lockList;
+	protected Set<String> identifierSet;
 	protected boolean selectForUpdate;
 	
 	/**
@@ -70,8 +68,8 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 	public AbstractPreparedStatementInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, S> invoker, Class<S> statementClass, Map<Database<D>, S> statementMap, FileSupport fileSupport, String sql) throws Exception
 	{
 		super(connection, proxy, invoker, statementClass, statementMap, fileSupport);
-		
-		this.lockList = this.getLockList(sql);
+
+		this.identifierSet = this.extractIdentifiers(sql);
 		this.selectForUpdate = this.isSelectForUpdate(sql);
 	}
 
@@ -100,12 +98,12 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 		
 		if (method.equals(PreparedStatement.class.getMethod("execute")) || method.equals(PreparedStatement.class.getMethod("executeUpdate")))
 		{
-			return new DatabaseWriteInvocationStrategy<D, S, Object>(this.lockList);
+			return new TransactionalDatabaseWriteInvocationStrategy<D, S, Object>(this.identifierSet);
 		}
 		
 		if (method.equals(PreparedStatement.class.getMethod("executeQuery")))
 		{
-			return (this.lockList.isEmpty() && !this.selectForUpdate && (statement.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY)) ? new DatabaseReadInvocationStrategy<D, S, Object>() : new EagerResultSetInvocationStrategy<D, S>(statement, this.fileSupport, this.lockList);
+			return (this.identifierSet.isEmpty() && !this.selectForUpdate && (statement.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY)) ? new DatabaseReadInvocationStrategy<D, S, Object>() : new EagerResultSetInvocationStrategy<D, S>(statement, this.fileSupport, this.identifierSet);
 		}
 		
 		return super.getInvocationStrategy(statement, method, parameters);
@@ -118,10 +116,9 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 	@Override
 	protected Invoker<D, S, ?> getInvoker(S statement, final Method method, final Object[] parameters) throws Exception
 	{
-		String methodName = method.getName();
 		Class<?>[] types = method.getParameterTypes();
 		
-		if (methodName.startsWith("set") && (types != null) && (types.length > 1) && (types[0].equals(String.class) || types[0].equals(Integer.TYPE)))
+		if (this.isIndexSetMethod(method))
 		{
 			if (types[1].equals(InputStream.class))
 			{
@@ -135,18 +132,7 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 						
 						parameterList.set(1, AbstractPreparedStatementInvocationHandler.this.fileSupport.getInputStream(file));
 						
-						try
-						{
-							return method.invoke(statement, parameterList.toArray());
-						}
-						catch (IllegalAccessException e)
-						{
-							throw SQLExceptionFactory.createSQLException(e);
-						}
-						catch (InvocationTargetException e)
-						{
-							throw SQLExceptionFactory.createSQLException(e.getTargetException());
-						}
+						return Methods.invoke(method, statement, parameterList.toArray());
 					}				
 				};
 			}
@@ -163,18 +149,7 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 						
 						parameterList.set(1, AbstractPreparedStatementInvocationHandler.this.fileSupport.getReader(file));
 						
-						try
-						{
-							return method.invoke(statement, parameterList.toArray());
-						}
-						catch (IllegalAccessException e)
-						{
-							throw SQLExceptionFactory.createSQLException(e);
-						}
-						catch (InvocationTargetException e)
-						{
-							throw SQLExceptionFactory.createSQLException(e.getTargetException());
-						}
+						return Methods.invoke(method, statement, parameterList.toArray());
 					}				
 				};
 			}
@@ -193,18 +168,7 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 							
 							parameterList.set(1, proxy.getObject(database));
 							
-							try
-							{
-								return method.invoke(statement, parameterList.toArray());
-							}
-							catch (IllegalAccessException e)
-							{
-								throw SQLExceptionFactory.createSQLException(e);
-							}
-							catch (InvocationTargetException e)
-							{
-								throw SQLExceptionFactory.createSQLException(e.getTargetException());
-							}
+							return Methods.invoke(method, statement, parameterList.toArray());
 						}				
 					};
 				}
@@ -227,18 +191,7 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 							
 							parameterList.set(1, proxy.getObject(database));
 							
-							try
-							{
-								return method.invoke(statement, parameterList.toArray());
-							}
-							catch (IllegalAccessException e)
-							{
-								throw SQLExceptionFactory.createSQLException(e);
-							}
-							catch (InvocationTargetException e)
-							{
-								throw SQLExceptionFactory.createSQLException(e.getTargetException());
-							}
+							return Methods.invoke(method, statement, parameterList.toArray());
 						}				
 					};
 				}
@@ -250,5 +203,26 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 		}
 		
 		return super.getInvoker(statement, method, parameters);
+	}
+
+	private boolean isIndexSetMethod(Method method)
+	{
+		Class<?>[] types = method.getParameterTypes();
+		
+		return this.isSetMethod(method) && (types.length > 1) && this.isIndexType(types[0]);
+	}
+	
+	protected boolean isIndexType(Class<?> type)
+	{
+		return type.equals(Integer.TYPE);
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractStatementInvocationHandler#isRecordable(java.lang.reflect.Method)
+	 */
+	@Override
+	protected boolean isRecordable(Method method)
+	{
+		return super.isRecordable(method) || method.getName().equals("clearParameters") || this.isIndexSetMethod(method);
 	}
 }

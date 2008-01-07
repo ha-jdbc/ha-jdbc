@@ -22,7 +22,6 @@ package net.sf.hajdbc.util.concurrent;
 
 import java.util.Date;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -78,24 +77,23 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 			 */
 			public void run()
 			{
-				Date time = expression.getNextValidTimeAfter(new Date());
+				Date now = new Date();
+				Date time = expression.getNextValidTimeAfter(now);
 			
 				try
 				{
 					while (time != null)
 					{
-						long delay = Math.max(time.getTime() - System.currentTimeMillis(), 0);
+						CronThreadPoolExecutor.this.schedule(task, time.getTime() - now.getTime(), TimeUnit.MILLISECONDS);
 						
-						try
+						while (now.before(time))
 						{
-							CronThreadPoolExecutor.this.schedule(task, delay, TimeUnit.MILLISECONDS).get();
-						}
-						catch (ExecutionException e)
-						{
-							logger.warn(e.toString(), e.getCause());
+							Thread.sleep(time.getTime() - now.getTime());
+							
+							now = new Date();
 						}
 						
-						time = expression.getNextValidTimeAfter(new Date());
+						time = expression.getNextValidTimeAfter(now);
 					}
 				}
 				catch (RejectedExecutionException e)

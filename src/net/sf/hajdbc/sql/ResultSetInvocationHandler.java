@@ -23,7 +23,6 @@ package net.sf.hajdbc.sql;
 import java.io.File;
 import java.io.InputStream;
 import java.io.Reader;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.Blob;
@@ -33,20 +32,19 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.concurrent.locks.Lock;
 
 import javax.sql.rowset.serial.SerialBlob;
 import javax.sql.rowset.serial.SerialClob;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.util.SQLExceptionFactory;
 import net.sf.hajdbc.util.SimpleInvocationHandler;
+import net.sf.hajdbc.util.reflect.Methods;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 /**
@@ -61,6 +59,7 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 	private static final Set<String> DATABASE_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList("deleteRow", "insertRow", "updateRow"));
 	
 	protected FileSupport fileSupport;
+	private List<Invoker<D, ResultSet, ?>> invokerList = new LinkedList<Invoker<D, ResultSet, ?>>();
 	
 	/**
 	 * @param statement the statement that created this result set
@@ -83,7 +82,6 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 	@Override
 	protected InvocationStrategy<D, ResultSet, ?> getInvocationStrategy(ResultSet resultSet, Method method, Object[] parameters) throws Exception
 	{
-		Class<?>[] types = method.getParameterTypes();
 		String methodName = method.getName();
 		
 		if (DRIVER_READ_METHOD_SET.contains(methodName))
@@ -98,12 +96,10 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 		
 		if (DATABASE_WRITE_METHOD_SET.contains(methodName))
 		{
-			List<Lock> lockList = Collections.emptyList();
-			
-			return new DatabaseWriteInvocationStrategy<D, ResultSet, Object>(lockList);
+			return new TransactionalDatabaseWriteInvocationStrategy<D, ResultSet, Object>();
 		}
 		
-		if (methodName.startsWith("get") && (types != null) && (types.length > 0) && ((types[0].equals(Integer.TYPE) || types[0].equals(String.class))))
+		if (this.isGetMethod(method))
 		{
 			Class<?> returnClass = method.getReturnType();
 			
@@ -131,7 +127,7 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 			};
 		}
 		
-		if (methodName.startsWith("update") && (types != null) && (types.length > 0) && (types[0].equals(String.class) || types[0].equals(Integer.TYPE)))
+		if (this.isUpdateMethod(method))
 		{
 			return new DriverWriteInvocationStrategy<D, ResultSet, Object>();
 		}
@@ -147,9 +143,8 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 	protected Invoker<D, ResultSet, ?> getInvoker(ResultSet object, final Method method, final Object[] parameters) throws Exception
 	{
 		Class<?>[] types = method.getParameterTypes();
-		String methodName = method.getName();
 		
-		if (methodName.startsWith("update") && (types != null) && (types.length > 1) && (types[0].equals(String.class) || types[0].equals(Integer.TYPE)))
+		if (this.isUpdateMethod(method))
 		{
 			if (types[1].equals(InputStream.class))
 			{
@@ -163,18 +158,7 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 						
 						parameterList.set(1, ResultSetInvocationHandler.this.fileSupport.getInputStream(file));
 						
-						try
-						{
-							return method.invoke(resultSet, parameterList.toArray());
-						}
-						catch (IllegalAccessException e)
-						{
-							throw SQLExceptionFactory.createSQLException(e);
-						}
-						catch (InvocationTargetException e)
-						{
-							throw SQLExceptionFactory.createSQLException(e.getTargetException());
-						}
+						return Methods.invoke(method, resultSet, parameterList.toArray());
 					}				
 				};
 			}
@@ -191,18 +175,7 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 						
 						parameterList.set(1, ResultSetInvocationHandler.this.fileSupport.getReader(file));
 						
-						try
-						{
-							return method.invoke(resultSet, parameterList.toArray());
-						}
-						catch (IllegalAccessException e)
-						{
-							throw SQLExceptionFactory.createSQLException(e);
-						}
-						catch (InvocationTargetException e)
-						{
-							throw SQLExceptionFactory.createSQLException(e.getTargetException());
-						}
+						return Methods.invoke(method, resultSet, parameterList.toArray());
 					}				
 				};
 			}
@@ -221,18 +194,7 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 							
 							parameterList.set(1, proxy.getObject(database));
 							
-							try
-							{
-								return method.invoke(resultSet, parameterList.toArray());
-							}
-							catch (IllegalAccessException e)
-							{
-								throw SQLExceptionFactory.createSQLException(e);
-							}
-							catch (InvocationTargetException e)
-							{
-								throw SQLExceptionFactory.createSQLException(e.getTargetException());
-							}
+							return Methods.invoke(method, resultSet, parameterList.toArray());
 						}				
 					};
 				}
@@ -255,18 +217,7 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 							
 							parameterList.set(1, proxy.getObject(database));
 							
-							try
-							{
-								return method.invoke(resultSet, parameterList.toArray());
-							}
-							catch (IllegalAccessException e)
-							{
-								throw SQLExceptionFactory.createSQLException(e);
-							}
-							catch (InvocationTargetException e)
-							{
-								throw SQLExceptionFactory.createSQLException(e.getTargetException());
-							}
+							return Methods.invoke(method, resultSet, parameterList.toArray());
 						}				
 					};
 				}
@@ -308,5 +259,55 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 	protected void close(S statement, ResultSet resultSet) throws SQLException
 	{
 		resultSet.close();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#record(java.lang.reflect.Method, net.sf.hajdbc.sql.Invoker)
+	 */
+	@Override
+	protected void record(Method method, Invoker<D, ResultSet, ?> invoker)
+	{
+		if (DRIVER_WRITE_METHOD_SET.contains(method.getName()) || this.isUpdateMethod(method))
+		{
+			synchronized (this.invokerList)
+			{
+				this.invokerList.add(invoker);
+			}
+		}
+		else
+		{
+			super.record(method, invoker);
+		}
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#replay(net.sf.hajdbc.Database, java.lang.Object)
+	 */
+	@Override
+	protected void replay(Database<D> database, ResultSet resultSet) throws SQLException
+	{
+		super.replay(database, resultSet);
+		
+		synchronized (this.invokerList)
+		{
+			for (Invoker<D, ResultSet, ?> invoker: this.invokerList)
+			{
+				invoker.invoke(database, resultSet);
+			}
+		}
+	}
+	
+	private boolean isGetMethod(Method method)
+	{
+		Class<?>[] types = method.getParameterTypes();
+		
+		return method.getName().startsWith("get") && (types != null) && (types.length > 0) && (types[0].equals(String.class) || types[0].equals(Integer.TYPE));
+	}
+	
+	private boolean isUpdateMethod(Method method)
+	{
+		Class<?>[] types = method.getParameterTypes();
+		
+		return method.getName().startsWith("update") && (types != null) && (types.length > 0) && (types[0].equals(String.class) || types[0].equals(Integer.TYPE));
 	}
 }

@@ -27,8 +27,15 @@ import java.lang.reflect.Proxy;
  * @author Paul Ferraro
  *
  */
-public class ProxyFactory
+public final class ProxyFactory
 {
+	/**
+	 * Helper method to simplify creation and casting of a proxy instance for a single interface.
+	 * @param <T> target interface
+	 * @param targetInterface interface to proxy
+	 * @param handler an invocation handler
+	 * @return a proxy instance for the given target interface
+	 */
 	public static <T> T createProxy(Class<T> targetInterface, InvocationHandler handler)
 	{
 		return targetInterface.cast(Proxy.newProxyInstance(targetInterface.getClassLoader(), new Class<?>[] { targetInterface }, handler));

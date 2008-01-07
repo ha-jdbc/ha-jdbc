@@ -40,8 +40,6 @@ public class DriverWriteInvocationStrategy<D, T, R> implements InvocationStrateg
 	{
 		SortedMap<Database<D>, R> map = this.invokeAll(proxy, invoker);
 		
-		proxy.record(invoker);
-		
 		return map.get(map.firstKey());
 	}
 

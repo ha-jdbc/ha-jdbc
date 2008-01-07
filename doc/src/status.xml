@@ -12,6 +12,23 @@
 	</contexts>
 
 	<changes>
+		<release version="2.0.10" date="January 7, 2008">
+			<action context="src" dev="PF" type="fix">
+				Fixed CronThreadPoolExecutor to work around potential inaccuracies in java.util.Date that could cause a task to be scheduled multiple times in a single cron interval.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Connection.setReadOnly() should use DatabaseWriteInvocationStrategy instead of DriverWriteInvocationStrategy.
+			</action>
+			<action context="src" dev="PF" type="update">
+				Refactored invoker recording to support any JDBC method regardless of InvocationStrategy implementation.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed replay of PreparedStatement and CallableStatement set*() methods for a newly activated database.
+			</action>
+			<action context="src" dev="PF" type="update">
+				Cleanup logic in DatabaseWriteInvocationStrategy by splitting into TransactionalDatabaseWriteInvocationStrategy and NonTransactionalDatabaseWriteInvocationStrategy.
+			</action>
+		</release>
 		<release version="2.0.9" date="December 28, 2007">
 			<action context="src" dev="PF" type="fix">
 				In DatabaseWriteInvocationStrategy, acquire read locks before Balancer.all() so that a newly activated database will not miss any pending write statements.

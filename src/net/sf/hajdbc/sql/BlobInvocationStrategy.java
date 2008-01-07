@@ -28,7 +28,7 @@ import net.sf.hajdbc.util.reflect.ProxyFactory;
  * @author Paul Ferraro
  *
  */
-public class BlobInvocationStrategy<D, P> extends DatabaseWriteInvocationStrategy<D, P, Blob>
+public class BlobInvocationStrategy<D, P> extends NonTransactionalDatabaseWriteInvocationStrategy<D, P, Blob>
 {
 	private P parent;
 	
@@ -37,8 +37,6 @@ public class BlobInvocationStrategy<D, P> extends DatabaseWriteInvocationStrateg
 	 */
 	public BlobInvocationStrategy(P parent)
 	{
-		super(null);
-		
 		this.parent = parent;
 	}
 

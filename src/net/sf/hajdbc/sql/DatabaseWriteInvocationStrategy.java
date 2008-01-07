@@ -21,7 +21,6 @@
 package net.sf.hajdbc.sql;
 
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +35,6 @@ import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.LockManager;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.util.SQLExceptionFactory;
 
@@ -44,15 +42,8 @@ import net.sf.hajdbc.util.SQLExceptionFactory;
  * @author Paul Ferraro
  *
  */
-public class DatabaseWriteInvocationStrategy<D, T, R> implements InvocationStrategy<D, T, R>
+public abstract class DatabaseWriteInvocationStrategy<D, T, R> implements InvocationStrategy<D, T, R>
 {
-	private List<Lock> lockList;
-	
-	public DatabaseWriteInvocationStrategy(List<Lock> lockList)
-	{
-		this.lockList = lockList;
-	}
-	
 	/**
 	 * @see net.sf.hajdbc.sql.InvocationStrategy#invoke(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker)
 	 */
@@ -71,21 +62,15 @@ public class DatabaseWriteInvocationStrategy<D, T, R> implements InvocationStrat
 		
 		DatabaseCluster<D> cluster = proxy.getDatabaseCluster();
 		
-		ExecutorService executor = (this.lockList == null) ? cluster.getNonTransactionalExecutor() : cluster.getTransactionalExecutor();
+		ExecutorService executor = this.getExecutor(cluster);
 		
 		Map<Database<D>, Future<R>> futureMap = new HashMap<Database<D>, Future<R>>();
 
-		if (this.lockList != null)
+		List<Lock> lockList = this.getLockList(cluster);
+		
+		for (Lock lock: lockList)
 		{
-			if (this.lockList.isEmpty())
-			{
-				this.lockList = Collections.singletonList(cluster.getLockManager().readLock(LockManager.GLOBAL));
-			}
-			
-			for (Lock lock: this.lockList)
-			{
-				lock.lock();
-			}
+			lock.lock();
 		}
 		
 		try
@@ -136,12 +121,9 @@ public class DatabaseWriteInvocationStrategy<D, T, R> implements InvocationStrat
 		}
 		finally
 		{
-			if (this.lockList != null)
+			for (Lock lock: lockList)
 			{
-				for (Lock lock: this.lockList)
-				{
-					lock.unlock();
-				}
+				lock.unlock();
 			}
 		}
 		
@@ -154,4 +136,8 @@ public class DatabaseWriteInvocationStrategy<D, T, R> implements InvocationStrat
 		// If any databases failed, while others succeeded, handle the failures
 		return exceptionMap.isEmpty() ? resultMap : proxy.handlePartialFailure(resultMap, exceptionMap);
 	}
+	
+	protected abstract ExecutorService getExecutor(DatabaseCluster<D> cluster);
+	
+	protected abstract List<Lock> getLockList(DatabaseCluster<D> cluster);
 }

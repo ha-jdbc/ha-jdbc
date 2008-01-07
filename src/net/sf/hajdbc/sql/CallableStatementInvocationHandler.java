@@ -77,4 +77,13 @@ public class CallableStatementInvocationHandler<D> extends AbstractPreparedState
 		
 		return super.getInvocationStrategy(object, method, parameters);
 	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractPreparedStatementInvocationHandler#isParameterizedType(java.lang.Class)
+	 */
+	@Override
+	protected boolean isIndexType(Class<?> type)
+	{
+		return super.isIndexType(type) || type.equals(String.class);
+	}
 }
