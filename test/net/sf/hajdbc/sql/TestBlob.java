@@ -120,6 +120,8 @@ public class TestBlob implements Blob
 	@Test
 	public void free() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
@@ -148,6 +150,8 @@ public class TestBlob implements Blob
 	public InputStream getBinaryStream() throws SQLException
 	{
 		InputStream input = new ByteArrayInputStream(new byte[0]);
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
@@ -183,6 +187,8 @@ public class TestBlob implements Blob
 	{
 		InputStream input = new ByteArrayInputStream(new byte[0]);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
 		
@@ -217,6 +223,8 @@ public class TestBlob implements Blob
 	{
 		byte[] bytes = new byte[0];
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
 		
@@ -243,6 +251,8 @@ public class TestBlob implements Blob
 	@Test
 	public long length() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
 		
@@ -275,6 +285,8 @@ public class TestBlob implements Blob
 	@Test(dataProvider = "bytes-long")
 	public long position(byte[] pattern, long start) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
 		
@@ -307,6 +319,8 @@ public class TestBlob implements Blob
 	@Test(dataProvider = "blob-long")
 	public long position(Blob pattern, long start) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
 		
@@ -341,6 +355,8 @@ public class TestBlob implements Blob
 	{
 		OutputStream output1 = new ByteArrayOutputStream();
 		OutputStream output2 = new ByteArrayOutputStream();
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
@@ -377,6 +393,8 @@ public class TestBlob implements Blob
 	@Test(dataProvider = "long-bytes")
 	public int setBytes(long position, byte[] bytes) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
@@ -412,6 +430,8 @@ public class TestBlob implements Blob
 	@Test(dataProvider = "long-bytes-int-int")
 	public int setBytes(long position, byte[] bytes, int offset, int length) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
@@ -441,6 +461,8 @@ public class TestBlob implements Blob
 	@Test(dataProvider = "long")
 	public void truncate(long position) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		

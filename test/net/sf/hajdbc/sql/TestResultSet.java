@@ -168,6 +168,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int")
 	public boolean absolute(int row) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.absolute(row)).andReturn(true);
 		EasyMock.expect(this.resultSet2.absolute(row)).andReturn(true);
 		
@@ -188,6 +190,8 @@ public class TestResultSet implements ResultSet
 	@Test
 	public void afterLast() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.afterLast();
 		this.resultSet2.afterLast();
 		
@@ -204,6 +208,8 @@ public class TestResultSet implements ResultSet
 	@Test
 	public void beforeFirst() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.beforeFirst();
 		this.resultSet2.beforeFirst();
 		
@@ -220,6 +226,8 @@ public class TestResultSet implements ResultSet
 	@Test
 	public void cancelRowUpdates() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.cancelRowUpdates();
 		this.resultSet2.cancelRowUpdates();
 		
@@ -236,6 +244,8 @@ public class TestResultSet implements ResultSet
 	@Test
 	public void clearWarnings() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.clearWarnings();
 		this.resultSet2.clearWarnings();
 		
@@ -252,6 +262,8 @@ public class TestResultSet implements ResultSet
 	@Test
 	public void close() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
@@ -279,6 +291,8 @@ public class TestResultSet implements ResultSet
 	@Test
 	public void deleteRow() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
 		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.readLock);
 		
@@ -317,6 +331,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string")
 	public int findColumn(String name) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.findColumn(name)).andReturn(1);
 		
 		this.replay();
@@ -336,6 +352,8 @@ public class TestResultSet implements ResultSet
 	@Test
 	public boolean first() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.first()).andReturn(true);
 		EasyMock.expect(this.resultSet2.first()).andReturn(true);
 		
@@ -358,6 +376,8 @@ public class TestResultSet implements ResultSet
 	{
 		Array array = EasyMock.createMock(Array.class);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getArray(index)).andReturn(array);
 		
 		this.replay();
@@ -378,6 +398,8 @@ public class TestResultSet implements ResultSet
 	public Array getArray(String name) throws SQLException
 	{
 		Array array = EasyMock.createMock(Array.class);
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getArray(name)).andReturn(array);
 		
@@ -400,6 +422,8 @@ public class TestResultSet implements ResultSet
 	{
 		InputStream inputStream = new ByteArrayInputStream(new byte[0]);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getAsciiStream(index)).andReturn(inputStream);
 		
 		this.replay();
@@ -420,6 +444,8 @@ public class TestResultSet implements ResultSet
 	public InputStream getAsciiStream(String name) throws SQLException
 	{
 		InputStream inputStream = new ByteArrayInputStream(new byte[0]);
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getAsciiStream(name)).andReturn(inputStream);
 		
@@ -442,6 +468,8 @@ public class TestResultSet implements ResultSet
 	{
 		BigDecimal decimal = new BigDecimal(1.0);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getBigDecimal(index)).andReturn(decimal);
 		
 		this.replay();
@@ -462,6 +490,8 @@ public class TestResultSet implements ResultSet
 	public BigDecimal getBigDecimal(String name) throws SQLException
 	{
 		BigDecimal decimal = new BigDecimal(1.0);
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getBigDecimal(name)).andReturn(decimal);
 		
@@ -492,6 +522,8 @@ public class TestResultSet implements ResultSet
 	{
 		BigDecimal decimal = new BigDecimal(1.0);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getBigDecimal(index, scale)).andReturn(decimal);
 		
 		this.replay();
@@ -521,6 +553,8 @@ public class TestResultSet implements ResultSet
 	{
 		BigDecimal decimal = new BigDecimal(1.0);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getBigDecimal(name, scale)).andReturn(decimal);
 		
 		this.replay();
@@ -541,6 +575,8 @@ public class TestResultSet implements ResultSet
 	public InputStream getBinaryStream(int index) throws SQLException
 	{
 		InputStream inputStream = new ByteArrayInputStream(new byte[0]);
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getBinaryStream(index)).andReturn(inputStream);
 		
@@ -563,6 +599,8 @@ public class TestResultSet implements ResultSet
 	{
 		InputStream inputStream = new ByteArrayInputStream(new byte[0]);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getBinaryStream(name)).andReturn(inputStream);
 		
 		this.replay();
@@ -584,6 +622,8 @@ public class TestResultSet implements ResultSet
 	{
 		Blob blob1 = EasyMock.createMock(Blob.class);
 		Blob blob2 = EasyMock.createMock(Blob.class);
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
@@ -622,6 +662,8 @@ public class TestResultSet implements ResultSet
 		Blob blob1 = EasyMock.createMock(Blob.class);
 		Blob blob2 = EasyMock.createMock(Blob.class);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
@@ -656,6 +698,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int")
 	public boolean getBoolean(int index) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getBoolean(index)).andReturn(true);
 		
 		this.replay();
@@ -675,6 +719,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string")
 	public boolean getBoolean(String name) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getBoolean(name)).andReturn(true);
 		
 		this.replay();
@@ -695,6 +741,8 @@ public class TestResultSet implements ResultSet
 	public byte getByte(int index) throws SQLException
 	{
 		byte b = Integer.valueOf(1).byteValue();
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getByte(index)).andReturn(b);
 		
@@ -717,6 +765,8 @@ public class TestResultSet implements ResultSet
 	{
 		byte b = Integer.valueOf(1).byteValue();
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getByte(name)).andReturn(b);
 		
 		this.replay();
@@ -737,6 +787,8 @@ public class TestResultSet implements ResultSet
 	public byte[] getBytes(int index) throws SQLException
 	{
 		byte[] bytes = new byte[0];
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getBytes(index)).andReturn(bytes);
 		
@@ -759,6 +811,8 @@ public class TestResultSet implements ResultSet
 	{
 		byte[] bytes = new byte[0];
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getBytes(name)).andReturn(bytes);
 		
 		this.replay();
@@ -779,6 +833,8 @@ public class TestResultSet implements ResultSet
 	public Reader getCharacterStream(int index) throws SQLException
 	{
 		Reader reader = new CharArrayReader(new char[0]);
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getCharacterStream(index)).andReturn(reader);
 		
@@ -801,6 +857,8 @@ public class TestResultSet implements ResultSet
 	{
 		Reader reader = new CharArrayReader(new char[0]);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getCharacterStream(name)).andReturn(reader);
 		
 		this.replay();
@@ -822,6 +880,8 @@ public class TestResultSet implements ResultSet
 	{
 		Clob clob1 = EasyMock.createMock(Clob.class);
 		Clob clob2 = EasyMock.createMock(Clob.class);
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
@@ -860,6 +920,8 @@ public class TestResultSet implements ResultSet
 		Clob clob1 = EasyMock.createMock(Clob.class);
 		Clob clob2 = EasyMock.createMock(Clob.class);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
@@ -896,6 +958,8 @@ public class TestResultSet implements ResultSet
 	{
 		int concurrency = java.sql.ResultSet.CONCUR_READ_ONLY;
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getConcurrency()).andReturn(concurrency);
 		
 		this.replay();
@@ -916,6 +980,8 @@ public class TestResultSet implements ResultSet
 	public String getCursorName() throws SQLException
 	{
 		String cursor = "cursor";
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getCursorName()).andReturn(cursor);
 		
@@ -938,6 +1004,8 @@ public class TestResultSet implements ResultSet
 	{
 		Date date = new Date(System.currentTimeMillis());
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getDate(index)).andReturn(date);
 		
 		this.replay();
@@ -958,6 +1026,8 @@ public class TestResultSet implements ResultSet
 	public Date getDate(String name) throws SQLException
 	{
 		Date date = new Date(System.currentTimeMillis());
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getDate(name)).andReturn(date);
 		
@@ -986,6 +1056,8 @@ public class TestResultSet implements ResultSet
 	{
 		Date date = new Date(System.currentTimeMillis());
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getDate(index, calendar)).andReturn(date);
 		
 		this.replay();
@@ -1013,6 +1085,8 @@ public class TestResultSet implements ResultSet
 	{
 		Date date = new Date(System.currentTimeMillis());
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getDate(name, calendar)).andReturn(date);
 		
 		this.replay();
@@ -1033,6 +1107,8 @@ public class TestResultSet implements ResultSet
 	public double getDouble(int index) throws SQLException
 	{
 		double d = 1.0;
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getDouble(index)).andReturn(d);
 		
@@ -1055,6 +1131,8 @@ public class TestResultSet implements ResultSet
 	{
 		double d = 1.0;
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getDouble(name)).andReturn(d);
 		
 		this.replay();
@@ -1075,6 +1153,8 @@ public class TestResultSet implements ResultSet
 	public int getFetchDirection() throws SQLException
 	{
 		int direction = java.sql.ResultSet.FETCH_FORWARD;
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getFetchDirection()).andReturn(direction);
 		
@@ -1097,6 +1177,8 @@ public class TestResultSet implements ResultSet
 	{
 		int size = 10;
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getFetchSize()).andReturn(size);
 		
 		this.replay();
@@ -1117,6 +1199,8 @@ public class TestResultSet implements ResultSet
 	public float getFloat(int index) throws SQLException
 	{
 		float f = 1.0F;
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getFloat(index)).andReturn(f);
 		
@@ -1139,6 +1223,8 @@ public class TestResultSet implements ResultSet
 	{
 		float f = 1.0F;
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getFloat(name)).andReturn(f);
 		
 		this.replay();
@@ -1159,6 +1245,8 @@ public class TestResultSet implements ResultSet
 	public int getInt(int index) throws SQLException
 	{
 		int i = 1;
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getInt(index)).andReturn(i);
 		
@@ -1181,6 +1269,8 @@ public class TestResultSet implements ResultSet
 	{
 		int i = 1;
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getInt(name)).andReturn(i);
 		
 		this.replay();
@@ -1201,6 +1291,8 @@ public class TestResultSet implements ResultSet
 	public long getLong(int index) throws SQLException
 	{
 		long l = 1;
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getLong(index)).andReturn(l);
 		
@@ -1223,6 +1315,8 @@ public class TestResultSet implements ResultSet
 	{
 		long l = 1;
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getLong(name)).andReturn(l);
 		
 		this.replay();
@@ -1244,6 +1338,8 @@ public class TestResultSet implements ResultSet
 	{
 		ResultSetMetaData metaData = EasyMock.createMock(ResultSetMetaData.class);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getMetaData()).andReturn(metaData);
 		
 		this.replay();
@@ -1264,7 +1360,9 @@ public class TestResultSet implements ResultSet
 	public Object getObject(int index) throws SQLException
 	{
 		Object object = new Object();
-				
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getObject(index)).andReturn(object);
 		
 		this.replay();
@@ -1285,6 +1383,8 @@ public class TestResultSet implements ResultSet
 	public Object getObject(String name) throws SQLException
 	{
 		Object object = new Object();
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getObject(name)).andReturn(object);
 		
@@ -1313,6 +1413,8 @@ public class TestResultSet implements ResultSet
 	{
 		Object object = new Object();
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getObject(index, map)).andReturn(object);
 		
 		this.replay();
@@ -1340,6 +1442,8 @@ public class TestResultSet implements ResultSet
 	{
 		Object object = new Object();
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getObject(name, map)).andReturn(object);
 		
 		this.replay();
@@ -1360,6 +1464,8 @@ public class TestResultSet implements ResultSet
 	public Ref getRef(int index) throws SQLException
 	{
 		Ref ref = EasyMock.createMock(Ref.class);
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getRef(index)).andReturn(ref);
 		
@@ -1382,6 +1488,8 @@ public class TestResultSet implements ResultSet
 	{
 		Ref ref = EasyMock.createMock(Ref.class);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getRef(name)).andReturn(ref);
 		
 		this.replay();
@@ -1402,6 +1510,8 @@ public class TestResultSet implements ResultSet
 	public int getRow() throws SQLException
 	{
 		int row = 1;
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getRow()).andReturn(row);
 		
@@ -1424,6 +1534,8 @@ public class TestResultSet implements ResultSet
 	{
 		short s = Integer.valueOf(1).shortValue();
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getShort(index)).andReturn(s);
 		
 		this.replay();
@@ -1445,6 +1557,8 @@ public class TestResultSet implements ResultSet
 	{
 		short s = Integer.valueOf(1).shortValue();
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getShort(name)).andReturn(s);
 		
 		this.replay();
@@ -1464,6 +1578,8 @@ public class TestResultSet implements ResultSet
 	@Test
 	public java.sql.Statement getStatement() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.replay();
 		
 		java.sql.Statement result = this.resultSet.getStatement();
@@ -1482,6 +1598,8 @@ public class TestResultSet implements ResultSet
 	public String getString(int index) throws SQLException
 	{
 		String string = "";
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getString(index)).andReturn(string);
 		
@@ -1504,6 +1622,8 @@ public class TestResultSet implements ResultSet
 	{
 		String string = "";
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getString(name)).andReturn(string);
 		
 		this.replay();
@@ -1524,6 +1644,8 @@ public class TestResultSet implements ResultSet
 	public Time getTime(int index) throws SQLException
 	{
 		Time time = new Time(System.currentTimeMillis());
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getTime(index)).andReturn(time);
 		
@@ -1546,6 +1668,8 @@ public class TestResultSet implements ResultSet
 	{
 		Time time = new Time(System.currentTimeMillis());
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getTime(name)).andReturn(time);
 		
 		this.replay();
@@ -1566,6 +1690,8 @@ public class TestResultSet implements ResultSet
 	public Time getTime(int index, Calendar calendar) throws SQLException
 	{
 		Time time = new Time(System.currentTimeMillis());
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getTime(index, calendar)).andReturn(time);
 		
@@ -1588,6 +1714,8 @@ public class TestResultSet implements ResultSet
 	{
 		Time time = new Time(System.currentTimeMillis());
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getTime(name, calendar)).andReturn(time);
 		
 		this.replay();
@@ -1608,6 +1736,8 @@ public class TestResultSet implements ResultSet
 	public Timestamp getTimestamp(int index) throws SQLException
 	{
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getTimestamp(index)).andReturn(timestamp);
 		
@@ -1630,6 +1760,8 @@ public class TestResultSet implements ResultSet
 	{
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getTimestamp(name)).andReturn(timestamp);
 		
 		this.replay();
@@ -1650,6 +1782,8 @@ public class TestResultSet implements ResultSet
 	public Timestamp getTimestamp(int index, Calendar calendar) throws SQLException
 	{
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getTimestamp(index, calendar)).andReturn(timestamp);
 		
@@ -1672,6 +1806,8 @@ public class TestResultSet implements ResultSet
 	{
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getTimestamp(name, calendar)).andReturn(timestamp);
 		
 		this.replay();
@@ -1692,6 +1828,8 @@ public class TestResultSet implements ResultSet
 	public int getType() throws SQLException
 	{
 		int type = java.sql.ResultSet.TYPE_FORWARD_ONLY;
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getType()).andReturn(type);
 		
@@ -1715,6 +1853,8 @@ public class TestResultSet implements ResultSet
 		try
 		{
 			URL url = new URL("http://ha-jdbc.sf.net");
+			
+			EasyMock.expect(this.cluster.isActive()).andReturn(true);
 			
 			EasyMock.expect(this.resultSet1.getURL(index)).andReturn(url);
 			
@@ -1745,6 +1885,8 @@ public class TestResultSet implements ResultSet
 		{
 			URL url = new URL("http://ha-jdbc.sf.net");
 			
+			EasyMock.expect(this.cluster.isActive()).andReturn(true);
+			
 			EasyMock.expect(this.resultSet1.getURL(name)).andReturn(url);
 			
 			this.replay();
@@ -1774,6 +1916,8 @@ public class TestResultSet implements ResultSet
 	{
 		InputStream inputStream = new ByteArrayInputStream(new byte[0]);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getUnicodeStream(index)).andReturn(inputStream);
 		
 		this.replay();
@@ -1797,6 +1941,8 @@ public class TestResultSet implements ResultSet
 	{
 		InputStream inputStream = new ByteArrayInputStream(new byte[0]);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getUnicodeStream(name)).andReturn(inputStream);
 		
 		this.replay();
@@ -1818,6 +1964,8 @@ public class TestResultSet implements ResultSet
 	{
 		SQLWarning warning = new SQLWarning();
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getWarnings()).andReturn(warning);
 		
 		this.replay();
@@ -1837,6 +1985,8 @@ public class TestResultSet implements ResultSet
 	@Test
 	public void insertRow() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
 		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.readLock);
 		
@@ -1869,6 +2019,8 @@ public class TestResultSet implements ResultSet
 	@Test
 	public boolean isAfterLast() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.isAfterLast()).andReturn(true);
 		
 		this.replay();
@@ -1888,6 +2040,8 @@ public class TestResultSet implements ResultSet
 	@Test
 	public boolean isBeforeFirst() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.isBeforeFirst()).andReturn(true);
 		
 		this.replay();
@@ -1907,6 +2061,8 @@ public class TestResultSet implements ResultSet
 	@Test
 	public boolean isFirst() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.isFirst()).andReturn(true);
 		
 		this.replay();
@@ -1926,6 +2082,8 @@ public class TestResultSet implements ResultSet
 	@Test
 	public boolean isLast() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.isLast()).andReturn(true);
 		
 		this.replay();
@@ -1945,6 +2103,8 @@ public class TestResultSet implements ResultSet
 	@Test
 	public boolean last() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.last()).andReturn(true);
 		EasyMock.expect(this.resultSet2.last()).andReturn(true);
 		
@@ -1965,6 +2125,8 @@ public class TestResultSet implements ResultSet
 	@Test
 	public void moveToCurrentRow() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.moveToCurrentRow();
 		this.resultSet2.moveToCurrentRow();
 		
@@ -1981,6 +2143,8 @@ public class TestResultSet implements ResultSet
 	@Test
 	public void moveToInsertRow() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.moveToInsertRow();
 		this.resultSet2.moveToInsertRow();
 		
@@ -1997,6 +2161,8 @@ public class TestResultSet implements ResultSet
 	@Test
 	public boolean next() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.next()).andReturn(true);
 		EasyMock.expect(this.resultSet2.next()).andReturn(true);
 		
@@ -2017,6 +2183,8 @@ public class TestResultSet implements ResultSet
 	@Test
 	public boolean previous() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.previous()).andReturn(true);
 		EasyMock.expect(this.resultSet2.previous()).andReturn(true);
 		
@@ -2037,6 +2205,8 @@ public class TestResultSet implements ResultSet
 	@Test
 	public void refreshRow() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
@@ -2062,6 +2232,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int")
 	public boolean relative(int rows) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.relative(rows)).andReturn(true);
 		EasyMock.expect(this.resultSet2.relative(rows)).andReturn(true);
 		
@@ -2082,6 +2254,8 @@ public class TestResultSet implements ResultSet
 	@Test
 	public boolean rowDeleted() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.rowDeleted()).andReturn(true);
 		
 		this.replay();
@@ -2101,6 +2275,8 @@ public class TestResultSet implements ResultSet
 	@Test
 	public boolean rowInserted() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.rowInserted()).andReturn(true);
 		
 		this.replay();
@@ -2120,6 +2296,8 @@ public class TestResultSet implements ResultSet
 	@Test
 	public boolean rowUpdated() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.rowUpdated()).andReturn(true);
 		
 		this.replay();
@@ -2139,6 +2317,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int")
 	public void setFetchDirection(int direction) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.setFetchDirection(direction);
 		this.resultSet2.setFetchDirection(direction);
 		
@@ -2155,6 +2335,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int")
 	public void setFetchSize(int rows) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.setFetchSize(rows);
 		this.resultSet2.setFetchSize(rows);
 		
@@ -2177,6 +2359,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int-array")
 	public void updateArray(int index, Array value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateArray(index, value);
 		this.resultSet2.updateArray(index, value);
 		
@@ -2199,6 +2383,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string-array")
 	public void updateArray(String name, Array value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateArray(name, value);
 		this.resultSet2.updateArray(name, value);
 		
@@ -2224,6 +2410,8 @@ public class TestResultSet implements ResultSet
 		File file = new File("");
 		InputStream input1 = new ByteArrayInputStream(new byte[0]);
 		InputStream input2 = new ByteArrayInputStream(new byte[0]);
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
@@ -2258,6 +2446,8 @@ public class TestResultSet implements ResultSet
 		InputStream input1 = new ByteArrayInputStream(new byte[0]);
 		InputStream input2 = new ByteArrayInputStream(new byte[0]);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
 		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(input1);
@@ -2287,6 +2477,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int-bigDecimal")
 	public void updateBigDecimal(int index, BigDecimal value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateBigDecimal(index, value);
 		this.resultSet2.updateBigDecimal(index, value);
 		
@@ -2309,6 +2501,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string-bigDecimal")
 	public void updateBigDecimal(String name, BigDecimal value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateBigDecimal(name, value);
 		this.resultSet2.updateBigDecimal(name, value);
 		
@@ -2328,6 +2522,8 @@ public class TestResultSet implements ResultSet
 		File file = new File("");
 		InputStream input1 = new ByteArrayInputStream(new byte[0]);
 		InputStream input2 = new ByteArrayInputStream(new byte[0]);
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
@@ -2355,6 +2551,8 @@ public class TestResultSet implements ResultSet
 		File file = new File("");
 		InputStream input1 = new ByteArrayInputStream(new byte[0]);
 		InputStream input2 = new ByteArrayInputStream(new byte[0]);
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
@@ -2392,6 +2590,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int-blob")
 	public void updateBlob(int index, Blob value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		if (Proxy.isProxyClass(value.getClass()))
 		{
 			this.resultSet1.updateBlob(index, this.blob1);
@@ -2429,6 +2629,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string-blob")
 	public void updateBlob(String name, Blob value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		if (Proxy.isProxyClass(value.getClass()))
 		{
 			this.resultSet1.updateBlob(name, this.blob1);
@@ -2459,6 +2661,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int-boolean")
 	public void updateBoolean(int index, boolean value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateBoolean(index, value);
 		this.resultSet2.updateBoolean(index, value);
 		
@@ -2481,6 +2685,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string-boolean")
 	public void updateBoolean(String name, boolean value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateBoolean(name, value);
 		this.resultSet2.updateBoolean(name, value);
 		
@@ -2503,6 +2709,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int-byte")
 	public void updateByte(int index, byte value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateByte(index, value);
 		this.resultSet2.updateByte(index, value);
 		
@@ -2525,6 +2733,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string-byte")
 	public void updateByte(String name, byte value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateByte(name, value);
 		this.resultSet2.updateByte(name, value);
 		
@@ -2547,6 +2757,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int-bytes")
 	public void updateBytes(int index, byte[] value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateBytes(index, value);
 		this.resultSet2.updateBytes(index, value);
 		
@@ -2569,6 +2781,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string-bytes")
 	public void updateBytes(String name, byte[] value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateBytes(name, value);
 		this.resultSet2.updateBytes(name, value);
 		
@@ -2594,6 +2808,8 @@ public class TestResultSet implements ResultSet
 		File file = new File("");
 		Reader reader1 = new CharArrayReader(new char[0]);
 		Reader reader2 = new CharArrayReader(new char[0]);
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
@@ -2627,6 +2843,8 @@ public class TestResultSet implements ResultSet
 		File file = new File("");
 		Reader reader1 = new CharArrayReader(new char[0]);
 		Reader reader2 = new CharArrayReader(new char[0]);
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
@@ -2664,6 +2882,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int-clob")
 	public void updateClob(int index, Clob value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		if (Proxy.isProxyClass(value.getClass()))
 		{
 			this.resultSet1.updateClob(index, this.clob1);
@@ -2701,6 +2921,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string-clob")
 	public void updateClob(String name, Clob value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		if (Proxy.isProxyClass(value.getClass()))
 		{
 			this.resultSet1.updateClob(name, this.clob1);
@@ -2731,6 +2953,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int-date")
 	public void updateDate(int index, Date value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateDate(index, value);
 		this.resultSet2.updateDate(index, value);
 		
@@ -2753,6 +2977,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string-date")
 	public void updateDate(String name, Date value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateDate(name, value);
 		this.resultSet2.updateDate(name, value);
 		
@@ -2775,6 +3001,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int-double")
 	public void updateDouble(int index, double value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateDouble(index, value);
 		this.resultSet2.updateDouble(index, value);
 		
@@ -2797,6 +3025,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string-double")
 	public void updateDouble(String name, double value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateDouble(name, value);
 		this.resultSet2.updateDouble(name, value);
 		
@@ -2819,6 +3049,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int-float")
 	public void updateFloat(int index, float value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateFloat(index, value);
 		this.resultSet2.updateFloat(index, value);
 		
@@ -2841,6 +3073,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string-float")
 	public void updateFloat(String name, float value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateFloat(name, value);
 		this.resultSet2.updateFloat(name, value);
 		
@@ -2857,6 +3091,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int-int")
 	public void updateInt(int index, int value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateInt(index, value);
 		this.resultSet2.updateInt(index, value);
 		
@@ -2873,6 +3109,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string-int")
 	public void updateInt(String name, int value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateInt(name, value);
 		this.resultSet2.updateInt(name, value);
 		
@@ -2895,6 +3133,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int-long")
 	public void updateLong(int index, long value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateLong(index, value);
 		this.resultSet2.updateLong(index, value);
 		
@@ -2917,6 +3157,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string-long")
 	public void updateLong(String name, long value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateLong(name, value);
 		this.resultSet2.updateLong(name, value);
 		
@@ -2933,6 +3175,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int")
 	public void updateNull(int index) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateNull(index);
 		this.resultSet2.updateNull(index);
 		
@@ -2949,6 +3193,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string")
 	public void updateNull(String name) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateNull(name);
 		this.resultSet2.updateNull(name);
 		
@@ -2971,6 +3217,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int-object")
 	public void updateObject(int index, Object value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateObject(index, value);
 		this.resultSet2.updateObject(index, value);
 		
@@ -2993,6 +3241,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string-object")
 	public void updateObject(String name, Object value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateObject(name, value);
 		this.resultSet2.updateObject(name, value);
 		
@@ -3015,6 +3265,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int-object-int")
 	public void updateObject(int index, Object value, int scale) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateObject(index, value, scale);
 		this.resultSet2.updateObject(index, value, scale);
 		
@@ -3037,6 +3289,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string-object-int")
 	public void updateObject(String name, Object value, int scale) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateObject(name, value, scale);
 		this.resultSet2.updateObject(name, value, scale);
 		
@@ -3059,6 +3313,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int-ref")
 	public void updateRef(int index, Ref value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateRef(index, value);
 		this.resultSet2.updateRef(index, value);
 		
@@ -3081,6 +3337,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string-ref")
 	public void updateRef(String name, Ref value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateRef(name, value);
 		this.resultSet2.updateRef(name, value);
 		
@@ -3097,6 +3355,8 @@ public class TestResultSet implements ResultSet
 	@Test
 	public void updateRow() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
 		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.readLock);
 		
@@ -3135,6 +3395,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int-short")
 	public void updateShort(int index, short value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateShort(index, value);
 		this.resultSet2.updateShort(index, value);
 		
@@ -3157,6 +3419,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string-short")
 	public void updateShort(String name, short value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateShort(name, value);
 		this.resultSet2.updateShort(name, value);
 		
@@ -3179,6 +3443,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int-string")
 	public void updateString(int index, String value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateString(index, value);
 		this.resultSet2.updateString(index, value);
 		
@@ -3201,6 +3467,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string-string")
 	public void updateString(String name, String value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateString(name, value);
 		this.resultSet2.updateString(name, value);
 		
@@ -3223,6 +3491,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int-time")
 	public void updateTime(int index, Time value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateTime(index, value);
 		this.resultSet2.updateTime(index, value);
 		
@@ -3245,6 +3515,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string-time")
 	public void updateTime(String name, Time value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateTime(name, value);
 		this.resultSet2.updateTime(name, value);
 		
@@ -3267,6 +3539,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int-timestamp")
 	public void updateTimestamp(int index, Timestamp value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateTimestamp(index, value);
 		this.resultSet2.updateTimestamp(index, value);
 		
@@ -3289,6 +3563,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string-timestamp")
 	public void updateTimestamp(String name, Timestamp value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateTimestamp(name, value);
 		this.resultSet2.updateTimestamp(name, value);
 		
@@ -3305,6 +3581,8 @@ public class TestResultSet implements ResultSet
 	@Test
 	public boolean wasNull() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.wasNull()).andReturn(true);
 		
 		this.replay();
@@ -3324,6 +3602,8 @@ public class TestResultSet implements ResultSet
 	@Test
 	public int getHoldability() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getHoldability()).andReturn(1);
 		
 		this.replay();
@@ -3344,6 +3624,8 @@ public class TestResultSet implements ResultSet
 	public Reader getNCharacterStream(int index) throws SQLException
 	{
 		Reader reader = new StringReader("");
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getNCharacterStream(index)).andReturn(reader);
 		
@@ -3366,6 +3648,8 @@ public class TestResultSet implements ResultSet
 	{
 		Reader reader = new StringReader("");
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getNCharacterStream(name)).andReturn(reader);
 		
 		this.replay();
@@ -3385,6 +3669,8 @@ public class TestResultSet implements ResultSet
 	public NClob getNClob(int index) throws SQLException
 	{
 		NClob clob = EasyMock.createMock(NClob.class);
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getNClob(index)).andReturn(clob);
 		
@@ -3406,6 +3692,8 @@ public class TestResultSet implements ResultSet
 	{
 		NClob clob = EasyMock.createMock(NClob.class);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getNClob(name)).andReturn(clob);
 		
 		this.replay();
@@ -3425,6 +3713,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int")
 	public String getNString(int index) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getNString(index)).andReturn("");
 		
 		this.replay();
@@ -3444,6 +3734,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string")
 	public String getNString(String name) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getNString(name)).andReturn("");
 		
 		this.replay();
@@ -3464,6 +3756,8 @@ public class TestResultSet implements ResultSet
 	public RowId getRowId(int index) throws SQLException
 	{
 		RowId rowId = EasyMock.createMock(RowId.class);
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getRowId(index)).andReturn(rowId);
 		
@@ -3486,6 +3780,8 @@ public class TestResultSet implements ResultSet
 	{
 		RowId rowId = EasyMock.createMock(RowId.class);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getRowId(name)).andReturn(rowId);
 		
 		this.replay();
@@ -3506,6 +3802,8 @@ public class TestResultSet implements ResultSet
 	public SQLXML getSQLXML(int index) throws SQLException
 	{
 		SQLXML xml = EasyMock.createMock(SQLXML.class);
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resultSet1.getSQLXML(index)).andReturn(xml);
 		
@@ -3528,6 +3826,8 @@ public class TestResultSet implements ResultSet
 	{
 		SQLXML xml = EasyMock.createMock(SQLXML.class);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.getSQLXML(name)).andReturn(xml);
 		
 		this.replay();
@@ -3547,6 +3847,8 @@ public class TestResultSet implements ResultSet
 	@Test
 	public boolean isClosed() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.isClosed()).andReturn(true);
 		
 		this.replay();
@@ -3575,6 +3877,8 @@ public class TestResultSet implements ResultSet
 		File file = new File("");
 		InputStream input1 = new ByteArrayInputStream(new byte[0]);
 		InputStream input2 = new ByteArrayInputStream(new byte[0]);
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
@@ -3609,6 +3913,8 @@ public class TestResultSet implements ResultSet
 		InputStream input1 = new ByteArrayInputStream(new byte[0]);
 		InputStream input2 = new ByteArrayInputStream(new byte[0]);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
 		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(input1);
@@ -3641,6 +3947,8 @@ public class TestResultSet implements ResultSet
 		File file = new File("");
 		InputStream input1 = new ByteArrayInputStream(new byte[0]);
 		InputStream input2 = new ByteArrayInputStream(new byte[0]);
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
@@ -3675,6 +3983,8 @@ public class TestResultSet implements ResultSet
 		InputStream input1 = new ByteArrayInputStream(new byte[0]);
 		InputStream input2 = new ByteArrayInputStream(new byte[0]);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
 		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(input1);
@@ -3701,6 +4011,8 @@ public class TestResultSet implements ResultSet
 		File file = new File("");
 		InputStream input1 = new ByteArrayInputStream(new byte[0]);
 		InputStream input2 = new ByteArrayInputStream(new byte[0]);
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
@@ -3729,6 +4041,8 @@ public class TestResultSet implements ResultSet
 		InputStream input1 = new ByteArrayInputStream(new byte[0]);
 		InputStream input2 = new ByteArrayInputStream(new byte[0]);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
 		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(input1);
@@ -3755,6 +4069,8 @@ public class TestResultSet implements ResultSet
 		File file = new File("");
 		InputStream input1 = new ByteArrayInputStream(new byte[0]);
 		InputStream input2 = new ByteArrayInputStream(new byte[0]);
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
@@ -3783,6 +4099,8 @@ public class TestResultSet implements ResultSet
 		InputStream input1 = new ByteArrayInputStream(new byte[0]);
 		InputStream input2 = new ByteArrayInputStream(new byte[0]);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
 		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(input1);
@@ -3809,6 +4127,8 @@ public class TestResultSet implements ResultSet
 		File file = new File("");
 		InputStream input1 = new ByteArrayInputStream(new byte[0]);
 		InputStream input2 = new ByteArrayInputStream(new byte[0]);
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
@@ -3837,6 +4157,8 @@ public class TestResultSet implements ResultSet
 		InputStream input1 = new ByteArrayInputStream(new byte[0]);
 		InputStream input2 = new ByteArrayInputStream(new byte[0]);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
 		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(input1);
@@ -3864,6 +4186,8 @@ public class TestResultSet implements ResultSet
 		InputStream input1 = new ByteArrayInputStream(new byte[0]);
 		InputStream input2 = new ByteArrayInputStream(new byte[0]);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
 		EasyMock.expect(this.fileSupport.getInputStream(file)).andReturn(input1);
@@ -3890,6 +4214,8 @@ public class TestResultSet implements ResultSet
 		File file = new File("");
 		InputStream input1 = new ByteArrayInputStream(new byte[0]);
 		InputStream input2 = new ByteArrayInputStream(new byte[0]);
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
@@ -3924,6 +4250,8 @@ public class TestResultSet implements ResultSet
 		Reader reader1 = new StringReader("");
 		Reader reader2 = new StringReader("");
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
 		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader1);
@@ -3956,6 +4284,8 @@ public class TestResultSet implements ResultSet
 		File file = new File("");
 		Reader reader1 = new StringReader("");
 		Reader reader2 = new StringReader("");
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
@@ -3990,6 +4320,8 @@ public class TestResultSet implements ResultSet
 		Reader reader1 = new StringReader("");
 		Reader reader2 = new StringReader("");
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
 		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader1);
@@ -4023,6 +4355,8 @@ public class TestResultSet implements ResultSet
 		Reader reader1 = new StringReader("");
 		Reader reader2 = new StringReader("");
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
 		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader1);
@@ -4049,6 +4383,8 @@ public class TestResultSet implements ResultSet
 		File file = new File("");
 		Reader reader1 = new StringReader("");
 		Reader reader2 = new StringReader("");
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
@@ -4077,6 +4413,8 @@ public class TestResultSet implements ResultSet
 		Reader reader1 = new StringReader("");
 		Reader reader2 = new StringReader("");
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
 		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader1);
@@ -4103,6 +4441,8 @@ public class TestResultSet implements ResultSet
 		File file = new File("");
 		Reader reader1 = new StringReader("");
 		Reader reader2 = new StringReader("");
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
@@ -4131,6 +4471,8 @@ public class TestResultSet implements ResultSet
 		Reader reader1 = new StringReader("");
 		Reader reader2 = new StringReader("");
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
 		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader1);
@@ -4157,6 +4499,8 @@ public class TestResultSet implements ResultSet
 		File file = new File("");
 		Reader reader1 = new StringReader("");
 		Reader reader2 = new StringReader("");
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
@@ -4185,6 +4529,8 @@ public class TestResultSet implements ResultSet
 		Reader reader1 = new StringReader("");
 		Reader reader2 = new StringReader("");
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
 		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader1);
@@ -4212,6 +4558,8 @@ public class TestResultSet implements ResultSet
 		Reader reader1 = new StringReader("");
 		Reader reader2 = new StringReader("");
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
 		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader1);
@@ -4238,6 +4586,8 @@ public class TestResultSet implements ResultSet
 		File file = new File("");
 		Reader reader1 = new StringReader("");
 		Reader reader2 = new StringReader("");
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
@@ -4275,6 +4625,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int-nclob")
 	public void updateNClob(int index, NClob value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		if (Proxy.isProxyClass(value.getClass()))
 		{
 			this.resultSet1.updateNClob(index, this.nClob1);
@@ -4317,6 +4669,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string-nclob")
 	public void updateNClob(String name, NClob value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		if (Proxy.isProxyClass(value.getClass()))
 		{
 			this.resultSet1.updateNClob(name, this.nClob1);
@@ -4345,6 +4699,8 @@ public class TestResultSet implements ResultSet
 		Reader reader1 = new StringReader("");
 		Reader reader2 = new StringReader("");
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
 		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader1);
@@ -4371,6 +4727,8 @@ public class TestResultSet implements ResultSet
 		File file = new File("");
 		Reader reader1 = new StringReader("");
 		Reader reader2 = new StringReader("");
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
@@ -4399,6 +4757,8 @@ public class TestResultSet implements ResultSet
 		Reader reader1 = new StringReader("");
 		Reader reader2 = new StringReader("");
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
 		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader1);
@@ -4426,6 +4786,8 @@ public class TestResultSet implements ResultSet
 		Reader reader1 = new StringReader("");
 		Reader reader2 = new StringReader("");
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.fileSupport.createFile(value)).andReturn(file);
 		
 		EasyMock.expect(this.fileSupport.getReader(file)).andReturn(reader1);
@@ -4449,6 +4811,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int-string")
 	public void updateNString(int index, String value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateNString(index, value);
 		this.resultSet2.updateNString(index, value);
 		
@@ -4465,6 +4829,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string-string")
 	public void updateNString(String name, String value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateNString(name, value);
 		this.resultSet2.updateNString(name, value);
 		
@@ -4487,6 +4853,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int-rowid")
 	public void updateRowId(int index, RowId value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateRowId(index, value);
 		this.resultSet2.updateRowId(index, value);
 		
@@ -4509,6 +4877,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string-rowid")
 	public void updateRowId(String name, RowId value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateRowId(name, value);
 		this.resultSet2.updateRowId(name, value);
 		
@@ -4531,6 +4901,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "int-xml")
 	public void updateSQLXML(int index, SQLXML value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateSQLXML(index, value);
 		this.resultSet2.updateSQLXML(index, value);
 		
@@ -4553,6 +4925,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "string-xml")
 	public void updateSQLXML(String name, SQLXML value) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.resultSet1.updateSQLXML(name, value);
 		this.resultSet2.updateSQLXML(name, value);
 		
@@ -4575,6 +4949,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "class")
 	public boolean isWrapperFor(Class<?> targetClass) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.resultSet1.isWrapperFor(targetClass)).andReturn(true);
 
 		this.replay();
@@ -4590,6 +4966,8 @@ public class TestResultSet implements ResultSet
 	@Test(dataProvider = "class")
 	public <T> T unwrap(Class<T> targetClass) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		try
 		{
 			EasyMock.expect(this.resultSet1.unwrap(targetClass)).andReturn(targetClass.newInstance());

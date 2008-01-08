@@ -124,6 +124,8 @@ public class TestClob implements NClob
 	@Test
 	public void free() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
@@ -153,6 +155,8 @@ public class TestClob implements NClob
 	{
 		InputStream input = new ByteArrayInputStream(new byte[0]);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
 		
@@ -180,6 +184,8 @@ public class TestClob implements NClob
 	public Reader getCharacterStream() throws SQLException
 	{
 		Reader reader = new StringReader("");
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
@@ -215,6 +221,8 @@ public class TestClob implements NClob
 	{
 		Reader reader = new StringReader("");
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
 		
@@ -247,6 +255,8 @@ public class TestClob implements NClob
 	@Test(dataProvider = "long-int")
 	public String getSubString(long position, int length) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
 		
@@ -273,6 +283,8 @@ public class TestClob implements NClob
 	@Test
 	public long length() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
 		
@@ -305,6 +317,8 @@ public class TestClob implements NClob
 	@Test(dataProvider = "string-long")
 	public long position(String pattern, long start) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
 		
@@ -337,6 +351,8 @@ public class TestClob implements NClob
 	@Test(dataProvider = "clob-long")
 	public long position(Clob pattern, long start) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
 		
@@ -372,6 +388,8 @@ public class TestClob implements NClob
 		OutputStream output1 = new ByteArrayOutputStream();
 		OutputStream output2 = new ByteArrayOutputStream();
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
@@ -403,6 +421,8 @@ public class TestClob implements NClob
 	{
 		Writer writer1 = new StringWriter();
 		Writer writer2 = new StringWriter();
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
@@ -439,6 +459,8 @@ public class TestClob implements NClob
 	@Test(dataProvider = "long-string")
 	public int setString(long position, String string) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
@@ -474,6 +496,8 @@ public class TestClob implements NClob
 	@Test(dataProvider = "long-string-int-int")
 	public int setString(long position, String string, int offset, int length) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
@@ -503,6 +527,8 @@ public class TestClob implements NClob
 	@Test(dataProvider = "long")
 	public void truncate(long position) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		

@@ -97,6 +97,8 @@ public class TestSavepoint implements Savepoint
 	@Test
 	public int getSavepointId() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.savepoint1.getSavepointId()).andReturn(1);
 		
 		this.replay();
@@ -116,6 +118,8 @@ public class TestSavepoint implements Savepoint
 	@Test
 	public String getSavepointName() throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.savepoint1.getSavepointName()).andReturn("");
 		
 		this.replay();
@@ -128,5 +132,4 @@ public class TestSavepoint implements Savepoint
 		
 		return result;
 	}
-
 }

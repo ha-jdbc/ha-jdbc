@@ -86,7 +86,7 @@ public class TestDataSource implements javax.sql.DataSource
 	{
 		EasyMock.verify(this.cluster, this.balancer, this.dataSource1, this.dataSource2);
 	}
-	
+
 	@AfterMethod
 	void reset()
 	{
@@ -101,6 +101,8 @@ public class TestDataSource implements javax.sql.DataSource
 	{
 		Connection connection1 = EasyMock.createStrictMock(Connection.class);
 		Connection connection2 = EasyMock.createStrictMock(Connection.class);
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
@@ -126,7 +128,7 @@ public class TestDataSource implements javax.sql.DataSource
 		return result;
 	}
 
-	@DataProvider(name = "connect")
+	@DataProvider(name = "string-string")
 	Object[][] connectProvider()
 	{
 		return new Object[][] { new Object[] { "", "" } };
@@ -135,12 +137,13 @@ public class TestDataSource implements javax.sql.DataSource
 	/**
 	 * @see javax.sql.DataSource#getConnection(java.lang.String, java.lang.String)
 	 */
-	@Test(dataProvider = "connect")
+	@Test(dataProvider = "string-string")
 	public Connection getConnection(String user, String password) throws SQLException
 	{
 		Connection connection1 = EasyMock.createStrictMock(Connection.class);
 		Connection connection2 = EasyMock.createStrictMock(Connection.class);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
@@ -174,6 +177,8 @@ public class TestDataSource implements javax.sql.DataSource
 	{
 		PrintWriter writer = new PrintWriter(System.out);
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.dataSource1.getLogWriter()).andReturn(writer);
 		
 		this.replay();
@@ -195,6 +200,8 @@ public class TestDataSource implements javax.sql.DataSource
 	{
 		int timeout = 1;
 		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.dataSource1.getLoginTimeout()).andReturn(timeout);
 		
 		this.replay();
@@ -213,13 +220,15 @@ public class TestDataSource implements javax.sql.DataSource
 	{
 		return new Object[][] { new Object[] { new PrintWriter(new StringWriter()) } };
 	}
-	
+
 	/**
 	 * @see javax.sql.CommonDataSource#setLogWriter(java.io.PrintWriter)
 	 */
 	@Test(dataProvider = "writer")
 	public void setLogWriter(PrintWriter writer) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.dataSource1.setLogWriter(writer);
 		this.dataSource2.setLogWriter(writer);
 
@@ -242,6 +251,8 @@ public class TestDataSource implements javax.sql.DataSource
 	@Test(dataProvider = "int")
 	public void setLoginTimeout(int timeout) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		this.dataSource1.setLoginTimeout(timeout);
 		this.dataSource2.setLoginTimeout(timeout);
 
@@ -264,6 +275,8 @@ public class TestDataSource implements javax.sql.DataSource
 	@Test(dataProvider = "class")
 	public boolean isWrapperFor(Class<?> targetClass) throws SQLException
 	{
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
 		EasyMock.expect(this.dataSource1.isWrapperFor(targetClass)).andReturn(true);
 		
 		this.replay();
@@ -286,6 +299,8 @@ public class TestDataSource implements javax.sql.DataSource
 		try
 		{
 			T object = targetClass.newInstance();
+			
+			EasyMock.expect(this.cluster.isActive()).andReturn(true);
 			
 			EasyMock.expect(this.dataSource1.unwrap(targetClass)).andReturn(object);
 			
