@@ -83,9 +83,11 @@ public class ConnectionInvocationHandler<D> extends AbstractChildInvocationHandl
 		
 		if (methodName.startsWith("prepare") || methodName.endsWith("Statement"))
 		{
+			boolean readOnly = connection.isReadOnly();
+			
 			if (methodName.equals("createStatement"))
 			{
-				if (connection.isReadOnly())
+				if (readOnly)
 				{
 					return new DriverReadInvocationStrategy<D, Connection, Object>();
 				}
@@ -93,7 +95,7 @@ public class ConnectionInvocationHandler<D> extends AbstractChildInvocationHandl
 				return new StatementInvocationStrategy<D>(connection, this.fileSupport);
 			}
 
-			if (connection.isReadOnly())
+			if (readOnly)
 			{
 				return new DatabaseReadInvocationStrategy<D, Connection, Object>();
 			}
@@ -104,7 +106,7 @@ public class ConnectionInvocationHandler<D> extends AbstractChildInvocationHandl
 			}
 			else if (methodName.equals("prepareCall"))
 			{
-				return new CallableStatementInvocationStrategy<D>(connection, this.fileSupport, (String) parameters[0]);
+				return new CallableStatementInvocationStrategy<D>(connection, this.fileSupport);
 			}
 		}
 		
@@ -172,9 +174,7 @@ public class ConnectionInvocationHandler<D> extends AbstractChildInvocationHandl
 	@Override
 	protected boolean isSQLMethod(Method method)
 	{
-		String methodName = method.getName();
-		
-		return methodName.equals("prepareStatement") || methodName.equals("prepareCall");
+		return method.getName().equals("prepareStatement");
 	}
 
 	/**
