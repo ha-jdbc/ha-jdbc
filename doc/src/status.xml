@@ -31,6 +31,9 @@
 			<action context="src" dev="PF" type="fix">
 				Rollback TestNG to 5.6.  Version 5.7 mysteriously skipped test methods.
 			</action>
+			<action context="src" dev="PF" type="fix">
+				CallableStatement does not need to parse out sequences nor identity columns, nor detect SELECT...FOR UPDATE in SQL.
+			</action>
 			<action context="test" dev="PF" type="fix">
 				Fixed broken test cases.
 			</action>
