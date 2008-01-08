@@ -20,9 +20,11 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.Map;
+import java.util.Set;
 
 import net.sf.hajdbc.Database;
 
@@ -32,6 +34,9 @@ import net.sf.hajdbc.Database;
  */
 public class PreparedStatementInvocationHandler<D> extends AbstractPreparedStatementInvocationHandler<D, PreparedStatement>
 {
+	protected Set<String> identifierSet;
+	protected boolean selectForUpdate;
+	
 	/**
 	 * @param connection
 	 * @param proxy
@@ -41,6 +46,29 @@ public class PreparedStatementInvocationHandler<D> extends AbstractPreparedState
 	 */
 	public PreparedStatementInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, PreparedStatement> invoker, Map<Database<D>, PreparedStatement> statementMap, FileSupport fileSupport, String sql) throws Exception
 	{
-		super(connection, proxy, invoker, PreparedStatement.class, statementMap, fileSupport, sql);
+		super(connection, proxy, invoker, PreparedStatement.class, statementMap, fileSupport);
+
+		this.identifierSet = this.extractIdentifiers(sql);
+		this.selectForUpdate = this.isSelectForUpdate(sql);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractStatementInvocationHandler#getInvocationStrategy(java.sql.Statement, java.lang.reflect.Method, java.lang.Object[])
+	 */
+	@SuppressWarnings("nls")
+	@Override
+	protected InvocationStrategy<D, PreparedStatement, ?> getInvocationStrategy(PreparedStatement statement, Method method, Object[] parameters) throws Exception
+	{
+		if (method.equals(PreparedStatement.class.getMethod("execute")) || method.equals(PreparedStatement.class.getMethod("executeUpdate")))
+		{
+			return new TransactionalDatabaseWriteInvocationStrategy<D, PreparedStatement, Object>(this.identifierSet);
+		}
+		
+		if (method.equals(PreparedStatement.class.getMethod("executeQuery")))
+		{
+			return (this.identifierSet.isEmpty() && !this.selectForUpdate && (statement.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY)) ? new DatabaseReadInvocationStrategy<D, PreparedStatement, Object>() : new EagerResultSetInvocationStrategy<D, PreparedStatement>(statement, this.fileSupport, this.identifierSet);
+		}
+		
+		return super.getInvocationStrategy(statement, method, parameters);
 	}
 }

@@ -33,17 +33,15 @@ public class CallableStatementInvocationStrategy<D> extends NonTransactionalData
 {
 	private Connection connection;
 	private FileSupport fileSupport;
-	private String sql;
 	
 	/**
 	 * @param connection the connection from which to create statements
 	 * @param fileSupport support for streams
 	 * @param sql the callable SQL
 	 */
-	public CallableStatementInvocationStrategy(Connection connection, FileSupport fileSupport, String sql)
+	public CallableStatementInvocationStrategy(Connection connection, FileSupport fileSupport)
 	{
 		this.connection = connection;
-		this.sql = sql;
 	}
 
 	/**
@@ -52,6 +50,6 @@ public class CallableStatementInvocationStrategy<D> extends NonTransactionalData
 	@Override
 	public CallableStatement invoke(SQLProxy<D, Connection> proxy, Invoker<D, Connection, CallableStatement> invoker) throws Exception
 	{
-		return ProxyFactory.createProxy(CallableStatement.class, new CallableStatementInvocationHandler<D>(this.connection, proxy, invoker, this.invokeAll(proxy, invoker), this.fileSupport, this.sql));
+		return ProxyFactory.createProxy(CallableStatement.class, new CallableStatementInvocationHandler<D>(this.connection, proxy, invoker, this.invokeAll(proxy, invoker), this.fileSupport));
 	}
 }
