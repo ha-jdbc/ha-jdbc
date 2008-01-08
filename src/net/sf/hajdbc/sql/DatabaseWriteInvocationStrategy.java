@@ -59,13 +59,10 @@ public abstract class DatabaseWriteInvocationStrategy<D, T, R> implements Invoca
 	{
 		SortedMap<Database<D>, R> resultMap = new TreeMap<Database<D>, R>();
 		SortedMap<Database<D>, SQLException> exceptionMap = new TreeMap<Database<D>, SQLException>();
-		
-		DatabaseCluster<D> cluster = proxy.getDatabaseCluster();
-		
-		ExecutorService executor = this.getExecutor(cluster);
-		
 		Map<Database<D>, Future<R>> futureMap = new HashMap<Database<D>, Future<R>>();
 
+		DatabaseCluster<D> cluster = proxy.getDatabaseCluster();
+		
 		List<Lock> lockList = this.getLockList(cluster);
 		
 		for (Lock lock: lockList)
@@ -83,6 +80,8 @@ public abstract class DatabaseWriteInvocationStrategy<D, T, R> implements Invoca
 			{
 				throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, cluster));
 			}
+			
+			ExecutorService executor = this.getExecutor(cluster);
 			
 			for (final Database<D> database: databaseSet)
 			{

@@ -36,8 +36,6 @@ import java.util.SortedMap;
 import java.util.TreeSet;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.TableProperties;
 
@@ -188,9 +186,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 		}
 		
 		// If auto-commit is off, throw exception to give client the opportunity to rollback the transaction
-		DatabaseCluster<D> cluster = this.getDatabaseCluster();
-		
-		Map<Boolean, List<Database<D>>> aliveMap = cluster.getAliveMap(exceptionMap.keySet());
+		Map<Boolean, List<Database<D>>> aliveMap = this.databaseCluster.getAliveMap(exceptionMap.keySet());
 
 		List<Database<D>> aliveList = aliveMap.get(true);
 
@@ -205,9 +201,9 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 		
 		for (Database<D> database: deadList)
 		{
-			if (cluster.deactivate(database, cluster.getStateManager()))
+			if (this.databaseCluster.deactivate(database, this.databaseCluster.getStateManager()))
 			{
-				this.logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, cluster), exceptionMap.get(database));
+				this.logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this.databaseCluster), exceptionMap.get(database));
 			}
 		}
 
@@ -230,9 +226,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 	
 	protected boolean isSelectForUpdate(String sql) throws SQLException
 	{
-		DatabaseCluster<D> databaseCluster = this.getDatabaseCluster();
-		
-		return databaseCluster.getDatabaseMetaDataCache().getDatabaseProperties(this.getParent()).supportsSelectForUpdate() ? databaseCluster.getDialect().isSelectForUpdate(sql) : false;
+		return this.databaseCluster.getDatabaseMetaDataCache().getDatabaseProperties(this.getParent()).supportsSelectForUpdate() ? this.databaseCluster.getDialect().isSelectForUpdate(sql) : false;
 	}
 	
 	protected Set<String> extractIdentifiers(String sql) throws SQLException
@@ -242,17 +236,13 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 	
 	private Set<String> extractIdentifiers(List<String> sqlList) throws SQLException
 	{
-		DatabaseCluster<D> databaseCluster = this.getDatabaseCluster();
-		
-		Dialect dialect = databaseCluster.getDialect();
-		
 		Set<String> identifierSet = new TreeSet<String>();
 		
 		for (String sql: sqlList)
 		{
-			if (databaseCluster.isSequenceDetectionEnabled())
+			if (this.databaseCluster.isSequenceDetectionEnabled())
 			{
-				String sequence = dialect.parseSequence(sql);
+				String sequence = this.databaseCluster.getDialect().parseSequence(sql);
 				
 				if (sequence != null)
 				{
@@ -260,13 +250,13 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 				}
 			}
 			
-			if (databaseCluster.isIdentityColumnDetectionEnabled())
+			if (this.databaseCluster.isIdentityColumnDetectionEnabled())
 			{
-				String table = dialect.parseInsertTable(sql);
+				String table = this.databaseCluster.getDialect().parseInsertTable(sql);
 				
 				if (table != null)
 				{
-					TableProperties tableProperties = databaseCluster.getDatabaseMetaDataCache().getDatabaseProperties(this.getParent()).findTable(table);
+					TableProperties tableProperties = this.databaseCluster.getDatabaseMetaDataCache().getDatabaseProperties(this.getParent()).findTable(table);
 					
 					if (!tableProperties.getIdentityColumns().isEmpty())
 					{

@@ -118,6 +118,9 @@
 
 	<target name="compile" depends="clean, init">
 		<javac srcdir="${src.dir}" destdir="${build.dir}" optimize="yes" debug="on" classpathref="build.classpath" source="1.5" target="${target}"></javac>
+		<copy todir="${build.dir}">
+			<fileset dir="${src.dir}" excludes="**/*.java"></fileset>
+		</copy>
 		<bind verbose="false" load="true">
 			<bindingfileset dir="${conf.jibx.dir}" includes="*.xml"/>
 			<classpath refid="build.classpath"></classpath>
@@ -127,7 +130,6 @@
 	<target name="jar-1.6" depends="compile-1.6" description="Creates JAR for Java 1.6">
 		<jar jarfile="${jar-1.6.file}" index="true">
 			<fileset dir="${build.dir}"></fileset>
-			<fileset dir="${src.dir}" excludes="**/*.java"></fileset>
 			<metainf dir="${conf.dir}" includes="services/*"></metainf>
 		</jar>
 	</target>
@@ -135,7 +137,6 @@
 	<target name="jar-1.5" depends="compile-1.5" description="Creates JAR for Java 1.5">
 		<jar jarfile="${jar-1.5.file}" index="true">
 			<fileset dir="${build.dir}"></fileset>
-			<fileset dir="${src.dir}" excludes="**/*.java"></fileset>
 		</jar>
 	</target>
 
@@ -154,7 +155,6 @@
 	<target name="jar-1.4" depends="clean-1.4, compile-1.4" description="Creates JAR for Java 1.4">
 		<jar jarfile="${jar-1.4.file}" index="true">
 			<fileset dir="${build-1.4.dir}"></fileset>
-			<fileset dir="${src.dir}" excludes="**/*.java"></fileset>
 		</jar>
 	</target>
 	
@@ -255,7 +255,7 @@
 	</target>
 
 	<target name="run-tests" depends="compile-tests" description="Runs TestNG test suite">
-		<testng classpathref="test.classpath">
+		<testng classpathref="test.classpath" verbose="2">
 			<xmlfileset dir="${test.dir}" includes="testng.xml"/>
 		</testng>
 	</target>

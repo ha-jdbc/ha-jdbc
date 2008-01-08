@@ -42,16 +42,16 @@ public class CallableStatementInvocationHandler<D> extends AbstractPreparedState
 	 * @param statementMap
 	 * @throws Exception
 	 */
-	public CallableStatementInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, CallableStatement> invoker, Map<Database<D>, CallableStatement> statementMap, FileSupport fileSupport, String sql) throws Exception
+	public CallableStatementInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, CallableStatement> invoker, Map<Database<D>, CallableStatement> statementMap, FileSupport fileSupport) throws Exception
 	{
-		super(connection, proxy, invoker, CallableStatement.class, statementMap, fileSupport, sql);
+		super(connection, proxy, invoker, CallableStatement.class, statementMap, fileSupport);
 	}
 
 	/**
 	 * @see net.sf.hajdbc.sql.AbstractStatementInvocationHandler#getInvocationStrategy(java.sql.Statement, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected InvocationStrategy<D, CallableStatement, ?> getInvocationStrategy(CallableStatement object, Method method, Object[] parameters) throws Exception
+	protected InvocationStrategy<D, CallableStatement, ?> getInvocationStrategy(CallableStatement statement, Method method, Object[] parameters) throws Exception
 	{
 		String methodName = method.getName();
 		
@@ -75,7 +75,17 @@ public class CallableStatementInvocationHandler<D> extends AbstractPreparedState
 			return new DriverReadInvocationStrategy<D, CallableStatement, Object>();
 		}
 		
-		return super.getInvocationStrategy(object, method, parameters);
+		if (method.equals(CallableStatement.class.getMethod("execute")) || method.equals(CallableStatement.class.getMethod("executeUpdate")))
+		{
+			return new TransactionalDatabaseWriteInvocationStrategy<D, CallableStatement, Object>();
+		}
+		
+		if (method.equals(CallableStatement.class.getMethod("executeQuery")))
+		{
+			return (statement.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) ? new DatabaseReadInvocationStrategy<D, CallableStatement, Object>() : new EagerResultSetInvocationStrategy<D, CallableStatement>(statement, this.fileSupport);
+		}
+		
+		return super.getInvocationStrategy(statement, method, parameters);
 	}
 
 	/**

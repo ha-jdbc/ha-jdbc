@@ -55,9 +55,6 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 	private static final Set<String> DATABASE_READ_METHOD_SET = new HashSet<String>(Arrays.asList("getMetaData", "getParameterMetaData"));
 	private static final Set<String> DRIVER_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList("addBatch", "clearParameters"));
 	
-	protected Set<String> identifierSet;
-	protected boolean selectForUpdate;
-	
 	/**
 	 * @param connection
 	 * @param proxy
@@ -65,12 +62,9 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 	 * @param statementMap
 	 * @throws Exception
 	 */
-	public AbstractPreparedStatementInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, S> invoker, Class<S> statementClass, Map<Database<D>, S> statementMap, FileSupport fileSupport, String sql) throws Exception
+	public AbstractPreparedStatementInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, S> invoker, Class<S> statementClass, Map<Database<D>, S> statementMap, FileSupport fileSupport) throws Exception
 	{
 		super(connection, proxy, invoker, statementClass, statementMap, fileSupport);
-
-		this.identifierSet = this.extractIdentifiers(sql);
-		this.selectForUpdate = this.isSelectForUpdate(sql);
 	}
 
 	/**
@@ -94,16 +88,6 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 		if (methodName.startsWith("set"))
 		{
 			return new DriverWriteInvocationStrategy<D, S, Object>();
-		}
-		
-		if (method.equals(PreparedStatement.class.getMethod("execute")) || method.equals(PreparedStatement.class.getMethod("executeUpdate")))
-		{
-			return new TransactionalDatabaseWriteInvocationStrategy<D, S, Object>(this.identifierSet);
-		}
-		
-		if (method.equals(PreparedStatement.class.getMethod("executeQuery")))
-		{
-			return (this.identifierSet.isEmpty() && !this.selectForUpdate && (statement.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY)) ? new DatabaseReadInvocationStrategy<D, S, Object>() : new EagerResultSetInvocationStrategy<D, S>(statement, this.fileSupport, this.identifierSet);
 		}
 		
 		return super.getInvocationStrategy(statement, method, parameters);

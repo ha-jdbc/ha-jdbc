@@ -130,28 +130,26 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 		{
 			List<Object> parameterList = new ArrayList<Object>(Arrays.asList(parameters));
 			
-			DatabaseCluster<D> cluster = this.getDatabaseCluster();
-			
 			long now = System.currentTimeMillis();
 			
-			if (cluster.isCurrentTimestampEvaluationEnabled())
+			if (this.databaseCluster.isCurrentTimestampEvaluationEnabled())
 			{
-				parameterList.set(0, cluster.getDialect().evaluateCurrentTimestamp((String) parameterList.get(0), new java.sql.Timestamp(now)));
+				parameterList.set(0, this.databaseCluster.getDialect().evaluateCurrentTimestamp((String) parameterList.get(0), new java.sql.Timestamp(now)));
 			}
 			
-			if (cluster.isCurrentDateEvaluationEnabled())
+			if (this.databaseCluster.isCurrentDateEvaluationEnabled())
 			{
-				parameterList.set(0, cluster.getDialect().evaluateCurrentDate((String) parameterList.get(0), new java.sql.Date(now)));
+				parameterList.set(0, this.databaseCluster.getDialect().evaluateCurrentDate((String) parameterList.get(0), new java.sql.Date(now)));
 			}
 			
-			if (cluster.isCurrentTimeEvaluationEnabled())
+			if (this.databaseCluster.isCurrentTimeEvaluationEnabled())
 			{
-				parameterList.set(0, cluster.getDialect().evaluateCurrentTime((String) parameterList.get(0), new java.sql.Time(now)));
+				parameterList.set(0, this.databaseCluster.getDialect().evaluateCurrentTime((String) parameterList.get(0), new java.sql.Time(now)));
 			}
 			
-			if (cluster.isRandEvaluationEnabled())
+			if (this.databaseCluster.isRandEvaluationEnabled())
 			{
-				parameterList.set(0, cluster.getDialect().evaluateRand((String) parameterList.get(0)));
+				parameterList.set(0, this.databaseCluster.getDialect().evaluateRand((String) parameterList.get(0)));
 			}
 			
 			return new SimpleInvoker(method, parameterList.toArray());
