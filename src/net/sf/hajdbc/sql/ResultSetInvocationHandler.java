@@ -144,9 +144,11 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 	{
 		Class<?>[] types = method.getParameterTypes();
 		
-		if (this.isUpdateMethod(method))
+		if (this.isUpdateMethod(method) && (types.length > 1))
 		{
-			if (types[1].equals(InputStream.class))
+			Class<?> type = types[1];
+			
+			if (type.equals(InputStream.class))
 			{
 				final File file = this.fileSupport.createFile((InputStream) parameters[1]);
 				
@@ -163,7 +165,7 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 				};
 			}
 			
-			if (types[1].equals(Reader.class))
+			if (type.equals(Reader.class))
 			{
 				final File file = this.fileSupport.createFile((Reader) parameters[1]);
 				
@@ -180,7 +182,7 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 				};
 			}
 			
-			if (types[1].equals(Blob.class))
+			if (type.equals(Blob.class))
 			{
 				if (Proxy.isProxyClass(parameters[1].getClass()))
 				{
@@ -203,7 +205,7 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 			}
 			
 			// Handle both clob and nclob
-			if (Clob.class.isAssignableFrom(types[1]))
+			if (Clob.class.isAssignableFrom(type))
 			{
 				if (Proxy.isProxyClass(parameters[1].getClass()))
 				{
@@ -224,7 +226,7 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 
 				Clob clob = new SerialClob((Clob) parameters[1]);
 				
-				parameters[1] = types[1].equals(Clob.class) ? clob : ProxyFactory.createProxy(types[1], new SimpleInvocationHandler(clob));
+				parameters[1] = type.equals(Clob.class) ? clob : ProxyFactory.createProxy(type, new SimpleInvocationHandler(clob));
 			}
 		}
 		
