@@ -12,7 +12,7 @@
 	</contexts>
 
 	<changes>
-		<release version="2.0.10" date="January 7, 2008">
+		<release version="2.0.10" date="January 8, 2008">
 			<action context="src" dev="PF" type="fix">
 				Fixed CronThreadPoolExecutor to work around potential inaccuracies in java.util.Date that could cause a task to be scheduled multiple times in a single cron interval.
 			</action>
@@ -27,6 +27,12 @@
 			</action>
 			<action context="src" dev="PF" type="update">
 				Cleanup logic in DatabaseWriteInvocationStrategy by splitting into TransactionalDatabaseWriteInvocationStrategy and NonTransactionalDatabaseWriteInvocationStrategy.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Rollback TestNG to 5.6.  Version 5.7 mysteriously skipped test methods.
+			</action>
+			<action context="test" dev="PF" type="fix">
+				Fixed broken test cases.
 			</action>
 		</release>
 		<release version="2.0.9" date="December 28, 2007">
