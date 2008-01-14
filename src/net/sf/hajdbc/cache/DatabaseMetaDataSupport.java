@@ -398,11 +398,11 @@ public class DatabaseMetaDataSupport
 		
 		if ((!quoted && this.storesLowerCaseIdentifiers) || (quoted && this.storesLowerCaseQuotedIdentifiers))
 		{
-			name.toLowerCase();
+			name = name.toLowerCase();
 		}
 		else if ((!quoted && this.storesUpperCaseIdentifiers) || (quoted && this.storesUpperCaseQuotedIdentifiers))
 		{
-			name.toUpperCase();
+			name = name.toUpperCase();
 		}
 			
 		return this.qualifyNameForDML(new QualifiedName(schema, name));
