@@ -12,6 +12,12 @@
 	</contexts>
 
 	<changes>
+		<release version="2.0.11" date="January 14, 2008">
+			<action context="src" dev="PF" type="fix">
+				Replaced accidental use of Method.getTypeParameters() with intended Method.getParameterTypes() in AbstractInvocationHandler.
+				This fixes bug where state changing methods were not recorded properly and subsequently not replayed correctly on newly activated databases.
+			</action>
+		</release>
 		<release version="2.0.10" date="January 8, 2008">
 			<action context="src" dev="PF" type="fix">
 				Fixed CronThreadPoolExecutor to work around potential inaccuracies in java.util.Date that could cause a task to be scheduled multiple times in a single cron interval.
