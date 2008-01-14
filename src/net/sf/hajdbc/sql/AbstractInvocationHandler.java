@@ -277,7 +277,7 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 	protected void record(Method method, Invoker<D, E, ?> invoker)
 	{
 		// Record only the last invocation of a given set*(...) method
-		if (this.isSetMethod(method) && (method.getTypeParameters().length == 1))
+		if (this.isSetMethod(method) && (method.getParameterTypes().length == 1))
 		{
 			synchronized (this.invokerMap)
 			{
@@ -289,7 +289,7 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 	@SuppressWarnings("nls")
 	protected boolean isSetMethod(Method method)
 	{
-		return method.getName().startsWith("set") && (method.getTypeParameters() != null);
+		return method.getName().startsWith("set") && (method.getParameterTypes() != null);
 	}
 	
 	protected void replay(Database<D> database, E object) throws SQLException
