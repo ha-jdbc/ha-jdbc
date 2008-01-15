@@ -42,6 +42,7 @@ public class CallableStatementInvocationStrategy<D> extends NonTransactionalData
 	public CallableStatementInvocationStrategy(Connection connection, FileSupport fileSupport)
 	{
 		this.connection = connection;
+		this.fileSupport = fileSupport;
 	}
 
 	/**
