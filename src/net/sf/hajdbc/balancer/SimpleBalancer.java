@@ -20,55 +20,22 @@
  */
 package net.sf.hajdbc.balancer;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedList;
+import java.util.NoSuchElementException;
 
 import net.sf.hajdbc.Database;
 
 /**
+ * Trivial balancer implementation whose {@link #next} implementation returns the database with the highest weight.
+ * 
  * @author  Paul Ferraro
- * @since   1.0
+ * @param <D> either java.sql.Driver or javax.sql.DataSource
  */
 public class SimpleBalancer<D> extends AbstractBalancer<D>
 {
-	private LinkedList<Database<D>> databaseList = new LinkedList<Database<D>>();
-
-	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#collect()
-	 */
-	@Override
-	protected Collection<Database<D>> collect()
-	{
-		return this.databaseList;
-	}
+	private volatile Database<D> nextDatabase = null;
 	
-	/**
-	 * @see net.sf.hajdbc.Balancer#next()
-	 */
-	@Override
-	public synchronized Database<D> next()
-	{
-		return this.databaseList.element();
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#add(net.sf.hajdbc.Database)
-	 */
-	@Override
-	public synchronized boolean add(Database<D> database)
-	{
-		boolean added = super.add(database);
-		
-		if (added)
-		{
-			Collections.sort(this.databaseList, this.comparator);
-		}
-		
-		return added;
-	}
-
 	private Comparator<Database<D>> comparator = new Comparator<Database<D>>()
 	{
 		/**
@@ -76,7 +43,55 @@ public class SimpleBalancer<D> extends AbstractBalancer<D>
 		 */
 		public int compare(Database<D> database1, Database<D> database2)
 		{
-			return database2.getWeight() - database1.getWeight();
+			return database1.getWeight() - database2.getWeight();
 		}
 	};
+
+	/**
+	 * @see net.sf.hajdbc.Balancer#next()
+	 */
+	@Override
+	public Database<D> next()
+	{
+		Database<D> next = this.nextDatabase;
+		
+		if (next == null)
+		{
+			throw new NoSuchElementException();
+		}
+		
+		return next;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.balancer.AbstractBalancer#added(net.sf.hajdbc.Database)
+	 */
+	@Override
+	protected void added(Database<D> database)
+	{
+		this.reset();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.balancer.AbstractBalancer#removed(net.sf.hajdbc.Database)
+	 */
+	@Override
+	protected void removed(Database<D> database)
+	{
+		this.reset();
+	}
+	
+	private void reset()
+	{
+		this.nextDatabase = Collections.max(this.databaseSet, this.comparator);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.balancer.AbstractBalancer#cleared()
+	 */
+	@Override
+	protected void cleared()
+	{
+		this.nextDatabase = null;
+	}
 }

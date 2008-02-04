@@ -20,104 +20,87 @@
  */
 package net.sf.hajdbc.balancer;
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.Set;
 
 import net.sf.hajdbc.Database;
 
 /**
+ * Balancer implementation whose {@link #next()} implementation uses a circular FIFO queue.
+ * 
  * @author  Paul Ferraro
- * @since   1.0
+ * @param <D> either java.sql.Driver or javax.sql.DataSource
  */
 public class RoundRobinBalancer<D> extends AbstractBalancer<D>
 {
-	private Set<Database<D>> databaseSet = new HashSet<Database<D>>();
 	private Queue<Database<D>> databaseQueue = new LinkedList<Database<D>>();
 
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#collect()
+	 * @see net.sf.hajdbc.balancer.AbstractBalancer#added(net.sf.hajdbc.Database)
 	 */
 	@Override
-	protected Collection<Database<D>> collect()
+	protected void added(Database<D> database)
 	{
-		return this.databaseSet;
+		int weight = database.getWeight();
+		
+		for (int i = 0; i < weight; ++i)
+		{
+			this.databaseQueue.add(database);
+		}
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Balancer#add(net.sf.hajdbc.Database)
+	 * @see net.sf.hajdbc.balancer.AbstractBalancer#removed(net.sf.hajdbc.Database)
 	 */
 	@Override
-	public synchronized boolean add(Database<D> database)
+	protected void removed(Database<D> database)
 	{
-		boolean added = super.add(database);
+		int weight = database.getWeight();
 		
-		if (added)
+		for (int i = 0; i < weight; ++i)
 		{
-			int weight = database.getWeight();
-			
-			for (int i = 0; i < weight; ++i)
-			{
-				this.databaseQueue.add(database);
-			}
+			this.databaseQueue.remove(database);
 		}
-		
-		return added;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.Balancer#remove(net.sf.hajdbc.Database)
-	 */
-	@Override
-	public synchronized boolean remove(Database<D> database)
-	{
-		boolean removed = super.remove(database);
-
-		if (removed)
-		{
-			int weight = database.getWeight();
-
-			for (int i = 0; i < weight; ++i)
-			{
-				this.databaseQueue.remove(database);
-			}
-		}
-		
-		return removed;
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.Balancer#next()
 	 */
 	@Override
-	public synchronized Database<D> next()
+	public Database<D> next()
 	{
-		if (this.databaseQueue.isEmpty())
+		this.lock.lock();
+		
+		try
 		{
-			return this.databaseSet.iterator().next();
+			if (this.databaseQueue.isEmpty())
+			{
+				return this.databaseSet.first();
+			}
+			
+			if (this.databaseQueue.size() == 1)
+			{
+				return this.databaseQueue.element();
+			}
+			
+			Database<D> database = this.databaseQueue.remove();
+			
+			this.databaseQueue.add(database);
+			
+			return database;
 		}
-		
-		if (this.databaseQueue.size() == 1)
+		finally
 		{
-			return this.databaseQueue.element();
+			this.lock.unlock();
 		}
-		
-		Database<D> database = this.databaseQueue.remove();
-		
-		this.databaseQueue.add(database);
-		
-		return database;
 	}
 
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#clear()
+	 * @see net.sf.hajdbc.balancer.AbstractBalancer#cleared()
 	 */
 	@Override
-	public synchronized void clear()
+	protected void cleared()
 	{
 		this.databaseQueue.clear();
-		this.databaseSet.clear();
 	}
 }
