@@ -27,7 +27,7 @@ import java.util.NoSuchElementException;
 import net.sf.hajdbc.Database;
 
 /**
- * Trivial balancer implementation whose {@link #next} implementation returns the database with the highest weight.
+ * Trivial balancer implementation whose {@link #next} implementation always returns the database with the highest weight.
  * 
  * @author  Paul Ferraro
  * @param <D> either java.sql.Driver or javax.sql.DataSource
@@ -38,9 +38,7 @@ public class SimpleBalancer<D> extends AbstractBalancer<D>
 	
 	private Comparator<Database<D>> comparator = new Comparator<Database<D>>()
 	{
-		/**
-		 * @see java.util.Comparator#compare(T, T)
-		 */
+		@Override
 		public int compare(Database<D> database1, Database<D> database2)
 		{
 			return database1.getWeight() - database2.getWeight();
