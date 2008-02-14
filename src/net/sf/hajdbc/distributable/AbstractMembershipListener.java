@@ -37,7 +37,7 @@ public abstract class AbstractMembershipListener implements MembershipListener
 	protected Channel channel;
 	private Set<Address> addressSet = new HashSet<Address>();
 
-	public AbstractMembershipListener(Channel channel)
+	protected AbstractMembershipListener(Channel channel)
 	{
 		this.channel = channel;
 		
