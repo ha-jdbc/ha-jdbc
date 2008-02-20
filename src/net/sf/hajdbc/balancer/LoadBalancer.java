@@ -52,14 +52,15 @@ public class LoadBalancer<D> implements Balancer<D>
 			Database<D> database2 = mapEntry2.getKey();
 
 			float load1 = mapEntry1.getValue().get();
-			float load2 = mapEntry1.getValue().get();
+			float load2 = mapEntry2.getValue().get();
 			
 			int weight1 = database1.getWeight();
 			int weight2 = database2.getWeight();
 			
+			// If weights are the same, we can simply compare the loads
 			if (weight1 == weight2)
 			{
-				Float.compare(load1, load2);
+				return Float.compare(load1, load2);
 			}
 			
 			float weightedLoad1 = (weight1 != 0) ? (load1 / weight1) : Float.POSITIVE_INFINITY;
