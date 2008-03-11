@@ -81,7 +81,7 @@ public class SimpleBalancer<D> extends AbstractBalancer<D>
 	
 	private void reset()
 	{
-		this.nextDatabase = Collections.max(this.databaseSet, this.comparator);
+		this.nextDatabase = this.databaseSet.isEmpty() ? null : Collections.max(this.databaseSet, this.comparator);
 	}
 
 	/**
