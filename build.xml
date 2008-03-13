@@ -235,7 +235,7 @@
 	
 	<target name="javadoc" description="Generated Java API documentation">
 		<delete dir="${doc.api.dir}" quiet="true"></delete>
-		<javadoc destdir="${doc.api.dir}" classpathref="src.classpath" windowtitle="HA-JDBC ${version} API">
+		<javadoc destdir="${doc.api.dir}" classpathref="src.classpath" windowtitle="HA-JDBC ${version} API" linksource="true">
 			<fileset dir="${src.dir}" includes="**/*.java"></fileset>
 			<link href="http://java.sun.com/javase/6/docs/api/"/>
 			<link href="http://www.jgroups.org/javagroupsnew/docs/javadoc/"/>
