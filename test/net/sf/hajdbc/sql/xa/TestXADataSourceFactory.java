@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2007 Paul Ferraro
+ * Copyright (c) 2004-2008 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -18,7 +18,7 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.sql;
+package net.sf.hajdbc.sql.xa;
 
 import java.lang.reflect.Proxy;
 import java.sql.Driver;
@@ -34,9 +34,10 @@ import javax.naming.RefAddr;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
 import javax.naming.spi.ObjectFactory;
-import javax.sql.DataSource;
+import javax.sql.XADataSource;
 
 import net.sf.hajdbc.local.LocalStateManager;
+import net.sf.hajdbc.sql.MockInitialContextFactory;
 
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -44,21 +45,18 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
- * Unit test for {@link DataSourceFactory}.
- * 
- * @author  Paul Ferraro
- * @since   1.1
+ * @author Paul Ferraro
+ *
  */
-@SuppressWarnings("nls")
-public class TestDataSourceFactory implements ObjectFactory
+public class TestXADataSourceFactory implements ObjectFactory
 {
-	private DataSourceFactory factory = new DataSourceFactory();
+	private XADataSourceFactory factory = new XADataSourceFactory();
 	private Context context;
 	
 	@BeforeClass
 	protected void setUp() throws Exception
 	{
-		Preferences.userNodeForPackage(LocalStateManager.class).put("test-datasource-cluster", "datasource1,datasource2");
+		Preferences.userNodeForPackage(LocalStateManager.class).put("test-xa-datasource-cluster", "datasource1,datasource2");
 		
 		Properties properties = new Properties();
 		
@@ -66,12 +64,12 @@ public class TestDataSourceFactory implements ObjectFactory
 		
 		this.context = new InitialContext(properties);
 		
-		Reference reference = new Reference(DataSourceFactory.class.toString(), MockDataSourceFactory.class.getName(), null);
+		Reference reference = new Reference(XADataSourceFactory.class.getName(), MockXADataSourceFactory.class.getName(), null);
 		
 		this.context.bind("datasource1", reference);
 		this.context.bind("datasource2", reference);
 		
-		this.context.bind("datasource", new DataSourceReference("test-datasource-cluster"));
+		this.context.bind("datasource", new XADataSourceReference("test-xa-datasource-cluster"));
 	}
 
 	@AfterClass
@@ -82,7 +80,7 @@ public class TestDataSourceFactory implements ObjectFactory
 		this.context.unbind("datasource1");
 		this.context.unbind("datasource2");
 		
-		Preferences.userNodeForPackage(LocalStateManager.class).remove("test-datasource-cluster");
+		Preferences.userNodeForPackage(LocalStateManager.class).remove("test-xa-datasource-cluster");
 	}
 
 	@DataProvider(name = "factory")
@@ -91,11 +89,11 @@ public class TestDataSourceFactory implements ObjectFactory
 		return new Object[][] {
 			new Object[] { null, null, null, null },
 			new Object[] { new Object(), null, null, null },
-			new Object[] { new Reference(DataSource.class.getName(), new StringRefAddr("cluster", "test-datasource-cluster")), null, null, null },
-			new Object[] { new Reference(DataSource.class.getName(), new StringRefAddr("cluster", null)), null, null, null },
-			new Object[] { new Reference(Driver.class.getName(), new StringRefAddr("cluster", "test-datasource-cluster")), null, null, null },
-			new Object[] { new Reference(DataSource.class.getName()), null, null, null },
-			new Object[] { new Reference(DataSource.class.getName(), new StringRefAddr("cluster", "invalid-cluster")), null, null, null }
+			new Object[] { new Reference(XADataSource.class.getName(), new StringRefAddr("cluster", "test-xa-datasource-cluster")), null, null, null },
+			new Object[] { new Reference(XADataSource.class.getName(), new StringRefAddr("cluster", null)), null, null, null },
+			new Object[] { new Reference(Driver.class.getName(), new StringRefAddr("cluster", "test-xa-datasource-cluster")), null, null, null },
+			new Object[] { new Reference(XADataSource.class.getName()), null, null, null },
+			new Object[] { new Reference(XADataSource.class.getName(), new StringRefAddr("cluster", "invalid-cluster")), null, null, null }
 		};
 	}
 	
@@ -118,7 +116,7 @@ public class TestDataSourceFactory implements ObjectFactory
 			
 			Reference reference = (Reference) obj;
 			
-			if (!reference.getClassName().equals(DataSource.class.getName()))
+			if (!reference.getClassName().equals(XADataSource.class.getName()))
 			{
 				assert result == null;
 				
@@ -136,7 +134,7 @@ public class TestDataSourceFactory implements ObjectFactory
 			
 			String id = (String) addr.getContent();
 			
-			if ((id == null) || !id.equals("test-datasource-cluster"))
+			if ((id == null) || !id.equals("test-xa-datasource-cluster"))
 			{
 				assert result == null;
 			}

@@ -37,7 +37,7 @@ public abstract class AbstractTestDatabase<T extends Database, U> implements Dat
 	protected abstract T createDatabase(String id);
 
 	@DataProvider(name = "object")
-	Object[][] objectProvider()
+	protected Object[][] objectProvider()
 	{
 		return new Object[][] { new Object[] { this.createDatabase("1") }, new Object[] { this.createDatabase("2") }, new Object[] { new Object() }, new Object[] { null } };
 	}
@@ -134,7 +134,7 @@ public abstract class AbstractTestDatabase<T extends Database, U> implements Dat
 	}
 
 	@DataProvider(name = "string")
-	public Object[][] stringProvider()
+	protected Object[][] stringProvider()
 	{
 		return new Object[][] { new Object[] { "test" } };
 	}
@@ -203,7 +203,7 @@ public abstract class AbstractTestDatabase<T extends Database, U> implements Dat
 	}
 
 	@DataProvider(name = "property")
-	public Object[][] propertyProvider()
+	protected Object[][] propertyProvider()
 	{
 		return new Object[][] { new Object[] { "name", "value" }, new Object[] { "name", null }, new Object[] { null, "value" }, new Object[] { null, null } };
 	}
@@ -290,7 +290,7 @@ public abstract class AbstractTestDatabase<T extends Database, U> implements Dat
 	}
 	
 	@DataProvider(name = "int")
-	public Object[][] intProvider()
+	protected Object[][] intProvider()
 	{
 		return new Object[][] { new Object[] { 1 } };
 	}
@@ -344,7 +344,7 @@ public abstract class AbstractTestDatabase<T extends Database, U> implements Dat
 	}
 	
 	@DataProvider(name = "boolean")
-	public Object[][] booleanProvider()
+	protected Object[][] booleanProvider()
 	{
 		return new Object[][] { new Object[] { true } };
 	}
@@ -385,7 +385,7 @@ public abstract class AbstractTestDatabase<T extends Database, U> implements Dat
 	}
 	
 	@DataProvider(name = "database")
-	Object[][] databaseProvider()
+	protected Object[][] databaseProvider()
 	{
 		return new Object[][] { new Object[] { this.createDatabase("1") }, new Object[] { this.createDatabase("1") }, new Object[] { this.createDatabase("2") } };
 	}

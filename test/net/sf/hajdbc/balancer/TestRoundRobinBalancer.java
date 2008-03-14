@@ -27,16 +27,11 @@ import net.sf.hajdbc.MockDatabase;
 
 /**
  * @author  Paul Ferraro
- * @version $Revision$
- * @since   1.0
  */
 @Test
 @SuppressWarnings("nls")
 public class TestRoundRobinBalancer extends AbstractTestBalancer
 {
-	/**
-	 * @see net.sf.hajdbc.balancer.AbstractTestBalancer#createBalancer()
-	 */
 	@Override
 	protected Balancer<Void> createBalancer()
 	{

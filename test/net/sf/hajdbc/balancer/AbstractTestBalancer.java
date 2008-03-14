@@ -33,7 +33,6 @@ import org.testng.annotations.Test;
 
 /**
  * @author  Paul Ferraro
- * @since   1.0
  */
 @SuppressWarnings("nls")
 public abstract class AbstractTestBalancer implements Balancer<Void>
@@ -45,10 +44,7 @@ public abstract class AbstractTestBalancer implements Balancer<Void>
 	@AfterMethod
 	void tearDown()
 	{
-		for (Database<Void> database: this.balancer.all())
-		{
-			this.balancer.remove(database);
-		}
+		this.balancer.clear();
 	}
 	
 	@DataProvider(name = "database")
@@ -57,9 +53,7 @@ public abstract class AbstractTestBalancer implements Balancer<Void>
 		return new Object[][] { new Object[] { new MockDatabase("1", 1) } };
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.Balancer#add(net.sf.hajdbc.Database)
-	 */
+	@Override
 	@Test(dataProvider = "database")
 	public boolean add(Database<Void> database)
 	{
@@ -74,9 +68,7 @@ public abstract class AbstractTestBalancer implements Balancer<Void>
 		return added;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.Balancer#afterInvocation(net.sf.hajdbc.Database)
-	 */
+	@Override
 	@Test(dataProvider = "database")
 	public void afterInvocation(Database<Void> database)
 	{
@@ -85,9 +77,7 @@ public abstract class AbstractTestBalancer implements Balancer<Void>
 		this.balancer.beforeInvocation(database);
 	}
 
-	/**
-	 * @see net.sf.hajdbc.Balancer#beforeInvocation(net.sf.hajdbc.Database)
-	 */
+	@Override
 	@Test(dataProvider = "database")
 	public void beforeInvocation(Database<Void> database)
 	{
@@ -96,9 +86,7 @@ public abstract class AbstractTestBalancer implements Balancer<Void>
 		this.balancer.beforeInvocation(database);
 	}
 
-	/**
-	 * @see net.sf.hajdbc.Balancer#list()
-	 */
+	@Override
 	@Test
 	public Set<Database<Void>> all()
 	{
@@ -138,9 +126,7 @@ public abstract class AbstractTestBalancer implements Balancer<Void>
 		return databaseList;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.Balancer#next()
-	 */
+	@Override
 	@Test
 	public Database<Void> next()
 	{
@@ -162,9 +148,7 @@ public abstract class AbstractTestBalancer implements Balancer<Void>
 	
 	protected abstract void next(Balancer<Void> balancer);
 
-	/**
-	 * @see net.sf.hajdbc.Balancer#remove(net.sf.hajdbc.Database)
-	 */
+	@Override
 	@Test(dataProvider = "database")
 	public boolean remove(Database<Void> database)
 	{
@@ -197,10 +181,8 @@ public abstract class AbstractTestBalancer implements Balancer<Void>
 		return removed;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.Balancer#clear()
-	 */
 	@Override
+	@Test
 	public void clear()
 	{
 		int size = this.balancer.all().size();

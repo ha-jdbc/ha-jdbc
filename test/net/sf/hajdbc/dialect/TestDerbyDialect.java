@@ -29,7 +29,6 @@ import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.SequenceProperties;
-import net.sf.hajdbc.TableProperties;
 
 import org.easymock.EasyMock;
 import org.testng.annotations.DataProvider;
@@ -48,9 +47,6 @@ public class TestDerbyDialect extends TestStandardDialect
 		return new DerbyDialect();
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
-	 */
 	@Override
 	@Test(dataProvider = "foreign-key")
 	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException
@@ -65,10 +61,7 @@ public class TestDerbyDialect extends TestStandardDialect
 		
 		return sql;
 	}
-
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getLockTableSQL(net.sf.hajdbc.TableProperties)
-	 */
+/*
 	@Override
 	@Test(dataProvider = "table")
 	public String getLockTableSQL(TableProperties properties) throws SQLException
@@ -85,10 +78,7 @@ public class TestDerbyDialect extends TestStandardDialect
 		
 		return sql;
 	}
-
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSimpleSQL()
-	 */
+*/
 	@Override
 	@Test
 	public String getSimpleSQL() throws SQLException
@@ -104,9 +94,6 @@ public class TestDerbyDialect extends TestStandardDialect
 		return sql;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#parseSequence(java.lang.String)
-	 */
 	@Override
 	@Test(dataProvider = "sequence-sql")
 	public String parseSequence(String sql) throws SQLException
@@ -122,9 +109,6 @@ public class TestDerbyDialect extends TestStandardDialect
 		return sequence;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSequences(java.sql.Connection)
-	 */
 	@Override
 	@Test(dataProvider = "meta-data")
 	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
@@ -140,9 +124,6 @@ public class TestDerbyDialect extends TestStandardDialect
 		return sequences;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.Dialect#isIdentity(net.sf.hajdbc.ColumnProperties)
-	 */
 	@Override
 	@Test(dataProvider = "column")
 	public boolean isIdentity(ColumnProperties properties) throws SQLException
@@ -172,9 +153,6 @@ public class TestDerbyDialect extends TestStandardDialect
 		return identity;
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.Dialect#getCurrentSequenceValueSQL(java.lang.String)
-	 */
 	@Override
 	@Test(dataProvider = "sequence")
 	public String getNextSequenceValueSQL(SequenceProperties sequence) throws SQLException
@@ -192,9 +170,6 @@ public class TestDerbyDialect extends TestStandardDialect
 		return sql;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#currentDateProvider()
-	 */
 	@Override
 	@DataProvider(name = "current-date")
 	Object[][] currentDateProvider()
@@ -212,7 +187,7 @@ public class TestDerbyDialect extends TestStandardDialect
 	
 	@Override
 	@Test(dataProvider = "current-date")
-	public String evaluateCurrentDate(String sql, java.sql.Date date)
+	public String evaluateCurrentDate(String sql, java.sql.Date date) throws SQLException
 	{
 		String expected = sql.contains("success") ? "SELECT DATE('" + date.toString() + "') FROM success" : sql;
 		
@@ -241,7 +216,7 @@ public class TestDerbyDialect extends TestStandardDialect
 	
 	@Override
 	@Test(dataProvider = "current-time")
-	public String evaluateCurrentTime(String sql, java.sql.Time date)
+	public String evaluateCurrentTime(String sql, java.sql.Time date) throws SQLException
 	{
 		String expected = sql.contains("success") ? "SELECT TIME('" + date.toString() + "') FROM success" : sql;
 		
@@ -269,7 +244,7 @@ public class TestDerbyDialect extends TestStandardDialect
 	
 	@Override
 	@Test(dataProvider = "current-timestamp")
-	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp date)
+	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp date) throws SQLException
 	{
 		String expected = sql.contains("success") ? "SELECT TIMESTAMP('" + date.toString() + "') FROM success" : sql;
 		

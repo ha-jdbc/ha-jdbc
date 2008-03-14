@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2007 Paul Ferraro
+ * Copyright (c) 2004-2008 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -18,52 +18,26 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.sql;
+package net.sf.hajdbc.sql.xa;
 
-import java.sql.Connection;
+import java.util.Hashtable;
 
-import javax.sql.DataSource;
-
-import org.easymock.EasyMock;
+import javax.naming.Context;
+import javax.naming.Name;
+import javax.naming.spi.ObjectFactory;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class MockDataSource extends MockCommonDataSource implements DataSource
+public class MockXADataSourceFactory implements ObjectFactory
 {
 	/**
-	 * @see javax.sql.DataSource#getConnection()
-	 */
-	public Connection getConnection()
-	{
-		return EasyMock.createMock(Connection.class);
-//		return new MockConnection();
-	}
-
-	/**
-	 * @see javax.sql.DataSource#getConnection(java.lang.String, java.lang.String)
-	 */
-	public Connection getConnection(String arg0, String arg1)
-	{
-		return this.getConnection();
-	}
-
-	/**
-	 * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
+	 * @see javax.naming.spi.ObjectFactory#getObjectInstance(java.lang.Object, javax.naming.Name, javax.naming.Context, java.util.Hashtable)
 	 */
 	@Override
-	public boolean isWrapperFor(Class<?> arg0)
+	public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception
 	{
-		return false;
-	}
-
-	/**
-	 * @see java.sql.Wrapper#unwrap(java.lang.Class)
-	 */
-	@Override
-	public <T> T unwrap(Class<T> arg0)
-	{
-		return null;
+		return new MockXADataSource();
 	}
 }

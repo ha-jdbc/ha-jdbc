@@ -40,19 +40,12 @@ import org.testng.annotations.Test;
 @SuppressWarnings("nls")
 public class TestSybaseDialect extends TestStandardDialect
 {
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#createDialect()
-	 */
 	@Override
 	protected Dialect createDialect()
 	{
 		return new SybaseDialect();
 	}
-
-	/**
-	 * @throws SQLException 
-	 * @see net.sf.hajdbc.Dialect#getLockTableSQL(net.sf.hajdbc.TableProperties)
-	 */
+/*
 	@Override
 	@Test(dataProvider = "table")
 	public String getLockTableSQL(TableProperties properties) throws SQLException
@@ -69,10 +62,7 @@ public class TestSybaseDialect extends TestStandardDialect
 		
 		return sql;
 	}
-
-	/**
-	 * @see net.sf.hajdbc.Dialect#getTruncateTableSQL(net.sf.hajdbc.TableProperties)
-	 */
+*/
 	@Override
 	@Test(dataProvider = "table")
 	public String getTruncateTableSQL(TableProperties properties) throws SQLException
@@ -90,9 +80,6 @@ public class TestSybaseDialect extends TestStandardDialect
 		return sql;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.Dialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
-	 */
 	@Override
 	@Test(dataProvider = "foreign-key")
 	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException
@@ -108,9 +95,6 @@ public class TestSybaseDialect extends TestStandardDialect
 		return sql;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.Dialect#isIdentity(net.sf.hajdbc.ColumnProperties)
-	 */
 	@Override
 	@Test(dataProvider = "column")
 	public boolean isIdentity(ColumnProperties properties) throws SQLException
@@ -152,9 +136,6 @@ public class TestSybaseDialect extends TestStandardDialect
 		return identity;
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.Dialect#parseSequence(java.lang.String)
-	 */
 	@Override
 	@Test(dataProvider = "sequence-sql")
 	public String parseSequence(String sql) throws SQLException
@@ -170,9 +151,6 @@ public class TestSybaseDialect extends TestStandardDialect
 		return sequence;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.Dialect#getSequences(java.sql.Connection)
-	 */
 	@Override
 	@Test(dataProvider = "meta-data")
 	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
@@ -207,7 +185,7 @@ public class TestSybaseDialect extends TestStandardDialect
 	
 	@Override
 	@Test(dataProvider = "current-date")
-	public String evaluateCurrentDate(String sql, java.sql.Date date)
+	public String evaluateCurrentDate(String sql, java.sql.Date date) throws SQLException
 	{
 		String expected = sql.contains("success") ? "SELECT '" + date.toString() + "' FROM success" : sql;
 		
@@ -234,7 +212,7 @@ public class TestSybaseDialect extends TestStandardDialect
 	
 	@Override
 	@Test(dataProvider = "current-time")
-	public String evaluateCurrentTime(String sql, java.sql.Time date)
+	public String evaluateCurrentTime(String sql, java.sql.Time date) throws SQLException
 	{
 		String expected = sql.contains("success") ? "SELECT '" + date.toString() + "' FROM success" : sql;
 		
@@ -267,7 +245,7 @@ public class TestSybaseDialect extends TestStandardDialect
 	
 	@Override
 	@Test(dataProvider = "current-timestamp")
-	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp date)
+	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp date) throws SQLException
 	{
 		String expected = sql.contains("success") ? "SELECT '" + date.toString() + "' FROM success" : sql;
 		

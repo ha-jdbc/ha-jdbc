@@ -40,18 +40,12 @@ import org.testng.annotations.Test;
 @SuppressWarnings("nls")
 public class TestFirebirdDialect extends TestStandardDialect
 {
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#createDialect()
-	 */
 	@Override
 	protected Dialect createDialect()
 	{
 		return new FirebirdDialect();
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getAlterSequenceSQL(java.lang.String, long)
-	 */
 	@Override
 	@Test(dataProvider = "sequence-long")
 	public String getAlterSequenceSQL(SequenceProperties sequence, long value) throws SQLException
@@ -69,9 +63,6 @@ public class TestFirebirdDialect extends TestStandardDialect
 		return sql;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSequences(java.sql.Connection)
-	 */
 	@Override
 	@Test(dataProvider = "meta-data")
 	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
@@ -113,9 +104,6 @@ public class TestFirebirdDialect extends TestStandardDialect
 		return sequences;
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.Dialect#getCurrentSequenceValueSQL(java.lang.String)
-	 */
 	@Override
 	@Test(dataProvider = "sequence")
 	public String getNextSequenceValueSQL(SequenceProperties sequence) throws SQLException
@@ -133,9 +121,6 @@ public class TestFirebirdDialect extends TestStandardDialect
 		return sql;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSimpleSQL()
-	 */
 	@Override
 	@Test
 	public String getSimpleSQL() throws SQLException
@@ -170,9 +155,6 @@ public class TestFirebirdDialect extends TestStandardDialect
 		};
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.Dialect#parseInsertTable(java.lang.String)
-	 */
 	@Override
 	@Test(dataProvider = "insert-table-sql")
 	public String parseInsertTable(String sql) throws SQLException

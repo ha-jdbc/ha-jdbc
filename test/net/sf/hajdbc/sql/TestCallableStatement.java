@@ -64,6 +64,7 @@ import org.testng.annotations.Test;
  * @author  Paul Ferraro
  * @since   1.1
  */
+@Test
 @SuppressWarnings({ "unchecked", "nls" })
 public class TestCallableStatement extends TestPreparedStatement implements java.sql.CallableStatement
 {
@@ -96,7 +97,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	@Override
 	protected AbstractStatementInvocationHandler getInvocationHandler(Map map) throws Exception
 	{
-		return new CallableStatementInvocationHandler(this.connection, this.parent, EasyMock.createMock(Invoker.class), map, this.fileSupport);
+		return new CallableStatementInvocationHandler(this.connection, this.parent, EasyMock.createMock(Invoker.class), map, this.transactionContext, this.fileSupport);
 	}
 	
 	/**
@@ -771,6 +772,7 @@ public class TestCallableStatement extends TestPreparedStatement implements java
 	/**
 	 * @see java.sql.CallableStatement#getObject(int, java.util.Map)
 	 */
+	@Test(dataProvider = "int-map")
 	public Object getObject(int index, Map<String, Class<?>> map) throws SQLException
 	{
 		Object object = new Object();

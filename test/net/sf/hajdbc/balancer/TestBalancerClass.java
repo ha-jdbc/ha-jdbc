@@ -33,7 +33,10 @@ import org.testng.annotations.Test;
 @SuppressWarnings({ "unchecked", "nls" })
 public class TestBalancerClass
 {
-	public void testSerialize()
+	/**
+	 * Test for {@link BalancerClass#serialize(Balancer)}.
+	 */
+	public void serialize()
 	{
 		this.assertBalancer(new SimpleBalancer(), "simple");
 		this.assertBalancer(new RandomBalancer(), "random");
@@ -59,7 +62,10 @@ public class TestBalancerClass
 		assert name.equals(id) : name;
 	}
 	
-	public void testDeserialize()
+	/**
+	 * Test for {@link BalancerClass#deserialize(String)}.
+	 */
+	public void deserialize()
 	{
 		this.assertBalancer("simple", SimpleBalancer.class);
 		this.assertBalancer("random", RandomBalancer.class);

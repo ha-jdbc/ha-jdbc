@@ -46,9 +46,6 @@ public class TestDB2Dialect extends TestStandardDialect
 		return new DB2Dialect();
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSequences(java.sql.DatabaseMetaData)
-	 */
 	@Override
 	@Test(dataProvider = "meta-data")
 	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
@@ -92,9 +89,6 @@ public class TestDB2Dialect extends TestStandardDialect
 		return sequences;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getCurrentSequenceValueSQL(java.lang.String)
-	 */
 	@Override
 	@Test(dataProvider = "sequence")
 	public String getNextSequenceValueSQL(SequenceProperties sequence) throws SQLException
@@ -112,9 +106,6 @@ public class TestDB2Dialect extends TestStandardDialect
 		return sql;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSimpleSQL()
-	 */
 	@Override
 	@Test
 	public String getSimpleSQL() throws SQLException
@@ -147,7 +138,7 @@ public class TestDB2Dialect extends TestStandardDialect
 	
 	@Override
 	@Test(dataProvider = "current-date")
-	public String evaluateCurrentDate(String sql, java.sql.Date date)
+	public String evaluateCurrentDate(String sql, java.sql.Date date) throws SQLException
 	{
 		String expected = sql.contains("success") ? "SELECT '" + date.toString() + "' FROM success" : sql;
 		
@@ -160,7 +151,7 @@ public class TestDB2Dialect extends TestStandardDialect
 	
 	@Override
 	@Test(dataProvider = "current-time")
-	public String evaluateCurrentTime(String sql, java.sql.Time date)
+	public String evaluateCurrentTime(String sql, java.sql.Time date) throws SQLException
 	{
 		String expected = sql.contains("success") ? "SELECT '" + date.toString() + "' FROM success" : sql;
 		
@@ -173,7 +164,7 @@ public class TestDB2Dialect extends TestStandardDialect
 	
 	@Override
 	@Test(dataProvider = "current-timestamp")
-	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp date)
+	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp date) throws SQLException
 	{
 		String expected = sql.contains("success") ? "SELECT '" + date.toString() + "' FROM success" : sql;
 		

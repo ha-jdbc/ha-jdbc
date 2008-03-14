@@ -45,27 +45,24 @@ import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.UniqueConstraint;
 
 import org.easymock.EasyMock;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
  * @author Paul Ferraro
- *
  */
 @SuppressWarnings("nls")
-public class TestDifferentialSynchronizationStrategy extends TestLockingSynchronizationStrategy
+public class TestDifferentialSynchronizationStrategy implements SynchronizationStrategy
 {
-	/**
-	 * @see net.sf.hajdbc.sync.TestLockingSynchronizationStrategy#createSynchronizationStrategy()
-	 */
-	@Override
-	protected SynchronizationStrategy createSynchronizationStrategy()
+	private SynchronizationStrategy strategy = new DifferentialSynchronizationStrategy();
+	
+	@DataProvider(name = "context")
+	Object[][] contextProvider()
 	{
-		return new DifferentialSynchronizationStrategy();
+		return new Object[][] { new Object[] { EasyMock.createStrictMock(SynchronizationContext.class) } };
 	}
-
-	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, net.sf.hajdbc.DatabaseMetaDataCache, net.sf.hajdbc.Dialect)
-	 */
+	
+	@Override
 	@SuppressWarnings("unchecked")
 	@Test(dataProvider = "context")
 	public <D> void synchronize(SynchronizationContext<D> context) throws SQLException

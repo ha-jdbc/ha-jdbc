@@ -53,7 +53,6 @@ import javax.sql.rowset.serial.SerialBlob;
 import javax.sql.rowset.serial.SerialClob;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.LockManager;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 import org.easymock.EasyMock;
@@ -61,10 +60,10 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
- * Unit test for {@link AbstractPreparedStatement}
+ * Unit test for {@link PreparedStatement}
  * @author  Paul Ferraro
- * @since   1.1
  */
+@Test
 @SuppressWarnings({ "unchecked", "nls" })
 public class TestPreparedStatement extends TestStatement implements java.sql.PreparedStatement
 {
@@ -106,7 +105,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	@Override
 	protected AbstractStatementInvocationHandler getInvocationHandler(Map map) throws Exception
 	{
-		return new PreparedStatementInvocationHandler(this.connection, this.parent, EasyMock.createMock(Invoker.class), map, this.fileSupport, this.sql);
+		return new PreparedStatementInvocationHandler(this.connection, this.parent, EasyMock.createMock(Invoker.class), map, this.transactionContext, this.fileSupport, this.sql);
 	}
 	
 	/**
@@ -166,10 +165,9 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
-		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.readLock);
+		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
 		
-		this.readLock.lock();
+		EasyMock.expect(this.transactionContext.start(EasyMock.isA(InvocationStrategy.class), EasyMock.same(this.connection))).andAnswer(this.anwser);
 		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
@@ -178,12 +176,8 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 		
 		this.root.retain(this.databaseSet);
 		
-		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
-		
 		EasyMock.expect(this.getStatement1().execute()).andReturn(true);
 		EasyMock.expect(this.getStatement2().execute()).andReturn(true);
-		
-		this.readLock.unlock();
 		
 		this.replay();
 		
@@ -236,11 +230,8 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 		// Updatable
 		EasyMock.expect(this.getStatement1().getResultSetConcurrency()).andReturn(ResultSet.CONCUR_UPDATABLE);
 
-		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.readLock);
-		
-		this.readLock.lock();
-		
+		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
+
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 
@@ -248,13 +239,9 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 		
 		this.root.retain(this.databaseSet);
 		
-		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
-		
 		EasyMock.expect(this.getStatement1().executeQuery()).andReturn(resultSet1);
 		EasyMock.expect(this.getStatement2().executeQuery()).andReturn(resultSet2);
 
-		this.readLock.unlock();
-		
 		this.replay();
 		
 		results = this.getStatement().executeQuery();
@@ -264,7 +251,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 		assert Proxy.isProxyClass(results.getClass());
 		assert SQLProxy.class.cast(Proxy.getInvocationHandler(results)).getObject(this.database1) == resultSet1;
 		assert SQLProxy.class.cast(Proxy.getInvocationHandler(results)).getObject(this.database2) == resultSet2;
-		
+
 		return results;
 	}
 
@@ -276,10 +263,9 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
-		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.readLock);
-		
-		this.readLock.lock();
+		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
+
+		EasyMock.expect(this.transactionContext.start(EasyMock.isA(InvocationStrategy.class), EasyMock.same(this.connection))).andAnswer(this.anwser);
 		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
@@ -288,12 +274,8 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 		
 		this.root.retain(this.databaseSet);
 		
-		EasyMock.expect(this.cluster.getTransactionalExecutor()).andReturn(this.executor);
-		
 		EasyMock.expect(this.getStatement1().executeUpdate()).andReturn(1);
 		EasyMock.expect(this.getStatement2().executeUpdate()).andReturn(1);
-		
-		this.readLock.unlock();
 		
 		this.replay();
 		
@@ -315,7 +297,7 @@ public class TestPreparedStatement extends TestStatement implements java.sql.Pre
 		ResultSetMetaData metaData = EasyMock.createMock(ResultSetMetaData.class);
 		
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
-		
+	
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.next()).andReturn(this.database2);
 		

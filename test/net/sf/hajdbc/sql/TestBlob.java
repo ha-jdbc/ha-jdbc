@@ -122,6 +122,8 @@ public class TestBlob implements Blob
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
+		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
@@ -130,8 +132,6 @@ public class TestBlob implements Blob
 		this.root.retain(this.databaseSet);
 		
 		this.parent.removeChild(this.handler);
-		
-		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
 		this.blob1.free();
 		this.blob2.free();
@@ -358,14 +358,14 @@ public class TestBlob implements Blob
 		
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
+		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
 		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
 
 		this.root.retain(this.databaseSet);
-		
-		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
 		EasyMock.expect(this.blob1.setBinaryStream(position)).andReturn(output1);
 		EasyMock.expect(this.blob2.setBinaryStream(position)).andReturn(output2);
@@ -395,14 +395,14 @@ public class TestBlob implements Blob
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
+		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
 		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
 
 		this.root.retain(this.databaseSet);
-		
-		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
 		EasyMock.expect(this.blob1.setBytes(position, bytes)).andReturn(1);
 		EasyMock.expect(this.blob2.setBytes(position, bytes)).andReturn(1);
@@ -432,14 +432,14 @@ public class TestBlob implements Blob
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
+		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
 		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
 
 		this.root.retain(this.databaseSet);
-		
-		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
 		EasyMock.expect(this.blob1.setBytes(position, bytes, offset, length)).andReturn(1);
 		EasyMock.expect(this.blob2.setBytes(position, bytes, offset, length)).andReturn(1);
@@ -463,14 +463,14 @@ public class TestBlob implements Blob
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
+		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
 		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
 		
 		this.root.retain(this.databaseSet);
-		
-		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
 		this.blob1.truncate(position);
 		this.blob2.truncate(position);

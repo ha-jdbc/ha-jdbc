@@ -38,40 +38,12 @@ public class TestPassiveSynchronizationStrategy implements SynchronizationStrate
 	private SynchronizationStrategy strategy = new PassiveSynchronizationStrategy();
 	
 	@DataProvider(name = "context")
-	public Object[][] contextProvider()
+	Object[][] contextProvider()
 	{
 		return new Object[][] { new Object[] { EasyMock.createStrictMock(SynchronizationContext.class) } };
 	}
 
-	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#cleanup(net.sf.hajdbc.sync.SynchronizationContextImpl)
-	 */
-	@Test(dataProvider = "context")
-	public <D> void cleanup(SynchronizationContext<D> context)
-	{
-		EasyMock.replay(context);
-		
-		this.strategy.cleanup(context);
-		
-		EasyMock.verify(context);
-	}
-
-	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#prepare(net.sf.hajdbc.sync.SynchronizationContextImpl)
-	 */
-	@Test(dataProvider = "context")
-	public <D> void prepare(SynchronizationContext<D> context) throws SQLException
-	{
-		EasyMock.replay(context);
-		
-		this.strategy.prepare(context);
-		
-		EasyMock.verify(context);
-	}
-
-	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(java.sql.Connection, java.sql.Connection, net.sf.hajdbc.DatabaseMetaDataCache, net.sf.hajdbc.Dialect)
-	 */
+	@Override
 	@Test(dataProvider = "context")
 	public <D> void synchronize(SynchronizationContext<D> context) throws SQLException
 	{

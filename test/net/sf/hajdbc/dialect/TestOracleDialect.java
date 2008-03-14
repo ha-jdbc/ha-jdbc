@@ -41,18 +41,12 @@ import org.testng.annotations.Test;
 @SuppressWarnings("nls")
 public class TestOracleDialect extends TestStandardDialect
 {
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#createDialect()
-	 */
 	@Override
 	protected Dialect createDialect()
 	{
 		return new OracleDialect();
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
-	 */
 	@Override
 	@Test(dataProvider = "foreign-key")
 	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException
@@ -68,9 +62,6 @@ public class TestOracleDialect extends TestStandardDialect
 		return sql;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSequences(java.sql.Connection)
-	 */
 	@Override
 	@Test(dataProvider = "meta-data")
 	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
@@ -112,9 +103,6 @@ public class TestOracleDialect extends TestStandardDialect
 		return sequences;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSimpleSQL()
-	 */
 	@Override
 	@Test
 	public String getSimpleSQL() throws SQLException
@@ -130,9 +118,6 @@ public class TestOracleDialect extends TestStandardDialect
 		return sql;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getTruncateTableSQL(net.sf.hajdbc.TableProperties)
-	 */
 	@Override
 	@Test(dataProvider = "table")
 	public String getTruncateTableSQL(TableProperties properties) throws SQLException
@@ -167,9 +152,6 @@ public class TestOracleDialect extends TestStandardDialect
 		};
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.Dialect#parseInsertTable(java.lang.String)
-	 */
 	@Override
 	@Test(dataProvider = "insert-table-sql")
 	public String parseInsertTable(String sql) throws SQLException
@@ -185,9 +167,6 @@ public class TestOracleDialect extends TestStandardDialect
 		return table;
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.Dialect#getCurrentSequenceValueSQL(java.lang.String)
-	 */
 	@Override
 	@Test(dataProvider = "sequence")
 	public String getNextSequenceValueSQL(SequenceProperties sequence) throws SQLException

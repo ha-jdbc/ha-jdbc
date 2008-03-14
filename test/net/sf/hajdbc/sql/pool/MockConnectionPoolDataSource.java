@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2007 Paul Ferraro
+ * Copyright (c) 2004-2008 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -18,52 +18,38 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.sql;
+package net.sf.hajdbc.sql.pool;
 
-import java.sql.Connection;
+import java.sql.SQLException;
 
-import javax.sql.DataSource;
+import javax.sql.ConnectionPoolDataSource;
+import javax.sql.PooledConnection;
 
 import org.easymock.EasyMock;
+
+import net.sf.hajdbc.sql.MockCommonDataSource;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class MockDataSource extends MockCommonDataSource implements DataSource
+public class MockConnectionPoolDataSource extends MockCommonDataSource implements ConnectionPoolDataSource
 {
 	/**
-	 * @see javax.sql.DataSource#getConnection()
-	 */
-	public Connection getConnection()
-	{
-		return EasyMock.createMock(Connection.class);
-//		return new MockConnection();
-	}
-
-	/**
-	 * @see javax.sql.DataSource#getConnection(java.lang.String, java.lang.String)
-	 */
-	public Connection getConnection(String arg0, String arg1)
-	{
-		return this.getConnection();
-	}
-
-	/**
-	 * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
+	 * @see javax.sql.ConnectionPoolDataSource#getPooledConnection()
 	 */
 	@Override
-	public boolean isWrapperFor(Class<?> arg0)
+	public PooledConnection getPooledConnection() throws SQLException
 	{
-		return false;
+		return EasyMock.createMock(PooledConnection.class);
 	}
 
 	/**
-	 * @see java.sql.Wrapper#unwrap(java.lang.Class)
+	 * @see javax.sql.ConnectionPoolDataSource#getPooledConnection(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public <T> T unwrap(Class<T> arg0)
+	public PooledConnection getPooledConnection(String arg0, String arg1) throws SQLException
 	{
-		return null;
+		return this.getPooledConnection();
 	}
 }

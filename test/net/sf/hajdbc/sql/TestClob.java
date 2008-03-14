@@ -126,6 +126,8 @@ public class TestClob implements NClob
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
+		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
@@ -134,8 +136,6 @@ public class TestClob implements NClob
 		this.root.retain(this.databaseSet);
 		
 		this.parent.removeChild(this.handler);
-		
-		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
 		this.clob1.free();
 		this.clob2.free();
@@ -390,14 +390,14 @@ public class TestClob implements NClob
 		
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
+		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
 		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
 
 		this.root.retain(this.databaseSet);
-		
-		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
 		EasyMock.expect(this.clob1.setAsciiStream(position)).andReturn(output1);
 		EasyMock.expect(this.clob2.setAsciiStream(position)).andReturn(output2);
@@ -424,14 +424,14 @@ public class TestClob implements NClob
 		
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
+		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
 		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
 
 		this.root.retain(this.databaseSet);
-		
-		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
 		EasyMock.expect(this.clob1.setCharacterStream(position)).andReturn(writer1);
 		EasyMock.expect(this.clob2.setCharacterStream(position)).andReturn(writer2);
@@ -461,14 +461,14 @@ public class TestClob implements NClob
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
+		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
 		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
 
 		this.root.retain(this.databaseSet);
-		
-		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
 		EasyMock.expect(this.clob1.setString(position, string)).andReturn(1);
 		EasyMock.expect(this.clob2.setString(position, string)).andReturn(1);
@@ -498,14 +498,14 @@ public class TestClob implements NClob
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
+		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
 		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
 
 		this.root.retain(this.databaseSet);
-		
-		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
 		EasyMock.expect(this.clob1.setString(position, string, offset, length)).andReturn(1);
 		EasyMock.expect(this.clob2.setString(position, string, offset, length)).andReturn(1);
@@ -529,14 +529,14 @@ public class TestClob implements NClob
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
+		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
 		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
 
 		this.root.retain(this.databaseSet);
-		
-		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
 		
 		this.clob1.truncate(position);
 		this.clob2.truncate(position);

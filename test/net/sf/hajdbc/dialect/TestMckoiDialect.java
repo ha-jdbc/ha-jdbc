@@ -33,18 +33,12 @@ import org.testng.annotations.Test;
 @SuppressWarnings("nls")
 public class TestMckoiDialect extends TestStandardDialect
 {
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#createDialect()
-	 */
 	@Override
 	protected Dialect createDialect()
 	{
 		return new MckoiDialect();
 	}
 
-	/**
-	 * @see net.sf.hajdbc.Dialect#parseInsertTable(java.lang.String)
-	 */
 	@Override
 	@Test(dataProvider = "insert-table-sql")
 	public String parseInsertTable(String sql) throws SQLException

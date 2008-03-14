@@ -47,9 +47,6 @@ public class TestHSQLDBDialect extends TestStandardDialect
 		return new HSQLDBDialect();
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
-	 */
 	@Override
 	@Test(dataProvider = "foreign-key")
 	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException
@@ -65,9 +62,6 @@ public class TestHSQLDBDialect extends TestStandardDialect
 		return sql;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSequences(java.sql.Connection)
-	 */
 	@Override
 	@Test(dataProvider = "meta-data")
 	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
@@ -111,9 +105,6 @@ public class TestHSQLDBDialect extends TestStandardDialect
 		return sequences;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSimpleSQL()
-	 */
 	@Override
 	@Test
 	public String getSimpleSQL() throws SQLException
@@ -129,9 +120,6 @@ public class TestHSQLDBDialect extends TestStandardDialect
 		return sql;
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.Dialect#getCurrentSequenceValueSQL(java.lang.String)
-	 */
 	@Test(dataProvider = "sequence")
 	@Override
 	public String getNextSequenceValueSQL(SequenceProperties sequence) throws SQLException

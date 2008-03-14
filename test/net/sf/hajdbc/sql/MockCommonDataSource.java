@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2007 Paul Ferraro
+ * Copyright (c) 2004-2008 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -20,50 +20,48 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.sql.Connection;
+import java.io.PrintWriter;
+import java.sql.SQLException;
 
-import javax.sql.DataSource;
-
-import org.easymock.EasyMock;
+import javax.sql.CommonDataSource;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class MockDataSource extends MockCommonDataSource implements DataSource
+public abstract class MockCommonDataSource implements CommonDataSource
 {
 	/**
-	 * @see javax.sql.DataSource#getConnection()
-	 */
-	public Connection getConnection()
-	{
-		return EasyMock.createMock(Connection.class);
-//		return new MockConnection();
-	}
-
-	/**
-	 * @see javax.sql.DataSource#getConnection(java.lang.String, java.lang.String)
-	 */
-	public Connection getConnection(String arg0, String arg1)
-	{
-		return this.getConnection();
-	}
-
-	/**
-	 * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
+	 * @see javax.sql.CommonDataSource#getLogWriter()
 	 */
 	@Override
-	public boolean isWrapperFor(Class<?> arg0)
-	{
-		return false;
-	}
-
-	/**
-	 * @see java.sql.Wrapper#unwrap(java.lang.Class)
-	 */
-	@Override
-	public <T> T unwrap(Class<T> arg0)
+	public PrintWriter getLogWriter() throws SQLException
 	{
 		return null;
+	}
+
+	/**
+	 * @see javax.sql.CommonDataSource#getLoginTimeout()
+	 */
+	@Override
+	public int getLoginTimeout() throws SQLException
+	{
+		return 0;
+	}
+
+	/**
+	 * @see javax.sql.CommonDataSource#setLogWriter(java.io.PrintWriter)
+	 */
+	@Override
+	public void setLogWriter(PrintWriter arg0) throws SQLException
+	{
+	}
+
+	/**
+	 * @see javax.sql.CommonDataSource#setLoginTimeout(int)
+	 */
+	@Override
+	public void setLoginTimeout(int arg0) throws SQLException
+	{
 	}
 }

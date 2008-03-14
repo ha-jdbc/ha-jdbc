@@ -32,8 +32,11 @@ import org.testng.annotations.Test;
 @SuppressWarnings("nls")
 public class TestDialectClass
 {
+	/**
+	 * Test method for {@link DialectClass#serialize(Dialect)}.
+	 */
 	@Test
-	public void testSerialize()
+	public void serialize()
 	{
 		Dialect dialect = EasyMock.createStrictMock(Dialect.class);
 
@@ -58,8 +61,11 @@ public class TestDialectClass
 		assert result.equals(id) : result;
 	}
 	
+	/**
+	 * Test method for {@link DialectClass#deserialize(String)}.
+	 */
 	@Test
-	public void testDeserialize()
+	public void deserialize()
 	{
 		this.assertDialect(null, StandardDialect.class);
 		this.assertDialect("net.sf.hajdbc.dialect.StandardDialect", StandardDialect.class);
