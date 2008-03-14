@@ -23,6 +23,7 @@ package net.sf.hajdbc.sql;
 import java.io.File;
 import java.io.InputStream;
 import java.io.Reader;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.Blob;
@@ -32,7 +33,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -43,22 +43,27 @@ import javax.sql.rowset.serial.SerialBlob;
 import javax.sql.rowset.serial.SerialClob;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.util.SimpleInvocationHandler;
 import net.sf.hajdbc.util.reflect.Methods;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
+import net.sf.hajdbc.util.reflect.SimpleInvocationHandler;
 
 /**
  * @author Paul Ferraro
- *
+ * @param <D> 
+ * @param <S> 
  */
 @SuppressWarnings("nls")
 public class ResultSetInvocationHandler<D, S extends Statement> extends AbstractChildInvocationHandler<D, S, ResultSet>
 {
-	private static final Set<String> DRIVER_READ_METHOD_SET = new HashSet<String>(Arrays.asList("findColumn", "getConcurrency", "getCursorName", "getFetchDirection", "getFetchSize", "getHoldability", "getMetaData", "getRow", "getType", "getWarnings", "isAfterLast", "isBeforeFirst", "isClosed", "isFirst", "isLast", "rowDeleted", "rowInserted", "rowUpdated", "wasNull"));
-	private static final Set<String> DRIVER_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList("absolute", "afterLast", "beforeFirst", "cancelRowUpdates", "clearWarnings", "first", "last", "moveToCurrentRow", "moveToInsertRow", "next", "previous", "relative", "setFetchDirection", "setFetchSize"));
-	private static final Set<String> DATABASE_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList("deleteRow", "insertRow", "updateRow"));
+	private static final Set<Method> driverReadMethodSet = Methods.findMethods(ResultSet.class, "findColumn", "getConcurrency", "getCursorName", "getFetchDirection", "getFetchSize", "getHoldability", "getMetaData", "getRow", "getType", "getWarnings", "isAfterLast", "isBeforeFirst", "isClosed", "isFirst", "isLast", "row(Deleted|Inserted|Updated)", "wasNull");
+	private static final Set<Method> driverWriteMethodSet = Methods.findMethods(ResultSet.class, "absolute", "afterLast", "beforeFirst", "cancelRowUpdates", "clearWarnings", "first", "last", "moveTo(Current|Insert)Row", "next", "previous", "relative", "setFetchDirection", "setFetchSize");
+	private static final Set<Method> transactionalWriteMethodSet = Methods.findMethods(ResultSet.class, "(delete|insert|update)Row");
+	
+	private static final Method closeMethod = Methods.getMethod(ResultSet.class, "close");
+	private static final Method getStatementMethod = Methods.getMethod(ResultSet.class, "getStatement");
 	
 	protected FileSupport fileSupport;
+	private TransactionContext<D> transactionContext;
 	private List<Invoker<D, ResultSet, ?>> invokerList = new LinkedList<Invoker<D, ResultSet, ?>>();
 	
 	/**
@@ -66,13 +71,15 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 	 * @param proxy the invocation handler of the statement that created this result set
 	 * @param invoker the invoker that was used to create this result set
 	 * @param resultSetMap a map of database to underlying result set
+	 * @param transactionContext 
 	 * @param fileSupport support for streams
 	 * @throws Exception
 	 */
-	protected ResultSetInvocationHandler(S statement, SQLProxy<D, S> proxy, Invoker<D, S, ResultSet> invoker, Map<Database<D>, ResultSet> resultSetMap, FileSupport fileSupport) throws Exception
+	protected ResultSetInvocationHandler(S statement, SQLProxy<D, S> proxy, Invoker<D, S, ResultSet> invoker, Map<Database<D>, ResultSet> resultSetMap, TransactionContext<D> transactionContext, FileSupport fileSupport) throws Exception
 	{
 		super(statement, proxy, invoker, ResultSet.class, resultSetMap);
 		
+		this.transactionContext = transactionContext;
 		this.fileSupport = fileSupport;
 	}
 
@@ -82,41 +89,22 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 	@Override
 	protected InvocationStrategy<D, ResultSet, ?> getInvocationStrategy(ResultSet resultSet, Method method, Object[] parameters) throws Exception
 	{
-		String methodName = method.getName();
-		
-		if (DRIVER_READ_METHOD_SET.contains(methodName))
+		if (driverReadMethodSet.contains(method))
 		{
 			return new DriverReadInvocationStrategy<D, ResultSet, Object>();
 		}
 		
-		if (DRIVER_WRITE_METHOD_SET.contains(methodName))
+		if (driverWriteMethodSet.contains(method))
 		{
 			return new DriverWriteInvocationStrategy<D, ResultSet, Object>();
 		}
 		
-		if (DATABASE_WRITE_METHOD_SET.contains(methodName))
+		if (transactionalWriteMethodSet.contains(method))
 		{
-			return new TransactionalDatabaseWriteInvocationStrategy<D, ResultSet, Object>();
+			return this.transactionContext.start(new DatabaseWriteInvocationStrategy<D, ResultSet, Object>(this.cluster.getTransactionalExecutor()), this.getParent().getConnection());
 		}
 		
-		if (this.isGetMethod(method))
-		{
-			Class<?> returnClass = method.getReturnType();
-			
-			if (returnClass.equals(Blob.class))
-			{
-				return new BlobInvocationStrategy<D, ResultSet>(resultSet);
-			}
-			
-			if (Clob.class.isAssignableFrom(returnClass))
-			{
-				return new ClobInvocationStrategy<D, ResultSet>(resultSet, returnClass.asSubclass(Clob.class));
-			}
-			
-			return new DriverReadInvocationStrategy<D, ResultSet, Object>();
-		}
-		
-		if (method.equals(ResultSet.class.getMethod("getStatement")))
+		if (method.equals(getStatementMethod))
 		{
 			return new InvocationStrategy<D, ResultSet, S>()
 			{
@@ -125,6 +113,23 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 					return ResultSetInvocationHandler.this.getParent();
 				}
 			};
+		}
+		
+		if (this.isGetMethod(method))
+		{
+			Class<?> returnClass = method.getReturnType();
+			
+			if (returnClass.equals(Blob.class))
+			{
+				return new BlobInvocationStrategy<D, ResultSet>(this.cluster, resultSet);
+			}
+			
+			if (Clob.class.isAssignableFrom(returnClass))
+			{
+				return new ClobInvocationStrategy<D, ResultSet>(this.cluster, resultSet, returnClass.asSubclass(Clob.class));
+			}
+			
+			return new DriverReadInvocationStrategy<D, ResultSet, Object>();
 		}
 		
 		if (this.isUpdateMethod(method))
@@ -184,49 +189,63 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 			
 			if (type.equals(Blob.class))
 			{
-				if (Proxy.isProxyClass(parameters[1].getClass()))
+				Blob blob = (Blob) parameters[1];
+				
+				if (Proxy.isProxyClass(blob.getClass()))
 				{
-					final BlobInvocationHandler<D, ?> proxy = (BlobInvocationHandler) Proxy.getInvocationHandler(parameters[1]);
+					InvocationHandler handler = Proxy.getInvocationHandler(blob);
 					
-					return new Invoker<D, ResultSet, Object>()
+					if (BlobInvocationHandler.class.isInstance(handler))
 					{
-						public Object invoke(Database<D> database, ResultSet resultSet) throws SQLException
+						final BlobInvocationHandler<D, ?> proxy = (BlobInvocationHandler) handler;
+						
+						return new Invoker<D, ResultSet, Object>()
 						{
-							List<Object> parameterList = new ArrayList<Object>(Arrays.asList(parameters));
-							
-							parameterList.set(1, proxy.getObject(database));
-							
-							return Methods.invoke(method, resultSet, parameterList.toArray());
-						}				
-					};
+							public Object invoke(Database<D> database, ResultSet resultSet) throws SQLException
+							{
+								List<Object> parameterList = new ArrayList<Object>(Arrays.asList(parameters));
+								
+								parameterList.set(1, proxy.getObject(database));
+								
+								return Methods.invoke(method, resultSet, parameterList.toArray());
+							}				
+						};
+					}
 				}
 
-				parameters[1] = new SerialBlob((Blob) parameters[1]);
+				parameters[1] = new SerialBlob(blob);
 			}
 			
 			// Handle both clob and nclob
 			if (Clob.class.isAssignableFrom(type))
 			{
-				if (Proxy.isProxyClass(parameters[1].getClass()))
+				Clob clob = (Clob) parameters[1];
+				
+				if (Proxy.isProxyClass(clob.getClass()))
 				{
-					final ClobInvocationHandler<D, ?> proxy = (ClobInvocationHandler) Proxy.getInvocationHandler(parameters[1]);
+					InvocationHandler handler = Proxy.getInvocationHandler(clob);
 					
-					return new Invoker<D, ResultSet, Object>()
+					if (ClobInvocationHandler.class.isInstance(handler))
 					{
-						public Object invoke(Database<D> database, ResultSet resultSet) throws SQLException
+						final ClobInvocationHandler<D, ?> proxy = (ClobInvocationHandler) handler;
+						
+						return new Invoker<D, ResultSet, Object>()
 						{
-							List<Object> parameterList = new ArrayList<Object>(Arrays.asList(parameters));
-							
-							parameterList.set(1, proxy.getObject(database));
-							
-							return Methods.invoke(method, resultSet, parameterList.toArray());
-						}				
-					};
+							public Object invoke(Database<D> database, ResultSet resultSet) throws SQLException
+							{
+								List<Object> parameterList = new ArrayList<Object>(Arrays.asList(parameters));
+								
+								parameterList.set(1, proxy.getObject(database));
+								
+								return Methods.invoke(method, resultSet, parameterList.toArray());
+							}				
+						};
+					}
 				}
 
-				Clob clob = new SerialClob((Clob) parameters[1]);
+				Clob serialClob = new SerialClob(clob);
 				
-				parameters[1] = type.equals(Clob.class) ? clob : ProxyFactory.createProxy(type, new SimpleInvocationHandler(clob));
+				parameters[1] = type.equals(Clob.class) ? serialClob : ProxyFactory.createProxy(type, new SimpleInvocationHandler(serialClob));
 			}
 		}
 		
@@ -237,9 +256,9 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#postInvoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected void postInvoke(ResultSet object, Method method, Object[] parameters) throws Exception
+	protected void postInvoke(ResultSet object, Method method, Object[] parameters)
 	{
-		if (method.equals(ResultSet.class.getMethod("close")))
+		if (method.equals(closeMethod))
 		{
 			this.getParentProxy().removeChild(this);
 		}
@@ -249,7 +268,7 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#handleFailures(java.util.SortedMap)
 	 */
 	@Override
-	public <R> SortedMap<Database<D>, R> handlePartialFailure(SortedMap<Database<D>, R> resultMap, SortedMap<Database<D>, SQLException> exceptionMap) throws SQLException
+	public <R> SortedMap<Database<D>, R> handlePartialFailure(SortedMap<Database<D>, R> resultMap, SortedMap<Database<D>, Exception> exceptionMap) throws Exception
 	{
 		return this.getParentProxy().handlePartialFailure(resultMap, exceptionMap);
 	}
@@ -269,7 +288,7 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 	@Override
 	protected void record(Method method, Invoker<D, ResultSet, ?> invoker)
 	{
-		if (DRIVER_WRITE_METHOD_SET.contains(method.getName()) || this.isUpdateMethod(method))
+		if (driverWriteMethodSet.contains(method.getName()) || this.isUpdateMethod(method))
 		{
 			synchronized (this.invokerList)
 			{
@@ -286,7 +305,7 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#replay(net.sf.hajdbc.Database, java.lang.Object)
 	 */
 	@Override
-	protected void replay(Database<D> database, ResultSet resultSet) throws SQLException
+	protected void replay(Database<D> database, ResultSet resultSet) throws Exception
 	{
 		super.replay(database, resultSet);
 		

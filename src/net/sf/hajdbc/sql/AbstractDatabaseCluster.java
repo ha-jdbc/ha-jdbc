@@ -125,7 +125,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	private StateManager stateManager = new LocalStateManager(this);
 	private volatile boolean active = false;
 	
-	public AbstractDatabaseCluster(String id, URL url)
+	protected AbstractDatabaseCluster(String id, URL url)
 	{
 		this.id = id;
 		this.url = url;
@@ -776,12 +776,12 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		return this.id.hashCode();
 	}
 	
-	DatabaseClusterDecorator getDecorator()
+	protected DatabaseClusterDecorator getDecorator()
 	{
 		return this.decorator;
 	}
 	
-	void setDecorator(DatabaseClusterDecorator decorator)
+	protected void setDecorator(DatabaseClusterDecorator decorator)
 	{
 		this.decorator = decorator;
 	}
@@ -803,7 +803,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		}
 	}
 	
-	Iterator<Database<D>> getDatabases()
+	protected Iterator<Database<D>> getDatabases()
 	{
 		synchronized (this.databaseMap)
 		{
@@ -866,19 +866,13 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			
 			try
 			{
-				strategy.prepare(context);
-				
 				logger.info(Messages.getMessage(Messages.DATABASE_SYNC_START, database, this));
 				
 				strategy.synchronize(context);
 				
 				logger.info(Messages.getMessage(Messages.DATABASE_SYNC_END, database, this));
 				
-				boolean activated = this.activate(database, this.stateManager);
-				
-				strategy.cleanup(context);
-				
-				return activated;
+				return this.activate(database, this.stateManager);
 			}
 			finally
 			{
@@ -1091,12 +1085,12 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		return new File(url.getPath());
 	}
 	
-	void addSynchronizationStrategyBuilder(SynchronizationStrategyBuilder builder) throws Exception
+	protected void addSynchronizationStrategyBuilder(SynchronizationStrategyBuilder builder) throws Exception
 	{
 		this.synchronizationStrategyMap.put(builder.getId(), builder.buildStrategy());
 	}
 	
-	Iterator<SynchronizationStrategyBuilder> getSynchronizationStrategyBuilders() throws Exception
+	protected Iterator<SynchronizationStrategyBuilder> getSynchronizationStrategyBuilders() throws Exception
 	{
 		List<SynchronizationStrategyBuilder> builderList = new ArrayList<SynchronizationStrategyBuilder>(this.synchronizationStrategyMap.size());
 		

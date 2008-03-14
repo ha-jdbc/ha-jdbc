@@ -32,7 +32,9 @@ import net.sf.hajdbc.Messages;
 
 /**
  * @author Paul Ferraro
- *
+ * @param <D> 
+ * @param <T> 
+ * @param <R> 
  */
 public class DatabaseReadInvocationStrategy<D, T, R> implements InvocationStrategy<D, T, R>
 {
@@ -71,7 +73,7 @@ public class DatabaseReadInvocationStrategy<D, T, R> implements InvocationStrate
 					
 					return resultMap;
 				}
-				catch (SQLException e)
+				catch (Exception e)
 				{
 					proxy.handleFailure(database, e);
 				}

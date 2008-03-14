@@ -27,39 +27,41 @@ import net.sf.hajdbc.Database;
 
 /**
  * @author Paul Ferraro
- *
+ * @param <D> 
+ * @param <P> 
+ * @param <T> 
  */
-public abstract class AbstractChildInvocationHandler<D, P, E> extends AbstractInvocationHandler<D, E>
+public abstract class AbstractChildInvocationHandler<D, P, T> extends AbstractInvocationHandler<D, T>
 {
 	private P parentObject;
 	private SQLProxy<D, P> parentProxy;
-	private Invoker<D, P, E> parentInvoker;
+	private Invoker<D, P, T> parentInvoker;
 
-	protected AbstractChildInvocationHandler(P object, SQLProxy<D, P> proxy, Invoker<D, P, E> invoker, Class<E> proxyClass, Map<Database<D>, E> objectMap) throws Exception
+	protected AbstractChildInvocationHandler(P parent, SQLProxy<D, P> proxy, Invoker<D, P, T> invoker, Class<T> proxyClass, Map<Database<D>, T> objectMap) throws Exception
 	{
 		super(proxy.getDatabaseCluster(), proxyClass, objectMap);
 		
-		this.parentObject = object;
+		this.parentObject = parent;
 		this.parentProxy = proxy;
 		this.parentInvoker = invoker;
 		this.parentProxy.addChild(this);
 	}
 	
 	@Override
-	protected E createObject(Database<D> database) throws SQLException
+	protected T createObject(Database<D> database) throws Exception
 	{
-		P parentObject = this.parentProxy.getObject(database);
+		P object = this.parentProxy.getObject(database);
 		
-		if (parentObject == null)
+		if (object == null)
 		{
 			throw new IllegalStateException();
 		}
 		
-		return this.parentInvoker.invoke(database, parentObject);
+		return this.parentInvoker.invoke(database, object);
 	}
 
 	@Override
-	protected void close(Database<D> database, E object)
+	protected void close(Database<D> database, T object)
 	{
 		try
 		{
@@ -71,7 +73,7 @@ public abstract class AbstractChildInvocationHandler<D, P, E> extends AbstractIn
 		}
 	}
 	
-	protected abstract void close(P parent, E object) throws SQLException;
+	protected abstract void close(P parent, T object) throws SQLException;
 	
 	/**
 	 * @see net.sf.hajdbc.sql.SQLProxy#getRoot()

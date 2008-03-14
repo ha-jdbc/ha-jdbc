@@ -20,40 +20,36 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.sql.Clob;
+import java.lang.reflect.InvocationHandler;
+import java.sql.SQLException;
+
+import javax.sql.DataSource;
 
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.util.reflect.ProxyFactory;
+import net.sf.hajdbc.DatabaseClusterFactory;
 
 /**
  * @author Paul Ferraro
- * @param <D> 
- * @param <P> 
  */
-public class ClobInvocationStrategy<D, P> extends DatabaseWriteInvocationStrategy<D, P, Clob>
+public class DataSourceFactory extends CommonDataSourceFactory<DataSource>
 {
-	private P parent;
-	private Class<? extends Clob> clobClass;
-	
 	/**
-	 * @param cluster 
-	 * @param parent
-	 * @param clobClass
+	 * Constructs a new factory for creating a <code>DataSource</code>.
 	 */
-	public ClobInvocationStrategy(DatabaseCluster<D> cluster, P parent, Class<? extends Clob> clobClass)
+	public DataSourceFactory()
 	{
-		super(cluster.getNonTransactionalExecutor());
-		
-		this.parent = parent;
-		this.clobClass = clobClass;
+		super(javax.sql.DataSource.class);
 	}
 
-	/**
-	 * @see net.sf.hajdbc.sql.DatabaseWriteInvocationStrategy#invoke(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker)
-	 */
 	@Override
-	public Clob invoke(SQLProxy<D, P> proxy, Invoker<D, P, Clob> invoker) throws Exception
+	protected DatabaseCluster<DataSource> getDatabaseCluster(String id, String config) throws SQLException
 	{
-		return ProxyFactory.createProxy(this.clobClass, new ClobInvocationHandler<D, P>(this.parent, proxy, invoker, this.invokeAll(proxy, invoker)));
+		return DatabaseClusterFactory.getDatabaseCluster(id, DataSourceDatabaseCluster.class, DataSourceDatabaseClusterMBean.class, config);
 	}
+
+	@Override
+	protected InvocationHandler getInvocationHandler(DatabaseCluster<DataSource> cluster)
+	{
+		return new DataSourceInvocationHandler(cluster);
+	}	
 }

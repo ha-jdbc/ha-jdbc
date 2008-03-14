@@ -20,7 +20,6 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.sql.SQLException;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -32,13 +31,13 @@ import net.sf.hajdbc.DatabaseCluster;
  * @author Paul Ferraro
  * @since 2.0
  */
-public interface SQLProxy<D, E>
+public interface SQLProxy<D, T>
 {
 	public DatabaseCluster<D> getDatabaseCluster();
 	
-	public Map.Entry<Database<D>, E> entry();
+	public Map.Entry<Database<D>, T> entry();
 	
-	public Set<Map.Entry<Database<D>, E>> entries();
+	public Set<Map.Entry<Database<D>, T>> entries();
 	
 	public void addChild(SQLProxy<D, ?> child);
 
@@ -48,13 +47,13 @@ public interface SQLProxy<D, E>
 
 	public SQLProxy<D, ?> getRoot();
 	
-	public E getObject(Database<D> database);
+	public T getObject(Database<D> database);
 	
 	public void retain(Set<Database<D>> databaseSet);
 	
-	public void handleFailure(Database<D> database, SQLException cause) throws SQLException;
+	public void handleFailure(Database<D> database, Exception cause) throws Exception;
 	
-	public void handleFailures(SortedMap<Database<D>, SQLException> exceptionMap) throws SQLException;
+	public void handleFailures(SortedMap<Database<D>, Exception> exceptionMap) throws Exception;
 	
-	public <R> SortedMap<Database<D>, R> handlePartialFailure(SortedMap<Database<D>, R> resultMap, SortedMap<Database<D>, SQLException> exceptionMap) throws SQLException;
+	public <R> SortedMap<Database<D>, R> handlePartialFailure(SortedMap<Database<D>, R> resultMap, SortedMap<Database<D>, Exception> exceptionMap) throws Exception;
 }

@@ -27,20 +27,27 @@ import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 /**
  * @author Paul Ferraro
- *
+ * @param <D> 
+ * @param <S> 
  */
 public class LazyResultSetInvocationStrategy<D, S extends Statement> extends DatabaseReadInvocationStrategy<D, S, ResultSet>
 {
 	private S statement;
+	private TransactionContext<D> transactionContext;
+	private FileSupport fileSupport;
 	
 	/**
 	 * @param statement the statement from which to create result sets
+	 * @param transactionContext 
+	 * @param fileSupport 
 	 */
-	public LazyResultSetInvocationStrategy(S statement)
+	public LazyResultSetInvocationStrategy(S statement, TransactionContext<D> transactionContext, FileSupport fileSupport)
 	{
 		super();
 		
 		this.statement = statement;
+		this.transactionContext = transactionContext;
+		this.fileSupport = fileSupport;
 	}
 	
 	/**
@@ -49,6 +56,6 @@ public class LazyResultSetInvocationStrategy<D, S extends Statement> extends Dat
 	@Override
 	public ResultSet invoke(SQLProxy<D, S> proxy, Invoker<D, S, ResultSet> invoker) throws Exception
 	{
-		return ProxyFactory.createProxy(ResultSet.class, new ResultSetInvocationHandler<D, S>(this.statement, proxy, invoker, this.invokeAll(proxy, invoker), null));
+		return ProxyFactory.createProxy(ResultSet.class, new ResultSetInvocationHandler<D, S>(this.statement, proxy, invoker, this.invokeAll(proxy, invoker), this.transactionContext, this.fileSupport));
 	}
 }

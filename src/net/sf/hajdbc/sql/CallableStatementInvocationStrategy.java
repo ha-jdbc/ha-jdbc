@@ -23,25 +23,31 @@ package net.sf.hajdbc.sql;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 /**
  * @author Paul Ferraro
- *
+ * @param <D> 
  */
-public class CallableStatementInvocationStrategy<D> extends NonTransactionalDatabaseWriteInvocationStrategy<D, Connection, CallableStatement>
+public class CallableStatementInvocationStrategy<D> extends DatabaseWriteInvocationStrategy<D, Connection, CallableStatement>
 {
 	private Connection connection;
+	private TransactionContext<D> decorator;
 	private FileSupport fileSupport;
 	
 	/**
+	 * @param cluster 
 	 * @param connection the connection from which to create statements
+	 * @param decorator 
 	 * @param fileSupport support for streams
-	 * @param sql the callable SQL
 	 */
-	public CallableStatementInvocationStrategy(Connection connection, FileSupport fileSupport)
+	public CallableStatementInvocationStrategy(DatabaseCluster<D> cluster, Connection connection, TransactionContext<D> decorator, FileSupport fileSupport)
 	{
+		super(cluster.getNonTransactionalExecutor());
+		
 		this.connection = connection;
+		this.decorator = decorator;
 		this.fileSupport = fileSupport;
 	}
 
@@ -51,6 +57,6 @@ public class CallableStatementInvocationStrategy<D> extends NonTransactionalData
 	@Override
 	public CallableStatement invoke(SQLProxy<D, Connection> proxy, Invoker<D, Connection, CallableStatement> invoker) throws Exception
 	{
-		return ProxyFactory.createProxy(CallableStatement.class, new CallableStatementInvocationHandler<D>(this.connection, proxy, invoker, this.invokeAll(proxy, invoker), this.fileSupport));
+		return ProxyFactory.createProxy(CallableStatement.class, new CallableStatementInvocationHandler<D>(this.connection, proxy, invoker, this.invokeAll(proxy, invoker), this.decorator, this.fileSupport));
 	}
 }

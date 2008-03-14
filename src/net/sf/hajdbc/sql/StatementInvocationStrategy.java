@@ -27,16 +27,23 @@ import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 /**
  * @author Paul Ferraro
- *
+ * @param <D> 
  */
 public class StatementInvocationStrategy<D> extends DriverWriteInvocationStrategy<D, Connection, Statement>
 {
 	private Connection connection;
+	private TransactionContext<D> transactionContext;
 	private FileSupport fileSupport;
 	
-	public StatementInvocationStrategy(Connection connection, FileSupport fileSupport)
+	/**
+	 * @param connection
+	 * @param transactionContext
+	 * @param fileSupport
+	 */
+	public StatementInvocationStrategy(Connection connection, TransactionContext<D> transactionContext, FileSupport fileSupport)
 	{
 		this.connection = connection;
+		this.transactionContext = transactionContext;
 		this.fileSupport = fileSupport;
 	}
 	
@@ -46,6 +53,6 @@ public class StatementInvocationStrategy<D> extends DriverWriteInvocationStrateg
 	@Override
 	public Statement invoke(SQLProxy<D, Connection> proxy, Invoker<D, Connection, Statement> invoker) throws Exception
 	{
-		return ProxyFactory.createProxy(java.sql.Statement.class, new StatementInvocationHandler<D>(this.connection, proxy, invoker, this.invokeAll(proxy, invoker), this.fileSupport));
+		return ProxyFactory.createProxy(java.sql.Statement.class, new StatementInvocationHandler<D>(this.connection, proxy, invoker, this.invokeAll(proxy, invoker), this.transactionContext, this.fileSupport));
 	}
 }

@@ -22,7 +22,6 @@ package net.sf.hajdbc.sql;
 
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -31,19 +30,29 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Messages;
-import net.sf.hajdbc.util.SQLExceptionFactory;
 
 /**
  * @author Paul Ferraro
- *
+ * @param <D> 
+ * @param <T> 
+ * @param <R> 
  */
-public abstract class DatabaseWriteInvocationStrategy<D, T, R> implements InvocationStrategy<D, T, R>
+public class DatabaseWriteInvocationStrategy<D, T, R> implements InvocationStrategy<D, T, R>
 {
+	private ExecutorService executor;
+	
+	/**
+	 * @param executor
+	 */
+	public DatabaseWriteInvocationStrategy(ExecutorService executor)
+	{
+		this.executor = executor;
+	}
+	
 	/**
 	 * @see net.sf.hajdbc.sql.InvocationStrategy#invoke(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker)
 	 */
@@ -58,71 +67,56 @@ public abstract class DatabaseWriteInvocationStrategy<D, T, R> implements Invoca
 	protected SortedMap<Database<D>, R> invokeAll(SQLProxy<D, T> proxy, final Invoker<D, T, R> invoker) throws Exception
 	{
 		SortedMap<Database<D>, R> resultMap = new TreeMap<Database<D>, R>();
-		SortedMap<Database<D>, SQLException> exceptionMap = new TreeMap<Database<D>, SQLException>();
+		SortedMap<Database<D>, Exception> exceptionMap = new TreeMap<Database<D>, Exception>();
 		Map<Database<D>, Future<R>> futureMap = new HashMap<Database<D>, Future<R>>();
 
 		DatabaseCluster<D> cluster = proxy.getDatabaseCluster();
 		
-		List<Lock> lockList = this.getLockList(cluster);
+		Set<Database<D>> databaseSet = cluster.getBalancer().all();
 		
-		for (Lock lock: lockList)
+		proxy.getRoot().retain(databaseSet);
+		
+		if (databaseSet.isEmpty())
 		{
-			lock.lock();
+			throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, cluster));
 		}
 		
-		try
+		for (final Database<D> database: databaseSet)
 		{
-			Set<Database<D>> databaseSet = cluster.getBalancer().all();
+			final T object = proxy.getObject(database);
 			
-			proxy.getRoot().retain(databaseSet);
-			
-			if (databaseSet.isEmpty())
+			Callable<R> task = new Callable<R>()
 			{
-				throw new SQLException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, cluster));
-			}
-			
-			ExecutorService executor = this.getExecutor(cluster);
-			
-			for (final Database<D> database: databaseSet)
-			{
-				final T object = proxy.getObject(database);
-				
-				Callable<R> task = new Callable<R>()
+				public R call() throws Exception
 				{
-					public R call() throws Exception
-					{
-						return invoker.invoke(database, object);
-					}
-				};
-	
-				futureMap.put(database, executor.submit(task));
-			}
+					return invoker.invoke(database, object);
+				}
+			};
 
-			for (Map.Entry<Database<D>, Future<R>> futureMapEntry: futureMap.entrySet())
-			{
-				Database<D> database = futureMapEntry.getKey();
-				
-				try
-				{
-					resultMap.put(database, futureMapEntry.getValue().get());
-				}
-				catch (ExecutionException e)
-				{
-					exceptionMap.put(database, SQLExceptionFactory.createSQLException(e.getCause()));
-				}
-				catch (InterruptedException e)
-				{
-					Thread.currentThread().interrupt();
-					
-					exceptionMap.put(database, SQLExceptionFactory.createSQLException(e));
-				}
-			}
+			futureMap.put(database, this.executor.submit(task));
 		}
-		finally
+
+		for (Map.Entry<Database<D>, Future<R>> futureMapEntry: futureMap.entrySet())
 		{
-			for (Lock lock: lockList)
+			Database<D> database = futureMapEntry.getKey();
+			
+			try
 			{
-				lock.unlock();
+				resultMap.put(database, futureMapEntry.getValue().get());
+			}
+			catch (ExecutionException e)
+			{
+				Throwable cause = e.getCause();
+				
+				Exception exception = (cause instanceof Exception) ? (Exception) cause : e;
+				
+				exceptionMap.put(database, exception);
+			}
+			catch (InterruptedException e)
+			{
+				Thread.currentThread().interrupt();
+				
+				exceptionMap.put(database, e);
 			}
 		}
 		
@@ -135,8 +129,4 @@ public abstract class DatabaseWriteInvocationStrategy<D, T, R> implements Invoca
 		// If any databases failed, while others succeeded, handle the failures
 		return exceptionMap.isEmpty() ? resultMap : proxy.handlePartialFailure(resultMap, exceptionMap);
 	}
-	
-	protected abstract ExecutorService getExecutor(DatabaseCluster<D> cluster);
-	
-	protected abstract List<Lock> getLockList(DatabaseCluster<D> cluster);
 }

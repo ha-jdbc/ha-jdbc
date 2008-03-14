@@ -31,6 +31,11 @@ import org.jibx.runtime.IUnmarshallingContext;
  */
 public class DriverDatabaseCluster extends AbstractDatabaseCluster<Driver> implements DriverDatabaseClusterMBean
 {
+	/**
+	 * Object factory for JiBX that pulls the cluster instance from the unmarshalling context
+	 * @param context unmarshalling context
+	 * @return a database cluster
+	 */
 	public static DriverDatabaseCluster extractDatabaseCluster(IUnmarshallingContext context)
 	{
 		return (DriverDatabaseCluster) context.getUserContext();

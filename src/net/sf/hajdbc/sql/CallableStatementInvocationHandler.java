@@ -25,26 +25,36 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.Map;
+import java.util.Set;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.util.reflect.Methods;
 
 /**
  * @author Paul Ferraro
- *
+ * @param <D> 
  */
 @SuppressWarnings("nls")
 public class CallableStatementInvocationHandler<D> extends AbstractPreparedStatementInvocationHandler<D, CallableStatement>
 {
+	private static final Set<Method> driverWriteMethodSet = Methods.findMethods(CallableStatement.class, "registerOutParameter", "set\\w+");
+	private static final Set<Method> driverReadMethodSet = Methods.findMethods(CallableStatement.class, "get\\w+", "wasNull");
+	{
+		driverReadMethodSet.removeAll(Methods.findMethods(PreparedStatement.class, "get\\w+"));
+	}
+	
 	/**
 	 * @param connection
 	 * @param proxy
 	 * @param invoker
 	 * @param statementMap
+	 * @param transactionContext 
+	 * @param fileSupport 
 	 * @throws Exception
 	 */
-	public CallableStatementInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, CallableStatement> invoker, Map<Database<D>, CallableStatement> statementMap, FileSupport fileSupport) throws Exception
+	public CallableStatementInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, CallableStatement> invoker, Map<Database<D>, CallableStatement> statementMap, TransactionContext<D> transactionContext, FileSupport fileSupport) throws Exception
 	{
-		super(connection, proxy, invoker, CallableStatement.class, statementMap, fileSupport);
+		super(connection, proxy, invoker, CallableStatement.class, statementMap, transactionContext, fileSupport);
 	}
 
 	/**
@@ -53,43 +63,21 @@ public class CallableStatementInvocationHandler<D> extends AbstractPreparedState
 	@Override
 	protected InvocationStrategy<D, CallableStatement, ?> getInvocationStrategy(CallableStatement statement, Method method, Object[] parameters) throws Exception
 	{
-		String methodName = method.getName();
-		
-		if (methodName.equals("registerOutParameter"))
+		if (driverWriteMethodSet.contains(method))
 		{
 			return new DriverWriteInvocationStrategy<D, CallableStatement, Object>();
 		}
 		
-		Class<?>[] types = method.getParameterTypes();
-		
-		if (methodName.startsWith("get") && (types != null) && (types.length > 0) && ((types[0].equals(Integer.TYPE) || types[0].equals(String.class))))
-		{
-			if (!method.equals(PreparedStatement.class.getMethod("getMoreResults", Integer.TYPE)))
-			{
-				return new DriverReadInvocationStrategy<D, CallableStatement, Object>();
-			}
-		}
-		
-		if (method.equals(CallableStatement.class.getMethod("wasNull")))
+		if (driverReadMethodSet.contains(method))
 		{
 			return new DriverReadInvocationStrategy<D, CallableStatement, Object>();
-		}
-		
-		if (method.equals(CallableStatement.class.getMethod("execute")) || method.equals(CallableStatement.class.getMethod("executeUpdate")))
-		{
-			return new TransactionalDatabaseWriteInvocationStrategy<D, CallableStatement, Object>();
-		}
-		
-		if (method.equals(CallableStatement.class.getMethod("executeQuery")))
-		{
-			return (statement.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) ? new DatabaseReadInvocationStrategy<D, CallableStatement, Object>() : new EagerResultSetInvocationStrategy<D, CallableStatement>(statement, this.fileSupport);
 		}
 		
 		return super.getInvocationStrategy(statement, method, parameters);
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractPreparedStatementInvocationHandler#isParameterizedType(java.lang.Class)
+	 * @see net.sf.hajdbc.sql.AbstractPreparedStatementInvocationHandler#isIndexType(java.lang.Class)
 	 */
 	@Override
 	protected boolean isIndexType(Class<?> type)

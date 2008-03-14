@@ -26,7 +26,9 @@ import net.sf.hajdbc.Database;
 
 /**
  * @author Paul Ferraro
- *
+ * @param <D> 
+ * @param <T> 
+ * @param <R> 
  */
 public class DriverReadInvocationStrategy<D, T, R> implements InvocationStrategy<D, T, R>
 {

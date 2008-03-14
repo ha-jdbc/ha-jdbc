@@ -28,10 +28,14 @@ import org.jibx.runtime.IUnmarshallingContext;
 
 /**
  * @author Paul Ferraro
- *
  */
-public class DataSourceDatabaseCluster extends AbstractDatabaseCluster<DataSource> implements DataSourceDatabaseClusterMBean
+public class DataSourceDatabaseCluster extends CommonDataSourceDatabaseCluster<DataSource> implements DataSourceDatabaseClusterMBean
 {
+	/**
+	 * Object factory for JiBX that pulls the cluster instance from the unmarshalling context
+	 * @param context unmarshalling context
+	 * @return a database cluster
+	 */
 	public static DataSourceDatabaseCluster extractDatabaseCluster(IUnmarshallingContext context)
 	{
 		return (DataSourceDatabaseCluster) context.getUserContext();
@@ -48,16 +52,11 @@ public class DataSourceDatabaseCluster extends AbstractDatabaseCluster<DataSourc
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.DataSourceDatabaseClusterMBean#add(java.lang.String, java.lang.String)
+	 * @see net.sf.hajdbc.sql.CommonDataSourceDatabaseCluster#createDatabase()
 	 */
 	@Override
-	public void add(String databaseId, String name)
+	protected CommonDataSourceDatabase<DataSource> createDatabase()
 	{
-		DataSourceDatabase database = new DataSourceDatabase();
-		
-		database.setId(databaseId);
-		database.setName(name);
-		
-		this.add(database);
+		return new DataSourceDatabase();
 	}
 }
