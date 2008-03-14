@@ -2,13 +2,13 @@
 <ha-jdbc>
 	<sync id="passive" class="net.sf.hajdbc.sync.PassiveSynchronizationStrategy"/>
 	<cluster balancer="simple" default-sync="passive" meta-data-cache="none" transaction-mode="parallel">
-		<datasource id="datasource1">
+		<xa-datasource id="datasource1">
 			<name>datasource1</name>
 			<property name="java.naming.factory.initial">net.sf.hajdbc.sql.MockInitialContextFactory</property>
-		</datasource>
-		<datasource id="datasource2" weight="2">
+		</xa-datasource>
+		<xa-datasource id="datasource2" weight="2">
 			<name>datasource2</name>
 			<property name="java.naming.factory.initial">net.sf.hajdbc.sql.MockInitialContextFactory</property>
-		</datasource>
+		</xa-datasource>
 	</cluster>
 </ha-jdbc>
