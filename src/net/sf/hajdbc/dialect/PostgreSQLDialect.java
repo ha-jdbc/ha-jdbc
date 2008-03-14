@@ -26,13 +26,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
 import net.sf.hajdbc.ColumnProperties;
-import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.util.Strings;
 
 /**
@@ -73,21 +71,6 @@ public class PostgreSQLDialect extends StandardDialect
 		return schemaList;
 	}
 
-	/**
-	 * Default implementation does not block INSERT statements in PostgreSQL.
-	 * Requires explicit exclusive mode table lock.
-	 * <p><em>From PostgreSQL documentation</em></p>
-	 * Unlike traditional database systems which use locks for concurrency control, PostgreSQL maintains data consistency by using a multiversion model (Multiversion Concurrency Control, MVCC).
-	 * This means that while querying a database each transaction sees a snapshot of data (a database version) as it was some time ago, regardless of the current state of the underlying data.
-	 * This protects the transaction from viewing inconsistent data that could be caused by (other) concurrent transaction updates on the same data rows, providing transaction isolation for each database session.	 * 
-	 * @see net.sf.hajdbc.dialect.StandardDialect#getLockTableSQL(net.sf.hajdbc.TableProperties)
-	 */
-	@Override
-	public String getLockTableSQL(TableProperties properties)
-	{
-		return MessageFormat.format("LOCK TABLE {0} IN EXCLUSIVE MODE", properties.getName());
-	}
-	
 	/**
 	 * PostgreSQL uses the native type OID to identify BLOBs.
 	 * However the JDBC driver incomprehensibly maps OIDs to INTEGERs.
@@ -178,5 +161,15 @@ public class PostgreSQLDialect extends StandardDialect
 	protected String randomPattern()
 	{
 		return "(?<=\\W)RANDOM\\s*\\(\\s*\\)";
+	}
+
+	/**
+	 * Recognizes FOR SHARE and FOR UPDATE.
+	 * @see net.sf.hajdbc.dialect.StandardDialect#selectForUpdatePattern()
+	 */
+	@Override
+	protected String selectForUpdatePattern()
+	{
+		return "SELECT\\s+.+\\s+FOR\\s+(SHARE|UPDATE)";
 	}
 }

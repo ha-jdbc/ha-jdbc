@@ -22,13 +22,11 @@ package net.sf.hajdbc.dialect;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
 
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.QualifiedName;
-import net.sf.hajdbc.TableProperties;
 
 /**
  * Dialect for <a href="http://db.apache.org/derby">Apache Derby</a>.
@@ -46,15 +44,6 @@ public class DerbyDialect extends StandardDialect
 	protected String executeFunctionFormat()
 	{
 		return "VALUES {0}";
-	}
-
-	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#getLockTableSQL(net.sf.hajdbc.TableProperties)
-	 */
-	@Override
-	public String getLockTableSQL(TableProperties properties)
-	{
-		return MessageFormat.format("LOCK TABLE {0} IN SHARE MODE", properties.getName());
 	}
 
 	/**
