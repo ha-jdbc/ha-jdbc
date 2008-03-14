@@ -12,6 +12,48 @@
 	</contexts>
 
 	<changes>
+		<release version="2.0.12" date="?">
+			<action context="src" dev="PF" type="fix">
+				Fixed case normalization in DatabaseMetaDataSupport.normalize(String, String).
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed NullPointerException using CallableStatement stream methods.
+			</action>
+			<action context="src" dev="PF" type="update">
+				Optimized Balancer implementations using copy-on-write concurrent collections.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Eliminated some unnecessary runtime reflection.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed potential deadlock when synchronization is triggered while there are open transactions.
+				Refactored statement read locking to lock and unlock at transaction boundaries.
+				Removed obsoleted table locking in synchronization strategies.
+			</action>
+			<action context="src" dev="PF" type="add">
+				Added ConnectionPoolDataSource and XADataSource proxies, the latter required to detect distributed transaction boundaries.
+				Added necessary <![CDATA[<xa-datasource>]]> and <![CDATA[<pool-datasource>]]> configuration file elements.
+			</action>
+			<action context="src" dev="PF" type="update">
+				Renamed <code>net.sf.hajdbc.sql.DataSource</code> to <code>net.sf.hajdbc.DataSourceFactory</code>.
+				This should hopefully eliminate some confusion about its usage, as it is a <code>javax.naming.spi.ObjectFactory</code> and not a <code>java.sql.DataSource</code> implementation.
+			</action>
+			<action context="src" dev="PF" type="fix" due-to="Alejandro Domenech">
+				Fixed Spanish translation of log messages.
+			</action>
+			<action context="doc" dev="PF" type="update">
+				Added linked source to javadoc.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded Retrotranslator to 1.2.6.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded JGroups to 2.6.2.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded SLF4J to 1.5.0.
+			</action>
+		</release>
 		<release version="2.0.11" date="January 14, 2008">
 			<action context="src" dev="PF" type="fix">
 				Replaced accidental use of Method.getTypeParameters() with intended Method.getParameterTypes() in AbstractInvocationHandler.
