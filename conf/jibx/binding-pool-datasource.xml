@@ -2,16 +2,16 @@
 <!DOCTYPE binding SYSTEM "binding.dtd">
 <binding>
 	<include path="binding.xml"/>
-	<mapping name="ha-jdbc" class="net.sf.hajdbc.sql.DataSourceDatabaseCluster" factory="net.sf.hajdbc.sql.DataSourceDatabaseCluster.extractDatabaseCluster">
+	<mapping name="ha-jdbc" class="net.sf.hajdbc.sql.pool.ConnectionPoolDataSourceDatabaseCluster" factory="net.sf.hajdbc.sql.pool.ConnectionPoolDataSourceDatabaseCluster.extractDatabaseCluster">
 		<structure get-method="getDecorator" set-method="setDecorator" map-as="net.sf.hajdbc.distributable.DistributableDatabaseClusterDecorator" usage="optional"></structure>
 		<collection add-method="addSynchronizationStrategyBuilder" iter-method="getSynchronizationStrategyBuilders" item-type="net.sf.hajdbc.sync.SynchronizationStrategyBuilder"></collection>
 		<structure name="cluster">
 			<structure map-as="net.sf.hajdbc.sql.AbstractDatabaseCluster"></structure>
-			<collection add-method="add" iter-method="getDatabases" item-type="net.sf.hajdbc.sql.DataSourceDatabase"></collection>
+			<collection add-method="add" iter-method="getDatabases" item-type="net.sf.hajdbc.sql.pool.ConnectionPoolDataSourceDatabase"></collection>
 		</structure>
 	</mapping>
 	
-	<mapping name="datasource" class="net.sf.hajdbc.sql.DataSourceDatabase" extends="net.sf.hajdbc.sql.AbstractDatabase">
+	<mapping name="pool-datasource" class="net.sf.hajdbc.sql.pool.ConnectionPoolDataSourceDatabase" extends="net.sf.hajdbc.sql.AbstractDatabase">
 		<value name="name" get-method="getName" set-method="setName"/>
 		<structure map-as="net.sf.hajdbc.sql.AbstractDatabase"></structure>
 	</mapping>
