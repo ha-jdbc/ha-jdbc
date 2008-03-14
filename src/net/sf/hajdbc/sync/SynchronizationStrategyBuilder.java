@@ -51,6 +51,9 @@ public class SynchronizationStrategyBuilder
 		// Do nothing
 	}
 	
+	/**
+	 * @return the unique identifier for this synchronization strategy
+	 */
 	public String getId()
 	{
 		return this.id;

@@ -26,7 +26,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -65,6 +64,7 @@ public final class SynchronizationSupport
 	
 	/**
 	 * Drop all foreign key constraints on the target database
+	 * @param <D> 
 	 * @param context a synchronization context
 	 * @throws SQLException if database error occurs
 	 */
@@ -96,6 +96,7 @@ public final class SynchronizationSupport
 	
 	/**
 	 * Restores all foreign key constraints on the target database
+	 * @param <D> 
 	 * @param context a synchronization context
 	 * @throws SQLException if database error occurs
 	 */
@@ -127,6 +128,7 @@ public final class SynchronizationSupport
 	
 	/**
 	 * Synchronizes the sequences on the target database with the source database.
+	 * @param <D> 
 	 * @param context a synchronization context
 	 * @throws SQLException if database error occurs
 	 */
@@ -221,6 +223,11 @@ public final class SynchronizationSupport
 		}
 	}
 	
+	/**
+	 * @param <D>
+	 * @param context
+	 * @throws SQLException
+	 */
 	public static <D> void synchronizeIdentityColumns(SynchronizationContext<D> context) throws SQLException
 	{
 		Statement sourceStatement = context.getConnection(context.getSourceDatabase()).createStatement();
@@ -276,151 +283,13 @@ public final class SynchronizationSupport
 		sourceStatement.close();
 		targetStatement.close();
 	}
-	
+
 	/**
-	 * Read-locks all of the tables in each active database.
-	 * @param context a synchronization context
-	 * @throws SQLException if database error occurs
+	 * @param <D>
+	 * @param context
+	 * @param table
+	 * @throws SQLException
 	 */
-	public static <D> void lock(final SynchronizationContext<D> context) throws SQLException
-	{
-		logger.info(Messages.getMessage(Messages.TABLE_LOCK_ACQUIRE));
-		
-		Set<Database<D>> databases = context.getActiveDatabaseSet();
-		
-		ExecutorService executor = context.getExecutor();
-		
-		Collection<Future<Void>> futures = new ArrayList<Future<Void>>(databases.size());
-		
-		// Create connections and set transaction isolation level
-		for (final Database<D> database: databases)
-		{
-			Callable<Void> task = new Callable<Void>()
-			{
-				public Void call() throws SQLException
-				{
-					Connection connection = context.getConnection(database);
-					
-					connection.setAutoCommit(false);
-					connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-					
-					return null;
-				}
-			};
-			
-			futures.add(executor.submit(task));
-		}
-		
-		Collection<TableProperties> tables = context.getDatabaseProperties().getTables();
-		
-		try
-		{
-			for (Future<Void> future: futures)
-			{
-				future.get();
-			}
-		}
-		catch (InterruptedException e)
-		{
-			throw SQLExceptionFactory.createSQLException(e);
-		}
-		catch (ExecutionException e)
-		{
-			throw SQLExceptionFactory.createSQLException(e.getCause());
-		}
-		
-		futures.clear();
-		
-		Dialect dialect = context.getDialect();
-		
-		// For each table - execute a lock table statement
-		for (TableProperties table: tables)
-		{
-			final String sql = dialect.getLockTableSQL(table);
-			
-			for (final Database<D> database: databases)
-			{
-				Callable<Void> task = new Callable<Void>()
-				{
-					public Void call() throws SQLException
-					{
-						Connection connection = context.getConnection(database);
-						
-						Statement statement = connection.createStatement();
-						
-						statement.execute(sql);
-						
-						statement.close();
-						
-						return null;
-					}
-				};
-				
-				futures.add(executor.submit(task));
-			}
-			
-			try
-			{
-				for (Future<Void> future: futures)
-				{
-					future.get();
-				}
-			}
-			catch (InterruptedException e)
-			{
-				throw SQLExceptionFactory.createSQLException(e);
-			}
-			catch (ExecutionException e)
-			{
-				throw SQLExceptionFactory.createSQLException(e.getCause());
-			}
-		}
-	}
-	
-	public static <D> void unlock(final SynchronizationContext<D> context)
-	{
-		Set<Database<D>> databases = context.getActiveDatabaseSet();
-		
-		ExecutorService executor = context.getExecutor();
-		
-		Collection<Future<Void>> futures = new ArrayList<Future<Void>>(databases.size());
-		
-		for (final Database<D> database: databases)
-		{
-			Callable<Void> task = new Callable<Void>()
-			{
-				public Void call() throws SQLException
-				{
-					Connection connection = context.getConnection(database);
-					
-					SynchronizationSupport.rollback(connection);
-					
-					return null;
-				}
-			};
-			
-			futures.add(executor.submit(task));
-		}
-		
-		for (Future<Void> future: futures)
-		{
-			try
-			{
-				future.get();
-			}
-			catch (InterruptedException e)
-			{
-				Thread.currentThread().interrupt();
-				
-				logger.warn(e.getMessage(), e);
-			}
-			catch (ExecutionException e)
-			{
-				logger.warn(e.getMessage(), e.getCause());
-			}
-		}
-	}
-	
 	public static <D> void dropUniqueConstraints(SynchronizationContext<D> context, TableProperties table) throws SQLException
 	{
 		Collection<UniqueConstraint> constraints = table.getUniqueConstraints();
@@ -447,6 +316,12 @@ public final class SynchronizationSupport
 		statement.close();
 	}
 	
+	/**
+	 * @param <D>
+	 * @param context
+	 * @param table
+	 * @throws SQLException
+	 */
 	public static <D> void restoreUniqueConstraints(SynchronizationContext<D> context, TableProperties table) throws SQLException
 	{
 		Collection<UniqueConstraint> constraints = table.getUniqueConstraints();
@@ -473,6 +348,9 @@ public final class SynchronizationSupport
 		statement.close();
 	}
 	
+	/**
+	 * @param connection
+	 */
 	public static void rollback(Connection connection)
 	{
 		try
@@ -486,6 +364,14 @@ public final class SynchronizationSupport
 		}
 	}
 	
+	/**
+	 * Helper method for {@link java.sql.ResultSet#getObject(int)} with special handling for large objects.
+	 * @param resultSet
+	 * @param index
+	 * @param type
+	 * @return the object of the specified type at the specified index from the specified result set
+	 * @throws SQLException
+	 */
 	public static Object getObject(ResultSet resultSet, int index, int type) throws SQLException
 	{
 		switch (type)

@@ -25,27 +25,12 @@ import java.sql.SQLException;
 
 /**
  * @author  Paul Ferraro
- * @version $Revision$
- * @since   1.0
  */
 public interface SynchronizationStrategy
 {
 	/**
-	 * Prepares the specified synchronization context for actual synchronization.
-	 * @param context a synchronization context
-	 * @throws SQLException if prepare fails
-	 */
-	public <D> void prepare(SynchronizationContext<D> context) throws SQLException;
-	
-	/**
-	 * Cleans up the specified synchronization context after synchronization.
-	 * @param context a synchronization context
-	 * @throws SQLException if cleanup fails
-	 */
-	public <D> void cleanup(SynchronizationContext<D> context);
-	
-	/**
 	 * Synchronizes a target database with a source database as defined by the synchronization context.
+	 * @param <D> 
 	 * @param context a synchronization context
 	 * @throws SQLException if synchronization fails
 	 */
