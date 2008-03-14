@@ -785,7 +785,7 @@ Connection connection = DriverManager.getConnection("jdbc:ha-jdbc:cluster1", "po
             url="jdbc:postgresql://server2/database"/>
 
   <Resource name="jdbc/cluster" type="javax.sql.DataSource"
-            factory="net.sf.hajdbc.sql.DataSource"
+            factory="net.sf.hajdbc.sql.DataSourceFactory"
             cluster="cluster2" config="file:///path/to/ha-jdbc-{0}.xml"/>
   <!-- ... -->
 </Context>
@@ -886,7 +886,7 @@ Connection connection = dataSource.getConnection();
 					<li><a href="api/net/sf/hajdbc/sql/DataSourceDatabaseClusterMBean.html">net.sf.hajdbc.sql.DataSourceDatabaseClusterMBean</a></li>
 				</ul>
 				<p>
-					Most of the management operations are defined the common super interface, <a href="api/net/sf/hajdbc/sql/DriverDatabaseClusterMBean.html">net.sf.hajdbc.DatabaseClusterMBean</a>.
+					Most of the management operations are defined the common super interface, <a href="api/net/sf/hajdbc/sql/DatabaseClusterMBean.html">net.sf.hajdbc.DatabaseClusterMBean</a>.
 				</p>
 				<p>
 					A database cluster mbean is registered using the following object-name:
@@ -998,7 +998,7 @@ cluster.activate(databaseId);
 					<p>
 						When a new database is added, it is initially inactive.
 						Database nodes may also be removed from the cluster.
-						A database node must first by inactive before it can be removed.
+						A database node must first be inactive before it can be removed.
 					</p>
 					<p>
 						HA-JDBC 1.1 also adds mbean interfaces for individual database nodes:
