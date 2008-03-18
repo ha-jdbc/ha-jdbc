@@ -21,11 +21,23 @@
 package net.sf.hajdbc.util;
 
 /**
+ * Interface for enumerated implementation classes.
  * @author Paul Ferraro
+ * @param <T> the implemented interface for each enumerated class
  */
 public interface ClassEnum<T>
 {
+	/**
+	 * Creates a new instance of the enumerated class.
+	 * @return a new instance of the enumerated class
+	 * @throws Exception if a new instance could not be instantiated.
+	 */
 	public T newInstance() throws Exception;
 	
+	/**
+	 * Indicates whether the specified object is an instance of this enumerated class.
+	 * @param object an instance
+	 * @return true, if this object is an instance of this enumerated class, false otherwise
+	 */
 	public boolean isInstance(T object);
 }

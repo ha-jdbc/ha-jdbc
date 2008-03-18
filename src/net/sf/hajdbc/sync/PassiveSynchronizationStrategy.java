@@ -32,24 +32,6 @@ import net.sf.hajdbc.SynchronizationStrategy;
 public class PassiveSynchronizationStrategy implements SynchronizationStrategy
 {
 	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#cleanup(net.sf.hajdbc.SynchronizationContext)
-	 */
-	@Override
-	public <D> void cleanup(SynchronizationContext<D> context)
-	{
-		// Do nothing
-	}
-
-	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#prepare(net.sf.hajdbc.SynchronizationContext)
-	 */
-	@Override
-	public <D> void prepare(SynchronizationContext<D> context)
-	{
-		// Do nothing
-	}
-
-	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.SynchronizationContext)
 	 */
 	@Override

@@ -21,97 +21,93 @@
 package net.sf.hajdbc.balancer;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import net.sf.hajdbc.Database;
 
 /**
+ * Balancer implementation whose {@link #next()} implementation returns a random database.
+ * The probability that a given database will be returned is: <em>weight / total-weight</em>.
+ * 
  * @author  Paul Ferraro
- * @since   1.0
+ * @param <D> either java.sql.Driver or javax.sql.DataSource
  */
 public class RandomBalancer<D> extends AbstractBalancer<D>
 {
-	private Random random = new Random();
-	private SortedSet<Database<D>> databaseSet = new TreeSet<Database<D>>();
-	private List<Database<D>> databaseList = new ArrayList<Database<D>>();
-	
-	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#collect()
-	 */
-	@Override
-	protected Collection<Database<D>> collect()
-	{
-		return this.databaseSet;
-	}
+	private volatile List<Database<D>> databaseList = Collections.emptyList();
 
-	/**
-	 * @see net.sf.hajdbc.Balancer#add(net.sf.hajdbc.Database)
-	 */
-	@Override
-	public synchronized boolean add(Database<D> database)
-	{
-		boolean added = super.add(database);
-		
-		if (added)
-		{
-			int weight = database.getWeight();
-			
-			for (int i = 0; i < weight; ++i)
-			{
-				this.databaseList.add(database);
-			}
-		}
-		
-		return added;
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.Balancer#remove(net.sf.hajdbc.Database)
-	 */
-	@Override
-	public synchronized boolean remove(Database<D> database)
-	{
-		boolean removed = super.remove(database);
-		
-		int weight = database.getWeight();
-		
-		if (removed && (weight > 0))
-		{
-			int index = this.databaseList.indexOf(database);
-			
-			this.databaseList.subList(index, index + weight).clear();
-		}
-		
-		return removed;
-	}
-	
+	private Random random = new Random();
+
 	/**
 	 * @see net.sf.hajdbc.Balancer#next()
 	 */
 	@Override
-	public synchronized Database<D> next()
+	public Database<D> next()
 	{
-		if (this.databaseList.isEmpty())
+		List<Database<D>> list = this.databaseList;
+		
+		if (list.isEmpty())
 		{
 			return this.databaseSet.first();
 		}
 		
-		int index = this.random.nextInt(this.databaseList.size());
+		int index = this.random.nextInt(list.size());
 		
-		return this.databaseList.get(index);
+		return list.get(index);
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.balancer.AbstractBalancer#added(net.sf.hajdbc.Database)
+	 */
+	@Override
+	protected void added(Database<D> database)
+	{
+		int weight = database.getWeight();
+		
+		if (weight > 0)
+		{
+			List<Database<D>> list = new ArrayList<Database<D>>(this.databaseList.size() + weight);
+			
+			list.addAll(this.databaseList);
+			
+			for (int i = 0; i < weight; ++i)
+			{
+				list.add(database);
+			}
+			
+			this.databaseList = list;
+		}
 	}
 
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#clear()
+	 * @see net.sf.hajdbc.balancer.AbstractBalancer#removed(net.sf.hajdbc.Database)
 	 */
 	@Override
-	public synchronized void clear()
+	protected void removed(Database<D> database)
 	{
-		this.databaseList.clear();
-		this.databaseSet.clear();
+		int weight = database.getWeight();
+
+		if (weight > 0)
+		{
+			List<Database<D>> list = new ArrayList<Database<D>>(this.databaseList.size() - weight);
+			
+			int index = this.databaseList.indexOf(database);
+			
+			list.addAll(this.databaseList.subList(0, index));
+			list.addAll(this.databaseList.subList(index + weight, this.databaseList.size()));
+			
+			this.databaseList = list;
+		}
+	}
+
+	/**
+	 * @see net.sf.hajdbc.balancer.AbstractBalancer#cleared()
+	 */
+	@Override
+	protected void cleared()
+	{
+		this.databaseList = Collections.emptyList();
 	}
 }

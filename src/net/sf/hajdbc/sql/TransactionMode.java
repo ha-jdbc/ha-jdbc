@@ -28,13 +28,23 @@ public enum TransactionMode
 {
 	PARALLEL, SERIAL;
 	
+	/**
+	 * Used by JiBX to unmarshal a transaction mode
+	 * @param value transaction mode
+	 * @return transaction mode enum
+	 */
 	public static TransactionMode deserialize(String value)
 	{
 		return TransactionMode.valueOf(value.toUpperCase());
 	}
 	
-	public static String serialize(TransactionMode transaction)
+	/**
+	 * Used by JiBX to marshal a transaction mode
+	 * @param mode transaction mode enum
+	 * @return transaction mode
+	 */
+	public static String serialize(TransactionMode mode)
 	{
-		return transaction.name().toLowerCase();
+		return mode.name().toLowerCase();
 	}
 }

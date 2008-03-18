@@ -48,6 +48,9 @@ public class LocalStateManager implements StateManager
 	
 	private DatabaseCluster<?> databaseCluster;
 	
+	/**
+	 * @param databaseCluster
+	 */
 	public LocalStateManager(DatabaseCluster<?> databaseCluster)
 	{
 		this.databaseCluster = databaseCluster;

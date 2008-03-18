@@ -23,21 +23,25 @@ package net.sf.hajdbc.sql;
 import java.sql.Connection;
 import java.sql.Savepoint;
 
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 /**
  * @author Paul Ferraro
- *
+ * @param <D> 
  */
-public class SavepointInvocationStrategy<D> extends TransactionalDatabaseWriteInvocationStrategy<D, Connection, Savepoint>
+public class SavepointInvocationStrategy<D> extends DatabaseWriteInvocationStrategy<D, Connection, Savepoint>
 {
 	private Connection connection;
 	
 	/**
+	 * @param cluster 
 	 * @param connection the connection from which to create savepoints
 	 */
-	public SavepointInvocationStrategy(Connection connection)
+	public SavepointInvocationStrategy(DatabaseCluster<D> cluster, Connection connection)
 	{
+		super(cluster.getTransactionalExecutor());
+		
 		this.connection = connection;
 	}
 	

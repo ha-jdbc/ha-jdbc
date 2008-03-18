@@ -22,21 +22,26 @@ package net.sf.hajdbc.sql;
 
 import java.sql.Blob;
 
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 /**
  * @author Paul Ferraro
- *
+ * @param <D> 
+ * @param <P> 
  */
-public class BlobInvocationStrategy<D, P> extends NonTransactionalDatabaseWriteInvocationStrategy<D, P, Blob>
+public class BlobInvocationStrategy<D, P> extends DatabaseWriteInvocationStrategy<D, P, Blob>
 {
 	private P parent;
 	
 	/**
+	 * @param cluster 
 	 * @param parent the object that created blobs
 	 */
-	public BlobInvocationStrategy(P parent)
+	public BlobInvocationStrategy(DatabaseCluster<D> cluster, P parent)
 	{
+		super(cluster.getNonTransactionalExecutor());
+		
 		this.parent = parent;
 	}
 

@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2007 Paul Ferraro
+ * Copyright (c) 2004-2008 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -20,83 +20,37 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.lang.reflect.InvocationHandler;
+import java.sql.SQLException;
 import java.util.Hashtable;
 
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.RefAddr;
 import javax.naming.Reference;
-import javax.naming.Referenceable;
-import javax.naming.StringRefAddr;
 import javax.naming.spi.ObjectFactory;
+import javax.sql.CommonDataSource;
 
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
-
 
 /**
  * @author Paul Ferraro
- * @version $Revision$
+ *
+ * @param <D>
  */
-public class DataSource implements Referenceable, ObjectFactory
+public abstract class CommonDataSourceFactory<D extends CommonDataSource> implements ObjectFactory
 {
-	private static final String CLUSTER = "cluster"; //$NON-NLS-1$
-	private static final String CONFIG = "config"; //$NON-NLS-1$
-	
-	private String cluster;
-	private String config;
+	private Class<D> targetClass;
 	
 	/**
-	 * @see javax.naming.Referenceable#getReference()
+	 * @param targetClass
 	 */
-	@Override
-	public Reference getReference()
+	protected CommonDataSourceFactory(Class<D> targetClass)
 	{
-		Reference reference = new Reference(javax.sql.DataSource.class.getName(), this.getClass().getName(), null);
-		
-		reference.add(new StringRefAddr(CLUSTER, this.cluster));
-		reference.add(new StringRefAddr(CONFIG, this.config));
-		
-		return reference;
-	}
-	
-	/**
-	 * Returns the identifier of the database cluster represented by this DataSource
-	 * @return a database cluster identifier
-	 */
-	public String getCluster()
-	{
-		return this.cluster;
-	}
-	
-	/**
-	 * Sets the identifier of the database cluster represented by this DataSource
-	 * @param cluster a database cluster identifier
-	 */
-	public void setCluster(String cluster)
-	{
-		this.cluster = cluster;
+		this.targetClass = targetClass;
 	}
 
-	/**
-	 * Returns the resource name of the configuration file used to load the database cluster represented by this DataSource.
-	 * @return a resource name
-	 */
-	public String getConfig()
-	{
-		return this.config;
-	}
-	
-	/**
-	 * Sets the resource name of the configuration file used to load the database cluster represented by this DataSource.
-	 * @param config a resource name
-	 */
-	public void setConfig(String config)
-	{
-		this.config = config;
-	}
-	
 	/**
 	 * @see javax.naming.spi.ObjectFactory#getObjectInstance(java.lang.Object, javax.naming.Name, javax.naming.Context, java.util.Hashtable)
 	 */
@@ -109,9 +63,9 @@ public class DataSource implements Referenceable, ObjectFactory
 		
 		String className = reference.getClassName();
 		
-		if ((className == null) || !className.equals(javax.sql.DataSource.class.getName())) return null;
+		if ((className == null) || !className.equals(this.targetClass.getName())) return null;
 		
-		RefAddr idAddr = reference.get(CLUSTER);
+		RefAddr idAddr = reference.get(CommonDataSourceReference.CLUSTER);
 		
 		if (idAddr == null) return null;
 		
@@ -121,7 +75,7 @@ public class DataSource implements Referenceable, ObjectFactory
 		
 		String id = (String) idAddrContent;
 		
-		RefAddr configAddr = reference.get(CONFIG);
+		RefAddr configAddr = reference.get(CommonDataSourceReference.CONFIG);
 		
 		String config = null;
 		
@@ -135,10 +89,24 @@ public class DataSource implements Referenceable, ObjectFactory
 			}
 		}
 		
-		DatabaseCluster<javax.sql.DataSource> cluster = DatabaseClusterFactory.getDatabaseCluster(id, DataSourceDatabaseCluster.class, DataSourceDatabaseClusterMBean.class, config);
+		DatabaseCluster<D> cluster = this.getDatabaseCluster(id, config);
 		
 		if (cluster == null) return null;
 		
-		return ProxyFactory.createProxy(javax.sql.DataSource.class, new DataSourceInvocationHandler(cluster));
-	}	
+		return ProxyFactory.createProxy(this.targetClass, this.getInvocationHandler(cluster));
+	}
+
+	/**
+	 * @param id
+	 * @param config
+	 * @return the appropriate database cluster
+	 * @throws SQLException
+	 */
+	protected abstract DatabaseCluster<D> getDatabaseCluster(String id, String config) throws SQLException;
+	
+	/**
+	 * @param cluster
+	 * @return the appropriate proxy invocation handler for this datasource
+	 */
+	protected abstract InvocationHandler getInvocationHandler(DatabaseCluster<D> cluster);
 }

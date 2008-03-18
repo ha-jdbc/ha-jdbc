@@ -5,6 +5,8 @@
 		<packages>
 			<package name="net.sf.hajdbc.balancer"></package>
 			<package name="net.sf.hajdbc.dialect"></package>
+			<package name="net.sf.hajdbc.sql.pool"></package>
+			<package name="net.sf.hajdbc.sql.xa"></package>
 			<package name="net.sf.hajdbc.sql"></package>
 			<package name="net.sf.hajdbc.sync"></package>
 		</packages>

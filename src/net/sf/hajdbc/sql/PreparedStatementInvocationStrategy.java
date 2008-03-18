@@ -23,21 +23,33 @@ package net.sf.hajdbc.sql;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 /**
  * @author Paul Ferraro
- *
+ * @param <D> 
  */
-public class PreparedStatementInvocationStrategy<D> extends NonTransactionalDatabaseWriteInvocationStrategy<D, Connection, PreparedStatement>
+public class PreparedStatementInvocationStrategy<D> extends DatabaseWriteInvocationStrategy<D, Connection, PreparedStatement>
 {
 	private Connection connection;
+	private TransactionContext<D> transactionContext;
 	private FileSupport fileSupport;
 	private String sql;
 	
-	public PreparedStatementInvocationStrategy(Connection connection, FileSupport fileSupport, String sql)
+	/**
+	 * @param cluster
+	 * @param connection
+	 * @param transactionContext 
+	 * @param fileSupport
+	 * @param sql
+	 */
+	public PreparedStatementInvocationStrategy(DatabaseCluster<D> cluster, Connection connection, TransactionContext<D> transactionContext, FileSupport fileSupport, String sql)
 	{
+		super(cluster.getNonTransactionalExecutor());
+		
 		this.connection = connection;
+		this.transactionContext = transactionContext;
 		this.fileSupport = fileSupport;
 		this.sql = sql;
 	}
@@ -48,6 +60,6 @@ public class PreparedStatementInvocationStrategy<D> extends NonTransactionalData
 	@Override
 	public PreparedStatement invoke(SQLProxy<D, Connection> proxy, Invoker<D, Connection, PreparedStatement> invoker) throws Exception
 	{
-		return ProxyFactory.createProxy(PreparedStatement.class, new PreparedStatementInvocationHandler<D>(this.connection, proxy, invoker, this.invokeAll(proxy, invoker), this.fileSupport, this.sql));
+		return ProxyFactory.createProxy(PreparedStatement.class, new PreparedStatementInvocationHandler<D>(this.connection, proxy, invoker, this.invokeAll(proxy, invoker), this.transactionContext, this.fileSupport, this.sql));
 	}
 }

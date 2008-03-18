@@ -29,7 +29,6 @@ import net.sf.hajdbc.MockDatabase;
 
 /**
  * @author  Paul Ferraro
- * @since   1.0
  */
 @Test
 @SuppressWarnings("nls")

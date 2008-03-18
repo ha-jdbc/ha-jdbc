@@ -22,30 +22,38 @@ package net.sf.hajdbc.sql;
 
 import java.sql.Connection;
 
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 /**
  * @author Paul Ferraro
- *
+ * @param <D> 
+ * @param <P> 
  */
-public class ConnectionInvocationStrategy<D> extends NonTransactionalDatabaseWriteInvocationStrategy<D, D, Connection>
+public class ConnectionInvocationStrategy<D, P> extends DatabaseWriteInvocationStrategy<D, P, Connection>
 {
-	private D connectionFactory;
+	private P connectionFactory;
+	private TransactionContext<D> transactionContext;
 	
 	/**
+	 * @param cluster 
 	 * @param connectionFactory the factory from which to create connections
+	 * @param transactionContext 
 	 */
-	public ConnectionInvocationStrategy(D connectionFactory)
+	public ConnectionInvocationStrategy(DatabaseCluster<D> cluster, P connectionFactory, TransactionContext<D> transactionContext)
 	{
+		super(cluster.getNonTransactionalExecutor());
+		
 		this.connectionFactory = connectionFactory;
+		this.transactionContext = transactionContext;
 	}
 
 	/**
 	 * @see net.sf.hajdbc.sql.DatabaseWriteInvocationStrategy#invoke(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker)
 	 */
 	@Override
-	public Connection invoke(SQLProxy<D, D> proxy, Invoker<D, D, Connection> invoker) throws Exception
+	public Connection invoke(SQLProxy<D, P> proxy, Invoker<D, P, Connection> invoker) throws Exception
 	{
-		return ProxyFactory.createProxy(Connection.class, new ConnectionInvocationHandler<D>(this.connectionFactory, proxy, invoker, this.invokeAll(proxy, invoker), new FileSupportImpl()));
+		return ProxyFactory.createProxy(Connection.class, new ConnectionInvocationHandler<D, P>(this.connectionFactory, proxy, invoker, this.invokeAll(proxy, invoker), this.transactionContext, new FileSupportImpl()));
 	}
 }

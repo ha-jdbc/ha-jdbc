@@ -39,10 +39,9 @@ import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * @author Paul Ferraro
- * @since 2.0
+ * @param <D> 
  */
 public class SynchronizationContextImpl<D> implements SynchronizationContext<D>
 {
@@ -56,6 +55,11 @@ public class SynchronizationContextImpl<D> implements SynchronizationContext<D>
 	private Map<Database<D>, Connection> connectionMap = new HashMap<Database<D>, Connection>();
 	private ExecutorService executor;
 	
+	/**
+	 * @param cluster
+	 * @param database
+	 * @throws SQLException
+	 */
 	public SynchronizationContextImpl(DatabaseCluster<D> cluster, Database<D> database) throws SQLException
 	{
 		this.cluster = cluster;

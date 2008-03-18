@@ -22,13 +22,11 @@ package net.sf.hajdbc.dialect;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
 
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.QualifiedName;
-import net.sf.hajdbc.TableProperties;
 
 /**
  * Dialect for Sybase (commercial).
@@ -37,15 +35,6 @@ import net.sf.hajdbc.TableProperties;
 @SuppressWarnings("nls")
 public class SybaseDialect extends StandardDialect
 {
-	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#getLockTableSQL(net.sf.hajdbc.TableProperties)
-	 */
-	@Override
-	public String getLockTableSQL(TableProperties properties) throws SQLException
-	{
-		return MessageFormat.format("LOCK TABLE {0} IN SHARE MODE", properties.getName());
-	}
-
 	/**
 	 * @see net.sf.hajdbc.dialect.StandardDialect#truncateTableFormat()
 	 */

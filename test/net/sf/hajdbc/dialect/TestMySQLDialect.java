@@ -43,18 +43,12 @@ import org.testng.annotations.Test;
 @SuppressWarnings("nls")
 public class TestMySQLDialect extends TestStandardDialect
 {
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#createDialect()
-	 */
 	@Override
 	protected Dialect createDialect()
 	{
 		return new MySQLDialect();
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
-	 */
 	@Override
 	@Test(dataProvider = "foreign-key")
 	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException
@@ -70,9 +64,6 @@ public class TestMySQLDialect extends TestStandardDialect
 		return sql;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
-	 */
 	@Override
 	@Test(dataProvider = "foreign-key")
 	public String getDropForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException
@@ -88,9 +79,6 @@ public class TestMySQLDialect extends TestStandardDialect
 		return sql;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
-	 */
 	@Override
 	@Test(dataProvider = "unique-constraint")
 	public String getCreateUniqueConstraintSQL(UniqueConstraint constraint) throws SQLException
@@ -106,9 +94,6 @@ public class TestMySQLDialect extends TestStandardDialect
 		return sql;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
-	 */
 	@Override
 	@Test(dataProvider = "unique-constraint")
 	public String getDropUniqueConstraintSQL(UniqueConstraint constraint) throws SQLException
@@ -124,9 +109,6 @@ public class TestMySQLDialect extends TestStandardDialect
 		return sql;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#parseSequence(java.lang.String)
-	 */
 	@Override
 	@Test(dataProvider = "sequence-sql")
 	public String parseSequence(String sql) throws SQLException
@@ -142,9 +124,6 @@ public class TestMySQLDialect extends TestStandardDialect
 		return sequence;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSequences(java.sql.Connection)
-	 */
 	@Override
 	@Test(dataProvider = "meta-data")
 	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
@@ -160,9 +139,6 @@ public class TestMySQLDialect extends TestStandardDialect
 		return sequences;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getDefaultSchemas(java.sql.Connection)
-	 */
 	@Override
 	@Test(dataProvider = "meta-data")
 	public List<String> getDefaultSchemas(DatabaseMetaData metaData) throws SQLException
@@ -189,9 +165,6 @@ public class TestMySQLDialect extends TestStandardDialect
 		return schemaList;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#isIdentity(net.sf.hajdbc.ColumnProperties)
-	 */
 	@Override
 	@Test(dataProvider = "column")
 	public boolean isIdentity(ColumnProperties properties) throws SQLException
@@ -233,9 +206,6 @@ public class TestMySQLDialect extends TestStandardDialect
 		return identity;
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.Dialect#getAlterIdentityColumnSQL(net.sf.hajdbc.TableProperties, net.sf.hajdbc.ColumnProperties, long)
-	 */
 	@Override
 	@Test(dataProvider = "table-column-long")
 	public String getAlterIdentityColumnSQL(TableProperties table, ColumnProperties column, long value) throws SQLException
@@ -273,7 +243,7 @@ public class TestMySQLDialect extends TestStandardDialect
 	
 	@Override
 	@Test(dataProvider = "current-date")
-	public String evaluateCurrentDate(String sql, java.sql.Date date)
+	public String evaluateCurrentDate(String sql, java.sql.Date date) throws SQLException
 	{
 		String expected = sql.contains("success") ? "SELECT '" + date.toString() + "' FROM success" : sql;
 		
@@ -310,7 +280,7 @@ public class TestMySQLDialect extends TestStandardDialect
 	
 	@Override
 	@Test(dataProvider = "current-time")
-	public String evaluateCurrentTime(String sql, java.sql.Time date)
+	public String evaluateCurrentTime(String sql, java.sql.Time date) throws SQLException
 	{
 		String expected = sql.contains("success") ? "SELECT '" + date.toString() + "' FROM success" : sql;
 		
@@ -350,7 +320,7 @@ public class TestMySQLDialect extends TestStandardDialect
 	
 	@Override
 	@Test(dataProvider = "current-timestamp")
-	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp date)
+	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp date) throws SQLException
 	{
 		String expected = sql.contains("success") ? "SELECT '" + date.toString() + "' FROM success" : sql;
 		

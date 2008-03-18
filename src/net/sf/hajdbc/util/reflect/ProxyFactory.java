@@ -25,7 +25,6 @@ import java.lang.reflect.Proxy;
 
 /**
  * @author Paul Ferraro
- *
  */
 public final class ProxyFactory
 {
@@ -39,5 +38,10 @@ public final class ProxyFactory
 	public static <T> T createProxy(Class<T> targetInterface, InvocationHandler handler)
 	{
 		return targetInterface.cast(Proxy.newProxyInstance(targetInterface.getClassLoader(), new Class<?>[] { targetInterface }, handler));
+	}
+	
+	private ProxyFactory()
+	{
+		// Hide constructor
 	}
 }

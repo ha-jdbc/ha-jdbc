@@ -75,24 +75,6 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 	private int fetchSize = 0;
 	
 	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#cleanup(net.sf.hajdbc.SynchronizationContext)
-	 */
-	@Override
-	public <D> void cleanup(SynchronizationContext<D> context)
-	{
-		SynchronizationSupport.unlock(context);
-	}
-
-	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#prepare(net.sf.hajdbc.SynchronizationContext)
-	 */
-	@Override
-	public <D> void prepare(SynchronizationContext<D> context) throws SQLException
-	{
-		SynchronizationSupport.lock(context);
-	}
-	
-	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.SynchronizationContext)
 	 */
 	@Override

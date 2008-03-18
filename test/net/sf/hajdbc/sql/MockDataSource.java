@@ -20,24 +20,25 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.sql.Connection;
 
 import javax.sql.DataSource;
+
+import org.easymock.EasyMock;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class MockDataSource implements DataSource
+public class MockDataSource extends MockCommonDataSource implements DataSource
 {
 	/**
 	 * @see javax.sql.DataSource#getConnection()
 	 */
 	public Connection getConnection()
 	{
-		return new MockConnection();
+		return EasyMock.createMock(Connection.class);
+//		return new MockConnection();
 	}
 
 	/**
@@ -46,36 +47,6 @@ public class MockDataSource implements DataSource
 	public Connection getConnection(String arg0, String arg1)
 	{
 		return this.getConnection();
-	}
-
-	/**
-	 * @see javax.sql.DataSource#getLogWriter()
-	 */
-	public PrintWriter getLogWriter()
-	{
-		return new PrintWriter(new StringWriter());
-	}
-
-	/**
-	 * @see javax.sql.DataSource#setLogWriter(java.io.PrintWriter)
-	 */
-	public void setLogWriter(PrintWriter writer)
-	{
-	}
-
-	/**
-	 * @see javax.sql.DataSource#setLoginTimeout(int)
-	 */
-	public void setLoginTimeout(int timeout)
-	{
-	}
-
-	/**
-	 * @see javax.sql.DataSource#getLoginTimeout()
-	 */
-	public int getLoginTimeout()
-	{
-		return 0;
 	}
 
 	/**

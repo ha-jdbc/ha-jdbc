@@ -20,22 +20,30 @@
  */
 package net.sf.hajdbc.balancer;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
 
 /**
- * Abstract balancer implementation that implements most of the Balancer interface.
+ * Thread-safe abstract balancer implementation that implements most of the Balancer interface, except {@link Balancer#next()}.
+ * Uses A copy-on-write algorithm for {@link #add(Database)}, {@link #remove(Database)}, and {@link #clear()}.
+ * Calls to {@link #all()} are non-blocking.
  * 
  * @author  Paul Ferraro
- * @since   1.0
+ * @param <D> either java.sql.Driver or javax.sql.DataSource
  */
 public abstract class AbstractBalancer<D> implements Balancer<D>
 {
+	protected Lock lock = new ReentrantLock();
+
+	protected volatile SortedSet<Database<D>> databaseSet = new TreeSet<Database<D>>();
+
 	/**
 	 * @see net.sf.hajdbc.Balancer#beforeInvocation(net.sf.hajdbc.Database)
 	 */
@@ -58,43 +66,107 @@ public abstract class AbstractBalancer<D> implements Balancer<D>
 	 * @see net.sf.hajdbc.Balancer#remove(net.sf.hajdbc.Database)
 	 */
 	@Override
-	public synchronized boolean remove(Database<D> database)
+	public boolean remove(Database<D> database)
 	{
-		return this.collect().remove(database);
+		this.lock.lock();
+		
+		try
+		{
+			boolean exists = this.databaseSet.contains(database);
+			
+			if (exists)
+			{
+				SortedSet<Database<D>> set = new TreeSet<Database<D>>(this.databaseSet);
+				
+				set.remove(database);
+				
+				this.databaseSet = set;
+				
+				this.removed(database);
+			}
+			
+			return exists;
+		}
+		finally
+		{
+			this.lock.unlock();
+		}
 	}
+	
+	/**
+	 * Called when a database was removed from the set.
+	 * @param database a database descriptor
+	 */
+	protected abstract void removed(Database<D> database);
 	
 	/**
 	 * @see net.sf.hajdbc.Balancer#add(net.sf.hajdbc.Database)
 	 */
 	@Override
-	public synchronized boolean add(Database<D> database)
+	public boolean add(Database<D> database)
 	{
-		return this.collect().contains(database) ? false : this.collect().add(database);
+		this.lock.lock();
+		
+		try
+		{
+			boolean exists = this.databaseSet.contains(database);
+			
+			if (!exists)
+			{
+				SortedSet<Database<D>> set = new TreeSet<Database<D>>(this.databaseSet);
+				
+				set.add(database);
+				
+				this.databaseSet = set;
+					
+				this.added(database);
+			}
+			
+			return !exists;
+		}
+		finally
+		{
+			this.lock.unlock();
+		}
 	}
+	
+	/**
+	 * Called when a database was added to the set.
+	 * @param database a database descriptor
+	 */
+	protected abstract void added(Database<D> database);
 	
 	/**
 	 * @see net.sf.hajdbc.Balancer#all()
 	 */
 	@Override
-	public synchronized Set<Database<D>> all()
+	public Set<Database<D>> all()
 	{
-		Set<Database<D>> databaseSet = new TreeSet<Database<D>>(this.collect());
-		
-		return Collections.unmodifiableSet(databaseSet);
+		return Collections.unmodifiableSet(this.databaseSet);
 	}
 
 	/**
 	 * @see net.sf.hajdbc.Balancer#clear()
 	 */
 	@Override
-	public synchronized void clear()
+	public void clear()
 	{
-		this.collect().clear();
+		this.lock.lock();
+		
+		try
+		{
+			this.databaseSet = new TreeSet<Database<D>>();
+			
+			this.cleared();
+		}
+		finally
+		{
+			this.lock.unlock();
+		}
 	}
-
+	
 	/**
-	 * Exposes a view of the underlying collection of Databases.
-	 * @return a Collection of databases
+	 * Called when the set was cleared.
 	 */
-	protected abstract Collection<Database<D>> collect();
+	protected abstract void cleared();
 }

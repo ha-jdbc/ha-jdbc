@@ -28,7 +28,7 @@ import net.sf.hajdbc.Database;
 
 /**
  * @author Paul Ferraro
- *
+ * @param <D> 
  */
 public class StatementInvocationHandler<D> extends AbstractStatementInvocationHandler<D, Statement>
 {
@@ -37,11 +37,12 @@ public class StatementInvocationHandler<D> extends AbstractStatementInvocationHa
 	 * @param proxy the invocation handler of the connection that created this statement
 	 * @param invoker the invoker used to create this statement
 	 * @param statementMap a map of database to underlying statement
+	 * @param transactionContext 
 	 * @param fileSupport support for streams
 	 * @throws Exception
 	 */
-	public StatementInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, Statement> invoker, Map<Database<D>, Statement> statementMap, FileSupport fileSupport) throws Exception
+	public StatementInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, Statement> invoker, Map<Database<D>, Statement> statementMap, TransactionContext<D> transactionContext, FileSupport fileSupport) throws Exception
 	{
-		super(connection, proxy, invoker, Statement.class, statementMap, fileSupport);
+		super(connection, proxy, invoker, Statement.class, statementMap, transactionContext, fileSupport);
 	}
 }

@@ -28,7 +28,6 @@ import java.sql.Statement;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -134,35 +133,6 @@ public class StandardDialect implements Dialect
 	protected String dummyTable()
 	{
 		return null;
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.Dialect#getLockTableSQL(net.sf.hajdbc.TableProperties)
-	 */
-	@Override
-	public String getLockTableSQL(TableProperties properties) throws SQLException
-	{
-		StringBuilder builder = new StringBuilder("UPDATE ").append(properties.getName()).append(" SET ");
-		
-		UniqueConstraint primaryKey = properties.getPrimaryKey();
-		
-		Collection<String> columnList = (primaryKey != null) ? primaryKey.getColumnList() : properties.getColumns();
-
-		Iterator<String> columns = columnList.iterator();
-		
-		while (columns.hasNext())
-		{
-			String column = columns.next();
-			
-			builder.append(column).append(" = ").append(column);
-			
-			if (columns.hasNext())
-			{
-				builder.append(Strings.PADDED_COMMA);
-			}
-		}
-		
-		return builder.toString();
 	}
 
 	/**

@@ -25,31 +25,50 @@ import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.util.reflect.Methods;
 
 /**
  * @author Paul Ferraro
- *
+ * @param <D> 
+ * @param <P> 
  */
 @SuppressWarnings("nls")
-public class ConnectionInvocationHandler<D> extends AbstractChildInvocationHandler<D, D, Connection>
+public class ConnectionInvocationHandler<D, P> extends AbstractChildInvocationHandler<D, P, Connection>
 {
-	private static final Set<String> DRIVER_READ_METHOD_SET = new HashSet<String>(Arrays.asList("createArrayOf", "createBlob", "createClob", "createNClob", "createSQLXML", "createStruct", "getAutoCommit", "getCatalog", "getClientInfo", "getHoldability", "getTypeMap", "getWarnings", "isClosed", "isReadOnly", "nativeSQL"));
-	private static final Set<String> DATABASE_READ_METHOD_SET = new HashSet<String>(Arrays.asList("getMetaData", "getTransactionIsolation", "isValid"));
-	private static final Set<String> DRIVER_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList("clearWarnings", "setAutoCommit", "setClientInfo", "setHoldability", "setTypeMap"));
-	private static final Set<String> DATABASE_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList("commit", "releaseSavepoint", "rollback"));
+	private static final Set<Method> driverReadMethodSet = Methods.findMethods(Connection.class, "create(ArrayOf|Blob|Clob|NClob|SQLXML|Struct)", "getAutoCommit", "getCatalog", "getClientInfo", "getHoldability", "getTypeMap", "getWarnings", "isClosed", "isReadOnly", "nativeSQL");
+	private static final Set<Method> databaseReadMethodSet = Methods.findMethods(Connection.class, "getMetaData", "getTransactionIsolation", "isValid");
+	private static final Set<Method> driverWriterMethodSet = Methods.findMethods(Connection.class, "clearWarnings", "setAutoCommit", "setClientInfo", "setHoldability", "setTypeMap");
+	private static final Set<Method> endTransactionMethodSet = Methods.findMethods(Connection.class, "commit", "rollback");
+	private static final Set<Method> createStatementMethodSet = Methods.findMethods(Connection.class, "createStatement");
+	private static final Set<Method> prepareStatementMethodSet = Methods.findMethods(Connection.class, "prepareStatement");
+	private static final Set<Method> prepareCallMethodSet = Methods.findMethods(Connection.class, "prepareCall");
+	private static final Set<Method> setSavepointMethodSet = Methods.findMethods(Connection.class, "setSavepoint");
+	
+	private static final Method releaseSavepointMethod = Methods.getMethod(Connection.class, "releaseSavepoint", Savepoint.class);
+	private static final Method rollbackSavepointMethod = Methods.getMethod(Connection.class, "rollback", Savepoint.class);
+	private static final Method closeMethod = Methods.getMethod(Connection.class, "close");
 	
 	private FileSupport fileSupport;
+	private TransactionContext<D> transactionContext;
 	
-	public ConnectionInvocationHandler(D proxy, SQLProxy<D, D> handler, Invoker<D, D, Connection> invoker, Map<Database<D>, Connection> connectionMap, FileSupport fileSupport) throws Exception
+	/**
+	 * @param proxy
+	 * @param handler
+	 * @param invoker
+	 * @param connectionMap
+	 * @param transactionContext 
+	 * @param fileSupport 
+	 * @throws Exception
+	 */
+	public ConnectionInvocationHandler(P proxy, SQLProxy<D, P> handler, Invoker<D, P, Connection> invoker, Map<Database<D>, Connection> connectionMap, TransactionContext<D> transactionContext, FileSupport fileSupport) throws Exception
 	{
 		super(proxy, handler, invoker, Connection.class, connectionMap);
 		
+		this.transactionContext = transactionContext;
 		this.fileSupport = fileSupport;
 	}
 	
@@ -59,60 +78,61 @@ public class ConnectionInvocationHandler<D> extends AbstractChildInvocationHandl
 	@Override
 	protected InvocationStrategy<D, Connection, ?> getInvocationStrategy(Connection connection, Method method, Object[] parameters) throws Exception
 	{
-		String methodName = method.getName();
-		
-		if (DRIVER_READ_METHOD_SET.contains(methodName))
+		if (driverReadMethodSet.contains(method))
 		{
 			return new DriverReadInvocationStrategy<D, Connection, Object>();
 		}
 		
-		if (DATABASE_READ_METHOD_SET.contains(methodName))
+		if (databaseReadMethodSet.contains(method))
 		{
 			return new DatabaseReadInvocationStrategy<D, Connection, Object>();
 		}
 		
-		if (DRIVER_WRITE_METHOD_SET.contains(methodName))
+		if (driverWriterMethodSet.contains(method))
 		{
 			return new DriverWriteInvocationStrategy<D, Connection, Object>();
 		}
 		
-		if (DATABASE_WRITE_METHOD_SET.contains(methodName))
+		if (endTransactionMethodSet.contains(method))
 		{
-			return new TransactionalDatabaseWriteInvocationStrategy<D, Connection, Object>();
+			return this.transactionContext.end(new DatabaseWriteInvocationStrategy<D, Connection, Void>(this.cluster.getTransactionalExecutor()));
 		}
 		
-		if (methodName.startsWith("prepare") || methodName.endsWith("Statement"))
+		if (method.equals(rollbackSavepointMethod) || method.equals(releaseSavepointMethod))
 		{
-			boolean readOnly = connection.isReadOnly();
-			
-			if (methodName.equals("createStatement"))
+			return new DatabaseWriteInvocationStrategy<D, Connection, Void>(this.cluster.getTransactionalExecutor());
+		}
+		
+		boolean createStatement = createStatementMethodSet.contains(method);
+		boolean prepareStatement = prepareStatementMethodSet.contains(method);
+		boolean prepareCall = prepareCallMethodSet.contains(method);
+		
+		if (createStatement || prepareStatement || prepareCall)
+		{
+			if (connection.isReadOnly())
 			{
-				if (readOnly)
-				{
-					return new DriverReadInvocationStrategy<D, Connection, Object>();
-				}
-
-				return new StatementInvocationStrategy<D>(connection, this.fileSupport);
-			}
-
-			if (readOnly)
-			{
-				return new DatabaseReadInvocationStrategy<D, Connection, Object>();
+				return createStatement ? new DriverReadInvocationStrategy<D, Connection, Object>() : new DatabaseReadInvocationStrategy<D, Connection, Object>();
 			}
 			
-			if (methodName.equals("prepareStatement"))
+			if (createStatement)
 			{
-				return new PreparedStatementInvocationStrategy<D>(connection, this.fileSupport, (String) parameters[0]);
+				return new StatementInvocationStrategy<D>(connection, this.transactionContext, this.fileSupport);
 			}
-			else if (methodName.equals("prepareCall"))
+			
+			if (prepareStatement)
 			{
-				return new CallableStatementInvocationStrategy<D>(connection, this.fileSupport);
+				return new PreparedStatementInvocationStrategy<D>(this.cluster, connection, this.transactionContext, this.fileSupport, (String) parameters[0]);
+			}
+			
+			if (prepareCall)
+			{
+				return new CallableStatementInvocationStrategy<D>(this.cluster, connection, this.transactionContext, this.fileSupport);
 			}
 		}
 		
-		if (methodName.equals("setSavepoint"))
+		if (setSavepointMethodSet.contains(method))
 		{
-			return new SavepointInvocationStrategy<D>(connection);
+			return new SavepointInvocationStrategy<D>(this.cluster, connection);
 		}
 /*		
 		if (methodName.equals("createBlob"))
@@ -135,7 +155,7 @@ public class ConnectionInvocationHandler<D> extends AbstractChildInvocationHandl
 	@Override
 	protected Invoker<D, Connection, ?> getInvoker(Connection connection, Method method, Object[] parameters) throws Exception
 	{
-		if (method.equals(Connection.class.getMethod("releaseSavepoint", Savepoint.class)))
+		if (method.equals(releaseSavepointMethod))
 		{
 			final SQLProxy<D, Savepoint> proxy = (SQLProxy) Proxy.getInvocationHandler(parameters[0]);
 			
@@ -150,7 +170,7 @@ public class ConnectionInvocationHandler<D> extends AbstractChildInvocationHandl
 			};
 		}
 		
-		if (method.equals(Connection.class.getMethod("rollback", Savepoint.class)))
+		if (method.equals(rollbackSavepointMethod))
 		{
 			final SQLProxy<D, Savepoint> proxy = (SQLProxy) Proxy.getInvocationHandler(parameters[0]);
 			
@@ -174,7 +194,7 @@ public class ConnectionInvocationHandler<D> extends AbstractChildInvocationHandl
 	@Override
 	protected boolean isSQLMethod(Method method)
 	{
-		return method.getName().equals("prepareStatement");
+		return prepareStatementMethodSet.contains(method);
 	}
 
 	/**
@@ -182,15 +202,17 @@ public class ConnectionInvocationHandler<D> extends AbstractChildInvocationHandl
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	protected void postInvoke(Connection object, Method method, Object[] parameters) throws Exception
+	protected void postInvoke(Connection object, Method method, Object[] parameters)
 	{
-		if (method.equals(Connection.class.getMethod("close")))
+		if (method.equals(closeMethod))
 		{
+			this.transactionContext.close();
+			
 			this.fileSupport.close();
 			
 			this.getParentProxy().removeChild(this);
 		}
-		else if (method.equals(Connection.class.getMethod("releaseSavepoint", Savepoint.class)))
+		else if (method.equals(releaseSavepointMethod))
 		{
 			SQLProxy<D, Savepoint> proxy = (SQLProxy) Proxy.getInvocationHandler(parameters[0]);
 			
@@ -202,7 +224,7 @@ public class ConnectionInvocationHandler<D> extends AbstractChildInvocationHandl
 	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#close(java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	protected void close(D parent, Connection connection) throws SQLException
+	protected void close(P parent, Connection connection) throws SQLException
 	{
 		connection.close();
 	}

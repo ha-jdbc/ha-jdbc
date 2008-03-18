@@ -36,6 +36,7 @@ import java.util.SortedMap;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.util.SQLExceptionFactory;
 import net.sf.hajdbc.util.reflect.Methods;
 
 import org.slf4j.Logger;
@@ -43,20 +44,34 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Paul Ferraro
+ * @param <D> 
+ * @param <T> 
  */
-public abstract class AbstractInvocationHandler<D, E> implements InvocationHandler, SQLProxy<D, E>
+@SuppressWarnings("nls")
+public abstract class AbstractInvocationHandler<D, T> implements InvocationHandler, SQLProxy<D, T>
 {
+	private static final Method equalsMethod = Methods.getMethod(Object.class, "equals", Object.class);
+	private static final Method hashCodeMethod = Methods.getMethod(Object.class, "hashCode");
+	private static final Method toStringMethod = Methods.getMethod(Object.class, "toString");
+	private static final Method isWrapperForMethod = Methods.findMethod("java.sql.Wrapper", "isWrapperFor", Class.class);
+	private static final Method unwrapMethod = Methods.findMethod("java.sql.Wrapper", "unwrap", Class.class);
+	
 	protected Logger logger = LoggerFactory.getLogger(this.getClass());
 	
-	protected DatabaseCluster<D> databaseCluster;
-	private Class<E> proxyClass;
-	private Map<Database<D>, E> objectMap;
+	protected DatabaseCluster<D> cluster;
+	private Class<T> proxyClass;
+	private Map<Database<D>, T> objectMap;
 	private List<SQLProxy<D, ?>> childList = new LinkedList<SQLProxy<D, ?>>();
-	private Map<Method, Invoker<D, E, ?>> invokerMap = new HashMap<Method, Invoker<D, E, ?>>();
+	private Map<Method, Invoker<D, T, ?>> invokerMap = new HashMap<Method, Invoker<D, T, ?>>();
 	
-	protected AbstractInvocationHandler(DatabaseCluster<D> databaseCluster, Class<E> proxyClass, Map<Database<D>, E> objectMap)
+	/**
+	 * @param cluster the database cluster
+	 * @param proxyClass the interface being proxied
+	 * @param objectMap a map of database to sql object.
+	 */
+	protected AbstractInvocationHandler(DatabaseCluster<D> cluster, Class<T> proxyClass, Map<Database<D>, T> objectMap)
 	{
-		this.databaseCluster = databaseCluster;
+		this.cluster = cluster;
 		this.proxyClass = proxyClass;
 		this.objectMap = objectMap;
 	}
@@ -68,12 +83,14 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 	@Override
 	public final Object invoke(Object object, Method method, Object[] parameters) throws Exception
 	{
-		if (!this.databaseCluster.isActive())
+		if (method.getName().equals("toString")) return "";
+		
+		if (!this.cluster.isActive())
 		{
-			throw new SQLException(Messages.getMessage(Messages.CLUSTER_NOT_ACTIVE, this.databaseCluster));
+			throw new SQLException(Messages.getMessage(Messages.CLUSTER_NOT_ACTIVE, this.cluster));
 		}
 		
-		E proxy = this.proxyClass.cast(object);
+		T proxy = this.proxyClass.cast(object);
 		
 		InvocationStrategy strategy = this.getInvocationStrategy(proxy, method, parameters);
 		Invoker invoker = this.getInvoker(proxy, method, parameters);
@@ -87,44 +104,52 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 		return result;
 	}
 	
-	@SuppressWarnings("nls")
-	protected InvocationStrategy<D, E, ?> getInvocationStrategy(final E object, Method method, final Object[] parameters) throws Exception
+	/**
+	 * Returns the appropriate {@link InvocationStrategy} for the specified method.
+	 * This implementation detects {@link java.sql.Wrapper} methods; and {@link Object#equals}, {@link Object#hashCode()}, and {@link Object#toString()}.
+	 * Default invocation strategy is {@link DatabaseWriteInvocationStrategy}. 
+	 * @param object the proxied object
+	 * @param method the method to invoke
+	 * @param parameters the method invocation parameters
+	 * @return an invocation strategy
+	 * @throws Exception
+	 */
+	protected InvocationStrategy<D, T, ?> getInvocationStrategy(final T object, Method method, final Object[] parameters) throws Exception
 	{
-		Class<?> objectClass = method.getDeclaringClass();
-		
-		try
+		// Most Java 1.6 sql classes implement java.sql.Wrapper
+		if (((isWrapperForMethod != null) && method.equals(isWrapperForMethod)) || ((unwrapMethod != null) && method.equals(unwrapMethod)))
 		{
-			// Most Java 1.6 sql classes implement java.sql.Wrapper
-			if (method.equals(objectClass.getMethod("isWrapperFor", Class.class)) || method.equals(objectClass.getMethod("unwrap", Class.class)))
-			{
-				return new DriverReadInvocationStrategy<D, E, Object>();
-			}
-		}
-		catch (NoSuchMethodException e)
-		{
-			// Ignore - Java 1.4 or 1.5
+			return new DriverReadInvocationStrategy<D, T, Object>();
 		}
 		
-		if (method.equals(Object.class.getMethod("equals", Object.class)))
+		if (method.equals(equalsMethod))
 		{
-			return new InvocationStrategy<D, E, Boolean>()
+			return new InvocationStrategy<D, T, Boolean>()
 			{
-				public Boolean invoke(SQLProxy<D, E> proxy, Invoker<D, E, Boolean> invoker) throws Exception
+				public Boolean invoke(SQLProxy<D, T> proxy, Invoker<D, T, Boolean> invoker)
 				{
 					return object == parameters[0];
 				}				
 			};
 		}
 		
-		if (method.equals(Object.class.getMethod("hashCode")) || method.equals(Object.class.getMethod("toString")))
+		if (method.equals(hashCodeMethod) || method.equals(toStringMethod))
 		{
-			return new DriverReadInvocationStrategy<D, E, Object>();
+			return new DriverReadInvocationStrategy<D, T, Object>();
 		}
 		
-		return new NonTransactionalDatabaseWriteInvocationStrategy<D, E, Object>();
+		return new DatabaseWriteInvocationStrategy<D, T, Object>(this.cluster.getNonTransactionalExecutor());
 	}
 	
-	protected Invoker<D, E, ?> getInvoker(E object, Method method, Object[] parameters) throws Exception
+	/**
+	 * Return the appropriate invoker for the specified method.
+	 * @param object
+	 * @param method
+	 * @param parameters
+	 * @return an invoker
+	 * @throws Exception
+	 */
+	protected Invoker<D, T, ?> getInvoker(T object, Method method, Object[] parameters) throws Exception
 	{
 		if (this.isSQLMethod(method))
 		{
@@ -132,24 +157,24 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 			
 			long now = System.currentTimeMillis();
 			
-			if (this.databaseCluster.isCurrentTimestampEvaluationEnabled())
+			if (this.cluster.isCurrentTimestampEvaluationEnabled())
 			{
-				parameterList.set(0, this.databaseCluster.getDialect().evaluateCurrentTimestamp((String) parameterList.get(0), new java.sql.Timestamp(now)));
+				parameterList.set(0, this.cluster.getDialect().evaluateCurrentTimestamp((String) parameterList.get(0), new java.sql.Timestamp(now)));
 			}
 			
-			if (this.databaseCluster.isCurrentDateEvaluationEnabled())
+			if (this.cluster.isCurrentDateEvaluationEnabled())
 			{
-				parameterList.set(0, this.databaseCluster.getDialect().evaluateCurrentDate((String) parameterList.get(0), new java.sql.Date(now)));
+				parameterList.set(0, this.cluster.getDialect().evaluateCurrentDate((String) parameterList.get(0), new java.sql.Date(now)));
 			}
 			
-			if (this.databaseCluster.isCurrentTimeEvaluationEnabled())
+			if (this.cluster.isCurrentTimeEvaluationEnabled())
 			{
-				parameterList.set(0, this.databaseCluster.getDialect().evaluateCurrentTime((String) parameterList.get(0), new java.sql.Time(now)));
+				parameterList.set(0, this.cluster.getDialect().evaluateCurrentTime((String) parameterList.get(0), new java.sql.Time(now)));
 			}
 			
-			if (this.databaseCluster.isRandEvaluationEnabled())
+			if (this.cluster.isRandEvaluationEnabled())
 			{
-				parameterList.set(0, this.databaseCluster.getDialect().evaluateRand((String) parameterList.get(0)));
+				parameterList.set(0, this.cluster.getDialect().evaluateRand((String) parameterList.get(0)));
 			}
 			
 			return new SimpleInvoker(method, parameterList.toArray());
@@ -168,7 +193,13 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 		return false;
 	}
 	
-	protected void postInvoke(E object, Method method, Object[] parameters) throws Exception
+	/**
+	 * Called after method is invoked.
+	 * @param proxy the proxied object
+	 * @param method the method that was just invoked
+	 * @param parameters the parameters of the method that was just invoked
+	 */
+	protected void postInvoke(T proxy, Method method, Object[] parameters)
 	{
 		// Do nothing
 	}
@@ -177,7 +208,7 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 	 * @see net.sf.hajdbc.sql.SQLProxy#entry()
 	 */
 	@Override
-	public Map.Entry<Database<D>, E> entry()
+	public Map.Entry<Database<D>, T> entry()
 	{
 		synchronized (this.objectMap)
 		{
@@ -189,7 +220,7 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 	 * @see net.sf.hajdbc.sql.SQLProxy#entries()
 	 */
 	@Override
-	public Set<Map.Entry<Database<D>, E>> entries()
+	public Set<Map.Entry<Database<D>, T>> entries()
 	{
 		synchronized (this.objectMap)
 		{
@@ -243,11 +274,11 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 	 * @return an underlying SQL object
 	 */
 	@Override
-	public final E getObject(Database<D> database)
+	public final T getObject(Database<D> database)
 	{
 		synchronized (this.objectMap)
 		{
-			E object = this.objectMap.get(database);
+			T object = this.objectMap.get(database);
 			
 			if (object == null)
 			{
@@ -259,9 +290,9 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 					
 					this.objectMap.put(database, object);
 				}
-				catch (SQLException e)
+				catch (Exception e)
 				{
-					if (!this.objectMap.isEmpty() && this.databaseCluster.deactivate(database, this.databaseCluster.getStateManager()))
+					if (!this.objectMap.isEmpty() && this.cluster.deactivate(database, this.cluster.getStateManager()))
 					{
 						this.logger.warn(Messages.getMessage(Messages.SQL_OBJECT_INIT_FAILED, this.getClass().getName(), database), e);
 					}
@@ -272,9 +303,9 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 		}
 	}
 	
-	protected abstract E createObject(Database<D> database) throws SQLException;
+	protected abstract T createObject(Database<D> database) throws Exception;
 
-	protected void record(Method method, Invoker<D, E, ?> invoker)
+	protected void record(Method method, Invoker<D, T, ?> invoker)
 	{
 		// Record only the last invocation of a given set*(...) method
 		if (this.isSetMethod(method) && (method.getParameterTypes().length == 1))
@@ -292,11 +323,11 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 		return method.getName().startsWith("set") && (method.getParameterTypes() != null);
 	}
 	
-	protected void replay(Database<D> database, E object) throws SQLException
+	protected void replay(Database<D> database, T object) throws Exception
 	{
 		synchronized (this.invokerMap)
 		{
-			for (Invoker<D, E, ?> invoker: this.invokerMap.values())
+			for (Invoker<D, T, ?> invoker: this.invokerMap.values())
 			{
 				invoker.invoke(database, object);
 			}
@@ -319,17 +350,17 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 		
 		synchronized (this.objectMap)
 		{
-			Iterator<Map.Entry<Database<D>, E>> mapEntries = this.objectMap.entrySet().iterator();
+			Iterator<Map.Entry<Database<D>, T>> mapEntries = this.objectMap.entrySet().iterator();
 			
 			while (mapEntries.hasNext())
 			{
-				Map.Entry<Database<D>, E> mapEntry = mapEntries.next();
+				Map.Entry<Database<D>, T> mapEntry = mapEntries.next();
 				
 				Database<D> database = mapEntry.getKey();
 				
 				if (!databaseSet.contains(database))
 				{
-					E object = mapEntry.getValue();
+					T object = mapEntry.getValue();
 					
 					if (object != null)
 					{
@@ -342,7 +373,7 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 		}
 	}
 
-	protected abstract void close(Database<D> database, E object);
+	protected abstract void close(Database<D> database, T object);
 	
 	/**
 	 * @see net.sf.hajdbc.sql.SQLProxy#getDatabaseCluster()
@@ -350,16 +381,16 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 	@Override
 	public final DatabaseCluster<D> getDatabaseCluster()
 	{
-		return this.databaseCluster;
+		return this.cluster;
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.sql.SQLProxy#handleFailure(net.sf.hajdbc.Database, java.sql.SQLException)
+	 * @see net.sf.hajdbc.sql.SQLProxy#handleFailure(net.sf.hajdbc.Database, java.lang.Exception)
 	 */
 	@Override
-	public void handleFailure(Database<D> database, SQLException exception) throws SQLException
+	public void handleFailure(Database<D> database, Exception exception) throws Exception
 	{
-		Set<Database<D>> databaseSet = this.databaseCluster.getBalancer().all();
+		Set<Database<D>> databaseSet = this.cluster.getBalancer().all();
 		
 		// If cluster has only one database left, don't deactivate
 		if (databaseSet.size() <= 1)
@@ -367,7 +398,7 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 			throw exception;
 		}
 
-		Map<Boolean, List<Database<D>>> aliveMap = this.databaseCluster.getAliveMap(databaseSet);
+		Map<Boolean, List<Database<D>>> aliveMap = this.cluster.getAliveMap(databaseSet);
 		
 		this.detectClusterPanic(aliveMap);
 		
@@ -381,7 +412,7 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 		}
 		
 		// Otherwise deactivate failed database
-		if (this.databaseCluster.deactivate(database, this.databaseCluster.getStateManager()))
+		if (this.cluster.deactivate(database, this.cluster.getStateManager()))
 		{
 			this.logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this), exception);
 		}
@@ -391,14 +422,14 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 	 * @see net.sf.hajdbc.sql.SQLProxy#handleFailures(java.util.SortedMap)
 	 */
 	@Override
-	public void handleFailures(SortedMap<Database<D>, SQLException> exceptionMap) throws SQLException
+	public void handleFailures(SortedMap<Database<D>, Exception> exceptionMap) throws Exception
 	{
 		if (exceptionMap.size() == 1)
 		{
 			throw exceptionMap.get(exceptionMap.firstKey());
 		}
 		
-		Map<Boolean, List<Database<D>>> aliveMap = this.databaseCluster.getAliveMap(exceptionMap.keySet());
+		Map<Boolean, List<Database<D>>> aliveMap = this.cluster.getAliveMap(exceptionMap.keySet());
 
 		this.detectClusterPanic(aliveMap);
 		
@@ -409,46 +440,46 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 		{
 			for (Database<D> database: deadList)
 			{
-				if (this.databaseCluster.deactivate(database, this.databaseCluster.getStateManager()))
+				if (this.cluster.deactivate(database, this.cluster.getStateManager()))
 				{
-					this.logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this.databaseCluster), exceptionMap.get(database));
+					this.logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this.cluster), exceptionMap.get(database));
 				}
 			}
 		}
 		
 		List<Database<D>> list = aliveList.isEmpty() ? deadList : aliveList;
 		
-		SQLException exception = exceptionMap.get(list.get(0));
+		SQLException exception = SQLExceptionFactory.createSQLException(exceptionMap.get(list.get(0)));
 
 		for (Database<D> database: list.subList(1, list.size()))
 		{
-			exception.setNextException(exceptionMap.get(database));
+			exception.setNextException(SQLExceptionFactory.createSQLException(exceptionMap.get(database)));
 		}
 		
 		throw exception;
 	}
-
+	
 	/**
 	 * @see net.sf.hajdbc.sql.SQLProxy#handlePartialFailure(java.util.SortedMap, java.util.SortedMap)
 	 */
 	@Override
-	public <R> SortedMap<Database<D>, R> handlePartialFailure(SortedMap<Database<D>, R> resultMap, SortedMap<Database<D>, SQLException> exceptionMap) throws SQLException
+	public <R> SortedMap<Database<D>, R> handlePartialFailure(SortedMap<Database<D>, R> resultMap, SortedMap<Database<D>, Exception> exceptionMap) throws Exception
 	{
-		Map<Boolean, List<Database<D>>> aliveMap = this.databaseCluster.getAliveMap(exceptionMap.keySet());
+		Map<Boolean, List<Database<D>>> aliveMap = this.cluster.getAliveMap(exceptionMap.keySet());
 		
 		// Assume success databases are alive
 		aliveMap.get(true).addAll(resultMap.keySet());
 		
 		this.detectClusterPanic(aliveMap);
 		
-		for (Map.Entry<Database<D>, SQLException> exceptionMapEntry: exceptionMap.entrySet())
+		for (Map.Entry<Database<D>, Exception> exceptionMapEntry: exceptionMap.entrySet())
 		{
 			Database<D> database = exceptionMapEntry.getKey();
-			SQLException exception = exceptionMapEntry.getValue();
+			Exception exception = exceptionMapEntry.getValue();
 			
-			if (this.databaseCluster.deactivate(database, this.databaseCluster.getStateManager()))
+			if (this.cluster.deactivate(database, this.cluster.getStateManager()))
 			{
-				this.logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this.databaseCluster), exception);
+				this.logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this.cluster), exception);
 			}
 		}
 		
@@ -464,20 +495,20 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 	 * <li>All dead databases are remote</li>
 	 * </ul>
 	 * @param aliveMap
-	 * @throws SQLException
+	 * @throws Exception
 	 */
-	protected void detectClusterPanic(Map<Boolean, List<Database<D>>> aliveMap) throws SQLException
+	protected void detectClusterPanic(Map<Boolean, List<Database<D>>> aliveMap) throws Exception
 	{
-		if (this.databaseCluster.getStateManager().isMembershipEmpty())
+		if (this.cluster.getStateManager().isMembershipEmpty())
 		{
 			List<Database<D>> aliveList = aliveMap.get(true);
 			List<Database<D>> deadList = aliveMap.get(false);
 			
 			if (!aliveList.isEmpty() && !deadList.isEmpty() && sameProximity(aliveList, true) && sameProximity(deadList, false))
 			{
-				this.databaseCluster.stop();
+				this.cluster.stop();
 				
-				String message = Messages.getMessage(Messages.CLUSTER_PANIC_DETECTED, this.databaseCluster);
+				String message = Messages.getMessage(Messages.CLUSTER_PANIC_DETECTED, this.cluster);
 				
 				this.logger.error(message);
 				
@@ -498,11 +529,15 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 		return same;
 	}
 	
-	protected class SimpleInvoker implements Invoker<D, E, Object>
+	protected class SimpleInvoker implements Invoker<D, T, Object>
 	{
 		private Method method;
 		private Object[] parameters;
 		
+		/**
+		 * @param method
+		 * @param parameters
+		 */
 		public SimpleInvoker(Method method, Object[] parameters)
 		{
 			this.method = method;
@@ -513,7 +548,7 @@ public abstract class AbstractInvocationHandler<D, E> implements InvocationHandl
 		 * @see net.sf.hajdbc.sql.Invoker#invoke(net.sf.hajdbc.Database, java.lang.Object)
 		 */
 		@Override
-		public Object invoke(Database<D> database, E object) throws SQLException
+		public Object invoke(Database<D> database, T object) throws Exception
 		{
 			return Methods.invoke(this.method, object, this.parameters);
 		}

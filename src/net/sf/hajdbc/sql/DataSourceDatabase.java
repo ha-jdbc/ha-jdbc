@@ -23,44 +23,23 @@ package net.sf.hajdbc.sql;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import javax.management.DynamicMBean;
-import javax.management.NotCompliantMBeanException;
-import javax.management.StandardMBean;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import net.sf.hajdbc.Messages;
 
 /**
+ * A database described by a {@link DataSource}.
  * @author  Paul Ferraro
- * @version $Revision$
- * @since   1.0
  */
-public class DataSourceDatabase extends AbstractDatabase<DataSource> implements InactiveDataSourceDatabaseMBean
+public class DataSourceDatabase extends CommonDataSourceDatabase<DataSource>
 {
-	private String name;
-	
 	/**
-	 * @see net.sf.hajdbc.sql.ActiveDataSourceDatabaseMBean#getName()
+	 * Constructs a new database described by a {@link DataSource}.
 	 */
-	@Override
-	public String getName()
+	public DataSourceDatabase()
 	{
-		return this.name;
+		super(DataSource.class);
 	}
-	
-	/**
-	 * @see net.sf.hajdbc.sql.InactiveDataSourceDatabaseMBean#setName(java.lang.String)
-	 */
-	@Override
-	public void setName(String name)
-	{
-		this.checkDirty(this.name, name);
-		this.name = name;
-	}
-	
+
 	/**
 	 * @param dataSource A DataSource
 	 * @return a database connection
@@ -71,59 +50,5 @@ public class DataSourceDatabase extends AbstractDatabase<DataSource> implements 
 	public Connection connect(DataSource dataSource) throws SQLException
 	{
 		return (this.user != null) ? dataSource.getConnection(this.user, this.password) : dataSource.getConnection();
-	}
-
-	/**
-	 * @see net.sf.hajdbc.Database#createConnectionFactory()
-	 */
-	@Override
-	public DataSource createConnectionFactory()
-	{
-		try
-		{
-			Context context = new InitialContext(this.properties);
-	
-			return (DataSource) context.lookup(this.name);
-		}
-		catch (ClassCastException e)
-		{
-			throw new IllegalArgumentException(e.toString(), e);
-		}
-		catch (NamingException e)
-		{
-			throw new IllegalArgumentException(Messages.getMessage(Messages.JNDI_LOOKUP_FAILED, this.name), e);
-		}
-	}
-
-	/**
-	 * @see net.sf.hajdbc.Database#getActiveMBean()
-	 */
-	@Override
-	public DynamicMBean getActiveMBean()
-	{
-		try
-		{
-			return new StandardMBean(this, ActiveDataSourceDatabaseMBean.class);
-		}
-		catch (NotCompliantMBeanException e)
-		{
-			throw new IllegalStateException(e);
-		}
-	}
-
-	/**
-	 * @see net.sf.hajdbc.Database#getInactiveMBean()
-	 */
-	@Override
-	public DynamicMBean getInactiveMBean()
-	{
-		try
-		{
-			return new StandardMBean(this, InactiveDataSourceDatabaseMBean.class);
-		}
-		catch (NotCompliantMBeanException e)
-		{
-			throw new IllegalStateException(e);
-		}
 	}
 }

@@ -22,38 +22,33 @@ package net.sf.hajdbc.sql;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.Set;
 
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 /**
  * @author Paul Ferraro
- *
+ * @param <D> 
+ * @param <S> 
  */
-public class EagerResultSetInvocationStrategy<D, S extends Statement> extends TransactionalDatabaseWriteInvocationStrategy<D, S, ResultSet>
+public class EagerResultSetInvocationStrategy<D, S extends Statement> extends DatabaseWriteInvocationStrategy<D, S, ResultSet>
 {
 	private S statement;
+	private TransactionContext<D> transactionContext;
 	private FileSupport fileSupport;
-	
-	/**
-	 * @param lockList
-	 */
-	public EagerResultSetInvocationStrategy(S statement, FileSupport fileSupport, Set<String> identifierSet)
-	{
-		super(identifierSet);
-		
-		this.statement = statement;
-		this.fileSupport = fileSupport;
-	}
 
 	/**
-	 * @param lockList
+	 * @param cluster 
+	 * @param statement
+	 * @param transactionContext
+	 * @param fileSupport
 	 */
-	public EagerResultSetInvocationStrategy(S statement, FileSupport fileSupport)
+	public EagerResultSetInvocationStrategy(DatabaseCluster<D> cluster, S statement, TransactionContext<D> transactionContext, FileSupport fileSupport)
 	{
-		super();
+		super(cluster.getTransactionalExecutor());
 		
 		this.statement = statement;
+		this.transactionContext = transactionContext;
 		this.fileSupport = fileSupport;
 	}
 
@@ -63,6 +58,6 @@ public class EagerResultSetInvocationStrategy<D, S extends Statement> extends Tr
 	@Override
 	public ResultSet invoke(SQLProxy<D, S> proxy, Invoker<D, S, ResultSet> invoker) throws Exception
 	{
-		return ProxyFactory.createProxy(ResultSet.class, new ResultSetInvocationHandler<D, S>(this.statement, proxy, invoker, this.invokeAll(proxy, invoker), this.fileSupport));
+		return ProxyFactory.createProxy(ResultSet.class, new ResultSetInvocationHandler<D, S>(this.statement, proxy, invoker, this.invokeAll(proxy, invoker), this.transactionContext, this.fileSupport));
 	}
 }

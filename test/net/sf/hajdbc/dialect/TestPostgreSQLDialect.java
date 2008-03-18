@@ -48,9 +48,6 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		return new PostgreSQLDialect();
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getColumnType(net.sf.hajdbc.ColumnProperties)
-	 */
 	@Override
 	@Test(dataProvider = "column")
 	public int getColumnType(ColumnProperties properties) throws SQLException
@@ -80,10 +77,7 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		
 		return type;
 	}
-
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getLockTableSQL(net.sf.hajdbc.TableProperties)
-	 */
+/*
 	@Override
 	@Test(dataProvider = "table")
 	public String getLockTableSQL(TableProperties properties) throws SQLException
@@ -100,10 +94,7 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		
 		return sql;
 	}
-
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getTruncateTableSQL(net.sf.hajdbc.TableProperties)
-	 */
+*/
 	@Override
 	@Test(dataProvider = "table")
 	public String getTruncateTableSQL(TableProperties properties) throws SQLException
@@ -121,9 +112,6 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		return sql;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getCurrentSequenceValueSQL(java.lang.String)
-	 */
 	@Override
 	@Test(dataProvider = "sequence")
 	public String getNextSequenceValueSQL(SequenceProperties sequence) throws SQLException
@@ -141,9 +129,6 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		return sql;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#parseSequence(java.lang.String)
-	 */
 	@Override
 	@Test(dataProvider = "null")
 	public String parseSequence(String sql) throws SQLException
@@ -177,9 +162,6 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		return sequence;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getDefaultSchemas(java.sql.Connection)
-	 */
 	@Override
 	@Test(dataProvider = "meta-data")
 	public List<String> getDefaultSchemas(DatabaseMetaData metaData) throws SQLException
@@ -210,9 +192,6 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		return schemaList;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#isIdentity(net.sf.hajdbc.ColumnProperties)
-	 */
 	@Override
 	@Test(dataProvider = "column")
 	public boolean isIdentity(ColumnProperties properties) throws SQLException
@@ -254,9 +233,6 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		return identity;
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.Dialect#getAlterIdentityColumnSQL(net.sf.hajdbc.TableProperties, net.sf.hajdbc.ColumnProperties, long)
-	 */
 	@Override
 	@Test(dataProvider = "table-column-long")
 	public String getAlterIdentityColumnSQL(TableProperties table, ColumnProperties column, long value) throws SQLException
@@ -275,9 +251,6 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		return sql;
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.Dialect#getIdentifierPattern(java.sql.DatabaseMetaData)
-	 */
 	@Override
 	@Test(dataProvider = "meta-data")
 	public Pattern getIdentifierPattern(DatabaseMetaData metaData) throws SQLException

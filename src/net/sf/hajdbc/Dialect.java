@@ -37,16 +37,9 @@ public interface Dialect
 	/**
 	 * Returns a simple SQL statement used to validate whether a database is alive or not.
 	 * @return a SQL statement
+	 * @throws SQLException 
 	 */
 	public String getSimpleSQL() throws SQLException;
-	
-	/**
-	 * Returns a SQL statement to be executed within a running transaction that will effectively lock the specified table for writing.
-	 * @param properties table meta data
-	 * @return a SQL statement
-	 * @throws SQLException if there was an error fetching meta data.
-	 */
-	public String getLockTableSQL(TableProperties properties) throws SQLException;
 	
 	/**
 	 * Returns a SQL statement used to truncate a table.
@@ -101,6 +94,7 @@ public interface Dialect
 	 * This method is intended to correct JDBC driver type mapping flaws.
 	 * @param properties table column meta data
 	 * @return the JDBC data type of this column
+	 * @throws SQLException 
 	 */
 	public int getColumnType(ColumnProperties properties) throws SQLException;
 	
@@ -154,6 +148,7 @@ public interface Dialect
 	 * @param sequence a sequence name
 	 * @param value a sequence value
 	 * @return a SQL statement
+	 * @throws SQLException 
 	 * @since 2.0
 	 */
 	public String getAlterSequenceSQL(SequenceProperties sequence, long value) throws SQLException;
@@ -164,20 +159,25 @@ public interface Dialect
 	 * @param column a sequence name
 	 * @param value a sequence value
 	 * @return a SQL statement
+	 * @throws SQLException 
 	 * @since 2.0.2
 	 */
 	public String getAlterIdentityColumnSQL(TableProperties table, ColumnProperties column, long value) throws SQLException;
 	
 	/**
 	 * Returns a search path of schemas 
+	 * @param metaData 
 	 * @return a list of schema names
+	 * @throws SQLException 
 	 * @since 2.0
 	 */
 	public List<String> getDefaultSchemas(DatabaseMetaData metaData) throws SQLException;
 	
 	/**
 	 * Returns a pattern for identifiers that do not require quoting
+	 * @param metaData 
 	 * @return a regular expression pattern
+	 * @throws SQLException 
 	 * @since 2.0.2
 	 */
 	public Pattern getIdentifierPattern(DatabaseMetaData metaData) throws SQLException;
@@ -187,33 +187,37 @@ public interface Dialect
 	 * @param sql an SQL statement
 	 * @param date the replacement date
 	 * @return an equivalent deterministic SQL statement
+	 * @throws SQLException 
 	 * @since 2.0.2
 	 */
-	public String evaluateCurrentDate(String sql, java.sql.Date date);
+	public String evaluateCurrentDate(String sql, java.sql.Date date) throws SQLException;
 	
 	/**
 	 * Replaces non-deterministic CURRENT_TIME functions with deterministic static values.
 	 * @param sql an SQL statement
 	 * @param time the replacement time
 	 * @return an equivalent deterministic SQL statement
+	 * @throws SQLException 
 	 * @since 2.0.2
 	 */
-	public String evaluateCurrentTime(String sql, java.sql.Time time);
+	public String evaluateCurrentTime(String sql, java.sql.Time time) throws SQLException;
 	
 	/**
 	 * Replaces non-deterministic CURRENT_TIMESTAMP functions with deterministic static values.
 	 * @param sql an SQL statement
 	 * @param timestamp the replacement timestamp
 	 * @return an equivalent deterministic SQL statement
+	 * @throws SQLException 
 	 * @since 2.0.2
 	 */
-	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp timestamp);
+	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp timestamp) throws SQLException;
 	
 	/**
 	 * Replaces non-deterministic RAND() functions with deterministic static values.
 	 * @param sql an SQL statement
 	 * @return an equivalent deterministic SQL statement
+	 * @throws SQLException 
 	 * @since 2.0.2
 	 */
-	public String evaluateRand(String sql);
+	public String evaluateRand(String sql) throws SQLException;
 }

@@ -35,18 +35,12 @@ import net.sf.hajdbc.MockDatabase;
 @SuppressWarnings("nls")
 public class TestRandomBalancer extends AbstractTestBalancer
 {
-	/**
-	 * @see net.sf.hajdbc.balancer.AbstractTestBalancer#createBalancer()
-	 */
 	@Override
 	protected Balancer<Void> createBalancer()
 	{
 		return new RandomBalancer<Void>();
 	}
 
-	/**
-	 * @see net.sf.hajdbc.balancer.AbstractTestBalancer#next(net.sf.hajdbc.Balancer)
-	 */
 	@Override
 	protected void next(Balancer<Void> balancer)
 	{

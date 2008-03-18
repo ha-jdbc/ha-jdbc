@@ -21,6 +21,7 @@
 package net.sf.hajdbc.sql;
 
 import java.lang.reflect.Proxy;
+import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.Hashtable;
 import java.util.Properties;
@@ -33,6 +34,7 @@ import javax.naming.RefAddr;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
 import javax.naming.spi.ObjectFactory;
+import javax.sql.DataSource;
 
 import net.sf.hajdbc.local.LocalStateManager;
 
@@ -50,7 +52,7 @@ import org.testng.annotations.Test;
 @SuppressWarnings("nls")
 public class TestDataSourceFactory implements ObjectFactory
 {
-	private DataSource dataSource = new DataSource();
+	private DataSourceFactory factory = new DataSourceFactory();
 	private Context context;
 	
 	@BeforeClass
@@ -60,18 +62,16 @@ public class TestDataSourceFactory implements ObjectFactory
 		
 		Properties properties = new Properties();
 		
-		properties.setProperty(Context.INITIAL_CONTEXT_FACTORY, "net.sf.hajdbc.sql.MockInitialContextFactory");
+		properties.setProperty(Context.INITIAL_CONTEXT_FACTORY, MockInitialContextFactory.class.getName());
 		
 		this.context = new InitialContext(properties);
 		
-		Reference reference = new Reference(DataSource.class.toString(), "net.sf.hajdbc.sql.MockDataSourceFactory", null);
+		Reference reference = new Reference(DataSourceFactory.class.toString(), MockDataSourceFactory.class.getName(), null);
 		
 		this.context.bind("datasource1", reference);
 		this.context.bind("datasource2", reference);
 		
-		this.dataSource.setCluster("test-datasource-cluster");
-		
-		this.context.bind("datasource", this.dataSource);
+		this.context.bind("datasource", new DataSourceReference("test-datasource-cluster"));
 	}
 
 	@AfterClass
@@ -91,11 +91,11 @@ public class TestDataSourceFactory implements ObjectFactory
 		return new Object[][] {
 			new Object[] { null, null, null, null },
 			new Object[] { new Object(), null, null, null },
-			new Object[] { new Reference(javax.sql.DataSource.class.getName(), new StringRefAddr("cluster", "test-datasource-cluster")), null, null, null },
-			new Object[] { new Reference(javax.sql.DataSource.class.getName(), new StringRefAddr("cluster", null)), null, null, null },
-			new Object[] { new Reference(java.sql.Driver.class.getName(), new StringRefAddr("cluster", "test-datasource-cluster")), null, null, null },
-			new Object[] { new Reference(javax.sql.DataSource.class.getName()), null, null, null },
-			new Object[] { new Reference(javax.sql.DataSource.class.getName(), new StringRefAddr("cluster", "invalid-cluster")), null, null, null }
+			new Object[] { new Reference(DataSource.class.getName(), new StringRefAddr("cluster", "test-datasource-cluster")), null, null, null },
+			new Object[] { new Reference(DataSource.class.getName(), new StringRefAddr("cluster", null)), null, null, null },
+			new Object[] { new Reference(Driver.class.getName(), new StringRefAddr("cluster", "test-datasource-cluster")), null, null, null },
+			new Object[] { new Reference(DataSource.class.getName()), null, null, null },
+			new Object[] { new Reference(DataSource.class.getName(), new StringRefAddr("cluster", "invalid-cluster")), null, null, null }
 		};
 	}
 	
@@ -107,7 +107,7 @@ public class TestDataSourceFactory implements ObjectFactory
 	{
 		try
 		{
-			Object result = this.dataSource.getObjectInstance(obj, name, nameCtx, environment);
+			Object result = this.factory.getObjectInstance(obj, name, nameCtx, environment);
 			
 			if ((obj == null) || !Reference.class.isInstance(obj))
 			{
@@ -116,9 +116,9 @@ public class TestDataSourceFactory implements ObjectFactory
 				return result;
 			}
 			
-			Reference reference = Reference.class.cast(obj);
+			Reference reference = (Reference) obj;
 			
-			if ((reference == null) || !reference.getClassName().equals(javax.sql.DataSource.class.getName()))
+			if (!reference.getClassName().equals(DataSource.class.getName()))
 			{
 				assert result == null;
 				
@@ -134,7 +134,7 @@ public class TestDataSourceFactory implements ObjectFactory
 				return result;
 			}
 			
-			String id = String.class.cast(addr.getContent());
+			String id = (String) addr.getContent();
 			
 			if ((id == null) || !id.equals("test-datasource-cluster"))
 			{
@@ -150,7 +150,7 @@ public class TestDataSourceFactory implements ObjectFactory
 		}
 		catch (SQLException e)
 		{
-			assert Reference.class.cast(obj).get("cluster").getContent().equals("invalid-cluster");
+			assert ((Reference) obj).get("cluster").getContent().equals("invalid-cluster");
 			
 			return null;
 		}

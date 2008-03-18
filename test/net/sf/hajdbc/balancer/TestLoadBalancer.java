@@ -20,8 +20,6 @@
  */
 package net.sf.hajdbc.balancer;
 
-import java.sql.SQLException;
-
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.MockDatabase;
@@ -120,7 +118,7 @@ public class TestLoadBalancer extends AbstractTestBalancer
 		/**
 		 * Constructs a new InvokerThread.
 		 * @param balancer
-		 * @param operation 
+		 * @param invoker 
 		 * @param database
 		 */
 		public InvokerThread(Balancer<Void> balancer, Invoker<Void, Void, Void> invoker, Database<Void> database)
@@ -148,7 +146,7 @@ public class TestLoadBalancer extends AbstractTestBalancer
 				
 				this.balancer.afterInvocation(this.database);
 			}
-			catch (SQLException e)
+			catch (Exception e)
 			{
 				assert false : e;
 			}
@@ -191,9 +189,7 @@ public class TestLoadBalancer extends AbstractTestBalancer
 	
 	static class MockInvoker implements Invoker<Void, Void, Void>
 	{
-		/**
-		 * @see net.sf.hajdbc.Operation#execute(net.sf.hajdbc.Database, java.lang.Object)
-		 */
+		@Override
 		public Void invoke(Database<Void> database, Void object)
 		{
 			// Simulate a long operation

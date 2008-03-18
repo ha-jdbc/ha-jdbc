@@ -38,18 +38,12 @@ import org.testng.annotations.Test;
 @SuppressWarnings("nls")
 public class TestIngresDialect extends TestStandardDialect
 {
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#createDialect()
-	 */
 	@Override
 	protected Dialect createDialect()
 	{
 		return new IngresDialect();
 	}
 
-	/**
-	 * @see net.sf.hajdbc.Dialect#parseInsertTable(java.lang.String)
-	 */
 	@Override
 	@Test(dataProvider = "insert-table-sql")
 	public String parseInsertTable(String sql) throws SQLException
@@ -65,9 +59,6 @@ public class TestIngresDialect extends TestStandardDialect
 		return table;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#getSequences(java.sql.Connection)
-	 */
 	@Override
 	@Test(dataProvider = "meta-data")
 	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException

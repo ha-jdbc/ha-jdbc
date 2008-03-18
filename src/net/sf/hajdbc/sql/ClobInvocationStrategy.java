@@ -22,19 +22,28 @@ package net.sf.hajdbc.sql;
 
 import java.sql.Clob;
 
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 /**
  * @author Paul Ferraro
- *
+ * @param <D> 
+ * @param <P> 
  */
-public class ClobInvocationStrategy<D, P> extends NonTransactionalDatabaseWriteInvocationStrategy<D, P, Clob>
+public class ClobInvocationStrategy<D, P> extends DatabaseWriteInvocationStrategy<D, P, Clob>
 {
 	private P parent;
 	private Class<? extends Clob> clobClass;
 	
-	public ClobInvocationStrategy(P parent, Class<? extends Clob> clobClass)
+	/**
+	 * @param cluster 
+	 * @param parent
+	 * @param clobClass
+	 */
+	public ClobInvocationStrategy(DatabaseCluster<D> cluster, P parent, Class<? extends Clob> clobClass)
 	{
+		super(cluster.getNonTransactionalExecutor());
+		
 		this.parent = parent;
 		this.clobClass = clobClass;
 	}

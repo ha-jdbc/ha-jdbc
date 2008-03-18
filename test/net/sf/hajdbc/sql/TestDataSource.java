@@ -30,10 +30,12 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.LockManager;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 import org.easymock.EasyMock;
@@ -49,7 +51,9 @@ public class TestDataSource implements javax.sql.DataSource
 	private Balancer balancer = EasyMock.createStrictMock(Balancer.class);
 	private javax.sql.DataSource dataSource1 = EasyMock.createStrictMock(javax.sql.DataSource.class);
 	private javax.sql.DataSource dataSource2 = EasyMock.createStrictMock(javax.sql.DataSource.class);
-
+	private LockManager lockManager = EasyMock.createStrictMock(LockManager.class);
+	private Lock lock = EasyMock.createStrictMock(Lock.class);
+	
 	private Database database1 = new MockDataSourceDatabase("1", this.dataSource1);
 	private Database database2 = new MockDataSourceDatabase("2", this.dataSource2);
 	private Set<Database> databaseSet;
@@ -77,20 +81,25 @@ public class TestDataSource implements javax.sql.DataSource
 		this.reset();
 	}
 	
+	private Object[] objects()
+	{
+		return new Object[] { this.cluster, this.balancer, this.dataSource1, this.dataSource2, this.lockManager, this.lock };
+	}
+	
 	void replay()
 	{
-		EasyMock.replay(this.cluster, this.balancer, this.dataSource1, this.dataSource2);
+		EasyMock.replay(this.objects());
 	}
 	
 	void verify()
 	{
-		EasyMock.verify(this.cluster, this.balancer, this.dataSource1, this.dataSource2);
+		EasyMock.verify(this.objects());
 	}
 
 	@AfterMethod
 	void reset()
 	{
-		EasyMock.reset(this.cluster, this.balancer, this.dataSource1, this.dataSource2);
+		EasyMock.reset(this.objects());
 	}
 	
 	/**
@@ -104,10 +113,13 @@ public class TestDataSource implements javax.sql.DataSource
 		
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
-		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
+		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
 		EasyMock.expect(this.dataSource1.getConnection()).andReturn(connection1);
 		EasyMock.expect(this.dataSource2.getConnection()).andReturn(connection2);
@@ -145,10 +157,13 @@ public class TestDataSource implements javax.sql.DataSource
 		
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
-		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
+		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
 		
 		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
 		EasyMock.expect(this.dataSource1.getConnection(user, password)).andReturn(connection1);
 		EasyMock.expect(this.dataSource2.getConnection(user, password)).andReturn(connection2);

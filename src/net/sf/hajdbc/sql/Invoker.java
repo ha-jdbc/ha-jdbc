@@ -20,11 +20,23 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.sql.SQLException;
-
 import net.sf.hajdbc.Database;
 
+/**
+ * Represents a method invocation on a SQL object against a database.
+ * @author Paul Ferraro
+ * @param <D> Type of the root object (e.g. driver, datasource)
+ * @param <T> Target object type of the invocation
+ * @param <R> Return type of this invocation
+ */
 public interface Invoker<D, T, R>
 {
-	public R invoke(Database<D> database, T object) throws SQLException;
+	/**
+	 * Invokes an action against the specified database on the specified SQL object
+	 * @param database a database
+	 * @param object an SQL object
+	 * @return the invocation result
+	 * @throws Exception
+	 */
+	public R invoke(Database<D> database, T object) throws Exception;
 }

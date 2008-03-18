@@ -78,7 +78,7 @@ public class LocalLockManager implements LockManager
 		private Lock globalLock;
 		private Lock lock;
 		
-		public GlobalLock(Lock globalLock, Lock lock)
+		GlobalLock(Lock globalLock, Lock lock)
 		{
 			this.globalLock = globalLock;
 			this.lock = lock;

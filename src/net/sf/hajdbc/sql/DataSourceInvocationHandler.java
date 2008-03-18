@@ -21,18 +21,22 @@
 package net.sf.hajdbc.sql;
 
 import java.lang.reflect.Method;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.util.reflect.Methods;
 
 /**
  * @author Paul Ferraro
  *
  */
 @SuppressWarnings("nls")
-public class DataSourceInvocationHandler extends AbstractRootInvocationHandler<DataSource>
+public class DataSourceInvocationHandler extends CommonDataSourceInvocationHandler<DataSource>
 {
+	private static final Set<Method> getConnectionMethods = Methods.findMethods(DataSource.class, "getConnection");
+	
 	/**
 	 * @param databaseCluster
 	 */
@@ -47,21 +51,11 @@ public class DataSourceInvocationHandler extends AbstractRootInvocationHandler<D
 	@Override
 	protected InvocationStrategy<DataSource, DataSource, ?> getInvocationStrategy(DataSource dataSource, Method method, Object[] parameters) throws Exception
 	{
-		String methodName = method.getName();
-		
-		if (methodName.equals("getConnection"))
+		if (getConnectionMethods.contains(method))
 		{
-			return new ConnectionInvocationStrategy<DataSource>(dataSource);
-		}
-		
-		if (methodName.startsWith("get"))
-		{
-			return new DriverReadInvocationStrategy<DataSource, DataSource, Object>();
-		}
-		
-		if (methodName.startsWith("set"))
-		{
-			return new DriverWriteInvocationStrategy<DataSource, DataSource, Object>();
+			TransactionContext<DataSource> context = new LocalTransactionContext<DataSource>(this.cluster);
+			
+			return new ConnectionInvocationStrategy<DataSource, DataSource>(this.cluster, dataSource, context);
 		}
 		
 		return super.getInvocationStrategy(dataSource, method, parameters);

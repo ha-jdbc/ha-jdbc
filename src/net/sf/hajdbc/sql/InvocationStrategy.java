@@ -21,10 +21,20 @@
 package net.sf.hajdbc.sql;
 
 /**
+ * Defines a strategy for invoking an invoker.
  * @author Paul Ferraro
- *
+ * @param <D> Type of the root object (e.g. driver, datasource)
+ * @param <T> Target object type of the invocation
+ * @param <R> Return type of this invocation
  */
 public interface InvocationStrategy<D, T, R>
 {
-	public R invoke(SQLProxy<D, T> proxy, Invoker<D, T, R> invoker) throws Exception;
+	/**
+	 * Invoke the specified invoker against the specified proxy.
+	 * @param proxy a JDBC object proxy
+	 * @param invoker an invoker
+	 * @return a result
+	 * @throws Exception if the invocation fails
+	 */
+	R invoke(SQLProxy<D, T> proxy, Invoker<D, T, R> invoker) throws Exception;
 }

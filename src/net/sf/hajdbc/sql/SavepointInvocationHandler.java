@@ -30,7 +30,7 @@ import net.sf.hajdbc.Database;
 
 /**
  * @author Paul Ferraro
- *
+ * @param <D> 
  */
 public class SavepointInvocationHandler<D> extends AbstractChildInvocationHandler<D, Connection, Savepoint>
 {

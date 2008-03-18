@@ -30,7 +30,8 @@ import net.sf.hajdbc.Database;
 
 /**
  * @author Paul Ferraro
- *
+ * @param <D> 
+ * @param <P> 
  */
 @SuppressWarnings("nls")
 public class ClobInvocationHandler<D, P> extends AbstractLobInvocationHandler<D, P, Clob>

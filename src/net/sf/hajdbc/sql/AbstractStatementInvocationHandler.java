@@ -25,47 +25,65 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeSet;
+import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.LockManager;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.TableProperties;
+import net.sf.hajdbc.util.SQLExceptionFactory;
+import net.sf.hajdbc.util.reflect.Methods;
 
 /**
  * @author Paul Ferraro
- *
+ * @param <D> 
+ * @param <S> 
  */
 @SuppressWarnings("nls")
 public abstract class AbstractStatementInvocationHandler<D, S extends Statement> extends AbstractChildInvocationHandler<D, Connection, S>
 {
-	private static final Set<String> DRIVER_READ_METHOD_SET = new HashSet<String>(Arrays.asList("getFetchDirection", "getFetchSize", "getGeneratedKeys", "getMaxFieldSize", "getMaxRows", "getQueryTimeout", "getResultSetConcurrency", "getResultSetHoldability", "getResultSetType", "getUpdateCount", "getWarnings", "isClosed", "isPoolable"));
-	private static final Set<String> DRIVER_WRITE_METHOD_SET = new HashSet<String>(Arrays.asList("addBatch", "clearBatch", "clearWarnings", "setCursorName", "setEscapeProcessing", "setFetchDirection", "setFetchSize", "setMaxFieldSize", "setMaxRows", "setPoolable", "setQueryTimeout"));
-	private static final Set<String> SQL_METHOD_SET = new HashSet<String>(Arrays.asList("addBatch", "executeQuery", "execute", "executeUpdate"));
+	private static final Set<Method> driverReadMethodSet = Methods.findMethods(Statement.class, "getFetchDirection", "getFetchSize", "getGeneratedKeys", "getMaxFieldSize", "getMaxRows", "getQueryTimeout", "getResultSetConcurrency", "getResultSetHoldability", "getResultSetType", "getUpdateCount", "getWarnings", "isClosed", "isPoolable");
+	private static final Set<Method> driverWriteMethodSet = Methods.findMethods(Statement.class, "addBatch", "clearBatch", "clearWarnings", "setCursorName", "setEscapeProcessing", "setFetchDirection", "setFetchSize", "setMaxFieldSize", "setMaxRows", "setPoolable", "setQueryTimeout");
+	private static final Set<Method> executeMethodSet = Methods.findMethods(Statement.class, "execute(Update)?");
 	
-	private List<String> sqlList = new LinkedList<String>();
+	private static final Method getConnectionMethod = Methods.getMethod(Statement.class, "getConnection");
+	private static final Method executeQueryMethod = Methods.getMethod(Statement.class, "executeQuery", String.class);
+	private static final Method clearBatchMethod = Methods.getMethod(Statement.class, "clearBatch");
+	private static final Method executeBatchMethod = Methods.getMethod(Statement.class, "executeBatch");
+	private static final Method getMoreResultsMethod = Methods.getMethod(Statement.class, "getMoreResults", Integer.TYPE);
+	private static final Method getResultSetMethod = Methods.getMethod(Statement.class, "getResultSet");
+	private static final Method addBatchMethod = Methods.getMethod(Statement.class, "addBatch", String.class);
+	private static final Method closeMethod = Methods.getMethod(Statement.class, "close");
+	
+	protected TransactionContext<D> transactionContext;
 	protected FileSupport fileSupport;
+	
 	private List<Invoker<D, S, ?>> invokerList = new LinkedList<Invoker<D, S, ?>>();
+	private List<String> sqlList = new LinkedList<String>();
 	
 	/**
 	 * @param connection the parent connection of this statement
 	 * @param proxy the parent invocation handler
 	 * @param invoker the invoker that created this statement
+	 * @param statementClass 
 	 * @param statementMap a map of database to underlying statement
+	 * @param transactionContext 
 	 * @param fileSupport support object for streams
 	 * @throws Exception
 	 */
-	public AbstractStatementInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, S> invoker, Class<S> statementClass, Map<Database<D>, S> statementMap, FileSupport fileSupport) throws Exception
+	protected AbstractStatementInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, S> invoker, Class<S> statementClass, Map<Database<D>, S> statementMap, TransactionContext<D> transactionContext, FileSupport fileSupport) throws Exception
 	{
 		super(connection, proxy, invoker, statementClass, statementMap);
 		
+		this.transactionContext = transactionContext;
 		this.fileSupport = fileSupport;
 	}
 
@@ -75,29 +93,24 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 	@Override
 	protected InvocationStrategy<D, S, ?> getInvocationStrategy(S statement, Method method, Object[] parameters) throws Exception
 	{
-		String methodName = method.getName();
-		
-		if (DRIVER_READ_METHOD_SET.contains(methodName))
+		if (driverReadMethodSet.contains(method))
 		{
 			return new DriverReadInvocationStrategy<D, S, Object>();
 		}
 		
-		if (DRIVER_WRITE_METHOD_SET.contains(methodName))
+		if (driverWriteMethodSet.contains(method))
 		{
 			return new DriverWriteInvocationStrategy<D, S, Object>();
 		}
 		
-		if (methodName.equals("execute") || methodName.equals("executeUpdate"))
+		if (executeMethodSet.contains(method))
 		{
-			Class<?>[] types = method.getParameterTypes();
+			List<Lock> lockList = this.extractLocks((String) parameters[0]);
 			
-			if ((types != null) && (types.length > 0) && types[0].equals(String.class))
-			{
-				return new TransactionalDatabaseWriteInvocationStrategy<D, S, Object>(this.extractIdentifiers((String) parameters[0]));
-			}
+			return this.transactionContext.start(new LockingInvocationStrategy<D, S, Object>(new DatabaseWriteInvocationStrategy<D, S, Object>(this.cluster.getTransactionalExecutor()), lockList), this.getParent());
 		}
 		
-		if (method.equals(Statement.class.getMethod("getConnection")))
+		if (method.equals(getConnectionMethod))
 		{
 			return new InvocationStrategy<D, S, Connection>()
 			{
@@ -108,21 +121,33 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 			};
 		}
 		
-		if (method.equals(Statement.class.getMethod("executeQuery", String.class)))
+		if (method.equals(executeQueryMethod))
 		{
 			String sql = (String) parameters[0];
 			
-			Set<String> identifierSet = this.extractIdentifiers(sql);
+			List<Lock> lockList = this.extractLocks(sql);
 			
-			return (identifierSet.isEmpty() && (statement.getResultSetConcurrency() == java.sql.ResultSet.CONCUR_READ_ONLY) && !this.isSelectForUpdate(sql)) ? new LazyResultSetInvocationStrategy<D, S>(statement) : new EagerResultSetInvocationStrategy<D, S>(statement, this.fileSupport, identifierSet);
+			int concurrency = statement.getResultSetConcurrency();
+			boolean selectForUpdate = this.isSelectForUpdate(sql);
+			
+			if (lockList.isEmpty() && (concurrency == ResultSet.CONCUR_READ_ONLY) && !selectForUpdate)
+			{
+				return new LazyResultSetInvocationStrategy<D, S>(statement, this.transactionContext, this.fileSupport);
+			}
+			
+			InvocationStrategy<D, S, ResultSet> strategy = new LockingInvocationStrategy<D, S, ResultSet>(new EagerResultSetInvocationStrategy<D, S>(this.cluster, statement, this.transactionContext, this.fileSupport), lockList);
+			
+			return selectForUpdate ? this.transactionContext.start(strategy, this.getParent()) : strategy;
 		}
 		
-		if (method.equals(Statement.class.getMethod("executeBatch")))
+		if (method.equals(executeBatchMethod))
 		{
-			return new TransactionalDatabaseWriteInvocationStrategy<D, S, Object>(this.extractIdentifiers(this.sqlList));
+			List<Lock> lockList = this.extractLocks(this.sqlList);
+			
+			return this.transactionContext.start(new LockingInvocationStrategy<D, S, Object>(new DatabaseWriteInvocationStrategy<D, S, Object>(this.cluster.getTransactionalExecutor()), lockList), this.getParent());
 		}
 		
-		if (method.equals(Statement.class.getMethod("getMoreResults", Integer.TYPE)))
+		if (method.equals(getMoreResultsMethod))
 		{
 			if (parameters[0].equals(Statement.KEEP_CURRENT_RESULT))
 			{
@@ -130,14 +155,14 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 			}
 		}
 		
-		if (method.equals(Statement.class.getMethod("getResultSet")))
+		if (method.equals(getResultSetMethod))
 		{
 			if (statement.getResultSetConcurrency() == ResultSet.CONCUR_READ_ONLY)
 			{
-				return new LazyResultSetInvocationStrategy<D, S>(statement);
+				return new LazyResultSetInvocationStrategy<D, S>(statement, this.transactionContext, this.fileSupport);
 			}
 			
-			return new EagerResultSetInvocationStrategy<D, S>(statement, this.fileSupport);
+			return new EagerResultSetInvocationStrategy<D, S>(this.cluster, statement, this.transactionContext, this.fileSupport);
 		}
 		
 		return super.getInvocationStrategy(statement, method, parameters);
@@ -149,26 +174,24 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 	@Override
 	protected boolean isSQLMethod(Method method)
 	{
-		Class<?>[] parameterTypes = method.getParameterTypes();
-		
-		return SQL_METHOD_SET.contains(method.getName()) && (parameterTypes.length > 0) && parameterTypes[0].equals(String.class);
+		return method.equals(addBatchMethod) || method.equals(executeQueryMethod) || executeMethodSet.contains(method);
 	}
 
 	/**
 	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#postInvoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected void postInvoke(S statement, Method method, Object[] parameters) throws Exception
+	protected void postInvoke(S statement, Method method, Object[] parameters)
 	{
-		if (method.equals(Statement.class.getMethod("addBatch", String.class)))
+		if (method.equals(addBatchMethod))
 		{
 			this.sqlList.add((String) parameters[0]);
 		}
-		else if (method.equals(Statement.class.getMethod("clearBatch")) || method.equals(Statement.class.getMethod("executeBatch")))
+		else if (method.equals(clearBatchMethod) || method.equals(executeBatchMethod))
 		{
 			this.sqlList.clear();
 		}
-		else if (method.equals(Statement.class.getMethod("close")))
+		else if (method.equals(closeMethod))
 		{
 			this.getParentProxy().removeChild(this);
 		}
@@ -178,7 +201,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 	 * @see net.sf.hajdbc.sql.SQLProxy#handlePartialFailure(java.util.SortedMap, java.util.SortedMap)
 	 */
 	@Override
-	public <R> SortedMap<Database<D>, R> handlePartialFailure(SortedMap<Database<D>, R> resultMap, SortedMap<Database<D>, SQLException> exceptionMap) throws SQLException
+	public <R> SortedMap<Database<D>, R> handlePartialFailure(SortedMap<Database<D>, R> resultMap, SortedMap<Database<D>, Exception> exceptionMap) throws Exception
 	{
 		if (this.getParent().getAutoCommit())
 		{
@@ -186,7 +209,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 		}
 		
 		// If auto-commit is off, throw exception to give client the opportunity to rollback the transaction
-		Map<Boolean, List<Database<D>>> aliveMap = this.databaseCluster.getAliveMap(exceptionMap.keySet());
+		Map<Boolean, List<Database<D>>> aliveMap = this.cluster.getAliveMap(exceptionMap.keySet());
 
 		List<Database<D>> aliveList = aliveMap.get(true);
 
@@ -201,9 +224,9 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 		
 		for (Database<D> database: deadList)
 		{
-			if (this.databaseCluster.deactivate(database, this.databaseCluster.getStateManager()))
+			if (this.cluster.deactivate(database, this.cluster.getStateManager()))
 			{
-				this.logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this.databaseCluster), exceptionMap.get(database));
+				this.logger.error(Messages.getMessage(Messages.DATABASE_DEACTIVATED, database, this.cluster), exceptionMap.get(database));
 			}
 		}
 
@@ -214,11 +237,11 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 		}
 		
 		// Chain exceptions from alive databases
-		SQLException exception = exceptionMap.get(aliveList.get(0));
+		SQLException exception = SQLExceptionFactory.createSQLException(exceptionMap.get(aliveList.get(0)));
 		
 		for (Database<D> database: aliveList.subList(1, size))
 		{
-			exception.setNextException(exceptionMap.get(database));
+			exception.setNextException(SQLExceptionFactory.createSQLException(exceptionMap.get(database)));
 		}
 		
 		throw exception;
@@ -226,23 +249,23 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 	
 	protected boolean isSelectForUpdate(String sql) throws SQLException
 	{
-		return this.databaseCluster.getDatabaseMetaDataCache().getDatabaseProperties(this.getParent()).supportsSelectForUpdate() ? this.databaseCluster.getDialect().isSelectForUpdate(sql) : false;
+		return this.cluster.getDatabaseMetaDataCache().getDatabaseProperties(this.getParent()).supportsSelectForUpdate() ? this.cluster.getDialect().isSelectForUpdate(sql) : false;
 	}
 	
-	protected Set<String> extractIdentifiers(String sql) throws SQLException
+	protected List<Lock> extractLocks(String sql) throws SQLException
 	{
-		return this.extractIdentifiers(Collections.singletonList(sql));
+		return this.extractLocks(Collections.singletonList(sql));
 	}
 	
-	private Set<String> extractIdentifiers(List<String> sqlList) throws SQLException
+	private List<Lock> extractLocks(List<String> sqlList) throws SQLException
 	{
 		Set<String> identifierSet = new TreeSet<String>();
 		
 		for (String sql: sqlList)
 		{
-			if (this.databaseCluster.isSequenceDetectionEnabled())
+			if (this.cluster.isSequenceDetectionEnabled())
 			{
-				String sequence = this.databaseCluster.getDialect().parseSequence(sql);
+				String sequence = this.cluster.getDialect().parseSequence(sql);
 				
 				if (sequence != null)
 				{
@@ -250,13 +273,13 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 				}
 			}
 			
-			if (this.databaseCluster.isIdentityColumnDetectionEnabled())
+			if (this.cluster.isIdentityColumnDetectionEnabled())
 			{
-				String table = this.databaseCluster.getDialect().parseInsertTable(sql);
+				String table = this.cluster.getDialect().parseInsertTable(sql);
 				
 				if (table != null)
 				{
-					TableProperties tableProperties = this.databaseCluster.getDatabaseMetaDataCache().getDatabaseProperties(this.getParent()).findTable(table);
+					TableProperties tableProperties = this.cluster.getDatabaseMetaDataCache().getDatabaseProperties(this.getParent()).findTable(table);
 					
 					if (!tableProperties.getIdentityColumns().isEmpty())
 					{
@@ -265,8 +288,20 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 				}
 			}
 		}
+
+		List<Lock> lockList = new ArrayList<Lock>(identifierSet.size());
 		
-		return identifierSet;
+		if (!identifierSet.isEmpty())
+		{
+			LockManager lockManager = this.cluster.getLockManager();
+			
+			for (String identifier: identifierSet)
+			{
+				lockList.add(lockManager.writeLock(identifier));
+			}
+		}
+		
+		return lockList;
 	}
 
 	/**
@@ -284,8 +319,6 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 	@Override
 	protected void record(Method method, Invoker<D, S, ?> invoker)
 	{
-		String methodName = method.getName();
-		
 		if (this.isRecordable(method))
 		{
 			synchronized (this.invokerList)
@@ -293,7 +326,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 				this.invokerList.add(invoker);
 			}
 		}
-		else if (methodName.equals("clearBatch") || methodName.equals("executeBatch"))
+		else if (method.equals(clearBatchMethod) || method.equals(executeBatchMethod))
 		{
 			synchronized (this.invokerList)
 			{
@@ -308,14 +341,14 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 
 	protected boolean isRecordable(Method method)
 	{
-		return method.getName().equals("addBatch");
+		return method.equals(addBatchMethod);
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#replay(net.sf.hajdbc.Database, java.lang.Object)
 	 */
 	@Override
-	protected void replay(Database<D> database, S statement) throws SQLException
+	protected void replay(Database<D> database, S statement) throws Exception
 	{
 		super.replay(database, statement);
 		

@@ -145,9 +145,7 @@ public class TestStandardDialect implements Dialect
 		return new Object[][] { new Object[] { this.sequenceProperties, 1000L } };
 	}
 
-	/**
-	 * @see net.sf.hajdbc.Dialect#getAlterSequenceSQL(java.lang.String, long)
-	 */
+	@Override
 	@Test(dataProvider = "sequence-long")
 	public String getAlterSequenceSQL(SequenceProperties sequence, long value) throws SQLException
 	{
@@ -164,9 +162,7 @@ public class TestStandardDialect implements Dialect
 		return sql;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.Dialect#getColumnType(net.sf.hajdbc.ColumnProperties)
-	 */
+	@Override
 	@Test(dataProvider = "column")
 	public int getColumnType(ColumnProperties properties) throws SQLException
 	{
@@ -183,9 +179,7 @@ public class TestStandardDialect implements Dialect
 		return type;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.Dialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
-	 */
+	@Override
 	@Test(dataProvider = "foreign-key")
 	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException
 	{
@@ -200,9 +194,7 @@ public class TestStandardDialect implements Dialect
 		return sql;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.Dialect#getCreateUniqueConstraintSQL(net.sf.hajdbc.UniqueConstraint)
-	 */
+	@Override
 	@Test(dataProvider = "unique-constraint")
 	public String getCreateUniqueConstraintSQL(UniqueConstraint constraint) throws SQLException
 	{
@@ -217,9 +209,7 @@ public class TestStandardDialect implements Dialect
 		return sql;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.Dialect#getDropForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
-	 */
+	@Override
 	@Test(dataProvider = "foreign-key")
 	public String getDropForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException
 	{
@@ -234,9 +224,7 @@ public class TestStandardDialect implements Dialect
 		return sql;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.Dialect#getDropUniqueConstraintSQL(net.sf.hajdbc.UniqueConstraint)
-	 */
+	@Override
 	@Test(dataProvider = "unique-constraint")
 	public String getDropUniqueConstraintSQL(UniqueConstraint constraint) throws SQLException
 	{
@@ -250,11 +238,8 @@ public class TestStandardDialect implements Dialect
 		
 		return sql;
 	}
-	
-	/**
-	 * @throws SQLException 
-	 * @see net.sf.hajdbc.Dialect#getLockTableSQL(net.sf.hajdbc.TableProperties)
-	 */
+/*	
+	@Override
 	@Test(dataProvider = "table")
 	public String getLockTableSQL(TableProperties properties) throws SQLException
 	{
@@ -289,10 +274,8 @@ public class TestStandardDialect implements Dialect
 		
 		return sql;
 	}
-	
-	/**
-	 * @see net.sf.hajdbc.Dialect#getCurrentSequenceValueSQL(java.lang.String)
-	 */
+*/	
+	@Override
 	@Test(dataProvider = "sequence")
 	public String getNextSequenceValueSQL(SequenceProperties sequence) throws SQLException
 	{
@@ -309,9 +292,7 @@ public class TestStandardDialect implements Dialect
 		return sql;
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.Dialect#getSequences(java.sql.Connection)
-	 */
+	@Override
 	@Test(dataProvider = "meta-data")
 	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
 	{
@@ -352,9 +333,7 @@ public class TestStandardDialect implements Dialect
 		return sequences;
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.Dialect#getSimpleSQL()
-	 */
+	@Override
 	@Test
 	public String getSimpleSQL() throws SQLException
 	{
@@ -369,9 +348,7 @@ public class TestStandardDialect implements Dialect
 		return sql;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.Dialect#getTruncateTableSQL(net.sf.hajdbc.TableProperties)
-	 */
+	@Override
 	@Test(dataProvider = "table")
 	public String getTruncateTableSQL(TableProperties properties) throws SQLException
 	{
@@ -397,9 +374,7 @@ public class TestStandardDialect implements Dialect
 		};
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.Dialect#isSelectForUpdate(java.lang.String)
-	 */
+	@Override
 	@Test(dataProvider = "select-for-update-sql")
 	public boolean isSelectForUpdate(String sql) throws SQLException
 	{
@@ -426,9 +401,7 @@ public class TestStandardDialect implements Dialect
 		};
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.Dialect#parseSequence(java.lang.String)
-	 */
+	@Override
 	@Test(dataProvider = "sequence-sql")
 	public String parseSequence(String sql) throws SQLException
 	{
@@ -451,9 +424,7 @@ public class TestStandardDialect implements Dialect
 		return sequence;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.Dialect#getDefaultSchemas(java.sql.DatabaseMetaData)
-	 */
+	@Override
 	@Test(dataProvider = "meta-data")
 	public List<String> getDefaultSchemas(DatabaseMetaData metaData) throws SQLException
 	{
@@ -476,9 +447,7 @@ public class TestStandardDialect implements Dialect
 		return schemaList;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.Dialect#isIdentity(net.sf.hajdbc.ColumnProperties)
-	 */
+	@Override
 	@Test(dataProvider = "column")
 	public boolean isIdentity(ColumnProperties properties) throws SQLException
 	{
@@ -524,9 +493,7 @@ public class TestStandardDialect implements Dialect
 		};
 	}
 		
-	/**
-	 * @see net.sf.hajdbc.Dialect#parseInsertTable(java.lang.String)
-	 */
+	@Override
 	@Test(dataProvider = "insert-table-sql")
 	public String parseInsertTable(String sql) throws SQLException
 	{
@@ -555,9 +522,6 @@ public class TestStandardDialect implements Dialect
 		return new Object[][] { new Object[] { this.metaData } };
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.Dialect#getIdentifierPattern(java.sql.DatabaseMetaData)
-	 */
 	@Override
 	@Test(dataProvider = "meta-data")
 	public Pattern getIdentifierPattern(DatabaseMetaData metaData) throws SQLException
@@ -590,7 +554,7 @@ public class TestStandardDialect implements Dialect
 	
 	@Override
 	@Test(dataProvider = "current-date")
-	public String evaluateCurrentDate(String sql, java.sql.Date date)
+	public String evaluateCurrentDate(String sql, java.sql.Date date) throws SQLException
 	{
 		String expected = sql.contains("success") ? "SELECT DATE '" + date.toString() + "' FROM success" : sql;
 		
@@ -623,7 +587,7 @@ public class TestStandardDialect implements Dialect
 	
 	@Override
 	@Test(dataProvider = "current-time")
-	public String evaluateCurrentTime(String sql, java.sql.Time date)
+	public String evaluateCurrentTime(String sql, java.sql.Time date) throws SQLException
 	{
 		String expected = sql.contains("success") ? "SELECT TIME '" + date.toString() + "' FROM success" : sql;
 		
@@ -656,7 +620,7 @@ public class TestStandardDialect implements Dialect
 	
 	@Override
 	@Test(dataProvider = "current-timestamp")
-	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp date)
+	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp date) throws SQLException
 	{
 		String expected = sql.contains("success") ? "SELECT TIMESTAMP '" + date.toString() + "' FROM success" : sql;
 		
@@ -681,13 +645,13 @@ public class TestStandardDialect implements Dialect
 	
 	@Override
 	@Test(dataProvider = "random")
-	public String evaluateRand(String sql)
+	public String evaluateRand(String sql) throws SQLException
 	{
 		String evaluated = this.dialect.evaluateRand(sql);
 
 		if (sql.contains("success"))
 		{
-			assert Pattern.matches("SELECT 0\\.\\d+ FROM success", evaluated) : evaluated;
+			assert Pattern.matches("SELECT 0\\.\\d+(E-\\d+)? FROM success", evaluated) : evaluated;
 		}
 		else
 		{
@@ -703,9 +667,6 @@ public class TestStandardDialect implements Dialect
 		return new Object[][] { new Object[] { this.tableProperties, this.columnProperties, 1000L } };
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.Dialect#getAlterIdentityColumnSQL(net.sf.hajdbc.TableProperties, net.sf.hajdbc.ColumnProperties, long)
-	 */
 	@Override
 	@Test(dataProvider = "table-column-long")
 	public String getAlterIdentityColumnSQL(TableProperties table, ColumnProperties column, long value) throws SQLException

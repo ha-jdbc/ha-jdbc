@@ -75,4 +75,9 @@ public final class Strings
 	{
 		return join(Arrays.asList(strings), delimiter);
 	}
+	
+	private Strings()
+	{
+		// Hide constructor
+	}
 }

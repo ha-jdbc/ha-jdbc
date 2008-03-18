@@ -97,9 +97,11 @@ public final class Driver implements java.sql.Driver
 			}
 		};
 		
+		TransactionContext<java.sql.Driver> context = new LocalTransactionContext<java.sql.Driver>(cluster);
+		
 		try
 		{
-			return new ConnectionInvocationStrategy<java.sql.Driver>(driver).invoke(handler, invoker);
+			return new ConnectionInvocationStrategy<java.sql.Driver, java.sql.Driver>(cluster, driver, context).invoke(handler, invoker);
 		}
 		catch (Exception e)
 		{

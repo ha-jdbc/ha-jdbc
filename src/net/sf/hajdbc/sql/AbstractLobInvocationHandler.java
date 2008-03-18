@@ -28,7 +28,9 @@ import net.sf.hajdbc.Database;
 
 /**
  * @author Paul Ferraro
- *
+ * @param <D> 
+ * @param <P> 
+ * @param <E> 
  */
 public abstract class AbstractLobInvocationHandler<D, P, E> extends AbstractChildInvocationHandler<D, P, E>
 {
@@ -36,6 +38,7 @@ public abstract class AbstractLobInvocationHandler<D, P, E> extends AbstractChil
 	 * @param object
 	 * @param proxy
 	 * @param invoker
+	 * @param proxyClass 
 	 * @param objectMap
 	 * @throws Exception
 	 */
@@ -67,7 +70,7 @@ public abstract class AbstractLobInvocationHandler<D, P, E> extends AbstractChil
 	 */
 	@SuppressWarnings("nls")
 	@Override
-	protected void postInvoke(E object, Method method, Object[] parameters) throws Exception
+	protected void postInvoke(E object, Method method, Object[] parameters)
 	{
 		if (method.getName().equals("free"))
 		{

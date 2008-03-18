@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2007 Paul Ferraro
+ * Copyright (c) 2004-2008 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -18,38 +18,50 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.util;
+package net.sf.hajdbc.sql;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.io.PrintWriter;
+import java.sql.SQLException;
+
+import javax.sql.CommonDataSource;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class SimpleInvocationHandler implements InvocationHandler
+public abstract class MockCommonDataSource implements CommonDataSource
 {
-	private Object object;
-	
-	public SimpleInvocationHandler(Object object)
-	{
-		this.object = object;
-	}
-	
 	/**
-	 * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 * @see javax.sql.CommonDataSource#getLogWriter()
 	 */
 	@Override
-	public Object invoke(Object proxy, Method method, Object[] parameters) throws Throwable
+	public PrintWriter getLogWriter() throws SQLException
 	{
-		try
-		{
-			return method.invoke(this.object, parameters);
-		}
-		catch (InvocationTargetException e)
-		{
-			throw e.getTargetException();
-		}
+		return null;
+	}
+
+	/**
+	 * @see javax.sql.CommonDataSource#getLoginTimeout()
+	 */
+	@Override
+	public int getLoginTimeout() throws SQLException
+	{
+		return 0;
+	}
+
+	/**
+	 * @see javax.sql.CommonDataSource#setLogWriter(java.io.PrintWriter)
+	 */
+	@Override
+	public void setLogWriter(PrintWriter arg0) throws SQLException
+	{
+	}
+
+	/**
+	 * @see javax.sql.CommonDataSource#setLoginTimeout(int)
+	 */
+	@Override
+	public void setLoginTimeout(int arg0) throws SQLException
+	{
 	}
 }
