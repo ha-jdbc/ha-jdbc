@@ -12,7 +12,7 @@
 	</contexts>
 
 	<changes>
-		<release version="2.0.12" date="?">
+		<release version="2.0.12" date="March 18, 2008">
 			<action context="src" dev="PF" type="fix">
 				Fixed case normalization in DatabaseMetaDataSupport.normalize(String, String).
 			</action>
