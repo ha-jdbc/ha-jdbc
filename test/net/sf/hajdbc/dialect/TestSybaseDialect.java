@@ -45,24 +45,22 @@ public class TestSybaseDialect extends TestStandardDialect
 	{
 		return new SybaseDialect();
 	}
-/*
+	
 	@Override
-	@Test(dataProvider = "table")
-	public String getLockTableSQL(TableProperties properties) throws SQLException
+	@Test
+	public String getSimpleSQL() throws SQLException
 	{
-		EasyMock.expect(properties.getName()).andReturn("table");
-		
 		this.replay();
 		
-		String sql = this.dialect.getLockTableSQL(properties);
+		String sql = this.dialect.getSimpleSQL();
 		
 		this.verify();
 		
-		assert sql.equals("LOCK TABLE table IN SHARE MODE") : sql;
+		assert sql.equals("SELECT GETDATE()") : sql;
 		
 		return sql;
 	}
-*/
+
 	@Override
 	@Test(dataProvider = "table")
 	public String getTruncateTableSQL(TableProperties properties) throws SQLException
