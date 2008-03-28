@@ -61,24 +61,7 @@ public class TestDerbyDialect extends TestStandardDialect
 		
 		return sql;
 	}
-/*
-	@Override
-	@Test(dataProvider = "table")
-	public String getLockTableSQL(TableProperties properties) throws SQLException
-	{
-		EasyMock.expect(properties.getName()).andReturn("table");
-		
-		this.replay();
-		
-		String sql = this.dialect.getLockTableSQL(properties);
-		
-		this.verify();
-		
-		assert sql.equals("LOCK TABLE table IN SHARE MODE") : sql;
-		
-		return sql;
-	}
-*/
+
 	@Override
 	@Test
 	public String getSimpleSQL() throws SQLException

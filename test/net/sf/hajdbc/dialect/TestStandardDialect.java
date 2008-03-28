@@ -238,43 +238,7 @@ public class TestStandardDialect implements Dialect
 		
 		return sql;
 	}
-/*	
-	@Override
-	@Test(dataProvider = "table")
-	public String getLockTableSQL(TableProperties properties) throws SQLException
-	{
-		UniqueConstraint primaryKey = new UniqueConstraintImpl("name", "table");
-		primaryKey.getColumnList().add("column1");
-		primaryKey.getColumnList().add("column2");
-		
-		EasyMock.expect(properties.getName()).andReturn("table");
-		EasyMock.expect(properties.getPrimaryKey()).andReturn(primaryKey);
-		
-		this.replay();
-		
-		String sql = this.dialect.getLockTableSQL(properties);
-		
-		this.verify();
-		
-		assert sql.equals("UPDATE table SET column1 = column1, column2 = column2") : sql;
-		
-		this.reset();
-		
-		EasyMock.expect(properties.getName()).andReturn("table");
-		EasyMock.expect(properties.getPrimaryKey()).andReturn(null);
-		EasyMock.expect(properties.getColumns()).andReturn(primaryKey.getColumnList());
-		
-		this.replay();
-		
-		sql = this.dialect.getLockTableSQL(properties);
-		
-		this.verify();
-		
-		assert sql.equals("UPDATE table SET column1 = column1, column2 = column2") : sql;
-		
-		return sql;
-	}
-*/	
+
 	@Override
 	@Test(dataProvider = "sequence")
 	public String getNextSequenceValueSQL(SequenceProperties sequence) throws SQLException
