@@ -98,7 +98,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 			return new DriverReadInvocationStrategy<D, S, Object>();
 		}
 		
-		if (driverWriteMethodSet.contains(method))
+		if (driverWriteMethodSet.contains(method) || method.equals(closeMethod))
 		{
 			return new DriverWriteInvocationStrategy<D, S, Object>();
 		}

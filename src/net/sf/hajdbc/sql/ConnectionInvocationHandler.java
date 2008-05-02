@@ -88,7 +88,7 @@ public class ConnectionInvocationHandler<D, P> extends AbstractChildInvocationHa
 			return new DatabaseReadInvocationStrategy<D, Connection, Object>();
 		}
 		
-		if (driverWriterMethodSet.contains(method))
+		if (driverWriterMethodSet.contains(method) || method.equals(closeMethod))
 		{
 			return new DriverWriteInvocationStrategy<D, Connection, Object>();
 		}
