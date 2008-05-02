@@ -188,13 +188,13 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		{
 			SynchronizationSupport.rollback(targetConnection);
 
-			SQLExceptionFactory.createSQLException(e);
+			throw SQLExceptionFactory.createSQLException(e);
 		}
 		catch (ExecutionException e)
 		{
 			SynchronizationSupport.rollback(targetConnection);
 
-			SQLExceptionFactory.createSQLException(e.getCause());
+			throw SQLExceptionFactory.createSQLException(e.getCause());
 		}
 		catch (SQLException e)
 		{
