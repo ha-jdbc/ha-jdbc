@@ -253,15 +253,6 @@ public class TestStatement implements java.sql.Statement
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
-		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		
-		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
-		
-		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
-		
-		this.root.retain(this.databaseSet);
-		
 		this.statement1.close();
 		this.statement2.close();
 

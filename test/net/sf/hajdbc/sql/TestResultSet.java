@@ -275,15 +275,6 @@ public class TestResultSet implements ResultSet
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
-		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		
-		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
-
-		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
-		
-		this.root.retain(this.databaseSet);
-		
 		this.resultSet1.close();
 		this.resultSet2.close();
 
