@@ -29,11 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -76,8 +72,6 @@ import org.slf4j.LoggerFactory;
  *  <li>Synchronize sequences</li>
  * </ol>
  * @author  Paul Ferraro
- * @version $Revision$
- * @since   1.0
  */
 public class DifferentialSynchronizationStrategy implements SynchronizationStrategy
 {
@@ -92,9 +86,6 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 	@Override
 	public <D> void synchronize(SynchronizationContext<D> context) throws SQLException
 	{
-		Map<Short, String> primaryKeyColumnMap = new TreeMap<Short, String>();
-		Set<Integer> primaryKeyColumnIndexSet = new LinkedHashSet<Integer>();
-		
 		Connection sourceConnection = context.getConnection(context.getSourceDatabase());
 		Connection targetConnection = context.getConnection(context.getTargetDatabase());
 
@@ -105,18 +96,14 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		targetConnection.setAutoCommit(true);
 		
 		SynchronizationSupport.dropForeignKeys(context);
+		SynchronizationSupport.dropUniqueConstraints(context);
+		
+		targetConnection.setAutoCommit(false);
 		
 		try
 		{
-			for (TableProperties table: context.getDatabaseProperties().getTables())
+			for (TableProperties table: context.getSourceDatabaseProperties().getTables())
 			{
-				SynchronizationSupport.dropUniqueConstraints(context, table);
-				
-				targetConnection.setAutoCommit(false);
-				
-				primaryKeyColumnMap.clear();
-				primaryKeyColumnIndexSet.clear();
-				
 				String tableName = table.getName();
 				
 				UniqueConstraint primaryKey = table.getPrimaryKey();
@@ -370,10 +357,6 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				sourceStatement.close();
 				
 				targetConnection.commit();
-
-				targetConnection.setAutoCommit(true);
-				
-				SynchronizationSupport.restoreUniqueConstraints(context, table);
 				
 				logger.info(Messages.getMessage(Messages.INSERT_COUNT, insertCount, tableName));
 				logger.info(Messages.getMessage(Messages.UPDATE_COUNT, updateCount, tableName));
@@ -399,6 +382,9 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 			throw e;
 		}
 		
+		targetConnection.setAutoCommit(true);
+		
+		SynchronizationSupport.restoreUniqueConstraints(context);
 		SynchronizationSupport.restoreForeignKeys(context);
 		
 		SynchronizationSupport.synchronizeIdentityColumns(context);

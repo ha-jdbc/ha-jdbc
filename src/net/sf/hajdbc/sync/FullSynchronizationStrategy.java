@@ -64,8 +64,6 @@ import org.slf4j.LoggerFactory;
  *  <li>Synchronize sequences</li>
  * </ol>
  * @author  Paul Ferraro
- * @version $Revision$
- * @since   1.0
  */
 public class FullSynchronizationStrategy implements SynchronizationStrategy
 {
@@ -94,7 +92,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		
 		try
 		{
-			for (TableProperties table: context.getDatabaseProperties().getTables())
+			for (TableProperties table: context.getSourceDatabaseProperties().getTables())
 			{
 				String tableName = table.getName();
 				Collection<String> columns = table.getColumns();

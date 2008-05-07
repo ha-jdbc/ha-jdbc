@@ -274,12 +274,14 @@ public class DatabaseMetaDataSupport
 	}
 
 	/**
-	 * Returns the unique constraints on the specified table.  This may include the primary key of the table.
+	 * Returns the unique constraints on the specified table - excluding the primary key of the table.
 	 * @param metaData a schema qualified table name
+	 * @param table a qualified table name
+	 * @param primaryKey the primary key of this table
 	 * @return a Collection of unique constraints.
 	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */
-	public Collection<UniqueConstraint> getUniqueConstraints(DatabaseMetaData metaData, QualifiedName table) throws SQLException
+	public Collection<UniqueConstraint> getUniqueConstraints(DatabaseMetaData metaData, QualifiedName table, UniqueConstraint primaryKey) throws SQLException
 	{
 		Map<String, UniqueConstraint> keyMap = new HashMap<String, UniqueConstraint>();
 		
@@ -290,6 +292,9 @@ public class DatabaseMetaDataSupport
 			if (resultSet.getInt("TYPE") == DatabaseMetaData.tableIndexStatistic) continue;
 			
 			String name = this.quote(resultSet.getString("INDEX_NAME"));
+			
+			// Don't include the primary key
+			if ((primaryKey != null) && name.equals(primaryKey.getName())) continue;
 			
 			UniqueConstraint key = keyMap.get(name);
 			
@@ -314,7 +319,6 @@ public class DatabaseMetaDataSupport
 	 * Returns the schema qualified name of the specified table suitable for use in a data modification language (DML) statement.
 	 * @param name a schema qualified name
 	 * @return a Collection of unique constraints.
-	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */
 	public String qualifyNameForDML(QualifiedName name)
 	{
@@ -325,7 +329,6 @@ public class DatabaseMetaDataSupport
 	 * Returns the schema qualified name of the specified table suitable for use in a data definition language (DDL) statement.
 	 * @param name a schema qualified name
 	 * @return a Collection of unique constraints.
-	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */
 	public String qualifyNameForDDL(QualifiedName name)
 	{
@@ -411,6 +414,12 @@ public class DatabaseMetaDataSupport
 		return this.qualifyNameForDML(new QualifiedName(schema, name));
 	}
 	
+	/**
+	 * Returns a collection of sequences using dialect specific logic.
+	 * @param metaData database meta data
+	 * @return a collection of sequences
+	 * @throws SQLException
+	 */
 	public Collection<SequenceProperties> getSequences(DatabaseMetaData metaData) throws SQLException
 	{
 		Collection<QualifiedName> sequences = this.dialect.getSequences(metaData);
@@ -425,6 +434,15 @@ public class DatabaseMetaDataSupport
 		return sequenceList;
 	}
 	
+	/**
+	 * Locates an object from a map keyed by schema qualified name.
+	 * @param <T> an object
+	 * @param map a map of database 
+	 * @param name the name of the object to locate
+	 * @param defaultSchemaList a list of default schemas
+	 * @return the object with the specified name
+	 * @throws SQLException
+	 */
 	public <T> T find(Map<String, T> map, String name, List<String> defaultSchemaList) throws SQLException
 	{
 		T properties = map.get(this.normalize(name, null));
@@ -448,6 +466,12 @@ public class DatabaseMetaDataSupport
 		return properties;
 	}
 	
+	/**
+	 * Identifies any identity columns from the from the specified collection of columns
+	 * @param columns the columns of a table
+	 * @return a collection of column names
+	 * @throws SQLException
+	 */
 	public Collection<String> getIdentityColumns(Collection<ColumnProperties> columns) throws SQLException
 	{
 		List<String> columnList = new LinkedList<String>();
