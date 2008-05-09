@@ -104,7 +104,7 @@ public class TestDifferentialSynchronizationStrategy implements SynchronizationS
 		
 		targetConnection.setAutoCommit(true);
 		
-		EasyMock.expect(context.getDatabaseProperties()).andReturn(database);
+		EasyMock.expect(context.getSourceDatabaseProperties()).andReturn(database);
 		EasyMock.expect(database.getTables()).andReturn(Collections.singleton(table));
 		EasyMock.expect(context.getDialect()).andReturn(dialect);
 
@@ -122,7 +122,7 @@ public class TestDifferentialSynchronizationStrategy implements SynchronizationS
 
 		targetStatement.close();
 
-		EasyMock.expect(context.getDatabaseProperties()).andReturn(database);
+		EasyMock.expect(context.getSourceDatabaseProperties()).andReturn(database);
 		EasyMock.expect(database.getTables()).andReturn(Collections.singleton(table));
 		
 		EasyMock.expect(table.getUniqueConstraints()).andReturn(new ArrayList<UniqueConstraint>(Arrays.asList(new UniqueConstraint[] { primaryKey, uniqueKey })));
@@ -327,7 +327,7 @@ public class TestDifferentialSynchronizationStrategy implements SynchronizationS
 
 		targetStatement.close();
 		
-		EasyMock.expect(context.getDatabaseProperties()).andReturn(database);
+		EasyMock.expect(context.getSourceDatabaseProperties()).andReturn(database);
 		EasyMock.expect(database.getTables()).andReturn(Collections.singleton(table));
 		EasyMock.expect(context.getDialect()).andReturn(dialect);
 
@@ -356,7 +356,7 @@ public class TestDifferentialSynchronizationStrategy implements SynchronizationS
 	
 			EasyMock.expect(context.getDialect()).andReturn(dialect);
 	
-			EasyMock.expect(context.getDatabaseProperties()).andReturn(database);
+			EasyMock.expect(context.getSourceDatabaseProperties()).andReturn(database);
 			EasyMock.expect(database.getTables()).andReturn(Collections.singleton(table));
 	
 			EasyMock.expect(table.getIdentityColumns()).andReturn(Collections.singleton("column"));
@@ -377,7 +377,7 @@ public class TestDifferentialSynchronizationStrategy implements SynchronizationS
 			targetStatement.close();
 		}
 		{
-			EasyMock.expect(context.getDatabaseProperties()).andReturn(database);
+			EasyMock.expect(context.getSourceDatabaseProperties()).andReturn(database);
 			EasyMock.expect(database.getSequences()).andReturn(Collections.singleton(sequence));
 			
 			EasyMock.expect(context.getSourceDatabase()).andReturn(sourceDatabase);
