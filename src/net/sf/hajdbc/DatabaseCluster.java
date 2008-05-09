@@ -40,16 +40,18 @@ public interface DatabaseCluster<D>
 	/**
 	 * Activates the specified database
 	 * @param database a database descriptor
+	 * @param listener a database activation listener
 	 * @return true, if the database was activated, false it was already active
 	 */
-	public boolean activate(Database<D> database, StateManager stateManager);
+	public boolean activate(Database<D> database, DatabaseActivationListener listener);
 	
 	/**
 	 * Deactivates the specified database
 	 * @param database a database descriptor
+	 * @param listener a database deactivation listener
 	 * @return true, if the database was deactivated, false it was already inactive
 	 */
-	public boolean deactivate(Database<D> database, StateManager stateManager);
+	public boolean deactivate(Database<D> database, DatabaseDeactivationListener listener);
 	
 	/**
 	 * Returns the database identified by the specified id
@@ -91,6 +93,7 @@ public interface DatabaseCluster<D>
 	
 	/**
 	 * Sets the LockManager implementation capable of acquiring named read/write locks on the specific objects in this database cluster.
+	 * @param lockManager a lock manager
 	 */
 	public void setLockManager(LockManager lockManager);
 	
@@ -102,6 +105,7 @@ public interface DatabaseCluster<D>
 	
 	/**
 	 * Sets the StateManager implementation for persisting database cluster state.
+	 * @param stateManager a state manager
 	 */
 	public void setStateManager(StateManager stateManager);
 	
