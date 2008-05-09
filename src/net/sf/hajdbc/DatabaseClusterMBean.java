@@ -116,4 +116,16 @@ public interface DatabaseClusterMBean
 	 * @return string representation of this cluster
 	 */
 	public String toString();
+	
+	public void addActivationListener(DatabaseActivationListener listener);
+	
+	public void removeActivationListener(DatabaseActivationListener listener);
+	
+	public void addDeactivationListener(DatabaseDeactivationListener listener);
+	
+	public void removeDeactivationListener(DatabaseDeactivationListener listener);
+	
+	public void addSynchronizationListener(SynchronizationListener listener);
+	
+	public void removeSynchronizationListener(SynchronizationListener listener);
 }

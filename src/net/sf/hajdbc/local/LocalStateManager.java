@@ -31,6 +31,7 @@ import java.util.prefs.Preferences;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.DatabaseEvent;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.StateManager;
 import net.sf.hajdbc.util.Strings;
@@ -82,45 +83,6 @@ public class LocalStateManager implements StateManager
 
 		return databaseSet;
 	}
-	
-	/**
-	 * @see net.sf.hajdbc.StateManager#add(java.lang.String)
-	 */
-	@Override
-	public void add(String databaseId)
-	{
-		this.storeState();
-	}
-
-	/**
-	 * @see net.sf.hajdbc.StateManager#remove(java.lang.String)
-	 */
-	@Override
-	public void remove(String databaseId)
-	{
-		this.storeState();
-	}
-	
-	private void storeState()
-	{
-		List<String> databaseList = new ArrayList<String>();
-
- 		for (Database<?> database: this.databaseCluster.getBalancer().all())
-		{
-			databaseList.add(database.getId());
-		}
-		
-		preferences.put(this.statePreferenceKey(), Strings.join(databaseList, Strings.COMMA));
-		
-		try
-		{
-			preferences.flush();
-		}
-		catch (BackingStoreException e)
-		{
-			throw new RuntimeException(Messages.getMessage(Messages.CLUSTER_STATE_STORE_FAILED, this.databaseCluster), e);
-		}
-	}
 
 	/**
 	 * @see net.sf.hajdbc.StateManager#start()
@@ -159,5 +121,44 @@ public class LocalStateManager implements StateManager
 	public boolean isMembershipEmpty()
 	{
 		return false;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseActivationListener#activated(net.sf.hajdbc.DatabaseEvent)
+	 */
+	@Override
+	public void activated(DatabaseEvent event)
+	{
+		this.storeState();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseDeactivationListener#deactivated(net.sf.hajdbc.DatabaseEvent)
+	 */
+	@Override
+	public void deactivated(DatabaseEvent event)
+	{
+		this.storeState();
+	}
+	
+	private void storeState()
+	{
+		List<String> databaseList = new ArrayList<String>();
+
+ 		for (Database<?> database: this.databaseCluster.getBalancer().all())
+		{
+			databaseList.add(database.getId());
+		}
+		
+		preferences.put(this.statePreferenceKey(), Strings.join(databaseList, Strings.COMMA));
+		
+		try
+		{
+			preferences.flush();
+		}
+		catch (BackingStoreException e)
+		{
+			throw new RuntimeException(Messages.getMessage(Messages.CLUSTER_STATE_STORE_FAILED, this.databaseCluster), e);
+		}
 	}
 }

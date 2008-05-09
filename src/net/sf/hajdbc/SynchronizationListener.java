@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2007 Paul Ferraro
+ * Copyright (c) 2004-2008 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -20,31 +20,23 @@
  */
 package net.sf.hajdbc;
 
-import java.util.Set;
+import java.util.EventListener;
 
 /**
+ * Event listener for synchronization notifications.
  * @author Paul Ferraro
- *
  */
-public interface StateManager extends DatabaseActivationListener, DatabaseDeactivationListener
+public interface SynchronizationListener extends EventListener
 {
 	/**
-	 * @return
+	 * Triggered just before synchronization commences.
+	 * @param event identifies the database to be synchronized.
 	 */
-	public Set<String> getInitialState();
+	public void beforeSynchronization(DatabaseEvent event);
 	
 	/**
-	 * @throws Exception
+	 * Triggered immediately after synchronization completes.
+	 * @param event identifies the database to be synchronized.
 	 */
-	public void start() throws Exception;
-	
-	/**
-	 * 
-	 */
-	public void stop();
-	
-	/**
-	 * @return
-	 */
-	public boolean isMembershipEmpty();
+	public void afterSynchronization(DatabaseEvent event);
 }

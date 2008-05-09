@@ -40,18 +40,18 @@ public interface DatabaseCluster<D>
 	/**
 	 * Activates the specified database
 	 * @param database a database descriptor
-	 * @param listener a database activation listener
+	 * @param manager a state manager
 	 * @return true, if the database was activated, false it was already active
 	 */
-	public boolean activate(Database<D> database, DatabaseActivationListener listener);
+	public boolean activate(Database<D> database, StateManager manager);
 	
 	/**
 	 * Deactivates the specified database
 	 * @param database a database descriptor
-	 * @param listener a database deactivation listener
+	 * @param manager a state manager
 	 * @return true, if the database was deactivated, false it was already inactive
 	 */
-	public boolean deactivate(Database<D> database, DatabaseDeactivationListener listener);
+	public boolean deactivate(Database<D> database, StateManager manager);
 	
 	/**
 	 * Returns the database identified by the specified id

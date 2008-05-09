@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2007 Paul Ferraro
+ * Copyright (c) 2004-2008 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -20,31 +20,30 @@
  */
 package net.sf.hajdbc;
 
-import java.util.Set;
+import java.util.EventObject;
 
 /**
+ * Identifies the target database of an event.
  * @author Paul Ferraro
- *
  */
-public interface StateManager extends DatabaseActivationListener, DatabaseDeactivationListener
+public class DatabaseEvent extends EventObject
 {
+	private static final long serialVersionUID = -6709361835865578668L;
+
 	/**
-	 * @return
+	 * @param database
 	 */
-	public Set<String> getInitialState();
-	
+	public DatabaseEvent(Database<?> database)
+	{
+		super(database.getId());
+	}
+
 	/**
-	 * @throws Exception
+	 * Returns the identifier of the target database.
+	 * @return a database identifier
 	 */
-	public void start() throws Exception;
-	
-	/**
-	 * 
-	 */
-	public void stop();
-	
-	/**
-	 * @return
-	 */
-	public boolean isMembershipEmpty();
+	public String getId()
+	{
+		return (String) super.getSource();
+	}
 }

@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2007 Paul Ferraro
+ * Copyright (c) 2004-2008 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -20,31 +20,17 @@
  */
 package net.sf.hajdbc;
 
-import java.util.Set;
+import java.util.EventListener;
 
 /**
+ * Event listener for database activations.
  * @author Paul Ferraro
- *
  */
-public interface StateManager extends DatabaseActivationListener, DatabaseDeactivationListener
+public interface DatabaseActivationListener extends EventListener
 {
 	/**
-	 * @return
+	 * Triggered after database is successfully activated.
+	 * @param event indicates the database that was activated
 	 */
-	public Set<String> getInitialState();
-	
-	/**
-	 * @throws Exception
-	 */
-	public void start() throws Exception;
-	
-	/**
-	 * 
-	 */
-	public void stop();
-	
-	/**
-	 * @return
-	 */
-	public boolean isMembershipEmpty();
+	public void activated(DatabaseEvent event);
 }

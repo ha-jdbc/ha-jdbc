@@ -44,6 +44,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -60,16 +61,20 @@ import javax.management.ObjectName;
 
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseActivationListener;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterDecorator;
 import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.DatabaseClusterMBean;
+import net.sf.hajdbc.DatabaseDeactivationListener;
+import net.sf.hajdbc.DatabaseEvent;
 import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.LockManager;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.StateManager;
 import net.sf.hajdbc.SynchronizationContext;
+import net.sf.hajdbc.SynchronizationListener;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.local.LocalLockManager;
 import net.sf.hajdbc.local.LocalStateManager;
@@ -124,11 +129,32 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	private LockManager lockManager = new LocalLockManager();
 	private StateManager stateManager = new LocalStateManager(this);
 	private volatile boolean active = false;
+	private List<DatabaseActivationListener> activationListenerList = new CopyOnWriteArrayList<DatabaseActivationListener>();
+	private List<DatabaseDeactivationListener> deactivationListenerList = new CopyOnWriteArrayList<DatabaseDeactivationListener>();
+	private List<SynchronizationListener> synchronizationListenerList = new CopyOnWriteArrayList<SynchronizationListener>();
 	
 	protected AbstractDatabaseCluster(String id, URL url)
 	{
 		this.id = id;
 		this.url = url;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseCluster#getId()
+	 */
+	@Override
+	public String getId()
+	{
+		return this.id;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#getVersion()
+	 */
+	@Override
+	public String getVersion()
+	{
+		return DatabaseClusterFactory.getVersion();
 	}
 	
 	/**
@@ -229,7 +255,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	 * @see net.sf.hajdbc.DatabaseCluster#deactivate(net.sf.hajdbc.Database, net.sf.hajdbc.StateManager)
 	 */
 	@Override
-	public boolean deactivate(Database<D> database, StateManager stateManager)
+	public boolean deactivate(Database<D> database, StateManager manager)
 	{
 		synchronized (this.balancer)
 		{
@@ -241,36 +267,25 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			
 			if (removed)
 			{
-				stateManager.remove(database.getId());
+				DatabaseEvent event = new DatabaseEvent(database);
+
+				manager.deactivated(event);
+				
+				for (DatabaseDeactivationListener listener: this.deactivationListenerList)
+				{
+					listener.deactivated(event);
+				}
 			}
 			
 			return removed;
 		}
-	}
-
-	/**
-	 * @see net.sf.hajdbc.DatabaseCluster#getId()
-	 */
-	@Override
-	public String getId()
-	{
-		return this.id;
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseClusterMBean#getVersion()
-	 */
-	@Override
-	public String getVersion()
-	{
-		return DatabaseClusterFactory.getVersion();
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#activate(net.sf.hajdbc.Database, net.sf.hajdbc.StateManager)
 	 */
 	@Override
-	public boolean activate(Database<D> database, StateManager stateManager)
+	public boolean activate(Database<D> database, StateManager manager)
 	{
 		synchronized (this.balancer)
 		{
@@ -289,7 +304,14 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			
 			if (added)
 			{
-				stateManager.add(database.getId());
+				DatabaseEvent event = new DatabaseEvent(database);
+
+				manager.activated(event);
+				
+				for (DatabaseActivationListener listener: this.activationListenerList)
+				{
+					listener.activated(event);
+				}
 			}
 			
 			return added;
@@ -866,11 +888,23 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			
 			try
 			{
+				DatabaseEvent event = new DatabaseEvent(database);
+				
 				logger.info(Messages.getMessage(Messages.DATABASE_SYNC_START, database, this));
 				
-				strategy.synchronize(context);
+				for (SynchronizationListener listener: this.synchronizationListenerList)
+				{
+					listener.beforeSynchronization(event);
+				}
 				
+				strategy.synchronize(context);
+
 				logger.info(Messages.getMessage(Messages.DATABASE_SYNC_END, database, this));
+				
+				for (SynchronizationListener listener: this.synchronizationListenerList)
+				{
+					listener.afterSynchronization(event);
+				}
 				
 				return this.activate(database, this.stateManager);
 			}
@@ -1100,6 +1134,60 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		}
 		
 		return builderList.iterator();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#addActivationListener(net.sf.hajdbc.DatabaseActivationListener)
+	 */
+	@Override
+	public void addActivationListener(DatabaseActivationListener listener)
+	{
+		this.activationListenerList.add(listener);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#addDeactivationListener(net.sf.hajdbc.DatabaseDeactivationListener)
+	 */
+	@Override
+	public void addDeactivationListener(DatabaseDeactivationListener listener)
+	{
+		this.deactivationListenerList.add(listener);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#addSynchronizationListener(net.sf.hajdbc.SynchronizationListener)
+	 */
+	@Override
+	public void addSynchronizationListener(SynchronizationListener listener)
+	{
+		this.synchronizationListenerList.add(listener);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#removeActivationListener(net.sf.hajdbc.DatabaseActivationListener)
+	 */
+	@Override
+	public void removeActivationListener(DatabaseActivationListener listener)
+	{
+		this.activationListenerList.remove(listener);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#removeDeactivationListener(net.sf.hajdbc.DatabaseDeactivationListener)
+	 */
+	@Override
+	public void removeDeactivationListener(DatabaseDeactivationListener listener)
+	{
+		this.deactivationListenerList.remove(listener);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseClusterMBean#removeSynchronizationListener(net.sf.hajdbc.SynchronizationListener)
+	 */
+	@Override
+	public void removeSynchronizationListener(SynchronizationListener listener)
+	{
+		this.synchronizationListenerList.remove(listener);
 	}
 
 	class FailureDetectionTask implements Runnable
