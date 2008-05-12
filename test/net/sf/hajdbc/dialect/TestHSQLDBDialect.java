@@ -20,15 +20,18 @@
  */
 package net.sf.hajdbc.dialect;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Collection;
 import java.util.Iterator;
 
-import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.SequenceProperties;
+import net.sf.hajdbc.cache.ForeignKeyConstraintImpl;
 
 import org.easymock.EasyMock;
 import org.testng.annotations.DataProvider;
@@ -39,102 +42,139 @@ import org.testng.annotations.Test;
  *
  */
 @SuppressWarnings("nls")
+@Test
 public class TestHSQLDBDialect extends TestStandardDialect
 {
-	@Override
-	protected Dialect createDialect()
+	public TestHSQLDBDialect()
 	{
-		return new HSQLDBDialect();
+		super(new HSQLDBDialect());
 	}
 
+	/**
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testGetCreateForeignKeyConstraintSQL()
+	 */
 	@Override
-	@Test(dataProvider = "foreign-key")
-	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException
+	public void testGetCreateForeignKeyConstraintSQL()
 	{
-		this.replay();
+		ForeignKeyConstraint key = new ForeignKeyConstraintImpl("name", "table");
+		key.getColumnList().add("column1");
+		key.getColumnList().add("column2");
+		key.setForeignTable("foreign_table");
+		key.getForeignColumnList().add("foreign_column1");
+		key.getForeignColumnList().add("foreign_column2");
+		key.setDeferrability(DatabaseMetaData.importedKeyInitiallyDeferred);
+		key.setDeleteRule(DatabaseMetaData.importedKeyCascade);
+		key.setUpdateRule(DatabaseMetaData.importedKeyRestrict);
 		
-		String sql = this.dialect.getCreateForeignKeyConstraintSQL(constraint);
-		
-		this.verify();
-		
-		assert sql.equals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE ON UPDATE RESTRICT") : sql;
-		
-		return sql;
+		try
+		{
+			String result = this.getCreateForeignKeyConstraintSQL(key);
+			
+			assert result.equals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE ON UPDATE RESTRICT") : result;
+		}
+		catch (SQLException e)
+		{
+			assert false : e;
+		}
 	}
 
+	/**
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testGetSequences()
+	 */
 	@Override
-	@Test(dataProvider = "meta-data")
-	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
+	public void testGetSequences()
 	{
-		EasyMock.expect(metaData.getConnection()).andReturn(this.connection);
-		EasyMock.expect(this.connection.createStatement()).andReturn(this.statement);
-		EasyMock.expect(this.statement.executeQuery("SELECT SEQUENCE_SCHEMA, SEQUENCE_NAME FROM INFORMATION_SCHEMA.SYSTEM_SEQUENCES")).andReturn(this.resultSet);
-		EasyMock.expect(this.resultSet.next()).andReturn(true);
-		EasyMock.expect(this.resultSet.getString(1)).andReturn("schema1");
-		EasyMock.expect(this.resultSet.getString(2)).andReturn("sequence1");
-		EasyMock.expect(this.resultSet.next()).andReturn(true);
-		EasyMock.expect(this.resultSet.getString(1)).andReturn("schema2");
-		EasyMock.expect(this.resultSet.getString(2)).andReturn("sequence2");
-		EasyMock.expect(this.resultSet.next()).andReturn(false);
+		DatabaseMetaData metaData = EasyMock.createStrictMock(DatabaseMetaData.class);
+		Connection connection = EasyMock.createStrictMock(Connection.class);
+		Statement statement = EasyMock.createStrictMock(Statement.class);
+		ResultSet resultSet = EasyMock.createStrictMock(ResultSet.class);
 		
-		this.statement.close();
+		try
+		{
+			EasyMock.expect(metaData.getConnection()).andReturn(connection);
+			EasyMock.expect(connection.createStatement()).andReturn(statement);
+			EasyMock.expect(statement.executeQuery("SELECT SEQUENCE_SCHEMA, SEQUENCE_NAME FROM INFORMATION_SCHEMA.SYSTEM_SEQUENCES")).andReturn(resultSet);
+			EasyMock.expect(resultSet.next()).andReturn(true);
+			EasyMock.expect(resultSet.getString(1)).andReturn("schema1");
+			EasyMock.expect(resultSet.getString(2)).andReturn("sequence1");
+			EasyMock.expect(resultSet.next()).andReturn(true);
+			EasyMock.expect(resultSet.getString(1)).andReturn("schema2");
+			EasyMock.expect(resultSet.getString(2)).andReturn("sequence2");
+			EasyMock.expect(resultSet.next()).andReturn(false);
+			
+			statement.close();
 		
-		this.replay();
-		
-		Collection<QualifiedName> sequences = this.dialect.getSequences(metaData);
-		
-		this.verify();
-		
-		assert sequences.size() == 2 : sequences;
-		
-		Iterator<QualifiedName> iterator = sequences.iterator();
-		QualifiedName sequence = iterator.next();
-		String schema = sequence.getSchema();
-		String name = sequence.getName();
-		
-		assert schema.equals("schema1") : schema;
-		assert name.equals("sequence1") : name;
-		
-		sequence = iterator.next();
-		schema = sequence.getSchema();
-		name = sequence.getName();
-		
-		assert schema.equals("schema2") : schema;
-		assert name.equals("sequence2") : name;
-		
-		return sequences;
+			EasyMock.replay(metaData, connection, statement, resultSet);
+			
+			Collection<QualifiedName> result = this.getSequences(metaData);
+			
+			EasyMock.verify(metaData, connection, statement, resultSet);
+			
+			assert result.size() == 2 : result;
+			
+			Iterator<QualifiedName> iterator = result.iterator();
+			QualifiedName sequence = iterator.next();
+			String schema = sequence.getSchema();
+			String name = sequence.getName();
+			
+			assert schema.equals("schema1") : schema;
+			assert name.equals("sequence1") : name;
+			
+			sequence = iterator.next();
+			schema = sequence.getSchema();
+			name = sequence.getName();
+			
+			assert schema.equals("schema2") : schema;
+			assert name.equals("sequence2") : name;
+		}
+		catch (SQLException e)
+		{
+			assert false : e;
+		}
 	}
 
+	/**
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testGetSimpleSQL()
+	 */
 	@Override
-	@Test
-	public String getSimpleSQL() throws SQLException
+	public void testGetSimpleSQL()
 	{
-		this.replay();
-		
-		String sql = this.dialect.getSimpleSQL();
-		
-		this.verify();
-		
-		assert sql.equals("CALL CURRENT_TIMESTAMP") : sql;
-		
-		return sql;
+		try
+		{
+			String result = this.getSimpleSQL();
+			
+			assert result.equals("CALL CURRENT_TIMESTAMP") : result;
+		}
+		catch (SQLException e)
+		{
+			assert false : e;
+		}
 	}
 	
-	@Test(dataProvider = "sequence")
+	/**
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testGetNextSequenceValueSQL()
+	 */
 	@Override
-	public String getNextSequenceValueSQL(SequenceProperties sequence) throws SQLException
+	public void testGetNextSequenceValueSQL()
 	{
+		SequenceProperties sequence = EasyMock.createStrictMock(SequenceProperties.class);
+		
 		EasyMock.expect(sequence.getName()).andReturn("sequence");
+
+		EasyMock.replay(sequence);
 		
-		this.replay();
-		
-		String sql = this.dialect.getNextSequenceValueSQL(sequence);
-		
-		this.verify();
-		
-		assert sql.equals("CALL NEXT VALUE FOR sequence") : sql;
-		
-		return sql;
+		try
+		{
+			String result = this.getNextSequenceValueSQL(sequence);
+
+			EasyMock.verify(sequence);
+			
+			assert result.equals("CALL NEXT VALUE FOR sequence") : result;
+		}
+		catch (SQLException e)
+		{
+			assert false : e;
+		}
 	}
 	
 	@Override

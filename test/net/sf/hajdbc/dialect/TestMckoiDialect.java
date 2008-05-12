@@ -22,8 +22,6 @@ package net.sf.hajdbc.dialect;
 
 import java.sql.SQLException;
 
-import net.sf.hajdbc.Dialect;
-
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -31,27 +29,31 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  */
 @SuppressWarnings("nls")
+@Test
 public class TestMckoiDialect extends TestStandardDialect
 {
-	@Override
-	protected Dialect createDialect()
+	public TestMckoiDialect()
 	{
-		return new MckoiDialect();
+		super(new MckoiDialect());
 	}
 
+	/**
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testParseInsertTable(java.lang.String)
+	 */
 	@Override
 	@Test(dataProvider = "insert-table-sql")
-	public String parseInsertTable(String sql) throws SQLException
+	public void testParseInsertTable(String sql)
 	{
-		this.replay();
-		
-		String table = this.dialect.parseInsertTable(sql);
-		
-		this.verify();
-
-		assert table == null : table;
-
-		return table;
+		try
+		{
+			String result = this.parseInsertTable(sql);
+			
+			assert (result == null) : result;
+		}
+		catch (SQLException e)
+		{
+			assert false : e;
+		}
 	}
 
 	@Override

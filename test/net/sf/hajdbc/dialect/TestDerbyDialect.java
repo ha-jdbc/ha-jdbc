@@ -25,10 +25,10 @@ import java.sql.SQLException;
 import java.util.Collection;
 
 import net.sf.hajdbc.ColumnProperties;
-import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.SequenceProperties;
+import net.sf.hajdbc.cache.ForeignKeyConstraintImpl;
 
 import org.easymock.EasyMock;
 import org.testng.annotations.DataProvider;
@@ -39,118 +39,165 @@ import org.testng.annotations.Test;
  *
  */
 @SuppressWarnings("nls")
+@Test
 public class TestDerbyDialect extends TestStandardDialect
 {
-	@Override
-	protected Dialect createDialect()
+	public TestDerbyDialect()
 	{
-		return new DerbyDialect();
+		super(new DerbyDialect());
 	}
 
+	/**
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testGetCreateForeignKeyConstraintSQL()
+	 */
 	@Override
-	@Test(dataProvider = "foreign-key")
-	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException
+	public void testGetCreateForeignKeyConstraintSQL()
 	{
-		this.replay();
+		ForeignKeyConstraint key = new ForeignKeyConstraintImpl("name", "table");
+		key.getColumnList().add("column1");
+		key.getColumnList().add("column2");
+		key.setForeignTable("foreign_table");
+		key.getForeignColumnList().add("foreign_column1");
+		key.getForeignColumnList().add("foreign_column2");
+		key.setDeferrability(DatabaseMetaData.importedKeyInitiallyDeferred);
+		key.setDeleteRule(DatabaseMetaData.importedKeyCascade);
+		key.setUpdateRule(DatabaseMetaData.importedKeyRestrict);
 		
-		String sql = this.dialect.getCreateForeignKeyConstraintSQL(constraint);
-		
-		this.verify();
-		
-		assert sql.equals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE ON UPDATE RESTRICT") : sql;
-		
-		return sql;
+		try
+		{
+			String result = this.getCreateForeignKeyConstraintSQL(key);
+			
+			assert result.equals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE ON UPDATE RESTRICT") : result;
+		}
+		catch (SQLException e)
+		{
+			assert false : e;
+		}
 	}
 
+	/**
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testGetSimpleSQL()
+	 */
 	@Override
-	@Test
-	public String getSimpleSQL() throws SQLException
+	public void testGetSimpleSQL()
 	{
-		this.replay();
-		
-		String sql = this.dialect.getSimpleSQL();
-		
-		this.verify();
-		
-		assert sql.equals("VALUES CURRENT_TIMESTAMP") : sql;
-		
-		return sql;
+		try
+		{
+			String result = this.getSimpleSQL();
+			
+			assert result.equals("VALUES CURRENT_TIMESTAMP") : result;
+		}
+		catch (SQLException e)
+		{
+			assert false : e;
+		}
 	}
 
+	/**
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testParseSequence(java.lang.String)
+	 */
 	@Override
 	@Test(dataProvider = "sequence-sql")
-	public String parseSequence(String sql) throws SQLException
+	public void testParseSequence(String sql)
 	{
-		this.replay();
-		
-		String sequence = this.dialect.parseSequence(sql);
-		
-		this.verify();
-		
-		assert sequence == null : sequence;
-		
-		return sequence;
+		try
+		{
+			String result = this.parseSequence(sql);
+			
+			assert result == null : result;
+		}
+		catch (SQLException e)
+		{
+			assert false : e;
+		}
 	}
 
+	/**
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testGetSequences()
+	 */
 	@Override
-	@Test(dataProvider = "meta-data")
-	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
+	public void testGetSequences()
 	{
-		this.replay();
+		DatabaseMetaData metaData = EasyMock.createStrictMock(DatabaseMetaData.class);
 		
-		Collection<QualifiedName> sequences = this.dialect.getSequences(metaData);
+		EasyMock.replay(metaData);
 		
-		this.verify();
-		
-		assert sequences.isEmpty() : sequences;
-		
-		return sequences;
+		try
+		{
+			Collection<QualifiedName> result = this.getSequences(metaData);
+
+			EasyMock.verify(metaData);
+			
+			assert result.isEmpty() : result;
+		}
+		catch (SQLException e)
+		{
+			assert false : e;
+		}
 	}
 
+	/**
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testIsIdentity()
+	 */
 	@Override
-	@Test(dataProvider = "column")
-	public boolean isIdentity(ColumnProperties properties) throws SQLException
+	public void testIsIdentity()
 	{
-		EasyMock.expect(properties.getRemarks()).andReturn("GENERATED ALWAYS AS IDENTITY");
+		ColumnProperties column = EasyMock.createStrictMock(ColumnProperties.class);
 		
-		this.replay();
+		EasyMock.expect(column.getRemarks()).andReturn("GENERATED ALWAYS AS IDENTITY");
 		
-		boolean identity = this.dialect.isIdentity(properties);
+		EasyMock.replay(column);
 		
-		this.verify();
-		
-		assert identity;
-		
-		this.reset();
-		
-		EasyMock.expect(this.columnProperties.getRemarks()).andReturn(null);
-		
-		this.replay();
-		
-		identity = this.dialect.isIdentity(properties);
-		
-		this.verify();
+		try
+		{
+			boolean result = this.isIdentity(column);
 
-		assert !identity;
-		
-		return identity;
+			EasyMock.verify(column);
+			
+			assert result;
+			
+			EasyMock.reset(column);
+
+			EasyMock.expect(column.getRemarks()).andReturn(null);
+			
+			EasyMock.replay(column);
+			
+			result = this.isIdentity(column);
+			
+			EasyMock.verify(column);
+			
+			assert !result;
+		}
+		catch (SQLException e)
+		{
+			assert false : e;
+		}
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testGetNextSequenceValueSQL()
+	 */
 	@Override
-	@Test(dataProvider = "sequence")
-	public String getNextSequenceValueSQL(SequenceProperties sequence) throws SQLException
+	public void testGetNextSequenceValueSQL()
 	{
+		SequenceProperties sequence = EasyMock.createStrictMock(SequenceProperties.class);
+		
 		EasyMock.expect(sequence.getName()).andReturn("sequence");
 		
-		this.replay();
-		
-		String sql = this.dialect.getNextSequenceValueSQL(sequence);
-		
-		this.verify();
-		
-		assert sql.equals("VALUES NEXT VALUE FOR sequence") : sql;
-		
-		return sql;
+		EasyMock.replay(sequence);
+
+		try
+		{
+			String result = this.getNextSequenceValueSQL(sequence);
+			
+			EasyMock.verify(sequence);
+			
+			assert result.equals("VALUES NEXT VALUE FOR sequence") : result;
+		}
+		catch (SQLException e)
+		{
+			assert false : e;
+		}
 	}
 
 	@Override
@@ -170,17 +217,21 @@ public class TestDerbyDialect extends TestStandardDialect
 	
 	@Override
 	@Test(dataProvider = "current-date")
-	public String evaluateCurrentDate(String sql, java.sql.Date date) throws SQLException
+	public void testEvaluateCurrentDate(String sql, java.sql.Date date)
 	{
-		String expected = sql.contains("success") ? "SELECT DATE('" + date.toString() + "') FROM success" : sql;
+		String expected = sql.contains("success") ? String.format("SELECT DATE('%s') FROM success", date.toString()) : sql;
 		
-		String evaluated = this.dialect.evaluateCurrentDate(sql, date);
-
-		assert evaluated.equals(expected) : evaluated;
-		
-		return evaluated;
+		try
+		{
+			String evaluated = this.evaluateCurrentDate(sql, date);
+	
+			assert evaluated.equals(expected) : evaluated;
+		}
+		catch (SQLException e)
+		{
+			assert false : e;
+		}
 	}
-
 
 	@Override
 	@DataProvider(name = "current-time")
@@ -199,15 +250,20 @@ public class TestDerbyDialect extends TestStandardDialect
 	
 	@Override
 	@Test(dataProvider = "current-time")
-	public String evaluateCurrentTime(String sql, java.sql.Time date) throws SQLException
+	public void testEvaluateCurrentTime(String sql, java.sql.Time date)
 	{
-		String expected = sql.contains("success") ? "SELECT TIME('" + date.toString() + "') FROM success" : sql;
+		String expected = sql.contains("success") ? String.format("SELECT TIME('%s') FROM success", date.toString()) : sql;
 		
-		String evaluated = this.dialect.evaluateCurrentTime(sql, date);
-
-		assert evaluated.equals(expected) : evaluated;
-		
-		return evaluated;
+		try
+		{
+			String evaluated = this.evaluateCurrentTime(sql, date);
+	
+			assert evaluated.equals(expected) : evaluated;
+		}
+		catch (SQLException e)
+		{
+			assert false : e;
+		}
 	}
 
 	@Override
@@ -227,14 +283,19 @@ public class TestDerbyDialect extends TestStandardDialect
 	
 	@Override
 	@Test(dataProvider = "current-timestamp")
-	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp date) throws SQLException
+	public void testEvaluateCurrentTimestamp(String sql, java.sql.Timestamp date)
 	{
-		String expected = sql.contains("success") ? "SELECT TIMESTAMP('" + date.toString() + "') FROM success" : sql;
+		String expected = sql.contains("success") ? String.format("SELECT TIMESTAMP('%s') FROM success", date.toString()) : sql;
 		
-		String evaluated = this.dialect.evaluateCurrentTimestamp(sql, date);
+		try
+		{
+			String evaluated = this.evaluateCurrentTimestamp(sql, date);
 
-		assert evaluated.equals(expected) : evaluated;
-		
-		return evaluated;
+			assert evaluated.equals(expected) : evaluated;
+		}
+		catch (SQLException e)
+		{
+			assert false : e;
+		}
 	}
 }
