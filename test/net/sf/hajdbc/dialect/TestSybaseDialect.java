@@ -50,7 +50,7 @@ public class TestSybaseDialect extends TestStandardDialect
 	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testGetSimpleSQL()
 	 */
 	@Override
-	public void testGetSimpleSQL()
+	public void testGetSimpleSQL() throws SQLException
 	{
 		String result = this.getSimpleSQL();
 		
@@ -61,7 +61,7 @@ public class TestSybaseDialect extends TestStandardDialect
 	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testGetTruncateTableSQL()
 	 */
 	@Override
-	public void testGetTruncateTableSQL()
+	public void testGetTruncateTableSQL() throws SQLException
 	{
 		TableProperties table = EasyMock.createStrictMock(TableProperties.class);
 		
@@ -80,7 +80,7 @@ public class TestSybaseDialect extends TestStandardDialect
 	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testGetCreateForeignKeyConstraintSQL()
 	 */
 	@Override
-	public void testGetCreateForeignKeyConstraintSQL()
+	public void testGetCreateForeignKeyConstraintSQL() throws SQLException
 	{
 		ForeignKeyConstraint key = new ForeignKeyConstraintImpl("name", "table");
 		key.getColumnList().add("column1");
@@ -101,7 +101,7 @@ public class TestSybaseDialect extends TestStandardDialect
 	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testIsIdentity()
 	 */
 	@Override
-	public void testIsIdentity()
+	public void testIsIdentity() throws SQLException
 	{
 		ColumnProperties column = EasyMock.createStrictMock(ColumnProperties.class);
 		
@@ -145,7 +145,7 @@ public class TestSybaseDialect extends TestStandardDialect
 	 */
 	@Override
 	@Test(dataProvider = "sequence-sql")
-	public void testParseSequence(String sql)
+	public void testParseSequence(String sql) throws SQLException
 	{
 		String result = this.parseSequence(sql);
 		
@@ -156,7 +156,7 @@ public class TestSybaseDialect extends TestStandardDialect
 	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testGetSequences()
 	 */
 	@Override
-	public void testGetSequences()
+	public void testGetSequences() throws SQLException
 	{
 		DatabaseMetaData metaData = EasyMock.createStrictMock(DatabaseMetaData.class);
 		
@@ -188,7 +188,7 @@ public class TestSybaseDialect extends TestStandardDialect
 	
 	@Override
 	@Test(dataProvider = "current-date")
-	public void testEvaluateCurrentDate(String sql, java.sql.Date date)
+	public void testEvaluateCurrentDate(String sql, java.sql.Date date) throws SQLException
 	{
 		String expected = sql.contains("success") ? String.format("SELECT '%s' FROM success", date.toString()) : sql;
 		
@@ -213,7 +213,7 @@ public class TestSybaseDialect extends TestStandardDialect
 	
 	@Override
 	@Test(dataProvider = "current-time")
-	public void testEvaluateCurrentTime(String sql, java.sql.Time date)
+	public void testEvaluateCurrentTime(String sql, java.sql.Time date) throws SQLException
 	{
 		String expected = sql.contains("success") ? String.format("SELECT '%s' FROM success", date.toString()) : sql;
 		
@@ -244,7 +244,7 @@ public class TestSybaseDialect extends TestStandardDialect
 	
 	@Override
 	@Test(dataProvider = "current-timestamp")
-	public void testEvaluateCurrentTimestamp(String sql, java.sql.Timestamp date)
+	public void testEvaluateCurrentTimestamp(String sql, java.sql.Timestamp date) throws SQLException
 	{
 		String expected = sql.contains("success") ? String.format("SELECT '%s' FROM success", date.toString()) : sql;
 		

@@ -53,7 +53,7 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testGetColumnType()
 	 */
 	@Override
-	public void testGetColumnType()
+	public void testGetColumnType() throws SQLException
 	{
 		ColumnProperties column = EasyMock.createStrictMock(ColumnProperties.class);
 		
@@ -85,7 +85,7 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testGetTruncateTableSQL()
 	 */
 	@Override
-	public void testGetTruncateTableSQL()
+	public void testGetTruncateTableSQL() throws SQLException
 	{
 		TableProperties table = EasyMock.createStrictMock(TableProperties.class);
 		
@@ -104,7 +104,7 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testGetNextSequenceValueSQL()
 	 */
 	@Override
-	public void testGetNextSequenceValueSQL()
+	public void testGetNextSequenceValueSQL() throws SQLException
 	{
 		SequenceProperties sequence = EasyMock.createStrictMock(SequenceProperties.class);
 		
@@ -136,49 +136,42 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testGetDefaultSchemas()
 	 */
 	@Override
-	public void testGetDefaultSchemas()
+	public void testGetDefaultSchemas() throws SQLException
 	{
 		DatabaseMetaData metaData = EasyMock.createStrictMock(DatabaseMetaData.class);
 		Connection connection = EasyMock.createStrictMock(Connection.class);
 		Statement statement = EasyMock.createStrictMock(Statement.class);
 		ResultSet resultSet = EasyMock.createStrictMock(ResultSet.class);
 		
-		try
-		{
-			EasyMock.expect(metaData.getConnection()).andReturn(connection);
-			EasyMock.expect(connection.createStatement()).andReturn(statement);
-			
-			EasyMock.expect(statement.executeQuery("SHOW search_path")).andReturn(resultSet);
-			EasyMock.expect(resultSet.next()).andReturn(false);
-			EasyMock.expect(resultSet.getString(1)).andReturn("$user,public");
+		EasyMock.expect(metaData.getConnection()).andReturn(connection);
+		EasyMock.expect(connection.createStatement()).andReturn(statement);
+		
+		EasyMock.expect(statement.executeQuery("SHOW search_path")).andReturn(resultSet);
+		EasyMock.expect(resultSet.next()).andReturn(false);
+		EasyMock.expect(resultSet.getString(1)).andReturn("$user,public");
 
-			resultSet.close();
-			statement.close();
-			
-			EasyMock.expect(metaData.getUserName()).andReturn("user");
-			
-			EasyMock.replay(metaData, connection, statement, resultSet);
-			
-			List<String> result = this.getDefaultSchemas(metaData);
-			
-			EasyMock.verify(metaData, connection, statement, resultSet);
-			
-			assert result.size() == 2 : result.size();
-			
-			assert result.get(0).equals("user") : result.get(0);
-			assert result.get(1).equals("public") : result.get(1);
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		resultSet.close();
+		statement.close();
+		
+		EasyMock.expect(metaData.getUserName()).andReturn("user");
+		
+		EasyMock.replay(metaData, connection, statement, resultSet);
+		
+		List<String> result = this.getDefaultSchemas(metaData);
+		
+		EasyMock.verify(metaData, connection, statement, resultSet);
+		
+		assert result.size() == 2 : result.size();
+		
+		assert result.get(0).equals("user") : result.get(0);
+		assert result.get(1).equals("public") : result.get(1);
 	}
 
 	/**
 	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testIsIdentity()
 	 */
 	@Override
-	public void testIsIdentity()
+	public void testIsIdentity() throws SQLException
 	{
 		ColumnProperties column = EasyMock.createStrictMock(ColumnProperties.class);
 		
@@ -221,7 +214,7 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testGetAlterIdentityColumnSQL()
 	 */
 	@Override
-	public void testGetAlterIdentityColumnSQL()
+	public void testGetAlterIdentityColumnSQL() throws SQLException
 	{
 		TableProperties table = EasyMock.createStrictMock(TableProperties.class);
 		ColumnProperties column = EasyMock.createStrictMock(ColumnProperties.class);
@@ -242,42 +235,35 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testGetIdentifierPattern()
 	 */
 	@Override
-	public void testGetIdentifierPattern()
+	public void testGetIdentifierPattern() throws SQLException
 	{
 		DatabaseMetaData metaData = EasyMock.createStrictMock(DatabaseMetaData.class);
 		
 		EasyMock.expect(metaData.getDriverMajorVersion()).andReturn(8);
 		EasyMock.expect(metaData.getDriverMinorVersion()).andReturn(0);
 		
-		try
-		{
-			EasyMock.expect(metaData.getExtraNameCharacters()).andReturn("");
-			
-			EasyMock.replay(metaData);
-			
-			String result = this.getIdentifierPattern(metaData).pattern();
-			
-			EasyMock.verify(metaData);
-			
-			assert result.equals("[\\w\\Q\\E]+") : result;
-			
-			EasyMock.reset(metaData);
-			
-			EasyMock.expect(metaData.getDriverMajorVersion()).andReturn(8);
-			EasyMock.expect(metaData.getDriverMinorVersion()).andReturn(1);
-			
-			EasyMock.replay(metaData);
-			
-			result = this.getIdentifierPattern(metaData).pattern();
-			
-			EasyMock.verify(metaData);
-			
-			assert result.equals("[A-Za-z\\0200-\\0377_][A-Za-z\\0200-\\0377_0-9\\$]*") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		EasyMock.expect(metaData.getExtraNameCharacters()).andReturn("");
+		
+		EasyMock.replay(metaData);
+		
+		String result = this.getIdentifierPattern(metaData).pattern();
+		
+		EasyMock.verify(metaData);
+		
+		assert result.equals("[\\w\\Q\\E]+") : result;
+		
+		EasyMock.reset(metaData);
+		
+		EasyMock.expect(metaData.getDriverMajorVersion()).andReturn(8);
+		EasyMock.expect(metaData.getDriverMinorVersion()).andReturn(1);
+		
+		EasyMock.replay(metaData);
+		
+		result = this.getIdentifierPattern(metaData).pattern();
+		
+		EasyMock.verify(metaData);
+		
+		assert result.equals("[A-Za-z\\0200-\\0377_][A-Za-z\\0200-\\0377_0-9\\$]*") : result;
 	}
 
 	@Override

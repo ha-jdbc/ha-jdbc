@@ -63,7 +63,7 @@ public class TestStandardDialect implements Dialect
 		this.dialect = dialect;
 	}
 
-	public void testGetAlterSequenceSQL()
+	public void testGetAlterSequenceSQL() throws SQLException
 	{
 		SequenceProperties sequence = EasyMock.createStrictMock(SequenceProperties.class);
 		
@@ -79,19 +79,12 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Override
-	public String getAlterSequenceSQL(SequenceProperties sequence, long value)
+	public String getAlterSequenceSQL(SequenceProperties sequence, long value) throws SQLException
 	{
-		try
-		{
-			return this.dialect.getAlterSequenceSQL(sequence, value);
-		}
-		catch (SQLException e)
-		{
-			throw new AssertionError(e);
-		}
+		return this.dialect.getAlterSequenceSQL(sequence, value);
 	}
 
-	public void testGetColumnType()
+	public void testGetColumnType() throws SQLException
 	{
 		ColumnProperties column = EasyMock.createStrictMock(ColumnProperties.class);
 		
@@ -107,19 +100,12 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Override
-	public int getColumnType(ColumnProperties column)
+	public int getColumnType(ColumnProperties column) throws SQLException
 	{
-		try
-		{
-			return this.dialect.getColumnType(column);
-		}
-		catch (SQLException e)
-		{
-			throw new AssertionError(e);
-		}
+		return this.dialect.getColumnType(column);
 	}
 
-	public void testGetCreateForeignKeyConstraintSQL()
+	public void testGetCreateForeignKeyConstraintSQL() throws SQLException
 	{
 		ForeignKeyConstraint key = new ForeignKeyConstraintImpl("name", "table");
 		key.getColumnList().add("column1");
@@ -137,19 +123,12 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Override
-	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint constraint)
+	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException
 	{
-		try
-		{
-			return this.dialect.getCreateForeignKeyConstraintSQL(constraint);
-		}
-		catch (SQLException e)
-		{
-			throw new AssertionError(e);
-		}
+		return this.dialect.getCreateForeignKeyConstraintSQL(constraint);
 	}
 
-	public void testGetCreateUniqueConstraintSQL()
+	public void testGetCreateUniqueConstraintSQL() throws SQLException
 	{
 		UniqueConstraint key = new UniqueConstraintImpl("name", "table");
 		key.getColumnList().add("column1");
@@ -161,19 +140,12 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Override
-	public String getCreateUniqueConstraintSQL(UniqueConstraint constraint)
+	public String getCreateUniqueConstraintSQL(UniqueConstraint constraint) throws SQLException
 	{
-		try
-		{
-			return this.dialect.getCreateUniqueConstraintSQL(constraint);
-		}
-		catch (SQLException e)
-		{
-			throw new AssertionError(e);
-		}
+		return this.dialect.getCreateUniqueConstraintSQL(constraint);
 	}
 
-	public void testGetDropForeignKeyConstraintSQL()
+	public void testGetDropForeignKeyConstraintSQL() throws SQLException
 	{
 		ForeignKeyConstraint key = new ForeignKeyConstraintImpl("name", "table");
 		key.getColumnList().add("column1");
@@ -191,19 +163,12 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Override
-	public String getDropForeignKeyConstraintSQL(ForeignKeyConstraint constraint)
+	public String getDropForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException
 	{
-		try
-		{
-			return this.dialect.getDropForeignKeyConstraintSQL(constraint);
-		}
-		catch (SQLException e)
-		{
-			throw new AssertionError(e);
-		}
+		return this.dialect.getDropForeignKeyConstraintSQL(constraint);
 	}
 
-	public void testGetDropUniqueConstraintSQL()
+	public void testGetDropUniqueConstraintSQL() throws SQLException
 	{
 		UniqueConstraint key = new UniqueConstraintImpl("name", "table");
 		key.getColumnList().add("column1");
@@ -215,19 +180,12 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Override
-	public String getDropUniqueConstraintSQL(UniqueConstraint constraint)
+	public String getDropUniqueConstraintSQL(UniqueConstraint constraint) throws SQLException
 	{
-		try
-		{
-			return this.dialect.getDropUniqueConstraintSQL(constraint);
-		}
-		catch (SQLException e)
-		{
-			throw new AssertionError(e);
-		}
+		return this.dialect.getDropUniqueConstraintSQL(constraint);
 	}
 
-	public void testGetNextSequenceValueSQL()
+	public void testGetNextSequenceValueSQL() throws SQLException
 	{
 		SequenceProperties sequence = EasyMock.createStrictMock(SequenceProperties.class);
 		
@@ -243,79 +201,58 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Override
-	public String getNextSequenceValueSQL(SequenceProperties sequence)
+	public String getNextSequenceValueSQL(SequenceProperties sequence) throws SQLException
 	{
-		try
-		{
-			return this.dialect.getNextSequenceValueSQL(sequence);
-		}
-		catch (SQLException e)
-		{
-			throw new AssertionError(e);
-		}
+		return this.dialect.getNextSequenceValueSQL(sequence);
 	}
 	
-	public void testGetSequences()
+	public void testGetSequences() throws SQLException
 	{
 		DatabaseMetaData metaData = EasyMock.createStrictMock(DatabaseMetaData.class);
 		ResultSet resultSet = EasyMock.createStrictMock(ResultSet.class);
 		
-		try
-		{
-			EasyMock.expect(metaData.getTables(EasyMock.eq(""), EasyMock.eq((String) null), EasyMock.eq("%"), EasyMock.aryEq(new String[] { "SEQUENCE" }))).andReturn(resultSet);
-			EasyMock.expect(resultSet.next()).andReturn(true);
-			EasyMock.expect(resultSet.getString("TABLE_SCHEM")).andReturn("schema1");
-			EasyMock.expect(resultSet.getString("TABLE_NAME")).andReturn("sequence1");
-			EasyMock.expect(resultSet.next()).andReturn(true);
-			EasyMock.expect(resultSet.getString("TABLE_SCHEM")).andReturn("schema2");
-			EasyMock.expect(resultSet.getString("TABLE_NAME")).andReturn("sequence2");
-			EasyMock.expect(resultSet.next()).andReturn(false);
-			
-			resultSet.close();
-			
-			EasyMock.replay(metaData, resultSet);
-			
-			Collection<QualifiedName> results = this.getSequences(metaData);
-			
-			EasyMock.verify(metaData, resultSet);
-			
-			assert results.size() == 2 : results;
-			
-			Iterator<QualifiedName> iterator = results.iterator();
-			QualifiedName sequence = iterator.next();
-			String schema = sequence.getSchema();
-			String name = sequence.getName();
-			
-			assert schema.equals("schema1") : schema;
-			assert name.equals("sequence1") : name;
-			
-			sequence = iterator.next();
-			schema = sequence.getSchema();
-			name = sequence.getName();
-			
-			assert schema.equals("schema2") : schema;
-			assert name.equals("sequence2") : name;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		EasyMock.expect(metaData.getTables(EasyMock.eq(""), EasyMock.eq((String) null), EasyMock.eq("%"), EasyMock.aryEq(new String[] { "SEQUENCE" }))).andReturn(resultSet);
+		EasyMock.expect(resultSet.next()).andReturn(true);
+		EasyMock.expect(resultSet.getString("TABLE_SCHEM")).andReturn("schema1");
+		EasyMock.expect(resultSet.getString("TABLE_NAME")).andReturn("sequence1");
+		EasyMock.expect(resultSet.next()).andReturn(true);
+		EasyMock.expect(resultSet.getString("TABLE_SCHEM")).andReturn("schema2");
+		EasyMock.expect(resultSet.getString("TABLE_NAME")).andReturn("sequence2");
+		EasyMock.expect(resultSet.next()).andReturn(false);
+		
+		resultSet.close();
+		
+		EasyMock.replay(metaData, resultSet);
+		
+		Collection<QualifiedName> results = this.getSequences(metaData);
+		
+		EasyMock.verify(metaData, resultSet);
+		
+		assert results.size() == 2 : results;
+		
+		Iterator<QualifiedName> iterator = results.iterator();
+		QualifiedName sequence = iterator.next();
+		String schema = sequence.getSchema();
+		String name = sequence.getName();
+		
+		assert schema.equals("schema1") : schema;
+		assert name.equals("sequence1") : name;
+		
+		sequence = iterator.next();
+		schema = sequence.getSchema();
+		name = sequence.getName();
+		
+		assert schema.equals("schema2") : schema;
+		assert name.equals("sequence2") : name;
 	}
 	
 	@Override
-	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData)
+	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
 	{
-		try
-		{
-			return this.dialect.getSequences(metaData);
-		}
-		catch (SQLException e)
-		{
-			throw new AssertionError(e);
-		}
+		return this.dialect.getSequences(metaData);
 	}
 	
-	public void testGetSimpleSQL()
+	public void testGetSimpleSQL() throws SQLException
 	{
 		String result = this.getSimpleSQL();
 		
@@ -323,19 +260,12 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Override
-	public String getSimpleSQL()
+	public String getSimpleSQL() throws SQLException
 	{
-		try
-		{
-			return this.dialect.getSimpleSQL();
-		}
-		catch (SQLException e)
-		{
-			throw new AssertionError(e);
-		}
+		return this.dialect.getSimpleSQL();
 	}
 
-	public void testGetTruncateTableSQL()
+	public void testGetTruncateTableSQL() throws SQLException
 	{
 		TableProperties table = EasyMock.createStrictMock(TableProperties.class);
 		
@@ -351,16 +281,9 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Override
-	public String getTruncateTableSQL(TableProperties properties)
+	public String getTruncateTableSQL(TableProperties properties) throws SQLException
 	{
-		try
-		{
-			return this.dialect.getTruncateTableSQL(properties);
-		}
-		catch (SQLException e)
-		{
-			throw new AssertionError(e);
-		}
+		return this.dialect.getTruncateTableSQL(properties);
 	}
 
 	@DataProvider(name = "select-for-update-sql")
@@ -373,7 +296,7 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Test(dataProvider = "select-for-update-sql")
-	public void testIsSelectForUpdate(String sql)
+	public void testIsSelectForUpdate(String sql) throws SQLException
 	{
 		boolean result = this.isSelectForUpdate(sql);
 		
@@ -381,16 +304,9 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Override
-	public boolean isSelectForUpdate(String sql)
+	public boolean isSelectForUpdate(String sql) throws SQLException
 	{
-		try
-		{
-			return this.dialect.isSelectForUpdate(sql);
-		}
-		catch (SQLException e)
-		{
-			throw new AssertionError(e);
-		}
+		return this.dialect.isSelectForUpdate(sql);
 	}
 
 	@DataProvider(name = "sequence-sql")
@@ -406,7 +322,7 @@ public class TestStandardDialect implements Dialect
 	}
 
 	@Test(dataProvider = "sequence-sql")
-	public void testParseSequence(String sql)
+	public void testParseSequence(String sql) throws SQLException
 	{
 		String result = this.parseSequence(sql);
 		
@@ -422,60 +338,39 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Override
-	public String parseSequence(String sql)
+	public String parseSequence(String sql) throws SQLException
 	{
-		try
-		{
-			return this.dialect.parseSequence(sql);
-		}
-		catch (SQLException e)
-		{
-			throw new AssertionError(e);
-		}
+		return this.dialect.parseSequence(sql);
 	}
 
-	public void testGetDefaultSchemas()
+	public void testGetDefaultSchemas() throws SQLException
 	{
 		DatabaseMetaData metaData = EasyMock.createStrictMock(DatabaseMetaData.class);
 		
 		String user = "user";
 		
-		try
-		{
-			EasyMock.expect(metaData.getUserName()).andReturn(user);
-			
-			EasyMock.replay(metaData);
-			
-			List<String> result = this.getDefaultSchemas(metaData);
-			
-			EasyMock.verify(metaData);
-			
-			assert result.size() == 1 : result.size();
-			
-			String schema = result.get(0);
-			
-			assert schema.equals(user) : schema;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		EasyMock.expect(metaData.getUserName()).andReturn(user);
+		
+		EasyMock.replay(metaData);
+		
+		List<String> result = this.getDefaultSchemas(metaData);
+		
+		EasyMock.verify(metaData);
+		
+		assert result.size() == 1 : result.size();
+		
+		String schema = result.get(0);
+		
+		assert schema.equals(user) : schema;
 	}
 	
 	@Override
-	public List<String> getDefaultSchemas(DatabaseMetaData metaData)
+	public List<String> getDefaultSchemas(DatabaseMetaData metaData) throws SQLException
 	{
-		try
-		{
-			return this.dialect.getDefaultSchemas(metaData);
-		}
-		catch (SQLException e)
-		{
-			throw new AssertionError(e);
-		}
+		return this.dialect.getDefaultSchemas(metaData);
 	}
 
-	public void testIsIdentity()
+	public void testIsIdentity() throws SQLException
 	{
 		ColumnProperties column = EasyMock.createStrictMock(ColumnProperties.class);
 		
@@ -503,16 +398,9 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Override
-	public boolean isIdentity(ColumnProperties properties)
+	public boolean isIdentity(ColumnProperties properties) throws SQLException
 	{
-		try
-		{
-			return this.dialect.isIdentity(properties);
-		}
-		catch (SQLException e)
-		{
-			throw new AssertionError(e);
-		}
+		return this.dialect.isIdentity(properties);
 	}
 
 	@DataProvider(name = "insert-table-sql")
@@ -533,7 +421,7 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Test(dataProvider = "insert-table-sql")
-	public void testParseInsertTable(String sql)
+	public void testParseInsertTable(String sql) throws SQLException
 	{
 		String result = this.parseInsertTable(sql);
 		
@@ -549,51 +437,30 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Override
-	public String parseInsertTable(String sql)
+	public String parseInsertTable(String sql) throws SQLException
 	{
-		try
-		{
-			return this.dialect.parseInsertTable(sql);
-		}
-		catch (SQLException e)
-		{
-			throw new AssertionError(e);
-		}
+		return this.dialect.parseInsertTable(sql);
 	}
 	
-	public void testGetIdentifierPattern()
+	public void testGetIdentifierPattern() throws SQLException
 	{
 		DatabaseMetaData metaData = EasyMock.createStrictMock(DatabaseMetaData.class);
 		
-		try
-		{
-			EasyMock.expect(metaData.getExtraNameCharacters()).andReturn("-");
-			
-			EasyMock.replay(metaData);
-			
-			Pattern result = this.getIdentifierPattern(metaData);
-			
-			EasyMock.verify(metaData);
-			
-			assert result.pattern().equals("[\\w\\Q-\\E]+");
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		EasyMock.expect(metaData.getExtraNameCharacters()).andReturn("-");
+		
+		EasyMock.replay(metaData);
+		
+		Pattern result = this.getIdentifierPattern(metaData);
+		
+		EasyMock.verify(metaData);
+		
+		assert result.pattern().equals("[\\w\\Q-\\E]+");
 	}
 	
 	@Override
-	public Pattern getIdentifierPattern(DatabaseMetaData metaData)
+	public Pattern getIdentifierPattern(DatabaseMetaData metaData) throws SQLException
 	{
-		try
-		{
-			return this.dialect.getIdentifierPattern(metaData);
-		}
-		catch (SQLException e)
-		{
-			throw new AssertionError(e);
-		}
+		return this.dialect.getIdentifierPattern(metaData);
 	}
 
 	@DataProvider(name = "current-date")
@@ -610,7 +477,7 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Test(dataProvider = "current-date")
-	public void testEvaluateCurrentDate(String sql, java.sql.Date date)
+	public void testEvaluateCurrentDate(String sql, java.sql.Date date) throws SQLException
 	{
 		String expected = sql.contains("success") ? String.format("SELECT DATE '%s' FROM success", date.toString()) : sql;
 		
@@ -620,16 +487,9 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Override
-	public String evaluateCurrentDate(String sql, java.sql.Date date)
+	public String evaluateCurrentDate(String sql, java.sql.Date date) throws SQLException
 	{
-		try
-		{
-			return this.dialect.evaluateCurrentDate(sql, date);
-		}
-		catch (SQLException e)
-		{
-			throw new AssertionError(e);
-		}
+		return this.dialect.evaluateCurrentDate(sql, date);
 	}
 
 	@DataProvider(name = "current-time")
@@ -653,7 +513,7 @@ public class TestStandardDialect implements Dialect
 	}
 
 	@Test(dataProvider = "current-time")
-	public void testEvaluateCurrentTime(String sql, java.sql.Time date)
+	public void testEvaluateCurrentTime(String sql, java.sql.Time date) throws SQLException
 	{
 		String expected = sql.contains("success") ? String.format("SELECT TIME '%s' FROM success", date.toString()) : sql;
 		
@@ -663,16 +523,9 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Override
-	public String evaluateCurrentTime(String sql, java.sql.Time date)
+	public String evaluateCurrentTime(String sql, java.sql.Time date) throws SQLException
 	{
-		try
-		{
-			return this.dialect.evaluateCurrentTime(sql, date);
-		}
-		catch (SQLException e)
-		{
-			throw new AssertionError(e);
-		}
+		return this.dialect.evaluateCurrentTime(sql, date);
 	}
 
 	@DataProvider(name = "current-timestamp")
@@ -696,7 +549,7 @@ public class TestStandardDialect implements Dialect
 	}
 
 	@Test(dataProvider = "current-timestamp")
-	public void testEvaluateCurrentTimestamp(String sql, java.sql.Timestamp date)
+	public void testEvaluateCurrentTimestamp(String sql, java.sql.Timestamp date) throws SQLException
 	{
 		String expected = sql.contains("success") ? String.format("SELECT TIMESTAMP '%s' FROM success", date.toString()) : sql;
 		
@@ -706,16 +559,9 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Override
-	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp date)
+	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp date) throws SQLException
 	{
-		try
-		{
-			return this.dialect.evaluateCurrentTimestamp(sql, date);
-		}
-		catch (SQLException e)
-		{
-			throw new AssertionError(e);
-		}
+		return this.dialect.evaluateCurrentTimestamp(sql, date);
 	}
 
 	@DataProvider(name = "random")
@@ -731,7 +577,7 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Test(dataProvider = "random")
-	public void testEvaluateRand(String sql)
+	public void testEvaluateRand(String sql) throws SQLException
 	{
 		String result = this.evaluateRand(sql);
 		
@@ -746,19 +592,12 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Override
-	public String evaluateRand(String sql)
+	public String evaluateRand(String sql) throws SQLException
 	{
-		try
-		{
-			return this.dialect.evaluateRand(sql);
-		}
-		catch (SQLException e)
-		{
-			throw new AssertionError(e);
-		}
+		return this.dialect.evaluateRand(sql);
 	}
 
-	public void testGetAlterIdentityColumnSQL()
+	public void testGetAlterIdentityColumnSQL() throws SQLException
 	{
 		TableProperties table = EasyMock.createStrictMock(TableProperties.class);
 		ColumnProperties column = EasyMock.createStrictMock(ColumnProperties.class);
@@ -776,15 +615,8 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Override
-	public String getAlterIdentityColumnSQL(TableProperties table, ColumnProperties column, long value)
+	public String getAlterIdentityColumnSQL(TableProperties table, ColumnProperties column, long value) throws SQLException
 	{
-		try
-		{
-			return this.dialect.getAlterIdentityColumnSQL(table, column, value);
-		}
-		catch (SQLException e)
-		{
-			throw new AssertionError(e);
-		}
+		return this.dialect.getAlterIdentityColumnSQL(table, column, value);
 	}
 }

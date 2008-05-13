@@ -42,7 +42,7 @@ public class TestMckoiDialect extends TestStandardDialect
 	 */
 	@Override
 	@Test(dataProvider = "insert-table-sql")
-	public void testParseInsertTable(String sql)
+	public void testParseInsertTable(String sql) throws SQLException
 	{
 		String result = this.parseInsertTable(sql);
 		
