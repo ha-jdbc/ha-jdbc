@@ -57,18 +57,11 @@ public class TestFirebirdDialect extends TestStandardDialect
 		
 		EasyMock.replay(sequence);
 		
-		try
-		{
-			String result = this.getAlterSequenceSQL(sequence, 1000L);
-			
-			EasyMock.verify(sequence);
-			
-			assert result.equals("SET GENERATOR sequence TO 1000") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getAlterSequenceSQL(sequence, 1000L);
+		
+		EasyMock.verify(sequence);
+		
+		assert result.equals("SET GENERATOR sequence TO 1000") : result;
 	}
 
 	/**
@@ -136,18 +129,11 @@ public class TestFirebirdDialect extends TestStandardDialect
 		
 		EasyMock.replay(sequence);
 		
-		try
-		{
-			String sql = this.getNextSequenceValueSQL(sequence);
-			
-			EasyMock.verify(sequence);
-			
-			assert sql.equals("SELECT GEN_ID(sequence, 1) FROM RDB$DATABASE") : sql;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String sql = this.getNextSequenceValueSQL(sequence);
+		
+		EasyMock.verify(sequence);
+		
+		assert sql.equals("SELECT GEN_ID(sequence, 1) FROM RDB$DATABASE") : sql;
 	}
 
 	/**
@@ -156,16 +142,9 @@ public class TestFirebirdDialect extends TestStandardDialect
 	@Override
 	public void testGetSimpleSQL()
 	{
-		try
-		{
-			String result = this.getSimpleSQL();
-			
-			assert result.equals("SELECT CURRENT_TIMESTAMP FROM RDB$DATABASE") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getSimpleSQL();
+		
+		assert result.equals("SELECT CURRENT_TIMESTAMP FROM RDB$DATABASE") : result;
 	}
 
 	@Override
@@ -198,15 +177,8 @@ public class TestFirebirdDialect extends TestStandardDialect
 	@Test(dataProvider = "insert-table-sql")
 	public void testParseInsertTable(String sql)
 	{
-		try
-		{
-			String result = this.parseInsertTable(sql);
-			
-			assert result == null : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.parseInsertTable(sql);
+		
+		assert result == null : result;
 	}
 }

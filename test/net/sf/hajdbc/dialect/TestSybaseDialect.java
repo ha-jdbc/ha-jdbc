@@ -52,16 +52,9 @@ public class TestSybaseDialect extends TestStandardDialect
 	@Override
 	public void testGetSimpleSQL()
 	{
-		try
-		{
-			String result = this.getSimpleSQL();
-			
-			assert result.equals("SELECT GETDATE()") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getSimpleSQL();
+		
+		assert result.equals("SELECT GETDATE()") : result;
 	}
 
 	/**
@@ -76,18 +69,11 @@ public class TestSybaseDialect extends TestStandardDialect
 		
 		EasyMock.replay(table);
 		
-		try
-		{
-			String result = this.getTruncateTableSQL(table);
-			
-			EasyMock.verify(table);
-			
-			assert result.equals("TRUNCATE TABLE table") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getTruncateTableSQL(table);
+		
+		EasyMock.verify(table);
+		
+		assert result.equals("TRUNCATE TABLE table") : result;
 	}
 
 	/**
@@ -106,16 +92,9 @@ public class TestSybaseDialect extends TestStandardDialect
 		key.setDeleteRule(DatabaseMetaData.importedKeyCascade);
 		key.setUpdateRule(DatabaseMetaData.importedKeyRestrict);
 		
-		try
-		{
-			String result = this.getCreateForeignKeyConstraintSQL(key);
-			
-			assert result.equals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE ON UPDATE RESTRICT") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getCreateForeignKeyConstraintSQL(key);
+		
+		assert result.equals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE ON UPDATE RESTRICT") : result;
 	}
 
 	/**
@@ -130,42 +109,35 @@ public class TestSybaseDialect extends TestStandardDialect
 		
 		EasyMock.replay(column);
 		
-		try
-		{
-			boolean result = this.isIdentity(column);
+		boolean result = this.isIdentity(column);
 
-			EasyMock.verify(column);
-			
-			assert result;
-			
-			EasyMock.reset(column);
-			
-			EasyMock.expect(column.getDefaultValue()).andReturn("IDENTITY");
-			
-			EasyMock.replay(column);
-			
-			result = this.isIdentity(column);
+		EasyMock.verify(column);
+		
+		assert result;
+		
+		EasyMock.reset(column);
+		
+		EasyMock.expect(column.getDefaultValue()).andReturn("IDENTITY");
+		
+		EasyMock.replay(column);
+		
+		result = this.isIdentity(column);
 
-			EasyMock.verify(column);
-			
-			assert result;
-			
-			EasyMock.reset(column);
-			
-			EasyMock.expect(column.getDefaultValue()).andReturn(null);
-			
-			EasyMock.replay(column);
-			
-			result = this.isIdentity(column);
-			
-			EasyMock.verify(column);
-			
-			assert !result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		EasyMock.verify(column);
+		
+		assert result;
+		
+		EasyMock.reset(column);
+		
+		EasyMock.expect(column.getDefaultValue()).andReturn(null);
+		
+		EasyMock.replay(column);
+		
+		result = this.isIdentity(column);
+		
+		EasyMock.verify(column);
+		
+		assert !result;
 	}
 	
 	/**
@@ -175,16 +147,9 @@ public class TestSybaseDialect extends TestStandardDialect
 	@Test(dataProvider = "sequence-sql")
 	public void testParseSequence(String sql)
 	{
-		try
-		{
-			String result = this.parseSequence(sql);
-			
-			assert (result == null) : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.parseSequence(sql);
+		
+		assert (result == null) : result;
 	}
 
 	/**
@@ -197,18 +162,11 @@ public class TestSybaseDialect extends TestStandardDialect
 		
 		EasyMock.replay(metaData);
 		
-		try
-		{
-			Collection<QualifiedName> result = this.getSequences(metaData);
-			
-			EasyMock.verify(metaData);
-			
-			assert result.isEmpty() : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		Collection<QualifiedName> result = this.getSequences(metaData);
+		
+		EasyMock.verify(metaData);
+		
+		assert result.isEmpty() : result;
 	}
 
 	@Override
@@ -234,16 +192,9 @@ public class TestSybaseDialect extends TestStandardDialect
 	{
 		String expected = sql.contains("success") ? String.format("SELECT '%s' FROM success", date.toString()) : sql;
 		
-		try
-		{
-			String evaluated = this.evaluateCurrentDate(sql, date);
-	
-			assert evaluated.equals(expected) : evaluated;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String evaluated = this.evaluateCurrentDate(sql, date);
+
+		assert evaluated.equals(expected) : evaluated;
 	}
 
 	@Override
@@ -266,16 +217,9 @@ public class TestSybaseDialect extends TestStandardDialect
 	{
 		String expected = sql.contains("success") ? String.format("SELECT '%s' FROM success", date.toString()) : sql;
 		
-		try
-		{
-			String evaluated = this.evaluateCurrentTime(sql, date);
-	
-			assert evaluated.equals(expected) : evaluated;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String evaluated = this.evaluateCurrentTime(sql, date);
+
+		assert evaluated.equals(expected) : evaluated;
 	}
 
 	@Override
@@ -304,15 +248,8 @@ public class TestSybaseDialect extends TestStandardDialect
 	{
 		String expected = sql.contains("success") ? String.format("SELECT '%s' FROM success", date.toString()) : sql;
 		
-		try
-		{
-			String evaluated = this.evaluateCurrentTimestamp(sql, date);
+		String evaluated = this.evaluateCurrentTimestamp(sql, date);
 
-			assert evaluated.equals(expected) : evaluated;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		assert evaluated.equals(expected) : evaluated;
 	}
 }

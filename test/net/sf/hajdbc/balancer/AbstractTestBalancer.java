@@ -27,6 +27,7 @@ import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.MockDatabase;
 
+import org.easymock.EasyMock;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -35,16 +36,14 @@ import org.testng.annotations.Test;
  * @author  Paul Ferraro
  */
 @SuppressWarnings("nls")
+@Test
 public abstract class AbstractTestBalancer implements Balancer<Void>
 {
-	private Balancer<Void> balancer = createBalancer();
+	private Balancer<Void> balancer;
 	
-	protected abstract Balancer<Void> createBalancer();
-
-	@AfterMethod
-	void tearDown()
+	protected AbstractTestBalancer(Balancer<Void> balancer)
 	{
-		this.balancer.clear();
+		this.balancer = balancer;
 	}
 	
 	@DataProvider(name = "database")
@@ -53,86 +52,110 @@ public abstract class AbstractTestBalancer implements Balancer<Void>
 		return new Object[][] { new Object[] { new MockDatabase("1", 1) } };
 	}
 	
+	public void testAdd()
+	{
+		Database<Void> database = new MockDatabase("1", 1);
+		
+		boolean result = this.add(database);
+		
+		assert result;
+		
+		result = this.add(database);
+		
+		assert !result;
+	}
+	
 	@Override
-	@Test(dataProvider = "database")
 	public boolean add(Database<Void> database)
 	{
-		boolean added = this.balancer.add(database);
-		
-		assert added;
-
-		added = this.balancer.add(database);
-
-		assert !added;
-		
-		return added;
+		return this.balancer.add(database);
 	}
 
+	@SuppressWarnings("unchecked")
+	public void testAfterInvocation()
+	{
+		Database<Void> database = EasyMock.createStrictMock(Database.class);
+		
+		EasyMock.replay(database);
+		
+		this.afterInvocation(database);
+		
+		EasyMock.verify(database);
+	}
+	
 	@Override
-	@Test(dataProvider = "database")
+	@Test(enabled = false)
 	public void afterInvocation(Database<Void> database)
 	{
-		this.balancer.add(database);
+		this.balancer.afterInvocation(database);
+	}
+
+	@SuppressWarnings("unchecked")
+	public void testBeforeInvocation()
+	{
+		Database<Void> database = EasyMock.createStrictMock(Database.class);
 		
-		this.balancer.beforeInvocation(database);
+		EasyMock.replay(database);
+		
+		this.beforeInvocation(database);
+		
+		EasyMock.verify(database);
 	}
 
 	@Override
-	@Test(dataProvider = "database")
+	@Test(enabled = false)
 	public void beforeInvocation(Database<Void> database)
 	{
-		this.balancer.add(database);
-		
 		this.balancer.beforeInvocation(database);
 	}
 
-	@Override
-	@Test
-	public Set<Database<Void>> all()
+	public void testAll()
 	{
-		Set<Database<Void>> databaseList = this.balancer.all();
+		Set<Database<Void>> databaseList = this.all();
 		
 		assert databaseList.isEmpty() : databaseList.size();
 		
 		Database<Void> database1 = new MockDatabase("db1", 1);
-		this.balancer.add(database1);
+		this.add(database1);
 		
-		databaseList = this.balancer.all();
+		databaseList = this.all();
 		
 		assert databaseList.size() == 1 : databaseList.size();
 		assert databaseList.contains(database1);
 		
 		Database<Void> database2 = new MockDatabase("db2", 1);
-		this.balancer.add(database2);
+		this.add(database2);
 
-		databaseList = this.balancer.all();
+		databaseList = this.all();
 
 		assert databaseList.size() == 2 : databaseList.size();
 		assert databaseList.contains(database1) && databaseList.contains(database2);
 
-		this.balancer.remove(database1);
+		this.remove(database1);
 
-		databaseList = this.balancer.all();
+		databaseList = this.all();
 		
 		assert databaseList.size() == 1 : databaseList.size();
 		assert databaseList.contains(database2);
 		
-		this.balancer.remove(database2);
+		this.remove(database2);
 		
-		databaseList = this.balancer.all();
+		databaseList = this.all();
 		
 		assert databaseList.isEmpty() : databaseList.size();
-		
-		return databaseList;
+	}
+	
+	@Override
+	public Set<Database<Void>> all()
+	{
+		return this.balancer.all();
 	}
 
-	@Override
-	@Test
-	public Database<Void> next()
+	public void testEmptyNext()
 	{
 		try
 		{
-			Database<Void> database = this.balancer.next();
+			Database<Void> database = this.next();
 			
 			assert false : database.getId();
 		}
@@ -140,70 +163,81 @@ public abstract class AbstractTestBalancer implements Balancer<Void>
 		{
 			assert true;
 		}
-		
-		this.next(this.balancer);
-		
-		return null;
 	}
-	
-	protected abstract void next(Balancer<Void> balancer);
 
+	public abstract void testNext();
+	
 	@Override
-	@Test(dataProvider = "database")
-	public boolean remove(Database<Void> database)
+	public Database<Void> next()
 	{
-		boolean removed = this.balancer.remove(database);
+		return this.balancer.next();
+	}
+
+	public void testRemove()
+	{
+		Database<Void> database1 = new MockDatabase("1", 1);
+		
+		boolean removed = this.remove(database1);
 
 		assert !removed;
 		
-		this.balancer.add(database);
+		this.add(database1);
 
 		Database<Void> database2 = new MockDatabase("2", 1);
 		
-		this.balancer.add(database2);
+		this.add(database2);
 		
-		removed = this.balancer.remove(database2);
+		removed = this.remove(database2);
 
 		assert removed;
 		
-		removed = this.balancer.remove(database2);
+		removed = this.remove(database2);
 
 		assert !removed;
 		
-		removed = this.balancer.remove(database);
+		removed = this.remove(database1);
 
 		assert removed;
 		
-		removed = this.balancer.remove(database);
+		removed = this.remove(database1);
 
 		assert !removed;
-		
-		return removed;
+	}
+	
+	@Override
+	public boolean remove(Database<Void> database)
+	{
+		return this.balancer.remove(database);
 	}
 
-	@Override
-	@Test
-	public void clear()
+	public void testClear()
 	{
-		int size = this.balancer.all().size();
+		int size = this.all().size();
 		
 		assert size == 0 : size;
 		
-		this.balancer.clear();
+		this.clear();
 		
 		assert size == 0 : size;
 		
-		this.balancer.add(new MockDatabase("1"));
-		this.balancer.add(new MockDatabase("2"));
+		this.add(new MockDatabase("1"));
+		this.add(new MockDatabase("2"));
 		
-		size = this.balancer.all().size();
+		size = this.all().size();
 		
 		assert size == 2 : size;
 		
-		this.balancer.clear();
+		this.clear();
 				
-		size = this.balancer.all().size();
+		size = this.all().size();
 		
 		assert size == 0 : size;
+	}
+	
+	@Override
+	@AfterMethod
+	public void clear()
+	{
+		this.balancer.clear();
 	}
 }

@@ -67,16 +67,9 @@ public class TestMaxDBDialect extends TestStandardDialect
 		key.setDeleteRule(DatabaseMetaData.importedKeyCascade);
 		key.setUpdateRule(DatabaseMetaData.importedKeyRestrict);
 		
-		try
-		{
-			String result = this.getCreateForeignKeyConstraintSQL(key);
-			
-			assert result.equals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getCreateForeignKeyConstraintSQL(key);
+		
+		assert result.equals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE") : result;
 	}
 
 	/**
@@ -138,16 +131,9 @@ public class TestMaxDBDialect extends TestStandardDialect
 	@Override
 	public void testGetSimpleSQL()
 	{
-		try
-		{
-			String result = this.getSimpleSQL();
-			
-			assert result.equals("SELECT SYSDATE FROM DUAL") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getSimpleSQL();
+		
+		assert result.equals("SELECT SYSDATE FROM DUAL") : result;
 	}
 
 	/**
@@ -162,18 +148,11 @@ public class TestMaxDBDialect extends TestStandardDialect
 		
 		EasyMock.replay(table);
 		
-		try
-		{
-			String result = this.getTruncateTableSQL(table);
+		String result = this.getTruncateTableSQL(table);
 
-			EasyMock.verify(table);
-			
-			assert result.equals("TRUNCATE TABLE table") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		EasyMock.verify(table);
+		
+		assert result.equals("TRUNCATE TABLE table") : result;
 	}
 
 	@Override
@@ -200,16 +179,9 @@ public class TestMaxDBDialect extends TestStandardDialect
 	@Test(dataProvider = "insert-table-sql")
 	public void testParseInsertTable(String sql)
 	{
-		try
-		{
-			String result = this.parseInsertTable(sql);
-			
-			assert (result == null) : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.parseInsertTable(sql);
+		
+		assert (result == null) : result;
 	}
 	
 	/**
@@ -224,17 +196,10 @@ public class TestMaxDBDialect extends TestStandardDialect
 		
 		EasyMock.replay(sequence);
 		
-		try
-		{
-			String result = this.getNextSequenceValueSQL(sequence);
+		String result = this.getNextSequenceValueSQL(sequence);
 
-			EasyMock.verify(sequence);
-			
-			assert result.equals("SELECT sequence.NEXTVAL FROM DUAL") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		EasyMock.verify(sequence);
+		
+		assert result.equals("SELECT sequence.NEXTVAL FROM DUAL") : result;
 	}
 }

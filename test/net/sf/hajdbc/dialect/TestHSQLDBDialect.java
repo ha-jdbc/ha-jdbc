@@ -66,16 +66,9 @@ public class TestHSQLDBDialect extends TestStandardDialect
 		key.setDeleteRule(DatabaseMetaData.importedKeyCascade);
 		key.setUpdateRule(DatabaseMetaData.importedKeyRestrict);
 		
-		try
-		{
-			String result = this.getCreateForeignKeyConstraintSQL(key);
-			
-			assert result.equals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE ON UPDATE RESTRICT") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getCreateForeignKeyConstraintSQL(key);
+		
+		assert result.equals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE ON UPDATE RESTRICT") : result;
 	}
 
 	/**
@@ -139,16 +132,9 @@ public class TestHSQLDBDialect extends TestStandardDialect
 	@Override
 	public void testGetSimpleSQL()
 	{
-		try
-		{
-			String result = this.getSimpleSQL();
-			
-			assert result.equals("CALL CURRENT_TIMESTAMP") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getSimpleSQL();
+		
+		assert result.equals("CALL CURRENT_TIMESTAMP") : result;
 	}
 	
 	/**
@@ -163,18 +149,11 @@ public class TestHSQLDBDialect extends TestStandardDialect
 
 		EasyMock.replay(sequence);
 		
-		try
-		{
-			String result = this.getNextSequenceValueSQL(sequence);
+		String result = this.getNextSequenceValueSQL(sequence);
 
-			EasyMock.verify(sequence);
-			
-			assert result.equals("CALL NEXT VALUE FOR sequence") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		EasyMock.verify(sequence);
+		
+		assert result.equals("CALL NEXT VALUE FOR sequence") : result;
 	}
 	
 	@Override

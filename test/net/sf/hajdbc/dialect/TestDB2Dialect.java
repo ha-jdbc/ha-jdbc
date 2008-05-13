@@ -115,18 +115,11 @@ public class TestDB2Dialect extends TestStandardDialect
 		
 		EasyMock.replay(sequence);
 		
-		try
-		{
-			String result = this.getNextSequenceValueSQL(sequence);
-			
-			EasyMock.verify(sequence);
-			
-			assert result.equals("VALUES NEXTVAL FOR sequence") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getNextSequenceValueSQL(sequence);
+		
+		EasyMock.verify(sequence);
+		
+		assert result.equals("VALUES NEXTVAL FOR sequence") : result;
 	}
 
 	/**
@@ -135,16 +128,9 @@ public class TestDB2Dialect extends TestStandardDialect
 	@Override
 	public void testGetSimpleSQL()
 	{
-		try
-		{
-			String result = this.getSimpleSQL();
-			
-			assert result.equals("VALUES CURRENT_TIMESTAMP") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getSimpleSQL();
+		
+		assert result.equals("VALUES CURRENT_TIMESTAMP") : result;
 	}
 
 	@Override
@@ -168,16 +154,9 @@ public class TestDB2Dialect extends TestStandardDialect
 	{
 		String expected = sql.contains("success") ? String.format("SELECT '%s' FROM success", date.toString()) : sql;
 		
-		try
-		{
-			String evaluated = this.evaluateCurrentDate(sql, date);
-	
-			assert evaluated.equals(expected) : evaluated;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String evaluated = this.evaluateCurrentDate(sql, date);
+
+		assert evaluated.equals(expected) : evaluated;
 	}
 	
 	@Override
@@ -186,16 +165,9 @@ public class TestDB2Dialect extends TestStandardDialect
 	{
 		String expected = sql.contains("success") ? String.format("SELECT '%s' FROM success", date.toString()) : sql;
 		
-		try
-		{
-			String evaluated = this.evaluateCurrentTime(sql, date);
-	
-			assert evaluated.equals(expected) : evaluated;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String evaluated = this.evaluateCurrentTime(sql, date);
+
+		assert evaluated.equals(expected) : evaluated;
 	}
 	
 	@Override
@@ -204,15 +176,8 @@ public class TestDB2Dialect extends TestStandardDialect
 	{
 		String expected = sql.contains("success") ? String.format("SELECT '%s' FROM success", date.toString()) : sql;
 		
-		try
-		{
-			String evaluated = this.evaluateCurrentTimestamp(sql, date);
-
-			assert evaluated.equals(expected) : evaluated;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String evaluated = this.evaluateCurrentTimestamp(sql, date);
+	
+		assert evaluated.equals(expected) : evaluated;
 	}
 }

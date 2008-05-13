@@ -69,16 +69,9 @@ public class TestMySQLDialect extends TestStandardDialect
 		key.setDeleteRule(DatabaseMetaData.importedKeyCascade);
 		key.setUpdateRule(DatabaseMetaData.importedKeyRestrict);
 		
-		try
-		{
-			String result = this.getCreateForeignKeyConstraintSQL(key);
-			
-			assert result.equals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE ON UPDATE RESTRICT") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getCreateForeignKeyConstraintSQL(key);
+		
+		assert result.equals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE ON UPDATE RESTRICT") : result;
 	}
 
 	/**
@@ -97,16 +90,9 @@ public class TestMySQLDialect extends TestStandardDialect
 		key.setDeleteRule(DatabaseMetaData.importedKeyCascade);
 		key.setUpdateRule(DatabaseMetaData.importedKeyRestrict);
 		
-		try
-		{
-			String result = this.getDropForeignKeyConstraintSQL(key);
-			
-			assert result.equals("ALTER TABLE table DROP FOREIGN KEY name") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getDropForeignKeyConstraintSQL(key);
+		
+		assert result.equals("ALTER TABLE table DROP FOREIGN KEY name") : result;
 	}
 
 	/**
@@ -119,16 +105,9 @@ public class TestMySQLDialect extends TestStandardDialect
 		key.getColumnList().add("column1");
 		key.getColumnList().add("column2");
 		
-		try
-		{
-			String result = this.getCreateUniqueConstraintSQL(key);
-			
-			assert result.equals("ALTER TABLE table ADD UNIQUE name (column1, column2)") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getCreateUniqueConstraintSQL(key);
+		
+		assert result.equals("ALTER TABLE table ADD UNIQUE name (column1, column2)") : result;
 	}
 
 	/**
@@ -141,16 +120,9 @@ public class TestMySQLDialect extends TestStandardDialect
 		key.getColumnList().add("column1");
 		key.getColumnList().add("column2");
 		
-		try
-		{
-			String result = this.getDropUniqueConstraintSQL(key);
-			
-			assert result.equals("ALTER TABLE table DROP INDEX name") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getDropUniqueConstraintSQL(key);
+		
+		assert result.equals("ALTER TABLE table DROP INDEX name") : result;
 	}
 
 	/**
@@ -160,16 +132,9 @@ public class TestMySQLDialect extends TestStandardDialect
 	@Test(dataProvider = "sequence-sql")
 	public void testParseSequence(String sql)
 	{
-		try
-		{
-			String result = this.parseSequence(sql);
-			
-			assert (result == null) : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.parseSequence(sql);
+		
+		assert (result == null) : result;
 	}
 
 	/**
@@ -180,16 +145,9 @@ public class TestMySQLDialect extends TestStandardDialect
 	{
 		DatabaseMetaData metaData = EasyMock.createStrictMock(DatabaseMetaData.class);
 		
-		try
-		{
-			Collection<QualifiedName> result = this.getSequences(metaData);
-			
-			assert result.isEmpty() : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		Collection<QualifiedName> result = this.getSequences(metaData);
+		
+		assert result.isEmpty() : result;
 	}
 
 	/**
@@ -242,44 +200,37 @@ public class TestMySQLDialect extends TestStandardDialect
 		
 		EasyMock.replay(column);
 		
-		try
-		{
-			boolean result = this.isIdentity(column);
+		boolean result = this.isIdentity(column);
+		
+		EasyMock.verify(column);
+		
+		assert result;
 			
-			EasyMock.verify(column);
-			
-			assert result;
-			
-			EasyMock.reset(column);
-			
-			EasyMock.expect(column.getNativeType()).andReturn("INTEGER");
-			EasyMock.expect(column.getRemarks()).andReturn("AUTO_INCREMENT");
-			
-			EasyMock.replay(column);
-			
-			result = this.isIdentity(column);
-			
-			EasyMock.verify(column);
-			
-			assert result;
-			
-			EasyMock.reset(column);
-			
-			EasyMock.expect(column.getNativeType()).andReturn("INTEGER");
-			EasyMock.expect(column.getRemarks()).andReturn(null);
-			
-			EasyMock.replay(column);
-			
-			result = this.isIdentity(column);
-			
-			EasyMock.verify(column);
-			
-			assert !result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		EasyMock.reset(column);
+		
+		EasyMock.expect(column.getNativeType()).andReturn("INTEGER");
+		EasyMock.expect(column.getRemarks()).andReturn("AUTO_INCREMENT");
+		
+		EasyMock.replay(column);
+		
+		result = this.isIdentity(column);
+		
+		EasyMock.verify(column);
+		
+		assert result;
+		
+		EasyMock.reset(column);
+		
+		EasyMock.expect(column.getNativeType()).andReturn("INTEGER");
+		EasyMock.expect(column.getRemarks()).andReturn(null);
+		
+		EasyMock.replay(column);
+		
+		result = this.isIdentity(column);
+		
+		EasyMock.verify(column);
+		
+		assert !result;
 	}
 	
 	/**
@@ -296,18 +247,11 @@ public class TestMySQLDialect extends TestStandardDialect
 		
 		EasyMock.replay(table, column);
 		
-		try
-		{
-			String result = this.getAlterIdentityColumnSQL(table, column, 1000L);
-			
-			EasyMock.verify(table, column);
-			
-			assert result.equals("ALTER TABLE table AUTO_INCREMENT = 1000") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getAlterIdentityColumnSQL(table, column, 1000L);
+		
+		EasyMock.verify(table, column);
+		
+		assert result.equals("ALTER TABLE table AUTO_INCREMENT = 1000") : result;
 	}
 
 	@Override
@@ -333,16 +277,9 @@ public class TestMySQLDialect extends TestStandardDialect
 	{
 		String expected = sql.contains("success") ? String.format("SELECT '%s' FROM success", date.toString()) : sql;
 		
-		try
-		{
-			String evaluated = this.evaluateCurrentDate(sql, date);
-	
-			assert evaluated.equals(expected) : evaluated;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String evaluated = this.evaluateCurrentDate(sql, date);
+
+		assert evaluated.equals(expected) : evaluated;
 	}
 
 	@Override
@@ -375,16 +312,9 @@ public class TestMySQLDialect extends TestStandardDialect
 	{
 		String expected = sql.contains("success") ? String.format("SELECT '%s' FROM success", date.toString()) : sql;
 		
-		try
-		{
-			String evaluated = this.evaluateCurrentTime(sql, date);
-	
-			assert evaluated.equals(expected) : evaluated;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String evaluated = this.evaluateCurrentTime(sql, date);
+
+		assert evaluated.equals(expected) : evaluated;
 	}
 
 	@Override
@@ -420,15 +350,8 @@ public class TestMySQLDialect extends TestStandardDialect
 	{
 		String expected = sql.contains("success") ? String.format("SELECT '%s' FROM success", date.toString()) : sql;
 		
-		try
-		{
-			String evaluated = this.evaluateCurrentTimestamp(sql, date);
+		String evaluated = this.evaluateCurrentTimestamp(sql, date);
 
-			assert evaluated.equals(expected) : evaluated;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		assert evaluated.equals(expected) : evaluated;
 	}
 }

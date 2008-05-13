@@ -61,31 +61,24 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		
 		EasyMock.replay(column);
 		
-		try
-		{
-			int result = this.getColumnType(column);
-			
-			EasyMock.verify(column);
-			
-			assert result == Types.BLOB : result;
-			
-			EasyMock.reset(column);
-			
-			EasyMock.expect(column.getNativeType()).andReturn("int");		
-			EasyMock.expect(column.getType()).andReturn(Types.INTEGER);
-			
-			EasyMock.replay(column);
-			
-			result = this.getColumnType(column);
-			
-			EasyMock.verify(column);
-			
-			assert result == Types.INTEGER : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		int result = this.getColumnType(column);
+		
+		EasyMock.verify(column);
+		
+		assert result == Types.BLOB : result;
+		
+		EasyMock.reset(column);
+		
+		EasyMock.expect(column.getNativeType()).andReturn("int");		
+		EasyMock.expect(column.getType()).andReturn(Types.INTEGER);
+		
+		EasyMock.replay(column);
+		
+		result = this.getColumnType(column);
+		
+		EasyMock.verify(column);
+		
+		assert result == Types.INTEGER : result;
 	}
 
 	/**
@@ -100,18 +93,11 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		
 		EasyMock.replay(table);
 		
-		try
-		{
-			String result = this.getTruncateTableSQL(table);
-			
-			EasyMock.verify(table);
-			
-			assert result.equals("TRUNCATE TABLE table") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getTruncateTableSQL(table);
+		
+		EasyMock.verify(table);
+		
+		assert result.equals("TRUNCATE TABLE table") : result;
 	}
 
 	/**
@@ -126,18 +112,11 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		
 		EasyMock.replay(sequence);
 		
-		try
-		{
-			String result = this.getNextSequenceValueSQL(sequence);
-			
-			EasyMock.verify(sequence);
-			
-			assert result.equals("SELECT NEXTVAL('sequence')") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getNextSequenceValueSQL(sequence);
+		
+		EasyMock.verify(sequence);
+		
+		assert result.equals("SELECT NEXTVAL('sequence')") : result;
 	}
 	
 	@Override
@@ -207,42 +186,35 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		
 		EasyMock.replay(column);
 		
-		try
-		{
-			boolean result = this.isIdentity(column);
-			
-			EasyMock.verify(column);
-			
-			assert result;
-			
-			EasyMock.reset(column);
-			
-			EasyMock.expect(column.getNativeType()).andReturn("bigserial");
-			
-			EasyMock.replay(column);
-			
-			result = this.isIdentity(column);
-			
-			EasyMock.verify(column);
-			
-			assert result;
-			
-			EasyMock.reset(column);
-			
-			EasyMock.expect(column.getNativeType()).andReturn("int");
-			
-			EasyMock.replay(column);
-			
-			result = this.isIdentity(column);
-			
-			EasyMock.verify(column);
-			
-			assert !result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		boolean result = this.isIdentity(column);
+		
+		EasyMock.verify(column);
+		
+		assert result;
+		
+		EasyMock.reset(column);
+		
+		EasyMock.expect(column.getNativeType()).andReturn("bigserial");
+		
+		EasyMock.replay(column);
+		
+		result = this.isIdentity(column);
+		
+		EasyMock.verify(column);
+		
+		assert result;
+		
+		EasyMock.reset(column);
+		
+		EasyMock.expect(column.getNativeType()).andReturn("int");
+		
+		EasyMock.replay(column);
+		
+		result = this.isIdentity(column);
+		
+		EasyMock.verify(column);
+		
+		assert !result;
 	}
 	
 	/**
@@ -259,18 +231,11 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		
 		EasyMock.replay(table, column);
 		
-		try
-		{
-			String result = this.getAlterIdentityColumnSQL(table, column, 1000L);
-			
-			EasyMock.verify(table, column);
-			
-			assert result.equals("ALTER SEQUENCE table_column_seq RESTART WITH 1000") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getAlterIdentityColumnSQL(table, column, 1000L);
+		
+		EasyMock.verify(table, column);
+		
+		assert result.equals("ALTER SEQUENCE table_column_seq RESTART WITH 1000") : result;
 	}
 	
 	/**

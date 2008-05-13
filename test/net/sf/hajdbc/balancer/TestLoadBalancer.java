@@ -36,40 +36,36 @@ import org.testng.annotations.Test;
 @SuppressWarnings("nls")
 public class TestLoadBalancer extends AbstractTestBalancer
 {
-	/**
-	 * @see net.sf.hajdbc.balancer.AbstractTestBalancer#createBalancer()
-	 */
-	@Override
-	protected Balancer<Void> createBalancer()
+	public TestLoadBalancer()
 	{
-		return new LoadBalancer<Void>();
+		super(new LoadBalancer<Void>());
 	}
 
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractTestBalancer#next(net.sf.hajdbc.Balancer)
+	 * @see net.sf.hajdbc.balancer.AbstractTestBalancer#testNext()
 	 */
 	@Override
-	protected void next(Balancer<Void> balancer)
+	public void testNext()
 	{
 		Database<Void> database0 = new MockDatabase("0", 0);
 		Database<Void> database1 = new MockDatabase("1", 1);
 		Database<Void> database2 = new MockDatabase("2", 2);
 
-		balancer.add(database0);
+		this.add(database0);
 		
-		Database<Void> next = balancer.next();
+		Database<Void> next = this.next();
 		
 		assert database0.equals(next) : next;
 
-		balancer.add(database2);
+		this.add(database2);
 
-		next = balancer.next();
+		next = this.next();
 
 		assert database2.equals(next) : next;
 		
-		balancer.add(database1);
+		this.add(database1);
 
-		next = balancer.next();
+		next = this.next();
 
 		assert database2.equals(next) : next;
 		
@@ -77,25 +73,25 @@ public class TestLoadBalancer extends AbstractTestBalancer
 		Thread[] database2Threads = new Thread[2];
 		for (int i = 0; i < 2; ++i)
 		{
-			database2Threads[i] = new InvokerThread(balancer, new MockInvoker(), database2);
+			database2Threads[i] = new InvokerThread(this, new MockInvoker(), database2);
 			database2Threads[i].start();
 		}
 		
-		next = balancer.next();
+		next = this.next();
 		
 		assert database1.equals(next) : next;
 		
 		// Add enough load to database1 to shift relative effective load
-		Thread database1Thread = new InvokerThread(balancer, new MockInvoker(), database1);
+		Thread database1Thread = new InvokerThread(this, new MockInvoker(), database1);
 		database1Thread.start();
 
-		next = balancer.next();
+		next = this.next();
 		
 		assert database2.equals(next) : next;
 
 		database1Thread.interrupt();
 
-		next = balancer.next();
+		next = this.next();
 
 		assert database1.equals(next) : next;
 		
@@ -104,7 +100,7 @@ public class TestLoadBalancer extends AbstractTestBalancer
 			database2Threads[i].interrupt();
 		}
 		
-		next = balancer.next();
+		next = this.next();
 		
 		assert database2.equals(next) : next;
 	}

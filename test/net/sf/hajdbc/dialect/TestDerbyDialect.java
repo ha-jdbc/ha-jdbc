@@ -63,16 +63,9 @@ public class TestDerbyDialect extends TestStandardDialect
 		key.setDeleteRule(DatabaseMetaData.importedKeyCascade);
 		key.setUpdateRule(DatabaseMetaData.importedKeyRestrict);
 		
-		try
-		{
-			String result = this.getCreateForeignKeyConstraintSQL(key);
-			
-			assert result.equals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE ON UPDATE RESTRICT") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getCreateForeignKeyConstraintSQL(key);
+		
+		assert result.equals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE ON UPDATE RESTRICT") : result;
 	}
 
 	/**
@@ -81,16 +74,9 @@ public class TestDerbyDialect extends TestStandardDialect
 	@Override
 	public void testGetSimpleSQL()
 	{
-		try
-		{
-			String result = this.getSimpleSQL();
-			
-			assert result.equals("VALUES CURRENT_TIMESTAMP") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getSimpleSQL();
+		
+		assert result.equals("VALUES CURRENT_TIMESTAMP") : result;
 	}
 
 	/**
@@ -100,16 +86,9 @@ public class TestDerbyDialect extends TestStandardDialect
 	@Test(dataProvider = "sequence-sql")
 	public void testParseSequence(String sql)
 	{
-		try
-		{
-			String result = this.parseSequence(sql);
-			
-			assert result == null : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.parseSequence(sql);
+		
+		assert result == null : result;
 	}
 
 	/**
@@ -122,18 +101,11 @@ public class TestDerbyDialect extends TestStandardDialect
 		
 		EasyMock.replay(metaData);
 		
-		try
-		{
-			Collection<QualifiedName> result = this.getSequences(metaData);
+		Collection<QualifiedName> result = this.getSequences(metaData);
 
-			EasyMock.verify(metaData);
-			
-			assert result.isEmpty() : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		EasyMock.verify(metaData);
+		
+		assert result.isEmpty() : result;
 	}
 
 	/**
@@ -148,30 +120,23 @@ public class TestDerbyDialect extends TestStandardDialect
 		
 		EasyMock.replay(column);
 		
-		try
-		{
-			boolean result = this.isIdentity(column);
+		boolean result = this.isIdentity(column);
 
-			EasyMock.verify(column);
-			
-			assert result;
-			
-			EasyMock.reset(column);
+		EasyMock.verify(column);
+		
+		assert result;
+		
+		EasyMock.reset(column);
 
-			EasyMock.expect(column.getRemarks()).andReturn(null);
-			
-			EasyMock.replay(column);
-			
-			result = this.isIdentity(column);
-			
-			EasyMock.verify(column);
-			
-			assert !result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		EasyMock.expect(column.getRemarks()).andReturn(null);
+		
+		EasyMock.replay(column);
+		
+		result = this.isIdentity(column);
+		
+		EasyMock.verify(column);
+		
+		assert !result;
 	}
 	
 	/**
@@ -186,18 +151,11 @@ public class TestDerbyDialect extends TestStandardDialect
 		
 		EasyMock.replay(sequence);
 
-		try
-		{
-			String result = this.getNextSequenceValueSQL(sequence);
-			
-			EasyMock.verify(sequence);
-			
-			assert result.equals("VALUES NEXT VALUE FOR sequence") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getNextSequenceValueSQL(sequence);
+		
+		EasyMock.verify(sequence);
+		
+		assert result.equals("VALUES NEXT VALUE FOR sequence") : result;
 	}
 
 	@Override
@@ -221,16 +179,9 @@ public class TestDerbyDialect extends TestStandardDialect
 	{
 		String expected = sql.contains("success") ? String.format("SELECT DATE('%s') FROM success", date.toString()) : sql;
 		
-		try
-		{
-			String evaluated = this.evaluateCurrentDate(sql, date);
-	
-			assert evaluated.equals(expected) : evaluated;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String evaluated = this.evaluateCurrentDate(sql, date);
+
+		assert evaluated.equals(expected) : evaluated;
 	}
 
 	@Override
@@ -254,16 +205,9 @@ public class TestDerbyDialect extends TestStandardDialect
 	{
 		String expected = sql.contains("success") ? String.format("SELECT TIME('%s') FROM success", date.toString()) : sql;
 		
-		try
-		{
-			String evaluated = this.evaluateCurrentTime(sql, date);
-	
-			assert evaluated.equals(expected) : evaluated;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String evaluated = this.evaluateCurrentTime(sql, date);
+
+		assert evaluated.equals(expected) : evaluated;
 	}
 
 	@Override
@@ -287,15 +231,8 @@ public class TestDerbyDialect extends TestStandardDialect
 	{
 		String expected = sql.contains("success") ? String.format("SELECT TIMESTAMP('%s') FROM success", date.toString()) : sql;
 		
-		try
-		{
-			String evaluated = this.evaluateCurrentTimestamp(sql, date);
+		String evaluated = this.evaluateCurrentTimestamp(sql, date);
 
-			assert evaluated.equals(expected) : evaluated;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		assert evaluated.equals(expected) : evaluated;
 	}
 }

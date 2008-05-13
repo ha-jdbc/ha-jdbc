@@ -20,36 +20,33 @@
  */
 package net.sf.hajdbc.sync;
 
-import java.sql.SQLException;
-
 import net.sf.hajdbc.SynchronizationContext;
-import net.sf.hajdbc.SynchronizationStrategy;
 
 import org.easymock.EasyMock;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class TestPassiveSynchronizationStrategy implements SynchronizationStrategy
+public class TestPassiveSynchronizationStrategy extends AbstractTestSynchronizationStrategy
 {
-	private SynchronizationStrategy strategy = new PassiveSynchronizationStrategy();
-	
-	@DataProvider(name = "context")
-	Object[][] contextProvider()
+	public TestPassiveSynchronizationStrategy()
 	{
-		return new Object[][] { new Object[] { EasyMock.createStrictMock(SynchronizationContext.class) } };
+		super(new PassiveSynchronizationStrategy());
 	}
-
+	
+	/**
+	 * @see net.sf.hajdbc.sync.AbstractTestSynchronizationStrategy#testSynchronize()
+	 */
+	@SuppressWarnings("unchecked")
 	@Override
-	@Test(dataProvider = "context")
-	public <D> void synchronize(SynchronizationContext<D> context) throws SQLException
+	public <D> void testSynchronize()
 	{
+		SynchronizationContext<D> context = EasyMock.createStrictMock(SynchronizationContext.class);
+		
 		EasyMock.replay(context);
 		
-		this.strategy.synchronize(context);
+		this.synchronize(context);
 		
 		EasyMock.verify(context);
 	}

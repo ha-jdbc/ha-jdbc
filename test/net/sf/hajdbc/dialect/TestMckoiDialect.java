@@ -44,16 +44,9 @@ public class TestMckoiDialect extends TestStandardDialect
 	@Test(dataProvider = "insert-table-sql")
 	public void testParseInsertTable(String sql)
 	{
-		try
-		{
-			String result = this.parseInsertTable(sql);
-			
-			assert (result == null) : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.parseInsertTable(sql);
+		
+		assert (result == null) : result;
 	}
 
 	@Override

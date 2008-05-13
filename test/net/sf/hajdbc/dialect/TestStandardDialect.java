@@ -71,24 +71,24 @@ public class TestStandardDialect implements Dialect
 		
 		EasyMock.replay(sequence);
 		
-		try
-		{
-			String result = this.getAlterSequenceSQL(sequence, 1000L);
+		String result = this.getAlterSequenceSQL(sequence, 1000L);
 
-			EasyMock.verify(sequence);
-			
-			assert result.equals("ALTER SEQUENCE sequence RESTART WITH 1000") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		EasyMock.verify(sequence);
+		
+		assert result.equals("ALTER SEQUENCE sequence RESTART WITH 1000") : result;
 	}
 	
 	@Override
-	public String getAlterSequenceSQL(SequenceProperties sequence, long value) throws SQLException
+	public String getAlterSequenceSQL(SequenceProperties sequence, long value)
 	{
-		return this.dialect.getAlterSequenceSQL(sequence, value);
+		try
+		{
+			return this.dialect.getAlterSequenceSQL(sequence, value);
+		}
+		catch (SQLException e)
+		{
+			throw new AssertionError(e);
+		}
 	}
 
 	public void testGetColumnType()
@@ -99,24 +99,24 @@ public class TestStandardDialect implements Dialect
 		
 		EasyMock.replay(column);
 		
-		try
-		{
-			int result = this.getColumnType(column);
-			
-			EasyMock.verify(column);
-			
-			assert result == Types.INTEGER : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		int result = this.getColumnType(column);
+		
+		EasyMock.verify(column);
+		
+		assert result == Types.INTEGER : result;
 	}
 	
 	@Override
-	public int getColumnType(ColumnProperties column) throws SQLException
+	public int getColumnType(ColumnProperties column)
 	{
-		return this.dialect.getColumnType(column);
+		try
+		{
+			return this.dialect.getColumnType(column);
+		}
+		catch (SQLException e)
+		{
+			throw new AssertionError(e);
+		}
 	}
 
 	public void testGetCreateForeignKeyConstraintSQL()
@@ -131,22 +131,22 @@ public class TestStandardDialect implements Dialect
 		key.setDeleteRule(DatabaseMetaData.importedKeyCascade);
 		key.setUpdateRule(DatabaseMetaData.importedKeyRestrict);
 		
-		try
-		{
-			String result = this.getCreateForeignKeyConstraintSQL(key);
-			
-			assert result.equals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE ON UPDATE RESTRICT DEFERRABLE INITIALLY DEFERRED") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getCreateForeignKeyConstraintSQL(key);
+		
+		assert result.equals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE ON UPDATE RESTRICT DEFERRABLE INITIALLY DEFERRED") : result;
 	}
 	
 	@Override
-	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException
+	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint constraint)
 	{
-		return this.dialect.getCreateForeignKeyConstraintSQL(constraint);
+		try
+		{
+			return this.dialect.getCreateForeignKeyConstraintSQL(constraint);
+		}
+		catch (SQLException e)
+		{
+			throw new AssertionError(e);
+		}
 	}
 
 	public void testGetCreateUniqueConstraintSQL()
@@ -155,22 +155,22 @@ public class TestStandardDialect implements Dialect
 		key.getColumnList().add("column1");
 		key.getColumnList().add("column2");
 		
-		try
-		{
-			String result = this.getCreateUniqueConstraintSQL(key);
-			
-			assert result.equals("ALTER TABLE table ADD CONSTRAINT name UNIQUE (column1, column2)") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getCreateUniqueConstraintSQL(key);
+		
+		assert result.equals("ALTER TABLE table ADD CONSTRAINT name UNIQUE (column1, column2)") : result;
 	}
 	
 	@Override
-	public String getCreateUniqueConstraintSQL(UniqueConstraint constraint) throws SQLException
+	public String getCreateUniqueConstraintSQL(UniqueConstraint constraint)
 	{
-		return this.dialect.getCreateUniqueConstraintSQL(constraint);
+		try
+		{
+			return this.dialect.getCreateUniqueConstraintSQL(constraint);
+		}
+		catch (SQLException e)
+		{
+			throw new AssertionError(e);
+		}
 	}
 
 	public void testGetDropForeignKeyConstraintSQL()
@@ -185,22 +185,22 @@ public class TestStandardDialect implements Dialect
 		key.setDeleteRule(DatabaseMetaData.importedKeyCascade);
 		key.setUpdateRule(DatabaseMetaData.importedKeyRestrict);
 		
-		try
-		{
-			String result = this.getDropForeignKeyConstraintSQL(key);
-			
-			assert result.equals("ALTER TABLE table DROP CONSTRAINT name") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getDropForeignKeyConstraintSQL(key);
+		
+		assert result.equals("ALTER TABLE table DROP CONSTRAINT name") : result;
 	}
 	
 	@Override
-	public String getDropForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException
+	public String getDropForeignKeyConstraintSQL(ForeignKeyConstraint constraint)
 	{
-		return this.dialect.getDropForeignKeyConstraintSQL(constraint);
+		try
+		{
+			return this.dialect.getDropForeignKeyConstraintSQL(constraint);
+		}
+		catch (SQLException e)
+		{
+			throw new AssertionError(e);
+		}
 	}
 
 	public void testGetDropUniqueConstraintSQL()
@@ -209,22 +209,22 @@ public class TestStandardDialect implements Dialect
 		key.getColumnList().add("column1");
 		key.getColumnList().add("column2");
 		
-		try
-		{
-			String result = this.getDropUniqueConstraintSQL(key);
-			
-			assert result.equals("ALTER TABLE table DROP CONSTRAINT name") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getDropUniqueConstraintSQL(key);
+		
+		assert result.equals("ALTER TABLE table DROP CONSTRAINT name") : result;
 	}
 	
 	@Override
-	public String getDropUniqueConstraintSQL(UniqueConstraint constraint) throws SQLException
+	public String getDropUniqueConstraintSQL(UniqueConstraint constraint)
 	{
-		return this.dialect.getDropUniqueConstraintSQL(constraint);
+		try
+		{
+			return this.dialect.getDropUniqueConstraintSQL(constraint);
+		}
+		catch (SQLException e)
+		{
+			throw new AssertionError(e);
+		}
 	}
 
 	public void testGetNextSequenceValueSQL()
@@ -235,24 +235,24 @@ public class TestStandardDialect implements Dialect
 		
 		EasyMock.replay(sequence);
 		
-		try
-		{
-			String result = this.getNextSequenceValueSQL(sequence);
-			
-			EasyMock.verify(sequence);
-			
-			assert result.equals("SELECT NEXT VALUE FOR sequence") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getNextSequenceValueSQL(sequence);
+		
+		EasyMock.verify(sequence);
+		
+		assert result.equals("SELECT NEXT VALUE FOR sequence") : result;
 	}
 	
 	@Override
-	public String getNextSequenceValueSQL(SequenceProperties sequence) throws SQLException
+	public String getNextSequenceValueSQL(SequenceProperties sequence)
 	{
-		return this.dialect.getNextSequenceValueSQL(sequence);
+		try
+		{
+			return this.dialect.getNextSequenceValueSQL(sequence);
+		}
+		catch (SQLException e)
+		{
+			throw new AssertionError(e);
+		}
 	}
 	
 	public void testGetSequences()
@@ -303,29 +303,36 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Override
-	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
+	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData)
 	{
-		return this.dialect.getSequences(metaData);
+		try
+		{
+			return this.dialect.getSequences(metaData);
+		}
+		catch (SQLException e)
+		{
+			throw new AssertionError(e);
+		}
 	}
 	
 	public void testGetSimpleSQL()
 	{
-		try
-		{
-			String result = this.dialect.getSimpleSQL();
-			
-			assert result.equals("SELECT CURRENT_TIMESTAMP") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getSimpleSQL();
+		
+		assert result.equals("SELECT CURRENT_TIMESTAMP") : result;
 	}
 	
 	@Override
-	public String getSimpleSQL() throws SQLException
+	public String getSimpleSQL()
 	{
-		return this.dialect.getSimpleSQL();
+		try
+		{
+			return this.dialect.getSimpleSQL();
+		}
+		catch (SQLException e)
+		{
+			throw new AssertionError(e);
+		}
 	}
 
 	public void testGetTruncateTableSQL()
@@ -336,24 +343,24 @@ public class TestStandardDialect implements Dialect
 		
 		EasyMock.replay(table);
 		
-		try
-		{
-			String result = this.getTruncateTableSQL(table);
-			
-			EasyMock.verify(table);
-			
-			assert result.equals("DELETE FROM table") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getTruncateTableSQL(table);
+		
+		EasyMock.verify(table);
+		
+		assert result.equals("DELETE FROM table") : result;
 	}
 	
 	@Override
-	public String getTruncateTableSQL(TableProperties properties) throws SQLException
+	public String getTruncateTableSQL(TableProperties properties)
 	{
-		return this.dialect.getTruncateTableSQL(properties);
+		try
+		{
+			return this.dialect.getTruncateTableSQL(properties);
+		}
+		catch (SQLException e)
+		{
+			throw new AssertionError(e);
+		}
 	}
 
 	@DataProvider(name = "select-for-update-sql")
@@ -368,22 +375,22 @@ public class TestStandardDialect implements Dialect
 	@Test(dataProvider = "select-for-update-sql")
 	public void testIsSelectForUpdate(String sql)
 	{
-		try
-		{
-			boolean result = this.isSelectForUpdate(sql);
-			
-			assert result == sql.contains("success");
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		boolean result = this.isSelectForUpdate(sql);
+		
+		assert result == sql.contains("success");
 	}
 	
 	@Override
-	public boolean isSelectForUpdate(String sql) throws SQLException
+	public boolean isSelectForUpdate(String sql)
 	{
-		return this.dialect.isSelectForUpdate(sql);
+		try
+		{
+			return this.dialect.isSelectForUpdate(sql);
+		}
+		catch (SQLException e)
+		{
+			throw new AssertionError(e);
+		}
 	}
 
 	@DataProvider(name = "sequence-sql")
@@ -401,30 +408,30 @@ public class TestStandardDialect implements Dialect
 	@Test(dataProvider = "sequence-sql")
 	public void testParseSequence(String sql)
 	{
-		try
+		String result = this.parseSequence(sql);
+		
+		if (sql.contains("success"))
 		{
-			String result = this.parseSequence(sql);
-			
-			if (sql.contains("success"))
-			{
-				assert (result != null);
-				assert result.equals("success") : result;
-			}
-			else
-			{
-				assert (result == null) : result;
-			}
+			assert (result != null);
+			assert result.equals("success") : result;
 		}
-		catch (SQLException e)
+		else
 		{
-			assert false : e;
+			assert (result == null) : result;
 		}
 	}
 	
 	@Override
-	public String parseSequence(String sql) throws SQLException
+	public String parseSequence(String sql)
 	{
-		return this.dialect.parseSequence(sql);
+		try
+		{
+			return this.dialect.parseSequence(sql);
+		}
+		catch (SQLException e)
+		{
+			throw new AssertionError(e);
+		}
 	}
 
 	public void testGetDefaultSchemas()
@@ -456,9 +463,16 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Override
-	public List<String> getDefaultSchemas(DatabaseMetaData metaData) throws SQLException
+	public List<String> getDefaultSchemas(DatabaseMetaData metaData)
 	{
-		return this.dialect.getDefaultSchemas(metaData);
+		try
+		{
+			return this.dialect.getDefaultSchemas(metaData);
+		}
+		catch (SQLException e)
+		{
+			throw new AssertionError(e);
+		}
 	}
 
 	public void testIsIdentity()
@@ -469,36 +483,36 @@ public class TestStandardDialect implements Dialect
 		
 		EasyMock.replay(column);
 		
-		try
-		{
-			boolean result = this.isIdentity(column);
-			
-			EasyMock.verify(column);
-			
-			assert result;
-			
-			EasyMock.reset(column);
-			
-			EasyMock.expect(column.getRemarks()).andReturn(null);
-			
-			EasyMock.replay(column);
-			
-			result = this.isIdentity(column);
-			
-			EasyMock.verify(column);
-			
-			assert !result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		boolean result = this.isIdentity(column);
+		
+		EasyMock.verify(column);
+		
+		assert result;
+		
+		EasyMock.reset(column);
+		
+		EasyMock.expect(column.getRemarks()).andReturn(null);
+		
+		EasyMock.replay(column);
+		
+		result = this.isIdentity(column);
+		
+		EasyMock.verify(column);
+		
+		assert !result;
 	}
 	
 	@Override
-	public boolean isIdentity(ColumnProperties properties) throws SQLException
+	public boolean isIdentity(ColumnProperties properties)
 	{
-		return this.dialect.isIdentity(properties);
+		try
+		{
+			return this.dialect.isIdentity(properties);
+		}
+		catch (SQLException e)
+		{
+			throw new AssertionError(e);
+		}
 	}
 
 	@DataProvider(name = "insert-table-sql")
@@ -521,30 +535,30 @@ public class TestStandardDialect implements Dialect
 	@Test(dataProvider = "insert-table-sql")
 	public void testParseInsertTable(String sql)
 	{
-		try
+		String result = this.parseInsertTable(sql);
+		
+		if (sql.contains("success"))
 		{
-			String result = this.parseInsertTable(sql);
-			
-			if (sql.contains("success"))
-			{
-				assert result != null;
-				assert result.equals("success");
-			}
-			else
-			{
-				assert result == null : result;
-			}
+			assert result != null;
+			assert result.equals("success");
 		}
-		catch (SQLException e)
+		else
 		{
-			assert false : e;
+			assert result == null : result;
 		}
 	}
 	
 	@Override
-	public String parseInsertTable(String sql) throws SQLException
+	public String parseInsertTable(String sql)
 	{
-		return this.dialect.parseInsertTable(sql);
+		try
+		{
+			return this.dialect.parseInsertTable(sql);
+		}
+		catch (SQLException e)
+		{
+			throw new AssertionError(e);
+		}
 	}
 	
 	public void testGetIdentifierPattern()
@@ -570,9 +584,16 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Override
-	public Pattern getIdentifierPattern(DatabaseMetaData metaData) throws SQLException
+	public Pattern getIdentifierPattern(DatabaseMetaData metaData)
 	{
-		return this.dialect.getIdentifierPattern(metaData);
+		try
+		{
+			return this.dialect.getIdentifierPattern(metaData);
+		}
+		catch (SQLException e)
+		{
+			throw new AssertionError(e);
+		}
 	}
 
 	@DataProvider(name = "current-date")
@@ -593,22 +614,22 @@ public class TestStandardDialect implements Dialect
 	{
 		String expected = sql.contains("success") ? String.format("SELECT DATE '%s' FROM success", date.toString()) : sql;
 		
-		try
-		{
-			String result = this.evaluateCurrentDate(sql, date);
-			
-			assert result.equals(expected) : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.evaluateCurrentDate(sql, date);
+		
+		assert result.equals(expected) : result;
 	}
 	
 	@Override
-	public String evaluateCurrentDate(String sql, java.sql.Date date) throws SQLException
+	public String evaluateCurrentDate(String sql, java.sql.Date date)
 	{
-		return this.dialect.evaluateCurrentDate(sql, date);
+		try
+		{
+			return this.dialect.evaluateCurrentDate(sql, date);
+		}
+		catch (SQLException e)
+		{
+			throw new AssertionError(e);
+		}
 	}
 
 	@DataProvider(name = "current-time")
@@ -636,22 +657,22 @@ public class TestStandardDialect implements Dialect
 	{
 		String expected = sql.contains("success") ? String.format("SELECT TIME '%s' FROM success", date.toString()) : sql;
 		
-		try
-		{
-			String result = this.evaluateCurrentTime(sql, date);
-			
-			assert result.equals(expected) : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.evaluateCurrentTime(sql, date);
+		
+		assert result.equals(expected) : result;
 	}
 	
 	@Override
-	public String evaluateCurrentTime(String sql, java.sql.Time date) throws SQLException
+	public String evaluateCurrentTime(String sql, java.sql.Time date)
 	{
-		return this.dialect.evaluateCurrentTime(sql, date);
+		try
+		{
+			return this.dialect.evaluateCurrentTime(sql, date);
+		}
+		catch (SQLException e)
+		{
+			throw new AssertionError(e);
+		}
 	}
 
 	@DataProvider(name = "current-timestamp")
@@ -679,22 +700,22 @@ public class TestStandardDialect implements Dialect
 	{
 		String expected = sql.contains("success") ? String.format("SELECT TIMESTAMP '%s' FROM success", date.toString()) : sql;
 		
-		try
-		{
-			String result = this.evaluateCurrentTimestamp(sql, date);
-			
-			assert result.equals(expected) : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.evaluateCurrentTimestamp(sql, date);
+		
+		assert result.equals(expected) : result;
 	}
 	
 	@Override
-	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp date) throws SQLException
+	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp date)
 	{
-		return this.dialect.evaluateCurrentTimestamp(sql, date);
+		try
+		{
+			return this.dialect.evaluateCurrentTimestamp(sql, date);
+		}
+		catch (SQLException e)
+		{
+			throw new AssertionError(e);
+		}
 	}
 
 	@DataProvider(name = "random")
@@ -712,29 +733,29 @@ public class TestStandardDialect implements Dialect
 	@Test(dataProvider = "random")
 	public void testEvaluateRand(String sql)
 	{
-		try
+		String result = this.evaluateRand(sql);
+		
+		if (sql.contains("success"))
 		{
-			String result = this.evaluateRand(sql);
-			
-			if (sql.contains("success"))
-			{
-				assert Pattern.matches("SELECT 0\\.\\d+(E-\\d+)? FROM success", result) : result;
-			}
-			else
-			{
-				assert result.equals(sql) : result;
-			}
+			assert Pattern.matches("SELECT 0\\.\\d+(E-\\d+)? FROM success", result) : result;
 		}
-		catch (SQLException e)
+		else
 		{
-			assert false : e;
+			assert result.equals(sql) : result;
 		}
 	}
 	
 	@Override
-	public String evaluateRand(String sql) throws SQLException
+	public String evaluateRand(String sql)
 	{
-		return this.dialect.evaluateRand(sql);
+		try
+		{
+			return this.dialect.evaluateRand(sql);
+		}
+		catch (SQLException e)
+		{
+			throw new AssertionError(e);
+		}
 	}
 
 	public void testGetAlterIdentityColumnSQL()
@@ -747,23 +768,23 @@ public class TestStandardDialect implements Dialect
 		
 		EasyMock.replay(table, column);
 		
-		try
-		{
-			String result = this.getAlterIdentityColumnSQL(table, column, 1000L);
-			
-			EasyMock.verify(table, column);
-			
-			assert result.equals("ALTER TABLE table ALTER COLUMN column RESTART WITH 1000") : result;
-		}
-		catch (SQLException e)
-		{
-			assert false : e;
-		}
+		String result = this.getAlterIdentityColumnSQL(table, column, 1000L);
+		
+		EasyMock.verify(table, column);
+		
+		assert result.equals("ALTER TABLE table ALTER COLUMN column RESTART WITH 1000") : result;
 	}
 	
 	@Override
-	public String getAlterIdentityColumnSQL(TableProperties table, ColumnProperties column, long value) throws SQLException
+	public String getAlterIdentityColumnSQL(TableProperties table, ColumnProperties column, long value)
 	{
-		return this.dialect.getAlterIdentityColumnSQL(table, column, value);
+		try
+		{
+			return this.dialect.getAlterIdentityColumnSQL(table, column, value);
+		}
+		catch (SQLException e)
+		{
+			throw new AssertionError(e);
+		}
 	}
 }
