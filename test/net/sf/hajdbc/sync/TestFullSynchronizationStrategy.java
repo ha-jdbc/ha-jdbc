@@ -50,7 +50,7 @@ import org.testng.annotations.Test;
  */
 @SuppressWarnings("nls")
 @Test
-public class TestFullSynchronizationStrategy extends AbstractTestSynchronizationStrategy
+public class TestFullSynchronizationStrategy extends TestSynchronizationStrategy
 {
 	public TestFullSynchronizationStrategy()
 	{
@@ -58,7 +58,7 @@ public class TestFullSynchronizationStrategy extends AbstractTestSynchronization
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.sync.AbstractTestSynchronizationStrategy#testSynchronize()
+	 * @see net.sf.hajdbc.sync.TestSynchronizationStrategy#testSynchronize()
 	 */
 	@SuppressWarnings("unchecked")
 	@Override

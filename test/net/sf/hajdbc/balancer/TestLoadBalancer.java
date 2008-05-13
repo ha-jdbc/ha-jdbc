@@ -34,7 +34,7 @@ import org.testng.annotations.Test;
  */
 @Test
 @SuppressWarnings("nls")
-public class TestLoadBalancer extends AbstractTestBalancer
+public class TestLoadBalancer extends TestBalancer
 {
 	public TestLoadBalancer()
 	{
@@ -42,7 +42,7 @@ public class TestLoadBalancer extends AbstractTestBalancer
 	}
 
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractTestBalancer#testNext()
+	 * @see net.sf.hajdbc.balancer.TestBalancer#testNext()
 	 */
 	@Override
 	public void testNext()

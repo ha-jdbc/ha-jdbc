@@ -33,7 +33,7 @@ import net.sf.hajdbc.MockDatabase;
  */
 @Test
 @SuppressWarnings("nls")
-public class TestRandomBalancer extends AbstractTestBalancer
+public class TestRandomBalancer extends TestBalancer
 {
 	public TestRandomBalancer()
 	{
@@ -41,7 +41,7 @@ public class TestRandomBalancer extends AbstractTestBalancer
 	}
 
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractTestBalancer#testNext()
+	 * @see net.sf.hajdbc.balancer.TestBalancer#testNext()
 	 */
 	@Override
 	public void testNext()

@@ -29,7 +29,7 @@ import org.testng.annotations.Test;
  */
 @Test
 @SuppressWarnings("nls")
-public class TestRoundRobinBalancer extends AbstractTestBalancer
+public class TestRoundRobinBalancer extends TestBalancer
 {
 	public TestRoundRobinBalancer()
 	{
@@ -37,7 +37,7 @@ public class TestRoundRobinBalancer extends AbstractTestBalancer
 	}
 
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractTestBalancer#testNext()
+	 * @see net.sf.hajdbc.balancer.TestBalancer#testNext()
 	 */
 	@Override
 	public void testNext()

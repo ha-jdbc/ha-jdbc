@@ -49,7 +49,7 @@ import org.easymock.EasyMock;
  * @author Paul Ferraro
  */
 @SuppressWarnings("nls")
-public class TestDifferentialSynchronizationStrategy extends AbstractTestSynchronizationStrategy
+public class TestDifferentialSynchronizationStrategy extends TestSynchronizationStrategy
 {
 	public TestDifferentialSynchronizationStrategy()
 	{
@@ -57,7 +57,7 @@ public class TestDifferentialSynchronizationStrategy extends AbstractTestSynchro
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.sync.AbstractTestSynchronizationStrategy#testSynchronize()
+	 * @see net.sf.hajdbc.sync.TestSynchronizationStrategy#testSynchronize()
 	 */
 	@SuppressWarnings("unchecked")
 	@Override

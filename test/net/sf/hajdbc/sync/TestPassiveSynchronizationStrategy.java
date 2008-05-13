@@ -28,7 +28,7 @@ import org.easymock.EasyMock;
  * @author Paul Ferraro
  *
  */
-public class TestPassiveSynchronizationStrategy extends AbstractTestSynchronizationStrategy
+public class TestPassiveSynchronizationStrategy extends TestSynchronizationStrategy
 {
 	public TestPassiveSynchronizationStrategy()
 	{
@@ -36,7 +36,7 @@ public class TestPassiveSynchronizationStrategy extends AbstractTestSynchronizat
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.sync.AbstractTestSynchronizationStrategy#testSynchronize()
+	 * @see net.sf.hajdbc.sync.TestSynchronizationStrategy#testSynchronize()
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
