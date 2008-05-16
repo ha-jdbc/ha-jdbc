@@ -20,6 +20,13 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.beans.PropertyEditor;
+import java.beans.PropertyEditorManager;
+import java.lang.reflect.InvocationTargetException;
+
 import javax.management.DynamicMBean;
 import javax.management.NotCompliantMBeanException;
 import javax.management.StandardMBean;
@@ -72,13 +79,23 @@ public abstract class CommonDataSourceDatabase<D extends CommonDataSource> exten
 	{
 		try
 		{
+			Class<?> dataSourceClass = Class.forName(this.name);
+			
+			return this.createDataSource(dataSourceClass.asSubclass(this.targetClass));
+		}
+		catch (ClassNotFoundException e)
+		{
+			return this.createDataSource();
+		}
+	}
+
+	private D createDataSource()
+	{
+		try
+		{
 			Context context = new InitialContext(this.properties);
 	
 			return this.targetClass.cast(context.lookup(this.name));
-		}
-		catch (ClassCastException e)
-		{
-			throw new IllegalArgumentException(e.toString(), e);
 		}
 		catch (NamingException e)
 		{
@@ -86,6 +103,50 @@ public abstract class CommonDataSourceDatabase<D extends CommonDataSource> exten
 		}
 	}
 
+	private D createDataSource(Class<? extends D> dataSourceClass)
+	{
+		try
+		{
+			D dataSource = dataSourceClass.newInstance();
+			
+			for (PropertyDescriptor descriptor: Introspector.getBeanInfo(dataSourceClass).getPropertyDescriptors())
+			{
+				String value = this.properties.getProperty(descriptor.getName());
+				
+				if (value != null)
+				{
+					PropertyEditor editor = PropertyEditorManager.findEditor(descriptor.getPropertyType());
+					
+					editor.setAsText(value);
+					
+					descriptor.getWriteMethod().invoke(dataSource, editor.getValue());
+				}
+			}
+			
+			return dataSource;
+		}
+		catch (InstantiationException e)
+		{
+			throw new IllegalArgumentException(e.toString(), e);
+		}
+		catch (IllegalAccessException e)
+		{
+			throw new IllegalArgumentException(e.toString(), e);
+		}
+		catch (IllegalArgumentException e)
+		{
+			throw new IllegalArgumentException(e.toString(), e);
+		}
+		catch (IntrospectionException e)
+		{
+			throw new IllegalArgumentException(e.toString(), e);
+		}
+		catch (InvocationTargetException e)
+		{
+			throw new IllegalArgumentException(e.getTargetException().toString(), e);
+		}
+	}
+	
 	/**
 	 * @see net.sf.hajdbc.Database#getActiveMBean()
 	 */

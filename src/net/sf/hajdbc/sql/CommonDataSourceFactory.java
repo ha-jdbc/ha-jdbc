@@ -89,13 +89,18 @@ public abstract class CommonDataSourceFactory<D extends CommonDataSource> implem
 			}
 		}
 		
+		return this.createDataSource(id, config);
+	}
+
+	protected D createDataSource(String id, String config) throws SQLException
+	{
 		DatabaseCluster<D> cluster = this.getDatabaseCluster(id, config);
 		
 		if (cluster == null) return null;
 		
 		return ProxyFactory.createProxy(this.targetClass, this.getInvocationHandler(cluster));
 	}
-
+	
 	/**
 	 * @param id
 	 * @param config
