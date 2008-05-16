@@ -89,13 +89,13 @@ public abstract class CommonDataSourceFactory<D extends CommonDataSource> implem
 			}
 		}
 		
-		return this.createDataSource(id, config);
+		return this.createProxy(id, config);
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.DataSourceProxyFactory#createDataSource(java.lang.String, java.lang.String)
+	 * @see net.sf.hajdbc.sql.DataSourceProxyFactory#createProxy(java.lang.String, java.lang.String)
 	 */
-	public D createDataSource(String id, String config) throws SQLException
+	public D createProxy(String id, String config) throws SQLException
 	{
 		DatabaseCluster<D> cluster = this.getDatabaseCluster(id, config);
 		

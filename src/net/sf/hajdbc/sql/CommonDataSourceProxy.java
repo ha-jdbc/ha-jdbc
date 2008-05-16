@@ -47,7 +47,7 @@ public abstract class CommonDataSourceProxy<D extends CommonDataSource> implemen
 	{
 		if (this.proxy == null)
 		{
-			this.proxy = this.factory.createDataSource(this.cluster, this.config);
+			this.proxy = this.factory.createProxy(this.cluster, this.config);
 		}
 		
 		return this.proxy;

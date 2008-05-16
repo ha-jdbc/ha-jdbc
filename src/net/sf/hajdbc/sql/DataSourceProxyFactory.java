@@ -31,11 +31,11 @@ import javax.sql.CommonDataSource;
 public interface DataSourceProxyFactory<D extends CommonDataSource>
 {
 	/**
-	 * Create a data source proxy to the specified cluster, using the configuration file at the specified location.
+	 * Creates a data source proxy to the specified cluster, using the configuration file at the specified location.
 	 * @param id a database cluster identifier
 	 * @param config the location of the configuration file for this cluster
 	 * @return a proxied data source
 	 * @throws SQLException if the data source proxy could not be created
 	 */
-	public D createDataSource(String id, String config) throws SQLException;
+	public D createProxy(String id, String config) throws SQLException;
 }
