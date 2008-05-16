@@ -37,7 +37,7 @@ import net.sf.hajdbc.util.reflect.Methods;
 @SuppressWarnings("nls")
 public class XADataSourceInvocationHandler extends AbstractRootInvocationHandler<XADataSource>
 {
-	private static final Set<Method> getXAConnectionMethodSet = Methods.findMethods(XADataSource.class, "getXADataSource");
+	private static final Set<Method> getXAConnectionMethodSet = Methods.findMethods(XADataSource.class, "getXAConnection");
 	
 	/**
 	 * @param databaseCluster
