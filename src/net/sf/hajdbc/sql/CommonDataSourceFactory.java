@@ -39,7 +39,7 @@ import net.sf.hajdbc.util.reflect.ProxyFactory;
  *
  * @param <D>
  */
-public abstract class CommonDataSourceFactory<D extends CommonDataSource> implements ObjectFactory
+public abstract class CommonDataSourceFactory<D extends CommonDataSource> implements ObjectFactory, DataSourceProxyFactory<D>
 {
 	private Class<D> targetClass;
 	
@@ -92,7 +92,10 @@ public abstract class CommonDataSourceFactory<D extends CommonDataSource> implem
 		return this.createDataSource(id, config);
 	}
 
-	protected D createDataSource(String id, String config) throws SQLException
+	/**
+	 * @see net.sf.hajdbc.sql.DataSourceProxyFactory#createDataSource(java.lang.String, java.lang.String)
+	 */
+	public D createDataSource(String id, String config) throws SQLException
 	{
 		DatabaseCluster<D> cluster = this.getDatabaseCluster(id, config);
 		

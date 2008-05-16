@@ -35,10 +35,10 @@ public abstract class CommonDataSourceProxy<D extends CommonDataSource> implemen
 	private String cluster;
 	private String config;
 
-	private CommonDataSourceFactory<D> factory;
+	private DataSourceProxyFactory<D> factory;
 	private D proxy;
 	
-	protected CommonDataSourceProxy(CommonDataSourceFactory<D> factory)
+	protected CommonDataSourceProxy(DataSourceProxyFactory<D> factory)
 	{
 		this.factory = factory;
 	}
