@@ -18,60 +18,46 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.sql;
+package net.sf.hajdbc.sql.pool;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 
 import javax.naming.NamingException;
 import javax.naming.Reference;
-import javax.sql.DataSource;
+import javax.sql.PooledConnection;
+
+import net.sf.hajdbc.sql.CommonDataSourceProxy;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class DataSourceProxy extends CommonDataSourceProxy<DataSource> implements DataSource
+public class ConnectionPoolDataSource extends CommonDataSourceProxy<javax.sql.ConnectionPoolDataSource> implements javax.sql.ConnectionPoolDataSource
 {
-	public DataSourceProxy()
+	/**
+	 * Constructs a new ConnectionPoolDataSource
+	 */
+	public ConnectionPoolDataSource()
 	{
-		super(new DataSourceFactory());
+		super(new ConnectionPoolDataSourceFactory());
 	}
 
 	/**
-	 * @see javax.sql.DataSource#getConnection()
+	 * @see javax.sql.ConnectionPoolDataSource#getPooledConnection()
 	 */
 	@Override
-	public Connection getConnection() throws SQLException
+	public PooledConnection getPooledConnection() throws SQLException
 	{
-		return this.getProxy().getConnection();
+		return this.getProxy().getPooledConnection();
 	}
 
 	/**
-	 * @see javax.sql.DataSource#getConnection(java.lang.String, java.lang.String)
+	 * @see javax.sql.ConnectionPoolDataSource#getPooledConnection(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public Connection getConnection(String user, String password) throws SQLException
+	public PooledConnection getPooledConnection(String user, String password) throws SQLException
 	{
-		return this.getProxy().getConnection(user, password);
-	}
-
-	/**
-	 * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
-	 */
-	@Override
-	public boolean isWrapperFor(Class<?> targetClass) throws SQLException
-	{
-		return this.getProxy().isWrapperFor(targetClass);
-	}
-
-	/**
-	 * @see java.sql.Wrapper#unwrap(java.lang.Class)
-	 */
-	@Override
-	public <T> T unwrap(Class<T> targetClass) throws SQLException
-	{
-		return this.getProxy().unwrap(targetClass);
+		return this.getProxy().getPooledConnection(user, password);
 	}
 
 	/**
@@ -80,6 +66,6 @@ public class DataSourceProxy extends CommonDataSourceProxy<DataSource> implement
 	@Override
 	public Reference getReference() throws NamingException
 	{
-		return new DataSourceReference(this.getCluster(), this.getConfig());
+		return new ConnectionPoolDataSourceReference(this.getCluster(), this.getConfig());
 	}
 }

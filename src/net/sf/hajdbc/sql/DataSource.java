@@ -18,44 +18,61 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.sql.xa;
+package net.sf.hajdbc.sql;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
 import javax.naming.NamingException;
 import javax.naming.Reference;
-import javax.sql.XAConnection;
-import javax.sql.XADataSource;
-
-import net.sf.hajdbc.sql.CommonDataSourceProxy;
 
 /**
  * @author Paul Ferraro
- *
  */
-public class XADataSourceProxy extends CommonDataSourceProxy<XADataSource> implements XADataSource
+public class DataSource extends CommonDataSourceProxy<javax.sql.DataSource> implements javax.sql.DataSource
 {
-	public XADataSourceProxy()
+	/**
+	 * Constructs a new DataSource
+	 */
+	public DataSource()
 	{
-		super(new XADataSourceFactory());
+		super(new DataSourceFactory());
 	}
 
 	/**
-	 * @see javax.sql.XADataSource#getXAConnection()
+	 * @see javax.sql.DataSource#getConnection()
 	 */
 	@Override
-	public XAConnection getXAConnection() throws SQLException
+	public Connection getConnection() throws SQLException
 	{
-		return this.getProxy().getXAConnection();
+		return this.getProxy().getConnection();
 	}
 
 	/**
-	 * @see javax.sql.XADataSource#getXAConnection(java.lang.String, java.lang.String)
+	 * @see javax.sql.DataSource#getConnection(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public XAConnection getXAConnection(String user, String password) throws SQLException
+	public Connection getConnection(String user, String password) throws SQLException
 	{
-		return this.getProxy().getXAConnection(user, password);
+		return this.getProxy().getConnection(user, password);
+	}
+
+	/**
+	 * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
+	 */
+	@Override
+	public boolean isWrapperFor(Class<?> targetClass) throws SQLException
+	{
+		return this.getProxy().isWrapperFor(targetClass);
+	}
+
+	/**
+	 * @see java.sql.Wrapper#unwrap(java.lang.Class)
+	 */
+	@Override
+	public <T> T unwrap(Class<T> targetClass) throws SQLException
+	{
+		return this.getProxy().unwrap(targetClass);
 	}
 
 	/**
@@ -64,6 +81,6 @@ public class XADataSourceProxy extends CommonDataSourceProxy<XADataSource> imple
 	@Override
 	public Reference getReference() throws NamingException
 	{
-		return new XADataSourceReference(this.getCluster(), this.getConfig());
+		return new DataSourceReference(this.getCluster(), this.getConfig());
 	}
 }

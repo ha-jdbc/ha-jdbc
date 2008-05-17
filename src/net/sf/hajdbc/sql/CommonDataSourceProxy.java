@@ -28,7 +28,7 @@ import javax.sql.CommonDataSource;
 
 /**
  * @author Paul Ferraro
- *
+ * @param <D> data source class
  */
 public abstract class CommonDataSourceProxy<D extends CommonDataSource> implements CommonDataSource, Referenceable
 {

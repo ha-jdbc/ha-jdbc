@@ -18,44 +18,45 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.sql.pool;
+package net.sf.hajdbc.sql.xa;
 
 import java.sql.SQLException;
 
 import javax.naming.NamingException;
 import javax.naming.Reference;
-import javax.sql.ConnectionPoolDataSource;
-import javax.sql.PooledConnection;
+import javax.sql.XAConnection;
 
 import net.sf.hajdbc.sql.CommonDataSourceProxy;
 
 /**
  * @author Paul Ferraro
- *
  */
-public class ConnectionPoolDataSourceProxy extends CommonDataSourceProxy<ConnectionPoolDataSource> implements ConnectionPoolDataSource
+public class XADataSource extends CommonDataSourceProxy<javax.sql.XADataSource> implements javax.sql.XADataSource
 {
-	public ConnectionPoolDataSourceProxy()
+	/**
+	 * Constructs a new XADataSource
+	 */
+	public XADataSource()
 	{
-		super(new ConnectionPoolDataSourceFactory());
+		super(new XADataSourceFactory());
 	}
 
 	/**
-	 * @see javax.sql.ConnectionPoolDataSource#getPooledConnection()
+	 * @see javax.sql.XADataSource#getXAConnection()
 	 */
 	@Override
-	public PooledConnection getPooledConnection() throws SQLException
+	public XAConnection getXAConnection() throws SQLException
 	{
-		return this.getProxy().getPooledConnection();
+		return this.getProxy().getXAConnection();
 	}
 
 	/**
-	 * @see javax.sql.ConnectionPoolDataSource#getPooledConnection(java.lang.String, java.lang.String)
+	 * @see javax.sql.XADataSource#getXAConnection(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public PooledConnection getPooledConnection(String user, String password) throws SQLException
+	public XAConnection getXAConnection(String user, String password) throws SQLException
 	{
-		return this.getProxy().getPooledConnection(user, password);
+		return this.getProxy().getXAConnection(user, password);
 	}
 
 	/**
@@ -64,6 +65,6 @@ public class ConnectionPoolDataSourceProxy extends CommonDataSourceProxy<Connect
 	@Override
 	public Reference getReference() throws NamingException
 	{
-		return new ConnectionPoolDataSourceReference(this.getCluster(), this.getConfig());
+		return new XADataSourceReference(this.getCluster(), this.getConfig());
 	}
 }
