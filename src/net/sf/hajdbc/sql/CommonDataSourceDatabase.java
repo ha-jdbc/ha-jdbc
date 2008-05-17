@@ -133,10 +133,6 @@ public abstract class CommonDataSourceDatabase<D extends CommonDataSource> exten
 		{
 			throw new IllegalArgumentException(e.toString(), e);
 		}
-		catch (IllegalArgumentException e)
-		{
-			throw new IllegalArgumentException(e.toString(), e);
-		}
 		catch (IntrospectionException e)
 		{
 			throw new IllegalArgumentException(e.toString(), e);
