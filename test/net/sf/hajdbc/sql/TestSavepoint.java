@@ -39,6 +39,7 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
+@Test
 @SuppressWarnings({ "unchecked", "nls" })
 public class TestSavepoint implements Savepoint
 {
@@ -91,11 +92,7 @@ public class TestSavepoint implements Savepoint
 		EasyMock.reset(this.objects());
 	}
 
-	/**
-	 * @see java.sql.Savepoint#getSavepointId()
-	 */
-	@Test
-	public int getSavepointId() throws SQLException
+	public void testGetSavepointId() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -103,20 +100,23 @@ public class TestSavepoint implements Savepoint
 		
 		this.replay();
 
-		int result = this.savepoint.getSavepointId();
+		int result = this.getSavepointId();
 		
 		this.verify();
 		
 		assert result == 1;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.Savepoint#getSavepointId()
+	 */
+	@Override
+	public int getSavepointId() throws SQLException
+	{
+		return this.savepoint.getSavepointId();
 	}
 
-	/**
-	 * @see java.sql.Savepoint#getSavepointName()
-	 */
-	@Test
-	public String getSavepointName() throws SQLException
+	public void testGetSavepointName() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -124,12 +124,19 @@ public class TestSavepoint implements Savepoint
 		
 		this.replay();
 
-		String result = this.savepoint.getSavepointName();
+		String result = this.getSavepointName();
 		
 		this.verify();
 		
 		assert result.equals("");
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.Savepoint#getSavepointName()
+	 */
+	@Override
+	public String getSavepointName() throws SQLException
+	{
+		return this.savepoint.getSavepointName();
 	}
 }

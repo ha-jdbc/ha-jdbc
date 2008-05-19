@@ -55,6 +55,7 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
+@Test
 @SuppressWarnings({ "unchecked", "nls" })
 public class TestClob implements NClob
 {
@@ -147,11 +148,7 @@ public class TestClob implements NClob
 		this.verify();
 	}
 
-	/**
-	 * @see java.sql.Clob#getAsciiStream()
-	 */
-	@Test
-	public InputStream getAsciiStream() throws SQLException
+	public void testGetAsciiStream() throws SQLException
 	{
 		InputStream input = new ByteArrayInputStream(new byte[0]);
 		
@@ -168,20 +165,23 @@ public class TestClob implements NClob
 		
 		this.replay();
 		
-		InputStream result = this.clob.getAsciiStream();
+		InputStream result = this.getAsciiStream();
 		
 		this.verify();
 		
 		assert result == input;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.Clob#getAsciiStream()
+	 */
+	@Override
+	public InputStream getAsciiStream() throws SQLException
+	{
+		return this.clob.getAsciiStream();
 	}
 
-	/**
-	 * @see java.sql.Clob#getCharacterStream()
-	 */
-	@Test
-	public Reader getCharacterStream() throws SQLException
+	public void testGetCharacterStream() throws SQLException
 	{
 		Reader reader = new StringReader("");
 		
@@ -198,13 +198,20 @@ public class TestClob implements NClob
 		
 		this.replay();
 		
-		Reader result = this.clob.getCharacterStream();
+		Reader result = this.getCharacterStream();
 		
 		this.verify();
 		
 		assert result == reader;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.Clob#getCharacterStream()
+	 */
+	@Override
+	public Reader getCharacterStream() throws SQLException
+	{
+		return this.clob.getCharacterStream();
 	}
 
 	@DataProvider(name = "long-long")
@@ -213,11 +220,8 @@ public class TestClob implements NClob
 		return new Object[][] { new Object[] { 1L, 1L } };
 	}
 
-	/**
-	 * @see java.sql.Clob#getCharacterStream(long, long)
-	 */
 	@Test(dataProvider = "long-long")
-	public Reader getCharacterStream(long position, long length) throws SQLException
+	public void testGetCharacterStream(long position, long length) throws SQLException
 	{
 		Reader reader = new StringReader("");
 		
@@ -234,13 +238,20 @@ public class TestClob implements NClob
 		
 		this.replay();
 		
-		Reader result = this.clob.getCharacterStream(position, length);
+		Reader result = this.getCharacterStream(position, length);
 		
 		this.verify();
 		
 		assert result == reader;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.Clob#getCharacterStream(long, long)
+	 */
+	@Override
+	public Reader getCharacterStream(long position, long length) throws SQLException
+	{
+		return this.clob.getCharacterStream(position, length);
 	}
 
 	@DataProvider(name = "long-int")
@@ -249,11 +260,8 @@ public class TestClob implements NClob
 		return new Object[][] { new Object[] { 1L, 1 } };
 	}
 
-	/**
-	 * @see java.sql.Clob#getSubString(long, int)
-	 */
 	@Test(dataProvider = "long-int")
-	public String getSubString(long position, int length) throws SQLException
+	public void testGetSubString(long position, int length) throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -268,20 +276,23 @@ public class TestClob implements NClob
 		
 		this.replay();
 		
-		String result = this.clob.getSubString(position, length);
+		String result = this.getSubString(position, length);
 		
 		this.verify();
 		
 		assert result.equals("");
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.Clob#getSubString(long, int)
+	 */
+	@Override
+	public String getSubString(long position, int length) throws SQLException
+	{
+		return this.clob.getSubString(position, length);
 	}
 
-	/**
-	 * @see java.sql.Clob#length()
-	 */
-	@Test
-	public long length() throws SQLException
+	public void testLength() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -296,13 +307,20 @@ public class TestClob implements NClob
 		
 		this.replay();
 		
-		long result = this.clob.length();
+		long result = this.length();
 		
 		this.verify();
 		
 		assert result == 1L;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.Clob#length()
+	 */
+	@Override
+	public long length() throws SQLException
+	{
+		return this.clob.length();
 	}
 
 	@DataProvider(name = "string-long")
@@ -311,11 +329,8 @@ public class TestClob implements NClob
 		return new Object[][] { new Object[] { "", 1L } };
 	}
 
-	/**
-	 * @see java.sql.Clob#position(java.lang.String, long)
-	 */
 	@Test(dataProvider = "string-long")
-	public long position(String pattern, long start) throws SQLException
+	public void testPosition(String pattern, long start) throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -330,13 +345,20 @@ public class TestClob implements NClob
 		
 		this.replay();
 		
-		long result = this.clob.position(pattern, start);
+		long result = this.position(pattern, start);
 		
 		this.verify();
 		
 		assert result == 1L;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.Clob#position(java.lang.String, long)
+	 */
+	@Override
+	public long position(String pattern, long start) throws SQLException
+	{
+		return this.clob.position(pattern, start);
 	}
 
 	@DataProvider(name = "clob-long")
@@ -345,11 +367,8 @@ public class TestClob implements NClob
 		return new Object[][] { new Object[] { EasyMock.createMock(Clob.class), 1L } };
 	}
 
-	/**
-	 * @see java.sql.Clob#position(java.sql.Clob, long)
-	 */
 	@Test(dataProvider = "clob-long")
-	public long position(Clob pattern, long start) throws SQLException
+	public void testPosition(Clob pattern, long start) throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -364,13 +383,20 @@ public class TestClob implements NClob
 		
 		this.replay();
 		
-		long result = this.clob.position(pattern, start);
+		long result = this.position(pattern, start);
 		
 		this.verify();
 		
 		assert result == 1L;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.Clob#position(java.sql.Clob, long)
+	 */
+	@Override
+	public long position(Clob pattern, long start) throws SQLException
+	{
+		return this.clob.position(pattern, start);
 	}
 
 	@DataProvider(name = "long")
@@ -379,11 +405,8 @@ public class TestClob implements NClob
 		return new Object[][] { new Object[] { 1L } };
 	}
 
-	/**
-	 * @see java.sql.Clob#setAsciiStream(long)
-	 */
 	@Test(dataProvider = "long")
-	public OutputStream setAsciiStream(long position) throws SQLException
+	public void testSetAsciiStream(long position) throws SQLException
 	{
 		OutputStream output1 = new ByteArrayOutputStream();
 		OutputStream output2 = new ByteArrayOutputStream();
@@ -404,20 +427,24 @@ public class TestClob implements NClob
 		
 		this.replay();
 		
-		OutputStream result = this.clob.setAsciiStream(position);
+		OutputStream result = this.setAsciiStream(position);
 
 		this.verify();
 		
 		assert result == output1;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.Clob#setAsciiStream(long)
+	 */
+	@Override
+	public OutputStream setAsciiStream(long position) throws SQLException
+	{
+		return this.clob.setAsciiStream(position);
 	}
 
-	/**
-	 * @see java.sql.Clob#setCharacterStream(long)
-	 */
 	@Test(dataProvider = "long")
-	public Writer setCharacterStream(long position) throws SQLException
+	public void testSetCharacterStream(long position) throws SQLException
 	{
 		Writer writer1 = new StringWriter();
 		Writer writer2 = new StringWriter();
@@ -438,13 +465,20 @@ public class TestClob implements NClob
 		
 		this.replay();
 		
-		Writer result = this.clob.setCharacterStream(position);
+		Writer result = this.setCharacterStream(position);
 
 		this.verify();
 		
 		assert result == writer1;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.Clob#setCharacterStream(long)
+	 */
+	@Override
+	public Writer setCharacterStream(long position) throws SQLException
+	{
+		return this.clob.setCharacterStream(position);
 	}
 
 	@DataProvider(name = "long-string")
@@ -453,11 +487,8 @@ public class TestClob implements NClob
 		return new Object[][] { new Object[] { 1L, "" } };
 	}
 
-	/**
-	 * @see java.sql.Clob#setString(long, java.lang.String)
-	 */
 	@Test(dataProvider = "long-string")
-	public int setString(long position, String string) throws SQLException
+	public void testSetString(long position, String string) throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -475,13 +506,20 @@ public class TestClob implements NClob
 		
 		this.replay();
 		
-		int result = this.clob.setString(position, string);
+		int result = this.setString(position, string);
 
 		this.verify();
 		
 		assert result == 1;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.Clob#setString(long, java.lang.String)
+	 */
+	@Override
+	public int setString(long position, String string) throws SQLException
+	{
+		return this.clob.setString(position, string);
 	}
 
 	@DataProvider(name = "long-string-int-int")
@@ -490,11 +528,8 @@ public class TestClob implements NClob
 		return new Object[][] { new Object[] { 1L, "", 1, 1 } };
 	}
 
-	/**
-	 * @see java.sql.Clob#setString(long, java.lang.String, int, int)
-	 */
 	@Test(dataProvider = "long-string-int-int")
-	public int setString(long position, String string, int offset, int length) throws SQLException
+	public void testSetString(long position, String string, int offset, int length) throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -512,13 +547,20 @@ public class TestClob implements NClob
 		
 		this.replay();
 		
-		int result = this.clob.setString(position, string, offset, length);
+		int result = this.setString(position, string, offset, length);
 
 		this.verify();
 		
 		assert result == 1;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.Clob#setString(long, java.lang.String, int, int)
+	 */
+	@Override
+	public int setString(long position, String string, int offset, int length) throws SQLException
+	{
+		return this.clob.setString(position, string, offset, length);
 	}
 
 	/**

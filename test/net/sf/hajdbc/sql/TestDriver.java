@@ -44,6 +44,7 @@ import org.testng.annotations.Test;
  * @since   1.0
  */
 @SuppressWarnings("nls")
+@Test
 public class TestDriver implements java.sql.Driver
 {
 	private java.sql.Driver driver = new Driver();
@@ -66,8 +67,7 @@ public class TestDriver implements java.sql.Driver
 	/**
 	 * Test method for {@link Driver} static initialization.
 	 */
-	@Test
-	public void register()
+	public void testRegister()
 	{
 		boolean registered = false;
 		
@@ -85,18 +85,19 @@ public class TestDriver implements java.sql.Driver
 	@DataProvider(name = "connect")
 	public Object[][] getConnectProvider()
 	{
-		return new Object[][] { new Object[] { "jdbc:ha-jdbc:test-database-cluster", new Properties() }, new Object[] { "jdbc:ha-jdbc:invalid-cluster", new Properties() }, new Object[] { "jdbc:mock", new Properties() } };
+		return new Object[][] {
+			new Object[] { "jdbc:ha-jdbc:test-database-cluster", new Properties() },
+			new Object[] { "jdbc:ha-jdbc:invalid-cluster", new Properties() }, 
+			new Object[] { "jdbc:mock", new Properties() }
+		};
 	}
 
-	/**
-	 * @see java.sql.Driver#connect(java.lang.String, java.util.Properties)
-	 */
 	@Test(dataProvider = "connect")
-	public Connection connect(String url, Properties properties)
+	public void testConnect(String url, Properties properties)
 	{
 		try
 		{
-			Connection connection = this.driver.connect(url, properties);
+			Connection connection = this.connect(url, properties);
 			
 			if (url.equals("jdbc:mock"))
 			{
@@ -112,42 +113,62 @@ public class TestDriver implements java.sql.Driver
 		}
 		catch (SQLException e)
 		{
-			assert !url.equals("jdbc:ha-jdbc:test-database-cluster") : url;
+			assert !url.equals("jdbc:ha-jdbc:test-database-cluster") : e;
 		}
-		
-		return null;
+	}
+	
+	/**
+	 * @see java.sql.Driver#connect(java.lang.String, java.util.Properties)
+	 */
+	@Override
+	public Connection connect(String url, Properties properties) throws SQLException
+	{
+		return this.driver.connect(url, properties);
 	}
 
 	@DataProvider(name = "url")
 	public Object[][] getUrlProvider()
 	{
-		return new Object[][] { new Object[] { "jdbc:ha-jdbc:test-database-cluster" }, new Object[] { "jdbc:ha-jdbc:" }, new Object[] { "jdbc:ha-jdbc" }, new Object[] { "jdbc:mock" } };
+		return new Object[][] {
+			new Object[] { "jdbc:ha-jdbc:test-database-cluster" },
+			new Object[] { "jdbc:ha-jdbc:" },
+			new Object[] { "jdbc:ha-jdbc" },
+			new Object[] { "jdbc:mock" }
+		};
 	}
 
-	/**
-	 * @see java.sql.Driver#acceptsURL(java.lang.String)
-	 */
 	@Test(dataProvider = "url")
-	public boolean acceptsURL(String url) throws SQLException
+	public void testAcceptsURL(String url)
 	{
 		boolean accepted = url.startsWith("jdbc:ha-jdbc:") && url.length() > 13;
 		
-		boolean result = this.driver.acceptsURL(url);
+		boolean result = this.acceptsURL(url);
 		
 		assert result == accepted : url;
-
-		return result;
 	}
-
+	
 	/**
-	 * @see java.sql.Driver#getPropertyInfo(java.lang.String, java.util.Properties)
+	 * @see java.sql.Driver#acceptsURL(java.lang.String)
 	 */
-	@Test(dataProvider = "connect")
-	public DriverPropertyInfo[] getPropertyInfo(String url, Properties properties)
+	@Override
+	public boolean acceptsURL(String url)
 	{
 		try
 		{
-			DriverPropertyInfo[] info = this.driver.getPropertyInfo(url, properties);
+			return this.driver.acceptsURL(url);
+		}
+		catch (SQLException e)
+		{
+			throw new AssertionError(e);
+		}
+	}
+
+	@Test(dataProvider = "connect")
+	public void testGetPropertyInfo(String url, Properties properties)
+	{
+		try
+		{
+			DriverPropertyInfo[] info = this.getPropertyInfo(url, properties);
 			
 			if (url.equals("jdbc:mock"))
 			{
@@ -160,48 +181,64 @@ public class TestDriver implements java.sql.Driver
 		}
 		catch (SQLException e)
 		{
-			assert !url.equals("jdbc:ha-jdbc:test-database-cluster") : url;
+			assert !url.equals("jdbc:ha-jdbc:test-database-cluster") : e;
 		}
-		
-		return null;
+	}
+	
+	/**
+	 * @see java.sql.Driver#getPropertyInfo(java.lang.String, java.util.Properties)
+	 */
+	@Override
+	public DriverPropertyInfo[] getPropertyInfo(String url, Properties properties) throws SQLException
+	{
+		return this.driver.getPropertyInfo(url, properties);
 	}
 
+	public void testGetMajorVersion()
+	{
+		int version = this.getMajorVersion();
+		
+		assert version == 2 : version;
+	}
+	
 	/**
 	 * @see java.sql.Driver#getMajorVersion()
 	 */
-	@Test
+	@Override
 	public int getMajorVersion()
 	{
-		int version = this.driver.getMajorVersion();
-		
-		assert version == 2 : version;
-		
-		return version;
+		return this.driver.getMajorVersion();
 	}
 
+	public void testGetMinorVersion()
+	{
+		int version = this.getMinorVersion();
+		
+		assert version == 0 : version;
+	}
+	
 	/**
 	 * @see java.sql.Driver#getMinorVersion()
 	 */
-	@Test
+	@Override
 	public int getMinorVersion()
 	{
-		int version = this.driver.getMinorVersion();
-		
-		assert version == 0 : version;
-		
-		return version;
+		return this.driver.getMinorVersion();
 	}
 
+	public void testJdbcCompliant()
+	{
+		boolean compliant = this.jdbcCompliant();
+		
+		assert compliant;
+	}
+	
 	/**
 	 * @see java.sql.Driver#jdbcCompliant()
 	 */
-	@Test
+	@Override
 	public boolean jdbcCompliant()
 	{
-		boolean compliant = this.driver.jdbcCompliant();
-		
-		assert compliant;
-		
-		return compliant;
+		return this.driver.jdbcCompliant();
 	}
 }

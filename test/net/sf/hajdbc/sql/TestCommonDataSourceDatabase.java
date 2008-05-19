@@ -37,7 +37,7 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
-public abstract class TestCommonDataSourceDatabase<C extends CommonDataSourceDatabase<D>, D extends CommonDataSource> extends AbstractTestDatabase<C, D> implements InactiveDataSourceDatabaseMBean
+public abstract class TestCommonDataSourceDatabase<C extends CommonDataSourceDatabase<D>, D extends CommonDataSource> extends TestDatabase<C, D> implements InactiveDataSourceDatabaseMBean
 {
 	protected D dataSource;
 
@@ -68,7 +68,7 @@ public abstract class TestCommonDataSourceDatabase<C extends CommonDataSourceDat
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractTestDatabase#createDatabase(java.lang.String)
+	 * @see net.sf.hajdbc.sql.TestDatabase#createDatabase(java.lang.String)
 	 */
 	@Override
 	protected final C createDatabase(String id)

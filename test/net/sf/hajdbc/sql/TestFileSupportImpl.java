@@ -43,6 +43,7 @@ import org.testng.annotations.Test;
  * @author  Paul Ferraro
  * @since   1.1
  */
+@Test
 @SuppressWarnings("nls")
 public class TestFileSupportImpl implements FileSupport
 {
@@ -85,21 +86,25 @@ public class TestFileSupportImpl implements FileSupport
 		return new Object[][] { new Object[] { new ByteArrayInputStream(new byte[] { 1, 2, 3, 4 }) } };
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.sql.FileSupport#createFile(java.io.InputStream)
-	 */
 	@Test(dataProvider = "inputStream")
-	public File createFile(InputStream inputStream) throws SQLException
+	public void testCreateFile(InputStream inputStream) throws SQLException
 	{
-		File file = this.fileSupport.createFile(inputStream);
+		File file = this.createFile(inputStream);
 		
 		assert file != null;
 		assert file.exists();
 		assert file.getName().startsWith("ha-jdbc-") : file.getName();
 		assert file.getName().endsWith(".lob") : file.getName();
 		assert file.length() == 4 : file.length();
-		
-		return file;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.sql.FileSupport#createFile(java.io.InputStream)
+	 */
+	@Override
+	public File createFile(InputStream inputStream) throws SQLException
+	{
+		return this.fileSupport.createFile(inputStream);
 	}
 
 	@DataProvider(name = "reader")
@@ -108,21 +113,25 @@ public class TestFileSupportImpl implements FileSupport
 		return new Object[][] { new Object[] { new CharArrayReader("abcd".toCharArray()) } };
 	}
 
-	/**
-	 * @see net.sf.hajdbc.sql.FileSupport#createFile(java.io.Reader)
-	 */
 	@Test(dataProvider = "reader")
-	public File createFile(Reader reader) throws SQLException
+	public void testCreateFile(Reader reader) throws SQLException
 	{
-		File file = this.fileSupport.createFile(reader);
+		File file = this.createFile(reader);
 		
 		assert file != null;
 		assert file.exists();
 		assert file.getName().startsWith("ha-jdbc-") : file.getName();
 		assert file.getName().endsWith(".lob") : file.getName();
 		assert file.length() == 4 : file.length();
-		
-		return file;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.sql.FileSupport#createFile(java.io.Reader)
+	 */
+	@Override
+	public File createFile(Reader reader) throws SQLException
+	{
+		return this.fileSupport.createFile(reader);
 	}
 
 	@DataProvider(name = "file")
@@ -138,13 +147,10 @@ public class TestFileSupportImpl implements FileSupport
 		return new Object[][] { new Object[] { file } };
 	}
 
-	/**
-	 * @see net.sf.hajdbc.sql.FileSupport#getInputStream(java.io.File)
-	 */
 	@Test(dataProvider = "file")
-	public InputStream getInputStream(File file) throws SQLException
+	public void testGetInputStream(File file) throws SQLException
 	{
-		InputStream inputStream = this.fileSupport.getInputStream(file);
+		InputStream inputStream = this.getInputStream(file);
 		
 		byte[] buffer = new byte[4];
 		
@@ -160,17 +166,21 @@ public class TestFileSupportImpl implements FileSupport
 		{
 			assert false : e;
 		}
-		
-		return inputStream;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.sql.FileSupport#getInputStream(java.io.File)
+	 */
+	@Override
+	public InputStream getInputStream(File file) throws SQLException
+	{
+		return this.fileSupport.getInputStream(file);
 	}
 
-	/**
-	 * @see net.sf.hajdbc.sql.FileSupport#getReader(java.io.File)
-	 */
 	@Test(dataProvider = "file")
-	public Reader getReader(File file) throws SQLException
+	public void testGetReader(File file) throws SQLException
 	{
-		Reader reader = this.fileSupport.getReader(file);
+		Reader reader = this.getReader(file);
 		
 		char[] buffer = new char[4];
 		
@@ -186,7 +196,14 @@ public class TestFileSupportImpl implements FileSupport
 		{
 			assert false : e;
 		}
-		
-		return reader;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.sql.FileSupport#getReader(java.io.File)
+	 */
+	@Override
+	public Reader getReader(File file) throws SQLException
+	{
+		return this.fileSupport.getReader(file);
 	}
 }

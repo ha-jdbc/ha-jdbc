@@ -39,7 +39,7 @@ import org.testng.annotations.Test;
  * @since   1.0
  */
 @SuppressWarnings("nls")
-public class TestDriverDatabase extends AbstractTestDatabase<DriverDatabase, Driver> implements InactiveDriverDatabaseMBean
+public class TestDriverDatabase extends TestDatabase<DriverDatabase, Driver> implements InactiveDriverDatabaseMBean
 {
 	static
 	{

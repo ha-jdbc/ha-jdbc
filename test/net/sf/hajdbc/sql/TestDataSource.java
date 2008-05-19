@@ -45,6 +45,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 @SuppressWarnings({ "unchecked", "nls" })
+@Test
 public class TestDataSource implements javax.sql.DataSource
 {
 	private DatabaseCluster cluster = EasyMock.createStrictMock(DatabaseCluster.class);
@@ -102,11 +103,7 @@ public class TestDataSource implements javax.sql.DataSource
 		EasyMock.reset(this.objects());
 	}
 	
-	/**
-	 * @see javax.sql.DataSource#getConnection()
-	 */
-	@Test
-	public Connection getConnection() throws SQLException
+	public void testGetConnection() throws SQLException
 	{
 		Connection connection1 = EasyMock.createStrictMock(Connection.class);
 		Connection connection2 = EasyMock.createStrictMock(Connection.class);
@@ -120,13 +117,13 @@ public class TestDataSource implements javax.sql.DataSource
 		
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
-		
+			
 		EasyMock.expect(this.dataSource1.getConnection()).andReturn(connection1);
 		EasyMock.expect(this.dataSource2.getConnection()).andReturn(connection2);
 		
 		this.replay();
 		
-		Connection result = this.dataSource.getConnection();
+		Connection result = this.getConnection();
 		
 		this.verify();
 		
@@ -136,8 +133,15 @@ public class TestDataSource implements javax.sql.DataSource
 		
 		assert proxy.getObject(this.database1) == connection1;
 		assert proxy.getObject(this.database2) == connection2;
-		
-		return result;
+	}
+	
+	/**
+	 * @see javax.sql.DataSource#getConnection()
+	 */
+	@Override
+	public Connection getConnection() throws SQLException
+	{
+		return this.dataSource.getConnection();
 	}
 
 	@DataProvider(name = "string-string")
@@ -146,11 +150,8 @@ public class TestDataSource implements javax.sql.DataSource
 		return new Object[][] { new Object[] { "", "" } };
 	}
 
-	/**
-	 * @see javax.sql.DataSource#getConnection(java.lang.String, java.lang.String)
-	 */
 	@Test(dataProvider = "string-string")
-	public Connection getConnection(String user, String password) throws SQLException
+	public void testGetConnection(String user, String password) throws SQLException
 	{
 		Connection connection1 = EasyMock.createStrictMock(Connection.class);
 		Connection connection2 = EasyMock.createStrictMock(Connection.class);
@@ -170,7 +171,7 @@ public class TestDataSource implements javax.sql.DataSource
 		
 		this.replay();
 		
-		Connection result = this.dataSource.getConnection(user, password);
+		Connection result = this.getConnection(user, password);
 		
 		this.verify();
 		
@@ -180,54 +181,81 @@ public class TestDataSource implements javax.sql.DataSource
 		
 		assert proxy.getObject(this.database1) == connection1;
 		assert proxy.getObject(this.database2) == connection2;
-		
-		return result;
+	}
+	
+	/**
+	 * @see javax.sql.DataSource#getConnection(java.lang.String, java.lang.String)
+	 */
+	@Override
+	public Connection getConnection(String user, String password) throws SQLException
+	{
+		return this.dataSource.getConnection(user, password);
 	}
 
-	/**
-	 * @see javax.sql.CommonDataSource#getLogWriter()
-	 */
-	@Test
-	public PrintWriter getLogWriter() throws SQLException
+	public void testGetLogWriter()
 	{
 		PrintWriter writer = new PrintWriter(System.out);
 		
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
-		EasyMock.expect(this.dataSource1.getLogWriter()).andReturn(writer);
-		
-		this.replay();
-		
-		PrintWriter result = this.dataSource.getLogWriter();
-		
-		this.verify();
-		
-		assert result == writer;
-		
-		return result;
+		try
+		{
+			EasyMock.expect(this.dataSource1.getLogWriter()).andReturn(writer);
+			
+			this.replay();
+			
+			PrintWriter result = this.getLogWriter();
+			
+			this.verify();
+			
+			assert result == writer;
+		}
+		catch (SQLException e)
+		{
+			assert false : e;
+		}
+	}
+	
+	/**
+	 * @see javax.sql.CommonDataSource#getLogWriter()
+	 */
+	@Override
+	public PrintWriter getLogWriter() throws SQLException
+	{
+		return this.dataSource.getLogWriter();
 	}
 
+	public void testGetLoginTimeout()
+	{
+		int timeout = 1;
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
+		try
+		{
+			EasyMock.expect(this.dataSource1.getLoginTimeout()).andReturn(timeout);
+			
+			this.replay();
+			
+			int result = this.getLoginTimeout();
+	
+			this.verify();
+			
+			assert result == timeout;
+		}
+		catch (SQLException e)
+		{
+			assert false : e;
+		}
+	}
+	
 	/**
 	 * @see javax.sql.CommonDataSource#getLoginTimeout()
 	 */
 	@Test
 	public int getLoginTimeout() throws SQLException
 	{
-		int timeout = 1;
-		
-		EasyMock.expect(this.cluster.isActive()).andReturn(true);
-		
-		EasyMock.expect(this.dataSource1.getLoginTimeout()).andReturn(timeout);
-		
-		this.replay();
-		
-		int result = this.dataSource.getLoginTimeout();
-
-		this.verify();
-		
-		assert result == timeout;
-		
-		return result;
+		return this.dataSource.getLoginTimeout();
 	}
 
 	@DataProvider(name = "writer")
@@ -278,56 +306,47 @@ public class TestDataSource implements javax.sql.DataSource
 		this.verify();
 	}
 
-	@DataProvider(name = "class")
-	Object[][] classProvider()
-	{
-		return new Object[][] { new Object[] { Object.class } };
-	}
-
-	/**
-	 * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
-	 */
-	@Test(dataProvider = "class")
-	public boolean isWrapperFor(Class<?> targetClass) throws SQLException
+	public void testIsWrapperFor() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
-		EasyMock.expect(this.dataSource1.isWrapperFor(targetClass)).andReturn(true);
+		EasyMock.expect(this.dataSource1.isWrapperFor(Object.class)).andReturn(true);
 		
 		this.replay();
 		
-		boolean result = this.dataSource.isWrapperFor(targetClass);
+		boolean result = this.isWrapperFor(Object.class);
 
 		this.verify();
 		
 		assert result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
+	 */
+	@Override
+	public boolean isWrapperFor(Class<?> targetClass) throws SQLException
+	{
+		return this.dataSource.isWrapperFor(targetClass);
 	}
 
-	/**
-	 * @see java.sql.Wrapper#unwrap(java.lang.Class)
-	 */
-	@Test(dataProvider = "class")
-	public <T> T unwrap(Class<T> targetClass) throws SQLException
+	public void testUnwrap() throws SQLException
 	{
 		try
 		{
-			T object = targetClass.newInstance();
+			Object object = Object.class.newInstance();
 			
 			EasyMock.expect(this.cluster.isActive()).andReturn(true);
 			
-			EasyMock.expect(this.dataSource1.unwrap(targetClass)).andReturn(object);
+			EasyMock.expect(this.dataSource1.unwrap(Object.class)).andReturn(object);
 			
 			this.replay();
 
-			T result = this.dataSource.unwrap(targetClass);
+			Object result = this.unwrap(Object.class);
 
 			this.verify();
 			
 			assert result == object;
-			
-			return result;
 		}
 		catch (InstantiationException e)
 		{
@@ -337,7 +356,14 @@ public class TestDataSource implements javax.sql.DataSource
 		{
 			assert false : e;
 		}
-		
-		return null;
+	}
+	
+	/**
+	 * @see java.sql.Wrapper#unwrap(java.lang.Class)
+	 */
+	@Override
+	public <T> T unwrap(Class<T> targetClass) throws SQLException
+	{
+		return this.dataSource.unwrap(targetClass);
 	}
 }
