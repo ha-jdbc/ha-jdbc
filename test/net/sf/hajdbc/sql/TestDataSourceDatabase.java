@@ -34,21 +34,13 @@ import org.testng.annotations.Test;
  * @author  Paul Ferraro
  * @since   1.1
  */
+@Test
 @SuppressWarnings("nls")
 public class TestDataSourceDatabase extends TestCommonDataSourceDatabase<DataSourceDatabase, DataSource>
 {
 	public TestDataSourceDatabase()
 	{
-		super(EasyMock.createStrictMock(DataSource.class));
-	}
-
-	/**
-	 * @see net.sf.hajdbc.sql.TestCommonDataSourceDatabase#createDatabase()
-	 */
-	@Override
-	protected DataSourceDatabase createDatabase()
-	{
-		return new DataSourceDatabase();
+		super(new DataSourceDatabase(), DataSource.class);
 	}
 
 	/**
@@ -70,38 +62,34 @@ public class TestDataSourceDatabase extends TestCommonDataSourceDatabase<DataSou
 	}
 	
 	@Override
-	@Test(dataProvider = "datasource")
-	public Connection connect(DataSource dataSource) throws SQLException
+	public void testConnect() throws SQLException
 	{
-		DataSourceDatabase database = this.createDatabase("1");
-		
+		DataSource dataSource = EasyMock.createStrictMock(DataSource.class);
 		Connection connection = EasyMock.createMock(Connection.class);
 		
-		EasyMock.expect(this.dataSource.getConnection()).andReturn(connection);
+		EasyMock.expect(dataSource.getConnection()).andReturn(connection);
 		
-		this.replay();
+		EasyMock.replay(dataSource);
 		
-		Connection result = database.connect(dataSource);
+		Connection result = this.connect(dataSource);
 		
-		this.verify();
+		EasyMock.verify(dataSource);
 		
 		assert result == connection : result.getClass().getName();
 		
-		this.reset();
+		EasyMock.reset(dataSource);
 		
-		database.setUser("user");
-		database.setPassword("password");
+		this.database.setUser("user");
+		this.database.setPassword("password");
 
-		EasyMock.expect(this.dataSource.getConnection("user", "password")).andReturn(connection);
+		EasyMock.expect(dataSource.getConnection("user", "password")).andReturn(connection);
 		
-		this.replay();
+		EasyMock.replay(dataSource);
 		
-		result = database.connect(dataSource);
+		result = this.connect(dataSource);
 		
-		this.verify();
+		EasyMock.verify(dataSource);
 		
 		assert result == connection : result.getClass().getName();
-		
-		return result;
 	}
 }

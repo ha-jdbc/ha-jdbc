@@ -30,40 +30,19 @@ import javax.sql.PooledConnection;
 import net.sf.hajdbc.sql.TestCommonDataSourceDatabase;
 
 import org.easymock.EasyMock;
+import org.testng.annotations.Test;
 
 /**
  * @author Paul Ferraro
  *
  */
+@Test
 @SuppressWarnings("nls")
 public class TestConnectionPoolDataSourceDatabase extends TestCommonDataSourceDatabase<ConnectionPoolDataSourceDatabase, ConnectionPoolDataSource>
 {
-	private PooledConnection connection = EasyMock.createStrictMock(PooledConnection.class);
-
-	/**
-	 * 
-	 */
 	public TestConnectionPoolDataSourceDatabase()
 	{
-		super(EasyMock.createStrictMock(ConnectionPoolDataSource.class));
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.sql.TestCommonDataSourceDatabase#objects()
-	 */
-	@Override
-	protected Object[] objects()
-	{
-		return new Object[] { this.dataSource, this.connection };
-	}
-
-	/**
-	 * @see net.sf.hajdbc.sql.TestCommonDataSourceDatabase#createDatabase()
-	 */
-	@Override
-	protected ConnectionPoolDataSourceDatabase createDatabase()
-	{
-		return new ConnectionPoolDataSourceDatabase();
+		super(new ConnectionPoolDataSourceDatabase(), ConnectionPoolDataSource.class);
 	}
 
 	/**
@@ -85,40 +64,40 @@ public class TestConnectionPoolDataSourceDatabase extends TestCommonDataSourceDa
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
+	 * @see net.sf.hajdbc.sql.TestDatabase#testConnect()
 	 */
 	@Override
-	public Connection connect(ConnectionPoolDataSource dataSource) throws SQLException
+	public void testConnect() throws SQLException
 	{
-		ConnectionPoolDataSourceDatabase database = this.createDatabase("1");
-		
+		ConnectionPoolDataSource dataSource = EasyMock.createStrictMock(ConnectionPoolDataSource.class);
+		PooledConnection pooledConnection = EasyMock.createStrictMock(PooledConnection.class);
 		Connection connection = EasyMock.createMock(Connection.class);
 		
-		EasyMock.expect(this.dataSource.getPooledConnection()).andReturn(this.connection);
-		EasyMock.expect(this.connection.getConnection()).andReturn(connection);
+		EasyMock.expect(dataSource.getPooledConnection()).andReturn(pooledConnection);
+		EasyMock.expect(pooledConnection.getConnection()).andReturn(connection);
 		
-		this.replay();
+		EasyMock.replay(dataSource, pooledConnection);
 		
-		Connection result = database.connect(dataSource);
+		Connection result = this.connect(dataSource);
 		
-		this.verify();
+		EasyMock.verify(dataSource, pooledConnection);
 		
 		assert result == connection : result.getClass().getName();
-		
-		database.setUser("user");
-		database.setPassword("password");
 
-		EasyMock.expect(this.dataSource.getPooledConnection("user", "password")).andReturn(this.connection);
-		EasyMock.expect(this.connection.getConnection()).andReturn(connection);
+		EasyMock.reset(dataSource, pooledConnection);
 		
-		this.replay();
+		this.database.setUser("user");
+		this.database.setPassword("password");
+
+		EasyMock.expect(dataSource.getPooledConnection("user", "password")).andReturn(pooledConnection);
+		EasyMock.expect(pooledConnection.getConnection()).andReturn(connection);
 		
-		result = database.connect(dataSource);
+		EasyMock.replay(dataSource, pooledConnection);
 		
-		this.verify();
+		result = this.database.connect(dataSource);
+		
+		EasyMock.verify(dataSource, pooledConnection);
 		
 		assert result == connection : result.getClass().getName();
-		
-		return result;
 	}
 }

@@ -29,6 +29,7 @@ import net.sf.hajdbc.LockManager;
 
 import org.easymock.EasyMock;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -36,6 +37,7 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
+@Test
 @SuppressWarnings("unchecked")
 public class TestLocalTransactionContext implements TransactionContext
 {
@@ -44,10 +46,25 @@ public class TestLocalTransactionContext implements TransactionContext
 	private InvocationStrategy strategy = EasyMock.createStrictMock(InvocationStrategy.class);
 	private LockManager lockManager = EasyMock.createStrictMock(LockManager.class);
 	private Lock lock = EasyMock.createStrictMock(Lock.class);
+	private TransactionContext context;
 	
 	private Object[] objects()
 	{
 		return new Object[] { this.connection, this.cluster, this.strategy, this.lock, this.lockManager };
+	}
+	
+	@BeforeMethod
+	void init()
+	{
+		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
+		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
+		
+		this.replay();
+		
+		this.context = new LocalTransactionContext(this.cluster);
+		
+		this.verify();
+		this.reset();
 	}
 	
 	void replay()
@@ -72,20 +89,9 @@ public class TestLocalTransactionContext implements TransactionContext
 		return new Object[][] { new Object[] { this.strategy, this.connection } };
 	}
 	
-	@Override
 	@Test(dataProvider = "start")
-	public InvocationStrategy start(InvocationStrategy strategy, Connection connection) throws SQLException
+	public void testStart(InvocationStrategy strategy, Connection connection) throws SQLException
 	{
-		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.replay();
-		
-		TransactionContext context = new LocalTransactionContext(this.cluster);
-		
-		this.verify();
-		this.reset();
-		
 		SQLProxy proxy = EasyMock.createMock(SQLProxy.class);
 		Invoker invoker = EasyMock.createMock(Invoker.class);
 		
@@ -94,7 +100,7 @@ public class TestLocalTransactionContext implements TransactionContext
 		
 		this.replay();
 		
-		InvocationStrategy result = context.start(strategy, connection);
+		InvocationStrategy result = this.start(strategy, connection);
 		
 		this.verify();
 		
@@ -134,7 +140,7 @@ public class TestLocalTransactionContext implements TransactionContext
 		
 		this.replay();
 		
-		result = context.start(strategy, connection);
+		result = this.start(strategy, connection);
 		
 		this.verify();
 		
@@ -170,13 +176,17 @@ public class TestLocalTransactionContext implements TransactionContext
 		// Already locked
 		this.replay();
 		
-		result = context.start(strategy, connection);
+		result = this.start(strategy, connection);
 		
 		this.verify();
 		
 		assert result == strategy;
-		
-		return result;
+	}
+	
+	@Override
+	public InvocationStrategy start(InvocationStrategy strategy, Connection connection) throws SQLException
+	{
+		return this.context.start(strategy, connection);
 	}
 	
 	@DataProvider(name = "end")
@@ -185,24 +195,13 @@ public class TestLocalTransactionContext implements TransactionContext
 		return new Object[][] { new Object[] { this.strategy } };
 	}
 
-	@Override
 	@Test(dataProvider = "end")
-	public InvocationStrategy end(InvocationStrategy strategy) throws SQLException
+	public void testEnd(InvocationStrategy strategy) throws SQLException
 	{
-		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.replay();
-		
-		TransactionContext context = new LocalTransactionContext(this.cluster);
-		
-		this.verify();
-		this.reset();
-		
 		// Not locked
 		this.replay();
 		
-		InvocationStrategy result = context.end(strategy);
+		InvocationStrategy result = this.end(strategy);
 
 		this.verify();
 		
@@ -215,7 +214,7 @@ public class TestLocalTransactionContext implements TransactionContext
 		
 		this.replay();
 		
-		result = context.start(this.strategy, this.connection);
+		result = this.start(this.strategy, this.connection);
 		
 		this.verify();
 		this.reset();
@@ -249,7 +248,7 @@ public class TestLocalTransactionContext implements TransactionContext
 		// Locked
 		this.replay();
 		
-		result = context.end(strategy);
+		result = this.end(strategy);
 		
 		this.verify();
 		
@@ -275,28 +274,21 @@ public class TestLocalTransactionContext implements TransactionContext
 		{
 			assert false : e;
 		}
-		
-		return result;
+	}
+	
+	@Override
+	public InvocationStrategy end(InvocationStrategy strategy) throws SQLException
+	{
+		return this.context.end(strategy);
 	}
 
 	@Override
-	@Test
 	public void close()
 	{
-		EasyMock.expect(this.cluster.getLockManager()).andReturn(this.lockManager);
-		EasyMock.expect(this.lockManager.readLock(LockManager.GLOBAL)).andReturn(this.lock);
-		
-		this.replay();
-		
-		TransactionContext context = new LocalTransactionContext(this.cluster);
-		
-		this.verify();
-		this.reset();
-		
 		// Normally uneventful
 		this.replay();
 		
-		context.close();
+		this.close();
 		
 		this.verify();
 		this.reset();
@@ -308,7 +300,7 @@ public class TestLocalTransactionContext implements TransactionContext
 			
 			this.replay();
 			
-			InvocationStrategy result = context.start(this.strategy, this.connection);
+			InvocationStrategy result = this.start(this.strategy, this.connection);
 			
 			this.verify();
 			this.reset();
@@ -342,7 +334,7 @@ public class TestLocalTransactionContext implements TransactionContext
 		
 		this.replay();
 		
-		context.close();
+		this.close();
 		
 		this.verify();
 	}

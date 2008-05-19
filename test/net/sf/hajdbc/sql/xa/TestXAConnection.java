@@ -35,11 +35,13 @@ import net.sf.hajdbc.sql.pool.AbstractPooledConnectionInvocationHandler;
 import net.sf.hajdbc.sql.pool.TestPooledConnection;
 
 import org.easymock.EasyMock;
+import org.testng.annotations.Test;
 
 /**
  * @author Paul Ferraro
  *
  */
+@Test
 @SuppressWarnings("unchecked")
 public class TestXAConnection extends TestPooledConnection implements XAConnection
 {
@@ -76,11 +78,7 @@ public class TestXAConnection extends TestPooledConnection implements XAConnecti
 		return new XAConnectionInvocationHandler(EasyMock.createStrictMock(XADataSource.class), this.parent, EasyMock.createMock(Invoker.class), map);
 	}
 
-	/**
-	 * @see javax.sql.XAConnection#getXAResource()
-	 */
-	@Override
-	public XAResource getXAResource() throws SQLException
+	public void testGetXAResource() throws SQLException
 	{
 		XAResource resource1 = EasyMock.createStrictMock(XAResource.class);
 		XAResource resource2 = EasyMock.createStrictMock(XAResource.class);
@@ -107,7 +105,14 @@ public class TestXAConnection extends TestPooledConnection implements XAConnecti
 		
 		assert proxy.getObject(this.database1) == resource1;
 		assert proxy.getObject(this.database2) == resource2;
-		
-		return result;
+	}
+	
+	/**
+	 * @see javax.sql.XAConnection#getXAResource()
+	 */
+	@Override
+	public XAResource getXAResource() throws SQLException
+	{
+		return this.getXAConnection().getXAResource();
 	}
 }

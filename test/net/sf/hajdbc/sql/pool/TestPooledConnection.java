@@ -54,6 +54,7 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
+@Test
 @SuppressWarnings({ "unchecked", "nls" })
 public class TestPooledConnection implements PooledConnection
 {
@@ -205,11 +206,7 @@ public class TestPooledConnection implements PooledConnection
 		this.verify();
 	}
 
-	/**
-	 * @see javax.sql.PooledConnection#getConnection()
-	 */
-	@Override
-	public Connection getConnection() throws SQLException
+	public void testGetConnection() throws SQLException
 	{
 		Connection connection1 = EasyMock.createStrictMock(Connection.class);
 		Connection connection2 = EasyMock.createStrictMock(Connection.class);
@@ -229,7 +226,7 @@ public class TestPooledConnection implements PooledConnection
 		
 		this.replay();
 		
-		Connection result = this.connection.getConnection();
+		Connection result = this.getConnection();
 		
 		this.verify();
 		
@@ -239,8 +236,15 @@ public class TestPooledConnection implements PooledConnection
 		
 		assert proxy.getObject(this.database1) == connection1;
 		assert proxy.getObject(this.database2) == connection2;
-		
-		return result;
+	}
+	
+	/**
+	 * @see javax.sql.PooledConnection#getConnection()
+	 */
+	@Override
+	public Connection getConnection() throws SQLException
+	{
+		return this.connection.getConnection();
 	}
 
 	/**

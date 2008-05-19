@@ -37,29 +37,9 @@ import org.easymock.EasyMock;
  */
 public class TestXADataSourceDatabase extends TestCommonDataSourceDatabase<XADataSourceDatabase, XADataSource>
 {
-	private XAConnection connection = EasyMock.createStrictMock(XAConnection.class);
-
 	public TestXADataSourceDatabase()
 	{
-		super(EasyMock.createStrictMock(XADataSource.class));
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.sql.TestCommonDataSourceDatabase#objects()
-	 */
-	@Override
-	protected Object[] objects()
-	{
-		return new Object[] { this.dataSource, this.connection };
-	}
-
-	/**
-	 * @see net.sf.hajdbc.sql.TestCommonDataSourceDatabase#createDatabase()
-	 */
-	@Override
-	protected XADataSourceDatabase createDatabase()
-	{
-		return new XADataSourceDatabase();
+		super(new XADataSourceDatabase(), XADataSource.class);
 	}
 
 	/**
@@ -80,41 +60,39 @@ public class TestXADataSourceDatabase extends TestCommonDataSourceDatabase<XADat
 		return MockXADataSourceFactory.class;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
-	 */
 	@Override
-	public Connection connect(XADataSource dataSource) throws SQLException
+	public void testConnect() throws SQLException
 	{
-		XADataSourceDatabase database = this.createDatabase("1");
+		XADataSource dataSource = EasyMock.createStrictMock(XADataSource.class);
+		XAConnection xaConnection = EasyMock.createStrictMock(XAConnection.class);
 		
 		Connection connection = EasyMock.createMock(Connection.class);
 		
-		EasyMock.expect(this.dataSource.getXAConnection()).andReturn(this.connection);
-		EasyMock.expect(this.connection.getConnection()).andReturn(connection);
+		EasyMock.expect(dataSource.getXAConnection()).andReturn(xaConnection);
+		EasyMock.expect(xaConnection.getConnection()).andReturn(connection);
 		
-		this.replay();
+		EasyMock.replay(dataSource, xaConnection);
 		
-		Connection result = database.connect(dataSource);
+		Connection result = this.connect(dataSource);
 		
-		this.verify();
+		EasyMock.verify(dataSource, xaConnection);
 		
 		assert result == connection : result.getClass().getName();
-		
-		database.setUser("user");
-		database.setPassword("password");
 
-		EasyMock.expect(this.dataSource.getXAConnection("user", "password")).andReturn(this.connection);
-		EasyMock.expect(this.connection.getConnection()).andReturn(connection);
+		EasyMock.reset(dataSource, xaConnection);
 		
-		this.replay();
+		this.database.setUser("user");
+		this.database.setPassword("password");
+
+		EasyMock.expect(dataSource.getXAConnection("user", "password")).andReturn(xaConnection);
+		EasyMock.expect(xaConnection.getConnection()).andReturn(connection);
 		
-		result = database.connect(dataSource);
+		EasyMock.replay(dataSource, xaConnection);
 		
-		this.verify();
+		result = this.connect(dataSource);
+		
+		EasyMock.verify(dataSource, xaConnection);
 		
 		assert result == connection : result.getClass().getName();
-		
-		return result;
 	}
 }

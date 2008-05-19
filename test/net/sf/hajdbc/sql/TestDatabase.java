@@ -20,10 +20,15 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Properties;
+
+import javax.management.DynamicMBean;
 
 import net.sf.hajdbc.Database;
 
+import org.easymock.EasyMock;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -32,66 +37,99 @@ import org.testng.annotations.Test;
  *
  */
 @SuppressWarnings({ "unchecked", "nls" })
-public abstract class TestDatabase<T extends Database, U> implements Database<U>
+public abstract class TestDatabase<T extends AbstractDatabase<U>, U> implements Database<U>
 {
-	protected abstract T createDatabase(String id);
-
-	@DataProvider(name = "object")
-	protected Object[][] objectProvider()
+	protected T database;
+	
+	protected TestDatabase(T database)
 	{
-		return new Object[][] { new Object[] { this.createDatabase("1") }, new Object[] { this.createDatabase("2") }, new Object[] { new Object() }, new Object[] { null } };
+		this.database = database;
+		this.database.setId("1");
+	}
+	
+	@Test
+	public void testCompareTo()
+	{
+		Database<U> database = EasyMock.createStrictMock(Database.class);
+		
+		EasyMock.expect(database.getId()).andReturn("0");
+		
+		EasyMock.replay(database);
+		
+		int result = this.compareTo(database);
+		
+		EasyMock.verify(database);
+		
+		assert result > 0 : result;
+		
+		EasyMock.reset(database);
+		
+		EasyMock.expect(database.getId()).andReturn("2");
+		
+		EasyMock.replay(database);
+		
+		result = this.compareTo(database);
+		
+		EasyMock.verify(database);
+		
+		assert result < 0 : result;
+		
+		EasyMock.reset(database);
+		
+		EasyMock.expect(database.getId()).andReturn("1");
+		
+		EasyMock.replay(database);
+		
+		result = this.compareTo(database);
+		
+		EasyMock.verify(database);
+		
+		assert result == 0 : result;
 	}
 	
 	/**
-	 * @see java.lang.Object#equals(java.lang.Object)
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
 	@Override
-	@Test(dataProvider = "object")
-	public boolean equals(Object object)
+	public int compareTo(Database<U> database)
 	{
-		Database database = this.createDatabase("1");
-		
-		boolean equals = database.equals(object);
-
-		boolean expected = (object != null) && Database.class.isInstance(object) && Database.class.cast(object).getId().equals("1");
-		
-		assert equals == expected : equals;
-		
-		return equals;
+		return this.database.compareTo(database);
 	}
+
+	@Test
+	public void testHashCode()
+	{
+		int hashCode = this.hashCode();
 		
+		int expected = this.database.getId().hashCode();
+		
+		assert hashCode == expected : hashCode;
+	}
+	
 	/**
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
-	@Test
 	public int hashCode()
 	{
-		Database database = this.createDatabase("1");
-		
-		int hashCode = database.hashCode();
-		
-		int expected = database.getId().hashCode();
-		
-		assert hashCode == expected : hashCode;
-		
-		return hashCode;
+		return this.database.hashCode();
 	}
 
+	@Test
+	public void testToString()
+	{
+		String string = this.toString();
+		
+		assert string.equals("1") : string;
+	}
+	
 	/**
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
-	@Test
 	public String toString()
 	{
-		Database database = this.createDatabase("1");
-		
-		String string = database.toString();
-		
-		assert string.equals("1") : string;
-
-		return string;
+		return this.database.toString();
 	}
 
 	/**
@@ -100,37 +138,37 @@ public abstract class TestDatabase<T extends Database, U> implements Database<U>
 	@Test
 	public void clean()
 	{
-		Database database = this.createDatabase("1");
+		this.database.clean();
 		
-		database.clean();
+		assert !this.database.isDirty();
 		
-		assert !database.isDirty();
+		this.database.setWeight(1);
+		this.database.clean();
 		
-		database.setWeight(1);
-		database.clean();
-		
-		assert !database.isDirty();
+		assert !this.database.isDirty();
 	}
 
-	/**
-	 * @see net.sf.hajdbc.Database#isDirty()
-	 */
 	@Test
-	public boolean isDirty()
+	public void testIsDirty()
 	{
-		Database database = this.createDatabase("1");
-		
-		boolean dirty = database.isDirty();
+		boolean dirty = this.isDirty();
 		
 		assert dirty;
 		
-		database.clean();
+		this.database.clean();
 		
-		dirty = database.isDirty();
+		dirty = this.isDirty();
 		
 		assert !dirty;
-		
-		return dirty;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.Database#isDirty()
+	 */
+	@Override
+	public boolean isDirty()
+	{
+		return this.database.isDirty();
 	}
 
 	@DataProvider(name = "string")
@@ -145,28 +183,26 @@ public abstract class TestDatabase<T extends Database, U> implements Database<U>
 	@Test(dataProvider = "string")
 	public void removeProperty(String name)
 	{
-		Database database = this.createDatabase("1");
+		this.database.setProperty(name, "value");
 		
-		database.setProperty(name, "value");
-		
-		String value = database.getProperties().getProperty(name);
+		String value = this.database.getProperties().getProperty(name);
 		
 		assert value.equals("value") : value;
 		
-		database.clean();
+		this.database.clean();
 		
-		database.removeProperty(name);
+		this.database.removeProperty(name);
 
-		value = database.getProperties().getProperty(name);
+		value = this.database.getProperties().getProperty(name);
 		
 		assert value == null;
 		
-		assert database.isDirty();
+		assert this.database.isDirty();
 		
-		database.clean();
-		database.removeProperty(name);
+		this.database.clean();
+		this.database.removeProperty(name);
 		
-		assert !database.isDirty();
+		assert !this.database.isDirty();
 	}
 
 	/**
@@ -175,29 +211,27 @@ public abstract class TestDatabase<T extends Database, U> implements Database<U>
 	@Test(dataProvider = "string")
 	public void setPassword(String password)
 	{
-		Database database = this.createDatabase("1");
+		this.database.setPassword(password);
 		
-		database.setPassword(password);
-		
-		String value = database.getPassword();
+		String value = this.database.getPassword();
 		
 		assert value.equals(password) : value;
 		
-		database.clean();
+		this.database.clean();
 		
-		database.setPassword(password);
+		this.database.setPassword(password);
 
-		value = database.getPassword();
+		value = this.database.getPassword();
 		
 		assert value.equals(password);
 		
-		assert !database.isDirty();
+		assert !this.database.isDirty();
 		
-		database.setPassword(null);
+		this.database.setPassword(null);
 		
-		assert database.isDirty();
+		assert this.database.isDirty();
 		
-		value = database.getPassword();
+		value = this.database.getPassword();
 		
 		assert value == null : value;
 	}
@@ -214,37 +248,35 @@ public abstract class TestDatabase<T extends Database, U> implements Database<U>
 	@Test(dataProvider = "property")
 	public void setProperty(String name, String value)
 	{
-		Database database = this.createDatabase("1");
-		
-		database.clean();
+		this.database.clean();
 		
 		boolean accepted = (name != null) && (value != null);
 		
 		try
 		{
-			database.setProperty(name, value);
+			this.database.setProperty(name, value);
 			
 			assert accepted;
 			
-			String propertyValue = database.getProperties().getProperty(name);
+			String propertyValue = this.database.getProperties().getProperty(name);
 			
 			assert propertyValue.equals(value) : propertyValue;
 			
-			database.clean();
+			this.database.clean();
 			
-			database.setProperty(name, value);
+			this.database.setProperty(name, value);
 	
-			propertyValue = database.getProperties().getProperty(name);
+			propertyValue = this.database.getProperties().getProperty(name);
 			
 			assert propertyValue.equals(value) : propertyValue;
 			
-			assert !database.isDirty();
+			assert !this.database.isDirty();
 			
-			database.setProperty(name, "");
+			this.database.setProperty(name, "");
 			
-			assert database.isDirty();
+			assert this.database.isDirty();
 			
-			propertyValue = database.getProperties().getProperty(name);
+			propertyValue = this.database.getProperties().getProperty(name);
 			
 			assert propertyValue.equals("") : propertyValue;
 		}
@@ -252,7 +284,7 @@ public abstract class TestDatabase<T extends Database, U> implements Database<U>
 		{
 			assert !accepted;
 			
-			assert !database.isDirty();
+			assert !this.database.isDirty();
 		}
 	}
 
@@ -262,29 +294,27 @@ public abstract class TestDatabase<T extends Database, U> implements Database<U>
 	@Test(dataProvider = "string")
 	public void setUser(String user)
 	{
-		Database database = this.createDatabase("1");
+		this.database.setUser(user);
 		
-		database.setUser(user);
-		
-		String value = database.getUser();
+		String value = this.database.getUser();
 		
 		assert value.equals(user) : value;
 		
-		database.clean();
+		this.database.clean();
 		
-		database.setUser(user);
+		this.database.setUser(user);
 
-		value = database.getUser();
+		value = this.database.getUser();
 		
 		assert value.equals(user);
 		
-		assert !database.isDirty();
+		assert !this.database.isDirty();
 		
-		database.setUser(null);
+		this.database.setUser(null);
 		
-		assert database.isDirty();
+		assert this.database.isDirty();
 		
-		value = database.getUser();
+		value = this.database.getUser();
 		
 		assert value == null : value;
 	}
@@ -301,37 +331,35 @@ public abstract class TestDatabase<T extends Database, U> implements Database<U>
 	@Test(dataProvider = "int")
 	public void setWeight(int weight)
 	{
-		Database database = this.createDatabase("1");
+		this.database.setWeight(weight);
 		
-		database.setWeight(weight);
-		
-		int value = database.getWeight();
+		int value = this.database.getWeight();
 		
 		assert value == weight : value;
 		
-		database.clean();
+		this.database.clean();
 		
-		database.setWeight(weight);
+		this.database.setWeight(weight);
 
-		value = database.getWeight();
+		value = this.database.getWeight();
 		
 		assert value == weight : value;
 		
-		assert !database.isDirty();
+		assert !this.database.isDirty();
 		
-		database.setWeight(0);
+		this.database.setWeight(0);
 		
-		assert database.isDirty();
+		assert this.database.isDirty();
 		
-		value = database.getWeight();
+		value = this.database.getWeight();
 		
 		assert value == 0 : value;
 		
-		database.clean();
+		this.database.clean();
 		
 		try
 		{
-			database.setWeight(-1);
+			this.database.setWeight(-1);
 			
 			assert false;
 		}
@@ -340,7 +368,7 @@ public abstract class TestDatabase<T extends Database, U> implements Database<U>
 			assert true;
 		}
 		
-		assert !database.isDirty();
+		assert !this.database.isDirty();
 	}
 	
 	@DataProvider(name = "boolean")
@@ -355,110 +383,83 @@ public abstract class TestDatabase<T extends Database, U> implements Database<U>
 	@Test(dataProvider = "boolean")
 	public void setLocal(boolean local)
 	{
-		Database database = this.createDatabase("1");
-		
-		database.setLocal(local);
+		this.database.setLocal(local);
 
-		boolean value = database.isLocal();
+		boolean value = this.database.isLocal();
 		
 		assert value == local : value;
 		
-		database.clean();
+		this.database.clean();
 
-		database.setLocal(local);
+		this.database.setLocal(local);
 
-		value = database.isLocal();
+		value = this.database.isLocal();
 		
 		assert value == local : value;
 		
-		assert !database.isDirty();
+		assert !this.database.isDirty();
 		
-		database.setLocal(false);
+		this.database.setLocal(false);
 		
-		assert database.isDirty();
+		assert this.database.isDirty();
 		
-		value = database.isLocal();
+		value = this.database.isLocal();
 		
 		assert !value;
 		
-		database.clean();
+		this.database.clean();
+	}
+
+	@Test
+	public void testGetId()
+	{
+		String id = this.getId();
+		
+		assert id.equals("1") : id;
 	}
 	
-	@DataProvider(name = "database")
-	protected Object[][] databaseProvider()
-	{
-		return new Object[][] { new Object[] { this.createDatabase("1") }, new Object[] { this.createDatabase("1") }, new Object[] { this.createDatabase("2") } };
-	}
-
-	/**
-	 * @see java.lang.Comparable#compareTo(T)
-	 */
-	@SuppressWarnings("unchecked")
-	@Test(dataProvider = "database")
-	public int compareTo(Database<U> object)
-	{
-		Database database = this.createDatabase("1");
-
-		int compared = database.compareTo(object);
-
-		int expected = database.getId().compareTo(object.getId());
-		
-		assert compared == expected : compared;
-		
-		return compared;
-	}
-
 	/**
 	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getId()
 	 */
-	@Test
+	@Override
 	public String getId()
 	{
-		Database database = this.createDatabase("1");
-
-		String id = database.getId();
-		
-		assert id.equals("1") : id;
-		
-		return id;
+		return this.database.getId();
 	}
 
-	/**
-	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getPassword()
-	 */
 	@Test
-	public String getPassword()
+	public void testGetPassword()
 	{
-		Database database = this.createDatabase("1");
-
-		String password = database.getPassword();
+		String password = this.getPassword();
 		
 		assert password == null : password;
 		
-		database.setPassword("password");
+		this.database.setPassword("password");
 		
-		password = database.getPassword();
+		password = this.getPassword();
 		
 		assert password.equals("password") : password;
-		
-		return password;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getPassword()
+	 */
+	@Override
+	public String getPassword()
+	{
+		return this.database.getPassword();
 	}
 
-	/**
-	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getProperties()
-	 */
 	@Test
-	public Properties getProperties()
+	public void testGetProperties()
 	{
-		Database database = this.createDatabase("1");
-
-		Properties properties = database.getProperties();
+		Properties properties = this.getProperties();
 		
 		assert properties.isEmpty() : properties;
 		
-		database.setProperty("name", "value");
+		this.database.setProperty("name", "value");
 
-		properties = database.getProperties();
+		properties = this.getProperties();
 		
 		assert properties.size() == 1 : properties.size();
 		
@@ -466,75 +467,132 @@ public abstract class TestDatabase<T extends Database, U> implements Database<U>
 		
 		assert value.equals("value") : value;
 		
-		database.removeProperty("name");
+		this.database.removeProperty("name");
 		
-		properties = database.getProperties();
+		properties = this.getProperties();
 		
 		assert properties.isEmpty();
-		
-		return properties;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getProperties()
+	 */
+	@Override
+	public Properties getProperties()
+	{
+		return this.database.getProperties();
 	}
 
-	/**
-	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getUser()
-	 */
 	@Test
-	public String getUser()
+	public void testGetUser()
 	{
-		Database database = this.createDatabase("1");
-
-		String user = database.getUser();
+		String user = this.getUser();
 		
 		assert user == null : user;
 		
-		database.setUser("user");
+		this.setUser("user");
 		
-		user = database.getUser();
+		user = this.getUser();
 		
 		assert user.equals("user") : user;
-		
-		return user;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getUser()
+	 */
+	@Override
+	public String getUser()
+	{
+		return this.database.getUser();
 	}
 
-	/**
-	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getWeight()
-	 */
 	@Test
-	public int getWeight()
+	public void testGetWeight()
 	{
-		Database database = this.createDatabase("1");
-
-		int weight = database.getWeight();
+		int weight = this.getWeight();
 		
 		assert weight == 1 : weight;
 		
-		database.setWeight(0);
+		this.setWeight(0);
 		
-		weight = database.getWeight();
+		weight = this.getWeight();
 		
 		assert weight == 0 : weight;
-		
-		return weight;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getWeight()
+	 */
+	@Override
+	public int getWeight()
+	{
+		return this.database.getWeight();
 	}
 
-	/**
-	 * @see net.sf.hajdbc.ActiveDatabaseMBean#isLocal()
-	 */
 	@Test
-	public boolean isLocal()
+	public void testIsLocal()
 	{
-		Database database = this.createDatabase("1");
-
-		boolean local = database.isLocal();
+		boolean local = this.isLocal();
 
 		assert !local;
 		
-		database.setLocal(true);
+		this.database.setLocal(true);
 		
-		local = database.isLocal();
+		local = this.isLocal();
 		
 		assert local;
-		
-		return local;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.ActiveDatabaseMBean#isLocal()
+	 */
+	@Override
+	public boolean isLocal()
+	{
+		return this.database.isLocal();
+	}
+
+	public abstract void testConnect() throws SQLException;	
+
+	/**
+	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
+	 */
+	@Override
+	public Connection connect(U connectionFactory) throws SQLException
+	{
+		return this.database.connect(connectionFactory);
+	}
+	
+	public abstract void testCreateConnectionFactory();	
+
+	/**
+	 * @see net.sf.hajdbc.Database#createConnectionFactory()
+	 */
+	@Override
+	public U createConnectionFactory()
+	{
+		return this.database.createConnectionFactory();
+	}
+
+	public abstract void testGetActiveMBean();
+	
+	/**
+	 * @see net.sf.hajdbc.Database#getActiveMBean()
+	 */
+	@Override
+	public DynamicMBean getActiveMBean()
+	{
+		return this.database.getActiveMBean();
+	}
+
+	public abstract void testGetInactiveMBean();
+	
+	/**
+	 * @see net.sf.hajdbc.Database#getInactiveMBean()
+	 */
+	@Override
+	public DynamicMBean getInactiveMBean()
+	{
+		return this.database.getInactiveMBean();
 	}
 }

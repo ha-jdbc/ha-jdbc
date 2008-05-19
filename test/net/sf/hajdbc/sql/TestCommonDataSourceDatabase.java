@@ -28,9 +28,6 @@ import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
 import javax.sql.CommonDataSource;
 
-import org.easymock.EasyMock;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
@@ -39,98 +36,59 @@ import org.testng.annotations.Test;
  */
 public abstract class TestCommonDataSourceDatabase<C extends CommonDataSourceDatabase<D>, D extends CommonDataSource> extends TestDatabase<C, D> implements InactiveDataSourceDatabaseMBean
 {
-	protected D dataSource;
-
-	protected TestCommonDataSourceDatabase(D dataSource)
-	{
-		this.dataSource = dataSource;
-	}
+	private Class<D> dataSourceClass;
 	
-	protected Object[] objects()
+	protected TestCommonDataSourceDatabase(C database, Class<D> dataSourceClass)
 	{
-		return new Object[] { this.dataSource };
-	}
-	
-	protected void replay()
-	{
-		EasyMock.replay(this.objects());
-	}
-	
-	protected void verify()
-	{
-		EasyMock.verify(this.objects());
-	}
-	
-	@AfterMethod
-	protected void reset()
-	{
-		EasyMock.reset(this.objects());
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.sql.TestDatabase#createDatabase(java.lang.String)
-	 */
-	@Override
-	protected final C createDatabase(String id)
-	{
-		C database = this.createDatabase();
+		super(database);
 		
-		database.setId(id);
-		
-		return database;
+		this.dataSourceClass = dataSourceClass;
 	}
 
-	protected abstract C createDatabase();
-	
-	@DataProvider(name = "datasource")
-	Object[][] dataSourceProvider()
-	{
-		return new Object[][] { new Object[] { this.dataSource } };
-	}
-
-	/**
-	 * @see net.sf.hajdbc.Database#createConnectionFactory()
-	 */
 	@Test
-	public final D createConnectionFactory()
+	@Override
+	public void testCreateConnectionFactory()
 	{
-		C database = this.createDatabase("1");
-		database.setName("test");
-		database.setProperty(Context.INITIAL_CONTEXT_FACTORY, MockInitialContextFactory.class.getName());
+		// Test JNDI-based DataSource
+		this.database.setName("test");
+		this.database.setProperty(Context.INITIAL_CONTEXT_FACTORY, MockInitialContextFactory.class.getName());
 		
 		try
 		{
-			Reference reference = new Reference(this.dataSource.getClass().getName(), this.objectFactoryClass().getName(), null);
+			Reference reference = new Reference(this.dataSourceClass.getName(), this.objectFactoryClass().getName(), null);
 			
-			Context context = new InitialContext(database.getProperties());
+			Context context = new InitialContext(this.database.getProperties());
 			
 			context.rebind("test", reference);
 		}
 		catch (NamingException e)
 		{
-			assert false;
+			assert false : e;
 		}
 		
-		D dataSource = database.createConnectionFactory();
+		D dataSource = this.createConnectionFactory();
 		
 		assert dataSource.getClass().equals(this.mockDataSourceClass()) : dataSource.getClass();
+
+		this.database.getProperties().clear();
 		
-		return dataSource;
+		// Test explicit DataSource creation
+		this.database.setName(this.mockDataSourceClass().getName());
+
+		dataSource = this.createConnectionFactory();
+		
+		assert dataSource.getClass().equals(this.mockDataSourceClass()) : dataSource.getClass();
 	}
 
 	protected abstract Class<? extends ObjectFactory> objectFactoryClass();
 	
 	protected abstract Class<? extends D> mockDataSourceClass();
 	
-	/**
-	 * @see net.sf.hajdbc.Database#getActiveMBean()
-	 */
 	@Test
-	public final DynamicMBean getActiveMBean()
+	@Override
+	public void testGetActiveMBean()
 	{
-		C database = this.createDatabase("1");
-		
-		DynamicMBean mbean = database.getActiveMBean();
+		DynamicMBean mbean = this.getActiveMBean();
 		
 		String className = mbean.getMBeanInfo().getClassName();
 		
@@ -142,19 +100,13 @@ public abstract class TestCommonDataSourceDatabase<C extends CommonDataSourceDat
 		{
 			assert false : e;
 		}
-		
-		return mbean;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.Database#getInactiveMBean()
-	 */
 	@Test
-	public final DynamicMBean getInactiveMBean()
+	@Override
+	public void testGetInactiveMBean()
 	{
-		C database = this.createDatabase("1");
-		
-		DynamicMBean mbean = database.getInactiveMBean();
+		DynamicMBean mbean = this.getInactiveMBean();
 		
 		String className = mbean.getMBeanInfo().getClassName();
 		
@@ -166,57 +118,56 @@ public abstract class TestCommonDataSourceDatabase<C extends CommonDataSourceDat
 		{
 			assert false : e;
 		}
-		
-		return mbean;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.sql.ActiveDataSourceDatabaseMBean#getName()
-	 */
 	@Test
-	public final String getName()
+	public void testGetName()
 	{
-		C database = this.createDatabase("1");
-
-		String name = database.getName();
+		String name = this.getName();
 		
 		assert name == null : name;
 		
-		database.setName("name");
+		this.database.setName("name");
 		
-		name = database.getName();
+		name = this.database.getName();
 		
 		assert name.equals("name") : name;
-		
-		return name;
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.sql.ActiveDataSourceDatabaseMBean#getName()
+	 */
+	@Override
+	public final String getName()
+	{
+		return this.database.getName();
+	}
+
 	@Test(dataProvider = "string")
+	@Override
 	public final void setName(String name)
 	{
-		C database = this.createDatabase("1");
+		this.database.setName(name);
 		
-		database.setName(name);
-		
-		String value = database.getName();
+		String value = this.database.getName();
 		
 		assert value.equals(name) : value;
 		
-		database.clean();
+		this.database.clean();
 		
-		database.setName(name);
+		this.database.setName(name);
 
-		value = database.getName();
+		value = this.database.getName();
 		
 		assert value.equals(name) : value;
 		
-		assert !database.isDirty();
+		assert !this.database.isDirty();
 		
-		database.setName(null);
+		this.database.setName(null);
 		
-		assert database.isDirty();
+		assert this.database.isDirty();
 		
-		value = database.getName();
+		value = this.database.getName();
 		
 		assert value == null : value;
 	}
