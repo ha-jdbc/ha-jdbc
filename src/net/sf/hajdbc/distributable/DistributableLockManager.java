@@ -79,6 +79,9 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 		this.dispatcher = new RpcDispatcher(this.channel, this, this, this);
 	}
 
+	/**
+	 * @see net.sf.hajdbc.Lifecycle#start()
+	 */
 	@Override
 	public void start() throws Exception
 	{
@@ -87,6 +90,9 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 		this.lockManager.start();
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.Lifecycle#stop()
+	 */
 	@Override
 	public void stop()
 	{
@@ -115,6 +121,11 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 		return new DistributableLock(object, this.lockManager.writeLock(object));
 	}
 
+	/**
+	 * Votes on the specified decree.
+	 * @param decree a lock decree
+	 * @return true, if success, false if failure
+	 */
 	public boolean vote(LockDecree decree)
 	{
 		Map<String, Lock> lockMap = this.addressMap.get(decree.getAddress());
@@ -184,6 +195,10 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 		private LockDecree releaseDecree;
 		private Lock lock;
 		
+		/**
+		 * @param object
+		 * @param lock
+		 */
 		public DistributableLock(String object, Lock lock)
 		{
 			Address address = DistributableLockManager.this.channel.getLocalAddress();
@@ -342,7 +357,7 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 		}
 	}
 	
-	public Map<Boolean, Vector<Address>> remoteVote(LockDecree decree, Vector<Address> addresses, long timeout)
+	Map<Boolean, Vector<Address>> remoteVote(LockDecree decree, Vector<Address> addresses, long timeout)
 	{
 		Map<Boolean, Vector<Address>> map = new TreeMap<Boolean, Vector<Address>>();
 		

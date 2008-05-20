@@ -162,7 +162,7 @@ public class DistributableStateManager extends AbstractMembershipListener implem
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.StateManager#start()
+	 * @see net.sf.hajdbc.Lifecycle#start()
 	 */
 	@Override
 	public void start() throws Exception
@@ -177,7 +177,7 @@ public class DistributableStateManager extends AbstractMembershipListener implem
 	}
 
 	/**
-	 * @see net.sf.hajdbc.StateManager#stop()
+	 * @see net.sf.hajdbc.Lifecycle#stop()
 	 */
 	@Override
 	public void stop()

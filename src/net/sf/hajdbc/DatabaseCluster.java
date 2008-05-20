@@ -29,7 +29,7 @@ import java.util.concurrent.ExecutorService;
  * @author Paul Ferraro
  * @param <D> either java.sql.Driver or javax.sql.DataSource
  */
-public interface DatabaseCluster<D>
+public interface DatabaseCluster<D> extends Lifecycle
 {
 	/**
 	 * Returns the identifier of this cluster.
@@ -157,17 +157,6 @@ public interface DatabaseCluster<D>
 	 * @return a map of alive status to set of database descriptors
 	 */
 	public Map<Boolean, List<Database<D>>> getAliveMap(Collection<Database<D>> databases);
-	
-	/**
-	 * Starts this database cluster.
-	 * @throws Exception if cluster could not be started
-	 */
-	public void start() throws Exception;
-	
-	/**
-	 * Stops this database cluster
-	 */
-	public void stop();
 	
 	/**
 	 * Indicates whether or not this cluster is active, i.e. started, but not yet stopped.

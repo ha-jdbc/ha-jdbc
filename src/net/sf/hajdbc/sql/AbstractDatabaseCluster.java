@@ -585,8 +585,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	}
 
 	/**
-	 * Starts this database cluster
-	 * @throws Exception if database cluster start fails
+	 * @see net.sf.hajdbc.Lifecycle#start()
 	 */
 	public synchronized void start() throws Exception
 	{
@@ -646,7 +645,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	}
 
 	/**
-	 * Stops this database cluster
+	 * @see net.sf.hajdbc.Lifecycle#stop()
 	 */
 	public synchronized void stop()
 	{

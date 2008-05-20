@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2007 Paul Ferraro
+ * Copyright (c) 2004-2008 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -20,31 +20,20 @@
  */
 package net.sf.hajdbc;
 
-import java.util.concurrent.locks.Lock;
-
-import net.sf.hajdbc.util.Strings;
-
 /**
- * Manages a set of named read/write locks.  A global lock is represented by an empty name (i.e "").
- * Obtaining a named read or write lock should implicitly obtain a global read lock.
- * Consequently, all named locks are blocked if a global write lock is obtained.
+ * Interface implemented by HA-JDBC services that participate in the lifecycle of a database cluster.
  * @author Paul Ferraro
  */
-public interface LockManager extends Lifecycle
+public interface Lifecycle
 {
-	public static final String GLOBAL = Strings.EMPTY;
+	/**
+	 * Called upon database cluster start.
+	 * @throws Exception if this service fails to start.
+	 */
+	public void start() throws Exception;
 	
 	/**
-	 * Obtains a named read lock.
-	 * @param object an object to lock
-	 * @return a read lock
+	 * Called when database cluster is stopped.
 	 */
-	public Lock readLock(String object);
-
-	/**
-	 * Obtains a named write lock.
-	 * @param object an object to lock
-	 * @return a write lock
-	 */
-	public Lock writeLock(String object);
+	public void stop();
 }

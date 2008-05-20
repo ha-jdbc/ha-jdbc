@@ -85,7 +85,7 @@ public class LocalStateManager implements StateManager
 	}
 
 	/**
-	 * @see net.sf.hajdbc.StateManager#start()
+	 * @see net.sf.hajdbc.Lifecycle#start()
 	 */
 	@Override
 	public void start() throws Exception
@@ -94,19 +94,12 @@ public class LocalStateManager implements StateManager
 	}
 
 	/**
-	 * @see net.sf.hajdbc.StateManager#stop()
+	 * @see net.sf.hajdbc.Lifecycle#stop()
 	 */
 	@Override
 	public void stop()
 	{
-		try
-		{
-			preferences.sync();
-		}
-		catch (BackingStoreException e)
-		{
-			logger.warn(e.getMessage(), e);
-		}
+		// Nothing to do
 	}
 	
 	private String statePreferenceKey()
