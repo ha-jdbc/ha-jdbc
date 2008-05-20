@@ -288,7 +288,7 @@ public class TestLocalTransactionContext implements TransactionContext
 		// Normally uneventful
 		this.replay();
 		
-		this.close();
+		this.context.close();
 		
 		this.verify();
 		this.reset();
@@ -334,7 +334,7 @@ public class TestLocalTransactionContext implements TransactionContext
 		
 		this.replay();
 		
-		this.close();
+		this.context.close();
 		
 		this.verify();
 	}
