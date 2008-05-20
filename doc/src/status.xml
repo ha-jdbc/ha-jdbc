@@ -47,7 +47,7 @@
 			<action context="src" dev="PF" type="fix">
 				Calls to PreparedStatement.addBatch() were not being recorded and, consequently, not getting replayed when a new database is activated.
 			</action>
-			<action context="src" dev="PF" type="fix">
+			<action context="src" dev="PF" type="fix" fixes-bug="1964456">
 				Fixed AcquireLockDecree to use write locks, instead of a read locks, so that database activation will block transactions on remote nodes.
 			</action>
 			<action context="lib" dev="PF" type="update">
