@@ -42,7 +42,20 @@ public class TestConnectionPoolDataSourceDatabase extends TestCommonDataSourceDa
 {
 	public TestConnectionPoolDataSourceDatabase()
 	{
-		super(new ConnectionPoolDataSourceDatabase(), ConnectionPoolDataSource.class);
+		super(ConnectionPoolDataSource.class);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.TestDatabase#createDatabase(java.lang.String)
+	 */
+	@Override
+	protected ConnectionPoolDataSourceDatabase createDatabase(String id)
+	{
+		ConnectionPoolDataSourceDatabase database = new ConnectionPoolDataSourceDatabase();
+		
+		database.setId(id);
+		
+		return database;
 	}
 
 	/**

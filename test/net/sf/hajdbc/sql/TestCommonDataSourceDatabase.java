@@ -38,10 +38,8 @@ public abstract class TestCommonDataSourceDatabase<C extends CommonDataSourceDat
 {
 	private Class<D> dataSourceClass;
 	
-	protected TestCommonDataSourceDatabase(C database, Class<D> dataSourceClass)
+	protected TestCommonDataSourceDatabase(Class<D> dataSourceClass)
 	{
-		super(database);
-		
 		this.dataSourceClass = dataSourceClass;
 	}
 

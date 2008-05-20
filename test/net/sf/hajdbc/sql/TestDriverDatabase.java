@@ -53,9 +53,17 @@ public class TestDriverDatabase extends TestDatabase<DriverDatabase, Driver> imp
 		}
 	}
 	
-	public TestDriverDatabase()
+	/**
+	 * @see net.sf.hajdbc.sql.TestDatabase#createDatabase(java.lang.String)
+	 */
+	@Override
+	protected DriverDatabase createDatabase(String id)
 	{
-		super(new DriverDatabase());
+		DriverDatabase database = new DriverDatabase();
+		
+		database.setId(id);
+		
+		return database;
 	}
 	
 	private Driver driver = EasyMock.createStrictMock(Driver.class);

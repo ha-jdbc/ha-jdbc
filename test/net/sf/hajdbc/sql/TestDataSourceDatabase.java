@@ -40,7 +40,20 @@ public class TestDataSourceDatabase extends TestCommonDataSourceDatabase<DataSou
 {
 	public TestDataSourceDatabase()
 	{
-		super(new DataSourceDatabase(), DataSource.class);
+		super(DataSource.class);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.TestDatabase#createDatabase(java.lang.String)
+	 */
+	@Override
+	protected DataSourceDatabase createDatabase(String id)
+	{
+		DataSourceDatabase database = new DataSourceDatabase();
+		
+		database.setId(id);
+		
+		return database;
 	}
 
 	/**

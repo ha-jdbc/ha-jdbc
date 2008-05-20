@@ -29,6 +29,7 @@ import javax.management.DynamicMBean;
 import net.sf.hajdbc.Database;
 
 import org.easymock.EasyMock;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -37,15 +38,17 @@ import org.testng.annotations.Test;
  *
  */
 @SuppressWarnings({ "unchecked", "nls" })
-public abstract class TestDatabase<T extends AbstractDatabase<U>, U> implements Database<U>
+public abstract class TestDatabase<T extends Database<U>, U> implements Database<U>
 {
 	protected T database;
 	
-	protected TestDatabase(T database)
+	@BeforeMethod()
+	public void init()
 	{
-		this.database = database;
-		this.database.setId("1");
+		this.database = this.createDatabase("1");
 	}
+
+	protected abstract T createDatabase(String id);
 	
 	@Test
 	public void testCompareTo()
@@ -99,37 +102,19 @@ public abstract class TestDatabase<T extends AbstractDatabase<U>, U> implements 
 	@Test
 	public void testHashCode()
 	{
-		int hashCode = this.hashCode();
+		int hashCode = this.database.hashCode();
 		
 		int expected = this.database.getId().hashCode();
 		
 		assert hashCode == expected : hashCode;
 	}
-	
-	/**
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode()
-	{
-		return this.database.hashCode();
-	}
 
 	@Test
 	public void testToString()
 	{
-		String string = this.toString();
+		String string = this.database.toString();
 		
 		assert string.equals("1") : string;
-	}
-	
-	/**
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString()
-	{
-		return this.database.toString();
 	}
 
 	/**
@@ -490,7 +475,7 @@ public abstract class TestDatabase<T extends AbstractDatabase<U>, U> implements 
 		
 		assert user == null : user;
 		
-		this.setUser("user");
+		this.database.setUser("user");
 		
 		user = this.getUser();
 		
@@ -513,7 +498,7 @@ public abstract class TestDatabase<T extends AbstractDatabase<U>, U> implements 
 		
 		assert weight == 1 : weight;
 		
-		this.setWeight(0);
+		this.database.setWeight(0);
 		
 		weight = this.getWeight();
 		

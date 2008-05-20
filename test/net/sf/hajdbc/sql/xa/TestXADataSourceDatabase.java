@@ -39,7 +39,20 @@ public class TestXADataSourceDatabase extends TestCommonDataSourceDatabase<XADat
 {
 	public TestXADataSourceDatabase()
 	{
-		super(new XADataSourceDatabase(), XADataSource.class);
+		super(XADataSource.class);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.TestDatabase#createDatabase(java.lang.String)
+	 */
+	@Override
+	protected XADataSourceDatabase createDatabase(String id)
+	{
+		XADataSourceDatabase database = new XADataSourceDatabase();
+		
+		database.setId(id);
+		
+		return database;
 	}
 
 	/**
