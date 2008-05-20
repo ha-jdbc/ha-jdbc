@@ -583,7 +583,7 @@ public class TestStandardDialect implements Dialect
 		
 		if (sql.contains("success"))
 		{
-			assert Pattern.matches("SELECT 0\\.\\d+(E\\-\\d+)? FROM success", result) : result;
+			assert Pattern.matches("SELECT \\d\\.\\d+(E\\-\\d+)? FROM success", result) : result;
 		}
 		else
 		{
