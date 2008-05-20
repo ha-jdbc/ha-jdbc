@@ -175,6 +175,28 @@
 				</p>
 			</answer>
 		</faq>
+		<faq>
+			<question>Using version 1.4 or 1.5 of Sun's Java implementation, HA-JDBC mysteriously deadlocks the first time DriverManager.getConnection() is called.  Why?</question>
+			<answer>
+				<p>
+					In Java 1.5 and earlier, all of the methods on <code>java.sql.DriverManager</code> are synchronized.
+					Your initial call to <code>DriverManager.getConnection(...)</code> triggers the startup of HA-JDBC.
+					As HA-JDBC initializes, it will eventually call <code>DriverManager.getDriver(...)</code> for each database url in your cluster.
+					The calls to <code>DriverManager.getDriver(...)</code> occur in a different thread from your application thread, hence the deadlock.
+				</p>
+				<p>There are at least 2 known workarounds for this problem:</p>
+				<ol>
+					<li>
+						Upgrade to Java 1.6.
+						After forever insisting that the blanket synchronization of <code>java.sql.DriverManager</code> was <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4263113">not a defect</a>, Sun <em>silently</em> fixed this in Java 1.6.
+					</li>
+					<li>
+						Rather than use <code>DriverManager.getConnection(...)</code> to obtain connections, use <code>DriverManager.getDriver(...).connect(...)</code> instead.
+						This will circumvent the deadlock since DriverManager.getDriver(...) will not trigger HA-JDBC startup and Driver.connect(...) is not synchronized.
+					</li>
+				</ol>
+			</answer>
+		</faq>
 	</faqsection>
 	<faqsection>
 		<title>About HA-JDBC</title>
