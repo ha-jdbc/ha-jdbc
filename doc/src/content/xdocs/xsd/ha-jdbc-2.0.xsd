@@ -53,8 +53,7 @@
 										<xs:sequence>
 											<xs:element name="driver" type="xs:string" minOccurs="0"></xs:element>
 											<xs:element name="url" type="xs:string"></xs:element>
-											<xs:group ref="property" minOccurs="0" maxOccurs="unbounded"></xs:group>
-											<xs:group ref="authentication" minOccurs="0"></xs:group>
+											<xs:group ref="common"></xs:group>
 										</xs:sequence>
 										<xs:attributeGroup ref="database"></xs:attributeGroup>
 									</xs:complexType>
@@ -63,11 +62,23 @@
 							<xs:sequence>
 								<xs:element name="datasource" minOccurs="1" maxOccurs="unbounded">
 									<xs:complexType>
-										<xs:sequence>
-											<xs:element name="name" type="xs:string"></xs:element>
-											<xs:group ref="property" minOccurs="0" maxOccurs="unbounded"></xs:group>
-											<xs:group ref="authentication" minOccurs="0"></xs:group>
-										</xs:sequence>
+										<xs:group ref="datasource"></xs:group>
+										<xs:attributeGroup ref="database"></xs:attributeGroup>
+									</xs:complexType>
+								</xs:element>
+							</xs:sequence>
+							<xs:sequence>
+								<xs:element name="pool-datasource" minOccurs="1" maxOccurs="unbounded">
+									<xs:complexType>
+										<xs:group ref="datasource"></xs:group>
+										<xs:attributeGroup ref="database"></xs:attributeGroup>
+									</xs:complexType>
+								</xs:element>
+							</xs:sequence>
+							<xs:sequence>
+								<xs:element name="xa-datasource" minOccurs="1" maxOccurs="unbounded">
+									<xs:complexType>
+										<xs:group ref="datasource"></xs:group>
 										<xs:attributeGroup ref="database"></xs:attributeGroup>
 									</xs:complexType>
 								</xs:element>
@@ -129,6 +140,18 @@
 					</xs:simpleContent>
 				</xs:complexType>
 			</xs:element>
+		</xs:sequence>
+	</xs:group>
+	<xs:group name="datasource">
+		<xs:sequence>
+			<xs:element name="name" type="xs:string"></xs:element>
+			<xs:group ref="common"></xs:group>
+		</xs:sequence>
+	</xs:group>
+	<xs:group name="common">
+		<xs:sequence>
+			<xs:group ref="property" minOccurs="0" maxOccurs="unbounded"></xs:group>
+			<xs:group ref="authentication" minOccurs="0"></xs:group>
 		</xs:sequence>
 	</xs:group>
 	<xs:group name="authentication">
