@@ -246,12 +246,7 @@ public class TestXAResource implements XAResource
 		this.verify();
 	}
 
-	/**
-	 * @see javax.transaction.xa.XAResource#getTransactionTimeout()
-	 */
-	@Override
-	@Test
-	public int getTransactionTimeout() throws XAException
+	public void testGetTransactionTimeout() throws XAException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -259,49 +254,50 @@ public class TestXAResource implements XAResource
 		
 		this.replay();
 		
-		int timeout = this.resource.getTransactionTimeout();
+		int timeout = this.getTransactionTimeout();
 		
 		this.verify();
 		
 		assert timeout == 1 : timeout;
-		
-		return timeout;
-	}
-
-	@DataProvider(name = "resource")
-	Object[][] resourceProvider()
-	{
-		return new Object[][] { new Object[] { EasyMock.createMock(XAResource.class) } };
 	}
 	
 	/**
-	 * @see javax.transaction.xa.XAResource#isSameRM(javax.transaction.xa.XAResource)
+	 * @see javax.transaction.xa.XAResource#getTransactionTimeout()
 	 */
 	@Override
-	@Test(dataProvider = "resource")
-	public boolean isSameRM(XAResource resource) throws XAException
+	public int getTransactionTimeout() throws XAException
 	{
+		return this.resource.getTransactionTimeout();
+	}
+	
+	public void testIsSameRM() throws XAException
+	{
+		XAResource resource = EasyMock.createMock(XAResource.class);
+		
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		EasyMock.expect(this.resource1.isSameRM(resource)).andReturn(true);
 		
 		this.replay();
 		
-		boolean same = this.resource.isSameRM(resource);
+		boolean same = this.isSameRM(resource);
 		
 		this.verify();
 
 		assert same;
-		
-		return same;
 	}
-
+	
 	/**
-	 * @see javax.transaction.xa.XAResource#prepare(javax.transaction.xa.Xid)
+	 * @see javax.transaction.xa.XAResource#isSameRM(javax.transaction.xa.XAResource)
 	 */
 	@Override
+	public boolean isSameRM(XAResource resource) throws XAException
+	{
+		return this.resource.isSameRM(resource);
+	}
+
 	@Test(dataProvider = "xid")
-	public int prepare(Xid xid) throws XAException
+	public void testPrepare(Xid xid) throws XAException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -319,27 +315,32 @@ public class TestXAResource implements XAResource
 		
 		this.replay();
 		
-		int result = this.resource.prepare(xid);
+		int result = this.prepare(xid);
 		
 		this.verify();
 		
 		assert result == XAResource.XA_OK :  result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see javax.transaction.xa.XAResource#prepare(javax.transaction.xa.Xid)
+	 */
+	@Override
+	public int prepare(Xid xid) throws XAException
+	{
+		return this.resource.prepare(xid);
 	}
 
 	@DataProvider(name = "flags")
 	Object[][] flagsProvider()
 	{
-		return new Object[][] { new Object[] { XAResource.TMNOFLAGS } };
+		return new Object[][] {
+			new Object[] { XAResource.TMNOFLAGS },
+		};
 	}
 	
-	/**
-	 * @see javax.transaction.xa.XAResource#recover(int)
-	 */
-	@Override
 	@Test(dataProvider = "flags")
-	public Xid[] recover(int flags) throws XAException
+	public void testRecover(int flags) throws XAException
 	{
 		Xid[] xids = new Xid[0];
 		
@@ -359,13 +360,20 @@ public class TestXAResource implements XAResource
 		
 		this.replay();
 		
-		Xid[] result = this.resource.recover(flags);
+		Xid[] result = this.recover(flags);
 		
 		this.verify();
 		
 		assert result == xids;
-		
-		return result;
+	}
+	
+	/**
+	 * @see javax.transaction.xa.XAResource#recover(int)
+	 */
+	@Override
+	public Xid[] recover(int flags) throws XAException
+	{
+		return this.resource.recover(flags);
 	}
 
 	/**
@@ -426,12 +434,8 @@ public class TestXAResource implements XAResource
 		this.verify();
 	}
 
-	/**
-	 * @see javax.transaction.xa.XAResource#setTransactionTimeout(int)
-	 */
-	@Override
 	@Test(dataProvider = "flags")
-	public boolean setTransactionTimeout(int timeout) throws XAException
+	public void testSetTransactionTimeout(int timeout) throws XAException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -449,13 +453,20 @@ public class TestXAResource implements XAResource
 		
 		this.replay();
 		
-		boolean result = this.resource.setTransactionTimeout(timeout);
+		boolean result = this.setTransactionTimeout(timeout);
 		
 		this.verify();
 		
 		assert result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see javax.transaction.xa.XAResource#setTransactionTimeout(int)
+	 */
+	@Override
+	public boolean setTransactionTimeout(int timeout) throws XAException
+	{
+		return this.resource.setTransactionTimeout(timeout);
 	}
 
 	/**

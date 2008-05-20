@@ -24,7 +24,6 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -82,7 +81,7 @@ public class DatabaseMetaDataSupport
 	private static final Pattern LOWER_CASE_PATTERN = Pattern.compile("[a-z]");
 	
 	private Dialect dialect;
-	private Set<String> reservedIdentifierSet;
+	private Set<String> reservedIdentifierSet = new HashSet<String>();
 	private Pattern identifierPattern;
 	private String quote;
 	private boolean supportsMixedCaseIdentifiers;
@@ -91,8 +90,6 @@ public class DatabaseMetaDataSupport
 	private boolean storesLowerCaseQuotedIdentifiers;
 	private boolean storesUpperCaseIdentifiers;
 	private boolean storesUpperCaseQuotedIdentifiers;
-	private boolean storesMixedCaseIdentifiers;
-	private boolean storesMixedCaseQuotedIdentifiers;
 	private boolean supportsSchemasInDDL;
 	private boolean supportsSchemasInDML;
 	
@@ -106,9 +103,6 @@ public class DatabaseMetaDataSupport
 	{
 		this.dialect = dialect;
 		
-		this.reservedIdentifierSet = new HashSet<String>(Arrays.asList(SQL_92_RESERVED_WORDS));
-		this.reservedIdentifierSet.addAll(Arrays.asList(metaData.getSQLKeywords().split(Strings.COMMA)));
-		
 		this.identifierPattern = dialect.getIdentifierPattern(metaData);
 		this.quote = metaData.getIdentifierQuoteString();
 		this.supportsMixedCaseIdentifiers = metaData.supportsMixedCaseIdentifiers();
@@ -117,10 +111,18 @@ public class DatabaseMetaDataSupport
 		this.storesLowerCaseQuotedIdentifiers = metaData.storesLowerCaseQuotedIdentifiers();
 		this.storesUpperCaseIdentifiers = metaData.storesUpperCaseIdentifiers();
 		this.storesUpperCaseQuotedIdentifiers = metaData.storesUpperCaseQuotedIdentifiers();
-		this.storesMixedCaseIdentifiers = metaData.storesMixedCaseIdentifiers();
-		this.storesMixedCaseQuotedIdentifiers = metaData.storesMixedCaseQuotedIdentifiers();
 		this.supportsSchemasInDML = metaData.supportsSchemasInDataManipulation();
 		this.supportsSchemasInDDL = metaData.supportsSchemasInTableDefinitions();
+		
+		for (String word: SQL_92_RESERVED_WORDS)
+		{
+			this.reservedIdentifierSet.add(this.normalizeCase(word));
+		}
+		
+		for (String word: metaData.getSQLKeywords().split(Strings.COMMA))
+		{
+			this.reservedIdentifierSet.add(this.normalizeCase(word));
+		}
 	}
 	
 	/**
@@ -272,12 +274,14 @@ public class DatabaseMetaDataSupport
 	}
 
 	/**
-	 * Returns the unique constraints on the specified table.  This may include the primary key of the table.
+	 * Returns the unique constraints on the specified table - excluding the primary key of the table.
 	 * @param metaData a schema qualified table name
+	 * @param table a qualified table name
+	 * @param primaryKey the primary key of this table
 	 * @return a Collection of unique constraints.
 	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */
-	public Collection<UniqueConstraint> getUniqueConstraints(DatabaseMetaData metaData, QualifiedName table) throws SQLException
+	public Collection<UniqueConstraint> getUniqueConstraints(DatabaseMetaData metaData, QualifiedName table, UniqueConstraint primaryKey) throws SQLException
 	{
 		Map<String, UniqueConstraint> keyMap = new HashMap<String, UniqueConstraint>();
 		
@@ -288,6 +292,9 @@ public class DatabaseMetaDataSupport
 			if (resultSet.getInt("TYPE") == DatabaseMetaData.tableIndexStatistic) continue;
 			
 			String name = this.quote(resultSet.getString("INDEX_NAME"));
+			
+			// Don't include the primary key
+			if ((primaryKey != null) && name.equals(primaryKey.getName())) continue;
 			
 			UniqueConstraint key = keyMap.get(name);
 			
@@ -312,7 +319,6 @@ public class DatabaseMetaDataSupport
 	 * Returns the schema qualified name of the specified table suitable for use in a data modification language (DML) statement.
 	 * @param name a schema qualified name
 	 * @return a Collection of unique constraints.
-	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */
 	public String qualifyNameForDML(QualifiedName name)
 	{
@@ -323,7 +329,6 @@ public class DatabaseMetaDataSupport
 	 * Returns the schema qualified name of the specified table suitable for use in a data definition language (DDL) statement.
 	 * @param name a schema qualified name
 	 * @return a Collection of unique constraints.
-	 * @throws SQLException if an error occurs access DatabaseMetaData
 	 */
 	public String qualifyNameForDDL(QualifiedName name)
 	{
@@ -362,29 +367,41 @@ public class DatabaseMetaDataSupport
 	{
 		if (identifier == null) return null;
 		
-		// Driver may return identifiers already quoted.  If so, exit early.
-		if (identifier.startsWith(this.quote)) return this.normalizeMixedCaseQuoted(identifier);
+		int quoteLength = this.quote.length();
+		
+		// Strip any existing quoting
+		String raw = (identifier.startsWith(this.quote) && identifier.endsWith(this.quote)) ? identifier.substring(quoteLength, identifier.length() - quoteLength) : identifier;
+		
+		String normal = this.normalizeCase(raw);
 		
 		// Quote reserved identifiers
-		boolean requiresQuoting = this.reservedIdentifierSet.contains(identifier.toLowerCase());
+		boolean requiresQuoting = this.reservedIdentifierSet.contains(normal);
 		
 		// Quote identifiers containing special characters
-		requiresQuoting |= !this.identifierPattern.matcher(identifier).matches();
+		requiresQuoting |= !this.identifierPattern.matcher(raw).matches();
 		
 		// Quote mixed-case identifiers if detected and supported by DBMS
-		requiresQuoting |= !this.supportsMixedCaseIdentifiers && this.supportsMixedCaseQuotedIdentifiers && ((this.storesLowerCaseIdentifiers && UPPER_CASE_PATTERN.matcher(identifier).find()) || (this.storesUpperCaseIdentifiers && LOWER_CASE_PATTERN.matcher(identifier).find()));
+		requiresQuoting |= !this.supportsMixedCaseIdentifiers && this.supportsMixedCaseQuotedIdentifiers && ((this.storesLowerCaseIdentifiers && !this.storesLowerCaseQuotedIdentifiers && UPPER_CASE_PATTERN.matcher(raw).find()) || (this.storesUpperCaseIdentifiers && !this.storesUpperCaseQuotedIdentifiers && LOWER_CASE_PATTERN.matcher(raw).find()));
 		
-		return requiresQuoting ? this.quote + this.normalizeMixedCaseQuoted(identifier) + this.quote : this.normalizeMixedCase(identifier);
+		return requiresQuoting ? this.quote + this.normalizeCaseQuoted(raw) + this.quote : normal;
 	}
 	
-	private String normalizeMixedCase(String identifier)
+	private String normalizeCase(String identifier)
 	{
-		return this.storesMixedCaseIdentifiers ? identifier.toLowerCase() : identifier;
+		if (this.storesLowerCaseIdentifiers) return identifier.toLowerCase();
+		
+		if (this.storesUpperCaseIdentifiers) return identifier.toUpperCase();
+		
+		return identifier;
 	}
 	
-	private String normalizeMixedCaseQuoted(String identifier)
+	private String normalizeCaseQuoted(String identifier)
 	{
-		return this.storesMixedCaseQuotedIdentifiers ? identifier.toLowerCase() : identifier;
+		if (this.storesLowerCaseQuotedIdentifiers) return identifier.toLowerCase();
+		
+		if (this.storesUpperCaseQuotedIdentifiers) return identifier.toUpperCase();
+		
+		return identifier;
 	}
 	
 	private String normalize(String qualifiedName, String defaultSchema)
@@ -393,21 +410,16 @@ public class DatabaseMetaDataSupport
 
 		String name = parts[parts.length - 1];
 		String schema = (parts.length > 1) ? parts[parts.length - 2] : defaultSchema;
-
-		boolean quoted = name.startsWith(this.quote);
-		
-		if ((!quoted && this.storesLowerCaseIdentifiers) || (quoted && this.storesLowerCaseQuotedIdentifiers))
-		{
-			name = name.toLowerCase();
-		}
-		else if ((!quoted && this.storesUpperCaseIdentifiers) || (quoted && this.storesUpperCaseQuotedIdentifiers))
-		{
-			name = name.toUpperCase();
-		}
 			
 		return this.qualifyNameForDML(new QualifiedName(schema, name));
 	}
 	
+	/**
+	 * Returns a collection of sequences using dialect specific logic.
+	 * @param metaData database meta data
+	 * @return a collection of sequences
+	 * @throws SQLException
+	 */
 	public Collection<SequenceProperties> getSequences(DatabaseMetaData metaData) throws SQLException
 	{
 		Collection<QualifiedName> sequences = this.dialect.getSequences(metaData);
@@ -422,6 +434,15 @@ public class DatabaseMetaDataSupport
 		return sequenceList;
 	}
 	
+	/**
+	 * Locates an object from a map keyed by schema qualified name.
+	 * @param <T> an object
+	 * @param map a map of database 
+	 * @param name the name of the object to locate
+	 * @param defaultSchemaList a list of default schemas
+	 * @return the object with the specified name
+	 * @throws SQLException
+	 */
 	public <T> T find(Map<String, T> map, String name, List<String> defaultSchemaList) throws SQLException
 	{
 		T properties = map.get(this.normalize(name, null));
@@ -445,6 +466,12 @@ public class DatabaseMetaDataSupport
 		return properties;
 	}
 	
+	/**
+	 * Identifies any identity columns from the from the specified collection of columns
+	 * @param columns the columns of a table
+	 * @return a collection of column names
+	 * @throws SQLException
+	 */
 	public Collection<String> getIdentityColumns(Collection<ColumnProperties> columns) throws SQLException
 	{
 		List<String> columnList = new LinkedList<String>();

@@ -26,17 +26,18 @@ import java.util.Set;
  * @author Paul Ferraro
  *
  */
-public interface StateManager
+public interface StateManager extends DatabaseActivationListener, DatabaseDeactivationListener, Lifecycle
 {
+	/**
+	 * Returns the initial state of the cluster.
+	 * @return a set of database identifiers, or null, if no initial cluster state was found.
+	 */
 	public Set<String> getInitialState();
 	
-	public void add(String databaseId);
-	
-	public void remove(String databaseId);
-	
-	public void start() throws Exception;
-	
-	public void stop();
-	
+	/**
+	 * Detects whether or not the membership of this state manager is empty.
+	 * Used during cluster panic detection.
+	 * @return true, if membership is empty, false otherwise
+	 */
 	public boolean isMembershipEmpty();
 }

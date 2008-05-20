@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Set;
 
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.DatabaseEvent;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.StateManager;
 
@@ -56,6 +57,11 @@ public class DistributableStateManager extends AbstractMembershipListener implem
 	private DatabaseCluster<?> databaseCluster;
 	private StateManager stateManager;
 	
+	/**
+	 * @param databaseCluster
+	 * @param decorator
+	 * @throws Exception
+	 */
 	public DistributableStateManager(DatabaseCluster<?> databaseCluster, DistributableDatabaseClusterDecorator decorator) throws Exception
 	{
 		super(decorator.createChannel(MessageFormat.format(CHANNEL, databaseCluster.getId())));
@@ -119,30 +125,30 @@ public class DistributableStateManager extends AbstractMembershipListener implem
 	}
 
 	/**
-	 * @see net.sf.hajdbc.StateManager#add(java.lang.String)
+	 * @see net.sf.hajdbc.DatabaseActivationListener#activated(net.sf.hajdbc.DatabaseEvent)
 	 */
 	@Override
-	public void add(String databaseId)
+	public void activated(DatabaseEvent event)
 	{
 		if (this.databaseCluster.isActive())
 		{
 			// Send synchronous notification
-			this.send(new ActivateCommand(databaseId), GroupRequest.GET_ALL, 0);
+			this.send(new ActivateCommand(event.getId()), GroupRequest.GET_ALL, 0);
 		}
 		
-		this.stateManager.add(databaseId);
+		this.stateManager.activated(event);
 	}
 
 	/**
-	 * @see net.sf.hajdbc.StateManager#remove(java.lang.String)
+	 * @see net.sf.hajdbc.DatabaseDeactivationListener#deactivated(net.sf.hajdbc.DatabaseEvent)
 	 */
 	@Override
-	public void remove(String databaseId)
+	public void deactivated(DatabaseEvent event)
 	{
 		// Send asynchronous notification
-		this.send(new DeactivateCommand(databaseId), GroupRequest.GET_NONE, this.timeout);
+		this.send(new DeactivateCommand(event.getId()), GroupRequest.GET_NONE, this.timeout);
 		
-		this.stateManager.remove(databaseId);
+		this.stateManager.deactivated(event);
 	}
 
 	private Collection<Rsp> send(Command<?> command, int mode, long timeout)
@@ -156,7 +162,7 @@ public class DistributableStateManager extends AbstractMembershipListener implem
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.StateManager#start()
+	 * @see net.sf.hajdbc.Lifecycle#start()
 	 */
 	@Override
 	public void start() throws Exception
@@ -171,7 +177,7 @@ public class DistributableStateManager extends AbstractMembershipListener implem
 	}
 
 	/**
-	 * @see net.sf.hajdbc.StateManager#stop()
+	 * @see net.sf.hajdbc.Lifecycle#stop()
 	 */
 	@Override
 	public void stop()

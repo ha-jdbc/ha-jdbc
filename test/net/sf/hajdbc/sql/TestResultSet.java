@@ -81,6 +81,7 @@ import org.testng.annotations.Test;
  * @author  Paul Ferraro
  * @since   1.0
  */
+@Test
 @SuppressWarnings({ "unchecked", "nls" })
 public class TestResultSet implements ResultSet
 {
@@ -173,32 +174,35 @@ public class TestResultSet implements ResultSet
 		return new Object[][] { new Object[] { 1 } };
 	}
 	
-	/**
-	 * @see java.sql.ResultSet#absolute(int)
-	 */
-	@Test(dataProvider = "int")
-	public boolean absolute(int row) throws SQLException
+	public void testAbsolute() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
-		EasyMock.expect(this.resultSet1.absolute(row)).andReturn(true);
-		EasyMock.expect(this.resultSet2.absolute(row)).andReturn(true);
+		EasyMock.expect(this.resultSet1.absolute(1)).andReturn(true);
+		EasyMock.expect(this.resultSet2.absolute(1)).andReturn(true);
 		
 		this.replay();
 		
-		boolean valid = this.resultSet.absolute(row);
+		boolean valid = this.absolute(1);
 		
 		this.verify();
 		
 		assert valid;
-		
-		return valid;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#absolute(int)
+	 */
+	@Override
+	public boolean absolute(int row) throws SQLException
+	{
+		return this.resultSet.absolute(row);
 	}
 
 	/**
 	 * @see java.sql.ResultSet#afterLast()
 	 */
-	@Test
+	@Override
 	public void afterLast() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
@@ -216,7 +220,7 @@ public class TestResultSet implements ResultSet
 	/**
 	 * @see java.sql.ResultSet#beforeFirst()
 	 */
-	@Test
+	@Override
 	public void beforeFirst() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
@@ -234,7 +238,7 @@ public class TestResultSet implements ResultSet
 	/**
 	 * @see java.sql.ResultSet#cancelRowUpdates()
 	 */
-	@Test
+	@Override
 	public void cancelRowUpdates() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
@@ -252,7 +256,7 @@ public class TestResultSet implements ResultSet
 	/**
 	 * @see java.sql.ResultSet#clearWarnings()
 	 */
-	@Test
+	@Override
 	public void clearWarnings() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
@@ -270,19 +274,10 @@ public class TestResultSet implements ResultSet
 	/**
 	 * @see java.sql.ResultSet#close()
 	 */
-	@Test
+	@Override
 	public void close() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
-		
-		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
-		
-		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
-		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
-
-		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
-		
-		this.root.retain(this.databaseSet);
 		
 		this.resultSet1.close();
 		this.resultSet2.close();
@@ -299,7 +294,7 @@ public class TestResultSet implements ResultSet
 	/**
 	 * @see java.sql.ResultSet#deleteRow()
 	 */
-	@Test
+	@Override
 	public void deleteRow() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
@@ -332,11 +327,8 @@ public class TestResultSet implements ResultSet
 		return new Object[][] { new Object[] { "" } };
 	}
 	
-	/**
-	 * @see java.sql.ResultSet#findColumn(java.lang.String)
-	 */
 	@Test(dataProvider = "string")
-	public int findColumn(String name) throws SQLException
+	public void testFindColumn(String name) throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -344,20 +336,23 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		int result = this.resultSet.findColumn(name);
+		int result = this.findColumn(name);
 		
 		this.verify();
 		
 		assert result == 1 : result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#findColumn(java.lang.String)
+	 */
+	@Override
+	public int findColumn(String name) throws SQLException
+	{
+		return this.resultSet.findColumn(name);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#first()
-	 */
-	@Test
-	public boolean first() throws SQLException
+	public void testFirst() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -366,20 +361,22 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		boolean result = this.resultSet.first();
+		boolean result = this.first();
 		
 		this.verify();
-		
-		assert result;
-				
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#first()
+	 */
+	@Override
+	public boolean first() throws SQLException
+	{
+		return this.resultSet.first();
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getArray(int)
-	 */
 	@Test(dataProvider = "int")
-	public Array getArray(int index) throws SQLException
+	public void testGetArray(int index) throws SQLException
 	{
 		Array array = EasyMock.createMock(Array.class);
 		
@@ -389,20 +386,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Array result = this.resultSet.getArray(index);
+		Array result = this.getArray(index);
 		
 		this.verify();
 		
 		assert array == result;
-		
-		return result;
 	}
 	
 	/**
-	 * @see java.sql.ResultSet#getArray(java.lang.String)
+	 * @see java.sql.ResultSet#getArray(int)
 	 */
+	@Override
+	public Array getArray(int index) throws SQLException
+	{
+		return this.resultSet.getArray(index);
+	}
+	
 	@Test(dataProvider = "string")
-	public Array getArray(String name) throws SQLException
+	public void testGetArray(String name) throws SQLException
 	{
 		Array array = EasyMock.createMock(Array.class);
 		
@@ -412,20 +413,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Array result = this.resultSet.getArray(name);
+		Array result = this.getArray(name);
 		
 		this.verify();
 		
 		assert array == result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getArray(java.lang.String)
+	 */
+	@Override
+	public Array getArray(String name) throws SQLException
+	{
+		return this.resultSet.getArray(name);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getAsciiStream(int)
-	 */
 	@Test(dataProvider = "int")
-	public InputStream getAsciiStream(int index) throws SQLException
+	public void testGetAsciiStream(int index) throws SQLException
 	{
 		InputStream inputStream = new ByteArrayInputStream(new byte[0]);
 		
@@ -435,20 +440,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		InputStream result = this.resultSet.getAsciiStream(index);
+		InputStream result = this.getAsciiStream(index);
 		
 		this.verify();
 		
 		assert inputStream == result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getAsciiStream(int)
+	 */
+	@Override
+	public InputStream getAsciiStream(int index) throws SQLException
+	{
+		return this.resultSet.getAsciiStream(index);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getAsciiStream(java.lang.String)
-	 */
 	@Test(dataProvider = "string")
-	public InputStream getAsciiStream(String name) throws SQLException
+	public void testGetAsciiStream(String name) throws SQLException
 	{
 		InputStream inputStream = new ByteArrayInputStream(new byte[0]);
 		
@@ -458,20 +467,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		InputStream result = this.resultSet.getAsciiStream(name);
+		InputStream result = this.getAsciiStream(name);
 		
 		this.verify();
 		
 		assert inputStream == result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getAsciiStream(java.lang.String)
+	 */
+	@Override
+	public InputStream getAsciiStream(String name) throws SQLException
+	{
+		return this.resultSet.getAsciiStream(name);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getBigDecimal(int)
-	 */
 	@Test(dataProvider = "int")
-	public BigDecimal getBigDecimal(int index) throws SQLException
+	public void testGetBigDecimal(int index) throws SQLException
 	{
 		BigDecimal decimal = new BigDecimal(1.0);
 		
@@ -481,20 +494,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		BigDecimal result = this.resultSet.getBigDecimal(index);
+		BigDecimal result = this.getBigDecimal(index);
 		
 		this.verify();
 		
 		assert decimal == result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getBigDecimal(int)
+	 */
+	@Override
+	public BigDecimal getBigDecimal(int index) throws SQLException
+	{
+		return this.resultSet.getBigDecimal(index);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getBigDecimal(java.lang.String)
-	 */
 	@Test(dataProvider = "string")
-	public BigDecimal getBigDecimal(String name) throws SQLException
+	public void testGetBigDecimal(String name) throws SQLException
 	{
 		BigDecimal decimal = new BigDecimal(1.0);
 		
@@ -504,13 +521,20 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		BigDecimal result = this.resultSet.getBigDecimal(name);
+		BigDecimal result = this.getBigDecimal(name);
 		
 		this.verify();
 		
 		assert decimal == result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getBigDecimal(java.lang.String)
+	 */
+	@Override
+	public BigDecimal getBigDecimal(String name) throws SQLException
+	{
+		return this.resultSet.getBigDecimal(name);
 	}
 
 	@DataProvider(name = "int-int")
@@ -519,13 +543,9 @@ public class TestResultSet implements ResultSet
 		return new Object[][] { new Object[] { 1, 1 } };
 	}
 	
-	/**
-	 * @see java.sql.ResultSet#getBigDecimal(int, int)
-	 */
 	@SuppressWarnings("deprecation")
 	@Test(dataProvider = "int-int")
-	@Deprecated
-	public BigDecimal getBigDecimal(int index, int scale) throws SQLException
+	public void testGetBigDecimal(int index, int scale) throws SQLException
 	{
 		BigDecimal decimal = new BigDecimal(1.0);
 		
@@ -535,13 +555,21 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		BigDecimal result = this.resultSet.getBigDecimal(index, scale);
+		BigDecimal result = this.getBigDecimal(index, scale);
 		
 		this.verify();
 		
 		assert decimal == result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getBigDecimal(int, int)
+	 */
+	@Deprecated
+	@Override
+	public BigDecimal getBigDecimal(int index, int scale) throws SQLException
+	{
+		return this.resultSet.getBigDecimal(index, scale);
 	}
 
 	@DataProvider(name = "string-int")
@@ -550,13 +578,9 @@ public class TestResultSet implements ResultSet
 		return new Object[][] { new Object[] { "", 1 } };
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getBigDecimal(java.lang.String, int)
-	 */
 	@SuppressWarnings("deprecation")
 	@Test(dataProvider = "string-int")
-	@Deprecated
-	public BigDecimal getBigDecimal(String name, int scale) throws SQLException
+	public void testGetBigDecimal(String name, int scale) throws SQLException
 	{
 		BigDecimal decimal = new BigDecimal(1.0);
 		
@@ -566,20 +590,25 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		BigDecimal result = this.resultSet.getBigDecimal(name, scale);
+		BigDecimal result = this.getBigDecimal(name, scale);
 		
 		this.verify();
 		
 		assert decimal == result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getBigDecimal(java.lang.String, int)
+	 */
+	@Deprecated
+	@Override
+	public BigDecimal getBigDecimal(String name, int scale) throws SQLException
+	{
+		return this.resultSet.getBigDecimal(name, scale);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getBinaryStream(int)
-	 */
 	@Test(dataProvider = "int")
-	public InputStream getBinaryStream(int index) throws SQLException
+	public void testGetBinaryStream(int index) throws SQLException
 	{
 		InputStream inputStream = new ByteArrayInputStream(new byte[0]);
 		
@@ -589,20 +618,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		InputStream result = this.resultSet.getBinaryStream(index);
+		InputStream result = this.getBinaryStream(index);
 		
 		this.verify();
 		
 		assert inputStream == result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getBinaryStream(int)
+	 */
+	@Override
+	public InputStream getBinaryStream(int index) throws SQLException
+	{
+		return this.resultSet.getBinaryStream(index);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getBinaryStream(java.lang.String)
-	 */
 	@Test(dataProvider = "string")
-	public InputStream getBinaryStream(String name) throws SQLException
+	public void testGetBinaryStream(String name) throws SQLException
 	{
 		InputStream inputStream = new ByteArrayInputStream(new byte[0]);
 		
@@ -612,20 +645,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		InputStream result = this.resultSet.getBinaryStream(name);
+		InputStream result = this.getBinaryStream(name);
 		
 		this.verify();
 		
 		assert inputStream == result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getBinaryStream(java.lang.String)
+	 */
+	@Override
+	public InputStream getBinaryStream(String name) throws SQLException
+	{
+		return this.resultSet.getBinaryStream(name);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getBlob(int)
-	 */
 	@Test(dataProvider = "int")
-	public Blob getBlob(int index) throws SQLException
+	public void testGetBlob(int index) throws SQLException
 	{
 		Blob blob1 = EasyMock.createMock(Blob.class);
 		Blob blob2 = EasyMock.createMock(Blob.class);
@@ -646,7 +683,7 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Blob result = this.resultSet.getBlob(index);
+		Blob result = this.getBlob(index);
 		
 		this.verify();
 
@@ -656,15 +693,19 @@ public class TestResultSet implements ResultSet
 		
 		assert handler.getObject(this.database1) == blob1;
 		assert handler.getObject(this.database2) == blob2;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getBlob(int)
+	 */
+	@Override
+	public Blob getBlob(int index) throws SQLException
+	{
+		return this.resultSet.getBlob(index);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getBlob(java.lang.String)
-	 */
 	@Test(dataProvider = "string")
-	public Blob getBlob(String name) throws SQLException
+	public void testGetBlob(String name) throws SQLException
 	{
 		Blob blob1 = EasyMock.createMock(Blob.class);
 		Blob blob2 = EasyMock.createMock(Blob.class);
@@ -685,7 +726,7 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Blob result = this.resultSet.getBlob(name);
+		Blob result = this.getBlob(name);
 		
 		this.verify();
 
@@ -695,15 +736,19 @@ public class TestResultSet implements ResultSet
 		
 		assert handler.getObject(this.database1) == blob1;
 		assert handler.getObject(this.database2) == blob2;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getBlob(java.lang.String)
+	 */
+	@Override
+	public Blob getBlob(String name) throws SQLException
+	{
+		return this.resultSet.getBlob(name);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getBoolean(int)
-	 */
 	@Test(dataProvider = "int")
-	public boolean getBoolean(int index) throws SQLException
+	public void testGetBoolean(int index) throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -711,20 +756,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		boolean result = this.resultSet.getBoolean(index);
+		boolean result = this.getBoolean(index);
 		
 		this.verify();
 		
 		assert result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getBoolean(int)
+	 */
+	@Override
+	public boolean getBoolean(int index) throws SQLException
+	{
+		return this.resultSet.getBoolean(index);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getBoolean(java.lang.String)
-	 */
 	@Test(dataProvider = "string")
-	public boolean getBoolean(String name) throws SQLException
+	public void testGetBoolean(String name) throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -732,20 +781,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		boolean result = this.resultSet.getBoolean(name);
+		boolean result = this.getBoolean(name);
 		
 		this.verify();
 		
 		assert result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getBoolean(java.lang.String)
+	 */
+	@Override
+	public boolean getBoolean(String name) throws SQLException
+	{
+		return this.resultSet.getBoolean(name);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getByte(int)
-	 */
 	@Test(dataProvider = "int")
-	public byte getByte(int index) throws SQLException
+	public void testGetByte(int index) throws SQLException
 	{
 		byte b = Integer.valueOf(1).byteValue();
 		
@@ -755,20 +808,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		byte result = this.resultSet.getByte(index);
+		byte result = this.getByte(index);
 		
 		this.verify();
 		
 		assert b == result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getByte(int)
+	 */
+	@Override
+	public byte getByte(int index) throws SQLException
+	{
+		return this.resultSet.getByte(index);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getByte(java.lang.String)
-	 */
 	@Test(dataProvider = "string")
-	public byte getByte(String name) throws SQLException
+	public void testGetByte(String name) throws SQLException
 	{
 		byte b = Integer.valueOf(1).byteValue();
 		
@@ -778,20 +835,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		byte result = this.resultSet.getByte(name);
+		byte result = this.getByte(name);
 		
 		this.verify();
 		
 		assert b == result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getByte(java.lang.String)
+	 */
+	@Override
+	public byte getByte(String name) throws SQLException
+	{
+		return this.resultSet.getByte(name);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getBytes(int)
-	 */
 	@Test(dataProvider = "int")
-	public byte[] getBytes(int index) throws SQLException
+	public void testGetBytes(int index) throws SQLException
 	{
 		byte[] bytes = new byte[0];
 		
@@ -801,20 +862,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		byte[] result = this.resultSet.getBytes(index);
+		byte[] result = this.getBytes(index);
 		
 		this.verify();
 		
 		assert bytes == result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getBytes(int)
+	 */
+	@Override
+	public byte[] getBytes(int index) throws SQLException
+	{
+		return this.resultSet.getBytes(index);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getBytes(java.lang.String)
-	 */
 	@Test(dataProvider = "string")
-	public byte[] getBytes(String name) throws SQLException
+	public void testGetBytes(String name) throws SQLException
 	{
 		byte[] bytes = new byte[0];
 		
@@ -824,20 +889,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		byte[] result = this.resultSet.getBytes(name);
+		byte[] result = this.getBytes(name);
 		
 		this.verify();
 		
 		assert bytes == result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getBytes(java.lang.String)
+	 */
+	@Override
+	public byte[] getBytes(String name) throws SQLException
+	{
+		return this.resultSet.getBytes(name);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getCharacterStream(int)
-	 */
 	@Test(dataProvider = "int")
-	public Reader getCharacterStream(int index) throws SQLException
+	public void testGetCharacterStream(int index) throws SQLException
 	{
 		Reader reader = new CharArrayReader(new char[0]);
 		
@@ -847,20 +916,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Reader result = this.resultSet.getCharacterStream(index);
+		Reader result = this.getCharacterStream(index);
 		
 		this.verify();
 		
 		assert result == reader;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getCharacterStream(int)
+	 */
+	@Override
+	public Reader getCharacterStream(int index) throws SQLException
+	{
+		return this.resultSet.getCharacterStream(index);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getCharacterStream(java.lang.String)
-	 */
 	@Test(dataProvider = "string")
-	public Reader getCharacterStream(String name) throws SQLException
+	public void testGetCharacterStream(String name) throws SQLException
 	{
 		Reader reader = new CharArrayReader(new char[0]);
 		
@@ -870,20 +943,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Reader result = this.resultSet.getCharacterStream(name);
+		Reader result = this.getCharacterStream(name);
 		
 		this.verify();
 		
 		assert result == reader;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getCharacterStream(java.lang.String)
+	 */
+	@Override
+	public Reader getCharacterStream(String name) throws SQLException
+	{
+		return this.resultSet.getCharacterStream(name);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getClob(int)
-	 */
 	@Test(dataProvider = "int")
-	public Clob getClob(int index) throws SQLException
+	public void testGetClob(int index) throws SQLException
 	{
 		Clob clob1 = EasyMock.createMock(Clob.class);
 		Clob clob2 = EasyMock.createMock(Clob.class);
@@ -904,7 +981,7 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Clob result = this.resultSet.getClob(index);
+		Clob result = this.getClob(index);
 		
 		this.verify();
 
@@ -914,15 +991,19 @@ public class TestResultSet implements ResultSet
 		
 		assert handler.getObject(this.database1) == clob1;
 		assert handler.getObject(this.database2) == clob2;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getClob(int)
+	 */
+	@Override
+	public Clob getClob(int index) throws SQLException
+	{
+		return this.resultSet.getClob(index);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getClob(java.lang.String)
-	 */
 	@Test(dataProvider = "string")
-	public Clob getClob(String name) throws SQLException
+	public void testGetClob(String name) throws SQLException
 	{
 		Clob clob1 = EasyMock.createMock(Clob.class);
 		Clob clob2 = EasyMock.createMock(Clob.class);
@@ -943,7 +1024,7 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Clob result = this.resultSet.getClob(name);
+		Clob result = this.getClob(name);
 		
 		this.verify();
 
@@ -953,15 +1034,18 @@ public class TestResultSet implements ResultSet
 		
 		assert handler.getObject(this.database1) == clob1;
 		assert handler.getObject(this.database2) == clob2;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getClob(java.lang.String)
+	 */
+	@Override
+	public Clob getClob(String name) throws SQLException
+	{
+		return this.resultSet.getClob(name);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getConcurrency()
-	 */
-	@Test
-	public int getConcurrency() throws SQLException
+	public void testGetConcurrency() throws SQLException
 	{
 		int concurrency = java.sql.ResultSet.CONCUR_READ_ONLY;
 		
@@ -971,20 +1055,23 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		int result = this.resultSet.getConcurrency();
+		int result = this.getConcurrency();
 		
 		this.verify();
 		
 		assert result == concurrency;
-		
-		return result;
 	}
-
+	
 	/**
-	 * @see java.sql.ResultSet#getCursorName()
+	 * @see java.sql.ResultSet#getConcurrency()
 	 */
 	@Test
-	public String getCursorName() throws SQLException
+	public int getConcurrency() throws SQLException
+	{
+		return this.resultSet.getConcurrency();
+	}
+
+	public void testGetCursorName() throws SQLException
 	{
 		String cursor = "cursor";
 		
@@ -994,20 +1081,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		String result = this.resultSet.getCursorName();
+		String result = this.getCursorName();
 		
 		this.verify();
 		
 		assert result == cursor;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getCursorName()
+	 */
+	@Override
+	public String getCursorName() throws SQLException
+	{
+		return this.resultSet.getCursorName();
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getDate(int)
-	 */
 	@Test(dataProvider = "int")
-	public Date getDate(int index) throws SQLException
+	public void testGetDate(int index) throws SQLException
 	{
 		Date date = new Date(System.currentTimeMillis());
 		
@@ -1017,20 +1108,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Date result = this.resultSet.getDate(index);
+		Date result = this.getDate(index);
 		
 		this.verify();
 		
 		assert result == date;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getDate(int)
+	 */
+	@Override
+	public Date getDate(int index) throws SQLException
+	{
+		return this.resultSet.getDate(index);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getDate(java.lang.String)
-	 */
 	@Test(dataProvider = "string")
-	public Date getDate(String name) throws SQLException
+	public void testGetDate(String name) throws SQLException
 	{
 		Date date = new Date(System.currentTimeMillis());
 		
@@ -1040,13 +1135,20 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Date result = this.resultSet.getDate(name);
+		Date result = this.getDate(name);
 		
 		this.verify();
 		
 		assert result == date;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getDate(java.lang.String)
+	 */
+	@Override
+	public Date getDate(String name) throws SQLException
+	{
+		return this.resultSet.getDate(name);
 	}
 
 	@DataProvider(name = "int-calendar")
@@ -1055,11 +1157,8 @@ public class TestResultSet implements ResultSet
 		return new Object[][] { new Object[] { 1, Calendar.getInstance() } };
 	}
 	
-	/**
-	 * @see java.sql.ResultSet#getDate(int, java.util.Calendar)
-	 */
 	@Test(dataProvider = "int-calendar")
-	public Date getDate(int index, Calendar calendar) throws SQLException
+	public void testGetDate(int index, Calendar calendar) throws SQLException
 	{
 		Date date = new Date(System.currentTimeMillis());
 		
@@ -1074,8 +1173,15 @@ public class TestResultSet implements ResultSet
 		this.verify();
 		
 		assert result == date;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getDate(int, java.util.Calendar)
+	 */
+	@Override
+	public Date getDate(int index, Calendar calendar) throws SQLException
+	{
+		return this.resultSet.getDate(index, calendar);
 	}
 
 	@DataProvider(name = "string-calendar")
@@ -1084,11 +1190,8 @@ public class TestResultSet implements ResultSet
 		return new Object[][] { new Object[] { "", Calendar.getInstance() } };
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getDate(java.lang.String, java.util.Calendar)
-	 */
 	@Test(dataProvider = "string-calendar")
-	public Date getDate(String name, Calendar calendar) throws SQLException
+	public void testGetDate(String name, Calendar calendar) throws SQLException
 	{
 		Date date = new Date(System.currentTimeMillis());
 		
@@ -1098,20 +1201,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Date result = this.resultSet.getDate(name, calendar);
+		Date result = this.getDate(name, calendar);
 		
 		this.verify();
 		
 		assert result == date;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getDate(java.lang.String, java.util.Calendar)
+	 */
+	@Override
+	public Date getDate(String name, Calendar calendar) throws SQLException
+	{
+		return this.resultSet.getDate(name, calendar);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getDouble(int)
-	 */
 	@Test(dataProvider = "int")
-	public double getDouble(int index) throws SQLException
+	public void testGetDouble(int index) throws SQLException
 	{
 		double d = 1.0;
 		
@@ -1126,15 +1233,19 @@ public class TestResultSet implements ResultSet
 		this.verify();
 		
 		assert result == d;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getDouble(int)
+	 */
+	@Override
+	public double getDouble(int index) throws SQLException
+	{
+		return this.resultSet.getDouble(index);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getDouble(java.lang.String)
-	 */
 	@Test(dataProvider = "string")
-	public double getDouble(String name) throws SQLException
+	public void testGetDouble(String name) throws SQLException
 	{
 		double d = 1.0;
 		
@@ -1149,15 +1260,18 @@ public class TestResultSet implements ResultSet
 		this.verify();
 		
 		assert result == d;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getDouble(java.lang.String)
+	 */
+	@Override
+	public double getDouble(String name) throws SQLException
+	{
+		return this.resultSet.getDouble(name);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getFetchDirection()
-	 */
-	@Test
-	public int getFetchDirection() throws SQLException
+	public void testGetFetchDirection() throws SQLException
 	{
 		int direction = java.sql.ResultSet.FETCH_FORWARD;
 		
@@ -1167,20 +1281,23 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		int result = this.resultSet.getFetchDirection();
+		int result = this.getFetchDirection();
 		
 		this.verify();
 		
 		assert result == direction;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getFetchDirection()
+	 */
+	@Override
+	public int getFetchDirection() throws SQLException
+	{
+		return this.resultSet.getFetchDirection();
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getFetchSize()
-	 */
-	@Test
-	public int getFetchSize() throws SQLException
+	public void testGetFetchSize() throws SQLException
 	{
 		int size = 10;
 		
@@ -1190,20 +1307,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		int result = this.resultSet.getFetchSize();
+		int result = this.getFetchSize();
 		
 		this.verify();
 		
 		assert result == size;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getFetchSize()
+	 */
+	@Override
+	public int getFetchSize() throws SQLException
+	{
+		return this.resultSet.getFetchSize();
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getFloat(int)
-	 */
 	@Test(dataProvider = "int")
-	public float getFloat(int index) throws SQLException
+	public void testGetFloat(int index) throws SQLException
 	{
 		float f = 1.0F;
 		
@@ -1213,20 +1334,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		float result = this.resultSet.getFloat(index);
+		float result = this.getFloat(index);
 		
 		this.verify();
 		
 		assert result == f;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getFloat(int)
+	 */
+	@Override
+	public float getFloat(int index) throws SQLException
+	{
+		return this.resultSet.getFloat(index);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getFloat(java.lang.String)
-	 */
 	@Test(dataProvider = "string")
-	public float getFloat(String name) throws SQLException
+	public void testGetFloat(String name) throws SQLException
 	{
 		float f = 1.0F;
 		
@@ -1236,20 +1361,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		float result = this.resultSet.getFloat(name);
+		float result = this.getFloat(name);
 		
 		this.verify();
 		
 		assert result == f;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getFloat(java.lang.String)
+	 */
+	@Override
+	public float getFloat(String name) throws SQLException
+	{
+		return this.resultSet.getFloat(name);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getInt(int)
-	 */
 	@Test(dataProvider = "int")
-	public int getInt(int index) throws SQLException
+	public void testGetInt(int index) throws SQLException
 	{
 		int i = 1;
 		
@@ -1259,20 +1388,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		int result = this.resultSet.getInt(index);
+		int result = this.getInt(index);
 		
 		this.verify();
 		
 		assert result == i;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getInt(int)
+	 */
+	@Override
+	public int getInt(int index) throws SQLException
+	{
+		return this.resultSet.getInt(index);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getInt(java.lang.String)
-	 */
 	@Test(dataProvider = "string")
-	public int getInt(String name) throws SQLException
+	public void testGetInt(String name) throws SQLException
 	{
 		int i = 1;
 		
@@ -1282,20 +1415,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		int result = this.resultSet.getInt(name);
+		int result = this.getInt(name);
 		
 		this.verify();
 		
 		assert result == i;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getInt(java.lang.String)
+	 */
+	@Override
+	public int getInt(String name) throws SQLException
+	{
+		return this.resultSet.getInt(name);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getLong(int)
-	 */
 	@Test(dataProvider = "int")
-	public long getLong(int index) throws SQLException
+	public void testGetLong(int index) throws SQLException
 	{
 		long l = 1;
 		
@@ -1305,20 +1442,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		long result = this.resultSet.getLong(index);
+		long result = this.getLong(index);
 		
 		this.verify();
 		
 		assert result == l;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getLong(int)
+	 */
+	@Override
+	public long getLong(int index) throws SQLException
+	{
+		return this.resultSet.getLong(index);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getLong(java.lang.String)
-	 */
 	@Test(dataProvider = "string")
-	public long getLong(String name) throws SQLException
+	public void testGetLong(String name) throws SQLException
 	{
 		long l = 1;
 		
@@ -1328,20 +1469,23 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		long result = this.resultSet.getLong(name);
+		long result = this.getLong(name);
 		
 		this.verify();
 		
 		assert result == l;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getLong(java.lang.String)
+	 */
+	@Override
+	public long getLong(String name) throws SQLException
+	{
+		return this.resultSet.getLong(name);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getMetaData()
-	 */
-	@Test
-	public ResultSetMetaData getMetaData() throws SQLException
+	public void testGetMetaData() throws SQLException
 	{
 		ResultSetMetaData metaData = EasyMock.createMock(ResultSetMetaData.class);
 		
@@ -1351,20 +1495,23 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		ResultSetMetaData result = this.resultSet.getMetaData();
+		ResultSetMetaData result = this.getMetaData();
 		
 		this.verify();
 		
 		assert result == metaData;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getMetaData()
+	 */
+	public ResultSetMetaData getMetaData() throws SQLException
+	{
+		return this.resultSet.getMetaData();
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getObject(int)
-	 */
 	@Test(dataProvider = "int")
-	public Object getObject(int index) throws SQLException
+	public void testGetObject(int index) throws SQLException
 	{
 		Object object = new Object();
 		
@@ -1374,20 +1521,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Object result = this.resultSet.getObject(index);
+		Object result = this.getObject(index);
 		
 		this.verify();
 		
 		assert result == object;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getObject(int)
+	 */
+	@Override
+	public Object getObject(int index) throws SQLException
+	{
+		return this.resultSet.getObject(index);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getObject(java.lang.String)
-	 */
 	@Test(dataProvider = "string")
-	public Object getObject(String name) throws SQLException
+	public void testGetObject(String name) throws SQLException
 	{
 		Object object = new Object();
 		
@@ -1397,13 +1548,20 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Object result = this.resultSet.getObject(name);
+		Object result = this.getObject(name);
 		
 		this.verify();
 		
 		assert result == object;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getObject(java.lang.String)
+	 */
+	@Override
+	public Object getObject(String name) throws SQLException
+	{
+		return this.resultSet.getObject(name);
 	}
 
 	@DataProvider(name = "int-map")
@@ -1412,11 +1570,8 @@ public class TestResultSet implements ResultSet
 		return new Object[][] { new Object[] { 1, Collections.EMPTY_MAP } };
 	}
 	
-	/**
-	 * @see java.sql.ResultSet#getObject(int, java.util.Map)
-	 */
 	@Test(dataProvider = "int-map")
-	public Object getObject(int index, Map<String, Class<?>> map) throws SQLException
+	public void testGetObject(int index, Map<String, Class<?>> map) throws SQLException
 	{
 		Object object = new Object();
 		
@@ -1426,13 +1581,20 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Object result = this.resultSet.getObject(index, map);
+		Object result = this.getObject(index, map);
 		
 		this.verify();
 		
 		assert result == object;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getObject(int, java.util.Map)
+	 */
+	@Override
+	public Object getObject(int index, Map<String, Class<?>> map) throws SQLException
+	{
+		return this.resultSet.getObject(index, map);
 	}
 
 	@DataProvider(name = "string-map")
@@ -1441,11 +1603,8 @@ public class TestResultSet implements ResultSet
 		return new Object[][] { new Object[] { "", Collections.EMPTY_MAP } };
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getObject(java.lang.String, java.util.Map)
-	 */
 	@Test(dataProvider = "string-map")
-	public Object getObject(String name, Map<String, Class<?>> map) throws SQLException
+	public void testGetObject(String name, Map<String, Class<?>> map) throws SQLException
 	{
 		Object object = new Object();
 		
@@ -1455,20 +1614,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Object result = this.resultSet.getObject(name, map);
+		Object result = this.getObject(name, map);
 		
 		this.verify();
 		
 		assert result == object;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getObject(java.lang.String, java.util.Map)
+	 */
+	@Override
+	public Object getObject(String name, Map<String, Class<?>> map) throws SQLException
+	{
+		return this.resultSet.getObject(name, map);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getRef(int)
-	 */
 	@Test(dataProvider = "int")
-	public Ref getRef(int index) throws SQLException
+	public void testGetRef(int index) throws SQLException
 	{
 		Ref ref = EasyMock.createMock(Ref.class);
 		
@@ -1478,20 +1641,25 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Ref result = this.resultSet.getRef(index);
+		Ref result = this.getRef(index);
 		
 		this.verify();
 		
 		assert result == ref;
-		
-		return result;
+
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getRef(int)
+	 */
+	@Override
+	public Ref getRef(int index) throws SQLException
+	{
+		return this.resultSet.getRef(index);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getRef(java.lang.String)
-	 */
 	@Test(dataProvider = "string")
-	public Ref getRef(String name) throws SQLException
+	public void testRef(String name) throws SQLException
 	{
 		Ref ref = EasyMock.createMock(Ref.class);
 		
@@ -1501,20 +1669,23 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Ref result = this.resultSet.getRef(name);
+		Ref result = this.getRef(name);
 		
 		this.verify();
 		
 		assert result == ref;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getRef(java.lang.String)
+	 */
+	@Override
+	public Ref getRef(String name) throws SQLException
+	{
+		return this.resultSet.getRef(name);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getRow()
-	 */
-	@Test
-	public int getRow() throws SQLException
+	public void testGetRow() throws SQLException
 	{
 		int row = 1;
 		
@@ -1524,20 +1695,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		int result = this.resultSet.getRow();
+		int result = this.getRow();
 		
 		this.verify();
 		
 		assert result == row;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getRow()
+	 */
+	@Override
+	public int getRow() throws SQLException
+	{
+		return this.resultSet.getRow();
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getShort(int)
-	 */
 	@Test(dataProvider = "int")
-	public short getShort(int index) throws SQLException
+	public void testGetShort(int index) throws SQLException
 	{
 		short s = Integer.valueOf(1).shortValue();
 		
@@ -1547,20 +1722,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		short result = this.resultSet.getShort(index);
+		short result = this.getShort(index);
 		
 		this.verify();
 		
 		assert result == s;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getShort(int)
+	 */
+	@Override
+	public short getShort(int index) throws SQLException
+	{
+		return this.resultSet.getShort(index);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getShort(java.lang.String)
-	 */
 	@Test(dataProvider = "string")
-	public short getShort(String name) throws SQLException
+	public void testGetShort(String name) throws SQLException
 	{
 		short s = Integer.valueOf(1).shortValue();
 		
@@ -1570,39 +1749,46 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		short result = this.resultSet.getShort(name);
+		short result = this.getShort(name);
 		
 		this.verify();
 		
 		assert result == s;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getShort(java.lang.String)
+	 */
+	@Override
+	public short getShort(String name) throws SQLException
+	{
+		return this.resultSet.getShort(name);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getStatement()
-	 */
-	@Test
-	public java.sql.Statement getStatement() throws SQLException
+	public void testGetStatement() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		this.replay();
 		
-		java.sql.Statement result = this.resultSet.getStatement();
+		Statement result = this.getStatement();
 		
 		this.verify();
 		
 		assert result == this.statement;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getStatement()
+	 */
+	@Override
+	public Statement getStatement() throws SQLException
+	{
+		return this.resultSet.getStatement();
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getString(int)
-	 */
 	@Test(dataProvider = "int")
-	public String getString(int index) throws SQLException
+	public void testGetString(int index) throws SQLException
 	{
 		String string = "";
 		
@@ -1612,20 +1798,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		String result = this.resultSet.getString(index);
+		String result = this.getString(index);
 		
 		this.verify();
 		
 		assert result == string;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getString(int)
+	 */
+	@Override
+	public String getString(int index) throws SQLException
+	{
+		return this.resultSet.getString(index);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getString(java.lang.String)
-	 */
 	@Test(dataProvider = "string")
-	public String getString(String name) throws SQLException
+	public void testGetString(String name) throws SQLException
 	{
 		String string = "";
 		
@@ -1635,20 +1825,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		String result = this.resultSet.getString(name);
+		String result = this.getString(name);
 		
 		this.verify();
 		
 		assert result == string;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getString(java.lang.String)
+	 */
+	@Override
+	public String getString(String name) throws SQLException
+	{
+		return this.resultSet.getString(name);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getTime(int)
-	 */
 	@Test(dataProvider = "int")
-	public Time getTime(int index) throws SQLException
+	public void testGetTime(int index) throws SQLException
 	{
 		Time time = new Time(System.currentTimeMillis());
 		
@@ -1658,20 +1852,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Time result = this.resultSet.getTime(index);
+		Time result = this.getTime(index);
 		
 		this.verify();
 		
 		assert result == time;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getTime(int)
+	 */
+	@Override
+	public Time getTime(int index) throws SQLException
+	{
+		return this.resultSet.getTime(index);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getTime(java.lang.String)
-	 */
 	@Test(dataProvider = "string")
-	public Time getTime(String name) throws SQLException
+	public void testGetTime(String name) throws SQLException
 	{
 		Time time = new Time(System.currentTimeMillis());
 		
@@ -1681,20 +1879,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Time result = this.resultSet.getTime(name);
+		Time result = this.getTime(name);
 		
 		this.verify();
 		
 		assert result == time;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getTime(java.lang.String)
+	 */
+	@Override
+	public Time getTime(String name) throws SQLException
+	{
+		return this.resultSet.getTime(name);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getTime(int, java.util.Calendar)
-	 */
 	@Test(dataProvider = "int-calendar")
-	public Time getTime(int index, Calendar calendar) throws SQLException
+	public void testGetTime(int index, Calendar calendar) throws SQLException
 	{
 		Time time = new Time(System.currentTimeMillis());
 		
@@ -1704,20 +1906,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Time result = this.resultSet.getTime(index, calendar);
+		Time result = this.getTime(index, calendar);
 		
 		this.verify();
 		
 		assert result == time;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getTime(int, java.util.Calendar)
+	 */
+	@Override
+	public Time getTime(int index, Calendar calendar) throws SQLException
+	{
+		return this.resultSet.getTime(index, calendar);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getTime(java.lang.String, java.util.Calendar)
-	 */
 	@Test(dataProvider = "string-calendar")
-	public Time getTime(String name, Calendar calendar) throws SQLException
+	public void testGetTime(String name, Calendar calendar) throws SQLException
 	{
 		Time time = new Time(System.currentTimeMillis());
 		
@@ -1727,20 +1933,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Time result = this.resultSet.getTime(name, calendar);
+		Time result = this.getTime(name, calendar);
 		
 		this.verify();
 		
 		assert result == time;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getTime(java.lang.String, java.util.Calendar)
+	 */
+	@Override
+	public Time getTime(String name, Calendar calendar) throws SQLException
+	{
+		return this.resultSet.getTime(name, calendar);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getTimestamp(int)
-	 */
 	@Test(dataProvider = "int")
-	public Timestamp getTimestamp(int index) throws SQLException
+	public void testGetTimestamp(int index) throws SQLException
 	{
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 		
@@ -1750,20 +1960,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Timestamp result = this.resultSet.getTimestamp(index);
+		Timestamp result = this.getTimestamp(index);
 		
 		this.verify();
 		
 		assert result == timestamp;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getTimestamp(int)
+	 */
+	@Override
+	public Timestamp getTimestamp(int index) throws SQLException
+	{
+		return this.resultSet.getTimestamp(index);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getTimestamp(java.lang.String)
-	 */
 	@Test(dataProvider = "string")
-	public Timestamp getTimestamp(String name) throws SQLException
+	public void testGetTimestamp(String name) throws SQLException
 	{
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 		
@@ -1773,20 +1987,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Timestamp result = this.resultSet.getTimestamp(name);
+		Timestamp result = this.getTimestamp(name);
 		
 		this.verify();
 		
 		assert result == timestamp;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getTimestamp(java.lang.String)
+	 */
+	@Override
+	public Timestamp getTimestamp(String name) throws SQLException
+	{
+		return this.resultSet.getTimestamp(name);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getTimestamp(int, java.util.Calendar)
-	 */
 	@Test(dataProvider = "int-calendar")
-	public Timestamp getTimestamp(int index, Calendar calendar) throws SQLException
+	public void testGetTimestamp(int index, Calendar calendar) throws SQLException
 	{
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 		
@@ -1796,20 +2014,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Timestamp result = this.resultSet.getTimestamp(index, calendar);
+		Timestamp result = this.getTimestamp(index, calendar);
 		
 		this.verify();
 		
 		assert result == timestamp;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getTimestamp(int, java.util.Calendar)
+	 */
+	@Override
+	public Timestamp getTimestamp(int index, Calendar calendar) throws SQLException
+	{
+		return this.resultSet.getTimestamp(index, calendar);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getTimestamp(java.lang.String, java.util.Calendar)
-	 */
 	@Test(dataProvider = "string-calendar")
-	public Timestamp getTimestamp(String name, Calendar calendar) throws SQLException
+	public void testGetTimestamp(String name, Calendar calendar) throws SQLException
 	{
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 		
@@ -1819,20 +2041,23 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Timestamp result = this.resultSet.getTimestamp(name, calendar);
+		Timestamp result = this.getTimestamp(name, calendar);
 		
 		this.verify();
 		
 		assert result == timestamp;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getTimestamp(java.lang.String, java.util.Calendar)
+	 */
+	@Override
+	public Timestamp getTimestamp(String name, Calendar calendar) throws SQLException
+	{
+		return this.resultSet.getTimestamp(name, calendar);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getType()
-	 */
-	@Test
-	public int getType() throws SQLException
+	public void testGetType() throws SQLException
 	{
 		int type = java.sql.ResultSet.TYPE_FORWARD_ONLY;
 		
@@ -1842,20 +2067,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		int result = this.resultSet.getType();
+		int result = this.getType();
 		
 		this.verify();
 		
 		assert result == type;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getType()
+	 */
+	@Override
+	public int getType() throws SQLException
+	{
+		return this.resultSet.getType();
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getURL(int)
-	 */
 	@Test(dataProvider = "int")
-	public URL getURL(int index) throws SQLException
+	public void testGetURL(int index) throws SQLException
 	{
 		try
 		{
@@ -1867,26 +2096,29 @@ public class TestResultSet implements ResultSet
 			
 			this.replay();
 			
-			URL result = this.resultSet.getURL(index);
+			URL result = this.getURL(index);
 			
 			this.verify();
 			
 			assert result == url;
-			
-			return result;
 		}
 		catch (MalformedURLException e)
 		{
-			assert false;
-			return null;
+			assert false : e;
 		}
 	}
-
+	
 	/**
-	 * @see java.sql.ResultSet#getURL(java.lang.String)
+	 * @see java.sql.ResultSet#getURL(int)
 	 */
+	@Override
+	public URL getURL(int index) throws SQLException
+	{
+		return this.resultSet.getURL(index);
+	}
+
 	@Test(dataProvider = "string")
-	public URL getURL(String name) throws SQLException
+	public void testGetURL(String name) throws SQLException
 	{
 		try
 		{
@@ -1898,28 +2130,30 @@ public class TestResultSet implements ResultSet
 			
 			this.replay();
 			
-			URL result = this.resultSet.getURL(name);
+			URL result = this.getURL(name);
 			
 			this.verify();
 			
 			assert result == url;
-			
-			return result;
 		}
 		catch (MalformedURLException e)
 		{
-			assert false;
-			return null;
+			assert false : e;
 		}
 	}
-
+	
 	/**
-	 * @see java.sql.ResultSet#getUnicodeStream(int)
+	 * @see java.sql.ResultSet#getURL(java.lang.String)
 	 */
+	@Override
+	public URL getURL(String name) throws SQLException
+	{
+		return this.resultSet.getURL(name);
+	}
+
 	@SuppressWarnings("deprecation")
 	@Test(dataProvider = "int")
-	@Deprecated
-	public InputStream getUnicodeStream(int index) throws SQLException
+	public void testGetUnicodeStream(int index) throws SQLException
 	{
 		InputStream inputStream = new ByteArrayInputStream(new byte[0]);
 		
@@ -1929,22 +2163,25 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		InputStream result = this.resultSet.getUnicodeStream(index);
+		InputStream result = this.getUnicodeStream(index);
 		
 		this.verify();
 		
 		assert result == inputStream;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getUnicodeStream(int)
+	 */
+	@Deprecated
+	public InputStream getUnicodeStream(int index) throws SQLException
+	{
+		return this.resultSet.getUnicodeStream(index);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getUnicodeStream(java.lang.String)
-	 */
 	@SuppressWarnings("deprecation")
 	@Test(dataProvider = "string")
-	@Deprecated
-	public InputStream getUnicodeStream(String name) throws SQLException
+	public void testGetUnicodeStream(String name) throws SQLException
 	{
 		InputStream inputStream = new ByteArrayInputStream(new byte[0]);
 		
@@ -1954,20 +2191,23 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		InputStream result = this.resultSet.getUnicodeStream(name);
+		InputStream result = this.getUnicodeStream(name);
 		
 		this.verify();
 		
 		assert result == inputStream;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getUnicodeStream(java.lang.String)
+	 */
+	@Deprecated
+	public InputStream getUnicodeStream(String name) throws SQLException
+	{
+		return this.resultSet.getUnicodeStream(name);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getWarnings()
-	 */
-	@Test
-	public SQLWarning getWarnings() throws SQLException
+	public void testGetWarnings() throws SQLException
 	{
 		SQLWarning warning = new SQLWarning();
 		
@@ -1977,19 +2217,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		SQLWarning result = this.resultSet.getWarnings();
+		SQLWarning result = this.getWarnings();
 		
 		this.verify();
 		
 		assert result == warning;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getWarnings()
+	 */
+	public SQLWarning getWarnings() throws SQLException
+	{
+		return this.resultSet.getWarnings();
 	}
 
 	/**
 	 * @see java.sql.ResultSet#insertRow()
 	 */
-	@Test
 	public void insertRow() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
@@ -2016,11 +2261,7 @@ public class TestResultSet implements ResultSet
 		this.verify();
 	}
 
-	/**
-	 * @see java.sql.ResultSet#isAfterLast()
-	 */
-	@Test
-	public boolean isAfterLast() throws SQLException
+	public void testIsAfterLast() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -2028,20 +2269,22 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		boolean result = this.resultSet.isAfterLast();
+		boolean result = this.isAfterLast();
 		
 		this.verify();
 		
 		assert result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#isAfterLast()
+	 */
+	public boolean isAfterLast() throws SQLException
+	{
+		return this.resultSet.isAfterLast();
 	}
 
-	/**
-	 * @see java.sql.ResultSet#isBeforeFirst()
-	 */
-	@Test
-	public boolean isBeforeFirst() throws SQLException
+	public void testIsBeforeFirst() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -2049,20 +2292,22 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		boolean result = this.resultSet.isBeforeFirst();
+		boolean result = this.isBeforeFirst();
 		
 		this.verify();
 		
 		assert result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#isBeforeFirst()
+	 */
+	public boolean isBeforeFirst() throws SQLException
+	{
+		return this.resultSet.isBeforeFirst();
 	}
 
-	/**
-	 * @see java.sql.ResultSet#isFirst()
-	 */
-	@Test
-	public boolean isFirst() throws SQLException
+	public void testIsFirst() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -2070,20 +2315,23 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		boolean result = this.resultSet.isFirst();
+		boolean result = this.isFirst();
 		
 		this.verify();
 		
 		assert result;
-			
-		return result;
 	}
-
+	
 	/**
-	 * @see java.sql.ResultSet#isLast()
+	 * @see java.sql.ResultSet#isFirst()
 	 */
 	@Test
-	public boolean isLast() throws SQLException
+	public boolean isFirst() throws SQLException
+	{
+		return this.resultSet.isFirst();
+	}
+
+	public void testIsLast() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -2091,20 +2339,23 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		boolean result = this.resultSet.isLast();
+		boolean result = this.isLast();
 		
 		this.verify();
 		
 		assert result;
-		
-		return result;
 	}
-
+	
 	/**
-	 * @see java.sql.ResultSet#last()
+	 * @see java.sql.ResultSet#isLast()
 	 */
 	@Test
-	public boolean last() throws SQLException
+	public boolean isLast() throws SQLException
+	{
+		return this.resultSet.isLast();
+	}
+
+	public void testLast() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -2118,8 +2369,14 @@ public class TestResultSet implements ResultSet
 		this.verify();
 		
 		assert result;
-				
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#last()
+	 */
+	public boolean last() throws SQLException
+	{
+		return this.resultSet.last();
 	}
 
 	/**
@@ -2158,11 +2415,7 @@ public class TestResultSet implements ResultSet
 		this.verify();
 	}
 
-	/**
-	 * @see java.sql.ResultSet#next()
-	 */
-	@Test
-	public boolean next() throws SQLException
+	public void testNext() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -2171,20 +2424,22 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		boolean result = this.resultSet.next();
+		boolean result = this.next();
 		
 		this.verify();
 		
 		assert result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#next()
+	 */
+	public boolean next() throws SQLException
+	{
+		return this.resultSet.next();
 	}
 
-	/**
-	 * @see java.sql.ResultSet#previous()
-	 */
-	@Test
-	public boolean previous() throws SQLException
+	public void testPrevious() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -2193,13 +2448,19 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		boolean result = this.resultSet.previous();
+		boolean result = this.previous();
 		
 		this.verify();
 		
 		assert result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#previous()
+	 */
+	public boolean previous() throws SQLException
+	{
+		return this.resultSet.previous();
 	}
 
 	/**
@@ -2229,11 +2490,8 @@ public class TestResultSet implements ResultSet
 		this.verify();
 	}
 
-	/**
-	 * @see java.sql.ResultSet#relative(int)
-	 */
 	@Test(dataProvider = "int")
-	public boolean relative(int rows) throws SQLException
+	public void testRelative(int rows) throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -2247,15 +2505,18 @@ public class TestResultSet implements ResultSet
 		this.verify();
 		
 		assert result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#relative(int)
+	 */
+	@Override
+	public boolean relative(int rows) throws SQLException
+	{
+		return this.resultSet.relative(rows);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#rowDeleted()
-	 */
-	@Test
-	public boolean rowDeleted() throws SQLException
+	public void testRowDeleted() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -2263,20 +2524,23 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 
-		boolean result = this.resultSet.rowDeleted();
+		boolean result = this.rowDeleted();
 		
 		this.verify();
 		
 		assert result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#rowDeleted()
+	 */
+	@Override
+	public boolean rowDeleted() throws SQLException
+	{
+		return this.resultSet.rowDeleted();
 	}
 
-	/**
-	 * @see java.sql.ResultSet#rowInserted()
-	 */
-	@Test
-	public boolean rowInserted() throws SQLException
+	public void testRowInserted() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -2284,20 +2548,23 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 
-		boolean result = this.resultSet.rowInserted();
+		boolean result = this.rowInserted();
 		
 		this.verify();
 		
 		assert result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#rowInserted()
+	 */
+	@Override
+	public boolean rowInserted() throws SQLException
+	{
+		return this.resultSet.rowInserted();
 	}
 
-	/**
-	 * @see java.sql.ResultSet#rowUpdated()
-	 */
-	@Test
-	public boolean rowUpdated() throws SQLException
+	public void testRowUpdated() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -2305,13 +2572,20 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 
-		boolean result = this.resultSet.rowUpdated();
+		boolean result = this.rowUpdated();
 		
 		this.verify();
 		
 		assert result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#rowUpdated()
+	 */
+	@Override
+	public boolean rowUpdated() throws SQLException
+	{
+		return this.resultSet.rowUpdated();
 	}
 
 	/**
@@ -3574,11 +3848,7 @@ public class TestResultSet implements ResultSet
 		this.verify();
 	}
 
-	/**
-	 * @see java.sql.ResultSet#wasNull()
-	 */
-	@Test
-	public boolean wasNull() throws SQLException
+	public void testWasNull() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -3586,20 +3856,23 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 
-		boolean result = this.resultSet.wasNull();
+		boolean result = this.wasNull();
 		
 		this.verify();
 		
 		assert result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#wasNull()
+	 */
+	@Override
+	public boolean wasNull() throws SQLException
+	{
+		return this.resultSet.wasNull();
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getHoldability()
-	 */
-	@Test
-	public int getHoldability() throws SQLException
+	public void testGetHoldability() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -3607,20 +3880,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		int result = this.resultSet.getHoldability();
+		int result = this.getHoldability();
 		
 		this.verify();
 		
 		assert result == 1 : result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getHoldability()
+	 */
+	@Override
+	public int getHoldability() throws SQLException
+	{
+		return this.resultSet.getHoldability();
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getNCharacterStream(int)
-	 */
 	@Test(dataProvider = "int")
-	public Reader getNCharacterStream(int index) throws SQLException
+	public void testGetNCharacterStream(int index) throws SQLException
 	{
 		Reader reader = new StringReader("");
 		
@@ -3630,20 +3907,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Reader result = this.resultSet.getNCharacterStream(index);
+		Reader result = this.getNCharacterStream(index);
 		
 		this.verify();
 		
 		assert result == reader;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getNCharacterStream(int)
+	 */
+	@Override
+	public Reader getNCharacterStream(int index) throws SQLException
+	{
+		return this.resultSet.getNCharacterStream(index);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getNCharacterStream(java.lang.String)
-	 */
 	@Test(dataProvider = "string")
-	public Reader getNCharacterStream(String name) throws SQLException
+	public void testGetNCharacterStream(String name) throws SQLException
 	{
 		Reader reader = new StringReader("");
 		
@@ -3653,64 +3934,108 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		Reader result = this.resultSet.getNCharacterStream(name);
+		Reader result = this.getNCharacterStream(name);
 		
 		this.verify();
 		
 		assert result == reader;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getNCharacterStream(java.lang.String)
+	 */
+	@Override
+	public Reader getNCharacterStream(String name) throws SQLException
+	{
+		return this.resultSet.getNCharacterStream(name);
 	}
 
+	@Test(dataProvider = "int")
+	public void testGetNClob(int index) throws SQLException
+	{
+		NClob clob1 = EasyMock.createMock(NClob.class);
+		NClob clob2 = EasyMock.createMock(NClob.class);
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
+		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
+		
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
+		
+		EasyMock.expect(this.resultSet1.getNClob(index)).andReturn(clob1);
+		EasyMock.expect(this.resultSet2.getNClob(index)).andReturn(clob2);
+		
+		this.replay();
+		
+		NClob result = this.getNClob(index);
+		
+		this.verify();
+
+		assert Proxy.isProxyClass(result.getClass());
+		
+		ClobInvocationHandler handler = ClobInvocationHandler.class.cast(Proxy.getInvocationHandler(result));
+		
+		assert handler.getObject(this.database1) == clob1;
+		assert handler.getObject(this.database2) == clob2;
+	}
+	
 	/**
 	 * @see java.sql.ResultSet#getNClob(int)
 	 */
 	public NClob getNClob(int index) throws SQLException
 	{
-		NClob clob = EasyMock.createMock(NClob.class);
+		return this.resultSet.getNClob(index);
+	}
+
+	@Test(dataProvider = "string")
+	public void testGetNClob(String name) throws SQLException
+	{
+		NClob clob1 = EasyMock.createMock(NClob.class);
+		NClob clob2 = EasyMock.createMock(NClob.class);
 		
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
-		EasyMock.expect(this.resultSet1.getNClob(index)).andReturn(clob);
+		EasyMock.expect(this.cluster.getNonTransactionalExecutor()).andReturn(this.executor);
+		
+		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
+		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
+		
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
+		
+		EasyMock.expect(this.resultSet1.getNClob(name)).andReturn(clob1);
+		EasyMock.expect(this.resultSet2.getNClob(name)).andReturn(clob2);
 		
 		this.replay();
 		
-		NClob result = this.resultSet.getNClob(index);
+		NClob result = this.getNClob(name);
 		
 		this.verify();
-		
-		assert result == clob;
-		
-		return result;
-	}
 
+		assert Proxy.isProxyClass(result.getClass());
+		
+		ClobInvocationHandler handler = ClobInvocationHandler.class.cast(Proxy.getInvocationHandler(result));
+		
+		assert handler.getObject(this.database1) == clob1;
+		assert handler.getObject(this.database2) == clob2;
+	}
+	
 	/**
 	 * @see java.sql.ResultSet#getNClob(java.lang.String)
 	 */
 	public NClob getNClob(String name) throws SQLException
 	{
-		NClob clob = EasyMock.createMock(NClob.class);
-		
-		EasyMock.expect(this.cluster.isActive()).andReturn(true);
-		
-		EasyMock.expect(this.resultSet1.getNClob(name)).andReturn(clob);
-		
-		this.replay();
-		
-		NClob result = this.resultSet.getNClob(name);
-		
-		this.verify();
-		
-		assert result == clob;
-		
-		return result;
+		return this.resultSet.getNClob(name);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getNString(int)
-	 */
 	@Test(dataProvider = "int")
-	public String getNString(int index) throws SQLException
+	public void testGetNString(int index) throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -3718,20 +4043,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		String result = this.resultSet.getNString(index);
+		String result = this.getNString(index);
 		
 		this.verify();
 		
 		assert result.equals("") : result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getNString(int)
+	 */
+	@Override
+	public String getNString(int index) throws SQLException
+	{
+		return this.resultSet.getNString(index);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getNString(java.lang.String)
-	 */
 	@Test(dataProvider = "string")
-	public String getNString(String name) throws SQLException
+	public void testGetNString(String name) throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -3739,20 +4068,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		String result = this.resultSet.getNString(name);
+		String result = this.getNString(name);
 		
 		this.verify();
 		
 		assert result.equals("") : result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getNString(java.lang.String)
+	 */
+	@Override
+	public String getNString(String name) throws SQLException
+	{
+		return this.resultSet.getNString(name);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getRowId(int)
-	 */
 	@Test(dataProvider = "int")
-	public RowId getRowId(int index) throws SQLException
+	public void testGetRowId(int index) throws SQLException
 	{
 		RowId rowId = EasyMock.createMock(RowId.class);
 		
@@ -3762,20 +4095,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		RowId result = this.resultSet.getRowId(index);
+		RowId result = this.getRowId(index);
 		
 		this.verify();
 		
 		assert result == rowId;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getRowId(int)
+	 */
+	@Override
+	public RowId getRowId(int index) throws SQLException
+	{
+		return this.resultSet.getRowId(index);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getRowId(java.lang.String)
-	 */
 	@Test(dataProvider = "string")
-	public RowId getRowId(String name) throws SQLException
+	public void testGetRowId(String name) throws SQLException
 	{
 		RowId rowId = EasyMock.createMock(RowId.class);
 		
@@ -3785,20 +4122,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		RowId result = this.resultSet.getRowId(name);
+		RowId result = this.getRowId(name);
 		
 		this.verify();
 		
 		assert result == rowId;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getRowId(java.lang.String)
+	 */
+	@Override
+	public RowId getRowId(String name) throws SQLException
+	{
+		return this.resultSet.getRowId(name);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getSQLXML(int)
-	 */
 	@Test(dataProvider = "int")
-	public SQLXML getSQLXML(int index) throws SQLException
+	public void testGetSQLXML(int index) throws SQLException
 	{
 		SQLXML xml = EasyMock.createMock(SQLXML.class);
 		
@@ -3808,20 +4149,24 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		SQLXML result = this.resultSet.getSQLXML(index);
+		SQLXML result = this.getSQLXML(index);
 		
 		this.verify();
 		
 		assert result == xml;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getSQLXML(int)
+	 */
+	@Override
+	public SQLXML getSQLXML(int index) throws SQLException
+	{
+		return this.resultSet.getSQLXML(index);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#getSQLXML(java.lang.String)
-	 */
 	@Test(dataProvider = "string")
-	public SQLXML getSQLXML(String name) throws SQLException
+	public void testGetSQLXML(String name) throws SQLException
 	{
 		SQLXML xml = EasyMock.createMock(SQLXML.class);
 		
@@ -3831,20 +4176,23 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		SQLXML result = this.resultSet.getSQLXML(name);
+		SQLXML result = this.getSQLXML(name);
 		
 		this.verify();
 		
 		assert result == xml;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#getSQLXML(java.lang.String)
+	 */
+	@Override
+	public SQLXML getSQLXML(String name) throws SQLException
+	{
+		return this.resultSet.getSQLXML(name);
 	}
 
-	/**
-	 * @see java.sql.ResultSet#isClosed()
-	 */
-	@Test
-	public boolean isClosed() throws SQLException
+	public void testIsClosed() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -3852,13 +4200,20 @@ public class TestResultSet implements ResultSet
 		
 		this.replay();
 		
-		boolean result = this.resultSet.isClosed();
+		boolean result = this.isClosed();
 		
 		this.verify();
 		
 		assert result;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.ResultSet#isClosed()
+	 */
+	@Override
+	public boolean isClosed() throws SQLException
+	{
+		return this.resultSet.isClosed();
 	}
 
 	@DataProvider(name = "int-inputStream")
@@ -4936,56 +5291,49 @@ public class TestResultSet implements ResultSet
 		this.verify();
 	}
 
-	@DataProvider(name = "class")
-	Object[][] classProvider()
-	{
-		return new Object[][] { new Object[] { Object.class } };
-	}
-
-	/**
-	 * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
-	 */
-	@Test(dataProvider = "class")
-	public boolean isWrapperFor(Class<?> targetClass) throws SQLException
+	public void testIsWrapperFor() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
-		EasyMock.expect(this.resultSet1.isWrapperFor(targetClass)).andReturn(true);
+		EasyMock.expect(this.resultSet1.isWrapperFor(Object.class)).andReturn(true);
 
 		this.replay();
 		
-		boolean result = this.resultSet.isWrapperFor(targetClass);
+		boolean result = this.isWrapperFor(Object.class);
 		
-		return result;
+		assert result;
+	}
+	
+	/**
+	 * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
+	 */
+	@Override
+	public boolean isWrapperFor(Class<?> targetClass) throws SQLException
+	{
+		return this.resultSet.isWrapperFor(targetClass);
 	}
 
+	public void testUnwrap() throws SQLException
+	{
+		Object object = new Object();
+		
+		EasyMock.expect(this.cluster.isActive()).andReturn(true);
+		
+		EasyMock.expect(this.resultSet1.unwrap(Object.class)).andReturn(object);
+
+		this.replay();
+		
+		Object result = this.unwrap(Object.class);
+		
+		assert result == object;
+	}
+	
 	/**
 	 * @see java.sql.Wrapper#unwrap(java.lang.Class)
 	 */
-	@Test(dataProvider = "class")
+	@Override
 	public <T> T unwrap(Class<T> targetClass) throws SQLException
 	{
-		EasyMock.expect(this.cluster.isActive()).andReturn(true);
-		
-		try
-		{
-			EasyMock.expect(this.resultSet1.unwrap(targetClass)).andReturn(targetClass.newInstance());
-	
-			this.replay();
-			
-			T result = this.resultSet.unwrap(targetClass);
-			
-			return result;
-		}
-		catch (InstantiationException e)
-		{
-			assert false : e;
-			return null;
-		}
-		catch (IllegalAccessException e)
-		{
-			assert false : e;
-			return null;
-		}
+		return this.resultSet.unwrap(targetClass);
 	}	
 }

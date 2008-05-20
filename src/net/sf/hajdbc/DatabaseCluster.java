@@ -29,7 +29,7 @@ import java.util.concurrent.ExecutorService;
  * @author Paul Ferraro
  * @param <D> either java.sql.Driver or javax.sql.DataSource
  */
-public interface DatabaseCluster<D>
+public interface DatabaseCluster<D> extends Lifecycle
 {
 	/**
 	 * Returns the identifier of this cluster.
@@ -40,16 +40,18 @@ public interface DatabaseCluster<D>
 	/**
 	 * Activates the specified database
 	 * @param database a database descriptor
+	 * @param manager a state manager
 	 * @return true, if the database was activated, false it was already active
 	 */
-	public boolean activate(Database<D> database, StateManager stateManager);
+	public boolean activate(Database<D> database, StateManager manager);
 	
 	/**
 	 * Deactivates the specified database
 	 * @param database a database descriptor
+	 * @param manager a state manager
 	 * @return true, if the database was deactivated, false it was already inactive
 	 */
-	public boolean deactivate(Database<D> database, StateManager stateManager);
+	public boolean deactivate(Database<D> database, StateManager manager);
 	
 	/**
 	 * Returns the database identified by the specified id
@@ -91,6 +93,7 @@ public interface DatabaseCluster<D>
 	
 	/**
 	 * Sets the LockManager implementation capable of acquiring named read/write locks on the specific objects in this database cluster.
+	 * @param lockManager a lock manager
 	 */
 	public void setLockManager(LockManager lockManager);
 	
@@ -102,6 +105,7 @@ public interface DatabaseCluster<D>
 	
 	/**
 	 * Sets the StateManager implementation for persisting database cluster state.
+	 * @param stateManager a state manager
 	 */
 	public void setStateManager(StateManager stateManager);
 	
@@ -153,17 +157,6 @@ public interface DatabaseCluster<D>
 	 * @return a map of alive status to set of database descriptors
 	 */
 	public Map<Boolean, List<Database<D>>> getAliveMap(Collection<Database<D>> databases);
-	
-	/**
-	 * Starts this database cluster.
-	 * @throws Exception if cluster could not be started
-	 */
-	public void start() throws Exception;
-	
-	/**
-	 * Stops this database cluster
-	 */
-	public void stop();
 	
 	/**
 	 * Indicates whether or not this cluster is active, i.e. started, but not yet stopped.

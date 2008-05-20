@@ -22,34 +22,35 @@ package net.sf.hajdbc.balancer;
 
 import java.util.Arrays;
 
-import org.testng.annotations.Test;
-
-import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.MockDatabase;
+
+import org.testng.annotations.Test;
 
 /**
  * @author  Paul Ferraro
  */
 @Test
 @SuppressWarnings("nls")
-public class TestSimpleBalancer extends AbstractTestBalancer
+public class TestSimpleBalancer extends TestBalancer
 {
-	@Override
-	protected Balancer<Void> createBalancer()
+	public TestSimpleBalancer()
 	{
-		return new SimpleBalancer<Void>();
+		super(new SimpleBalancer<Void>());
 	}
 
+	/**
+	 * @see net.sf.hajdbc.balancer.TestBalancer#testNext()
+	 */
 	@Override
-	protected void next(Balancer<Void> balancer)
+	public void testNext()
 	{
-		balancer.add(new MockDatabase("0", 0));
+		this.add(new MockDatabase("0", 0));
 		
 		String[] results = new String[20];
 		
 		for (int i = 0; i < results.length; ++i)
 		{
-			results[i] = balancer.next().getId();
+			results[i] = this.next().getId();
 		}
 
 		String[] expected = new String[results.length];
@@ -58,22 +59,22 @@ public class TestSimpleBalancer extends AbstractTestBalancer
 
 		assert Arrays.equals(results, expected) : Arrays.asList(results);
 
-		balancer.add(new MockDatabase("2", 2));
+		this.add(new MockDatabase("2", 2));
 		
 		for (int i = 0; i < results.length; ++i)
 		{
-			results[i] = balancer.next().getId();
+			results[i] = this.next().getId();
 		}
 		
 		Arrays.fill(expected, "2");
 		
 		assert Arrays.equals(results, expected) : Arrays.asList(results);
 
-		balancer.add(new MockDatabase("1", 1));
+		this.add(new MockDatabase("1", 1));
 		
 		for (int i = 0; i < results.length; ++i)
 		{
-			results[i] = balancer.next().getId();
+			results[i] = this.next().getId();
 		}
 
 		assert Arrays.equals(results, expected) : Arrays.asList(results);

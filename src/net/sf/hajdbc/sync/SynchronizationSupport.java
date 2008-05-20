@@ -70,15 +70,13 @@ public final class SynchronizationSupport
 	 */
 	public static <D> void dropForeignKeys(SynchronizationContext<D> context) throws SQLException
 	{
-		Collection<TableProperties> tables = context.getDatabaseProperties().getTables();
-		
 		Dialect dialect = context.getDialect();
 		
 		Connection connection = context.getConnection(context.getTargetDatabase());
 		
 		Statement statement = connection.createStatement();
 		
-		for (TableProperties table: tables)
+		for (TableProperties table: context.getTargetDatabaseProperties().getTables())
 		{
 			for (ForeignKeyConstraint constraint: table.getForeignKeyConstraints())
 			{
@@ -102,15 +100,13 @@ public final class SynchronizationSupport
 	 */
 	public static <D> void restoreForeignKeys(SynchronizationContext<D> context) throws SQLException
 	{
-		Collection<TableProperties> tables = context.getDatabaseProperties().getTables();
-		
 		Dialect dialect = context.getDialect();
 		
 		Connection connection = context.getConnection(context.getTargetDatabase());
 		
 		Statement statement = connection.createStatement();
 		
-		for (TableProperties table: tables)
+		for (TableProperties table: context.getSourceDatabaseProperties().getTables())
 		{
 			for (ForeignKeyConstraint constraint: table.getForeignKeyConstraints())
 			{
@@ -134,7 +130,7 @@ public final class SynchronizationSupport
 	 */
 	public static <D> void synchronizeSequences(final SynchronizationContext<D> context) throws SQLException
 	{
-		Collection<SequenceProperties> sequences = context.getDatabaseProperties().getSequences();
+		Collection<SequenceProperties> sequences = context.getSourceDatabaseProperties().getSequences();
 
 		if (!sequences.isEmpty())
 		{
@@ -235,7 +231,7 @@ public final class SynchronizationSupport
 		
 		Dialect dialect = context.getDialect();
 		
-		for (TableProperties table: context.getDatabaseProperties().getTables())
+		for (TableProperties table: context.getSourceDatabaseProperties().getTables())
 		{
 			Collection<String> columns = table.getIdentityColumns();
 			
@@ -287,29 +283,26 @@ public final class SynchronizationSupport
 	/**
 	 * @param <D>
 	 * @param context
-	 * @param table
 	 * @throws SQLException
 	 */
-	public static <D> void dropUniqueConstraints(SynchronizationContext<D> context, TableProperties table) throws SQLException
+	public static <D> void dropUniqueConstraints(SynchronizationContext<D> context) throws SQLException
 	{
-		Collection<UniqueConstraint> constraints = table.getUniqueConstraints();
-		
-		constraints.remove(table.getPrimaryKey());
-
 		Dialect dialect = context.getDialect();
 
 		Connection connection = context.getConnection(context.getTargetDatabase());
 		
 		Statement statement = connection.createStatement();
 		
-		// Drop unique constraints on the current table
-		for (UniqueConstraint constraint: constraints)
+		for (TableProperties table: context.getTargetDatabaseProperties().getTables())
 		{
-			String sql = dialect.getDropUniqueConstraintSQL(constraint);
-			
-			logger.debug(sql);
-			
-			statement.addBatch(sql);
+			for (UniqueConstraint constraint: table.getUniqueConstraints())
+			{
+				String sql = dialect.getDropUniqueConstraintSQL(constraint);
+				
+				logger.debug(sql);
+				
+				statement.addBatch(sql);
+			}
 		}
 		
 		statement.executeBatch();
@@ -319,29 +312,27 @@ public final class SynchronizationSupport
 	/**
 	 * @param <D>
 	 * @param context
-	 * @param table
 	 * @throws SQLException
 	 */
-	public static <D> void restoreUniqueConstraints(SynchronizationContext<D> context, TableProperties table) throws SQLException
+	public static <D> void restoreUniqueConstraints(SynchronizationContext<D> context) throws SQLException
 	{
-		Collection<UniqueConstraint> constraints = table.getUniqueConstraints();
-		
-		constraints.remove(table.getPrimaryKey());
-
 		Dialect dialect = context.getDialect();
 
 		Connection connection = context.getConnection(context.getTargetDatabase());
 		
 		Statement statement = connection.createStatement();
 		
-		// Drop unique constraints on the current table
-		for (UniqueConstraint constraint: constraints)
+		for (TableProperties table: context.getSourceDatabaseProperties().getTables())
 		{
-			String sql = dialect.getCreateUniqueConstraintSQL(constraint);
-			
-			logger.debug(sql);
-			
-			statement.addBatch(sql);
+			// Drop unique constraints on the current table
+			for (UniqueConstraint constraint: table.getUniqueConstraints())
+			{
+				String sql = dialect.getCreateUniqueConstraintSQL(constraint);
+				
+				logger.debug(sql);
+				
+				statement.addBatch(sql);
+			}
 		}
 		
 		statement.executeBatch();

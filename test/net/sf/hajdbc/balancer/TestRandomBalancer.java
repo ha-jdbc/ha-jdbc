@@ -33,53 +33,55 @@ import net.sf.hajdbc.MockDatabase;
  */
 @Test
 @SuppressWarnings("nls")
-public class TestRandomBalancer extends AbstractTestBalancer
+public class TestRandomBalancer extends TestBalancer
 {
-	@Override
-	protected Balancer<Void> createBalancer()
+	public TestRandomBalancer()
 	{
-		return new RandomBalancer<Void>();
+		super(new RandomBalancer<Void>());
 	}
 
+	/**
+	 * @see net.sf.hajdbc.balancer.TestBalancer#testNext()
+	 */
 	@Override
-	protected void next(Balancer<Void> balancer)
+	public void testNext()
 	{
 		int count = 100;
 		int[] results = new int[3];
 		
 		Arrays.fill(results, 0);
 		
-		balancer.add(new MockDatabase("0", 0));
+		this.add(new MockDatabase("0", 0));
 		
 		for (int i = 0; i < count; ++i)
 		{
-			results[balancer.next().getWeight()] += 1;
+			results[this.next().getWeight()] += 1;
 		}
 
 		assert results[0] == count : results[0];
 		assert results[1] == 0 : results[1];
 		assert results[2] == 0 : results[2];
 
-		balancer.add(new MockDatabase("1", 1));
+		this.add(new MockDatabase("1", 1));
 		
 		Arrays.fill(results, 0);
 		
 		for (int i = 0; i < count; ++i)
 		{
-			results[balancer.next().getWeight()] += 1;
+			results[this.next().getWeight()] += 1;
 		}
 		
 		assert results[0] == 0 : results[0];
 		assert results[1] == count : results[1];
 		assert results[2] == 0 : results[2];
 
-		balancer.add(new MockDatabase("2", 2));
+		this.add(new MockDatabase("2", 2));
 
 		Arrays.fill(results, 0);
 		
 		for (int i = 0; i < count; ++i)
 		{
-			results[balancer.next().getWeight()] += 1;
+			results[this.next().getWeight()] += 1;
 		}
 
 		assert results[0] == 0 : results[0];

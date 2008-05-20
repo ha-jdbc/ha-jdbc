@@ -30,7 +30,7 @@ import net.sf.hajdbc.util.Strings;
  * Consequently, all named locks are blocked if a global write lock is obtained.
  * @author Paul Ferraro
  */
-public interface LockManager
+public interface LockManager extends Lifecycle
 {
 	public static final String GLOBAL = Strings.EMPTY;
 	
@@ -47,8 +47,4 @@ public interface LockManager
 	 * @return a write lock
 	 */
 	public Lock writeLock(String object);
-	
-	public void start() throws Exception;
-	
-	public void stop();
 }

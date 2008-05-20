@@ -40,7 +40,7 @@
 	class CDATA #REQUIRED
 >
 
-<!ELEMENT cluster (database+|datasource+)>
+<!ELEMENT cluster (database+|datasource+|pool-datasource+|xa-datasource+)>
 <!ATTLIST cluster
 	balancer (simple|random|round-robin|load) #REQUIRED
 	default-sync IDREF #REQUIRED
@@ -60,25 +60,31 @@
 	eval-rand (true|false) "false"
 >
 
-<!ENTITY % authentication-info "(user, password)?">
+<!ENTITY % authentication "(user, password)?">
+<!ENTITY % common "property*, %authentication;">
+<!ENTITY % database "
+	id CDATA #REQUIRED
+	weight CDATA '1'
+	local (true|false) 'false'
+">
+
 <!ELEMENT user (#PCDATA)>
 <!ELEMENT password (#PCDATA)>
 
-<!ELEMENT database (driver?, url, property*, %authentication-info;)>
-<!ATTLIST database
-	id CDATA #REQUIRED
-	weight CDATA "1"
-	local (true|false) "false"
->
+<!ELEMENT database (driver?, url, %common;)>
+<!ATTLIST database %database;>
 <!ELEMENT url (#PCDATA)>
 <!ELEMENT driver (#PCDATA)>
 
-<!ELEMENT datasource (name, property*, %authentication-info;)>
-<!ATTLIST datasource
-	id CDATA #REQUIRED
-	weight CDATA "1"
-	local (true|false) "false"
->
+<!ENTITY % datasource "(name, %common;)">
+
+<!ELEMENT datasource %datasource;>
+<!ATTLIST datasource %database;>
+<!ELEMENT pool-datasource %datasource;>
+<!ATTLIST pool-datasource %database;>
+<!ELEMENT xa-datasource %datasource;>
+<!ATTLIST xa-datasource %database;>
+
 <!ELEMENT name (#PCDATA)>
 
 <!ELEMENT property (#PCDATA)>

@@ -12,7 +12,49 @@
 	</contexts>
 
 	<changes>
-		<release version="2.0.12" date="?">
+		<release version="2.0.13" date="May 20, 2008">
+			<action context="src" dev="PF" type="fix" due-to="Jason Rosenberg">
+				Fixed SybaseDialect.getSimpleSQL() to query for GETDATE().
+			</action>
+			<action context="src" dev="PF" type="add">
+				Added event handler support for activation, deactivation, and synchronization events.
+				Clients can opt to be notified of such events by registering themselves as handlers using the appropriate methods on the database cluster mbean.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed close() methods of Connection, Statement, and ResultSet proxies to use driver (instead of database) write invocation strategy to prevent unnecessary creation of SQL objects (potentially triggering query execution) just to be closed.
+			</action>
+			<action context="src" dev="PF" type="fix" due-to="Maris Orbidans">
+				Fixed exception handling in FullSynchronizationStrategy.
+				Exceptions wrapped as SQLException were not getting re-thrown.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed logic in DatabaseMetaDataSupport.quote(String) to properly deal with identifier case.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed synchronization to allow schemas with auto-generated constraint names (i.e. constraint names are not uniform in all databases) to function properly when meta-data-cache="none".
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed bug where statements created from read-only connections were not getting properly load balanced.
+			</action>
+			<action context="src" dev="PF" type="add">
+				Added explicit, Referenceable DataSource, ConnectionPoolDataSource, and XADataSource proxy implementations.
+				The <![CDATA[<name>]]> element of a <![CDATA[<datasource>, <pool-datasource>, or <xa-datasource>]]> configuration can define a data source implementation class name.
+				If the <![CDATA[<name>]]> element is a class name, then the following <![CDATA[<property name="...">]]> elements will be interpreted as property values of the data source (e.g. serverName, portNumber, databaseName).
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Added missing definitions for <![CDATA[<pool-datasource>]]> and <![CDATA[<xa-datasource>]]> to DTD and XSD.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Calls to PreparedStatement.addBatch() were not being recorded and, consequently, not getting replayed when a new database is activated.
+			</action>
+			<action context="src" dev="PF" type="fix" fixes-bug="1964456">
+				Fixed AcquireLockDecree to use write locks, instead of a read locks, so that database activation will block transactions on remote nodes.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded TestNG to 2.8.
+			</action>
+		</release>
+		<release version="2.0.12" date="March 18, 2008">
 			<action context="src" dev="PF" type="fix">
 				Fixed case normalization in DatabaseMetaDataSupport.normalize(String, String).
 			</action>

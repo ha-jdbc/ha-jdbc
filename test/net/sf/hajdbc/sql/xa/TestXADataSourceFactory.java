@@ -97,66 +97,63 @@ public class TestXADataSourceFactory implements ObjectFactory
 		};
 	}
 	
-	/**
-	 * @see javax.naming.spi.ObjectFactory#getObjectInstance(java.lang.Object, javax.naming.Name, javax.naming.Context, java.util.Hashtable)
-	 */
 	@Test(dataProvider = "factory")
-	public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment)
+	public void testGetObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception
 	{
 		try
 		{
-			Object result = this.factory.getObjectInstance(obj, name, nameCtx, environment);
+			Object result = this.getObjectInstance(obj, name, nameCtx, environment);
 			
 			if ((obj == null) || !Reference.class.isInstance(obj))
-			{
-				assert result == null;
-				
-				return result;
-			}
-			
-			Reference reference = (Reference) obj;
-			
-			if (!reference.getClassName().equals(XADataSource.class.getName()))
-			{
-				assert result == null;
-				
-				return result;
-			}
-			
-			RefAddr addr = reference.get("cluster");
-			
-			if ((addr == null) || (addr.getContent() == null))
-			{
-				assert result == null;
-				
-				return result;
-			}
-			
-			String id = (String) addr.getContent();
-			
-			if ((id == null) || !id.equals("test-xa-datasource-cluster"))
 			{
 				assert result == null;
 			}
 			else
 			{
-				assert result != null;
-				assert Proxy.isProxyClass(result.getClass()) : result.getClass().getName();
+				Reference reference = (Reference) obj;
+				
+				if (!reference.getClassName().equals(XADataSource.class.getName()))
+				{
+					assert result == null;
+				}
+				else
+				{
+					RefAddr addr = reference.get("cluster");
+					
+					if ((addr == null) || (addr.getContent() == null))
+					{
+						assert result == null;
+					}
+					else
+					{
+						String id = (String) addr.getContent();
+						
+						if ((id == null) || !id.equals("test-xa-datasource-cluster"))
+						{
+							assert result == null;
+						}
+						else
+						{
+							assert result != null;
+							assert Proxy.isProxyClass(result.getClass()) : result.getClass().getName();
+						}
+					}
+				}
 			}
-			
-			return result;
 		}
 		catch (SQLException e)
 		{
 			assert ((Reference) obj).get("cluster").getContent().equals("invalid-cluster");
-			
-			return null;
 		}
-		catch (Exception e)
-		{
-			assert false : e;
-		
-			return null;
-		}
+	}
+	
+	/**
+	 * @throws Exception 
+	 * @see javax.naming.spi.ObjectFactory#getObjectInstance(java.lang.Object, javax.naming.Name, javax.naming.Context, java.util.Hashtable)
+	 */
+	@Override
+	public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception
+	{
+		return this.factory.getObjectInstance(obj, name, nameCtx, environment);
 	}
 }

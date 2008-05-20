@@ -47,7 +47,7 @@ public class EagerTableProperties extends AbstractTableProperties
 	{
 		this.columnMap = support.getColumns(metaData, table);
 		this.primaryKey = support.getPrimaryKey(metaData, table);
-		this.uniqueConstraints = support.getUniqueConstraints(metaData, table);
+		this.uniqueConstraints = support.getUniqueConstraints(metaData, table, this.primaryKey);
 		this.foreignKeyConstraints = support.getForeignKeyConstraints(metaData, table);
 		this.identityColumns = support.getIdentityColumns(this.columnMap.values());
 		this.name = support.qualifyNameForDML(table);

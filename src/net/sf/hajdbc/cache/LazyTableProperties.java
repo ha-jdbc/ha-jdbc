@@ -114,7 +114,7 @@ public class LazyTableProperties extends AbstractTableProperties
 	{
 		if (this.uniqueConstraints == null)
 		{
-			this.uniqueConstraints = this.support.getUniqueConstraints(LazyDatabaseProperties.getDatabaseMetaData(), this.table);
+			this.uniqueConstraints = this.support.getUniqueConstraints(LazyDatabaseProperties.getDatabaseMetaData(), this.table, this.getPrimaryKey());
 		}
 		
 		return this.uniqueConstraints;

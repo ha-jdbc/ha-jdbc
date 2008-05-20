@@ -31,6 +31,7 @@ import java.util.prefs.Preferences;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.DatabaseEvent;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.StateManager;
 import net.sf.hajdbc.util.Strings;
@@ -82,21 +83,53 @@ public class LocalStateManager implements StateManager
 
 		return databaseSet;
 	}
-	
+
 	/**
-	 * @see net.sf.hajdbc.StateManager#add(java.lang.String)
+	 * @see net.sf.hajdbc.Lifecycle#start()
 	 */
 	@Override
-	public void add(String databaseId)
+	public void start() throws Exception
+	{
+		preferences.sync();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.Lifecycle#stop()
+	 */
+	@Override
+	public void stop()
+	{
+		// Nothing to do
+	}
+	
+	private String statePreferenceKey()
+	{
+		return this.databaseCluster.getId();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.StateManager#isMembershipEmpty()
+	 */
+	@Override
+	public boolean isMembershipEmpty()
+	{
+		return false;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.DatabaseActivationListener#activated(net.sf.hajdbc.DatabaseEvent)
+	 */
+	@Override
+	public void activated(DatabaseEvent event)
 	{
 		this.storeState();
 	}
 
 	/**
-	 * @see net.sf.hajdbc.StateManager#remove(java.lang.String)
+	 * @see net.sf.hajdbc.DatabaseDeactivationListener#deactivated(net.sf.hajdbc.DatabaseEvent)
 	 */
 	@Override
-	public void remove(String databaseId)
+	public void deactivated(DatabaseEvent event)
 	{
 		this.storeState();
 	}
@@ -120,44 +153,5 @@ public class LocalStateManager implements StateManager
 		{
 			throw new RuntimeException(Messages.getMessage(Messages.CLUSTER_STATE_STORE_FAILED, this.databaseCluster), e);
 		}
-	}
-
-	/**
-	 * @see net.sf.hajdbc.StateManager#start()
-	 */
-	@Override
-	public void start() throws Exception
-	{
-		preferences.sync();
-	}
-
-	/**
-	 * @see net.sf.hajdbc.StateManager#stop()
-	 */
-	@Override
-	public void stop()
-	{
-		try
-		{
-			preferences.sync();
-		}
-		catch (BackingStoreException e)
-		{
-			logger.warn(e.getMessage(), e);
-		}
-	}
-	
-	private String statePreferenceKey()
-	{
-		return this.databaseCluster.getId();
-	}
-
-	/**
-	 * @see net.sf.hajdbc.StateManager#isMembershipEmpty()
-	 */
-	@Override
-	public boolean isMembershipEmpty()
-	{
-		return false;
 	}
 }

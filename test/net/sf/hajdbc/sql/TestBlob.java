@@ -50,6 +50,7 @@ import org.testng.annotations.Test;
  * @author Paul Ferraro
  *
  */
+@Test
 @SuppressWarnings({ "unchecked", "nls" })
 public class TestBlob implements Blob
 {
@@ -117,7 +118,7 @@ public class TestBlob implements Blob
 	/**
 	 * @see java.sql.Blob#free()
 	 */
-	@Test
+	@Override
 	public void free() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
@@ -143,11 +144,7 @@ public class TestBlob implements Blob
 		this.verify();
 	}
 
-	/**
-	 * @see java.sql.Blob#getBinaryStream()
-	 */
-	@Test
-	public InputStream getBinaryStream() throws SQLException
+	public void testGetBinaryStream() throws SQLException
 	{
 		InputStream input = new ByteArrayInputStream(new byte[0]);
 		
@@ -164,13 +161,20 @@ public class TestBlob implements Blob
 		
 		this.replay();
 		
-		InputStream result = this.blob.getBinaryStream();
+		InputStream result = this.getBinaryStream();
 		
 		this.verify();
 		
 		assert result == input;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.Blob#getBinaryStream()
+	 */
+	@Override
+	public InputStream getBinaryStream() throws SQLException
+	{
+		return this.blob.getBinaryStream();
 	}
 
 	@DataProvider(name = "long-long")
@@ -179,11 +183,8 @@ public class TestBlob implements Blob
 		return new Object[][] { new Object[] { 1L, 1L } };
 	}
 	
-	/**
-	 * @see java.sql.Blob#getBinaryStream(long, long)
-	 */
 	@Test(dataProvider = "long-long")
-	public InputStream getBinaryStream(long position, long length) throws SQLException
+	public void testGetBinaryStream(long position, long length) throws SQLException
 	{
 		InputStream input = new ByteArrayInputStream(new byte[0]);
 		
@@ -200,13 +201,20 @@ public class TestBlob implements Blob
 		
 		this.replay();
 		
-		InputStream result = this.blob.getBinaryStream(position, length);
+		InputStream result = this.getBinaryStream(position, length);
 		
 		this.verify();
 		
 		assert result == input;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.Blob#getBinaryStream(long, long)
+	 */
+	@Override
+	public InputStream getBinaryStream(long position, long length) throws SQLException
+	{
+		return this.blob.getBinaryStream(position, length);
 	}
 
 	@DataProvider(name = "long-int")
@@ -215,11 +223,8 @@ public class TestBlob implements Blob
 		return new Object[][] { new Object[] { 1L, 1 } };
 	}
 
-	/**
-	 * @see java.sql.Blob#getBytes(long, int)
-	 */
 	@Test(dataProvider = "long-int")
-	public byte[] getBytes(long position, int length) throws SQLException
+	public void testGetBytes(long position, int length) throws SQLException
 	{
 		byte[] bytes = new byte[0];
 		
@@ -236,20 +241,23 @@ public class TestBlob implements Blob
 		
 		this.replay();
 		
-		byte[] result = this.blob.getBytes(position, length);
+		byte[] result = this.getBytes(position, length);
 		
 		this.verify();
 		
 		assert result == bytes;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.Blob#getBytes(long, int)
+	 */
+	@Override
+	public byte[] getBytes(long position, int length) throws SQLException
+	{
+		return this.blob.getBytes(position, length);
 	}
 
-	/**
-	 * @see java.sql.Blob#length()
-	 */
-	@Test
-	public long length() throws SQLException
+	public void testGetLength() throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -264,13 +272,20 @@ public class TestBlob implements Blob
 		
 		this.replay();
 		
-		long result = this.blob.length();
+		long result = this.length();
 		
 		this.verify();
 		
 		assert result == 1L;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.Blob#length()
+	 */
+	@Override
+	public long length() throws SQLException
+	{
+		return this.blob.length();
 	}
 
 	@DataProvider(name = "bytes-long")
@@ -279,11 +294,8 @@ public class TestBlob implements Blob
 		return new Object[][] { new Object[] { new byte[0], 1L } };
 	}
 	
-	/**
-	 * @see java.sql.Blob#position(byte[], long)
-	 */
 	@Test(dataProvider = "bytes-long")
-	public long position(byte[] pattern, long start) throws SQLException
+	public void testPosition(byte[] pattern, long start) throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -298,13 +310,20 @@ public class TestBlob implements Blob
 		
 		this.replay();
 		
-		long result = this.blob.position(pattern, start);
+		long result = this.position(pattern, start);
 		
 		this.verify();
 		
 		assert result == 1L;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.Blob#position(byte[], long)
+	 */
+	@Override
+	public long position(byte[] pattern, long start) throws SQLException
+	{
+		return this.blob.position(pattern, start);
 	}
 
 	@DataProvider(name = "blob-long")
@@ -313,11 +332,8 @@ public class TestBlob implements Blob
 		return new Object[][] { new Object[] { EasyMock.createMock(Blob.class), 1L } };
 	}
 
-	/**
-	 * @see java.sql.Blob#position(java.sql.Blob, long)
-	 */
 	@Test(dataProvider = "blob-long")
-	public long position(Blob pattern, long start) throws SQLException
+	public void testPosition(Blob pattern, long start) throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -332,13 +348,20 @@ public class TestBlob implements Blob
 		
 		this.replay();
 		
-		long result = this.blob.position(pattern, start);
+		long result = this.position(pattern, start);
 		
 		this.verify();
 		
 		assert result == 1L;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.Blob#position(java.sql.Blob, long)
+	 */
+	@Override
+	public long position(Blob pattern, long start) throws SQLException
+	{
+		return this.blob.position(pattern, start);
 	}
 
 	@DataProvider(name = "long")
@@ -346,12 +369,9 @@ public class TestBlob implements Blob
 	{
 		return new Object[][] { new Object[] { 1L } };
 	}
-	
-	/**
-	 * @see java.sql.Blob#setBinaryStream(long)
-	 */
+
 	@Test(dataProvider = "long")
-	public OutputStream setBinaryStream(long position) throws SQLException
+	public void testSetBinaryStream(long position) throws SQLException
 	{
 		OutputStream output1 = new ByteArrayOutputStream();
 		OutputStream output2 = new ByteArrayOutputStream();
@@ -372,13 +392,20 @@ public class TestBlob implements Blob
 		
 		this.replay();
 		
-		OutputStream result = this.blob.setBinaryStream(position);
+		OutputStream result = this.setBinaryStream(position);
 
 		this.verify();
 		
 		assert result == output1;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.Blob#setBinaryStream(long)
+	 */
+	@Override
+	public OutputStream setBinaryStream(long position) throws SQLException
+	{
+		return this.blob.setBinaryStream(position);
 	}
 
 	@DataProvider(name = "long-bytes")
@@ -387,11 +414,8 @@ public class TestBlob implements Blob
 		return new Object[][] { new Object[] { 1L, new byte[0] } };
 	}
 	
-	/**
-	 * @see java.sql.Blob#setBytes(long, byte[])
-	 */
 	@Test(dataProvider = "long-bytes")
-	public int setBytes(long position, byte[] bytes) throws SQLException
+	public void testSetBytes(long position, byte[] bytes) throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -409,13 +433,20 @@ public class TestBlob implements Blob
 		
 		this.replay();
 		
-		int result = this.blob.setBytes(position, bytes);
+		int result = this.setBytes(position, bytes);
 
 		this.verify();
 		
 		assert result == 1;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.Blob#setBytes(long, byte[])
+	 */
+	@Override
+	public int setBytes(long position, byte[] bytes) throws SQLException
+	{
+		return this.blob.setBytes(position, bytes);
 	}
 
 	@DataProvider(name = "long-bytes-int-int")
@@ -424,11 +455,8 @@ public class TestBlob implements Blob
 		return new Object[][] { new Object[] { 1L, new byte[0], 1, 1 } };
 	}
 
-	/**
-	 * @see java.sql.Blob#setBytes(long, byte[], int, int)
-	 */
 	@Test(dataProvider = "long-bytes-int-int")
-	public int setBytes(long position, byte[] bytes, int offset, int length) throws SQLException
+	public void testSetBytes(long position, byte[] bytes, int offset, int length) throws SQLException
 	{
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -446,13 +474,20 @@ public class TestBlob implements Blob
 		
 		this.replay();
 		
-		int result = this.blob.setBytes(position, bytes, offset, length);
+		int result = this.setBytes(position, bytes, offset, length);
 
 		this.verify();
 		
 		assert result == 1;
-		
-		return result;
+	}
+	
+	/**
+	 * @see java.sql.Blob#setBytes(long, byte[], int, int)
+	 */
+	@Override
+	public int setBytes(long position, byte[] bytes, int offset, int length) throws SQLException
+	{
+		return this.blob.setBytes(position, bytes, offset, length);
 	}
 
 	/**

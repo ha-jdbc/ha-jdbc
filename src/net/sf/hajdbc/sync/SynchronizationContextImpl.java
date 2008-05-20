@@ -31,6 +31,7 @@ import java.util.concurrent.Executors;
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.DatabaseProperties;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.SynchronizationContext;
@@ -41,7 +42,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Paul Ferraro
- * @param <D> 
+ * @param <D> Driver or DataSource
  */
 public class SynchronizationContextImpl<D> implements SynchronizationContext<D>
 {
@@ -51,7 +52,8 @@ public class SynchronizationContextImpl<D> implements SynchronizationContext<D>
 	private Database<D> sourceDatabase;
 	private Database<D> targetDatabase;
 	private DatabaseCluster<D> cluster;
-	private DatabaseProperties databaseProperties;
+	private DatabaseProperties sourceDatabaseProperties;
+	private DatabaseProperties targetDatabaseProperties;
 	private Map<Database<D>, Connection> connectionMap = new HashMap<Database<D>, Connection>();
 	private ExecutorService executor;
 	
@@ -70,7 +72,11 @@ public class SynchronizationContextImpl<D> implements SynchronizationContext<D>
 		this.activeDatabaseSet = balancer.all();
 		this.targetDatabase = database;
 		this.executor = Executors.newFixedThreadPool(this.activeDatabaseSet.size(), DaemonThreadFactory.getInstance());
-		this.databaseProperties = cluster.getDatabaseMetaDataCache().getDatabaseProperties(this.getConnection(this.targetDatabase));
+		
+		DatabaseMetaDataCache cache = cluster.getDatabaseMetaDataCache();
+		
+		this.sourceDatabaseProperties = cache.getDatabaseProperties(this.getConnection(this.sourceDatabase));
+		this.targetDatabaseProperties = cache.getDatabaseProperties(this.getConnection(this.targetDatabase));
 	}
 	
 	/**
@@ -122,14 +128,23 @@ public class SynchronizationContextImpl<D> implements SynchronizationContext<D>
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.SynchronizationContext#getDatabaseProperties()
+	 * @see net.sf.hajdbc.SynchronizationContext#getSourceDatabaseProperties()
 	 */
 	@Override
-	public DatabaseProperties getDatabaseProperties()
+	public DatabaseProperties getSourceDatabaseProperties()
 	{
-		return this.databaseProperties;
+		return this.sourceDatabaseProperties;
 	}
-	
+
+	/**
+	 * @see net.sf.hajdbc.SynchronizationContext#getTargetDatabaseProperties()
+	 */
+	@Override
+	public DatabaseProperties getTargetDatabaseProperties()
+	{
+		return this.targetDatabaseProperties;
+	}
+
 	/**
 	 * @see net.sf.hajdbc.SynchronizationContext#getDialect()
 	 */

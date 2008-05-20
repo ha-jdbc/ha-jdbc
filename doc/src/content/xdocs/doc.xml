@@ -426,19 +426,27 @@
 					</dl>
 				</section>
 				<section id="datasource">
-					<title>&lt;datasource&gt;</title>
+					<title>&lt;datasource&gt;, &lt;pool-datasource&gt;, &lt;xa-datasource&gt;</title>
 					<p>
 						Defines the databases in this cluster that will be referenced via a javax.sql.DataSource.
 					</p>
 					<source><![CDATA[<!ELEMENT datasource (name, property*, (user, password)?>]]></source>
 					<dl>
-						<dt>name</dt>
+						<dt id="datasource.name">name</dt>
 						<dd>
-							Defines the <acronym title="Java Naming and Directory Interface">JNDI</acronym> name of this DataSource.
+							Defines one of the following:
+							<ul>
+								<li>The <acronym title="Java Naming and Directory Interface">JNDI</acronym> name of this DataSource.</li>
+								<li>The class name of the DataSource.</li>
+							</ul>
 						</dd>
 						<dt><a href="#property">property</a></dt>
 						<dd>
-							Defines a <acronym title="Java Naming and Directory Interface">JNDI</acronym> environment property used when creating an InitialContext from which to lookup this DataSource.
+							Depending on the value of <a href="#datasource.name">&lt;name&gt;</a>, properties are interpreted as:
+							<ul>
+								<li>A <acronym title="Java Naming and Directory Interface">JNDI</acronym> environment property used when creating an InitialContext from which to lookup this data source.</li>
+								<li>A JavaBean property with which to initialize the data source.</li>
+							</ul>
 						</dd>
 						<dt>user</dt>
 						<dd>
@@ -451,6 +459,16 @@
 					</dl>
 					<source><![CDATA[
 <!ATTLIST datasource
+	id     CDATA        #REQUIRED
+	weight CDATA        "1"
+	local  (true|false) "false"
+>
+<!ATTLIST pool-datasource
+	id     CDATA        #REQUIRED
+	weight CDATA        "1"
+	local  (true|false) "false"
+>
+<!ATTLIST xa-datasource
 	id     CDATA        #REQUIRED
 	weight CDATA        "1"
 	local  (true|false) "false"
@@ -752,11 +770,22 @@ Connection connection = DriverManager.getConnection("jdbc:ha-jdbc:cluster1", "po
 				<p>
 					An HA-JDBC cluster can also wrap one or more DataSources.
 				</p>
-				<p>e.g.</p>
-				<p>
-					The following is a sample HA-JDBC configuration that uses DataSource facilities to obtain connections.
-				</p>
+				<p>Connections are made to the HA-JDBC cluster via the following code:</p>
 				<source><![CDATA[
+Context context = new InitialContext();
+DataSource dataSource = (DataSource) context.lookup("java:comp/env/jdbc/cluster");
+Connection connection = dataSource.getConnection();
+]]></source>
+				<p>
+					You can define underlying data sources either by JNDI names to which they are already bound, or explicitly in your configuration file.
+				</p>
+				<section>
+					<title>JNDI-based Configuration</title>
+					<p>e.g.</p>
+					<p>
+						The following is a sample HA-JDBC configuration that uses JNDI-bound DataSource facilities to obtain connections.
+					</p>
+					<source><![CDATA[
 <ha-jdbc>
   <!-- ... -->
   <cluster balancer="..." dialect="PostgreSQL" default-sync="..." transaction-mode="...">
@@ -769,11 +798,11 @@ Connection connection = DriverManager.getConnection("jdbc:ha-jdbc:cluster1", "po
   </cluster>
 </ha-jdbc>
 ]]></source>
-				<p>
-					The corresponding Tomcat configuration might look like the following:
-				</p>
-				<p>server.xml:</p>
-				<source><![CDATA[
+					<p>
+						The corresponding Tomcat configuration might look like the following:
+					</p>
+					<p>server.xml:</p>
+					<source><![CDATA[
 <Context>
   <!-- ... -->
   <Resource name="jdbc/database1" type="javax.sql.DataSource"
@@ -790,8 +819,8 @@ Connection connection = DriverManager.getConnection("jdbc:ha-jdbc:cluster1", "po
   <!-- ... -->
 </Context>
 ]]></source>
-				<p>web.xml:</p>
-				<source><![CDATA[
+					<p>web.xml:</p>
+					<source><![CDATA[
 <web-app>
   <!-- ... -->
   <resource-env-ref>
@@ -809,10 +838,110 @@ Connection connection = DriverManager.getConnection("jdbc:ha-jdbc:cluster1", "po
   <!-- ... -->
 </web-app>
 ]]></source>
+				</section>
+				<section>
+					<title>Explicit Configuration</title>
+					<p>e.g.</p>
+					<p>
+						The following is a sample HA-JDBC configuration that uses explicitly defines DataSource facilities to obtain connections.
+						This setup has the advantage of not exposing underlying data sources to your application and is less verbose.
+					</p>
+					<source><![CDATA[
+<ha-jdbc>
+  <!-- ... -->
+  <cluster balancer="..." dialect="PostgreSQL" default-sync="..." transaction-mode="...">
+    <datasource id="database1">
+      <name>org.postgresql.ds.PGSimpleDataSource</name>
+      <property name="serverName">server1</property>
+      <property name="portNumber">5432</property>
+      <property name="databaseName">database</property>
+    </datasource>
+    <datasource id="database2">
+      <name>org.postgresql.ds.PGSimpleDataSource</name>
+      <property name="serverName">server2</property>
+      <property name="portNumber">5432</property>
+      <property name="databaseName">database</property>
+    </datasource>
+  </cluster>
+</ha-jdbc>
+]]></source>
+					<p>
+						The corresponding Tomcat configuration might look like the following:
+					</p>
+					<p>server.xml:</p>
+					<source><![CDATA[
+<Context>
+  <!-- ... -->
+  <Resource name="jdbc/cluster" type="javax.sql.DataSource"
+            factory="net.sf.hajdbc.sql.DataSourceFactory"
+            cluster="cluster2" config="file:///path/to/ha-jdbc-{0}.xml"/>
+  <!-- ... -->
+</Context>
+]]></source>
+					<p>web.xml:</p>
+					<source><![CDATA[
+<web-app>
+  <!-- ... -->
+  <resource-env-ref>
+    <resource-env-ref-name>jdbc/cluster</resource-env-ref-name>
+    <resource-env-ref-type>javax.sql.DataSource</resource-env-ref-type>
+  </resource-env-ref>
+  <!-- ... -->
+</web-app>
+]]></source>
+				</section>
+			</section>
+			<section>
+				<title>XADataSource-based access</title>
+				<p>
+					An HA-JDBC cluster can also wrap one or more XADataSources.
+					You can define underlying data sources either by JNDI names to which they are already bound, or explicitly in your configuration file.
+				</p>
+				<warning>
+					Typically, when configuring an XADataSource for your application server, only the DataSource exposed to the application is bound to JNDI, not the XADataSource itself.
+					It is crucial that you configure HA-JDBC to proxy the XADataSource, and NOT the application-facing DataSource directly.
+					HA-JDBC must be able to detect the boundaries of a transaction, which, in the case of distributed transactions, are visible to the XAConnections created by the XADataSource, but not the Connections created by the application facing DataSource.
+				</warning>
+				<p>e.g.</p>
+				<p>
+					The following is a sample HA-JDBC configuration that uses explicitly defines XADataSource facilities to obtain connections.
+				</p>
+				<source><![CDATA[
+<ha-jdbc>
+  <!-- ... -->
+  <cluster balancer="..." dialect="PostgreSQL" default-sync="..." transaction-mode="...">
+    <xa-datasource id="database1">
+      <name>﻿org.postgresql.xa.PGXADataSource</name>
+      <property name="serverName">host1</property>
+﻿      <property name="portNumber">5432</property>
+﻿      <property name="databaseName">mydatabase</property>
+    </xa-datasource>
+    <xa-datasource id="database2">
+      <name>﻿org.postgresql.xa.PGXADataSource</name>
+      <property name="serverName">host1</property>
+﻿      <property name="portNumber">5432</property>
+﻿      <property name="databaseName">mydatabase</property>
+    </xa-datasource>
+  </cluster>
+</ha-jdbc>
+]]></source>
+				<p>
+					The corresponding JBoss configuration might look like the following:
+				</p>
+				<source><![CDATA[
+<datasources>
+  <xa-datasource>
+    <jndi-name>haDS</jndi-name>
+    <xa-datasource-class>net.sf.hajdbc.xa.XADataSource</xa-datasource-class>
+    <xa-datasource-property name="Cluster">mycluster</xa-datasource-property>
+    <track-connection-by-tx/>
+  </xa-datasource>
+</datasources>
+]]></source>
 				<p>Connections are made to the HA-JDBC cluster via the following code:</p>
 				<source><![CDATA[
 Context context = new InitialContext();
-DataSource dataSource = (DataSource) context.lookup("java:comp/env/jdbc/cluster");
+DataSource dataSource = (DataSource) context.lookup("java:/haDS");
 Connection connection = dataSource.getConnection();
 ]]></source>
 			</section>

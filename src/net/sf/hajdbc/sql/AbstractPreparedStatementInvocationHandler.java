@@ -61,6 +61,7 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 	private static final Method executeMethod = Methods.getMethod(PreparedStatement.class, "execute");
 	private static final Method executeUpdateMethod = Methods.getMethod(PreparedStatement.class, "executeUpdate");
 	private static final Method executeQueryMethod = Methods.getMethod(PreparedStatement.class, "executeQuery");
+	private static final Set<Method> recordableMethodSet = Methods.findMethods(PreparedStatement.class, "addBatch", "clearParameters");
 	
 	protected List<Lock> lockList = Collections.emptyList();
 	protected boolean selectForUpdate = false;
@@ -248,6 +249,6 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 	@Override
 	protected boolean isRecordable(Method method)
 	{
-		return super.isRecordable(method) || method.getName().equals("clearParameters") || this.isIndexSetMethod(method);
+		return super.isRecordable(method) || recordableMethodSet.contains(method) || this.isIndexSetMethod(method);
 	}
 }

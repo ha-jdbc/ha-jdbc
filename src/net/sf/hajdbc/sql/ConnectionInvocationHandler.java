@@ -88,7 +88,7 @@ public class ConnectionInvocationHandler<D, P> extends AbstractChildInvocationHa
 			return new DatabaseReadInvocationStrategy<D, Connection, Object>();
 		}
 		
-		if (driverWriterMethodSet.contains(method))
+		if (driverWriterMethodSet.contains(method) || method.equals(closeMethod))
 		{
 			return new DriverWriteInvocationStrategy<D, Connection, Object>();
 		}
@@ -103,31 +103,19 @@ public class ConnectionInvocationHandler<D, P> extends AbstractChildInvocationHa
 			return new DatabaseWriteInvocationStrategy<D, Connection, Void>(this.cluster.getTransactionalExecutor());
 		}
 		
-		boolean createStatement = createStatementMethodSet.contains(method);
-		boolean prepareStatement = prepareStatementMethodSet.contains(method);
-		boolean prepareCall = prepareCallMethodSet.contains(method);
-		
-		if (createStatement || prepareStatement || prepareCall)
+		if (createStatementMethodSet.contains(method))
 		{
-			if (connection.isReadOnly())
-			{
-				return createStatement ? new DriverReadInvocationStrategy<D, Connection, Object>() : new DatabaseReadInvocationStrategy<D, Connection, Object>();
-			}
-			
-			if (createStatement)
-			{
-				return new StatementInvocationStrategy<D>(connection, this.transactionContext, this.fileSupport);
-			}
-			
-			if (prepareStatement)
-			{
-				return new PreparedStatementInvocationStrategy<D>(this.cluster, connection, this.transactionContext, this.fileSupport, (String) parameters[0]);
-			}
-			
-			if (prepareCall)
-			{
-				return new CallableStatementInvocationStrategy<D>(this.cluster, connection, this.transactionContext, this.fileSupport);
-			}
+			return new StatementInvocationStrategy<D>(connection, this.transactionContext, this.fileSupport);
+		}
+		
+		if (prepareStatementMethodSet.contains(method))
+		{
+			return new PreparedStatementInvocationStrategy<D>(this.cluster, connection, this.transactionContext, this.fileSupport, (String) parameters[0]);
+		}
+		
+		if (prepareCallMethodSet.contains(method))
+		{
+			return new CallableStatementInvocationStrategy<D>(this.cluster, connection, this.transactionContext, this.fileSupport);
 		}
 		
 		if (setSavepointMethodSet.contains(method))

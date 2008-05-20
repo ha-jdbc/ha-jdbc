@@ -28,6 +28,7 @@ import java.util.concurrent.ExecutorService;
 
 /**
  * @author Paul Ferraro
+ * @param <D> Driver or DataSource
  * @since 2.0
  */
 public interface SynchronizationContext<D>
@@ -59,10 +60,16 @@ public interface SynchronizationContext<D>
 	public Set<Database<D>> getActiveDatabaseSet();
 	
 	/**
-	 * Returns a cache of database meta data.
-	 * @return a cache of database meta data.
+	 * Returns a cache of database meta data for the source database.
+	 * @return a cache of database meta data
 	 */
-	public DatabaseProperties getDatabaseProperties();
+	public DatabaseProperties getSourceDatabaseProperties();
+	
+	/**
+	 * Returns a cache of database meta data for the target database.
+	 * @return a cache of database meta data
+	 */
+	public DatabaseProperties getTargetDatabaseProperties();
 	
 	/**
 	 * Returns the dialect of the cluster.

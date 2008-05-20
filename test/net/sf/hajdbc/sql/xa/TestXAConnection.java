@@ -32,43 +32,30 @@ import javax.transaction.xa.XAResource;
 import net.sf.hajdbc.sql.Invoker;
 import net.sf.hajdbc.sql.SQLProxy;
 import net.sf.hajdbc.sql.pool.AbstractPooledConnectionInvocationHandler;
-import net.sf.hajdbc.sql.pool.TestPooledConnection;
+import net.sf.hajdbc.sql.pool.AbstractTestPooledConnection;
 
 import org.easymock.EasyMock;
+import org.testng.annotations.Test;
 
 /**
  * @author Paul Ferraro
  *
  */
+@Test
 @SuppressWarnings("unchecked")
-public class TestXAConnection extends TestPooledConnection implements XAConnection
+public class TestXAConnection extends AbstractTestPooledConnection<XAConnection> implements XAConnection
 {
-	protected XAConnection getXAConnection()
-	{
-		return (XAConnection) this.connection;
-	}
-	
-	protected XAConnection getConnection1()
-	{
-		return (XAConnection) this.connection1;
-	}
-	
-	protected XAConnection getConnection2()
-	{
-		return (XAConnection) this.connection2;
-	}
-	
 	/**
-	 * @see net.sf.hajdbc.sql.pool.TestPooledConnection#getConnectionClass()
+	 * @see net.sf.hajdbc.sql.pool.AbstractTestPooledConnection#getConnectionClass()
 	 */
 	@Override
-	protected Class<? extends PooledConnection> getConnectionClass()
+	protected Class<XAConnection> getConnectionClass()
 	{
 		return XAConnection.class;
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.pool.TestPooledConnection#getInvocationHandler(java.util.Map)
+	 * @see net.sf.hajdbc.sql.pool.AbstractTestPooledConnection#getInvocationHandler(java.util.Map)
 	 */
 	@Override
 	protected AbstractPooledConnectionInvocationHandler getInvocationHandler(Map map) throws Exception
@@ -76,11 +63,7 @@ public class TestXAConnection extends TestPooledConnection implements XAConnecti
 		return new XAConnectionInvocationHandler(EasyMock.createStrictMock(XADataSource.class), this.parent, EasyMock.createMock(Invoker.class), map);
 	}
 
-	/**
-	 * @see javax.sql.XAConnection#getXAResource()
-	 */
-	@Override
-	public XAResource getXAResource() throws SQLException
+	public void testGetXAResource() throws SQLException
 	{
 		XAResource resource1 = EasyMock.createStrictMock(XAResource.class);
 		XAResource resource2 = EasyMock.createStrictMock(XAResource.class);
@@ -92,12 +75,16 @@ public class TestXAConnection extends TestPooledConnection implements XAConnecti
 		EasyMock.expect(this.cluster.getBalancer()).andReturn(this.balancer);
 		EasyMock.expect(this.balancer.all()).andReturn(this.databaseSet);
 		
-		EasyMock.expect(this.getConnection1().getXAResource()).andReturn(resource1);
-		EasyMock.expect(this.getConnection2().getXAResource()).andReturn(resource2);
+		EasyMock.expect(this.parent.getRoot()).andReturn(this.root);
+		
+		this.root.retain(this.databaseSet);
+		
+		EasyMock.expect(this.connection1.getXAResource()).andReturn(resource1);
+		EasyMock.expect(this.connection2.getXAResource()).andReturn(resource2);
 		
 		this.replay();
 		
-		XAResource result = this.getXAConnection().getXAResource();
+		XAResource result = this.getXAResource();
 		
 		this.verify();
 		
@@ -107,7 +94,14 @@ public class TestXAConnection extends TestPooledConnection implements XAConnecti
 		
 		assert proxy.getObject(this.database1) == resource1;
 		assert proxy.getObject(this.database2) == resource2;
-		
-		return result;
+	}
+	
+	/**
+	 * @see javax.sql.XAConnection#getXAResource()
+	 */
+	@Override
+	public XAResource getXAResource() throws SQLException
+	{
+		return this.connection.getXAResource();
 	}
 }

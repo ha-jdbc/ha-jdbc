@@ -20,14 +20,15 @@
  */
 package net.sf.hajdbc.dialect;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import net.sf.hajdbc.ColumnProperties;
-import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.TableProperties;
 
@@ -40,247 +41,229 @@ import org.testng.annotations.Test;
  *
  */
 @SuppressWarnings("nls")
+@Test
 public class TestPostgreSQLDialect extends TestStandardDialect
 {
-	@Override
-	protected Dialect createDialect()
+	public TestPostgreSQLDialect()
 	{
-		return new PostgreSQLDialect();
+		super(new PostgreSQLDialect());
 	}
 
+	/**
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testGetColumnType()
+	 */
 	@Override
-	@Test(dataProvider = "column")
-	public int getColumnType(ColumnProperties properties) throws SQLException
+	public void testGetColumnType() throws SQLException
 	{
-		EasyMock.expect(properties.getNativeType()).andReturn("oid");
+		ColumnProperties column = EasyMock.createStrictMock(ColumnProperties.class);
 		
-		this.replay();
+		EasyMock.expect(column.getNativeType()).andReturn("oid");
 		
-		int type = this.dialect.getColumnType(properties);
+		EasyMock.replay(column);
 		
-		this.verify();
+		int result = this.getColumnType(column);
 		
-		assert type == Types.BLOB : type;
+		EasyMock.verify(column);
 		
-		this.reset();
+		assert result == Types.BLOB : result;
 		
-		EasyMock.expect(properties.getNativeType()).andReturn("int");		
-		EasyMock.expect(properties.getType()).andReturn(Types.INTEGER);
+		EasyMock.reset(column);
 		
-		this.replay();
+		EasyMock.expect(column.getNativeType()).andReturn("int");		
+		EasyMock.expect(column.getType()).andReturn(Types.INTEGER);
 		
-		type = this.dialect.getColumnType(properties);
+		EasyMock.replay(column);
 		
-		this.verify();
+		result = this.getColumnType(column);
 		
-		assert type == Types.INTEGER : type;
+		EasyMock.verify(column);
 		
-		return type;
-	}
-/*
-	@Override
-	@Test(dataProvider = "table")
-	public String getLockTableSQL(TableProperties properties) throws SQLException
-	{
-		EasyMock.expect(properties.getName()).andReturn("table");
-		
-		this.replay();
-		
-		String sql = this.dialect.getLockTableSQL(properties);
-		
-		this.verify();
-		
-		assert sql.equals("LOCK TABLE table IN EXCLUSIVE MODE") : sql;
-		
-		return sql;
-	}
-*/
-	@Override
-	@Test(dataProvider = "table")
-	public String getTruncateTableSQL(TableProperties properties) throws SQLException
-	{
-		EasyMock.expect(properties.getName()).andReturn("table");
-		
-		this.replay();
-		
-		String sql = this.dialect.getTruncateTableSQL(properties);
-		
-		this.verify();
-		
-		assert sql.equals("TRUNCATE TABLE table");
-		
-		return sql;
+		assert result == Types.INTEGER : result;
 	}
 
+	/**
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testGetTruncateTableSQL()
+	 */
 	@Override
-	@Test(dataProvider = "sequence")
-	public String getNextSequenceValueSQL(SequenceProperties sequence) throws SQLException
+	public void testGetTruncateTableSQL() throws SQLException
 	{
+		TableProperties table = EasyMock.createStrictMock(TableProperties.class);
+		
+		EasyMock.expect(table.getName()).andReturn("table");
+		
+		EasyMock.replay(table);
+		
+		String result = this.getTruncateTableSQL(table);
+		
+		EasyMock.verify(table);
+		
+		assert result.equals("TRUNCATE TABLE table") : result;
+	}
+
+	/**
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testGetNextSequenceValueSQL()
+	 */
+	@Override
+	public void testGetNextSequenceValueSQL() throws SQLException
+	{
+		SequenceProperties sequence = EasyMock.createStrictMock(SequenceProperties.class);
+		
 		EasyMock.expect(sequence.getName()).andReturn("sequence");
 		
-		this.replay();
+		EasyMock.replay(sequence);
 		
-		String sql = this.dialect.getNextSequenceValueSQL(sequence);
+		String result = this.getNextSequenceValueSQL(sequence);
 		
-		this.verify();
+		EasyMock.verify(sequence);
 		
-		assert sql.equals("SELECT NEXTVAL('sequence')") : sql;
-		
-		return sql;
+		assert result.equals("SELECT NEXTVAL('sequence')") : result;
+	}
+	
+	@Override
+	@DataProvider(name = "sequence-sql")
+	Object[][] sequenceSQLProvider()
+	{
+		return new Object[][] {
+			new Object[] { "SELECT CURRVAL('success')" },
+			new Object[] { "SELECT nextval('success'), * FROM table" },
+			new Object[] { "INSERT INTO table VALUES (NEXTVAL('success'), 0)" },
+			new Object[] { "UPDATE table SET id = NEXTVAL('success')" },
+			new Object[] { "SELECT * FROM table" },
+		};
 	}
 
+	/**
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testGetDefaultSchemas()
+	 */
 	@Override
-	@Test(dataProvider = "null")
-	public String parseSequence(String sql) throws SQLException
+	public void testGetDefaultSchemas() throws SQLException
 	{
-		this.replay();
+		DatabaseMetaData metaData = EasyMock.createStrictMock(DatabaseMetaData.class);
+		Connection connection = EasyMock.createStrictMock(Connection.class);
+		Statement statement = EasyMock.createStrictMock(Statement.class);
+		ResultSet resultSet = EasyMock.createStrictMock(ResultSet.class);
 		
-		String sequence = this.dialect.parseSequence("SELECT CURRVAL('sequence')");
+		EasyMock.expect(metaData.getConnection()).andReturn(connection);
+		EasyMock.expect(connection.createStatement()).andReturn(statement);
 		
-		this.verify();
-		
-		assert sequence.equals("sequence") : sequence;
-		
-		this.reset();
-		this.replay();
-		
-		sequence = this.dialect.parseSequence("SELECT nextval('sequence')");
-		
-		this.verify();
-		
-		assert sequence.equals("sequence") : sequence;
-		
-		this.reset();
-		this.replay();
-		
-		sequence = this.dialect.parseSequence("SELECT * FROM table");
-		
-		this.verify();
-		
-		assert sequence == null : sequence;
-		
-		return sequence;
-	}
+		EasyMock.expect(statement.executeQuery("SHOW search_path")).andReturn(resultSet);
+		EasyMock.expect(resultSet.next()).andReturn(false);
+		EasyMock.expect(resultSet.getString(1)).andReturn("$user,public");
 
-	@Override
-	@Test(dataProvider = "meta-data")
-	public List<String> getDefaultSchemas(DatabaseMetaData metaData) throws SQLException
-	{
-		EasyMock.expect(metaData.getConnection()).andReturn(this.connection);
-		EasyMock.expect(this.connection.createStatement()).andReturn(this.statement);
-		
-		EasyMock.expect(this.statement.executeQuery("SHOW search_path")).andReturn(this.resultSet);
-		EasyMock.expect(this.resultSet.next()).andReturn(false);
-		EasyMock.expect(this.resultSet.getString(1)).andReturn("$user,public");
-
-		this.resultSet.close();
-		this.statement.close();
+		resultSet.close();
+		statement.close();
 		
 		EasyMock.expect(metaData.getUserName()).andReturn("user");
 		
-		this.replay();
+		EasyMock.replay(metaData, connection, statement, resultSet);
 		
-		List<String> schemaList = this.dialect.getDefaultSchemas(metaData);
+		List<String> result = this.getDefaultSchemas(metaData);
 		
-		this.verify();
+		EasyMock.verify(metaData, connection, statement, resultSet);
 		
-		assert schemaList.size() == 2 : schemaList.size();
+		assert result.size() == 2 : result.size();
 		
-		assert schemaList.get(0).equals("user") : schemaList.get(0);
-		assert schemaList.get(1).equals("public") : schemaList.get(1);
-		
-		return schemaList;
+		assert result.get(0).equals("user") : result.get(0);
+		assert result.get(1).equals("public") : result.get(1);
 	}
 
+	/**
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testIsIdentity()
+	 */
 	@Override
-	@Test(dataProvider = "column")
-	public boolean isIdentity(ColumnProperties properties) throws SQLException
+	public void testIsIdentity() throws SQLException
 	{
-		EasyMock.expect(properties.getNativeType()).andReturn("serial");
+		ColumnProperties column = EasyMock.createStrictMock(ColumnProperties.class);
 		
-		this.replay();
+		EasyMock.expect(column.getNativeType()).andReturn("serial");
 		
-		boolean identity = this.dialect.isIdentity(properties);
+		EasyMock.replay(column);
 		
-		this.verify();
+		boolean result = this.isIdentity(column);
 		
-		assert identity;
+		EasyMock.verify(column);
 		
-		this.reset();
+		assert result;
 		
-		EasyMock.expect(properties.getNativeType()).andReturn("bigserial");
+		EasyMock.reset(column);
 		
-		this.replay();
+		EasyMock.expect(column.getNativeType()).andReturn("bigserial");
 		
-		identity = this.dialect.isIdentity(properties);
+		EasyMock.replay(column);
 		
-		this.verify();
+		result = this.isIdentity(column);
 		
-		assert identity;
+		EasyMock.verify(column);
 		
-		this.reset();
+		assert result;
 		
-		EasyMock.expect(this.columnProperties.getNativeType()).andReturn("int");
+		EasyMock.reset(column);
 		
-		this.replay();
+		EasyMock.expect(column.getNativeType()).andReturn("int");
 		
-		identity = this.dialect.isIdentity(properties);
+		EasyMock.replay(column);
 		
-		this.verify();
-
-		assert !identity;
+		result = this.isIdentity(column);
 		
-		return identity;
+		EasyMock.verify(column);
+		
+		assert !result;
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testGetAlterIdentityColumnSQL()
+	 */
 	@Override
-	@Test(dataProvider = "table-column-long")
-	public String getAlterIdentityColumnSQL(TableProperties table, ColumnProperties column, long value) throws SQLException
+	public void testGetAlterIdentityColumnSQL() throws SQLException
 	{
+		TableProperties table = EasyMock.createStrictMock(TableProperties.class);
+		ColumnProperties column = EasyMock.createStrictMock(ColumnProperties.class);
+		
 		EasyMock.expect(table.getName()).andReturn("table");
 		EasyMock.expect(column.getName()).andReturn("column");
 		
-		this.replay();
+		EasyMock.replay(table, column);
 		
-		String sql = this.dialect.getAlterIdentityColumnSQL(table, column, value);
+		String result = this.getAlterIdentityColumnSQL(table, column, 1000L);
 		
-		this.verify();
+		EasyMock.verify(table, column);
 		
-		assert sql.equals("ALTER SEQUENCE table_column_seq RESTART WITH 1000") : sql;
-		
-		return sql;
+		assert result.equals("ALTER SEQUENCE table_column_seq RESTART WITH 1000") : result;
 	}
 	
+	/**
+	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testGetIdentifierPattern()
+	 */
 	@Override
-	@Test(dataProvider = "meta-data")
-	public Pattern getIdentifierPattern(DatabaseMetaData metaData) throws SQLException
+	public void testGetIdentifierPattern() throws SQLException
 	{
+		DatabaseMetaData metaData = EasyMock.createStrictMock(DatabaseMetaData.class);
+		
 		EasyMock.expect(metaData.getDriverMajorVersion()).andReturn(8);
 		EasyMock.expect(metaData.getDriverMinorVersion()).andReturn(0);
+		
 		EasyMock.expect(metaData.getExtraNameCharacters()).andReturn("");
 		
-		this.replay();
+		EasyMock.replay(metaData);
 		
-		Pattern pattern = this.dialect.getIdentifierPattern(metaData);
+		String result = this.getIdentifierPattern(metaData).pattern();
 		
-		this.verify();
+		EasyMock.verify(metaData);
 		
-		assert pattern.pattern().equals("[\\w\\Q\\E]+") : pattern.pattern();
+		assert result.equals("[\\w\\Q\\E]+") : result;
 		
-		this.reset();
+		EasyMock.reset(metaData);
 		
 		EasyMock.expect(metaData.getDriverMajorVersion()).andReturn(8);
 		EasyMock.expect(metaData.getDriverMinorVersion()).andReturn(1);
 		
-		this.replay();
+		EasyMock.replay(metaData);
 		
-		pattern = this.dialect.getIdentifierPattern(metaData);
+		result = this.getIdentifierPattern(metaData).pattern();
 		
-		this.verify();
+		EasyMock.verify(metaData);
 		
-		assert pattern.pattern().equals("[A-Za-z\\0200-\\0377_][A-Za-z\\0200-\\0377_0-9\\$]*") : pattern.pattern();
-		
-		return pattern;
+		assert result.equals("[A-Za-z\\0200-\\0377_][A-Za-z\\0200-\\0377_0-9\\$]*") : result;
 	}
 
 	@Override

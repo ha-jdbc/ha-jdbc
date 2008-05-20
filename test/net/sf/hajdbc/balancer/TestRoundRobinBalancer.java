@@ -20,54 +20,55 @@
  */
 package net.sf.hajdbc.balancer;
 
-import org.testng.annotations.Test;
-
-import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.MockDatabase;
+
+import org.testng.annotations.Test;
 
 /**
  * @author  Paul Ferraro
  */
 @Test
 @SuppressWarnings("nls")
-public class TestRoundRobinBalancer extends AbstractTestBalancer
+public class TestRoundRobinBalancer extends TestBalancer
 {
-	@Override
-	protected Balancer<Void> createBalancer()
+	public TestRoundRobinBalancer()
 	{
-		return new RoundRobinBalancer<Void>();
+		super(new RoundRobinBalancer<Void>());
 	}
 
+	/**
+	 * @see net.sf.hajdbc.balancer.TestBalancer#testNext()
+	 */
 	@Override
-	protected void next(Balancer<Void> balancer)
+	public void testNext()
 	{
 		int count = 100;
 		
-		balancer.add(new MockDatabase("0", 0));
+		this.add(new MockDatabase("0", 0));
 		
 		for (int i = 0; i < count; ++i)
 		{
-			int weight = balancer.next().getWeight();
+			int weight = this.next().getWeight();
 			
 			assert weight == 0 : weight;
 		}
 		
-		balancer.add(new MockDatabase("1", 1));
+		this.add(new MockDatabase("1", 1));
 		
 		for (int i = 0; i < count; ++i)
 		{
-			int weight = balancer.next().getWeight();
+			int weight = this.next().getWeight();
 			
 			assert weight == 1 : weight;
 		}
 		
-		balancer.add(new MockDatabase("2", 2));
+		this.add(new MockDatabase("2", 2));
 		
 		int[] expected = new int[] { 1, 2, 2 };
 		
 		for (int i = 0; i < count; ++i)
 		{
-			int weight = balancer.next().getWeight();
+			int weight = this.next().getWeight();
 			
 			assert expected[i % 3] == weight : weight;
 		}

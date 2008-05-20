@@ -94,7 +94,7 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 			return new DriverReadInvocationStrategy<D, ResultSet, Object>();
 		}
 		
-		if (driverWriteMethodSet.contains(method))
+		if (driverWriteMethodSet.contains(method) || method.equals(closeMethod))
 		{
 			return new DriverWriteInvocationStrategy<D, ResultSet, Object>();
 		}

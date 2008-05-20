@@ -154,7 +154,7 @@ public class LocalLockManager implements LockManager
 	}
 
 	/**
-	 * @see net.sf.hajdbc.LockManager#start()
+	 * @see net.sf.hajdbc.Lifecycle#start()
 	 */
 	@Override
 	public void start() throws Exception
@@ -163,7 +163,7 @@ public class LocalLockManager implements LockManager
 	}
 
 	/**
-	 * @see net.sf.hajdbc.LockManager#stop()
+	 * @see net.sf.hajdbc.Lifecycle#stop()
 	 */
 	@Override
 	public void stop()
