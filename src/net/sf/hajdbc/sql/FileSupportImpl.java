@@ -36,6 +36,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.sql.SQLException;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -179,12 +180,18 @@ public class FileSupportImpl implements FileSupport
 	@Override
 	public void close()
 	{
-		for (File file: this.fileList)
+		Iterator<File> files = this.fileList.iterator();
+
+		while (files.hasNext())
 		{
+			File file = files.next();
+
 			if (!file.delete())
 			{
 				file.deleteOnExit();
 			}
+
+			files.remove();
 		}
 	}
 	
