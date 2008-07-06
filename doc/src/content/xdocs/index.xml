@@ -39,7 +39,7 @@
 			<title>Related Software</title>
 			<ul>
 				<li><a href="http://forge.continuent.org/projects/sequoia/">Sequoia</a> - Database-independent clustering middleware</li>
-				<li><a href="http://http://pgcluster.projects.postgresql.org/">PGCluster</a> - Multi-master replication system for PostgreSQL.</li>
+				<li><a href="http://pgcluster.projects.postgresql.org/">PGCluster</a> - Multi-master replication system for PostgreSQL.</li>
 				<li><a href="http://www.mysql.com/products/cluster/">MySQL Cluster</a> - Fault tolerant database architecture using NDB storage engine</li>
 				<li><a href="http://www.h2database.com/html/advanced.html#clustering">H2 Clustering</a> - a simple clustering / high availability mechanism for H2</li>
 			</ul>
