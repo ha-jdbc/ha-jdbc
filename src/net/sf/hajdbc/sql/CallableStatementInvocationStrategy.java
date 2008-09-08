@@ -34,7 +34,6 @@ public class CallableStatementInvocationStrategy<D> extends DatabaseWriteInvocat
 {
 	private Connection connection;
 	private TransactionContext<D> decorator;
-	private FileSupport fileSupport;
 	
 	/**
 	 * @param cluster 
@@ -42,13 +41,12 @@ public class CallableStatementInvocationStrategy<D> extends DatabaseWriteInvocat
 	 * @param decorator 
 	 * @param fileSupport support for streams
 	 */
-	public CallableStatementInvocationStrategy(DatabaseCluster<D> cluster, Connection connection, TransactionContext<D> decorator, FileSupport fileSupport)
+	public CallableStatementInvocationStrategy(DatabaseCluster<D> cluster, Connection connection, TransactionContext<D> decorator)
 	{
 		super(cluster.getNonTransactionalExecutor());
 		
 		this.connection = connection;
 		this.decorator = decorator;
-		this.fileSupport = fileSupport;
 	}
 
 	/**
@@ -57,6 +55,6 @@ public class CallableStatementInvocationStrategy<D> extends DatabaseWriteInvocat
 	@Override
 	public CallableStatement invoke(SQLProxy<D, Connection> proxy, Invoker<D, Connection, CallableStatement> invoker) throws Exception
 	{
-		return ProxyFactory.createProxy(CallableStatement.class, new CallableStatementInvocationHandler<D>(this.connection, proxy, invoker, this.invokeAll(proxy, invoker), this.decorator, this.fileSupport));
+		return ProxyFactory.createProxy(CallableStatement.class, new CallableStatementInvocationHandler<D>(this.connection, proxy, invoker, this.invokeAll(proxy, invoker), this.decorator, new FileSupportImpl()));
 	}
 }

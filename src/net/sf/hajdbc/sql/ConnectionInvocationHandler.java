@@ -47,12 +47,13 @@ public class ConnectionInvocationHandler<D, P> extends AbstractChildInvocationHa
 	private static final Set<Method> prepareStatementMethodSet = Methods.findMethods(Connection.class, "prepareStatement");
 	private static final Set<Method> prepareCallMethodSet = Methods.findMethods(Connection.class, "prepareCall");
 	private static final Set<Method> setSavepointMethodSet = Methods.findMethods(Connection.class, "setSavepoint");
+//	private static final Set<Method> createClobMethodSet = Methods.fin;
 	
 	private static final Method releaseSavepointMethod = Methods.getMethod(Connection.class, "releaseSavepoint", Savepoint.class);
 	private static final Method rollbackSavepointMethod = Methods.getMethod(Connection.class, "rollback", Savepoint.class);
 	private static final Method closeMethod = Methods.getMethod(Connection.class, "close");
+//	private static final Method createBlobMethod = Methods.getMethod(Connection.class, "createBlob");
 	
-	private FileSupport fileSupport;
 	private TransactionContext<D> transactionContext;
 	
 	/**
@@ -61,15 +62,13 @@ public class ConnectionInvocationHandler<D, P> extends AbstractChildInvocationHa
 	 * @param invoker
 	 * @param connectionMap
 	 * @param transactionContext 
-	 * @param fileSupport 
 	 * @throws Exception
 	 */
-	public ConnectionInvocationHandler(P proxy, SQLProxy<D, P> handler, Invoker<D, P, Connection> invoker, Map<Database<D>, Connection> connectionMap, TransactionContext<D> transactionContext, FileSupport fileSupport) throws Exception
+	public ConnectionInvocationHandler(P proxy, SQLProxy<D, P> handler, Invoker<D, P, Connection> invoker, Map<Database<D>, Connection> connectionMap, TransactionContext<D> transactionContext) throws Exception
 	{
 		super(proxy, handler, invoker, Connection.class, connectionMap);
 		
 		this.transactionContext = transactionContext;
-		this.fileSupport = fileSupport;
 	}
 	
 	/**
@@ -105,17 +104,17 @@ public class ConnectionInvocationHandler<D, P> extends AbstractChildInvocationHa
 		
 		if (createStatementMethodSet.contains(method))
 		{
-			return new StatementInvocationStrategy<D>(connection, this.transactionContext, this.fileSupport);
+			return new StatementInvocationStrategy<D>(connection, this.transactionContext);
 		}
 		
 		if (prepareStatementMethodSet.contains(method))
 		{
-			return new PreparedStatementInvocationStrategy<D>(this.cluster, connection, this.transactionContext, this.fileSupport, (String) parameters[0]);
+			return new PreparedStatementInvocationStrategy<D>(this.cluster, connection, this.transactionContext, (String) parameters[0]);
 		}
 		
 		if (prepareCallMethodSet.contains(method))
 		{
-			return new CallableStatementInvocationStrategy<D>(this.cluster, connection, this.transactionContext, this.fileSupport);
+			return new CallableStatementInvocationStrategy<D>(this.cluster, connection, this.transactionContext);
 		}
 		
 		if (setSavepointMethodSet.contains(method))
@@ -195,8 +194,6 @@ public class ConnectionInvocationHandler<D, P> extends AbstractChildInvocationHa
 		if (method.equals(closeMethod))
 		{
 			this.transactionContext.close();
-			
-			this.fileSupport.close();
 			
 			this.getParentProxy().removeChild(this);
 		}

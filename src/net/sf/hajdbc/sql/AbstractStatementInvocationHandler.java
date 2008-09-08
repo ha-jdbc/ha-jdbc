@@ -193,6 +193,8 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 		}
 		else if (method.equals(closeMethod))
 		{
+			this.fileSupport.close();
+			
 			this.getParentProxy().removeChild(this);
 		}
 	}
