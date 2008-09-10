@@ -119,7 +119,6 @@ public abstract class AbstractTestStatement<S extends Statement> implements java
 		this.reset();
 	}
 	
-	@SuppressWarnings("unused")
 	protected void recordConstructor() throws SQLException
 	{
 		this.parent.addChild(EasyMock.isA(StatementInvocationHandler.class));
@@ -249,6 +248,7 @@ public abstract class AbstractTestStatement<S extends Statement> implements java
 		this.statement1.close();
 		this.statement2.close();
 
+		this.fileSupport.close();
 		this.parent.removeChild(this.handler);
 		
 		this.replay();

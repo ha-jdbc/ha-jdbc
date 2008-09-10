@@ -74,7 +74,6 @@ public class TestConnection implements Connection
 	private TransactionContext transactionContext = EasyMock.createStrictMock(TransactionContext.class);
 	private Balancer balancer = EasyMock.createStrictMock(Balancer.class);
 	private DatabaseCluster cluster = EasyMock.createStrictMock(DatabaseCluster.class);
-	private FileSupport fileSupport = EasyMock.createStrictMock(FileSupport.class);
 	private Dialect dialect = EasyMock.createStrictMock(Dialect.class);
 	private DatabaseMetaDataCache metaData = EasyMock.createStrictMock(DatabaseMetaDataCache.class);
 	private DatabaseProperties databaseProperties = EasyMock.createStrictMock(DatabaseProperties.class);
@@ -117,7 +116,7 @@ public class TestConnection implements Connection
 
 		this.replay();
 		
-		this.handler = new ConnectionInvocationHandler(new Object(), this.parent, EasyMock.createMock(Invoker.class), map, this.transactionContext, this.fileSupport);
+		this.handler = new ConnectionInvocationHandler(new Object(), this.parent, EasyMock.createMock(Invoker.class), map, this.transactionContext);
 		this.connection = ProxyFactory.createProxy(Connection.class, this.handler);
 		
 		this.verify();
@@ -126,7 +125,7 @@ public class TestConnection implements Connection
 	
 	private Object[] objects()
 	{
-		return new Object[] { this.cluster, this.balancer, this.connection1, this.connection2, this.fileSupport, this.parent, this.root, this.savepoint1, this.savepoint2, this.dialect, this.metaData, this.databaseProperties, this.tableProperties, this.columnProperties, this.transactionContext };
+		return new Object[] { this.cluster, this.balancer, this.connection1, this.connection2, this.parent, this.root, this.savepoint1, this.savepoint2, this.dialect, this.metaData, this.databaseProperties, this.tableProperties, this.columnProperties, this.transactionContext };
 	}
 	
 	void replay()
@@ -175,8 +174,6 @@ public class TestConnection implements Connection
 		this.connection2.close();
 		
 		this.transactionContext.close();
-		
-		this.fileSupport.close();
 
 		this.parent.removeChild(this.handler);
 		
