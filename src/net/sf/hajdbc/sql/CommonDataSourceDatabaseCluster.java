@@ -22,13 +22,11 @@ package net.sf.hajdbc.sql;
 
 import java.net.URL;
 
-import javax.sql.CommonDataSource;
-
 /**
  * @author Paul Ferraro
  * @param <D> 
  */
-public abstract class CommonDataSourceDatabaseCluster<D extends CommonDataSource> extends AbstractDatabaseCluster<D> implements CommonDataSourceDatabaseClusterMBean<D>
+public abstract class CommonDataSourceDatabaseCluster<D> extends AbstractDatabaseCluster<D> implements CommonDataSourceDatabaseClusterMBean<D>
 {
 	/**
 	 * Constructs a new DataSourceDatabaseCluster

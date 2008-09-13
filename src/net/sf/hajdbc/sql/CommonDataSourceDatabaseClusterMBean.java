@@ -20,8 +20,6 @@
  */
 package net.sf.hajdbc.sql;
 
-import javax.sql.CommonDataSource;
-
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterMBean;
 
@@ -29,7 +27,7 @@ import net.sf.hajdbc.DatabaseClusterMBean;
  * @author Paul Ferraro
  * @param <D> 
  */
-public interface CommonDataSourceDatabaseClusterMBean<D extends CommonDataSource> extends DatabaseClusterMBean, DatabaseCluster<D>
+public interface CommonDataSourceDatabaseClusterMBean<D> extends DatabaseClusterMBean, DatabaseCluster<D>
 {
 	/**
 	 * Adds a new DataSource to this cluster using the specified identifier and JNDI name.

@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc.sql.xa;
 
+import java.io.PrintWriter;
 import java.sql.SQLException;
 
 import javax.naming.NamingException;
@@ -57,6 +58,42 @@ public class XADataSource extends CommonDataSourceProxy<javax.sql.XADataSource> 
 	public XAConnection getXAConnection(String user, String password) throws SQLException
 	{
 		return this.getProxy().getXAConnection(user, password);
+	}
+
+	/**
+	 * @see javax.sql.CommonDataSource#getLoginTimeout()
+	 */
+	@Override
+	public int getLoginTimeout() throws SQLException
+	{
+		return this.getProxy().getLoginTimeout();
+	}
+
+	/**
+	 * @see javax.sql.CommonDataSource#getLogWriter()
+	 */
+	@Override
+	public PrintWriter getLogWriter() throws SQLException
+	{
+		return this.getProxy().getLogWriter();
+	}
+
+	/**
+	 * @see javax.sql.CommonDataSource#setLoginTimeout(int)
+	 */
+	@Override
+	public void setLoginTimeout(int timeout) throws SQLException
+	{
+		this.getProxy().setLoginTimeout(timeout);
+	}
+
+	/**
+	 * @see javax.sql.CommonDataSource#setLogWriter(java.io.PrintWriter)
+	 */
+	@Override
+	public void setLogWriter(PrintWriter writer) throws SQLException
+	{
+		this.getProxy().setLogWriter(writer);
 	}
 
 	/**

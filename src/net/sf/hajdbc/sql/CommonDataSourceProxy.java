@@ -20,25 +20,23 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.io.PrintWriter;
 import java.sql.SQLException;
 
 import javax.naming.Referenceable;
-import javax.sql.CommonDataSource;
 
 /**
  * @author Paul Ferraro
  * @param <D> data source class
  */
-public abstract class CommonDataSourceProxy<D extends CommonDataSource> implements CommonDataSource, Referenceable
+public abstract class CommonDataSourceProxy<D> implements Referenceable //, javax.sql.CommonDataSource
 {
 	private String cluster;
 	private String config;
 
-	private DataSourceProxyFactory<D> factory;
+	private CommonDataSourceFactory<D> factory;
 	private D proxy;
 	
-	protected CommonDataSourceProxy(DataSourceProxyFactory<D> factory)
+	protected CommonDataSourceProxy(CommonDataSourceFactory<D> factory)
 	{
 		this.factory = factory;
 	}
@@ -56,39 +54,39 @@ public abstract class CommonDataSourceProxy<D extends CommonDataSource> implemen
 	/**
 	 * @see javax.sql.CommonDataSource#getLogWriter()
 	 */
-	@Override
+/*	@Override
 	public PrintWriter getLogWriter() throws SQLException
 	{
 		return this.getProxy().getLogWriter();
 	}
-
+*/
 	/**
 	 * @see javax.sql.CommonDataSource#getLoginTimeout()
 	 */
-	@Override
+/*	@Override
 	public int getLoginTimeout() throws SQLException
 	{
 		return this.getProxy().getLoginTimeout();
 	}
-
+*/
 	/**
 	 * @see javax.sql.CommonDataSource#setLogWriter(java.io.PrintWriter)
 	 */
-	@Override
+/*	@Override
 	public void setLogWriter(PrintWriter writer) throws SQLException
 	{
 		this.getProxy().setLogWriter(writer);
 	}
-
+*/
 	/**
 	 * @see javax.sql.CommonDataSource#setLoginTimeout(int)
 	 */
-	@Override
+/*	@Override
 	public void setLoginTimeout(int timeout) throws SQLException
 	{
 		this.getProxy().setLoginTimeout(timeout);
 	}
-
+*/
 	/**
 	 * @return the cluster
 	 */

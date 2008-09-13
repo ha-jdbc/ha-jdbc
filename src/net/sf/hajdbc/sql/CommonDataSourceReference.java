@@ -23,14 +23,15 @@ package net.sf.hajdbc.sql;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
 import javax.naming.spi.ObjectFactory;
-import javax.sql.CommonDataSource;
 
 /**
  * @author Paul Ferraro
  * @param <D> 
  */
-public abstract class CommonDataSourceReference<D extends CommonDataSource> extends Reference
+public abstract class CommonDataSourceReference<D> extends Reference
 {
+	private static final long serialVersionUID = 1408239702660701511L;
+	
 	protected static final String CLUSTER = "cluster"; //$NON-NLS-1$
 	protected static final String CONFIG = "config"; //$NON-NLS-1$
 	
