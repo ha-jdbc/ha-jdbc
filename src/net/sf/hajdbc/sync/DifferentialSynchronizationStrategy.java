@@ -90,8 +90,9 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		Connection targetConnection = context.getConnection(context.getTargetDatabase());
 
 		Dialect dialect = context.getDialect();
-
 		ExecutorService executor = context.getExecutor();
+		
+		boolean autoCommit = targetConnection.getAutoCommit();
 		
 		targetConnection.setAutoCommit(true);
 		
@@ -389,6 +390,8 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		
 		SynchronizationSupport.synchronizeIdentityColumns(context);
 		SynchronizationSupport.synchronizeSequences(context);
+		
+		targetConnection.setAutoCommit(autoCommit);
 	}
 
 	private boolean equals(Object object1, Object object2)

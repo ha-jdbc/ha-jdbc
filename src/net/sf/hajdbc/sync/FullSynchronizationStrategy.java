@@ -84,6 +84,8 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		Dialect dialect = context.getDialect();
 		ExecutorService executor = context.getExecutor();
 		
+		boolean autoCommit = targetConnection.getAutoCommit();
+		
 		targetConnection.setAutoCommit(true);
 		
 		SynchronizationSupport.dropForeignKeys(context);
@@ -207,6 +209,8 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		
 		SynchronizationSupport.synchronizeIdentityColumns(context);
 		SynchronizationSupport.synchronizeSequences(context);
+		
+		targetConnection.setAutoCommit(autoCommit);
 	}
 
 	/**
