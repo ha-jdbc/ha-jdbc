@@ -35,6 +35,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -98,6 +99,21 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, DatabaseClusterMBean, MBeanRegistration
 {
+	/** This is a work-around for Boolean not implementing Comparable in java 1.4. */
+	private static final Comparator<Boolean> booleanComparator = new Comparator<Boolean>()
+	{
+		@Override
+		public int compare(Boolean value1, Boolean value2)
+		{
+			return this.valueOf(value1) - this.valueOf(value2);
+		}
+		
+		private int valueOf(Boolean value)
+		{
+			return value.booleanValue() ? 1 : 0;
+		}
+	};
+
 	static Logger logger = LoggerFactory.getLogger(AbstractDatabaseCluster.class);
 		
 	private String id;
@@ -178,7 +194,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			futureMap.put(database, this.nonTransactionalExecutor.submit(task));
 		}
 
-		Map<Boolean, List<Database<D>>> map = new TreeMap<Boolean, List<Database<D>>>();
+		Map<Boolean, List<Database<D>>> map = new TreeMap<Boolean, List<Database<D>>>(booleanComparator);
 		
 		int size = databases.size();
 		
