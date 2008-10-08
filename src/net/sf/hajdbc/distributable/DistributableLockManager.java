@@ -221,6 +221,8 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 				{
 					return;
 				}
+				
+				Thread.yield();
 			}
 			
 			this.lock.lock();
@@ -243,6 +245,8 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 				{
 					throw new InterruptedException();
 				}
+				
+				Thread.yield();
 			}
 			
 			this.lock.lockInterruptibly();
