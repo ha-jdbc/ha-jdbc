@@ -42,7 +42,8 @@ import net.sf.hajdbc.util.SQLExceptionFactory;
  */
 public class DatabaseClusterFactory
 {
-	private static final String CONFIGURATION_PROPERTY = "ha-jdbc.configuration"; //$NON-NLS-1$
+	private static final String CONFIG_FORMAT_PROPERTY = "ha-jdbc.{0}.configuration"; //$NON-NLS-1$
+	private static final String CONFIG_PROPERTY = "ha-jdbc.configuration"; //$NON-NLS-1$
 	private static final String DEFAULT_RESOURCE = "ha-jdbc-{0}.xml"; //$NON-NLS-1$
 	private static final String MBEAN_CLUSTER_KEY = "cluster"; //$NON-NLS-1$
 	private static final String MBEAN_DATABASE_KEY = "database"; //$NON-NLS-1$
@@ -110,7 +111,7 @@ public class DatabaseClusterFactory
 			
 			if (!server.isRegistered(name))
 			{
-				URL url = getResourceURL((resource == null) ? MessageFormat.format(System.getProperty(CONFIGURATION_PROPERTY, DEFAULT_RESOURCE), id) : resource);
+				URL url = findResource((resource == null) ? identifyResource(id) : resource);
 				
 				C cluster = targetClass.getConstructor(String.class, URL.class).newInstance(id, url);
 				
@@ -141,12 +142,19 @@ public class DatabaseClusterFactory
 		}
 	}
 	
+	private static String identifyResource(String id)
+	{
+		String resource = System.getProperty(MessageFormat.format(CONFIG_FORMAT_PROPERTY, id));
+		
+		return (resource != null) ? resource : MessageFormat.format(System.getProperty(CONFIG_PROPERTY, DEFAULT_RESOURCE), id);
+	}
+	
 	/**
 	 * Algorithm for searching class loaders for HA-JDBC url.
 	 * @param resource a resource name
 	 * @return a URL for the HA-JDBC configuration resource
 	 */
-	private static URL getResourceURL(String resource) throws SQLException
+	private static URL findResource(String resource) throws SQLException
 	{
 		try
 		{
