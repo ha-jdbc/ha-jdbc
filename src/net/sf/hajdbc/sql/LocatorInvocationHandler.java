@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Set;
@@ -32,19 +33,19 @@ import net.sf.hajdbc.Database;
  * @param <P> 
  * @param <E> 
  */
-public abstract class AbstractLobInvocationHandler<D, P, E> extends AbstractChildInvocationHandler<D, P, E>
+public abstract class LocatorInvocationHandler<D, P, E> extends AbstractChildInvocationHandler<D, P, E>
 {
 	/**
-	 * @param object
+	 * @param parent
 	 * @param proxy
 	 * @param invoker
 	 * @param proxyClass 
 	 * @param objectMap
 	 * @throws Exception
 	 */
-	protected AbstractLobInvocationHandler(P object, SQLProxy<D, P> proxy, Invoker<D, P, E> invoker, Class<E> proxyClass, Map<Database<D>, E> objectMap) throws Exception
+	protected LocatorInvocationHandler(P parent, SQLProxy<D, P> proxy, Invoker<D, P, E> invoker, Class<E> proxyClass, Map<Database<D>, E> objectMap) throws Exception
 	{
-		super(object, proxy, invoker, proxyClass, objectMap);
+		super(parent, proxy, invoker, proxyClass, objectMap);
 	}
 
 	/**
@@ -83,15 +84,25 @@ public abstract class AbstractLobInvocationHandler<D, P, E> extends AbstractChil
 	 */
 	@SuppressWarnings("nls")
 	@Override
-	protected void close(P parent, E lob)
+	protected void close(P parent, E locator)
 	{
 		try
 		{
-			lob.getClass().getMethod("free").invoke(lob);
+			// free() is a Java 1.6 method
+			locator.getClass().getMethod("free").invoke(locator);
 		}
-		catch (Exception e)
+		catch (NoSuchMethodException e)
 		{
 			// Ignore
+		}
+		catch (IllegalAccessException e)
+		{
+			// Ignore
+		}
+		catch (InvocationTargetException e)
+		{
+			Throwable target = e.getTargetException();
+			this.logger.warn(target.getMessage(), target);
 		}
 	}
 }

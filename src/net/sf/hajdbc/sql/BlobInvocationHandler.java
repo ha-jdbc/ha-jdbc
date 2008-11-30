@@ -34,7 +34,7 @@ import net.sf.hajdbc.Database;
  * @param <P> 
  */
 @SuppressWarnings("nls")
-public class BlobInvocationHandler<D, P> extends AbstractLobInvocationHandler<D, P, Blob>
+public class BlobInvocationHandler<D, P> extends LocatorInvocationHandler<D, P, Blob>
 {
 	private static final Set<String> DATABASE_READ_METHOD_SET = new HashSet<String>(Arrays.asList("getBinaryStream", "getBytes", "length", "position"));
 
@@ -51,7 +51,7 @@ public class BlobInvocationHandler<D, P> extends AbstractLobInvocationHandler<D,
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractLobInvocationHandler#getDatabaseReadMethodSet()
+	 * @see net.sf.hajdbc.sql.LocatorInvocationHandler#getDatabaseReadMethodSet()
 	 */
 	@Override
 	protected Set<String> getDatabaseReadMethodSet()
