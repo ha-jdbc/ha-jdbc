@@ -55,7 +55,8 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 	private static final Method startMethod = Methods.getMethod(XAResource.class, "start", Xid.class, Integer.TYPE);
 	private static final Set<Method> commitRollbackMethods = Methods.findMethods(XAResource.class, "commit", "rollback");
 	
-	private ConcurrentMap<Xid, Lock> lockMap = new ConcurrentHashMap<Xid, Lock>();
+	// Xids are global - so store in static variable
+	private static ConcurrentMap<Xid, Lock> lockMap = new ConcurrentHashMap<Xid, Lock>();
 	
 	/**
 	 * @param connection
@@ -96,7 +97,7 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 				final Lock lock = this.cluster.getLockManager().readLock(LockManager.GLOBAL);
 				
 				// Lock may already exist if we're resuming a suspended transaction
-				Lock existingLock = this.lockMap.putIfAbsent(xid, lock);
+				Lock existingLock = lockMap.putIfAbsent(xid, lock);
 				
 				if (existingLock == null)
 				{
@@ -115,7 +116,7 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 			
 			if (commitRollbackMethods.contains(method))
 			{
-				final Lock lock = this.lockMap.remove(parameters[0]);
+				final Lock lock = lockMap.remove(parameters[0]);
 				
 				return new InvocationStrategy<XADataSource, XAResource, Object>()
 				{
