@@ -20,13 +20,13 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.lang.reflect.Method;
 import java.sql.Clob;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.util.reflect.Methods;
 
 /**
  * @author Paul Ferraro
@@ -36,7 +36,7 @@ import net.sf.hajdbc.Database;
 @SuppressWarnings("nls")
 public class ClobInvocationHandler<D, P> extends LocatorInvocationHandler<D, P, Clob>
 {
-	private static final Set<String> DATABASE_READ_METHOD_SET = new HashSet<String>(Arrays.asList("getAsciiStream", "getCharacterStream", "getSubString", "length", "position"));
+	private static final Set<Method> DATABASE_READ_METHOD_SET = Methods.findMethods(Clob.class, "getAsciiStream", "getCharacterStream", "getSubString", "length", "position");
 	
 	/**
 	 * @param object
@@ -54,7 +54,7 @@ public class ClobInvocationHandler<D, P> extends LocatorInvocationHandler<D, P, 
 	 * @see net.sf.hajdbc.sql.LocatorInvocationHandler#getDatabaseReadMethodSet()
 	 */
 	@Override
-	protected Set<String> getDatabaseReadMethodSet()
+	protected Set<Method> getDatabaseReadMethodSet()
 	{
 		return DATABASE_READ_METHOD_SET;
 	}

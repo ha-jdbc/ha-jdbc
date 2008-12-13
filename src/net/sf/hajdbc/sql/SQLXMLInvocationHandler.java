@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2007 Paul Ferraro
+ * Copyright (c) 2004-2008 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -21,38 +21,21 @@
 package net.sf.hajdbc.sql;
 
 import java.lang.reflect.Method;
-import java.sql.Blob;
 import java.util.Map;
 import java.util.Set;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.util.reflect.Methods;
 
-/**
- * @author Paul Ferraro
- * @param <D> 
- * @param <P> 
- */
-@SuppressWarnings("nls")
-public class BlobInvocationHandler<D, P> extends LocatorInvocationHandler<D, P, Blob>
+public class SQLXMLInvocationHandler<D, P> extends LocatorInvocationHandler<D, P, java.sql.SQLXML>
 {
-	private static final Set<Method> DATABASE_READ_METHOD_SET = Methods.findMethods(Blob.class, "getBinaryStream", "getBytes", "length", "position");
+	private static final Set<Method> DATABASE_READ_METHOD_SET = Methods.findMethods(java.sql.SQLXML.class, "getBinaryStream", "getCharacterStream", "getSource", "getString");
 
-	/**
-	 * @param object
-	 * @param proxy
-	 * @param invoker
-	 * @param objectMap
-	 * @throws Exception
-	 */
-	protected BlobInvocationHandler(P object, SQLProxy<D, P> proxy, Invoker<D, P, Blob> invoker, Map<Database<D>, Blob> objectMap) throws Exception
+	protected SQLXMLInvocationHandler(P object, SQLProxy<D, P> proxy, Invoker<D, P, java.sql.SQLXML> invoker, Map<Database<D>, java.sql.SQLXML> objectMap) throws Exception
 	{
-		super(object, proxy, invoker, Blob.class, objectMap);
+		super(object, proxy, invoker, java.sql.SQLXML.class, objectMap);
 	}
-	
-	/**
-	 * @see net.sf.hajdbc.sql.LocatorInvocationHandler#getDatabaseReadMethodSet()
-	 */
+
 	@Override
 	protected Set<Method> getDatabaseReadMethodSet()
 	{

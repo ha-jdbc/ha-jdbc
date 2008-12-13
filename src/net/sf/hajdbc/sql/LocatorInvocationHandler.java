@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.util.reflect.Methods;
 
 /**
  * @author Paul Ferraro
@@ -35,6 +36,8 @@ import net.sf.hajdbc.Database;
  */
 public abstract class LocatorInvocationHandler<D, P, E> extends AbstractChildInvocationHandler<D, P, E>
 {
+	private final Method freeMethod;
+	
 	/**
 	 * @param parent
 	 * @param proxy
@@ -46,6 +49,8 @@ public abstract class LocatorInvocationHandler<D, P, E> extends AbstractChildInv
 	protected LocatorInvocationHandler(P parent, SQLProxy<D, P> proxy, Invoker<D, P, E> invoker, Class<E> proxyClass, Map<Database<D>, E> objectMap) throws Exception
 	{
 		super(parent, proxy, invoker, proxyClass, objectMap);
+		
+		this.freeMethod = Methods.findMethod(proxyClass, "free");
 	}
 
 	/**
@@ -54,9 +59,7 @@ public abstract class LocatorInvocationHandler<D, P, E> extends AbstractChildInv
 	@Override
 	protected InvocationStrategy<D, E, ?> getInvocationStrategy(E object, Method method, Object[] parameters) throws Exception
 	{
-		String methodName = method.getName();
-		
-		if (this.getDatabaseReadMethodSet().contains(methodName))
+		if (this.getDatabaseReadMethodSet().contains(method))
 		{
 			return new DatabaseReadInvocationStrategy<D, E, Object>();
 		}
@@ -64,7 +67,7 @@ public abstract class LocatorInvocationHandler<D, P, E> extends AbstractChildInv
 		return super.getInvocationStrategy(object, method, parameters);
 	}
 
-	protected abstract Set<String> getDatabaseReadMethodSet();
+	protected abstract Set<Method> getDatabaseReadMethodSet();
 	
 	/**
 	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#postInvoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
@@ -73,7 +76,7 @@ public abstract class LocatorInvocationHandler<D, P, E> extends AbstractChildInv
 	@Override
 	protected void postInvoke(E object, Method method, Object[] parameters)
 	{
-		if (method.getName().equals("free"))
+		if ((this.freeMethod != null) && method.equals(this.freeMethod))
 		{
 			this.getParentProxy().removeChild(this);
 		}
@@ -86,23 +89,21 @@ public abstract class LocatorInvocationHandler<D, P, E> extends AbstractChildInv
 	@Override
 	protected void close(P parent, E locator)
 	{
-		try
+		if (this.freeMethod != null)
 		{
-			// free() is a Java 1.6 method
-			locator.getClass().getMethod("free").invoke(locator);
-		}
-		catch (NoSuchMethodException e)
-		{
-			// Ignore
-		}
-		catch (IllegalAccessException e)
-		{
-			// Ignore
-		}
-		catch (InvocationTargetException e)
-		{
-			Throwable target = e.getTargetException();
-			this.logger.warn(target.getMessage(), target);
+			try
+			{
+				// free() is a Java 1.6 method - so invoke reflectively
+				this.freeMethod.invoke(locator);
+			}
+			catch (IllegalAccessException e)
+			{
+				this.logger.warn(e.getMessage(), e);
+			}
+			catch (InvocationTargetException e)
+			{
+				this.logger.warn(e.toString(), e.getTargetException());
+			}
 		}
 	}
 }
