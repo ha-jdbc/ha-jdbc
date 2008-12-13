@@ -22,6 +22,7 @@ package net.sf.hajdbc.sql;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
@@ -40,19 +41,21 @@ import net.sf.hajdbc.util.reflect.Methods;
 public class ConnectionInvocationHandler<D, P> extends AbstractChildInvocationHandler<D, P, Connection>
 {
 	private static final Set<Method> driverReadMethodSet = Methods.findMethods(Connection.class, "create(ArrayOf|Blob|Clob|NClob|SQLXML|Struct)", "getAutoCommit", "getCatalog", "getClientInfo", "getHoldability", "getTypeMap", "getWarnings", "isClosed", "isReadOnly", "nativeSQL");
-	private static final Set<Method> databaseReadMethodSet = Methods.findMethods(Connection.class, "getMetaData", "getTransactionIsolation", "isValid");
+	private static final Set<Method> databaseReadMethodSet = Methods.findMethods(Connection.class, "getTransactionIsolation", "isValid");
 	private static final Set<Method> driverWriterMethodSet = Methods.findMethods(Connection.class, "clearWarnings", "setAutoCommit", "setClientInfo", "setHoldability", "setTypeMap");
 	private static final Set<Method> endTransactionMethodSet = Methods.findMethods(Connection.class, "commit", "rollback");
 	private static final Set<Method> createStatementMethodSet = Methods.findMethods(Connection.class, "createStatement");
 	private static final Set<Method> prepareStatementMethodSet = Methods.findMethods(Connection.class, "prepareStatement");
 	private static final Set<Method> prepareCallMethodSet = Methods.findMethods(Connection.class, "prepareCall");
 	private static final Set<Method> setSavepointMethodSet = Methods.findMethods(Connection.class, "setSavepoint");
-//	private static final Set<Method> createClobMethodSet = Methods.fin;
+	private static final Set<Method> createClobMethodSet = Methods.findMethods(Connection.class, "createN?Clob");
 	
+	private static final Method getMetaDataMethod = Methods.getMethod(Connection.class, "getMetaData");
 	private static final Method releaseSavepointMethod = Methods.getMethod(Connection.class, "releaseSavepoint", Savepoint.class);
 	private static final Method rollbackSavepointMethod = Methods.getMethod(Connection.class, "rollback", Savepoint.class);
 	private static final Method closeMethod = Methods.getMethod(Connection.class, "close");
-//	private static final Method createBlobMethod = Methods.getMethod(Connection.class, "createBlob");
+	private static final Method createBlobMethod = Methods.getMethod(Connection.class, "createBlob");
+	private static final Method createSQLXMLMethod = Methods.getMethod(Connection.class, "createSQLXML");
 	
 	private TransactionContext<D> transactionContext;
 	
@@ -121,17 +124,27 @@ public class ConnectionInvocationHandler<D, P> extends AbstractChildInvocationHa
 		{
 			return new SavepointInvocationStrategy<D>(this.cluster, connection);
 		}
-/*		
-		if (methodName.equals("createBlob"))
+		
+		if (method.equals(getMetaDataMethod))
 		{
-			return new BlobInvocationStrategy<D, Connection>(connection);
+			return new DatabaseMetaDataInvocationStrategy<D>(connection);
 		}
 		
-		if (methodName.equals("createClob") || methodName.equals("createNClob"))
+		if (method.equals(createBlobMethod))
 		{
-			return new ClobInvocationStrategy<D, Connection>(connection, method.getReturnType().asSubclass(Clob.class));
+			return new BlobInvocationStrategy<D, Connection>(this.cluster, connection);
 		}
-*/		
+		
+		if (createClobMethodSet.contains(method))
+		{
+			return new ClobInvocationStrategy<D, Connection>(this.cluster, connection, method.getReturnType().asSubclass(Clob.class));
+		}
+		
+		if (method.equals(createSQLXMLMethod))
+		{
+			return new SQLXMLInvocationStrategy<D, Connection>(this.cluster, connection);
+		}
+		
 		return super.getInvocationStrategy(connection, method, parameters);
 	}
 
