@@ -21,20 +21,37 @@
 package net.sf.hajdbc.util.concurrent;
 
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 
 /**
- * Simple {@link java.util.concurrent.lock.ReadWriteLock} implementation that uses a semaphore that grants up to {@link java.lang.Integer#MAX_VALUE} permits using a fair FIFO policy.
+ * Simple {@link java.util.concurrent.locks.ReadWriteLock} implementation that uses a semaphore.
  * A read lock requires 1 permit, while a write lock requires all the permits.
+ * Lock upgrading and downgrading is not supported; nor are conditions.
  * 
  * @author Paul Ferraro
  */
 public class SemaphoreReadWriteLock implements ReadWriteLock
 {
-	private Semaphore semaphore = new Semaphore(Integer.MAX_VALUE, true);
-	private Lock readLock = new SemaphoreLock(this.semaphore, 1);
-	private Lock writeLock = new SemaphoreLock(this.semaphore, Integer.MAX_VALUE);
+	private static final int DEFAULT_PERMITS = Integer.MAX_VALUE;
+	
+	private final Lock readLock;
+	private final Lock writeLock;
+	
+	public SemaphoreReadWriteLock(boolean fair)
+	{
+		this(DEFAULT_PERMITS, fair);
+	}
+
+	public SemaphoreReadWriteLock(int permits, boolean fair)
+	{
+		Semaphore semaphore = new Semaphore(permits, fair);
+		
+		this.readLock = new SemaphoreLock(semaphore);
+		this.writeLock = new SemaphoreWriteLock(semaphore, permits);
+	}
 	
 	/**
 	 * @see java.util.concurrent.locks.ReadWriteLock#readLock()
@@ -52,5 +69,121 @@ public class SemaphoreReadWriteLock implements ReadWriteLock
 	public Lock writeLock()
 	{
 		return this.writeLock;
+	}
+	
+	private static class SemaphoreWriteLock implements Lock
+	{
+		private final Semaphore semaphore;
+		private final int permits;
+		
+		SemaphoreWriteLock(Semaphore semaphore, int permits)
+		{
+			this.semaphore = semaphore;
+			this.permits = permits;
+		}
+		
+		/**
+		 * Helps avoid write lock starvation, when using an unfair acquisition policy by draining all available permits.
+		 * @return the number of drained permits
+		 */
+		private int drainPermits()
+		{
+			return this.semaphore.isFair() ? 0 : this.semaphore.drainPermits();
+		}
+		
+		/**
+		 * @see java.util.concurrent.locks.Lock#lock()
+		 */
+		@Override
+		public void lock()
+		{
+			int drained = this.drainPermits();
+			
+			if (drained < this.permits)
+			{
+				this.semaphore.acquireUninterruptibly(this.permits - drained);
+			}
+		}
+
+		/**
+		 * @see java.util.concurrent.locks.Lock#lockInterruptibly()
+		 */
+		@Override
+		public void lockInterruptibly() throws InterruptedException
+		{
+			int drained = this.drainPermits();
+			
+			if (drained < this.permits)
+			{
+				try
+				{
+					this.semaphore.acquire(this.permits - drained);
+				}
+				catch (InterruptedException e)
+				{
+					if (drained > 0)
+					{
+						this.semaphore.release(drained);
+					}
+					
+					throw e;
+				}
+			}
+		}
+
+		/**
+		 * @see java.util.concurrent.locks.Lock#tryLock()
+		 */
+		@Override
+		public boolean tryLock()
+		{
+			// This will barge the fairness queue, so there's no need to drain permits
+			return this.semaphore.tryAcquire(this.permits);
+		}
+
+		/**
+		 * @see java.util.concurrent.locks.Lock#tryLock(long, java.util.concurrent.TimeUnit)
+		 */
+		@Override
+		public boolean tryLock(long timeout, TimeUnit unit) throws InterruptedException
+		{
+			int drained = this.drainPermits();
+			
+			if (drained == this.permits) return true;
+			
+			boolean acquired = false;
+			
+			try
+			{
+				acquired = this.semaphore.tryAcquire(this.permits - drained, timeout, unit);
+			}
+			finally
+			{
+				if (!acquired && (drained > 0))
+				{
+					this.semaphore.release(drained);
+				}
+			}
+			
+			return acquired;
+		}
+
+		/**
+		 * @see java.util.concurrent.locks.Lock#unlock()
+		 */
+		@Override
+		public void unlock()
+		{
+			this.semaphore.release(this.permits);
+		}
+		
+		/**
+		 * @see java.util.concurrent.locks.Lock#newCondition()
+		 */
+		@Override
+		public Condition newCondition()
+		{
+			throw new UnsupportedOperationException();
+		}
 	}
 }

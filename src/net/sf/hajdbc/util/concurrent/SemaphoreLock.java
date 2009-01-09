@@ -26,26 +26,24 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
 /**
- * An implementation of {@link java.util.concurrent.lock.Lock} using a semaphore.
- * Unlike the {@link java.util.concurrent.lock.ReentrantLock} this lock can be locked and unlocked by different threads.
- * Lock upgrading and downgrading are not supported.  Conditions are also not supported.
+ * An implementation of {@link java.util.concurrent.locks.Lock} using a binary semaphore.
+ * Unlike the {@link java.util.concurrent.locks.ReentrantLock} this lock can be locked and unlocked by different threads.
+ * Conditions are not supported.
  * 
  * @author Paul Ferraro
  */
 public class SemaphoreLock implements Lock
 {
-	private Semaphore semaphore;
-	private int permits;
+	private final Semaphore semaphore;
 	
-	public SemaphoreLock()
+	public SemaphoreLock(boolean fair)
 	{
-		this(new Semaphore(1, true), 1);
+		this(new Semaphore(1, fair));
 	}
 	
-	public SemaphoreLock(Semaphore semaphore, int permits)
+	SemaphoreLock(Semaphore semaphore)
 	{
 		this.semaphore = semaphore;
-		this.permits = permits;
 	}
 	
 	/**
@@ -54,7 +52,7 @@ public class SemaphoreLock implements Lock
 	@Override
 	public void lock()
 	{
-		this.semaphore.acquireUninterruptibly(this.permits);
+		this.semaphore.acquireUninterruptibly();
 	}
 
 	/**
@@ -63,7 +61,7 @@ public class SemaphoreLock implements Lock
 	@Override
 	public void lockInterruptibly() throws InterruptedException
 	{
-		this.semaphore.acquire(this.permits);
+		this.semaphore.acquire();
 	}
 
 	/**
@@ -81,7 +79,7 @@ public class SemaphoreLock implements Lock
 	@Override
 	public boolean tryLock()
 	{
-		return this.semaphore.tryAcquire(this.permits);
+		return this.semaphore.tryAcquire();
 	}
 
 	/**
@@ -90,7 +88,7 @@ public class SemaphoreLock implements Lock
 	@Override
 	public boolean tryLock(long time, TimeUnit unit) throws InterruptedException
 	{
-		return this.semaphore.tryAcquire(this.permits, time, unit);
+		return this.semaphore.tryAcquire(time, unit);
 	}
 
 	/**
@@ -99,6 +97,6 @@ public class SemaphoreLock implements Lock
 	@Override
 	public void unlock()
 	{
-		this.semaphore.release(this.permits);
+		this.semaphore.release();
 	}
 }
