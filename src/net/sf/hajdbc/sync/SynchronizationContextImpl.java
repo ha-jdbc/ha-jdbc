@@ -75,8 +75,8 @@ public class SynchronizationContextImpl<D> implements SynchronizationContext<D>
 		
 		DatabaseMetaDataCache cache = cluster.getDatabaseMetaDataCache();
 		
-		this.sourceDatabaseProperties = cache.getDatabaseProperties(this.getConnection(this.sourceDatabase));
 		this.targetDatabaseProperties = cache.getDatabaseProperties(this.getConnection(this.targetDatabase));
+		this.sourceDatabaseProperties = cache.getDatabaseProperties(this.getConnection(this.sourceDatabase));
 	}
 	
 	/**
@@ -169,20 +169,23 @@ public class SynchronizationContextImpl<D> implements SynchronizationContext<D>
 	@Override
 	public void close()
 	{
-		for (Connection connection: this.connectionMap.values())
+		synchronized (this.connectionMap)
 		{
-			if (connection != null)
+			for (Connection connection: this.connectionMap.values())
 			{
-				try
+				if (connection != null)
 				{
-					if (!connection.isClosed())
+					try
 					{
-						connection.close();
+						if (!connection.isClosed())
+						{
+							connection.close();
+						}
 					}
-				}
-				catch (SQLException e)
-				{
-					logger.warn(e.toString(), e);
+					catch (SQLException e)
+					{
+						logger.warn(e.toString(), e);
+					}
 				}
 			}
 		}
