@@ -21,6 +21,7 @@
 package net.sf.hajdbc.distributable;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
 import org.jgroups.Address;
@@ -53,16 +54,23 @@ public class AcquireLockDecree extends AbstractLockDecree
 	{
 		Lock lock = lockManager.writeLock(this.id);
 		
-		boolean locked = lock.tryLock();
-		
-		if (locked)
+		try
 		{
-			synchronized (lockMap)
+			boolean locked = lock.tryLock(0, TimeUnit.SECONDS);
+			
+			if (locked)
 			{
-				lockMap.put(this.id, lock);
+				synchronized (lockMap)
+				{
+					lockMap.put(this.id, lock);
+				}
 			}
+			
+			return locked;
 		}
-		
-		return locked;
+		catch (InterruptedException e)
+		{
+			return false;
+		}
 	}
 }
