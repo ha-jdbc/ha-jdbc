@@ -18,7 +18,7 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.util;
+package net.sf.hajdbc.util.ref;
 
 /**
  * A synchronizable wrapper around a nullable object.
