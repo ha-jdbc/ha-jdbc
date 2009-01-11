@@ -22,5 +22,5 @@ package net.sf.hajdbc;
 
 public interface DatabaseMetaDataCacheFactory
 {
-	<D> DatabaseMetaDataCache<D> createCache(Dialect dialect);
+	<D> DatabaseMetaDataCache createCache(DatabaseCluster<D> cluster);
 }
