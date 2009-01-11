@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2007 Paul Ferraro
+ * Copyright (c) 2004-2008 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -20,38 +20,22 @@
  */
 package net.sf.hajdbc.cache;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-
-import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.DatabaseMetaDataCache;
+import net.sf.hajdbc.DatabaseMetaDataCacheFactory;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class LazyDatabaseProperties extends AbstractLazyDatabaseProperties
+public class SimpleDatabaseMetaDataCacheFactory implements DatabaseMetaDataCacheFactory
 {
-	private final ThreadLocal<Connection> threadLocal = new ThreadLocal<Connection>();
-	
-	public LazyDatabaseProperties(DatabaseMetaData metaData, Dialect dialect) throws SQLException
-	{
-		super(metaData, dialect);
-		
-		this.setConnection(metaData.getConnection());
-	}
-
-	public void setConnection(Connection connection)
-	{
-		this.threadLocal.set(connection);
-	}
-	
 	/**
-	 * @see net.sf.hajdbc.cache.DatabaseMetaDataProvider#getDatabaseMetaData()
+	 * @see net.sf.hajdbc.DatabaseMetaDataCacheFactory#createCache(net.sf.hajdbc.Dialect)
 	 */
 	@Override
-	public DatabaseMetaData getDatabaseMetaData() throws SQLException
+	public <D> DatabaseMetaDataCache createCache(DatabaseCluster<D> cluster)
 	{
-		return this.threadLocal.get().getMetaData();
+		return new SimpleDatabaseMetaDataCache(cluster.getDialect());
 	}
 }

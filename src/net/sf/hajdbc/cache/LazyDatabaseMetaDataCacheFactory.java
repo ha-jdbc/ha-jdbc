@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2007 Paul Ferraro
+ * Copyright (c) 2004-2008 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -20,23 +20,22 @@
  */
 package net.sf.hajdbc.cache;
 
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseMetaDataCache;
-import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.DatabaseMetaDataCacheFactory;
 
 /**
  * @author Paul Ferraro
  *
  */
-public abstract class AbstractDatabaseMetaDataCache implements DatabaseMetaDataCache
+public class LazyDatabaseMetaDataCacheFactory implements DatabaseMetaDataCacheFactory
 {
-	protected Dialect dialect;
-
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#setDialect(net.sf.hajdbc.Dialect)
+	 * @see net.sf.hajdbc.DatabaseMetaDataCacheFactory#createCache(net.sf.hajdbc.Dialect)
 	 */
 	@Override
-	public void setDialect(Dialect dialect)
+	public <D> DatabaseMetaDataCache createCache(DatabaseCluster<D> cluster)
 	{
-		this.dialect = dialect;
+		return new LazyDatabaseMetaDataCache(cluster.getDialect());
 	}
 }

@@ -41,34 +41,22 @@ public class EagerTableProperties extends AbstractTableProperties
 	private Collection<UniqueConstraint> uniqueConstraints;
 	private Collection<ForeignKeyConstraint> foreignKeyConstraints;
 	private Collection<String> identityColumns;
-	private String name;
 	
 	public EagerTableProperties(DatabaseMetaData metaData, DatabaseMetaDataSupport support, QualifiedName table) throws SQLException
 	{
+		super(support, table);
+		
 		this.columnMap = support.getColumns(metaData, table);
 		this.primaryKey = support.getPrimaryKey(metaData, table);
 		this.uniqueConstraints = support.getUniqueConstraints(metaData, table, this.primaryKey);
 		this.foreignKeyConstraints = support.getForeignKeyConstraints(metaData, table);
 		this.identityColumns = support.getIdentityColumns(this.columnMap.values());
-		this.name = support.qualifyNameForDML(table);
 	}
 
-	/**
-	 * @see net.sf.hajdbc.TableProperties#getColumns()
-	 */
 	@Override
-	public Collection<String> getColumns()
+	protected Map<String, ColumnProperties> getColumnMap()
 	{
-		return this.columnMap.keySet();
-	}
-
-	/**
-	 * @see net.sf.hajdbc.TableProperties#getColumnProperties(java.lang.String)
-	 */
-	@Override
-	public ColumnProperties getColumnProperties(String column)
-	{
-		return this.columnMap.get(column);
+		return this.columnMap;
 	}
 
 	/**
@@ -96,15 +84,6 @@ public class EagerTableProperties extends AbstractTableProperties
 	public Collection<UniqueConstraint> getUniqueConstraints()
 	{
 		return this.uniqueConstraints;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.TableProperties#getName()
-	 */
-	@Override
-	public String getName()
-	{
-		return this.name;
 	}
 
 	/**

@@ -25,7 +25,9 @@ import java.lang.ref.SoftReference;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.DatabaseProperties;
+import net.sf.hajdbc.Dialect;
 
 
 /**
@@ -36,15 +38,21 @@ import net.sf.hajdbc.DatabaseProperties;
  * @author Paul Ferraro
  * @since 2.0
  */
-public class LazyDatabaseMetaDataCache extends AbstractDatabaseMetaDataCache
+public class LazyDatabaseMetaDataCache implements DatabaseMetaDataCache
 {
-	private Reference<DatabaseProperties> propertiesRef = new SoftReference<DatabaseProperties>(null);
+	private volatile Reference<LazyDatabaseProperties> propertiesRef = new SoftReference<LazyDatabaseProperties>(null);
+	private final Dialect dialect;
+	
+	public LazyDatabaseMetaDataCache(Dialect dialect)
+	{
+		this.dialect = dialect;
+	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush(java.sql.Connection)
+	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush()
 	 */
 	@Override
-	public synchronized void flush(Connection connection)
+	public void flush()
 	{
 		this.propertiesRef.clear();
 	}
@@ -55,15 +63,17 @@ public class LazyDatabaseMetaDataCache extends AbstractDatabaseMetaDataCache
 	@Override
 	public synchronized DatabaseProperties getDatabaseProperties(Connection connection) throws SQLException
 	{
-		LazyDatabaseProperties.setConnection(connection);
-		
-		DatabaseProperties properties = this.propertiesRef.get();
+		LazyDatabaseProperties properties = this.propertiesRef.get();
 		
 		if (properties == null)
 		{
-			properties = new LazyDatabaseProperties(this.dialect);
+			properties = new LazyDatabaseProperties(connection.getMetaData(), this.dialect);
 		
-			this.propertiesRef = new SoftReference<DatabaseProperties>(properties);
+			this.propertiesRef = new SoftReference<LazyDatabaseProperties>(properties);
+		}
+		else
+		{
+			properties.setConnection(connection);
 		}
 		
 		return properties;

@@ -23,7 +23,11 @@ package net.sf.hajdbc.cache;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import net.sf.hajdbc.Balancer;
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.DatabaseProperties;
+import net.sf.hajdbc.Dialect;
 
 /**
  * DatabaseMetaDataCache implementation that eagerly caches data when first flushed.
@@ -32,17 +36,27 @@ import net.sf.hajdbc.DatabaseProperties;
  * @author Paul Ferraro
  * @since 2.0
  */
-public class EagerDatabaseMetaDataCache extends AbstractDatabaseMetaDataCache
+public class EagerDatabaseMetaDataCache<D> implements DatabaseMetaDataCache
 {
-	private DatabaseProperties properties;
+	private volatile DatabaseProperties properties;
+	private final Dialect dialect;
+	private final Balancer<D> balancer;
+	
+	public EagerDatabaseMetaDataCache(Dialect dialect, Balancer<D> balancer)
+	{
+		this.dialect = dialect;
+		this.balancer = balancer;
+	}
 	
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush(java.sql.Connection)
+	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush()
 	 */
 	@Override
-	public synchronized void flush(Connection connection) throws SQLException
+	public void flush() throws SQLException
 	{
-		this.properties = new EagerDatabaseProperties(connection.getMetaData(), this.dialect);
+		Database<D> database = this.balancer.next();
+		
+		this.setDatabaseProperties(database.connect(database.createConnectionFactory()));
 	}
 
 	/**
@@ -53,9 +67,14 @@ public class EagerDatabaseMetaDataCache extends AbstractDatabaseMetaDataCache
 	{
 		if (this.properties == null)
 		{
-			this.flush(connection);
+			this.setDatabaseProperties(connection);
 		}
 		
 		return this.properties;
+	}
+	
+	private synchronized void setDatabaseProperties(Connection connection) throws SQLException
+	{
+		this.properties = new EagerDatabaseProperties(connection.getMetaData(), this.dialect);
 	}
 }

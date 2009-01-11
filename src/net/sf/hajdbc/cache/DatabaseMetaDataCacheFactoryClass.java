@@ -20,9 +20,10 @@
  */
 package net.sf.hajdbc.cache;
 
-import net.sf.hajdbc.DatabaseMetaDataCache;
+import net.sf.hajdbc.DatabaseMetaDataCacheFactory;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.util.ClassEnum;
+import net.sf.hajdbc.util.Enums;
 
 /**
  * Factory for creating DatabaseMetaDataCache implementations.
@@ -30,35 +31,35 @@ import net.sf.hajdbc.util.ClassEnum;
  * @author Paul Ferraro
  * @since 2.0
  */
-public enum DatabaseMetaDataCacheClass implements ClassEnum<DatabaseMetaDataCache>
+public enum DatabaseMetaDataCacheFactoryClass implements ClassEnum<DatabaseMetaDataCacheFactory>
 {
-	NONE(NullDatabaseMetaDataCache.class),
-	LAZY(LazyDatabaseMetaDataCache.class),
-	EAGER(EagerDatabaseMetaDataCache.class);
+	NONE(SimpleDatabaseMetaDataCacheFactory.class),
+	LAZY(LazyDatabaseMetaDataCacheFactory.class),
+	EAGER(EagerDatabaseMetaDataCacheFactory.class);
 	
-	private Class<? extends DatabaseMetaDataCache> cacheClass;
+	private Class<? extends DatabaseMetaDataCacheFactory> cacheFactoryClass;
 	
-	private DatabaseMetaDataCacheClass(Class<? extends DatabaseMetaDataCache> cacheClass)
+	private DatabaseMetaDataCacheFactoryClass(Class<? extends DatabaseMetaDataCacheFactory> cacheFactoryClass)
 	{
-		this.cacheClass = cacheClass;
+		this.cacheFactoryClass = cacheFactoryClass;
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.util.ClassEnum#isInstance(java.lang.Object)
 	 */
 	@Override
-	public boolean isInstance(DatabaseMetaDataCache cache)
+	public boolean isInstance(DatabaseMetaDataCacheFactory cache)
 	{
-		return this.cacheClass.equals(cache.getClass());
+		return this.cacheFactoryClass.equals(cache.getClass());
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.util.ClassEnum#newInstance()
 	 */
 	@Override
-	public DatabaseMetaDataCache newInstance() throws Exception
+	public DatabaseMetaDataCacheFactory newInstance() throws Exception
 	{
-		return this.cacheClass.newInstance();
+		return this.cacheFactoryClass.newInstance();
 	}
 	
 	/**
@@ -67,11 +68,11 @@ public enum DatabaseMetaDataCacheClass implements ClassEnum<DatabaseMetaDataCach
 	 * @return a new DatabaseMetaDataCache instance
 	 * @throws Exception if specified cache identifier is invalid
 	 */
-	public static DatabaseMetaDataCache deserialize(String id) throws Exception
+	public static DatabaseMetaDataCacheFactory deserialize(String id) throws Exception
 	{
 		try
 		{
-			return DatabaseMetaDataCacheClass.valueOf(id.toUpperCase()).newInstance();
+			return Enums.valueOf(DatabaseMetaDataCacheFactoryClass.class, id).newInstance();
 		}
 		catch (IllegalArgumentException e)
 		{
@@ -84,16 +85,16 @@ public enum DatabaseMetaDataCacheClass implements ClassEnum<DatabaseMetaDataCach
 	 * @param cache a cache implementation
 	 * @return the class name of this cache
 	 */
-	public static String serialize(DatabaseMetaDataCache cache)
+	public static String serialize(DatabaseMetaDataCacheFactory cacheFactory)
 	{
-		for (DatabaseMetaDataCacheClass cacheClass: DatabaseMetaDataCacheClass.values())
+		for (DatabaseMetaDataCacheFactoryClass cacheFactoryClass: DatabaseMetaDataCacheFactoryClass.values())
 		{
-			if (cacheClass.isInstance(cache))
+			if (cacheFactoryClass.isInstance(cacheFactory))
 			{
-				return cacheClass.name().toLowerCase();
+				return Enums.id(cacheFactoryClass);
 			}
 		}
 		
-		throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_META_DATA_CACHE, cache.getClass()));
+		throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_META_DATA_CACHE, cacheFactory.getClass()));
 	}
 }

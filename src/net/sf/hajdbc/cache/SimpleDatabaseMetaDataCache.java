@@ -23,7 +23,9 @@ package net.sf.hajdbc.cache;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.DatabaseProperties;
+import net.sf.hajdbc.Dialect;
 
 /**
  * DatabaseMetaDataCache implementation that does not cache data.
@@ -32,13 +34,20 @@ import net.sf.hajdbc.DatabaseProperties;
  * @author Paul Ferraro
  * @since 2.0
  */
-public class NullDatabaseMetaDataCache extends AbstractDatabaseMetaDataCache
+public class SimpleDatabaseMetaDataCache implements DatabaseMetaDataCache
 {
+	private final Dialect dialect;
+	
+	public SimpleDatabaseMetaDataCache(Dialect dialect)
+	{
+		this.dialect = dialect;
+	}
+	
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush(java.sql.Connection)
+	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush()
 	 */
 	@Override
-	public void flush(Connection connection)
+	public void flush()
 	{
 		// Nothing to flush
 	}
@@ -49,8 +58,6 @@ public class NullDatabaseMetaDataCache extends AbstractDatabaseMetaDataCache
 	@Override
 	public DatabaseProperties getDatabaseProperties(Connection connection) throws SQLException
 	{
-		LazyDatabaseProperties.setConnection(connection);
-		
-		return new LazyDatabaseProperties(this.dialect);
+		return new SimpleDatabaseProperties(connection.getMetaData(), this.dialect);
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2007 Paul Ferraro
+ * Copyright (c) 2004-2008 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -20,7 +20,6 @@
  */
 package net.sf.hajdbc.cache;
 
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
@@ -30,28 +29,28 @@ import net.sf.hajdbc.Dialect;
  * @author Paul Ferraro
  *
  */
-public class LazyDatabaseProperties extends AbstractLazyDatabaseProperties
+public class SimpleDatabaseProperties extends AbstractLazyDatabaseProperties
 {
-	private final ThreadLocal<Connection> threadLocal = new ThreadLocal<Connection>();
+	private DatabaseMetaData metaData;
 	
-	public LazyDatabaseProperties(DatabaseMetaData metaData, Dialect dialect) throws SQLException
+	/**
+	 * @param connection
+	 * @param dialect
+	 * @throws SQLException
+	 */
+	public SimpleDatabaseProperties(DatabaseMetaData metaData, Dialect dialect) throws SQLException
 	{
 		super(metaData, dialect);
 		
-		this.setConnection(metaData.getConnection());
+		this.metaData = metaData;
 	}
 
-	public void setConnection(Connection connection)
-	{
-		this.threadLocal.set(connection);
-	}
-	
 	/**
 	 * @see net.sf.hajdbc.cache.DatabaseMetaDataProvider#getDatabaseMetaData()
 	 */
 	@Override
 	public DatabaseMetaData getDatabaseMetaData() throws SQLException
 	{
-		return this.threadLocal.get().getMetaData();
+		return this.metaData;
 	}
 }
