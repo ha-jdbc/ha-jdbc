@@ -36,6 +36,7 @@ import java.util.TreeSet;
 import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseProperties;
 import net.sf.hajdbc.LockManager;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.TableProperties;
@@ -251,7 +252,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 	
 	protected boolean isSelectForUpdate(String sql) throws SQLException
 	{
-		return this.cluster.getDatabaseMetaDataCache().getDatabaseProperties(this.getParent()).supportsSelectForUpdate() ? this.cluster.getDialect().isSelectForUpdate(sql) : false;
+		return this.getDatabaseProperties().supportsSelectForUpdate() ? this.cluster.getDialect().isSelectForUpdate(sql) : false;
 	}
 	
 	protected List<Lock> extractLocks(String sql) throws SQLException
@@ -281,7 +282,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 				
 				if (table != null)
 				{
-					TableProperties tableProperties = this.cluster.getDatabaseMetaDataCache().getDatabaseProperties(this.getParent()).findTable(table);
+					TableProperties tableProperties = this.getDatabaseProperties().findTable(table);
 					
 					if (!tableProperties.getIdentityColumns().isEmpty())
 					{
@@ -306,6 +307,11 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 		return lockList;
 	}
 
+	protected DatabaseProperties getDatabaseProperties() throws SQLException
+	{
+		return this.cluster.getDatabaseMetaDataCache().getDatabaseProperties(this.getParent());
+	}
+	
 	/**
 	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#close(java.lang.Object, java.lang.Object)
 	 */
