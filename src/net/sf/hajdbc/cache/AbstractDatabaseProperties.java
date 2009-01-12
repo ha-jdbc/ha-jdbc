@@ -44,9 +44,13 @@ public abstract class AbstractDatabaseProperties implements DatabaseProperties
 	
 	protected AbstractDatabaseProperties(DatabaseMetaData metaData, Dialect dialect) throws SQLException
 	{
+		this(metaData, new DatabaseMetaDataSupportImpl(metaData, dialect), dialect);
+	}
+	
+	protected AbstractDatabaseProperties(DatabaseMetaData metaData, DatabaseMetaDataSupport support, Dialect dialect) throws SQLException
+	{
 		this.dialect = dialect;
-		
-		this.support = new DatabaseMetaDataSupport(metaData, dialect);
+		this.support = support;
 		this.supportsSelectForUpdate = metaData.supportsSelectForUpdate();
 	}
 	

@@ -45,6 +45,13 @@ public class SimpleDatabaseProperties extends AbstractLazyDatabaseProperties
 		this.metaData = metaData;
 	}
 
+	protected SimpleDatabaseProperties(DatabaseMetaData metaData, DatabaseMetaDataSupport support, Dialect dialect) throws SQLException
+	{
+		super(metaData, support, dialect);
+		
+		this.metaData = metaData;
+	}
+	
 	/**
 	 * @see net.sf.hajdbc.cache.DatabaseMetaDataProvider#getDatabaseMetaData()
 	 */

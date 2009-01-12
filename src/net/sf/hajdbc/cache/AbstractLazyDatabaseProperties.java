@@ -46,7 +46,12 @@ public abstract class AbstractLazyDatabaseProperties extends AbstractDatabasePro
 	{
 		super(metaData, dialect);
 	}
-
+	
+	protected AbstractLazyDatabaseProperties(DatabaseMetaData metaData, DatabaseMetaDataSupport support, Dialect dialect) throws SQLException
+	{
+		super(metaData, support, dialect);
+	}
+	
 	protected Map<String, TableProperties> getTableMap() throws SQLException
 	{
 		synchronized (this.tableMapRef)

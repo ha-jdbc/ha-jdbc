@@ -38,9 +38,21 @@ public class LazyDatabaseProperties extends AbstractLazyDatabaseProperties
 	{
 		super(metaData, dialect);
 		
-		this.setConnection(metaData.getConnection());
+		this.init(metaData);
+	}
+	
+	protected LazyDatabaseProperties(DatabaseMetaData metaData, DatabaseMetaDataSupport support, Dialect dialect) throws SQLException
+	{
+		super(metaData, support, dialect);
+		
+		this.init(metaData);
 	}
 
+	private void init(DatabaseMetaData metaData) throws SQLException
+	{
+		this.setConnection(metaData.getConnection());
+	}
+	
 	public void setConnection(Connection connection)
 	{
 		this.threadLocal.set(connection);
