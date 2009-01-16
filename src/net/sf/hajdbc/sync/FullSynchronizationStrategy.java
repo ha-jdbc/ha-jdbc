@@ -44,7 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Database-independent synchronization strategy that only updates differences between two databases.
+ * Database-independent synchronization strategy that does full record transfer between two databases.
  * This strategy is best used when there are <em>many</em> differences between the active database and the inactive database (i.e. very much out of sync).
  * The following algorithm is used:
  * <ol>
