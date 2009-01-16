@@ -42,15 +42,10 @@ public abstract class AbstractDatabaseProperties implements DatabaseProperties
 	
 	private final boolean supportsSelectForUpdate;
 	
-	protected AbstractDatabaseProperties(DatabaseMetaData metaData, Dialect dialect) throws SQLException
-	{
-		this(metaData, new DatabaseMetaDataSupportImpl(metaData, dialect), dialect);
-	}
-	
-	protected AbstractDatabaseProperties(DatabaseMetaData metaData, DatabaseMetaDataSupport support, Dialect dialect) throws SQLException
+	protected AbstractDatabaseProperties(DatabaseMetaData metaData, DatabaseMetaDataSupportFactory factory, Dialect dialect) throws SQLException
 	{
 		this.dialect = dialect;
-		this.support = support;
+		this.support = factory.createSupport(metaData, dialect);
 		this.supportsSelectForUpdate = metaData.supportsSelectForUpdate();
 	}
 	

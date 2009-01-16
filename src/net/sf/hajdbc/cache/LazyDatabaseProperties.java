@@ -34,22 +34,10 @@ public class LazyDatabaseProperties extends AbstractLazyDatabaseProperties
 {
 	private final ThreadLocal<Connection> threadLocal = new ThreadLocal<Connection>();
 	
-	public LazyDatabaseProperties(DatabaseMetaData metaData, Dialect dialect) throws SQLException
+	public LazyDatabaseProperties(DatabaseMetaData metaData, DatabaseMetaDataSupportFactory factory, Dialect dialect) throws SQLException
 	{
-		super(metaData, dialect);
+		super(metaData, factory, dialect);
 		
-		this.init(metaData);
-	}
-	
-	protected LazyDatabaseProperties(DatabaseMetaData metaData, DatabaseMetaDataSupport support, Dialect dialect) throws SQLException
-	{
-		super(metaData, support, dialect);
-		
-		this.init(metaData);
-	}
-
-	private void init(DatabaseMetaData metaData) throws SQLException
-	{
 		this.setConnection(metaData.getConnection());
 	}
 	

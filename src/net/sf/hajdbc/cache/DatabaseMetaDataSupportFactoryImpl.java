@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2007 Paul Ferraro
+ * Copyright (c) 2004-2009 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -20,41 +20,24 @@
  */
 package net.sf.hajdbc.cache;
 
-import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
-import net.sf.hajdbc.DatabaseProperties;
 import net.sf.hajdbc.Dialect;
 
-/**
- * DatabaseMetaDataCache implementation that does not cache data.
- * To be used when memory usage is more of a concern than performance.
- * 
- * @author Paul Ferraro
- * @since 2.0
- */
-public class SimpleDatabaseMetaDataCache extends AbstractDatabaseMetaDataCache
-{
-	public SimpleDatabaseMetaDataCache(Dialect dialect)
-	{
-		super(dialect);
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush()
-	 */
-	@Override
-	public void flush()
-	{
-		// Nothing to flush
-	}
 
+/**
+ * @author Paul Ferraro
+ *
+ */
+public class DatabaseMetaDataSupportFactoryImpl implements DatabaseMetaDataSupportFactory
+{
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getDatabaseProperties(java.sql.Connection)
+	 * @see net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory#createSupport(java.sql.DatabaseMetaData, net.sf.hajdbc.Dialect)
 	 */
 	@Override
-	public DatabaseProperties getDatabaseProperties(Connection connection) throws SQLException
+	public DatabaseMetaDataSupport createSupport(DatabaseMetaData metaData, Dialect dialect) throws SQLException
 	{
-		return new SimpleDatabaseProperties(connection.getMetaData(), this.factory, this.dialect);
+		return new DatabaseMetaDataSupportImpl(metaData, dialect);
 	}
 }

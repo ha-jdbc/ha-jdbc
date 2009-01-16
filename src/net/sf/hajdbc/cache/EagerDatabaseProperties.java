@@ -43,22 +43,10 @@ public class EagerDatabaseProperties extends AbstractDatabaseProperties
 	private Map<String, SequenceProperties> sequenceMap = new HashMap<String, SequenceProperties>();
 	private List<String> defaultSchemaList;
 
-	public EagerDatabaseProperties(DatabaseMetaData metaData, Dialect dialect) throws SQLException
+	public EagerDatabaseProperties(DatabaseMetaData metaData, DatabaseMetaDataSupportFactory factory, Dialect dialect) throws SQLException
 	{
-		super(metaData, dialect);
+		super(metaData, factory, dialect);
 		
-		this.init(metaData);
-	}
-	
-	protected EagerDatabaseProperties(DatabaseMetaData metaData, DatabaseMetaDataSupport support, Dialect dialect) throws SQLException
-	{
-		super(metaData, support, dialect);
-		
-		this.init(metaData);
-	}
-
-	private void init(DatabaseMetaData metaData) throws SQLException
-	{
 		Collection<QualifiedName> tables = this.support.getTables(metaData);
 		
 		for (QualifiedName table: tables)

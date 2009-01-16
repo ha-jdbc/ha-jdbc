@@ -25,7 +25,6 @@ import java.sql.SQLException;
 
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.DatabaseProperties;
 import net.sf.hajdbc.Dialect;
 
@@ -36,15 +35,15 @@ import net.sf.hajdbc.Dialect;
  * @author Paul Ferraro
  * @since 2.0
  */
-public class EagerDatabaseMetaDataCache<D> implements DatabaseMetaDataCache
+public class EagerDatabaseMetaDataCache<D> extends AbstractDatabaseMetaDataCache
 {
 	private volatile DatabaseProperties properties;
-	private final Dialect dialect;
 	private final Balancer<D> balancer;
 	
 	public EagerDatabaseMetaDataCache(Dialect dialect, Balancer<D> balancer)
 	{
-		this.dialect = dialect;
+		super(dialect);
+
 		this.balancer = balancer;
 	}
 	
@@ -75,6 +74,6 @@ public class EagerDatabaseMetaDataCache<D> implements DatabaseMetaDataCache
 	
 	private synchronized void setDatabaseProperties(Connection connection) throws SQLException
 	{
-		this.properties = new EagerDatabaseProperties(connection.getMetaData(), this.dialect);
+		this.properties = new EagerDatabaseProperties(connection.getMetaData(), this.factory, this.dialect);
 	}
 }

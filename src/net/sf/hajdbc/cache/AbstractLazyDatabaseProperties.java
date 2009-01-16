@@ -41,15 +41,10 @@ public abstract class AbstractLazyDatabaseProperties extends AbstractDatabasePro
 	private final VolatileReference<Map<String, TableProperties>> tableMapRef = new VolatileReference<Map<String, TableProperties>>();
 	private final VolatileReference<Map<String, SequenceProperties>> sequenceMapRef = new VolatileReference<Map<String, SequenceProperties>>();
 	private final VolatileReference<List<String>> defaultSchemaListRef = new VolatileReference<List<String>>();
-
-	protected AbstractLazyDatabaseProperties(DatabaseMetaData metaData, Dialect dialect) throws SQLException
-	{
-		super(metaData, dialect);
-	}
 	
-	protected AbstractLazyDatabaseProperties(DatabaseMetaData metaData, DatabaseMetaDataSupport support, Dialect dialect) throws SQLException
+	protected AbstractLazyDatabaseProperties(DatabaseMetaData metaData, DatabaseMetaDataSupportFactory factory, Dialect dialect) throws SQLException
 	{
-		super(metaData, support, dialect);
+		super(metaData, factory, dialect);
 	}
 	
 	protected Map<String, TableProperties> getTableMap() throws SQLException

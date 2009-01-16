@@ -33,21 +33,9 @@ public class SimpleDatabaseProperties extends AbstractLazyDatabaseProperties
 {
 	private DatabaseMetaData metaData;
 	
-	/**
-	 * @param connection
-	 * @param dialect
-	 * @throws SQLException
-	 */
-	public SimpleDatabaseProperties(DatabaseMetaData metaData, Dialect dialect) throws SQLException
+	public SimpleDatabaseProperties(DatabaseMetaData metaData, DatabaseMetaDataSupportFactory factory, Dialect dialect) throws SQLException
 	{
-		super(metaData, dialect);
-		
-		this.metaData = metaData;
-	}
-
-	protected SimpleDatabaseProperties(DatabaseMetaData metaData, DatabaseMetaDataSupport support, Dialect dialect) throws SQLException
-	{
-		super(metaData, support, dialect);
+		super(metaData, factory, dialect);
 		
 		this.metaData = metaData;
 	}
