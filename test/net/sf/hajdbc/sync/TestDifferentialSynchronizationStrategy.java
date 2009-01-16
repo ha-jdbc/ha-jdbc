@@ -44,11 +44,13 @@ import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.UniqueConstraint;
 
 import org.easymock.EasyMock;
+import org.testng.annotations.Test;
 
 /**
  * @author Paul Ferraro
  */
 @SuppressWarnings("nls")
+@Test
 public class TestDifferentialSynchronizationStrategy extends TestSynchronizationStrategy
 {
 	public TestDifferentialSynchronizationStrategy()
@@ -91,6 +93,12 @@ public class TestDifferentialSynchronizationStrategy extends TestSynchronization
 		ExecutorService executor = Executors.newSingleThreadExecutor();
 		SequenceProperties sequence = EasyMock.createStrictMock(SequenceProperties.class);
 		
+		EasyMock.makeThreadSafe(targetStatement, true);
+		EasyMock.makeThreadSafe(context, true);
+		EasyMock.makeThreadSafe(sourceConnection, true);
+		EasyMock.makeThreadSafe(sourceStatement, true);
+		EasyMock.makeThreadSafe(sourceResultSet, true);
+		
 		try
 		{
 			EasyMock.expect(context.getSourceDatabase()).andReturn(sourceDatabase);
@@ -102,6 +110,7 @@ public class TestDifferentialSynchronizationStrategy extends TestSynchronization
 			EasyMock.expect(context.getDialect()).andReturn(dialect);
 			EasyMock.expect(context.getExecutor()).andReturn(executor);
 			
+			EasyMock.expect(targetConnection.getAutoCommit()).andReturn(false);
 			targetConnection.setAutoCommit(true);
 			{
 				EasyMock.expect(context.getDialect()).andReturn(dialect);
@@ -418,6 +427,7 @@ public class TestDifferentialSynchronizationStrategy extends TestSynchronization
 				
 				targetStatement.close();
 			}
+			targetConnection.setAutoCommit(false);
 			
 			EasyMock.replay(context, sourceDatabase, targetDatabase, sourceConnection, targetConnection, statement, metaData, sourceProperties, targetProperties, table, dialect, foreignKey, primaryKey, uniqueKey, targetStatement, targetResultSet, sourceStatement, sourceResultSet, deleteStatement, insertStatement, updateStatement, column1, column2, column3, column4);
 			
