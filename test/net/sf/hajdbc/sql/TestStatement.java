@@ -26,11 +26,13 @@ import java.util.Map;
 import net.sf.hajdbc.Database;
 
 import org.easymock.EasyMock;
+import org.testng.annotations.Test;
 
 /**
  * @author Paul Ferraro
  *
  */
+@Test
 public class TestStatement extends AbstractTestStatement<Statement>
 {
 	/**

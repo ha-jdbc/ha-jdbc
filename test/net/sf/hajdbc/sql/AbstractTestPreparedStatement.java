@@ -189,6 +189,9 @@ public abstract class AbstractTestPreparedStatement<S extends PreparedStatement>
 		
 		this.reset();
 		
+		EasyMock.makeThreadSafe(this.statement1, true);
+		EasyMock.makeThreadSafe(this.statement2, true);
+		
 		ResultSet resultSet1 = EasyMock.createMock(ResultSet.class);
 		ResultSet resultSet2 = EasyMock.createMock(ResultSet.class);
 		
