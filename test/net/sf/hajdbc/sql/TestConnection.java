@@ -75,7 +75,7 @@ public class TestConnection implements Connection
 	private Balancer balancer = EasyMock.createStrictMock(Balancer.class);
 	private DatabaseCluster cluster = EasyMock.createStrictMock(DatabaseCluster.class);
 	private Dialect dialect = EasyMock.createStrictMock(Dialect.class);
-	private DatabaseMetaDataCache metaData = EasyMock.createStrictMock(DatabaseMetaDataCache.class);
+	private DatabaseMetaDataCache cache = EasyMock.createStrictMock(DatabaseMetaDataCache.class);
 	private DatabaseProperties databaseProperties = EasyMock.createStrictMock(DatabaseProperties.class);
 	private TableProperties tableProperties = EasyMock.createStrictMock(TableProperties.class);
 	private ColumnProperties columnProperties = EasyMock.createStrictMock(ColumnProperties.class);
@@ -125,7 +125,7 @@ public class TestConnection implements Connection
 	
 	private Object[] objects()
 	{
-		return new Object[] { this.cluster, this.balancer, this.connection1, this.connection2, this.parent, this.root, this.savepoint1, this.savepoint2, this.dialect, this.metaData, this.databaseProperties, this.tableProperties, this.columnProperties, this.transactionContext };
+		return new Object[] { this.cluster, this.balancer, this.connection1, this.connection2, this.parent, this.root, this.savepoint1, this.savepoint2, this.dialect, this.cache, this.databaseProperties, this.tableProperties, this.columnProperties, this.transactionContext };
 	}
 	
 	void replay()
@@ -439,7 +439,11 @@ public class TestConnection implements Connection
 		
 		this.verify();
 		
-		assert result == metaData;
+		assert Proxy.isProxyClass(result.getClass());
+		
+		SQLProxy proxy = SQLProxy.class.cast(Proxy.getInvocationHandler(result));
+		
+		assert proxy.getObject(this.database2) == metaData;
 	}
 	
 	/**
@@ -1782,8 +1786,8 @@ public class TestConnection implements Connection
 		EasyMock.expect(this.cluster.isSequenceDetectionEnabled()).andReturn(false);
 		EasyMock.expect(this.cluster.isIdentityColumnDetectionEnabled()).andReturn(false);
 		
-		EasyMock.expect(this.cluster.getDatabaseMetaDataCache()).andReturn(this.metaData);
-		EasyMock.expect(this.metaData.getDatabaseProperties(EasyMock.same(this.connection))).andReturn(this.databaseProperties);
+		EasyMock.expect(this.cluster.getDatabaseMetaDataCache()).andReturn(this.cache);
+		EasyMock.expect(this.cache.getDatabaseProperties(EasyMock.same(this.connection))).andReturn(this.databaseProperties);
 		EasyMock.expect(this.databaseProperties.supportsSelectForUpdate()).andReturn(false);
 	}
 }
