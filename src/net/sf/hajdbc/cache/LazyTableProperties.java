@@ -28,6 +28,7 @@ import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.UniqueConstraint;
+import net.sf.hajdbc.util.ref.VolatileReference;
 
 /**
  * @author Paul Ferraro
@@ -35,116 +36,123 @@ import net.sf.hajdbc.UniqueConstraint;
  */
 public class LazyTableProperties extends AbstractTableProperties
 {
-	private QualifiedName table;
-	private DatabaseMetaDataSupport support;
-	private Map<String, ColumnProperties> columnMap;
-	private UniqueConstraint primaryKey;
-	private Collection<UniqueConstraint> uniqueConstraints;
-	private Collection<ForeignKeyConstraint> foreignKeyConstraints;
-	private Collection<String> identityColumns;
-	private String name;
+	private final DatabaseMetaDataProvider metaDataProvider;
+	private final QualifiedName table;
+	private final DatabaseMetaDataSupport support;
 	
-	public LazyTableProperties(DatabaseMetaDataSupport support, QualifiedName table)
-	{
-		this.table = table;
-		this.support = support;
-	}
+	private final VolatileReference<Map<String, ColumnProperties>> columnMapRef = new VolatileReference<Map<String, ColumnProperties>>();
+	private final VolatileReference<UniqueConstraint> primaryKeyRef = new VolatileReference<UniqueConstraint>();
+	private final VolatileReference<Collection<UniqueConstraint>> uniqueConstraintsRef = new VolatileReference<Collection<UniqueConstraint>>();
+	private final VolatileReference<Collection<ForeignKeyConstraint>> foreignKeyConstraintsRef = new VolatileReference<Collection<ForeignKeyConstraint>>();
+	private final VolatileReference<Collection<String>> identityColumnsRef = new VolatileReference<Collection<String>>();
 	
-	/**
-	 * @see net.sf.hajdbc.TableProperties#getColumns()
-	 */
-	@Override
-	public synchronized Collection<String> getColumns() throws SQLException
+	public LazyTableProperties(DatabaseMetaDataProvider metaDataProvider, DatabaseMetaDataSupport support, QualifiedName table)
 	{
-		return this.getColumnMap().keySet();
-	}
-
-	/**
-	 * @see net.sf.hajdbc.TableProperties#getColumnProperties(java.lang.String)
-	 */
-	@Override
-	public synchronized ColumnProperties getColumnProperties(String column) throws SQLException
-	{
-		return this.getColumnMap().get(column);
-	}
-
-	private synchronized Map<String, ColumnProperties> getColumnMap() throws SQLException
-	{
-		if (this.columnMap == null)
-		{
-			this.columnMap = this.support.getColumns(LazyDatabaseProperties.getDatabaseMetaData(), this.table);
-		}
+		super(support, table);
 		
-		return this.columnMap;
+		this.metaDataProvider = metaDataProvider;
+		this.support = support;
+		this.table = table;
+	}
+
+	protected Map<String, ColumnProperties> getColumnMap() throws SQLException
+	{
+		synchronized (this.columnMapRef)
+		{
+			Map<String, ColumnProperties> map = this.columnMapRef.get();
+			
+			if (map == null)
+			{
+				map = this.support.getColumns(this.metaDataProvider.getDatabaseMetaData(), this.table);
+				
+				this.columnMapRef.set(map);
+			}
+			
+			return map;
+		}
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.TableProperties#getPrimaryKey()
 	 */
 	@Override
-	public synchronized UniqueConstraint getPrimaryKey() throws SQLException
+	public UniqueConstraint getPrimaryKey() throws SQLException
 	{
-		if (this.primaryKey == null)
+		synchronized (this.primaryKeyRef)
 		{
-			this.primaryKey = this.support.getPrimaryKey(LazyDatabaseProperties.getDatabaseMetaData(), this.table);
+			UniqueConstraint key = this.primaryKeyRef.get();
+			
+			if (key == null)
+			{
+				key = this.support.getPrimaryKey(this.metaDataProvider.getDatabaseMetaData(), this.table);
+				
+				this.primaryKeyRef.set(key);
+			}
+			
+			return key;
 		}
-		
-		return this.primaryKey;
 	}
 
 	/**
 	 * @see net.sf.hajdbc.TableProperties#getForeignKeyConstraints()
 	 */
 	@Override
-	public synchronized Collection<ForeignKeyConstraint> getForeignKeyConstraints() throws SQLException
+	public Collection<ForeignKeyConstraint> getForeignKeyConstraints() throws SQLException
 	{
-		if (this.foreignKeyConstraints == null)
+		synchronized (this.foreignKeyConstraintsRef)
 		{
-			this.foreignKeyConstraints = this.support.getForeignKeyConstraints(LazyDatabaseProperties.getDatabaseMetaData(), this.table);
+			Collection<ForeignKeyConstraint> keys = this.foreignKeyConstraintsRef.get();
+			
+			if (keys == null)
+			{
+				keys = this.support.getForeignKeyConstraints(this.metaDataProvider.getDatabaseMetaData(), this.table);
+				
+				this.foreignKeyConstraintsRef.set(keys);
+			}
+			
+			return keys;
 		}
-		
-		return this.foreignKeyConstraints;
 	}
 
 	/**
 	 * @see net.sf.hajdbc.TableProperties#getUniqueConstraints()
 	 */
 	@Override
-	public synchronized Collection<UniqueConstraint> getUniqueConstraints() throws SQLException
+	public Collection<UniqueConstraint> getUniqueConstraints() throws SQLException
 	{
-		if (this.uniqueConstraints == null)
+		synchronized (this.uniqueConstraintsRef)
 		{
-			this.uniqueConstraints = this.support.getUniqueConstraints(LazyDatabaseProperties.getDatabaseMetaData(), this.table, this.getPrimaryKey());
+			Collection<UniqueConstraint> keys = this.uniqueConstraintsRef.get();
+			
+			if (keys == null)
+			{
+				keys = this.support.getUniqueConstraints(this.metaDataProvider.getDatabaseMetaData(), this.table, this.getPrimaryKey());
+				
+				this.uniqueConstraintsRef.set(keys);
+			}
+			
+			return keys;
 		}
-		
-		return this.uniqueConstraints;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.TableProperties#getName()
-	 */
-	@Override
-	public synchronized String getName()
-	{
-		if (this.name == null)
-		{
-			this.name = this.support.qualifyNameForDML(this.table);
-		}
-		
-		return this.name;
 	}
 
 	/**
 	 * @see net.sf.hajdbc.TableProperties#getIdentityColumns()
 	 */
 	@Override
-	public synchronized Collection<String> getIdentityColumns() throws SQLException
+	public Collection<String> getIdentityColumns() throws SQLException
 	{
-		if (this.identityColumns == null)
+		synchronized (this.identityColumnsRef)
 		{
-			this.identityColumns = this.support.getIdentityColumns(this.getColumnMap().values());
+			Collection<String> columns = this.identityColumnsRef.get();
+			
+			if (columns == null)
+			{
+				columns = this.support.getIdentityColumns(this.getColumnMap().values());
+				
+				this.identityColumnsRef.set(columns);
+			}
+			
+			return columns;
 		}
-		
-		return this.identityColumns;
 	}
 }

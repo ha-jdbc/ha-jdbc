@@ -27,12 +27,12 @@ import javax.sql.XADataSource;
 
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterFactory;
-import net.sf.hajdbc.sql.CommonDataSourceFactory;
+import net.sf.hajdbc.sql.CommonDataSourceObjectFactory;
 
 /**
  * @author Paul Ferraro
  */
-public class XADataSourceFactory extends CommonDataSourceFactory<XADataSource>
+public class XADataSourceFactory extends CommonDataSourceObjectFactory<XADataSource>
 {
 	/**
 	 * Constructs a new factory for creating an <code>XADataSource</code>.
@@ -43,7 +43,7 @@ public class XADataSourceFactory extends CommonDataSourceFactory<XADataSource>
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.CommonDataSourceFactory#getDatabaseCluster(java.lang.String, java.lang.String)
+	 * @see net.sf.hajdbc.sql.CommonDataSourceObjectFactory#getDatabaseCluster(java.lang.String, java.lang.String)
 	 */
 	@Override
 	protected DatabaseCluster<javax.sql.XADataSource> getDatabaseCluster(String id, String config) throws SQLException
@@ -52,7 +52,7 @@ public class XADataSourceFactory extends CommonDataSourceFactory<XADataSource>
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.CommonDataSourceFactory#getInvocationHandler(net.sf.hajdbc.DatabaseCluster)
+	 * @see net.sf.hajdbc.sql.CommonDataSourceObjectFactory#getInvocationHandler(net.sf.hajdbc.DatabaseCluster)
 	 */
 	@Override
 	protected InvocationHandler getInvocationHandler(DatabaseCluster<XADataSource> cluster)

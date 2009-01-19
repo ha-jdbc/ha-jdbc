@@ -51,11 +51,12 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 {
 	private static final Set<Method> driverReadMethodSet = Methods.findMethods(XAResource.class, "getTransactionTimeout", "isSameRM");
 	private static final Set<Method> databaseWriteMethodSet = Methods.findMethods(XAResource.class, "setTransactionTimeout");
-	private static final Set<Method> transactionMethodSet = Methods.findMethods(XAResource.class, "commit", "end", "forget", "prepare", "recover", "rollback", "start");
+	private static final Set<Method> intraTransactionMethodSet = Methods.findMethods(XAResource.class, "end", "prepare", "recover");
 	private static final Method startMethod = Methods.getMethod(XAResource.class, "start", Xid.class, Integer.TYPE);
-	private static final Set<Method> commitRollbackMethods = Methods.findMethods(XAResource.class, "commit", "rollback");
+	private static final Set<Method> endTransactionMethodSet = Methods.findMethods(XAResource.class, "commit", "rollback", "forget");
 	
-	private ConcurrentMap<Xid, Lock> lockMap = new ConcurrentHashMap<Xid, Lock>();
+	// Xids are global - so store in static variable
+	private static ConcurrentMap<Xid, Lock> lockMap = new ConcurrentHashMap<Xid, Lock>();
 	
 	/**
 	 * @param connection
@@ -85,7 +86,7 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 			return new DatabaseWriteInvocationStrategy<XADataSource, XAResource, Object>(this.cluster.getNonTransactionalExecutor());
 		}
 		
-		if (transactionMethodSet.contains(method))
+		if (method.equals(startMethod) || intraTransactionMethodSet.contains(method) || endTransactionMethodSet.contains(method))
 		{
 			final InvocationStrategy<XADataSource, XAResource, Object> strategy = new DatabaseWriteInvocationStrategy<XADataSource, XAResource, Object>(this.cluster.getTransactionalExecutor());
 			
@@ -96,7 +97,7 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 				final Lock lock = this.cluster.getLockManager().readLock(LockManager.GLOBAL);
 				
 				// Lock may already exist if we're resuming a suspended transaction
-				Lock existingLock = this.lockMap.putIfAbsent(xid, lock);
+				Lock existingLock = lockMap.putIfAbsent(xid, lock);
 				
 				if (existingLock == null)
 				{
@@ -113,9 +114,9 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 				}
 			}
 			
-			if (commitRollbackMethods.contains(method))
+			if (endTransactionMethodSet.contains(method))
 			{
-				final Lock lock = this.lockMap.remove(parameters[0]);
+				final Lock lock = lockMap.remove(parameters[0]);
 				
 				return new InvocationStrategy<XADataSource, XAResource, Object>()
 				{

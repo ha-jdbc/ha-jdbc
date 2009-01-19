@@ -217,10 +217,16 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 		{
 			while (!DistributableLockManager.this.isMembershipEmpty())
 			{
-				if (this.tryLock())
+				try
 				{
-					return;
+					if (this.tryLock(0, TimeUnit.SECONDS)) return;
 				}
+				catch (InterruptedException e)
+				{
+					// Ignore
+				}
+				
+				Thread.yield();
 			}
 			
 			this.lock.lock();
@@ -233,16 +239,15 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 		public void lockInterruptibly() throws InterruptedException
 		{
 			while (!DistributableLockManager.this.isMembershipEmpty())
-			{				
-				if (this.tryLock())
-				{
-					return;
-				}
-				
+			{
+				if (this.tryLock(0, TimeUnit.SECONDS)) return;
+
 				if (Thread.currentThread().isInterrupted())
 				{
 					throw new InterruptedException();
 				}
+				
+				Thread.yield();
 			}
 			
 			this.lock.lockInterruptibly();
@@ -285,7 +290,7 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 					return this.lock.tryLock(ms, TimeUnit.MILLISECONDS);
 				}
 				
-				if (this.tryLock())
+				if (this.tryLock(0, TimeUnit.SECONDS))
 				{
 					return true;
 				}

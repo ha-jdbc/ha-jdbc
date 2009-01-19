@@ -20,6 +20,7 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -73,6 +74,42 @@ public class DataSource extends CommonDataSourceProxy<javax.sql.DataSource> impl
 	public <T> T unwrap(Class<T> targetClass) throws SQLException
 	{
 		return this.getProxy().unwrap(targetClass);
+	}
+
+	/**
+	 * @see javax.sql.CommonDataSource#getLoginTimeout()
+	 */
+	@Override
+	public int getLoginTimeout() throws SQLException
+	{
+		return this.getProxy().getLoginTimeout();
+	}
+
+	/**
+	 * @see javax.sql.CommonDataSource#getLogWriter()
+	 */
+	@Override
+	public PrintWriter getLogWriter() throws SQLException
+	{
+		return this.getProxy().getLogWriter();
+	}
+
+	/**
+	 * @see javax.sql.CommonDataSource#setLoginTimeout(int)
+	 */
+	@Override
+	public void setLoginTimeout(int timeout) throws SQLException
+	{
+		this.getProxy().setLoginTimeout(timeout);
+	}
+
+	/**
+	 * @see javax.sql.CommonDataSource#setLogWriter(java.io.PrintWriter)
+	 */
+	@Override
+	public void setLogWriter(PrintWriter writer) throws SQLException
+	{
+		this.getProxy().setLogWriter(writer);
 	}
 
 	/**

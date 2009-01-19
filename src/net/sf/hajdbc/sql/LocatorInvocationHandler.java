@@ -20,11 +20,13 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Set;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.util.reflect.Methods;
 
 /**
  * @author Paul Ferraro
@@ -32,19 +34,23 @@ import net.sf.hajdbc.Database;
  * @param <P> 
  * @param <E> 
  */
-public abstract class AbstractLobInvocationHandler<D, P, E> extends AbstractChildInvocationHandler<D, P, E>
+public abstract class LocatorInvocationHandler<D, P, E> extends AbstractChildInvocationHandler<D, P, E>
 {
+	private final Method freeMethod;
+	
 	/**
-	 * @param object
+	 * @param parent
 	 * @param proxy
 	 * @param invoker
 	 * @param proxyClass 
 	 * @param objectMap
 	 * @throws Exception
 	 */
-	protected AbstractLobInvocationHandler(P object, SQLProxy<D, P> proxy, Invoker<D, P, E> invoker, Class<E> proxyClass, Map<Database<D>, E> objectMap) throws Exception
+	protected LocatorInvocationHandler(P parent, SQLProxy<D, P> proxy, Invoker<D, P, E> invoker, Class<E> proxyClass, Map<Database<D>, E> objectMap) throws Exception
 	{
-		super(object, proxy, invoker, proxyClass, objectMap);
+		super(parent, proxy, invoker, proxyClass, objectMap);
+		
+		this.freeMethod = Methods.findMethod(proxyClass, "free");
 	}
 
 	/**
@@ -53,9 +59,7 @@ public abstract class AbstractLobInvocationHandler<D, P, E> extends AbstractChil
 	@Override
 	protected InvocationStrategy<D, E, ?> getInvocationStrategy(E object, Method method, Object[] parameters) throws Exception
 	{
-		String methodName = method.getName();
-		
-		if (this.getDatabaseReadMethodSet().contains(methodName))
+		if (this.getDatabaseReadMethodSet().contains(method))
 		{
 			return new DatabaseReadInvocationStrategy<D, E, Object>();
 		}
@@ -63,7 +67,7 @@ public abstract class AbstractLobInvocationHandler<D, P, E> extends AbstractChil
 		return super.getInvocationStrategy(object, method, parameters);
 	}
 
-	protected abstract Set<String> getDatabaseReadMethodSet();
+	protected abstract Set<Method> getDatabaseReadMethodSet();
 	
 	/**
 	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#postInvoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
@@ -72,7 +76,7 @@ public abstract class AbstractLobInvocationHandler<D, P, E> extends AbstractChil
 	@Override
 	protected void postInvoke(E object, Method method, Object[] parameters)
 	{
-		if (method.getName().equals("free"))
+		if ((this.freeMethod != null) && method.equals(this.freeMethod))
 		{
 			this.getParentProxy().removeChild(this);
 		}
@@ -83,15 +87,23 @@ public abstract class AbstractLobInvocationHandler<D, P, E> extends AbstractChil
 	 */
 	@SuppressWarnings("nls")
 	@Override
-	protected void close(P parent, E lob)
+	protected void close(P parent, E locator)
 	{
-		try
+		if (this.freeMethod != null)
 		{
-			lob.getClass().getMethod("free").invoke(lob);
-		}
-		catch (Exception e)
-		{
-			// Ignore
+			try
+			{
+				// free() is a Java 1.6 method - so invoke reflectively
+				this.freeMethod.invoke(locator);
+			}
+			catch (IllegalAccessException e)
+			{
+				this.logger.warn(e.getMessage(), e);
+			}
+			catch (InvocationTargetException e)
+			{
+				this.logger.warn(e.toString(), e.getTargetException());
+			}
 		}
 	}
 }

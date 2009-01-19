@@ -33,18 +33,15 @@ public class StatementInvocationStrategy<D> extends DriverWriteInvocationStrateg
 {
 	private Connection connection;
 	private TransactionContext<D> transactionContext;
-	private FileSupport fileSupport;
 	
 	/**
 	 * @param connection
 	 * @param transactionContext
-	 * @param fileSupport
 	 */
-	public StatementInvocationStrategy(Connection connection, TransactionContext<D> transactionContext, FileSupport fileSupport)
+	public StatementInvocationStrategy(Connection connection, TransactionContext<D> transactionContext)
 	{
 		this.connection = connection;
 		this.transactionContext = transactionContext;
-		this.fileSupport = fileSupport;
 	}
 	
 	/**
@@ -53,6 +50,6 @@ public class StatementInvocationStrategy<D> extends DriverWriteInvocationStrateg
 	@Override
 	public Statement invoke(SQLProxy<D, Connection> proxy, Invoker<D, Connection, Statement> invoker) throws Exception
 	{
-		return ProxyFactory.createProxy(java.sql.Statement.class, new StatementInvocationHandler<D>(this.connection, proxy, invoker, this.invokeAll(proxy, invoker), this.transactionContext, this.fileSupport));
+		return ProxyFactory.createProxy(java.sql.Statement.class, new StatementInvocationHandler<D>(this.connection, proxy, invoker, this.invokeAll(proxy, invoker), this.transactionContext, new FileSupportImpl()));
 	}
 }

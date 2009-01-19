@@ -20,13 +20,25 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.util.concurrent.ExecutorService;
+
+import net.sf.hajdbc.util.Enums;
+import net.sf.hajdbc.util.concurrent.SynchronousExecutor;
+
 /**
  * @author Paul Ferraro
  *
  */
 public enum TransactionMode
 {
-	PARALLEL, SERIAL;
+	PARALLEL(null), SERIAL(new SynchronousExecutor());
+	
+	private final ExecutorService executor;
+	
+	private TransactionMode(ExecutorService executor)
+	{
+		this.executor = executor;
+	}
 	
 	/**
 	 * Used by JiBX to unmarshal a transaction mode
@@ -35,7 +47,7 @@ public enum TransactionMode
 	 */
 	public static TransactionMode deserialize(String value)
 	{
-		return TransactionMode.valueOf(value.toUpperCase());
+		return Enums.valueOf(TransactionMode.class, value);
 	}
 	
 	/**
@@ -45,6 +57,11 @@ public enum TransactionMode
 	 */
 	public static String serialize(TransactionMode mode)
 	{
-		return mode.name().toLowerCase();
+		return Enums.id(mode);
+	}
+	
+	public ExecutorService getTransactionExecutor(ExecutorService executor)
+	{
+		return (this.executor != null) ? this.executor : executor;
 	}
 }

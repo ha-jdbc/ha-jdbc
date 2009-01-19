@@ -34,23 +34,20 @@ public class PreparedStatementInvocationStrategy<D> extends DatabaseWriteInvocat
 {
 	private Connection connection;
 	private TransactionContext<D> transactionContext;
-	private FileSupport fileSupport;
 	private String sql;
 	
 	/**
 	 * @param cluster
 	 * @param connection
 	 * @param transactionContext 
-	 * @param fileSupport
 	 * @param sql
 	 */
-	public PreparedStatementInvocationStrategy(DatabaseCluster<D> cluster, Connection connection, TransactionContext<D> transactionContext, FileSupport fileSupport, String sql)
+	public PreparedStatementInvocationStrategy(DatabaseCluster<D> cluster, Connection connection, TransactionContext<D> transactionContext, String sql)
 	{
 		super(cluster.getNonTransactionalExecutor());
 		
 		this.connection = connection;
 		this.transactionContext = transactionContext;
-		this.fileSupport = fileSupport;
 		this.sql = sql;
 	}
 
@@ -60,6 +57,6 @@ public class PreparedStatementInvocationStrategy<D> extends DatabaseWriteInvocat
 	@Override
 	public PreparedStatement invoke(SQLProxy<D, Connection> proxy, Invoker<D, Connection, PreparedStatement> invoker) throws Exception
 	{
-		return ProxyFactory.createProxy(PreparedStatement.class, new PreparedStatementInvocationHandler<D>(this.connection, proxy, invoker, this.invokeAll(proxy, invoker), this.transactionContext, this.fileSupport, this.sql));
+		return ProxyFactory.createProxy(PreparedStatement.class, new PreparedStatementInvocationHandler<D>(this.connection, proxy, invoker, this.invokeAll(proxy, invoker), this.transactionContext, new FileSupportImpl(), this.sql));
 	}
 }

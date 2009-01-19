@@ -22,6 +22,7 @@ package net.sf.hajdbc.dialect;
 
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.util.ClassEnum;
+import net.sf.hajdbc.util.Enums;
 
 /**
  * @author  Paul Ferraro
@@ -78,7 +79,7 @@ public enum DialectClass implements ClassEnum<Dialect>
 	{
 		try
 		{
-			DialectClass dialectClass = (id != null) ? DialectClass.valueOf(id.toUpperCase()) : STANDARD;
+			DialectClass dialectClass = (id != null) ? Enums.valueOf(DialectClass.class, id) : STANDARD;
 			
 			return dialectClass.newInstance();
 		}
@@ -99,7 +100,7 @@ public enum DialectClass implements ClassEnum<Dialect>
 		{
 			if (dialectClass.isInstance(dialect))
 			{
-				return dialectClass.name().toLowerCase();
+				return Enums.id(dialectClass);
 			}
 		}
 		

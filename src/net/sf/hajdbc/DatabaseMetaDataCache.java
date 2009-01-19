@@ -32,10 +32,10 @@ import java.sql.SQLException;
 public interface DatabaseMetaDataCache
 {
 	/**
-	 * Initializes/Flushes this cache.
+	 * Flushes this cache.
 	 * @throws SQLException if flush fails
 	 */
-	public void flush(Connection connection) throws SQLException;
+	public void flush() throws SQLException;
 	
 	/**
 	 * Retrieves processed meta data for this database.
@@ -43,6 +43,4 @@ public interface DatabaseMetaDataCache
 	 * @throws SQLException if database properties could not be fetched.
 	 */
 	public DatabaseProperties getDatabaseProperties(Connection connection) throws SQLException;
-	
-	public void setDialect(Dialect dialect);
 }

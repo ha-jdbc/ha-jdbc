@@ -54,6 +54,6 @@ public class ConnectionInvocationStrategy<D, P> extends DatabaseWriteInvocationS
 	@Override
 	public Connection invoke(SQLProxy<D, P> proxy, Invoker<D, P, Connection> invoker) throws Exception
 	{
-		return ProxyFactory.createProxy(Connection.class, new ConnectionInvocationHandler<D, P>(this.connectionFactory, proxy, invoker, this.invokeAll(proxy, invoker), this.transactionContext, new FileSupportImpl()));
+		return ProxyFactory.createProxy(Connection.class, new ConnectionInvocationHandler<D, P>(this.connectionFactory, proxy, invoker, this.invokeAll(proxy, invoker), this.transactionContext));
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2007 Paul Ferraro
+ * Copyright (c) 2004-2008 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -18,39 +18,29 @@
  * 
  * Contact: ferraro@users.sourceforge.net
  */
-package net.sf.hajdbc.cache;
+package net.sf.hajdbc.sql;
 
 import java.sql.Connection;
-import java.sql.SQLException;
+import java.sql.DatabaseMetaData;
 
-import net.sf.hajdbc.DatabaseProperties;
+import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 /**
- * DatabaseMetaDataCache implementation that does not cache data.
- * To be used when memory usage is more of a concern than performance.
- * 
  * @author Paul Ferraro
- * @since 2.0
+ *
  */
-public class NullDatabaseMetaDataCache extends AbstractDatabaseMetaDataCache
+public class DatabaseMetaDataInvocationStrategy<D> extends DatabaseReadInvocationStrategy<D, Connection, DatabaseMetaData>
 {
-	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush(java.sql.Connection)
-	 */
-	@Override
-	public void flush(Connection connection)
+	private final Connection connection;
+	
+	public DatabaseMetaDataInvocationStrategy(Connection connection)
 	{
-		// Nothing to flush
+		this.connection = connection;
 	}
-
-	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getDatabaseProperties(java.sql.Connection)
-	 */
+	
 	@Override
-	public DatabaseProperties getDatabaseProperties(Connection connection) throws SQLException
+	public DatabaseMetaData invoke(SQLProxy<D, Connection> proxy, Invoker<D, Connection, DatabaseMetaData> invoker) throws Exception
 	{
-		LazyDatabaseProperties.setConnection(connection);
-		
-		return new LazyDatabaseProperties(this.dialect);
+		return ProxyFactory.createProxy(DatabaseMetaData.class, new DatabaseMetaDataInvocationHandler<D>(this.connection, proxy, invoker, this.invokeAll(proxy, invoker)));
 	}
 }

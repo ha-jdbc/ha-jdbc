@@ -20,22 +20,25 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.sql.SQLException;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.Set;
 
-import javax.sql.CommonDataSource;
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.util.reflect.Methods;
 
-/**
- * @author Paul Ferraro
- * @param <D> the data source class
- */
-public interface DataSourceProxyFactory<D extends CommonDataSource>
+public class SQLXMLInvocationHandler<D, P> extends LocatorInvocationHandler<D, P, java.sql.SQLXML>
 {
-	/**
-	 * Creates a data source proxy to the specified cluster, using the configuration file at the specified location.
-	 * @param id a database cluster identifier
-	 * @param config the location of the configuration file for this cluster
-	 * @return a proxied data source
-	 * @throws SQLException if the data source proxy could not be created
-	 */
-	public D createProxy(String id, String config) throws SQLException;
+	private static final Set<Method> DATABASE_READ_METHOD_SET = Methods.findMethods(java.sql.SQLXML.class, "getBinaryStream", "getCharacterStream", "getSource", "getString");
+
+	protected SQLXMLInvocationHandler(P object, SQLProxy<D, P> proxy, Invoker<D, P, java.sql.SQLXML> invoker, Map<Database<D>, java.sql.SQLXML> objectMap) throws Exception
+	{
+		super(object, proxy, invoker, java.sql.SQLXML.class, objectMap);
+	}
+
+	@Override
+	protected Set<Method> getDatabaseReadMethodSet()
+	{
+		return DATABASE_READ_METHOD_SET;
+	}
 }

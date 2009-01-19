@@ -35,6 +35,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -69,6 +70,7 @@ import net.sf.hajdbc.DatabaseClusterMBean;
 import net.sf.hajdbc.DatabaseDeactivationListener;
 import net.sf.hajdbc.DatabaseEvent;
 import net.sf.hajdbc.DatabaseMetaDataCache;
+import net.sf.hajdbc.DatabaseMetaDataCacheFactory;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.LockManager;
 import net.sf.hajdbc.Messages;
@@ -81,7 +83,6 @@ import net.sf.hajdbc.local.LocalStateManager;
 import net.sf.hajdbc.sync.SynchronizationContextImpl;
 import net.sf.hajdbc.sync.SynchronizationStrategyBuilder;
 import net.sf.hajdbc.util.concurrent.CronThreadPoolExecutor;
-import net.sf.hajdbc.util.concurrent.SynchronousExecutor;
 
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IMarshallingContext;
@@ -98,11 +99,29 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, DatabaseClusterMBean, MBeanRegistration
 {
-	static Logger logger = LoggerFactory.getLogger(AbstractDatabaseCluster.class);
+	/** This is a work-around for Java 1.4, where Boolean does not implement Comparable */
+	private static final Comparator<Boolean> booleanComparator = new Comparator<Boolean>()
+	{
+		@Override
+		public int compare(Boolean value1, Boolean value2)
+		{
+			return this.valueOf(value1) - this.valueOf(value2);
+		}
 		
+		private int valueOf(Boolean value)
+		{
+			return value.booleanValue() ? 1 : 0;
+		}
+	};
+
+	static Logger logger = LoggerFactory.getLogger(AbstractDatabaseCluster.class);
+
+//	private static final Method isValidMethod = Methods.findMethod(Connection.class, "isValid", Integer.TYPE);
+	
 	private String id;
 	private Balancer<D> balancer;
 	private Dialect dialect;
+	private DatabaseMetaDataCacheFactory databaseMetaDataCacheFactory;
 	private DatabaseMetaDataCache databaseMetaDataCache;
 	private String defaultSynchronizationStrategyId;
 	private CronExpression failureDetectionExpression;
@@ -123,8 +142,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	private Map<String, SynchronizationStrategy> synchronizationStrategyMap = new HashMap<String, SynchronizationStrategy>();
 	private DatabaseClusterDecorator decorator;
 	private Map<String, Database<D>> databaseMap = new HashMap<String, Database<D>>();
-	private ExecutorService transactionalExecutor;
-	private ExecutorService nonTransactionalExecutor;
+	private ExecutorService executor;
 	private CronThreadPoolExecutor cronExecutor = new CronThreadPoolExecutor(2);
 	private LockManager lockManager = new LocalLockManager();
 	private StateManager stateManager = new LocalStateManager(this);
@@ -175,10 +193,10 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 				}
 			};
 
-			futureMap.put(database, this.nonTransactionalExecutor.submit(task));
+			futureMap.put(database, this.executor.submit(task));
 		}
 
-		Map<Boolean, List<Database<D>>> map = new TreeMap<Boolean, List<Database<D>>>();
+		Map<Boolean, List<Database<D>>> map = new TreeMap<Boolean, List<Database<D>>>(booleanComparator);
 		
 		int size = databases.size();
 		
@@ -250,7 +268,71 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			}
 		}
 	}
+/*	
+	boolean isAliveNew(Database<D> database)
+	{
+		Connection connection = null;
+		
+		try
+		{
+			connection = database.connect(database.createConnectionFactory());
+			
+			return this.isAlive(connection);
+		}
+		catch (SQLException e)
+		{
+			logger.warn(Messages.getMessage(Messages.DATABASE_NOT_ALIVE, database, this), e);
+			
+			return false;
+		}
+		finally
+		{
+			if (connection != null)
+			{
+				try
+				{
+					connection.close();
+				}
+				catch (SQLException e)
+				{
+					logger.warn(e.getMessage(), e);
+				}
+			}
+		}
+	}
 	
+	private boolean isAlive(Connection connection)
+	{
+		if (isValidMethod != null)
+		{
+			try
+			{
+				return connection.isValid(0);
+			}
+			catch (SQLException e)
+			{
+				// isValid not yet supported
+			}
+		}
+
+		try
+		{
+			Statement statement = connection.createStatement();
+			
+			statement.execute(this.dialect.getSimpleSQL());
+
+			statement.close();
+			
+			return true;
+		}
+		catch (SQLException e)
+		{
+			logger.warn(e.toString(), e);
+			
+			return false;
+		}
+	}
+*/	
 	/**
 	 * @see net.sf.hajdbc.DatabaseCluster#deactivate(net.sf.hajdbc.Database, net.sf.hajdbc.StateManager)
 	 */
@@ -405,7 +487,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	@Override
 	public ExecutorService getTransactionalExecutor()
 	{
-		return this.transactionalExecutor;
+		return this.transactionMode.getTransactionExecutor(this.executor);
 	}
 
 	/**
@@ -414,7 +496,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	@Override
 	public ExecutorService getNonTransactionalExecutor()
 	{
-		return this.nonTransactionalExecutor;
+		return this.executor;
 	}
 	
 	/**
@@ -594,9 +676,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		this.lockManager.start();
 		this.stateManager.start();
 		
-		this.nonTransactionalExecutor = new ThreadPoolExecutor(this.minThreads, this.maxThreads, this.maxIdle, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new ThreadPoolExecutor.CallerRunsPolicy());
-		
-		this.transactionalExecutor = this.transactionMode.equals(TransactionMode.SERIAL) ? new SynchronousExecutor() : this.nonTransactionalExecutor;
+		this.executor = new ThreadPoolExecutor(this.minThreads, this.maxThreads, this.maxIdle, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new ThreadPoolExecutor.CallerRunsPolicy());
 		
 		Set<String> databaseSet = this.stateManager.getInitialState();
 		
@@ -620,7 +700,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			}
 		}
 		
-		this.databaseMetaDataCache.setDialect(this.dialect);
+		this.databaseMetaDataCache = this.databaseMetaDataCacheFactory.createCache(this);
 		
 		try
 		{
@@ -660,14 +740,9 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		
 		this.cronExecutor.shutdownNow();
 		
-		if (this.nonTransactionalExecutor != null)
+		if (this.executor != null)
 		{
-			this.nonTransactionalExecutor.shutdownNow();
-		}
-		
-		if (this.transactionalExecutor != null)
-		{
-			this.transactionalExecutor.shutdownNow();
+			this.executor.shutdownNow();
 		}
 	}
 	
@@ -677,37 +752,13 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 	@Override
 	public void flushMetaDataCache()
 	{
-		Connection connection = null;
-		
 		try
 		{
-			Database<D> database = this.balancer.next();
-			
-			connection = database.connect(database.createConnectionFactory());
-			
-			this.databaseMetaDataCache.flush(connection);
-		}
-		catch (NoSuchElementException e)
-		{
-			throw new IllegalStateException(Messages.getMessage(Messages.NO_ACTIVE_DATABASES, this));
+			this.databaseMetaDataCache.flush();
 		}
 		catch (SQLException e)
 		{
 			throw new IllegalStateException(e.toString(), e);
-		}
-		finally
-		{
-			if (connection != null)
-			{
-				try
-				{
-					connection.close();
-				}
-				catch (SQLException e)
-				{
-					logger.warn(e.toString(), e);
-				}
-			}
 		}
 	}
 

@@ -20,101 +20,20 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.lang.reflect.InvocationHandler;
 import java.sql.SQLException;
-import java.util.Hashtable;
-
-import javax.naming.Context;
-import javax.naming.Name;
-import javax.naming.RefAddr;
-import javax.naming.Reference;
-import javax.naming.spi.ObjectFactory;
-import javax.sql.CommonDataSource;
-
-import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 /**
  * @author Paul Ferraro
- *
- * @param <D>
+ * @param <D> the data source class
  */
-public abstract class CommonDataSourceFactory<D extends CommonDataSource> implements ObjectFactory, DataSourceProxyFactory<D>
+public interface CommonDataSourceFactory<D>
 {
-	private Class<D> targetClass;
-	
 	/**
-	 * @param targetClass
+	 * Creates a data source proxy to the specified cluster, using the configuration file at the specified location.
+	 * @param id a database cluster identifier
+	 * @param config the location of the configuration file for this cluster
+	 * @return a proxied data source
+	 * @throws SQLException if the data source proxy could not be created
 	 */
-	protected CommonDataSourceFactory(Class<D> targetClass)
-	{
-		this.targetClass = targetClass;
-	}
-
-	/**
-	 * @see javax.naming.spi.ObjectFactory#getObjectInstance(java.lang.Object, javax.naming.Name, javax.naming.Context, java.util.Hashtable)
-	 */
-	@Override
-	public Object getObjectInstance(Object object, Name name, Context context, Hashtable<?,?> environment) throws Exception
-	{
-		if ((object == null) || !(object instanceof Reference)) return null;
-		
-		Reference reference = (Reference) object;
-		
-		String className = reference.getClassName();
-		
-		if ((className == null) || !className.equals(this.targetClass.getName())) return null;
-		
-		RefAddr idAddr = reference.get(CommonDataSourceReference.CLUSTER);
-		
-		if (idAddr == null) return null;
-		
-		Object idAddrContent = idAddr.getContent();
-		
-		if ((idAddrContent == null) || !(idAddrContent instanceof String)) return null;
-		
-		String id = (String) idAddrContent;
-		
-		RefAddr configAddr = reference.get(CommonDataSourceReference.CONFIG);
-		
-		String config = null;
-		
-		if (configAddr != null)
-		{
-			Object configAddrContent = configAddr.getContent();
-			
-			if ((configAddrContent != null) && (configAddrContent instanceof String))
-			{
-				config = (String) configAddrContent;
-			}
-		}
-		
-		return this.createProxy(id, config);
-	}
-
-	/**
-	 * @see net.sf.hajdbc.sql.DataSourceProxyFactory#createProxy(java.lang.String, java.lang.String)
-	 */
-	public D createProxy(String id, String config) throws SQLException
-	{
-		DatabaseCluster<D> cluster = this.getDatabaseCluster(id, config);
-		
-		if (cluster == null) return null;
-		
-		return ProxyFactory.createProxy(this.targetClass, this.getInvocationHandler(cluster));
-	}
-	
-	/**
-	 * @param id
-	 * @param config
-	 * @return the appropriate database cluster
-	 * @throws SQLException
-	 */
-	protected abstract DatabaseCluster<D> getDatabaseCluster(String id, String config) throws SQLException;
-	
-	/**
-	 * @param cluster
-	 * @return the appropriate proxy invocation handler for this datasource
-	 */
-	protected abstract InvocationHandler getInvocationHandler(DatabaseCluster<D> cluster);
+	public D createProxy(String id, String config) throws SQLException;
 }

@@ -23,7 +23,7 @@ package net.sf.hajdbc.balancer;
 import net.sf.hajdbc.Balancer;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.util.ClassEnum;
-import net.sf.hajdbc.util.Strings;
+import net.sf.hajdbc.util.Enums;
 
 /**
  * @author  Paul Ferraro
@@ -73,7 +73,7 @@ public enum BalancerClass implements ClassEnum<Balancer<?>>
 	{
 		try
 		{
-			return BalancerClass.valueOf(id.toUpperCase().replace(Strings.DASH, Strings.UNDERSCORE)).newInstance();
+			return Enums.valueOf(BalancerClass.class, id).newInstance();
 		}
 		catch (IllegalArgumentException e)
 		{
@@ -92,7 +92,7 @@ public enum BalancerClass implements ClassEnum<Balancer<?>>
 		{
 			if (balancerClass.isInstance(balancer))
 			{
-				return balancerClass.name().toLowerCase().replace(Strings.UNDERSCORE, Strings.DASH);
+				return Enums.id(balancerClass);
 			}
 		}
 		

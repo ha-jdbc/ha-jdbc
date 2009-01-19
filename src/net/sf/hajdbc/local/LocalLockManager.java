@@ -65,7 +65,7 @@ public class LocalLockManager implements LockManager
 		
 		if (lock == null)
 		{
-			lock = new SemaphoreReadWriteLock();
+			lock = new SemaphoreReadWriteLock(true);
 			
 			this.lockMap.put(object, lock);
 		}

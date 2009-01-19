@@ -27,11 +27,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.WeakHashMap;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
@@ -61,7 +61,7 @@ public abstract class AbstractInvocationHandler<D, T> implements InvocationHandl
 	protected DatabaseCluster<D> cluster;
 	private Class<T> proxyClass;
 	private Map<Database<D>, T> objectMap;
-	private List<SQLProxy<D, ?>> childList = new LinkedList<SQLProxy<D, ?>>();
+	private Map<SQLProxy<D, ?>, Void> childMap = new WeakHashMap<SQLProxy<D, ?>, Void>();
 	private Map<Method, Invoker<D, T, ?>> invokerMap = new HashMap<Method, Invoker<D, T, ?>>();
 	
 	/**
@@ -234,9 +234,9 @@ public abstract class AbstractInvocationHandler<D, T> implements InvocationHandl
 	@Override
 	public final void addChild(SQLProxy<D, ?> child)
 	{
-		synchronized (this.childList)
+		synchronized (this.childMap)
 		{
-			this.childList.add(child);
+			this.childMap.put(child, null);
 		}
 	}
 	
@@ -246,9 +246,9 @@ public abstract class AbstractInvocationHandler<D, T> implements InvocationHandl
 	@Override
 	public final void removeChildren()
 	{
-		synchronized (this.childList)
+		synchronized (this.childMap)
 		{
-			this.childList.clear();
+			this.childMap.clear();
 		}
 	}
 	
@@ -258,11 +258,11 @@ public abstract class AbstractInvocationHandler<D, T> implements InvocationHandl
 	@Override
 	public final void removeChild(SQLProxy<D, ?> child)
 	{
-		synchronized (this.childList)
+		child.removeChildren();
+		
+		synchronized (this.childMap)
 		{
-			child.removeChildren();
-			
-			this.childList.remove(child);
+			this.childMap.remove(child);
 		}
 	}
 	
@@ -274,7 +274,7 @@ public abstract class AbstractInvocationHandler<D, T> implements InvocationHandl
 	 * @return an underlying SQL object
 	 */
 	@Override
-	public final T getObject(Database<D> database)
+	public T getObject(Database<D> database)
 	{
 		synchronized (this.objectMap)
 		{
@@ -340,9 +340,9 @@ public abstract class AbstractInvocationHandler<D, T> implements InvocationHandl
 	@Override
 	public final void retain(Set<Database<D>> databaseSet)
 	{
-		synchronized (this.childList)
+		synchronized (this.childMap)
 		{
-			for (SQLProxy<D, ?> child: this.childList)
+			for (SQLProxy<D, ?> child: this.childMap.keySet())
 			{
 				child.retain(databaseSet);
 			}

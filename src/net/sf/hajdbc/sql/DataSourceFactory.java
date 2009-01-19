@@ -31,7 +31,7 @@ import net.sf.hajdbc.DatabaseClusterFactory;
 /**
  * @author Paul Ferraro
  */
-public class DataSourceFactory extends CommonDataSourceFactory<DataSource>
+public class DataSourceFactory extends CommonDataSourceObjectFactory<DataSource>
 {
 	/**
 	 * Constructs a new factory for creating a <code>DataSource</code>.

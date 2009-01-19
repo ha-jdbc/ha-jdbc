@@ -20,13 +20,13 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.lang.reflect.Method;
 import java.sql.Blob;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.util.reflect.Methods;
 
 /**
  * @author Paul Ferraro
@@ -34,9 +34,9 @@ import net.sf.hajdbc.Database;
  * @param <P> 
  */
 @SuppressWarnings("nls")
-public class BlobInvocationHandler<D, P> extends AbstractLobInvocationHandler<D, P, Blob>
+public class BlobInvocationHandler<D, P> extends LocatorInvocationHandler<D, P, Blob>
 {
-	private static final Set<String> DATABASE_READ_METHOD_SET = new HashSet<String>(Arrays.asList("getBinaryStream", "getBytes", "length", "position"));
+	private static final Set<Method> DATABASE_READ_METHOD_SET = Methods.findMethods(Blob.class, "getBinaryStream", "getBytes", "length", "position");
 
 	/**
 	 * @param object
@@ -51,10 +51,10 @@ public class BlobInvocationHandler<D, P> extends AbstractLobInvocationHandler<D,
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractLobInvocationHandler#getDatabaseReadMethodSet()
+	 * @see net.sf.hajdbc.sql.LocatorInvocationHandler#getDatabaseReadMethodSet()
 	 */
 	@Override
-	protected Set<String> getDatabaseReadMethodSet()
+	protected Set<Method> getDatabaseReadMethodSet()
 	{
 		return DATABASE_READ_METHOD_SET;
 	}

@@ -33,7 +33,6 @@ import javax.management.StandardMBean;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.sql.CommonDataSource;
 
 import net.sf.hajdbc.Messages;
 
@@ -42,7 +41,7 @@ import net.sf.hajdbc.Messages;
  * @author Paul Ferraro
  * @param <D> <code>javax.sql</code> data source interface
  */
-public abstract class CommonDataSourceDatabase<D extends CommonDataSource> extends AbstractDatabase<D> implements InactiveDataSourceDatabaseMBean
+public abstract class CommonDataSourceDatabase<D> extends AbstractDatabase<D> implements InactiveDataSourceDatabaseMBean
 {
 	private String name;
 	private Class<D> targetClass;
