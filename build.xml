@@ -58,6 +58,7 @@
 	
 	<path id="src.classpath">
 		<fileset dir="${lib.dir}" includes="*.jar"></fileset>
+		<fileset dir="${lib.compile.dir}" includes="*.jar"></fileset>
 	</path>
 
 	<path id="build.classpath">

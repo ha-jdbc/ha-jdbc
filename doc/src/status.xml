@@ -12,6 +12,60 @@
 	</contexts>
 
 	<changes>
+		<release version="2.0.14" date="...">
+			<action context="lib" dev="PF" type="update">
+				Upgraded JiBX to 1.1.6a.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded SLF4J to 1.5.6.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded Retrotranslator to 1.2.8.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded JGroups to 2.6.7.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded Quartz to 1.6.4.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded EasyMock to 2.4.
+			</action>
+			<action context="src" dev="PF" type="fix" fixes-bug="2004105">
+				Remove file list items during FileSupport.close() - rather than wait for finalization.
+			</action>
+			<action context="src" dev="PF" type="fix" fixes-bug="2004105">
+				FileSupport is no longer used for large object support and is now created/destroyed per statement, rather than per connection.
+				This helps mitigate temp file build-up.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Removed references to javax.sql.CommonDataSource - this broke binary compatibility with Java 1.4/1.5 for datasource configurations.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed java 1.4 binary incompatibility with Boolean (does not yet implement Comparable) not handled by Retrotranslator.
+			</action>
+			<action context="src" dev="PF" type="fix" due-to="Ben Short">
+				Restore autoCommit mode to its original value at the end of synchronize(...) in each strategy.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed regression in lazy/none meta-data-cache that broke synchronization. 
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed misleading Spanish, French, Italian, and Portuguese translation of config-not-found message.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Store child proxies using weak references to fix potential memory leak if proxy is not closed.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Remote locks in DistributableLockManager now respect lock fairness.
+			</action>
+			<action context="src" dev="PF" type="add">
+				Startup will now also consult ha-jdbc.{0}.configuration system property when searching for configuration file.
+			</action>
+			<action context="src" dev="PF" type="add">
+				Add HA proxying of DatabaseMetaData interface.
+			</action>
+		</release>
 		<release version="2.0.13" date="May 20, 2008">
 			<action context="src" dev="PF" type="fix" due-to="Jason Rosenberg">
 				Fixed SybaseDialect.getSimpleSQL() to query for GETDATE().
@@ -39,7 +93,7 @@
 			<action context="src" dev="PF" type="add">
 				Added explicit, Referenceable DataSource, ConnectionPoolDataSource, and XADataSource proxy implementations.
 				The <![CDATA[<name>]]> element of a <![CDATA[<datasource>, <pool-datasource>, or <xa-datasource>]]> configuration can define a data source implementation class name.
-				If the <![CDATA[<name>]]> element is a class name, then the following <![CDATA[<property name="...">]]> elements will be interpreted as property values of the data source (e.g. serverName, portNumber, databaseName).
+				If the <![CDATA[<name>]]> element is a class name, then the subsequent <![CDATA[<property name="...">]]> elements will be interpreted as property values of the data source (e.g. serverName, portNumber, databaseName).
 			</action>
 			<action context="src" dev="PF" type="fix">
 				Added missing definitions for <![CDATA[<pool-datasource>]]> and <![CDATA[<xa-datasource>]]> to DTD and XSD.
@@ -1301,16 +1355,29 @@
 	<todo>
 		<actions priority="high">
 			<action type="update" context="src" dev="PF">
-				Improve network failure handling of distributable cluster configurations where databases co-reside on peer nodes.
-			</action>
-			<action type="update" context="src" dev="PF">
-				Minimize table/row locking during diff and full synchronization strategies.
+				Add diff synchronization strategy alternative that leverages a last modified timestamp column.
+				This will minimize data needed to be queried, as well as speed up row comparisons.
 			</action>
 			<action type="add" context="src" dev="PF">
 				Create a feasible synchronization strategy for large databases.
+				I envision a buddy schema that intelligently records inserted/modified/deleted primary key values per table.
+				Synchronization will only need to insert/update/delete the recorded rows.
+			</action>
+			<action type="add" context="src" dev="PF">
+				Add optional "protect-commit" mode that detects and recovers from partial commits incurred as a result of a node crash.
 			</action>
 		</actions>
 		<actions priority="medium">
+			<action type="add" context="src" dev="PF">
+				Create distributable balancer implementation for round-robin and load.
+				Allow distributable configurations to opt for local balancer implementations.
+			</action>
+			<action type="update" context="src" dev="PF">
+				Add more robust handling of jgroups partitions.
+			</action>
+			<action type="update" context="" dev="PF">
+				Create integration test suite using H2 or some full-featured, highly standard compliant embedded database.
+			</action>
 			<action type="add" context="doc" dev="PF">
 				Update performance graphs with results from latest version.
 			</action>
@@ -1322,6 +1389,7 @@
 			</action>
 			<action type="update" context="src" dev="PF">
 				Investigate the potential of SQLState codes as a replacement for secondary isAlive() queries when determining how to handle failures.
+				Also consider using Connection.isValid(int) with Retrotranslator plugin implementation to support Java 1.4 + 1.5.
 			</action>
 		</actions>
 	</todo>

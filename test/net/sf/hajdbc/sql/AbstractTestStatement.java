@@ -119,7 +119,6 @@ public abstract class AbstractTestStatement<S extends Statement> implements java
 		this.reset();
 	}
 	
-	@SuppressWarnings("unused")
 	protected void recordConstructor() throws SQLException
 	{
 		this.parent.addChild(EasyMock.isA(StatementInvocationHandler.class));
@@ -249,6 +248,7 @@ public abstract class AbstractTestStatement<S extends Statement> implements java
 		this.statement1.close();
 		this.statement2.close();
 
+		this.fileSupport.close();
 		this.parent.removeChild(this.handler);
 		
 		this.replay();
@@ -1105,6 +1105,9 @@ public abstract class AbstractTestStatement<S extends Statement> implements java
 		
 		this.reset();
 		
+		EasyMock.makeThreadSafe(this.statement1, true);
+		EasyMock.makeThreadSafe(this.statement2, true);
+		
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		this.expectIdentifiers(sql, null, null);
@@ -1144,6 +1147,9 @@ public abstract class AbstractTestStatement<S extends Statement> implements java
 		assert SQLProxy.class.cast(Proxy.getInvocationHandler(results)).getObject(this.database2) == resultSet2;
 		
 		this.reset();
+		
+		EasyMock.makeThreadSafe(this.statement1, true);
+		EasyMock.makeThreadSafe(this.statement2, true);
 		
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -1186,6 +1192,9 @@ public abstract class AbstractTestStatement<S extends Statement> implements java
 		assert SQLProxy.class.cast(Proxy.getInvocationHandler(results)).getObject(this.database2) == resultSet2;
 		
 		this.reset();
+		
+		EasyMock.makeThreadSafe(this.statement1, true);
+		EasyMock.makeThreadSafe(this.statement2, true);
 		
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
@@ -1230,6 +1239,9 @@ public abstract class AbstractTestStatement<S extends Statement> implements java
 		
 		this.reset();
 		
+		EasyMock.makeThreadSafe(this.statement1, true);
+		EasyMock.makeThreadSafe(this.statement2, true);
+		
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
 		this.expectIdentifiers(sql, null, "table");
@@ -1272,6 +1284,9 @@ public abstract class AbstractTestStatement<S extends Statement> implements java
 		assert SQLProxy.class.cast(Proxy.getInvocationHandler(results)).getObject(this.database2) == resultSet2;
 		
 		this.reset();
+		
+		EasyMock.makeThreadSafe(this.statement1, true);
+		EasyMock.makeThreadSafe(this.statement2, true);
 		
 		EasyMock.expect(this.cluster.isActive()).andReturn(true);
 		
