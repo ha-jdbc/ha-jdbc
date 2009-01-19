@@ -143,7 +143,7 @@ public class TestDB2Dialect extends TestStandardDialect
 	
 	@Override
 	@Test(dataProvider = "current-date")
-	public void testEvaluateCurrentDate(String sql, java.sql.Date date) throws SQLException
+	public void testEvaluateCurrentDate(String sql, java.sql.Date date)
 	{
 		String expected = sql.contains("success") ? String.format("SELECT '%s' FROM success", date.toString()) : sql;
 		
@@ -154,7 +154,7 @@ public class TestDB2Dialect extends TestStandardDialect
 	
 	@Override
 	@Test(dataProvider = "current-time")
-	public void testEvaluateCurrentTime(String sql, java.sql.Time date) throws SQLException
+	public void testEvaluateCurrentTime(String sql, java.sql.Time date)
 	{
 		String expected = sql.contains("success") ? String.format("SELECT '%s' FROM success", date.toString()) : sql;
 		
@@ -165,7 +165,7 @@ public class TestDB2Dialect extends TestStandardDialect
 	
 	@Override
 	@Test(dataProvider = "current-timestamp")
-	public void testEvaluateCurrentTimestamp(String sql, java.sql.Timestamp date) throws SQLException
+	public void testEvaluateCurrentTimestamp(String sql, java.sql.Timestamp date)
 	{
 		String expected = sql.contains("success") ? String.format("SELECT '%s' FROM success", date.toString()) : sql;
 		

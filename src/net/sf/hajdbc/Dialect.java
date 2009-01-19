@@ -190,7 +190,7 @@ public interface Dialect
 	 * @throws SQLException 
 	 * @since 2.0.2
 	 */
-	public String evaluateCurrentDate(String sql, java.sql.Date date) throws SQLException;
+	public String evaluateCurrentDate(String sql, java.sql.Date date);
 	
 	/**
 	 * Replaces non-deterministic CURRENT_TIME functions with deterministic static values.
@@ -200,7 +200,7 @@ public interface Dialect
 	 * @throws SQLException 
 	 * @since 2.0.2
 	 */
-	public String evaluateCurrentTime(String sql, java.sql.Time time) throws SQLException;
+	public String evaluateCurrentTime(String sql, java.sql.Time time);
 	
 	/**
 	 * Replaces non-deterministic CURRENT_TIMESTAMP functions with deterministic static values.
@@ -210,7 +210,7 @@ public interface Dialect
 	 * @throws SQLException 
 	 * @since 2.0.2
 	 */
-	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp timestamp) throws SQLException;
+	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp timestamp);
 	
 	/**
 	 * Replaces non-deterministic RAND() functions with deterministic static values.
@@ -219,5 +219,5 @@ public interface Dialect
 	 * @throws SQLException 
 	 * @since 2.0.2
 	 */
-	public String evaluateRand(String sql) throws SQLException;
+	public String evaluateRand(String sql);
 }

@@ -477,7 +477,7 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Test(dataProvider = "current-date")
-	public void testEvaluateCurrentDate(String sql, java.sql.Date date) throws SQLException
+	public void testEvaluateCurrentDate(String sql, java.sql.Date date)
 	{
 		String expected = sql.contains("success") ? String.format("SELECT DATE '%s' FROM success", date.toString()) : sql;
 		
@@ -487,7 +487,7 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Override
-	public String evaluateCurrentDate(String sql, java.sql.Date date) throws SQLException
+	public String evaluateCurrentDate(String sql, java.sql.Date date)
 	{
 		return this.dialect.evaluateCurrentDate(sql, date);
 	}
@@ -513,7 +513,7 @@ public class TestStandardDialect implements Dialect
 	}
 
 	@Test(dataProvider = "current-time")
-	public void testEvaluateCurrentTime(String sql, java.sql.Time date) throws SQLException
+	public void testEvaluateCurrentTime(String sql, java.sql.Time date)
 	{
 		String expected = sql.contains("success") ? String.format("SELECT TIME '%s' FROM success", date.toString()) : sql;
 		
@@ -523,7 +523,7 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Override
-	public String evaluateCurrentTime(String sql, java.sql.Time date) throws SQLException
+	public String evaluateCurrentTime(String sql, java.sql.Time date)
 	{
 		return this.dialect.evaluateCurrentTime(sql, date);
 	}
@@ -549,7 +549,7 @@ public class TestStandardDialect implements Dialect
 	}
 
 	@Test(dataProvider = "current-timestamp")
-	public void testEvaluateCurrentTimestamp(String sql, java.sql.Timestamp date) throws SQLException
+	public void testEvaluateCurrentTimestamp(String sql, java.sql.Timestamp date)
 	{
 		String expected = sql.contains("success") ? String.format("SELECT TIMESTAMP '%s' FROM success", date.toString()) : sql;
 		
@@ -559,7 +559,7 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Override
-	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp date) throws SQLException
+	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp date)
 	{
 		return this.dialect.evaluateCurrentTimestamp(sql, date);
 	}
@@ -577,7 +577,7 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Test(dataProvider = "random")
-	public void testEvaluateRand(String sql) throws SQLException
+	public void testEvaluateRand(String sql)
 	{
 		String result = this.evaluateRand(sql);
 		
@@ -592,7 +592,7 @@ public class TestStandardDialect implements Dialect
 	}
 	
 	@Override
-	public String evaluateRand(String sql) throws SQLException
+	public String evaluateRand(String sql)
 	{
 		return this.dialect.evaluateRand(sql);
 	}
