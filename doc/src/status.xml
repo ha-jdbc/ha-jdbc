@@ -12,7 +12,7 @@
 	</contexts>
 
 	<changes>
-		<release version="2.0.14" date="...">
+		<release version="2.0.14-rc-1" date="January 25, 2009">
 			<action context="lib" dev="PF" type="update">
 				Upgraded JiBX to 1.1.6a.
 			</action>
