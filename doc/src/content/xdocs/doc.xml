@@ -152,8 +152,9 @@
 				<li>
 					<p>Determine the resource name from one of the following sources:</p>
 					<ol>
-						<li>A <em>config</em> property passed to DriverManager.getConnection(String, Properties), or the getConfig() property of the DataSource</li>
-						<li>The <em>ha-jdbc.configuration</em> system property</li>
+						<li>A <code>config</code> property passed to <code>DriverManager.getConnection(String, Properties)</code>, or the <code>getConfig()</code> property of the DataSource</li>
+						<li>The <code>ha-jdbc.</code><em>cluster-id</em><code>.configuration</code> system property</li>
+						<li>The <code>ha-jdbc.configuration</code> system property</li>
 						<li>Use default value of <em>ha-jdbc-{0}.xml</em></li>
 					</ol>
 				</li>
