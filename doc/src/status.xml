@@ -65,6 +65,10 @@
 			<action context="src" dev="PF" type="add">
 				Add HA proxying of DatabaseMetaData interface.
 			</action>
+			<action context="src" dev="PF" type="add">
+				Added <code>net.sf.hajdbc.util.servlet.DatabaseClusterShutdownContextListener</code> to automatically shutdown a list of database clusters scoped to a servlet context.
+				The clusters to shutdown are defined in a comma delimited init parameter: <code>ha-jdbc.clusters</code>
+			</action>
 		</release>
 		<release version="2.0.13" date="May 20, 2008">
 			<action context="src" dev="PF" type="fix" due-to="Jason Rosenberg">
