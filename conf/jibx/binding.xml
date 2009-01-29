@@ -38,6 +38,7 @@
 	<mapping class="net.sf.hajdbc.sql.AbstractDatabase" abstract="true">
 		<value name="id" field="id" style="attribute"/>
 		<value name="weight" field="weight" style="attribute" usage="optional" default="1"/>
+		<value name="local" field="local" style="attribute" usage="optional" default="false"/>
 		<structure field="properties" unmarshaller="net.sf.hajdbc.util.PropertiesMapper" marshaller="net.sf.hajdbc.util.PropertiesMapper"></structure>
 		<value name="user" field="user" usage="optional"/>
 		<value name="password" field="password" usage="optional"/>
