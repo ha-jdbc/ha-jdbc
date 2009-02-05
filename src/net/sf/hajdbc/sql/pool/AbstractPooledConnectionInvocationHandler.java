@@ -25,7 +25,6 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.Set;
 
-import javax.sql.CommonDataSource;
 import javax.sql.PooledConnection;
 
 import net.sf.hajdbc.Database;
@@ -44,7 +43,7 @@ import net.sf.hajdbc.util.reflect.Methods;
  * @param <C> 
  */
 @SuppressWarnings("nls")
-public abstract class AbstractPooledConnectionInvocationHandler<D extends CommonDataSource, C extends PooledConnection> extends AbstractChildInvocationHandler<D, D, C>
+public abstract class AbstractPooledConnectionInvocationHandler<D, C extends PooledConnection> extends AbstractChildInvocationHandler<D, D, C>
 {
 	private static final Set<Method> eventListenerMethodSet = Methods.findMethods(PooledConnection.class, "(add|remove)(Connection|Statement)EventListener");
 	
