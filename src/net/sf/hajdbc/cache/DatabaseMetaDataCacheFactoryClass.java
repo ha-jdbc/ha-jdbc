@@ -63,9 +63,9 @@ public enum DatabaseMetaDataCacheFactoryClass implements ClassEnum<DatabaseMetaD
 	}
 	
 	/**
-	 * Creates a new instance of the DatabaseMetaDataCache implementation identified by the specified identifier
+	 * Creates a new instance of the {@link net.sf.hajdbc.DatabaseMetaDataCacheFactory} implementation identified by the specified identifier
 	 * @param id an enumerated cache identifier
-	 * @return a new DatabaseMetaDataCache instance
+	 * @return a new cache factory instance
 	 * @throws Exception if specified cache identifier is invalid
 	 */
 	public static DatabaseMetaDataCacheFactory deserialize(String id) throws Exception
@@ -81,20 +81,20 @@ public enum DatabaseMetaDataCacheFactoryClass implements ClassEnum<DatabaseMetaD
 	}
 	
 	/**
-	 * Return the identifier of the specified DatabaseMetaDataCache.
-	 * @param cache a cache implementation
+	 * Return the identifier of the specified {@link net.sf.hajdbc.DatabaseMetaDataCacheFactory}.
+	 * @param factory a cache factory implementation
 	 * @return the class name of this cache
 	 */
-	public static String serialize(DatabaseMetaDataCacheFactory cacheFactory)
+	public static String serialize(DatabaseMetaDataCacheFactory factory)
 	{
 		for (DatabaseMetaDataCacheFactoryClass cacheFactoryClass: DatabaseMetaDataCacheFactoryClass.values())
 		{
-			if (cacheFactoryClass.isInstance(cacheFactory))
+			if (cacheFactoryClass.isInstance(factory))
 			{
 				return Enums.id(cacheFactoryClass);
 			}
 		}
 		
-		throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_META_DATA_CACHE, cacheFactory.getClass()));
+		throw new IllegalArgumentException(Messages.getMessage(Messages.INVALID_META_DATA_CACHE, factory.getClass()));
 	}
 }

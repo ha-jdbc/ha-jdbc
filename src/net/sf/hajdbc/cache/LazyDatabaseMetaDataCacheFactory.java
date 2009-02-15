@@ -31,7 +31,7 @@ import net.sf.hajdbc.DatabaseMetaDataCacheFactory;
 public class LazyDatabaseMetaDataCacheFactory implements DatabaseMetaDataCacheFactory
 {
 	/**
-	 * @see net.sf.hajdbc.DatabaseMetaDataCacheFactory#createCache(net.sf.hajdbc.Dialect)
+	 * @see net.sf.hajdbc.DatabaseMetaDataCacheFactory#createCache(net.sf.hajdbc.DatabaseCluster)
 	 */
 	@Override
 	public <D> DatabaseMetaDataCache createCache(DatabaseCluster<D> cluster)

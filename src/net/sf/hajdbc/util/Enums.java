@@ -32,7 +32,7 @@ public final class Enums
 	 * @param <T>
 	 * @param targetEnum
 	 * @param id
-	 * @return
+	 * @return an enum value
 	 */
 	public static <T extends Enum<T>> T valueOf(Class<T> targetEnum, String id)
 	{
@@ -44,7 +44,7 @@ public final class Enums
 	 * Used for serializing configuration file enums.
 	 * @param <T>
 	 * @param value
-	 * @return
+	 * @return the id of the specified enum value
 	 */
 	public static <T extends Enum<T>> String id(T value)
 	{

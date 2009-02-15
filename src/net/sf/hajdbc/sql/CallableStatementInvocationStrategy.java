@@ -33,20 +33,19 @@ import net.sf.hajdbc.util.reflect.ProxyFactory;
 public class CallableStatementInvocationStrategy<D> extends DatabaseWriteInvocationStrategy<D, Connection, CallableStatement>
 {
 	private Connection connection;
-	private TransactionContext<D> decorator;
+	private TransactionContext<D> context;
 	
 	/**
 	 * @param cluster 
 	 * @param connection the connection from which to create statements
-	 * @param decorator 
-	 * @param fileSupport support for streams
+	 * @param context transaction context
 	 */
-	public CallableStatementInvocationStrategy(DatabaseCluster<D> cluster, Connection connection, TransactionContext<D> decorator)
+	public CallableStatementInvocationStrategy(DatabaseCluster<D> cluster, Connection connection, TransactionContext<D> context)
 	{
 		super(cluster.getNonTransactionalExecutor());
 		
 		this.connection = connection;
-		this.decorator = decorator;
+		this.context = context;
 	}
 
 	/**
@@ -55,6 +54,6 @@ public class CallableStatementInvocationStrategy<D> extends DatabaseWriteInvocat
 	@Override
 	public CallableStatement invoke(SQLProxy<D, Connection> proxy, Invoker<D, Connection, CallableStatement> invoker) throws Exception
 	{
-		return ProxyFactory.createProxy(CallableStatement.class, new CallableStatementInvocationHandler<D>(this.connection, proxy, invoker, this.invokeAll(proxy, invoker), this.decorator, new FileSupportImpl()));
+		return ProxyFactory.createProxy(CallableStatement.class, new CallableStatementInvocationHandler<D>(this.connection, proxy, invoker, this.invokeAll(proxy, invoker), this.context, new FileSupportImpl()));
 	}
 }
