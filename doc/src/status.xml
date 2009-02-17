@@ -12,6 +12,11 @@
 	</contexts>
 
 	<changes>
+		<release version="2.0.15" date="February 17, 2009">
+			<action context="src" dev="PF" type="fix">
+				Fixes infinite loop regression in DistributableLockManager$DistributableLock.tryLock(long, TimeUnit)
+			</action>
+		</release>
 		<release version="2.0.14" date="February 15, 2009">
 			<action context="src" dev="PF" type="fix">
 				Fixed parsing of local attribute of database, datasource, etc.
