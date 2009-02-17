@@ -54,8 +54,8 @@ public class ConnectionInvocationHandler<D, P> extends AbstractChildInvocationHa
 	private static final Method releaseSavepointMethod = Methods.getMethod(Connection.class, "releaseSavepoint", Savepoint.class);
 	private static final Method rollbackSavepointMethod = Methods.getMethod(Connection.class, "rollback", Savepoint.class);
 	private static final Method closeMethod = Methods.getMethod(Connection.class, "close");
-	private static final Method createBlobMethod = Methods.getMethod(Connection.class, "createBlob");
-	private static final Method createSQLXMLMethod = Methods.getMethod(Connection.class, "createSQLXML");
+	private static final Method createBlobMethod = Methods.findMethod(Connection.class, "createBlob");
+	private static final Method createSQLXMLMethod = Methods.findMethod(Connection.class, "createSQLXML");
 	
 	private TransactionContext<D> transactionContext;
 	
