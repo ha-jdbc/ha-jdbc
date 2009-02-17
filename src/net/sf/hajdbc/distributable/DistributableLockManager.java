@@ -217,14 +217,7 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 		{
 			while (!DistributableLockManager.this.isMembershipEmpty())
 			{
-				try
-				{
-					if (this.tryLock(0, TimeUnit.SECONDS)) return;
-				}
-				catch (InterruptedException e)
-				{
-					// Ignore
-				}
+				if (this.tryLockFairly()) return;
 				
 				Thread.yield();
 			}
@@ -240,7 +233,7 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 		{
 			while (!DistributableLockManager.this.isMembershipEmpty())
 			{
-				if (this.tryLock(0, TimeUnit.SECONDS)) return;
+				if (this.tryLockFairly()) return;
 
 				if (Thread.currentThread().isInterrupted())
 				{
@@ -273,6 +266,33 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 		}
 
 		/**
+		 * Like {@link #tryLock()}, but do not barge on other waiting threads
+		 * @return true, if lock acquired, false otherwise
+		 * @throws InterruptedException
+		 */
+		private boolean tryLockFairly()
+		{
+			try
+			{
+				if (this.lock.tryLock(0, TimeUnit.SECONDS))
+				{
+					if (this.tryRemoteLock())
+					{
+						return true;
+					}
+					
+					this.lock.unlock();
+				}
+			}
+			catch (InterruptedException e)
+			{
+				Thread.currentThread().interrupt();
+			}
+			
+			return false;
+		}
+		
+		/**
 		 * @see java.util.concurrent.locks.Lock#tryLock(long, java.util.concurrent.TimeUnit)
 		 */
 		@Override
@@ -290,7 +310,7 @@ public class DistributableLockManager extends AbstractMembershipListener impleme
 					return this.lock.tryLock(ms, TimeUnit.MILLISECONDS);
 				}
 				
-				if (this.tryLock(0, TimeUnit.SECONDS))
+				if (this.tryLockFairly())
 				{
 					return true;
 				}
