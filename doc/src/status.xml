@@ -16,6 +16,9 @@
 			<action context="src" dev="PF" type="fix">
 				Fixes infinite loop regression in DistributableLockManager$DistributableLock.tryLock(long, TimeUnit)
 			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixes ExceptionInInitializerError regression when creating HA-JDBC connections in Java 1.4/1.5.
+			</action>
 		</release>
 		<release version="2.0.14" date="February 15, 2009">
 			<action context="src" dev="PF" type="fix">
