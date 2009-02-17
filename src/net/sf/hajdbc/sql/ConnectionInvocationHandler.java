@@ -130,7 +130,7 @@ public class ConnectionInvocationHandler<D, P> extends AbstractChildInvocationHa
 			return new DatabaseMetaDataInvocationStrategy<D>(connection);
 		}
 		
-		if (method.equals(createBlobMethod))
+		if ((createBlobMethod != null) && method.equals(createBlobMethod))
 		{
 			return new BlobInvocationStrategy<D, Connection>(this.cluster, connection);
 		}
@@ -140,7 +140,7 @@ public class ConnectionInvocationHandler<D, P> extends AbstractChildInvocationHa
 			return new ClobInvocationStrategy<D, Connection>(this.cluster, connection, method.getReturnType().asSubclass(Clob.class));
 		}
 		
-		if (method.equals(createSQLXMLMethod))
+		if ((createSQLXMLMethod != null) && method.equals(createSQLXMLMethod))
 		{
 			return new SQLXMLInvocationStrategy<D, Connection>(this.cluster, connection);
 		}
