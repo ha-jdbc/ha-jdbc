@@ -149,7 +149,7 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 	{
 		Class<?>[] types = method.getParameterTypes();
 		
-		if (this.isUpdateMethod(method) && (types.length > 1))
+		if (this.isUpdateMethod(method) && (parameters.length > 1) && (parameters[1] != null))
 		{
 			Class<?> type = types[1];
 			
