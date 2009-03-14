@@ -128,7 +128,7 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 	{
 		Class<?>[] types = method.getParameterTypes();
 		
-		if (this.isIndexSetMethod(method))
+		if (this.isIndexSetMethod(method) && (parameters.length > 1) && (parameters[1] != null))
 		{
 			Class<?> type = types[1];
 			
@@ -235,7 +235,7 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 	{
 		Class<?>[] types = method.getParameterTypes();
 		
-		return this.isSetMethod(method) && (types.length > 1) && this.isIndexType(types[0]);
+		return this.isSetMethod(method) && (types.length > 0) && this.isIndexType(types[0]);
 	}
 	
 	protected boolean isIndexType(Class<?> type)
