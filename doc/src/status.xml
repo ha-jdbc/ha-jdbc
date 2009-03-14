@@ -12,6 +12,11 @@
 	</contexts>
 
 	<changes>
+		<release version="2.0.16" date="...">
+			<action context="src" dev="PF" type="fix" fixes-bug="2684746">
+				Fixed NullPointerException in PreparedStatement.set/ResultSet.update stream/reader/blob/clob methods, if called with null value. 
+			</action>
+		</release>
 		<release version="2.0.15" date="February 17, 2009">
 			<action context="src" dev="PF" type="fix">
 				Fixes infinite loop regression in DistributableLockManager$DistributableLock.tryLock(long, TimeUnit)
