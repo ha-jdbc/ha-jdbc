@@ -294,25 +294,26 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 		
 		while (resultSet.next())
 		{
-			if (resultSet.getInt("TYPE") == DatabaseMetaData.tableIndexStatistic) continue;
-			
-			String name = this.quote(resultSet.getString("INDEX_NAME"));
-			
-			// Don't include the primary key
-			if ((primaryKey != null) && name.equals(primaryKey.getName())) continue;
-			
-			UniqueConstraint key = keyMap.get(name);
-			
-			if (key == null)
+			if (resultSet.getShort("TYPE") == DatabaseMetaData.tableIndexHashed)
 			{
-				key = new UniqueConstraintImpl(name, this.qualifyNameForDDL(table));
+				String name = this.quote(resultSet.getString("INDEX_NAME"));
 				
-				keyMap.put(name, key);
+				// Don't include the primary key
+				if ((primaryKey != null) && name.equals(primaryKey.getName())) continue;
+				
+				UniqueConstraint key = keyMap.get(name);
+				
+				if (key == null)
+				{
+					key = new UniqueConstraintImpl(name, this.qualifyNameForDDL(table));
+					
+					keyMap.put(name, key);
+				}
+				
+				String column = this.quote(resultSet.getString("COLUMN_NAME"));
+
+				key.getColumnList().add(column);
 			}
-			
-			String column = resultSet.getString("COLUMN_NAME");
-			
-			key.getColumnList().add(column);
 		}
 		
 		resultSet.close();
