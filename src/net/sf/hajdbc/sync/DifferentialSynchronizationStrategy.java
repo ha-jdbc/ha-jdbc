@@ -178,11 +178,16 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				PreparedStatement insertStatement = targetConnection.prepareStatement(insertSQL);
 				
 				// Construct UPDATE SQL
-				String updateSQL = "UPDATE " + tableName + " SET " + Strings.join(nonPrimaryKeyColumnList, " = ?, ") + " = ?" + primaryKeyWhereClause; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+				PreparedStatement updateStatement = null;
 				
-				logger.debug(updateSQL);
-				
-				PreparedStatement updateStatement = targetConnection.prepareStatement(updateSQL);
+				if (!nonPrimaryKeyColumnList.isEmpty())
+				{
+					String updateSQL = "UPDATE " + tableName + " SET " + Strings.join(nonPrimaryKeyColumnList, " = ?, ") + " = ?" + primaryKeyWhereClause; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+					
+					logger.debug(updateSQL);
+					
+					updateStatement = targetConnection.prepareStatement(updateSQL);
+				}
 				
 				boolean hasMoreActiveResults = sourceResultSet.next();
 				boolean hasMoreInactiveResults = inactiveResultSet.next();
@@ -271,7 +276,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 							insertStatement.clearBatch();
 						}
 					}
-					else // if (compare == 0)
+					else if (updateStatement != null) // if (compare == 0)
 					{
 						updateStatement.clearParameters();
 						
@@ -347,12 +352,15 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				
 				insertStatement.close();
 				
-				if ((updateCount % this.maxBatchSize) > 0)
+				if (updateStatement != null)
 				{
-					updateStatement.executeBatch();
+					if ((updateCount % this.maxBatchSize) > 0)
+					{
+						updateStatement.executeBatch();
+					}
+					
+					updateStatement.close();
 				}
-				
-				updateStatement.close();
 				
 				targetStatement.close();
 				sourceStatement.close();
