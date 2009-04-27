@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.QualifiedName;
 
 /**
@@ -43,19 +42,6 @@ public class MySQLDialect extends StandardDialect
 	public List<String> getDefaultSchemas(DatabaseMetaData metaData) throws SQLException
 	{
 		return Collections.singletonList(this.executeFunction(metaData.getConnection(), "DATABASE()"));
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#isIdentity(net.sf.hajdbc.ColumnProperties)
-	 */
-	@Override
-	public boolean isIdentity(ColumnProperties properties)
-	{
-		if (properties.getNativeType().equalsIgnoreCase("SERIAL")) return true;
-		
-		String remarks = properties.getRemarks();
-		
-		return (remarks != null) && remarks.contains("AUTO_INCREMENT");
 	}
 
 	/**

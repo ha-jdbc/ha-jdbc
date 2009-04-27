@@ -25,7 +25,6 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
 
-import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.QualifiedName;
 
 /**
@@ -44,17 +43,6 @@ public class DerbyDialect extends StandardDialect
 	protected String executeFunctionFormat()
 	{
 		return "VALUES {0}";
-	}
-
-	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#isIdentity(net.sf.hajdbc.ColumnProperties)
-	 */
-	@Override
-	public boolean isIdentity(ColumnProperties properties)
-	{
-		String remarks = properties.getRemarks();
-		
-		return (remarks != null) && remarks.contains("AS IDENTITY");
 	}
 
 	/**

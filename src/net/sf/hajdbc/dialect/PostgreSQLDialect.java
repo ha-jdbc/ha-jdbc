@@ -82,17 +82,6 @@ public class PostgreSQLDialect extends StandardDialect
 	{
 		return properties.getNativeType().equalsIgnoreCase("oid") ? Types.BLOB : properties.getType();
 	}
-	
-	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#isIdentity(net.sf.hajdbc.ColumnProperties)
-	 */
-	@Override
-	public boolean isIdentity(ColumnProperties properties)
-	{
-		String type = properties.getNativeType();
-		
-		return type.equalsIgnoreCase("serial") || type.equalsIgnoreCase("bigserial");
-	}
 
 	/**
 	 * Versions &gt;=8.1 of the PostgreSQL JDBC driver return incorrect values for DatabaseMetaData.getExtraNameCharacters().

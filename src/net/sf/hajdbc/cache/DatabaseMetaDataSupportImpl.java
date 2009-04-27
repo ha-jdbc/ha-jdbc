@@ -22,7 +22,9 @@ package net.sf.hajdbc.cache;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -160,39 +162,26 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 	{
 		Map<String, ColumnProperties> columnMap = new HashMap<String, ColumnProperties>();
 		
-		ResultSet resultSet = metaData.getColumns(this.getCatalog(metaData), this.getSchema(table), table.getName(), Strings.ANY);
+		Statement statement = metaData.getConnection().createStatement();
 		
-		while (resultSet.next())
+		try
 		{
-			String column = this.quote(resultSet.getString("COLUMN_NAME"));
-			int type = resultSet.getInt("DATA_TYPE");
-			String nativeType = resultSet.getString("TYPE_NAME");
-			String defaultValue = resultSet.getString("COLUMN_DEF");
-			String remarks = resultSet.getString("REMARKS");
-			Boolean autoIncrement = null;
+			ResultSetMetaData resultSet = statement.executeQuery("SELECT * FROM " + this.qualifyNameForDML(table) + " WHERE 0=1").getMetaData();
 			
-			try
+			for (int i = 1; i <= resultSet.getColumnCount(); ++i)
 			{
-				String value = resultSet.getString("IS_AUTOINCREMENT");
+				String column = this.quote(resultSet.getColumnName(i));
+				int type = resultSet.getColumnType(i);
+				String nativeType = resultSet.getColumnTypeName(i);
+				boolean autoIncrement = resultSet.isAutoIncrement(i);
 				
-				if (value.equals("YES"))
-				{
-					autoIncrement = true;
-				}
-				else if (value.equals("NO"))
-				{
-					autoIncrement = false;
-				}
+				columnMap.put(column, new ColumnPropertiesImpl(column, type, nativeType, null, null, autoIncrement));
 			}
-			catch (SQLException e)
-			{
-				// Ignore - this column is new to Java 1.6
-			}
-			
-			columnMap.put(column, new ColumnPropertiesImpl(column, type, nativeType, defaultValue, remarks, autoIncrement));
 		}
-		
-		resultSet.close();
+		finally
+		{
+			statement.close();
+		}
 		
 		return columnMap;
 	}
@@ -489,10 +478,7 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 		
 		for (ColumnProperties column: columns)
 		{
-			Boolean autoIncrement = column.isAutoIncrement();
-			
-			// Database meta data may have already identified column as identity, if not ask dialect.
-			if ((autoIncrement != null) ? autoIncrement : this.dialect.isIdentity(column))
+			if (column.isAutoIncrement())
 			{
 				columnList.add(column.getName());
 			}

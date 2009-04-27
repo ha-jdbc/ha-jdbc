@@ -106,15 +106,6 @@ public interface Dialect
 	 * @since 2.0
 	 */
 	public String parseInsertTable(String sql) throws SQLException;
-	
-	/**
-	 * Indicates whether or not the specified column is an identity column.
-	 * @param properties a table column
-	 * @return true, if this column is an identity column, false otherwise
-	 * @throws SQLException
-	 * @since 2.0
-	 */
-	public boolean isIdentity(ColumnProperties properties) throws SQLException;
 
 	/**
 	 * Parses a sequence name from the specified SQL statement.

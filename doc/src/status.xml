@@ -16,6 +16,25 @@
 			<action context="src" dev="PF" type="fix" fixes-bug="2684746">
 				Fixed NullPointerException in PreparedStatement.set/ResultSet.update stream/reader/blob/clob methods, if called with null value. 
 			</action>
+			<action context="src" dev="PF" type="fix" fixes-bug="2688439">
+				Only consider hashed unique indexes when finding unique constraints.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Ensure unique constraint columns are quoted, if necessary.
+			</action>
+			<action context="src" dev="PF" type="fix" fixes-bug="2728324">
+				Make sure PreparedStatement.clearParameters() method removes recorded parameter setter invokers.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Make sure ResultSet.(delete|insert|update)Row() and cancelRowUpdates() methods remove recorded update column invokers.
+			</action>
+			<action context="src" dev="PF" type="fix" fixes-bug="2688421">
+				Fix differential sync strategy breakage when a table contains only primary key columns.
+			</action>
+			<action context="src" dev="PF" type="fix" fixes-bug="2770743" due-to="Karl Moore">
+				Determine column meta data from ResultSetMetaData instead of DatabaseMetaData.getColumns(...).
+				This avoids the need for dialect specific IDENTITY column detection logic.
+			</action>
 		</release>
 		<release version="2.0.15" date="February 17, 2009">
 			<action context="src" dev="PF" type="fix">

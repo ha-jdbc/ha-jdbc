@@ -32,9 +32,5 @@ public interface ColumnProperties
 	
 	public String getNativeType();
 	
-	public String getRemarks();
-	
-	public Boolean isAutoIncrement();
-	
-	public String getDefaultValue();
+	public boolean isAutoIncrement();
 }
