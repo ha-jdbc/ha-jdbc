@@ -166,49 +166,6 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		assert result.get(0).equals("user") : result.get(0);
 		assert result.get(1).equals("public") : result.get(1);
 	}
-
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testIsIdentity()
-	 */
-	@Override
-	public void testIsIdentity() throws SQLException
-	{
-		ColumnProperties column = EasyMock.createStrictMock(ColumnProperties.class);
-		
-		EasyMock.expect(column.getNativeType()).andReturn("serial");
-		
-		EasyMock.replay(column);
-		
-		boolean result = this.isIdentity(column);
-		
-		EasyMock.verify(column);
-		
-		assert result;
-		
-		EasyMock.reset(column);
-		
-		EasyMock.expect(column.getNativeType()).andReturn("bigserial");
-		
-		EasyMock.replay(column);
-		
-		result = this.isIdentity(column);
-		
-		EasyMock.verify(column);
-		
-		assert result;
-		
-		EasyMock.reset(column);
-		
-		EasyMock.expect(column.getNativeType()).andReturn("int");
-		
-		EasyMock.replay(column);
-		
-		result = this.isIdentity(column);
-		
-		EasyMock.verify(column);
-		
-		assert !result;
-	}
 	
 	/**
 	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testGetAlterIdentityColumnSQL()

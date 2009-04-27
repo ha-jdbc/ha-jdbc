@@ -24,7 +24,6 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Collection;
 
-import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.SequenceProperties;
@@ -106,37 +105,6 @@ public class TestDerbyDialect extends TestStandardDialect
 		EasyMock.verify(metaData);
 		
 		assert result.isEmpty() : result;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testIsIdentity()
-	 */
-	@Override
-	public void testIsIdentity() throws SQLException
-	{
-		ColumnProperties column = EasyMock.createStrictMock(ColumnProperties.class);
-		
-		EasyMock.expect(column.getRemarks()).andReturn("GENERATED ALWAYS AS IDENTITY");
-		
-		EasyMock.replay(column);
-		
-		boolean result = this.isIdentity(column);
-
-		EasyMock.verify(column);
-		
-		assert result;
-		
-		EasyMock.reset(column);
-
-		EasyMock.expect(column.getRemarks()).andReturn(null);
-		
-		EasyMock.replay(column);
-		
-		result = this.isIdentity(column);
-		
-		EasyMock.verify(column);
-		
-		assert !result;
 	}
 	
 	/**

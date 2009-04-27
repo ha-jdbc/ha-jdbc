@@ -180,51 +180,6 @@ public class TestMySQLDialect extends TestStandardDialect
 		
 		assert result.get(0).equals("database") : result.get(0);
 	}
-
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testIsIdentity()
-	 */
-	@Override
-	public void testIsIdentity() throws SQLException
-	{
-		ColumnProperties column = EasyMock.createStrictMock(ColumnProperties.class);
-		
-		EasyMock.expect(column.getNativeType()).andReturn("SERIAL");
-		
-		EasyMock.replay(column);
-		
-		boolean result = this.isIdentity(column);
-		
-		EasyMock.verify(column);
-		
-		assert result;
-			
-		EasyMock.reset(column);
-		
-		EasyMock.expect(column.getNativeType()).andReturn("INTEGER");
-		EasyMock.expect(column.getRemarks()).andReturn("AUTO_INCREMENT");
-		
-		EasyMock.replay(column);
-		
-		result = this.isIdentity(column);
-		
-		EasyMock.verify(column);
-		
-		assert result;
-		
-		EasyMock.reset(column);
-		
-		EasyMock.expect(column.getNativeType()).andReturn("INTEGER");
-		EasyMock.expect(column.getRemarks()).andReturn(null);
-		
-		EasyMock.replay(column);
-		
-		result = this.isIdentity(column);
-		
-		EasyMock.verify(column);
-		
-		assert !result;
-	}
 	
 	/**
 	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testGetAlterIdentityColumnSQL()

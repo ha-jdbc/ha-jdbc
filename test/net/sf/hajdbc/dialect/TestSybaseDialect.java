@@ -24,7 +24,6 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Collection;
 
-import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.TableProperties;
@@ -95,49 +94,6 @@ public class TestSybaseDialect extends TestStandardDialect
 		String result = this.getCreateForeignKeyConstraintSQL(key);
 		
 		assert result.equals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE ON UPDATE RESTRICT") : result;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.dialect.TestStandardDialect#testIsIdentity()
-	 */
-	@Override
-	public void testIsIdentity() throws SQLException
-	{
-		ColumnProperties column = EasyMock.createStrictMock(ColumnProperties.class);
-		
-		EasyMock.expect(column.getDefaultValue()).andReturn("AUTOINCREMENT");
-		
-		EasyMock.replay(column);
-		
-		boolean result = this.isIdentity(column);
-
-		EasyMock.verify(column);
-		
-		assert result;
-		
-		EasyMock.reset(column);
-		
-		EasyMock.expect(column.getDefaultValue()).andReturn("IDENTITY");
-		
-		EasyMock.replay(column);
-		
-		result = this.isIdentity(column);
-
-		EasyMock.verify(column);
-		
-		assert result;
-		
-		EasyMock.reset(column);
-		
-		EasyMock.expect(column.getDefaultValue()).andReturn(null);
-		
-		EasyMock.replay(column);
-		
-		result = this.isIdentity(column);
-		
-		EasyMock.verify(column);
-		
-		assert !result;
 	}
 	
 	/**
