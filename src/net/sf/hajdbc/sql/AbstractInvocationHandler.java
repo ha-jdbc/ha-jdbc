@@ -83,7 +83,7 @@ public abstract class AbstractInvocationHandler<D, T> implements InvocationHandl
 	@Override
 	public final Object invoke(Object object, Method method, Object[] parameters) throws Exception
 	{
-		if (method.getName().equals("toString")) return "";
+		if (method.equals(toStringMethod)) return "";
 		
 		if (!this.cluster.isActive())
 		{
@@ -320,7 +320,7 @@ public abstract class AbstractInvocationHandler<D, T> implements InvocationHandl
 	@SuppressWarnings("nls")
 	protected boolean isSetMethod(Method method)
 	{
-		return method.getName().startsWith("set") && (method.getParameterTypes() != null);
+		return method.getName().startsWith("set");
 	}
 	
 	protected void replay(Database<D> database, T object) throws Exception
