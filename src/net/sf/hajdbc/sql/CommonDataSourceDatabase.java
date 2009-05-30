@@ -26,6 +26,7 @@ import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Properties;
 
 import javax.management.DynamicMBean;
 import javax.management.NotCompliantMBeanException;
@@ -92,7 +93,7 @@ public abstract class CommonDataSourceDatabase<D> extends AbstractDatabase<D> im
 	{
 		try
 		{
-			Context context = new InitialContext(this.properties);
+			Context context = new InitialContext(this.getProperties());
 	
 			return this.targetClass.cast(context.lookup(this.name));
 		}
@@ -104,13 +105,15 @@ public abstract class CommonDataSourceDatabase<D> extends AbstractDatabase<D> im
 
 	private D createDataSource(Class<? extends D> dataSourceClass)
 	{
+		Properties properties = this.getProperties();
+		
 		try
 		{
 			D dataSource = dataSourceClass.newInstance();
 			
 			for (PropertyDescriptor descriptor: Introspector.getBeanInfo(dataSourceClass).getPropertyDescriptors())
 			{
-				String value = this.properties.getProperty(descriptor.getName());
+				String value = properties.getProperty(descriptor.getName());
 				
 				if (value != null)
 				{

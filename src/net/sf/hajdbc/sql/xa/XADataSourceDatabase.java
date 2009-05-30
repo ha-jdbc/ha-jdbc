@@ -48,7 +48,8 @@ public class XADataSourceDatabase extends CommonDataSourceDatabase<XADataSource>
 	@Override
 	public Connection connect(XADataSource dataSource) throws SQLException
 	{
-		XAConnection connection = (this.user != null) ? dataSource.getXAConnection(this.user, this.password) : dataSource.getXAConnection();
+		String user = this.getUser();
+		XAConnection connection = (user != null) ? dataSource.getXAConnection(user, this.getPassword()) : dataSource.getXAConnection();
 		
 		return connection.getConnection();
 	}

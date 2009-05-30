@@ -48,7 +48,8 @@ public class ConnectionPoolDataSourceDatabase extends CommonDataSourceDatabase<C
 	@Override
 	public Connection connect(ConnectionPoolDataSource dataSource) throws SQLException
 	{
-		PooledConnection connection = (this.user != null) ? dataSource.getPooledConnection(this.user, this.password) : dataSource.getPooledConnection();
+		String user = this.getUser();
+		PooledConnection connection = (user != null) ? dataSource.getPooledConnection(user, this.getPassword()) : dataSource.getPooledConnection();
 		
 		return connection.getConnection();
 	}

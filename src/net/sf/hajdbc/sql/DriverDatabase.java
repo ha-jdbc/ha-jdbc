@@ -109,15 +109,19 @@ public class DriverDatabase extends AbstractDatabase<Driver> implements Inactive
 	public Connection connect(Driver driver) throws SQLException
 	{
 		Properties properties = new Properties(this.getProperties());
+
+		String user = this.getUser();
 		
-		if (this.user != null)
+		if (user != null)
 		{
-			properties.setProperty(USER, this.user);
+			properties.setProperty(USER, user);
 		}
 
-		if (this.password != null)
+		String password = this.getPassword();
+		
+		if (password != null)
 		{
-			properties.setProperty(PASSWORD, this.password);
+			properties.setProperty(PASSWORD, password);
 		}
 		
 		return driver.connect(this.url, properties);

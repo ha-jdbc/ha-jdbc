@@ -49,6 +49,8 @@ public class DataSourceDatabase extends CommonDataSourceDatabase<DataSource>
 	@Override
 	public Connection connect(DataSource dataSource) throws SQLException
 	{
-		return (this.user != null) ? dataSource.getConnection(this.user, this.password) : dataSource.getConnection();
+		String user = this.getUser();
+		
+		return (user != null) ? dataSource.getConnection(user, this.getPassword()) : dataSource.getConnection();
 	}
 }
