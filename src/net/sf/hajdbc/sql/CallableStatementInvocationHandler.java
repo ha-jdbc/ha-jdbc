@@ -82,6 +82,6 @@ public class CallableStatementInvocationHandler<D> extends AbstractPreparedState
 	@Override
 	protected boolean isIndexType(Class<?> type)
 	{
-		return super.isIndexType(type) || type.equals(String.class);
+		return type.equals(String.class) || super.isIndexType(type);
 	}
 }

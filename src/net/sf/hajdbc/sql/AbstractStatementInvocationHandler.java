@@ -188,15 +188,15 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 		{
 			this.sqlList.add((String) parameters[0]);
 		}
-		else if (method.equals(clearBatchMethod) || method.equals(executeBatchMethod))
-		{
-			this.sqlList.clear();
-		}
 		else if (method.equals(closeMethod))
 		{
 			this.fileSupport.close();
 			
 			this.getParentProxy().removeChild(this);
+		}
+		else if (method.equals(clearBatchMethod) || method.equals(executeBatchMethod))
+		{
+			this.sqlList.clear();
 		}
 	}
 
@@ -327,14 +327,14 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 	@Override
 	protected void record(Method method, Invoker<D, S, ?> invoker)
 	{
-		if (this.isRecordable(method))
+		if (this.isBatchMethod(method))
 		{
 			synchronized (this.invokerList)
 			{
 				this.invokerList.add(invoker);
 			}
 		}
-		else if (method.equals(clearBatchMethod) || method.equals(executeBatchMethod))
+		else if (this.isEndBatchMethod(method))
 		{
 			synchronized (this.invokerList)
 			{
@@ -347,9 +347,14 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 		}
 	}
 
-	protected boolean isRecordable(Method method)
+	protected boolean isBatchMethod(Method method)
 	{
 		return method.equals(addBatchMethod);
+	}
+
+	protected boolean isEndBatchMethod(Method method)
+	{
+		return method.equals(clearBatchMethod) || method.equals(executeBatchMethod);
 	}
 	
 	/**

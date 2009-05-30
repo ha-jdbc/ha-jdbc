@@ -57,11 +57,12 @@ import net.sf.hajdbc.util.reflect.SimpleInvocationHandler;
 public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedStatement> extends AbstractStatementInvocationHandler<D, S>
 {
 	private static final Set<Method> databaseReadMethodSet = Methods.findMethods(PreparedStatement.class, "getMetaData", "getParameterMetaData");
-	private static final Set<Method> driverWriteMethodSet = Methods.findMethods(PreparedStatement.class, "addBatch", "clearParameters", "set\\w+");
+	private static final Set<Method> driverWriteMethodSet = Methods.findMethods(PreparedStatement.class, "set\\w+");
 	private static final Method executeMethod = Methods.getMethod(PreparedStatement.class, "execute");
 	private static final Method executeUpdateMethod = Methods.getMethod(PreparedStatement.class, "executeUpdate");
 	private static final Method executeQueryMethod = Methods.getMethod(PreparedStatement.class, "executeQuery");
-	private static final Set<Method> recordableMethodSet = Methods.findMethods(PreparedStatement.class, "addBatch", "clearParameters");
+	private static final Method clearParametersMethod = Methods.getMethod(PreparedStatement.class, "clearParameters");
+	private static final Method addBatchMethod = Methods.getMethod(PreparedStatement.class, "addBatch");
 	
 	protected List<Lock> lockList = Collections.emptyList();
 	protected boolean selectForUpdate = false;
@@ -92,7 +93,7 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 			return new DatabaseReadInvocationStrategy<D, S, Object>();
 		}
 		
-		if (driverWriteMethodSet.contains(method))
+		if (driverWriteMethodSet.contains(method) || method.equals(clearParametersMethod) || method.equals(addBatchMethod))
 		{
 			return new DriverWriteInvocationStrategy<D, S, Object>();
 		}
@@ -128,7 +129,7 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 	{
 		Class<?>[] types = method.getParameterTypes();
 		
-		if (this.isIndexSetMethod(method) && (parameters.length > 1) && (parameters[1] != null))
+		if (this.isParameterSetMethod(method) && (parameters.length > 1) && (parameters[1] != null))
 		{
 			Class<?> type = types[1];
 			
@@ -230,8 +231,17 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 		
 		return super.getInvoker(statement, method, parameters);
 	}
+	
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractStatementInvocationHandler#isBatchMethod(java.lang.reflect.Method)
+	 */
+	@Override
+	protected boolean isBatchMethod(Method method)
+	{
+		return method.equals(addBatchMethod) || method.equals(clearParametersMethod) || this.isParameterSetMethod(method) || super.isBatchMethod(method);
+	}
 
-	private boolean isIndexSetMethod(Method method)
+	private boolean isParameterSetMethod(Method method)
 	{
 		Class<?>[] types = method.getParameterTypes();
 		
@@ -241,14 +251,5 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 	protected boolean isIndexType(Class<?> type)
 	{
 		return type.equals(Integer.TYPE);
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.sql.AbstractStatementInvocationHandler#isRecordable(java.lang.reflect.Method)
-	 */
-	@Override
-	protected boolean isRecordable(Method method)
-	{
-		return super.isRecordable(method) || recordableMethodSet.contains(method) || this.isIndexSetMethod(method);
 	}
 }
