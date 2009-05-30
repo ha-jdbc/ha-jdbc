@@ -23,8 +23,6 @@ package net.sf.hajdbc.sql;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -53,6 +51,7 @@ public abstract class AbstractInvocationHandler<D, T> implements InvocationHandl
 	private static final Method equalsMethod = Methods.getMethod(Object.class, "equals", Object.class);
 	private static final Method hashCodeMethod = Methods.getMethod(Object.class, "hashCode");
 	private static final Method toStringMethod = Methods.getMethod(Object.class, "toString");
+	/* JDBC 4.0 methods */
 	private static final Method isWrapperForMethod = Methods.findMethod("java.sql.Wrapper", "isWrapperFor", Class.class);
 	private static final Method unwrapMethod = Methods.findMethod("java.sql.Wrapper", "unwrap", Class.class);
 	
@@ -153,31 +152,27 @@ public abstract class AbstractInvocationHandler<D, T> implements InvocationHandl
 	{
 		if (this.isSQLMethod(method))
 		{
-			List<Object> parameterList = new ArrayList<Object>(Arrays.asList(parameters));
-			
 			long now = System.currentTimeMillis();
 			
 			if (this.cluster.isCurrentTimestampEvaluationEnabled())
 			{
-				parameterList.set(0, this.cluster.getDialect().evaluateCurrentTimestamp((String) parameterList.get(0), new java.sql.Timestamp(now)));
+				parameters[0] = this.cluster.getDialect().evaluateCurrentTimestamp((String) parameters[0], new java.sql.Timestamp(now));
 			}
 			
 			if (this.cluster.isCurrentDateEvaluationEnabled())
 			{
-				parameterList.set(0, this.cluster.getDialect().evaluateCurrentDate((String) parameterList.get(0), new java.sql.Date(now)));
+				parameters[0] = this.cluster.getDialect().evaluateCurrentDate((String) parameters[0], new java.sql.Date(now));
 			}
 			
 			if (this.cluster.isCurrentTimeEvaluationEnabled())
 			{
-				parameterList.set(0, this.cluster.getDialect().evaluateCurrentTime((String) parameterList.get(0), new java.sql.Time(now)));
+				parameters[0] = this.cluster.getDialect().evaluateCurrentTime((String) parameters[0], new java.sql.Time(now));
 			}
 			
 			if (this.cluster.isRandEvaluationEnabled())
 			{
-				parameterList.set(0, this.cluster.getDialect().evaluateRand((String) parameterList.get(0)));
+				parameters[0] = this.cluster.getDialect().evaluateRand((String) parameters[0]);
 			}
-			
-			return new SimpleInvoker(method, parameterList.toArray());
 		}
 		
 		return new SimpleInvoker(method, parameters);
