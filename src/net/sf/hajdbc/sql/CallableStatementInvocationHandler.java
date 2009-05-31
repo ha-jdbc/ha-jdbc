@@ -37,7 +37,8 @@ import net.sf.hajdbc.util.reflect.Methods;
 @SuppressWarnings("nls")
 public class CallableStatementInvocationHandler<D> extends AbstractPreparedStatementInvocationHandler<D, CallableStatement>
 {
-	private static final Set<Method> driverWriteMethodSet = Methods.findMethods(CallableStatement.class, "registerOutParameter", "set\\w+");
+	private static final Set<Method> registerOutParameterMethodSet = Methods.findMethods(CallableStatement.class, "registerOutParameter");
+	private static final Set<Method> setMethodSet = Methods.findMethods(CallableStatement.class, "set\\w+");
 	private static final Set<Method> driverReadMethodSet = Methods.findMethods(CallableStatement.class, "get\\w+", "wasNull");
 	{
 		driverReadMethodSet.removeAll(Methods.findMethods(PreparedStatement.class, "get\\w+"));
@@ -63,7 +64,7 @@ public class CallableStatementInvocationHandler<D> extends AbstractPreparedState
 	@Override
 	protected InvocationStrategy<D, CallableStatement, ?> getInvocationStrategy(CallableStatement statement, Method method, Object[] parameters) throws Exception
 	{
-		if (driverWriteMethodSet.contains(method))
+		if (registerOutParameterMethodSet.contains(method) || setMethodSet.contains(method))
 		{
 			return new DriverWriteInvocationStrategy<D, CallableStatement, Object>();
 		}
@@ -74,6 +75,15 @@ public class CallableStatementInvocationHandler<D> extends AbstractPreparedState
 		}
 		
 		return super.getInvocationStrategy(statement, method, parameters);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractPreparedStatementInvocationHandler#isBatchMethod(java.lang.reflect.Method)
+	 */
+	@Override
+	protected boolean isBatchMethod(Method method)
+	{
+		return registerOutParameterMethodSet.contains(method) || super.isBatchMethod(method);
 	}
 
 	/**
