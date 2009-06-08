@@ -584,7 +584,7 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			
 			while (exception != null)
 			{
-				logger.error(exception.getMessage(), e);
+				logger.error(exception.getMessage(), exception);
 				
 				exception = exception.getNextException();
 			}
