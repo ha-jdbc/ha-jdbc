@@ -360,7 +360,7 @@ public class StandardDialect implements Dialect
 	@Override
 	public Pattern getIdentifierPattern(DatabaseMetaData metaData) throws SQLException
 	{
-		return Pattern.compile(MessageFormat.format("[\\w{0}]+", Pattern.quote(metaData.getExtraNameCharacters())));
+		return Pattern.compile(MessageFormat.format("[a-zA-Z][\\w{0}]*", Pattern.quote(metaData.getExtraNameCharacters())));
 	}
 
 	protected String parse(Pattern pattern, String string)
