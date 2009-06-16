@@ -57,7 +57,7 @@ import net.sf.hajdbc.util.reflect.SimpleInvocationHandler;
 public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedStatement> extends AbstractStatementInvocationHandler<D, S>
 {
 	private static final Set<Method> databaseReadMethodSet = Methods.findMethods(PreparedStatement.class, "getMetaData", "getParameterMetaData");
-	private static final Set<Method> driverWriteMethodSet = Methods.findMethods(PreparedStatement.class, "set\\w+");
+	private static final Set<Method> setParameterMethodSet = Methods.findMethods(PreparedStatement.class, "set\\w+");
 	private static final Method executeMethod = Methods.getMethod(PreparedStatement.class, "execute");
 	private static final Method executeUpdateMethod = Methods.getMethod(PreparedStatement.class, "executeUpdate");
 	private static final Method executeQueryMethod = Methods.getMethod(PreparedStatement.class, "executeQuery");
@@ -93,7 +93,7 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 			return new DatabaseReadInvocationStrategy<D, S, Object>();
 		}
 		
-		if (driverWriteMethodSet.contains(method) || method.equals(clearParametersMethod) || method.equals(addBatchMethod))
+		if (setParameterMethodSet.contains(method) || method.equals(clearParametersMethod) || method.equals(addBatchMethod))
 		{
 			return new DriverWriteInvocationStrategy<D, S, Object>();
 		}
@@ -175,9 +175,9 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 				{
 					InvocationHandler handler = Proxy.getInvocationHandler(blob);
 					
-					if (BlobInvocationHandler.class.isInstance(handler))
+					if (SQLProxy.class.isInstance(handler))
 					{
-						final BlobInvocationHandler<D, ?> proxy = (BlobInvocationHandler) handler;
+						final SQLProxy<D, Blob> proxy = (SQLProxy) handler;
 						
 						return new Invoker<D, S, Object>()
 						{
@@ -205,9 +205,9 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 				{
 					InvocationHandler handler = Proxy.getInvocationHandler(clob);
 					
-					if (ClobInvocationHandler.class.isInstance(handler))
+					if (SQLProxy.class.isInstance(handler))
 					{
-						final ClobInvocationHandler<D, ?> proxy = (ClobInvocationHandler) handler;
+						final SQLProxy<D, Clob> proxy = (SQLProxy) handler;
 						
 						return new Invoker<D, S, Object>()
 						{
@@ -222,7 +222,7 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 						};
 					}
 				}
-
+				
 				Clob serialClob = new SerialClob(clob);
 				
 				parameters[1] = type.equals(Clob.class) ? serialClob : ProxyFactory.createProxy(type, new SimpleInvocationHandler(serialClob));
@@ -245,7 +245,7 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 	{
 		Class<?>[] types = method.getParameterTypes();
 		
-		return this.isSetMethod(method) && (types.length > 0) && this.isIndexType(types[0]);
+		return setParameterMethodSet.contains(method) && (types.length > 0) && this.isIndexType(types[0]);
 	}
 	
 	protected boolean isIndexType(Class<?> type)
