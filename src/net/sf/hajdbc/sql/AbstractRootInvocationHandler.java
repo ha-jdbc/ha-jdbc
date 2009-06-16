@@ -30,7 +30,7 @@ import net.sf.hajdbc.DatabaseCluster;
  * @author Paul Ferraro
  * @param <D> 
  */
-public class AbstractRootInvocationHandler<D> extends AbstractInvocationHandler<D, D>
+public abstract class AbstractRootInvocationHandler<D> extends AbstractInvocationHandler<D, D>
 {
 	/**
 	 * Constructs a new AbstractRootInvocationHandler.
