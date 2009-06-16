@@ -421,7 +421,7 @@ public class TestStandardDialect implements Dialect
 		
 		EasyMock.verify(metaData);
 		
-		assert result.pattern().equals("[\\w\\Q-\\E]+");
+		assert result.pattern().equals("[a-zA-Z][\\w\\Q-\\E]*");
 	}
 	
 	@Override
