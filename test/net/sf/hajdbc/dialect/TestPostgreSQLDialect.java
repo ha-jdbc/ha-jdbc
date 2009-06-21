@@ -199,7 +199,7 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		EasyMock.expect(metaData.getDriverMajorVersion()).andReturn(8);
 		EasyMock.expect(metaData.getDriverMinorVersion()).andReturn(0);
 		
-		EasyMock.expect(metaData.getExtraNameCharacters()).andReturn("");
+		EasyMock.expect(metaData.getExtraNameCharacters()).andReturn("$");
 		
 		EasyMock.replay(metaData);
 		
@@ -207,7 +207,7 @@ public class TestPostgreSQLDialect extends TestStandardDialect
 		
 		EasyMock.verify(metaData);
 		
-		assert result.equals("[\\w\\Q\\E]+") : result;
+		assert result.equals("[a-zA-Z][\\w\\Q$\\E]*") : result;
 		
 		EasyMock.reset(metaData);
 		

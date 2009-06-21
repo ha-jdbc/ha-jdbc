@@ -413,15 +413,15 @@ public class TestStandardDialect implements Dialect
 	{
 		DatabaseMetaData metaData = EasyMock.createStrictMock(DatabaseMetaData.class);
 		
-		EasyMock.expect(metaData.getExtraNameCharacters()).andReturn("-");
+		EasyMock.expect(metaData.getExtraNameCharacters()).andReturn("$");
 		
 		EasyMock.replay(metaData);
 		
-		Pattern result = this.getIdentifierPattern(metaData);
+		String result = this.getIdentifierPattern(metaData).pattern();
 		
 		EasyMock.verify(metaData);
 		
-		assert result.pattern().equals("[a-zA-Z][\\w\\Q-\\E]*");
+		assert result.equals("[a-zA-Z][\\w\\Q$\\E]*") : result;
 	}
 	
 	@Override
