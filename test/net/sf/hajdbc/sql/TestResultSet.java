@@ -364,6 +364,8 @@ public class TestResultSet implements ResultSet
 		boolean result = this.first();
 		
 		this.verify();
+		
+		assert result;
 	}
 	
 	/**
