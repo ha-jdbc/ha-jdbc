@@ -64,10 +64,10 @@ public abstract class AbstractMapper<T> implements IMarshaller, IUnmarshaller, I
 	}
 	
 	/**
-	 * @see org.jibx.runtime.IMarshaller#isExtension(int)
+	 * @see org.jibx.runtime.IMarshaller#isExtension(java.lang.String)
 	 */
 	@Override
-	public boolean isExtension(int arg0)
+	public boolean isExtension(String arg0)
 	{
 		return false;
 	}
