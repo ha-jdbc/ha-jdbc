@@ -29,7 +29,7 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.util.reflect.Methods;
 
 /**
- * @author paul
+ * @author Paul Ferraro
  *
  */
 public class ArrayInvocationHandler<D, P> extends LocatorInvocationHandler<D, P, Array>
@@ -43,9 +43,6 @@ public class ArrayInvocationHandler<D, P> extends LocatorInvocationHandler<D, P,
 	 * @param invoker
 	 * @param proxyClass
 	 * @param objectMap
-	 * @param updateCopy
-	 * @param readMethodSet
-	 * @param writeMethodSet
 	 * @throws Exception
 	 */
 	public ArrayInvocationHandler(P parent, SQLProxy<D, P> proxy, Invoker<D, P, Array> invoker, Map<Database<D>, Array> objectMap) throws Exception

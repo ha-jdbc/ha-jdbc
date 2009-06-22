@@ -27,7 +27,7 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 /**
- * @author paul
+ * @author Paul Ferraro
  *
  */
 public class ArrayInvocationStrategy<D, P> extends DatabaseWriteInvocationStrategy<D, P, Array>
@@ -37,8 +37,6 @@ public class ArrayInvocationStrategy<D, P> extends DatabaseWriteInvocationStrate
 	/**
 	 * @param cluster
 	 * @param parent
-	 * @param locatorClass
-	 * @param connection
 	 * @throws SQLException
 	 */
 	public ArrayInvocationStrategy(DatabaseCluster<D> cluster, P parent) throws SQLException
