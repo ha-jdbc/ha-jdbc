@@ -20,11 +20,14 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.Map;
+import java.util.Set;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.util.reflect.Methods;
 
 /**
  * @author Paul Ferraro
@@ -32,6 +35,8 @@ import net.sf.hajdbc.Database;
  */
 public class PreparedStatementInvocationHandler<D> extends AbstractPreparedStatementInvocationHandler<D, PreparedStatement>
 {
+	private static final Set<Method> setMethodSet = Methods.findMethods(PreparedStatement.class, "set\\w+");
+	
 	/**
 	 * @param connection
 	 * @param proxy
@@ -44,7 +49,7 @@ public class PreparedStatementInvocationHandler<D> extends AbstractPreparedState
 	 */
 	public PreparedStatementInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, PreparedStatement> invoker, Map<Database<D>, PreparedStatement> statementMap, TransactionContext<D> transactionContext, FileSupport fileSupport, String sql) throws Exception
 	{
-		super(connection, proxy, invoker, PreparedStatement.class, statementMap, transactionContext, fileSupport);
+		super(connection, proxy, invoker, PreparedStatement.class, statementMap, transactionContext, fileSupport, setMethodSet);
 		
 		this.lockList = this.extractLocks(sql);
 		this.selectForUpdate = this.isSelectForUpdate(sql);

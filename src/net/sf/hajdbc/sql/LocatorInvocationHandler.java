@@ -22,6 +22,8 @@ package net.sf.hajdbc.sql;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,6 +39,7 @@ import net.sf.hajdbc.util.reflect.Methods;
 public abstract class LocatorInvocationHandler<D, P, E> extends AbstractChildInvocationHandler<D, P, E>
 {
 	private final Method freeMethod;
+	private final List<Invoker<D, E, ?>> invokerList = new LinkedList<Invoker<D, E, ?>>();
 	
 	/**
 	 * @param parent
@@ -103,6 +106,21 @@ public abstract class LocatorInvocationHandler<D, P, E> extends AbstractChildInv
 			catch (InvocationTargetException e)
 			{
 				this.logger.warn(e.toString(), e.getTargetException());
+			}
+		}
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#record(net.sf.hajdbc.sql.Invoker, java.lang.reflect.Method, java.lang.Object[])
+	 */
+	@Override
+	protected void record(Invoker<D, E, ?> invoker, Method method, Object[] parameters)
+	{
+		if (this.isRecordable(method))
+		{
+			synchronized (this.invokerList)
+			{
+				this.invokerList.add(invoker);
 			}
 		}
 	}

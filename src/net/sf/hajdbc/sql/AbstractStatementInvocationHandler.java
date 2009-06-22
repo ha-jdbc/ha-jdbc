@@ -52,7 +52,7 @@ import net.sf.hajdbc.util.reflect.Methods;
 public abstract class AbstractStatementInvocationHandler<D, S extends Statement> extends AbstractChildInvocationHandler<D, Connection, S>
 {
 	private static final Set<Method> driverReadMethodSet = Methods.findMethods(Statement.class, "getFetchDirection", "getFetchSize", "getGeneratedKeys", "getMaxFieldSize", "getMaxRows", "getQueryTimeout", "getResultSetConcurrency", "getResultSetHoldability", "getResultSetType", "getUpdateCount", "getWarnings", "isClosed", "isPoolable");
-	private static final Set<Method> driverWriteMethodSet = Methods.findMethods(Statement.class, "addBatch", "clearBatch", "clearWarnings", "setCursorName", "setEscapeProcessing", "setFetchDirection", "setFetchSize", "setMaxFieldSize", "setMaxRows", "setPoolable", "setQueryTimeout");
+	private static final Set<Method> driverWriteMethodSet = Methods.findMethods(Statement.class, "clearWarnings", "setCursorName", "setEscapeProcessing", "setFetchDirection", "setFetchSize", "setMaxFieldSize", "setMaxRows", "setPoolable", "setQueryTimeout");
 	private static final Set<Method> executeMethodSet = Methods.findMethods(Statement.class, "execute(Update)?");
 	
 	private static final Method getConnectionMethod = Methods.getMethod(Statement.class, "getConnection");
@@ -99,7 +99,7 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 			return new DriverReadInvocationStrategy<D, S, Object>();
 		}
 		
-		if (driverWriteMethodSet.contains(method) || method.equals(closeMethod))
+		if (driverWriteMethodSet.contains(method) || method.equals(closeMethod) || method.equals(addBatchMethod) || method.equals(clearBatchMethod))
 		{
 			return new DriverWriteInvocationStrategy<D, S, Object>();
 		}
@@ -322,10 +322,10 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#record(java.lang.reflect.Method, net.sf.hajdbc.sql.Invoker)
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#record(net.sf.hajdbc.sql.Invoker, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected void record(Method method, Invoker<D, S, ?> invoker)
+	protected void record(Invoker<D, S, ?> invoker, Method method, Object[] parameters)
 	{
 		if (this.isBatchMethod(method))
 		{
@@ -343,8 +343,17 @@ public abstract class AbstractStatementInvocationHandler<D, S extends Statement>
 		}
 		else
 		{
-			super.record(method, invoker);
+			super.record(invoker, method, parameters);
 		}
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#isRecordable(java.lang.reflect.Method)
+	 */
+	@Override
+	protected boolean isRecordable(Method method)
+	{
+		return driverWriteMethodSet.contains(method);
 	}
 
 	protected boolean isBatchMethod(Method method)

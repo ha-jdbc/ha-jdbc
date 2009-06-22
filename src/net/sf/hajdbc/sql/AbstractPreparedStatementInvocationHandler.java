@@ -57,7 +57,6 @@ import net.sf.hajdbc.util.reflect.SimpleInvocationHandler;
 public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedStatement> extends AbstractStatementInvocationHandler<D, S>
 {
 	private static final Set<Method> databaseReadMethodSet = Methods.findMethods(PreparedStatement.class, "getMetaData", "getParameterMetaData");
-	private static final Set<Method> setParameterMethodSet = Methods.findMethods(PreparedStatement.class, "set\\w+");
 	private static final Method executeMethod = Methods.getMethod(PreparedStatement.class, "execute");
 	private static final Method executeUpdateMethod = Methods.getMethod(PreparedStatement.class, "executeUpdate");
 	private static final Method executeQueryMethod = Methods.getMethod(PreparedStatement.class, "executeQuery");
@@ -66,6 +65,7 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 	
 	protected List<Lock> lockList = Collections.emptyList();
 	protected boolean selectForUpdate = false;
+	private Set<Method> setMethodSet;
 	
 	/**
 	 * @param connection
@@ -77,9 +77,11 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 	 * @param fileSupport 
 	 * @throws Exception
 	 */
-	public AbstractPreparedStatementInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, S> invoker, Class<S> statementClass, Map<Database<D>, S> statementMap, TransactionContext<D> transactionContext, FileSupport fileSupport) throws Exception
+	public AbstractPreparedStatementInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, S> invoker, Class<S> statementClass, Map<Database<D>, S> statementMap, TransactionContext<D> transactionContext, FileSupport fileSupport, Set<Method> setMethods) throws Exception
 	{
 		super(connection, proxy, invoker, statementClass, statementMap, transactionContext, fileSupport);
+		
+		this.setMethodSet = setMethods;
 	}
 	
 	/**
@@ -93,7 +95,7 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 			return new DatabaseReadInvocationStrategy<D, S, Object>();
 		}
 		
-		if (setParameterMethodSet.contains(method) || method.equals(clearParametersMethod) || method.equals(addBatchMethod))
+		if (this.setMethodSet.contains(method) || method.equals(clearParametersMethod) || method.equals(addBatchMethod))
 		{
 			return new DriverWriteInvocationStrategy<D, S, Object>();
 		}
@@ -245,7 +247,7 @@ public class AbstractPreparedStatementInvocationHandler<D, S extends PreparedSta
 	{
 		Class<?>[] types = method.getParameterTypes();
 		
-		return setParameterMethodSet.contains(method) && (types.length > 0) && this.isIndexType(types[0]);
+		return this.setMethodSet.contains(method) && (types.length > 0) && this.isIndexType(types[0]);
 	}
 	
 	protected boolean isIndexType(Class<?> type)

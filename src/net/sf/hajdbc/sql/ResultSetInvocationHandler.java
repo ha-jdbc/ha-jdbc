@@ -56,15 +56,23 @@ import net.sf.hajdbc.util.reflect.SimpleInvocationHandler;
 public class ResultSetInvocationHandler<D, S extends Statement> extends AbstractChildInvocationHandler<D, S, ResultSet>
 {
 	private static final Set<Method> driverReadMethodSet = Methods.findMethods(ResultSet.class, "findColumn", "getConcurrency", "getCursorName", "getFetchDirection", "getFetchSize", "getHoldability", "getMetaData", "getRow", "getType", "getWarnings", "isAfterLast", "isBeforeFirst", "isClosed", "isFirst", "isLast", "row(Deleted|Inserted|Updated)", "wasNull");
-	private static final Set<Method> driverWriteMethodSet = Methods.findMethods(ResultSet.class, "absolute", "afterLast", "beforeFirst", "cancelRowUpdates", "clearWarnings", "first", "last", "moveTo(Current|Insert)Row", "next", "previous", "relative", "setFetchDirection", "setFetchSize");
+	private static final Set<Method> driverWriteMethodSet = Methods.findMethods(ResultSet.class, "clearWarnings", "setFetchDirection", "setFetchSize");
+	private static final Set<Method> absoluteNavigationMethodSet = Methods.findMethods(ResultSet.class, "absolute", "afterLast", "beforeFirst", "first", "last");
+	private static final Set<Method> relativeNavigationMethodSet = Methods.findMethods(ResultSet.class, "moveTo(Current|Insert)Row", "next", "previous", "relative");
 	private static final Set<Method> transactionalWriteMethodSet = Methods.findMethods(ResultSet.class, "(delete|insert|update)Row");
 	
 	private static final Method closeMethod = Methods.getMethod(ResultSet.class, "close");
+	private static final Method cancelRowUpdatesMethod = Methods.getMethod(ResultSet.class, "cancelRowUpdates");
 	private static final Method getStatementMethod = Methods.getMethod(ResultSet.class, "getStatement");
+	
+	private static final Set<Method> getBlobMethodSet = Methods.findMethods(ResultSet.class, "getBlob");
+	private static final Set<Method> getClobMethodSet = Methods.findMethods(ResultSet.class, "getClob", "getNClob");
 	
 	protected FileSupport fileSupport;
 	private TransactionContext<D> transactionContext;
-	private List<Invoker<D, ResultSet, ?>> invokerList = new LinkedList<Invoker<D, ResultSet, ?>>();
+	private List<Invoker<D, ResultSet, ?>> updateInvokerList = new LinkedList<Invoker<D, ResultSet, ?>>();
+	private Invoker<D, ResultSet, ?> absoluteNavigationInvoker = null;
+	private List<Invoker<D, ResultSet, ?>> relativeNavigationInvokerList = new LinkedList<Invoker<D, ResultSet, ?>>();
 	
 	/**
 	 * @param statement the statement that created this result set
@@ -94,7 +102,7 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 			return new DriverReadInvocationStrategy<D, ResultSet, Object>();
 		}
 		
-		if (driverWriteMethodSet.contains(method) || method.equals(closeMethod))
+		if (driverWriteMethodSet.contains(method) || absoluteNavigationMethodSet.contains(method) || relativeNavigationMethodSet.contains(method) || method.equals(closeMethod) || method.equals(cancelRowUpdatesMethod))
 		{
 			return new DriverWriteInvocationStrategy<D, ResultSet, Object>();
 		}
@@ -115,20 +123,18 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 			};
 		}
 		
+		if (getBlobMethodSet.contains(method))
+		{
+			return new BlobInvocationStrategy<D, ResultSet>(this.cluster, resultSet);
+		}
+		
+		if (getClobMethodSet.contains(method))
+		{
+			return new ClobInvocationStrategy<D, ResultSet>(this.cluster, resultSet, method.getReturnType().asSubclass(Clob.class));
+		}
+		
 		if (this.isGetMethod(method))
 		{
-			Class<?> returnClass = method.getReturnType();
-			
-			if (returnClass.equals(Blob.class))
-			{
-				return new BlobInvocationStrategy<D, ResultSet>(this.cluster, resultSet);
-			}
-			
-			if (Clob.class.isAssignableFrom(returnClass))
-			{
-				return new ClobInvocationStrategy<D, ResultSet>(this.cluster, resultSet, returnClass.asSubclass(Clob.class));
-			}
-			
 			return new DriverReadInvocationStrategy<D, ResultSet, Object>();
 		}
 		
@@ -195,9 +201,9 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 				{
 					InvocationHandler handler = Proxy.getInvocationHandler(blob);
 					
-					if (BlobInvocationHandler.class.isInstance(handler))
+					if (SQLProxy.class.isInstance(handler))
 					{
-						final BlobInvocationHandler<D, ?> proxy = (BlobInvocationHandler) handler;
+						final SQLProxy<D, Blob> proxy = (SQLProxy) handler;
 						
 						return new Invoker<D, ResultSet, Object>()
 						{
@@ -225,9 +231,9 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 				{
 					InvocationHandler handler = Proxy.getInvocationHandler(clob);
 					
-					if (ClobInvocationHandler.class.isInstance(handler))
+					if (SQLProxy.class.isInstance(handler))
 					{
-						final ClobInvocationHandler<D, ?> proxy = (ClobInvocationHandler) handler;
+						final SQLProxy<D, Clob> proxy = (SQLProxy) handler;
 						
 						return new Invoker<D, ResultSet, Object>()
 						{
@@ -283,22 +289,53 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#record(java.lang.reflect.Method, net.sf.hajdbc.sql.Invoker)
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#record(net.sf.hajdbc.sql.Invoker, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected void record(Method method, Invoker<D, ResultSet, ?> invoker)
+	protected void record(Invoker<D, ResultSet, ?> invoker, Method method, Object[] parameters)
 	{
-		if (driverWriteMethodSet.contains(method.getName()) || this.isUpdateMethod(method))
+		if (this.isUpdateMethod(method))
 		{
-			synchronized (this.invokerList)
+			synchronized (this.updateInvokerList)
 			{
-				this.invokerList.add(invoker);
+				this.updateInvokerList.add(invoker);
+			}
+		}
+		else if (transactionalWriteMethodSet.contains(method) || method.equals(cancelRowUpdatesMethod))
+		{
+			synchronized (this.updateInvokerList)
+			{
+				this.updateInvokerList.clear();
+			}
+		}
+		else if (absoluteNavigationMethodSet.contains(method))
+		{
+			synchronized (this.relativeNavigationInvokerList)
+			{
+				this.absoluteNavigationInvoker = invoker;
+				this.relativeNavigationInvokerList.clear();
+			}
+		}
+		else if (relativeNavigationMethodSet.contains(method))
+		{
+			synchronized (this.relativeNavigationInvokerList)
+			{
+				this.relativeNavigationInvokerList.add(invoker);
 			}
 		}
 		else
 		{
-			super.record(method, invoker);
+			super.record(invoker, method, parameters);
 		}
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#isRecordable(java.lang.reflect.Method)
+	 */
+	@Override
+	protected boolean isRecordable(Method method)
+	{
+		return driverWriteMethodSet.contains(method);
 	}
 
 	/**
@@ -309,9 +346,22 @@ public class ResultSetInvocationHandler<D, S extends Statement> extends Abstract
 	{
 		super.replay(database, resultSet);
 		
-		synchronized (this.invokerList)
+		synchronized (this.relativeNavigationInvokerList)
 		{
-			for (Invoker<D, ResultSet, ?> invoker: this.invokerList)
+			if (this.absoluteNavigationInvoker != null)
+			{
+				this.absoluteNavigationInvoker.invoke(database, resultSet);
+			}
+			
+			for (Invoker<D, ResultSet, ?> invoker: this.relativeNavigationInvokerList)
+			{
+				invoker.invoke(database, resultSet);
+			}
+		}
+		
+		synchronized (this.updateInvokerList)
+		{
+			for (Invoker<D, ResultSet, ?> invoker: this.updateInvokerList)
 			{
 				invoker.invoke(database, resultSet);
 			}

@@ -55,7 +55,7 @@ public class CallableStatementInvocationHandler<D> extends AbstractPreparedState
 	 */
 	public CallableStatementInvocationHandler(Connection connection, SQLProxy<D, Connection> proxy, Invoker<D, Connection, CallableStatement> invoker, Map<Database<D>, CallableStatement> statementMap, TransactionContext<D> transactionContext, FileSupport fileSupport) throws Exception
 	{
-		super(connection, proxy, invoker, CallableStatement.class, statementMap, transactionContext, fileSupport);
+		super(connection, proxy, invoker, CallableStatement.class, statementMap, transactionContext, fileSupport, setMethodSet);
 	}
 
 	/**
@@ -64,7 +64,7 @@ public class CallableStatementInvocationHandler<D> extends AbstractPreparedState
 	@Override
 	protected InvocationStrategy<D, CallableStatement, ?> getInvocationStrategy(CallableStatement statement, Method method, Object[] parameters) throws Exception
 	{
-		if (registerOutParameterMethodSet.contains(method) || setMethodSet.contains(method))
+		if (registerOutParameterMethodSet.contains(method))
 		{
 			return new DriverWriteInvocationStrategy<D, CallableStatement, Object>();
 		}

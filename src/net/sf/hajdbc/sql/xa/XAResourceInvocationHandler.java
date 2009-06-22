@@ -152,4 +152,13 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 	{
 		// Do nothing
 	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#isRecordable(java.lang.reflect.Method)
+	 */
+	@Override
+	protected boolean isRecordable(Method method)
+	{
+		return databaseWriteMethodSet.contains(method);
+	}
 }

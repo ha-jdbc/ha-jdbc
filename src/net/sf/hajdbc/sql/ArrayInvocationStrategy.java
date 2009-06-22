@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2008 Paul Ferraro
+ * Copyright (c) 2004-2009 Paul Ferraro
  * 
  * This library is free software; you can redistribute it and/or modify it 
  * under the terms of the GNU Lesser General Public License as published by the 
@@ -20,25 +20,28 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.sql.Array;
+import java.sql.SQLException;
+
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 /**
- * Invocation strategy for creating SQLXML proxies.
- * @author Paul Ferraro
+ * @author paul
  *
- * @param <D>
- * @param <P>
  */
-public class SQLXMLInvocationStrategy<D, P> extends DatabaseWriteInvocationStrategy<D, P, java.sql.SQLXML>
+public class ArrayInvocationStrategy<D, P> extends DatabaseWriteInvocationStrategy<D, P, Array>
 {
 	private P parent;
 	
 	/**
-	 * @param cluster 
-	 * @param parent the object that created sql xml objects
+	 * @param cluster
+	 * @param parent
+	 * @param locatorClass
+	 * @param connection
+	 * @throws SQLException
 	 */
-	public SQLXMLInvocationStrategy(DatabaseCluster<D> cluster, P parent)
+	public ArrayInvocationStrategy(DatabaseCluster<D> cluster, P parent) throws SQLException
 	{
 		super(cluster.getNonTransactionalExecutor());
 		
@@ -49,8 +52,8 @@ public class SQLXMLInvocationStrategy<D, P> extends DatabaseWriteInvocationStrat
 	 * @see net.sf.hajdbc.sql.DatabaseWriteInvocationStrategy#invoke(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker)
 	 */
 	@Override
-	public java.sql.SQLXML invoke(SQLProxy<D, P> proxy, Invoker<D, P, java.sql.SQLXML> invoker) throws Exception
+	public Array invoke(SQLProxy<D, P> proxy, Invoker<D, P, Array> invoker) throws Exception
 	{
-		return ProxyFactory.createProxy(java.sql.SQLXML.class, new SQLXMLInvocationHandler<D, P>(this.parent, proxy, invoker, this.invokeAll(proxy, invoker)));
+		return ProxyFactory.createProxy(Array.class, new ArrayInvocationHandler<D, P>(this.parent, proxy, invoker, this.invokeAll(proxy, invoker)));
 	}
 }

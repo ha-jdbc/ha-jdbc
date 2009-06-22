@@ -27,11 +27,18 @@ import java.util.Set;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.util.reflect.Methods;
 
+/**
+ * Invocation handler for SQLXML objects.
+ * @author Paul Ferraro
+ *
+ * @param <D>
+ * @param <P>
+ */
 public class SQLXMLInvocationHandler<D, P> extends LocatorInvocationHandler<D, P, java.sql.SQLXML>
 {
 	private static final Set<Method> DATABASE_READ_METHOD_SET = Methods.findMethods(java.sql.SQLXML.class, "getBinaryStream", "getCharacterStream", "getSource", "getString");
 
-	protected SQLXMLInvocationHandler(P object, SQLProxy<D, P> proxy, Invoker<D, P, java.sql.SQLXML> invoker, Map<Database<D>, java.sql.SQLXML> objectMap) throws Exception
+	public SQLXMLInvocationHandler(P object, SQLProxy<D, P> proxy, Invoker<D, P, java.sql.SQLXML> invoker, Map<Database<D>, java.sql.SQLXML> objectMap) throws Exception
 	{
 		super(object, proxy, invoker, java.sql.SQLXML.class, objectMap);
 	}

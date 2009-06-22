@@ -66,4 +66,13 @@ public class CommonDataSourceInvocationHandler<D> extends AbstractRootInvocation
 		
 		return super.getInvocationStrategy(object, method, parameters);
 	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#isRecordable(java.lang.reflect.Method)
+	 */
+	@Override
+	protected boolean isRecordable(Method method)
+	{
+		return this.setMethodSet.contains(method);
+	}
 }

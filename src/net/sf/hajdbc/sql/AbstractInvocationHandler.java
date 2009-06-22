@@ -96,7 +96,7 @@ public abstract class AbstractInvocationHandler<D, T> implements InvocationHandl
 		
 		Object result = strategy.invoke(this, invoker);
 		
-		this.record(method, invoker);
+		this.record(invoker, method, parameters);
 		
 		this.postInvoke(proxy, method, parameters);
 		
@@ -300,10 +300,10 @@ public abstract class AbstractInvocationHandler<D, T> implements InvocationHandl
 	
 	protected abstract T createObject(Database<D> database) throws Exception;
 
-	protected void record(Method method, Invoker<D, T, ?> invoker)
+	protected void record(Invoker<D, T, ?> invoker, Method method, Object[] parameters)
 	{
-		// Record only the last invocation of a given set*(...) method
-		if (this.isSetMethod(method) && (method.getParameterTypes().length == 1))
+		// Record only the last invocation of a given recordable method
+		if (this.isRecordable(method))
 		{
 			synchronized (this.invokerMap)
 			{
@@ -312,10 +312,9 @@ public abstract class AbstractInvocationHandler<D, T> implements InvocationHandl
 		}
 	}
 	
-	@SuppressWarnings("nls")
-	protected boolean isSetMethod(Method method)
+	protected boolean isRecordable(Method method)
 	{
-		return method.getName().startsWith("set");
+		return false;
 	}
 	
 	protected void replay(Database<D> database, T object) throws Exception

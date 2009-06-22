@@ -42,7 +42,7 @@ public class ConnectionInvocationHandler<D, P> extends AbstractChildInvocationHa
 {
 	private static final Set<Method> driverReadMethodSet = Methods.findMethods(Connection.class, "create(ArrayOf|Blob|Clob|NClob|SQLXML|Struct)", "getAutoCommit", "getCatalog", "getClientInfo", "getHoldability", "getTypeMap", "getWarnings", "isClosed", "isReadOnly", "nativeSQL");
 	private static final Set<Method> databaseReadMethodSet = Methods.findMethods(Connection.class, "getTransactionIsolation", "isValid");
-	private static final Set<Method> driverWriterMethodSet = Methods.findMethods(Connection.class, "clearWarnings", "setAutoCommit", "setClientInfo", "setHoldability", "setTypeMap");
+	private static final Set<Method> driverWriteMethodSet = Methods.findMethods(Connection.class, "clearWarnings", "setAutoCommit", "setClientInfo", "setHoldability", "setTypeMap");
 	private static final Set<Method> endTransactionMethodSet = Methods.findMethods(Connection.class, "commit", "rollback");
 	private static final Set<Method> createStatementMethodSet = Methods.findMethods(Connection.class, "createStatement");
 	private static final Set<Method> prepareStatementMethodSet = Methods.findMethods(Connection.class, "prepareStatement");
@@ -54,6 +54,7 @@ public class ConnectionInvocationHandler<D, P> extends AbstractChildInvocationHa
 	private static final Method releaseSavepointMethod = Methods.getMethod(Connection.class, "releaseSavepoint", Savepoint.class);
 	private static final Method rollbackSavepointMethod = Methods.getMethod(Connection.class, "rollback", Savepoint.class);
 	private static final Method closeMethod = Methods.getMethod(Connection.class, "close");
+	private static final Method createArrayOfMethod = Methods.findMethod(Connection.class, "createArrayOf");
 	private static final Method createBlobMethod = Methods.findMethod(Connection.class, "createBlob");
 	private static final Method createSQLXMLMethod = Methods.findMethod(Connection.class, "createSQLXML");
 	
@@ -90,7 +91,7 @@ public class ConnectionInvocationHandler<D, P> extends AbstractChildInvocationHa
 			return new DatabaseReadInvocationStrategy<D, Connection, Object>();
 		}
 		
-		if (driverWriterMethodSet.contains(method) || method.equals(closeMethod))
+		if (driverWriteMethodSet.contains(method) || method.equals(closeMethod))
 		{
 			return new DriverWriteInvocationStrategy<D, Connection, Object>();
 		}
@@ -138,6 +139,11 @@ public class ConnectionInvocationHandler<D, P> extends AbstractChildInvocationHa
 		if (createClobMethodSet.contains(method))
 		{
 			return new ClobInvocationStrategy<D, Connection>(this.cluster, connection, method.getReturnType().asSubclass(Clob.class));
+		}
+		
+		if ((createArrayOfMethod != null) && method.equals(createArrayOfMethod))
+		{
+			return new ArrayInvocationStrategy<D, Connection>(this.cluster, connection);
 		}
 		
 		if ((createSQLXMLMethod != null) && method.equals(createSQLXMLMethod))
@@ -225,5 +231,14 @@ public class ConnectionInvocationHandler<D, P> extends AbstractChildInvocationHa
 	protected void close(P parent, Connection connection) throws SQLException
 	{
 		connection.close();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#isRecordable(java.lang.reflect.Method)
+	 */
+	@Override
+	protected boolean isRecordable(Method method)
+	{
+		return driverWriteMethodSet.contains(method);
 	}
 }

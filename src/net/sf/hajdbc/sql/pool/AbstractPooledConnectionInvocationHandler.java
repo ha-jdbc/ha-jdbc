@@ -22,10 +22,15 @@ package net.sf.hajdbc.sql.pool;
 
 import java.lang.reflect.Method;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.sql.ConnectionEventListener;
 import javax.sql.PooledConnection;
+import javax.sql.StatementEventListener;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.sql.AbstractChildInvocationHandler;
@@ -45,10 +50,18 @@ import net.sf.hajdbc.util.reflect.Methods;
 @SuppressWarnings("nls")
 public abstract class AbstractPooledConnectionInvocationHandler<D, C extends PooledConnection> extends AbstractChildInvocationHandler<D, D, C>
 {
-	private static final Set<Method> eventListenerMethodSet = Methods.findMethods(PooledConnection.class, "(add|remove)(Connection|Statement)EventListener");
+	private static final Method addConnectionEventListenerMethod = Methods.getMethod(PooledConnection.class, "addConnectionEventListener", ConnectionEventListener.class);
+	private static final Method addStatementEventListenerMethod = Methods.getMethod(PooledConnection.class, "addStatementEventListener", StatementEventListener.class);
+	private static final Method removeConnectionEventListenerMethod = Methods.getMethod(PooledConnection.class, "removeConnectionEventListener", ConnectionEventListener.class);
+	private static final Method removeStatementEventListenerMethod = Methods.getMethod(PooledConnection.class, "removeStatementEventListener", StatementEventListener.class);
+	
+	private static final Set<Method> eventListenerMethodSet = new HashSet<Method>(Arrays.asList(addConnectionEventListenerMethod, addStatementEventListenerMethod, removeConnectionEventListenerMethod, removeStatementEventListenerMethod));
 	
 	private static final Method getConnectionMethod = Methods.getMethod(PooledConnection.class, "getConnection");
 	private static final Method closeMethod = Methods.getMethod(PooledConnection.class, "close");
+	
+	private Map<Object, Invoker<D, C, ?>> connectionEventListenerInvokerMap = new HashMap<Object, Invoker<D, C, ?>>();
+	private Map<Object, Invoker<D, C, ?>> statementEventListenerInvokerMap = new HashMap<Object, Invoker<D, C, ?>>();
 	
 	/**
 	 * @param dataSource
@@ -98,4 +111,63 @@ public abstract class AbstractPooledConnectionInvocationHandler<D, C extends Poo
 	}
 	
 	protected abstract TransactionContext<D> createTransactionContext();
+
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#record(net.sf.hajdbc.sql.Invoker, java.lang.reflect.Method, java.lang.Object[])
+	 */
+	@Override
+	protected void record(Invoker<D, C, ?> invoker, Method method, Object[] parameters)
+	{
+		if (method.equals(addConnectionEventListenerMethod))
+		{
+			synchronized (this.connectionEventListenerInvokerMap)
+			{
+				this.connectionEventListenerInvokerMap.put(parameters[0], invoker);
+			}
+		}
+		else if (method.equals(removeConnectionEventListenerMethod))
+		{
+			synchronized (this.connectionEventListenerInvokerMap)
+			{
+				this.connectionEventListenerInvokerMap.remove(parameters[0]);
+			}
+		}
+		else if (method.equals(addStatementEventListenerMethod))
+		{
+			synchronized (this.statementEventListenerInvokerMap)
+			{
+				this.statementEventListenerInvokerMap.put(parameters[0], invoker);
+			}
+		}
+		else if (method.equals(removeStatementEventListenerMethod))
+		{
+			synchronized (this.statementEventListenerInvokerMap)
+			{
+				this.statementEventListenerInvokerMap.remove(parameters[0]);
+			}
+		}
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#replay(net.sf.hajdbc.Database, java.lang.Object)
+	 */
+	@Override
+	protected void replay(Database<D> database, C connection) throws Exception
+	{
+		synchronized (this.connectionEventListenerInvokerMap)
+		{
+			for (Invoker<D, C, ?> invoker: this.connectionEventListenerInvokerMap.values())
+			{
+				invoker.invoke(database, connection);
+			}
+		}
+
+		synchronized (this.statementEventListenerInvokerMap)
+		{
+			for (Invoker<D, C, ?> invoker: this.statementEventListenerInvokerMap.values())
+			{
+				invoker.invoke(database, connection);
+			}
+		}
+	}
 }
