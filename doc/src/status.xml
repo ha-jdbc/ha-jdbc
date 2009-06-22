@@ -12,7 +12,7 @@
 	</contexts>
 
 	<changes>
-		<release version="2.0.16" date="...">
+		<release version="2.0.16" date="June 21, 2009">
 			<action context="src" dev="PF" type="fix" fixes-bug="2684746">
 				Fixed NullPointerException in PreparedStatement.set/ResultSet.update stream/reader/blob/clob methods, if called with null value. 
 			</action>
@@ -23,10 +23,13 @@
 				Ensure unique constraint columns are quoted, if necessary.
 			</action>
 			<action context="src" dev="PF" type="fix" fixes-bug="2728324">
-				Make sure PreparedStatement.clearParameters() method removes recorded parameter setter invokers.
+				Fix memory leak caused by batch method recording when using PreparedStatement pooling.
 			</action>
 			<action context="src" dev="PF" type="fix">
-				Make sure ResultSet.(delete|insert|update)Row() and cancelRowUpdates() methods remove recorded update column invokers.
+				Optimize recording of ResultSet navigation and update methods.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fix recording of CallableStatement.registerOutParameter(...) methods.
 			</action>
 			<action context="src" dev="PF" type="fix" fixes-bug="2688421">
 				Fix differential sync strategy breakage when a table contains only primary key columns.
@@ -34,6 +37,27 @@
 			<action context="src" dev="PF" type="fix" fixes-bug="2770743" due-to="Karl Moore">
 				Determine column meta data from ResultSetMetaData instead of DatabaseMetaData.getColumns(...).
 				This avoids the need for dialect specific IDENTITY column detection logic.
+			</action>
+			<action context="src" dev="PF" type="fix">
+				Fixed StandardDialect.getIdentifierPattern(DatabaseMetaData) to require that identifiers begin with a letter.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded JGroups to 2.6.10.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded JiBX to 1.2.1.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded Quartz to 1.6.5.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded SLF4J to 1.5.7.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded EasyMock to 2.5.1.
+			</action>
+			<action context="lib" dev="PF" type="update">
+				Upgraded TestNG to 5.9.
 			</action>
 		</release>
 		<release version="2.0.15" date="February 17, 2009">
