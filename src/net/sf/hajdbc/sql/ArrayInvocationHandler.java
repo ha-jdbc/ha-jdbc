@@ -41,7 +41,6 @@ public class ArrayInvocationHandler<D, P> extends LocatorInvocationHandler<D, P,
 	 * @param parent
 	 * @param proxy
 	 * @param invoker
-	 * @param proxyClass
 	 * @param objectMap
 	 * @throws Exception
 	 */
