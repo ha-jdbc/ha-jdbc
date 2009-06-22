@@ -12,7 +12,7 @@
 	</contexts>
 
 	<changes>
-		<release version="2.0.16" date="June 21, 2009">
+		<release version="2.0.16-rc-1" date="June 21, 2009">
 			<action context="src" dev="PF" type="fix" fixes-bug="2684746">
 				Fixed NullPointerException in PreparedStatement.set/ResultSet.update stream/reader/blob/clob methods, if called with null value. 
 			</action>
