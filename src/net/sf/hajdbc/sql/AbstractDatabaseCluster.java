@@ -1049,6 +1049,11 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 				this.decorator.decorate(this);
 			}
 			
+			for (Database<D> database: this.databaseMap.values())
+			{
+				database.clean();
+			}
+			
 			this.start();
 			
 			return name;
