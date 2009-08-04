@@ -869,8 +869,6 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 				throw new IllegalArgumentException(Messages.getMessage(Messages.DATABASE_ALREADY_EXISTS, id, this));
 			}
 			
-			database.clean();
-			
 			this.register(database, database.getInactiveMBean());
 			
 			this.databaseMap.put(id, database);
@@ -1049,6 +1047,11 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 			if (this.decorator != null)
 			{
 				this.decorator.decorate(this);
+			}
+			
+			for (Database<D> database: this.databaseMap.values())
+			{
+				database.clean();
 			}
 			
 			this.start();
