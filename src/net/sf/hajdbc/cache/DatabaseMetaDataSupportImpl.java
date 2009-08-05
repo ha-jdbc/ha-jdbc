@@ -26,6 +26,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,37 +54,37 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 {
 	// As defined in SQL-92 specification: http://www.andrew.cmu.edu/user/shadow/sql/sql1992.txt
 	private static final String[] SQL_92_RESERVED_WORDS = new String[] {
-		"absolute", "action", "add", "all", "allocate", "alter", "and", "any", "are", "as", "asc", "assertion", "at", "authorization", "avg",
-		"begin", "between", "bit", "bit_length", "both", "by",
-		"cascade", "cascaded", "case", "cast", "catalog", "char", "character", "char_length", "character_length", "check", "close", "coalesce", "collate", "collation", "column", "commit", "connect", "connection", "constraint", "constraints", "continue", "convert", "corresponding", "count", "create", "cross", "current", "current_date", "current_time", "current_timestamp", "current_user", "cursor",
-		"date", "day", "deallocate", "dec", "decimal", "declare", "default", "deferrable", "deferred", "delete", "desc", "describe", "descriptor", "diagnostics", "disconnect", "distinct", "domain", "double", "drop",
-		"else", "end", "end-exec", "escape", "except", "exception", "exec", "execute", "exists", "external", "extract",
-		"false", "fetch", "first", "float", "for", "foreign", "found", "from", "full",
-		"get", "global", "go", "goto", "grant", "group",
-		"having", "hour",
-		"identity", "immediate", "in", "indicator", "initially", "inner", "input", "insensitive", "insert", "int", "integer", "intersect", "interval", "into", "is", "isolation",
-		"join",
-		"key",
-		"language", "last", "leading", "left", "level", "like", "local", "lower",
-		"match", "max", "min", "minute", "module", "month",
-		"names", "national", "natural", "nchar", "next", "no", "not", "null", "nullif", "numeric",
-		"octet_length", "of", "on", "only", "open", "option", "or", "order", "outer", "output", "overlaps",
-		"pad", "partial", "position", "precision", "prepare", "preserve", "primary", "prior", "privileges", "procedure", "public",
-		"read", "real", "references", "relative", "restrict", "revoke", "right", "rollback", "rows",
-		"schema", "scroll", "second", "section", "select", "session", "session_user", "set", "size", "smallint", "some", "space", "sql", "sqlcode", "sqlerror", "sqlstate", "substring", "sum", "system_user",
-		"table", "temporary", "then", "time", "timestamp", "timezone_hour", "timezone_minute", "to", "trailing", "transaction", "translate", "translation", "trim", "true",
-		"union", "unique", "unknown", "update", "upper", "usage", "user", "using",
-		"value", "values", "varchar", "varying", "view",
-		"when", "whenever", "where", "with", "work", "write",
-		"year",
-		"zone"
+		"ABSOLUTE", "ACTION", "ADD", "ALL", "ALLOCATE", "ALTER", "AND", "ANY", "ARE", "AS", "ASC", "ASSERTION", "AT", "AUTHORIZATION", "AVG",
+		"BEGIN", "BETWEEN", "BIT", "BIT_LENGTH", "BOTH", "BY",
+		"CASCADE", "CASCADED", "CASE", "CAST", "CATALOG", "CHAR", "CHARACTER", "CHAR_LENGTH", "CHARACTER_LENGTH", "CHECK", "CLOSE", "COALESCE", "COLLATE", "COLLATION", "COLUMN", "COMMIT", "CONNECT", "CONNECTION", "CONSTRAINT", "CONSTRAINTS", "CONTINUE", "CONVERT", "CORRESPONDING", "COUNT", "CREATE", "CROSS", "CURRENT", "CURRENT_DATE", "CURRENT_TIME", "CURRENT_TIMESTAMP", "CURRENT_USER", "CURSOR",
+		"DATE", "DAY", "DEALLOCATE", "DEC", "DECIMAL", "DECLARE", "DEFAULT", "DEFERRABLE", "DEFERRED", "DELETE", "DESC", "DESCRIBE", "DESCRIPTOR", "DIAGNOSTICS", "DISCONNECT", "DISTINCT", "DOMAIN", "DOUBLE", "DROP",
+		"ELSE", "END", "END-EXEC", "ESCAPE", "EXCEPT", "EXCEPTION", "EXEC", "EXECUTE", "EXISTS", "EXTERNAL", "EXTRACT",
+		"FALSE", "FETCH", "FIRST", "FLOAT", "FOR", "FOREIGN", "FOUND", "FROM", "FULL",
+		"GET", "GLOBAL", "GO", "GOTO", "GRANT", "GROUP",
+		"HAVING", "HOUR",
+		"IDENTITY", "IMMEDIATE", "IN", "INDICATOR", "INITIALLY", "INNER", "INPUT", "INSENSITIVE", "INSERT", "INT", "INTEGER", "INTERSECT", "INTERVAL", "INTO", "IS", "ISOLATION",
+		"JOIN",
+		"KEY",
+		"LANGUAGE", "LAST", "LEADING", "LEFT", "LEVEL", "LIKE", "LOCAL", "LOWER",
+		"MATCH", "MAX", "MIN", "MINUTE", "MODULE", "MONTH",
+		"NAMES", "NATIONAL", "NATURAL", "NCHAR", "NEXT", "NO", "NOT", "NULL", "NULLIF", "NUMERIC",
+		"OCTET_LENGTH", "OF", "ON", "ONLY", "OPEN", "OPTION", "OR", "ORDER", "OUTER", "OUTPUT", "OVERLAPS",
+		"PAD", "PARTIAL", "POSITION", "PRECISION", "PREPARE", "PRESERVE", "PRIMARY", "PRIOR", "PRIVILEGES", "PROCEDURE", "PUBLIC",
+		"READ", "REAL", "REFERENCES", "RELATIVE", "RESTRICT", "REVOKE", "RIGHT", "ROLLBACK", "ROWS",
+		"SCHEMA", "SCROLL", "SECOND", "SECTION", "SELECT", "SESSION", "SESSION_USER", "SET", "SIZE", "SMALLINT", "SOME", "SPACE", "SQL", "SQLCODE", "SQLERROR", "SQLSTATE", "SUBSTRING", "SUM", "SYSTEM_USER",
+		"TABLE", "TEMPORARY", "THEN", "TIME", "TIMESTAMP", "TIMEZONE_HOUR", "TIMEZONE_MINUTE", "TO", "TRAILING", "TRANSACTION", "TRANSLATE", "TRANSLATION", "TRIM", "TRUE",
+		"UNION", "UNIQUE", "UNKNOWN", "UPDATE", "UPPER", "USAGE", "USER", "USING",
+		"VALUE", "VALUES", "VARCHAR", "VARYING", "VIEW",
+		"WHEN", "WHENEVER", "WHERE", "WITH", "WORK", "WRITE",
+		"YEAR",
+		"ZONE"
 	};
 	
 	private static final Pattern UPPER_CASE_PATTERN = Pattern.compile("[A-Z]");
 	private static final Pattern LOWER_CASE_PATTERN = Pattern.compile("[a-z]");
 	
 	private Dialect dialect;
-	private Set<String> reservedIdentifierSet = new HashSet<String>();
+	private Set<String> reservedIdentifierSet = new HashSet<String>(SQL_92_RESERVED_WORDS.length);
 	private Pattern identifierPattern;
 	private String quote;
 	private boolean supportsMixedCaseIdentifiers;
@@ -116,14 +117,11 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 		this.supportsSchemasInDML = metaData.supportsSchemasInDataManipulation();
 		this.supportsSchemasInDDL = metaData.supportsSchemasInTableDefinitions();
 		
-		for (String word: SQL_92_RESERVED_WORDS)
-		{
-			this.reservedIdentifierSet.add(this.normalizeCase(word));
-		}
+		this.reservedIdentifierSet.addAll(Arrays.asList(SQL_92_RESERVED_WORDS));
 		
 		for (String word: metaData.getSQLKeywords().split(Strings.COMMA))
 		{
-			this.reservedIdentifierSet.add(this.normalizeCase(word));
+			this.reservedIdentifierSet.add(word.trim().toUpperCase());
 		}
 	}
 	
@@ -369,10 +367,8 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 		// Strip any existing quoting
 		String raw = (identifier.startsWith(this.quote) && identifier.endsWith(this.quote)) ? identifier.substring(quoteLength, identifier.length() - quoteLength) : identifier;
 		
-		String normal = this.normalizeCase(raw);
-		
 		// Quote reserved identifiers
-		boolean requiresQuoting = this.reservedIdentifierSet.contains(normal);
+		boolean requiresQuoting = this.reservedIdentifierSet.contains(raw.toUpperCase());
 		
 		// Quote identifiers containing special characters
 		requiresQuoting |= !this.identifierPattern.matcher(raw).matches();
@@ -380,7 +376,7 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 		// Quote mixed-case identifiers if detected and supported by DBMS
 		requiresQuoting |= !this.supportsMixedCaseIdentifiers && this.supportsMixedCaseQuotedIdentifiers && ((this.storesLowerCaseIdentifiers && !this.storesLowerCaseQuotedIdentifiers && UPPER_CASE_PATTERN.matcher(raw).find()) || (this.storesUpperCaseIdentifiers && !this.storesUpperCaseQuotedIdentifiers && LOWER_CASE_PATTERN.matcher(raw).find()));
 		
-		return requiresQuoting ? this.quote + this.normalizeCaseQuoted(raw) + this.quote : normal;
+		return requiresQuoting ? this.quote + this.normalizeCaseQuoted(raw) + this.quote : this.normalizeCase(raw);
 	}
 	
 	private String normalizeCase(String identifier)
