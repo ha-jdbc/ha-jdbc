@@ -84,13 +84,15 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		Dialect dialect = context.getDialect();
 		ExecutorService executor = context.getExecutor();
 		
-		boolean autoCommit = targetConnection.getAutoCommit();
+		boolean sourceAutoCommit = sourceConnection.getAutoCommit();
+		boolean targetAutoCommit = targetConnection.getAutoCommit();
 		
 		targetConnection.setAutoCommit(true);
 		
 		SynchronizationSupport.dropForeignKeys(context);
 		
 		targetConnection.setAutoCommit(false);
+		sourceConnection.setAutoCommit(false);
 		
 		try
 		{
@@ -210,7 +212,9 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 		SynchronizationSupport.synchronizeIdentityColumns(context);
 		SynchronizationSupport.synchronizeSequences(context);
 		
-		targetConnection.setAutoCommit(autoCommit);
+		// Restore auto-commit to original value
+		targetConnection.setAutoCommit(targetAutoCommit);
+		sourceConnection.setAutoCommit(sourceAutoCommit);
 	}
 
 	/**

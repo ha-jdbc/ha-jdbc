@@ -92,7 +92,8 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		Dialect dialect = context.getDialect();
 		ExecutorService executor = context.getExecutor();
 		
-		boolean autoCommit = targetConnection.getAutoCommit();
+		boolean sourceAutoCommit = sourceConnection.getAutoCommit();
+		boolean targetAutoCommit = targetConnection.getAutoCommit();
 		
 		targetConnection.setAutoCommit(true);
 		
@@ -100,6 +101,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		SynchronizationSupport.dropUniqueConstraints(context);
 		
 		targetConnection.setAutoCommit(false);
+		sourceConnection.setAutoCommit(false);
 		
 		try
 		{
@@ -390,7 +392,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 			
 			throw e;
 		}
-		
+
 		targetConnection.setAutoCommit(true);
 		
 		SynchronizationSupport.restoreUniqueConstraints(context);
@@ -399,7 +401,8 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		SynchronizationSupport.synchronizeIdentityColumns(context);
 		SynchronizationSupport.synchronizeSequences(context);
 		
-		targetConnection.setAutoCommit(autoCommit);
+		targetConnection.setAutoCommit(targetAutoCommit);
+		sourceConnection.setAutoCommit(sourceAutoCommit);
 	}
 
 	private boolean equals(Object object1, Object object2)
