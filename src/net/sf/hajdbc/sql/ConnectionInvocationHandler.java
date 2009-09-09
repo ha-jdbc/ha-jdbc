@@ -42,7 +42,7 @@ public class ConnectionInvocationHandler<D, P> extends AbstractChildInvocationHa
 {
 	private static final Set<Method> driverReadMethodSet = Methods.findMethods(Connection.class, "create(ArrayOf|Blob|Clob|NClob|SQLXML|Struct)", "getAutoCommit", "getCatalog", "getClientInfo", "getHoldability", "getTypeMap", "getWarnings", "isClosed", "isReadOnly", "nativeSQL");
 	private static final Set<Method> databaseReadMethodSet = Methods.findMethods(Connection.class, "getTransactionIsolation", "isValid");
-	private static final Set<Method> driverWriteMethodSet = Methods.findMethods(Connection.class, "clearWarnings", "setAutoCommit", "setClientInfo", "setHoldability", "setTypeMap");
+	private static final Set<Method> driverWriteMethodSet = Methods.findMethods(Connection.class, "clearWarnings", "setClientInfo", "setHoldability", "setTypeMap");
 	private static final Set<Method> endTransactionMethodSet = Methods.findMethods(Connection.class, "commit", "rollback");
 	private static final Set<Method> createStatementMethodSet = Methods.findMethods(Connection.class, "createStatement");
 	private static final Set<Method> prepareStatementMethodSet = Methods.findMethods(Connection.class, "prepareStatement");
@@ -50,6 +50,7 @@ public class ConnectionInvocationHandler<D, P> extends AbstractChildInvocationHa
 	private static final Set<Method> setSavepointMethodSet = Methods.findMethods(Connection.class, "setSavepoint");
 	private static final Set<Method> createClobMethodSet = Methods.findMethods(Connection.class, "createN?Clob");
 	
+	private static final Method setAutoCommitMethod = Methods.getMethod(Connection.class, "setAutoCommit", Boolean.TYPE);
 	private static final Method getMetaDataMethod = Methods.getMethod(Connection.class, "getMetaData");
 	private static final Method releaseSavepointMethod = Methods.getMethod(Connection.class, "releaseSavepoint", Savepoint.class);
 	private static final Method rollbackSavepointMethod = Methods.getMethod(Connection.class, "rollback", Savepoint.class);
@@ -96,7 +97,7 @@ public class ConnectionInvocationHandler<D, P> extends AbstractChildInvocationHa
 			return new DriverWriteInvocationStrategy<D, Connection, Object>();
 		}
 		
-		if (endTransactionMethodSet.contains(method))
+		if (endTransactionMethodSet.contains(method) || method.equals(setAutoCommitMethod))
 		{
 			return this.transactionContext.end(new DatabaseWriteInvocationStrategy<D, Connection, Void>(this.cluster.getTransactionalExecutor()));
 		}
@@ -239,6 +240,6 @@ public class ConnectionInvocationHandler<D, P> extends AbstractChildInvocationHa
 	@Override
 	protected boolean isRecordable(Method method)
 	{
-		return driverWriteMethodSet.contains(method);
+		return driverWriteMethodSet.contains(method) || method.equals(setAutoCommitMethod);
 	}
 }
