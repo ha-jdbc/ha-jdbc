@@ -60,9 +60,9 @@ public class MockDatabase extends AbstractDatabase<Void>
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Database#createConnectionFactory()
+	 * @see net.sf.hajdbc.Database#createConnectionSource()
 	 */
-	public Void createConnectionFactory()
+	public Void createConnectionSource()
 	{
 		return null;
 	}

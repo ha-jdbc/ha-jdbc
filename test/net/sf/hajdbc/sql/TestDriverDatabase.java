@@ -196,7 +196,7 @@ public class TestDriverDatabase extends TestDatabase<DriverDatabase, Driver> imp
 		this.database.setDriver(MockDriver.class.getName());
 		this.database.setUrl("jdbc:mock:test");
 		
-		Driver driver = this.database.createConnectionFactory();
+		Driver driver = this.database.createConnectionSource();
 		
 		assert driver.getClass().equals(MockDriver.class) : driver.getClass().getName();
 	}

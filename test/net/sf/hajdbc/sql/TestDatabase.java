@@ -551,12 +551,12 @@ public abstract class TestDatabase<T extends Database<U>, U> implements Database
 	public abstract void testCreateConnectionFactory();	
 
 	/**
-	 * @see net.sf.hajdbc.Database#createConnectionFactory()
+	 * @see net.sf.hajdbc.Database#createConnectionSource()
 	 */
 	@Override
-	public U createConnectionFactory()
+	public U createConnectionSource()
 	{
-		return this.database.createConnectionFactory();
+		return this.database.createConnectionSource();
 	}
 
 	public abstract void testGetActiveMBean();

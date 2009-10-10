@@ -64,7 +64,7 @@ public abstract class TestCommonDataSourceDatabase<C extends CommonDataSourceDat
 			assert false : e;
 		}
 		
-		D dataSource = this.createConnectionFactory();
+		D dataSource = this.createConnectionSource();
 		
 		assert dataSource.getClass().equals(this.mockDataSourceClass()) : dataSource.getClass();
 
@@ -73,7 +73,7 @@ public abstract class TestCommonDataSourceDatabase<C extends CommonDataSourceDat
 		// Test explicit DataSource creation
 		this.database.setName(this.mockDataSourceClass().getName());
 
-		dataSource = this.createConnectionFactory();
+		dataSource = this.createConnectionSource();
 		
 		assert dataSource.getClass().equals(this.mockDataSourceClass()) : dataSource.getClass();
 	}

@@ -50,10 +50,10 @@ public class MockDataSourceDatabase extends AbstractDatabase<DataSource>
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Database#createConnectionFactory()
+	 * @see net.sf.hajdbc.Database#createConnectionSource()
 	 */
 	@Override
-	public DataSource createConnectionFactory()
+	public DataSource createConnectionSource()
 	{
 		return this.dataSource;
 	}
