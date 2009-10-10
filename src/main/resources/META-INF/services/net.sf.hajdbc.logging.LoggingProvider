@@ -1,0 +1,2 @@
+net.sf.hajdbc.logging.slf4j.SLF4JLoggingProvider
+net.sf.hajdbc.logging.jdk.JDKLoggingProvider
