@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<project name="ha-jdbc-doc" default="site" basedir=".">
-
-	<property environment="env"></property>
-
-	<import file="${env.FORREST_HOME}/main/forrest.build.xml"/>
-	
-</project>
