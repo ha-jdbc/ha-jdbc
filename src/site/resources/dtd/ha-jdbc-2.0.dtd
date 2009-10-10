@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	HA-JDBC: High-Availability JDBC
+	Copyright (c) 2004-2007 Paul Ferraro
+
+	This library is free software; you can redistribute it and/or modify it 
+	under the terms of the GNU Lesser General Public License as published by the 
+	Free Software Foundation; either version 2.1 of the License, or (at your 
+	option) any later version.
+	
+	This library is distributed in the hope that it will be useful, but WITHOUT
+	ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+	FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+	for more details.
+
+	You should have received a copy of the GNU Lesser General Public License
+	along with this library; if not, write to the Free Software Foundation, 
+	Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+	Contact: ferraro@users.sourceforge.net
+
+	This DTD module is identified by the PUBLIC and SYSTEM identifiers:
+
+	PUBLIC "-//HA-JDBC//DTD HA-JDBC 2.0//EN"
+	SYSTEM "http://ha-jdbc.sourceforge.net/dtd/ha-jdbc-2.0.dtd"
+-->
+
+<!ELEMENT ha-jdbc (distributable?,sync+,cluster)>
+
+<!ELEMENT distributable EMPTY>
+<!ATTLIST distributable
+	config CDATA "stacks.xml"
+	stack CDATA "udp-sync"
+	timeout CDATA "1000"
+>
+
+<!ELEMENT sync (property*)>
+<!ATTLIST sync
+	id ID #REQUIRED
+	class CDATA #REQUIRED
+>
+
+<!ELEMENT cluster (database+|datasource+|pool-datasource+|xa-datasource+)>
+<!ATTLIST cluster
+	balancer (simple|random|round-robin|load) #REQUIRED
+	default-sync IDREF #REQUIRED
+	dialect CDATA "standard"
+	meta-data-cache (none|lazy|eager) #REQUIRED
+	transaction-mode (parallel|serial) #REQUIRED
+	auto-activate-schedule CDATA #IMPLIED
+	failure-detect-schedule CDATA #IMPLIED
+	min-threads CDATA "0"
+	max-threads CDATA "100"
+	max-idle CDATA "60"
+	detect-identity-columns (true|false) "false"
+	detect-sequences (true|false) "false"
+	eval-current-date (true|false) "false"
+	eval-current-time (true|false) "false"
+	eval-current-timestamp (true|false) "false"
+	eval-rand (true|false) "false"
+>
+
+<!ENTITY % authentication "(user, password)?">
+<!ENTITY % common "property*, %authentication;">
+<!ENTITY % database "
+	id CDATA #REQUIRED
+	weight CDATA '1'
+	local (true|false) 'false'
+">
+
+<!ELEMENT user (#PCDATA)>
+<!ELEMENT password (#PCDATA)>
+
+<!ELEMENT database (driver?, url, %common;)>
+<!ATTLIST database %database;>
+<!ELEMENT url (#PCDATA)>
+<!ELEMENT driver (#PCDATA)>
+
+<!ENTITY % datasource "(name, %common;)">
+
+<!ELEMENT datasource %datasource;>
+<!ATTLIST datasource %database;>
+<!ELEMENT pool-datasource %datasource;>
+<!ATTLIST pool-datasource %database;>
+<!ELEMENT xa-datasource %datasource;>
+<!ATTLIST xa-datasource %database;>
+
+<!ELEMENT name (#PCDATA)>
+
+<!ELEMENT property (#PCDATA)>
+<!ATTLIST property
+	name CDATA #REQUIRED
+>

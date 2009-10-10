@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	HA-JDBC: High-Availability JDBC
+	Copyright (c) 2004-2007 Paul Ferraro
+
+	This library is free software; you can redistribute it and/or modify it 
+	under the terms of the GNU Lesser General Public License as published by the 
+	Free Software Foundation; either version 2.1 of the License, or (at your 
+	option) any later version.
+	
+	This library is distributed in the hope that it will be useful, but WITHOUT
+	ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+	FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+	for more details.
+
+	You should have received a copy of the GNU Lesser General Public License
+	along with this library; if not, write to the Free Software Foundation, 
+	Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+	Contact: ferraro@users.sourceforge.net
+
+	This DTD module is identified by the PUBLIC and SYSTEM identifiers:
+
+	PUBLIC "-//HA-JDBC//DTD HA-JDBC 1.1//EN"
+	SYSTEM "http://ha-jdbc.sourceforge.net/dtd/ha-jdbc-1.1.dtd"
+-->
+
+<!ELEMENT ha-jdbc (distributable?,sync+,cluster+)>
+
+<!ELEMENT distributable EMPTY>
+<!ATTLIST distributable
+	protocol CDATA "default-minimalthreads.xml"
+	timeout CDATA "1000"
+>
+
+<!ELEMENT sync (property*)>
+<!ATTLIST sync
+	id ID #REQUIRED
+	class CDATA #REQUIRED
+>
+
+<!ELEMENT cluster (database+|datasource+)>
+<!ATTLIST cluster
+	id CDATA #REQUIRED
+	balancer (simple|random|round-robin|load) #REQUIRED
+	default-sync IDREF #REQUIRED
+	dialect CDATA "default"
+	transactions (local|xa) #REQUIRED
+	auto-activate-schedule CDATA #IMPLIED
+	failure-detect-schedule CDATA #IMPLIED
+	min-threads CDATA "0"
+	max-threads CDATA "100"
+	max-idle CDATA "60"
+>
+
+<!ENTITY % authentication-info "(user, password)?">
+<!ELEMENT user (#PCDATA)>
+<!ELEMENT password (#PCDATA)>
+
+<!ELEMENT database (driver?, url, property*, %authentication-info;)>
+<!ATTLIST database
+	id CDATA #REQUIRED
+	weight CDATA "1"
+>
+<!ELEMENT url (#PCDATA)>
+<!ELEMENT driver (#PCDATA)>
+
+<!ELEMENT datasource (name, property*, %authentication-info;)>
+<!ATTLIST datasource
+	id CDATA #REQUIRED
+	weight CDATA "1"
+>
+<!ELEMENT name (#PCDATA)>
+
+<!ELEMENT property (#PCDATA)>
+<!ATTLIST property
+	name CDATA #REQUIRED
+>

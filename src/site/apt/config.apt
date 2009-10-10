@@ -1,0 +1,257 @@
+	---
+	Configuration
+	---
+	
+Configuration
+	
+	Configuration for an HA-JDBC managed database cluster is contained in an XML file.
+	The xml file is 
+	The algorithm used to locate the configuration file resource at runtime is as follows:
+
+	[[1]] Determine the resource name from one of the following sources:
+	
+		[[a]] A <<<config>>> property passed to <<<DriverManager.getConnection(String, Properties)>>>, or the <<<getConfig()>>> property of the DataSource
+
+		[[a]] The <<<ha-jdbc.>>><cluster-id><<<.configuration>>> system property
+
+		[[a]] The <<<ha-jdbc.configuration>>> system property
+
+		[[a]] Use default value resource name: <<<ha-jdbc->>><cluster-id><<<.xml>>>
+
+	[[1]] Format the parameterized resource name using the identifier of the cluster.
+
+	[[1]] If the resource name cannot be converted to a URL, then search for the resource in the classpath using the following class loaders:
+
+		[[a]] Search for resource using the thread context class loader.
+
+		[[a]] Search for resource using the class loader of the current class.
+
+		[[a]] Search for resource using the system class loader.
+
+	[[1]] If still not found, throw an exception back to the caller.
+
+	[]
+	
+	The root element of the configuration file has the following definition:
+	
+  <<<\<!ELEMENT ha-jdbc ({{distributable}}?,{{sync}}+,{{cluster}})\>>>>
+
+* \<{distributable}\>
+
+		Indicates that database clusters defined in this file will be accessed by multiple JVMs.
+		HA-JDBC leverages {{{http://www.jgroups.org} JGroups}} to handle communication between database clusters across servers.
+
+		<<<\<!ELEMENT distributable EMPTY\>>>>\
+		<<<\<!ATTLIST distributable>>>\
+		<<<\ \ config\ \ CDATA "stacks.xml">>>\
+		<<<\ \ stack\ \ \ CDATA "udp-sync">>>\
+		<<<\ \ timeout CDATA "1000">>>\
+		<<<\>>>>
+
+		[config] Defines one of the following:
+	
+			* Name of a system resource containing the JGroups XML configuration.
+		
+			* URL of the JGroups XML configuration file.
+		
+			* Path of the JGroups XML configuration on the local file system.
+		
+			[]
+		
+			The jgroups config file is expected to use the new (as of 2.3) muliplexing format.
+			See the JGroup's {{{http://www.jboss.com/wiki/Wiki.jsp?page=JGroups} Wiki}} for assistance with customizing the protocol stack.
+
+		[stack] The stack name from the jgroups configuration file.
+	
+		[timeout] Indicates the number of milliseconds allowed for JGroups operations.
+	
+* \<{sync}\>
+
+		Defines a strategy for synchronizing a database before activation.
+		If the strategy contains JavaBean properties, you can override their default values.
+
+		<<<\<!ELEMENT sync ({{property}}*)\>>>>\
+		<<<\<!ATTLIST sync>>>\
+		<<<\ \ id\ \ \ \ ID\ \ \ \ #REQUIRED>>>\
+		<<<\ \ class CDATA #REQUIRED>>>\
+		<<<\>>>>
+
+		[id] Uniquely identifies this synchronization strategy. Used when invoking activation methods.
+	
+		[class] Class name of an implementation of the <<<{{{/apidocs/api/net/sf/hajdbc/SynchronizationStrategy.html} net.sf.hajdbc.SynchronizationStrategy}}>>> interface.
+	
+** \<{property}\>
+
+			<<<\<!ELEMENT property (#PCDATA)\>>>>\
+			<<<\<!ATTLIST property>>>\
+			<<<\ \ name CDATA #REQUIRED>>>\
+			<<<\>>>>
+
+			[name] The name of the property.  The value of the property is defined inside this element's contents.
+	
+* \<{cluster}\>
+
+		Defines the nodes and behavior of a database cluster.
+		
+		<<<\<!ELEMENT cluster ({{database}}+|{{datasource}}+|{{pool-datasource}}+|{{xa-datasource}}+)\>>>>\
+		<<<\<!ATTLIST cluster>>>\
+		<<<\ \ balancer\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (simple|random|round-robin|load) #REQUIRED>>>\
+		<<<\ \ default-sync\ \ \ \ \ \ \ \ \ \ \ \ IDREF\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ #REQUIRED>>>\
+		<<<\ \ dialect\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CDATA\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ "standard">>>\
+		<<<\ \ meta-data-cache\ \ \ \ \ \ \ \ \ (none|lazy|eager)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ #REQUIRED>>>\
+		<<<\ \ transaction-mode\ \ \ \ \ \ \ \ (parallel|serial)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ #REQUIRED>>>\
+		<<<\ \ auto-activate-schedule\ \ CDATA\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ #IMPLIED>>>\
+		<<<\ \ failure-detect-schedule CDATA\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ #IMPLIED>>>\
+		<<<\ \ min-threads\ \ \ \ \ \ \ \ \ \ \ \ \ CDATA\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ "0">>>\
+		<<<\ \ max-threads\ \ \ \ \ \ \ \ \ \ \ \ \ CDATA\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ "100">>>\
+		<<<\ \ max-idle\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ CDATA\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ "60">>>\
+		<<<\ \ detect-identity-columns (true|false)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ "false">>>\
+		<<<\ \ detect-sequences        (true|false)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ "false">>>\
+		<<<\ \ eval-current-date       (true|false)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ "false">>>\
+		<<<\ \ eval-current-time       (true|false)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ "false">>>\
+		<<<\ \ eval-current-timestamp  (true|false)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ "false">>>\
+		<<<\ \ eval-rand               (true|false)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ "false">>>\
+		<<<\>>>>
+		
+		[balancer] Defines the balancer implementation used to distribute read operations among the active nodes of this cluster.
+		
+		[default-sync] Defines the unique identifier of the synchronization strategy to use by default when activating nodes of this cluster.
+		
+		[dialect] The value of this attribute defines either:
+		
+			* the class name of an implementation of the {{{apidocs/net/sf/hajdbc/Dialect.html} net.sf.hajdbc.Dialect}} interface.
+			
+			* a pre-defined alias as enumerated {{{dialect} here}}.
+		
+			[]
+			
+			HA-JDBC references the configured dialect for any vendor specific SQL.
+			
+		[meta-data-cache] Defines the strategy to use for caching database meta data.
+		
+			[none] Meta data is loaded when requested and not cached.
+			
+			[lazy] Meta data is loaded and cached as it is requested.
+			
+			[eager] All necessary meta data is loaded and cached during HA-JDBC initialization.
+			
+			[]
+			
+		[transaction-mode]
+			Indicates whether transactional writes should execute in serial or parallel.
+			If your application uses distributed transactions coordinated via a transaction manager (typically provided by an application server) using the X/Open XA protocol then you should use serial mode.
+			In serial mode, database writes execute in consistent order across databases in the cluster thereby avoiding deadlocks.
+			If your application uses normal database transactions then you may use parallel mode.  Parallel mode is obviously more efficient than serial mode.
+			If you find that your application suffers unacceptably from SQLExceptions due to concurrent updates of the same data then you might want to use serial mode to improve fault tolerance.
+			
+			[parallel] Transactional writes are executed in parallel, for efficiency.
+			
+			[serial] Transactional writes are executed in serial, for improved fault tolerance.
+
+			[]
+			
+		[auto-activate-schedule]
+			Defines a cron schedule for an asynchronous task that will automatically activate any database nodes that are alive, but inactive.
+			Schedule should be defined in accordance with the documentation for Quartz {{{http://www.opensymphony.com/quartz/api/org/quartz/CronExpression.html} CronExpression}}.
+
+		[failure-detect-schedule]
+			Defines a cron schedule for an asynchronous task that will proactively detect failed database nodes and deactivate them.
+			Schedule should be defined in accordance with the documentation for Quartz {{{http://www.opensymphony.com/quartz/api/org/quartz/CronExpression.html} CronExpression}}.
+
+		[min-threads] Defines the minimum size of the thread pool used for executing write operations.
+
+		[max-threads] Defines the maximum size of the thread pool used for executing write operations.
+
+		[max-idle] Defines the amount of time for which a non-core idle thread will remain in the thread pool before it is discarded.
+
+		[detect-identity-columns]
+			Indicates whether or not identity columns should be detected (if the configured dialect supports them) and measures taken to ensure that they are replicated correctly.
+			If enabled, you should also use an eager meta-data-cache since identity column detection requires several database meta-data queries.
+
+		[detect-sequences] Indicates whether or not sequence operations should be detected (if the configured dialect supports them) and measures taken to ensure that they are replicated correctly.
+
+		[eval-current-date] Indicates whether or not SQL statements containing non-deterministic CURRENT_DATE functions should be replaced with deterministic client-generated values.
+
+		[eval-current-time] Indicates whether or not SQL statements containing non-deterministic CURRENT_TIME functions should be replaced with deterministic client-generated values.
+
+		[eval-current-timestamp] Indicates whether or not SQL statements containing non-deterministic CURRENT_TIMESTAMP functions should be replaced with deterministic client-generated values.
+
+		[eval-rand] Indicates whether or not SQL statements containing non-deterministic RAND() functions should be replaced with deterministic client-generated values.
+
+** \<{database}\>
+
+			Defines the databases in this cluster that will be referenced via the java.sql.DriverManager facility.
+			
+			<<<\<!ELEMENT database (driver?, url, {{property}}*, (user, password)?)\>>>>
+			
+			[driver] Defines the class name of the JDBC driver used to access this database.
+			
+			[url] Defines the JDBC url used to access this database.
+			
+			[property] Defines a property to be passed to the java.sql.Driver.connect() method.
+			
+			[user] Defines the user, if any, that HA-JDBC should use to connect to the database during synchronization and database failure detection.
+			
+			[password] Defines the password, if any, that HA-JDBC should use to connect to the database during synchronization and database failure detection.
+			
+			[]
+			
+			<<<\<!ATTLIST database>>>\
+			<<<\ \ id\ \ \ \ \ CDATA\ \ \ \ \ \ \ \ #REQUIRED>>>\
+			<<<\ \ weight CDATA\ \ \ \ \ \ \ \ "1">>>\
+			<<<\ \ local\ \ (true|false) "false">>>\
+			<<<\>>>>
+
+			[id] Unique identifier for this database node.
+			
+			[weight]
+				Defines the relative weight of this database node.
+				The weight is used by the balancer implementation to determine which node will service a read request.
+				
+			[local] Indicates that this database resides on the local machine.
+
+** \<{datasource}\>, \<{pool-datasource}\>, \<{xa-datasource}\>
+
+			Defines the databases in this cluster that will be referenced via a javax.sql.DataSource.
+			
+			<<<\<!ELEMENT datasource (name, property*, (user, password)?\>>>>\
+			<<<\<!ELEMENT pool-datasource (name, property*, (user, password)?\>>>>\
+			<<<\<!ELEMENT xa-datasource (name, property*, (user, password)?\>>>>
+			
+			[name] Defines one of the following:
+			
+				* The JNDI name of this DataSource.
+				
+				* The class name of the DataSource.
+				
+				[]
+				
+			[property] Depending on the value of \<name\>, properties are interpreted as:
+			
+				* A JNDI environment property used when creating an InitialContext from which to lookup this data source.
+				
+				* A JavaBean property with which to initialize the data source.
+				
+				[]
+				
+			[user] Defines the user, if any, that HA-JDBC should use to connect to the database during synchronization and database failure detection.
+			
+			[password] Defines the password, if any, that HA-JDBC should use to connect to the database during synchronization and database failure detection.
+			
+			<<<\<!ATTLIST datasource>>>\
+			<<<\ \ id\ \ \ \ \ CDATA\ \ \ \ \ \ \ \ #REQUIRED>>>\
+			<<<\ \ weight CDATA\ \ \ \ \ \ \ \ "1">>>\
+			<<<\ \ local\ \ (true|false) "false">>>\
+			<<<\>>>>\
+			<<<\<!ATTLIST pool-datasource>>>\
+			<<<\ \ id\ \ \ \ \ CDATA\ \ \ \ \ \ \ \ #REQUIRED>>>\
+			<<<\ \ weight CDATA\ \ \ \ \ \ \ \ "1">>>\
+			<<<\ \ local\ \ (true|false) "false">>>\
+			<<<\>>>>\
+			<<<\<!ATTLIST xa-datasource>>>\
+			<<<\ \ id\ \ \ \ \ CDATA\ \ \ \ \ \ \ \ #REQUIRED>>>\
+			<<<\ \ weight CDATA\ \ \ \ \ \ \ \ "1">>>\
+			<<<\ \ local\ \ (true|false) "false">>>\
+			<<<\>>>>
+
+			

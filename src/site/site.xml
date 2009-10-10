@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ HA-JDBC: High-Availability JDBC
+ Copyright (c) 2004-2009 Paul Ferraro
+
+ This library is free software; you can redistribute it and/or modify it
+ under the terms of the GNU Lesser General Public License as published by the
+ Free Software Foundation; either version 2.1 of the License, or (at your
+ option) any later version.
+
+ This library is distributed in the hope that it will be useful, but WITHOUT
+ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this library; if not, write to the Free Software Foundation,
+ Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+ Contact: ferraro@users.sourceforge.net
+-->
+<project xmlns="http://maven.apache.org/DECORATION/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd">
+	<bannerLeft>
+		<name>HA-JDBC</name>
+		<src>images/logo.png</src>
+		<href>http://ha-jdbc.sourceforge.net</href>
+	</bannerLeft>
+	<bannerRight>
+		<name>SourceForge.net</name>
+		<src>http://sflogo.sourceforge.net/sflogo.php?group_id=111957&amp;type=10</src>
+		<href>http://sourceforge.net/projects/ha-jdbc</href>
+	</bannerRight>
+	<body>
+		<menu name="About">
+			<item name="Overview" href="index.html"/>
+			<item name="Documentation" href="doc.html"/>
+			<item name="Performance" href="performance.html"/>
+			<item name="FAQ" href="faq.html"/>
+			<item name="Download" href="http://sourceforge.net/project/showfiles.php?group_id=111957"/>
+			<item name="DTD" href="dtd.html"/>
+			<item name="XSD" href="xsd.html"/>
+			<item name="Project Page" href="http://sourceforge.net/projects/ha-jdbc"/>
+		</menu>
+		<menu ref="reports"/>
+	</body>
+	<skin>
+		<groupId>org.apache.maven.skins</groupId>
+		<artifactId>maven-default-skin</artifactId>
+	</skin>
+</project>

@@ -1,0 +1,168 @@
+<?xml version="1.0"?>
+<!--
+	HA-JDBC: High-Availability JDBC
+	Copyright (c) 2004-2007 Paul Ferraro
+
+	This library is free software; you can redistribute it and/or modify it 
+	under the terms of the GNU Lesser General Public License as published by the 
+	Free Software Foundation; either version 2.1 of the License, or (at your 
+	option) any later version.
+	
+	This library is distributed in the hope that it will be useful, but WITHOUT
+	ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+	FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+	for more details.
+
+	You should have received a copy of the GNU Lesser General Public License
+	along with this library; if not, write to the Free Software Foundation, 
+	Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+	Contact: ferraro@users.sourceforge.net
+
+	This DTD module is identified by the PUBLIC and SYSTEM identifiers:
+
+	PUBLIC "-//HA-JDBC//DTD HA-JDBC 2.0//EN"
+	SYSTEM "http://ha-jdbc.sourceforge.net/dtd/ha-jdbc-2.0.dtd"
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://ha-jdbc.sourceforge.net" xmlns="http://ha-jdbc.sourceforge.net" elementFormDefault="qualified">
+	<xs:element name="ha-jdbc">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="distributable" minOccurs="0">
+					<xs:complexType>
+						<xs:attribute name="config" type="xs:anyURI" default="stacks.xml"></xs:attribute>
+						<xs:attribute name="stack" type="xs:string" default="udp-sync"></xs:attribute>
+						<xs:attribute name="timeout" type="xs:nonNegativeInteger" default="1000"></xs:attribute>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="sync" minOccurs="1" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:group ref="property" minOccurs="0" maxOccurs="unbounded"></xs:group>
+						</xs:sequence>
+						<xs:attribute name="id" type="xs:ID" id="sync" use="required"></xs:attribute>
+						<xs:attribute name="class" type="xs:string" use="required"></xs:attribute>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="cluster">
+					<xs:complexType>
+						<xs:choice>
+							<xs:sequence>
+								<xs:element name="database" minOccurs="1" maxOccurs="unbounded">
+									<xs:complexType>
+										<xs:sequence>
+											<xs:element name="driver" type="xs:string" minOccurs="0"></xs:element>
+											<xs:element name="url" type="xs:string"></xs:element>
+											<xs:group ref="common"></xs:group>
+										</xs:sequence>
+										<xs:attributeGroup ref="database"></xs:attributeGroup>
+									</xs:complexType>
+								</xs:element>
+							</xs:sequence>
+							<xs:sequence>
+								<xs:element name="datasource" minOccurs="1" maxOccurs="unbounded">
+									<xs:complexType>
+										<xs:group ref="datasource"></xs:group>
+										<xs:attributeGroup ref="database"></xs:attributeGroup>
+									</xs:complexType>
+								</xs:element>
+							</xs:sequence>
+							<xs:sequence>
+								<xs:element name="pool-datasource" minOccurs="1" maxOccurs="unbounded">
+									<xs:complexType>
+										<xs:group ref="datasource"></xs:group>
+										<xs:attributeGroup ref="database"></xs:attributeGroup>
+									</xs:complexType>
+								</xs:element>
+							</xs:sequence>
+							<xs:sequence>
+								<xs:element name="xa-datasource" minOccurs="1" maxOccurs="unbounded">
+									<xs:complexType>
+										<xs:group ref="datasource"></xs:group>
+										<xs:attributeGroup ref="database"></xs:attributeGroup>
+									</xs:complexType>
+								</xs:element>
+							</xs:sequence>
+						</xs:choice>
+						<xs:attribute name="balancer" use="required">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="simple"></xs:enumeration>
+									<xs:enumeration value="random"></xs:enumeration>
+									<xs:enumeration value="round-robin"></xs:enumeration>
+									<xs:enumeration value="load"></xs:enumeration>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+						<xs:attribute name="default-sync" type="xs:IDREF" use="required"></xs:attribute>
+						<xs:attribute name="dialect" type="xs:string" default="standard"></xs:attribute>
+						<xs:attribute name="meta-data-cache" use="required">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="none"></xs:enumeration>
+									<xs:enumeration value="lazy"></xs:enumeration>
+									<xs:enumeration value="eager"></xs:enumeration>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+						<xs:attribute name="transaction-mode" use="required">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="parallel"></xs:enumeration>
+									<xs:enumeration value="serial"></xs:enumeration>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+						<xs:attribute name="auto-activate-schedule" type="xs:string"></xs:attribute>
+						<xs:attribute name="failure-detect-schedule" type="xs:string"></xs:attribute>
+						<xs:attribute name="min-threads" type="xs:nonNegativeInteger" default="0"></xs:attribute>
+						<xs:attribute name="max-threads" type="xs:positiveInteger" default="100"></xs:attribute>
+						<xs:attribute name="max-idle" type="xs:nonNegativeInteger" default="60"></xs:attribute>
+						<xs:attribute name="detect-identity-columns" type="xs:boolean" default="false"></xs:attribute>
+						<xs:attribute name="detect-sequences" type="xs:boolean" default="false"></xs:attribute>
+						<xs:attribute name="eval-current-date" type="xs:boolean" default="false"></xs:attribute>
+						<xs:attribute name="eval-current-time" type="xs:boolean" default="false"></xs:attribute>
+						<xs:attribute name="eval-current-timestamp" type="xs:boolean" default="false"></xs:attribute>
+						<xs:attribute name="eval-rand" type="xs:boolean" default="false"></xs:attribute>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:group name="property">
+		<xs:sequence>
+			<xs:element name="property" maxOccurs="unbounded">
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="xs:string">
+							<xs:attribute name="name" type="xs:string" use="required"></xs:attribute>
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:group>
+	<xs:group name="datasource">
+		<xs:sequence>
+			<xs:element name="name" type="xs:string"></xs:element>
+			<xs:group ref="common"></xs:group>
+		</xs:sequence>
+	</xs:group>
+	<xs:group name="common">
+		<xs:sequence>
+			<xs:group ref="property" minOccurs="0" maxOccurs="unbounded"></xs:group>
+			<xs:group ref="authentication" minOccurs="0"></xs:group>
+		</xs:sequence>
+	</xs:group>
+	<xs:group name="authentication">
+		<xs:sequence>
+			<xs:element name="user" type="xs:string"></xs:element>
+			<xs:element name="password" type="xs:string"></xs:element>
+		</xs:sequence>
+	</xs:group>
+	<xs:attributeGroup name="database">
+		<xs:attribute name="id" type="xs:string" use="required"></xs:attribute>
+		<xs:attribute name="weight" type="xs:nonNegativeInteger" default="1"></xs:attribute>
+		<xs:attribute name="local" type="xs:boolean" default="false"></xs:attribute>
+	</xs:attributeGroup>
+</xs:schema>

@@ -1,0 +1,1155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document PUBLIC "-//Apache Software Foundation//DTD XDOC 1.0//EN" "http://maven.apache.org/dtd/xdoc_1_0.dtd">
+<document>
+	<properties>
+		<title>Documentation</title>
+		<author email="ferraro@users.sourceforge.net">Paul Ferraro</author>
+	</properties>
+	<body>
+		<section name="Introduction">
+			<p>
+				HA-JDBC is a JDBC proxy that enables a Java application to transparently access a cluster of identical databases through the JDBC API.
+			</p>
+			<table>
+				<tr>
+					<th>Normal database access via JDBC</th>
+					<th>Database cluster access via HA-JDBC</th>
+				</tr>
+				<tr>
+					<td><img id="jdbc-diagram" src="images/jdbc.png" alt="JDBC Diagram"/></td>
+					<td><img id="ha-jdbc-diagram" src="images/ha-jdbc.png" alt="HA-JDBC Diagram"/></td>
+				</tr>
+			</table>
+			<p>
+				HA-JDBC has the following advantages over normal JDBC:
+			</p>
+			<ul>
+				<li>High-Availability: The database cluster is available to service requests so long as at least one database node is active.</li>
+				<li>Fault Tolerance: Because HA-JDBC operates via the JDBC API, it is transaction-aware and can survive a database node failure without failing or corrupting current transactions.</li>
+				<li>Scalability: By balancing read requests across databases, HA-JDBC can meet increasing load by scaling horizontally (i.e. adding database nodes).</li>
+			</ul>
+		</section>
+		<section name="Requirements">
+			<ul>
+				<li>Java Runtime Environment 1.4 or greater</li>
+				<li>Type IV JDBC driver for underlying databases</li>
+				<li>An <a href="#config">XML configuration file</a> for each database cluster.</li>
+				<li>ha-jdbc-*.jar and its <a href="#dependencies">dependencies</a> must exist in the classpath.</li>
+			</ul>
+			<subsection id="dependencies" name="Dependencies">
+				<table>
+					<caption><em>/lib</em> : Required dependencies</caption>
+					<tr>
+						<th>Library</th>
+						<th>Description</th>
+						<th>Notes</th>
+					</tr>
+					<tr>
+						<td>jgroups-*.jar</td>
+						<td><a href="http://jgroups.org">JGroups</a></td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>jibx-run-*.jar</td>
+						<td><a href="http://jibx.sourceforge.net">JiBX</a></td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>quartz-*.jar</td>
+						<td><a href="http://www.opensymphony.com/quartz">Quartz</a></td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>slf4j-api-*.jar</td>
+						<td><a href="http://slf4j.org">SLF4J</a> API</td>
+						<td></td>
+					</tr>
+					<tr><th colspan="3">Additional dependencies for Java 1.4 and 1.5 only.</th></tr>
+					<tr>
+						<td>stax-api-*.jar</td>
+						<td>Streaming API for XML.</td>
+						<td>Required dependency of JiBX.</td>
+					</tr>
+					<tr><th colspan="3">Additional dependencies for Java 1.4 only.</th></tr>
+					<tr>
+						<td>backport-util-concurrent-*.jar</td>
+						<td>JDK 1.4 <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent">backport of java.util.concurrent</a> package.</td>
+						<td>Required dependency of Retrotranslator.</td>
+					</tr>
+					<tr>
+						<td>jdbc-rowset-*.jar</td>
+						<td>JDBC RowSet API and implementations</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>retrotranslator-runtime-*.jar</td>
+						<td><a href="http://retrotranslator.sourceforge.net">Retrotranslator</a> runtime.</td>
+						<td></td>
+					</tr>
+				</table>
+				<table>
+					<caption><em>/lib/runtime</em> : Optional runtime dependencies</caption>
+					<thead>
+						<tr>
+							<th>Library</th>
+							<th>Description</th>
+							<th>Notes</th>
+						</tr>
+					</thead>
+					<tfoot>
+						<tr>
+							<td colspan="3">You must include <strong>exactly one</strong> SLF4J implementation library (i.e. slf4j-*-*.jar) in your classpath.</td>
+						</tr>
+						<tr>
+							<td colspan="3">Never use jcl104-over-slf4j-*.jar in conjunction with slf4j-jcl-*.jar; this will cause a StackOverflowError.</td>
+						</tr>
+					</tfoot>
+					<tbody>
+						<tr>
+							<td>jcl104-over-slf4j-*.jar</td>
+							<td>An implementation of the <a href="http://jakarta.apache.org/commons/logging">commons-logging</a> api that delegates to SLF4J.  Provides <a href="http://www.slf4j.org/manual.html#gradual">gradual migration</a> from commons-logging to SLF4J.</td>
+							<td>Commons-logging is a required dependency of JGroups and Quartz.</td>
+						</tr>
+						<tr>
+							<td>slf4j-jcl-*.jar</td>
+							<td><a href="http://jakarta.apache.org/commons/logging">Commons-logging</a> provider for SLF4J.</td>
+							<td>Used only in conjunction with commons-logging.jar.</td>
+						</tr>
+						<tr>
+							<td>slf4j-jdk14-*.jar</td>
+							<td><a href="http://java.sun.com/javase/6/docs/api/java/util/logging/package-summary.html">JDK logging</a> provider for SLF4J.</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>slf4j-log4j12-*.jar</td>
+							<td><a href="http://logging.apache.org/log4j">Log4J</a> provider for SLF4J.</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td>slf4j-simple-*.jar</td>
+							<td><a href="http://java.sun.com/javase/6/docs/api/java/lang/System.html#err">System.err</a> logging provider for SLF4J.</td>
+							<td></td>
+						</tr>
+						<tr><th colspan="3">Additional runtime dependencies for Java 1.4 and 1.5 only.:</th></tr>
+						<tr>
+							<td>stax-*.jar</td>
+							<td>StAX reference implementation</td>
+							<td>Any StAX implementation will suffice.</td>
+						</tr>
+						<tr><th colspan="3">Additional runtime dependencies for Java 1.4 only:</th></tr>
+						<tr>
+							<td>jmx-*.jar</td>
+							<td>JMX API and reference implementation</td>
+							<td>Needed if your runtime environment does not provide a JMX implementation.  Any JMX implementation will suffice.</td>
+						</tr>
+					</tbody>
+				</table>
+				<!--note>
+					You must include <strong>exactly one</strong> SLF4J implementation library (i.e. slf4j-*-*.jar) in your classpath.
+				</note>
+				<warning>
+					Never use jcl104-over-slf4j-*.jar in conjunction with slf4j-jcl-*.jar; this will cause a StackOverflowError.
+				</warning-->
+			</subsection>
+		</section>
+		<section id="config" name="&lt;ha-jdbc&gt; Configuration">
+			<p>
+				Configuration for an HA-JDBC managed database cluster is contained in an XML file.
+				The algorithm used to locate the configuration file resource at runtime is as follows:
+			</p>
+			<ol>
+				<li>
+					<p>Determine the resource name from one of the following sources:</p>
+					<ol>
+						<li>A <em>config</em> property passed to DriverManager.getConnection(String, Properties), or the getConfig() property of the DataSource</li>
+						<li>The <em>ha-jdbc.configuration</em> system property</li>
+						<li>Use default value of <em>ha-jdbc-{0}.xml</em></li>
+					</ol>
+				</li>
+				<li>
+					<p>Format the parameterized resource name using the identifier of the cluster.</p>
+				</li>
+				<li>
+					<p>Attempt to interpret the resource name as a URL.</p>
+				</li>
+				<li>
+					<p>If the resource name cannot be converted to a URL, then search for the resource in the classpath using the following class loaders:</p>
+					<ol>
+						<li>Search for resource using the thread context class loader.</li>
+						<li>Search for resource using the class loader of the current class.</li>
+						<li>Search for resource using the system class loader.</li>
+					</ol>
+				</li>
+				<li>
+					<p>If still not found, throw an exception back to the caller.</p>
+				</li>
+			</ol>
+			<p>
+				The root element of the configuration file has the following definition:
+			</p>
+			<source id="ha-jdbc">&lt;!ELEMENT ha-jdbc (<a href="#distributable">distributable</a>?,<a href="#sync">sync</a>+,<a href="#cluster">cluster</a>)&gt;</source>
+			<subsection id="distributable" name="&lt;distributable&gt;">
+				<p>
+					Indicates that database clusters defined in this file will be accessed by multiple JVMs.
+					HA-JDBC leverages <a href="http://www.jgroups.org">JGroups</a> to handle communication between database clusters across servers.
+				</p>
+				<source><![CDATA[
+<!ELEMENT distributable EMPTY>
+<!ATTLIST distributable
+  config  CDATA "stacks.xml"
+  stack   CDATA "udp-sync"
+  timeout CDATA "1000"
+>
+]]></source>
+				<dl>
+					<dt>config</dt>
+					<dd>
+						Defines one of the following:
+						<ul>
+							<li>Name of a system resource containing the JGroups XML configuration.</li>
+							<li>URL of the JGroups XML configuration file.</li>
+							<li>Path of the JGroups XML configuration on the local file system.</li>
+						</ul>
+						The jgroups config file is expected to use the new (as of 2.3) muliplexing format.
+						See the JGroup's <a href="http://www.jboss.com/wiki/Wiki.jsp?page=JGroups">Wiki</a> for assistance with customizing the protocol stack.
+					</dd>
+					<dt>stack</dt>
+					<dd>
+						The stack name from the jgroups configuration file.
+					</dd>
+					<dt>timeout</dt>
+					<dd>
+						Indicates the number of milliseconds allowed for JGroups operations.
+					</dd>
+				</dl>
+			</subsection>
+			<subsection id="sync" name="&lt;sync&gt;">
+				<p>
+					Defines a strategy for synchronizing a database before activation.
+					If the strategy contains JavaBean properties, you can override their default values.
+				</p>
+				<source>&lt;!ELEMENT sync (<a href="#property">property</a>*)&gt;</source>
+				<source><![CDATA[
+<!ATTLIST sync
+  id    ID    #REQUIRED
+  class CDATA #REQUIRED
+>
+				]]></source>
+				<dl>
+					<dt>id</dt>
+					<dd>
+						Uniquely identifies this synchronization strategy.  Used when invoking activation methods.
+					</dd>
+					<dt>class</dt>
+					<dd>
+						Class name of an implementation of the <a href="api/net/sf/hajdbc/SynchronizationStrategy.html">net.sf.hajdbc.SynchronizationStrategy</a> interface.
+						Details <a href="#sync-strategies">here</a>.
+					</dd>
+				</dl>
+				<subsection id="property" name="&lt;property&gt;">
+					<source><![CDATA[
+<!ELEMENT property (#PCDATA)>
+<!ATTLIST property
+  name CDATA #REQUIRED
+>
+]]></source>
+					<dl>
+						<dt>name</dt>
+						<dd>
+							The name of the property.
+							The value of the property is defined inside this element's contents.
+						</dd>
+					</dl>
+				</subsection>
+			</subsection>
+			<subsection id="cluster" name="&lt;cluster&gt;">
+				<p>
+					Defines the nodes and behavior of a database cluster.
+				</p>
+				<source>&lt;!ELEMENT cluster (<a href="#database">database</a>+|<a href="#datasource">datasource</a>+)&gt;</source>
+				<source><![CDATA[
+<!ATTLIST cluster
+  balancer                (simple|random|round-robin|load) #REQUIRED
+  default-sync            IDREF                            #REQUIRED
+  dialect                 CDATA                            "standard"
+  meta-data-cache         (none|lazy|eager)                #REQUIRED
+  transaction-mode        (parallel|serial)                #REQUIRED
+  auto-activate-schedule  CDATA                            #IMPLIED
+  failure-detect-schedule CDATA                            #IMPLIED
+  min-threads             CDATA                            "0"
+  max-threads             CDATA                            "100"
+  max-idle                CDATA                            "60"
+  detect-identity-columns (true|false)                     "false"
+  detect-sequences        (true|false)                     "false"
+  eval-current-date       (true|false)                     "false"
+  eval-current-time       (true|false)                     "false"
+  eval-current-timestamp  (true|false)                     "false"
+  eval-rand               (true|false)                     "false"
+>
+]]></source>
+				<dl>
+					<dt><a href="#balancer">balancer</a></dt>
+					<dd>
+						Defines the balancer implementation used to distribute read operations among the active nodes of this cluster.
+					</dd>
+					<dt>default-sync</dt>
+					<dd>
+						Defines the unique identifier of the synchronization strategy to use by default when activating nodes of this cluster.
+					</dd>
+					<dt><a href="#dialect">dialect</a></dt>
+					<dd>
+						The value of this attribute defines either:
+						<ul>
+							<li>the class name of an implementation of the <a href="api/net/sf/hajdbc/Dialect.html">net.sf.hajdbc.Dialect</a> interface.</li>
+							<li>A pre-defined alias as enumerated <a href="#dialect">here</a>.</li>
+						</ul>
+						HA-JDBC references the configured dialect for any vendor specific SQL.
+					</dd>
+					<dt>meta-data-cache</dt>
+					<dd>
+						Defines the strategy to use for caching database meta data.
+						<dl>
+							<dt>none</dt>
+							<dd>Meta data is loaded when requested and not cached.</dd>
+							<dt>lazy</dt>
+							<dd>Meta data is loaded and cached as it is requested.</dd>
+							<dt>eager</dt>
+							<dd>All necessary meta data is loaded and cached during HA-JDBC initialization.</dd>
+						</dl>
+					</dd>
+					<dt>transaction-mode</dt>
+					<dd>
+						Indicates whether transactional writes should execute in serial or parallel.
+						If your application uses distributed transactions coordinated via a transaction manager (typically provided by an application server) using the X/Open XA protocol then you should use serial mode.
+						In serial mode, database writes execute in consistent order across databases in the cluster thereby avoiding deadlocks.
+						If your application uses normal database transactions then you may use parallel mode.  Parallel mode is obviously more efficient than serial mode.
+						If you find that your application suffers unacceptably from SQLExceptions due to concurrent updates of the same data then you might want to use serial mode to improve fault tolerance.
+						<dl>
+							<dt>parallel</dt>
+							<dd>Transactional writes are executed in parallel, for efficiency.</dd>
+							<dt>serial</dt>
+							<dd>Transactional writes are executed in serial, for improved fault tolerance.</dd>
+						</dl>
+					</dd>
+					<dt>auto-activate-schedule</dt>
+					<dd>
+						Defines a cron schedule for an asynchronous task that will automatically activate any database nodes that are alive, but inactive.
+						Schedule should be defined in accordance with the documentation for Quartz <a href="http://www.opensymphony.com/quartz/api/org/quartz/CronTrigger.html">CronTrigger</a>.
+					</dd>
+					<dt>failure-detect-schedule</dt>
+					<dd>
+						Defines a cron schedule for an asynchronous task that will proactively detect failed database nodes and deactivate them.
+						Schedule should be defined in accordance with the documentation for Quartz <a href="http://www.opensymphony.com/quartz/api/org/quartz/CronTrigger.html">CronTrigger</a>.
+					</dd>
+					<dt>min-threads</dt>
+					<dd>
+						Defines the minimum size of the thread pool used for executing write operations.
+					</dd>
+					<dt>max-threads</dt>
+					<dd>
+						Defines the maximum size of the thread pool used for executing write operations.
+					</dd>
+					<dt>max-idle</dt>
+					<dd>
+						Defines the amount of time for which a non-core idle thread will remain in the thread pool before it is discarded.
+					</dd>
+					<dt id="identity-columns">detect-identity-columns</dt>
+					<dd>
+						Indicates whether or not identity columns should be detected (if the configured dialect supports them) and measures taken to ensure that they are replicated correctly.
+						If enabled, you should also use an eager meta-data-cache since identity column detection requires several database meta-data queries.
+					</dd>
+					<dt id="sequences">detect-sequences</dt>
+					<dd>
+						Indicates whether or not sequence operations should be detected (if the configured dialect supports them) and measures taken to ensure that they are replicated correctly.
+					</dd>
+					<dt>eval-current-date</dt>
+					<dd>
+						Indicates whether or not SQL statements containing non-deterministic CURRENT_DATE functions should be replaced with deterministic client-generated values.
+					</dd>
+					<dt>eval-current-time</dt>
+					<dd>
+						Indicates whether or not SQL statements containing non-deterministic CURRENT_TIME functions should be replaced with deterministic client-generated values.
+					</dd>
+					<dt>eval-current-timestamp</dt>
+					<dd>
+						Indicates whether or not SQL statements containing non-deterministic CURRENT_TIMESTAMP functions should be replaced with deterministic client-generated values.
+					</dd>
+					<dt>eval-rand</dt>
+					<dd>
+						Indicates whether or not SQL statements containing non-deterministic RAND() functions should be replaced with deterministic client-generated values.
+					</dd>
+				</dl>
+				<subsection id="database" name="&lt;database&gt;">
+					<p>
+						Defines the databases in this cluster that will be referenced via the java.sql.DriverManager facility.
+					</p>
+					<source><![CDATA[<!ELEMENT database (driver?, url, property*, (user, password)?)>]]></source>
+					<dl>
+						<dt>driver</dt>
+						<dd>
+							Defines the class name of the <acronym title="Java Database Connectivity">JDBC</acronym> driver used to access this database.
+						</dd>
+						<dt>url</dt>
+						<dd>
+							Defines the <acronym title="Java Database Connectivity">JDBC</acronym> url used to access this database.
+						</dd>
+						<dt><a href="#property">property</a></dt>
+						<dd>
+							Defines a property to be passed to the java.sql.Driver.connect() method.
+						</dd>
+						<dt>user</dt>
+						<dd>
+							Defines the user, if any, that HA-JDBC should use to connect to the database during synchronization and database failure detection.
+						</dd>
+						<dt>password</dt>
+						<dd>
+							Defines the password, if any, that HA-JDBC should use to connect to the database during synchronization and database failure detection.
+						</dd>
+					</dl>
+					<source><![CDATA[
+<!ATTLIST database
+	id     CDATA        #REQUIRED
+	weight CDATA        "1"
+	local  (true|false) "false"
+>
+]]></source>
+					<dl>
+						<dt>id</dt>
+						<dd>
+							Unique identifier for this database node.
+						</dd>
+						<dt>weight</dt>
+						<dd>
+							Defines the relative weight of this database node.
+							The weight is used by the balancer implementation to determine which node will service a read request.
+						</dd>
+						<dt>local</dt>
+						<dd>
+							Indicates that this database resides on the local machine.
+						</dd>
+					</dl>
+				</subsection>
+				<subsection id="datasource" name="&lt;datasource&gt;, &lt;pool-datasource&gt;, &lt;xa-datasource&gt;">
+					<p>
+						Defines the databases in this cluster that will be referenced via a javax.sql.DataSource.
+					</p>
+					<source><![CDATA[<!ELEMENT datasource (name, property*, (user, password)?>]]></source>
+					<dl>
+						<dt id="datasource.name">name</dt>
+						<dd>
+							Defines one of the following:
+							<ul>
+								<li>The <acronym title="Java Naming and Directory Interface">JNDI</acronym> name of this DataSource.</li>
+								<li>The class name of the DataSource.</li>
+							</ul>
+						</dd>
+						<dt><a href="#property">property</a></dt>
+						<dd>
+							Depending on the value of <a href="#datasource.name">&lt;name&gt;</a>, properties are interpreted as:
+							<ul>
+								<li>A <acronym title="Java Naming and Directory Interface">JNDI</acronym> environment property used when creating an InitialContext from which to lookup this data source.</li>
+								<li>A JavaBean property with which to initialize the data source.</li>
+							</ul>
+						</dd>
+						<dt>user</dt>
+						<dd>
+							Defines the user, if any, that HA-JDBC should use to connect to the database during synchronization and database failure detection.
+						</dd>
+						<dt>password</dt>
+						<dd>
+							Defines the password, if any, that HA-JDBC should use to connect to the database during synchronization and database failure detection.
+						</dd>
+					</dl>
+					<source><![CDATA[
+<!ATTLIST datasource
+	id     CDATA        #REQUIRED
+	weight CDATA        "1"
+	local  (true|false) "false"
+>
+<!ATTLIST pool-datasource
+	id     CDATA        #REQUIRED
+	weight CDATA        "1"
+	local  (true|false) "false"
+>
+<!ATTLIST xa-datasource
+	id     CDATA        #REQUIRED
+	weight CDATA        "1"
+	local  (true|false) "false"
+>
+]]></source>
+					<dl>
+						<dt>id</dt>
+						<dd>
+							Unique identifier for this database node.
+						</dd>
+						<dt>weight</dt>
+						<dd>
+							Defines the relative weight of this database node.
+							The weight is used by the balancer implementation to determine which node will service a read request.
+						</dd>
+						<dt>local</dt>
+						<dd>
+							Indicates that this database resides on the local machine.
+						</dd>
+					</dl>
+				</subsection>
+			</subsection>
+			<subsection id="dialect" name="Dialect">
+				<p>
+					The <code>dialect</code> attribute of a cluster determines the SQL syntax used for a given task.
+					The value specified for this attribute is either the name of a class that implements <a href="api/net/sf/hajdbc/Dialect.html">net.sf.hajdbc.Dialect</a> (custom implementations are allowed), or, more conveniently, a pre-defined, case-insensitive alias.
+				</p>
+				<table>
+					<caption>The HA-JDBC distribution contains the following dialect implementations:</caption>
+					<tr>
+						<th>Vendor(s)</th>
+						<th>Dialect</th>
+						<th>Alias</th>
+					</tr>
+					<tr>
+						<td>Apache Derby</td>
+						<td><a href="api/net/sf/hajdbc/dialect/DerbyDialect.html">net.sf.hajdbc.dialect.DerbyDialect</a></td>
+						<td>derby</td>
+					</tr>
+					<tr>
+						<td>Firebird, InterBase</td>
+						<td><a href="api/net/sf/hajdbc/dialect/FirebirdDialect.html">net.sf.hajdbc.dialect.FirebirdDialect</a></td>
+						<td>firebird</td>
+					</tr>
+					<tr>
+						<td>H2</td>
+						<td><a href="api/net/sf/hajdbc/dialect/H2Dialect.html">net.sf.hajdbc.dialect.H2Dialect</a></td>
+						<td>h2</td>
+					</tr>
+					<tr>
+						<td>HSQLDB</td>
+						<td><a href="api/net/sf/hajdbc/dialect/HSQLDBDialect.html">net.sf.hajdbc.dialect.HSQLDBDialect</a></td>
+						<td>hsqldb</td>
+					</tr>
+					<tr>
+						<td>IBM DB2</td>
+						<td><a href="api/net/sf/hajdbc/dialect/DB2Dialect.html">net.sf.hajdbc.dialect.DB2Dialect</a></td>
+						<td>db2</td>
+					</tr>
+					<tr>
+						<td>Ingres</td>
+						<td><a href="api/net/sf/hajdbc/dialect/IngresDialect.html">net.sf.hajdbc.dialect.IngresDialect</a></td>
+						<td>ingres</td>
+					</tr>
+					<tr>
+						<td>Mckoi</td>
+						<td><a href="api/net/sf/hajdbc/dialect/MckoiDialect.html">net.sf.hajdbc.dialect.MckoiDialect</a></td>
+						<td>mckoi</td>
+					</tr>
+					<tr>
+						<td>MySQL</td>
+						<td><a href="api/net/sf/hajdbc/dialect/MySQLDialect.html">net.sf.hajdbc.dialect.MySQLDialect</a></td>
+						<td>mysql</td>
+					</tr>
+					<tr>
+						<td>MySQL MaxDB</td>
+						<td><a href="api/net/sf/hajdbc/dialect/MaxDBDialect.html">net.sf.hajdbc.dialect.MaxDBDialect</a></td>
+						<td>maxdb</td>
+					</tr>
+					<tr>
+						<td>Oracle</td>
+						<td><a href="api/net/sf/hajdbc/dialect/OracleDialect.html">net.sf.hajdbc.dialect.OracleDialect</a></td>
+						<td>oracle</td>
+					</tr>
+					<tr>
+						<td>PostgreSQL</td>
+						<td><a href="api/net/sf/hajdbc/dialect/PostgreSQLDialect.html">net.sf.hajdbc.dialect.PostgreSQLDialect</a></td>
+						<td>postgresql</td>
+					</tr>
+					<tr>
+						<td>Sybase</td>
+						<td><a href="api/net/sf/hajdbc/dialect/SybaseDialect.html">net.sf.hajdbc.dialect.SybaseDialect</a></td>
+						<td>sybase</td>
+					</tr>
+					<tr>
+						<td>Standard (SQL-92 compliant)</td>
+						<td><a href="api/net/sf/hajdbc/dialect/StandardDialect.html">net.sf.hajdbc.dialect.StandardDialect</a></td>
+						<td>standard</td>
+					</tr>
+				</table>
+				<note>
+					Dialect contributions are more than welcome.  Please submit any additions/updates <a href="http://sourceforge.net/tracker/?group_id=111957&amp;atid=660863">here</a>.
+				</note>
+			</subsection>
+			<subsection id="balancer" name="Balancer">
+				<p>
+					When executing a read request from the cluster, HA-JDBC uses the configured balancer strategy to determine which database should service the request.
+					Each database can define a weight to affect how it is prioritized by the balancer.
+					If no weight is specified for a given database, it is assumed to be 1.
+				</p>
+				<p>
+					HA-JDBC supports four types of balancers:
+				</p>
+				<dl>
+					<dt>simple</dt>
+					<dd>
+						Requests are always sent to the node with the highest weight.
+					</dd>
+					<dt>random</dt>
+					<dd>
+						Requests are sent to a random node.
+						Node weights affect the probability that a given node will be chosen.
+						The probability that a node will be chosen = <em>weight</em> / <em>total-weight</em>.
+					</dd>
+					<dt>round-robin</dt>
+					<dd>
+						Requests are sent to each node in succession.
+						A node of weight <em>n</em> will receive <em>n</em> requests before the balancer moves on to the next node.
+					</dd>
+					<dt>load</dt>
+					<dd>
+						Requests are sent to the node with the smallest load.
+						Node weights affect the calculated load of a given node.
+						The load of a node = <em>concurrent-requests</em> / <em>weight</em>.
+					</dd>
+				</dl>
+				<note>
+					In general, a node with a weight of 0 will never service a request unless it is the last node in the cluster.
+				</note>
+			</subsection>
+			<subsection id="sync-strategies" name="Synchronization Strategy">
+				<p>
+					Synchronization is performed before a database node is activated.
+				</p>
+				<p>
+					HA-JDBC provides several out-of-the-box database independent strategies for synchronizing a failed database:
+				</p>
+				<dl>
+					<dt><a href="api/net/sf/hajdbc/sync/FullSynchronizationStrategy.html"><code>net.sf.hajdbc.sync.FullSynchronizationStrategy</code></a></dt>
+					<dd>
+						Each table in the inactive database is truncated and data is reinserted from an active database.
+						This strategy is fastest if the database is way out of sync.
+					</dd>
+					<dt><a href="api/net/sf/hajdbc/sync/DifferentialSynchronizationStrategy.html"><code>net.sf.hajdbc.sync.DifferentialSynchronizationStrategy</code></a></dt>
+					<dd>
+						For each table in the inactive database is compared, row by row, with an active database and only changes are updated.
+						This strategy is fastest if the database is more in sync than not.
+					</dd>
+					<dt><a href="api/net/sf/hajdbc/sync/PassiveSynchronizationStrategy.html"><code>net.sf.hajdbc.sync.PassiveSynchronizationStrategy</code></a></dt>
+					<dd>
+						Does nothing.
+						Should only be used if databases are known to be in sync.
+					</dd>
+				</dl>
+				<p>
+					Each synchronization strategy must be defined in the HA-JDBC configuration file.
+					A strategy may contain any number of JavaBean properties that can be set in the config file.
+				</p>
+				<p>e.g.</p>
+				<source><![CDATA[
+<ha-jdbc>
+  <!-- ... -->
+  <sync id="diff" class="net.sf.hajdbc.sync.DifferentialSynchronizationStrategy">
+    <property name="fetchSize">1000</property>
+    <property name="maxBatchSize">100</property>
+  </sync>
+  <sync id="full" class="net.sf.hajdbc.sync.FullSynchronizationStrategy">
+    <property name="fetchSize">1000</property>
+    <property name="maxBatchSize">100</property>
+  </sync>
+  <sync id="passive" class="net.sf.hajdbc.sync.PassiveSynchronizationStrategy"></sync>
+  <!-- ... -->
+</ha-jdbc>
+]]></source>
+				<p>
+					Although the build-in strategies should be sufficient for most small databases, they are probably not feasible for large databases.
+					Synchronizing a large database will typically require vendor specific functionality.
+					Custom synchronization strategies may be written by implementing the <a href="api/net/sf/hajdbc/SynchronizationStrategy.html"><code>net.sf.hajdbc.SynchronizationStrategy</code></a> interface or by extending the functionality of one of the existing strategies.
+					For example, I may want to improve the efficiency of the <code>FullSynchronizationStrategy</code> by dropping and re-creating indexes on my database tables.
+				</p>
+				<p>e.g.</p>
+				<source><![CDATA[
+public class FasterFullSynchronizationStrategy extends net.sf.hajdbc.sync.FullSynchronizationStrategy
+{
+    public void synchronize(SynchronizationContext context)
+    {
+        // For each table, drop all indexes
+
+        super.synchronize(context);
+
+        // For each table, recreate all indexes
+    }
+}
+]]></source>
+				<p>
+					Any custom strategies that you plan to use should also be defined in the configuration file.
+				</p>
+			</subsection>
+		</section>
+		<section name="Using HA-JDBC">
+			<subsection name="DriverManager-based Access">
+				<p>
+					Just like your database's <acronym title="Java Database Connectivity">JDBC</acronym> driver, the HA-JDBC driver must first be loaded.
+					As of Java 1.6, the DriverManager uses the service provider mechanism to auto-load JDBC drivers on startup.
+					Java versions prior to 1.6 must load the HA-JDBC driver manually.  This can be accomplished in one of two ways:
+				</p>
+				<ul>
+					<li>
+						<p>Add <code>net.sf.hajdbc.sql.Driver</code> to your <code>jdbc.drivers</code> system property.</p>
+						<p>The JVM will automatically load and register each driver upon startup.</p>
+					</li>
+					<li>
+						<p>
+							Explicitly load the <code>net.sf.hajdbc.sql.Driver</code> class using <code>Class.forName(...)</code>.
+						</p>
+						<p>
+							Per the <acronym title="Java Database Connectivity">JDBC</acronym> specification, loading the HA-JDBC driver class automatically registers the driver with the <code>DriverManager</code>.
+							The HA-JDBC driver will automatically load all underlying <acronym title="Java Database Connectivity">JDBC</acronym> drivers defined within a given cluster.
+							This means that you do not need to perform an additional <code>Class.forName(...)</code> to load your database's driver.
+						</p>
+					</li>
+				</ul>
+				<p>e.g.</p>
+				<p>
+					The following is a sample HA-JDBC configuration that uses the DriverManager facility to obtain connections.
+				</p>
+				<source><![CDATA[
+<ha-jdbc>
+  <!-- ... -->
+  <cluster balancer="..." dialect="PostgreSQL" default-sync="..." transaction-mode="...">
+    <database id="database1">
+      <driver>org.postgresql.Driver</driver>
+      <url>jdbc:postgresql://server1/database</url>
+      <user>postgres</user>
+      <password>password</password>
+    </datasource>
+    <database id="database2">
+      <driver>org.postgresql.Driver</driver>
+      <url>jdbc:postgresql://server2/database</url>
+      <user>postgres</user>
+      <password>password</password>
+    </datasource>
+  </cluster>
+</ha-jdbc>
+]]></source>
+				<p>
+					The URL specified in subsequent calls to <code>DriverManager.getConnection(...)</code> has the following format:
+				</p>
+				<p><code>jdbc:ha-jdbc:</code><em>cluster-id</em></p>
+				<p>e.g.</p>
+				<source><![CDATA[
+Connection connection = DriverManager.getConnection("jdbc:ha-jdbc:cluster1", "postgres", "password");
+]]></source>
+				<p>
+					The following is a sample Tomcat configuration that sets up a connection pool for the above HA-JDBC database cluster.
+				</p>
+				<p>server.xml</p>
+				<source><![CDATA[
+<Context>
+  <!-- ... -->
+  <Resource name="jdbc/cluster" type="javax.sql.DataSource"
+            username="postgres" password="password" driverClassName="net.sf.hajdbc.sql.Driver"
+            url="jdbc:ha-jdbc:cluster1"/>
+  <!-- ... -->
+</Context>
+]]></source>
+				<p>web.xml</p>
+				<source><![CDATA[
+<web-app>
+  <!-- ... -->
+  <resource-env-ref>
+    <resource-env-ref-name>jdbc/cluster</resource-env-ref-name>
+    <resource-env-ref-type>javax.sql.DataSource</resource-env-ref-type>
+  </resource-env-ref>
+  <!-- ... -->
+</web-app>
+]]></source>
+				<p>
+					Pooled connections to the HA-JDBC cluster are now available via a DataSource at <code>java:comp/env/jdbc/cluster</code>.
+				</p>
+			</subsection>
+			<subsection name="DataSource-based Access">
+				<p>
+					An HA-JDBC cluster can also wrap one or more DataSources.
+				</p>
+				<p>Connections are made to the HA-JDBC cluster via the following code:</p>
+				<source><![CDATA[
+Context context = new InitialContext();
+DataSource dataSource = (DataSource) context.lookup("java:comp/env/jdbc/cluster");
+Connection connection = dataSource.getConnection();
+]]></source>
+				<p>
+					You can define underlying data sources either by JNDI names to which they are already bound, or explicitly in your configuration file.
+				</p>
+				<subsection name="JNDI-based Configuration">
+					<p>e.g.</p>
+					<p>
+						The following is a sample HA-JDBC configuration that uses JNDI-bound DataSource facilities to obtain connections.
+					</p>
+					<source><![CDATA[
+<ha-jdbc>
+  <!-- ... -->
+  <cluster balancer="..." dialect="PostgreSQL" default-sync="..." transaction-mode="...">
+    <datasource id="database1">
+      <name>java:comp/env/jdbc/database1</name>
+    </datasource>
+    <datasource id="database2">
+      <name>java:comp/env/jdbc/database2</name>
+    </datasource>
+  </cluster>
+</ha-jdbc>
+]]></source>
+					<p>
+						The corresponding Tomcat configuration might look like the following:
+					</p>
+					<p>server.xml:</p>
+					<source><![CDATA[
+<Context>
+  <!-- ... -->
+  <Resource name="jdbc/database1" type="javax.sql.DataSource"
+            username="postgres" password="password" driverClassName="org.postgresql.Driver"
+            url="jdbc:postgresql://server1/database"/>
+
+  <Resource name="jdbc/database2" type="javax.sql.DataSource"
+            username="postgres" password="password" driverClassName="org.postgresql.Driver"
+            url="jdbc:postgresql://server2/database"/>
+
+  <Resource name="jdbc/cluster" type="javax.sql.DataSource"
+            factory="net.sf.hajdbc.sql.DataSourceFactory"
+            cluster="cluster2" config="file:///path/to/ha-jdbc-{0}.xml"/>
+  <!-- ... -->
+</Context>
+]]></source>
+					<p>web.xml:</p>
+					<source><![CDATA[
+<web-app>
+  <!-- ... -->
+  <resource-env-ref>
+    <resource-env-ref-name>jdbc/database1</resource-env-ref-name>
+    <resource-env-ref-type>javax.sql.DataSource</resource-env-ref-type>
+  </resource-env-ref>
+  <resource-env-ref>
+    <resource-env-ref-name>jdbc/database2</resource-env-ref-name>
+    <resource-env-ref-type>javax.sql.DataSource</resource-env-ref-type>
+  </resource-env-ref>
+  <resource-env-ref>
+    <resource-env-ref-name>jdbc/cluster</resource-env-ref-name>
+    <resource-env-ref-type>javax.sql.DataSource</resource-env-ref-type>
+  </resource-env-ref>
+  <!-- ... -->
+</web-app>
+]]></source>
+				</subsection>
+				<subsection name="Explicit Configuration">
+					<p>e.g.</p>
+					<p>
+						The following is a sample HA-JDBC configuration that uses explicitly defines DataSource facilities to obtain connections.
+						This setup has the advantage of not exposing underlying data sources to your application and is less verbose.
+					</p>
+					<source><![CDATA[
+<ha-jdbc>
+  <!-- ... -->
+  <cluster balancer="..." dialect="PostgreSQL" default-sync="..." transaction-mode="...">
+    <datasource id="database1">
+      <name>org.postgresql.ds.PGSimpleDataSource</name>
+      <property name="serverName">server1</property>
+      <property name="portNumber">5432</property>
+      <property name="databaseName">database</property>
+    </datasource>
+    <datasource id="database2">
+      <name>org.postgresql.ds.PGSimpleDataSource</name>
+      <property name="serverName">server2</property>
+      <property name="portNumber">5432</property>
+      <property name="databaseName">database</property>
+    </datasource>
+  </cluster>
+</ha-jdbc>
+]]></source>
+					<p>
+						The corresponding Tomcat configuration might look like the following:
+					</p>
+					<p>server.xml:</p>
+					<source><![CDATA[
+<Context>
+  <!-- ... -->
+  <Resource name="jdbc/cluster" type="javax.sql.DataSource"
+            factory="net.sf.hajdbc.sql.DataSourceFactory"
+            cluster="cluster2" config="file:///path/to/ha-jdbc-{0}.xml"/>
+  <!-- ... -->
+</Context>
+]]></source>
+					<p>web.xml:</p>
+					<source><![CDATA[
+<web-app>
+  <!-- ... -->
+  <resource-env-ref>
+    <resource-env-ref-name>jdbc/cluster</resource-env-ref-name>
+    <resource-env-ref-type>javax.sql.DataSource</resource-env-ref-type>
+  </resource-env-ref>
+  <!-- ... -->
+</web-app>
+]]></source>
+				</subsection>
+			</subsection>
+			<subsection name="XADataSource-based access">
+				<p>
+					An HA-JDBC cluster can also wrap one or more XADataSources.
+					You can define underlying data sources either by JNDI names to which they are already bound, or explicitly in your configuration file.
+				</p>
+				<warning>
+					Typically, when configuring an XADataSource for your application server, only the DataSource exposed to the application is bound to JNDI, not the XADataSource itself.
+					It is crucial that you configure HA-JDBC to proxy the XADataSource, and NOT the application-facing DataSource directly.
+					HA-JDBC must be able to detect the boundaries of a transaction, which, in the case of distributed transactions, are visible to the XAConnections created by the XADataSource, but not the Connections created by the application facing DataSource.
+				</warning>
+				<p>e.g.</p>
+				<p>
+					The following is a sample HA-JDBC configuration that uses explicitly defines XADataSource facilities to obtain connections.
+				</p>
+				<source><![CDATA[
+<ha-jdbc>
+  <!-- ... -->
+  <cluster balancer="..." dialect="PostgreSQL" default-sync="..." transaction-mode="...">
+    <xa-datasource id="database1">
+      <name>﻿org.postgresql.xa.PGXADataSource</name>
+      <property name="serverName">host1</property>
+﻿      <property name="portNumber">5432</property>
+﻿      <property name="databaseName">mydatabase</property>
+    </xa-datasource>
+    <xa-datasource id="database2">
+      <name>﻿org.postgresql.xa.PGXADataSource</name>
+      <property name="serverName">host1</property>
+﻿      <property name="portNumber">5432</property>
+﻿      <property name="databaseName">mydatabase</property>
+    </xa-datasource>
+  </cluster>
+</ha-jdbc>
+]]></source>
+				<p>
+					The corresponding JBoss configuration might look like the following:
+				</p>
+				<source><![CDATA[
+<datasources>
+  <xa-datasource>
+    <jndi-name>haDS</jndi-name>
+    <xa-datasource-class>net.sf.hajdbc.xa.XADataSource</xa-datasource-class>
+    <xa-datasource-property name="Cluster">mycluster</xa-datasource-property>
+    <track-connection-by-tx/>
+  </xa-datasource>
+</datasources>
+]]></source>
+				<p>Connections are made to the HA-JDBC cluster via the following code:</p>
+				<source><![CDATA[
+Context context = new InitialContext();
+DataSource dataSource = (DataSource) context.lookup("java:/haDS");
+Connection connection = dataSource.getConnection();
+]]></source>
+			</subsection>
+			<subsection id="unique-id" name="Unique identifier generation">
+				<p>
+					As of version 2.0, HA-JDBC now supports database sequences and identity (i.e. auto-incrementing) columns.
+				</p>
+				<p>
+					It is important to note the performance implications when using sequences and/or identity columns in conjunction with HA-JDBC.
+					Both algorithms introduce per statement regular expression matching and mutex costs in HA-JDBC, the latter being particularly costly for distributed environments.
+					Because of their performance impact, support for both sequences and identity columns can be disabled via the <a href="#sequences">detect-sequences</a> and <a href="#identity-columns">detect-identity-columns</a> cluster attributes, respectively.
+					Fortunately, the performance penalty for sequences can be mitigated via what Hibernate calls a <a href="http://www.hibernate.org/doc/api/org/hibernate/id/SequenceHiLoGenerator.html">Sequence-HiLo algorithm</a>.
+				</p>
+				<p>
+					For best performance, HA-JDBC recommends using a table-based high-low or UUID algorithm so that statement parsing and locking costs can be avoided.
+					Object-relation mapping (ORM) frameworks (e.g. Hibernate, OJB, Cayenne) typically include implementations of these mechanisms.
+				</p>
+			</subsection>
+			<subsection name="Failed Database Nodes">
+				<p>A database node may fail for any number of reasons:</p>
+				<ul>
+					<li>Network outage</li>
+					<li>Hardware failure</li>
+					<li>Operating System crash</li>
+					<li>Database application crash</li>
+					<li>Out of disk space</li>
+					<li>No more free connections</li>
+					<li>etc.</li>
+				</ul>
+				<p>
+					Failed database nodes are detected after an SQLException is thrown when executing a given database operation.
+					A database is determined to have failed if it fails to respond to a trivial query (e.g. SELECT 1).
+					The query used to validate that a database is alive is defined by the configured <a href="#dialect">dialect</a>.
+				</p>
+				<p>
+					This query may be executed manually, via the <a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#isAlive(java.lang.String)"><code>isAlive(String)</code></a> method on the management interface.
+				</p>
+				<p>If HA-JDBC determines that a given database has failed:</p>
+				<ol>
+					<li>An ERROR message is logged.</li>
+					<li>The database is removed from the internal registry of active databases.  No more requests will be sent to this database.</li>
+					<li>If the cluster was configured to be <em>distributable</em>, other servers are notified of the deactivation.</li>
+				</ol>
+				<p>
+					Databases can also be manually deactivated via the <a href="#jmx"><acronym title="Java Management eXtensions">JMX</acronym> management interface</a>.
+				</p>
+				<p>
+					Optionally, you can configure HA-JDBC to proactively detect database failures via the <code>failure-detect-schedule</code> attribute.
+					The value of this attribute defines a cron expression, which specifies the schedule a database cluster will detect failed databases and deactivate them.
+				</p>
+				<p>e.g.</p>
+				<source><![CDATA[
+<ha-jdbc>
+  <!-- ... -->
+  <!-- Failure detection will run every minute -->
+  <cluster ... failure-detect-schedule="0 * * ? * *">
+    <!-- ... -->
+  </cluster>
+</ha-jdbc>
+]]></source>
+			</subsection>
+			<subsection id="jmx" name="Database Cluster Administration">
+				<p>
+					HA-JDBC database clusters are administered via one of two <acronym title="Java Management eXtensions">JMX</acronym> interfaces:
+				</p>
+				<ul>
+					<li><a href="api/net/sf/hajdbc/sql/DriverDatabaseClusterMBean.html">net.sf.hajdbc.sql.DriverDatabaseClusterMBean</a></li>
+					<li><a href="api/net/sf/hajdbc/sql/DataSourceDatabaseClusterMBean.html">net.sf.hajdbc.sql.DataSourceDatabaseClusterMBean</a></li>
+				</ul>
+				<p>
+					Most of the management operations are defined the common super interface, <a href="api/net/sf/hajdbc/sql/DatabaseClusterMBean.html">net.sf.hajdbc.DatabaseClusterMBean</a>.
+				</p>
+				<p>
+					A database cluster mbean is registered using the following object-name:
+				</p>
+				<p>
+					net.sf.ha-jdbc:cluster=<em>database-cluster-id</em>
+				</p>
+				<p>
+					<acronym title="Java Management eXtensions">JMX</acronym> operations can be executed from the <a href="http://java.sun.com/j2se/1.5.0/docs/guide/management/jconsole.html">JConsole</a> interface packaged with JDK 1.5+.
+				</p>
+				<p>
+					As an alternative to JConsole (namely, for Java 1.4 deployments), you can use any of several 3rd-party <acronym title="Java Management eXtensions">JMX</acronym> clients:
+				</p>
+				<ul>
+					<li><a href="http://mc4j.org/">MC4J</a></li>
+					<li><a href="http://www.jmanage.org/">jManage</a></li>
+					<li><a href="http://ejtools.sourceforge.net/applications/jmx.browser/">EJTools JMX Browser</a></li>
+					<li><a href="http://panoptesmgmt.sourceforge.net/">Panoptes</a></li>
+					<li><a href="http://code.google.com/p/eclipse-jmx/">Eclipse-JMX</a></li>
+				</ul>
+				<p>
+					HA-JDBC database clusters may also be administered programatically:
+				</p>
+				<p>e.g.</p>
+				<source><![CDATA[
+String clusterId = "cluster1";
+String databaseId = "database1";
+
+MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+ObjectName name = ObjectName.getInstance("net.sf.hajdbc", "cluster", clusterId);
+
+// There are 2 ways to programatically invoke methods on an mbean:
+
+// 1. Generic invoke
+Object[] parameterValues = new Object[] { databaseId };
+String[] parameterTypes = new String[] { String.class.getName() };
+server.invoke(name, "activate", parameterValues, parameterTypes);
+
+// 2. Dynamic proxy
+DriverDatabaseClusterMBean cluster = JMX.newMBeanProxy(server, name, DriverDatabaseClusterMBean.class);
+cluster.activate(databaseId);
+]]></source>
+				<subsection name="Activating a Database">
+					<p>
+						Database nodes are activated by executing one of the following methods on the database cluster mbean:
+					</p>
+					<dl>
+						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#activate(java.lang.String)"><code>activate(String databaseId)</code></a></dt>
+						<dd>Synchronizes, using the default synchronization strategy, and activates the specified database.</dd>
+						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#activate(java.lang.String, java.lang.String)"><code>activate(String databaseId, String strategyId)</code></a></dt>
+						<dd>Synchronizes, using the specified synchronization strategy, and activates the specified database.</dd>
+					</dl>
+					<p>
+						In general, database synchronization is an intensive and intrusive task.
+						To maintain database consistency, each database node in the cluster is read locked (i.e. writes are blocked) until synchronization completes.
+						Since synchronization may take anywhere from seconds to hours (depending on the size of your database and synchronization strategy employed), if your database cluster is used in a high write volume environment, it is recommended that activation only be performed during off-peak hours.
+					</p>
+					<p>
+						As of version 1.1, HA-JDBC includes a useful database cluster option: "auto-activate-schedule".
+						If specified, HA-JDBC will automatically attempt to activate database nodes that are inactive, but alive, according to the specified cron schedule.
+					</p>
+					<p>e.g.</p>
+					<source><![CDATA[
+<ha-jdbc>
+  <!-- ... -->
+  <!-- Auto-activation will run every day at 2:00 AM -->
+  <cluster ... auto-activate-schedule="0 0 2 ? * *">
+    <!-- ... -->
+  </cluster>
+</ha-jdbc>
+]]></source>
+					<note>
+						In distributable mode, listening servers are automatically notified of any activated databases.
+					</note>
+				</subsection>
+				<subsection name="Deactivating a Database">
+					<p>
+						There are a number of reasons why you might want to deactivate a database node manually - most commonly, to perform some maintenance on the database or the machine itself.
+						Database nodes are deactivated by executing the following method on the database cluster mbean:
+					</p>
+					<dl>
+						<dt><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#deactivate(java.lang.String)"><code>deactivate(String databaseId)</code></a></dt>
+						<dd>Deactivates the specified database.</dd>
+					</dl>
+					<note>
+						In distributable mode, listening servers are automatically notified of any deactivated databases.
+					</note>
+				</subsection>
+				<subsection name="Adding a Database">
+					<p>
+						In HA-JDBC 1.0, the database nodes in a cluster were static.  They could not be altered while the application/server was running.
+					</p>
+					<p>
+						As of HA-JDBC 1.1, database nodes can be added, updated, or removed during runtime.
+					</p>
+					<p>net.sf.hajdbc.sql.DriverDatabaseClusterMBean:</p>
+					<ul>
+						<li><a href="api/net/sf/hajdbc/sql/DriverDatabaseClusterMBean.html#add(java.lang.String, java.lang.String, java.lang.String)"><code>add(String databaseId, String driver, String url)</code></a></li>
+						<li><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#remove(java.lang.String)"><code>remove(String databaseId)</code></a></li>
+					</ul>
+					<p>net.sf.hajdbc.sql.DataSourceDatabaseClusterMBean:</p>
+					<ul>
+						<li><a href="api/net/sf/hajdbc/sql/DataSourceDatabaseClusterMBean.html#add(java.lang.String, java.lang.String)"><code>DataSourceDatabaseClusterMBean.add(String databaseId, String name)</code></a></li>
+						<li><a href="api/net/sf/hajdbc/DatabaseClusterMBean.html#remove(java.lang.String)"><code>remove(String databaseId)</code></a></li>
+					</ul>
+					<p>
+						When a new database is added, it is initially inactive.
+						Database nodes may also be removed from the cluster.
+						A database node must first be inactive before it can be removed.
+					</p>
+					<p>
+						HA-JDBC 1.1 also adds mbean interfaces for individual database nodes:
+					</p>
+					<ul>
+						<li><a href="api/net/sf/hajdbc/sql/InactiveDriverDatabaseMBean.html"><code>net.sf.hajdbc.sql.InactiveDriverDatabaseMBean</code></a></li>
+						<li><a href="api/net/sf/hajdbc/sql/InactiveDataSourceDatabaseMBean.html"><code>net.sf.hajdbc.sql.InactiveDataSourceDatabaseMBean</code></a></li>
+						<li><a href="api/net/sf/hajdbc/sql/ActiveDriverDatabaseMBean.html"><code>net.sf.hajdbc.sql.ActiveDriverDatabaseMBean</code></a></li>
+						<li><a href="api/net/sf/hajdbc/sql/ActiveDataSourceDatabaseMBean.html"><code>net.sf.hajdbc.sql.ActiveDataSourceDatabaseMBean</code></a></li>
+					</ul>
+					<p>
+						Database mbeans are registered using the following object-name:
+					</p>
+					<p>
+						net.sf.ha-jdbc:cluster=<em>cluster-id</em>,database=<em>database-id</em>
+					</p>
+					<p>
+						While inactive, a database node's connection properties (e.g. user, password, etc.) may be modified.
+						When active, a database node's connection properties are read-only.
+					</p>
+					<p>
+						When a database node is activated and it's configuration has changed, or when a database node is removed, the configuration is saved to it's original URL.
+					</p>
+					<warning>
+						In distributable mode, listening servers are <em>not</em> notified of database node additions, updates, and removals.
+						These cluster modifications must be made on each server.
+					</warning>
+				</subsection>
+			</subsection>
+		</section>
+		<section name="Limitations">
+			<ul>
+				<li>HA-JDBC does not safely support stored procedures that update sequences or insert rows containing identity columns.</li>
+			</ul>
+		</section>
+	</body>
+</document>
