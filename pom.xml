@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ HA-JDBC: High-Availability JDBC
+ Copyright (c) 2004-2009 Paul Ferraro
+
+ This library is free software; you can redistribute it and/or modify it
+ under the terms of the GNU Lesser General Public License as published by the
+ Free Software Foundation; either version 2.1 of the License, or (at your
+ option) any later version.
+
+ This library is distributed in the hope that it will be useful, but WITHOUT
+ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this library; if not, write to the Free Software Foundation,
+ Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+ Contact: ferraro@users.sourceforge.net
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>net.sf.hajdbc</groupId>
+	<artifactId>ha-jdbc</artifactId>
+	<version>2.1.0-beta-1</version>
+	<packaging>jar</packaging>
+	
+	<repositories>
+		<repository>
+			<id>repository.jboss.org</id>
+			<url>http://repository.jboss.org/maven2</url>
+		</repository>
+		<repository>
+			<id>download.oracle.com</id>
+			<url>http://download.oracle.com/maven</url>
+		</repository>
+	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>download.java.net</id>
+			<name>Provides maven-jaxb-schemagen-plugin</name>
+			<url>http://download.java.net/maven/2</url>
+		</pluginRepository>
+		<pluginRepository>
+			<id>doodleproject-repo</id>
+			<name>Provides batik-maven-plugin</name>
+			<url>http://doodleproject.sourceforge.net/maven2/release</url>
+		</pluginRepository>
+	</pluginRepositories>
+	
+	<dependencies>
+		<dependency>
+			<groupId>jgroups</groupId>
+			<artifactId>jgroups</artifactId>
+			<version>2.8.0.CR2</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.testng</groupId>
+					<artifactId>testng</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.5.8</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>1.5.8</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>jdbm</groupId>
+			<artifactId>jdbm</artifactId>
+			<version>1.0</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>com.sleepycat</groupId>
+			<artifactId>je</artifactId>
+			<version>3.3.87</version>
+			<scope>optional</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.tmatesoft.sqljet</groupId>
+			<artifactId>sqljet</artifactId>
+			<version>1.0.0</version>
+			<scope>optional</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.7</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.easymock</groupId>
+			<artifactId>easymock</artifactId>
+			<version>2.5.2</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	
+	<properties>
+		<provider.logging>net.sf.hajdbc.logging.jdk.JDKLoggingProvider</provider.logging>
+	</properties>
+	
+	<build>
+		<resources>
+			<resource>
+				<directory>${project.build.sourceDirectory}</directory>
+				<includes>
+					<include>**/*.properties</include>
+				</includes>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>1.0-beta-1</version>
+				<configuration>
+					<rules>
+						<requireJavaVersion>
+							<version>1.6</version>
+						</requireJavaVersion>
+					</rules>
+				</configuration>
+				<!--executions>
+					<execution>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+					</execution>
+				</executions-->
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.0.2</version>
+			</plugin>
+			<plugin>
+				<groupId>com.sun.tools.jxc.maven2</groupId>
+				<artifactId>maven-jaxb-schemagen-plugin</artifactId>
+				<version>1.2</version>
+				<configuration>
+					<project>${project}</project>
+					<includes>
+						<include>**/*DatabaseClusterConfiguration.java</include>
+						<include>**/DefaultChannelProvider.java</include>
+						<include>**/ChannelProvider.java</include>
+						<include>**/BalancerFactory.java</include>
+						<include>**/DatabaseMetaDataCacheFactory.java</include>
+						<include>**/DialectFactory.java</include>
+						<include>**/DurabilityFactory.java</include>
+						<include>**/*Enum.java</include>
+						<include>**/SynchronizationStrategy.java</include>
+						<include>**/CronExpression.java</include>
+						<include>**/CronExpressionAdapter.java</include>
+						<include>**/TransactionMode.java</include>
+						<include>**/Property.java</include>
+						<include>**/PropertyAdapter.java</include>
+						<include>**/*Database.java</include>
+						<include>**/Managed.java</include>
+					</includes>
+					<schemas>
+						<schema>
+							<namespace>http://ha-jdbc.sourceforge.net</namespace>
+							<file>ha-jdbc.xsd</file>
+						</schema>
+					</schemas>
+					<verbose>true</verbose>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>net.sf.doodleproject</groupId>
+				<artifactId>batik-maven-plugin</artifactId>
+				<version>2.1</version>
+				<dependencies>
+					<dependency>
+						<groupId>batik</groupId>
+						<artifactId>batik-ext</artifactId>
+						<version>1.6-1</version>
+					</dependency>
+				</dependencies>
+				<executions>
+					<execution>
+						<phase>site</phase>
+						<goals>
+							<goal>rasterize</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<sourceDirectory>${basedir}/target/site/images</sourceDirectory>
+					<destinationDirectory>${basedir}/target/site/images</destinationDirectory>
+					<pngGenerate>true</pngGenerate>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+				<version>2.0.1</version>
+			</plugin>
+		</plugins>
+	</build>
+	
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>2.1.2</version>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>dependencies</report>
+							<report>issue-tracking</report>
+							<report>license</report>
+							<report>mailing-list</report>
+							<report>project-team</report>
+							<report>scm</report>
+							<report>summary</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-changes-plugin</artifactId>
+				<version>2.1</version>
+				<configuration>
+					<xmlPath>${basedir}/src/site/changes.xml</xmlPath>
+					<issueLinkTemplatePerSystem>
+						<default>%URL%?func=detail&amp;group_id=111957&amp;atid=660861&amp;aid=%ISSUE%</default>
+					</issueLinkTemplatePerSystem>
+				</configuration>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>changes-report</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.6</version>
+				<configuration>
+					<linksource>true</linksource>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>findbugs-maven-plugin</artifactId>
+				<version>2.1</version>
+			</plugin>
+		</plugins>
+	</reporting>
+	
+	<name>HA-JDBC</name>
+	<description>High-Availability JDBC</description>
+	<url>http://ha-jdbc.sourceforge.net</url>
+	<inceptionYear>2004</inceptionYear>
+	<licenses>
+		<license>
+			<name>GNU LGPL</name>
+			<url>http://www.gnu.org/licenses/lgpl.html</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	
+	<scm>
+		<connection>scm:svn:https://ha-jdbc.svn.sourceforge.net/svnroot/ha-jdbc/trunk</connection>
+		<developerConnection>scm:svn:https://ha-jdbc.svn.sourceforge.net/svnroot/ha-jdbc/trunk</developerConnection>
+		<tag>HEAD</tag>
+		<url>http://ha-jdbc.svn.sourceforge.net/viewvc/ha-jdbc/trunk</url>
+	</scm>
+	
+	<issueManagement>
+		<system>SourceForge</system>
+		<url>http://sourceforge.net/tracker/?group_id=111957&amp;atid=660861</url>
+	</issueManagement>
+	
+	<distributionManagement>
+		<downloadUrl>http://sourceforge.net/project/showfiles.php?group_id=111957</downloadUrl>
+		<site>
+			<id>ha-jdbc.site</id>
+			<name>HA-JDBC project page</name>
+			<url>scp://ferraro,ha-jdbc@shell.sourceforge.net/home/groups/h/ha/ha-jdbc/htdocs</url>
+		</site>
+	</distributionManagement>
+
+	<organization>
+		<name>SourceForge</name>
+		<url>http://sourceforge.net</url>
+	</organization>	
+	<developers>
+		<developer>
+			<id>pmf</id>
+			<name>Paul Ferraro</name>
+			<email>ferraro@users.sourceforge.net</email>
+		</developer>
+	</developers>
+	
+	<mailingLists>
+		<mailingList>
+			<name>User Support</name>
+			<subscribe>https://lists.sourceforge.net/lists/listinfo/ha-jdbc-user</subscribe>
+			<unsubscribe>https://lists.sourceforge.net/lists/listinfo/ha-jdbc-user</unsubscribe>
+			<post>ha-jdbc-user@lists.sourceforge.net</post>
+			<archive>https://sourceforge.net/mailarchive/forum.php?forum_name=ha-jdbc-user</archive>
+		</mailingList>
+		<mailingList>
+			<name>Release Announcements</name>
+			<subscribe>https://lists.sourceforge.net/mailman/listinfo/ha-jdbc-announce</subscribe>
+			<unsubscribe>https://lists.sourceforge.net/mailman/listinfo/ha-jdbc-announce</unsubscribe>
+			<post>ha-jdbc-announce@lists.sourceforge.net</post>
+			<archive>https://sourceforge.net/mailarchive/forum.php?forum_name=ha-jdbc-announce</archive>
+		</mailingList>
+		<mailingList>
+			<name>Developer Discussions</name>
+			<subscribe>https://lists.sourceforge.net/mailman/listinfo/ha-jdbc-devel</subscribe>
+			<unsubscribe>https://lists.sourceforge.net/mailman/listinfo/ha-jdbc-devel</unsubscribe>
+			<post>ha-jdbc-devel@lists.sourceforge.net</post>
+			<archive>https://sourceforge.net/mailarchive/forum.php?forum_name=ha-jdbc-devel</archive>
+		</mailingList>
+	</mailingLists>
+</project>
