@@ -1,0 +1,83 @@
+/*
+ * HA-JDBC: High-Availability JDBC
+ * Copyright (c) 2004-2007 Paul Ferraro
+ * 
+ * This library is free software; you can redistribute it and/or modify it 
+ * under the terms of the GNU Lesser General Public License as published by the 
+ * Free Software Foundation; either version 2.1 of the License, or (at your 
+ * option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+ * for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, 
+ * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * 
+ * Contact: ferraro@users.sourceforge.net
+ */
+package net.sf.hajdbc;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+
+/**
+ * @author  Paul Ferraro
+ * @version $Revision: 1536 $
+ * @param <Z> connection source (e.g. Driver, DataSource, etc.)
+ * @since   1.0
+ */
+public interface Database<Z> extends Comparable<Database<Z>>
+{
+	/**
+	 * Returns the unique idenfier for this database
+	 * @return a unique identifier
+	 */
+	String getId();
+	
+	/**
+	 * Returns the location of this database
+	 * @return a location
+	 */
+	String getName();
+	
+	/**
+	 * Returns the relative "weight" of this cluster node.
+	 * In general, when choosing a node to service read requests, a cluster will favor the node with the highest weight.
+	 * A weight of 0 is somewhat special, depending on the type of balancer used by the cluster.
+	 * In most cases, a weight of 0 means that this node will never service read requests unless it is the only node in the cluster.
+	 * @return a positive integer
+	 */
+	int getWeight();
+	
+	/**
+	 * Indicates whether or not this database is local to the machine on which the JVM resides.
+	 * @return true if local, false if remote
+	 */
+	boolean isLocal();
+	
+	/**
+	 * Connects to the database using the specified connection factory.
+	 * @param connectionSource a factory object for creating connections
+	 * @return a database connection
+	 * @throws SQLException if connection fails
+	 */
+	Connection connect(Z connectionSource) throws SQLException;
+	
+	/**
+	 * Factory method for creating a connection factory object for this database.
+	 * @return a connection factory object
+	 * @throws IllegalArgumentException if connection factory could not be created
+	 */
+	Z createConnectionSource();
+	
+	boolean isDirty();
+	
+	void clean();
+	
+	boolean isActive();
+	
+	void setActive(boolean active);
+}
