@@ -601,15 +601,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		@Override
 		public String marshal(DialectFactory factory)
 		{
-			for (DialectFactoryEnum factoryEnum: DialectFactoryEnum.values())
-			{
-				if (factoryEnum == factory)
-				{
-					return factoryEnum.name().toLowerCase();
-				}
-			}
-			
-			return factory.createDialect().getClass().getName();
+			return factory.toString();
 		}
 
 		@Override
@@ -621,14 +613,27 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			}
 			catch (IllegalArgumentException e)
 			{
-				final Dialect dialect = Class.forName(value).asSubclass(Dialect.class).newInstance();
+				final Class<? extends Dialect> targetClass = Class.forName(value).asSubclass(Dialect.class);
 				
 				return new DialectFactory()
 				{
 					@Override
 					public Dialect createDialect()
 					{
-						return dialect;
+						try
+						{
+							return targetClass.newInstance();
+						}
+						catch (Exception e)
+						{
+							throw new IllegalArgumentException(e);
+						}
+					}
+
+					@Override
+					public String toString()
+					{
+						return targetClass.getName();
 					}
 				};
 			}

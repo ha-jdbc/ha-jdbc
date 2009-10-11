@@ -39,11 +39,11 @@ public enum DialectFactoryEnum implements DialectFactory
 	STANDARD(StandardDialect.class),
 	SYBASE(SybaseDialect.class);
 	
-	private Class<? extends Dialect> dialectClass;
+	private Class<? extends Dialect> targetClass;
 	
-	private DialectFactoryEnum(Class<? extends Dialect> dialectClass)
+	private DialectFactoryEnum(Class<? extends Dialect> targetClass)
 	{
-		this.dialectClass = dialectClass;
+		this.targetClass = targetClass;
 	}
 	
 	/**
@@ -55,11 +55,21 @@ public enum DialectFactoryEnum implements DialectFactory
 	{
 		try
 		{
-			return this.dialectClass.newInstance();
+			return this.targetClass.newInstance();
 		}
 		catch (Exception e)
 		{
 			throw new IllegalArgumentException(e);
 		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see java.lang.Enum#toString()
+	 */
+	@Override
+	public String toString()
+	{
+		return this.name().toLowerCase();
 	}
 }
