@@ -1,38 +1,51 @@
 /*
- * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2007 Paul Ferraro
- * 
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by the 
- * Free Software Foundation; either version 2.1 of the License, or (at your 
- * option) any later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
- * for more details.
- * 
+ * HA-JDBC: High-Availablity JDBC
+ * Copyright 2004, 2009 Paul Ferraro
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
  * You should have received a copy of the GNU Lesser General Public License
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * 
- * Contact: ferraro@users.sourceforge.net
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sf.hajdbc.distributed;
 
 import java.io.Serializable;
 
 /**
+ * A command to be executed on a remote member.
+ * 
  * @author Paul Ferraro
+ * @param <R> the execution return type
+ * @param <C> the execution context type
  */
 public interface Command<R, C> extends Serializable
 {
 	/**
 	 * Execute this command with the specified context.
+	 * @param context the execution context.
+	 * @return the result of this command.
 	 */
 	R execute(C context);
 	
+	/**
+	 * Unmarshals the rpc response to the expected execution result type.
+	 * @param object the rpc response
+	 * @return the execution result
+	 */
 	R unmarshalResult(Object object);
 	
+	/**
+	 * Marshals the execution result to a suitable rpc response.
+	 * @param result the execution result
+	 * @return the rpc response
+	 */
 	Object marshalResult(R result);
 }

@@ -1,22 +1,19 @@
 /*
- * HA-JDBC: High-Availability JDBC
- * Copyright (c) 2004-2009 Paul Ferraro
- * 
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by the 
- * Free Software Foundation; either version 2.1 of the License, or (at your 
- * option) any later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
- * for more details.
- * 
+ * HA-JDBC: High-Availablity JDBC
+ * Copyright 2004, 2009 Paul Ferraro
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
  * You should have received a copy of the GNU Lesser General Public License
- * along with this library; if not, write to the Free Software Foundation, 
- * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * 
- * Contact: ferraro@users.sourceforge.net
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sf.hajdbc.distributed.jgroups;
 
@@ -49,8 +46,11 @@ import org.jgroups.blocks.RequestHandler;
 import org.jgroups.util.Rsp;
 
 /**
- * @author paul
- *
+ * A JGroups-based command dispatcher.
+ * 
+ * @author Paul Ferraro
+ * @see org.jgroups.blocks.MessageDispatcher
+ * @param <C> the execution context type
  */
 public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispatcher<C>, ExtendedMembershipListener, MessageListener
 {
@@ -63,6 +63,15 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 	private final MembershipListener membershipListener;
 	private final Stateful stateful;
 	
+	/**
+	 * Constructs a new ChannelCommandDispatcher.
+	 * @param id the channel name
+	 * @param provider the channel provider
+	 * @param context the execution context
+	 * @param stateful the state transfer handler
+	 * @param membershipListener notified of membership changes
+	 * @throws Exception if channel cannot be created
+	 */
 	public ChannelCommandDispatcher(String id, ChannelProvider provider, C context, Stateful stateful, MembershipListener membershipListener) throws Exception
 	{
 		this.id = id;
@@ -109,7 +118,7 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.distributable.jgroups.ICommandDispatcher#executeAll(net.sf.hajdbc.distributed.Command)
+	 * @see net.sf.hajdbc.distributed.CommandDispatcher#executeAll(net.sf.hajdbc.distributed.Command)
 	 */
 	public <R> Map<Member, R> executeAll(Command<R, C> command)
 	{
@@ -136,7 +145,7 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.distributable.jgroups.ICommandDispatcher#executeCoordinator(net.sf.hajdbc.distributed.Command)
+	 * @see net.sf.hajdbc.distributed.CommandDispatcher#executeCoordinator(net.sf.hajdbc.distributed.Command)
 	 */
 	public <R> R executeCoordinator(Command<R, C> command)
 	{
@@ -163,7 +172,7 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.distributable.jgroups.CommandDispatcher#isCoordinator()
+	 * @see net.sf.hajdbc.distributed.CommandDispatcher#isCoordinator()
 	 */
 	public boolean isCoordinator()
 	{
@@ -171,7 +180,7 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.distributable.jgroups.CommandDispatcher#getLocal()
+	 * @see net.sf.hajdbc.distributed.CommandDispatcher#getLocal()
 	 */
 	public Member getLocal()
 	{
