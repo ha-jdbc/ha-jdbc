@@ -1,0 +1,149 @@
+/*
+ * HA-JDBC: High-Availability JDBC
+ * Copyright (c) 2004-2007 Paul Ferraro
+ * 
+ * This library is free software; you can redistribute it and/or modify it 
+ * under the terms of the GNU Lesser General Public License as published by the 
+ * Free Software Foundation; either version 2.1 of the License, or (at your 
+ * option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+ * for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, 
+ * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * 
+ * Contact: ferraro@users.sourceforge.net
+ */
+package net.sf.hajdbc.sql;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.ExceptionFactory;
+import net.sf.hajdbc.Messages;
+
+/**
+ * @author Paul Ferraro
+ * @param <D> 
+ * @param <T> 
+ * @param <R> 
+ */
+public class DatabaseWriteInvocationStrategy<Z, D extends Database<Z>, T, R, E extends Exception> extends AbstractInvocationStrategy<Z, D, T, R, E>
+{
+	private final ExecutorService executor;
+	
+	/**
+	 * @param executor
+	 */
+	public DatabaseWriteInvocationStrategy(ExecutorService executor)
+	{
+		this.executor = executor;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.sql.AbstractInvocationStrategy#collectResults(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker)
+	 */
+	@Override
+	protected Map.Entry<SortedMap<D, R>, SortedMap<D, E>> collectResults(SQLProxy<Z, D, T, E> proxy, final Invoker<Z, D, T, R, E> invoker)
+	{
+		DatabaseCluster<Z, D> cluster = proxy.getDatabaseCluster();
+		Set<D> databaseSet = cluster.getBalancer();
+		
+		proxy.getRoot().retain(databaseSet);
+		
+		ExceptionFactory<E> exceptionFactory = proxy.getExceptionFactory();
+		
+		if (databaseSet.isEmpty())
+		{
+			exceptionFactory.createException(Messages.NO_ACTIVE_DATABASES.getMessage(cluster));
+		}
+
+		int size = databaseSet.size();
+		
+		List<Invocation> invocationList = new ArrayList<Invocation>(size);
+		
+		for (D database: databaseSet)
+		{
+			invocationList.add(new Invocation(invoker, database, proxy.getObject(database)));
+		}
+
+		try
+		{
+			List<Future<R>> futureList = this.executor.invokeAll(invocationList);
+			
+			final SortedMap<D, R> resultMap = new TreeMap<D, R>();
+			final SortedMap<D, E> exceptionMap = new TreeMap<D, E>();
+			
+			for (int i = 0; i < invocationList.size(); ++i)
+			{
+				D database = invocationList.get(i).getDatabase();
+				
+				try
+				{
+					resultMap.put(database, futureList.get(i).get());
+				}
+				catch (ExecutionException e)
+				{
+					exceptionMap.put(database, exceptionFactory.createException(e.getCause()));
+				}
+				catch (InterruptedException e)
+				{
+					Thread.currentThread().interrupt();
+					
+					exceptionMap.put(database, exceptionFactory.createException(e));
+				}
+			}
+		
+			return Collections.singletonMap(resultMap, exceptionMap).entrySet().iterator().next();
+		}
+		catch (InterruptedException e)
+		{
+			throw new IllegalStateException(e);
+		}
+	}
+	
+	private class Invocation implements Callable<R>
+	{
+		private final Invoker<Z, D, T, R, E> invoker;
+		private final D database;
+		private final T object;
+		
+		Invocation(Invoker<Z, D, T, R, E> invoker, D database, T object)
+		{
+			this.invoker = invoker;
+			this.database = database;
+			this.object = object;
+		}
+		
+		D getDatabase()
+		{
+			return this.database;
+		}
+		
+		/**
+		 * {@inheritDoc}
+		 * @see java.util.concurrent.Callable#call()
+		 */
+		@Override
+		public R call() throws E
+		{
+			return this.invoker.invoke(this.database, this.object);
+		}
+	}
+}
