@@ -50,6 +50,7 @@ import net.sf.hajdbc.cache.DatabaseMetaDataCacheFactory;
 import net.sf.hajdbc.cache.DatabaseMetaDataCacheFactoryEnum;
 import net.sf.hajdbc.dialect.DialectFactory;
 import net.sf.hajdbc.dialect.DialectFactoryEnum;
+import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.distributed.jgroups.ChannelProvider;
 import net.sf.hajdbc.distributed.jgroups.DefaultChannelProvider;
 import net.sf.hajdbc.durability.DurabilityFactory;
@@ -72,7 +73,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	static Logger logger = LoggerFactory.getLogger(AbstractDatabaseClusterConfiguration.class);
 	
 	@XmlElement(name = "distributable", type = DefaultChannelProvider.class)
-	private ChannelProvider channelProvider;
+	private CommandDispatcherFactory dispatcherFactory;
 	
 	@XmlTransient
 	Map<String, SynchronizationStrategy> synchronizationStrategies = new HashMap<String, SynchronizationStrategy>();
@@ -183,12 +184,12 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getChannelProvider()
+	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getDispatcherFactory()
 	 */
 	@Override
-	public ChannelProvider getChannelProvider()
+	public CommandDispatcherFactory getDispatcherFactory()
 	{
-		return this.channelProvider;
+		return this.dispatcherFactory;
 	}
 
 	/**
@@ -455,7 +456,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		}
 
 		@Override
-		public ChannelProvider getChannelProvider()
+		public ChannelProvider getDispatcherFactory()
 		{
 			throw new IllegalStateException();
 		}

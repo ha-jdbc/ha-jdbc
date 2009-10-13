@@ -37,7 +37,7 @@ import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationListener;
 import net.sf.hajdbc.balancer.Balancer;
 import net.sf.hajdbc.cache.DatabaseMetaDataCache;
-import net.sf.hajdbc.distributed.jgroups.ChannelProvider;
+import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.durability.Durability;
 import net.sf.hajdbc.lock.LockManager;
 import net.sf.hajdbc.lock.distributed.DistributedLockManager;
@@ -404,12 +404,12 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		this.lockManager = new LocalLockManager();
 		this.stateManager = this.configuration.getStateManagerProvider().createStateManager(this, System.getProperties());
 		
-		ChannelProvider channelProvider = this.configuration.getChannelProvider();
+		CommandDispatcherFactory dispatcherFactory = this.configuration.getDispatcherFactory();
 		
-		if (channelProvider != null)
+		if (dispatcherFactory != null)
 		{
-			this.lockManager = new DistributedLockManager(this, channelProvider);
-			this.stateManager = new DistributedStateManager<Z, D>(this, channelProvider);
+			this.lockManager = new DistributedLockManager(this, dispatcherFactory);
+			this.stateManager = new DistributedStateManager<Z, D>(this, dispatcherFactory);
 		}
 		
 		this.balancer = this.configuration.getBalancerFactory().createBalancer(new TreeSet<D>());

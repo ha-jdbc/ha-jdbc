@@ -38,7 +38,7 @@ import org.jgroups.conf.ProtocolStackConfigurator;
  */
 @XmlType
 @XmlAccessorType(XmlAccessType.FIELD)
-public class DefaultChannelProvider implements ChannelProvider
+public class DefaultChannelProvider extends AbstractChannelProvider
 {
 	@XmlTransient
 	private static final String SINGLETON_NAME = "ha-jdbc";

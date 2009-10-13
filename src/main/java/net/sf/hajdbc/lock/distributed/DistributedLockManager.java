@@ -36,12 +36,11 @@ import java.util.concurrent.locks.Lock;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.distributed.CommandDispatcher;
+import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.distributed.Member;
 import net.sf.hajdbc.distributed.MembershipListener;
 import net.sf.hajdbc.distributed.Remote;
 import net.sf.hajdbc.distributed.Stateful;
-import net.sf.hajdbc.distributed.jgroups.ChannelProvider;
-import net.sf.hajdbc.distributed.jgroups.ChannelCommandDispatcher;
 import net.sf.hajdbc.lock.LockManager;
 
 /**
@@ -54,10 +53,11 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 	private final LockManager lockManager;
 	private final ConcurrentMap<Member, Map<LockDescriptor, Lock>> remoteLockDescriptorMap = new ConcurrentHashMap<Member, Map<LockDescriptor, Lock>>();
 	
-	public <Z, D extends Database<Z>> DistributedLockManager(DatabaseCluster<Z, D> cluster, ChannelProvider channelFactory) throws Exception
+	public <Z, D extends Database<Z>> DistributedLockManager(DatabaseCluster<Z, D> cluster, CommandDispatcherFactory dispatcherFactory) throws Exception
 	{
 		this.lockManager = cluster.getLockManager();
-		this.dispatcher = new ChannelCommandDispatcher<LockCommandContext>(cluster.getId(), channelFactory, this, this, this);
+		LockCommandContext context = this;
+		this.dispatcher = dispatcherFactory.createCommandDispatcher(cluster.getId(), context, this, this);
 	}
 	
 	/**

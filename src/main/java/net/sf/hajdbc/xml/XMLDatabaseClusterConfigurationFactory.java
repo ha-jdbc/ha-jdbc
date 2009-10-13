@@ -17,13 +17,9 @@
  */
 package net.sf.hajdbc.xml;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.WritableByteChannel;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 
@@ -35,8 +31,6 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
-import org.xml.sax.SAXException;
-
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseClusterConfiguration;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
@@ -46,6 +40,8 @@ import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+
+import org.xml.sax.SAXException;
 
 /**
  * @author paul
@@ -57,11 +53,11 @@ public class XMLDatabaseClusterConfigurationFactory implements DatabaseClusterCo
 	private static final String CONFIG_PROPERTY = "ha-jdbc.configuration"; //$NON-NLS-1$
 	private static final String DEFAULT_RESOURCE = "ha-jdbc-{0}.xml"; //$NON-NLS-1$
 	
-	private static final URL SCHEMA = findClassLoaderResource("ha-jdbc.xsd");
+	private static final URL SCHEMA = findClassLoaderResource("schema1.xsd");
 
 	private static final Logger logger = LoggerFactory.getLogger(XMLDatabaseClusterConfigurationFactory.class);
 	
-	private final URL url;
+	private final Locator locator;
 	
 	private static String identifyResource(String id)
 	{
@@ -116,8 +112,14 @@ public class XMLDatabaseClusterConfigurationFactory implements DatabaseClusterCo
 	
 	public XMLDatabaseClusterConfigurationFactory(URL url)
 	{
+		this(new URLLocator(url));
+		
 		logger.log(Level.INFO, "Using url {0}", url);
-		this.url = url;
+	}
+	
+	public XMLDatabaseClusterConfigurationFactory(Locator locator)
+	{
+		this.locator = locator;
 	}
 	
 	/**
@@ -130,21 +132,24 @@ public class XMLDatabaseClusterConfigurationFactory implements DatabaseClusterCo
 		try
 		{
 			SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-			File schemaFile = new File("/home/paul/ha-jdbc/trunk/target/generated-schema/schema1.xsd");
-			Schema schema = schemaFactory.newSchema(schemaFile);
+			Schema schema = schemaFactory.newSchema(SCHEMA);
 			JAXBContext context = JAXBContext.newInstance(targetClass);
 			
 			Unmarshaller unmarshaller = context.createUnmarshaller();
 
 			unmarshaller.setSchema(schema);
 			
-			return targetClass.cast(unmarshaller.unmarshal(this.url));
+			return targetClass.cast(unmarshaller.unmarshal(this.locator.getReader()));
 		}
 		catch (JAXBException e)
 		{
 			throw new SQLException(e);
 		}
 		catch (SAXException e)
+		{
+			throw new SQLException(e);
+		}
+		catch (IOException e)
 		{
 			throw new SQLException(e);
 		}
@@ -174,86 +179,20 @@ public class XMLDatabaseClusterConfigurationFactory implements DatabaseClusterCo
 	{
 		try
 		{
-//			File file = File.createTempFile("ha-jdbc", ".xml"); //$NON-NLS-1$ //$NON-NLS-2$;
+			JAXBContext context = JAXBContext.newInstance(configuration.getClass());
 			
-			try
-			{
-				JAXBContext context = JAXBContext.newInstance(configuration.getClass());
-				
-				Marshaller marshaller = context.createMarshaller();
-				
-				marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);				
-				marshaller.marshal(configuration, System.out);
-			}
-			catch (JAXBException e)
-			{
-				e.printStackTrace(System.err);
-			}
-/*			
-			try
-			{
-				FileChannel fileChannel = new FileInputStream(file).getChannel();
-				
-				try
-				{
-					WritableByteChannel outputChannel = this.getOutputChannel(this.url);
-					
-					try
-					{
-						fileChannel.transferTo(0, file.length(), outputChannel);
-					}
-					finally
-					{
-						try
-						{
-							outputChannel.close();
-						}
-						catch (IOException e)
-						{
-							logger.log(Level.WARN, e.getMessage(), e);
-						}
-					}
-				}
-				finally
-				{
-					try
-					{
-						fileChannel.close();
-					}
-					catch (IOException e)
-					{
-						logger.log(Level.WARN, e.getMessage(), e);
-					}
-				}
-			}
-			finally
-			{
-				file.delete();
-			}
-*/
+			Marshaller marshaller = context.createMarshaller();
+			
+			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);				
+			marshaller.marshal(configuration, this.locator.getWriter());
 		}
-//		catch (IOException e)
-		catch (Exception e)
+		catch (JAXBException e)
 		{
-			logger.log(Level.WARN, e, Messages.CONFIG_STORE_FAILED.getMessage(), this.url);
+			logger.log(Level.WARN, e, Messages.CONFIG_STORE_FAILED.getMessage(), this.locator);
 		}
-	}
-	
-	/**
-	 * We cannot use URLConnection for files because Sun's implementation does not support output.
-	 */
-	private WritableByteChannel getOutputChannel(URL url) throws IOException
-	{
-		return this.isFile(url) ? new FileOutputStream(this.toFile(url)).getChannel() : Channels.newChannel(url.openConnection().getOutputStream());
-	}
-	
-	private boolean isFile(URL url)
-	{
-		return url.getProtocol().equals("file"); //$NON-NLS-1$
-	}
-	
-	private File toFile(URL url)
-	{
-		return new File(url.getPath());
+		catch (IOException e)
+		{
+			logger.log(Level.WARN, e, Messages.CONFIG_STORE_FAILED.getMessage(), this.locator);
+		}
 	}
 }

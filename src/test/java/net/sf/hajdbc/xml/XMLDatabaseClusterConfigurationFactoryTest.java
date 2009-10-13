@@ -17,6 +17,10 @@
  */
 package net.sf.hajdbc.xml;
 
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.Map;
 
@@ -31,25 +35,43 @@ import net.sf.hajdbc.sql.DriverDatabase;
 import net.sf.hajdbc.sql.DriverDatabaseClusterConfiguration;
 import net.sf.hajdbc.sql.TransactionMode;
 
+import org.easymock.EasyMock;
 import org.junit.Before;
 import org.junit.Test;
 
 public class XMLDatabaseClusterConfigurationFactoryTest
 {
-	private XMLDatabaseClusterConfigurationFactory factory;
-	
-	@Before
-	public void init()
-	{
-		this.factory = new XMLDatabaseClusterConfigurationFactory("test-database-cluster", null);
-	}
-	
 	@Test
-	public void createConfiguration() throws SQLException
+	public void createConfiguration() throws SQLException, IOException
 	{
-		DriverDatabaseClusterConfiguration configuration = this.factory.createConfiguration(DriverDatabaseClusterConfiguration.class);
+		StringBuilder builder = new StringBuilder();
+		builder.append("<ha-jdbc>");
+		builder.append("\t<sync id=\"passive\" class=\"net.sf.hajdbc.sync.PassiveSynchronizationStrategy\"></sync>");
+		builder.append("\t<cluster default-sync=\"passive\">");
+		builder.append("\t\t<database id=\"db1\">");
+		builder.append("\t\t\t<name>jdbc:mock:db1</name>");
+		builder.append("\t\t</database>");
+		builder.append("\t\t<database id=\"db2\">");
+		builder.append("\t\t\t<name>jdbc:mock:db2</name>");
+		builder.append("\t\t</database>");
+		builder.append("\t</cluster>");
+		builder.append("</ha-jdbc>");
 		
-		Assert.assertNull(configuration.getChannelProvider());
+		String xml = builder.toString();
+		
+		Locator locator = EasyMock.createStrictMock(Locator.class);
+		
+		XMLDatabaseClusterConfigurationFactory factory = new XMLDatabaseClusterConfigurationFactory(locator);
+		
+		EasyMock.expect(locator.getReader()).andReturn(new StringReader(xml));
+		
+		EasyMock.replay(locator);
+		
+		DriverDatabaseClusterConfiguration configuration = factory.createConfiguration(DriverDatabaseClusterConfiguration.class);
+		
+		EasyMock.verify(locator);
+		
+		Assert.assertNull(configuration.getDispatcherFactory());
 		Map<String, SynchronizationStrategy> strategies = configuration.getSynchronizationStrategyMap();
 		Assert.assertNotNull(strategies);
 		Assert.assertEquals(1, strategies.size());
@@ -107,6 +129,18 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 	   Assert.assertFalse(db2.isActive());
 	   Assert.assertFalse(db2.isDirty());
 	   
-		this.factory.added(null, configuration);
+	   EasyMock.reset(locator);
+	   
+	   StringWriter writer = new StringWriter();
+	   
+	   EasyMock.expect(locator.getWriter()).andReturn(writer);
+	   
+	   EasyMock.replay(locator);
+	   
+		factory.added(null, configuration);
+		
+		EasyMock.verify(locator);
+		
+		System.out.println(writer.toString());
 	}
 }

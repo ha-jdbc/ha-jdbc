@@ -24,7 +24,7 @@ import org.jgroups.Channel;
  * @author paul
  *
  */
-public class SimpleChannelProvider implements ChannelProvider
+public class SimpleChannelProvider extends AbstractChannelProvider
 {
 	private final Channel channel;
 	

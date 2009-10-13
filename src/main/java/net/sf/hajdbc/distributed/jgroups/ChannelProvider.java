@@ -17,13 +17,15 @@
  */
 package net.sf.hajdbc.distributed.jgroups;
 
+import net.sf.hajdbc.distributed.CommandDispatcherFactory;
+
 import org.jgroups.Channel;
 
 /**
  * @author paul
  *
  */
-public interface ChannelProvider
+public interface ChannelProvider extends CommandDispatcherFactory
 {
 	Channel getChannel() throws Exception;
 }

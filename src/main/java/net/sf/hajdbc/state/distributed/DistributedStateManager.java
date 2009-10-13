@@ -34,12 +34,12 @@ import java.util.concurrent.ConcurrentMap;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.distributed.CommandDispatcher;
+import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.distributed.Member;
 import net.sf.hajdbc.distributed.MembershipListener;
 import net.sf.hajdbc.distributed.Remote;
 import net.sf.hajdbc.distributed.Stateful;
-import net.sf.hajdbc.distributed.jgroups.ChannelProvider;
-import net.sf.hajdbc.distributed.jgroups.ChannelCommandDispatcher;
 import net.sf.hajdbc.durability.InvocationEvent;
 import net.sf.hajdbc.durability.InvokerEvent;
 import net.sf.hajdbc.state.DatabaseEvent;
@@ -53,14 +53,15 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 {
 	private final DatabaseCluster<Z, D> cluster;
 	private final StateManager stateManager;
-	private final ChannelCommandDispatcher<StateCommandContext<Z, D>> dispatcher;
+	private final CommandDispatcher<StateCommandContext<Z, D>> dispatcher;
 	private final ConcurrentMap<Member, Map<InvocationEvent, Map<D, InvokerEvent>>> remoteInvokerMap = new ConcurrentHashMap<Member, Map<InvocationEvent, Map<D, InvokerEvent>>>();
 	
-	public DistributedStateManager(DatabaseCluster<Z, D> cluster, ChannelProvider channelFactory) throws Exception
+	public DistributedStateManager(DatabaseCluster<Z, D> cluster, CommandDispatcherFactory dispatcherFactory) throws Exception
 	{
 		this.cluster = cluster;
 		this.stateManager = cluster.getStateManager();
-		this.dispatcher = new ChannelCommandDispatcher<StateCommandContext<Z, D>>(cluster.getId(), channelFactory, this, this, this);
+		StateCommandContext<Z, D> context = this;
+		this.dispatcher = dispatcherFactory.createCommandDispatcher(cluster.getId(), context, this, this);
 	}
 
 	/**
