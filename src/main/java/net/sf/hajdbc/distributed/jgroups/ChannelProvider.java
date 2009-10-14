@@ -17,15 +17,20 @@
  */
 package net.sf.hajdbc.distributed.jgroups;
 
-import net.sf.hajdbc.distributed.CommandDispatcherFactory;
-
 import org.jgroups.Channel;
 
 /**
- * @author paul
- *
+ * Abstraction to decouple the source of a channel from its use.
+ * Supplies the channel used by {@link ChannelCommandDispatcher}.
+ * 
+ * @author Paul Ferraro
  */
-public interface ChannelProvider extends CommandDispatcherFactory
+public interface ChannelProvider
 {
+	/**
+	 * Returns the channel.
+	 * @return a JGroups channel
+	 * @throws Exception if an error occured supplying a channel
+	 */
 	Channel getChannel() throws Exception;
 }

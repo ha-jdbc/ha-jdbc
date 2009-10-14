@@ -17,29 +17,25 @@
  */
 package net.sf.hajdbc.distributed.jgroups;
 
-import org.jgroups.Channel;
+import net.sf.hajdbc.distributed.CommandDispatcher;
+import net.sf.hajdbc.distributed.CommandDispatcherFactory;
+import net.sf.hajdbc.distributed.MembershipListener;
+import net.sf.hajdbc.distributed.Stateful;
 
 /**
- * Simple channel provider to support channel injection.
- * 
+ * Factory for creating a JGroups instrumented command dispatcher.
+
  * @author Paul Ferraro
  */
-public class SimpleChannelProvider extends ChannelCommandDispatcherFactory
+public abstract class ChannelCommandDispatcherFactory implements ChannelProvider, CommandDispatcherFactory
 {
-	private final Channel channel;
-	
-	public SimpleChannelProvider(Channel channel)
-	{
-		this.channel = channel;
-	}
-	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.distributed.jgroups.ChannelProvider#getChannel()
+	 * @see net.sf.hajdbc.distributed.CommandDispatcherFactory#createCommandDispatcher(java.lang.String, java.lang.Object, net.sf.hajdbc.distributed.Stateful, net.sf.hajdbc.distributed.MembershipListener)
 	 */
 	@Override
-	public Channel getChannel()
+	public <C> CommandDispatcher<C> createCommandDispatcher(String id, C context, Stateful stateful, MembershipListener membershipListener) throws Exception
 	{
-		return this.channel;
+		return new ChannelCommandDispatcher<C>(id, this, context, stateful, membershipListener);
 	}
 }

@@ -93,6 +93,7 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 		
 		channel.setOpt(Channel.LOCAL, true);
 		
+		// Connect and fetch state
 		channel.connect(this.id, null, null, 0);
 	}
 

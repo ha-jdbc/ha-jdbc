@@ -17,7 +17,6 @@
  */
 package net.sf.hajdbc.distributed.jgroups;
 
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -33,28 +32,22 @@ import org.jgroups.conf.ProtocolParameter;
 import org.jgroups.conf.ProtocolStackConfigurator;
 
 /**
- * @author paul
- *
+ * Channel provider that creates a new channel from a JGroups configuration file.
+ * Channels created by this provider will use a shared transport.
+ * 
+ * @author Paul Ferraro
  */
 @XmlType
 @XmlAccessorType(XmlAccessType.FIELD)
-public class DefaultChannelProvider extends AbstractChannelProvider
+public class DefaultChannelProvider extends ChannelCommandDispatcherFactory
 {
+	public static final String DEFAULT_STACK = "udp-sync.xml";
+	
 	@XmlTransient
 	private static final String SINGLETON_NAME = "ha-jdbc";
 	
 	@XmlAttribute(name = "stack")
-	private String stack = "udp-sync.xml"; //$NON-NLS-1$
-	
-	public String getStack()
-	{
-		return this.stack;
-	}
-	
-	public void setStack(String stack)
-	{
-		this.stack = stack;
-	}
+	private String stack = DEFAULT_STACK;
 	
 	/**
 	 * {@inheritDoc}

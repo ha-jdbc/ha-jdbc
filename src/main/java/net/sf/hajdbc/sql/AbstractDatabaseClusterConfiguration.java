@@ -51,7 +51,6 @@ import net.sf.hajdbc.cache.DatabaseMetaDataCacheFactoryEnum;
 import net.sf.hajdbc.dialect.DialectFactory;
 import net.sf.hajdbc.dialect.DialectFactoryEnum;
 import net.sf.hajdbc.distributed.CommandDispatcherFactory;
-import net.sf.hajdbc.distributed.jgroups.ChannelProvider;
 import net.sf.hajdbc.distributed.jgroups.DefaultChannelProvider;
 import net.sf.hajdbc.durability.DurabilityFactory;
 import net.sf.hajdbc.durability.DurabilityFactoryEnum;
@@ -456,7 +455,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		}
 
 		@Override
-		public ChannelProvider getDispatcherFactory()
+		public CommandDispatcherFactory getDispatcherFactory()
 		{
 			throw new IllegalStateException();
 		}
