@@ -17,34 +17,40 @@
  */
 package net.sf.hajdbc.xml;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.net.URL;
 
-public class URLLocator implements Locator
+/**
+ * Alternative to {@link URLLocator}, since default JDK file url stream handler
+ * does not support output.
+ * 
+ * @author Paul Ferraro
+ */
+public class FileLocator implements Locator
 {
-	private final URL url;
+	private final File file;
 	
-	public URLLocator(URL url)
+	public FileLocator(File file)
 	{
-		this.url = url;
+		this.file = file;
 	}
 	
 	@Override
 	public Reader getReader() throws IOException
 	{
-		return new InputStreamReader(this.url.openConnection().getInputStream());
+		return new FileReader(this.file);
 	}
 
 	@Override
 	public Writer getWriter() throws IOException
 	{
-		return new OutputStreamWriter(this.url.openConnection().getOutputStream());
+		return new FileWriter(this.file);
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 * @see java.lang.Object#toString()
@@ -52,6 +58,6 @@ public class URLLocator implements Locator
 	@Override
 	public String toString()
 	{
-		return this.url.toString();
+		return this.file.getPath();
 	}
 }

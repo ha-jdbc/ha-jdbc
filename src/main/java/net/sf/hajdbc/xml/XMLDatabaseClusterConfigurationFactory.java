@@ -17,6 +17,7 @@
  */
 package net.sf.hajdbc.xml;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -112,7 +113,7 @@ public class XMLDatabaseClusterConfigurationFactory implements DatabaseClusterCo
 	
 	public XMLDatabaseClusterConfigurationFactory(URL url)
 	{
-		this(new URLLocator(url));
+		this(url.getProtocol().equals("file") ? new FileLocator(new File(url.getPath())) : new URLLocator(url));
 		
 		logger.log(Level.INFO, "Using url {0}", url);
 	}
