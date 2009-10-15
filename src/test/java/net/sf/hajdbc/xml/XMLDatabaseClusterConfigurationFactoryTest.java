@@ -18,7 +18,6 @@
 package net.sf.hajdbc.xml;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.sql.SQLException;
@@ -36,7 +35,6 @@ import net.sf.hajdbc.sql.DriverDatabaseClusterConfiguration;
 import net.sf.hajdbc.sql.TransactionMode;
 
 import org.easymock.EasyMock;
-import org.junit.Before;
 import org.junit.Test;
 
 public class XMLDatabaseClusterConfigurationFactoryTest
@@ -59,17 +57,17 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 		
 		String xml = builder.toString();
 		
-		Locator locator = EasyMock.createStrictMock(Locator.class);
+		CharacterStreamer streamer = EasyMock.createStrictMock(CharacterStreamer.class);
 		
-		XMLDatabaseClusterConfigurationFactory factory = new XMLDatabaseClusterConfigurationFactory(locator);
+		XMLDatabaseClusterConfigurationFactory factory = new XMLDatabaseClusterConfigurationFactory(streamer);
 		
-		EasyMock.expect(locator.getReader()).andReturn(new StringReader(xml));
+		EasyMock.expect(streamer.getReader()).andReturn(new StringReader(xml));
 		
-		EasyMock.replay(locator);
+		EasyMock.replay(streamer);
 		
 		DriverDatabaseClusterConfiguration configuration = factory.createConfiguration(DriverDatabaseClusterConfiguration.class);
 		
-		EasyMock.verify(locator);
+		EasyMock.verify(streamer);
 		
 		Assert.assertNull(configuration.getDispatcherFactory());
 		Map<String, SynchronizationStrategy> strategies = configuration.getSynchronizationStrategyMap();
@@ -129,17 +127,17 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 	   Assert.assertFalse(db2.isActive());
 	   Assert.assertFalse(db2.isDirty());
 	   
-	   EasyMock.reset(locator);
+	   EasyMock.reset(streamer);
 	   
 	   StringWriter writer = new StringWriter();
 	   
-	   EasyMock.expect(locator.getWriter()).andReturn(writer);
+	   EasyMock.expect(streamer.getWriter()).andReturn(writer);
 	   
-	   EasyMock.replay(locator);
+	   EasyMock.replay(streamer);
 	   
 		factory.added(null, configuration);
 		
-		EasyMock.verify(locator);
+		EasyMock.verify(streamer);
 		
 		System.out.println(writer.toString());
 	}
