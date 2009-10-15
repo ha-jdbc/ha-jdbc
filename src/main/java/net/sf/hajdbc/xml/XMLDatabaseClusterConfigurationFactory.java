@@ -58,7 +58,7 @@ public class XMLDatabaseClusterConfigurationFactory implements DatabaseClusterCo
 
 	private static final Logger logger = LoggerFactory.getLogger(XMLDatabaseClusterConfigurationFactory.class);
 	
-	private final Locator locator;
+	private final CharacterStreamer streamer;
 	
 	private static String identifyResource(String id)
 	{
@@ -113,14 +113,14 @@ public class XMLDatabaseClusterConfigurationFactory implements DatabaseClusterCo
 	
 	public XMLDatabaseClusterConfigurationFactory(URL url)
 	{
-		this(url.getProtocol().equals("file") ? new FileLocator(new File(url.getPath())) : new URLLocator(url));
+		this(url.getProtocol().equals("file") ? new FileCharacterStreamer(new File(url.getPath())) : new URLCharacterStreamer(url));
 		
 		logger.log(Level.INFO, "Using url {0}", url);
 	}
 	
-	public XMLDatabaseClusterConfigurationFactory(Locator locator)
+	public XMLDatabaseClusterConfigurationFactory(CharacterStreamer streamer)
 	{
-		this.locator = locator;
+		this.streamer = streamer;
 	}
 	
 	/**
@@ -140,7 +140,7 @@ public class XMLDatabaseClusterConfigurationFactory implements DatabaseClusterCo
 
 			unmarshaller.setSchema(schema);
 			
-			return targetClass.cast(unmarshaller.unmarshal(this.locator.getReader()));
+			return targetClass.cast(unmarshaller.unmarshal(this.streamer.getReader()));
 		}
 		catch (JAXBException e)
 		{
@@ -185,15 +185,15 @@ public class XMLDatabaseClusterConfigurationFactory implements DatabaseClusterCo
 			Marshaller marshaller = context.createMarshaller();
 			
 			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);				
-			marshaller.marshal(configuration, this.locator.getWriter());
+			marshaller.marshal(configuration, this.streamer.getWriter());
 		}
 		catch (JAXBException e)
 		{
-			logger.log(Level.WARN, e, Messages.CONFIG_STORE_FAILED.getMessage(), this.locator);
+			logger.log(Level.WARN, e, Messages.CONFIG_STORE_FAILED.getMessage(), this.streamer);
 		}
 		catch (IOException e)
 		{
-			logger.log(Level.WARN, e, Messages.CONFIG_STORE_FAILED.getMessage(), this.locator);
+			logger.log(Level.WARN, e, Messages.CONFIG_STORE_FAILED.getMessage(), this.streamer);
 		}
 	}
 }

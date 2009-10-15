@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
-public interface Locator
+public interface CharacterStreamer
 {
 	Reader getReader() throws IOException;
 	

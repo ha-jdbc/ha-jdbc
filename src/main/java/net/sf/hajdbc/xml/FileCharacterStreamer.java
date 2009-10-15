@@ -25,16 +25,16 @@ import java.io.Reader;
 import java.io.Writer;
 
 /**
- * Alternative to {@link URLLocator}, since default JDK file url stream handler
+ * Alternative to {@link URLCharacterStreamer}, since default JDK file url stream handler
  * does not support output.
  * 
  * @author Paul Ferraro
  */
-public class FileLocator implements Locator
+public class FileCharacterStreamer implements CharacterStreamer
 {
 	private final File file;
 	
-	public FileLocator(File file)
+	public FileCharacterStreamer(File file)
 	{
 		this.file = file;
 	}

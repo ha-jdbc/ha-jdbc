@@ -24,11 +24,11 @@ import java.io.Reader;
 import java.io.Writer;
 import java.net.URL;
 
-public class URLLocator implements Locator
+public class URLCharacterStreamer implements CharacterStreamer
 {
 	private final URL url;
 	
-	public URLLocator(URL url)
+	public URLCharacterStreamer(URL url)
 	{
 		this.url = url;
 	}
