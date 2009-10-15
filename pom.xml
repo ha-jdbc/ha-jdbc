@@ -68,6 +68,11 @@
 			<version>1.3</version>
 		</dependency>
 		<dependency>
+			<groupId>org.opensymphony.quartz</groupId>
+			<artifactId>quartz</artifactId>
+			<version>1.6.5</version>
+		</dependency>
+		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>1.5.8</version>
@@ -155,8 +160,22 @@
 				<groupId>com.sun.tools.jxc.maven2</groupId>
 				<artifactId>maven-jaxb-schemagen-plugin</artifactId>
 				<version>1.2</version>
+				<executions>
+					<execution>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
 				<configuration>
-					<project>${project}</project>
+					<!-- This does not seem to work -->
+					<!--schemas>
+						<schema>
+							<namespace>ha-jdbc.sourceforge.net</namespace>
+							<file>ha-jdbc.xsd</file>
+						</schema>
+					</schemas-->
 					<includes>
 						<include>**/*DatabaseClusterConfiguration.java</include>
 						<include>**/DefaultChannelProvider.java</include>
@@ -170,18 +189,9 @@
 						<include>**/CronExpression.java</include>
 						<include>**/CronExpressionAdapter.java</include>
 						<include>**/TransactionMode.java</include>
-						<include>**/Property.java</include>
-						<include>**/PropertyAdapter.java</include>
 						<include>**/*Database.java</include>
 						<include>**/Managed.java</include>
 					</includes>
-					<schemas>
-						<schema>
-							<namespace>http://ha-jdbc.sourceforge.net</namespace>
-							<file>ha-jdbc.xsd</file>
-						</schema>
-					</schemas>
-					<verbose>true</verbose>
 				</configuration>
 			</plugin>
 			<plugin>

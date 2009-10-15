@@ -49,8 +49,9 @@ import net.sf.hajdbc.management.Managed;
 import net.sf.hajdbc.state.DatabaseEvent;
 import net.sf.hajdbc.state.StateManager;
 import net.sf.hajdbc.state.distributed.DistributedStateManager;
-import net.sf.hajdbc.util.concurrent.cron.CronExpression;
 import net.sf.hajdbc.util.concurrent.cron.CronThreadPoolExecutor;
+
+import org.quartz.CronExpression;
 
 /**
  * @author paul

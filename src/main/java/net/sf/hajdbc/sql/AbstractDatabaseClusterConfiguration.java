@@ -58,7 +58,8 @@ import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.state.StateManagerProvider;
 import net.sf.hajdbc.state.sql.SQLStateManagerProvider;
-import net.sf.hajdbc.util.concurrent.cron.CronExpression;
+
+import org.quartz.CronExpression;
 
 /**
  * @author paul
@@ -395,8 +396,10 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		@XmlAttribute(name = "transaction-mode")
 		private TransactionMode transactionMode = TransactionMode.SERIAL;
 
+		@XmlJavaTypeAdapter(CronExpressionAdapter.class)
 		@XmlAttribute(name = "auto-activate-schedule")
 		private CronExpression autoActivationExpression;
+		@XmlJavaTypeAdapter(CronExpressionAdapter.class)
 		@XmlAttribute(name = "failure-detect-schedule")
 		private CronExpression failureDetectionExpression;
 		
@@ -637,6 +640,21 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 					}
 				};
 			}
+		}
+	}
+	
+	static class CronExpressionAdapter extends XmlAdapter<String, CronExpression>
+	{
+		@Override
+		public String marshal(CronExpression expression) throws Exception
+		{
+			return (expression != null) ? expression.getCronExpression() : null;
+		}
+
+		@Override
+		public CronExpression unmarshal(String expression) throws Exception
+		{
+			return new CronExpression(expression);
 		}
 	}
 	

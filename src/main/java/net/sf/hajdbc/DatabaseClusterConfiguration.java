@@ -26,7 +26,8 @@ import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.durability.DurabilityFactory;
 import net.sf.hajdbc.sql.TransactionMode;
 import net.sf.hajdbc.state.StateManagerProvider;
-import net.sf.hajdbc.util.concurrent.cron.CronExpression;
+
+import org.quartz.CronExpression;
 
 /**
  * @author paul

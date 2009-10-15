@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
 
+import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

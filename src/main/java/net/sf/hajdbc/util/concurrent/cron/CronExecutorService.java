@@ -20,6 +20,8 @@ package net.sf.hajdbc.util.concurrent.cron;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
+import org.quartz.CronExpression;
+
 /**
  * Executor service that schedules a runnable task for execution via a cron expression.
  * 
