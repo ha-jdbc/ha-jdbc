@@ -65,7 +65,7 @@ import org.quartz.CronExpression;
  * @author paul
  *
  */
-@XmlType(propOrder = { "channelProvider", "synchronizationStrategyMapEntries" })
+@XmlType(propOrder = { "dispatcherFactory", "synchronizationStrategyMapEntries" })
 @XmlAccessorType(XmlAccessType.FIELD)
 public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database<Z>> implements DatabaseClusterConfiguration<Z, D>
 {
@@ -396,11 +396,9 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		@XmlAttribute(name = "transaction-mode")
 		private TransactionMode transactionMode = TransactionMode.SERIAL;
 
-		@XmlJavaTypeAdapter(CronExpressionAdapter.class)
-		@XmlAttribute(name = "auto-activate-schedule")
+		@XmlTransient
 		private CronExpression autoActivationExpression;
-		@XmlJavaTypeAdapter(CronExpressionAdapter.class)
-		@XmlAttribute(name = "failure-detect-schedule")
+		@XmlTransient
 		private CronExpression failureDetectionExpression;
 		
 		@XmlAttribute(name = "eval-current-date")
@@ -439,6 +437,42 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			this.defaultSynchronizationStrategy = descriptor.getId();
 		}
 
+		@SuppressWarnings("unused")
+		@XmlAttribute(name = "auto-activate-schedule")
+		private String getAutoActivationCronExpression() throws Exception
+		{
+			return this.marshalCronExpression(this.autoActivationExpression);
+		}
+		
+		@SuppressWarnings("unused")
+		private void setAutoActivationCronExpression(String expression) throws Exception
+		{
+			this.autoActivationExpression = this.unmarshalCronExpression(expression);
+		}
+
+		@SuppressWarnings("unused")
+		@XmlAttribute(name = "failure-detect-schedule")
+		private String getFailureDetectionCronExpression() throws Exception
+		{
+			return this.marshalCronExpression(this.failureDetectionExpression);
+		}
+		
+		@SuppressWarnings("unused")
+		private void setFailureDetectionCronExpression(String expression) throws Exception
+		{
+			this.failureDetectionExpression = this.unmarshalCronExpression(expression);
+		}
+		
+		public String marshalCronExpression(CronExpression expression)
+		{
+			return (expression != null) ? expression.getCronExpression() : null;
+		}
+
+		public CronExpression unmarshalCronExpression(String expression) throws Exception
+		{
+			return new CronExpression(expression);
+		}
+		
 		@Override
 		public Map<String, D> getDatabaseMap()
 		{
@@ -640,21 +674,6 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 					}
 				};
 			}
-		}
-	}
-	
-	static class CronExpressionAdapter extends XmlAdapter<String, CronExpression>
-	{
-		@Override
-		public String marshal(CronExpression expression) throws Exception
-		{
-			return (expression != null) ? expression.getCronExpression() : null;
-		}
-
-		@Override
-		public CronExpression unmarshal(String expression) throws Exception
-		{
-			return new CronExpression(expression);
 		}
 	}
 	
