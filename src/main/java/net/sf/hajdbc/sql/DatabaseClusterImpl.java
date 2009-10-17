@@ -41,7 +41,7 @@ import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.durability.Durability;
 import net.sf.hajdbc.lock.LockManager;
 import net.sf.hajdbc.lock.distributed.DistributedLockManager;
-import net.sf.hajdbc.lock.local.LocalLockManager;
+import net.sf.hajdbc.lock.semaphore.SemaphoreLockManager;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
@@ -402,7 +402,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	{
 		if (this.active) return;
 		
-		this.lockManager = new LocalLockManager();
+		this.lockManager = new SemaphoreLockManager();
 		this.stateManager = this.configuration.getStateManagerProvider().createStateManager(this, System.getProperties());
 		
 		CommandDispatcherFactory dispatcherFactory = this.configuration.getDispatcherFactory();
