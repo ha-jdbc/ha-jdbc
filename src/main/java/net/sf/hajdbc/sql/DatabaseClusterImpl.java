@@ -75,11 +75,11 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	
 	private volatile boolean active = false;
 	
-	private final List<DatabaseClusterConfigurationListener> configurationListeners = new CopyOnWriteArrayList<DatabaseClusterConfigurationListener>();	
+	private final List<DatabaseClusterConfigurationListener<Z, D>> configurationListeners = new CopyOnWriteArrayList<DatabaseClusterConfigurationListener<Z, D>>();	
 	private final List<DatabaseClusterListener> clusterListeners = new CopyOnWriteArrayList<DatabaseClusterListener>();
 	private final List<SynchronizationListener> synchronizationListeners = new CopyOnWriteArrayList<SynchronizationListener>();
 	
-	public DatabaseClusterImpl(String id, DatabaseClusterConfiguration<Z, D> configuration, DatabaseClusterConfigurationListener listener)
+	public DatabaseClusterImpl(String id, DatabaseClusterConfiguration<Z, D> configuration, DatabaseClusterConfigurationListener<Z, D> listener)
 	{
 		this.id = id;
 		this.configuration = configuration;
@@ -126,7 +126,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	 * @see net.sf.hajdbc.DatabaseCluster#addConfigurationListener(net.sf.hajdbc.DatabaseClusterConfigurationListener)
 	 */
 	@Override
-	public void addConfigurationListener(DatabaseClusterConfigurationListener listener)
+	public void addConfigurationListener(DatabaseClusterConfigurationListener<Z, D> listener)
 	{
 		this.configurationListeners.add(listener);
 	}
@@ -368,7 +368,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	 * @see net.sf.hajdbc.DatabaseCluster#removeConfigurationListener(net.sf.hajdbc.DatabaseClusterConfigurationListener)
 	 */
 	@Override
-	public void removeConfigurationListener(DatabaseClusterConfigurationListener listener)
+	public void removeConfigurationListener(DatabaseClusterConfigurationListener<Z, D> listener)
 	{
 		this.configurationListeners.remove(listener);
 	}

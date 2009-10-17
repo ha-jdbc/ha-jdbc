@@ -62,9 +62,9 @@ public final class ReplicatingDriver extends AbstractDriver
 		}
 	}
 	
-	private DatabaseClusterConfigurationFactory configurationFactory;
+	private DatabaseClusterConfigurationFactory<Driver, DriverDatabase> configurationFactory;
 
-	public void setConfigurationFactory(DatabaseClusterConfigurationFactory configurationFactory)
+	public void setConfigurationFactory(DatabaseClusterConfigurationFactory<Driver, DriverDatabase> configurationFactory)
 	{
 		this.configurationFactory = configurationFactory;
 	}
@@ -141,12 +141,7 @@ public final class ReplicatingDriver extends AbstractDriver
 			
 			if (cluster == null)
 			{
-				DatabaseClusterConfigurationFactory factory = this.configurationFactory;
-				
-				if (factory == null)
-				{
-					factory = new XMLDatabaseClusterConfigurationFactory(id, properties.getProperty(CONFIG));
-				}
+				DatabaseClusterConfigurationFactory<Driver, DriverDatabase> factory = (this.configurationFactory != null) ? this.configurationFactory : new XMLDatabaseClusterConfigurationFactory<Driver, DriverDatabase>(id, properties.getProperty(CONFIG));
 				
 				DatabaseClusterConfiguration<Driver, DriverDatabase> configuration = factory.createConfiguration(DriverDatabaseClusterConfiguration.class);
 				

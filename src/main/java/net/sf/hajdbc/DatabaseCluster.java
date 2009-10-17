@@ -153,9 +153,9 @@ public interface DatabaseCluster<Z, D extends Database<Z>> extends Lifecycle
 	
 	void removeSynchronizationListener(SynchronizationListener listener);
 	
-	void addConfigurationListener(DatabaseClusterConfigurationListener listener);
+	void addConfigurationListener(DatabaseClusterConfigurationListener<Z, D> listener);
 	
-	void removeConfigurationListener(DatabaseClusterConfigurationListener listener);
+	void removeConfigurationListener(DatabaseClusterConfigurationListener<Z, D> listener);
 	
 	Durability<Z, D> getDurability();
 }

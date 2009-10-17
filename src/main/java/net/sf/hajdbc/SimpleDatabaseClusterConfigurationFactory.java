@@ -20,14 +20,14 @@ package net.sf.hajdbc;
 import java.sql.SQLException;
 
 /**
- * @author paul
+ * @author Paul Ferraro
  *
  */
-public class SimpleDatabaseClusterConfigurationFactory implements DatabaseClusterConfigurationFactory
+public class SimpleDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> implements DatabaseClusterConfigurationFactory<Z, D>
 {
-	private final DatabaseClusterConfiguration<?, ?> configuration;
+	private final DatabaseClusterConfiguration<Z, D> configuration;
 	
-	public SimpleDatabaseClusterConfigurationFactory(DatabaseClusterConfiguration<?, ?> configuration)
+	public SimpleDatabaseClusterConfigurationFactory(DatabaseClusterConfiguration<Z, D> configuration)
 	{
 		this.configuration = configuration;
 	}
@@ -37,9 +37,9 @@ public class SimpleDatabaseClusterConfigurationFactory implements DatabaseCluste
 	 * @see net.sf.hajdbc.DatabaseClusterConfigurationFactory#createConfiguration(java.lang.String, java.lang.Class)
 	 */
 	@Override
-	public <Z, D extends Database<Z>, C extends DatabaseClusterConfiguration<Z, D>> C createConfiguration(Class<C> targetClass) throws SQLException
+	public DatabaseClusterConfiguration<Z, D> createConfiguration(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass) throws SQLException
 	{
-		return targetClass.cast(this.configuration);
+		return this.configuration;
 	}
 
 	/**
@@ -47,7 +47,7 @@ public class SimpleDatabaseClusterConfigurationFactory implements DatabaseCluste
 	 * @see net.sf.hajdbc.DatabaseClusterConfigurationListener#added(net.sf.hajdbc.Database, net.sf.hajdbc.DatabaseClusterConfiguration)
 	 */
 	@Override
-	public <Z, D extends Database<Z>> void added(D database, DatabaseClusterConfiguration<Z, D> configuration)
+	public void added(D database, DatabaseClusterConfiguration<Z, D> configuration)
 	{
 	}
 
@@ -56,7 +56,7 @@ public class SimpleDatabaseClusterConfigurationFactory implements DatabaseCluste
 	 * @see net.sf.hajdbc.DatabaseClusterConfigurationListener#removed(net.sf.hajdbc.Database, net.sf.hajdbc.DatabaseClusterConfiguration)
 	 */
 	@Override
-	public <Z, D extends Database<Z>> void removed(D database, DatabaseClusterConfiguration<Z, D> configuration)
+	public void removed(D database, DatabaseClusterConfiguration<Z, D> configuration)
 	{
 	}
 }

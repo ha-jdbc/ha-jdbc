@@ -48,7 +48,7 @@ import org.xml.sax.SAXException;
  * @author paul
  *
  */
-public class XMLDatabaseClusterConfigurationFactory implements DatabaseClusterConfigurationFactory, DatabaseClusterConfigurationListener
+public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> implements DatabaseClusterConfigurationFactory<Z, D>, DatabaseClusterConfigurationListener<Z, D>
 {
 	private static final String CONFIG_FORMAT_PROPERTY = "ha-jdbc.{0}.configuration"; //$NON-NLS-1$
 	private static final String CONFIG_PROPERTY = "ha-jdbc.configuration"; //$NON-NLS-1$
@@ -128,7 +128,7 @@ public class XMLDatabaseClusterConfigurationFactory implements DatabaseClusterCo
 	 * @see net.sf.hajdbc.DatabaseClusterConfigurationFactory#createConfiguration(java.lang.String, java.lang.Class)
 	 */
 	@Override
-	public <Z, D extends Database<Z>, C extends DatabaseClusterConfiguration<Z, D>> C createConfiguration(Class<C> targetClass) throws SQLException
+	public DatabaseClusterConfiguration<Z, D> createConfiguration(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass) throws SQLException
 	{
 		try
 		{
@@ -161,7 +161,7 @@ public class XMLDatabaseClusterConfigurationFactory implements DatabaseClusterCo
 	 * @see net.sf.hajdbc.DatabaseClusterConfigurationListener#added(net.sf.hajdbc.Database, net.sf.hajdbc.DatabaseClusterConfiguration)
 	 */
 	@Override
-	public <Z, D extends Database<Z>> void added(D database, DatabaseClusterConfiguration<Z, D> configuration)
+	public void added(D database, DatabaseClusterConfiguration<Z, D> configuration)
 	{
 		this.export(configuration);
 	}
@@ -171,12 +171,12 @@ public class XMLDatabaseClusterConfigurationFactory implements DatabaseClusterCo
 	 * @see net.sf.hajdbc.DatabaseClusterConfigurationListener#removed(net.sf.hajdbc.Database, net.sf.hajdbc.DatabaseClusterConfiguration)
 	 */
 	@Override
-	public <Z, D extends Database<Z>> void removed(D database, DatabaseClusterConfiguration<Z, D> configuration)
+	public void removed(D database, DatabaseClusterConfiguration<Z, D> configuration)
 	{
 		this.export(configuration);
 	}
 	
-	private <Z, D extends Database<Z>> void export(DatabaseClusterConfiguration<Z, D> configuration)
+	private void export(DatabaseClusterConfiguration<Z, D> configuration)
 	{
 		try
 		{

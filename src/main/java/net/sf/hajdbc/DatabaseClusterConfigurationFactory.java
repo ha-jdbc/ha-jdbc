@@ -23,7 +23,7 @@ import java.sql.SQLException;
  * @author paul
  *
  */
-public interface DatabaseClusterConfigurationFactory extends DatabaseClusterConfigurationListener
+public interface DatabaseClusterConfigurationFactory<Z, D extends Database<Z>> extends DatabaseClusterConfigurationListener<Z, D>
 {
-	<Z, D extends Database<Z>, C extends DatabaseClusterConfiguration<Z, D>> C createConfiguration(Class<C> targetClass) throws SQLException;
+	DatabaseClusterConfiguration<Z, D> createConfiguration(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass) throws SQLException;
 }

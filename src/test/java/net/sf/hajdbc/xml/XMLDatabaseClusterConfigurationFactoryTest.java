@@ -20,10 +20,12 @@ package net.sf.hajdbc.xml;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.Map;
 
 import junit.framework.Assert;
+import net.sf.hajdbc.DatabaseClusterConfiguration;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.balancer.BalancerFactoryEnum;
 import net.sf.hajdbc.cache.DatabaseMetaDataCacheFactoryEnum;
@@ -59,13 +61,13 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 		
 		CharacterStreamer streamer = EasyMock.createStrictMock(CharacterStreamer.class);
 		
-		XMLDatabaseClusterConfigurationFactory factory = new XMLDatabaseClusterConfigurationFactory(streamer);
+		XMLDatabaseClusterConfigurationFactory<Driver, DriverDatabase> factory = new XMLDatabaseClusterConfigurationFactory<Driver, DriverDatabase>(streamer);
 		
 		EasyMock.expect(streamer.getReader()).andReturn(new StringReader(xml));
 		
 		EasyMock.replay(streamer);
 		
-		DriverDatabaseClusterConfiguration configuration = factory.createConfiguration(DriverDatabaseClusterConfiguration.class);
+		DatabaseClusterConfiguration<Driver, DriverDatabase> configuration = factory.createConfiguration(DriverDatabaseClusterConfiguration.class);
 		
 		EasyMock.verify(streamer);
 		

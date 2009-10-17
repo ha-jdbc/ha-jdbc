@@ -21,9 +21,9 @@ package net.sf.hajdbc;
  * @author paul
  *
  */
-public interface DatabaseClusterConfigurationListener
+public interface DatabaseClusterConfigurationListener<Z, D extends Database<Z>>
 {
-	<Z, D extends Database<Z>> void added(D database, DatabaseClusterConfiguration<Z, D> configuration);
+	void added(D database, DatabaseClusterConfiguration<Z, D> configuration);
 	
-	<Z, D extends Database<Z>> void removed(D database, DatabaseClusterConfiguration<Z, D> configuration);
+	void removed(D database, DatabaseClusterConfiguration<Z, D> configuration);
 }
