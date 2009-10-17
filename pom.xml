@@ -155,6 +155,10 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.0.2</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>com.sun.tools.jxc.maven2</groupId>
@@ -179,15 +183,13 @@
 					<includes>
 						<include>**/*DatabaseClusterConfiguration.java</include>
 						<include>**/DefaultChannelProvider.java</include>
-						<include>**/ChannelProvider.java</include>
+						<include>**/CommandDispatcherFactory.java</include>
 						<include>**/BalancerFactory.java</include>
 						<include>**/DatabaseMetaDataCacheFactory.java</include>
 						<include>**/DialectFactory.java</include>
 						<include>**/DurabilityFactory.java</include>
 						<include>**/*Enum.java</include>
 						<include>**/SynchronizationStrategy.java</include>
-						<include>**/CronExpression.java</include>
-						<include>**/CronExpressionAdapter.java</include>
 						<include>**/TransactionMode.java</include>
 						<include>**/*Database.java</include>
 						<include>**/Managed.java</include>
@@ -265,13 +267,18 @@
 					</reportSet>
 				</reportSets>
 			</plugin>
-			<plugin>
+			<!--plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.6</version>
 				<configuration>
 					<linksource>true</linksource>
 				</configuration>
+			</plugin-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jxr-plugin</artifactId>
+				<version>2.1</version>
 			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
