@@ -178,7 +178,8 @@
 						</schema>
 					</schemas-->
 					<includes>
-						<include>**/*DatabaseClusterConfiguration.java</include>
+						<include>**/DriverDatabaseClusterConfiguration.java</include>
+						<include>**/AbstractDatabaseClusterConfiguration.java</include>
 						<include>**/DefaultChannelProvider.java</include>
 						<include>**/CommandDispatcherFactory.java</include>
 						<include>**/BalancerFactory.java</include>
@@ -188,7 +189,8 @@
 						<include>**/*Enum.java</include>
 						<include>**/SynchronizationStrategy.java</include>
 						<include>**/TransactionMode.java</include>
-						<include>**/*Database.java</include>
+						<include>**/DriverDatabase.java</include>
+						<include>**/AbstractDatabase.java</include>
 						<include>**/Managed.java</include>
 					</includes>
 				</configuration>
