@@ -22,6 +22,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
 import net.sf.hajdbc.sql.AbstractDatabaseClusterConfiguration;
 
@@ -29,6 +30,7 @@ import net.sf.hajdbc.sql.AbstractDatabaseClusterConfiguration;
  * @author Paul Ferraro
  */
 @XmlRootElement(name = "ha-jdbc")
+@XmlType(name = "databaseClusterConfiguration")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ConnectionPoolDataSourceDatabaseClusterConfiguration extends AbstractDatabaseClusterConfiguration<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase>
 {
@@ -41,6 +43,7 @@ public class ConnectionPoolDataSourceDatabaseClusterConfiguration extends Abstra
 		return this.configuration;
 	}
 
+	@XmlType(name = "nestedDatabaseClusterConfiguration")
 	static class ConnectionPoolDataSourceNestedConfiguration extends AbstractDatabaseClusterConfiguration.NestedConfiguration<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase>
 	{
 		@SuppressWarnings("unused")

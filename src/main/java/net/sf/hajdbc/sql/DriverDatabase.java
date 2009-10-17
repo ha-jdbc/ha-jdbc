@@ -27,6 +27,7 @@ import java.util.Properties;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
 
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.management.Managed;
@@ -37,6 +38,7 @@ import net.sf.hajdbc.management.Managed;
  * @since   1.0
  */
 @Managed(description = "Database accessed via DriverManager")
+@XmlType(name = "database")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class DriverDatabase extends AbstractDatabase<Driver>
 {

@@ -615,7 +615,6 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		}
 	}
 
-	@XmlTransient
 	static abstract class EnumAdapter<I, E extends I> extends XmlAdapter<E, I>
 	{
 		@Override

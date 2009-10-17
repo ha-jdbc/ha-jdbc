@@ -23,12 +23,14 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
 /**
  * @author paul
  *
  */
 @XmlRootElement(name = "ha-jdbc")
+@XmlType(name = "databaseClusterConfiguration")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class DriverDatabaseClusterConfiguration extends AbstractDatabaseClusterConfiguration<Driver, DriverDatabase>
 {
@@ -41,6 +43,7 @@ public class DriverDatabaseClusterConfiguration extends AbstractDatabaseClusterC
 		return this.configuration;
 	}
 	
+	@XmlType(name = "nestedDatabaseClusterConfiguration")
 	static class DriverNestedConfiguration extends AbstractDatabaseClusterConfiguration.NestedConfiguration<Driver, DriverDatabase>
 	{
 		@SuppressWarnings("unused")

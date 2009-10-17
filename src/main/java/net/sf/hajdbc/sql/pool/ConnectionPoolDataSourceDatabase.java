@@ -22,6 +22,9 @@ import java.sql.SQLException;
 
 import javax.sql.ConnectionPoolDataSource;
 import javax.sql.PooledConnection;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
 
 import net.sf.hajdbc.management.Managed;
 import net.sf.hajdbc.sql.CommonDataSourceDatabase;
@@ -31,6 +34,8 @@ import net.sf.hajdbc.sql.CommonDataSourceDatabase;
  * @author Paul Ferraro
  */
 @Managed(description = "Database accessed via a server-side ConnectionPoolDataSource")
+@XmlType(name = "database")
+@XmlAccessorType(XmlAccessType.FIELD)
 public class ConnectionPoolDataSourceDatabase extends CommonDataSourceDatabase<ConnectionPoolDataSource>
 {
 	/**

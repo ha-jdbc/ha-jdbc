@@ -23,12 +23,14 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
 /**
  * @author Paul Ferraro
  *
  */
 @XmlRootElement(name = "ha-jdbc")
+@XmlType(name = "databaseClusterConfiguration")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class DataSourceDatabaseClusterConfiguration extends AbstractDatabaseClusterConfiguration<DataSource, DataSourceDatabase>
 {
@@ -41,6 +43,7 @@ public class DataSourceDatabaseClusterConfiguration extends AbstractDatabaseClus
 		return this.configuration;
 	}
 
+	@XmlType(name = "nestedDatabaseClusterConfiguration")
 	static class DataSourceNestedConfiguration extends AbstractDatabaseClusterConfiguration.NestedConfiguration<DataSource, DataSourceDatabase>
 	{
 		@SuppressWarnings("unused")
