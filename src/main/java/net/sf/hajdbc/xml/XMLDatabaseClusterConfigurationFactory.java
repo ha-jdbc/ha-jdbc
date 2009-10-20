@@ -54,7 +54,7 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 	private static final String CONFIG_PROPERTY = "ha-jdbc.configuration"; //$NON-NLS-1$
 	private static final String DEFAULT_RESOURCE = "ha-jdbc-{0}.xml"; //$NON-NLS-1$
 	
-	private static final URL SCHEMA = findClassLoaderResource("schema1.xsd");
+	private static final URL SCHEMA = findClassLoaderResource("ha-jdbc.xsd");
 
 	private static final Logger logger = LoggerFactory.getLogger(XMLDatabaseClusterConfigurationFactory.class);
 	
@@ -134,10 +134,8 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 		{
 			SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 			Schema schema = schemaFactory.newSchema(SCHEMA);
-			JAXBContext context = JAXBContext.newInstance(targetClass);
 			
-			Unmarshaller unmarshaller = context.createUnmarshaller();
-
+			Unmarshaller unmarshaller = JAXBContext.newInstance(targetClass).createUnmarshaller();
 			unmarshaller.setSchema(schema);
 			
 			return targetClass.cast(unmarshaller.unmarshal(this.streamer.getReader()));
@@ -180,9 +178,7 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 	{
 		try
 		{
-			JAXBContext context = JAXBContext.newInstance(configuration.getClass());
-			
-			Marshaller marshaller = context.createMarshaller();
+			Marshaller marshaller = JAXBContext.newInstance(configuration.getClass()).createMarshaller();
 			
 			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);				
 			marshaller.marshal(configuration, this.streamer.getWriter());
