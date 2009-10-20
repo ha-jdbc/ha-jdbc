@@ -18,6 +18,9 @@
 package net.sf.hajdbc;
 
 import java.util.ResourceBundle;
+import java.util.regex.Pattern;
+
+import net.sf.hajdbc.util.Strings;
 
 /**
  * @author paul
@@ -36,5 +39,25 @@ public class Version
 	public static String getVersion()
 	{
 		return resource.getString(VERSION);
+	}
+	
+	private static int getVersionPart(int index)
+	{
+		return Integer.parseInt(getVersion().split(Pattern.quote(Strings.DASH), 1)[0].split(Pattern.quote(Strings.DOT), index + 1)[index]);
+	}
+	
+	public static int getMajorVersion()
+	{
+		return getVersionPart(0);
+	}
+	
+	public static int getMinorVersion()
+	{
+		return getVersionPart(1);
+	}
+	
+	public static int getRevisionVersion()
+	{
+		return getVersionPart(2);
 	}
 }
