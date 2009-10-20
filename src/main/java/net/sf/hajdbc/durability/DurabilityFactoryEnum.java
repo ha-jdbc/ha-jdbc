@@ -29,8 +29,8 @@ import net.sf.hajdbc.durability.none.NoDurabilityFactory;
 /**
  * @author Paul Ferraro
  */
-@XmlType
 @XmlEnum(String.class)
+@XmlType(name = "durability")
 public enum DurabilityFactoryEnum implements DurabilityFactory
 {
 	@XmlEnumValue("fine")

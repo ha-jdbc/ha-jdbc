@@ -19,6 +19,7 @@ package net.sf.hajdbc.cache;
 
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
+import javax.xml.bind.annotation.XmlType;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
@@ -35,6 +36,7 @@ import net.sf.hajdbc.cache.simple.SimpleDatabaseMetaDataCacheFactory;
  * @since 2.0
  */
 @XmlEnum(String.class)
+@XmlType(name = "databaseMetaDataCache")
 public enum DatabaseMetaDataCacheFactoryEnum implements DatabaseMetaDataCacheFactory
 {
 	@XmlEnumValue("none")

@@ -21,6 +21,7 @@ import java.util.Set;
 
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
+import javax.xml.bind.annotation.XmlType;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.balancer.load.LoadBalancerFactory;
@@ -33,6 +34,7 @@ import net.sf.hajdbc.balancer.simple.SimpleBalancerFactory;
  * @author  Paul Ferraro
  */
 @XmlEnum(String.class)
+@XmlType(name="balancer")
 public enum BalancerFactoryEnum implements BalancerFactory
 {
 	@XmlEnumValue("simple")
