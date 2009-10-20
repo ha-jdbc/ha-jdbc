@@ -36,11 +36,6 @@
 	</repositories>
 	<pluginRepositories>
 		<pluginRepository>
-			<id>download.java.net</id>
-			<name>Provides maven-jaxb-schemagen-plugin</name>
-			<url>http://download.java.net/maven/2</url>
-		</pluginRepository>
-		<pluginRepository>
 			<id>doodleproject-repo</id>
 			<name>Provides batik-maven-plugin</name>
 			<url>http://doodleproject.sourceforge.net/maven2/release</url>
@@ -76,12 +71,6 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-simple</artifactId>
-			<version>1.5.8</version>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
 			<groupId>jdbm</groupId>
 			<artifactId>jdbm</artifactId>
 			<version>1.0</version>
@@ -91,13 +80,13 @@
 			<groupId>com.sleepycat</groupId>
 			<artifactId>je</artifactId>
 			<version>3.3.87</version>
-			<scope>optional</scope>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.tmatesoft.sqljet</groupId>
 			<artifactId>sqljet</artifactId>
 			<version>1.0.0</version>
-			<scope>optional</scope>
+			<optional>true</optional>
 		</dependency>
 		
 		<dependency>
@@ -113,10 +102,6 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	
-	<properties>
-		<provider.logging>net.sf.hajdbc.logging.jdk.JDKLoggingProvider</provider.logging>
-	</properties>
 	
 	<build>
 		<resources>
@@ -140,13 +125,13 @@
 						</requireJavaVersion>
 					</rules>
 				</configuration>
-				<!--executions>
+				<executions>
 					<execution>
 						<goals>
 							<goal>enforce</goal>
 						</goals>
 					</execution>
-				</executions-->
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -158,41 +143,24 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<groupId>com.sun.tools.jxc.maven2</groupId>
-				<artifactId>maven-jaxb-schemagen-plugin</artifactId>
-				<version>1.2</version>
-				<executions>
-					<execution>
-						<phase>generate-resources</phase>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-					</execution>
-				</executions>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.1.1</version>
+            <executions>
+               <execution>
+                  <phase>process-classes</phase>
+                  <goals>
+                     <goal>java</goal>
+                  </goals>
+               </execution>
+            </executions>
 				<configuration>
-					<!-- This does not seem to work -->
-					<!--schemas>
-						<schema>
-							<namespace>ha-jdbc.sourceforge.net</namespace>
-							<file>ha-jdbc.xsd</file>
-						</schema>
-					</schemas-->
-					<includes>
-						<include>**/DriverDatabaseClusterConfiguration.java</include>
-						<include>**/AbstractDatabaseClusterConfiguration.java</include>
-						<include>**/DefaultChannelProvider.java</include>
-						<include>**/CommandDispatcherFactory.java</include>
-						<include>**/BalancerFactory.java</include>
-						<include>**/DatabaseMetaDataCacheFactory.java</include>
-						<include>**/DialectFactory.java</include>
-						<include>**/DurabilityFactory.java</include>
-						<include>**/*Enum.java</include>
-						<include>**/SynchronizationStrategy.java</include>
-						<include>**/TransactionMode.java</include>
-						<include>**/DriverDatabase.java</include>
-						<include>**/AbstractDatabase.java</include>
-						<include>**/Managed.java</include>
-					</includes>
+					<mainClass>net.sf.hajdbc.xml.SchemaGenerator</mainClass>
+					<arguments>
+						<argument>net.sf.hajdbc.sql.DriverDatabaseClusterConfiguration</argument>
+						<argument>${project.build.outputDirectory}</argument>
+						<argument>ha-jdbc.xsd</argument>
+					</arguments>
 				</configuration>
 			</plugin>
 			<plugin>
