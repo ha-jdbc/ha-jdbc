@@ -18,6 +18,7 @@
 package net.sf.hajdbc.sql;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadFactory;
 
 import net.sf.hajdbc.ExecutorServiceProvider;
 
@@ -39,7 +40,7 @@ public class SimpleExecutorServiceProvider implements ExecutorServiceProvider
 	 * @see net.sf.hajdbc.ExecutorServiceProvider#getExecutor()
 	 */
 	@Override
-	public ExecutorService getExecutor()
+	public ExecutorService getExecutor(ThreadFactory threadFactory)
 	{
 		return this.executor;
 	}

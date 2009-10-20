@@ -18,14 +18,23 @@
 package net.sf.hajdbc;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadFactory;
 
 /**
- * @author paul
- *
+ * @author Paul Ferraro
  */
 public interface ExecutorServiceProvider
 {
-	ExecutorService getExecutor();
+	/**
+	 * Returns an executor to use for parallel statement execution
+	 * @param threadFactory factory for creating threads
+	 * @return an executor service
+	 */
+	ExecutorService getExecutor(ThreadFactory threadFactory);
 	
+	/**
+	 * Shuts down the specified executor.
+	 * @param service an executor service
+	 */
 	void release(ExecutorService service);
 }

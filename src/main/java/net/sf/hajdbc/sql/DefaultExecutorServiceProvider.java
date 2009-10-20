@@ -18,14 +18,12 @@
 package net.sf.hajdbc.sql;
 
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlTransient;
 
 import net.sf.hajdbc.ExecutorServiceProvider;
 
@@ -41,8 +39,6 @@ public class DefaultExecutorServiceProvider implements ExecutorServiceProvider
 	private int maxThreads = 100;
 	@XmlAttribute(name = "max-idle")
 	private int maxIdle = 60;
-	@XmlTransient
-	private ThreadFactory threadFactory = Executors.defaultThreadFactory();
 	
 	/**
 	 * @return the minThreads
@@ -93,29 +89,13 @@ public class DefaultExecutorServiceProvider implements ExecutorServiceProvider
 	}
 
 	/**
-	 * @return the threadFactory
-	 */
-	public ThreadFactory getThreadFactory()
-	{
-		return this.threadFactory;
-	}
-
-	/**
-	 * @param threadFactory the threadFactory to set
-	 */
-	public void setThreadFactory(ThreadFactory threadFactory)
-	{
-		this.threadFactory = threadFactory;
-	}
-
-	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.ExecutorServiceProvider#getExecutor()
 	 */
 	@Override
-	public ExecutorService getExecutor()
+	public ExecutorService getExecutor(ThreadFactory threadFactory)
 	{
-		return new ThreadPoolExecutor(this.minThreads, this.maxThreads, this.maxIdle, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), this.threadFactory, new ThreadPoolExecutor.CallerRunsPolicy());
+		return new ThreadPoolExecutor(this.minThreads, this.maxThreads, this.maxIdle, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), threadFactory, new ThreadPoolExecutor.CallerRunsPolicy());
 	}
 
 	/**

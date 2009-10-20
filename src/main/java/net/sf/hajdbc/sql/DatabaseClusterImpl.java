@@ -420,7 +420,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		this.lockManager.start();
 		this.stateManager.start();
 		
-		this.executor = this.configuration.getExecutorProvider().getExecutor();
+		this.executor = this.configuration.getExecutorProvider().getExecutor(this.configuration.getThreadFactory());
 		
 		Set<String> databaseSet = this.stateManager.getActiveDatabases();
 		
