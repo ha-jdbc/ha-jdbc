@@ -40,7 +40,7 @@ public class XADataSourceDatabaseClusterConfiguration extends AbstractDatabaseCl
 		return this.configuration;
 	}
 
-	@XmlType(name = "nestedDatabaseClusterConfiguration")
+	@XmlType(name = "nestedConfiguration")
 	static class XADataSourceNestedConfiguration extends AbstractDatabaseClusterConfiguration.NestedConfiguration<XADataSource, XADataSourceDatabase>
 	{
 		@SuppressWarnings("unused")

@@ -43,7 +43,7 @@ public class ConnectionPoolDataSourceDatabaseClusterConfiguration extends Abstra
 		return this.configuration;
 	}
 
-	@XmlType(name = "nestedDatabaseClusterConfiguration")
+	@XmlType(name = "nestedConfiguration")
 	static class ConnectionPoolDataSourceNestedConfiguration extends AbstractDatabaseClusterConfiguration.NestedConfiguration<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase>
 	{
 		@SuppressWarnings("unused")

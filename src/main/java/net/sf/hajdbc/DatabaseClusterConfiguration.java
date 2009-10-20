@@ -18,6 +18,7 @@
 package net.sf.hajdbc;
 
 import java.util.Map;
+import java.util.concurrent.ThreadFactory;
 
 import net.sf.hajdbc.balancer.BalancerFactory;
 import net.sf.hajdbc.cache.DatabaseMetaDataCacheFactory;
@@ -118,4 +119,6 @@ public interface DatabaseClusterConfiguration<Z, D extends Database<Z>>
 	CronExpression getFailureDetectionExpression();
 	
 	CronExpression getAutoActivationExpression();
+	
+	ThreadFactory getThreadFactory();
 }

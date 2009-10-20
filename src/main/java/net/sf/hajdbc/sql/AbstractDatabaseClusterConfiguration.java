@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -65,7 +67,7 @@ import org.quartz.CronExpression;
  * @author paul
  *
  */
-@XmlType(propOrder = { "dispatcherFactory", "synchronizationStrategyMapEntries" })
+@XmlType(propOrder = { "dispatcherFactory", "synchronizationStrategyDescriptors" })
 @XmlAccessorType(XmlAccessType.FIELD)
 public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database<Z>> implements DatabaseClusterConfiguration<Z, D>
 {
@@ -82,7 +84,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	
 	@SuppressWarnings("unused")
 	@XmlElement(name = "sync")
-	private SynchronizationStrategyDescriptor[] getSynchronizationStrategyMapEntries() throws Exception
+	private SynchronizationStrategyDescriptor[] getSynchronizationStrategyDescriptors() throws Exception
 	{
 		List<SynchronizationStrategyDescriptor> results = new ArrayList<SynchronizationStrategyDescriptor>(this.synchronizationStrategies.size());
 		
@@ -116,7 +118,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	}
 	
 	@SuppressWarnings("unused")
-	private void setSynchronizationStrategyMapEntries(SynchronizationStrategyDescriptor[] entries) throws Exception
+	private void setSynchronizationStrategyDescriptors(SynchronizationStrategyDescriptor[] entries) throws Exception
 	{
 		for (SynchronizationStrategyDescriptor entry: entries)
 		{
@@ -251,6 +253,16 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	{
 		return this.getNestedConfiguration().getExecutorProvider();
 	}
+	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getThreadFactory()
+	 */
+	@Override
+	public ThreadFactory getThreadFactory()
+	{
+		return this.getNestedConfiguration().getThreadFactory();
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -367,6 +379,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		return map;
 	}
 	
+	@XmlType(name = "abstractNestedConfiguration")
 	protected static abstract class NestedConfiguration<Z, D extends Database<Z>> implements DatabaseClusterConfiguration<Z, D>
 	{
 		@XmlJavaTypeAdapter(BalancerFactoryAdapter.class)
@@ -385,14 +398,13 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		@XmlAttribute(name = "durability")
 		private DurabilityFactory durabilityFactory = DurabilityFactoryEnum.FINE;
 
-//	@XmlElement(name = "", type = DefaultExecutorServiceProvider.class)
-	@XmlTransient
-	private ExecutorServiceProvider executorProvider = new DefaultExecutorServiceProvider();
-	
-//	@XmlElement(name = "", type = SQLStateManagerProvider.class)
-	@XmlTransient
-	private StateManagerProvider stateManagerProvider = new SQLStateManagerProvider();
-	
+		@XmlTransient
+		private ExecutorServiceProvider executorProvider = new DefaultExecutorServiceProvider();
+		@XmlTransient
+		private ThreadFactory threadFactory = Executors.defaultThreadFactory();
+		@XmlTransient
+		private StateManagerProvider stateManagerProvider = new SQLStateManagerProvider();
+
 		@XmlAttribute(name = "transaction-mode")
 		private TransactionMode transactionMode = TransactionMode.SERIAL;
 
@@ -463,12 +475,12 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			this.failureDetectionExpression = this.unmarshalCronExpression(expression);
 		}
 		
-		public String marshalCronExpression(CronExpression expression)
+		private String marshalCronExpression(CronExpression expression)
 		{
 			return (expression != null) ? expression.getCronExpression() : null;
 		}
 
-		public CronExpression unmarshalCronExpression(String expression) throws Exception
+		private CronExpression unmarshalCronExpression(String expression) throws Exception
 		{
 			return new CronExpression(expression);
 		}
@@ -525,6 +537,12 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		public ExecutorServiceProvider getExecutorProvider()
 		{
 			return this.executorProvider;
+		}
+
+		@Override
+		public ThreadFactory getThreadFactory()
+		{
+			return this.threadFactory;
 		}
 
 		@Override
@@ -677,6 +695,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	}
 	
 	@XmlAccessorType(XmlAccessType.FIELD)
+	@XmlType
 	static class SynchronizationStrategyDescriptor
 	{
 		@XmlID
@@ -721,6 +740,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	}
 	
 	@XmlAccessorType(XmlAccessType.FIELD)
+	@XmlType
 	protected static class Property
 	{
 		@XmlAttribute(required = true)

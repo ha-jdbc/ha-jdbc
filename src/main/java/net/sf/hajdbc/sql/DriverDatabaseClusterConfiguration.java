@@ -43,7 +43,7 @@ public class DriverDatabaseClusterConfiguration extends AbstractDatabaseClusterC
 		return this.configuration;
 	}
 	
-	@XmlType(name = "nestedDatabaseClusterConfiguration")
+	@XmlType(name = "nestedConfiguration")
 	static class DriverNestedConfiguration extends AbstractDatabaseClusterConfiguration.NestedConfiguration<Driver, DriverDatabase>
 	{
 		@SuppressWarnings("unused")

@@ -18,7 +18,6 @@
 package net.sf.hajdbc.sql;
 
 import javax.sql.DataSource;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -43,7 +42,7 @@ public class DataSourceDatabaseClusterConfiguration extends AbstractDatabaseClus
 		return this.configuration;
 	}
 
-	@XmlType(name = "nestedDatabaseClusterConfiguration")
+	@XmlType(name = "nestedConfiguration")
 	static class DataSourceNestedConfiguration extends AbstractDatabaseClusterConfiguration.NestedConfiguration<DataSource, DataSourceDatabase>
 	{
 		@SuppressWarnings("unused")
