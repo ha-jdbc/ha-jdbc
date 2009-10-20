@@ -22,8 +22,6 @@ import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.sf.hajdbc.util.Strings;
-
 /**
  * @author Paul Ferraro
  */
@@ -69,7 +67,7 @@ public abstract class AbstractDriver implements Driver
 	@Override
 	public int getMajorVersion()
 	{
-		return Integer.parseInt(version()[0]);
+		return Version.getMajorVersion();
 	}
 	
 	/**
@@ -78,11 +76,6 @@ public abstract class AbstractDriver implements Driver
 	@Override
 	public int getMinorVersion()
 	{
-		return Integer.parseInt(version()[1]);
-	}
-
-	private String[] version()
-	{
-		return Version.getVersion().split(Strings.DASH)[0].split(Pattern.quote(Strings.DOT));
+		return Version.getMinorVersion();
 	}
 }
