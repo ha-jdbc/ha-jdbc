@@ -45,7 +45,8 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 	public void createConfiguration() throws SQLException, IOException
 	{
 		StringBuilder builder = new StringBuilder();
-		builder.append("<ha-jdbc>");
+		builder.append("<?xml version=\"1.0\"?>");
+		builder.append("<ha-jdbc xmlns=\"").append(SchemaGenerator.NAMESPACE).append("\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">");
 		builder.append("\t<sync id=\"passive\" class=\"net.sf.hajdbc.sync.PassiveSynchronizationStrategy\"></sync>");
 		builder.append("\t<cluster default-sync=\"passive\">");
 		builder.append("\t\t<database id=\"db1\">");
