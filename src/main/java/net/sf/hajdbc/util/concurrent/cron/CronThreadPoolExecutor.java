@@ -22,9 +22,8 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-
-import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
 
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
@@ -43,22 +42,40 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 	/**
 	 * Constructs a new CronThreadPoolExecutor.
 	 * @param corePoolSize
-	 * @param handler
 	 */
-	public CronThreadPoolExecutor(int corePoolSize, RejectedExecutionHandler handler)
+	public CronThreadPoolExecutor(int corePoolSize)
 	{
-		super(corePoolSize, DaemonThreadFactory.getInstance(), handler);
+		super(corePoolSize);
+	}
+	
+	/**
+	 * Constructs a new CronThreadPoolExecutor.
+	 * @param corePoolSize
+	 */
+	public CronThreadPoolExecutor(int corePoolSize, ThreadFactory threadFactory)
+	{
+		super(corePoolSize, threadFactory);
 	}
 
 	/**
 	 * Constructs a new CronThreadPoolExecutor.
 	 * @param corePoolSize
 	 */
-	public CronThreadPoolExecutor(int corePoolSize)
+	public CronThreadPoolExecutor(int corePoolSize, RejectedExecutionHandler handler)
 	{
-		super(corePoolSize, DaemonThreadFactory.getInstance());
+		super(corePoolSize, handler);
 	}
-	
+
+	/**
+	 * Constructs a new CronThreadPoolExecutor.
+	 * @param corePoolSize
+	 * @param handler
+	 */
+	public CronThreadPoolExecutor(int corePoolSize, ThreadFactory threadFactory, RejectedExecutionHandler handler)
+	{
+		super(corePoolSize, threadFactory, handler);
+	}
+
 	/**
 	 * @see net.sf.hajdbc.util.concurrent.cron.CronExecutorService#schedule(java.lang.Runnable, net.sf.hajdbc.util.concurrent.cron.quartz.CronExpression)
 	 */
