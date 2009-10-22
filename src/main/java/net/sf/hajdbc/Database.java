@@ -20,6 +20,8 @@ package net.sf.hajdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import net.sf.hajdbc.codec.Codec;
+
 /**
  * @author  Paul Ferraro
  * @version $Revision: 1536 $
@@ -61,7 +63,7 @@ public interface Database<Z> extends Comparable<Database<Z>>
 	 * @return a database connection
 	 * @throws SQLException if connection fails
 	 */
-	Connection connect(Z connectionSource) throws SQLException;
+	Connection connect(Z connectionSource, Codec codec) throws SQLException;
 	
 	/**
 	 * Factory method for creating a connection factory object for this database.

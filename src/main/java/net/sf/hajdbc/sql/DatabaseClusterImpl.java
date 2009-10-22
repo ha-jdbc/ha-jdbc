@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadFactory;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
@@ -37,6 +38,7 @@ import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationListener;
 import net.sf.hajdbc.balancer.Balancer;
 import net.sf.hajdbc.cache.DatabaseMetaDataCache;
+import net.sf.hajdbc.codec.Codec;
 import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.durability.Durability;
 import net.sf.hajdbc.lock.LockManager;
@@ -69,6 +71,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	private Durability<Z, D> durability;
 	private DatabaseMetaDataCache<Z, D> databaseMetaDataCache;
 	private ExecutorService executor;
+	private Codec codec;
 	private CronThreadPoolExecutor cronExecutor;
 	private LockManager lockManager;
 	private StateManager stateManager;
@@ -293,6 +296,18 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		return this.configuration.getTransactionMode().getTransactionExecutor(this.executor);
 	}
 
+	@Override
+	public ThreadFactory getThreadFactory()
+	{
+		return this.configuration.getThreadFactory();
+	}
+
+	@Override
+	public Codec getCodec()
+	{
+		return this.codec;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseCluster#isActive()
@@ -402,6 +417,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	{
 		if (this.active) return;
 		
+		this.codec = this.configuration.getCodecFactory().createDecoder(System.getProperties());
 		this.lockManager = new SemaphoreLockManager();
 		this.stateManager = this.configuration.getStateManagerProvider().createStateManager(this, System.getProperties());
 		
@@ -468,7 +484,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		
 		if (threads > 0)
 		{
-			this.cronExecutor = new CronThreadPoolExecutor(threads);
+			this.cronExecutor = new CronThreadPoolExecutor(threads, this.configuration.getThreadFactory());
 			
 			if (failureDetectionExpression != null)
 			{
@@ -528,7 +544,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	{
 		try
 		{
-			Connection connection = database.connect(database.createConnectionSource());
+			Connection connection = database.connect(database.createConnectionSource(), this.codec);
 
 			boolean alive = this.isAlive(connection);
 			

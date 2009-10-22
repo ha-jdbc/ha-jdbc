@@ -30,6 +30,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.codec.Codec;
 import net.sf.hajdbc.management.Managed;
 
 /**
@@ -65,7 +66,7 @@ public class DriverDatabase extends AbstractDatabase<Driver>
 	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
 	 */
 	@Override
-	public Connection connect(Driver driver) throws SQLException
+	public Connection connect(Driver driver, Codec codec) throws SQLException
 	{
 		Properties properties = new Properties();
 		
@@ -77,7 +78,7 @@ public class DriverDatabase extends AbstractDatabase<Driver>
 		if (this.requiresAuthentication())
 		{
 			properties.setProperty(USER, this.getUser());
-			properties.setProperty(PASSWORD, this.getPassword());
+			properties.setProperty(PASSWORD, codec.decode(this.getPassword()));
 		}
 		
 		return driver.connect(this.getName(), properties);

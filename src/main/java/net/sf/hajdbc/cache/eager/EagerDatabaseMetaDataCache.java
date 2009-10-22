@@ -60,7 +60,7 @@ public class EagerDatabaseMetaDataCache<Z, D extends Database<Z>> implements Dat
 		
 		for (D database: this.cluster.getBalancer())
 		{
-			Connection connection = database.connect(database.createConnectionSource());
+			Connection connection = database.connect(database.createConnectionSource(), this.cluster.getCodec());
 			
 			try
 			{

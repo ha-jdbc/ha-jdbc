@@ -22,6 +22,7 @@ import java.util.concurrent.ThreadFactory;
 
 import net.sf.hajdbc.balancer.BalancerFactory;
 import net.sf.hajdbc.cache.DatabaseMetaDataCacheFactory;
+import net.sf.hajdbc.codec.CodecFactory;
 import net.sf.hajdbc.dialect.DialectFactory;
 import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.durability.DurabilityFactory;
@@ -121,4 +122,6 @@ public interface DatabaseClusterConfiguration<Z, D extends Database<Z>>
 	CronExpression getAutoActivationExpression();
 	
 	ThreadFactory getThreadFactory();
+	
+	CodecFactory getCodecFactory();
 }

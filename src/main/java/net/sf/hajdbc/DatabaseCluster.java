@@ -18,9 +18,11 @@
 package net.sf.hajdbc;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadFactory;
 
 import net.sf.hajdbc.balancer.Balancer;
 import net.sf.hajdbc.cache.DatabaseMetaDataCache;
+import net.sf.hajdbc.codec.Codec;
 import net.sf.hajdbc.durability.Durability;
 import net.sf.hajdbc.lock.LockManager;
 import net.sf.hajdbc.state.StateManager;
@@ -158,4 +160,8 @@ public interface DatabaseCluster<Z, D extends Database<Z>> extends Lifecycle
 	void removeConfigurationListener(DatabaseClusterConfigurationListener<Z, D> listener);
 	
 	Durability<Z, D> getDurability();
+	
+	ThreadFactory getThreadFactory();
+	
+	Codec getCodec();
 }

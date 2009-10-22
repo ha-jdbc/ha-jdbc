@@ -50,6 +50,8 @@ import net.sf.hajdbc.balancer.BalancerFactory;
 import net.sf.hajdbc.balancer.BalancerFactoryEnum;
 import net.sf.hajdbc.cache.DatabaseMetaDataCacheFactory;
 import net.sf.hajdbc.cache.DatabaseMetaDataCacheFactoryEnum;
+import net.sf.hajdbc.codec.CodecFactory;
+import net.sf.hajdbc.codec.SimpleCodec;
 import net.sf.hajdbc.dialect.DialectFactory;
 import net.sf.hajdbc.dialect.DialectFactoryEnum;
 import net.sf.hajdbc.distributed.CommandDispatcherFactory;
@@ -263,6 +265,16 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	{
 		return this.getNestedConfiguration().getThreadFactory();
 	}
+	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getCodecFactory()
+	 */
+	@Override
+	public CodecFactory getCodecFactory()
+	{
+		return this.getNestedConfiguration().getCodecFactory();
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -402,6 +414,8 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		private ExecutorServiceProvider executorProvider = new DefaultExecutorServiceProvider();
 		@XmlTransient
 		private ThreadFactory threadFactory = Executors.defaultThreadFactory();
+		@XmlTransient
+		private CodecFactory codecFactory = new SimpleCodec();
 		@XmlTransient
 		private StateManagerProvider stateManagerProvider = new SQLStateManagerProvider();
 
@@ -543,6 +557,12 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		public ThreadFactory getThreadFactory()
 		{
 			return this.threadFactory;
+		}
+
+		@Override
+		public CodecFactory getCodecFactory()
+		{
+			return this.codecFactory;
 		}
 
 		@Override

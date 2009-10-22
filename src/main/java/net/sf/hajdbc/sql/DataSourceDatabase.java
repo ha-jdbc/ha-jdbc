@@ -25,6 +25,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import net.sf.hajdbc.codec.Codec;
 import net.sf.hajdbc.management.Managed;
 
 
@@ -44,9 +45,9 @@ public class DataSourceDatabase extends CommonDataSourceDatabase<DataSource>
 	 * @see net.sf.hajdbc.Database#connect(Object)
 	 */
 	@Override
-	public Connection connect(DataSource dataSource) throws SQLException
+	public Connection connect(DataSource dataSource, Codec codec) throws SQLException
 	{
-		return this.requiresAuthentication() ? dataSource.getConnection(this.getUser(), this.getPassword()) : dataSource.getConnection();
+		return this.requiresAuthentication() ? dataSource.getConnection(this.getUser(), codec.decode(this.getPassword())) : dataSource.getConnection();
 	}
 
 	@Override

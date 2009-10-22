@@ -33,7 +33,6 @@ import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.balancer.Balancer;
 import net.sf.hajdbc.cache.DatabaseMetaDataCache;
 import net.sf.hajdbc.cache.DatabaseProperties;
-import net.sf.hajdbc.util.concurrent.DaemonThreadFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +74,7 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 		
 		this.activeDatabaseSet = balancer;
 		this.targetDatabase = database;
-		this.executor = Executors.newFixedThreadPool(this.activeDatabaseSet.size(), DaemonThreadFactory.getInstance());
+		this.executor = Executors.newFixedThreadPool(this.activeDatabaseSet.size(), this.cluster.getThreadFactory());
 		
 		DatabaseMetaDataCache<Z, D> cache = cluster.getDatabaseMetaDataCache();
 		
@@ -95,7 +94,7 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 			
 			if (connection == null)
 			{
-				connection = database.connect(database.createConnectionSource());
+				connection = database.connect(database.createConnectionSource(), this.cluster.getCodec());
 				
 				this.connectionMap.put(database, connection);
 			}

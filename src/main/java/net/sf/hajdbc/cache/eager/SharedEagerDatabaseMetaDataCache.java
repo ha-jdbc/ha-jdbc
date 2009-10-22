@@ -60,7 +60,7 @@ public class SharedEagerDatabaseMetaDataCache<Z, D extends Database<Z>> implemen
 			throw new SQLException(Messages.NO_ACTIVE_DATABASES.getMessage());
 		}
 		
-		this.setDatabaseProperties(database.connect(database.createConnectionSource()));
+		this.setDatabaseProperties(database.connect(database.createConnectionSource(), this.cluster.getCodec()));
 	}
 
 	/**
