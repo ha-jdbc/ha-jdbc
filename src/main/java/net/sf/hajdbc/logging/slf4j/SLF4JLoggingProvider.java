@@ -37,6 +37,16 @@ public class SLF4JLoggingProvider implements net.sf.hajdbc.logging.LoggingProvid
 
 	/**
 	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.logging.LoggingProvider#getName()
+	 */
+	@Override
+	public String getName()
+	{
+		return "SLF4J";
+	}
+
+	/**
+	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.logging.LoggingProvider#isEnabled()
 	 */
 	@Override

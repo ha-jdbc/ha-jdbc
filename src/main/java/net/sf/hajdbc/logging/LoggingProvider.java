@@ -26,4 +26,6 @@ public interface LoggingProvider
 	boolean isEnabled();
 	
 	Logger getLogger(Class<?> targetClass);
+	
+	String getName();
 }

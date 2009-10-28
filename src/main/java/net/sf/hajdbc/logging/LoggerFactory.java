@@ -35,7 +35,8 @@ public final class LoggerFactory
 		{
 			if (provider.isEnabled())
 			{
-				provider.getLogger(LoggerFactory.class).log(Level.INFO, "Using {0}", provider.getClass().getName());
+				provider.getLogger(LoggerFactory.class).log(Level.DEBUG, "Using {0} logging", provider.getName());
+				
 				return provider;
 			}
 		}

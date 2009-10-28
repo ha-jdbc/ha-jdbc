@@ -38,6 +38,16 @@ public class JDKLoggingProvider implements LoggingProvider
 
 	/**
 	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.logging.LoggingProvider#getName()
+	 */
+	@Override
+	public String getName()
+	{
+		return "JDK";
+	}
+
+	/**
+	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.logging.LoggingProvider#isEnabled()
 	 */
 	@Override
