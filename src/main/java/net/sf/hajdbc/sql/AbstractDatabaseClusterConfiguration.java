@@ -58,8 +58,6 @@ import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.distributed.jgroups.DefaultChannelProvider;
 import net.sf.hajdbc.durability.DurabilityFactory;
 import net.sf.hajdbc.durability.DurabilityFactoryEnum;
-import net.sf.hajdbc.logging.Logger;
-import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.state.StateManagerProvider;
 import net.sf.hajdbc.state.sql.SQLStateManagerProvider;
 
@@ -73,9 +71,6 @@ import org.quartz.CronExpression;
 @XmlAccessorType(XmlAccessType.FIELD)
 public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database<Z>> implements DatabaseClusterConfiguration<Z, D>
 {
-	@XmlTransient
-	static Logger logger = LoggerFactory.getLogger(AbstractDatabaseClusterConfiguration.class);
-	
 	@XmlElement(name = "distributable", type = DefaultChannelProvider.class)
 	private CommandDispatcherFactory dispatcherFactory;
 	
