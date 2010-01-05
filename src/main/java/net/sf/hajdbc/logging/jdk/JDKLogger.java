@@ -61,11 +61,11 @@ public class JDKLogger extends AbstractLogger
 			
 			if (e != null)
 			{
-				this.logger.log(realLevel, message);
+				this.logger.log(realLevel, message, e);
 			}
 			else
 			{
-				this.logger.log(realLevel, message, e);
+				this.logger.log(realLevel, message);
 			}
 		}
 	}
