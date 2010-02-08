@@ -22,14 +22,14 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.cache.DatabaseMetaDataCache;
 import net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory;
 import net.sf.hajdbc.cache.DatabaseProperties;
+import net.sf.hajdbc.logging.Level;
+import net.sf.hajdbc.logging.Logger;
+import net.sf.hajdbc.logging.LoggerFactory;
 
 /**
  * @author paul
@@ -74,7 +74,7 @@ public class EagerDatabaseMetaDataCache<Z, D extends Database<Z>> implements Dat
 				}
 				catch (SQLException e)
 				{
-					logger.warn(e.toString(), e);
+					logger.log(Level.WARN, e, e.getMessage());
 				}
 			}
 		}
