@@ -17,24 +17,26 @@
  */
 package net.sf.hajdbc.cache;
 
+import net.sf.hajdbc.util.Strings;
+
 /**
  * Tuple that stores the schema name and object name of a schema qualified object.
  * @author Paul Ferraro
  */
 public class QualifiedName
 {
-	private String schema;
-	private String name;
+	private final String schema;
+	private final String name;
 	
 	public QualifiedName(String schema, String name)
 	{
-		this(name);
-		
 		this.schema = schema;
+		this.name = name;
 	}
 	
 	public QualifiedName(String name)
 	{
+		this.schema = null;
 		this.name = name;
 	}
 	
@@ -46,5 +48,49 @@ public class QualifiedName
 	public String getName()
 	{
 		return this.name;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object object)
+	{
+		if ((object == null) || !(object instanceof QualifiedName))
+		{
+			return false;
+		}
+		
+		QualifiedName qn = (QualifiedName) object;
+		
+		return ((this.schema == qn.schema) || ((this.schema != null) && (qn.schema != null) && this.schema.equals(qn.schema))) && this.name.equals(qn.name);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode()
+	{
+		return this.name.hashCode();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString()
+	{
+		StringBuilder builder = new StringBuilder();
+		
+		if (this.schema != null)
+		{
+			builder.append(this.schema).append(Strings.DOT);
+		}
+		
+		return builder.append(this.name).toString();
 	}
 }
