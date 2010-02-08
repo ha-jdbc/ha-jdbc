@@ -25,6 +25,8 @@ import java.text.MessageFormat;
  */
 public abstract class AbstractLogger implements Logger
 {
+	private static final String SINGLE_ARG = "{0}";
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.logging.Logger#log(net.sf.hajdbc.logging.Level, java.lang.String, java.lang.Object[])
@@ -35,6 +37,16 @@ public abstract class AbstractLogger implements Logger
 		this.log(level, null, pattern, args);
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.logging.Logger#log(net.sf.hajdbc.logging.Level, java.lang.Throwable)
+	 */
+	@Override
+	public void log(Level level, Throwable e)
+	{
+		this.log(level, e, SINGLE_ARG, e);
+	}
+
 	protected static String format(String pattern, Object... args)
 	{
 		return (args.length == 0) ? pattern : MessageFormat.format(pattern, args);
