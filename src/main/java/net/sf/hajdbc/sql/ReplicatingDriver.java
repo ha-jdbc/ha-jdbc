@@ -32,11 +32,11 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterConfiguration;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.logging.Level;
+import net.sf.hajdbc.logging.Logger;
+import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
 import net.sf.hajdbc.xml.XMLDatabaseClusterConfigurationFactory;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author  Paul Ferraro
@@ -58,7 +58,7 @@ public final class ReplicatingDriver extends AbstractDriver
 		}
 		catch (SQLException e)
 		{
-			logger.error(Messages.DRIVER_REGISTER_FAILED.getMessage(ReplicatingDriver.class.getName()), e);
+			logger.log(Level.ERROR, e, Messages.DRIVER_REGISTER_FAILED.getMessage(), ReplicatingDriver.class.getName());
 		}
 	}
 	
