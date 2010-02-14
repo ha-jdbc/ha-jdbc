@@ -24,10 +24,10 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.logging.Level;
+import net.sf.hajdbc.logging.Logger;
+import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.state.StateManager;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Paul Ferraro
@@ -67,7 +67,7 @@ public class DriverReadInvocationStrategy<Z, D extends Database<Z>, T, R, E exte
 				{
 					if (cluster.deactivate(database, stateManager))
 					{
-						logger.error(Messages.DATABASE_DEACTIVATED.getMessage(database, cluster), exception);
+						logger.log(Level.ERROR, exception, Messages.DATABASE_DEACTIVATED.getMessage(), database, cluster);
 					}
 				}
 				else
