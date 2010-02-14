@@ -22,14 +22,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.logging.Level;
+import net.sf.hajdbc.logging.Logger;
+import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.state.StateManager;
 
 /**
@@ -63,7 +63,7 @@ public abstract class AbstractInvocationStrategy<Z, D extends Database<Z>, T, R,
 				
 				if (cluster.deactivate(database, cluster.getStateManager()))
 				{
-					logger.error(Messages.DATABASE_INCONSISTENT.getMessage(database, cluster, masterResult, result));
+					logger.log(Level.ERROR, Messages.DATABASE_INCONSISTENT.getMessage(), database, cluster, masterResult, result);
 				}
 			}
 		}
@@ -106,7 +106,7 @@ public abstract class AbstractInvocationStrategy<Z, D extends Database<Z>, T, R,
 					
 					if (cluster.deactivate(failedDatabase, stateManager))
 					{
-						logger.error(Messages.DATABASE_DEACTIVATED.getMessage(failedDatabase, cluster), exception);
+						logger.log(Level.ERROR, exception, Messages.DATABASE_DEACTIVATED.getMessage(), failedDatabase, cluster);
 					}
 				}
 			}
@@ -130,7 +130,7 @@ public abstract class AbstractInvocationStrategy<Z, D extends Database<Z>, T, R,
 							
 							if (cluster.deactivate(database, stateManager))
 							{
-								logger.error(Messages.DATABASE_INCONSISTENT.getMessage(database, cluster, masterException, exception), exception);
+								logger.log(Level.ERROR, exception, Messages.DATABASE_INCONSISTENT.getMessage(), database, cluster, masterException, exception);
 							}
 						}
 					}
@@ -142,7 +142,7 @@ public abstract class AbstractInvocationStrategy<Z, D extends Database<Z>, T, R,
 						
 						if (cluster.deactivate(database, stateManager))
 						{
-							logger.error(Messages.DATABASE_INCONSISTENT.getMessage(database, cluster, masterException, entry.getValue()));
+							logger.log(Level.ERROR, Messages.DATABASE_INCONSISTENT.getMessage(), database, cluster, masterException, entry.getValue());
 						}
 					}
 					
@@ -158,7 +158,7 @@ public abstract class AbstractInvocationStrategy<Z, D extends Database<Z>, T, R,
 				
 				if (cluster.deactivate(database, stateManager))
 				{
-					logger.error(Messages.DATABASE_DEACTIVATED.getMessage(database, cluster), exception);
+					logger.log(Level.ERROR, exception, Messages.DATABASE_DEACTIVATED.getMessage(), database, cluster);
 				}
 			}
 		}
