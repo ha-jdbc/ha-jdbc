@@ -20,6 +20,7 @@ package net.sf.hajdbc.sql;
 import java.util.Map;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.logging.Level;
 
 /**
  * @author Paul Ferraro
@@ -72,7 +73,7 @@ public abstract class AbstractChildInvocationHandler<Z, D extends Database<Z>, P
 		}
 		catch (Exception e)
 		{
-			this.logger.info(e.getMessage(), e);
+			this.logger.log(Level.INFO, e, e.getMessage());
 		}
 	}
 	
