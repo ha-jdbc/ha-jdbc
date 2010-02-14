@@ -33,10 +33,10 @@ import java.util.WeakHashMap;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.logging.Level;
+import net.sf.hajdbc.logging.Logger;
+import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.util.reflect.Methods;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Paul Ferraro
@@ -280,7 +280,7 @@ public abstract class AbstractInvocationHandler<Z, D extends Database<Z>, T, E e
 				{
 					if (!this.objectMap.isEmpty() && this.cluster.deactivate(database, this.cluster.getStateManager()))
 					{
-						this.logger.warn(Messages.SQL_OBJECT_INIT_FAILED.getMessage(this.getClass().getName(), database), e);
+						this.logger.log(Level.WARN, e, Messages.SQL_OBJECT_INIT_FAILED.getMessage(), this.getClass().getName(), database);
 					}
 				}
 			}
@@ -367,50 +367,6 @@ public abstract class AbstractInvocationHandler<Z, D extends Database<Z>, T, E e
 	public final DatabaseCluster<Z, D> getDatabaseCluster()
 	{
 		return this.cluster;
-	}
-
-	/**
-	 * Detect cluster panic if all conditions are met:
-	 * <ul>
-	 * <li>We're in distributable mode</li>
-	 * <li>We're the only group member</li>
-	 * <li>All alive databases are local</li>
-	 * <li>All dead databases are remote</li>
-	 * </ul>
-	 * @param aliveMap
-	 * @throws Exception
-	 */
-	@SuppressWarnings("unused")
-	protected void detectClusterPanic(Map<Boolean, List<D>> aliveMap) throws E
-	{
-		if (this.cluster.getStateManager().isMembershipEmpty())
-		{
-			List<D> aliveList = aliveMap.get(true);
-			List<D> deadList = aliveMap.get(false);
-			
-			if (!aliveList.isEmpty() && !deadList.isEmpty() && sameProximity(aliveList, true) && sameProximity(deadList, false))
-			{
-				this.cluster.stop();
-				
-				String message = Messages.CLUSTER_PANIC_DETECTED.getMessage(this.cluster);
-				
-				this.logger.error(message);
-				
-				this.getExceptionFactory().createException(message);
-			}
-		}
-	}
-	
-	private boolean sameProximity(List<D> databaseList, boolean local)
-	{
-		boolean same = true;
-		
-		for (D database: databaseList)
-		{
-			same &= (database.isLocal() == local);
-		}
-		
-		return same;
 	}
 	
 	@SuppressWarnings("unchecked")
