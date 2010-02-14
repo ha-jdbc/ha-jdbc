@@ -26,6 +26,7 @@ import java.util.Set;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.ExceptionFactory;
+import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.util.reflect.Methods;
 
 /**
@@ -107,7 +108,7 @@ public abstract class LocatorInvocationHandler<Z, D extends Database<Z>, P, E> e
 			}
 			catch (SQLException e)
 			{
-				this.logger.warn(e.getMessage(), e);
+				this.logger.log(Level.WARN, e, e.getMessage());
 			}
 		}
 	}
