@@ -26,8 +26,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.quartz.CronExpression;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Scheduled thread-pool executor implementation that leverages a Quartz CronExpression to calculate future execution times for scheduled tasks.
@@ -37,8 +35,6 @@ import org.slf4j.LoggerFactory;
  */
 public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implements CronExecutorService
 {
-	protected static Logger logger = LoggerFactory.getLogger(CronThreadPoolExecutor.class);
-	
 	/**
 	 * Constructs a new CronThreadPoolExecutor.
 	 * @param corePoolSize
@@ -91,6 +87,7 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 			/**
 			 * @see java.lang.Runnable#run()
 			 */
+			@Override
 			public void run()
 			{
 				Date now = new Date();
