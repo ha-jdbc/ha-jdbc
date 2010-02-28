@@ -17,7 +17,6 @@
  */
 package net.sf.hajdbc.util.concurrent.cron;
 
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
 import org.quartz.CronExpression;
@@ -27,7 +26,7 @@ import org.quartz.CronExpression;
  * 
  * @author Paul Ferraro
  */
-public interface CronExecutorService extends Executor, ExecutorService
+public interface CronExecutorService extends ExecutorService
 {
 	/**
 	 * Schedules the specified task to execute according to the specified cron expression.
