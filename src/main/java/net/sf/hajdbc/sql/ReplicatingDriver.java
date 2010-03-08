@@ -22,6 +22,7 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -49,7 +50,8 @@ public final class ReplicatingDriver extends AbstractDriver
 	private static final Logger logger = LoggerFactory.getLogger(ReplicatingDriver.class);
 	
 	private static final Map<String, DatabaseCluster<java.sql.Driver, DriverDatabase>> clusterMap = new HashMap<String, DatabaseCluster<java.sql.Driver, DriverDatabase>>();
-
+	private static volatile Map<String, DatabaseClusterConfigurationFactory<Driver, DriverDatabase>> configurationFactoryMap = Collections.emptyMap();
+	
 	static
 	{
 		try
@@ -61,12 +63,10 @@ public final class ReplicatingDriver extends AbstractDriver
 			logger.log(Level.ERROR, e, Messages.DRIVER_REGISTER_FAILED.getMessage(), ReplicatingDriver.class.getName());
 		}
 	}
-	
-	private volatile DatabaseClusterConfigurationFactory<Driver, DriverDatabase> configurationFactory;
 
-	public void setConfigurationFactory(DatabaseClusterConfigurationFactory<Driver, DriverDatabase> configurationFactory)
+	public static void setConfigurationFactories(Map<String, DatabaseClusterConfigurationFactory<Driver, DriverDatabase>> map)
 	{
-		this.configurationFactory = configurationFactory;
+		configurationFactoryMap = (map != null) ? map : Collections.<String, DatabaseClusterConfigurationFactory<Driver, DriverDatabase>>emptyMap();
 	}
 	
 	/**
@@ -141,7 +141,12 @@ public final class ReplicatingDriver extends AbstractDriver
 			
 			if (cluster == null)
 			{
-				DatabaseClusterConfigurationFactory<Driver, DriverDatabase> factory = (this.configurationFactory != null) ? this.configurationFactory : new XMLDatabaseClusterConfigurationFactory<Driver, DriverDatabase>(id, properties.getProperty(CONFIG));
+				DatabaseClusterConfigurationFactory<Driver, DriverDatabase> factory = configurationFactoryMap.get(id);
+				
+				if (factory != null)
+				{
+					factory = new XMLDatabaseClusterConfigurationFactory<Driver, DriverDatabase>(id, properties.getProperty(CONFIG));
+				}
 				
 				DatabaseClusterConfiguration<Driver, DriverDatabase> configuration = factory.createConfiguration(DriverDatabaseClusterConfiguration.class);
 				
