@@ -29,6 +29,8 @@ import org.apache.commons.codec.binary.Base64;
  */
 public class Base64CodecFactory extends AbstractCodec
 {
+	private static final long serialVersionUID = -2286529406290006597L;
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.codec.Codec#decode(java.lang.String)

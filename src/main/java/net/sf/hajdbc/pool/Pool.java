@@ -23,8 +23,6 @@ package net.sf.hajdbc.pool;
  */
 public interface Pool<T, E extends Exception>
 {
-	void init() throws E;
-	
 	T take() throws E;
 	
 	void release(T item);

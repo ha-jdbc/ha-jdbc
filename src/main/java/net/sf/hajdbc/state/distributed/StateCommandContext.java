@@ -36,5 +36,5 @@ public interface StateCommandContext<Z, D extends Database<Z>>
 	
 	StateManager getLocalStateManager();
 	
-	Map<InvocationEvent, Map<D, InvokerEvent>> getRemoteInvokers(Remote remote);
+	Map<InvocationEvent, Map<String, InvokerEvent>> getRemoteInvokers(Remote remote);
 }

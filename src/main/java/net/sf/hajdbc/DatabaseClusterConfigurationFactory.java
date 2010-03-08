@@ -17,13 +17,14 @@
  */
 package net.sf.hajdbc;
 
+import java.io.Serializable;
 import java.sql.SQLException;
 
 /**
  * @author paul
  *
  */
-public interface DatabaseClusterConfigurationFactory<Z, D extends Database<Z>> extends DatabaseClusterConfigurationListener<Z, D>
+public interface DatabaseClusterConfigurationFactory<Z, D extends Database<Z>> extends DatabaseClusterConfigurationListener<Z, D>, Serializable
 {
 	DatabaseClusterConfiguration<Z, D> createConfiguration(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass) throws SQLException;
 }

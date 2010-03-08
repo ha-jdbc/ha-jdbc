@@ -17,6 +17,7 @@
  */
 package net.sf.hajdbc;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ThreadFactory;
 
@@ -35,7 +36,7 @@ import org.quartz.CronExpression;
  * @author paul
  *
  */
-public interface DatabaseClusterConfiguration<Z, D extends Database<Z>>
+public interface DatabaseClusterConfiguration<Z, D extends Database<Z>> extends Serializable
 {
 	CommandDispatcherFactory getDispatcherFactory();
 	

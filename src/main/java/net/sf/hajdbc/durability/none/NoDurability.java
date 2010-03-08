@@ -17,10 +17,17 @@
  */
 package net.sf.hajdbc.durability.none;
 
+import java.util.Map;
+
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.durability.Durability;
+import net.sf.hajdbc.durability.InvocationEvent;
+import net.sf.hajdbc.durability.InvokerEvent;
 import net.sf.hajdbc.durability.TransactionIdentifier;
+import net.sf.hajdbc.logging.Level;
+import net.sf.hajdbc.logging.Logger;
+import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.sql.InvocationStrategy;
 import net.sf.hajdbc.sql.Invoker;
 
@@ -30,6 +37,8 @@ import net.sf.hajdbc.sql.Invoker;
  */
 public class NoDurability<Z, D extends Database<Z>> implements Durability<Z, D>
 {
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.durability.Durability#getInvocationStrategy(net.sf.hajdbc.sql.InvocationStrategy)
@@ -48,5 +57,11 @@ public class NoDurability<Z, D extends Database<Z>> implements Durability<Z, D>
 	public <T, R, E extends Exception> Invoker<Z, D, T, R, E> getInvoker(Invoker<Z, D, T, R, E> invoker, Phase phase, TransactionIdentifier transactionId, ExceptionFactory<E> exceptionFactory)
 	{
 		return invoker;
+	}
+
+	@Override
+	public void recover(Map<InvocationEvent, Map<String, InvokerEvent>> invokers)
+	{
+		this.logger.log(Level.WARN, invokers.toString());
 	}
 }

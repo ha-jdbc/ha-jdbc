@@ -21,54 +21,73 @@
 		<title>HA-JDBC Changes</title>
 	</properties>
 	<body>
-		<release version="2.1.0-alpha-1" date="..." description="Drinking the Kool-Aid">
+		<release version="2.1.0-beta-1" date="...">
 			<action dev="pmf" type="update">
 				Migrate build from Ant to Maven.
+				Update java runtime requirement to 1.6.
 			</action>
 			<action dev="pmf" type="update">
 				Migrate site generation from Forrest to Maven site plugin.
 			</action>
 			<action dev="pmf" type="update">
 				Replace JiBX with JAXB for configuration file reading/writing.
-				Configuration schema is now auto-generated during build.
+				Configuration schema is now auto-generated from annotations during build.
+				XML parsing will validate against the schema.
 			</action>
 			<action dev="pmf" type="update">
 				Store references to database clusters within Driver or DataSource object, rather than in the mbean server.
 			</action>
 			<action dev="pmf" type="update">
-				Replace mbean interfaces with dynamic mbean created from annotations.
+				Replace mbean interfaces with dynamic mbeans created from annotations.
 			</action>
 			<action dev="pmf" type="update">
-				Replace java.util.prefs-based state manager with jdbc-based implementation.
+				Replace java.util.prefs-based state manager with a jdbc-based or in-memory implementation.
+				Add alternative implementations for sqljet (i.e. sqlite), berkeleydb, and jdbm.
 			</action>
-			<!--action dev="pmf" type="add">
+			<action dev="pmf" type="add">
 				Add ability to obfuscate passwords stored in HA-JDBC configuration file.
-				Supported mechanisms: plain text, Base64 encoding, Hex encoding, password-based symmetric encryption, key-based symmetric encryption
-			</action-->
-			<action dev="pmf" type="update">
-				Add support for version (i.e. last update timestamp/counter) columns to differential sync strategy.
-				This should improve the performance of change detection from O(N*M) -> O(N), where N is number of rows, and M is number of columns.
+				Supported mechanisms: plain text, hex encoding, base-64 encoding, symmetric encryption.
 			</action>
-			<!--action dev="pmf" type="update">
-				Add support for multiple conflict resolution strategies:
-				optimistic (old default), pessimistic, chain-of-command (new default).
-			</action-->
-			<!--action dev="pmf" type="update">
-				Add support for protected-commit mode to detect and recover from node crashes during commit, enabled by default.
-			</action-->
 			<action dev="pmf" type="update">
-				Improve reliability of distributed lock manager by locking coordinator first, then broadcasting lock to other members.
+				Add support for version (i.e. last update timestamp) columns to differential sync strategy.
+				This improves the general performance of change detection from O(N*M) -> O(N), where N is number of rows, and M is number of columns.
+			</action>
+			<action dev="pmf" type="update">
+				Changed failure detection handling to always prefer response from first alive database (instead of always preferring successful responses).
+				Apply the same logic to resolve jdbc method result conflicts.
+			</action>
+			<action dev="pmf" type="update">
+				Add durability support to detect and recover from node crashes during commit, enabled by default.
+			</action>
+			<action dev="pmf" type="update">
+				Improve reliability of distributed lock manager by locking coordinator first, then broadcasting lock acquisition event to other members.
 			</action>
 			<action dev="pmf" type="update">
 				Use exception introspection to determine whether a not a given failure is catastrophic, replacing separate simple query.
 			</action>
+			<action dev="pmf" type="add">
+				Add per-database eager and lazy meta data cache implementations - useful for schemas with auto-generated constraint names.
+				Options for meta-data-cache="eager|shared-eager|lazy|shared-lazy|none".
+			</action>
+			<action dev="pmf" type="add">
+				Create logging facade to support parameterized log messages to avoid string evaluation if message won't be logged.
+				Prefer slf4j provider, fall back to commons-logging, then to jdk logging.
+				SLF4J is no longer a required dependency.
+			</action>
+			<action dev="pmf" type="update">
+				Redesign HA-JDBC startup, adding support for xml-less configuration.
+			</action>
+			<action dev="pmf8" type="update">
+				Reverse invocation order of commit/rollback using serial transaction mode.
+				The first database to acquire a row lock should be the last to commit.
+			</action>
 		</release>
 		<release version="2.0.15" date="2009-02-17">
 			<action dev="pmf" type="fix">
-				Fixes infinite loop regression in DistributableLockManager$DistributableLock.tryLock(long, TimeUnit)
+				Fixed infinite loop regression in DistributableLockManager$DistributableLock.tryLock(long, TimeUnit)
 			</action>
 			<action dev="pmf" type="fix">
-				Fixes ExceptionInInitializerError regression when creating HA-JDBC connections in Java 1.4/1.5.
+				Fixed ExceptionInInitializerError regression when creating HA-JDBC connections in Java 1.4/1.5.
 			</action>
 		</release>
 		<release version="2.0.14" date="2009-02-15">

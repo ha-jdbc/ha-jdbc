@@ -17,6 +17,7 @@
  */
 package net.sf.hajdbc.sync;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -35,11 +36,11 @@ import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.cache.TableProperties;
+import net.sf.hajdbc.logging.Level;
+import net.sf.hajdbc.logging.Logger;
+import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.sql.SQLExceptionFactory;
 import net.sf.hajdbc.util.Strings;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Database-independent synchronization strategy that does full record transfer between two databases.
@@ -63,8 +64,10 @@ import org.slf4j.LoggerFactory;
  * </ol>
  * @author  Paul Ferraro
  */
-public class FullSynchronizationStrategy implements SynchronizationStrategy
+public class FullSynchronizationStrategy implements SynchronizationStrategy, Serializable
 {
+	private static final long serialVersionUID = 9190347092842178162L;
+
 	private static Logger logger = LoggerFactory.getLogger(FullSynchronizationStrategy.class);
 
 	private int maxBatchSize = 100;
@@ -117,22 +120,22 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 				Future<ResultSet> future = executor.submit(callable);
 				
 				String deleteSQL = dialect.getTruncateTableSQL(table);
-	
-				logger.debug(deleteSQL);
+
+				logger.log(Level.DEBUG, deleteSQL);
 				
 				Statement deleteStatement = targetConnection.createStatement();
 	
 				int deletedRows = deleteStatement.executeUpdate(deleteSQL);
-				
-				logger.info(Messages.DELETE_COUNT.getMessage(deletedRows, tableName));
+
+				logger.log(Level.INFO, Messages.DELETE_COUNT.getMessage(), deletedRows, tableName);
 				
 				deleteStatement.close();
 				
 				ResultSet resultSet = future.get();
 				
 				String insertSQL = "INSERT INTO " + tableName + " (" + commaDelimitedColumns + ") VALUES (" + Strings.join(Collections.nCopies(columns.size(), Strings.QUESTION), Strings.PADDED_COMMA) + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-				
-				logger.debug(insertSQL);
+
+				logger.log(Level.DEBUG, insertSQL);
 				
 				PreparedStatement insertStatement = targetConnection.prepareStatement(insertSQL);
 				int statementCount = 0;
@@ -175,8 +178,8 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy
 				{
 					insertStatement.executeBatch();
 				}
-	
-				logger.info(Messages.INSERT_COUNT.getMessage(statementCount, tableName));
+
+				logger.log(Level.INFO, Messages.INSERT_COUNT.getMessage(), statementCount, tableName);
 				
 				insertStatement.close();
 				selectStatement.close();

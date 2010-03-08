@@ -30,7 +30,7 @@ import net.sf.hajdbc.sql.CommonDataSource;
  * @author Paul Ferraro
  *
  */
-public class ConnectionPoolDataSource extends CommonDataSource<javax.sql.ConnectionPoolDataSource> implements javax.sql.ConnectionPoolDataSource
+public class ConnectionPoolDataSource extends CommonDataSource<javax.sql.ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase> implements javax.sql.ConnectionPoolDataSource
 {
 	/**
 	 * Constructs a new ConnectionPoolDataSource

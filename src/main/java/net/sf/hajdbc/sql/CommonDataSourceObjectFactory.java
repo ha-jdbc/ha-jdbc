@@ -29,7 +29,10 @@ import javax.naming.spi.ObjectFactory;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.DatabaseClusterConfiguration;
+import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
+import net.sf.hajdbc.xml.XMLDatabaseClusterConfigurationFactory;
 
 /**
  * @author Paul Ferraro
@@ -37,16 +40,20 @@ import net.sf.hajdbc.util.reflect.ProxyFactory;
  * @param <Z>
  * @param <D>
  */
-public abstract class CommonDataSourceObjectFactory<Z extends javax.sql.CommonDataSource, D extends Database<Z>> implements ObjectFactory, CommonDataSourceFactory<Z>
+public abstract class CommonDataSourceObjectFactory<Z extends javax.sql.CommonDataSource, D extends Database<Z>> implements ObjectFactory, CommonDataSourceFactory<Z, D>
 {
-	private Class<Z> targetClass;
+	private static final long serialVersionUID = 4537163442336124817L;
+	
+	private final Class<Z> targetClass;
+	private final Class<? extends DatabaseClusterConfiguration<Z, D>> configurationClass;
 	
 	/**
 	 * @param targetClass
 	 */
-	protected CommonDataSourceObjectFactory(Class<Z> targetClass)
+	protected CommonDataSourceObjectFactory(Class<Z> targetClass, Class<? extends DatabaseClusterConfiguration<Z, D>> configurationClass)
 	{
 		this.targetClass = targetClass;
+		this.configurationClass = configurationClass;
 	}
 
 	/**
@@ -87,29 +94,35 @@ public abstract class CommonDataSourceObjectFactory<Z extends javax.sql.CommonDa
 			}
 		}
 		
-		return this.createProxy(id, config);
+		DatabaseClusterConfigurationFactory<Z, D> factory = new XMLDatabaseClusterConfigurationFactory<Z, D>(id, config);
+		
+		return this.createProxy(id, factory);
 	}
-
+	
 	/**
+	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.sql.CommonDataSourceFactory#createProxy(java.lang.String, java.lang.String)
 	 */
-	public Z createProxy(String id, String config) throws SQLException
+	@Override
+	public Z createProxy(String id, DatabaseClusterConfigurationFactory<Z, D> factory) throws SQLException
 	{
-		DatabaseCluster<Z, D> cluster = this.getDatabaseCluster(id, config);
+		DatabaseClusterConfiguration<Z, D> configuration = factory.createConfiguration(this.configurationClass);
+		DatabaseCluster<Z, D> cluster = new DatabaseClusterImpl<Z, D>(id, configuration, factory);
 		
-		if (cluster == null) return null;
+		try
+		{
+			cluster.start();
+		}
+		catch (Exception e)
+		{
+			cluster.stop();
+
+			throw SQLExceptionFactory.getInstance().createException(e);
+		}
 		
 		return ProxyFactory.createProxy(this.targetClass, this.getInvocationHandler(cluster));
 	}
-	
-	/**
-	 * @param id
-	 * @param config
-	 * @return the appropriate database cluster
-	 * @throws SQLException
-	 */
-	protected abstract DatabaseCluster<Z, D> getDatabaseCluster(String id, String config) throws SQLException;
-	
+
 	/**
 	 * @param cluster
 	 * @return the appropriate proxy invocation handler for this datasource

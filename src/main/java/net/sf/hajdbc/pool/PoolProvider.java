@@ -22,10 +22,14 @@ package net.sf.hajdbc.pool;
  *
  */
 public interface PoolProvider<T, E extends Exception>
-{
-	boolean isValid(T item);
+{	
+	T create() throws E;
 	
 	void close(T item);
 	
-	T create() throws E;
+	boolean isValid(T item);
+	
+	Class<T> getProvidedClass();
+	
+	Class<E> getExceptionClass();
 }

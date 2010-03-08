@@ -21,10 +21,11 @@ import java.sql.SQLException;
 
 /**
  * @author Paul Ferraro
- *
  */
 public class SimpleDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> implements DatabaseClusterConfigurationFactory<Z, D>
 {
+	private static final long serialVersionUID = -6882420729056764462L;
+	
 	private final DatabaseClusterConfiguration<Z, D> configuration;
 	
 	public SimpleDatabaseClusterConfigurationFactory(DatabaseClusterConfiguration<Z, D> configuration)

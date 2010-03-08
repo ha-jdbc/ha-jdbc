@@ -23,10 +23,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -294,20 +295,20 @@ public class StandardDialect implements Dialect
 	 * @see net.sf.hajdbc.Dialect#getSequences(java.sql.DatabaseMetaData)
 	 */
 	@Override
-	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
+	public Map<QualifiedName, Integer> getSequences(DatabaseMetaData metaData) throws SQLException
 	{
-		List<QualifiedName> sequenceList = new LinkedList<QualifiedName>();
+		Map<QualifiedName, Integer> sequences = new HashMap<QualifiedName, Integer>();
 		
 		ResultSet resultSet = metaData.getTables(Strings.EMPTY, null, Strings.ANY, new String[] { this.sequenceTableType() });
 		
 		while (resultSet.next())
 		{
-			sequenceList.add(new QualifiedName(resultSet.getString("TABLE_SCHEM"), resultSet.getString("TABLE_NAME")));
+			sequences.put(new QualifiedName(resultSet.getString("TABLE_SCHEM"), resultSet.getString("TABLE_NAME")), 1);
 		}
 		
 		resultSet.close();
 		
-		return sequenceList;
+		return sequences;
 	}
 
 	protected String sequenceTableType()
@@ -335,7 +336,7 @@ public class StandardDialect implements Dialect
 	@Override
 	public String getAlterSequenceSQL(SequenceProperties sequence, long value)
 	{
-		return MessageFormat.format(this.alterSequenceFormat(), sequence.getName(), String.valueOf(value));
+		return MessageFormat.format(this.alterSequenceFormat(), sequence.getName(), String.valueOf(value), String.valueOf(sequence.getIncrement()));
 	}
 	
 	protected String alterSequenceFormat()

@@ -18,7 +18,6 @@
 package net.sf.hajdbc.sql;
 
 import java.lang.reflect.InvocationHandler;
-import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
@@ -29,19 +28,14 @@ import net.sf.hajdbc.DatabaseCluster;
  */
 public class DataSourceFactory extends CommonDataSourceObjectFactory<DataSource, DataSourceDatabase>
 {
-	
+	private static final long serialVersionUID = 6329647625724086236L;
+
 	/**
 	 * Constructs a new factory for creating a <code>DataSource</code>.
 	 */
 	public DataSourceFactory()
 	{
-		super(javax.sql.DataSource.class);
-	}
-
-	@Override
-	protected DatabaseCluster<DataSource, DataSourceDatabase> getDatabaseCluster(String id, String config) throws SQLException
-	{
-		return null; //DatabaseClusterFactory.getDatabaseCluster(id, DataSourceDatabaseCluster.class, DataSourceDatabaseClusterMBean.class, config);
+		super(javax.sql.DataSource.class, DataSourceDatabaseClusterConfiguration.class);
 	}
 
 	@Override

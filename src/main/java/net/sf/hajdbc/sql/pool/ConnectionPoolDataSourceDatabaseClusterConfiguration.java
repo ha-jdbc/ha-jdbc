@@ -34,8 +34,10 @@ import net.sf.hajdbc.sql.AbstractDatabaseClusterConfiguration;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ConnectionPoolDataSourceDatabaseClusterConfiguration extends AbstractDatabaseClusterConfiguration<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase>
 {
+	private static final long serialVersionUID = 6137340553506862286L;
+	
 	@XmlElement(name = "cluster", required = true)
-	private ConnectionPoolDataSourceNestedConfiguration configuration;
+	private ConnectionPoolDataSourceNestedConfiguration configuration = new ConnectionPoolDataSourceNestedConfiguration();
 
 	@Override
 	protected AbstractDatabaseClusterConfiguration.NestedConfiguration<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase> getNestedConfiguration()
@@ -46,6 +48,8 @@ public class ConnectionPoolDataSourceDatabaseClusterConfiguration extends Abstra
 	@XmlType(name = "nestedConfiguration")
 	static class ConnectionPoolDataSourceNestedConfiguration extends AbstractDatabaseClusterConfiguration.NestedConfiguration<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase>
 	{
+		private static final long serialVersionUID = 3139842065941633881L;
+
 		@SuppressWarnings("unused")
 		@XmlElement(name = "database")
 		private ConnectionPoolDataSourceDatabase[] getDatabases()

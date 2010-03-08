@@ -54,7 +54,7 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 	private final DatabaseCluster<Z, D> cluster;
 	private final StateManager stateManager;
 	private final CommandDispatcher<StateCommandContext<Z, D>> dispatcher;
-	private final ConcurrentMap<Member, Map<InvocationEvent, Map<D, InvokerEvent>>> remoteInvokerMap = new ConcurrentHashMap<Member, Map<InvocationEvent, Map<D, InvokerEvent>>>();
+	private final ConcurrentMap<Member, Map<InvocationEvent, Map<String, InvokerEvent>>> remoteInvokerMap = new ConcurrentHashMap<Member, Map<InvocationEvent, Map<String, InvokerEvent>>>();
 	
 	public DistributedStateManager(DatabaseCluster<Z, D> cluster, CommandDispatcherFactory dispatcherFactory) throws Exception
 	{
@@ -62,16 +62,6 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 		this.stateManager = cluster.getStateManager();
 		StateCommandContext<Z, D> context = this;
 		this.dispatcher = dispatcherFactory.createCommandDispatcher(cluster.getId(), context, this, this);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.state.StateManager#isMembershipEmpty()
-	 */
-	@Override
-	public boolean isMembershipEmpty()
-	{
-		return false;
 	}
 
 	/**
@@ -219,7 +209,7 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 	 * @see net.sf.hajdbc.state.distributed.StateCommandContext#getRemoteInvokers(net.sf.hajdbc.distributed.Remote)
 	 */
 	@Override
-	public Map<InvocationEvent, Map<D, InvokerEvent>> getRemoteInvokers(Remote remote)
+	public Map<InvocationEvent, Map<String, InvokerEvent>> getRemoteInvokers(Remote remote)
 	{
 		return this.remoteInvokerMap.get(remote.getMember());
 	}
@@ -291,7 +281,7 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 	@Override
 	public void added(Member member)
 	{
-		this.remoteInvokerMap.putIfAbsent(member, new HashMap<InvocationEvent, Map<D, InvokerEvent>>());
+		this.remoteInvokerMap.putIfAbsent(member, new HashMap<InvocationEvent, Map<String, InvokerEvent>>());
 	}
 
 	/**
@@ -301,14 +291,27 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 	@Override
 	public void removed(Member member)
 	{
-		Map<InvocationEvent, Map<D, InvokerEvent>> invokers = this.remoteInvokerMap.remove(member);
-		
-		if (invokers != null)
+		if (this.dispatcher.isCoordinator())
 		{
+			Map<InvocationEvent, Map<String, InvokerEvent>> invokers = this.remoteInvokerMap.remove(member);
 			
+			if (invokers != null)
+			{
+				this.cluster.getDurability().recover(invokers);
+			}
 		}
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.state.StateManager#recover()
+	 */
+	@Override
+	public Map<InvocationEvent, Map<String, InvokerEvent>> recover()
+	{
+		return this.stateManager.recover();
+	}
+
 	private static class RemoteDescriptor implements Remote, Serializable
 	{
 		private static final long serialVersionUID = 3717630867671175936L;

@@ -19,6 +19,8 @@ package net.sf.hajdbc.sql.xa;
 
 import java.lang.reflect.Method;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -54,12 +56,13 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 {
 	private static final Set<Method> driverReadMethodSet = Methods.findMethods(XAResource.class, "getTransactionTimeout", "isSameRM");
 	private static final Set<Method> databaseWriteMethodSet = Methods.findMethods(XAResource.class, "setTransactionTimeout");
-	private static final Set<Method> intraTransactionMethodSet = Methods.findMethods(XAResource.class, "end", "recover");
+	private static final Set<Method> intraTransactionMethodSet = Methods.findMethods(XAResource.class, "prepare", "end", "recover");
 	private static final Method prepareMethod = Methods.getMethod(XAResource.class, "prepare", Xid.class);
 	private static final Method startMethod = Methods.getMethod(XAResource.class, "start", Xid.class, Integer.TYPE);
 	private static final Method commitMethod = Methods.getMethod(XAResource.class, "commit", Xid.class, Boolean.TYPE);
 	private static final Method rollbackMethod = Methods.getMethod(XAResource.class, "rollback", Xid.class);
 	private static final Method forgetMethod = Methods.getMethod(XAResource.class, "forget", Xid.class);
+	private static final Set<Method> endTransactionMethodSet = new HashSet<Method>(Arrays.asList(commitMethod, rollbackMethod, forgetMethod));
 	
 	private static final Map<Method, Durability.Phase> phaseMap = new IdentityHashMap<Method, Durability.Phase>();
 	static
@@ -102,14 +105,11 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 		}
 		
 		boolean start = method.equals(startMethod);
-		boolean prepare = method.equals(prepareMethod);
-		boolean commit = method.equals(commitMethod);
-		boolean rollback = method.equals(rollbackMethod);
-		boolean forget = method.equals(forgetMethod);
+		boolean end = endTransactionMethodSet.contains(method);
 		
-		if (start || prepare || commit || rollback || forget || intraTransactionMethodSet.contains(method))
+		if (start || end || method.equals(prepareMethod) || intraTransactionMethodSet.contains(method))
 		{
-			final InvocationStrategy<XADataSource, XADataSourceDatabase, XAResource, Object, XAException> strategy = new DatabaseWriteInvocationStrategy<XADataSource, XADataSourceDatabase, XAResource, Object, XAException>(this.cluster.getTransactionalExecutor());
+			final InvocationStrategy<XADataSource, XADataSourceDatabase, XAResource, Object, XAException> strategy = new DatabaseWriteInvocationStrategy<XADataSource, XADataSourceDatabase, XAResource, Object, XAException>(end ? this.cluster.getEndTransactionExecutor() : this.cluster.getTransactionalExecutor());
 			
 			Xid xid = (Xid) parameters[0];
 			
@@ -148,7 +148,7 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 			{
 				final InvocationStrategy<XADataSource, XADataSourceDatabase, XAResource, Object, XAException> durabilityStrategy = this.cluster.getDurability().getInvocationStrategy(strategy, phase, new XidTransactionIdentifier(xid), this.getExceptionFactory());
 				
-				if (commit || rollback || forget)
+				if (endTransactionMethodSet.contains(method))
 				{
 					final Lock lock = lockMap.remove(xid);
 
@@ -192,7 +192,7 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 		
 		Durability.Phase phase = phaseMap.get(method);
 		
-		if (method.equals(prepareMethod) || method.equals(commitMethod) || method.equals(rollbackMethod) || method.equals(forgetMethod))
+		if (method.equals(prepareMethod) || endTransactionMethodSet.contains(method))
 		{
 			Xid xid = (Xid) parameters[0];
 			

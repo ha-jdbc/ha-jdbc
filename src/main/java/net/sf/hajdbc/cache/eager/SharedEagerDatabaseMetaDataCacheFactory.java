@@ -29,6 +29,8 @@ import net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory;
  */
 public class SharedEagerDatabaseMetaDataCacheFactory extends AbstractDatabaseMetaDataCacheFactory
 {
+	private static final long serialVersionUID = -7042032576675428976L;
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.cache.AbstractDatabaseMetaDataCacheFactory#createCache(net.sf.hajdbc.DatabaseCluster, net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory)

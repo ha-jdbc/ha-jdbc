@@ -21,11 +21,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.Serializable;
 import java.io.Writer;
 import java.net.URL;
 
-public class URLCharacterStreamer implements CharacterStreamer
+public class URLCharacterStreamer implements CharacterStreamer, Serializable
 {
+	private static final long serialVersionUID = -3911432025271185584L;
+	
 	private final URL url;
 	
 	public URLCharacterStreamer(URL url)

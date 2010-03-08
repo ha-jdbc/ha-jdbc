@@ -37,6 +37,13 @@ public class InvocationEvent extends EventObject
 		
 		this.phase = phase;
 	}
+
+	public InvocationEvent(byte[] transactionId, int phase)
+	{
+		super(transactionId);
+		
+		this.phase = Durability.Phase.values()[phase];
+	}
 	
 	public Durability.Phase getPhase()
 	{
@@ -55,7 +62,7 @@ public class InvocationEvent extends EventObject
 	@Override
 	public boolean equals(Object object)
 	{
-		if ((object == null) || !(object instanceof EventObject)) return false;
+		if ((object == null) || !(object instanceof InvocationEvent)) return false;
 		
 		InvocationEvent event = (InvocationEvent) object;
 		

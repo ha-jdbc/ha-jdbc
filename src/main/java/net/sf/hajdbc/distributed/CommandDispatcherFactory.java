@@ -17,6 +17,7 @@
  */
 package net.sf.hajdbc.distributed;
 
+
 /**
  * Factory for creating instances of {@link CommandDispatcher}.
  * 

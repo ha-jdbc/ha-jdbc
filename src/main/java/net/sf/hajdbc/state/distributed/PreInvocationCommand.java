@@ -34,8 +34,8 @@ public class PreInvocationCommand<Z, D extends Database<Z>> extends InvocationCo
 	}
 
 	@Override
-	protected void execute(Map<InvocationEvent, Map<D, InvokerEvent>> invokers, InvocationEvent event)
+	protected void execute(Map<InvocationEvent, Map<String, InvokerEvent>> invokers, InvocationEvent event)
 	{
-		invokers.put(event, new TreeMap<D, InvokerEvent>());
+		invokers.put(event, new TreeMap<String, InvokerEvent>());
 	}
 }

@@ -17,13 +17,17 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.io.Serializable;
 import java.sql.SQLException;
+
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 
 /**
  * @author Paul Ferraro
  * @param <D> the data source class
  */
-public interface CommonDataSourceFactory<Z extends javax.sql.CommonDataSource>
+public interface CommonDataSourceFactory<Z extends javax.sql.CommonDataSource, D extends Database<Z>> extends Serializable
 {
 	/**
 	 * Creates a data source proxy to the specified cluster, using the configuration file at the specified location.
@@ -32,5 +36,5 @@ public interface CommonDataSourceFactory<Z extends javax.sql.CommonDataSource>
 	 * @return a proxied data source
 	 * @throws SQLException if the data source proxy could not be created
 	 */
-	public Z createProxy(String id, String config) throws SQLException;
+	public Z createProxy(String id, DatabaseClusterConfigurationFactory<Z, D> factory) throws SQLException;
 }

@@ -18,7 +18,6 @@
 package net.sf.hajdbc.sql.pool;
 
 import java.lang.reflect.InvocationHandler;
-import java.sql.SQLException;
 
 import javax.sql.ConnectionPoolDataSource;
 
@@ -31,21 +30,14 @@ import net.sf.hajdbc.sql.CommonDataSourceObjectFactory;
  */
 public class ConnectionPoolDataSourceFactory extends CommonDataSourceObjectFactory<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase>
 {
+	private static final long serialVersionUID = 4615188477335443494L;
+
 	/**
 	 * Constructs a new factory for creating a <code>ConnectionPoolDataSource</code>.
 	 */
 	public ConnectionPoolDataSourceFactory()
 	{
-		super(ConnectionPoolDataSource.class);
-	}
-
-	/**
-	 * @see net.sf.hajdbc.sql.CommonDataSourceObjectFactory#getDatabaseCluster(java.lang.String, java.lang.String)
-	 */
-	@Override
-	protected DatabaseCluster<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase> getDatabaseCluster(String id, String config) throws SQLException
-	{
-		return null; //DatabaseClusterFactory.getDatabaseCluster(id, ConnectionPoolDataSourceDatabaseCluster.class, ConnectionPoolDataSourceDatabaseClusterMBean.class, config);
+		super(ConnectionPoolDataSource.class, ConnectionPoolDataSourceDatabaseClusterConfiguration.class);
 	}
 
 	/**

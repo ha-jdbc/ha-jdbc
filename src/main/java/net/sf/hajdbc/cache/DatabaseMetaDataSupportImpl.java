@@ -17,6 +17,7 @@
  */
 package net.sf.hajdbc.cache;
 
+import java.io.Serializable;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -42,8 +43,10 @@ import net.sf.hajdbc.util.Strings;
  * @author Paul Ferraro
  */
 @SuppressWarnings("nls")
-public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
+public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport, Serializable
 {
+	private static final long serialVersionUID = 7296994314643391105L;
+
 	// As defined in SQL-92 specification: http://www.andrew.cmu.edu/user/shadow/sql/sql1992.txt
 	private static final String[] SQL_92_RESERVED_WORDS = new String[] {
 		"ABSOLUTE", "ACTION", "ADD", "ALL", "ALLOCATE", "ALTER", "AND", "ANY", "ARE", "AS", "ASC", "ASSERTION", "AT", "AUTHORIZATION", "AVG",
@@ -408,13 +411,13 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 	@Override
 	public Collection<SequenceProperties> getSequences(DatabaseMetaData metaData) throws SQLException
 	{
-		Collection<QualifiedName> sequences = this.dialect.getSequences(metaData);
+		Map<QualifiedName, Integer> sequences = this.dialect.getSequences(metaData);
 		
 		List<SequenceProperties> sequenceList = new ArrayList<SequenceProperties>(sequences.size());
 		
-		for (QualifiedName sequence: sequences)
+		for (Map.Entry<QualifiedName, Integer> sequence: sequences.entrySet())
 		{
-			sequenceList.add(new SequencePropertiesImpl(this.qualifyNameForDML(sequence)));
+			sequenceList.add(new SequencePropertiesImpl(this.qualifyNameForDML(sequence.getKey()), sequence.getValue()));
 		}
 		
 		return sequenceList;

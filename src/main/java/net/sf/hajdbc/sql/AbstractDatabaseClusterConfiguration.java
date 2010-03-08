@@ -21,7 +21,9 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +54,7 @@ import net.sf.hajdbc.cache.DatabaseMetaDataCacheFactory;
 import net.sf.hajdbc.cache.DatabaseMetaDataCacheFactoryEnum;
 import net.sf.hajdbc.codec.CodecFactory;
 import net.sf.hajdbc.codec.SimpleCodec;
+import net.sf.hajdbc.dialect.CustomDialectFactory;
 import net.sf.hajdbc.dialect.DialectFactory;
 import net.sf.hajdbc.dialect.DialectFactoryEnum;
 import net.sf.hajdbc.distributed.CommandDispatcherFactory;
@@ -69,15 +72,17 @@ import org.quartz.CronExpression;
  */
 @XmlType(propOrder = { "dispatcherFactory", "synchronizationStrategyDescriptors" })
 @XmlAccessorType(XmlAccessType.FIELD)
-public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database<Z>> implements DatabaseClusterConfiguration<Z, D>
+public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database<Z>> implements DatabaseClusterConfiguration<Z, D>, Serializable
 {
+	private static final long serialVersionUID = -2808296483725374829L;
+
 	@XmlElement(name = "distributable", type = DefaultChannelProvider.class)
 	private CommandDispatcherFactory dispatcherFactory;
 	
 	@XmlTransient
 	Map<String, SynchronizationStrategy> synchronizationStrategies = new HashMap<String, SynchronizationStrategy>();
 	
-	protected abstract DatabaseClusterConfiguration<Z, D> getNestedConfiguration();
+	protected abstract NestedConfiguration<Z, D> getNestedConfiguration();
 	
 	@SuppressWarnings("unused")
 	@XmlElement(name = "sync")
@@ -171,6 +176,11 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		return this.getNestedConfiguration().getAutoActivationExpression();
 	}
 
+	public void setAutoActivationExpression(CronExpression expression)
+	{
+		this.getNestedConfiguration().setAutoActivationExpression(expression);
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getBalancerFactory()
@@ -181,6 +191,11 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		return this.getNestedConfiguration().getBalancerFactory();
 	}
 
+	public void setBalancerFactory(BalancerFactory factory)
+	{
+		this.getNestedConfiguration().setBalancerFactory(factory);
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getDispatcherFactory()
@@ -191,6 +206,11 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		return this.dispatcherFactory;
 	}
 
+	public void setDispatcherFactory(CommandDispatcherFactory factory)
+	{
+		this.dispatcherFactory = factory;
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getDatabaseMap()
@@ -201,6 +221,16 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		return this.getNestedConfiguration().getDatabaseMap();
 	}
 
+	public void setDatabases(Collection<D> databases)
+	{
+		Map<String, D> map = this.getDatabaseMap();
+		
+		for (D database: databases)
+		{
+			map.put(database.getId(), database);
+		}
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getDatabaseMetaDataCacheFactory()
@@ -211,6 +241,11 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		return this.getNestedConfiguration().getDatabaseMetaDataCacheFactory();
 	}
 
+	public void setDatabaseMetaDataCacheFactory(DatabaseMetaDataCacheFactory factory)
+	{
+		this.getNestedConfiguration().setDatabaseMetaDataCacheFactory(factory);
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getDefaultSynchronizationStrategy()
@@ -221,6 +256,11 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		return this.getNestedConfiguration().getDefaultSynchronizationStrategy();
 	}
 
+	public void setDefaultSynchronizationStrategy(String strategy)
+	{
+		this.getNestedConfiguration().setDefaultSynchronizationStrategy(strategy);
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getDialectFactory()
@@ -231,6 +271,11 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		return this.getNestedConfiguration().getDialectFactory();
 	}
 
+	public void setDialectFactory(DialectFactory factory)
+	{
+		this.getNestedConfiguration().setDialectFactory(factory);
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getDurabilityFactory()
@@ -241,6 +286,11 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		return this.getNestedConfiguration().getDurabilityFactory();
 	}
 
+	public void setDurabilityFactory(DurabilityFactory factory)
+	{
+		this.getNestedConfiguration().setDurabilityFactory(factory);
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getExecutorProvider()
@@ -251,6 +301,11 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		return this.getNestedConfiguration().getExecutorProvider();
 	}
 	
+	public void setExecutorProvider(ExecutorServiceProvider provider)
+	{
+		this.getNestedConfiguration().setExecutorProvider(provider);
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getThreadFactory()
@@ -259,6 +314,11 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	public ThreadFactory getThreadFactory()
 	{
 		return this.getNestedConfiguration().getThreadFactory();
+	}
+
+	public void setThreadFactory(ThreadFactory factory)
+	{
+		this.getNestedConfiguration().setThreadFactory(factory);
 	}
 	
 	/**
@@ -271,6 +331,11 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		return this.getNestedConfiguration().getCodecFactory();
 	}
 
+	public void setCodecFactory(CodecFactory factory)
+	{
+		this.getNestedConfiguration().setCodecFactory(factory);
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getFailureDetectionExpression()
@@ -281,6 +346,11 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		return this.getNestedConfiguration().getFailureDetectionExpression();
 	}
 
+	public void setFailureDetectionExpression(CronExpression expression)
+	{
+		this.getNestedConfiguration().setFailureDetectionExpression(expression);
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getStateManager()
@@ -291,6 +361,11 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		return this.getNestedConfiguration().getStateManagerProvider();
 	}
 
+	public void setStateManagerProvider(StateManagerProvider provider)
+	{
+		this.getNestedConfiguration().setStateManagerProvider(provider);
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getSynchronizationStrategyMap()
@@ -301,6 +376,11 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		return this.synchronizationStrategies;
 	}
 
+	public void setSynchronizationStrategyMap(Map<String, SynchronizationStrategy> strategies)
+	{
+		this.synchronizationStrategies = strategies;
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getTransactionMode()
@@ -311,6 +391,11 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		return this.getNestedConfiguration().getTransactionMode();
 	}
 
+	public void setTransactionMode(TransactionMode mode)
+	{
+		this.getNestedConfiguration().setTransactionMode(mode);
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#isCurrentDateEvaluationEnabled()
@@ -321,6 +406,11 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		return this.getNestedConfiguration().isCurrentDateEvaluationEnabled();
 	}
 
+	public void setCurrentDateEvaluationEnabled(boolean enabled)
+	{
+		this.getNestedConfiguration().setCurrentDateEvaluationEnabled(enabled);
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#isCurrentTimeEvaluationEnabled()
@@ -331,6 +421,11 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		return this.getNestedConfiguration().isCurrentTimeEvaluationEnabled();
 	}
 
+	public void setCurrentTimeEvaluationEnabled(boolean enabled)
+	{
+		this.getNestedConfiguration().setCurrentTimeEvaluationEnabled(enabled);
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#isCurrentTimestampEvaluationEnabled()
@@ -341,6 +436,11 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		return this.getNestedConfiguration().isCurrentTimestampEvaluationEnabled();
 	}
 
+	public void setCurrentTimestampEvaluationEnabled(boolean enabled)
+	{
+		this.getNestedConfiguration().setCurrentTimestampEvaluationEnabled(enabled);
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#isIdentityColumnDetectionEnabled()
@@ -351,6 +451,11 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		return this.getNestedConfiguration().isIdentityColumnDetectionEnabled();
 	}
 
+	public void setIdentityColumnDetectionEnabled(boolean enabled)
+	{
+		this.getNestedConfiguration().setIdentityColumnDetectionEnabled(enabled);
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#isRandEvaluationEnabled()
@@ -361,6 +466,11 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		return this.getNestedConfiguration().isRandEvaluationEnabled();
 	}
 
+	public void setRandEvaluationEnabled(boolean enabled)
+	{
+		this.getNestedConfiguration().setRandEvaluationEnabled(enabled);
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#isSequenceDetectionEnabled()
@@ -369,6 +479,11 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	public boolean isSequenceDetectionEnabled()
 	{
 		return this.getNestedConfiguration().isSequenceDetectionEnabled();
+	}
+	
+	public void setSequenceDetectionEnabled(boolean enabled)
+	{
+		this.getNestedConfiguration().setSequenceDetectionEnabled(enabled);
 	}
 	
 	private Map<String, PropertyDescriptor> findDescriptors(Class<?> targetClass) throws Exception
@@ -387,8 +502,11 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	}
 	
 	@XmlType(name = "abstractNestedConfiguration")
+	@XmlAccessorType(XmlAccessType.FIELD)
 	protected static abstract class NestedConfiguration<Z, D extends Database<Z>> implements DatabaseClusterConfiguration<Z, D>
 	{
+		private static final long serialVersionUID = -5674156614205147546L;
+
 		@XmlJavaTypeAdapter(BalancerFactoryAdapter.class)
 		@XmlAttribute(name = "balancer")
 		private BalancerFactory balancerFactory = BalancerFactoryEnum.ROUND_ROBIN;
@@ -414,8 +532,9 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		@XmlTransient
 		private StateManagerProvider stateManagerProvider = new SQLStateManagerProvider();
 
+		@XmlJavaTypeAdapter(TransactionModeAdapter.class)
 		@XmlAttribute(name = "transaction-mode")
-		private TransactionMode transactionMode = TransactionMode.SERIAL;
+		private TransactionMode transactionMode = TransactionModeEnum.SERIAL;
 
 		@XmlTransient
 		private CronExpression autoActivationExpression;
@@ -506,12 +625,22 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			return this.autoActivationExpression;
 		}
 
+		public void setAutoActivationExpression(CronExpression expression)
+		{
+			this.autoActivationExpression = expression;
+		}
+		
 		@Override
 		public BalancerFactory getBalancerFactory()
 		{
 			return this.balancerFactory;
 		}
 
+		public void setBalancerFactory(BalancerFactory factory)
+		{
+			this.balancerFactory = factory;
+		}
+		
 		@Override
 		public CommandDispatcherFactory getDispatcherFactory()
 		{
@@ -524,54 +653,99 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			return this.databaseMetaDataCacheFactory;
 		}
 
+		public void setDatabaseMetaDataCacheFactory(DatabaseMetaDataCacheFactory factory)
+		{
+			this.databaseMetaDataCacheFactory = factory;
+		}
+		
 		@Override
 		public String getDefaultSynchronizationStrategy()
 		{
 			return this.defaultSynchronizationStrategy;
 		}
 
+		public void setDefaultSynchronizationStrategy(String strategy)
+		{
+			this.defaultSynchronizationStrategy = strategy;
+		}
+		
 		@Override
 		public DialectFactory getDialectFactory()
 		{
 			return this.dialectFactory;
 		}
 
+		public void setDialectFactory(DialectFactory factory)
+		{
+			this.dialectFactory = factory;
+		}
+		
 		@Override
 		public DurabilityFactory getDurabilityFactory()
 		{
 			return this.durabilityFactory;
 		}
 
+		public void setDurabilityFactory(DurabilityFactory factory)
+		{
+			this.durabilityFactory = factory;
+		}
+		
 		@Override
 		public ExecutorServiceProvider getExecutorProvider()
 		{
 			return this.executorProvider;
 		}
 
+		public void setExecutorProvider(ExecutorServiceProvider provider)
+		{
+			this.executorProvider = provider;
+		}
+		
 		@Override
 		public ThreadFactory getThreadFactory()
 		{
 			return this.threadFactory;
 		}
 
+		public void setThreadFactory(ThreadFactory factory)
+		{
+			this.threadFactory = factory;
+		}
+		
 		@Override
 		public CodecFactory getCodecFactory()
 		{
 			return this.codecFactory;
 		}
 
+		public void setCodecFactory(CodecFactory factory)
+		{
+			this.codecFactory = factory;
+		}
+		
 		@Override
 		public CronExpression getFailureDetectionExpression()
 		{
 			return this.failureDetectionExpression;
 		}
 
+		public void setFailureDetectionExpression(CronExpression expression)
+		{
+			this.failureDetectionExpression = expression;
+		}
+		
 		@Override
 		public StateManagerProvider getStateManagerProvider()
 		{
 			return this.stateManagerProvider;
 		}
 
+		public void setStateManagerProvider(StateManagerProvider provider)
+		{
+			this.stateManagerProvider = provider;
+		}
+		
 		@Override
 		public Map<String, SynchronizationStrategy> getSynchronizationStrategyMap()
 		{
@@ -584,10 +758,20 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			return this.transactionMode;
 		}
 
+		public void setTransactionMode(TransactionMode mode)
+		{
+			this.transactionMode = mode;
+		}
+		
 		@Override
 		public boolean isCurrentDateEvaluationEnabled()
 		{
 			return this.currentDateEvaluationEnabled;
+		}
+		
+		public void setCurrentDateEvaluationEnabled(boolean enabled)
+		{
+			this.currentDateEvaluationEnabled = enabled;
 		}
 		
 		@Override
@@ -596,10 +780,20 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			return this.currentTimeEvaluationEnabled;
 		}
 		
+		public void setCurrentTimeEvaluationEnabled(boolean enabled)
+		{
+			this.currentTimeEvaluationEnabled = enabled;
+		}
+		
 		@Override
 		public boolean isCurrentTimestampEvaluationEnabled()
 		{
 			return this.currentTimestampEvaluationEnabled;
+		}
+		
+		public void setCurrentTimestampEvaluationEnabled(boolean enabled)
+		{
+			this.currentTimestampEvaluationEnabled = enabled;
 		}
 		
 		@Override
@@ -608,16 +802,31 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			return this.identityColumnDetectionEnabled;
 		}
 		
+		public void setIdentityColumnDetectionEnabled(boolean enabled)
+		{
+			this.identityColumnDetectionEnabled = enabled;
+		}
+		
 		@Override
 		public boolean isRandEvaluationEnabled()
 		{
 			return this.randEvaluationEnabled;
+		}
+
+		public void setRandEvaluationEnabled(boolean enabled)
+		{
+			this.randEvaluationEnabled = enabled;
 		}
 		
 		@Override
 		public boolean isSequenceDetectionEnabled()
 		{
 			return this.sequenceDetectionEnabled;
+		}
+		
+		public void setSequenceDetectionEnabled(boolean enabled)
+		{
+			this.sequenceDetectionEnabled = enabled;
 		}
 	}
 
@@ -645,6 +854,15 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		protected Class<DurabilityFactoryEnum> getTargetClass()
 		{
 			return DurabilityFactoryEnum.class;
+		}
+	}
+
+	static class TransactionModeAdapter extends EnumAdapter<TransactionMode, TransactionModeEnum>
+	{
+		@Override
+		protected Class<TransactionModeEnum> getTargetClass()
+		{
+			return TransactionModeEnum.class;
 		}
 	}
 
@@ -682,29 +900,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			}
 			catch (IllegalArgumentException e)
 			{
-				final Class<? extends Dialect> targetClass = Class.forName(value).asSubclass(Dialect.class);
-				
-				return new DialectFactory()
-				{
-					@Override
-					public Dialect createDialect()
-					{
-						try
-						{
-							return targetClass.newInstance();
-						}
-						catch (Exception e)
-						{
-							throw new IllegalArgumentException(e);
-						}
-					}
-
-					@Override
-					public String toString()
-					{
-						return targetClass.getName();
-					}
-				};
+				return new CustomDialectFactory(Class.forName(value).asSubclass(Dialect.class));
 			}
 		}
 	}

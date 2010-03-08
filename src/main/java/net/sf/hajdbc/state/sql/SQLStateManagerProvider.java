@@ -19,8 +19,11 @@ package net.sf.hajdbc.state.sql;
 
 import java.util.Properties;
 
+import org.apache.commons.pool.impl.GenericObjectPool;
+
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.pool.generic.GenericObjectPoolFactory;
 import net.sf.hajdbc.state.StateManager;
 import net.sf.hajdbc.state.StateManagerProvider;
 
@@ -29,7 +32,7 @@ public class SQLStateManagerProvider implements StateManagerProvider
 	@Override
 	public <Z, D extends Database<Z>> StateManager createStateManager(DatabaseCluster<Z, D> cluster, Properties properties)
 	{
-		return new SQLStateManager(cluster);
+		return new SQLStateManager<Z, D>(cluster, new GenericObjectPoolFactory(new GenericObjectPool.Config()));
 	}
 
 	@Override

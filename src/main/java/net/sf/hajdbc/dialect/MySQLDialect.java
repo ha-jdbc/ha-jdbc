@@ -19,9 +19,9 @@ package net.sf.hajdbc.dialect;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.hajdbc.cache.QualifiedName;
 
@@ -54,9 +54,9 @@ public class MySQLDialect extends StandardDialect
 	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.DatabaseMetaData)
 	 */
 	@Override
-	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
+	public Map<QualifiedName, Integer> getSequences(DatabaseMetaData metaData) throws SQLException
 	{
-		return Collections.emptyList();
+		return Collections.emptyMap();
 	}
 
 	/**

@@ -23,11 +23,19 @@ package net.sf.hajdbc.cache;
  */
 public class SequencePropertiesImpl implements SequenceProperties
 {
-	private String name;
+	private final String name;
+	private final int increment;
+	
+	public SequencePropertiesImpl(String name, int increment)
+	{
+		this.name = name;
+		this.increment = increment;
+	}
 	
 	public SequencePropertiesImpl(String name)
 	{
 		this.name = name;
+		this.increment = 1;
 	}
 	
 	/**
@@ -37,6 +45,16 @@ public class SequencePropertiesImpl implements SequenceProperties
 	public String getName()
 	{
 		return this.name;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.cache.SequenceProperties#getIncrement()
+	 */
+	@Override
+	public int getIncrement()
+	{
+		return this.increment;
 	}
 
 	/**

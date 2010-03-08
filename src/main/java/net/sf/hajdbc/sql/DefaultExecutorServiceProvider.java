@@ -17,6 +17,7 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.io.Serializable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
@@ -31,8 +32,10 @@ import net.sf.hajdbc.ExecutorServiceProvider;
  * @author paul
  *
  */
-public class DefaultExecutorServiceProvider implements ExecutorServiceProvider
+public class DefaultExecutorServiceProvider implements ExecutorServiceProvider, Serializable
 {
+	private static final long serialVersionUID = 5781743869682086889L;
+	
 	@XmlAttribute(name = "min-threads")
 	private int minThreads = 0;
 	@XmlAttribute(name = "max-threads")

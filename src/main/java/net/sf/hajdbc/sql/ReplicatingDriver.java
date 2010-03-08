@@ -62,7 +62,7 @@ public final class ReplicatingDriver extends AbstractDriver
 		}
 	}
 	
-	private DatabaseClusterConfigurationFactory<Driver, DriverDatabase> configurationFactory;
+	private volatile DatabaseClusterConfigurationFactory<Driver, DriverDatabase> configurationFactory;
 
 	public void setConfigurationFactory(DatabaseClusterConfigurationFactory<Driver, DriverDatabase> configurationFactory)
 	{

@@ -34,7 +34,7 @@ import net.sf.hajdbc.durability.DurabilityFactoryEnum;
 import net.sf.hajdbc.sql.DefaultExecutorServiceProvider;
 import net.sf.hajdbc.sql.DriverDatabase;
 import net.sf.hajdbc.sql.DriverDatabaseClusterConfiguration;
-import net.sf.hajdbc.sql.TransactionMode;
+import net.sf.hajdbc.sql.TransactionModeEnum;
 
 import org.easymock.EasyMock;
 import org.junit.Test;
@@ -86,7 +86,7 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 	   Assert.assertEquals("passive", configuration.getDefaultSynchronizationStrategy());
 	   Assert.assertSame(DialectFactoryEnum.STANDARD, configuration.getDialectFactory());
 	   Assert.assertSame(DurabilityFactoryEnum.FINE, configuration.getDurabilityFactory());
-	   Assert.assertSame(TransactionMode.SERIAL, configuration.getTransactionMode());
+	   Assert.assertSame(TransactionModeEnum.SERIAL, configuration.getTransactionMode());
 	   
 	   DefaultExecutorServiceProvider executorProvider = (DefaultExecutorServiceProvider) configuration.getExecutorProvider();
 	   

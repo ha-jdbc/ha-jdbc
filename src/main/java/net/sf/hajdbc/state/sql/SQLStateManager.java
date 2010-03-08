@@ -24,6 +24,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -31,21 +33,20 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.durability.InvocationEvent;
 import net.sf.hajdbc.durability.InvokerEvent;
+import net.sf.hajdbc.logging.Level;
+import net.sf.hajdbc.logging.Logger;
+import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.pool.Pool;
-import net.sf.hajdbc.pool.simple.SimplePool;
-import net.sf.hajdbc.pool.simple.SimplePoolConfiguration;
+import net.sf.hajdbc.pool.PoolFactory;
 import net.sf.hajdbc.pool.sql.ConnectionFactory;
 import net.sf.hajdbc.pool.sql.ConnectionPoolProvider;
 import net.sf.hajdbc.state.DatabaseEvent;
 import net.sf.hajdbc.state.StateManager;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * @author Paul Ferraro
  */
-public class SQLStateManager implements StateManager, ConnectionFactory
+public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, ConnectionFactory
 {
 	private static final String STATE_TABLE = "cluster_state";
 	private static final String DATABASE_COLUMN = "database_id";
@@ -62,9 +63,11 @@ public class SQLStateManager implements StateManager, ConnectionFactory
 	static final String DELETE_STATE_SQL = MessageFormat.format("DELETE FROM {0} WHERE {1} = ?", STATE_TABLE, DATABASE_COLUMN);
 	static final String TRUNCATE_STATE_SQL = MessageFormat.format("DELETE FROM {0}", STATE_TABLE);
 
-	static final String INSERT_INVOCATION_SQL = MessageFormat.format("INSERT INTO {0} ({1}, {2}) VALUES (?)", INVOCATION_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN);
+	static final String SELECT_INVOCATION_SQL = MessageFormat.format("SELECT {1}, {2} FROM {0}", INVOCATION_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN);
+	static final String INSERT_INVOCATION_SQL = MessageFormat.format("INSERT INTO {0} ({1}, {2}) VALUES (?, ?)", INVOCATION_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN);
 	static final String DELETE_INVOCATION_SQL = MessageFormat.format("DELETE FROM {0} WHERE {1} = ? AND {2} = ?", INVOCATION_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN);
 	
+	static final String SELECT_INVOKER_SQL = MessageFormat.format("SELECT {1}, {2}, {3}, {4}, {5} FROM {0}", INVOKER_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, DATABASE_COLUMN, SUCCESS_COLUMN, RESULT_COLUMN);
 	static final String INSERT_INVOKER_SQL = MessageFormat.format("INSERT INTO {0} ({1}, {2}, {3}) VALUES (?, ?, ?)", INVOKER_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, DATABASE_COLUMN);
 	static final String UPDATE_INVOKER_SQL = MessageFormat.format("UPDATE {0} SET {4} = ?, {5} = ? WHERE {1} = ? AND {2} = ? AND {3} = ?", INVOKER_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, DATABASE_COLUMN, SUCCESS_COLUMN, RESULT_COLUMN);
 	static final String DELETE_INVOKER_SQL = MessageFormat.format("DELETE FROM {0} WHERE {1} = ? AND {2} = ?", INVOKER_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN);
@@ -75,7 +78,8 @@ public class SQLStateManager implements StateManager, ConnectionFactory
 	
 	private static Logger logger = LoggerFactory.getLogger(SQLStateManager.class);
 	
-	private final String clusterId;
+	private final DatabaseCluster<Z, D> cluster;
+	private final PoolFactory poolFactory;
 	
 	private Pool<Connection, SQLException> pool;
 	private String urlPattern = "jdbc:h2:{0}";
@@ -84,19 +88,10 @@ public class SQLStateManager implements StateManager, ConnectionFactory
 
 	private String url;
 	
-	public <Z, D extends Database<Z>> SQLStateManager(DatabaseCluster<Z, D> cluster)
+	public SQLStateManager(DatabaseCluster<Z, D> cluster, PoolFactory poolFactory)
 	{
-		this.clusterId = cluster.getId();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.state.StateManager#isMembershipEmpty()
-	 */
-	@Override
-	public boolean isMembershipEmpty()
-	{
-		return false;
+		this.cluster = cluster;
+		this.poolFactory = poolFactory;
 	}
 
 	/**
@@ -144,7 +139,7 @@ public class SQLStateManager implements StateManager, ConnectionFactory
 		}
 		catch (SQLException e)
 		{
-			logger.error(e.getMessage(), e);
+			logger.log(Level.ERROR, e, e.getMessage());
 		}
 		
 		return set;
@@ -203,6 +198,14 @@ public class SQLStateManager implements StateManager, ConnectionFactory
 	@Override
 	public void activated(final DatabaseEvent event)
 	{
+		try
+		{
+			throw new Exception();
+		}
+		catch (Exception e)
+		{
+			logger.log(Level.INFO, e, "activated(" + event + ")");
+		}
 		Transaction transaction = new Transaction()
 		{
 			@Override
@@ -218,7 +221,7 @@ public class SQLStateManager implements StateManager, ConnectionFactory
 		}
 		catch (SQLException e)
 		{
-			logger.error("", e);
+			logger.log(Level.ERROR, e, e.getMessage());
 		}
 	}
 
@@ -244,7 +247,7 @@ public class SQLStateManager implements StateManager, ConnectionFactory
 		}
 		catch (SQLException e)
 		{
-			logger.error("", e);
+			logger.log(Level.ERROR, e, e.getMessage());
 		}
 	}
 
@@ -260,7 +263,7 @@ public class SQLStateManager implements StateManager, ConnectionFactory
 		}
 		finally
 		{
-			statement.close();
+			close(statement);
 		}
 	}
 
@@ -286,7 +289,7 @@ public class SQLStateManager implements StateManager, ConnectionFactory
 		}
 		catch (SQLException e)
 		{
-			logger.error("", e);
+			logger.log(Level.ERROR, e, e.getMessage());
 		}
 	}
 	
@@ -313,7 +316,7 @@ public class SQLStateManager implements StateManager, ConnectionFactory
 		}
 		catch (SQLException e)
 		{
-			logger.error("", e);
+			logger.log(Level.ERROR, e, e.getMessage());
 		}
 	}
 	
@@ -330,10 +333,87 @@ public class SQLStateManager implements StateManager, ConnectionFactory
 		}
 		finally
 		{
-			statement.close();
+			close(statement);
 		}
 	}
-	
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.state.StateManager#recover(net.sf.hajdbc.DatabaseCluster)
+	 */
+	@Override
+	public Map<InvocationEvent, Map<String, InvokerEvent>> recover()
+	{
+		Map<InvocationEvent, Map<String, InvokerEvent>> map = new HashMap<InvocationEvent, Map<String, InvokerEvent>>();
+		
+		try
+		{
+			Connection connection = this.pool.take();
+			
+			try
+			{
+				PreparedStatement statement = connection.prepareStatement(SELECT_INVOCATION_SQL);
+				
+				try
+				{
+					ResultSet resultSet = statement.executeQuery();
+					
+					while (resultSet.next())
+					{
+						map.put(new InvocationEvent(resultSet.getBytes(1), resultSet.getInt(2)), new HashMap<String, InvokerEvent>());
+					}
+					
+					close(resultSet);
+				}
+				finally
+				{
+					close(statement);
+				}
+
+				statement = connection.prepareStatement(SELECT_INVOKER_SQL);
+				
+				try
+				{
+					ResultSet resultSet = statement.executeQuery();
+					
+					while (resultSet.next())
+					{
+						byte[] transactionId = resultSet.getBytes(1);
+						int phase = resultSet.getInt(2);
+						
+						Map<String, InvokerEvent> invokers = map.get(new InvocationEvent(transactionId, phase));
+						
+						if (invokers != null)
+						{
+							String databaseId = resultSet.getString(3);
+							boolean success = resultSet.getBoolean(4);
+							boolean hasResult = resultSet.wasNull();
+							byte[] result = resultSet.getBytes(5);
+							
+							invokers.put(databaseId, new InvokerEvent(transactionId, phase, databaseId, (hasResult && success) ? result : null, (hasResult && !success) ? result : null));
+						}
+					}
+					
+					close(resultSet);
+				}
+				finally
+				{
+					close(statement);
+				}
+				
+				return map;
+			}
+			finally
+			{
+				this.pool.release(connection);
+			}
+		}
+		catch (SQLException e)
+		{
+			throw new IllegalStateException(e);
+		}
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.durability.DurabilityListener#beforeInvoker(net.sf.hajdbc.durability.InvokerEvent)
@@ -358,7 +438,7 @@ public class SQLStateManager implements StateManager, ConnectionFactory
 				}
 				finally
 				{
-					statement.close();
+					close(statement);
 				}
 			}
 		};
@@ -369,7 +449,7 @@ public class SQLStateManager implements StateManager, ConnectionFactory
 		}
 		catch (SQLException e)
 		{
-			logger.error("", e);
+			logger.log(Level.ERROR, e, e.getMessage());
 		}
 	}
 
@@ -403,7 +483,7 @@ public class SQLStateManager implements StateManager, ConnectionFactory
 				}
 				finally
 				{
-					statement.close();
+					close(statement);
 				}
 			}
 		};
@@ -414,7 +494,7 @@ public class SQLStateManager implements StateManager, ConnectionFactory
 		}
 		catch (SQLException e)
 		{
-			logger.error("", e);
+			logger.log(Level.ERROR, e, e.getMessage());
 		}
 	}
 
@@ -425,13 +505,9 @@ public class SQLStateManager implements StateManager, ConnectionFactory
 	@Override
 	public void start() throws Exception
 	{
-		this.url = MessageFormat.format(this.urlPattern, this.clusterId);
+		this.url = MessageFormat.format(this.urlPattern, this.cluster.getId());
 		
-		SimplePoolConfiguration configuration = new SimplePoolConfiguration();
-		
-		this.pool = new SimplePool<Connection, SQLException>(new ConnectionPoolProvider(this), configuration);
-		
-		this.pool.init();
+		this.pool = this.poolFactory.createPool(new ConnectionPoolProvider(this));
 		
 		Connection connection = this.pool.take();
 		
@@ -517,7 +593,7 @@ public class SQLStateManager implements StateManager, ConnectionFactory
 		}
 		catch (SQLException e)
 		{
-			logger.warn(e.getMessage(), e);
+			logger.log(Level.WARN, e, e.getMessage());
 		}
 	}
 	
@@ -529,7 +605,7 @@ public class SQLStateManager implements StateManager, ConnectionFactory
 		}
 		catch (SQLException e)
 		{
-			logger.warn(e.getMessage(), e);
+			logger.log(Level.WARN, e, e.getMessage());
 		}
 	}
 }

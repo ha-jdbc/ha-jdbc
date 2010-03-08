@@ -40,11 +40,11 @@ import net.sf.hajdbc.cache.ForeignKeyConstraint;
 import net.sf.hajdbc.cache.SequenceProperties;
 import net.sf.hajdbc.cache.TableProperties;
 import net.sf.hajdbc.cache.UniqueConstraint;
+import net.sf.hajdbc.logging.Level;
+import net.sf.hajdbc.logging.Logger;
+import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.sql.SQLExceptionFactory;
 import net.sf.hajdbc.util.Strings;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Paul Ferraro
@@ -79,7 +79,7 @@ public final class SynchronizationSupport
 			{
 				String sql = dialect.getDropForeignKeyConstraintSQL(constraint);
 				
-				logger.debug(sql);
+				logger.log(Level.DEBUG, sql);
 				
 				statement.addBatch(sql);
 			}
@@ -109,7 +109,7 @@ public final class SynchronizationSupport
 			{
 				String sql = dialect.getCreateForeignKeyConstraintSQL(constraint);
 				
-				logger.debug(sql);
+				logger.log(Level.DEBUG, sql);
 				
 				statement.addBatch(sql);
 			}
@@ -146,7 +146,7 @@ public final class SynchronizationSupport
 			{
 				final String sql = dialect.getNextSequenceValueSQL(sequence);
 				
-				logger.debug(sql);
+				logger.log(Level.DEBUG, sql);
 
 				for (final D database: databases)
 				{
@@ -206,7 +206,7 @@ public final class SynchronizationSupport
 			{
 				String sql = dialect.getAlterSequenceSQL(sequence, sequenceMap.get(sequence) + 1);
 				
-				logger.debug(sql);
+				logger.log(Level.DEBUG, sql);
 				
 				targetStatement.addBatch(sql);
 			}
@@ -236,7 +236,7 @@ public final class SynchronizationSupport
 			{
 				String selectSQL = MessageFormat.format("SELECT max({0}) FROM {1}", Strings.join(columns, "), max("), table.getName()); //$NON-NLS-1$ //$NON-NLS-2$
 				
-				logger.debug(selectSQL);
+				logger.log(Level.DEBUG, selectSQL);
 				
 				Map<String, Long> map = new HashMap<String, Long>();
 				
@@ -262,7 +262,7 @@ public final class SynchronizationSupport
 						
 						if (alterSQL != null)
 						{
-							logger.debug(alterSQL);
+							logger.log(Level.DEBUG, alterSQL);
 							
 							targetStatement.addBatch(alterSQL);
 						}
@@ -296,7 +296,7 @@ public final class SynchronizationSupport
 			{
 				String sql = dialect.getDropUniqueConstraintSQL(constraint);
 				
-				logger.debug(sql);
+				logger.log(Level.DEBUG, sql);
 				
 				statement.addBatch(sql);
 			}
@@ -326,7 +326,7 @@ public final class SynchronizationSupport
 			{
 				String sql = dialect.getCreateUniqueConstraintSQL(constraint);
 				
-				logger.debug(sql);
+				logger.log(Level.DEBUG, sql);
 				
 				statement.addBatch(sql);
 			}
@@ -348,7 +348,7 @@ public final class SynchronizationSupport
 		}
 		catch (SQLException e)
 		{
-			logger.warn(e.toString(), e);
+			logger.log(Level.WARN, e, e.toString());
 		}
 	}
 	

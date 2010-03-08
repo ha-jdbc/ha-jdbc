@@ -17,6 +17,8 @@
  */
 package net.sf.hajdbc.cache;
 
+import java.io.Serializable;
+
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 
@@ -24,8 +26,10 @@ import net.sf.hajdbc.DatabaseCluster;
  * @author paul
  *
  */
-public abstract class AbstractDatabaseMetaDataCacheFactory implements DatabaseMetaDataCacheFactory
+public abstract class AbstractDatabaseMetaDataCacheFactory implements DatabaseMetaDataCacheFactory, Serializable
 {
+	private static final long serialVersionUID = -462771492839305551L;
+	
 	private DatabaseMetaDataSupportFactory factory = new DatabaseMetaDataSupportFactoryImpl();
 	
 	/**

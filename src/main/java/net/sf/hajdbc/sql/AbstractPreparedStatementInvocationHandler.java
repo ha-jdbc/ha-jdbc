@@ -91,7 +91,7 @@ public abstract class AbstractPreparedStatementInvocationHandler<Z, D extends Da
 			return new DatabaseReadInvocationStrategy<Z, D, S, Object, SQLException>();
 		}
 		
-		if (this.setMethodSet.contains(method))
+		if (this.setMethodSet.contains(method) || method.equals(clearParametersMethod) || method.equals(addBatchMethod))
 		{
 			return new DriverWriteInvocationStrategy<Z, D, S, Object, SQLException>();
 		}

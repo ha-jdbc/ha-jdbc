@@ -37,10 +37,17 @@ import java.util.concurrent.TimeUnit;
 public class SynchronousExecutor extends AbstractExecutorService
 {
 	private final ExecutorService executor;
+	private final boolean reverse;
 	
 	public SynchronousExecutor(ExecutorService executor)
 	{
+		this(executor, false);
+	}
+	
+	public SynchronousExecutor(ExecutorService executor, boolean reverse)
+	{
 		this.executor = executor;
+		this.reverse = reverse;
 	}
 	
 	/**
@@ -107,10 +114,17 @@ public class SynchronousExecutor extends AbstractExecutorService
 	{
 		if (tasks.isEmpty()) return Collections.emptyList();
 
-		int remaining = tasks.size();
-		List<Future<T>> futureList = new ArrayList<Future<T>>(remaining);
+		List<Callable<T>> taskList = new ArrayList<Callable<T>>(tasks);
+		taskList.addAll(tasks);
+		
+		if (this.reverse)
+		{
+			Collections.reverse(taskList);
+		}
 		
 		boolean synchronous = true;
+		int remaining = tasks.size();
+		List<Future<T>> futureList = new ArrayList<Future<T>>(remaining);
 		
 		for (Callable<T> task: tasks)
 		{
@@ -132,6 +146,11 @@ public class SynchronousExecutor extends AbstractExecutorService
 			{
 				futureList.add(this.executor.submit(task));
 			}
+		}
+		
+		if (this.reverse)
+		{
+			Collections.reverse(futureList);
 		}
 
 		try
@@ -180,10 +199,17 @@ public class SynchronousExecutor extends AbstractExecutorService
 	{
 		if (tasks.isEmpty()) return Collections.emptyList();
 
-		int remaining = tasks.size();
-		List<Future<T>> futureList = new ArrayList<Future<T>>(remaining);
+		List<Callable<T>> taskList = new ArrayList<Callable<T>>(tasks);
+		taskList.addAll(tasks);
+		
+		if (this.reverse)
+		{
+			Collections.reverse(taskList);
+		}
 		
 		boolean synchronous = true;
+		int remaining = tasks.size();
+		List<Future<T>> futureList = new ArrayList<Future<T>>(remaining);
 		
 		for (Callable<T> task: tasks)
 		{
@@ -205,6 +231,11 @@ public class SynchronousExecutor extends AbstractExecutorService
 			{
 				futureList.add(this.executor.submit(task));
 			}
+		}
+		
+		if (this.reverse)
+		{
+			Collections.reverse(futureList);
 		}
 
 		boolean interrupted = true;

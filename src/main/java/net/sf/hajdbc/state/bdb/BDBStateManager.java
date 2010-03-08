@@ -19,7 +19,7 @@ package net.sf.hajdbc.state.bdb;
 
 import java.io.File;
 
-import net.sf.hajdbc.pool.PoolProvider;
+import net.sf.hajdbc.pool.AbstractPoolProvider;
 
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
@@ -28,9 +28,14 @@ import com.sleepycat.je.EnvironmentConfig;
 /**
  * @author paul
  */
-public class BDBStateManager implements PoolProvider<Environment, DatabaseException>
+public class BDBStateManager extends AbstractPoolProvider<Environment, DatabaseException>
 {
 	private EnvironmentConfig config = new EnvironmentConfig();
+	
+	public BDBStateManager()
+	{
+		super(Environment.class, DatabaseException.class);
+	}
 	
 	/**
 	 * {@inheritDoc}

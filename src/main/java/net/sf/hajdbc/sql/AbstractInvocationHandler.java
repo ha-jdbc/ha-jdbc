@@ -90,7 +90,7 @@ public abstract class AbstractInvocationHandler<Z, D extends Database<Z>, T, E e
 		
 		InvocationStrategy strategy = this.getInvocationStrategy(proxy, method, parameters);
 		Invoker invoker = this.getInvoker(proxy, method, parameters);
-		
+		this.logger.log(Level.TRACE, "Invoking "+method.getName()+" using " + strategy.getClass().getName());
 		Object result = strategy.invoke(this, invoker);
 		
 		this.record(invoker, method, parameters);
@@ -310,10 +310,12 @@ public abstract class AbstractInvocationHandler<Z, D extends Database<Z>, T, E e
 	
 	protected void replay(D database, T object) throws E
 	{
+		System.out.println("replay");
 		synchronized (this.invokerMap)
 		{
 			for (Invoker<Z, D, T, ?, E> invoker: this.invokerMap.values())
 			{
+				System.out.println("replaying: " + invoker);
 				invoker.invoke(database, object);
 			}
 		}
@@ -397,6 +399,16 @@ public abstract class AbstractInvocationHandler<Z, D extends Database<Z>, T, E e
 		public Object invoke(D database, T object) throws E
 		{
 			return Methods.invoke(this.method, AbstractInvocationHandler.this.getExceptionFactory(), object, this.parameters);
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString()
+		{
+			return this.method.toString();
 		}
 	}
 }

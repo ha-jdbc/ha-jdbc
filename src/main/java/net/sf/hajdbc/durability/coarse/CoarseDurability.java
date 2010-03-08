@@ -17,10 +17,15 @@
  */
 package net.sf.hajdbc.durability.coarse;
 
+import java.util.Iterator;
+import java.util.Map;
+
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.durability.DurabilityListener;
 import net.sf.hajdbc.durability.InvocationEvent;
+import net.sf.hajdbc.durability.InvokerEvent;
 import net.sf.hajdbc.durability.TransactionIdentifier;
 import net.sf.hajdbc.durability.none.NoDurability;
 import net.sf.hajdbc.sql.InvocationStrategy;
@@ -33,11 +38,11 @@ import net.sf.hajdbc.sql.SQLProxy;
  */
 public class CoarseDurability<Z, D extends Database<Z>> extends NoDurability<Z, D>
 {
-	final DurabilityListener listener;
+	protected final DatabaseCluster<Z, D> cluster;
 	
-	public CoarseDurability(DurabilityListener listener)
+	public CoarseDurability(DatabaseCluster<Z, D> cluster)
 	{
-		this.listener = listener;
+		this.cluster = cluster;
 	}
 	
 	/**
@@ -47,6 +52,8 @@ public class CoarseDurability<Z, D extends Database<Z>> extends NoDurability<Z, 
 	@Override
 	public <T, R, E extends Exception> InvocationStrategy<Z, D, T, R, E> getInvocationStrategy(final InvocationStrategy<Z, D, T, R, E> strategy, final Phase phase, final TransactionIdentifier transactionId, final ExceptionFactory<E> exceptionFactory)
 	{
+		final DurabilityListener listener = this.cluster.getStateManager();
+		
 		return new InvocationStrategy<Z, D, T, R, E>()
 		{
 			@Override
@@ -54,7 +61,7 @@ public class CoarseDurability<Z, D extends Database<Z>> extends NoDurability<Z, 
 			{
 				InvocationEvent event = new InvocationEvent(transactionId, phase);
 				
-				CoarseDurability.this.listener.beforeInvocation(event);
+				listener.beforeInvocation(event);
 				
 				try
 				{
@@ -70,9 +77,37 @@ public class CoarseDurability<Z, D extends Database<Z>> extends NoDurability<Z, 
 				}
 				finally
 				{
-					CoarseDurability.this.listener.afterInvocation(event);
+					listener.afterInvocation(event);
 				}
 			}
 		};
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.durability.Durability#recover(net.sf.hajdbc.balancer.Balancer, java.util.Map)
+	 */
+	@Override
+	public void recover(Map<InvocationEvent, Map<String, InvokerEvent>> invokers)
+	{
+		Iterator<D> databases = this.cluster.getBalancer().iterator();
+		
+		if (databases.hasNext())
+		{
+			// Keep master active
+			databases.next();
+			
+			while (databases.hasNext())
+			{
+				this.cluster.deactivate(databases.next(), this.cluster.getStateManager());
+			}
+		}
+		
+		DurabilityListener listener = this.cluster.getStateManager();
+		
+		for (InvocationEvent event: invokers.keySet())
+		{
+			listener.afterInvocation(event);
+		}
 	}
 }

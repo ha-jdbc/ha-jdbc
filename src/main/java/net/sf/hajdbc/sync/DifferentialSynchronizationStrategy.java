@@ -17,6 +17,7 @@
  */
 package net.sf.hajdbc.sync;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -40,11 +41,11 @@ import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.cache.TableProperties;
 import net.sf.hajdbc.cache.UniqueConstraint;
+import net.sf.hajdbc.logging.Level;
+import net.sf.hajdbc.logging.Logger;
+import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.sql.SQLExceptionFactory;
 import net.sf.hajdbc.util.Strings;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Database-independent synchronization strategy that only updates differences between two databases.
@@ -72,8 +73,10 @@ import org.slf4j.LoggerFactory;
  * </ol>
  * @author  Paul Ferraro
  */
-public class DifferentialSynchronizationStrategy implements SynchronizationStrategy
+public class DifferentialSynchronizationStrategy implements SynchronizationStrategy, Serializable
 {
+	private static final long serialVersionUID = -2785092229503649831L;
+
 	private static Logger logger = LoggerFactory.getLogger(DifferentialSynchronizationStrategy.class);
 
 	private int fetchSize = 0;
@@ -161,8 +164,8 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				final Statement targetStatement = targetConnection.createStatement();
 
 				targetStatement.setFetchSize(this.fetchSize);
-	
-				logger.debug(selectSQL);
+				
+				logger.log(Level.DEBUG, selectSQL);
 				
 				Callable<ResultSet> callable = new Callable<ResultSet>()
 				{
@@ -186,14 +189,14 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				// Construct DELETE SQL
 				String deleteSQL = String.format("DELETE FROM %s WHERE %s", tableName, primaryKeyWhereClause);
 				
-				logger.debug(deleteSQL);
+				logger.log(Level.DEBUG, deleteSQL);
 				
 				PreparedStatement deleteStatement = targetConnection.prepareStatement(deleteSQL);
 				
 				// Construct INSERT SQL
 				String insertSQL = String.format("INSERT INTO %s (%s) VALUES (%s)", tableName, commaDelimitedColumns, Strings.join(Collections.nCopies(columnList.size(), Strings.QUESTION), Strings.PADDED_COMMA)); //$NON-NLS-1$
 				
-				logger.debug(insertSQL);
+				logger.log(Level.DEBUG, insertSQL);
 				
 				PreparedStatement insertStatement = targetConnection.prepareStatement(insertSQL);
 				
@@ -204,7 +207,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				{
 					String updateSQL = String.format("UPDATE %s SET %s = ? WHERE %s", tableName, Strings.join(nonPrimaryKeyColumnList, " = ?, "), primaryKeyWhereClause); //$NON-NLS-1$
 					
-					logger.debug(updateSQL);
+					logger.log(Level.DEBUG, updateSQL);
 					
 					updateStatement = targetConnection.prepareStatement(updateSQL);
 				}
@@ -394,9 +397,9 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				
 				targetConnection.commit();
 				
-				logger.info(Messages.INSERT_COUNT.getMessage(insertCount, tableName));
-				logger.info(Messages.UPDATE_COUNT.getMessage(updateCount, tableName));
-				logger.info(Messages.DELETE_COUNT.getMessage(deleteCount, tableName));			
+				logger.log(Level.INFO, Messages.INSERT_COUNT.getMessage(), insertCount, tableName);
+				logger.log(Level.INFO, Messages.UPDATE_COUNT.getMessage(), updateCount, tableName);
+				logger.log(Level.INFO, Messages.DELETE_COUNT.getMessage(), deleteCount, tableName);
 			}
 		}
 		catch (ExecutionException e)

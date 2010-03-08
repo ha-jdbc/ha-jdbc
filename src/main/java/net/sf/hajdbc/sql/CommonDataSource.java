@@ -21,28 +21,33 @@ import java.sql.SQLException;
 
 import javax.naming.Referenceable;
 
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
+import net.sf.hajdbc.xml.XMLDatabaseClusterConfigurationFactory;
+
 /**
  * @author Paul Ferraro
  * @param <Z> data source class
  */
-public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource> implements Referenceable, javax.sql.CommonDataSource
+public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D extends Database<Z>> implements Referenceable, javax.sql.CommonDataSource
 {
 	private String cluster;
 	private String config;
-
-	private CommonDataSourceFactory<Z> factory;
+	private DatabaseClusterConfigurationFactory<Z, D> configurationFactory;
+	
+	private final CommonDataSourceFactory<Z, D> factory;
 	private volatile Z proxy;
 	
-	protected CommonDataSource(CommonDataSourceFactory<Z> factory)
+	protected CommonDataSource(CommonDataSourceFactory<Z, D> factory)
 	{
 		this.factory = factory;
 	}
 	
-	protected synchronized Z getProxy() throws SQLException
+	public synchronized Z getProxy() throws SQLException
 	{
 		if (this.proxy == null)
 		{
-			this.proxy = this.factory.createProxy(this.cluster, this.config);
+			this.proxy = this.factory.createProxy(this.cluster, (this.configurationFactory != null) ? this.configurationFactory : new XMLDatabaseClusterConfigurationFactory<Z, D>(this.cluster, this.config));
 		}
 		
 		return this.proxy;
@@ -78,5 +83,15 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource> imp
 	public void setConfig(String config)
 	{
 		this.config = config;
+	}
+	
+	public DatabaseClusterConfigurationFactory<Z, D> getConfigurationFactory()
+	{
+		return this.configurationFactory;
+	}
+	
+	public void setConfigurationFactory(DatabaseClusterConfigurationFactory<Z, D> factory)
+	{
+		this.configurationFactory = factory;
 	}
 }

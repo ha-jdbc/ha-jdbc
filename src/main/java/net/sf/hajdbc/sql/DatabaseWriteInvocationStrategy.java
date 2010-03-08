@@ -79,7 +79,7 @@ public class DatabaseWriteInvocationStrategy<Z, D extends Database<Z>, T, R, E e
 		{
 			invocationList.add(new Invocation(invoker, database, proxy.getObject(database)));
 		}
-
+		
 		try
 		{
 			List<Future<R>> futureList = this.executor.invokeAll(invocationList);

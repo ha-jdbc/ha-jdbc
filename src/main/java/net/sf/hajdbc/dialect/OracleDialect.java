@@ -21,9 +21,8 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import net.sf.hajdbc.cache.QualifiedName;
 
@@ -47,22 +46,22 @@ public class OracleDialect extends StandardDialect
 	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.DatabaseMetaData)
 	 */
 	@Override
-	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
+	public Map<QualifiedName, Integer> getSequences(DatabaseMetaData metaData) throws SQLException
 	{
-		List<QualifiedName> sequenceList = new LinkedList<QualifiedName>();
+		Map<QualifiedName, Integer> sequences = new HashMap<QualifiedName, Integer>();
 		
 		Statement statement = metaData.getConnection().createStatement();
 		
-		ResultSet resultSet = statement.executeQuery("SELECT SEQUENCE_NAME FROM USER_SEQUENCES");
+		ResultSet resultSet = statement.executeQuery("SELECT SEQUENCE_NAME, INCREMENT_BY FROM USER_SEQUENCES");
 		
 		while (resultSet.next())
 		{
-			sequenceList.add(new QualifiedName(resultSet.getString(1)));
+			sequences.put(new QualifiedName(resultSet.getString(1)), resultSet.getInt(2));
 		}
 		
 		statement.close();
 		
-		return sequenceList;
+		return sequences;
 	}
 
 	/**
@@ -109,5 +108,15 @@ public class OracleDialect extends StandardDialect
 	protected String nextSequenceValueFormat()
 	{
 		return "{0}.NEXTVAL";
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#alterSequenceFormat()
+	 */
+	@Override
+	protected String alterSequenceFormat()
+	{
+		return "ALTER SEQUENCE {0} INCREMENT BY ({1} - (SELECT {0}.NEXTVAL FROM DUAL)); SELECT {0}.NEXTVAL FROM DUAL; ALTER SEQUENCE {0} INCREMENT BY {2}";
 	}
 }

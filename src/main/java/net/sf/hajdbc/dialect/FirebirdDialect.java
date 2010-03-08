@@ -21,9 +21,8 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import net.sf.hajdbc.cache.QualifiedName;
 
@@ -57,9 +56,9 @@ public class FirebirdDialect extends StandardDialect
 	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.DatabaseMetaData)
 	 */
 	@Override
-	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException
+	public Map<QualifiedName, Integer> getSequences(DatabaseMetaData metaData) throws SQLException
 	{
-		List<QualifiedName> sequenceList = new LinkedList<QualifiedName>();
+		Map<QualifiedName, Integer> sequences = new HashMap<QualifiedName, Integer>();
 		
 		Statement statement = metaData.getConnection().createStatement();
 		
@@ -67,12 +66,12 @@ public class FirebirdDialect extends StandardDialect
 		
 		while (resultSet.next())
 		{
-			sequenceList.add(new QualifiedName(resultSet.getString(1)));
+			sequences.put(new QualifiedName(resultSet.getString(1)), 1);
 		}
 		
 		statement.close();
 		
-		return sequenceList;
+		return sequences;
 	}
 
 	/**

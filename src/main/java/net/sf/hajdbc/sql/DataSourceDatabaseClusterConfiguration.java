@@ -33,8 +33,10 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class DataSourceDatabaseClusterConfiguration extends AbstractDatabaseClusterConfiguration<DataSource, DataSourceDatabase>
 {
+	private static final long serialVersionUID = -2213490659407620585L;
+	
 	@XmlElement(name = "cluster", required = true)
-	private DataSourceNestedConfiguration configuration;
+	private DataSourceNestedConfiguration configuration = new DataSourceNestedConfiguration();
 
 	@Override
 	protected AbstractDatabaseClusterConfiguration.NestedConfiguration<DataSource, DataSourceDatabase> getNestedConfiguration()
@@ -45,6 +47,8 @@ public class DataSourceDatabaseClusterConfiguration extends AbstractDatabaseClus
 	@XmlType(name = "nestedConfiguration")
 	static class DataSourceNestedConfiguration extends AbstractDatabaseClusterConfiguration.NestedConfiguration<DataSource, DataSourceDatabase>
 	{
+		private static final long serialVersionUID = -5155160003090960720L;
+
 		@SuppressWarnings("unused")
 		@XmlElement(name = "database")
 		private DataSourceDatabase[] getDatabases()

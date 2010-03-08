@@ -29,6 +29,8 @@ import net.sf.hajdbc.Dialect;
  */
 public class DatabaseMetaDataSupportFactoryImpl implements DatabaseMetaDataSupportFactory
 {
+	private static final long serialVersionUID = -2989879373607702506L;
+
 	/**
 	 * @see net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory#createSupport(java.sql.DatabaseMetaData, net.sf.hajdbc.Dialect)
 	 */

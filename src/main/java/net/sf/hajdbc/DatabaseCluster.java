@@ -70,6 +70,12 @@ public interface DatabaseCluster<Z, D extends Database<Z>> extends Lifecycle
 	Balancer<Z, D> getBalancer();
 	
 	/**
+	 * Returns an executor service used to execute end transaction statements.
+	 * @return an implementation of <code>ExecutorService</code>
+	 */
+	ExecutorService getEndTransactionExecutor();
+	
+	/**
 	 * Returns an executor service used to execute transactional database writes.
 	 * @return an implementation of <code>ExecutorService</code>
 	 */

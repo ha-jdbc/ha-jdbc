@@ -111,7 +111,7 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ab
 		
 		if (endTransactionMethodSet.contains(method))
 		{
-			return this.transactionContext.end(new DatabaseWriteInvocationStrategy<Z, D, Connection, Void, SQLException>(this.cluster.getTransactionalExecutor()), phaseMap.get(method));
+			return this.transactionContext.end(new DatabaseWriteInvocationStrategy<Z, D, Connection, Void, SQLException>(this.cluster.getEndTransactionExecutor()), phaseMap.get(method));
 		}
 		
 		if (method.equals(rollbackSavepointMethod) || method.equals(releaseSavepointMethod))

@@ -42,7 +42,7 @@ public abstract class InvocationCommand<Z, D extends Database<Z>> implements Com
 	@Override
 	public Void execute(StateCommandContext<Z, D> context)
 	{
-		Map<InvocationEvent, Map<D, InvokerEvent>> invokers = context.getRemoteInvokers(this.descriptor);
+		Map<InvocationEvent, Map<String, InvokerEvent>> invokers = context.getRemoteInvokers(this.descriptor);
 
 		synchronized (invokers)
 		{
@@ -52,7 +52,7 @@ public abstract class InvocationCommand<Z, D extends Database<Z>> implements Com
 		return null;
 	}
 
-	protected abstract void execute(Map<InvocationEvent, Map<D, InvokerEvent>> invokers, InvocationEvent event);
+	protected abstract void execute(Map<InvocationEvent, Map<String, InvokerEvent>> invokers, InvocationEvent event);
 	
 	@Override
 	public Object marshalResult(Void result)

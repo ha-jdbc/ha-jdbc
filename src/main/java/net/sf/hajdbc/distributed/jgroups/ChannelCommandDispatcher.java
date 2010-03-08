@@ -40,9 +40,9 @@ import org.jgroups.MessageListener;
 import org.jgroups.SuspectedException;
 import org.jgroups.TimeoutException;
 import org.jgroups.View;
-import org.jgroups.blocks.GroupRequest;
 import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestHandler;
+import org.jgroups.blocks.RequestOptions;
 import org.jgroups.util.Rsp;
 
 /**
@@ -125,15 +125,16 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 	{
 		Message message = new Message(null, this.getLocalAddress(), command);
 		
-		Map<Address, Rsp> responses = this.dispatcher.castMessage(null, message, GroupRequest.GET_ALL, 0);
+		@SuppressWarnings("unchecked")
+		Map<Address, Rsp> responses = this.dispatcher.castMessage(null, message, RequestOptions.SYNC);
 		
 		if (responses == null) return Collections.emptyMap();
 		
 		Map<Member, R> results = new TreeMap<Member, R>();
 		
-		for (Map.Entry<Address, Rsp> entry: responses.entrySet())
+		for (@SuppressWarnings("unchecked") Map.Entry<Address, Rsp> entry: responses.entrySet())
 		{
-			Rsp response = entry.getValue();
+			Rsp<?> response = entry.getValue();
 
 			if (response.wasReceived() && !response.wasSuspected())
 			{
@@ -156,13 +157,12 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 
 			try
 			{
-				Object result = this.dispatcher.sendMessage(message, GroupRequest.GET_ALL, 0);
+				Object result = this.dispatcher.sendMessage(message, RequestOptions.SYNC);
 				
 				return command.unmarshalResult(result);
 			}
 			catch (TimeoutException e)
 			{
-				throw new IllegalStateException(e);
 			}
 			catch (SuspectedException e)
 			{

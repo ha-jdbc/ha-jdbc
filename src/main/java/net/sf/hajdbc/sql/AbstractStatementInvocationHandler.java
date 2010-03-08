@@ -277,6 +277,7 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 		{
 			synchronized (this.batchInvokerList)
 			{
+				System.out.println("recording: " + invoker);
 				this.batchInvokerList.add(invoker);
 			}
 		}
@@ -284,6 +285,7 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 		{
 			synchronized (this.batchInvokerList)
 			{
+				System.out.println("cleared recorded invokers");
 				this.batchInvokerList.clear();
 			}
 		}
@@ -312,19 +314,21 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 	{
 		return method.equals(clearBatchMethod) || method.equals(executeBatchMethod);
 	}
-	
+
 	/**
 	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#replay(net.sf.hajdbc.Database, java.lang.Object)
 	 */
 	@Override
 	protected void replay(D database, S statement) throws SQLException
 	{
+		System.out.println("super.replay");
 		super.replay(database, statement);
 		
 		synchronized (this.batchInvokerList)
 		{
 			for (Invoker<Z, D, S, ?, SQLException> invoker: this.batchInvokerList)
 			{
+				System.out.println("replaying: " + invoker);
 				invoker.invoke(database, statement);
 			}
 		}

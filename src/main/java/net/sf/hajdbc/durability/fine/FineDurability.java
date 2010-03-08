@@ -17,9 +17,15 @@
  */
 package net.sf.hajdbc.durability.fine;
 
+import java.util.Iterator;
+import java.util.Map;
+
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.ExceptionFactory;
+import net.sf.hajdbc.balancer.Balancer;
 import net.sf.hajdbc.durability.DurabilityListener;
+import net.sf.hajdbc.durability.InvocationEvent;
 import net.sf.hajdbc.durability.InvokerEvent;
 import net.sf.hajdbc.durability.TransactionIdentifier;
 import net.sf.hajdbc.durability.coarse.CoarseDurability;
@@ -31,13 +37,9 @@ import net.sf.hajdbc.sql.Invoker;
  */
 public class FineDurability<Z, D extends Database<Z>> extends CoarseDurability<Z, D>
 {
-	final DurabilityListener listener;
-	
-	public FineDurability(DurabilityListener listener)
+	public FineDurability(DatabaseCluster<Z, D> cluster)
 	{
-		super(listener);
-		
-		this.listener = listener;
+		super(cluster);
 	}
 
 	/**
@@ -47,6 +49,8 @@ public class FineDurability<Z, D extends Database<Z>> extends CoarseDurability<Z
 	@Override
 	public <T, R, E extends Exception> Invoker<Z, D, T, R, E> getInvoker(final Invoker<Z, D, T, R, E> invoker, final Phase phase, final TransactionIdentifier transactionId, final ExceptionFactory<E> exceptionFactory)
 	{
+		final DurabilityListener listener = this.cluster.getStateManager();
+		
 		return new Invoker<Z, D, T, R, E>()
 		{
 			@Override
@@ -54,7 +58,7 @@ public class FineDurability<Z, D extends Database<Z>> extends CoarseDurability<Z
 			{
 				InvokerEvent event = new InvokerEvent(transactionId, phase, database);
 				
-				FineDurability.this.listener.beforeInvoker(event);
+				listener.beforeInvoker(event);
 				
 				try
 				{
@@ -74,9 +78,60 @@ public class FineDurability<Z, D extends Database<Z>> extends CoarseDurability<Z
 				}
 				finally
 				{
-					FineDurability.this.listener.afterInvoker(event);
+					listener.afterInvoker(event);
 				}
 			}
 		};
+	}
+
+	@Override
+	public void recover(Map<InvocationEvent, Map<String, InvokerEvent>> map)
+	{
+		Balancer<Z, D> balancer = this.cluster.getBalancer();
+		
+		for (Map<String, InvokerEvent> invokers: map.values())
+		{
+			if (!invokers.isEmpty())
+			{
+				Iterator<D> databases = balancer.iterator();
+				
+				if (databases.hasNext())
+				{
+					databases.next();
+					
+					while (databases.hasNext())
+					{
+						
+					}
+				}
+				
+				for (Map.Entry<String, InvokerEvent> invokerEntry: invokers.entrySet())
+				{
+					String databaseId = invokerEntry.getKey();
+					InvokerEvent invoker = invokerEntry.getValue();
+					
+					switch (invoker.getPhase())
+					{
+						case COMMIT:
+						{
+							break;
+						}
+						case ROLLBACK:
+						{
+							break;
+						}
+						case PREPARE:
+						{
+							// Need to check for heuristic decisions
+							break;
+						}
+						case FORGET:
+						{
+							break;
+						}
+					}
+				}
+			}
+		}
 	}
 }

@@ -19,8 +19,8 @@ package net.sf.hajdbc;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.transaction.xa.XAException;
@@ -129,7 +129,7 @@ public interface Dialect
 	 * @throws SQLException
 	 * @since 2.0
 	 */
-	public Collection<QualifiedName> getSequences(DatabaseMetaData metaData) throws SQLException;
+	public Map<QualifiedName, Integer> getSequences(DatabaseMetaData metaData) throws SQLException;
 	
 	/**
 	 * Returns a SQL statement for obtaining the next value the specified sequence

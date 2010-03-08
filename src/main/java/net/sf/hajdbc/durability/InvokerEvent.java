@@ -47,6 +47,15 @@ public class InvokerEvent extends InvocationEvent
 		this.databaseId = database.getId();
 	}
 
+	public InvokerEvent(byte[] transactionId, int phase, String databaseId, byte[] result, byte[] exception)
+	{
+		super(transactionId, phase);
+		
+		this.databaseId = databaseId;
+		this.result = result;
+		this.exception = exception;
+	}
+	
 	public String getDatabaseId()
 	{
 		return this.databaseId;
@@ -111,5 +120,29 @@ public class InvokerEvent extends InvocationEvent
 		}
 		
 		return object.getClass().getName().getBytes();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.durability.InvocationEvent#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object object)
+	{
+		if ((object == null) || !(object instanceof InvokerEvent)) return false;
+		
+		InvokerEvent event = (InvokerEvent) object;
+		
+		return super.equals(object) && this.databaseId.equals(event.databaseId);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.durability.InvocationEvent#hashCode()
+	 */
+	@Override
+	public int hashCode()
+	{
+		return super.hashCode() + this.databaseId.hashCode();
 	}
 }

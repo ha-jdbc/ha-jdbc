@@ -27,7 +27,7 @@ import javax.naming.Reference;
 /**
  * @author Paul Ferraro
  */
-public class DataSource extends CommonDataSource<javax.sql.DataSource> implements javax.sql.DataSource
+public class DataSource extends CommonDataSource<javax.sql.DataSource, DataSourceDatabase> implements javax.sql.DataSource
 {
 	/**
 	 * Constructs a new DataSource

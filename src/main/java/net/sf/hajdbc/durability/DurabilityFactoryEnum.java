@@ -22,6 +22,7 @@ import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.durability.coarse.CoarseDurabilityFactory;
 import net.sf.hajdbc.durability.fine.FineDurabilityFactory;
 import net.sf.hajdbc.durability.none.NoDurabilityFactory;
@@ -48,8 +49,8 @@ public enum DurabilityFactoryEnum implements DurabilityFactory
 	}
 
 	@Override
-	public <Z, D extends Database<Z>> Durability<Z, D> createDurability(DurabilityListener listener)
+	public <Z, D extends Database<Z>> Durability<Z, D> createDurability(DatabaseCluster<Z, D> cluster)
 	{
-		return this.factory.createDurability(listener);
+		return this.factory.createDurability(cluster);
 	}
 }

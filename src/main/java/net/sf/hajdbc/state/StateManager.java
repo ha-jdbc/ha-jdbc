@@ -17,11 +17,14 @@
  */
 package net.sf.hajdbc.state;
 
+import java.util.Map;
 import java.util.Set;
 
 import net.sf.hajdbc.DatabaseClusterListener;
 import net.sf.hajdbc.Lifecycle;
 import net.sf.hajdbc.durability.DurabilityListener;
+import net.sf.hajdbc.durability.InvocationEvent;
+import net.sf.hajdbc.durability.InvokerEvent;
 
 
 /**
@@ -30,14 +33,9 @@ import net.sf.hajdbc.durability.DurabilityListener;
  */
 public interface StateManager extends DatabaseClusterListener, DurabilityListener, Lifecycle
 {
-	/**
-	 * Detects whether or not the membership of this state manager is empty.
-	 * Used during cluster panic detection.
-	 * @return true, if membership is empty, false otherwise
-	 */
-	public boolean isMembershipEmpty();
+	Set<String> getActiveDatabases();
 	
-	public Set<String> getActiveDatabases();
+	void setActiveDatabases(Set<String> databases);
 	
-	public void setActiveDatabases(Set<String> databases);
+	Map<InvocationEvent, Map<String, InvokerEvent>> recover();
 }

@@ -37,7 +37,7 @@ public class PostInvocationCommand<Z, D extends Database<Z>> extends InvocationC
 	 * @see net.sf.hajdbc.state.distributed.InvocationCommand#execute(java.util.Map, net.sf.hajdbc.durability.InvocationEvent)
 	 */
 	@Override
-	protected void execute(Map<InvocationEvent, Map<D, InvokerEvent>> invokers, InvocationEvent event)
+	protected void execute(Map<InvocationEvent, Map<String, InvokerEvent>> invokers, InvocationEvent event)
 	{
 		invokers.remove(event);
 	}

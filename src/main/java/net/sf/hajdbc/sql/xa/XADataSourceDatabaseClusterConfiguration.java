@@ -31,8 +31,10 @@ import net.sf.hajdbc.sql.AbstractDatabaseClusterConfiguration;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class XADataSourceDatabaseClusterConfiguration extends AbstractDatabaseClusterConfiguration<XADataSource, XADataSourceDatabase>
 {
+	private static final long serialVersionUID = 6548016448539963613L;
+	
 	@XmlElement(name = "cluster", required = true)
-	private XADataSourceNestedConfiguration configuration;
+	private XADataSourceNestedConfiguration configuration = new XADataSourceNestedConfiguration();
 
 	@Override
 	protected AbstractDatabaseClusterConfiguration.NestedConfiguration<XADataSource, XADataSourceDatabase> getNestedConfiguration()
@@ -43,6 +45,8 @@ public class XADataSourceDatabaseClusterConfiguration extends AbstractDatabaseCl
 	@XmlType(name = "nestedConfiguration")
 	static class XADataSourceNestedConfiguration extends AbstractDatabaseClusterConfiguration.NestedConfiguration<XADataSource, XADataSourceDatabase>
 	{
+		private static final long serialVersionUID = 8096563929212126538L;
+
 		@SuppressWarnings("unused")
 		@XmlElement(name = "database")
 		private XADataSourceDatabase[] getDatabases()

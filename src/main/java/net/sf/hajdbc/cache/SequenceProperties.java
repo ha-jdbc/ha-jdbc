@@ -23,4 +23,6 @@ package net.sf.hajdbc.cache;
 public interface SequenceProperties
 {
 	public String getName();
+	
+	public int getIncrement();
 }

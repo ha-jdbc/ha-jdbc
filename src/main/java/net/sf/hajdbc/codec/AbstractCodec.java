@@ -17,6 +17,7 @@
  */
 package net.sf.hajdbc.codec;
 
+import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -24,8 +25,10 @@ import java.util.Properties;
  * Abstract codec implementation that is its own factory
  * @author Paul Ferraro
  */
-public abstract class AbstractCodec implements Codec, CodecFactory
+public abstract class AbstractCodec implements Codec, CodecFactory, Serializable
 {
+	private static final long serialVersionUID = 848903379915175047L;
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.codec.CodecFactory#createDecoder(java.util.Map)

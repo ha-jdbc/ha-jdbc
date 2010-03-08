@@ -41,6 +41,8 @@ import org.jgroups.conf.ProtocolStackConfigurator;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class DefaultChannelProvider extends ChannelCommandDispatcherFactory
 {
+	private static final long serialVersionUID = -2396294564096482534L;
+
 	public static final String DEFAULT_STACK = "udp-sync.xml";
 	
 	@XmlTransient

@@ -33,9 +33,9 @@ import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.balancer.Balancer;
 import net.sf.hajdbc.cache.DatabaseMetaDataCache;
 import net.sf.hajdbc.cache.DatabaseProperties;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import net.sf.hajdbc.logging.Level;
+import net.sf.hajdbc.logging.Logger;
+import net.sf.hajdbc.logging.LoggerFactory;
 
 /**
  * @author Paul Ferraro
@@ -187,7 +187,7 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 					}
 					catch (SQLException e)
 					{
-						logger.warn(e.toString(), e);
+						logger.log(Level.WARN, e, e.toString());
 					}
 				}
 			}

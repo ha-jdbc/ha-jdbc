@@ -24,11 +24,11 @@ import java.sql.SQLException;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import net.sf.hajdbc.AbstractDriver;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.logging.Level;
+import net.sf.hajdbc.logging.Logger;
+import net.sf.hajdbc.logging.LoggerFactory;
 
 /**
  * @author paul
@@ -48,7 +48,7 @@ public class PoolingDriver extends AbstractDriver
 		}
 		catch (SQLException e)
 		{
-			logger.error(Messages.DRIVER_REGISTER_FAILED.getMessage(PoolingDriver.class.getName()), e);
+			logger.log(Level.ERROR, e, Messages.DRIVER_REGISTER_FAILED.getMessage(), PoolingDriver.class.getName());
 		}
 	}
 

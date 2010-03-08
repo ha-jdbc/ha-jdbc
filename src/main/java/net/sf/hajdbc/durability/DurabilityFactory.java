@@ -18,6 +18,7 @@
 package net.sf.hajdbc.durability;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseCluster;
 
 
 /**
@@ -26,5 +27,5 @@ import net.sf.hajdbc.Database;
  */
 public interface DurabilityFactory
 {
-	<Z, D extends Database<Z>> Durability<Z, D> createDurability(DurabilityListener listener);
+	<Z, D extends Database<Z>> Durability<Z, D> createDurability(DatabaseCluster<Z, D> cluster);
 }

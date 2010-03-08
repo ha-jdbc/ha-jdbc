@@ -17,6 +17,8 @@
  */
 package net.sf.hajdbc.sync;
 
+import java.io.Serializable;
+
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.SynchronizationStrategy;
@@ -27,8 +29,10 @@ import net.sf.hajdbc.SynchronizationStrategy;
  * @author  Paul Ferraro
  * @since   1.0
  */
-public class PassiveSynchronizationStrategy implements SynchronizationStrategy
+public class PassiveSynchronizationStrategy implements SynchronizationStrategy, Serializable
 {
+	private static final long serialVersionUID = -7847193096593293640L;
+
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.SynchronizationContext)
 	 */

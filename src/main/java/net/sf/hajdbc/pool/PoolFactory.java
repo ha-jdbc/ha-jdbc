@@ -21,7 +21,7 @@ package net.sf.hajdbc.pool;
  * @author paul
  *
  */
-public interface PoolFactory<C>
+public interface PoolFactory
 {
-	<T, E extends Exception> Pool<T, E> createPool(PoolProvider<T, E> provider, C configuration);
+	<T, E extends Exception> Pool<T, E> createPool(PoolProvider<T, E> provider);
 }

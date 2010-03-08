@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -41,6 +42,8 @@ import net.sf.hajdbc.cache.DatabaseMetaDataCache;
 import net.sf.hajdbc.codec.Codec;
 import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.durability.Durability;
+import net.sf.hajdbc.durability.InvocationEvent;
+import net.sf.hajdbc.durability.InvokerEvent;
 import net.sf.hajdbc.lock.LockManager;
 import net.sf.hajdbc.lock.distributed.DistributedLockManager;
 import net.sf.hajdbc.lock.semaphore.SemaphoreLockManager;
@@ -288,6 +291,16 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 
 	/**
 	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.DatabaseCluster#getEndTransactionExecutor()
+	 */
+	@Override
+	public ExecutorService getEndTransactionExecutor()
+	{
+		return this.configuration.getTransactionMode().getEndTransactionExecutor(this.executor);
+	}
+
+	/**
+	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseCluster#getTransactionalExecutor()
 	 */
 	@Override
@@ -431,7 +444,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		
 		this.balancer = this.configuration.getBalancerFactory().createBalancer(new TreeSet<D>());
 		this.dialect = this.configuration.getDialectFactory().createDialect();
-		this.durability = this.configuration.getDurabilityFactory().createDurability(this.stateManager);
+		this.durability = this.configuration.getDurabilityFactory().createDurability(this);
 		
 		this.lockManager.start();
 		this.stateManager.start();
@@ -440,7 +453,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		
 		Set<String> databaseSet = this.stateManager.getActiveDatabases();
 		
-		if (databaseSet != null)
+		if (!databaseSet.isEmpty())
 		{
 			for (String databaseId: databaseSet)
 			{
@@ -448,11 +461,11 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 				
 				if (database != null)
 				{
-					this.activate(database, this.stateManager);
+					this.balancer.add(database);
 				}
 				else
 				{
-					// Log warning
+					logger.log(Level.WARN, "{0}", database);
 				}
 			}
 		}
@@ -466,6 +479,10 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 				}
 			}
 		}
+
+		Map<InvocationEvent, Map<String, InvokerEvent>> invokers = this.stateManager.recover();
+		
+		this.durability.recover(invokers);
 		
 		this.databaseMetaDataCache = this.configuration.getDatabaseMetaDataCacheFactory().createCache(this);
 		

@@ -22,6 +22,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.Serializable;
 import java.io.Writer;
 
 /**
@@ -30,8 +31,10 @@ import java.io.Writer;
  * 
  * @author Paul Ferraro
  */
-public class FileCharacterStreamer implements CharacterStreamer
+public class FileCharacterStreamer implements CharacterStreamer, Serializable
 {
+	private static final long serialVersionUID = -8857228563490452629L;
+	
 	private final File file;
 	
 	public FileCharacterStreamer(File file)

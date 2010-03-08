@@ -17,24 +17,28 @@
  */
 package net.sf.hajdbc.durability.coarse;
 
+import java.io.Serializable;
+
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.durability.Durability;
 import net.sf.hajdbc.durability.DurabilityFactory;
-import net.sf.hajdbc.durability.DurabilityListener;
 
 /**
  * @author paul
  *
  */
-public class CoarseDurabilityFactory implements DurabilityFactory
+public class CoarseDurabilityFactory implements DurabilityFactory, Serializable
 {
+	private static final long serialVersionUID = -24045976334856435L;
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.durability.DurabilityFactory#createDurability(net.sf.hajdbc.durability.DurabilityListener)
 	 */
 	@Override
-	public <Z, D extends Database<Z>> Durability<Z, D> createDurability(DurabilityListener listener)
+	public <Z, D extends Database<Z>> Durability<Z, D> createDurability(DatabaseCluster<Z, D> cluster)
 	{
-		return new CoarseDurability<Z, D>(listener);
+		return new CoarseDurability<Z, D>(cluster);
 	}
 }

@@ -34,8 +34,10 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class DriverDatabaseClusterConfiguration extends AbstractDatabaseClusterConfiguration<Driver, DriverDatabase>
 {
+	private static final long serialVersionUID = -1244943642980298325L;
+	
 	@XmlElement(name = "cluster", required = true)
-	private DriverNestedConfiguration configuration;
+	private DriverNestedConfiguration configuration = new DriverNestedConfiguration();
 
 	@Override
 	protected AbstractDatabaseClusterConfiguration.NestedConfiguration<Driver, DriverDatabase> getNestedConfiguration()
@@ -46,6 +48,8 @@ public class DriverDatabaseClusterConfiguration extends AbstractDatabaseClusterC
 	@XmlType(name = "nestedConfiguration")
 	static class DriverNestedConfiguration extends AbstractDatabaseClusterConfiguration.NestedConfiguration<Driver, DriverDatabase>
 	{
+		private static final long serialVersionUID = 6162775670140013194L;
+
 		@SuppressWarnings("unused")
 		@XmlElement(name = "database")
 		private DriverDatabase[] getDatabases()

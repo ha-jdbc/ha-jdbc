@@ -42,18 +42,18 @@ public class InvokerCommand<Z, D extends Database<Z>> implements Command<Void, S
 	@Override
 	public Void execute(StateCommandContext<Z, D> context)
 	{
-		Map<InvocationEvent, Map<D, InvokerEvent>> invokers = context.getRemoteInvokers(this.descriptor);
+		Map<InvocationEvent, Map<String, InvokerEvent>> invokers = context.getRemoteInvokers(this.descriptor);
 
 		InvokerEvent event = this.descriptor.getEvent();
-		D database = context.getDatabaseCluster().getDatabase(event.getDatabaseId());
+		String databaseId = event.getDatabaseId();
 		
 		synchronized (invokers)
 		{
-			Map<D, InvokerEvent> map = invokers.get(event);
+			Map<String, InvokerEvent> map = invokers.get(event);
 			
 			if (map != null)
 			{
-				map.put(database, event);
+				map.put(databaseId, event);
 			}
 		}
 		

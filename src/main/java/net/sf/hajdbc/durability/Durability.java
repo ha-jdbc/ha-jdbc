@@ -17,6 +17,8 @@
  */
 package net.sf.hajdbc.durability;
 
+import java.util.Map;
+
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.sql.InvocationStrategy;
@@ -36,4 +38,6 @@ public interface Durability<Z, D extends Database<Z>>
 	<T, R, E extends Exception> InvocationStrategy<Z, D, T, R, E> getInvocationStrategy(InvocationStrategy<Z, D, T, R, E> strategy, Phase phase, TransactionIdentifier transactionId, ExceptionFactory<E> exceptionFactory);
 	
 	<T, R, E extends Exception> Invoker<Z, D, T, R, E> getInvoker(Invoker<Z, D, T, R, E> invoker, Phase phase, TransactionIdentifier transactionId, ExceptionFactory<E> exceptionFactory);
+	
+	void recover(Map<InvocationEvent, Map<String, InvokerEvent>> invokers);
 }

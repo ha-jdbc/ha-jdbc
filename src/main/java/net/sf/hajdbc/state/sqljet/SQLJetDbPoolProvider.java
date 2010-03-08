@@ -19,22 +19,27 @@ package net.sf.hajdbc.state.sqljet;
 
 import java.io.File;
 
-import org.tmatesoft.sqljet.core.SqlJetException;
-import org.tmatesoft.sqljet.core.table.SqlJetDb;
-
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
-import net.sf.hajdbc.pool.PoolProvider;
+import net.sf.hajdbc.pool.AbstractPoolProvider;
+
+import org.tmatesoft.sqljet.core.SqlJetException;
+import org.tmatesoft.sqljet.core.table.SqlJetDb;
 
 /**
  * <a href="http://sqljet.com/">SQLJet</a> is a java port of <a href="http://www.sqlite.org/">SQLite</a>.
  * 
  * @author paul
  */
-public class SQLJetDbPoolProvider implements PoolProvider<SqlJetDb, SqlJetException>
+public class SQLJetDbPoolProvider extends AbstractPoolProvider<SqlJetDb, SqlJetException>
 {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	
+	public SQLJetDbPoolProvider()
+	{
+		super(SqlJetDb.class, SqlJetException.class);
+	}
 	
 	/**
 	 * {@inheritDoc}

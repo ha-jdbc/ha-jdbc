@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.sql.SQLException;
@@ -60,8 +61,10 @@ import net.sf.hajdbc.sql.SQLExceptionFactory;
  * </table>
  * @author Paul Ferraro
  */
-public class CipherCodecFactory implements CodecFactory
+public class CipherCodecFactory implements CodecFactory, Serializable
 {
+	private static final long serialVersionUID = -4409167180573651279L;
+	
 	public static final String DEFAULT_KEYSTORE_FILE = String.format("%s/.keystore", System.getProperty("user.home"));
 	public static final String DEFAULT_KEY_ALIAS = "ha-jdbc";
 	

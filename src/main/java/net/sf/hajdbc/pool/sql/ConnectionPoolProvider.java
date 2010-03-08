@@ -20,16 +20,16 @@ package net.sf.hajdbc.pool.sql;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import net.sf.hajdbc.pool.PoolProvider;
+import net.sf.hajdbc.logging.Level;
+import net.sf.hajdbc.logging.Logger;
+import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.pool.AbstractPoolProvider;
 
 /**
  * @author paul
  *
  */
-public class ConnectionPoolProvider implements PoolProvider<Connection, SQLException>
+public class ConnectionPoolProvider extends AbstractPoolProvider<Connection, SQLException>
 {
 	private static Logger logger = LoggerFactory.getLogger(ConnectionPoolProvider.class);
 	
@@ -37,6 +37,8 @@ public class ConnectionPoolProvider implements PoolProvider<Connection, SQLExcep
 	
 	public ConnectionPoolProvider(ConnectionFactory factory)
 	{
+		super(Connection.class, SQLException.class);
+		
 		this.factory = factory;
 	}
 
@@ -53,7 +55,7 @@ public class ConnectionPoolProvider implements PoolProvider<Connection, SQLExcep
 		}
 		catch (SQLException e)
 		{
-			logger.warn(e.getMessage(), e);
+			logger.log(Level.WARN, e, e.getMessage());
 		}
 	}
 

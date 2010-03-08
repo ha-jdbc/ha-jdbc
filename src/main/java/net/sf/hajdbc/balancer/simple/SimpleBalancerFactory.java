@@ -17,6 +17,7 @@
  */
 package net.sf.hajdbc.balancer.simple;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import net.sf.hajdbc.Database;
@@ -27,8 +28,10 @@ import net.sf.hajdbc.balancer.BalancerFactory;
  * @author paul
  *
  */
-public class SimpleBalancerFactory implements BalancerFactory
+public class SimpleBalancerFactory implements BalancerFactory, Serializable
 {
+	private static final long serialVersionUID = -5871958980592464011L;
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.balancer.BalancerFactory#createBalancer(java.util.Set)

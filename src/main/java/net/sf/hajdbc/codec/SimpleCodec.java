@@ -25,6 +25,8 @@ import java.sql.SQLException;
  */
 public class SimpleCodec extends AbstractCodec
 {
+	private static final long serialVersionUID = -472755264720942251L;
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.codec.Codec#decrypt(java.lang.String)

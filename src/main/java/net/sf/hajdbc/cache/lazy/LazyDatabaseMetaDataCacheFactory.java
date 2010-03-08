@@ -29,6 +29,8 @@ import net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory;
  */
 public class LazyDatabaseMetaDataCacheFactory extends AbstractDatabaseMetaDataCacheFactory
 {
+	private static final long serialVersionUID = -8343580190808280295L;
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.cache.AbstractDatabaseMetaDataCacheFactory#createCache(net.sf.hajdbc.DatabaseCluster, net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory)

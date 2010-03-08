@@ -17,6 +17,7 @@
  */
 package net.sf.hajdbc.cache;
 
+import java.io.Serializable;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
@@ -26,7 +27,7 @@ import net.sf.hajdbc.Dialect;
  * @author Paul Ferraro
  *
  */
-public interface DatabaseMetaDataSupportFactory
+public interface DatabaseMetaDataSupportFactory extends Serializable
 {
 	DatabaseMetaDataSupport createSupport(DatabaseMetaData metaData, Dialect dialect) throws SQLException;
 }

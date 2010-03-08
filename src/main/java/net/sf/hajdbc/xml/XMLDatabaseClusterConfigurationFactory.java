@@ -50,6 +50,8 @@ import org.xml.sax.SAXException;
  */
 public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> implements DatabaseClusterConfigurationFactory<Z, D>, DatabaseClusterConfigurationListener<Z, D>
 {
+	private static final long serialVersionUID = -8796872297122349961L;
+	
 	private static final String CONFIG_FORMAT_PROPERTY = "ha-jdbc.{0}.configuration"; //$NON-NLS-1$
 	private static final String CONFIG_PROPERTY = "ha-jdbc.configuration"; //$NON-NLS-1$
 	private static final String DEFAULT_RESOURCE = "ha-jdbc-{0}.xml"; //$NON-NLS-1$

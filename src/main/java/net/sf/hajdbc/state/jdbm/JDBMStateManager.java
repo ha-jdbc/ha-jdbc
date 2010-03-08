@@ -21,14 +21,19 @@ import java.io.IOException;
 
 import jdbm.RecordManager;
 import jdbm.RecordManagerFactory;
-import net.sf.hajdbc.pool.PoolProvider;
+import net.sf.hajdbc.pool.AbstractPoolProvider;
 
 /**
  * @author paul
  *
  */
-public class JDBMStateManager implements PoolProvider<RecordManager, IOException>
+public class JDBMStateManager extends AbstractPoolProvider<RecordManager, IOException>
 {
+	public JDBMStateManager()
+	{
+		super(RecordManager.class, IOException.class);
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.pool.PoolProvider#close(java.lang.Object)

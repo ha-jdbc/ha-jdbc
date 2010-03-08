@@ -29,7 +29,7 @@ import net.sf.hajdbc.sql.CommonDataSource;
 /**
  * @author Paul Ferraro
  */
-public class XADataSource extends CommonDataSource<javax.sql.XADataSource> implements javax.sql.XADataSource
+public class XADataSource extends CommonDataSource<javax.sql.XADataSource, XADataSourceDatabase> implements javax.sql.XADataSource
 {
 	/**
 	 * Constructs a new XADataSource
