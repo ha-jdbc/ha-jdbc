@@ -64,9 +64,13 @@ public final class ReplicatingDriver extends AbstractDriver
 		}
 	}
 
-	public static void setConfigurationFactories(Map<String, DatabaseClusterConfigurationFactory<Driver, DriverDatabase>> map)
+	/**
+	 * Set custom configuration factories per cluster.
+	 * @param factories a map of configuration factories per cluster identifier.
+	 */
+	public static void setConfigurationFactories(Map<String, DatabaseClusterConfigurationFactory<Driver, DriverDatabase>> factories)
 	{
-		configurationFactoryMap = (map != null) ? map : Collections.<String, DatabaseClusterConfigurationFactory<Driver, DriverDatabase>>emptyMap();
+		configurationFactoryMap = (factories != null) ? factories : Collections.<String, DatabaseClusterConfigurationFactory<Driver, DriverDatabase>>emptyMap();
 	}
 	
 	/**
@@ -80,6 +84,7 @@ public final class ReplicatingDriver extends AbstractDriver
 	}
 
 	/**
+	 * {@inheritDoc}
 	 * @see java.sql.Driver#connect(java.lang.String, java.util.Properties)
 	 */
 	@Override
@@ -109,6 +114,7 @@ public final class ReplicatingDriver extends AbstractDriver
 	}
 	
 	/**
+	 * {@inheritDoc}
 	 * @see Driver#getPropertyInfo(java.lang.String, java.util.Properties)
 	 */
 	@Override
@@ -143,7 +149,7 @@ public final class ReplicatingDriver extends AbstractDriver
 			{
 				DatabaseClusterConfigurationFactory<Driver, DriverDatabase> factory = configurationFactoryMap.get(id);
 				
-				if (factory != null)
+				if (factory == null)
 				{
 					factory = new XMLDatabaseClusterConfigurationFactory<Driver, DriverDatabase>(id, properties.getProperty(CONFIG));
 				}
