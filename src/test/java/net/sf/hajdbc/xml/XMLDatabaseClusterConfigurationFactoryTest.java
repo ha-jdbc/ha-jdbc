@@ -62,13 +62,13 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 		
 		CharacterStreamer streamer = EasyMock.createStrictMock(CharacterStreamer.class);
 		
-		XMLDatabaseClusterConfigurationFactory<Driver, DriverDatabase> factory = new XMLDatabaseClusterConfigurationFactory<Driver, DriverDatabase>(streamer);
+		XMLDatabaseClusterConfigurationFactory<Driver, DriverDatabase> factory = new XMLDatabaseClusterConfigurationFactory<Driver, DriverDatabase>(DriverDatabaseClusterConfiguration.class, streamer);
 		
 		EasyMock.expect(streamer.getReader()).andReturn(new StringReader(xml));
 		
 		EasyMock.replay(streamer);
 		
-		DatabaseClusterConfiguration<Driver, DriverDatabase> configuration = factory.createConfiguration(DriverDatabaseClusterConfiguration.class);
+		DatabaseClusterConfiguration<Driver, DriverDatabase> configuration = factory.createConfiguration();
 		
 		EasyMock.verify(streamer);
 		
