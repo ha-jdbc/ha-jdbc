@@ -94,7 +94,7 @@ public abstract class CommonDataSourceObjectFactory<Z extends javax.sql.CommonDa
 			}
 		}
 		
-		DatabaseClusterConfigurationFactory<Z, D> factory = new XMLDatabaseClusterConfigurationFactory<Z, D>(id, config);
+		DatabaseClusterConfigurationFactory<Z, D> factory = new XMLDatabaseClusterConfigurationFactory<Z, D>(this.configurationClass, id, config);
 		
 		return this.createProxy(id, factory);
 	}
@@ -106,7 +106,7 @@ public abstract class CommonDataSourceObjectFactory<Z extends javax.sql.CommonDa
 	@Override
 	public Z createProxy(String id, DatabaseClusterConfigurationFactory<Z, D> factory) throws SQLException
 	{
-		DatabaseClusterConfiguration<Z, D> configuration = factory.createConfiguration(this.configurationClass);
+		DatabaseClusterConfiguration<Z, D> configuration = factory.createConfiguration();
 		DatabaseCluster<Z, D> cluster = new DatabaseClusterImpl<Z, D>(id, configuration, factory);
 		
 		try

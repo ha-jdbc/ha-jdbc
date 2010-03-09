@@ -34,7 +34,7 @@ public class DataSource extends CommonDataSource<javax.sql.DataSource, DataSourc
 	 */
 	public DataSource()
 	{
-		super(new DataSourceFactory());
+		super(new DataSourceFactory(), DataSourceDatabaseClusterConfiguration.class);
 	}
 
 	/**

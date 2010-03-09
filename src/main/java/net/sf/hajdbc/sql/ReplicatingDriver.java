@@ -92,6 +92,7 @@ public final class ReplicatingDriver extends AbstractDriver
 	{
 		String id = this.parse(url);
 		
+		// JDBC spec compliance
 		if (id == null) return null;
 		
 		DatabaseCluster<Driver, DriverDatabase> cluster = this.getDatabaseCluster(id, properties);
@@ -122,6 +123,7 @@ public final class ReplicatingDriver extends AbstractDriver
 	{
 		String id = this.parse(url);
 		
+		// JDBC spec compliance
 		if (id == null) return null;
 		
 		DatabaseCluster<Driver, DriverDatabase> cluster = this.getDatabaseCluster(id, properties);
@@ -151,10 +153,10 @@ public final class ReplicatingDriver extends AbstractDriver
 				
 				if (factory == null)
 				{
-					factory = new XMLDatabaseClusterConfigurationFactory<Driver, DriverDatabase>(id, properties.getProperty(CONFIG));
+					factory = new XMLDatabaseClusterConfigurationFactory<Driver, DriverDatabase>(DriverDatabaseClusterConfiguration.class, id, properties.getProperty(CONFIG));
 				}
 				
-				DatabaseClusterConfiguration<Driver, DriverDatabase> configuration = factory.createConfiguration(DriverDatabaseClusterConfiguration.class);
+				DatabaseClusterConfiguration<Driver, DriverDatabase> configuration = factory.createConfiguration();
 				
 				cluster = new DatabaseClusterImpl<Driver, DriverDatabase>(id, configuration, factory);
 				

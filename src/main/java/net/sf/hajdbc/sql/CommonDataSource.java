@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import javax.naming.Referenceable;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseClusterConfiguration;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.xml.XMLDatabaseClusterConfigurationFactory;
 
@@ -36,18 +37,20 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 	private DatabaseClusterConfigurationFactory<Z, D> configurationFactory;
 	
 	private final CommonDataSourceFactory<Z, D> factory;
+	private final Class<? extends DatabaseClusterConfiguration<Z, D>> configurationClass;
 	private volatile Z proxy;
 	
-	protected CommonDataSource(CommonDataSourceFactory<Z, D> factory)
+	protected CommonDataSource(CommonDataSourceFactory<Z, D> factory, Class<? extends DatabaseClusterConfiguration<Z, D>> configurationClass)
 	{
 		this.factory = factory;
+		this.configurationClass = configurationClass;
 	}
 	
 	public synchronized Z getProxy() throws SQLException
 	{
 		if (this.proxy == null)
 		{
-			this.proxy = this.factory.createProxy(this.cluster, (this.configurationFactory != null) ? this.configurationFactory : new XMLDatabaseClusterConfigurationFactory<Z, D>(this.cluster, this.config));
+			this.proxy = this.factory.createProxy(this.cluster, (this.configurationFactory != null) ? this.configurationFactory : new XMLDatabaseClusterConfigurationFactory<Z, D>(this.configurationClass, this.cluster, this.config));
 		}
 		
 		return this.proxy;

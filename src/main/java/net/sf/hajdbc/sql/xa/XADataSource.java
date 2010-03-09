@@ -36,7 +36,7 @@ public class XADataSource extends CommonDataSource<javax.sql.XADataSource, XADat
 	 */
 	public XADataSource()
 	{
-		super(new XADataSourceFactory());
+		super(new XADataSourceFactory(), XADataSourceDatabaseClusterConfiguration.class);
 	}
 
 	/**

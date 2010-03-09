@@ -37,7 +37,7 @@ public class ConnectionPoolDataSource extends CommonDataSource<javax.sql.Connect
 	 */
 	public ConnectionPoolDataSource()
 	{
-		super(new ConnectionPoolDataSourceFactory());
+		super(new ConnectionPoolDataSourceFactory(), ConnectionPoolDataSourceDatabaseClusterConfiguration.class);
 	}
 
 	/**

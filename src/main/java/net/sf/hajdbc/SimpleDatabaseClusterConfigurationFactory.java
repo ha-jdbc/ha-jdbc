@@ -38,7 +38,7 @@ public class SimpleDatabaseClusterConfigurationFactory<Z, D extends Database<Z>>
 	 * @see net.sf.hajdbc.DatabaseClusterConfigurationFactory#createConfiguration(java.lang.String, java.lang.Class)
 	 */
 	@Override
-	public DatabaseClusterConfiguration<Z, D> createConfiguration(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass) throws SQLException
+	public DatabaseClusterConfiguration<Z, D> createConfiguration() throws SQLException
 	{
 		return this.configuration;
 	}

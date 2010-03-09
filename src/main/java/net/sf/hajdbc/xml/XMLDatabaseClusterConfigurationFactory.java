@@ -60,6 +60,7 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 
 	private static final Logger logger = LoggerFactory.getLogger(XMLDatabaseClusterConfigurationFactory.class);
 	
+	private final Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass;
 	private final CharacterStreamer streamer;
 	
 	private static String identifyResource(String id)
@@ -108,20 +109,21 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 		return url;
 	}
 	
-	public XMLDatabaseClusterConfigurationFactory(String id, String resource)
+	public XMLDatabaseClusterConfigurationFactory(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass, String id, String resource)
 	{
-		this(findResource((resource == null) ? identifyResource(id) : MessageFormat.format(resource, id)));
+		this(targetClass, findResource((resource == null) ? identifyResource(id) : MessageFormat.format(resource, id)));
 	}
 	
-	public XMLDatabaseClusterConfigurationFactory(URL url)
+	public XMLDatabaseClusterConfigurationFactory(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass, URL url)
 	{
-		this(url.getProtocol().equals("file") ? new FileCharacterStreamer(new File(url.getPath())) : new URLCharacterStreamer(url));
+		this(targetClass, url.getProtocol().equals("file") ? new FileCharacterStreamer(new File(url.getPath())) : new URLCharacterStreamer(url));
 		
 		logger.log(Level.INFO, "Using url {0}", url);
 	}
 	
-	public XMLDatabaseClusterConfigurationFactory(CharacterStreamer streamer)
+	public XMLDatabaseClusterConfigurationFactory(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass, CharacterStreamer streamer)
 	{
+		this.targetClass = targetClass;
 		this.streamer = streamer;
 	}
 	
@@ -130,17 +132,17 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 	 * @see net.sf.hajdbc.DatabaseClusterConfigurationFactory#createConfiguration(java.lang.String, java.lang.Class)
 	 */
 	@Override
-	public DatabaseClusterConfiguration<Z, D> createConfiguration(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass) throws SQLException
+	public DatabaseClusterConfiguration<Z, D> createConfiguration() throws SQLException
 	{
 		try
 		{
 			SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 			Schema schema = schemaFactory.newSchema(SCHEMA);
 			
-			Unmarshaller unmarshaller = JAXBContext.newInstance(targetClass).createUnmarshaller();
+			Unmarshaller unmarshaller = JAXBContext.newInstance(this.targetClass).createUnmarshaller();
 			unmarshaller.setSchema(schema);
 			
-			return targetClass.cast(unmarshaller.unmarshal(this.streamer.getReader()));
+			return this.targetClass.cast(unmarshaller.unmarshal(this.streamer.getReader()));
 		}
 		catch (JAXBException e)
 		{
