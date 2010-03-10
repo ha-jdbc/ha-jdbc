@@ -33,12 +33,7 @@ public class SemaphoreLock implements Lock
 {
 	private final Semaphore semaphore;
 	
-	public SemaphoreLock(boolean fair)
-	{
-		this(new Semaphore(1, fair));
-	}
-	
-	SemaphoreLock(Semaphore semaphore)
+	public SemaphoreLock(Semaphore semaphore)
 	{
 		this.semaphore = semaphore;
 	}

@@ -33,22 +33,13 @@ import java.util.concurrent.locks.ReadWriteLock;
  */
 public class SemaphoreReadWriteLock implements ReadWriteLock
 {
-	private static final int DEFAULT_PERMITS = Integer.MAX_VALUE;
-	
 	private final Lock readLock;
 	private final Lock writeLock;
 	
-	public SemaphoreReadWriteLock(boolean fair)
+	public SemaphoreReadWriteLock(Semaphore semaphore)
 	{
-		this(DEFAULT_PERMITS, fair);
-	}
-
-	public SemaphoreReadWriteLock(int permits, boolean fair)
-	{
-		Semaphore semaphore = new Semaphore(permits, fair);
-		
 		this.readLock = new SemaphoreLock(semaphore);
-		this.writeLock = new SemaphoreWriteLock(semaphore, permits);
+		this.writeLock = new SemaphoreWriteLock(semaphore);
 	}
 	
 	/**
@@ -73,11 +64,11 @@ public class SemaphoreReadWriteLock implements ReadWriteLock
 	{
 		private final Semaphore semaphore;
 		private final int permits;
-		
-		SemaphoreWriteLock(Semaphore semaphore, int permits)
+
+		SemaphoreWriteLock(Semaphore semaphore)
 		{
 			this.semaphore = semaphore;
-			this.permits = permits;
+			this.permits = semaphore.availablePermits();
 		}
 		
 		/**

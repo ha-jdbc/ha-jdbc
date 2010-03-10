@@ -19,6 +19,7 @@ package net.sf.hajdbc.lock.semaphore;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -61,7 +62,7 @@ public class SemaphoreLockManager implements LockManager
 		
 		if (lock == null)
 		{
-			lock = new SemaphoreReadWriteLock(true);
+			lock = new SemaphoreReadWriteLock(new Semaphore(Integer.MAX_VALUE, true));
 			
 			this.lockMap.put(object, lock);
 		}
