@@ -36,6 +36,7 @@ import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.cache.DatabaseProperties;
 import net.sf.hajdbc.cache.TableProperties;
 import net.sf.hajdbc.lock.LockManager;
+import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.util.reflect.Methods;
 
 /**
@@ -277,7 +278,8 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 		{
 			synchronized (this.batchInvokerList)
 			{
-				System.out.println("recording: " + invoker);
+				this.logger.log(Level.TRACE, "Recording batch method: {0}", invoker);
+
 				this.batchInvokerList.add(invoker);
 			}
 		}
@@ -285,7 +287,8 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 		{
 			synchronized (this.batchInvokerList)
 			{
-				System.out.println("cleared recorded invokers");
+				this.logger.log(Level.TRACE, "Clearing recorded batch methods");
+				
 				this.batchInvokerList.clear();
 			}
 		}
@@ -321,14 +324,14 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 	@Override
 	protected void replay(D database, S statement) throws SQLException
 	{
-		System.out.println("super.replay");
 		super.replay(database, statement);
 		
 		synchronized (this.batchInvokerList)
 		{
 			for (Invoker<Z, D, S, ?, SQLException> invoker: this.batchInvokerList)
 			{
-				System.out.println("replaying: " + invoker);
+				this.logger.log(Level.TRACE, "Replaying against database {0}: {1}.{2}", database, statement.getClass().getName(), invoker);
+
 				invoker.invoke(database, statement);
 			}
 		}

@@ -310,12 +310,12 @@ public abstract class AbstractInvocationHandler<Z, D extends Database<Z>, T, E e
 	
 	protected void replay(D database, T object) throws E
 	{
-		System.out.println("replay");
 		synchronized (this.invokerMap)
 		{
 			for (Invoker<Z, D, T, ?, E> invoker: this.invokerMap.values())
 			{
-				System.out.println("replaying: " + invoker);
+				this.logger.log(Level.TRACE, "Replaying against database {0}: {1}.{2}", database, object.getClass().getName(), invoker);
+
 				invoker.invoke(database, object);
 			}
 		}
