@@ -22,7 +22,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -40,7 +43,7 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 {
 	private final Lock lock = new ReentrantLock();
 	
-	private volatile Map<D, AtomicInteger> databaseMap = Collections.emptyMap();
+	private volatile SortedMap<D, AtomicInteger> databaseMap = new TreeMap<D, AtomicInteger>();
 	
 	private Comparator<Map.Entry<D, AtomicInteger>> comparator = new Comparator<Map.Entry<D, AtomicInteger>>()
 	{
@@ -70,6 +73,28 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 	
 	/**
 	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.balancer.Balancer#master()
+	 */
+	@Override
+	public D master()
+	{
+		return this.databaseMap.firstKey();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.balancer.Balancer#slaves()
+	 */
+	@Override
+	public Iterable<D> slaves()
+	{
+		SortedSet<D> set = new TreeSet<D>(this.databaseMap.keySet());
+		set.remove(set.first());
+		return Collections.unmodifiableSet(set);
+	}
+
+	/**
+	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabaseSet()
 	 */
 	@Override
@@ -89,7 +114,7 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 		
 		try
 		{
-			Map<D, AtomicInteger> addMap = new TreeMap<D, AtomicInteger>(this.databaseMap);
+			SortedMap<D, AtomicInteger> addMap = new TreeMap<D, AtomicInteger>(this.databaseMap);
 			
 			boolean added = false;
 			
@@ -122,7 +147,7 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 		
 		try
 		{
-			Map<D, AtomicInteger> map = new TreeMap<D, AtomicInteger>(this.databaseMap);
+			SortedMap<D, AtomicInteger> map = new TreeMap<D, AtomicInteger>(this.databaseMap);
 			
 			boolean removed = map.keySet().removeAll(databases);
 
@@ -150,7 +175,7 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 		
 		try
 		{
-			Map<D, AtomicInteger> map = new TreeMap<D, AtomicInteger>(this.databaseMap);
+			SortedMap<D, AtomicInteger> map = new TreeMap<D, AtomicInteger>(this.databaseMap);
 			
 			boolean retained = map.keySet().retainAll(databases);
 
@@ -179,7 +204,7 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 		{
 			if (!this.databaseMap.isEmpty())
 			{
-				this.databaseMap = Collections.emptyMap();
+				this.databaseMap = new TreeMap<D, AtomicInteger>();
 			}
 		}
 		finally
@@ -202,7 +227,7 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 			
 			if (remove)
 			{
-				Map<D, AtomicInteger> map = new TreeMap<D, AtomicInteger>(this.databaseMap);
+				SortedMap<D, AtomicInteger> map = new TreeMap<D, AtomicInteger>(this.databaseMap);
 
 				map.remove(database);
 				
@@ -242,7 +267,7 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 			
 			if (add)
 			{
-				Map<D, AtomicInteger> map = new TreeMap<D, AtomicInteger>(this.databaseMap);
+				SortedMap<D, AtomicInteger> map = new TreeMap<D, AtomicInteger>(this.databaseMap);
 				
 				map.put(database, new AtomicInteger(1));
 				

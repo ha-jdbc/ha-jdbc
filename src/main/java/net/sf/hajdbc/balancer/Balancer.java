@@ -32,20 +32,32 @@ import net.sf.hajdbc.Database;
 public interface Balancer<Z, D extends Database<Z>> extends Set<D>
 {
 	/**
+	 * The designated master database
+	 * @return the master database
+	 */
+	D master();
+	
+	/**
+	 * The non-master databases.
+	 * @return an iterable collection of databases.
+	 */
+	Iterable<D> slaves();
+	
+	/**
 	 * Returns the next database from this balancer
 	 * @return the next database from this balancer
 	 */
-	public D next();
+	D next();
 
 	/**
 	 * Called before an operation is performed on the specified database retrieved via {@link #next()}.
 	 * @param database a database descriptor
 	 */
-	public void beforeInvocation(D database);
+	void beforeInvocation(D database);
 	
 	/**
 	 * Called after an operation is performed on the specified database retrieved via {@link #next()}.
 	 * @param database a database descriptor
 	 */
-	public void afterInvocation(D database);
+	void afterInvocation(D database);
 }

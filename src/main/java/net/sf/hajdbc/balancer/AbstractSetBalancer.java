@@ -18,7 +18,6 @@
 package net.sf.hajdbc.balancer;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -35,13 +34,35 @@ public abstract class AbstractSetBalancer<Z, D extends Database<Z>> extends Abst
 {
 	private final Lock lock = new ReentrantLock();
 
-	private volatile Set<D> databaseSet = Collections.emptySet();
+	private volatile SortedSet<D> databaseSet = new TreeSet<D>();
 
 	protected Lock getLock()
 	{
 		return this.lock;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.balancer.Balancer#master()
+	 */
+	@Override
+	public D master()
+	{
+		return this.databaseSet.first();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.balancer.Balancer#slaves()
+	 */
+	@Override
+	public Iterable<D> slaves()
+	{
+		SortedSet<D> slaves = new TreeSet<D>(this.databaseSet);
+		slaves.remove(slaves.first());
+		return slaves;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabaseSet()
@@ -268,7 +289,7 @@ public abstract class AbstractSetBalancer<Z, D extends Database<Z>> extends Abst
 		{
 			if (!this.databaseSet.isEmpty())
 			{
-				this.databaseSet = Collections.emptySet();
+				this.databaseSet = new TreeSet<D>();
 				
 				this.cleared();
 			}
