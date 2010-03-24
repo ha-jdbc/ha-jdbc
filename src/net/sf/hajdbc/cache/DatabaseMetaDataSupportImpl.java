@@ -135,12 +135,39 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 	public Collection<QualifiedName> getTables(DatabaseMetaData metaData) throws SQLException
 	{
 		List<QualifiedName> list = new LinkedList<QualifiedName>();
+		String catalog = this.getCatalog(metaData);
 		
-		ResultSet resultSet = metaData.getTables(this.getCatalog(metaData), null, Strings.ANY, new String[] { "TABLE" });
+		List<String> requiredPrivileges = Arrays.asList("SELECT", "INSERT", "UPDATE", "DELETE");
+		Set<String> privileges = new HashSet<String>();
+		Pattern pattern = Pattern.compile("\\s*\\Q,\\E\\s*");
+		
+		ResultSet resultSet = metaData.getTables(catalog, null, Strings.ANY, new String[] { "TABLE" });
 		
 		while (resultSet.next())
 		{
-			list.add(new QualifiedName(resultSet.getString("TABLE_SCHEM"), resultSet.getString("TABLE_NAME")));
+			String schema = resultSet.getString("TABLE_SCHEM");
+			String table = resultSet.getString("TABLE_NAME");
+			
+			privileges.clear();
+			
+			ResultSet rs = metaData.getTablePrivileges(catalog, schema, table);
+			
+			while (rs.next())
+			{
+				String privilege = rs.getString("PRIVILEGE");
+				
+				if (privilege != null)
+				{
+					privileges.addAll(Arrays.asList(pattern.split(privilege.toUpperCase())));
+				}
+			}
+			
+			rs.close();
+			
+			if (privileges.containsAll(requiredPrivileges))
+			{
+				list.add(new QualifiedName(schema, table));
+			}
 		}
 		
 		resultSet.close();
