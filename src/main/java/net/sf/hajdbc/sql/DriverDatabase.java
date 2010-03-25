@@ -31,14 +31,17 @@ import javax.xml.bind.annotation.XmlType;
 
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.codec.Codec;
-import net.sf.hajdbc.management.Managed;
+import net.sf.hajdbc.management.Description;
+import net.sf.hajdbc.management.MBean;
+import net.sf.hajdbc.management.ManagedAttribute;
 
 /**
  * @author  Paul Ferraro
  * @version $Revision: 1948 $
  * @since   1.0
  */
-@Managed(description = "Database accessed via DriverManager")
+@MBean
+@Description("Database accessed via DriverManager")
 @XmlType(name = "database")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class DriverDatabase extends AbstractDatabase<Driver>
@@ -53,7 +56,8 @@ public class DriverDatabase extends AbstractDatabase<Driver>
 	 * @param url a database url
 	 * @throws IllegalArgumentException if url is not accepted by any driver
 	 */
-	@Managed(description = "JDBC url")
+	@ManagedAttribute
+	@Description("JDBC url")
 	@Override
 	public void setName(String location)
 	{

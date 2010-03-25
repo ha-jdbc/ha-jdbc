@@ -30,7 +30,9 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.management.Managed;
+import net.sf.hajdbc.management.Description;
+import net.sf.hajdbc.management.ManagedAttribute;
+import net.sf.hajdbc.management.ManagedOperation;
 import net.sf.hajdbc.sql.AbstractDatabaseClusterConfiguration.Property;
 
 /**
@@ -91,7 +93,8 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getDatabaseId()
 	 */
-	@Managed(description = "Uniquely identifies this database in the cluster")
+	@ManagedAttribute
+	@Description("Uniquely identifies this database in the cluster")
 	@Override
 	public String getId()
 	{
@@ -107,14 +110,15 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.Database#getName()
 	 */
-	@Managed(description = "Identifies the location of this database")
+	@ManagedAttribute
+	@Description("Identifies the location of this database")
 	@Override
 	public String getName()
 	{
 		return this.name;
 	}
 
-	@Managed
+	@ManagedAttribute
 	public void setName(String name)
 	{
 		this.assertInactive();
@@ -125,7 +129,8 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	/**
 	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getUser()
 	 */
-	@Managed(description = "User ID for administrative connection authentication")
+	@ManagedAttribute
+	@Description("User ID for administrative connection authentication")
 	public String getUser()
 	{
 		return this.user;
@@ -134,7 +139,7 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	/**
 	 * @see net.sf.hajdbc.InactiveDatabaseMBean#setUser(java.lang.String)
 	 */
-	@Managed
+	@ManagedAttribute
 	public void setUser(String user)
 	{
 		this.assertInactive();
@@ -145,7 +150,8 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	/**
 	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getPassword()
 	 */
-	@Managed(description = "Password for administrative connection authentication")
+	@ManagedAttribute
+	@Description("Password for administrative connection authentication")
 	public String getPassword()
 	{
 		return this.password;
@@ -154,7 +160,7 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	/**
 	 * @see net.sf.hajdbc.InactiveDatabaseMBean#setPassword(java.lang.String)
 	 */
-	@Managed
+	@ManagedAttribute
 	public void setPassword(String password)
 	{
 		this.assertInactive();
@@ -165,7 +171,8 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	/**
 	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getWeight()
 	 */
-	@Managed(description = "Weight used in read request balancing")
+	@ManagedAttribute
+	@Description("Weight used in read request balancing")
 	@Override
 	public int getWeight()
 	{
@@ -175,7 +182,7 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	/**
 	 * @see net.sf.hajdbc.InactiveDatabaseMBean#setWeight(int)
 	 */
-	@Managed
+	@ManagedAttribute
 	public void setWeight(int weight)
 	{
 		this.assertInactive();
@@ -232,7 +239,8 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	/**
 	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getProperties()
 	 */
-	@Managed(description = "Connection properties")
+	@ManagedAttribute
+	@Description("Connection properties")
 	public Map<String, String> getProperties()
 	{
 		return this.properties;
@@ -241,7 +249,8 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	/**
 	 * @see net.sf.hajdbc.InactiveDatabaseMBean#removeProperty(java.lang.String)
 	 */
-	@Managed(description = "Removes the specified connection property")
+	@ManagedOperation
+	@Description("Removes the specified connection property")
 	public void removeProperty(String name)
 	{
 		this.assertInactive();
@@ -254,7 +263,8 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	/**
 	 * @see net.sf.hajdbc.InactiveDatabaseMBean#setProperty(java.lang.String, java.lang.String)
 	 */
-	@Managed(description = "Creates/updates the specified connection property")
+	@ManagedOperation
+	@Description("Creates/updates the specified connection property")
 	public void setProperty(String name, String value)
 	{
 		this.assertInactive();
@@ -272,7 +282,7 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	/**
 	 * @see net.sf.hajdbc.InactiveDatabaseMBean#setLocal(boolean)
 	 */
-	@Managed
+	@ManagedAttribute
 	public void setLocal(boolean local)
 	{
 		this.assertInactive();
@@ -283,7 +293,8 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	/**
 	 * @see net.sf.hajdbc.ActiveDatabaseMBean#isLocal()
 	 */
-	@Managed(description = "Indicates whether this database is local to this JVM")
+	@ManagedAttribute
+	@Description("Indicates whether this database is local to this JVM")
 	@Override
 	public boolean isLocal()
 	{
@@ -310,7 +321,8 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.Database#isActive()
 	 */
-	@Managed(description = "Indicates whether or not this database is active")
+	@ManagedAttribute
+	@Description("Indicates whether or not this database is active")
 	@Override
 	public boolean isActive()
 	{

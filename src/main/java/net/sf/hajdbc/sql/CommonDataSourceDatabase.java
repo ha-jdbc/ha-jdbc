@@ -31,7 +31,8 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import net.sf.hajdbc.Messages;
-import net.sf.hajdbc.management.Managed;
+import net.sf.hajdbc.management.Description;
+import net.sf.hajdbc.management.ManagedAttribute;
 
 /**
  * A database described by a data source.
@@ -46,7 +47,8 @@ public abstract class CommonDataSourceDatabase<Z extends javax.sql.CommonDataSou
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.sql.AbstractDatabase#getName()
 	 */
-	@Managed(description = "The JNDI name to which this DataSource is bound, or the class name of the DataSource implementation")
+	@ManagedAttribute
+	@Description("The JNDI name to which this DataSource is bound, or the class name of the DataSource implementation")
 	@Override
 	public void setName(String name)
 	{

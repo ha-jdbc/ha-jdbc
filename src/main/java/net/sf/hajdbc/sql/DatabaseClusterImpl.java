@@ -50,7 +50,9 @@ import net.sf.hajdbc.lock.semaphore.SemaphoreLockManager;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
-import net.sf.hajdbc.management.Managed;
+import net.sf.hajdbc.management.Description;
+import net.sf.hajdbc.management.MBean;
+import net.sf.hajdbc.management.ManagedOperation;
 import net.sf.hajdbc.state.DatabaseEvent;
 import net.sf.hajdbc.state.StateManager;
 import net.sf.hajdbc.state.distributed.DistributedStateManager;
@@ -62,6 +64,7 @@ import org.quartz.CronExpression;
  * @author paul
  *
  */
+@MBean
 public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCluster<Z, D>
 {
 	static final Logger logger = LoggerFactory.getLogger(DatabaseClusterImpl.class);
@@ -236,7 +239,8 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	/**
 	 * Flushes this cluster's cache of DatabaseMetaData.
 	 */
-	@Managed(description = "Flushes this cluster's cache of database meta data")
+	@ManagedOperation
+	@Description("Flushes this cluster's cache of database meta data")
 	public void flushMetaDataCache()
 	{
 		try

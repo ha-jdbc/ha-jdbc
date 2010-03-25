@@ -28,14 +28,16 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import net.sf.hajdbc.codec.Codec;
-import net.sf.hajdbc.management.Managed;
+import net.sf.hajdbc.management.Description;
+import net.sf.hajdbc.management.MBean;
 import net.sf.hajdbc.sql.CommonDataSourceDatabase;
 
 /**
  * A database described by an {@link XADataSource}.
  * @author Paul Ferraro
  */
-@Managed(description = "Database accessed via a server-side XADataSource")
+@MBean
+@Description("Database accessed via a server-side XADataSource")
 @XmlType(name = "database")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class XADataSourceDatabase extends CommonDataSourceDatabase<XADataSource>

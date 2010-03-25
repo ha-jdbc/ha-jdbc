@@ -26,14 +26,16 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 import net.sf.hajdbc.codec.Codec;
-import net.sf.hajdbc.management.Managed;
+import net.sf.hajdbc.management.Description;
+import net.sf.hajdbc.management.MBean;
 
 
 /**
  * A database described by a {@link DataSource}.
  * @author  Paul Ferraro
  */
-@Managed(description = "Database accessed via a DataSource")
+@MBean
+@Description("Database accessed via a DataSource")
 @XmlType(name = "database")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class DataSourceDatabase extends CommonDataSourceDatabase<DataSource>

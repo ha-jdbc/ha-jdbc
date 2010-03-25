@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright 2004-2009 Paul Ferraro
+ * Copyright 2010 Paul Ferraro
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -18,10 +18,11 @@
 package net.sf.hajdbc.management;
 
 /**
- * Indicates that a given class or method should be exposed via JMX.
+ * Placeholder for JSR 255 (JMX 2.0) annotations.
+ * 
  * @author Paul Ferraro
  */
-public @interface Managed
+public @interface Description
 {
-   String description() default "";
+	String value();
 }

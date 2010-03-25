@@ -52,11 +52,11 @@ public class AnnotatedMBean implements DynamicMBean
 	{
 		Class<?> beanClass = bean.getClass();
 		
-		Managed managed = beanClass.getAnnotation(Managed.class);
+		MBean mbean = beanClass.getAnnotation(MBean.class);
 		
-		if (managed == null)
+		if (mbean == null)
 		{
-			throw new IllegalArgumentException(String.format("%s is not a @Managed object", bean.getClass()));
+			throw new IllegalArgumentException(String.format("%s is not an @MBean", bean.getClass()));
 		}
 		
 		this.bean = bean;
@@ -70,30 +70,29 @@ public class AnnotatedMBean implements DynamicMBean
 			for (PropertyDescriptor descriptor: properties)
 			{
 				Method accessor = descriptor.getReadMethod();
-				Managed managedAccessor = (accessor != null) ? accessor.getAnnotation(Managed.class) : null;
-				String description = (managedAccessor != null) ? managedAccessor.description() : null;
-				
+				ManagedAttribute managedAccessor = (accessor != null) ? accessor.getAnnotation(ManagedAttribute.class) : null;
+
 				Method mutator = descriptor.getWriteMethod();
-				Managed managedMutator = (mutator != null) ? accessor.getAnnotation(Managed.class) : null;
-				if (description == null)
-				{
-					description = (managedMutator != null) ? managedMutator.description() : null;
-				}
+				ManagedAttribute managedMutator = (mutator != null) ? mutator.getAnnotation(ManagedAttribute.class) : null;
 				
 				if ((managedAccessor != null) || (managedMutator != null))
 				{
 					String name = descriptor.getName();
-					accessor = (managedAccessor != null) ? accessor : null;
-					mutator = (managedMutator != null) ? mutator : null;
 					
-					attributeList.add(new MBeanAttributeInfo(descriptor.getName(), description, accessor, mutator));
+					Description description = (accessor != null) ? accessor.getAnnotation(Description.class) : null;
+					if ((description == null) && (mutator != null))
+					{
+						description = mutator.getAnnotation(Description.class);
+					}
 					
-					if (accessor != null)
+					attributeList.add(new MBeanAttributeInfo(name, (description != null) ? description.value() : null, (managedAccessor != null) ? accessor : null, (managedMutator != null) ? mutator : null));
+					
+					if (managedAccessor != null)
 					{
 						this.accessorMap.put(name, accessor);
 					}
 					
-					if (mutator != null)
+					if (managedMutator != null)
 					{
 						this.mutatorMap.put(name, mutator);
 					}
@@ -106,15 +105,19 @@ public class AnnotatedMBean implements DynamicMBean
 			for (MethodDescriptor descriptor: beanInfo.getMethodDescriptors())
 			{
 				Method method = descriptor.getMethod();
-				Managed managedMethod = method.getAnnotation(Managed.class);
+				ManagedOperation managedMethod = method.getAnnotation(ManagedOperation.class);
 				
 				if (managedMethod != null)
 				{
-					operationList.add(new MBeanOperationInfo(managedMethod.description(), method));
+					Description description = method.getAnnotation(Description.class);
+					
+					operationList.add(new MBeanOperationInfo((description != null) ? description.value() : null, method));
 				}
 			}
 			
-			this.info = new MBeanInfo(beanClass.getName(), managed.description(), attributeList.toArray(new MBeanAttributeInfo[attributeList.size()]), null, operationList.toArray(new MBeanOperationInfo[operationList.size()]), null);
+			Description description = beanClass.getAnnotation(Description.class);
+			
+			this.info = new MBeanInfo(beanClass.getName(), (description != null) ? description.value() : null, attributeList.toArray(new MBeanAttributeInfo[attributeList.size()]), null, operationList.toArray(new MBeanOperationInfo[operationList.size()]), null);
 		}
 		catch (java.beans.IntrospectionException e)
 		{
