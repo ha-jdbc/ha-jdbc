@@ -37,19 +37,7 @@ public class Collections
 	public static final SortedSet<?> EMPTY_SORTED_SET = new EmptySortedSet<Object>();
 	public static final SortedMap<?, ?> EMPTY_SORTED_MAP = new EmptySortedMap<Object, Object>();
 	static final Iterator<?> EMPTY_ITERATOR = new EmptyIterator<Object>();
-	
-	static <E> Comparator<E> naturalComparator()
-	{
-		return new Comparator<E>()
-		{
-			@SuppressWarnings("unchecked")
-			@Override
-			public int compare(E object1, E object2)
-			{
-				return ((Comparable<E>) object1).compareTo(object2);
-			}
-		};
-	}
+	static final Comparator<?> NATURAL_COMPARATOR = new NaturalComparator<Object>();
 	
 	private Collections()
 	{
@@ -60,6 +48,12 @@ public class Collections
 	static <E> Iterator<E> emptyIterator()
 	{
 		return (Iterator<E>) EMPTY_ITERATOR;
+	}
+
+	@SuppressWarnings("unchecked")
+	static <E> Comparator<E> naturalComparator()
+	{
+		return (Comparator<E>) NATURAL_COMPARATOR;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -95,6 +89,16 @@ public class Collections
 	public static <K, V> SortedMap<K, V> singletonSortedMap(K key, V value)
 	{
 		return new SingletonSortedMap<K, V>(key, value);
+	}
+
+	static class NaturalComparator<E> implements Comparator<E>
+	{
+		@SuppressWarnings("unchecked")
+		@Override
+		public int compare(E object1, E object2)
+		{
+			return ((Comparable<E>) object1).compareTo(object2);
+		}
 	}
 
 	static class EmptyIterator<E> implements Iterator<E>
@@ -385,7 +389,9 @@ public class Collections
 		@Override
 		public SortedSet<E> subSet(E fromElement, E toElement)
 		{
-			return ((naturalComparator().compare(this.element, toElement) < 0) && (naturalComparator().compare(this.element, fromElement) >= 0)) ? this : Collections.<E>emptySortedSet();
+			Comparator<E> comparator = naturalComparator();
+			
+			return ((comparator.compare(this.element, toElement) < 0) && (comparator.compare(this.element, fromElement) >= 0)) ? this : Collections.<E>emptySortedSet();
 		}
 
 		@Override
@@ -481,7 +487,9 @@ public class Collections
 		@Override
 		public SortedMap<K, V> subMap(K fromKey, K toKey)
 		{
-			return ((naturalComparator().compare(this.entry.getKey(), toKey) < 0) && (naturalComparator().compare(this.entry.getKey(), fromKey) >= 0)) ? this : Collections.<K, V>emptySortedMap();
+			Comparator<K> comparator = naturalComparator();
+			
+			return ((comparator.compare(this.entry.getKey(), toKey) < 0) && (comparator.compare(this.entry.getKey(), fromKey) >= 0)) ? this : Collections.<K, V>emptySortedMap();
 		}
 
 		@Override
