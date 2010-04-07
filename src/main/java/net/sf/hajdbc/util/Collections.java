@@ -37,11 +37,29 @@ public class Collections
 	public static final SortedSet<?> EMPTY_SORTED_SET = new EmptySortedSet<Object>();
 	public static final SortedMap<?, ?> EMPTY_SORTED_MAP = new EmptySortedMap<Object, Object>();
 	static final Iterator<?> EMPTY_ITERATOR = new EmptyIterator<Object>();
-	static final Comparator<?> NULL_COMPARATOR = new NullComparator<Object>();
+	
+	static <E> Comparator<E> naturalComparator()
+	{
+		return new Comparator<E>()
+		{
+			@SuppressWarnings("unchecked")
+			@Override
+			public int compare(E object1, E object2)
+			{
+				return ((Comparable<E>) object1).compareTo(object2);
+			}
+		};
+	}
 	
 	private Collections()
 	{
 		// Hide constructor
+	}
+	
+	@SuppressWarnings("unchecked")
+	static <E> Iterator<E> emptyIterator()
+	{
+		return (Iterator<E>) EMPTY_ITERATOR;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -104,37 +122,24 @@ public class Collections
 	{
 		private static final long serialVersionUID = 8614249160102450427L;
 
-		@SuppressWarnings("unchecked")
 		@Override
 		public Iterator<E> iterator()
 		{
-			return (Iterator<E>) EMPTY_ITERATOR;
+			return emptyIterator();
 		}
 
-		/**
-		 * {@inheritDoc}
-		 * @see java.util.AbstractCollection#contains(java.lang.Object)
-		 */
 		@Override
 		public boolean contains(Object object)
 		{
 			return false;
 		}
 
-		/**
-		 * {@inheritDoc}
-		 * @see java.util.AbstractCollection#containsAll(java.util.Collection)
-		 */
 		@Override
 		public boolean containsAll(Collection<?> c)
 		{
 			return c.isEmpty();
 		}
 
-		/**
-		 * {@inheritDoc}
-		 * @see java.util.AbstractCollection#isEmpty()
-		 */
 		@Override
 		public boolean isEmpty()
 		{
@@ -147,41 +152,40 @@ public class Collections
 			return 0;
 		}
 
-		@SuppressWarnings("unchecked")
 		@Override
 		public Comparator<? super E> comparator()
 		{
-			return (Comparator<E>) NULL_COMPARATOR;
+			return null;
 		}
 
 		@Override
 		public E first()
 		{
-			return null;
+			throw new NoSuchElementException();
 		}
 
 		@Override
-		public SortedSet<E> headSet(E arg0)
+		public SortedSet<E> headSet(E toElement)
 		{
-			return null;
+			return emptySortedSet();
 		}
 
 		@Override
 		public E last()
 		{
-			return null;
+			throw new NoSuchElementException();
 		}
 
 		@Override
-		public SortedSet<E> subSet(E arg0, E arg1)
+		public SortedSet<E> subSet(E fromElement, E toElement)
 		{
-			return null;
+			return emptySortedSet();
 		}
 
 		@Override
-		public SortedSet<E> tailSet(E arg0)
+		public SortedSet<E> tailSet(E fromElement)
 		{
-			return null;
+			return emptySortedSet();
 		}
 	}
 	
@@ -207,40 +211,24 @@ public class Collections
 			return null;
 		}
 
-		/**
-		 * {@inheritDoc}
-		 * @see java.util.AbstractMap#isEmpty()
-		 */
 		@Override
 		public boolean isEmpty()
 		{
 			return true;
 		}
 
-		/**
-		 * {@inheritDoc}
-		 * @see java.util.AbstractMap#keySet()
-		 */
 		@Override
 		public Set<K> keySet()
 		{
 			return java.util.Collections.emptySet();
 		}
 
-		/**
-		 * {@inheritDoc}
-		 * @see java.util.AbstractMap#size()
-		 */
 		@Override
 		public int size()
 		{
 			return 0;
 		}
 
-		/**
-		 * {@inheritDoc}
-		 * @see java.util.AbstractMap#values()
-		 */
 		@Override
 		public Collection<V> values()
 		{
@@ -253,41 +241,40 @@ public class Collections
 			return java.util.Collections.emptySet();
 		}
 
-		@SuppressWarnings("unchecked")
 		@Override
 		public Comparator<? super K> comparator()
 		{
-			return (Comparator<K>) NULL_COMPARATOR;
+			return null;
 		}
 
 		@Override
 		public K firstKey()
 		{
-			return null;
+			throw new NoSuchElementException();
 		}
 
 		@Override
 		public SortedMap<K, V> headMap(K toKey)
 		{
-			return null;
+			return emptySortedMap();
 		}
 
 		@Override
 		public K lastKey()
 		{
-			return null;
+			throw new NoSuchElementException();
 		}
 
 		@Override
 		public SortedMap<K, V> subMap(K fromKey, K toKey)
 		{
-			return null;
+			return emptySortedMap();
 		}
 
 		@Override
 		public SortedMap<K, V> tailMap(K fromKey)
 		{
-			return null;
+			return emptySortedMap();
 		}
 	}
 	
@@ -359,31 +346,22 @@ public class Collections
 			return 1;
 		}
 
-		/**
-		 * {@inheritDoc}
-		 * @see java.util.AbstractCollection#contains(java.lang.Object)
-		 */
 		@Override
 		public boolean contains(Object object)
 		{
 			return this.element.equals(object);
 		}
 
-		/**
-		 * {@inheritDoc}
-		 * @see java.util.AbstractCollection#isEmpty()
-		 */
 		@Override
 		public boolean isEmpty()
 		{
 			return false;
 		}
 
-		@SuppressWarnings("unchecked")
 		@Override
 		public Comparator<? super E> comparator()
 		{
-			return (Comparator<E>) NULL_COMPARATOR;
+			return null;
 		}
 
 		@Override
@@ -395,7 +373,7 @@ public class Collections
 		@Override
 		public SortedSet<E> headSet(E toElement)
 		{
-			return null;
+			return (naturalComparator().compare(this.element, toElement) < 0) ? this : Collections.<E>emptySortedSet();
 		}
 
 		@Override
@@ -407,13 +385,13 @@ public class Collections
 		@Override
 		public SortedSet<E> subSet(E fromElement, E toElement)
 		{
-			return null;
+			return ((naturalComparator().compare(this.element, toElement) < 0) && (naturalComparator().compare(this.element, fromElement) >= 0)) ? this : Collections.<E>emptySortedSet();
 		}
 
 		@Override
 		public SortedSet<E> tailSet(E fromElement)
 		{
-			return null;
+			return (naturalComparator().compare(this.element, fromElement) >= 0) ? this : Collections.<E>emptySortedSet();
 		}
 	}
 	
@@ -428,70 +406,42 @@ public class Collections
 			this.entry = new SimpleImmutableEntry<K, V>(key, value);
 		}
 
-		/**
-		 * {@inheritDoc}
-		 * @see java.util.AbstractMap#containsKey(java.lang.Object)
-		 */
 		@Override
 		public boolean containsKey(Object object)
 		{
 			return this.entry.getKey().equals(object);
 		}
 
-		/**
-		 * {@inheritDoc}
-		 * @see java.util.AbstractMap#containsValue(java.lang.Object)
-		 */
 		@Override
 		public boolean containsValue(Object object)
 		{
 			return this.entry.getValue().equals(object);
 		}
 
-		/**
-		 * {@inheritDoc}
-		 * @see java.util.AbstractMap#get(java.lang.Object)
-		 */
 		@Override
 		public V get(Object object)
 		{
 			return this.entry.getKey().equals(object) ? this.entry.getValue() : null;
 		}
 
-		/**
-		 * {@inheritDoc}
-		 * @see java.util.AbstractMap#isEmpty()
-		 */
 		@Override
 		public boolean isEmpty()
 		{
 			return false;
 		}
 
-		/**
-		 * {@inheritDoc}
-		 * @see java.util.AbstractMap#keySet()
-		 */
 		@Override
 		public Set<K> keySet()
 		{
 			return java.util.Collections.singleton(this.entry.getKey());
 		}
 
-		/**
-		 * {@inheritDoc}
-		 * @see java.util.AbstractMap#size()
-		 */
 		@Override
 		public int size()
 		{
 			return 1;
 		}
 
-		/**
-		 * {@inheritDoc}
-		 * @see java.util.AbstractMap#values()
-		 */
 		@Override
 		public Collection<V> values()
 		{
@@ -504,11 +454,10 @@ public class Collections
 			return java.util.Collections.singleton(this.entry);
 		}
 
-		@SuppressWarnings("unchecked")
 		@Override
 		public Comparator<? super K> comparator()
 		{
-			return (Comparator<K>) NULL_COMPARATOR;
+			return null;
 		}
 
 		@Override
@@ -520,7 +469,7 @@ public class Collections
 		@Override
 		public SortedMap<K, V> headMap(K toKey)
 		{
-			return null;
+			return (naturalComparator().compare(this.entry.getKey(), toKey) < 0) ? this : Collections.<K, V>emptySortedMap();
 		}
 
 		@Override
@@ -532,13 +481,13 @@ public class Collections
 		@Override
 		public SortedMap<K, V> subMap(K fromKey, K toKey)
 		{
-			return null;
+			return ((naturalComparator().compare(this.entry.getKey(), toKey) < 0) && (naturalComparator().compare(this.entry.getKey(), fromKey) >= 0)) ? this : Collections.<K, V>emptySortedMap();
 		}
 
 		@Override
 		public SortedMap<K, V> tailMap(K fromKey)
 		{
-			return null;
+			return (naturalComparator().compare(this.entry.getKey(), fromKey) >= 0) ? this : Collections.<K, V>emptySortedMap();
 		}
 	}
 }
