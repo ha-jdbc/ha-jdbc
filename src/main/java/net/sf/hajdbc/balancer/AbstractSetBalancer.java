@@ -18,6 +18,7 @@
 package net.sf.hajdbc.balancer;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -25,6 +26,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.util.Collections;
 
 /**
  * @author paul
@@ -34,7 +36,7 @@ public abstract class AbstractSetBalancer<Z, D extends Database<Z>> extends Abst
 {
 	private final Lock lock = new ReentrantLock();
 
-	private volatile SortedSet<D> databaseSet = new TreeSet<D>();
+	private volatile SortedSet<D> databaseSet = Collections.emptySortedSet();
 
 	protected Lock getLock()
 	{
@@ -58,8 +60,24 @@ public abstract class AbstractSetBalancer<Z, D extends Database<Z>> extends Abst
 	@Override
 	public Iterable<D> slaves()
 	{
-		SortedSet<D> slaves = new TreeSet<D>(this.databaseSet);
-		slaves.remove(slaves.first());
+		Iterator<D> databases = this.databaseSet.iterator();
+		
+		if (!databases.hasNext() || ((databases.next() != null) && !databases.hasNext())) return java.util.Collections.emptySet();
+		
+		D database = databases.next();
+		
+		if (!databases.hasNext()) return java.util.Collections.singleton(database);
+		
+		SortedSet<D> slaves = new TreeSet<D>();
+		
+		slaves.add(database);
+		
+		do
+		{
+			slaves.add(databases.next());
+		}
+		while (databases.hasNext());
+
 		return slaves;
 	}
 
@@ -106,11 +124,18 @@ public abstract class AbstractSetBalancer<Z, D extends Database<Z>> extends Abst
 
 			if (remove)
 			{
-				SortedSet<D> set = new TreeSet<D>(this.databaseSet);
-				
-				set.remove(database);
-				
-				this.databaseSet = set;
+				if (this.databaseSet.size() == 1)
+				{
+					this.databaseSet = Collections.emptySortedSet();
+				}
+				else
+				{
+					SortedSet<D> set = new TreeSet<D>(this.databaseSet);
+					
+					set.remove(database);
+					
+					this.databaseSet = set;
+				}
 				
 				this.removed((D) database);
 			}
@@ -143,11 +168,18 @@ public abstract class AbstractSetBalancer<Z, D extends Database<Z>> extends Abst
 			
 			if (add)
 			{
-				SortedSet<D> set = new TreeSet<D>(this.databaseSet);
-				
-				set.add(database);
-				
-				this.databaseSet = set;
+				if (this.databaseSet.isEmpty())
+				{
+					this.databaseSet = Collections.singletonSortedSet(database);
+				}
+				else
+				{
+					SortedSet<D> set = new TreeSet<D>(this.databaseSet);
+					
+					set.add(database);
+					
+					this.databaseSet = set;
+				}
 				
 				this.added(database);
 			}
@@ -289,7 +321,7 @@ public abstract class AbstractSetBalancer<Z, D extends Database<Z>> extends Abst
 		{
 			if (!this.databaseSet.isEmpty())
 			{
-				this.databaseSet = new TreeSet<D>();
+				this.databaseSet = Collections.emptySortedSet();
 				
 				this.cleared();
 			}

@@ -32,7 +32,8 @@ import net.sf.hajdbc.Database;
 public interface Balancer<Z, D extends Database<Z>> extends Set<D>
 {
 	/**
-	 * The designated master database
+	 * Returns the master database.
+	 * The database returned by this method should be consistent across nodes.
 	 * @return the master database
 	 */
 	D master();

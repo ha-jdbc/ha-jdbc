@@ -18,7 +18,6 @@
 package net.sf.hajdbc.balancer.load;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
@@ -32,6 +31,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.balancer.AbstractBalancer;
+import net.sf.hajdbc.util.Collections;
 
 /**
  * Balancer implementation whose {@link #next()} implementation returns the database with the least load.
@@ -43,7 +43,7 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 {
 	private final Lock lock = new ReentrantLock();
 	
-	private volatile SortedMap<D, AtomicInteger> databaseMap = new TreeMap<D, AtomicInteger>();
+	private volatile SortedMap<D, AtomicInteger> databaseMap = Collections.emptySortedMap();
 	
 	private Comparator<Map.Entry<D, AtomicInteger>> comparator = new Comparator<Map.Entry<D, AtomicInteger>>()
 	{
@@ -90,7 +90,7 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 	{
 		SortedSet<D> set = new TreeSet<D>(this.databaseMap.keySet());
 		set.remove(set.first());
-		return Collections.unmodifiableSet(set);
+		return java.util.Collections.unmodifiableSet(set);
 	}
 
 	/**
@@ -227,11 +227,18 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 			
 			if (remove)
 			{
-				SortedMap<D, AtomicInteger> map = new TreeMap<D, AtomicInteger>(this.databaseMap);
+				if (this.databaseMap.size() == 1)
+				{
+					this.databaseMap = Collections.emptySortedMap();
+				}
+				else
+				{
+					SortedMap<D, AtomicInteger> map = new TreeMap<D, AtomicInteger>(this.databaseMap);
 
-				map.remove(database);
-				
-				this.databaseMap = map;
+					map.remove(database);
+					
+					this.databaseMap = map;
+				}
 			}
 			
 			return remove;
@@ -250,7 +257,7 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 	{
 		Set<Map.Entry<D, AtomicInteger>> entrySet = this.databaseMap.entrySet();
 		
-		return !entrySet.isEmpty() ? Collections.min(entrySet, this.comparator).getKey() : null;
+		return !entrySet.isEmpty() ? java.util.Collections.min(entrySet, this.comparator).getKey() : null;
 	}
 
 	/**
@@ -267,11 +274,20 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 			
 			if (add)
 			{
-				SortedMap<D, AtomicInteger> map = new TreeMap<D, AtomicInteger>(this.databaseMap);
+				AtomicInteger load = new AtomicInteger(1);
 				
-				map.put(database, new AtomicInteger(1));
-				
-				this.databaseMap = map;
+				if (this.databaseMap.isEmpty())
+				{
+					this.databaseMap = Collections.singletonSortedMap(database, load);
+				}
+				else
+				{
+					SortedMap<D, AtomicInteger> map = new TreeMap<D, AtomicInteger>(this.databaseMap);
+					
+					map.put(database, load);
+					
+					this.databaseMap = map;
+				}
 			}
 			
 			return add;
