@@ -121,6 +121,7 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.distributed.CommandDispatcher#executeAll(net.sf.hajdbc.distributed.Command)
 	 */
+	@Override
 	public <R> Map<Member, R> executeAll(Command<R, C> command)
 	{
 		Message message = new Message(null, this.getLocalAddress(), command);
@@ -149,6 +150,7 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.distributed.CommandDispatcher#executeCoordinator(net.sf.hajdbc.distributed.Command)
 	 */
+	@Override
 	public <R> R executeCoordinator(Command<R, C> command)
 	{
 		while (true)
@@ -175,14 +177,17 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.distributed.CommandDispatcher#isCoordinator()
 	 */
+	@Override
 	public boolean isCoordinator()
 	{
 		return this.getLocalAddress().equals(this.getCoordinatorAddress());
 	}
 	
 	/**
+	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.distributed.CommandDispatcher#getLocal()
 	 */
+	@Override
 	public Member getLocal()
 	{
 		return new AddressMember(this.getLocalAddress());
