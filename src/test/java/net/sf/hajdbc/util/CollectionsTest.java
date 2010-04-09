@@ -1,6 +1,5 @@
 package net.sf.hajdbc.util;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.SortedMap;
@@ -8,9 +7,8 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.junit.Assert;
 import org.junit.Test;
-
-import junit.framework.Assert;
 
 public class CollectionsTest
 {
@@ -115,7 +113,7 @@ public class CollectionsTest
 		
 		Assert.assertEquals(immutableSet.size(), mutableSet.size());
 		
-		Assert.assertTrue(Arrays.equals(immutableSet.toArray(), mutableSet.toArray()));
+		Assert.assertArrayEquals(immutableSet.toArray(), mutableSet.toArray());
 		
 		Assert.assertSame(immutableSet.comparator(), mutableSet.comparator());
 		
