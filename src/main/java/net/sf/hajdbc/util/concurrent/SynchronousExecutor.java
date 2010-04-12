@@ -115,22 +115,21 @@ public class SynchronousExecutor extends AbstractExecutorService
 		if (tasks.isEmpty()) return Collections.emptyList();
 
 		List<Callable<T>> taskList = new ArrayList<Callable<T>>(tasks);
-		taskList.addAll(tasks);
 		
 		if (this.reverse)
 		{
 			Collections.reverse(taskList);
 		}
 		
-		boolean synchronous = true;
+		boolean synchronous = !this.reverse;
 		int remaining = tasks.size();
 		List<Future<T>> futureList = new ArrayList<Future<T>>(remaining);
 		
 		for (Callable<T> task: tasks)
 		{
 			remaining -= 1;
-			
-			if (synchronous)
+
+			if (synchronous || (this.reverse && (remaining == 0)))
 			{
 				SynchronousFuture<T> future = new SynchronousFuture<T>(task);
 				
@@ -200,14 +199,13 @@ public class SynchronousExecutor extends AbstractExecutorService
 		if (tasks.isEmpty()) return Collections.emptyList();
 
 		List<Callable<T>> taskList = new ArrayList<Callable<T>>(tasks);
-		taskList.addAll(tasks);
 		
 		if (this.reverse)
 		{
 			Collections.reverse(taskList);
 		}
 		
-		boolean synchronous = true;
+		boolean synchronous = !this.reverse;
 		int remaining = tasks.size();
 		List<Future<T>> futureList = new ArrayList<Future<T>>(remaining);
 		
@@ -215,7 +213,7 @@ public class SynchronousExecutor extends AbstractExecutorService
 		{
 			remaining -= 1;
 			
-			if (synchronous)
+			if (synchronous || (this.reverse && (remaining == 0)))
 			{
 				SynchronousFuture<T> future = new SynchronousFuture<T>(task);
 				
@@ -297,7 +295,7 @@ public class SynchronousExecutor extends AbstractExecutorService
 			{
 				this.result = task.call();
 			}
-			catch (Exception e)
+			catch (Throwable e)
 			{
 				this.exception = new ExecutionException(e);
 			}
