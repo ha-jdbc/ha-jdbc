@@ -17,7 +17,6 @@
  */
 package net.sf.hajdbc.durability.coarse;
 
-import java.util.Iterator;
 import java.util.Map;
 
 import net.sf.hajdbc.Database;
@@ -31,6 +30,7 @@ import net.sf.hajdbc.durability.none.NoDurability;
 import net.sf.hajdbc.sql.InvocationStrategy;
 import net.sf.hajdbc.sql.Invoker;
 import net.sf.hajdbc.sql.SQLProxy;
+import net.sf.hajdbc.state.StateManager;
 
 /**
  * @author paul
@@ -90,24 +90,16 @@ public class CoarseDurability<Z, D extends Database<Z>> extends NoDurability<Z, 
 	@Override
 	public void recover(Map<InvocationEvent, Map<String, InvokerEvent>> invokers)
 	{
-		Iterator<D> databases = this.cluster.getBalancer().iterator();
+		StateManager stateManager = this.cluster.getStateManager();
 		
-		if (databases.hasNext())
+		for (D database: this.cluster.getBalancer().slaves())
 		{
-			// Keep master active
-			databases.next();
-			
-			while (databases.hasNext())
-			{
-				this.cluster.deactivate(databases.next(), this.cluster.getStateManager());
-			}
+			this.cluster.deactivate(database, stateManager);
 		}
-		
-		DurabilityListener listener = this.cluster.getStateManager();
 		
 		for (InvocationEvent event: invokers.keySet())
 		{
-			listener.afterInvocation(event);
+			stateManager.afterInvocation(event);
 		}
 	}
 }
