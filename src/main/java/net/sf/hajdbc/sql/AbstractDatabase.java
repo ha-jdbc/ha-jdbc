@@ -207,13 +207,12 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	/**
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public boolean equals(Object object)
 	{
-		if ((object == null) || !(object instanceof Database)) return false;
+		if ((object == null) || !(object instanceof Database<?>)) return false;
 		
-		String id = ((Database) object).getId();
+		String id = ((Database<?>) object).getId();
 		
 		return (id != null) && id.equals(this.id);
 	}
@@ -304,6 +303,7 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	/**
 	 * @see net.sf.hajdbc.Database#clean()
 	 */
+	@Override
 	public void clean()
 	{
 		this.dirty = false;
@@ -312,6 +312,7 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	/**
 	 * @see net.sf.hajdbc.Database#isDirty()
 	 */
+	@Override
 	public boolean isDirty()
 	{
 		return this.dirty;
