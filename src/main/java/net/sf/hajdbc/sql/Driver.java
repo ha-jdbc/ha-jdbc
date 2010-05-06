@@ -18,7 +18,6 @@
 package net.sf.hajdbc.sql;
 
 import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
@@ -43,25 +42,25 @@ import net.sf.hajdbc.xml.XMLDatabaseClusterConfigurationFactory;
 /**
  * @author  Paul Ferraro
  */
-public final class ReplicatingDriver extends AbstractDriver
+public final class Driver extends AbstractDriver
 {
 	private static final Pattern URL_PATTERN = Pattern.compile("jdbc:ha-jdbc:(.+)"); //$NON-NLS-1$
 	private static final String CONFIG = "config"; //$NON-NLS-1$
 	
-	private static final Logger logger = LoggerFactory.getLogger(ReplicatingDriver.class);
+	private static final Logger logger = LoggerFactory.getLogger(Driver.class);
 	
 	private static final Map<String, DatabaseCluster<java.sql.Driver, DriverDatabase>> clusterMap = new HashMap<String, DatabaseCluster<java.sql.Driver, DriverDatabase>>();
-	private static volatile Map<String, DatabaseClusterConfigurationFactory<Driver, DriverDatabase>> configurationFactoryMap = Collections.emptyMap();
+	private static volatile Map<String, DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>> configurationFactoryMap = Collections.emptyMap();
 	
 	static
 	{
 		try
 		{
-			DriverManager.registerDriver(new ReplicatingDriver());
+			DriverManager.registerDriver(new Driver());
 		}
 		catch (SQLException e)
 		{
-			logger.log(Level.ERROR, e, Messages.DRIVER_REGISTER_FAILED.getMessage(), ReplicatingDriver.class.getName());
+			logger.log(Level.ERROR, e, Messages.DRIVER_REGISTER_FAILED.getMessage(), Driver.class.getName());
 		}
 	}
 
@@ -69,9 +68,9 @@ public final class ReplicatingDriver extends AbstractDriver
 	 * Set custom configuration factories per cluster.
 	 * @param factories a map of configuration factories per cluster identifier.
 	 */
-	public static void setConfigurationFactories(Map<String, DatabaseClusterConfigurationFactory<Driver, DriverDatabase>> factories)
+	public static void setConfigurationFactories(Map<String, DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>> factories)
 	{
-		configurationFactoryMap = (factories != null) ? factories : Collections.<String, DatabaseClusterConfigurationFactory<Driver, DriverDatabase>>emptyMap();
+		configurationFactoryMap = (factories != null) ? factories : Collections.<String, DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>>emptyMap();
 	}
 	
 	/**
@@ -96,16 +95,16 @@ public final class ReplicatingDriver extends AbstractDriver
 		// JDBC spec compliance
 		if (id == null) return null;
 		
-		DatabaseCluster<Driver, DriverDatabase> cluster = this.getDatabaseCluster(id, properties);
+		DatabaseCluster<java.sql.Driver, DriverDatabase> cluster = this.getDatabaseCluster(id, properties);
 		
 		DriverInvocationHandler handler = new DriverInvocationHandler(cluster);
 		
 		java.sql.Driver driver = ProxyFactory.createProxy(java.sql.Driver.class, handler);
 		
-		Invoker<Driver, DriverDatabase, Driver, Connection, SQLException> invoker = new Invoker<Driver, DriverDatabase, Driver, Connection, SQLException>()
+		Invoker<java.sql.Driver, DriverDatabase, java.sql.Driver, Connection, SQLException> invoker = new Invoker<java.sql.Driver, DriverDatabase, java.sql.Driver, Connection, SQLException>()
 		{
 			@Override
-			public Connection invoke(DriverDatabase database, Driver driver) throws SQLException
+			public Connection invoke(DriverDatabase database, java.sql.Driver driver) throws SQLException
 			{
 				return driver.connect(database.getName(), properties);
 			}
@@ -113,11 +112,11 @@ public final class ReplicatingDriver extends AbstractDriver
 		
 		SortedMap<DriverDatabase, Connection> results = InvocationStrategyEnum.INVOKE_ON_ALL.invoke(handler, invoker);
 		
-		TransactionContext<Driver, DriverDatabase> context = new LocalTransactionContext<Driver, DriverDatabase>(cluster);
+		TransactionContext<java.sql.Driver, DriverDatabase> context = new LocalTransactionContext<java.sql.Driver, DriverDatabase>(cluster);
 		
-		InvocationHandlerFactory<Driver, DriverDatabase, Driver, Connection, SQLException> handlerFactory = new ConnectionInvocationHandlerFactory<Driver, DriverDatabase, Driver>(context);
+		InvocationHandlerFactory<java.sql.Driver, DriverDatabase, java.sql.Driver, Connection, SQLException> handlerFactory = new ConnectionInvocationHandlerFactory<java.sql.Driver, DriverDatabase, java.sql.Driver>(context);
 		
-		InvocationResultFactory<Driver, DriverDatabase, Connection, SQLException> resultFactory = handler.new ProxyInvocationResultFactory<Connection>(handlerFactory, driver, invoker);
+		InvocationResultFactory<java.sql.Driver, DriverDatabase, Connection, SQLException> resultFactory = handler.new ProxyInvocationResultFactory<Connection>(handlerFactory, driver, invoker);
 		
 		return resultFactory.createResult(results);
 	}
@@ -134,14 +133,14 @@ public final class ReplicatingDriver extends AbstractDriver
 		// JDBC spec compliance
 		if (id == null) return null;
 		
-		DatabaseCluster<Driver, DriverDatabase> cluster = this.getDatabaseCluster(id, properties);
+		DatabaseCluster<java.sql.Driver, DriverDatabase> cluster = this.getDatabaseCluster(id, properties);
 		
 		DriverInvocationHandler handler = new DriverInvocationHandler(cluster);
 		
-		Invoker<Driver, DriverDatabase, Driver, DriverPropertyInfo[], SQLException> invoker = new Invoker<Driver, DriverDatabase, Driver, DriverPropertyInfo[], SQLException>()
+		Invoker<java.sql.Driver, DriverDatabase, java.sql.Driver, DriverPropertyInfo[], SQLException> invoker = new Invoker<java.sql.Driver, DriverDatabase, java.sql.Driver, DriverPropertyInfo[], SQLException>()
 		{
 			@Override
-			public DriverPropertyInfo[] invoke(DriverDatabase database, Driver driver) throws SQLException
+			public DriverPropertyInfo[] invoke(DriverDatabase database, java.sql.Driver driver) throws SQLException
 			{
 				return driver.getPropertyInfo(database.getName(), properties);
 			}			
@@ -149,29 +148,29 @@ public final class ReplicatingDriver extends AbstractDriver
 		
 		SortedMap<DriverDatabase, DriverPropertyInfo[]> results = InvocationStrategyEnum.INVOKE_ON_NEXT.invoke(handler, invoker);
 
-		InvocationResultFactory<Driver, DriverDatabase, DriverPropertyInfo[], SQLException> resultFactory = handler.new SimpleInvocationResultFactory<DriverPropertyInfo[]>();
+		InvocationResultFactory<java.sql.Driver, DriverDatabase, DriverPropertyInfo[], SQLException> resultFactory = handler.new SimpleInvocationResultFactory<DriverPropertyInfo[]>();
 		
 		return resultFactory.createResult(results);
 	}
 
-	private DatabaseCluster<Driver, DriverDatabase> getDatabaseCluster(String id, Properties properties) throws SQLException
+	private DatabaseCluster<java.sql.Driver, DriverDatabase> getDatabaseCluster(String id, Properties properties) throws SQLException
 	{
 		synchronized (clusterMap)
 		{
-			DatabaseCluster<Driver, DriverDatabase> cluster = clusterMap.get(id);
+			DatabaseCluster<java.sql.Driver, DriverDatabase> cluster = clusterMap.get(id);
 			
 			if (cluster == null)
 			{
-				DatabaseClusterConfigurationFactory<Driver, DriverDatabase> factory = configurationFactoryMap.get(id);
+				DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase> factory = configurationFactoryMap.get(id);
 				
 				if (factory == null)
 				{
-					factory = new XMLDatabaseClusterConfigurationFactory<Driver, DriverDatabase>(DriverDatabaseClusterConfiguration.class, id, properties.getProperty(CONFIG));
+					factory = new XMLDatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>(DriverDatabaseClusterConfiguration.class, id, properties.getProperty(CONFIG));
 				}
 				
-				DatabaseClusterConfiguration<Driver, DriverDatabase> configuration = factory.createConfiguration();
+				DatabaseClusterConfiguration<java.sql.Driver, DriverDatabase> configuration = factory.createConfiguration();
 				
-				cluster = new DatabaseClusterImpl<Driver, DriverDatabase>(id, configuration, factory);
+				cluster = new DatabaseClusterImpl<java.sql.Driver, DriverDatabase>(id, configuration, factory);
 				
 				try
 				{
