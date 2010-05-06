@@ -32,6 +32,7 @@ import java.util.TreeSet;
 import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.cache.DatabaseProperties;
 import net.sf.hajdbc.cache.TableProperties;
@@ -45,7 +46,7 @@ import net.sf.hajdbc.util.reflect.Methods;
  * @param <S> 
  */
 @SuppressWarnings("nls")
-public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z>, S extends Statement> extends AbstractChildInvocationHandler<Z, D, Connection, S, SQLException>
+public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z>, S extends Statement> extends ChildInvocationHandler<Z, D, Connection, S, SQLException>
 {
 	private static final Set<Method> driverReadMethodSet = Methods.findMethods(Statement.class, "getFetchDirection", "getFetchSize", "getGeneratedKeys", "getMaxFieldSize", "getMaxRows", "getQueryTimeout", "getResultSetConcurrency", "getResultSetHoldability", "getResultSetType", "getUpdateCount", "getWarnings", "isClosed", "isPoolable");
 	private static final Set<Method> driverWriteMethodSet = Methods.findMethods(Statement.class, "clearWarnings", "setCursorName", "setEscapeProcessing", "setFetchDirection", "setFetchSize", "setMaxFieldSize", "setMaxRows", "setPoolable", "setQueryTimeout");
@@ -85,37 +86,56 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 	}
 
 	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 */
+	@Override
+	public Object invoke(Object object, Method method, Object[] parameters) throws Throwable
+	{
+		if (method.equals(getConnectionMethod))
+		{
+			return this.getParent();
+		}
+		
+		return super.invoke(object, method, parameters);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvocationHandlerFactory(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 */
+	@Override
+	protected InvocationHandlerFactory<Z, D, S, ?, SQLException> getInvocationHandlerFactory(S object, Method method, Object[] parameters) throws SQLException
+	{
+		if (method.equals(executeQueryMethod) || method.equals(getResultSetMethod))
+		{
+			return new ResultSetInvocationHandlerFactory<Z, D, S>(this.transactionContext, this.fileSupport);
+		}
+		
+		return super.getInvocationHandlerFactory(object, method, parameters);
+	}
+
+	/**
 	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected InvocationStrategy<Z, D, S, ?, SQLException> getInvocationStrategy(S statement, Method method, Object[] parameters) throws SQLException
+	protected InvocationStrategy getInvocationStrategy(S statement, Method method, Object[] parameters) throws SQLException
 	{
 		if (driverReadMethodSet.contains(method))
 		{
-			return new DriverReadInvocationStrategy<Z, D, S, Object, SQLException>();
+			return InvocationStrategyEnum.INVOKE_ON_ANY;
 		}
 		
 		if (driverWriteMethodSet.contains(method) || method.equals(closeMethod))
 		{
-			return new DriverWriteInvocationStrategy<Z, D, S, Object, SQLException>();
+			return InvocationStrategyEnum.INVOKE_ON_EXISTING;
 		}
 		
 		if (executeMethodSet.contains(method))
 		{
 			List<Lock> lockList = this.extractLocks((String) parameters[0]);
 			
-			return this.transactionContext.start(new LockingInvocationStrategy<Z, D, S, Object, SQLException>(new DatabaseWriteInvocationStrategy<Z, D, S, Object, SQLException>(this.cluster.getTransactionalExecutor()), lockList), this.getParent());
-		}
-		
-		if (method.equals(getConnectionMethod))
-		{
-			return new InvocationStrategy<Z, D, S, Connection, SQLException>()
-			{
-				public Connection invoke(SQLProxy<Z, D, S, SQLException> proxy, Invoker<Z, D, S, Connection, SQLException> invoker)
-				{
-					return AbstractStatementInvocationHandler.this.getParent();
-				}
-			};
+			return this.transactionContext.start(new LockingInvocationStrategy(InvocationStrategyEnum.TRANSACTION_INVOKE_ON_ALL, lockList), this.getParent());
 		}
 		
 		if (method.equals(executeQueryMethod))
@@ -125,30 +145,30 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 			List<Lock> lockList = this.extractLocks(sql);
 			
 			int concurrency = statement.getResultSetConcurrency();
-			boolean selectForUpdate = this.isSelectForUpdate(sql);
+			boolean lockingSelect = this.isLockingSelect(sql) || (statement.getConnection().getTransactionIsolation() >= Connection.TRANSACTION_REPEATABLE_READ);
 			
-			if (lockList.isEmpty() && (concurrency == ResultSet.CONCUR_READ_ONLY) && !selectForUpdate)
+			if (lockList.isEmpty() && (concurrency == ResultSet.CONCUR_READ_ONLY) && !lockingSelect)
 			{
-				return new LazyResultSetInvocationStrategy<Z, D, S>(statement, this.transactionContext, this.fileSupport);
+				return InvocationStrategyEnum.INVOKE_ON_NEXT;
 			}
 			
-			InvocationStrategy<Z, D, S, ResultSet, SQLException> strategy = new LockingInvocationStrategy<Z, D, S, ResultSet, SQLException>(new EagerResultSetInvocationStrategy<Z, D, S>(this.cluster, statement, this.transactionContext, this.fileSupport), lockList);
+			InvocationStrategy strategy = new LockingInvocationStrategy(InvocationStrategyEnum.TRANSACTION_INVOKE_ON_ALL, lockList);
 			
-			return selectForUpdate ? this.transactionContext.start(strategy, this.getParent()) : strategy;
+			return lockingSelect ? this.transactionContext.start(strategy, this.getParent()) : strategy;
 		}
 		
 		if (method.equals(executeBatchMethod))
 		{
 			List<Lock> lockList = this.extractLocks(this.sqlList);
 			
-			return this.transactionContext.start(new LockingInvocationStrategy<Z, D, S, Object, SQLException>(new DatabaseWriteInvocationStrategy<Z, D, S, Object, SQLException>(this.cluster.getTransactionalExecutor()), lockList), this.getParent());
+			return this.transactionContext.start(new LockingInvocationStrategy(InvocationStrategyEnum.TRANSACTION_INVOKE_ON_ALL, lockList), this.getParent());
 		}
 		
 		if (method.equals(getMoreResultsMethod))
 		{
 			if (parameters[0].equals(Statement.KEEP_CURRENT_RESULT))
 			{
-				return new DriverWriteInvocationStrategy<Z, D, S, Object, SQLException>();
+				return InvocationStrategyEnum.INVOKE_ON_EXISTING;
 			}
 		}
 		
@@ -156,10 +176,10 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 		{
 			if (statement.getResultSetConcurrency() == ResultSet.CONCUR_READ_ONLY)
 			{
-				return new LazyResultSetInvocationStrategy<Z, D, S>(statement, this.transactionContext, this.fileSupport);
+				return InvocationStrategyEnum.INVOKE_ON_EXISTING;
 			}
-			
-			return new EagerResultSetInvocationStrategy<Z, D, S>(this.cluster, statement, this.transactionContext, this.fileSupport);
+
+			return InvocationStrategyEnum.INVOKE_ON_ALL;
 		}
 		
 		return super.getInvocationStrategy(statement, method, parameters);
@@ -196,9 +216,11 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 		}
 	}
 	
-	protected boolean isSelectForUpdate(String sql) throws SQLException
+	protected boolean isLockingSelect(String sql) throws SQLException
 	{
-		return this.getDatabaseProperties().supportsSelectForUpdate() ? this.cluster.getDialect().isSelectForUpdate(sql) : false;
+		Connection connection = this.getParent();
+		
+		return (connection.getTransactionIsolation() >= Connection.TRANSACTION_REPEATABLE_READ) || (this.getDatabaseProperties().supportsSelectForUpdate() ? this.getDatabaseCluster().getDialect().isSelectForUpdate(sql) : false);
 	}
 	
 	protected List<Lock> extractLocks(String sql) throws SQLException
@@ -209,12 +231,13 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 	private List<Lock> extractLocks(List<String> sqlList) throws SQLException
 	{
 		Set<String> identifierSet = new TreeSet<String>();
+		DatabaseCluster<Z, D> cluster = this.getDatabaseCluster();
 		
 		for (String sql: sqlList)
 		{
-			if (this.cluster.isSequenceDetectionEnabled())
+			if (cluster.isSequenceDetectionEnabled())
 			{
-				String sequence = this.cluster.getDialect().parseSequence(sql);
+				String sequence = cluster.getDialect().parseSequence(sql);
 				
 				if (sequence != null)
 				{
@@ -222,9 +245,9 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 				}
 			}
 			
-			if (this.cluster.isIdentityColumnDetectionEnabled())
+			if (cluster.isIdentityColumnDetectionEnabled())
 			{
-				String table = this.cluster.getDialect().parseInsertTable(sql);
+				String table = cluster.getDialect().parseInsertTable(sql);
 				
 				if (table != null)
 				{
@@ -242,7 +265,7 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 		
 		if (!identifierSet.isEmpty())
 		{
-			LockManager lockManager = this.cluster.getLockManager();
+			LockManager lockManager = cluster.getLockManager();
 			
 			for (String identifier: identifierSet)
 			{
@@ -255,7 +278,9 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 
 	protected DatabaseProperties getDatabaseProperties() throws SQLException
 	{
-		return this.cluster.getDatabaseMetaDataCache().getDatabaseProperties(this.cluster.getBalancer().next(), this.getParent());
+		DatabaseCluster<Z, D> cluster = this.getDatabaseCluster();
+		
+		return cluster.getDatabaseMetaDataCache().getDatabaseProperties(cluster.getBalancer().next(), this.getParent());
 	}
 	
 	/**
@@ -344,6 +369,6 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 	@Override
 	public ExceptionFactory<SQLException> getExceptionFactory()
 	{
-		return SQLExceptionFactory.getInstance();
+		return this.getParentProxy().getExceptionFactory();
 	}
 }

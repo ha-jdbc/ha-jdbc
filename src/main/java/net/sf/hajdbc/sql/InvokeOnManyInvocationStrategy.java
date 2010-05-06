@@ -36,42 +36,15 @@ import net.sf.hajdbc.state.StateManager;
  * @author paul
  *
  */
-public abstract class AbstractInvocationStrategy<Z, D extends Database<Z>, T, R, E extends Exception> implements InvocationStrategy<Z, D, T, R, E>
+public abstract class InvokeOnManyInvocationStrategy implements InvocationStrategy
 {
-	private static Logger logger = LoggerFactory.getLogger(AbstractInvocationStrategy.class);
+	private static Logger logger = LoggerFactory.getLogger(InvokeOnManyInvocationStrategy.class);
 	
 	/**
 	 * @see net.sf.hajdbc.sql.InvocationStrategy#invoke(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker)
 	 */
 	@Override
-	public R invoke(SQLProxy<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker) throws E
-	{
-		SortedMap<D, R> map = this.invokeAll(proxy, invoker);
-		
-		D masterDatabase = map.firstKey();
-		R masterResult = map.get(masterDatabase);
-
-		for (Map.Entry<D, R> entry: map.entrySet())
-		{
-			R result = entry.getValue();
-			
-			if (((masterResult != null) && (result != null)) ? !masterResult.equals(result) : (masterResult != result))
-			{
-				DatabaseCluster<Z, D> cluster = proxy.getDatabaseCluster();
-				
-				D database = entry.getKey();
-				
-				if (cluster.deactivate(database, cluster.getStateManager()))
-				{
-					logger.log(Level.ERROR, Messages.DATABASE_INCONSISTENT.getMessage(), database, cluster, masterResult, result);
-				}
-			}
-		}
-		
-		return masterResult;
-	}
-	
-	protected SortedMap<D, R> invokeAll(SQLProxy<Z, D, T, E> proxy, final Invoker<Z, D, T, R, E> invoker) throws E
+	public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(SQLProxy<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker) throws E
 	{
 		Map.Entry<SortedMap<D, R>, SortedMap<D, E>> results = this.collectResults(proxy, invoker);
 		
@@ -166,5 +139,5 @@ public abstract class AbstractInvocationStrategy<Z, D extends Database<Z>, T, R,
 		return resultMap;
 	}
 	
-	protected abstract Map.Entry<SortedMap<D, R>, SortedMap<D, E>> collectResults(SQLProxy<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker);
+	protected abstract <Z, D extends Database<Z>, T, R, E extends Exception> Map.Entry<SortedMap<D, R>, SortedMap<D, E>> collectResults(SQLProxy<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker);
 }

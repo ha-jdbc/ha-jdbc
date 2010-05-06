@@ -17,10 +17,10 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.AbstractMap;
 
 import net.sf.hajdbc.Database;
 
@@ -28,10 +28,10 @@ import net.sf.hajdbc.Database;
  * @author Paul Ferraro
  *
  */
-public class DriverWriteInvocationStrategy<Z, D extends Database<Z>, T, R, E extends Exception> extends AbstractInvocationStrategy<Z, D, T, R, E>
+public class InvokeOnExistingInvocationStrategy extends InvokeOnManyInvocationStrategy
 {
 	@Override
-	protected Map.Entry<SortedMap<D, R>, SortedMap<D, E>> collectResults(SQLProxy<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker)
+	protected <Z, D extends Database<Z>, T, R, E extends Exception> Map.Entry<SortedMap<D, R>, SortedMap<D, E>> collectResults(SQLProxy<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker)
 	{
 		final SortedMap<D, R> resultMap = new TreeMap<D, R>();
 		final SortedMap<D, E> exceptionMap = new TreeMap<D, E>();
@@ -50,6 +50,6 @@ public class DriverWriteInvocationStrategy<Z, D extends Database<Z>, T, R, E ext
 			}
 		}
 		
-		return Collections.singletonMap(resultMap, exceptionMap).entrySet().iterator().next();
+		return new AbstractMap.SimpleImmutableEntry<SortedMap<D, R>, SortedMap<D, E>>(resultMap, exceptionMap);
 	}
 }

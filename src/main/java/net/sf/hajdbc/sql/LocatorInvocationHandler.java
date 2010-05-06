@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.util.reflect.Methods;
 
@@ -35,12 +34,12 @@ import net.sf.hajdbc.util.reflect.Methods;
  * @param <P> 
  * @param <E> 
  */
-public abstract class LocatorInvocationHandler<Z, D extends Database<Z>, P, E> extends AbstractChildInvocationHandler<Z, D, P, E, SQLException>
+public abstract class LocatorInvocationHandler<Z, D extends Database<Z>, P, T> extends ChildInvocationHandler<Z, D, P, T, SQLException>
 {
 	private final Method freeMethod;
 	private final Set<Method> readMethodSet;
 	private final Set<Method> writeMethodSet;
-	private final List<Invoker<Z, D, E, ?, SQLException>> invokerList = new LinkedList<Invoker<Z, D, E, ?, SQLException>>();
+	private final List<Invoker<Z, D, T, ?, SQLException>> invokerList = new LinkedList<Invoker<Z, D, T, ?, SQLException>>();
 	private final boolean updateCopy;
 	
 	/**
@@ -51,11 +50,11 @@ public abstract class LocatorInvocationHandler<Z, D extends Database<Z>, P, E> e
 	 * @param objectMap
 	 * @throws Exception
 	 */
-	protected LocatorInvocationHandler(P parent, SQLProxy<Z, D, P, SQLException> proxy, Invoker<Z, D, P, E, SQLException> invoker, Class<E> proxyClass, Map<D, E> objectMap, boolean updateCopy, Set<Method> readMethodSet, Set<Method> writeMethodSet)
+	protected LocatorInvocationHandler(P parent, SQLProxy<Z, D, P, SQLException> proxy, Invoker<Z, D, P, T, SQLException> invoker, Class<T> locatorClass, Map<D, T> locators, boolean updateCopy, Set<Method> readMethodSet, Set<Method> writeMethodSet)
 	{
-		super(parent, proxy, invoker, proxyClass, objectMap);
+		super(parent, proxy, invoker, locatorClass, locators);
 		
-		this.freeMethod = Methods.findMethod(proxyClass, "free");
+		this.freeMethod = Methods.findMethod(locatorClass, "free");
 		this.updateCopy = updateCopy;
 		this.readMethodSet = readMethodSet;
 		this.writeMethodSet = writeMethodSet;
@@ -65,27 +64,26 @@ public abstract class LocatorInvocationHandler<Z, D extends Database<Z>, P, E> e
 	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected InvocationStrategy<Z, D, E, ?, SQLException> getInvocationStrategy(E object, Method method, Object[] parameters) throws SQLException
+	protected InvocationStrategy getInvocationStrategy(T locator, Method method, Object[] parameters) throws SQLException
 	{
 		if (this.readMethodSet.contains(method))
 		{
-			return this.updateCopy ? new DriverReadInvocationStrategy<Z, D, E, Object, SQLException>() : new DatabaseReadInvocationStrategy<Z, D, E, Object, SQLException>();
+			return this.updateCopy ? InvocationStrategyEnum.INVOKE_ON_ANY : InvocationStrategyEnum.INVOKE_ON_NEXT;
 		}
 		
 		if (this.updateCopy && this.writeMethodSet.contains(method))
 		{
-			return new DriverWriteInvocationStrategy<Z, D, E, Object, SQLException>();
+			return InvocationStrategyEnum.INVOKE_ON_EXISTING;
 		}
 		
-		return super.getInvocationStrategy(object, method, parameters);
+		return super.getInvocationStrategy(locator, method, parameters);
 	}
 	
 	/**
 	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#postInvoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
-	@SuppressWarnings("nls")
 	@Override
-	protected void postInvoke(E object, Method method, Object[] parameters)
+	protected void postInvoke(T object, Method method, Object[] parameters)
 	{
 		if ((this.freeMethod != null) && method.equals(this.freeMethod))
 		{
@@ -98,7 +96,7 @@ public abstract class LocatorInvocationHandler<Z, D extends Database<Z>, P, E> e
 	 */
 	@SuppressWarnings("nls")
 	@Override
-	protected void close(P parent, E locator)
+	protected void close(P parent, T locator)
 	{
 		if (this.freeMethod != null)
 		{
@@ -113,13 +111,13 @@ public abstract class LocatorInvocationHandler<Z, D extends Database<Z>, P, E> e
 		}
 	}
 	
-	protected abstract void free(E locator) throws SQLException;
+	protected abstract void free(T locator) throws SQLException;
 
 	/**
 	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#record(net.sf.hajdbc.sql.Invoker, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected void record(Invoker<Z, D, E, ?, SQLException> invoker, Method method, Object[] parameters)
+	protected void record(Invoker<Z, D, T, ?, SQLException> invoker, Method method, Object[] parameters)
 	{
 		if (this.isRecordable(method))
 		{
@@ -128,15 +126,5 @@ public abstract class LocatorInvocationHandler<Z, D extends Database<Z>, P, E> e
 				this.invokerList.add(invoker);
 			}
 		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.SQLProxy#getExceptionFactory()
-	 */
-	@Override
-	public ExceptionFactory<SQLException> getExceptionFactory()
-	{
-		return SQLExceptionFactory.getInstance();
 	}
 }

@@ -18,39 +18,35 @@
 package net.sf.hajdbc.sql;
 
 import java.lang.reflect.InvocationHandler;
-import java.sql.Array;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Map;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.DatabaseCluster;
 
 /**
- * @author paul
- *
+ * @author Paul Ferraro
+ * @param <D> 
  */
-public class ArrayInvocationStrategy<Z, D extends Database<Z>, P> extends LocatorInvocationStrategy<Z, D, P, Array>
+public class StatementInvocationHandlerFactory<Z, D extends Database<Z>> extends AbstractStatementInvocationHandlerFactory<Z, D, Statement>
 {
 	/**
-	 * @param cluster
-	 * @param parent
-	 * @param locatorClass
 	 * @param connection
-	 * @throws SQLException
+	 * @param transactionContext
 	 */
-	public ArrayInvocationStrategy(DatabaseCluster<Z, D> cluster, P parent, Connection connection) throws SQLException
+	public StatementInvocationHandlerFactory(TransactionContext<Z, D> context)
 	{
-		super(cluster, parent, Array.class, connection);
+		super(Statement.class, context);
 	}
-
+	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.LocatorInvocationStrategy#createInvocationHandler(java.lang.Object, net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker, java.util.Map, boolean)
+	 * @see net.sf.hajdbc.sql.AbstractStatementInvocationHandlerFactory#createInvocationHandler(java.sql.Connection, net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker, java.util.Map, net.sf.hajdbc.sql.TransactionContext, net.sf.hajdbc.sql.FileSupport)
 	 */
 	@Override
-	protected InvocationHandler createInvocationHandler(P parent, SQLProxy<Z, D, P, SQLException> proxy, Invoker<Z, D, P, Array, SQLException> invoker, Map<D, Array> objectMap, boolean updateCopy) throws SQLException
+	protected InvocationHandler createInvocationHandler(Connection connection, SQLProxy<Z, D, Connection, SQLException> proxy, Invoker<Z, D, Connection, Statement, SQLException> invoker, Map<D, Statement> statements, TransactionContext<Z, D> context, FileSupport<SQLException> fileSupport) throws SQLException
 	{
-		return new ArrayInvocationHandler<Z, D, P>(parent, proxy, invoker, objectMap, updateCopy);
+		return new StatementInvocationHandler<Z, D>(connection, proxy, invoker, statements, context, fileSupport);
 	}
 }

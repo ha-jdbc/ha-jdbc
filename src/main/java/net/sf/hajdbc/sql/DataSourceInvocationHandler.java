@@ -44,18 +44,20 @@ public class DataSourceInvocationHandler extends CommonDataSourceInvocationHandl
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 * {@inheritDoc}
+	 * @throws SQLException 
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvocationHandlerFactory(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected InvocationStrategy<DataSource, DataSourceDatabase, DataSource, ?, SQLException> getInvocationStrategy(DataSource dataSource, Method method, Object[] parameters) throws SQLException
+	protected InvocationHandlerFactory<DataSource, DataSourceDatabase, DataSource, ?, SQLException> getInvocationHandlerFactory(DataSource object, Method method, Object[] parameters) throws SQLException
 	{
 		if (getConnectionMethods.contains(method))
 		{
-			TransactionContext<DataSource, DataSourceDatabase> context = new LocalTransactionContext<DataSource, DataSourceDatabase>(this.cluster);
+			TransactionContext<DataSource, DataSourceDatabase> context = new LocalTransactionContext<DataSource, DataSourceDatabase>(this.getDatabaseCluster());
 			
-			return new ConnectionInvocationStrategy<DataSource, DataSourceDatabase, DataSource>(this.cluster, dataSource, context);
+			return new ConnectionInvocationHandlerFactory<DataSource, DataSourceDatabase, DataSource>(context);
 		}
 		
-		return super.getInvocationStrategy(dataSource, method, parameters);
+		return null;
 	}
 }

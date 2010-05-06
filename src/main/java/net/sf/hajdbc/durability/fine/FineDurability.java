@@ -30,6 +30,7 @@ import net.sf.hajdbc.durability.InvokerEvent;
 import net.sf.hajdbc.durability.TransactionIdentifier;
 import net.sf.hajdbc.durability.coarse.CoarseDurability;
 import net.sf.hajdbc.sql.Invoker;
+import net.sf.hajdbc.state.StateManager;
 
 /**
  * @author paul
@@ -87,7 +88,28 @@ public class FineDurability<Z, D extends Database<Z>> extends CoarseDurability<Z
 	@Override
 	public void recover(Map<InvocationEvent, Map<String, InvokerEvent>> map)
 	{
+		StateManager stateManager = this.cluster.getStateManager();
 		Balancer<Z, D> balancer = this.cluster.getBalancer();
+		D master = balancer.master();
+
+		for (Map.Entry<InvocationEvent, Map<String, InvokerEvent>> entry: map.entrySet())
+		{
+			InvocationEvent invocation = entry.getKey();
+			Map<String, InvokerEvent> invokers = entry.getValue();
+
+			if (!invokers.isEmpty())
+			{
+				for (D slave: balancer.slaves())
+				{
+					if (this.deactivateSlave(master, slave, invokers))
+					{
+						this.cluster.deactivate(slave, stateManager);
+					}
+				}
+			}
+			
+			stateManager.afterInvocation(invocation);
+		}
 		
 		for (Map<String, InvokerEvent> invokers: map.values())
 		{
@@ -133,5 +155,60 @@ public class FineDurability<Z, D extends Database<Z>> extends CoarseDurability<Z
 				}
 			}
 		}
+	}
+	
+	private boolean deactivateSlave(D master, D slave, Map<String, InvokerEvent> invokers)
+	{
+		InvokerEvent masterEvent = invokers.get(master.getId());
+		
+		if (masterEvent != null)
+		{
+			if (masterEvent.isCompleted())
+			{
+				byte[] masterResult = masterEvent.getResult();
+				byte[] masterException = masterEvent.getException();
+				
+				InvokerEvent slaveEvent = invokers.get(slave.getId());
+				
+				if (slaveEvent != null)
+				{
+					if (slaveEvent.isCompleted())
+					{
+						byte[] slaveResult = slaveEvent.getResult();
+						byte[] slaveException = slaveEvent.getException();
+						
+						if ((masterResult != slaveResult) && ((masterResult == null) || (slaveResult == null) || masterResult.equals(slaveResult)))
+						{
+							return true;
+						}
+						else if ((masterException != slaveException) && ((masterException == null) || (slaveException == null)))
+						{
+							return true;
+						}
+					}
+					else
+					{
+						return true;
+					}
+				}
+				else
+				{
+					return true;
+				}
+			}
+			else
+			{
+				return true;
+			}
+		}
+		else
+		{
+			if (invokers.containsKey(slave.getId()))
+			{
+				return true;
+			}
+		}
+		
+		return false;
 	}
 }

@@ -26,21 +26,34 @@ import net.sf.hajdbc.DatabaseCluster;
  * @author Paul Ferraro
  * @param <D> 
  */
-public abstract class AbstractRootInvocationHandler<Z, D extends Database<Z>, E extends Exception> extends AbstractInvocationHandler<Z, D, Z, E>
+public abstract class RootInvocationHandler<Z, D extends Database<Z>, E extends Exception> extends AbstractInvocationHandler<Z, D, Z, E> implements RootSQLProxy<Z, D, E>
 {
+	private final DatabaseCluster<Z, D> cluster;
+	
 	/**
 	 * Constructs a new AbstractRootInvocationHandler.
 	 * @param databaseCluster
 	 * @param proxyClass
 	 */
-	protected AbstractRootInvocationHandler(DatabaseCluster<Z, D> databaseCluster, Class<Z> proxyClass)
+	protected RootInvocationHandler(DatabaseCluster<Z, D> cluster, Class<Z> proxyClass)
 	{
-		super(databaseCluster, proxyClass, new TreeMap<D, Z>());
+		super(proxyClass, new TreeMap<D, Z>());
 		
-		for (D database: databaseCluster.getBalancer())
+		this.cluster = cluster;
+		
+		for (D database: cluster.getBalancer())
 		{
 			this.getObject(database);
 		}
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.sql.SQLProxy#getDatabaseCluster()
+	 */
+	@Override
+	public DatabaseCluster<Z, D> getDatabaseCluster()
+	{
+		return this.cluster;
 	}
 
 	/**
@@ -65,7 +78,7 @@ public abstract class AbstractRootInvocationHandler<Z, D extends Database<Z>, E 
 	 * @see net.sf.hajdbc.sql.SQLProxy#getRoot()
 	 */
 	@Override
-	public SQLProxy<Z, D, ?, ?> getRoot()
+	public RootSQLProxy<Z, D, ? extends Exception> getRoot()
 	{
 		return this;
 	}

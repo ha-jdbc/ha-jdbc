@@ -19,13 +19,14 @@ package net.sf.hajdbc.sql;
 
 import java.lang.reflect.Method;
 import java.sql.SQLException;
+import java.sql.SQLXML;
 import java.util.Map;
 import java.util.Set;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.util.reflect.Methods;
 
-public class SQLXMLInvocationHandler<Z, D extends Database<Z>, P> extends LocatorInvocationHandler<Z, D, P, java.sql.SQLXML>
+public class SQLXMLInvocationHandler<Z, D extends Database<Z>, P> extends LocatorInvocationHandler<Z, D, P, SQLXML>
 {
 	private static final Set<Method> READ_METHOD_SET = Methods.findMethods(java.sql.SQLXML.class, "getBinaryStream", "getCharacterStream", "getSource", "getString");
 	private static final Set<Method> WRITE_METHOD_SET = Methods.findMethods(java.sql.SQLXML.class, "setBinaryStream", "setCharacterStream", "setResult", "setString");

@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.SortedMap;
 import java.util.regex.Pattern;
 
 import net.sf.hajdbc.AbstractDriver;
@@ -103,15 +104,22 @@ public final class ReplicatingDriver extends AbstractDriver
 		
 		Invoker<Driver, DriverDatabase, Driver, Connection, SQLException> invoker = new Invoker<Driver, DriverDatabase, Driver, Connection, SQLException>()
 		{
+			@Override
 			public Connection invoke(DriverDatabase database, Driver driver) throws SQLException
 			{
 				return driver.connect(database.getName(), properties);
 			}
 		};
 		
+		SortedMap<DriverDatabase, Connection> results = InvocationStrategyEnum.INVOKE_ON_ALL.invoke(handler, invoker);
+		
 		TransactionContext<Driver, DriverDatabase> context = new LocalTransactionContext<Driver, DriverDatabase>(cluster);
 		
-		return new ConnectionInvocationStrategy<Driver, DriverDatabase, Driver>(cluster, driver, context).invoke(handler, invoker);
+		InvocationHandlerFactory<Driver, DriverDatabase, Driver, Connection, SQLException> handlerFactory = new ConnectionInvocationHandlerFactory<Driver, DriverDatabase, Driver>(context);
+		
+		InvocationResultFactory<Driver, DriverDatabase, Connection, SQLException> resultFactory = handler.new ProxyInvocationResultFactory<Connection>(handlerFactory, driver, invoker);
+		
+		return resultFactory.createResult(results);
 	}
 	
 	/**
@@ -132,13 +140,18 @@ public final class ReplicatingDriver extends AbstractDriver
 		
 		Invoker<Driver, DriverDatabase, Driver, DriverPropertyInfo[], SQLException> invoker = new Invoker<Driver, DriverDatabase, Driver, DriverPropertyInfo[], SQLException>()
 		{
+			@Override
 			public DriverPropertyInfo[] invoke(DriverDatabase database, Driver driver) throws SQLException
 			{
 				return driver.getPropertyInfo(database.getName(), properties);
 			}			
 		};
 		
-		return new DatabaseReadInvocationStrategy<Driver, DriverDatabase, Driver, DriverPropertyInfo[], SQLException>().invoke(handler, invoker);
+		SortedMap<DriverDatabase, DriverPropertyInfo[]> results = InvocationStrategyEnum.INVOKE_ON_NEXT.invoke(handler, invoker);
+
+		InvocationResultFactory<Driver, DriverDatabase, DriverPropertyInfo[], SQLException> resultFactory = handler.new SimpleInvocationResultFactory<DriverPropertyInfo[]>();
+		
+		return resultFactory.createResult(results);
 	}
 
 	private DatabaseCluster<Driver, DriverDatabase> getDatabaseCluster(String id, Properties properties) throws SQLException

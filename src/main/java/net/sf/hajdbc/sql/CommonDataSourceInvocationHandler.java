@@ -30,7 +30,7 @@ import net.sf.hajdbc.util.reflect.Methods;
  * @param <D> 
  */
 @SuppressWarnings("nls")
-public class CommonDataSourceInvocationHandler<Z extends javax.sql.CommonDataSource, D extends CommonDataSourceDatabase<Z>> extends AbstractRootInvocationHandler<Z, D, SQLException>
+public class CommonDataSourceInvocationHandler<Z extends javax.sql.CommonDataSource, D extends CommonDataSourceDatabase<Z>> extends RootInvocationHandler<Z, D, SQLException>
 {
 	private static final Set<Method> getMethodSet = Methods.findMethods(CommonDataSource.class, "get\\w+");
 	private static final Set<Method> setMethodSet = Methods.findMethods(CommonDataSource.class, "set\\w+");
@@ -45,19 +45,19 @@ public class CommonDataSourceInvocationHandler<Z extends javax.sql.CommonDataSou
 	}
 
 	@Override
-	protected InvocationStrategy<Z, D, Z, ?, SQLException> getInvocationStrategy(Z object, Method method, Object[] parameters) throws SQLException
+	protected InvocationStrategy getInvocationStrategy(Z dataSource, Method method, Object[] parameters) throws SQLException
 	{
 		if (getMethodSet.contains(method))
 		{
-			return new DriverReadInvocationStrategy<Z, D, Z, Object, SQLException>();
+			return InvocationStrategyEnum.INVOKE_ON_ANY;
 		}
 
 		if (setMethodSet.contains(method))
 		{
-			return new DriverWriteInvocationStrategy<Z, D, Z, Object, SQLException>();
+			return InvocationStrategyEnum.INVOKE_ON_EXISTING;
 		}
 		
-		return super.getInvocationStrategy(object, method, parameters);
+		return super.getInvocationStrategy(dataSource, method, parameters);
 	}
 
 	/**

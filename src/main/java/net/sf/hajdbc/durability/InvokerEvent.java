@@ -34,6 +34,7 @@ public class InvokerEvent extends InvocationEvent
 	private static final long serialVersionUID = -2796504299012960009L;
 
 	private final String databaseId;
+	private boolean completed = false;
 	private byte[] result;
 	private byte[] exception;
 	
@@ -47,11 +48,12 @@ public class InvokerEvent extends InvocationEvent
 		this.databaseId = database.getId();
 	}
 
-	public InvokerEvent(byte[] transactionId, int phase, String databaseId, byte[] result, byte[] exception)
+	public InvokerEvent(byte[] transactionId, int phase, String databaseId, boolean completed, byte[] result, byte[] exception)
 	{
 		super(transactionId, phase);
 		
 		this.databaseId = databaseId;
+		this.completed = completed;
 		this.result = result;
 		this.exception = exception;
 	}
@@ -79,6 +81,16 @@ public class InvokerEvent extends InvocationEvent
 	public byte[] getResult()
 	{
 		return this.result;
+	}
+
+	public boolean isCompleted()
+	{
+		return this.completed;
+	}
+
+	public void setCompleted(boolean completed)
+	{
+		this.completed = completed;
 	}
 	
 	private static byte[] toBytes(Object object)

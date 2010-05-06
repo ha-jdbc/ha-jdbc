@@ -20,6 +20,7 @@ package net.sf.hajdbc.sql;
 import java.util.Map;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.logging.Level;
 
 /**
@@ -28,15 +29,15 @@ import net.sf.hajdbc.logging.Level;
  * @param <P> 
  * @param <T> 
  */
-public abstract class AbstractChildInvocationHandler<Z, D extends Database<Z>, P, T, E extends Exception> extends AbstractInvocationHandler<Z, D, T, E>
+public abstract class AbstractChildInvocationHandler<Z, D extends Database<Z>, P, PE extends Exception, T, E extends Exception> extends AbstractInvocationHandler<Z, D, T, E>
 {
 	private P parentObject;
-	private SQLProxy<Z, D, P, ? extends Exception> parentProxy;
-	private Invoker<Z, D, P, T, ? extends Exception> parentInvoker;
+	private SQLProxy<Z, D, P, PE> parentProxy;
+	private Invoker<Z, D, P, T, PE> parentInvoker;
 
-	protected AbstractChildInvocationHandler(P parent, SQLProxy<Z, D, P, ? extends Exception> proxy, Invoker<Z, D, P, T, ? extends Exception> invoker, Class<T> proxyClass, Map<D, T> objectMap)
+	protected AbstractChildInvocationHandler(P parent, SQLProxy<Z, D, P, PE> proxy, Invoker<Z, D, P, T, PE> invoker, Class<T> proxyClass, Map<D, T> objectMap)
 	{
-		super(proxy.getDatabaseCluster(), proxyClass, objectMap);
+		super(proxyClass, objectMap);
 		
 		this.parentObject = parent;
 		this.parentProxy = proxy;
@@ -83,7 +84,7 @@ public abstract class AbstractChildInvocationHandler<Z, D extends Database<Z>, P
 	 * @see net.sf.hajdbc.sql.SQLProxy#getRoot()
 	 */
 	@Override
-	public final SQLProxy<Z, D, ?, ?> getRoot()
+	public final RootSQLProxy<Z, D, ? extends Exception> getRoot()
 	{
 		return this.parentProxy.getRoot();
 	}
@@ -93,8 +94,18 @@ public abstract class AbstractChildInvocationHandler<Z, D extends Database<Z>, P
 		return this.parentObject;
 	}
 	
-	protected SQLProxy<Z, D, P, ? extends Exception> getParentProxy()
+	protected SQLProxy<Z, D, P, PE> getParentProxy()
 	{
 		return this.parentProxy;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.sql.SQLProxy#getDatabaseCluster()
+	 */
+	@Override
+	public DatabaseCluster<Z, D> getDatabaseCluster()
+	{
+		return this.getRoot().getDatabaseCluster();
 	}
 }

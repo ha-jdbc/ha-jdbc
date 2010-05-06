@@ -43,7 +43,7 @@ public class XADataSourceFactory extends CommonDataSourceObjectFactory<XADataSou
 	 * @see net.sf.hajdbc.sql.CommonDataSourceObjectFactory#getInvocationHandler(net.sf.hajdbc.DatabaseCluster)
 	 */
 	@Override
-	protected InvocationHandler getInvocationHandler(DatabaseCluster<XADataSource, XADataSourceDatabase> cluster)
+	protected InvocationHandler createInvocationHandler(DatabaseCluster<XADataSource, XADataSourceDatabase> cluster)
 	{
 		return new XADataSourceInvocationHandler(cluster);
 	}

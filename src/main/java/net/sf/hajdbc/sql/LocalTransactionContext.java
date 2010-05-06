@@ -20,6 +20,7 @@ package net.sf.hajdbc.sql;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.SortedMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 
@@ -53,22 +54,25 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 	/**
 	 * @see net.sf.hajdbc.sql.TransactionContext#start(net.sf.hajdbc.sql.InvocationStrategy, java.sql.Connection)
 	 */
-	public <T, R> InvocationStrategy<Z, D, T, R, SQLException> start(final InvocationStrategy<Z, D, T, R, SQLException> strategy, Connection connection) throws SQLException
+	@Override
+	public InvocationStrategy start(final InvocationStrategy strategy, final Connection connection) throws SQLException
 	{
 		if (this.transactionId != null) return strategy;
-
+		
 		if (connection.getAutoCommit())
 		{
-			return new InvocationStrategy<Z, D, T, R, SQLException>()
+			return new InvocationStrategy()
 			{
 				@Override
-				public R invoke(SQLProxy<Z, D, T, SQLException> proxy, Invoker<Z, D, T, R, SQLException> invoker) throws SQLException
+				public <ZZ, DD extends Database<ZZ>, T, R, E extends Exception> SortedMap<DD, R> invoke(SQLProxy<ZZ, DD, T, E> proxy, Invoker<ZZ, DD, T, R, E> invoker) throws E
 				{
 					LocalTransactionContext.this.lock();
 					
 					try
 					{
-						return LocalTransactionContext.this.durability.getInvocationStrategy(strategy, Durability.Phase.COMMIT, LocalTransactionContext.this.transactionId, SQLExceptionFactory.getInstance()).invoke(proxy, invoker);
+						InvocationStrategy durabilityStrategy = LocalTransactionContext.this.durability.getInvocationStrategy(strategy, Durability.Phase.COMMIT, LocalTransactionContext.this.transactionId);
+						
+						return durabilityStrategy.invoke(proxy, invoker);
 					}
 					finally
 					{
@@ -78,10 +82,10 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 			};
 		}
 		
-		return new InvocationStrategy<Z, D, T, R, SQLException>()
+		return new InvocationStrategy()
 		{
 			@Override
-			public R invoke(SQLProxy<Z, D, T, SQLException> proxy, Invoker<Z, D, T, R, SQLException> invoker) throws SQLException
+			public <ZZ, DD extends Database<ZZ>, T, R, E extends Exception> SortedMap<DD, R> invoke(SQLProxy<ZZ, DD, T, E> proxy, Invoker<ZZ, DD, T, R, E> invoker) throws E
 			{
 				LocalTransactionContext.this.lock();
 				
@@ -121,17 +125,18 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 	/**
 	 * @see net.sf.hajdbc.sql.TransactionContext#end(net.sf.hajdbc.sql.InvocationStrategy)
 	 */
-	public <T, R> InvocationStrategy<Z, D, T, R, SQLException> end(InvocationStrategy<Z, D, T, R, SQLException> strategy, Durability.Phase phase)
+	@Override
+	public InvocationStrategy end(final InvocationStrategy strategy, final Durability.Phase phase)
 	{
 		if (this.transactionId == null) return strategy;
 
-		final InvocationStrategy<Z, D, T, R, SQLException> durabilityStrategy = this.durability.getInvocationStrategy(strategy, phase, this.transactionId, SQLExceptionFactory.getInstance());
-		
-		return new InvocationStrategy<Z, D, T, R, SQLException>()
+		return new InvocationStrategy()
 		{
 			@Override
-			public R invoke(SQLProxy<Z, D, T, SQLException> proxy, Invoker<Z, D, T, R, SQLException> invoker) throws SQLException
+			public <ZZ, DD extends Database<ZZ>, T, R, E extends Exception> SortedMap<DD, R> invoke(SQLProxy<ZZ, DD, T, E> proxy, Invoker<ZZ, DD, T, R, E> invoker) throws E
 			{
+				InvocationStrategy durabilityStrategy = LocalTransactionContext.this.durability.getInvocationStrategy(strategy, phase, LocalTransactionContext.this.transactionId);
+				
 				try
 				{
 					return durabilityStrategy.invoke(proxy, invoker);

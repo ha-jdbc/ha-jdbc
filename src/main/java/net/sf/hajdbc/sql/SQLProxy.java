@@ -30,21 +30,21 @@ import net.sf.hajdbc.ExceptionFactory;
  */
 public interface SQLProxy<Z, D extends Database<Z>, T, E extends Exception>
 {
-	public DatabaseCluster<Z, D> getDatabaseCluster();
+	DatabaseCluster<Z, D> getDatabaseCluster();
 	
-	public Set<Map.Entry<D, T>> entries();
+	Set<Map.Entry<D, T>> entries();
 	
-	public void addChild(SQLProxy<Z, D, ?, ?> child);
+	void addChild(SQLProxy<Z, D, ?, ? extends Exception> child);
 
-	public void removeChild(SQLProxy<Z, D, ?, ?> child);
+	void removeChild(SQLProxy<Z, D, ?, ? extends Exception> child);
 	
-	public void removeChildren();
+	void removeChildren();
 
-	public SQLProxy<Z, D, ?, ? extends Exception> getRoot();
+	RootSQLProxy<Z, D, ? extends Exception> getRoot();
 	
-	public T getObject(D database);
+	T getObject(D database);
 	
-	public void retain(Set<D> databaseSet);
+	ExceptionFactory<E> getExceptionFactory();
 	
-	public ExceptionFactory<E> getExceptionFactory();
+	void retain(Set<D> databaseSet);	
 }

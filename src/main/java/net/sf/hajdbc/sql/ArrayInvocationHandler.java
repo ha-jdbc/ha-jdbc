@@ -58,14 +58,14 @@ public class ArrayInvocationHandler<Z, D extends Database<Z>, P> extends Locator
 	 * @see net.sf.hajdbc.sql.LocatorInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected InvocationStrategy<Z, D, Array, ?, SQLException> getInvocationStrategy(Array object, Method method, Object[] parameters) throws SQLException
+	protected InvocationStrategy getInvocationStrategy(Array array, Method method, Object[] parameters) throws SQLException
 	{
 		if (driverReadMethodSet.contains(method))
 		{
-			return new DriverReadInvocationStrategy<Z, D, Array, Object, SQLException>();
+			return InvocationStrategyEnum.INVOKE_ON_ANY;
 		}
 		
-		return super.getInvocationStrategy(object, method, parameters);
+		return super.getInvocationStrategy(array, method, parameters);
 	}
 
 	/**

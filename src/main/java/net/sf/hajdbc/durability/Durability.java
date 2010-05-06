@@ -35,7 +35,7 @@ public interface Durability<Z, D extends Database<Z>>
 		PREPARE, COMMIT, ROLLBACK, FORGET;
 	}
 	
-	<T, R, E extends Exception> InvocationStrategy<Z, D, T, R, E> getInvocationStrategy(InvocationStrategy<Z, D, T, R, E> strategy, Phase phase, TransactionIdentifier transactionId, ExceptionFactory<E> exceptionFactory);
+	InvocationStrategy getInvocationStrategy(InvocationStrategy strategy, Phase phase, TransactionIdentifier transactionId);
 	
 	<T, R, E extends Exception> Invoker<Z, D, T, R, E> getInvoker(Invoker<Z, D, T, R, E> invoker, Phase phase, TransactionIdentifier transactionId, ExceptionFactory<E> exceptionFactory);
 	

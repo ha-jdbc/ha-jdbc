@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
@@ -34,14 +35,15 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.durability.Durability;
 import net.sf.hajdbc.durability.TransactionIdentifier;
 import net.sf.hajdbc.durability.Durability.Phase;
 import net.sf.hajdbc.lock.LockManager;
 import net.sf.hajdbc.sql.AbstractChildInvocationHandler;
-import net.sf.hajdbc.sql.DatabaseWriteInvocationStrategy;
-import net.sf.hajdbc.sql.DriverReadInvocationStrategy;
+import net.sf.hajdbc.sql.InvocationStrategyEnum;
 import net.sf.hajdbc.sql.InvocationStrategy;
 import net.sf.hajdbc.sql.Invoker;
 import net.sf.hajdbc.sql.SQLProxy;
@@ -52,7 +54,7 @@ import net.sf.hajdbc.util.reflect.Methods;
  *
  */
 @SuppressWarnings("nls")
-public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<XADataSource, XADataSourceDatabase, XAConnection, XAResource, XAException>
+public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<XADataSource, XADataSourceDatabase, XAConnection, SQLException, XAResource, XAException>
 {
 	private static final Set<Method> driverReadMethodSet = Methods.findMethods(XAResource.class, "getTransactionTimeout", "isSameRM");
 	private static final Set<Method> databaseWriteMethodSet = Methods.findMethods(XAResource.class, "setTransactionTimeout");
@@ -92,16 +94,16 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected InvocationStrategy<XADataSource, XADataSourceDatabase, XAResource, ?, XAException> getInvocationStrategy(XAResource resource, Method method, Object[] parameters) throws XAException
+	protected InvocationStrategy getInvocationStrategy(XAResource resource, Method method, Object[] parameters) throws XAException
 	{
 		if (driverReadMethodSet.contains(method))
 		{
-			return new DriverReadInvocationStrategy<XADataSource, XADataSourceDatabase, XAResource, Object, XAException>();
+			return InvocationStrategyEnum.INVOKE_ON_ANY;
 		}
 		
 		if (databaseWriteMethodSet.contains(method))
 		{
-			return new DatabaseWriteInvocationStrategy<XADataSource, XADataSourceDatabase, XAResource, Object, XAException>(this.cluster.getNonTransactionalExecutor());
+			return InvocationStrategyEnum.INVOKE_ON_ALL;
 		}
 		
 		boolean start = method.equals(startMethod);
@@ -109,21 +111,23 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 		
 		if (start || end || method.equals(prepareMethod) || intraTransactionMethodSet.contains(method))
 		{
-			final InvocationStrategy<XADataSource, XADataSourceDatabase, XAResource, Object, XAException> strategy = new DatabaseWriteInvocationStrategy<XADataSource, XADataSourceDatabase, XAResource, Object, XAException>(end ? this.cluster.getEndTransactionExecutor() : this.cluster.getTransactionalExecutor());
+			final InvocationStrategy strategy = end ? InvocationStrategyEnum.END_TRANSACTION_INVOKE_ON_ALL : InvocationStrategyEnum.TRANSACTION_INVOKE_ON_ALL;
 			
 			Xid xid = (Xid) parameters[0];
 			
+			DatabaseCluster<XADataSource, XADataSourceDatabase> cluster = this.getDatabaseCluster();
+			
 			if (start)
 			{
-				final Lock lock = this.cluster.getLockManager().readLock(LockManager.GLOBAL);
+				final Lock lock = cluster.getLockManager().readLock(LockManager.GLOBAL);
 				
 				// Lock may already exist if we're resuming a suspended transaction
 				if (lockMap.putIfAbsent(xid, lock) == null)
 				{
-					return new InvocationStrategy<XADataSource, XADataSourceDatabase, XAResource, Object, XAException>()
+					return new InvocationStrategy()
 					{
 						@Override
-						public Object invoke(SQLProxy<XADataSource, XADataSourceDatabase, XAResource, XAException> proxy, Invoker<XADataSource, XADataSourceDatabase, XAResource, Object, XAException> invoker) throws XAException
+						public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(SQLProxy<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker) throws E
 						{
 							lock.lock();
 							
@@ -131,11 +135,11 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 							{
 								return strategy.invoke(proxy, invoker);
 							}
-							catch (XAException e)
+							catch (Exception e)
 							{
 								lock.unlock();
 
-								throw e;
+								throw proxy.getExceptionFactory().createException(e);
 							}
 						}
 					};
@@ -146,16 +150,16 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 			
 			if (phase != null)
 			{
-				final InvocationStrategy<XADataSource, XADataSourceDatabase, XAResource, Object, XAException> durabilityStrategy = this.cluster.getDurability().getInvocationStrategy(strategy, phase, new XidTransactionIdentifier(xid), this.getExceptionFactory());
+				final InvocationStrategy durabilityStrategy = cluster.getDurability().getInvocationStrategy(strategy, phase, new XidTransactionIdentifier(xid));
 				
 				if (endTransactionMethodSet.contains(method))
 				{
 					final Lock lock = lockMap.remove(xid);
 
-					return new InvocationStrategy<XADataSource, XADataSourceDatabase, XAResource, Object, XAException>()
+					return new InvocationStrategy()
 					{
 						@Override
-						public Object invoke(SQLProxy<XADataSource, XADataSourceDatabase, XAResource, XAException> proxy, Invoker<XADataSource, XADataSourceDatabase, XAResource, Object, XAException> invoker) throws XAException
+						public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(SQLProxy<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker) throws E
 						{
 							try
 							{
@@ -186,9 +190,9 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvoker(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected Invoker<XADataSource, XADataSourceDatabase, XAResource, ?, XAException> getInvoker(XAResource object, Method method, Object[] parameters) throws XAException
+	protected <R> Invoker<XADataSource, XADataSourceDatabase, XAResource, R, XAException> getInvoker(XAResource object, Method method, Object[] parameters) throws XAException
 	{
-		Invoker<XADataSource, XADataSourceDatabase, XAResource, ?, XAException> invoker = super.getInvoker(object, method, parameters);
+		Invoker<XADataSource, XADataSourceDatabase, XAResource, R, XAException> invoker = super.getInvoker(object, method, parameters);
 		
 		Durability.Phase phase = phaseMap.get(method);
 		
@@ -196,7 +200,7 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 		{
 			Xid xid = (Xid) parameters[0];
 			
-			return this.cluster.getDurability().getInvoker(invoker, phase, new XidTransactionIdentifier(xid), this.getExceptionFactory());
+			return this.getDatabaseCluster().getDurability().getInvoker(invoker, phase, new XidTransactionIdentifier(xid), this.getExceptionFactory());
 		}
 		
 		return invoker;

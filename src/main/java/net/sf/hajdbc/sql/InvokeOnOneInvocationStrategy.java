@@ -1,17 +1,17 @@
 /*
- * HA-JDBC: High-Availability JDBC
- * Copyright 2004-2009 Paul Ferraro
- * 
+ * HA-JDBC: High-Availablity JDBC
+ * Copyright 2004-Apr 9, 2010 Paul Ferraro
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -32,27 +32,18 @@ import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.state.StateManager;
 
 /**
- * @author Paul Ferraro
- * @param <D> 
- * @param <T> 
- * @param <R> 
+ * @author paul
+ *
  */
-public class DatabaseReadInvocationStrategy<Z, D extends Database<Z>, T, R, E extends Exception> implements InvocationStrategy<Z, D, T, R, E>
+public abstract class InvokeOnOneInvocationStrategy implements InvocationStrategy
 {
-	private static Logger logger = LoggerFactory.getLogger(DatabaseReadInvocationStrategy.class);
+	private static Logger logger = LoggerFactory.getLogger(InvokeOnOneInvocationStrategy.class);
 	
 	/**
 	 * @see net.sf.hajdbc.sql.InvocationStrategy#invoke(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker)
 	 */
 	@Override
-	public R invoke(SQLProxy<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker) throws E
-	{
-		SortedMap<D, R> map = this.invokeAll(proxy, invoker);
-		
-		return map.get(map.firstKey());
-	}
-	
-	protected SortedMap<D, R> invokeAll(SQLProxy<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker) throws E
+	public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(SQLProxy<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker) throws E
 	{
 		SortedMap<D, R> resultMap = new TreeMap<D, R>();
 		
@@ -64,7 +55,7 @@ public class DatabaseReadInvocationStrategy<Z, D extends Database<Z>, T, R, E ex
 		
 		while (true)
 		{
-			D database = balancer.next();
+			D database = this.getTarget(balancer);
 			
 			if (database == null)
 			{
@@ -105,4 +96,6 @@ public class DatabaseReadInvocationStrategy<Z, D extends Database<Z>, T, R, E ex
 			}
 		}
 	}
+	
+	protected abstract <Z, D extends Database<Z>> D getTarget(Balancer<Z, D> balancer);
 }

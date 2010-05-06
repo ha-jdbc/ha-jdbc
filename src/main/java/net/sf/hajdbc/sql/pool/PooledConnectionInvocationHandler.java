@@ -52,6 +52,6 @@ public class PooledConnectionInvocationHandler extends AbstractPooledConnectionI
 	@Override
 	protected TransactionContext<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase> createTransactionContext()
 	{
-		return new LocalTransactionContext<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase>(this.cluster);
+		return new LocalTransactionContext<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase>(this.getDatabaseCluster());
 	}
 }

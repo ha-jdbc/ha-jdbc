@@ -18,28 +18,23 @@
 package net.sf.hajdbc.sql;
 
 import java.lang.reflect.InvocationHandler;
-import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLXML;
 import java.util.Map;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.DatabaseCluster;
 
-/**
- * @author Paul Ferraro
- * @param <D> 
- * @param <P> 
- */
-public class ClobInvocationStrategy<Z, D extends Database<Z>, P> extends LocatorInvocationStrategy<Z, D, P, Clob>
+public class SQLXMLInvocationHandlerFactory<Z, D extends Database<Z>, P> extends LocatorInvocationHandlerFactory<Z, D, P, SQLXML>
 {
 	/**
 	 * @param cluster 
-	 * @param parent
+	 * @param parent the object that created sql xml objects
+	 * @throws SQLException 
 	 */
-	public ClobInvocationStrategy(DatabaseCluster<Z, D> cluster, P parent, Connection connection) throws SQLException
+	public SQLXMLInvocationHandlerFactory(Connection connection)
 	{
-		super(cluster, parent, Clob.class, connection);
+		super(SQLXML.class, connection);
 	}
 
 	/**
@@ -47,8 +42,8 @@ public class ClobInvocationStrategy<Z, D extends Database<Z>, P> extends Locator
 	 * @see net.sf.hajdbc.sql.LocatorInvocationStrategy#createInvocationHandler(java.lang.Object, net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker, java.util.Map, boolean)
 	 */
 	@Override
-	protected InvocationHandler createInvocationHandler(P parent, SQLProxy<Z, D, P, SQLException> proxy, Invoker<Z, D, P, Clob, SQLException> invoker, Map<D, Clob> objectMap, boolean updateCopy) throws SQLException
+	protected InvocationHandler createInvocationHandler(P parent, SQLProxy<Z, D, P, SQLException> proxy, Invoker<Z, D, P, java.sql.SQLXML, SQLException> invoker, Map<D, java.sql.SQLXML> objectMap, boolean updateCopy) throws SQLException
 	{
-		return new ClobInvocationHandler<Z, D, P>(parent, proxy, invoker, objectMap, updateCopy);
+		return new SQLXMLInvocationHandler<Z, D, P>(parent, proxy, invoker, objectMap, updateCopy);
 	}
 }

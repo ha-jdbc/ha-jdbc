@@ -25,7 +25,7 @@ import javax.sql.ConnectionPoolDataSource;
 
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.sql.CommonDataSourceInvocationHandler;
-import net.sf.hajdbc.sql.InvocationStrategy;
+import net.sf.hajdbc.sql.InvocationHandlerFactory;
 import net.sf.hajdbc.util.reflect.Methods;
 
 /**
@@ -45,14 +45,18 @@ public class ConnectionPoolDataSourceInvocationHandler extends CommonDataSourceI
 		super(databaseCluster, ConnectionPoolDataSource.class);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvocationHandlerFactory(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 */
 	@Override
-	protected InvocationStrategy<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase, ConnectionPoolDataSource, ?, SQLException> getInvocationStrategy(ConnectionPoolDataSource dataSource, Method method, Object[] parameters) throws SQLException
+	protected InvocationHandlerFactory<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase, ConnectionPoolDataSource, ?, SQLException> getInvocationHandlerFactory(ConnectionPoolDataSource object, Method method, Object[] parameters) throws SQLException
 	{
 		if (getPooledConnectionMethodSet.contains(method))
 		{
-			return new PooledConnectionInvocationStrategy(this.cluster, dataSource);
+			return new PooledConnectionInvocationHandlerFactory();
 		}
 		
-		return super.getInvocationStrategy(dataSource, method, parameters);
+		return super.getInvocationHandlerFactory(object, method, parameters);
 	}
 }

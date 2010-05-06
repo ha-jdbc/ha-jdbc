@@ -24,7 +24,7 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.durability.Durability;
 
 /**
- * Decorates and invocation strategy with transaction boundary logic.
+ * Decorates an invocation strategy with transaction boundary logic.
  * @author Paul Ferraro
  * @param <D> DataSource or Driver
  */
@@ -39,7 +39,7 @@ public interface TransactionContext<Z, D extends Database<Z>>
 	 * @return the decorated invocation strategy
 	 * @throws SQLException
 	 */
-	<T, R> InvocationStrategy<Z, D, T, R, SQLException> start(InvocationStrategy<Z, D, T, R, SQLException> strategy, Connection connection) throws SQLException;
+	InvocationStrategy start(InvocationStrategy strategy, Connection connection) throws SQLException;
 
 	<T, R> Invoker<Z, D, T, R, SQLException> start(Invoker<Z, D, T, R, SQLException> invoker, Connection connection) throws SQLException;
 
@@ -51,7 +51,7 @@ public interface TransactionContext<Z, D extends Database<Z>>
 	 * @return the decorated invocation strategy
 	 * @throws SQLException
 	 */
-	<T, R> InvocationStrategy<Z, D, T, R, SQLException> end(InvocationStrategy<Z, D, T, R, SQLException> strategy, Durability.Phase phase) throws SQLException;
+	InvocationStrategy end(InvocationStrategy strategy, Durability.Phase phase) throws SQLException;
 
 	<T, R> Invoker<Z, D, T, R, SQLException> end(Invoker<Z, D, T, R, SQLException> invoker, Durability.Phase phase) throws SQLException;
 	

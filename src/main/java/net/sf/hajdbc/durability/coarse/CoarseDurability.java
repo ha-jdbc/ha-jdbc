@@ -18,10 +18,10 @@
 package net.sf.hajdbc.durability.coarse;
 
 import java.util.Map;
+import java.util.SortedMap;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.durability.DurabilityListener;
 import net.sf.hajdbc.durability.InvocationEvent;
 import net.sf.hajdbc.durability.InvokerEvent;
@@ -34,46 +34,43 @@ import net.sf.hajdbc.state.StateManager;
 
 /**
  * @author paul
- *
+ * 
  */
 public class CoarseDurability<Z, D extends Database<Z>> extends NoDurability<Z, D>
 {
 	protected final DatabaseCluster<Z, D> cluster;
-	
+
 	public CoarseDurability(DatabaseCluster<Z, D> cluster)
 	{
 		this.cluster = cluster;
 	}
-	
+
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see net.sf.hajdbc.durability.Durability#getInvocationStrategy(net.sf.hajdbc.sql.InvocationStrategy)
 	 */
 	@Override
-	public <T, R, E extends Exception> InvocationStrategy<Z, D, T, R, E> getInvocationStrategy(final InvocationStrategy<Z, D, T, R, E> strategy, final Phase phase, final TransactionIdentifier transactionId, final ExceptionFactory<E> exceptionFactory)
+	public InvocationStrategy getInvocationStrategy(final InvocationStrategy strategy, final Phase phase, final TransactionIdentifier transactionId)
 	{
 		final DurabilityListener listener = this.cluster.getStateManager();
-		
-		return new InvocationStrategy<Z, D, T, R, E>()
+
+		return new InvocationStrategy()
 		{
 			@Override
-			public R invoke(SQLProxy<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker) throws E
+			public <ZZ, DD extends Database<ZZ>, T, R, EE extends Exception> SortedMap<DD, R> invoke(SQLProxy<ZZ, DD, T, EE> proxy, Invoker<ZZ, DD, T, R, EE> invoker) throws EE
 			{
 				InvocationEvent event = new InvocationEvent(transactionId, phase);
-				
+
 				listener.beforeInvocation(event);
-				
+
 				try
 				{
-					R result = strategy.invoke(proxy, invoker);
-					
-					return result;
+					return strategy.invoke(proxy, invoker);
 				}
 				catch (Exception e)
 				{
-					E exception = exceptionFactory.createException(e);
-					
-					throw exception;
+					throw proxy.getExceptionFactory().createException(e);
 				}
 				finally
 				{
@@ -85,18 +82,20 @@ public class CoarseDurability<Z, D extends Database<Z>> extends NoDurability<Z, 
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.durability.Durability#recover(net.sf.hajdbc.balancer.Balancer, java.util.Map)
+	 * 
+	 * @see net.sf.hajdbc.durability.Durability#recover(net.sf.hajdbc.balancer.Balancer,
+	 *      java.util.Map)
 	 */
 	@Override
 	public void recover(Map<InvocationEvent, Map<String, InvokerEvent>> invokers)
 	{
 		StateManager stateManager = this.cluster.getStateManager();
-		
+
 		for (D database: this.cluster.getBalancer().slaves())
 		{
 			this.cluster.deactivate(database, stateManager);
 		}
-		
+
 		for (InvocationEvent event: invokers.keySet())
 		{
 			stateManager.afterInvocation(event);

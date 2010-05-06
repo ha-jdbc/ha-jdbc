@@ -60,16 +60,16 @@ public class CallableStatementInvocationHandler<Z, D extends Database<Z>> extend
 	 * @see net.sf.hajdbc.sql.AbstractStatementInvocationHandler#getInvocationStrategy(java.sql.Statement, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected InvocationStrategy<Z, D, CallableStatement, ?, SQLException> getInvocationStrategy(CallableStatement statement, Method method, Object[] parameters) throws SQLException
+	protected InvocationStrategy getInvocationStrategy(CallableStatement statement, Method method, Object[] parameters) throws SQLException
 	{
 		if (registerOutParameterMethodSet.contains(method))
 		{
-			return new DriverWriteInvocationStrategy<Z, D, CallableStatement, Object, SQLException>();
+			return InvocationStrategyEnum.INVOKE_ON_EXISTING;
 		}
 		
 		if (driverReadMethodSet.contains(method))
 		{
-			return new DriverReadInvocationStrategy<Z, D, CallableStatement, Object, SQLException>();
+			return InvocationStrategyEnum.INVOKE_ON_ANY;
 		}
 		
 		return super.getInvocationStrategy(statement, method, parameters);

@@ -39,7 +39,7 @@ public class DataSourceFactory extends CommonDataSourceObjectFactory<DataSource,
 	}
 
 	@Override
-	protected InvocationHandler getInvocationHandler(DatabaseCluster<DataSource, DataSourceDatabase> cluster)
+	protected InvocationHandler createInvocationHandler(DatabaseCluster<DataSource, DataSourceDatabase> cluster)
 	{
 		return new DataSourceInvocationHandler(cluster);
 	}	

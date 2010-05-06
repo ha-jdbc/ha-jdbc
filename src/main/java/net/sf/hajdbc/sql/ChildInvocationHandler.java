@@ -17,29 +17,31 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
+import java.util.Map;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.util.reflect.ProxyFactory;
+import net.sf.hajdbc.ExceptionFactory;
 
 /**
  * @author Paul Ferraro
- *
+ * @param <D> 
+ * @param <P> 
+ * @param <T> 
  */
-public class DatabaseMetaDataInvocationStrategy<Z, D extends Database<Z>> extends DatabaseReadInvocationStrategy<Z, D, Connection, DatabaseMetaData, SQLException>
+public abstract class ChildInvocationHandler<Z, D extends Database<Z>, P, T, E extends Exception> extends AbstractChildInvocationHandler<Z, D, P, E, T, E>
 {
-	private final Connection connection;
-	
-	public DatabaseMetaDataInvocationStrategy(Connection connection)
+	protected ChildInvocationHandler(P parent, SQLProxy<Z, D, P, E> proxy, Invoker<Z, D, P, T, E> invoker, Class<T> proxyClass, Map<D, T> objects)
 	{
-		this.connection = connection;
+		super(parent, proxy, invoker, proxyClass, objects);
 	}
-	
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.sql.SQLProxy#getExceptionFactory()
+	 */
 	@Override
-	public DatabaseMetaData invoke(SQLProxy<Z, D, Connection, SQLException> proxy, Invoker<Z, D, Connection, DatabaseMetaData, SQLException> invoker) throws SQLException
+	public ExceptionFactory<E> getExceptionFactory()
 	{
-		return ProxyFactory.createProxy(DatabaseMetaData.class, new DatabaseMetaDataInvocationHandler<Z, D>(this.connection, proxy, invoker, this.invokeAll(proxy, invoker)));
+		return this.getParentProxy().getExceptionFactory();
 	}
 }

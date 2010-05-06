@@ -30,13 +30,12 @@ import javax.sql.PooledConnection;
 import javax.sql.StatementEventListener;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.ExceptionFactory;
-import net.sf.hajdbc.sql.AbstractChildInvocationHandler;
-import net.sf.hajdbc.sql.ConnectionInvocationStrategy;
-import net.sf.hajdbc.sql.DriverWriteInvocationStrategy;
+import net.sf.hajdbc.sql.ChildInvocationHandler;
+import net.sf.hajdbc.sql.ConnectionInvocationHandlerFactory;
+import net.sf.hajdbc.sql.InvocationHandlerFactory;
 import net.sf.hajdbc.sql.InvocationStrategy;
+import net.sf.hajdbc.sql.InvocationStrategyEnum;
 import net.sf.hajdbc.sql.Invoker;
-import net.sf.hajdbc.sql.SQLExceptionFactory;
 import net.sf.hajdbc.sql.SQLProxy;
 import net.sf.hajdbc.sql.TransactionContext;
 import net.sf.hajdbc.util.reflect.Methods;
@@ -47,7 +46,7 @@ import net.sf.hajdbc.util.reflect.Methods;
  * @param <C> 
  */
 @SuppressWarnings("nls")
-public abstract class AbstractPooledConnectionInvocationHandler<Z, D extends Database<Z>, C extends PooledConnection> extends AbstractChildInvocationHandler<Z, D, Z, C, SQLException>
+public abstract class AbstractPooledConnectionInvocationHandler<Z, D extends Database<Z>, C extends PooledConnection> extends ChildInvocationHandler<Z, D, Z, C, SQLException>
 {
 	private static final Method addConnectionEventListenerMethod = Methods.getMethod(PooledConnection.class, "addConnectionEventListener", ConnectionEventListener.class);
 	private static final Method addStatementEventListenerMethod = Methods.getMethod(PooledConnection.class, "addStatementEventListener", StatementEventListener.class);
@@ -70,22 +69,32 @@ public abstract class AbstractPooledConnectionInvocationHandler<Z, D extends Dat
 	 * @param objectMap
 	 * @throws Exception
 	 */
-	protected AbstractPooledConnectionInvocationHandler(Z dataSource, SQLProxy<Z, D, Z, SQLException> proxy, Invoker<Z, D, Z, C, SQLException> invoker, Class<C> proxyClass, Map<D, C> objectMap)
+	protected AbstractPooledConnectionInvocationHandler(Z dataSource, SQLProxy<Z, D, Z, SQLException> proxy, Invoker<Z, D, Z, C, SQLException> invoker, Class<C> proxyClass, Map<D, C> objects)
 	{
-		super(dataSource, proxy, invoker, proxyClass, objectMap);
+		super(dataSource, proxy, invoker, proxyClass, objects);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvocationHandlerFactory(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 */
+	@Override
+	protected InvocationHandlerFactory<Z, D, C, ?, SQLException> getInvocationHandlerFactory(C object, Method method, Object[] parameters) throws SQLException
+	{
+		if (method.equals(getConnectionMethod))
+		{
+			return new ConnectionInvocationHandlerFactory<Z, D, C>(this.createTransactionContext());
+		}
+		
+		return super.getInvocationHandlerFactory(object, method, parameters);
 	}
 
 	@Override
-	protected InvocationStrategy<Z, D, C, ?, SQLException> getInvocationStrategy(C connection, Method method, Object[] parameters) throws SQLException
+	protected InvocationStrategy getInvocationStrategy(C connection, Method method, Object[] parameters) throws SQLException
 	{
 		if (eventListenerMethodSet.contains(method))
 		{
-			return new DriverWriteInvocationStrategy<Z, D, C, Void, SQLException>();
-		}
-		
-		if (method.equals(getConnectionMethod))
-		{
-			return new ConnectionInvocationStrategy<Z, D, C>(this.cluster, connection, this.createTransactionContext());
+			return InvocationStrategyEnum.INVOKE_ON_EXISTING;
 		}
 
 		return super.getInvocationStrategy(connection, method, parameters);
@@ -169,15 +178,5 @@ public abstract class AbstractPooledConnectionInvocationHandler<Z, D extends Dat
 				invoker.invoke(database, connection);
 			}
 		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.SQLProxy#getExceptionFactory()
-	 */
-	@Override
-	public ExceptionFactory<SQLException> getExceptionFactory()
-	{
-		return SQLExceptionFactory.getInstance();
 	}
 }

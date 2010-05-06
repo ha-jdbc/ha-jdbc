@@ -120,12 +120,12 @@ public abstract class CommonDataSourceObjectFactory<Z extends javax.sql.CommonDa
 			throw SQLExceptionFactory.getInstance().createException(e);
 		}
 		
-		return ProxyFactory.createProxy(this.targetClass, this.getInvocationHandler(cluster));
+		return ProxyFactory.createProxy(this.targetClass, this.createInvocationHandler(cluster));
 	}
 
 	/**
 	 * @param cluster
 	 * @return the appropriate proxy invocation handler for this datasource
 	 */
-	protected abstract InvocationHandler getInvocationHandler(DatabaseCluster<Z, D> cluster);
+	protected abstract InvocationHandler createInvocationHandler(DatabaseCluster<Z, D> cluster);
 }

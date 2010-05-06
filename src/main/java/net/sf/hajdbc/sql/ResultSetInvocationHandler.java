@@ -49,7 +49,7 @@ import net.sf.hajdbc.util.reflect.SimpleInvocationHandler;
  * @param <S> 
  */
 @SuppressWarnings("nls")
-public class ResultSetInvocationHandler<Z, D extends Database<Z>, S extends Statement> extends AbstractChildInvocationHandler<Z, D, S, ResultSet, SQLException>
+public class ResultSetInvocationHandler<Z, D extends Database<Z>, S extends Statement> extends ChildInvocationHandler<Z, D, S, ResultSet, SQLException>
 {
 	private static final Set<Method> driverReadMethodSet = Methods.findMethods(ResultSet.class, "findColumn", "getConcurrency", "getCursorName", "getFetchDirection", "getFetchSize", "getHoldability", "getMetaData", "getRow", "getType", "getWarnings", "isAfterLast", "isBeforeFirst", "isClosed", "isFirst", "isLast", "row(Deleted|Inserted|Updated)", "wasNull");
 	private static final Set<Method> driverWriteMethodSet = Methods.findMethods(ResultSet.class, "absolute", "afterLast", "beforeFirst", "cancelRowUpdates", "clearWarnings", "first", "last", "moveTo(Current|Insert)Row", "next", "previous", "relative", "setFetchDirection", "setFetchSize");
@@ -84,65 +84,79 @@ public class ResultSetInvocationHandler<Z, D extends Database<Z>, S extends Stat
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected InvocationStrategy<Z, D, ResultSet, ?, SQLException> getInvocationStrategy(ResultSet resultSet, Method method, Object[] parameters) throws SQLException
+	public Object invoke(Object object, Method method, Object[] parameters) throws Throwable
 	{
-		if (driverReadMethodSet.contains(method))
-		{
-			return new DriverReadInvocationStrategy<Z, D, ResultSet, Object, SQLException>();
-		}
-		
-		if (driverWriteMethodSet.contains(method) || method.equals(closeMethod))
-		{
-			return new DriverWriteInvocationStrategy<Z, D, ResultSet, Object, SQLException>();
-		}
-		
-		if (transactionalWriteMethodSet.contains(method))
-		{
-			return this.transactionContext.start(new DatabaseWriteInvocationStrategy<Z, D, ResultSet, Object, SQLException>(this.cluster.getTransactionalExecutor()), this.getParent().getConnection());
-		}
-		
 		if (method.equals(getStatementMethod))
 		{
-			return new InvocationStrategy<Z, D, ResultSet, S, SQLException>()
-			{
-				public S invoke(SQLProxy<Z, D, ResultSet, SQLException> proxy, Invoker<Z, D, ResultSet, S, SQLException> invoker)
-				{
-					return ResultSetInvocationHandler.this.getParent();
-				}
-			};
+			return this.getParent();
 		}
 		
+		return super.invoke(object, method, parameters);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvocationHandlerFactory(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 */
+	@Override
+	protected InvocationHandlerFactory<Z, D, ResultSet, ?, SQLException> getInvocationHandlerFactory(ResultSet object, Method method, Object[] parameters) throws SQLException
+	{
 		if (getBlobMethodSet.contains(method))
 		{
-			return new BlobInvocationStrategy<Z, D, ResultSet>(this.cluster, resultSet, this.getParent().getConnection());
+			return new BlobInvocationHandlerFactory<Z, D, ResultSet>(this.getParent().getConnection());
 		}
 		
 		if (getClobMethodSet.contains(method))
 		{
-			return new ClobInvocationStrategy<Z, D, ResultSet>(this.cluster, resultSet, this.getParent().getConnection());
+			return new ClobInvocationHandlerFactory<Z, D, ResultSet>(this.getParent().getConnection());
 		}
 		
 		if (getNClobMethodSet.contains(method))
 		{
-			return new NClobInvocationStrategy<Z, D, ResultSet>(this.cluster, resultSet, this.getParent().getConnection());
+			return new NClobInvocationHandlerFactory<Z, D, ResultSet>(this.getParent().getConnection());
 		}
 		
 		if (getSQLXMLMethodSet.contains(method))
 		{
-			return new SQLXMLInvocationStrategy<Z, D, ResultSet>(this.cluster, resultSet, this.getParent().getConnection());
+			return new SQLXMLInvocationHandlerFactory<Z, D, ResultSet>(this.getParent().getConnection());
+		}
+		
+		return super.getInvocationHandlerFactory(object, method, parameters);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 */
+	@Override
+	protected InvocationStrategy getInvocationStrategy(ResultSet resultSet, Method method, Object[] parameters) throws SQLException
+	{
+		if (driverReadMethodSet.contains(method))
+		{
+			return InvocationStrategyEnum.INVOKE_ON_ANY;
+		}
+		
+		if (driverWriteMethodSet.contains(method) || method.equals(closeMethod))
+		{
+			return InvocationStrategyEnum.INVOKE_ON_EXISTING;
+		}
+		
+		if (transactionalWriteMethodSet.contains(method))
+		{
+			return this.transactionContext.start(InvocationStrategyEnum.TRANSACTION_INVOKE_ON_ALL, this.getParent().getConnection());
 		}
 		
 		if (this.isGetMethod(method))
 		{
-			return new DriverReadInvocationStrategy<Z, D, ResultSet, Object, SQLException>();
+			return InvocationStrategyEnum.INVOKE_ON_ANY;
 		}
 		
 		if (this.isUpdateMethod(method))
 		{
-			return new DriverWriteInvocationStrategy<Z, D, ResultSet, Object, SQLException>();
+			return InvocationStrategyEnum.INVOKE_ON_EXISTING;
 		}
 		
 		return super.getInvocationStrategy(resultSet, method, parameters);
@@ -152,7 +166,7 @@ public class ResultSetInvocationHandler<Z, D extends Database<Z>, S extends Stat
 	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvoker(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected Invoker<Z, D, ResultSet, ?, SQLException> getInvoker(ResultSet object, final Method method, final Object[] parameters) throws SQLException
+	protected <R> Invoker<Z, D, ResultSet, R, SQLException> getInvoker(ResultSet object, final Method method, final Object[] parameters) throws SQLException
 	{
 		if (this.isUpdateMethod(method) && (parameters.length > 1))
 		{
@@ -166,9 +180,10 @@ public class ResultSetInvocationHandler<Z, D extends Database<Z>, S extends Stat
 				{
 					final File file = this.fileSupport.createFile((InputStream) typeParameter);
 					
-					return new Invoker<Z, D, ResultSet, Object, SQLException>()
+					return new Invoker<Z, D, ResultSet, R, SQLException>()
 					{
-						public Object invoke(D database, ResultSet resultSet) throws SQLException
+						@Override
+						public R invoke(D database, ResultSet resultSet) throws SQLException
 						{
 							List<Object> parameterList = new ArrayList<Object>(Arrays.asList(parameters));
 							
@@ -183,9 +198,10 @@ public class ResultSetInvocationHandler<Z, D extends Database<Z>, S extends Stat
 				{
 					final File file = this.fileSupport.createFile((Reader) typeParameter);
 					
-					return new Invoker<Z, D, ResultSet, Object, SQLException>()
+					return new Invoker<Z, D, ResultSet, R, SQLException>()
 					{
-						public Object invoke(D database, ResultSet resultSet) throws SQLException
+						@Override
+						public R invoke(D database, ResultSet resultSet) throws SQLException
 						{
 							List<Object> parameterList = new ArrayList<Object>(Arrays.asList(parameters));
 							
@@ -204,9 +220,10 @@ public class ResultSetInvocationHandler<Z, D extends Database<Z>, S extends Stat
 					{
 						final SQLProxy<Z, D, Blob, SQLException> proxy = this.getInvocationHandler(blob);
 						
-						return new Invoker<Z, D, ResultSet, Object, SQLException>()
+						return new Invoker<Z, D, ResultSet, R, SQLException>()
 						{
-							public Object invoke(D database, ResultSet resultSet) throws SQLException
+							@Override
+							public R invoke(D database, ResultSet resultSet) throws SQLException
 							{
 								List<Object> parameterList = new ArrayList<Object>(Arrays.asList(parameters));
 								
@@ -229,9 +246,10 @@ public class ResultSetInvocationHandler<Z, D extends Database<Z>, S extends Stat
 					{
 						final SQLProxy<Z, D, Clob, SQLException> proxy = this.getInvocationHandler(clob);
 						
-						return new Invoker<Z, D, ResultSet, Object, SQLException>()
+						return new Invoker<Z, D, ResultSet, R, SQLException>()
 						{
-							public Object invoke(D database, ResultSet resultSet) throws SQLException
+							@Override
+							public R invoke(D database, ResultSet resultSet) throws SQLException
 							{
 								List<Object> parameterList = new ArrayList<Object>(Arrays.asList(parameters));
 								

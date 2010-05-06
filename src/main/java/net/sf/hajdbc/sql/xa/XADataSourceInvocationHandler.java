@@ -25,7 +25,7 @@ import javax.sql.XADataSource;
 
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.sql.CommonDataSourceInvocationHandler;
-import net.sf.hajdbc.sql.InvocationStrategy;
+import net.sf.hajdbc.sql.InvocationHandlerFactory;
 import net.sf.hajdbc.util.reflect.Methods;
 
 /**
@@ -45,14 +45,18 @@ public class XADataSourceInvocationHandler extends CommonDataSourceInvocationHan
 		super(databaseCluster, XADataSource.class);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvocationHandlerFactory(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 */
 	@Override
-	protected InvocationStrategy<XADataSource, XADataSourceDatabase, XADataSource, ?, SQLException> getInvocationStrategy(XADataSource dataSource, Method method, Object[] parameters) throws SQLException
+	protected InvocationHandlerFactory<XADataSource, XADataSourceDatabase, XADataSource, ?, SQLException> getInvocationHandlerFactory(XADataSource object, Method method, Object[] parameters) throws SQLException
 	{
 		if (getXAConnectionMethodSet.contains(method))
 		{
-			return new XAConnectionInvocationStrategy(this.cluster, dataSource);
+			return new XAConnectionInvocationHandlerFactory();
 		}
 		
-		return super.getInvocationStrategy(dataSource, method, parameters);
+		return super.getInvocationHandlerFactory(object, method, parameters);
 	}
 }

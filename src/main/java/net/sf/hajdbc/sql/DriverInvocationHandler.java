@@ -27,7 +27,7 @@ import net.sf.hajdbc.ExceptionFactory;
  * @author Paul Ferraro
  *
  */
-public class DriverInvocationHandler extends AbstractRootInvocationHandler<Driver, DriverDatabase, SQLException>
+public class DriverInvocationHandler extends RootInvocationHandler<Driver, DriverDatabase, SQLException>
 {
 	/**
 	 * @param databaseCluster

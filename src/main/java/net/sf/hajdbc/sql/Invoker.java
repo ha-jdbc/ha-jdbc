@@ -35,5 +35,5 @@ public interface Invoker<Z, D extends Database<Z>, T, R, E extends Exception>
 	 * @return the invocation result
 	 * @throws Exception
 	 */
-	public R invoke(D database, T object) throws E;
+	R invoke(D database, T object) throws E;
 }

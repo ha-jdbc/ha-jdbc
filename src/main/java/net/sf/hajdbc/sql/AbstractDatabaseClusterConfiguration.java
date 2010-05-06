@@ -48,6 +48,7 @@ import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ExecutorServiceProvider;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationStrategy;
+import net.sf.hajdbc.TransactionMode;
 import net.sf.hajdbc.balancer.BalancerFactory;
 import net.sf.hajdbc.balancer.BalancerFactoryEnum;
 import net.sf.hajdbc.cache.DatabaseMetaDataCacheFactory;

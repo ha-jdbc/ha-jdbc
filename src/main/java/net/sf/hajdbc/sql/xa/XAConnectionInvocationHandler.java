@@ -25,7 +25,8 @@ import java.util.Map;
 import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 
-import net.sf.hajdbc.durability.Durability.Phase;
+import net.sf.hajdbc.durability.Durability;
+import net.sf.hajdbc.sql.InvocationHandlerFactory;
 import net.sf.hajdbc.sql.InvocationStrategy;
 import net.sf.hajdbc.sql.Invoker;
 import net.sf.hajdbc.sql.SQLProxy;
@@ -55,15 +56,19 @@ public class XAConnectionInvocationHandler extends AbstractPooledConnectionInvoc
 		super(dataSource, proxy, invoker, XAConnection.class, objectMap);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvocationHandlerFactory(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 */
 	@Override
-	protected InvocationStrategy<XADataSource, XADataSourceDatabase, XAConnection, ?, SQLException> getInvocationStrategy(XAConnection connection, Method method, Object[] parameters) throws SQLException
+	protected InvocationHandlerFactory<XADataSource, XADataSourceDatabase, XAConnection, ?, SQLException> getInvocationHandlerFactory(XAConnection object, Method method, Object[] parameters) throws SQLException
 	{
 		if (method.equals(getXAResource))
 		{
-			return new XAResourceInvocationStrategy(this.cluster, connection);
+			return new XAResourceInvocationHandlerFactory();
 		}
 		
-		return super.getInvocationStrategy(connection, method, parameters);
+		return super.getInvocationHandlerFactory(object, method, parameters);
 	}
 
 	/**
@@ -84,7 +89,7 @@ public class XAConnectionInvocationHandler extends AbstractPooledConnectionInvoc
 		}
 
 		@Override
-		public <T, R> InvocationStrategy<XADataSource, XADataSourceDatabase, T, R, SQLException> start(InvocationStrategy<XADataSource, XADataSourceDatabase, T, R, SQLException> strategy, Connection connection) throws SQLException
+		public InvocationStrategy start(InvocationStrategy strategy, Connection connection) throws SQLException
 		{
 			return strategy;
 		}
@@ -96,13 +101,13 @@ public class XAConnectionInvocationHandler extends AbstractPooledConnectionInvoc
 		}
 
 		@Override
-		public <T, R> InvocationStrategy<XADataSource, XADataSourceDatabase, T, R, SQLException> end(InvocationStrategy<XADataSource, XADataSourceDatabase, T, R, SQLException> strategy, Phase phase) throws SQLException
+		public InvocationStrategy end(InvocationStrategy strategy, Durability.Phase phase) throws SQLException
 		{
 			throw new IllegalStateException();
 		}
 
 		@Override
-		public <T, R> Invoker<XADataSource, XADataSourceDatabase, T, R, SQLException> end(Invoker<XADataSource, XADataSourceDatabase, T, R, SQLException> invoker, Phase phase) throws SQLException
+		public <T, R> Invoker<XADataSource, XADataSourceDatabase, T, R, SQLException> end(Invoker<XADataSource, XADataSourceDatabase, T, R, SQLException> invoker, Durability.Phase phase) throws SQLException
 		{
 			throw new IllegalStateException();
 		}

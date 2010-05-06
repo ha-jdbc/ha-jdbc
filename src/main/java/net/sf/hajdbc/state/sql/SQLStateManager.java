@@ -387,10 +387,10 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 						{
 							String databaseId = resultSet.getString(3);
 							boolean success = resultSet.getBoolean(4);
-							boolean hasResult = resultSet.wasNull();
+							boolean completed = resultSet.wasNull();
 							byte[] result = resultSet.getBytes(5);
 							
-							invokers.put(databaseId, new InvokerEvent(transactionId, phase, databaseId, (hasResult && success) ? result : null, (hasResult && !success) ? result : null));
+							invokers.put(databaseId, new InvokerEvent(transactionId, phase, databaseId, completed, success ? result : null, success ? null : result));
 						}
 					}
 					

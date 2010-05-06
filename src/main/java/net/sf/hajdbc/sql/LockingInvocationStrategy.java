@@ -18,6 +18,7 @@
 package net.sf.hajdbc.sql;
 
 import java.util.List;
+import java.util.SortedMap;
 import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Database;
@@ -29,26 +30,23 @@ import net.sf.hajdbc.Database;
  * @param <T> Target object type of the invocation
  * @param <R> Return type of this invocation
  */
-public class LockingInvocationStrategy<Z, D extends Database<Z>, T, R, E extends Exception> implements InvocationStrategy<Z, D, T, R, E>
+public class LockingInvocationStrategy implements InvocationStrategy
 {
-	private InvocationStrategy<Z, D, T, R, E> strategy;
+	private InvocationStrategy strategy;
 	private List<Lock> lockList;
 	
 	/**
 	 * @param strategy
 	 * @param lockList
 	 */
-	public LockingInvocationStrategy(InvocationStrategy<Z, D, T, R, E> strategy, List<Lock> lockList)
+	public LockingInvocationStrategy(InvocationStrategy strategy, List<Lock> lockList)
 	{
 		this.strategy = strategy;
 		this.lockList = lockList;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.sql.InvocationStrategy#invoke(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker)
-	 */
 	@Override
-	public R invoke(SQLProxy<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker) throws E
+	public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(SQLProxy<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker) throws E
 	{
 		for (Lock lock: this.lockList)
 		{

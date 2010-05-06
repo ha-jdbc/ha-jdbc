@@ -30,7 +30,7 @@ import net.sf.hajdbc.ExceptionFactory;
  * @author Paul Ferraro
  * @param <D> 
  */
-public class SavepointInvocationHandler<Z, D extends Database<Z>> extends AbstractChildInvocationHandler<Z, D, Connection, Savepoint, SQLException>
+public class SavepointInvocationHandler<Z, D extends Database<Z>> extends ChildInvocationHandler<Z, D, Connection, Savepoint, SQLException>
 {
 	/**
 	 * @param connection the connection that created this savepoint
@@ -48,9 +48,9 @@ public class SavepointInvocationHandler<Z, D extends Database<Z>> extends Abstra
 	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected InvocationStrategy<Z, D, Savepoint, ?, SQLException> getInvocationStrategy(Savepoint object, Method method, Object[] parameters)
+	protected InvocationStrategy getInvocationStrategy(Savepoint savepoint, Method method, Object[] parameters)
 	{
-		return new DriverReadInvocationStrategy<Z, D, Savepoint, Object, SQLException>();
+		return InvocationStrategyEnum.INVOKE_ON_ANY;
 	}
 
 	/**

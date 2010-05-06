@@ -37,6 +37,7 @@ import net.sf.hajdbc.DatabaseClusterListener;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationListener;
+import net.sf.hajdbc.TransactionMode;
 import net.sf.hajdbc.balancer.Balancer;
 import net.sf.hajdbc.cache.DatabaseMetaDataCache;
 import net.sf.hajdbc.codec.Codec;
@@ -278,9 +279,19 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	 * @see net.sf.hajdbc.DatabaseCluster#getNonTransactionalExecutor()
 	 */
 	@Override
-	public ExecutorService getNonTransactionalExecutor()
+	public ExecutorService getExecutor()
 	{
 		return this.executor;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.DatabaseCluster#getTransactionMode()
+	 */
+	@Override
+	public TransactionMode getTransactionMode()
+	{
+		return this.configuration.getTransactionMode();
 	}
 
 	/**
@@ -291,26 +302,6 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	public StateManager getStateManager()
 	{
 		return this.stateManager;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DatabaseCluster#getEndTransactionExecutor()
-	 */
-	@Override
-	public ExecutorService getEndTransactionExecutor()
-	{
-		return this.configuration.getTransactionMode().getEndTransactionExecutor(this.executor);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DatabaseCluster#getTransactionalExecutor()
-	 */
-	@Override
-	public ExecutorService getTransactionalExecutor()
-	{
-		return this.configuration.getTransactionMode().getTransactionExecutor(this.executor);
 	}
 
 	@Override

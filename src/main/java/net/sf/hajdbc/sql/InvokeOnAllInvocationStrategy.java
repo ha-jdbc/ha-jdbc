@@ -18,12 +18,12 @@
 package net.sf.hajdbc.sql;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.AbstractMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -40,24 +40,14 @@ import net.sf.hajdbc.Messages;
  * @param <T> 
  * @param <R> 
  */
-public class DatabaseWriteInvocationStrategy<Z, D extends Database<Z>, T, R, E extends Exception> extends AbstractInvocationStrategy<Z, D, T, R, E>
+public class InvokeOnAllInvocationStrategy extends InvokeOnManyInvocationStrategy
 {
-	private final ExecutorService executor;
-	
-	/**
-	 * @param executor
-	 */
-	public DatabaseWriteInvocationStrategy(ExecutorService executor)
-	{
-		this.executor = executor;
-	}
-	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.AbstractInvocationStrategy#collectResults(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker)
+	 * @see net.sf.hajdbc.sql.InvokeOnManyInvocationStrategy#collectResults(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker)
 	 */
 	@Override
-	protected Map.Entry<SortedMap<D, R>, SortedMap<D, E>> collectResults(SQLProxy<Z, D, T, E> proxy, final Invoker<Z, D, T, R, E> invoker)
+	protected <Z, D extends Database<Z>, T, R, E extends Exception> Map.Entry<SortedMap<D, R>, SortedMap<D, E>> collectResults(SQLProxy<Z, D, T, E> proxy, final Invoker<Z, D, T, R, E> invoker)
 	{
 		DatabaseCluster<Z, D> cluster = proxy.getDatabaseCluster();
 		Set<D> databaseSet = cluster.getBalancer();
@@ -73,16 +63,16 @@ public class DatabaseWriteInvocationStrategy<Z, D extends Database<Z>, T, R, E e
 
 		int size = databaseSet.size();
 		
-		List<Invocation> invocationList = new ArrayList<Invocation>(size);
+		List<Invocation<Z, D, T, R, E>> invocationList = new ArrayList<Invocation<Z, D, T, R, E>>(size);
 		
 		for (D database: databaseSet)
 		{
-			invocationList.add(new Invocation(invoker, database, proxy.getObject(database)));
+			invocationList.add(new Invocation<Z, D, T, R, E>(invoker, database, proxy.getObject(database)));
 		}
 		
 		try
 		{
-			List<Future<R>> futureList = this.executor.invokeAll(invocationList);
+			List<Future<R>> futureList = this.getExecutor(cluster).invokeAll(invocationList);
 			
 			final SortedMap<D, R> resultMap = new TreeMap<D, R>();
 			final SortedMap<D, E> exceptionMap = new TreeMap<D, E>();
@@ -107,7 +97,7 @@ public class DatabaseWriteInvocationStrategy<Z, D extends Database<Z>, T, R, E e
 				}
 			}
 		
-			return Collections.singletonMap(resultMap, exceptionMap).entrySet().iterator().next();
+			return new AbstractMap.SimpleImmutableEntry<SortedMap<D, R>, SortedMap<D, E>>(resultMap, exceptionMap);
 		}
 		catch (InterruptedException e)
 		{
@@ -115,7 +105,12 @@ public class DatabaseWriteInvocationStrategy<Z, D extends Database<Z>, T, R, E e
 		}
 	}
 	
-	private class Invocation implements Callable<R>
+	protected <Z, D extends Database<Z>> ExecutorService getExecutor(DatabaseCluster<Z, D> cluster)
+	{
+		return cluster.getExecutor();
+	}
+	
+	private class Invocation<Z, D extends Database<Z>, T, R, E extends Exception> implements Callable<R>
 	{
 		private final Invoker<Z, D, T, R, E> invoker;
 		private final D database;

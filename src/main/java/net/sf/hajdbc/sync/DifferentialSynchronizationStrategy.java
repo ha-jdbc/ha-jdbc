@@ -24,7 +24,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -45,6 +44,7 @@ import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.sql.SQLExceptionFactory;
+import net.sf.hajdbc.util.Objects;
 import net.sf.hajdbc.util.Strings;
 
 /**
@@ -332,7 +332,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 								updateStatement.setObject(index, sourceObject, type);
 								
 								updated |= targetResultSet.wasNull();
-								updated |= !equals(sourceObject, targetObject);
+								updated |= !Objects.equals(sourceObject, targetObject);
 							}
 						}
 						
@@ -431,24 +431,6 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		
 		sourceConnection.setAutoCommit(sourceAutoCommit);
 		targetConnection.setAutoCommit(targetAutoCommit);
-	}
-
-	private boolean equals(Object object1, Object object2)
-	{
-		if ((object1 instanceof byte[]) && (object2 instanceof byte[]))
-		{
-			byte[] bytes1 = (byte[]) object1;
-			byte[] bytes2 = (byte[]) object2;
-			
-			if (bytes1.length != bytes2.length)
-			{
-				return false;
-			}
-			
-			return Arrays.equals(bytes1, bytes2);
-		}
-		
-		return object1.equals(object2);
 	}
 	
 	@SuppressWarnings("unchecked")

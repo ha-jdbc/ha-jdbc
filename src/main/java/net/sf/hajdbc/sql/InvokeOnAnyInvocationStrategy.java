@@ -18,6 +18,7 @@
 package net.sf.hajdbc.sql;
 
 import java.util.Map;
+import java.util.SortedMap;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
@@ -28,6 +29,7 @@ import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.state.StateManager;
+import net.sf.hajdbc.util.Collections;
 
 /**
  * @author Paul Ferraro
@@ -35,16 +37,16 @@ import net.sf.hajdbc.state.StateManager;
  * @param <T> 
  * @param <R> 
  */
-public class DriverReadInvocationStrategy<Z, D extends Database<Z>, T, R, E extends Exception> extends DatabaseReadInvocationStrategy<Z, D, T, R, E>
+public class InvokeOnAnyInvocationStrategy extends InvokeOnNextInvocationStrategy
 {
-	private static Logger logger = LoggerFactory.getLogger(DriverWriteInvocationStrategy.class);
+	private static Logger logger = LoggerFactory.getLogger(InvokeOnExistingInvocationStrategy.class);
 
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.sql.InvocationStrategy#invoke(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker)
 	 */
 	@Override
-	public R invoke(SQLProxy<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker) throws E
+	public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(SQLProxy<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker) throws E
 	{
 		DatabaseCluster<Z, D> cluster = proxy.getDatabaseCluster();
 		Dialect dialect = cluster.getDialect();
@@ -57,7 +59,9 @@ public class DriverReadInvocationStrategy<Z, D extends Database<Z>, T, R, E exte
 			
 			try
 			{
-				return invoker.invoke(database, entry.getValue());
+				R result = invoker.invoke(database, entry.getValue());
+				
+				return Collections.singletonSortedMap(database, result);
 			}
 			catch (Exception e)
 			{

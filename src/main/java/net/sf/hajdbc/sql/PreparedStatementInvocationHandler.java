@@ -50,6 +50,6 @@ public class PreparedStatementInvocationHandler<Z, D extends Database<Z>> extend
 		super(connection, proxy, invoker, PreparedStatement.class, statementMap, transactionContext, fileSupport, setMethodSet);
 		
 		this.lockList = this.extractLocks(sql);
-		this.selectForUpdate = this.isSelectForUpdate(sql);
+		this.selectForUpdate = this.isLockingSelect(sql);
 	}
 }

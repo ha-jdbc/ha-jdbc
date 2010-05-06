@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.durability.Durability;
 import net.sf.hajdbc.util.reflect.Methods;
 
@@ -39,7 +38,7 @@ import net.sf.hajdbc.util.reflect.Methods;
  * @param <P> 
  */
 @SuppressWarnings("nls")
-public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends AbstractChildInvocationHandler<Z, D, P, Connection, SQLException>
+public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends ChildInvocationHandler<Z, D, P, Connection, SQLException>
 {
 	private static final Set<Method> driverReadMethodSet = Methods.findMethods(Connection.class, "create(ArrayOf|Struct)", "getAutoCommit", "getCatalog", "getClientInfo", "getHoldability", "getTypeMap", "getWarnings", "isClosed", "isReadOnly", "nativeSQL");
 	private static final Set<Method> databaseReadMethodSet = Methods.findMethods(Connection.class, "getTransactionIsolation", "isValid");
@@ -48,7 +47,7 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ab
 	private static final Set<Method> prepareStatementMethodSet = Methods.findMethods(Connection.class, "prepareStatement");
 	private static final Set<Method> prepareCallMethodSet = Methods.findMethods(Connection.class, "prepareCall");
 	private static final Set<Method> setSavepointMethodSet = Methods.findMethods(Connection.class, "setSavepoint");
-	
+
 	private static final Method setAutoCommitMethod = Methods.getMethod(Connection.class, "setAutoCommit", Boolean.TYPE);
 	private static final Method commitMethod = Methods.getMethod(Connection.class, "commit");
 	private static final Method rollbackMethod = Methods.getMethod(Connection.class, "rollback");
@@ -62,6 +61,7 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ab
 	private static final Method createSQLXMLMethod = Methods.getMethod(Connection.class, "createSQLXML");
 	
 	private static final Set<Method> endTransactionMethodSet = new HashSet<Method>(Arrays.asList(commitMethod, rollbackMethod, setAutoCommitMethod));
+	private static final Set<Method> createLocatorMethodSet = new HashSet<Method>(Arrays.asList(createBlobMethod, createClobMethod, createNClobMethod, createSQLXMLMethod));
 	
 	private static final Map<Method, Durability.Phase> phaseMap = new IdentityHashMap<Method, Durability.Phase>();
 	static
@@ -89,79 +89,100 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ab
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvocationHandlerFactory(java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected InvocationStrategy<Z, D, Connection, ?, SQLException> getInvocationStrategy(Connection connection, Method method, Object[] parameters) throws SQLException
+	protected InvocationHandlerFactory<Z, D, Connection, ?, SQLException> getInvocationHandlerFactory(Connection connection, Method method, Object[] parameters)
 	{
-		if (driverReadMethodSet.contains(method))
-		{
-			return new DriverReadInvocationStrategy<Z, D, Connection, Object, SQLException>();
-		}
-		
-		if (databaseReadMethodSet.contains(method))
-		{
-			return new DatabaseReadInvocationStrategy<Z, D, Connection, Object, SQLException>();
-		}
-		
-		if (driverWriterMethodSet.contains(method) || method.equals(closeMethod))
-		{
-			return new DriverWriteInvocationStrategy<Z, D, Connection, Object, SQLException>();
-		}
-		
-		if (endTransactionMethodSet.contains(method))
-		{
-			return this.transactionContext.end(new DatabaseWriteInvocationStrategy<Z, D, Connection, Void, SQLException>(this.cluster.getEndTransactionExecutor()), phaseMap.get(method));
-		}
-		
-		if (method.equals(rollbackSavepointMethod) || method.equals(releaseSavepointMethod))
-		{
-			return new DatabaseWriteInvocationStrategy<Z, D, Connection, Void, SQLException>(this.cluster.getTransactionalExecutor());
-		}
-		
 		if (createStatementMethodSet.contains(method))
 		{
-			return new StatementInvocationStrategy<Z, D>(connection, this.transactionContext);
+			return new StatementInvocationHandlerFactory<Z, D>(this.transactionContext);
 		}
 		
 		if (prepareStatementMethodSet.contains(method))
 		{
-			return new PreparedStatementInvocationStrategy<Z, D>(this.cluster, connection, this.transactionContext, (String) parameters[0]);
+			return new PreparedStatementInvocationHandlerFactory<Z, D>(this.transactionContext, (String) parameters[0]);
 		}
 		
 		if (prepareCallMethodSet.contains(method))
 		{
-			return new CallableStatementInvocationStrategy<Z, D>(this.cluster, connection, this.transactionContext);
+			return new CallableStatementInvocationHandlerFactory<Z, D>(this.transactionContext);
 		}
 		
 		if (setSavepointMethodSet.contains(method))
 		{
-			return new SavepointInvocationStrategy<Z, D>(this.cluster, connection);
+			return new SavepointInvocationHandlerFactory<Z, D>();
 		}
 		
 		if (method.equals(getMetaDataMethod))
 		{
-			return new DatabaseMetaDataInvocationStrategy<Z, D>(connection);
+			return new DatabaseMetaDataInvocationHandlerFactory<Z, D>();
 		}
 		
 		if (method.equals(createBlobMethod))
 		{
-			return new BlobInvocationStrategy<Z, D, Connection>(this.cluster, connection, connection);
+			return new BlobInvocationHandlerFactory<Z, D, Connection>(connection);
 		}
 
 		if (method.equals(createClobMethod))
 		{
-			return new ClobInvocationStrategy<Z, D, Connection>(this.cluster, connection, connection);
+			return new ClobInvocationHandlerFactory<Z, D, Connection>(connection);
 		}
 
 		if (method.equals(createNClobMethod))
 		{
-			return new NClobInvocationStrategy<Z, D, Connection>(this.cluster, connection, connection);
+			return new NClobInvocationHandlerFactory<Z, D, Connection>(connection);
 		}
 		
 		if (method.equals(createSQLXMLMethod))
 		{
-			return new SQLXMLInvocationStrategy<Z, D, Connection>(this.cluster, connection, connection);
+			return new SQLXMLInvocationHandlerFactory<Z, D, Connection>(connection);
+		}
+		
+		return null;
+	}
+
+	/**
+	 * @throws SQLException 
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 */
+	@Override
+	protected InvocationStrategy getInvocationStrategy(Connection connection, Method method, Object[] parameters) throws SQLException
+	{
+		if (driverReadMethodSet.contains(method))
+		{
+			return InvocationStrategyEnum.INVOKE_ON_ANY;
+		}
+		
+		if (databaseReadMethodSet.contains(method) || method.equals(getMetaDataMethod))
+		{
+			return InvocationStrategyEnum.INVOKE_ON_NEXT;
+		}
+		
+		if (driverWriterMethodSet.contains(method) || method.equals(closeMethod) || createStatementMethodSet.contains(method))
+		{
+			return InvocationStrategyEnum.INVOKE_ON_EXISTING;
+		}
+		
+		if (prepareStatementMethodSet.contains(method) || prepareCallMethodSet.contains(method) || createLocatorMethodSet.contains(method))
+		{
+			return InvocationStrategyEnum.INVOKE_ON_ALL;
+		}
+		
+		if (endTransactionMethodSet.contains(method))
+		{
+			return this.transactionContext.end(InvocationStrategyEnum.END_TRANSACTION_INVOKE_ON_ALL, phaseMap.get(method));
+		}
+		
+		if (method.equals(rollbackSavepointMethod) || method.equals(releaseSavepointMethod))
+		{
+			return InvocationStrategyEnum.END_TRANSACTION_INVOKE_ON_ALL;
+		}
+		
+		if (setSavepointMethodSet.contains(method))
+		{
+			return InvocationStrategyEnum.TRANSACTION_INVOKE_ON_ALL;
 		}
 		
 		return super.getInvocationStrategy(connection, method, parameters);
@@ -171,15 +192,16 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ab
 	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvoker(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected Invoker<Z, D, Connection, ?, SQLException> getInvoker(Connection connection, Method method, Object[] parameters) throws SQLException
+	protected <R> Invoker<Z, D, Connection, R, SQLException> getInvoker(Connection connection, Method method, Object[] parameters) throws SQLException
 	{
 		if (method.equals(releaseSavepointMethod))
 		{
 			final SQLProxy<Z, D, Savepoint, SQLException> proxy = this.getInvocationHandler((Savepoint) parameters[0]);
 			
-			return new Invoker<Z, D, Connection, Void, SQLException>()
+			return new Invoker<Z, D, Connection, R, SQLException>()
 			{
-				public Void invoke(D database, Connection connection) throws SQLException
+				@Override
+				public R invoke(D database, Connection connection) throws SQLException
 				{
 					connection.releaseSavepoint(proxy.getObject(database));
 					
@@ -192,9 +214,10 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ab
 		{
 			final SQLProxy<Z, D, Savepoint, SQLException> proxy = this.getInvocationHandler((Savepoint) parameters[0]);
 			
-			return new Invoker<Z, D, Connection, Void, SQLException>()
+			return new Invoker<Z, D, Connection, R, SQLException>()
 			{
-				public Void invoke(D database, Connection connection) throws SQLException
+				@Override
+				public R invoke(D database, Connection connection) throws SQLException
 				{
 					connection.rollback(proxy.getObject(database));
 					
@@ -203,7 +226,7 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ab
 			};
 		}
 		
-		Invoker<Z, D, Connection, ?, SQLException> invoker = super.getInvoker(connection, method, parameters);
+		Invoker<Z, D, Connection, R, SQLException> invoker = super.getInvoker(connection, method, parameters);
 		
 		if (endTransactionMethodSet.contains(method))
 		{
@@ -231,7 +254,6 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ab
 	/**
 	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#postInvoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	protected void postInvoke(Connection object, Method method, Object[] parameters)
 	{
@@ -243,7 +265,8 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ab
 		}
 		else if (method.equals(releaseSavepointMethod))
 		{
-			SQLProxy<Z, D, Savepoint, SQLException> proxy = (SQLProxy) Proxy.getInvocationHandler(parameters[0]);
+			@SuppressWarnings("unchecked")
+			SQLProxy<Z, D, Savepoint, SQLException> proxy = (SQLProxy<Z, D, Savepoint, SQLException>) Proxy.getInvocationHandler(parameters[0]);
 			
 			this.removeChild(proxy);
 		}
@@ -256,15 +279,5 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ab
 	protected void close(P parent, Connection connection) throws SQLException
 	{
 		connection.close();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.SQLProxy#getExceptionFactory()
-	 */
-	@Override
-	public ExceptionFactory<SQLException> getExceptionFactory()
-	{
-		return SQLExceptionFactory.getInstance();
 	}
 }

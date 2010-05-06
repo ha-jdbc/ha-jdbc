@@ -69,23 +69,27 @@ public interface DatabaseCluster<Z, D extends Database<Z>> extends Lifecycle
 	 */
 	Balancer<Z, D> getBalancer();
 	
+	TransactionMode getTransactionMode();
+	
+	ExecutorService getExecutor();
+	
 	/**
 	 * Returns an executor service used to execute end transaction statements.
 	 * @return an implementation of <code>ExecutorService</code>
 	 */
-	ExecutorService getEndTransactionExecutor();
+//	ExecutorService getEndTransactionExecutor();
 	
 	/**
 	 * Returns an executor service used to execute transactional database writes.
 	 * @return an implementation of <code>ExecutorService</code>
 	 */
-	ExecutorService getTransactionalExecutor();
+//	ExecutorService getTransactionalExecutor();
 	
 	/**
 	 * Returns an executor service used to execute non-transactional database writes.
 	 * @return an implementation of <code>ExecutorService</code>
 	 */
-	ExecutorService getNonTransactionalExecutor();
+//	ExecutorService getNonTransactionalExecutor();
 	
 	/**
 	 * Returns a dialect capable of returning database vendor specific values.

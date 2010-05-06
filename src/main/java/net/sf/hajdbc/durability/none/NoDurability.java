@@ -44,7 +44,7 @@ public class NoDurability<Z, D extends Database<Z>> implements Durability<Z, D>
 	 * @see net.sf.hajdbc.durability.Durability#getInvocationStrategy(net.sf.hajdbc.sql.InvocationStrategy)
 	 */
 	@Override
-	public <T, R, E extends Exception> InvocationStrategy<Z, D, T, R, E> getInvocationStrategy(InvocationStrategy<Z, D, T, R, E> strategy, Phase phase, TransactionIdentifier transactionId, ExceptionFactory<E> exceptionFactory)
+	public InvocationStrategy getInvocationStrategy(InvocationStrategy strategy, Phase phase, TransactionIdentifier transactionId)
 	{
 		return strategy;
 	}

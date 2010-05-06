@@ -27,7 +27,6 @@ import net.sf.hajdbc.codec.CodecFactory;
 import net.sf.hajdbc.dialect.DialectFactory;
 import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.durability.DurabilityFactory;
-import net.sf.hajdbc.sql.TransactionMode;
 import net.sf.hajdbc.state.StateManagerProvider;
 
 import org.quartz.CronExpression;

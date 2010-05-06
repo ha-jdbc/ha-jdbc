@@ -44,7 +44,7 @@ public class ConnectionPoolDataSourceFactory extends CommonDataSourceObjectFacto
 	 * @see net.sf.hajdbc.sql.CommonDataSourceObjectFactory#getInvocationHandler(net.sf.hajdbc.DatabaseCluster)
 	 */
 	@Override
-	protected InvocationHandler getInvocationHandler(DatabaseCluster<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase> cluster)
+	protected InvocationHandler createInvocationHandler(DatabaseCluster<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase> cluster)
 	{
 		return new ConnectionPoolDataSourceInvocationHandler(cluster);
 	}

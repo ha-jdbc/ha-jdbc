@@ -22,6 +22,7 @@ import java.util.concurrent.ExecutorService;
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 
+import net.sf.hajdbc.TransactionMode;
 import net.sf.hajdbc.util.concurrent.SynchronousExecutor;
 
 /**
@@ -43,18 +44,8 @@ public enum TransactionModeEnum implements TransactionMode
 		this.synchronous = synchronous;
 	}
 	
-	public ExecutorService getTransactionExecutor(ExecutorService executor)
+	public ExecutorService getTransactionExecutor(ExecutorService executor, boolean end)
 	{
-		return this.getExecutor(executor, false);
-	}
-	
-	public ExecutorService getEndTransactionExecutor(ExecutorService executor)
-	{
-		return this.getExecutor(executor, true);
-	}
-	
-	private ExecutorService getExecutor(ExecutorService executor, boolean reverse)
-	{
-		return this.synchronous ? new SynchronousExecutor(executor, reverse) : executor;
+		return this.synchronous ? new SynchronousExecutor(executor, end) : executor;
 	}
 }

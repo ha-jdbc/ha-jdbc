@@ -81,24 +81,39 @@ public abstract class AbstractPreparedStatementInvocationHandler<Z, D extends Da
 	}
 	
 	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.sql.AbstractStatementInvocationHandler#getInvocationHandlerFactory(java.sql.Statement, java.lang.reflect.Method, java.lang.Object[])
+	 */
+	@Override
+	protected InvocationHandlerFactory<Z, D, S, ?, SQLException> getInvocationHandlerFactory(S object, Method method, Object[] parameters) throws SQLException
+	{
+		if (method.equals(executeQueryMethod))
+		{
+			return new ResultSetInvocationHandlerFactory<Z, D, S>(this.transactionContext, this.fileSupport);
+		}
+		
+		return super.getInvocationHandlerFactory(object, method, parameters);
+	}
+
+	/**
 	 * @see net.sf.hajdbc.sql.AbstractStatementInvocationHandler#getInvocationStrategy(java.sql.Statement, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected InvocationStrategy<Z, D, S, ?, SQLException> getInvocationStrategy(S statement, Method method, Object[] parameters) throws SQLException
+	protected InvocationStrategy getInvocationStrategy(S statement, Method method, Object[] parameters) throws SQLException
 	{
 		if (databaseReadMethodSet.contains(method))
 		{
-			return new DatabaseReadInvocationStrategy<Z, D, S, Object, SQLException>();
+			return InvocationStrategyEnum.INVOKE_ON_NEXT;
 		}
 		
 		if (this.setMethodSet.contains(method) || method.equals(clearParametersMethod) || method.equals(addBatchMethod))
 		{
-			return new DriverWriteInvocationStrategy<Z, D, S, Object, SQLException>();
+			return InvocationStrategyEnum.INVOKE_ON_EXISTING;
 		}
 		
 		if (method.equals(executeMethod) || method.equals(executeUpdateMethod))
 		{
-			return this.transactionContext.start(new LockingInvocationStrategy<Z, D, S, Object, SQLException>(new DatabaseWriteInvocationStrategy<Z, D, S, Object, SQLException>(this.cluster.getTransactionalExecutor()), this.lockList), this.getParent());
+			return this.transactionContext.start(new LockingInvocationStrategy(InvocationStrategyEnum.TRANSACTION_INVOKE_ON_ALL, this.lockList), this.getParent());
 		}
 		
 		if (method.equals(executeQueryMethod))
@@ -107,10 +122,10 @@ public abstract class AbstractPreparedStatementInvocationHandler<Z, D extends Da
 			
 			if (this.lockList.isEmpty() && (concurrency == ResultSet.CONCUR_READ_ONLY) && !this.selectForUpdate)
 			{
-				return new DatabaseReadInvocationStrategy<Z, D, S, Object, SQLException>();
+				return InvocationStrategyEnum.INVOKE_ON_NEXT;
 			}
 			
-			InvocationStrategy<Z, D, S, ResultSet, SQLException> strategy = new LockingInvocationStrategy<Z, D, S, ResultSet, SQLException>(new EagerResultSetInvocationStrategy<Z, D, S>(this.cluster, statement, this.transactionContext, this.fileSupport), this.lockList);
+			InvocationStrategy strategy = new LockingInvocationStrategy(InvocationStrategyEnum.TRANSACTION_INVOKE_ON_ALL, this.lockList);
 			
 			return this.selectForUpdate ? this.transactionContext.start(strategy, this.getParent()) : strategy;
 		}
@@ -122,7 +137,7 @@ public abstract class AbstractPreparedStatementInvocationHandler<Z, D extends Da
 	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvoker(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected Invoker<Z, D, S, ?, SQLException> getInvoker(S statement, final Method method, final Object[] parameters) throws SQLException
+	protected <R> Invoker<Z, D, S, R, SQLException> getInvoker(S statement, final Method method, final Object[] parameters) throws SQLException
 	{
 		if (this.isParameterSetMethod(method) && (parameters.length > 1))
 		{
@@ -136,9 +151,10 @@ public abstract class AbstractPreparedStatementInvocationHandler<Z, D extends Da
 				{
 					final File file = this.fileSupport.createFile((InputStream) typeParameter);
 					
-					return new Invoker<Z, D, S, Object, SQLException>()
+					return new Invoker<Z, D, S, R, SQLException>()
 					{
-						public Object invoke(D database, S statement) throws SQLException
+						@Override
+						public R invoke(D database, S statement) throws SQLException
 						{
 							List<Object> parameterList = new ArrayList<Object>(Arrays.asList(parameters));
 							
@@ -153,9 +169,10 @@ public abstract class AbstractPreparedStatementInvocationHandler<Z, D extends Da
 				{
 					final File file = this.fileSupport.createFile((Reader) typeParameter);
 					
-					return new Invoker<Z, D, S, Object, SQLException>()
+					return new Invoker<Z, D, S, R, SQLException>()
 					{
-						public Object invoke(D database, S statement) throws SQLException
+						@Override
+						public R invoke(D database, S statement) throws SQLException
 						{
 							List<Object> parameterList = new ArrayList<Object>(Arrays.asList(parameters));
 							
@@ -174,9 +191,10 @@ public abstract class AbstractPreparedStatementInvocationHandler<Z, D extends Da
 					{
 						final SQLProxy<Z, D, Blob, SQLException> proxy = this.getInvocationHandler(blob);
 						
-						return new Invoker<Z, D, S, Object, SQLException>()
+						return new Invoker<Z, D, S, R, SQLException>()
 						{
-							public Object invoke(D database, S statement) throws SQLException
+							@Override
+							public R invoke(D database, S statement) throws SQLException
 							{
 								List<Object> parameterList = new ArrayList<Object>(Arrays.asList(parameters));
 								
@@ -189,7 +207,7 @@ public abstract class AbstractPreparedStatementInvocationHandler<Z, D extends Da
 
 					parameters[1] = new SerialBlob(blob);
 				}
-			
+				
 				// Handle both clob and nclob
 				if (Clob.class.isAssignableFrom(type))
 				{
@@ -199,9 +217,10 @@ public abstract class AbstractPreparedStatementInvocationHandler<Z, D extends Da
 					{
 						final SQLProxy<Z, D, Clob, SQLException> proxy = this.getInvocationHandler(clob);
 						
-						return new Invoker<Z, D, S, Object, SQLException>()
+						return new Invoker<Z, D, S, R, SQLException>()
 						{
-							public Object invoke(D database, S statement) throws SQLException
+							@Override
+							public R invoke(D database, S statement) throws SQLException
 							{
 								List<Object> parameterList = new ArrayList<Object>(Arrays.asList(parameters));
 								
