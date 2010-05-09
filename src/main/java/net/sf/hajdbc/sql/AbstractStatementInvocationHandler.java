@@ -87,17 +87,12 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getParentMethod()
 	 */
 	@Override
-	public Object invoke(Object object, Method method, Object[] parameters) throws Throwable
+	protected Method getParentMethod()
 	{
-		if (method.equals(getConnectionMethod))
-		{
-			return this.getParent();
-		}
-		
-		return super.invoke(object, method, parameters);
+		return getConnectionMethod;
 	}
 
 	/**

@@ -17,6 +17,7 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.lang.reflect.Method;
 import java.util.Map;
 
 import net.sf.hajdbc.Database;
@@ -31,10 +32,10 @@ import net.sf.hajdbc.logging.Level;
  */
 public abstract class AbstractChildInvocationHandler<Z, D extends Database<Z>, P, PE extends Exception, T, E extends Exception> extends AbstractInvocationHandler<Z, D, T, E>
 {
-	private P parentObject;
-	private SQLProxy<Z, D, P, PE> parentProxy;
-	private Invoker<Z, D, P, T, PE> parentInvoker;
-
+	private final P parentObject;
+	private final SQLProxy<Z, D, P, PE> parentProxy;
+	private final Invoker<Z, D, P, T, PE> parentInvoker;
+	
 	protected AbstractChildInvocationHandler(P parent, SQLProxy<Z, D, P, PE> proxy, Invoker<Z, D, P, T, PE> invoker, Class<T> proxyClass, Map<D, T> objectMap)
 	{
 		super(proxyClass, objectMap);
@@ -43,6 +44,25 @@ public abstract class AbstractChildInvocationHandler<Z, D extends Database<Z>, P
 		this.parentProxy = proxy;
 		this.parentInvoker = invoker;
 		this.parentProxy.addChild(this);
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 */
+	@Override
+	public Object invoke(Object object, Method method, Object[] parameters) throws Throwable
+	{
+		Method parentMethod = this.getParentMethod();
+		
+		if ((parentMethod != null) && method.equals(parentMethod)) return this.parentObject;
+		
+		return super.invoke(object, method, parameters);
+	}
+
+	protected Method getParentMethod()
+	{
+		return null;
 	}
 	
 	@Override

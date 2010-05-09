@@ -85,17 +85,12 @@ public class ResultSetInvocationHandler<Z, D extends Database<Z>, S extends Stat
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getParentMethod()
 	 */
 	@Override
-	public Object invoke(Object object, Method method, Object[] parameters) throws Throwable
+	protected Method getParentMethod()
 	{
-		if (method.equals(getStatementMethod))
-		{
-			return this.getParent();
-		}
-		
-		return super.invoke(object, method, parameters);
+		return getStatementMethod;
 	}
 
 	/**
