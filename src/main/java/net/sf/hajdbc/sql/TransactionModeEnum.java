@@ -44,6 +44,7 @@ public enum TransactionModeEnum implements TransactionMode
 		this.synchronous = synchronous;
 	}
 	
+	@Override
 	public ExecutorService getTransactionExecutor(ExecutorService executor, boolean end)
 	{
 		return this.synchronous ? new SynchronousExecutor(executor, end) : executor;
