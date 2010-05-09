@@ -39,6 +39,8 @@ public final class LoggerFactory
 				
 				return provider;
 			}
+
+			provider.getLogger(LoggerFactory.class).log(Level.DEBUG, "{0} logging is not enabled", provider.getName());
 		}
 		
 		throw new ServiceConfigurationError(LoggingProvider.class.getName());
