@@ -126,14 +126,14 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 	{
 		Message message = new Message(null, this.getLocalAddress(), command);
 		
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings("rawtypes")
 		Map<Address, Rsp> responses = this.dispatcher.castMessage(null, message, RequestOptions.SYNC);
 		
 		if (responses == null) return Collections.emptyMap();
 		
 		Map<Member, R> results = new TreeMap<Member, R>();
 		
-		for (@SuppressWarnings("unchecked") Map.Entry<Address, Rsp> entry: responses.entrySet())
+		for (@SuppressWarnings("rawtypes") Map.Entry<Address, Rsp> entry: responses.entrySet())
 		{
 			Rsp<?> response = entry.getValue();
 
@@ -207,13 +207,13 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 	 * {@inheritDoc}
 	 * @see org.jgroups.blocks.RequestHandler#handle(org.jgroups.Message)
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public Object handle(Message message)
 	{
 		if (!(message instanceof Command)) return null;
 		
-		Command<Object, C> command = (Command) message.getObject();
+		@SuppressWarnings("unchecked")
+		Command<Object, C> command = (Command<Object, C>) message.getObject();
 
 		this.logger.log(Level.DEBUG, Messages.COMMAND_RECEIVED.getMessage(command));
 		
