@@ -10,7 +10,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
 
-import junit.framework.Assert;
 import net.sf.hajdbc.cache.DatabaseMetaDataCacheFactoryEnum;
 import net.sf.hajdbc.dialect.DialectFactoryEnum;
 import net.sf.hajdbc.sql.DataSource;
@@ -19,6 +18,7 @@ import net.sf.hajdbc.sql.DataSourceDatabaseClusterConfiguration;
 import net.sf.hajdbc.sql.SQLProxy;
 import net.sf.hajdbc.state.simple.SimpleStateManagerProvider;
 
+import org.junit.Assert;
 import org.junit.Before;
 
 public class Test
@@ -30,8 +30,6 @@ public class Test
 	@Before
 	public void init() throws Exception
 	{
-		Class.forName("org.h2.Driver");
-
 		DataSourceDatabase db1 = new DataSourceDatabase();
 		db1.setId("db1");
 		db1.setName(UrlDataSource.class.getName());
@@ -91,19 +89,29 @@ public class Test
 		ps.executeBatch();
 		ps.close();
 		
-		String selectSQL = "SELECT count(*) FROM test";
+		String selectSQL = "SELECT id, name FROM test";
 		
 		s1 = c1.createStatement();
 		ResultSet rs1 = s1.executeQuery(selectSQL);
 		Assert.assertTrue(rs1.next());
+		Assert.assertEquals(1, rs1.getInt(1));
+		Assert.assertEquals("1", rs1.getString(2));
+		Assert.assertTrue(rs1.next());
 		Assert.assertEquals(2, rs1.getInt(1));
+		Assert.assertEquals("2", rs1.getString(2));
+		Assert.assertFalse(rs1.next());
 		rs1.close();
 		s1.close();
 		
 		s2 = c2.createStatement();
 		ResultSet rs2 = s2.executeQuery(selectSQL);
 		Assert.assertTrue(rs2.next());
+		Assert.assertEquals(1, rs2.getInt(1));
+		Assert.assertEquals("1", rs2.getString(2));
+		Assert.assertTrue(rs2.next());
 		Assert.assertEquals(2, rs2.getInt(1));
+		Assert.assertEquals("2", rs2.getString(2));
+		Assert.assertFalse(rs2.next());
 		rs2.close();
 		s2.close();
 		
