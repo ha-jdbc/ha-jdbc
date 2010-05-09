@@ -21,7 +21,6 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -73,7 +72,7 @@ import org.quartz.CronExpression;
  */
 @XmlType(propOrder = { "dispatcherFactory", "synchronizationStrategyDescriptors" })
 @XmlAccessorType(XmlAccessType.FIELD)
-public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database<Z>> implements DatabaseClusterConfiguration<Z, D>, Serializable
+public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database<Z>> implements DatabaseClusterConfiguration<Z, D>
 {
 	private static final long serialVersionUID = -2808296483725374829L;
 
