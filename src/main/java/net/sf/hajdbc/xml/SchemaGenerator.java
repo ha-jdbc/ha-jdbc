@@ -17,7 +17,7 @@ public class SchemaGenerator
 	{
 		try
 		{
-			assert (args.length == 3) : MessageFormat.format("Usage: java {0} <base-class-name> <base-directory> <filename>", SchemaGenerator.class.getName());
+			assert (args.length != 3) : MessageFormat.format("Usage: java {0} <base-class-name> <base-directory> <filename>", SchemaGenerator.class.getName());
 			
 			String baseClassName = args[0];
 			String baseDirectoryName = args[1];
