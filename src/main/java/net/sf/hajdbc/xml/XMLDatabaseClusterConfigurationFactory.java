@@ -35,7 +35,6 @@ import javax.xml.validation.SchemaFactory;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseClusterConfiguration;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
-import net.sf.hajdbc.DatabaseClusterConfigurationListener;
 import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.logging.Level;
@@ -48,7 +47,7 @@ import org.xml.sax.SAXException;
  * @author paul
  *
  */
-public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> implements DatabaseClusterConfigurationFactory<Z, D>, DatabaseClusterConfigurationListener<Z, D>
+public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> implements DatabaseClusterConfigurationFactory<Z, D>
 {
 	private static final long serialVersionUID = -8796872297122349961L;
 	
