@@ -152,6 +152,7 @@ public final class SynchronizationSupport
 				{
 					Callable<Long> task = new Callable<Long>()
 					{
+						@Override
 						public Long call() throws SQLException
 						{
 							Statement statement = context.getConnection(database).createStatement();

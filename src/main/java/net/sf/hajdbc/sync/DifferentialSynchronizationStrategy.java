@@ -169,6 +169,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				
 				Callable<ResultSet> callable = new Callable<ResultSet>()
 				{
+					@Override
 					public ResultSet call() throws SQLException
 					{
 						return targetStatement.executeQuery(selectSQL);
@@ -433,10 +434,12 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		targetConnection.setAutoCommit(targetAutoCommit);
 	}
 	
-	@SuppressWarnings("unchecked")
 	private int compare(Object object1, Object object2)
 	{
-		return ((Comparable) object1).compareTo(object2);
+		@SuppressWarnings("unchecked")
+		Comparable<Object> comparable = (Comparable<Object>) object1;
+		
+		return comparable.compareTo(object2);
 	}
 
 	/**

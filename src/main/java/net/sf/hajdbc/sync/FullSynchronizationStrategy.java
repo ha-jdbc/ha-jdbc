@@ -111,6 +111,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy, Ser
 				
 				Callable<ResultSet> callable = new Callable<ResultSet>()
 				{
+					@Override
 					public ResultSet call() throws SQLException
 					{
 						return selectStatement.executeQuery(selectSQL);
