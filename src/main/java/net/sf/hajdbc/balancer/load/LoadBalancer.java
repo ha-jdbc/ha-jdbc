@@ -47,6 +47,7 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 	
 	private Comparator<Map.Entry<D, AtomicInteger>> comparator = new Comparator<Map.Entry<D, AtomicInteger>>()
 	{
+		@Override
 		public int compare(Map.Entry<D, AtomicInteger> mapEntry1, Map.Entry<D, AtomicInteger> mapEntry2)
 		{
 			D database1 = mapEntry1.getKey();
