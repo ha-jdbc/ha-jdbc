@@ -54,9 +54,8 @@ public class SLF4JLoggingProvider implements net.sf.hajdbc.logging.LoggingProvid
 	{
 		try
 		{
-			LoggerFactory.getILoggerFactory();
-			
-			return true;
+			// As of SLF4J 1.6, the LoggerFactory.getILoggerFactory() will return a no-op implementation
+			return LoggerFactory.getILoggerFactory().getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME).isErrorEnabled();
 		}
 		catch (Throwable e)
 		{
