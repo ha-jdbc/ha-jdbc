@@ -293,7 +293,7 @@ public class ResultSetInvocationHandler<Z, D extends Database<Z>, S extends Stat
 	@Override
 	protected void record(Invoker<Z, D, ResultSet, ?, SQLException> invoker, Method method, Object[] parameters)
 	{
-		if (driverWriteMethodSet.contains(method.getName()) || this.isUpdateMethod(method))
+		if (driverWriteMethodSet.contains(method) || this.isUpdateMethod(method))
 		{
 			synchronized (this.invokerList)
 			{
