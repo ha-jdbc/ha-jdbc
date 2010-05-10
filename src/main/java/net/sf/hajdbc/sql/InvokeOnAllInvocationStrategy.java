@@ -110,7 +110,7 @@ public class InvokeOnAllInvocationStrategy extends InvokeOnManyInvocationStrateg
 		return cluster.getExecutor();
 	}
 	
-	private class Invocation<Z, D extends Database<Z>, T, R, E extends Exception> implements Callable<R>
+	private static class Invocation<Z, D extends Database<Z>, T, R, E extends Exception> implements Callable<R>
 	{
 		private final Invoker<Z, D, T, R, E> invoker;
 		private final D database;
