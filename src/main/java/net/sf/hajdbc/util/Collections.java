@@ -91,8 +91,10 @@ public class Collections
 		return new SingletonSortedMap<K, V>(key, value);
 	}
 
-	static class NaturalComparator<E> implements Comparator<E>
+	static class NaturalComparator<E> implements Comparator<E>, Serializable
 	{
+		private static final long serialVersionUID = 984839581274651936L;
+
 		@SuppressWarnings("unchecked")
 		@Override
 		public int compare(E object1, E object2)
@@ -318,8 +320,10 @@ public class Collections
 		}
 	}
 	
-	static class NullComparator<E> implements Comparator<E>
+	static class NullComparator<E> implements Comparator<E>, Serializable
 	{
+		private static final long serialVersionUID = -8178822438438191299L;
+
 		@Override
 		public int compare(E object1, E object2)
 		{
