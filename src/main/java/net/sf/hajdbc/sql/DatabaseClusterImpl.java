@@ -460,7 +460,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 				}
 				else
 				{
-					logger.log(Level.WARN, "{0}", database);
+					logger.log(Level.WARN, "{0} does not exist", databaseId);
 				}
 			}
 		}
