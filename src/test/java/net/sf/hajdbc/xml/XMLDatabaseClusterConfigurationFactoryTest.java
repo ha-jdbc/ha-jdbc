@@ -24,7 +24,6 @@ import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.Map;
 
-import junit.framework.Assert;
 import net.sf.hajdbc.DatabaseClusterConfiguration;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.balancer.BalancerFactoryEnum;
@@ -37,6 +36,7 @@ import net.sf.hajdbc.sql.DriverDatabaseClusterConfiguration;
 import net.sf.hajdbc.sql.TransactionModeEnum;
 
 import org.easymock.EasyMock;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class XMLDatabaseClusterConfigurationFactoryTest
