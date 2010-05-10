@@ -32,8 +32,7 @@ public class Objects
 	
 	public static boolean equals(Object object1, Object object2)
 	{
-		if ((object1 == null) && (object2 == null)) return true;
-		if (((object1 != null) && (object2 == null)) || ((object1 == null) && (object2 != null))) return false;
+		if ((object1 == null) || (object2 == null)) return object1 == object2;
 
 		if (object1.getClass().isArray() && object2.getClass().isArray())
 		{
