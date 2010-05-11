@@ -34,5 +34,5 @@ public interface CronExecutorService extends ExecutorService
 	 * @param task the Runnable task to schedule
 	 * @param expression a cron expression
 	 */
-	public void schedule(Runnable task, CronExpression expression);
+	void schedule(Runnable task, CronExpression expression);
 }
