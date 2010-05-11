@@ -36,5 +36,5 @@ public interface CommonDataSourceFactory<Z extends javax.sql.CommonDataSource, D
 	 * @return a proxied data source
 	 * @throws SQLException if the data source proxy could not be created
 	 */
-	public Z createProxy(String id, DatabaseClusterConfigurationFactory<Z, D> factory) throws SQLException;
+	Z createProxy(String id, DatabaseClusterConfigurationFactory<Z, D> factory) throws SQLException;
 }
