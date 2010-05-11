@@ -38,7 +38,7 @@ public interface FileSupport<E extends Throwable>
 	 * @return a temporary file
 	 * @throws SQLException if an IO error occurs
 	 */
-	public File createFile(InputStream inputStream) throws E;
+	File createFile(InputStream inputStream) throws E;
 	
 	/**
 	 * Create a file from the specified character input stream
@@ -46,7 +46,7 @@ public interface FileSupport<E extends Throwable>
 	 * @return a temporary file
 	 * @throws SQLException if an IO error occurs
 	 */
-	public File createFile(Reader reader) throws E;
+	File createFile(Reader reader) throws E;
 
 	/**
 	 * Returns a reader for the specified file.
@@ -54,7 +54,7 @@ public interface FileSupport<E extends Throwable>
 	 * @return a reader
 	 * @throws SQLException if IO error occurs
 	 */
-	public Reader getReader(File file) throws E;
+	Reader getReader(File file) throws E;
 	
 	/**
 	 * Returns an input stream for the specified file.
@@ -62,10 +62,10 @@ public interface FileSupport<E extends Throwable>
 	 * @return an input stream
 	 * @throws SQLException if IO error occurs
 	 */
-	public InputStream getInputStream(File file) throws E;
+	InputStream getInputStream(File file) throws E;
 	
 	/**
 	 * Deletes any files created by this object.
 	 */
-	public void close();
+	void close();
 }
