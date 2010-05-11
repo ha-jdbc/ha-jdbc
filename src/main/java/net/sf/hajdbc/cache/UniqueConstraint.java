@@ -30,15 +30,15 @@ public interface UniqueConstraint extends Comparable<UniqueConstraint>
 	/**
 	 * @return the name of this constraint
 	 */
-	public String getName();
+	String getName();
 
 	/**
 	 * @return the table of this constraint
 	 */
-	public String getTable();
+	String getTable();
 	
 	/**
 	 * @return the list of columns in this unique constraint
 	 */
-	public List<String> getColumnList();
+	List<String> getColumnList();
 }

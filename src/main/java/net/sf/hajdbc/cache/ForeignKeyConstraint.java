@@ -32,45 +32,45 @@ public interface ForeignKeyConstraint extends UniqueConstraint
 	/**
 	 * @return the foreign table of this foreign key
 	 */
-	public String getForeignTable();
+	String getForeignTable();
 	
 	/**
 	 * @return the foreign column of this foreign key
 	 */
-	public List<String> getForeignColumnList();
+	List<String> getForeignColumnList();
 	
 	/**
 	 * @return Returns the deleteRule.
 	 */
-	public int getDeleteRule();
+	int getDeleteRule();
 
 	/**
 	 * @return Returns the updateRule.
 	 */
-	public int getUpdateRule();
+	int getUpdateRule();
 
 	/**
 	 * @return Returns the deferrability.
 	 */
-	public int getDeferrability();
+	int getDeferrability();
 
 	/**
 	 * @param deferrability The deferrability to set.
 	 */
-	public void setDeferrability(int deferrability);
+	void setDeferrability(int deferrability);
 
 	/**
 	 * @param deleteRule The deleteRule to set.
 	 */
-	public void setDeleteRule(int deleteRule);
+	void setDeleteRule(int deleteRule);
 
 	/**
 	 * @param foreignTable The foreignTable to set.
 	 */
-	public void setForeignTable(String foreignTable);
+	void setForeignTable(String foreignTable);
 
 	/**
 	 * @param updateRule The updateRule to set.
 	 */
-	public void setUpdateRule(int updateRule);
+	void setUpdateRule(int updateRule);
 }

@@ -27,15 +27,15 @@ import java.util.Collection;
  */
 public interface DatabaseProperties
 {
-	public Collection<TableProperties> getTables() throws SQLException;
+	Collection<TableProperties> getTables() throws SQLException;
 
-	public boolean supportsSelectForUpdate() throws SQLException;
+	boolean supportsSelectForUpdate() throws SQLException;
 	
-	public boolean locatorsUpdateCopy() throws SQLException;
+	boolean locatorsUpdateCopy() throws SQLException;
 	
-	public TableProperties findTable(String table) throws SQLException;
+	TableProperties findTable(String table) throws SQLException;
 	
-	public Collection<SequenceProperties> getSequences() throws SQLException;
+	Collection<SequenceProperties> getSequences() throws SQLException;
 	
-	public SequenceProperties findSequence(String sequence) throws SQLException;
+	SequenceProperties findSequence(String sequence) throws SQLException;
 }

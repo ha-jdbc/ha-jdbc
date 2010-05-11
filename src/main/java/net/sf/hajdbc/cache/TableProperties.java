@@ -27,17 +27,17 @@ import java.util.Collection;
  */
 public interface TableProperties
 {
-	public String getName();
+	String getName();
 	
-	public Collection<String> getColumns() throws SQLException;
+	Collection<String> getColumns() throws SQLException;
 	
-	public ColumnProperties getColumnProperties(String column) throws SQLException;
+	ColumnProperties getColumnProperties(String column) throws SQLException;
 	
-	public UniqueConstraint getPrimaryKey() throws SQLException;
+	UniqueConstraint getPrimaryKey() throws SQLException;
 	
-	public Collection<ForeignKeyConstraint> getForeignKeyConstraints() throws SQLException;
+	Collection<ForeignKeyConstraint> getForeignKeyConstraints() throws SQLException;
 	
-	public Collection<UniqueConstraint> getUniqueConstraints() throws SQLException;
+	Collection<UniqueConstraint> getUniqueConstraints() throws SQLException;
 	
-	public Collection<String> getIdentityColumns() throws SQLException;
+	Collection<String> getIdentityColumns() throws SQLException;
 }

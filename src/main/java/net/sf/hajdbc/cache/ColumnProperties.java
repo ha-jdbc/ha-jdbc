@@ -23,11 +23,11 @@ package net.sf.hajdbc.cache;
  */
 public interface ColumnProperties
 {
-	public String getName();
+	String getName();
 	
-	public int getType();
+	int getType();
 	
-	public String getNativeType();
+	String getNativeType();
 	
-	public boolean isAutoIncrement();
+	boolean isAutoIncrement();
 }
