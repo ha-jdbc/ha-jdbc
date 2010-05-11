@@ -17,7 +17,6 @@
  */
 package net.sf.hajdbc.cache;
 
-import java.io.Serializable;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -43,7 +42,7 @@ import net.sf.hajdbc.util.Strings;
  * @author Paul Ferraro
  */
 @SuppressWarnings("nls")
-public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport, Serializable
+public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 {
 	private static final long serialVersionUID = 7296994314643391105L;
 
@@ -78,18 +77,18 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport, Ser
 	private static final Pattern UPPER_CASE_PATTERN = Pattern.compile("[A-Z]");
 	private static final Pattern LOWER_CASE_PATTERN = Pattern.compile("[a-z]");
 	
-	private Dialect dialect;
-	private Set<String> reservedIdentifierSet = new HashSet<String>(SQL_92_RESERVED_WORDS.length);
-	private Pattern identifierPattern;
-	private String quote;
-	private boolean supportsMixedCaseIdentifiers;
-	private boolean supportsMixedCaseQuotedIdentifiers;
-	private boolean storesLowerCaseIdentifiers;
-	private boolean storesLowerCaseQuotedIdentifiers;
-	private boolean storesUpperCaseIdentifiers;
-	private boolean storesUpperCaseQuotedIdentifiers;
-	private boolean supportsSchemasInDDL;
-	private boolean supportsSchemasInDML;
+	private final Dialect dialect;
+	private final Set<String> reservedIdentifierSet = new HashSet<String>(SQL_92_RESERVED_WORDS.length);
+	private final Pattern identifierPattern;
+	private final String quote;
+	private final boolean supportsMixedCaseIdentifiers;
+	private final boolean supportsMixedCaseQuotedIdentifiers;
+	private final boolean storesLowerCaseIdentifiers;
+	private final boolean storesLowerCaseQuotedIdentifiers;
+	private final boolean storesUpperCaseIdentifiers;
+	private final boolean storesUpperCaseQuotedIdentifiers;
+	private final boolean supportsSchemasInDDL;
+	private final boolean supportsSchemasInDML;
 	
 	/**
 	 * Constructs a new DatabaseMetaDataSupport using the specified DatabaseMetaData implementation.
