@@ -37,12 +37,12 @@ public interface LockManager extends Lifecycle
 	 * @param object an object to lock
 	 * @return a read lock
 	 */
-	public Lock readLock(String object);
+	Lock readLock(String object);
 
 	/**
 	 * Obtains a named write lock.
 	 * @param object an object to lock
 	 * @return a write lock
 	 */
-	public Lock writeLock(String object);
+	Lock writeLock(String object);
 }
