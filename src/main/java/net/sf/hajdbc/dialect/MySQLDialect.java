@@ -32,8 +32,6 @@ import net.sf.hajdbc.cache.QualifiedName;
 @SuppressWarnings("nls")
 public class MySQLDialect extends StandardDialect
 {
-	private static final long serialVersionUID = 1108382737506332406L;
-
 	/**
 	 * @see net.sf.hajdbc.dialect.StandardDialect#getDefaultSchemas(java.sql.DatabaseMetaData)
 	 */

@@ -35,8 +35,6 @@ import net.sf.hajdbc.cache.QualifiedName;
 @SuppressWarnings("nls")
 public class IngresDialect extends StandardDialect
 {
-	private static final long serialVersionUID = -1623738138537490651L;
-	
 	private final Pattern legacySequencePattern = Pattern.compile("'?(\\w+)'?\\.(?:(?:CURR)|(?:NEXT))VAL", Pattern.CASE_INSENSITIVE);
 	
 	/**

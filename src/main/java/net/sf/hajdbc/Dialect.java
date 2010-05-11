@@ -17,7 +17,6 @@
  */
 package net.sf.hajdbc;
 
-import java.io.Serializable;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.List;
@@ -39,14 +38,14 @@ import net.sf.hajdbc.cache.UniqueConstraint;
  * @author  Paul Ferraro
  * @since   1.1
  */
-public interface Dialect extends Serializable
+public interface Dialect
 {
 	/**
 	 * Returns a simple SQL statement used to validate whether a database is alive or not.
 	 * @return a SQL statement
 	 * @throws SQLException 
 	 */
-	public String getSimpleSQL() throws SQLException;
+	String getSimpleSQL() throws SQLException;
 	
 	/**
 	 * Returns a SQL statement used to truncate a table.
@@ -54,7 +53,7 @@ public interface Dialect extends Serializable
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
-	public String getTruncateTableSQL(TableProperties properties) throws SQLException;
+	String getTruncateTableSQL(TableProperties properties) throws SQLException;
 	
 	/**
 	 * Returns a SQL statement used to create a foreign key constraint.
@@ -62,7 +61,7 @@ public interface Dialect extends Serializable
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
-	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException;
+	String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException;
 
 	/**
 	 * Returns a SQL statement used to drop a foreign key constraint.
@@ -70,7 +69,7 @@ public interface Dialect extends Serializable
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
-	public String getDropForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException;
+	String getDropForeignKeyConstraintSQL(ForeignKeyConstraint constraint) throws SQLException;
 
 	/**
 	 * Returns a SQL statement used to create a unique constraint.
@@ -78,7 +77,7 @@ public interface Dialect extends Serializable
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
-	public String getCreateUniqueConstraintSQL(UniqueConstraint constraint) throws SQLException;
+	String getCreateUniqueConstraintSQL(UniqueConstraint constraint) throws SQLException;
 
 	/**
 	 * Returns a SQL statement used to drop a unique constraint.
@@ -86,7 +85,7 @@ public interface Dialect extends Serializable
 	 * @return a SQL statement
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
-	public String getDropUniqueConstraintSQL(UniqueConstraint constraint) throws SQLException;
+	String getDropUniqueConstraintSQL(UniqueConstraint constraint) throws SQLException;
 	
 	/**
 	 * Determines whether the specified SQL is a SELECT ... FOR UPDATE statement
@@ -94,7 +93,7 @@ public interface Dialect extends Serializable
 	 * @return true if this is a SELECT ... FOR UPDATE statement, false if it is not
 	 * @throws SQLException if there was an error fetching meta data.
 	 */
-	public boolean isSelectForUpdate(String sql) throws SQLException;
+	boolean isSelectForUpdate(String sql) throws SQLException;
 	
 	/**
 	 * Returns the data type of the specified column of the specified schema and table.
@@ -103,7 +102,7 @@ public interface Dialect extends Serializable
 	 * @return the JDBC data type of this column
 	 * @throws SQLException 
 	 */
-	public int getColumnType(ColumnProperties properties) throws SQLException;
+	int getColumnType(ColumnProperties properties) throws SQLException;
 	
 	/**
 	 * Parses a table name from the specified INSERT SQL statement that may contain identity columns.
@@ -112,7 +111,7 @@ public interface Dialect extends Serializable
 	 * @throws SQLException
 	 * @since 2.0
 	 */
-	public String parseInsertTable(String sql) throws SQLException;
+	String parseInsertTable(String sql) throws SQLException;
 
 	/**
 	 * Parses a sequence name from the specified SQL statement.
@@ -121,7 +120,7 @@ public interface Dialect extends Serializable
 	 * @throws SQLException
 	 * @since 2.0
 	 */
-	public String parseSequence(String sql) throws SQLException;
+	String parseSequence(String sql) throws SQLException;
 	
 	/**
 	 * Returns a collection of all sequences in this database.
@@ -130,7 +129,7 @@ public interface Dialect extends Serializable
 	 * @throws SQLException
 	 * @since 2.0
 	 */
-	public Map<QualifiedName, Integer> getSequences(DatabaseMetaData metaData) throws SQLException;
+	Map<QualifiedName, Integer> getSequences(DatabaseMetaData metaData) throws SQLException;
 	
 	/**
 	 * Returns a SQL statement for obtaining the next value the specified sequence
@@ -139,7 +138,7 @@ public interface Dialect extends Serializable
 	 * @throws SQLException
 	 * @since 2.0
 	 */
-	public String getNextSequenceValueSQL(SequenceProperties sequence) throws SQLException;
+	String getNextSequenceValueSQL(SequenceProperties sequence) throws SQLException;
 
 	/**
 	 * Returns a SQL statement used reset the current value of a sequence.
@@ -149,7 +148,7 @@ public interface Dialect extends Serializable
 	 * @throws SQLException 
 	 * @since 2.0
 	 */
-	public String getAlterSequenceSQL(SequenceProperties sequence, long value) throws SQLException;
+	String getAlterSequenceSQL(SequenceProperties sequence, long value) throws SQLException;
 	
 	/**
 	 * Returns a SQL statement used reset the current value of an identity column.
@@ -160,7 +159,7 @@ public interface Dialect extends Serializable
 	 * @throws SQLException 
 	 * @since 2.0.2
 	 */
-	public String getAlterIdentityColumnSQL(TableProperties table, ColumnProperties column, long value) throws SQLException;
+	String getAlterIdentityColumnSQL(TableProperties table, ColumnProperties column, long value) throws SQLException;
 	
 	/**
 	 * Returns a search path of schemas 
@@ -169,7 +168,7 @@ public interface Dialect extends Serializable
 	 * @throws SQLException 
 	 * @since 2.0
 	 */
-	public List<String> getDefaultSchemas(DatabaseMetaData metaData) throws SQLException;
+	List<String> getDefaultSchemas(DatabaseMetaData metaData) throws SQLException;
 	
 	/**
 	 * Returns a pattern for identifiers that do not require quoting
@@ -178,7 +177,7 @@ public interface Dialect extends Serializable
 	 * @throws SQLException 
 	 * @since 2.0.2
 	 */
-	public Pattern getIdentifierPattern(DatabaseMetaData metaData) throws SQLException;
+	Pattern getIdentifierPattern(DatabaseMetaData metaData) throws SQLException;
 	
 	/**
 	 * Replaces non-deterministic CURRENT_DATE functions with deterministic static values.
@@ -188,7 +187,7 @@ public interface Dialect extends Serializable
 	 * @throws SQLException 
 	 * @since 2.0.2
 	 */
-	public String evaluateCurrentDate(String sql, java.sql.Date date);
+	String evaluateCurrentDate(String sql, java.sql.Date date);
 	
 	/**
 	 * Replaces non-deterministic CURRENT_TIME functions with deterministic static values.
@@ -198,7 +197,7 @@ public interface Dialect extends Serializable
 	 * @throws SQLException 
 	 * @since 2.0.2
 	 */
-	public String evaluateCurrentTime(String sql, java.sql.Time time);
+	String evaluateCurrentTime(String sql, java.sql.Time time);
 	
 	/**
 	 * Replaces non-deterministic CURRENT_TIMESTAMP functions with deterministic static values.
@@ -208,7 +207,7 @@ public interface Dialect extends Serializable
 	 * @throws SQLException 
 	 * @since 2.0.2
 	 */
-	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp timestamp);
+	String evaluateCurrentTimestamp(String sql, java.sql.Timestamp timestamp);
 	
 	/**
 	 * Replaces non-deterministic RAND() functions with deterministic static values.
@@ -217,7 +216,7 @@ public interface Dialect extends Serializable
 	 * @throws SQLException 
 	 * @since 2.0.2
 	 */
-	public String evaluateRand(String sql);
+	String evaluateRand(String sql);
 	
 	/**
 	 * Determines whether the specified exception indicates a catastrophic error.

@@ -35,8 +35,6 @@ import net.sf.hajdbc.cache.QualifiedName;
 @SuppressWarnings("nls")
 public class HSQLDBDialect extends StandardDialect
 {
-	private static final long serialVersionUID = -4051442409120505238L;
-
 	/**
 	 * @see net.sf.hajdbc.dialect.StandardDialect#executeFunctionFormat()
 	 */

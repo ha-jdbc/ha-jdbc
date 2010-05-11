@@ -50,8 +50,6 @@ import net.sf.hajdbc.util.Strings;
 @SuppressWarnings("nls")
 public class StandardDialect implements Dialect
 {
-	private static final long serialVersionUID = -7490774379193877475L;
-	
 	private final Pattern selectForUpdatePattern = this.compile(this.selectForUpdatePattern());
 	private final Pattern insertIntoTablePattern = this.compile(this.insertIntoTablePattern());
 	private final Pattern sequencePattern = this.compile(this.sequencePattern());

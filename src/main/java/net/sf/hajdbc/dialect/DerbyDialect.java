@@ -33,8 +33,6 @@ import net.sf.hajdbc.cache.QualifiedName;
 @SuppressWarnings("nls")
 public class DerbyDialect extends StandardDialect
 {
-	private static final long serialVersionUID = 3822562741150350440L;
-
 	/**
 	 * @see net.sf.hajdbc.dialect.StandardDialect#executeFunctionFormat()
 	 */

@@ -33,8 +33,6 @@ import net.sf.hajdbc.cache.QualifiedName;
 @SuppressWarnings("nls")
 public class FirebirdDialect extends StandardDialect
 {
-	private static final long serialVersionUID = 2919810289001817894L;
-
 	/**
 	 * @see net.sf.hajdbc.dialect.StandardDialect#dummyTable()
 	 */
