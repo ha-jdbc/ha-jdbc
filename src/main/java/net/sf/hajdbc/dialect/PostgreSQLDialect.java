@@ -38,6 +38,8 @@ import net.sf.hajdbc.util.Strings;
 @SuppressWarnings("nls")
 public class PostgreSQLDialect extends StandardDialect
 {
+	private static final long serialVersionUID = 7554232525426784047L;
+
 	/**
 	 * PostgreSQL uses a schema search path to locate unqualified table names.
 	 * The default search path is [$user,public], where $user is the current user.

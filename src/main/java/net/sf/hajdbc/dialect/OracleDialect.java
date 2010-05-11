@@ -33,6 +33,8 @@ import net.sf.hajdbc.cache.QualifiedName;
 @SuppressWarnings("nls")
 public class OracleDialect extends StandardDialect
 {
+	private static final long serialVersionUID = 3460739615430283951L;
+
 	/**
 	 * @see net.sf.hajdbc.dialect.StandardDialect#dummyTable()
 	 */

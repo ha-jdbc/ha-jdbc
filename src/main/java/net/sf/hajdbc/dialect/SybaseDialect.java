@@ -31,6 +31,8 @@ import net.sf.hajdbc.cache.QualifiedName;
 @SuppressWarnings("nls")
 public class SybaseDialect extends StandardDialect
 {
+	private static final long serialVersionUID = 4763861953905175137L;
+
 	/**
 	 * @see net.sf.hajdbc.dialect.StandardDialect#currentTimestampFunction()
 	 */

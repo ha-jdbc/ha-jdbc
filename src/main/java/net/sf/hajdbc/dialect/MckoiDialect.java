@@ -25,6 +25,8 @@ package net.sf.hajdbc.dialect;
 @SuppressWarnings("nls")
 public class MckoiDialect extends StandardDialect
 {
+	private static final long serialVersionUID = -7087680128235045369L;
+
 	/**
 	 * @see net.sf.hajdbc.dialect.StandardDialect#parseInsertTable(java.lang.String)
 	 */

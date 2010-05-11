@@ -34,6 +34,8 @@ import net.sf.hajdbc.cache.QualifiedName;
 @SuppressWarnings("nls")
 public class MaxDBDialect extends StandardDialect
 {
+	private static final long serialVersionUID = 335911716663453529L;
+
 	/**
 	 * @see net.sf.hajdbc.dialect.StandardDialect#dummyTable()
 	 */

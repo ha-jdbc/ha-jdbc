@@ -17,6 +17,7 @@
  */
 package net.sf.hajdbc;
 
+import java.io.Serializable;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.List;
@@ -38,7 +39,7 @@ import net.sf.hajdbc.cache.UniqueConstraint;
  * @author  Paul Ferraro
  * @since   1.1
  */
-public interface Dialect
+public interface Dialect extends Serializable
 {
 	/**
 	 * Returns a simple SQL statement used to validate whether a database is alive or not.

@@ -50,13 +50,15 @@ import net.sf.hajdbc.util.Strings;
 @SuppressWarnings("nls")
 public class StandardDialect implements Dialect
 {
-	private Pattern selectForUpdatePattern = this.compile(this.selectForUpdatePattern());
-	private Pattern insertIntoTablePattern = this.compile(this.insertIntoTablePattern());
-	private Pattern sequencePattern = this.compile(this.sequencePattern());
-	private Pattern currentTimestampPattern = this.compile(this.currentTimestampPattern());
-	private Pattern currentDatePattern = this.compile(this.currentDatePattern());
-	private Pattern currentTimePattern = this.compile(this.currentTimePattern());
-	private Pattern randomPattern = this.compile(this.randomPattern());
+	private static final long serialVersionUID = -7490774379193877475L;
+	
+	private final Pattern selectForUpdatePattern = this.compile(this.selectForUpdatePattern());
+	private final Pattern insertIntoTablePattern = this.compile(this.insertIntoTablePattern());
+	private final Pattern sequencePattern = this.compile(this.sequencePattern());
+	private final Pattern currentTimestampPattern = this.compile(this.currentTimestampPattern());
+	private final Pattern currentDatePattern = this.compile(this.currentDatePattern());
+	private final Pattern currentTimePattern = this.compile(this.currentTimePattern());
+	private final Pattern randomPattern = this.compile(this.randomPattern());
 	
 	private Pattern compile(String pattern)
 	{
