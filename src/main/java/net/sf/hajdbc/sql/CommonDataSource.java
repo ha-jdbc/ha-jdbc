@@ -32,12 +32,12 @@ import net.sf.hajdbc.xml.XMLDatabaseClusterConfigurationFactory;
  */
 public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D extends Database<Z>> implements Referenceable, javax.sql.CommonDataSource
 {
-	private String cluster;
-	private String config;
-	private DatabaseClusterConfigurationFactory<Z, D> configurationFactory;
-	
 	private final CommonDataSourceFactory<Z, D> factory;
 	private final Class<? extends DatabaseClusterConfiguration<Z, D>> configurationClass;
+	
+	private volatile String cluster;
+	private volatile String config;
+	private volatile DatabaseClusterConfigurationFactory<Z, D> configurationFactory;	
 	private volatile Z proxy;
 	
 	protected CommonDataSource(CommonDataSourceFactory<Z, D> factory, Class<? extends DatabaseClusterConfiguration<Z, D>> configurationClass)
