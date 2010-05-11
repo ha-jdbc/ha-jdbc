@@ -27,10 +27,10 @@ public interface Lifecycle
 	 * Called upon database cluster start.
 	 * @throws Exception if this service fails to start.
 	 */
-	public void start() throws Exception;
+	void start() throws Exception;
 	
 	/**
 	 * Called when database cluster is stopped.
 	 */
-	public void stop();
+	void stop();
 }
