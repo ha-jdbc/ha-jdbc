@@ -58,5 +58,5 @@ public interface TransactionContext<Z, D extends Database<Z>>
 	/**
 	 * Closes this transaction context.
 	 */
-	public void close();
+	void close();
 }
