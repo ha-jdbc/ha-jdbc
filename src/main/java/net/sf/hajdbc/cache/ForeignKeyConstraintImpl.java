@@ -122,4 +122,24 @@ public class ForeignKeyConstraintImpl extends UniqueConstraintImpl implements Fo
 	{
 		this.updateRule = updateRule;
 	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.cache.UniqueConstraintImpl#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object object)
+	{
+		return super.equals(object);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.cache.UniqueConstraintImpl#hashCode()
+	 */
+	@Override
+	public int hashCode()
+	{
+		return super.hashCode();
+	}
 }
