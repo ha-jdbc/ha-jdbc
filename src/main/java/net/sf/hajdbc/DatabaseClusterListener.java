@@ -31,11 +31,11 @@ public interface DatabaseClusterListener extends EventListener
 	 * Triggered after database is successfully activated.
 	 * @param event indicates the database that was activated
 	 */
-	public void activated(DatabaseEvent event);
+	void activated(DatabaseEvent event);
 	
 	/**
 	 * Triggered after database is successfully deactivated.
 	 * @param event indicates the database that was deactivated
 	 */
-	public void deactivated(DatabaseEvent event);
+	void deactivated(DatabaseEvent event);
 }
