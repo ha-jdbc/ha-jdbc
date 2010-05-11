@@ -38,52 +38,52 @@ public interface SynchronizationContext<Z, D extends Database<Z>>
 	 * @return a database connection
 	 * @throws SQLException if connection could not be obtained
 	 */
-	public Connection getConnection(D database) throws SQLException;
+	Connection getConnection(D database) throws SQLException;
 	
 	/**
 	 * Returns the database from which to synchronize.
 	 * @return a database
 	 */
-	public D getSourceDatabase();
+	D getSourceDatabase();
 	
 	/**
 	 * Returns the database to synchronize.
 	 * @return a database
 	 */
-	public D getTargetDatabase();
+	D getTargetDatabase();
 	
 	/**
 	 * Returns a snapshot of the activate databases in the cluster at the time synchronization started.
 	 * @return a collection of databases
 	 */
-	public Set<D> getActiveDatabaseSet();
+	Set<D> getActiveDatabaseSet();
 	
 	/**
 	 * Returns a cache of database meta data for the source database.
 	 * @return a cache of database meta data
 	 */
-	public DatabaseProperties getSourceDatabaseProperties();
+	DatabaseProperties getSourceDatabaseProperties();
 	
 	/**
 	 * Returns a cache of database meta data for the target database.
 	 * @return a cache of database meta data
 	 */
-	public DatabaseProperties getTargetDatabaseProperties();
+	DatabaseProperties getTargetDatabaseProperties();
 	
 	/**
 	 * Returns the dialect of the cluster.
 	 * @return a dialect
 	 */
-	public Dialect getDialect();
+	Dialect getDialect();
 	
 	/**
 	 * An executor service for executing tasks asynchronously.
 	 * @return an executor service
 	 */
-	public ExecutorService getExecutor();
+	ExecutorService getExecutor();
 	
 	/**
 	 * Closes any open database connections and shuts down the executor service. 
 	 */
-	public void close();
+	void close();
 }

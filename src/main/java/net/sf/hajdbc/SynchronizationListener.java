@@ -31,11 +31,11 @@ public interface SynchronizationListener extends EventListener
 	 * Triggered just before synchronization commences.
 	 * @param event identifies the database to be synchronized.
 	 */
-	public void beforeSynchronization(DatabaseEvent event);
+	void beforeSynchronization(DatabaseEvent event);
 	
 	/**
 	 * Triggered immediately after synchronization completes.
 	 * @param event identifies the database to be synchronized.
 	 */
-	public void afterSynchronization(DatabaseEvent event);
+	void afterSynchronization(DatabaseEvent event);
 }

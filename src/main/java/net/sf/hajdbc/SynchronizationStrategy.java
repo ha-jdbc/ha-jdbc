@@ -31,5 +31,5 @@ public interface SynchronizationStrategy
 	 * @param context a synchronization context
 	 * @throws SQLException if synchronization fails
 	 */
-	public <Z, D extends Database<Z>> void synchronize(SynchronizationContext<Z, D> context) throws SQLException;
+	<Z, D extends Database<Z>> void synchronize(SynchronizationContext<Z, D> context) throws SQLException;
 }
