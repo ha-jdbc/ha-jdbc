@@ -31,6 +31,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.balancer.AbstractBalancer;
+import net.sf.hajdbc.sql.Invoker;
 import net.sf.hajdbc.util.Collections;
 
 /**
@@ -300,10 +301,11 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.balancer.Balancer#beforeInvocation(net.sf.hajdbc.Database)
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.balancer.AbstractBalancer#invoke(net.sf.hajdbc.sql.Invoker, net.sf.hajdbc.Database, java.lang.Object)
 	 */
 	@Override
-	public void beforeInvocation(D database)
+	public <T, R, E extends Exception> R invoke(Invoker<Z, D, T, R, E> invoker, D database, T object) throws E
 	{
 		AtomicInteger load = this.databaseMap.get(database);
 		
@@ -311,19 +313,17 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 		{
 			load.incrementAndGet();
 		}
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.balancer.Balancer#afterInvocation(net.sf.hajdbc.Database)
-	 */
-	@Override
-	public void afterInvocation(D database)
-	{
-		AtomicInteger load = this.databaseMap.get(database);
 		
-		if (load != null)
+		try
 		{
-			load.decrementAndGet();
+			return invoker.invoke(database, object);
+		}
+		finally
+		{
+			if (load != null)
+			{
+				load.decrementAndGet();
+			}
 		}
 	}
 }

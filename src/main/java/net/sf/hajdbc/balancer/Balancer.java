@@ -20,6 +20,7 @@ package net.sf.hajdbc.balancer;
 import java.util.Set;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.sql.Invoker;
 
 /**
  * The set of active databases and a strategy for determining the next balancing target.
@@ -50,15 +51,5 @@ public interface Balancer<Z, D extends Database<Z>> extends Set<D>
 	 */
 	D next();
 
-	/**
-	 * Called before an operation is performed on the specified database retrieved via {@link #next()}.
-	 * @param database a database descriptor
-	 */
-	void beforeInvocation(D database);
-	
-	/**
-	 * Called after an operation is performed on the specified database retrieved via {@link #next()}.
-	 * @param database a database descriptor
-	 */
-	void afterInvocation(D database);
+	<T, R, E extends Exception> R invoke(Invoker<Z, D, T, R, E> invoker, D database, T object) throws E;
 }

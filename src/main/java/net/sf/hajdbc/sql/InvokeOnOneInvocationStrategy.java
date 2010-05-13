@@ -64,11 +64,9 @@ public abstract class InvokeOnOneInvocationStrategy implements InvocationStrateg
 			
 			T object = proxy.getObject(database);
 			
-			balancer.beforeInvocation(database);
-			
 			try
 			{
-				R result = invoker.invoke(database, object);
+				R result = balancer.invoke(invoker, database, object);
 				
 				resultMap.put(database, result);
 				
@@ -89,10 +87,6 @@ public abstract class InvokeOnOneInvocationStrategy implements InvocationStrateg
 				{
 					throw exception;
 				}
-			}
-			finally
-			{
-				balancer.afterInvocation(database);
 			}
 		}
 	}
