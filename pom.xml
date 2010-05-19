@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 	HA-JDBC: High-Availability JDBC
-	Copyright 2004-2009 Paul Ferraro
+	Copyright 2004-2010 Paul Ferraro
 	
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU Lesser General Public License as published by
@@ -21,19 +21,19 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.sf.ha-jdbc</groupId>
 	<artifactId>ha-jdbc</artifactId>
-	<version>2.1.0-beta-1</version>
+	<version>2.1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	
 	<repositories>
 		<repository>
 			<id>repository.jboss.org</id>
 			<name>Provides jgroups</name>
-			<url>http://repository.jboss.org/maven2</url>
+			<url>https://repository.jboss.org/nexus/content/groups/public</url>
 		</repository>
 		<repository>
 			<id>repo.terracotta.org</id>
 			<name>Provides quartz</name>
-			<url>http://repo.terracotta.org/maven2</url>
+			<url>http://www.terracotta.org/download/reflector/maven2</url>
 		</repository>
 		<repository>
 			<id>download.oracle.com</id>
@@ -47,18 +47,39 @@
 			<name>Provides batik-maven-plugin</name>
 			<url>http://doodleproject.sourceforge.net/maven2/release</url>
 		</pluginRepository>
-		<pluginRepository>
+		<!--pluginRepository>
 			<id>repository.codehaus.org</id>
 			<name>Provides versions-maven-plugin</name>
 			<url>http://repository.codehaus.org</url>
-		</pluginRepository>
+		</pluginRepository-->
 	</pluginRepositories>
 	
 	<dependencies>
 		<dependency>
+			<groupId>org.quartz-scheduler</groupId>
+			<artifactId>quartz</artifactId>
+			<version>1.8.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-log4j12</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>javax.transaction</groupId>
+					<artifactId>jta</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!-- Optional command dispatcher dependencies -->
+		<dependency>
 			<groupId>jgroups</groupId>
 			<artifactId>jgroups</artifactId>
-			<version>2.9.0.GA</version>
+			<version>2.10.0.Beta2</version>
+			<optional>true</optional>
 			<exclusions>
 				<exclusion>
 					<groupId>org.testng</groupId>
@@ -66,32 +87,11 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
-			<groupId>commons-pool</groupId>
-			<artifactId>commons-pool</artifactId>
-			<version>1.5.4</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-codec</groupId>
-			<artifactId>commons-codec</artifactId>
-			<version>1.4</version>
-		</dependency>
-		<dependency>
-			<groupId>org.quartz-scheduler</groupId>
-			<artifactId>quartz</artifactId>
-			<version>1.7.3</version>
-			<exclusions>
-				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
 		<!-- Optional logging dependencies -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.5.11</version>
+			<version>1.6.0</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -102,13 +102,6 @@
 		</dependency>
 		<!-- Optional state manager dependencies -->
 		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<version>1.2.128</version>
-			<scope>test</scope>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
 			<groupId>jdbm</groupId>
 			<artifactId>jdbm</artifactId>
 			<version>1.0</version>
@@ -117,7 +110,7 @@
 		<dependency>
 			<groupId>com.sleepycat</groupId>
 			<artifactId>je</artifactId>
-			<version>4.0.71</version>
+			<version>4.0.92</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -126,17 +119,37 @@
 			<version>1.0.2</version>
 			<optional>true</optional>
 		</dependency>
+		<dependency>
+			<groupId>commons-pool</groupId>
+			<artifactId>commons-pool</artifactId>
+			<version>1.5.4</version>
+			<optional>true</optional>
+		</dependency>
+		<!-- Optional codec factory dependencies -->
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.4</version>
+			<optional>true</optional>
+		</dependency>
 		
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.8.1</version>
+			<!--version>4.8.2</version-->
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.easymock</groupId>
 			<artifactId>easymock</artifactId>
-			<version>2.5.2</version>
+			<version>3.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>1.2.134</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -177,7 +190,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.1</version>
+				<version>2.3</version>
 				<configuration>
 					<source>1.6</source>
 					<target>1.6</target>
@@ -279,7 +292,7 @@
 			<!--plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.6.1</version>
+				<version>2.7</version>
 				<configuration>
 					<linksource>true</linksource>
 				</configuration>
@@ -292,7 +305,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>findbugs-maven-plugin</artifactId>
-				<version>2.3</version>
+				<version>2.3.1</version>
 			</plugin>
 		</plugins>
 	</reporting>
