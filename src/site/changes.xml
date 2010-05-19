@@ -72,12 +72,12 @@
 			<action dev="pmf" type="add">
 				Create logging facade to support parameterized log messages to avoid string evaluation if message won't be logged.
 				Prefer slf4j provider, fall back to commons-logging, then to jdk logging.
-				SLF4J is no longer a required dependency.
+				This removes any explicit runtime dependency on a particular logging framework.
 			</action>
 			<action dev="pmf" type="update">
 				Redesign HA-JDBC startup, adding support for xml-less configuration.
 			</action>
-			<action dev="pmf8" type="update">
+			<action dev="pmf" type="update">
 				Reverse invocation order of commit/rollback using serial transaction mode.
 				The first database to acquire a row lock should be the last to commit.
 			</action>
