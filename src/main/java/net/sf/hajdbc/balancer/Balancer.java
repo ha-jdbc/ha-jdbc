@@ -51,5 +51,16 @@ public interface Balancer<Z, D extends Database<Z>> extends Set<D>
 	 */
 	D next();
 
+	/**
+	 * Invoke the specified invoker on the specified object against the specified database, potentially informing the balancer.
+	 * @param <T> invoker target object type
+	 * @param <R> invoker return type
+	 * @param <E> invoker exception type
+	 * @param invoker
+	 * @param database
+	 * @param object
+	 * @return
+	 * @throws E
+	 */
 	<T, R, E extends Exception> R invoke(Invoker<Z, D, T, R, E> invoker, D database, T object) throws E;
 }
