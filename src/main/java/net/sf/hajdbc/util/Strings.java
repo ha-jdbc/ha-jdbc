@@ -37,17 +37,15 @@ public final class Strings
 	public static final String QUESTION = "?"; //$NON-NLS-1$
 	public static final String UNDERSCORE = "_"; //$NON-NLS-1$
 	public static final String TAB = "\t";
-	
+
 	/**
 	 * Performs the reverse of a split operation, joining the elements of the specified collection using the specified delimiter.
 	 * @param collection a collection of strings
 	 * @param delimiter a string to insert between each collection element
 	 * @return a new String
 	 */
-	public static String join(Collection<String> collection, String delimiter)
+	public static StringBuilder join(StringBuilder builder, Collection<String> collection, String delimiter)
 	{
-		StringBuilder builder = new StringBuilder();
-		
 		Iterator<String> elements = collection.iterator();
 		
 		while (elements.hasNext())
@@ -60,7 +58,18 @@ public final class Strings
 			}
 		}
 		
-		return builder.toString();
+		return builder;
+	}
+	
+	/**
+	 * Performs the reverse of a split operation, joining the elements of the specified collection using the specified delimiter.
+	 * @param collection a collection of strings
+	 * @param delimiter a string to insert between each collection element
+	 * @return a new String
+	 */
+	public static String join(Collection<String> collection, String delimiter)
+	{
+		return join(new StringBuilder(), collection, delimiter).toString();
 	}
 	
 	/**
@@ -72,6 +81,17 @@ public final class Strings
 	public static String join(String[] strings, String delimiter)
 	{
 		return join(Arrays.asList(strings), delimiter);
+	}
+	
+	/**
+	 * Performs the reverse of a split operation, joining the elements of the specified collection using the specified delimiter.
+	 * @param strings an array of strings
+	 * @param delimiter a string to insert between each array element
+	 * @return a new String
+	 */
+	public static StringBuilder join(StringBuilder builder, String[] strings, String delimiter)
+	{
+		return join(builder, Arrays.asList(strings), delimiter);
 	}
 	
 	private Strings()
