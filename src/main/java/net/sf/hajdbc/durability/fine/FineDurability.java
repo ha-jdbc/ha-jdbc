@@ -31,6 +31,7 @@ import net.sf.hajdbc.durability.TransactionIdentifier;
 import net.sf.hajdbc.durability.coarse.CoarseDurability;
 import net.sf.hajdbc.sql.Invoker;
 import net.sf.hajdbc.state.StateManager;
+import net.sf.hajdbc.util.Objects;
 
 /**
  * @author paul
@@ -177,7 +178,7 @@ public class FineDurability<Z, D extends Database<Z>> extends CoarseDurability<Z
 						byte[] slaveResult = slaveEvent.getResult();
 						byte[] slaveException = slaveEvent.getException();
 						
-						if ((masterResult != slaveResult) && ((masterResult == null) || (slaveResult == null) || masterResult.equals(slaveResult)))
+						if ((masterResult != slaveResult) && ((masterResult == null) || (slaveResult == null) || Objects.equals(masterResult, slaveResult)))
 						{
 							return true;
 						}
