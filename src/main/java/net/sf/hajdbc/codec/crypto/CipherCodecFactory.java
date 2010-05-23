@@ -30,6 +30,7 @@ import java.util.Properties;
 import net.sf.hajdbc.codec.Codec;
 import net.sf.hajdbc.codec.CodecFactory;
 import net.sf.hajdbc.sql.SQLExceptionFactory;
+import net.sf.hajdbc.util.Strings;
 
 /**
  * Used to decrypt configuration file passwords using a symmetric key stored in a keystore.
@@ -119,7 +120,7 @@ public class CipherCodecFactory implements CodecFactory, Serializable
 	{
 		if (args.length != 1)
 		{
-			System.err.println(String.format("Usage:%s\tjava %s <password-to-encrypt>", System.getProperty("line.separator"), CipherCodecFactory.class.getName()));
+			System.err.println(String.format("Usage:%s\tjava %s <password-to-encrypt>", Strings.NEW_LINE, CipherCodecFactory.class.getName()));
 			System.exit(1);
 			return;
 		}
