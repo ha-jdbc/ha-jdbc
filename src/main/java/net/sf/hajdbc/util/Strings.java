@@ -37,6 +37,9 @@ public final class Strings
 	public static final String QUESTION = "?"; //$NON-NLS-1$
 	public static final String UNDERSCORE = "_"; //$NON-NLS-1$
 	public static final String TAB = "\t";
+	public static final String NEW_LINE = System.getProperty("line.separator");
+	public static final String FILE_SEPARATOR = System.getProperty("file.separator");
+	public static final String USER_HOME = System.getProperty("user.home");
 
 	/**
 	 * Performs the reverse of a split operation, joining the elements of the specified collection using the specified delimiter.
