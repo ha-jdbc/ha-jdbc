@@ -38,6 +38,16 @@ public class IngresDialect extends StandardDialect
 	private final Pattern legacySequencePattern = Pattern.compile("'?(\\w+)'?\\.(?:(?:CURR)|(?:NEXT))VAL", Pattern.CASE_INSENSITIVE);
 	
 	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#vendorPattern()
+	 */
+	@Override
+	protected String vendorPattern()
+	{
+		return "ingres";
+	}
+
+	/**
 	 * @see net.sf.hajdbc.dialect.StandardDialect#parseInsertTable(java.lang.String)
 	 */
 	@Override

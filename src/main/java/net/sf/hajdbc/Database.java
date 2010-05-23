@@ -56,6 +56,8 @@ public interface Database<Z> extends Comparable<Database<Z>>
 	 * @return true if local, false if remote
 	 */
 	boolean isLocal();
+
+	String decodePassword(Codec codec) throws SQLException;
 	
 	/**
 	 * Connects to the database using the specified connection factory.
@@ -63,7 +65,7 @@ public interface Database<Z> extends Comparable<Database<Z>>
 	 * @return a database connection
 	 * @throws SQLException if connection fails
 	 */
-	Connection connect(Z connectionSource, Codec codec) throws SQLException;
+	Connection connect(Z connectionSource, String password) throws SQLException;
 	
 	/**
 	 * Factory method for creating a connection factory object for this database.

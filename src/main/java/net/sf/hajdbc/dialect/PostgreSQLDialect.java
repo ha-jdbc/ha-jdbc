@@ -17,6 +17,8 @@
  */
 package net.sf.hajdbc.dialect;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -27,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import net.sf.hajdbc.ConnectionProperties;
 import net.sf.hajdbc.cache.ColumnProperties;
 import net.sf.hajdbc.util.Strings;
 
@@ -38,6 +41,18 @@ import net.sf.hajdbc.util.Strings;
 @SuppressWarnings("nls")
 public class PostgreSQLDialect extends StandardDialect
 {
+	private static final File PASSWORD_FILE = new File(String.format("%s%s.pgpass", Strings.USER_HOME, Strings.FILE_SEPARATOR));
+	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#vendor()
+	 */
+	@Override
+	protected String vendorPattern()
+	{
+		return "postgresql";
+	}
+
 	/**
 	 * PostgreSQL uses a schema search path to locate unqualified table names.
 	 * The default search path is [$user,public], where $user is the current user.
@@ -157,5 +172,36 @@ public class PostgreSQLDialect extends StandardDialect
 	protected String selectForUpdatePattern()
 	{
 		return "SELECT\\s+.+\\s+FOR\\s+(SHARE|UPDATE)";
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @throws IOException 
+	 * @see net.sf.hajdbc.dialect.StandardDialect#startDumpProcess(java.lang.String, java.io.File)
+	 */
+	@Override
+	public ProcessBuilder createDumpProcess(ConnectionProperties properties, File file)
+	{
+		return this.setPassword(new ProcessBuilder("pg_dump", "-h", properties.getHost(), "-p", properties.getPort(), "-U", properties.getUser(), "-f", file.getPath(), "-F", "tar", properties.getDatabase()), properties);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#startRestoreProcess(java.lang.String, java.io.File)
+	 */
+	@Override
+	public ProcessBuilder createRestoreProcess(ConnectionProperties properties, File file)
+	{
+		return this.setPassword(new ProcessBuilder("pg_restore", "-h", properties.getHost(), "-p", properties.getPort(), "-U", properties.getUser(), "-d", properties.getDatabase(), file.getPath()), properties);
+	}
+	
+	private ProcessBuilder setPassword(ProcessBuilder builder, ConnectionProperties properties)
+	{
+		if (!PASSWORD_FILE.exists())
+		{
+			builder.environment().put("PGPASSWORD", properties.getPassword());
+		}
+		
+		return builder;
 	}
 }

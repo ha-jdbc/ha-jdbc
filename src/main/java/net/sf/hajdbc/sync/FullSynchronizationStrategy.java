@@ -33,7 +33,6 @@ import java.util.concurrent.Future;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.Messages;
-import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.cache.TableProperties;
 import net.sf.hajdbc.logging.Level;
@@ -74,10 +73,10 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy, Ser
 	private int fetchSize = 0;
 	
 	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.SynchronizationContext)
+	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.sync.SynchronizationContext)
 	 */
 	@Override
-	public <P, D extends Database<P>> void synchronize(SynchronizationContext<P, D> context) throws SQLException
+	public <Z, D extends Database<Z>> void synchronize(SynchronizationContext<Z, D> context) throws SQLException
 	{
 		Connection sourceConnection = context.getConnection(context.getSourceDatabase());
 		Connection targetConnection = context.getConnection(context.getTargetDatabase());
@@ -90,132 +89,139 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy, Ser
 		
 		targetConnection.setAutoCommit(true);
 		
-		SynchronizationSupport.dropForeignKeys(context);
+		SynchronizationSupport support = context.getSynchronizationSupport();
+		
+		support.dropForeignKeys();
 		
 		sourceConnection.setAutoCommit(false);
 		targetConnection.setAutoCommit(false);
 		
 		try
 		{
-			for (TableProperties table: context.getSourceDatabaseProperties().getTables())
+			try
 			{
-				String tableName = table.getName();
-				Collection<String> columns = table.getColumns();
-				
-				String commaDelimitedColumns = Strings.join(columns, Strings.PADDED_COMMA);
-				
-				final String selectSQL = "SELECT " + commaDelimitedColumns + " FROM " + tableName; //$NON-NLS-1$ //$NON-NLS-2$
-				
-				final Statement selectStatement = sourceConnection.createStatement();
-				selectStatement.setFetchSize(this.fetchSize);
-				
-				Callable<ResultSet> callable = new Callable<ResultSet>()
+				for (TableProperties table: context.getSourceDatabaseProperties().getTables())
 				{
-					@Override
-					public ResultSet call() throws SQLException
+					String tableName = table.getName();
+					Collection<String> columns = table.getColumns();
+					
+					String commaDelimitedColumns = Strings.join(columns, Strings.PADDED_COMMA);
+					
+					final String selectSQL = String.format("SELECT %s FROM %s", commaDelimitedColumns, tableName);
+					
+					final Statement selectStatement = sourceConnection.createStatement();
+					selectStatement.setFetchSize(this.fetchSize);
+					
+					Callable<ResultSet> callable = new Callable<ResultSet>()
 					{
-						return selectStatement.executeQuery(selectSQL);
-					}
-				};
-	
-				Future<ResultSet> future = executor.submit(callable);
-				
-				String deleteSQL = dialect.getTruncateTableSQL(table);
-
-				logger.log(Level.DEBUG, deleteSQL);
-				
-				Statement deleteStatement = targetConnection.createStatement();
-	
-				int deletedRows = deleteStatement.executeUpdate(deleteSQL);
-
-				logger.log(Level.INFO, Messages.DELETE_COUNT.getMessage(), deletedRows, tableName);
-				
-				deleteStatement.close();
-				
-				ResultSet resultSet = future.get();
-				
-				String insertSQL = "INSERT INTO " + tableName + " (" + commaDelimitedColumns + ") VALUES (" + Strings.join(Collections.nCopies(columns.size(), Strings.QUESTION), Strings.PADDED_COMMA) + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-
-				logger.log(Level.DEBUG, insertSQL);
-				
-				PreparedStatement insertStatement = targetConnection.prepareStatement(insertSQL);
-				int statementCount = 0;
-				
-				while (resultSet.next())
-				{
-					int index = 0;
+						@Override
+						public ResultSet call() throws SQLException
+						{
+							return selectStatement.executeQuery(selectSQL);
+						}
+					};
+		
+					Future<ResultSet> future = executor.submit(callable);
 					
-					for (String column: columns)
+					String deleteSQL = dialect.getTruncateTableSQL(table);
+	
+					logger.log(Level.DEBUG, deleteSQL);
+					
+					Statement deleteStatement = targetConnection.createStatement();
+		
+					int deletedRows = deleteStatement.executeUpdate(deleteSQL);
+	
+					logger.log(Level.INFO, Messages.DELETE_COUNT.getMessage(), deletedRows, tableName);
+					
+					deleteStatement.close();
+					
+					ResultSet resultSet = future.get();
+
+					String insertSQL = String.format("INSERT INTO %s (%s) VALUES (%s)", tableName, commaDelimitedColumns, Strings.join(Collections.nCopies(columns.size(), Strings.QUESTION), Strings.PADDED_COMMA));
+	
+					logger.log(Level.DEBUG, insertSQL);
+					
+					PreparedStatement insertStatement = targetConnection.prepareStatement(insertSQL);
+					int statementCount = 0;
+					
+					while (resultSet.next())
 					{
-						index += 1;
+						int index = 0;
 						
-						int type = dialect.getColumnType(table.getColumnProperties(column));
-						
-						Object object = SynchronizationSupport.getObject(resultSet, index, type);
-						
-						if (resultSet.wasNull())
+						for (String column: columns)
 						{
-							insertStatement.setNull(index, type);
+							index += 1;
+							
+							int type = dialect.getColumnType(table.getColumnProperties(column));
+							
+							Object object = support.getObject(resultSet, index, type);
+							
+							if (resultSet.wasNull())
+							{
+								insertStatement.setNull(index, type);
+							}
+							else
+							{
+								insertStatement.setObject(index, object, type);
+							}
 						}
-						else
+						
+						insertStatement.addBatch();
+						statementCount += 1;
+						
+						if ((statementCount % this.maxBatchSize) == 0)
 						{
-							insertStatement.setObject(index, object, type);
+							insertStatement.executeBatch();
+							insertStatement.clearBatch();
 						}
+						
+						insertStatement.clearParameters();
 					}
-					
-					insertStatement.addBatch();
-					statementCount += 1;
-					
-					if ((statementCount % this.maxBatchSize) == 0)
+		
+					if ((statementCount % this.maxBatchSize) > 0)
 					{
 						insertStatement.executeBatch();
-						insertStatement.clearBatch();
 					}
-					
-					insertStatement.clearParameters();
-				}
 	
-				if ((statementCount % this.maxBatchSize) > 0)
-				{
-					insertStatement.executeBatch();
+					logger.log(Level.INFO, Messages.INSERT_COUNT.getMessage(), statementCount, tableName);
+					
+					insertStatement.close();
+					selectStatement.close();
+					
+					targetConnection.commit();
 				}
-
-				logger.log(Level.INFO, Messages.INSERT_COUNT.getMessage(), statementCount, tableName);
-				
-				insertStatement.close();
-				selectStatement.close();
-				
-				targetConnection.commit();
 			}
-		}
-		catch (InterruptedException e)
-		{
-			SynchronizationSupport.rollback(targetConnection);
-
-			throw SQLExceptionFactory.getInstance().createException(e);
-		}
-		catch (ExecutionException e)
-		{
-			SynchronizationSupport.rollback(targetConnection);
-
-			throw SQLExceptionFactory.getInstance().createException(e.getCause());
-		}
-		catch (SQLException e)
-		{
-			SynchronizationSupport.rollback(targetConnection);
+			catch (InterruptedException e)
+			{
+				support.rollback(targetConnection);
+	
+				throw SQLExceptionFactory.getInstance().createException(e);
+			}
+			catch (ExecutionException e)
+			{
+				support.rollback(targetConnection);
+	
+				throw SQLExceptionFactory.getInstance().createException(e.getCause());
+			}
+			catch (SQLException e)
+			{
+				support.rollback(targetConnection);
+				
+				throw e;
+			}
 			
-			throw e;
+			targetConnection.setAutoCommit(true);
+			
+			support.restoreForeignKeys();
+			
+			support.synchronizeIdentityColumns();
+			support.synchronizeSequences();
 		}
-		
-		targetConnection.setAutoCommit(true);
-		
-		SynchronizationSupport.restoreForeignKeys(context);
-		
-		SynchronizationSupport.synchronizeIdentityColumns(context);
-		SynchronizationSupport.synchronizeSequences(context);
-		
-		sourceConnection.setAutoCommit(sourceAutoCommit);
-		targetConnection.setAutoCommit(targetAutoCommit);
+		finally
+		{
+			sourceConnection.setAutoCommit(sourceAutoCommit);
+			targetConnection.setAutoCommit(targetAutoCommit);
+		}
 	}
 
 	/**

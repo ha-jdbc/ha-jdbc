@@ -17,6 +17,7 @@
  */
 package net.sf.hajdbc.dialect;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -34,6 +35,7 @@ import java.util.regex.Pattern;
 
 import javax.transaction.xa.XAException;
 
+import net.sf.hajdbc.ConnectionProperties;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.cache.ColumnProperties;
 import net.sf.hajdbc.cache.ForeignKeyConstraint;
@@ -57,6 +59,17 @@ public class StandardDialect implements Dialect
 	private final Pattern currentDatePattern = this.compile(this.currentDatePattern());
 	private final Pattern currentTimePattern = this.compile(this.currentTimePattern());
 	private final Pattern randomPattern = this.compile(this.randomPattern());
+	private final Pattern urlPattern = Pattern.compile(String.format("jdbc:%s:%s", this.vendorPattern(), this.locatorPattern()));
+	
+	protected String vendorPattern()
+	{
+		return "(?:^\\:)+";
+	}
+
+	protected String locatorPattern()
+	{
+		return "//(^\\:+):(\\d+)/(^\\?+)(?:\\?.*)?";
+	}
 	
 	private Pattern compile(String pattern)
 	{
@@ -465,5 +478,35 @@ public class StandardDialect implements Dialect
 	protected Set<Integer> failureXAErrorCodes()
 	{
 		return Collections.singleton(XAException.XAER_RMFAIL);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.Dialect#getUrlPattern()
+	 */
+	@Override
+	public Pattern getUrlPattern()
+	{
+		return this.urlPattern;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.Dialect#createDumpProcess(net.sf.hajdbc.ConnectionProperties, java.io.File)
+	 */
+	@Override
+	public ProcessBuilder createDumpProcess(ConnectionProperties properties, File file)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.Dialect#createRestoreProcess(net.sf.hajdbc.ConnectionProperties, java.io.File)
+	 */
+	@Override
+	public ProcessBuilder createRestoreProcess(ConnectionProperties properties, File file)
+	{
+		throw new UnsupportedOperationException();
 	}
 }

@@ -17,13 +17,16 @@
  */
 package net.sf.hajdbc.dialect;
 
+import java.io.File;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.hajdbc.ConnectionProperties;
 import net.sf.hajdbc.cache.QualifiedName;
+import net.sf.hajdbc.util.Strings;
 
 /**
  * Dialect for <a href="http://www.mysql.com/products/database/mysql/">MySQL</a>
@@ -32,6 +35,18 @@ import net.sf.hajdbc.cache.QualifiedName;
 @SuppressWarnings("nls")
 public class MySQLDialect extends StandardDialect
 {
+	private static final File PASSWORD_FILE = new File(String.format("%s%s.my.cnf", Strings.USER_HOME, Strings.FILE_SEPARATOR));
+	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#vendorPattern()
+	 */
+	@Override
+	protected String vendorPattern()
+	{
+		return "mysql";
+	}
+
 	/**
 	 * @see net.sf.hajdbc.dialect.StandardDialect#getDefaultSchemas(java.sql.DatabaseMetaData)
 	 */
@@ -157,5 +172,35 @@ public class MySQLDialect extends StandardDialect
 	protected String timestampLiteralFormat()
 	{
 		return "''{0}''";
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#createDumpProcess(net.sf.hajdbc.ConnectionProperties, java.io.File)
+	 */
+	@Override
+	public ProcessBuilder createDumpProcess(ConnectionProperties properties, File file)
+	{
+		return this.setPassword(new ProcessBuilder("mysqldump", "-h", properties.getHost(), "-P", properties.getPort(), "-u", properties.getUser(), properties.getDatabase(), ">", file.getPath()), properties);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#createRestoreProcess(net.sf.hajdbc.ConnectionProperties, java.io.File)
+	 */
+	@Override
+	public ProcessBuilder createRestoreProcess(ConnectionProperties properties, File file)
+	{
+		return this.setPassword(new ProcessBuilder("mysql", "-h", properties.getHost(), "-P", properties.getPort(), "-u", properties.getUser(), properties.getDatabase(), "<", file.getPath()), properties);
+	}
+	
+	private ProcessBuilder setPassword(ProcessBuilder builder, ConnectionProperties properties)
+	{
+		if (!PASSWORD_FILE.exists())
+		{
+			builder.environment().put("MYSQL_PWD", properties.getPassword());
+		}
+		
+		return builder;
 	}
 }

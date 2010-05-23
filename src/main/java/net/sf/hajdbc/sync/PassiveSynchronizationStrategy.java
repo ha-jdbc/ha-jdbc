@@ -20,7 +20,6 @@ package net.sf.hajdbc.sync;
 import java.io.Serializable;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.SynchronizationStrategy;
 
 /**
@@ -34,10 +33,10 @@ public class PassiveSynchronizationStrategy implements SynchronizationStrategy, 
 	private static final long serialVersionUID = -7847193096593293640L;
 
 	/**
-	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.SynchronizationContext)
+	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.sync.SynchronizationContext)
 	 */
 	@Override
-	public <P, D extends Database<P>> void synchronize(SynchronizationContext<P, D> context)
+	public <Z, D extends Database<Z>> void synchronize(SynchronizationContext<Z, D> context)
 	{
 		// Do nothing
 	}

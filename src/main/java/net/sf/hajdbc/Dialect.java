@@ -17,6 +17,7 @@
  */
 package net.sf.hajdbc;
 
+import java.io.File;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.List;
@@ -231,4 +232,10 @@ public interface Dialect
 	 * @return true, if the exception indicates catastrophe, false otherwise
 	 */
 	boolean indicatesFailure(XAException e);
+	
+	Pattern getUrlPattern();
+	
+	ProcessBuilder createDumpProcess(ConnectionProperties properties, File file);
+	
+	ProcessBuilder createRestoreProcess(ConnectionProperties properties, File file);
 }

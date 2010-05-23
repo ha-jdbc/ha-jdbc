@@ -35,6 +35,16 @@ import net.sf.hajdbc.cache.QualifiedName;
 public class MaxDBDialect extends StandardDialect
 {
 	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#vendorPattern()
+	 */
+	@Override
+	protected String vendorPattern()
+	{
+		return "maxdb";
+	}
+
+	/**
 	 * @see net.sf.hajdbc.dialect.StandardDialect#dummyTable()
 	 */
 	@Override

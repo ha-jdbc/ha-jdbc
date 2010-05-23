@@ -15,14 +15,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.hajdbc;
+package net.sf.hajdbc.sync;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.cache.DatabaseProperties;
+import net.sf.hajdbc.codec.Codec;
 
 
 /**
@@ -81,6 +84,10 @@ public interface SynchronizationContext<Z, D extends Database<Z>>
 	 * @return an executor service
 	 */
 	ExecutorService getExecutor();
+	
+	SynchronizationSupport getSynchronizationSupport();
+	
+	Codec getCodec();
 	
 	/**
 	 * Closes any open database connections and shuts down the executor service. 

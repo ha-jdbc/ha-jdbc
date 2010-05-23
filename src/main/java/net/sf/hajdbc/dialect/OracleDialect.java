@@ -34,6 +34,16 @@ import net.sf.hajdbc.cache.QualifiedName;
 public class OracleDialect extends StandardDialect
 {
 	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#vendorPattern()
+	 */
+	@Override
+	protected String vendorPattern()
+	{
+		return "oracle";
+	}
+
+	/**
 	 * @see net.sf.hajdbc.dialect.StandardDialect#dummyTable()
 	 */
 	@Override

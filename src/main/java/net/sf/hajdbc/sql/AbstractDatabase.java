@@ -17,6 +17,7 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +31,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.codec.Codec;
 import net.sf.hajdbc.management.Description;
 import net.sf.hajdbc.management.ManagedAttribute;
 import net.sf.hajdbc.management.ManagedOperation;
@@ -127,6 +129,7 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	}
 	
 	/**
+	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getUser()
 	 */
 	@ManagedAttribute
@@ -148,6 +151,7 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	}
 	
 	/**
+	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getPassword()
 	 */
 	@ManagedAttribute
@@ -166,6 +170,17 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 		this.assertInactive();
 		this.checkDirty(this.password, password);
 		this.password = password;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @throws SQLException 
+	 * @see net.sf.hajdbc.Database#decodePassword(net.sf.hajdbc.codec.Codec)
+	 */
+	@Override
+	public String decodePassword(Codec codec) throws SQLException
+	{
+		return (this.password != null) ? codec.decode(this.password) : null;
 	}
 
 	/**

@@ -35,6 +35,16 @@ import net.sf.hajdbc.cache.QualifiedName;
 public class DB2Dialect extends StandardDialect
 {
 	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#vendorPattern()
+	 */
+	@Override
+	protected String vendorPattern()
+	{
+		return "db2";
+	}
+
+	/**
 	 * @see net.sf.hajdbc.dialect.StandardDialect#executeFunctionFormat()
 	 */
 	@Override

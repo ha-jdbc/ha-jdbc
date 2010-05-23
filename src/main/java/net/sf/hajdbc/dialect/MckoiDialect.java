@@ -26,6 +26,16 @@ package net.sf.hajdbc.dialect;
 public class MckoiDialect extends StandardDialect
 {
 	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#vendorPattern()
+	 */
+	@Override
+	protected String vendorPattern()
+	{
+		return "mckoi";
+	}
+
+	/**
 	 * @see net.sf.hajdbc.dialect.StandardDialect#parseInsertTable(java.lang.String)
 	 */
 	@Override

@@ -27,7 +27,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
-import net.sf.hajdbc.codec.Codec;
 import net.sf.hajdbc.management.Description;
 import net.sf.hajdbc.management.MBean;
 import net.sf.hajdbc.sql.CommonDataSourceDatabase;
@@ -49,9 +48,9 @@ public class XADataSourceDatabase extends CommonDataSourceDatabase<XADataSource>
 	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
 	 */
 	@Override
-	public Connection connect(XADataSource dataSource, Codec codec) throws SQLException
+	public Connection connect(XADataSource dataSource, String password) throws SQLException
 	{
-		XAConnection connection = this.requiresAuthentication() ? dataSource.getXAConnection(this.getUser(), codec.decode(this.getPassword())) : dataSource.getXAConnection();
+		XAConnection connection = this.requiresAuthentication() ? dataSource.getXAConnection(this.getUser(), password) : dataSource.getXAConnection();
 		
 		return connection.getConnection();
 	}

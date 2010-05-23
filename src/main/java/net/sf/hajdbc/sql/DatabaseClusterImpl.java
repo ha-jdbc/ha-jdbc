@@ -71,6 +71,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	static final Logger logger = LoggerFactory.getLogger(DatabaseClusterImpl.class);
 	
 	private final String id;
+	
 	final DatabaseClusterConfiguration<Z, D> configuration;
 	
 	private Balancer<Z, D> balancer;
@@ -446,11 +447,11 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		
 		this.executor = this.configuration.getExecutorProvider().getExecutor(this.configuration.getThreadFactory());
 		
-		Set<String> databaseSet = this.stateManager.getActiveDatabases();
+		Set<String> databases = this.stateManager.getActiveDatabases();
 		
-		if (!databaseSet.isEmpty())
+		if (!databases.isEmpty())
 		{
-			for (String databaseId: databaseSet)
+			for (String databaseId: databases)
 			{
 				D database = this.getDatabase(databaseId);
 				
@@ -556,7 +557,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	{
 		try
 		{
-			Connection connection = database.connect(database.createConnectionSource(), this.codec);
+			Connection connection = database.connect(database.createConnectionSource(), database.decodePassword(this.codec));
 
 			boolean alive = this.isAlive(connection);
 			

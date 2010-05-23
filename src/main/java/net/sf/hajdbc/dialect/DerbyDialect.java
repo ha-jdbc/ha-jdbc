@@ -34,6 +34,16 @@ import net.sf.hajdbc.cache.QualifiedName;
 public class DerbyDialect extends StandardDialect
 {
 	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#vendorPattern()
+	 */
+	@Override
+	protected String vendorPattern()
+	{
+		return "derby";
+	}
+
+	/**
 	 * @see net.sf.hajdbc.dialect.StandardDialect#executeFunctionFormat()
 	 */
 	@Override

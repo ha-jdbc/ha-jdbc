@@ -32,6 +32,16 @@ import net.sf.hajdbc.cache.QualifiedName;
 public class SybaseDialect extends StandardDialect
 {
 	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#vendorPattern()
+	 */
+	@Override
+	protected String vendorPattern()
+	{
+		return "sybase";
+	}
+
+	/**
 	 * @see net.sf.hajdbc.dialect.StandardDialect#currentTimestampFunction()
 	 */
 	@Override

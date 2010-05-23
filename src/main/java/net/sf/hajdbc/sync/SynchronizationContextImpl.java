@@ -29,10 +29,10 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.Messages;
-import net.sf.hajdbc.SynchronizationContext;
 import net.sf.hajdbc.balancer.Balancer;
 import net.sf.hajdbc.cache.DatabaseMetaDataCache;
 import net.sf.hajdbc.cache.DatabaseProperties;
+import net.sf.hajdbc.codec.Codec;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
@@ -83,7 +83,7 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.SynchronizationContext#getConnection(net.sf.hajdbc.Database)
+	 * @see net.sf.hajdbc.sync.SynchronizationContext#getConnection(net.sf.hajdbc.Database)
 	 */
 	@Override
 	public Connection getConnection(D database) throws SQLException
@@ -94,7 +94,7 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 			
 			if (connection == null)
 			{
-				connection = database.connect(database.createConnectionSource(), this.cluster.getCodec());
+				connection = database.connect(database.createConnectionSource(), database.decodePassword(this.cluster.getCodec()));
 				
 				this.connectionMap.put(database, connection);
 			}
@@ -104,7 +104,7 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.SynchronizationContext#getSourceDatabase()
+	 * @see net.sf.hajdbc.sync.SynchronizationContext#getSourceDatabase()
 	 */
 	@Override
 	public D getSourceDatabase()
@@ -113,7 +113,7 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.SynchronizationContext#getTargetDatabase()
+	 * @see net.sf.hajdbc.sync.SynchronizationContext#getTargetDatabase()
 	 */
 	@Override
 	public D getTargetDatabase()
@@ -122,7 +122,7 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.SynchronizationContext#getActiveDatabaseSet()
+	 * @see net.sf.hajdbc.sync.SynchronizationContext#getActiveDatabaseSet()
 	 */
 	@Override
 	public Set<D> getActiveDatabaseSet()
@@ -131,7 +131,7 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.SynchronizationContext#getSourceDatabaseProperties()
+	 * @see net.sf.hajdbc.sync.SynchronizationContext#getSourceDatabaseProperties()
 	 */
 	@Override
 	public DatabaseProperties getSourceDatabaseProperties()
@@ -140,7 +140,7 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.SynchronizationContext#getTargetDatabaseProperties()
+	 * @see net.sf.hajdbc.sync.SynchronizationContext#getTargetDatabaseProperties()
 	 */
 	@Override
 	public DatabaseProperties getTargetDatabaseProperties()
@@ -149,7 +149,7 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.SynchronizationContext#getDialect()
+	 * @see net.sf.hajdbc.sync.SynchronizationContext#getDialect()
 	 */
 	@Override
 	public Dialect getDialect()
@@ -158,7 +158,17 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.SynchronizationContext#getExecutor()
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.sync.SynchronizationContext#getCodec()
+	 */
+	@Override
+	public Codec getCodec()
+	{
+		return this.cluster.getCodec();
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sync.SynchronizationContext#getExecutor()
 	 */
 	@Override
 	public ExecutorService getExecutor()
@@ -167,7 +177,17 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.SynchronizationContext#close()
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.sync.SynchronizationContext#getSynchronizationSupport()
+	 */
+	@Override
+	public SynchronizationSupport getSynchronizationSupport()
+	{
+		return new SynchronizationSupportImpl<Z, D>(this);
+	}
+
+	/**
+	 * @see net.sf.hajdbc.sync.SynchronizationContext#close()
 	 */
 	@Override
 	public void close()
