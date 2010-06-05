@@ -1,51 +1,62 @@
 /*
- * HA-JDBC: High-Availability JDBC
- * Copyright 2004-2009 Paul Ferraro
- * 
+ * HA-JDBC: High-Availablity JDBC
+ * Copyright 2010 Paul Ferraro
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package net.sf.hajdbc.xml;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
 import java.io.Serializable;
-import java.io.Writer;
 import java.net.URL;
 
-public class URLCharacterStreamer implements CharacterStreamer, Serializable
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+
+/**
+ * @author Paul Ferraro
+ */
+public class URLXMLStreamFactory implements XMLStreamFactory, Serializable
 {
 	private static final long serialVersionUID = -3911432025271185584L;
 	
-	private final URL url;
+	private final String url;
 	
-	public URLCharacterStreamer(URL url)
+	public URLXMLStreamFactory(URL url)
 	{
-		this.url = url;
+		this.url = url.toString();
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.xml.XMLStreamFactory#createSource()
+	 */
 	@Override
-	public Reader getReader() throws IOException
+	public Source createSource()
 	{
-		return new InputStreamReader(this.url.openConnection().getInputStream());
+		return new StreamSource(this.url);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.xml.XMLStreamFactory#createResult()
+	 */
 	@Override
-	public Writer getWriter() throws IOException
+	public Result createResult()
 	{
-		return new OutputStreamWriter(this.url.openConnection().getOutputStream());
+		return new StreamResult(this.url);
 	}
 	
 	/**
@@ -55,6 +66,6 @@ public class URLCharacterStreamer implements CharacterStreamer, Serializable
 	@Override
 	public String toString()
 	{
-		return this.url.toString();
+		return this.url;
 	}
 }

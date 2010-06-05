@@ -18,7 +18,6 @@
 package net.sf.hajdbc.xml;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.SQLException;
@@ -60,7 +59,7 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 	private static final Logger logger = LoggerFactory.getLogger(XMLDatabaseClusterConfigurationFactory.class);
 	
 	private final Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass;
-	private final CharacterStreamer streamer;
+	private final XMLStreamFactory streamFactory;
 	
 	private static String identifyResource(String id)
 	{
@@ -115,15 +114,15 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 	
 	public XMLDatabaseClusterConfigurationFactory(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass, URL url)
 	{
-		this(targetClass, url.getProtocol().equals("file") ? new FileCharacterStreamer(new File(url.getPath())) : new URLCharacterStreamer(url));
+		this(targetClass, url.getProtocol().equals("file") ? new FileXMLStreamFactory(new File(url.getPath())) : new URLXMLStreamFactory(url));
 		
 		logger.log(Level.INFO, "Using url {0}", url);
 	}
 	
-	public XMLDatabaseClusterConfigurationFactory(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass, CharacterStreamer streamer)
+	public XMLDatabaseClusterConfigurationFactory(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass, XMLStreamFactory streamer)
 	{
 		this.targetClass = targetClass;
-		this.streamer = streamer;
+		this.streamFactory = streamer;
 	}
 	
 	/**
@@ -141,17 +140,13 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 			Unmarshaller unmarshaller = JAXBContext.newInstance(this.targetClass).createUnmarshaller();
 			unmarshaller.setSchema(schema);
 			
-			return this.targetClass.cast(unmarshaller.unmarshal(this.streamer.getReader()));
+			return this.targetClass.cast(unmarshaller.unmarshal(this.streamFactory.createSource()));
 		}
 		catch (JAXBException e)
 		{
 			throw new SQLException(e);
 		}
 		catch (SAXException e)
-		{
-			throw new SQLException(e);
-		}
-		catch (IOException e)
 		{
 			throw new SQLException(e);
 		}
@@ -184,15 +179,11 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 			Marshaller marshaller = JAXBContext.newInstance(configuration.getClass()).createMarshaller();
 			
 			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);				
-			marshaller.marshal(configuration, this.streamer.getWriter());
+			marshaller.marshal(configuration, this.streamFactory.createResult());
 		}
 		catch (JAXBException e)
 		{
-			logger.log(Level.WARN, e, Messages.CONFIG_STORE_FAILED.getMessage(), this.streamer);
-		}
-		catch (IOException e)
-		{
-			logger.log(Level.WARN, e, Messages.CONFIG_STORE_FAILED.getMessage(), this.streamer);
+			logger.log(Level.WARN, e, Messages.CONFIG_STORE_FAILED.getMessage(), this.streamFactory);
 		}
 	}
 }
