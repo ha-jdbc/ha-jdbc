@@ -17,6 +17,11 @@
  */
 package net.sf.hajdbc.util;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 import java.util.Arrays;
 
 /**
@@ -72,5 +77,28 @@ public class Objects
 		}
 
 		return object1.equals(object2);
+	}
+	
+	public static byte[] serialize(Object object)
+	{
+		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+		
+		try
+		{
+			ObjectOutput output = new ObjectOutputStream(bytes);
+			output.writeObject(object);
+			output.flush();
+			output.close();
+			
+			return bytes.toByteArray();
+		}
+		catch (NotSerializableException e)
+		{
+			return serialize(e);
+		}
+		catch (IOException e)
+		{
+			throw new IllegalStateException(e);
+		}
 	}
 }
