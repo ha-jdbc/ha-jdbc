@@ -17,12 +17,14 @@
  */
 package net.sf.hajdbc.xml;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.Map;
+
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
 import net.sf.hajdbc.DatabaseClusterConfiguration;
 import net.sf.hajdbc.SynchronizationStrategy;
@@ -42,7 +44,7 @@ import org.junit.Test;
 public class XMLDatabaseClusterConfigurationFactoryTest
 {
 	@Test
-	public void createConfiguration() throws SQLException, IOException
+	public void createConfiguration() throws SQLException
 	{
 		StringBuilder builder = new StringBuilder();
 		builder.append("<?xml version=\"1.0\"?>");
@@ -60,17 +62,17 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 		
 		String xml = builder.toString();
 		
-		CharacterStreamer streamer = EasyMock.createStrictMock(CharacterStreamer.class);
+		XMLStreamFactory streamFactory = EasyMock.createStrictMock(XMLStreamFactory.class);
 		
-		XMLDatabaseClusterConfigurationFactory<Driver, DriverDatabase> factory = new XMLDatabaseClusterConfigurationFactory<Driver, DriverDatabase>(DriverDatabaseClusterConfiguration.class, streamer);
+		XMLDatabaseClusterConfigurationFactory<Driver, DriverDatabase> factory = new XMLDatabaseClusterConfigurationFactory<Driver, DriverDatabase>(DriverDatabaseClusterConfiguration.class, streamFactory);
 		
-		EasyMock.expect(streamer.getReader()).andReturn(new StringReader(xml));
+		EasyMock.expect(streamFactory.createSource()).andReturn(new StreamSource(new StringReader(xml)));
 		
-		EasyMock.replay(streamer);
+		EasyMock.replay(streamFactory);
 		
 		DatabaseClusterConfiguration<Driver, DriverDatabase> configuration = factory.createConfiguration();
 		
-		EasyMock.verify(streamer);
+		EasyMock.verify(streamFactory);
 		
 		Assert.assertNull(configuration.getDispatcherFactory());
 		Map<String, SynchronizationStrategy> strategies = configuration.getSynchronizationStrategyMap();
@@ -130,17 +132,17 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 	   Assert.assertFalse(db2.isActive());
 	   Assert.assertFalse(db2.isDirty());
 	   
-	   EasyMock.reset(streamer);
+	   EasyMock.reset(streamFactory);
 	   
 	   StringWriter writer = new StringWriter();
 	   
-	   EasyMock.expect(streamer.getWriter()).andReturn(writer);
+	   EasyMock.expect(streamFactory.createResult()).andReturn(new StreamResult(writer));
 	   
-	   EasyMock.replay(streamer);
+	   EasyMock.replay(streamFactory);
 	   
 		factory.added(null, configuration);
 		
-		EasyMock.verify(streamer);
+		EasyMock.verify(streamFactory);
 		
 		System.out.println(writer.toString());
 	}
