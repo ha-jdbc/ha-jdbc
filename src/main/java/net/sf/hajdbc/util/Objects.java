@@ -17,12 +17,19 @@
  */
 package net.sf.hajdbc.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.NotSerializableException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
+
+import net.sf.hajdbc.logging.Level;
+import net.sf.hajdbc.logging.Logger;
+import net.sf.hajdbc.logging.LoggerFactory;
 
 /**
  * @author paul
@@ -30,6 +37,8 @@ import java.util.Arrays;
  */
 public class Objects
 {
+	private static Logger logger = LoggerFactory.getLogger(Objects.class);
+	
 	private Objects()
 	{
 		// Hide
@@ -79,8 +88,15 @@ public class Objects
 		return object1.equals(object2);
 	}
 	
+	/**
+	 * Serializes the specified object.
+	 * @param object the serialization target
+	 * @return a serialized object
+	 */
 	public static byte[] serialize(Object object)
 	{
+		if (object == null) return null;
+		
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 		
 		try
@@ -94,11 +110,62 @@ public class Objects
 		}
 		catch (NotSerializableException e)
 		{
+			logger.log(Level.WARN, e);
 			return serialize(e);
 		}
 		catch (IOException e)
 		{
 			throw new IllegalStateException(e);
 		}
+	}
+	
+	/**
+	 * Deserializes the specified bytes into the object of the specified type.
+	 * @param <T> the target class
+	 * @param bytes a serialized object
+	 * @return a deserialized object
+	 */
+	public static Object deserialize(byte[] bytes)
+	{
+		if (bytes == null) return null;
+		
+		try
+		{
+			ObjectInput input = new ObjectInputStream(new ByteArrayInputStream(bytes));
+			
+			try
+			{
+				return input.readObject();
+			}
+			catch (ClassNotFoundException e)
+			{
+				throw new IllegalStateException(e);
+			}
+			catch (IOException e)
+			{
+				throw new IllegalStateException(e);
+			}
+			finally
+			{
+				input.close();
+			}
+		}
+		catch (IOException e)
+		{
+			throw new IllegalStateException(e);
+		}
+	}
+	
+	/**
+	 * Deserializes the specified bytes into the object of the specified type.
+	 * @param <T> the target class
+	 * @param bytes a serialized object
+	 * @return a deserialized object
+	 */
+	public static <T> T deserialize(Class<T> targetClass, byte[] bytes)
+	{
+		Object object = deserialize(bytes);
+		
+		return (object != null) ? targetClass.cast(object) : null;
 	}
 }
