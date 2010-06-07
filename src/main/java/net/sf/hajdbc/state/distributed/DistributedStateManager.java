@@ -25,7 +25,9 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -34,6 +36,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.balancer.Balancer;
 import net.sf.hajdbc.distributed.CommandDispatcher;
 import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.distributed.Member;
@@ -221,20 +224,26 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 	@Override
 	public byte[] getState()
 	{
-		Set<String> databases = this.stateManager.getActiveDatabases();
+		Balancer<Z, D> balancer = this.cluster.getBalancer();
+		List<String> ids = new ArrayList<String>(balancer.size());
 		
+		for (D database: balancer)
+		{
+			ids.add(database.getId());
+		}
+
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 		DataOutput output = new DataOutputStream(bytes);
 		
 		try
 		{
-			output.writeInt(databases.size());
+			output.writeInt(ids.size());
 			
-			for (String database: databases)
+			for (String id: ids)
 			{
-				output.writeUTF(database);
+				output.writeUTF(id);
 			}
-		
+			
 			return bytes.toByteArray();
 		}
 		catch (IOException e)
