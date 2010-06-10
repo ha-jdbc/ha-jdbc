@@ -25,8 +25,8 @@ import net.sf.hajdbc.balancer.Balancer;
 import net.sf.hajdbc.balancer.BalancerFactory;
 
 /**
- * @author paul
- *
+ * Factory for creating a {@link LoadBalancer}
+ * @author Paul Ferraro
  */
 public class LoadBalancerFactory implements BalancerFactory, Serializable
 {
