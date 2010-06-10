@@ -32,8 +32,8 @@ import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
 
 /**
- * @author paul
- *
+ * Per-database {@link DatabaseMetaDataCache} implementation that populates itself eagerly.
+ * @author Paul Ferraro
  */
 public class EagerDatabaseMetaDataCache<Z, D extends Database<Z>> implements DatabaseMetaDataCache<Z, D>
 {

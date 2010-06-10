@@ -32,8 +32,8 @@ import net.sf.hajdbc.util.ref.ReferenceMap;
 import net.sf.hajdbc.util.ref.SoftReferenceFactory;
 
 /**
- * @author paul
- *
+ * Per-database {@link DatabaseMetaDataCache} implementation that populates itself lazily.
+ * @author Paul Ferraro
  */
 public class LazyDatabaseMetaDataCache<Z, D extends Database<Z>> implements DatabaseMetaDataCache<Z, D>
 {

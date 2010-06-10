@@ -24,8 +24,8 @@ import net.sf.hajdbc.cache.DatabaseMetaDataCache;
 import net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory;
 
 /**
- * @author paul
- *
+ * Factory for creating an {@link EagerDatabaseMetaDataCache}.
+ * @author Paul Ferraro
  */
 public class EagerDatabaseMetaDataCacheFactory extends AbstractDatabaseMetaDataCacheFactory
 {

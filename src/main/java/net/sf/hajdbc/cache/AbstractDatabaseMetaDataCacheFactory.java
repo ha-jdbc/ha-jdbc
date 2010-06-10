@@ -23,8 +23,8 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 
 /**
- * @author paul
- *
+ * Abstract {@link DatabaseMetaDataCacheFactory} implementation.
+ * @author Paul Ferraro
  */
 public abstract class AbstractDatabaseMetaDataCacheFactory implements DatabaseMetaDataCacheFactory, Serializable
 {
