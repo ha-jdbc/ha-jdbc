@@ -34,6 +34,7 @@ import java.util.concurrent.Future;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.cache.ForeignKeyConstraint;
 import net.sf.hajdbc.cache.SequenceProperties;
@@ -42,12 +43,11 @@ import net.sf.hajdbc.cache.UniqueConstraint;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
-import net.sf.hajdbc.sql.SQLExceptionFactory;
 import net.sf.hajdbc.util.Strings;
 
 /**
- * @author paul
- *
+ * Default {@link SynchonrizationSupport} implementation.
+ * @author Paul Ferraro
  */
 public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements SynchronizationSupport
 {
@@ -192,11 +192,11 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 				}
 				catch (InterruptedException e)
 				{
-					throw SQLExceptionFactory.getInstance().createException(e);
+					throw ExceptionType.getExceptionFactory(SQLException.class).createException(e);
 				}
 				catch (ExecutionException e)
 				{
-					throw SQLExceptionFactory.getInstance().createException(e.getCause());
+					throw ExceptionType.getExceptionFactory(SQLException.class).createException(e.getCause());
 				}
 			}
 			

@@ -32,13 +32,13 @@ import java.util.concurrent.Future;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.cache.TableProperties;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
-import net.sf.hajdbc.sql.SQLExceptionFactory;
 import net.sf.hajdbc.util.Strings;
 
 /**
@@ -195,13 +195,13 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy, Ser
 			{
 				support.rollback(targetConnection);
 	
-				throw SQLExceptionFactory.getInstance().createException(e);
+				throw ExceptionType.getExceptionFactory(SQLException.class).createException(e);
 			}
 			catch (ExecutionException e)
 			{
 				support.rollback(targetConnection);
 	
-				throw SQLExceptionFactory.getInstance().createException(e.getCause());
+				throw ExceptionType.getExceptionFactory(SQLException.class).createException(e.getCause());
 			}
 			catch (SQLException e)
 			{

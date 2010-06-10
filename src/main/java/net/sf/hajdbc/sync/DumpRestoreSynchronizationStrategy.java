@@ -27,13 +27,13 @@ import java.util.regex.Matcher;
 import net.sf.hajdbc.ConnectionProperties;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.SynchronizationStrategy;
-import net.sf.hajdbc.sql.SQLExceptionFactory;
 import net.sf.hajdbc.util.Strings;
 
 /**
- * @author paul
- *
+ * A synchronization strategy that uses dump/restore procedures.
+ * @author Paul Ferraro
  */
 public class DumpRestoreSynchronizationStrategy implements SynchronizationStrategy
 {
@@ -63,7 +63,7 @@ public class DumpRestoreSynchronizationStrategy implements SynchronizationStrate
 		}
 		catch (Exception e)
 		{
-			SQLExceptionFactory.getInstance().createException(e);
+			throw ExceptionType.getExceptionFactory(SQLException.class).createException(e);
 		}
 	}
 	
