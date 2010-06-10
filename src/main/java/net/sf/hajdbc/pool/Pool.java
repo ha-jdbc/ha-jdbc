@@ -18,8 +18,10 @@
 package net.sf.hajdbc.pool;
 
 /**
- * @author paul
- *
+ * Simple object pool service provider interface.
+ * @author Paul Ferraro
+ * @param <T>
+ * @param <E>
  */
 public interface Pool<T, E extends Exception>
 {

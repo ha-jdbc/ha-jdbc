@@ -26,8 +26,7 @@ import javax.sql.ConnectionPoolDataSource;
 import javax.sql.PooledConnection;
 
 /**
- * @author paul
- *
+ * @author Paul Ferraro
  */
 public class DriverConnectionPoolDataSource implements ConnectionPoolDataSource
 {

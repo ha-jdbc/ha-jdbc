@@ -26,8 +26,8 @@ import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.pool.AbstractPoolProvider;
 
 /**
- * @author paul
- *
+ * {@link Connection} object pool provider implementation.
+ * @author Paul Ferraro
  */
 public class ConnectionPoolProvider extends AbstractPoolProvider<Connection, SQLException>
 {

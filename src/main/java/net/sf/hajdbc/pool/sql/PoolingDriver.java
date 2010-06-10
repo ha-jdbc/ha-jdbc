@@ -31,8 +31,7 @@ import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
 
 /**
- * @author paul
- *
+ * @author Paul Ferraro
  */
 public class PoolingDriver extends AbstractDriver
 {

@@ -25,8 +25,7 @@ import javax.sql.PooledConnection;
 import javax.sql.StatementEventListener;
 
 /**
- * @author paul
- *
+ * @author Paul Ferraro
  */
 public class DriverPooledConnection implements PooledConnection
 {

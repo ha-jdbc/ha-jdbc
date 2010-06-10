@@ -21,8 +21,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * @author paul
- *
+ * Factory for creating {@link Connection} objects.
+ * @author Paul Ferraro
  */
 public interface ConnectionFactory
 {

@@ -18,10 +18,16 @@
 package net.sf.hajdbc.pool;
 
 /**
- * @author paul
- *
+ * Factory for creating an object pool.
+ * @author Paul Ferraro
  */
 public interface PoolFactory
 {
+	/**
+	 * @param <T>
+	 * @param <E>
+	 * @param provider
+	 * @return
+	 */
 	<T, E extends Exception> Pool<T, E> createPool(PoolProvider<T, E> provider);
 }

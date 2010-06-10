@@ -14,7 +14,7 @@ import org.apache.commons.pool.PoolableObjectFactory;
 import org.apache.commons.pool.impl.GenericObjectPool;
 
 /**
- * Adapter for a commons-pool GenericObjectPool.
+ * Adapter for a <a href="http://commons.apache.org/pool">commons-pool</a> GenericObjectPool.
  * 
  * @author Paul Ferraro
  */

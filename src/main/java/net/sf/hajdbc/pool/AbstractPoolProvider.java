@@ -1,5 +1,11 @@
 package net.sf.hajdbc.pool;
 
+/**
+ * Abstract pool provider implementation.
+ * @author Paul Ferraro
+ * @param <T>
+ * @param <E>
+ */
 public abstract class AbstractPoolProvider<T, E extends Exception> implements PoolProvider<T, E>
 {
 	private final Class<T> providedClass;

@@ -18,8 +18,10 @@
 package net.sf.hajdbc.pool;
 
 /**
- * @author paul
- *
+ * Object pooling service provider interface.
+ * @author Paul Ferraro
+ * @param <T>
+ * @param <E>
  */
 public interface PoolProvider<T, E extends Exception>
 {	
