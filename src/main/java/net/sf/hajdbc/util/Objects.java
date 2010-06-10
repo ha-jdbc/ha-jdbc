@@ -20,30 +20,25 @@ package net.sf.hajdbc.util;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.NotSerializableException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
 
-import net.sf.hajdbc.logging.Level;
-import net.sf.hajdbc.logging.Logger;
-import net.sf.hajdbc.logging.LoggerFactory;
-
 /**
- * @author paul
- *
+ * Object utility methods.
+ * @author Paul Ferraro
  */
 public class Objects
 {
-	private static Logger logger = LoggerFactory.getLogger(Objects.class);
-	
-	private Objects()
-	{
-		// Hide
-	}
-	
+	/**
+	 * Compares two objects for equality.
+	 * If the objects are arrays, then an array comparison is performed.
+	 * @param object1 an object
+	 * @param object2 another object
+	 * @return true, if the objects are equal, false otherwise
+	 */
 	public static boolean equals(Object object1, Object object2)
 	{
 		if ((object1 == null) || (object2 == null)) return object1 == object2;
@@ -108,11 +103,6 @@ public class Objects
 			
 			return bytes.toByteArray();
 		}
-		catch (NotSerializableException e)
-		{
-			logger.log(Level.WARN, e);
-			return serialize(e);
-		}
 		catch (IOException e)
 		{
 			throw new IllegalStateException(e);
@@ -168,4 +158,9 @@ public class Objects
 		
 		return (object != null) ? targetClass.cast(object) : null;
 	}
+	
+	private Objects()
+	{
+		// Hide
+	}	
 }

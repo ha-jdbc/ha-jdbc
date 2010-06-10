@@ -22,9 +22,8 @@ import java.util.Collection;
 import java.util.Iterator;
 
 /**
- * A set of String utilities.
+ * String utility methods.
  * @author Paul Ferraro
- * @since 2.0
  */
 public final class Strings
 {

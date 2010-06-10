@@ -29,8 +29,8 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 
 /**
- * @author paul
- *
+ * Collection utility methods.
+ * @author Paul Ferraro
  */
 public class Collections
 {
@@ -39,29 +39,45 @@ public class Collections
 	static final Iterator<?> EMPTY_ITERATOR = new EmptyIterator<Object>();
 	static final Comparator<?> NATURAL_COMPARATOR = new NaturalComparator<Object>();
 	
-	private Collections()
-	{
-		// Hide constructor
-	}
-	
+	/**
+	 * Returns an iterator over an empty collection.
+	 * @param <E> the collection type
+	 * @return a collection iterator
+	 */
 	@SuppressWarnings("unchecked")
 	static <E> Iterator<E> emptyIterator()
 	{
 		return (Iterator<E>) EMPTY_ITERATOR;
 	}
 
+	/**
+	 * Returns a comparator using the natural ordering of comparable objects.
+	 * @param <E> the collection type
+	 * @return a comparator
+	 */
 	@SuppressWarnings("unchecked")
 	static <E> Comparator<E> naturalComparator()
 	{
 		return (Comparator<E>) NATURAL_COMPARATOR;
 	}
 	
+	/**
+	 * Like {@link java.util.Collections#emptySet()}, but returns a sorted set.
+	 * @param <E> a collection type
+	 * @return an empty sorted set
+	 */
 	@SuppressWarnings("unchecked")
 	public static <E> SortedSet<E> emptySortedSet()
 	{
 		return (SortedSet<E>) EMPTY_SORTED_SET;
 	}
 	
+	/**
+	 * Like {@link java.util.Collections#emptyMap()}, but returns a sorted map.
+	 * @param <K> the map's key type
+	 * @param <V> the map's value type
+	 * @return an empty sorted map
+	 */
 	@SuppressWarnings("unchecked")
 	public static <K, V> SortedMap<K, V> emptySortedMap()
 	{
@@ -69,7 +85,7 @@ public class Collections
 	}
 	
 	/**
-	 * Like {@link java.util.Collections#singleton(Object)}, but returns a {@link SortedSet}.
+	 * Like {@link java.util.Collections#singleton(Object)}, but returns a sorted set.
 	 * @param <E>
 	 * @param element
 	 * @return
@@ -80,7 +96,7 @@ public class Collections
 	}
 	
 	/**
-	 * Like {@link java.util.Collections#singletonMap(Object, Object)}, but returns a {@link SortedMap}.
+	 * Like {@link java.util.Collections#singletonMap(Object, Object)}, but returns a sorted map.
 	 * @param <K>
 	 * @param <V>
 	 * @param element
@@ -501,5 +517,10 @@ public class Collections
 		{
 			return (naturalComparator().compare(this.entry.getKey(), fromKey) >= 0) ? this : Collections.<K, V>emptySortedMap();
 		}
+	}
+	
+	private Collections()
+	{
+		// Hide constructor
 	}
 }
