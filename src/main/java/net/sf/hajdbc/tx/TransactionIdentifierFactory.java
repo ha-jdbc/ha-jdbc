@@ -17,11 +17,9 @@
  */
 package net.sf.hajdbc.tx;
 
-
-
 /**
- * @author paul
- *
+ * Factory for generating transaction identifiers.
+ * @author Paul Ferraro
  */
 public interface TransactionIdentifierFactory
 {
