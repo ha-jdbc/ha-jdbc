@@ -43,8 +43,8 @@ import net.sf.hajdbc.logging.LoggerFactory;
 import org.xml.sax.SAXException;
 
 /**
- * @author paul
- *
+ * {@link DatabaseClusterConfigurationFactory} that parses an xml configuration file.
+ * @author Paul Ferraro
  */
 public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> implements DatabaseClusterConfigurationFactory<Z, D>
 {
