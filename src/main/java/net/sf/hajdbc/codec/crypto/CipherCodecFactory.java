@@ -27,13 +27,16 @@ import java.security.KeyStore;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.codec.Codec;
 import net.sf.hajdbc.codec.CodecFactory;
-import net.sf.hajdbc.sql.SQLExceptionFactory;
 import net.sf.hajdbc.util.Strings;
 
 /**
  * Used to decrypt configuration file passwords using a symmetric key stored in a keystore.
+ * Use the following command to generate Base-64 encoded encrypted passwords for use in your config file:<br/>
+ * <p><code>java -classpath ha-jdbc.jar net.sf.hajdbc.codec.crypto.CipherCodecFactory [password]</code></p>
+ * The following system properties can be used to customize the properties of the key and/or keystore:
  * <table>
  * 	<tr>
  * 		<th>Property</th>
@@ -108,11 +111,11 @@ public class CipherCodecFactory implements CodecFactory, Serializable
 		}
 		catch (GeneralSecurityException e)
 		{
-			throw SQLExceptionFactory.getInstance().createException(e);
+			throw ExceptionType.getExceptionFactory(SQLException.class).createException(e);
 		}
 		catch (IOException e)
 		{
-			throw SQLExceptionFactory.getInstance().createException(e);
+			throw ExceptionType.getExceptionFactory(SQLException.class).createException(e);
 		}
 	}
 	

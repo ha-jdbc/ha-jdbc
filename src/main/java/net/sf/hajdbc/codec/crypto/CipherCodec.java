@@ -23,8 +23,8 @@ import java.sql.SQLException;
 
 import javax.crypto.Cipher;
 
+import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.codec.Codec;
-import net.sf.hajdbc.sql.SQLExceptionFactory;
 
 import org.apache.commons.codec.binary.Base64;
 
@@ -58,7 +58,7 @@ public class CipherCodec implements Codec
 		}
 		catch (GeneralSecurityException e)
 		{
-			throw SQLExceptionFactory.getInstance().createException(e);
+			throw ExceptionType.getExceptionFactory(SQLException.class).createException(e);
 		}
 	}
 
@@ -79,7 +79,7 @@ public class CipherCodec implements Codec
 		}
 		catch (GeneralSecurityException e)
 		{
-			throw SQLExceptionFactory.getInstance().createException(e);
+			throw ExceptionType.getExceptionFactory(SQLException.class).createException(e);
 		}
 	}
 }
