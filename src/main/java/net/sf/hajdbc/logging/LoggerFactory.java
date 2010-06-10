@@ -20,10 +20,9 @@ package net.sf.hajdbc.logging;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
-
-
 /**
- * @author paul
+ * Factory for creating {@link Logger} implementation from various logging service provider implementations.
+ * @author Paul Ferraro
  */
 public final class LoggerFactory
 {

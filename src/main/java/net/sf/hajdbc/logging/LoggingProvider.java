@@ -18,8 +18,8 @@
 package net.sf.hajdbc.logging;
 
 /**
- * @author paul
- *
+ * Logging provider abstraction of logging service provider interface.
+ * @author Paul Ferraro
  */
 public interface LoggingProvider
 {

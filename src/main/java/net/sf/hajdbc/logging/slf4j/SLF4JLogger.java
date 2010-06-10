@@ -23,7 +23,8 @@ import net.sf.hajdbc.logging.AbstractLogger;
 import net.sf.hajdbc.logging.Level;
 
 /**
- * @author paul
+ * SLF4J-based {@link Logger}.
+ * @author Paul Ferraro
  */
 public class SLF4JLogger extends AbstractLogger
 {

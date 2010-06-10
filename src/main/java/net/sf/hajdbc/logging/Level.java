@@ -18,8 +18,8 @@
 package net.sf.hajdbc.logging;
 
 /**
- * @author paul
- *
+ * Log level abstraction for logging service provider interface.
+ * @author Paul Ferraro
  */
 public enum Level
 {

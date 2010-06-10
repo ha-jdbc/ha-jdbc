@@ -21,8 +21,8 @@ import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggingProvider;
 
 /**
- * @author paul
- *
+ * <a href="http://java.sun.com/javase/6/docs/technotes/guides/logging/overview.html">java.util.logging</a>-based service provider.
+ * @author Paul Ferraro
  */
 public class JDKLoggingProvider implements LoggingProvider
 {

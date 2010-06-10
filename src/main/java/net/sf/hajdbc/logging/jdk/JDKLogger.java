@@ -24,8 +24,8 @@ import net.sf.hajdbc.logging.AbstractLogger;
 import net.sf.hajdbc.logging.Level;
 
 /**
- * @author paul
- *
+ * java.util.logging-based {@link Logger} implementation.
+ * @author Paul Ferraro
  */
 public class JDKLogger extends AbstractLogger
 {

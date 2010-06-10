@@ -19,7 +19,7 @@ package net.sf.hajdbc.logging;
 
 /**
  * Logging wrapper that allows deferment of message formatting and argument evaluation.
- * @author paul
+ * @author Paul Ferraro
  */
 public interface Logger
 {

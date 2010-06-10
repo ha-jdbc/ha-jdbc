@@ -20,8 +20,8 @@ package net.sf.hajdbc.logging;
 import java.text.MessageFormat;
 
 /**
- * @author paul
- *
+ * Abstract logger implementation.
+ * @author Paul Ferraro
  */
 public abstract class AbstractLogger implements Logger
 {

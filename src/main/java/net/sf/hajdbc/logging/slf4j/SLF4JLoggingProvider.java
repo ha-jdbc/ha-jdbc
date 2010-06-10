@@ -20,8 +20,8 @@ package net.sf.hajdbc.logging.slf4j;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author paul
- *
+ * <a href="http://slf4j.org">SLF4J</a>-based logging service provider.
+ * @author Paul Ferraro
  */
 public class SLF4JLoggingProvider implements net.sf.hajdbc.logging.LoggingProvider
 {
