@@ -20,8 +20,9 @@ package net.sf.hajdbc.tx;
 import java.util.UUID;
 
 /**
- * @author paul
- *
+ * Transaction identifier factory that generates random UUIDs.
+ * This implementation is safe for <distributable/> clusters.
+ * @author Paul Ferraro
  */
 public class UUIDTransactionIdentifierFactory implements TransactionIdentifierFactory
 {

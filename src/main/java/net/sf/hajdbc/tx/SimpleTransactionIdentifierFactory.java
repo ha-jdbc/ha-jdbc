@@ -20,8 +20,9 @@ package net.sf.hajdbc.tx;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * @author paul
- *
+ * Simple transaction identifier factory using an incrementing counter.
+ * This implementation is *not* safe for <distributable/> clusters, since the identifiers are only unique within a single DatabaseCluster instance.
+ * @author Paul Ferraro
  */
 public class SimpleTransactionIdentifierFactory implements TransactionIdentifierFactory
 {
