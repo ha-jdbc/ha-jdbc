@@ -22,13 +22,13 @@ import java.lang.reflect.InvocationHandler;
 import javax.sql.ConnectionPoolDataSource;
 
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.sql.CommonDataSourceObjectFactory;
+import net.sf.hajdbc.sql.CommonDataSourceFactory;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class ConnectionPoolDataSourceFactory extends CommonDataSourceObjectFactory<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase>
+public class ConnectionPoolDataSourceFactory extends CommonDataSourceFactory<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase>
 {
 	private static final long serialVersionUID = 4615188477335443494L;
 
@@ -37,14 +37,14 @@ public class ConnectionPoolDataSourceFactory extends CommonDataSourceObjectFacto
 	 */
 	public ConnectionPoolDataSourceFactory()
 	{
-		super(ConnectionPoolDataSource.class, ConnectionPoolDataSourceDatabaseClusterConfiguration.class);
+		super(ConnectionPoolDataSource.class);
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.CommonDataSourceObjectFactory#getInvocationHandler(net.sf.hajdbc.DatabaseCluster)
+	 * @see net.sf.hajdbc.sql.CommonDataSourceFactory#createInvocationHandler(net.sf.hajdbc.DatabaseCluster)
 	 */
 	@Override
-	protected InvocationHandler createInvocationHandler(DatabaseCluster<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase> cluster)
+	public InvocationHandler createInvocationHandler(DatabaseCluster<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase> cluster)
 	{
 		return new ConnectionPoolDataSourceInvocationHandler(cluster);
 	}

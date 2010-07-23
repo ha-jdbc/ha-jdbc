@@ -22,12 +22,12 @@ import java.lang.reflect.InvocationHandler;
 import javax.sql.XADataSource;
 
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.sql.CommonDataSourceObjectFactory;
+import net.sf.hajdbc.sql.CommonDataSourceFactory;
 
 /**
  * @author Paul Ferraro
  */
-public class XADataSourceFactory extends CommonDataSourceObjectFactory<XADataSource, XADataSourceDatabase>
+public class XADataSourceFactory extends CommonDataSourceFactory<XADataSource, XADataSourceDatabase>
 {
 	private static final long serialVersionUID = 4012237702282330306L;
 
@@ -36,14 +36,14 @@ public class XADataSourceFactory extends CommonDataSourceObjectFactory<XADataSou
 	 */
 	public XADataSourceFactory()
 	{
-		super(XADataSource.class, XADataSourceDatabaseClusterConfiguration.class);
+		super(XADataSource.class);
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.CommonDataSourceObjectFactory#getInvocationHandler(net.sf.hajdbc.DatabaseCluster)
+	 * @see net.sf.hajdbc.sql.CommonDataSourceFactory#createInvocationHandler(net.sf.hajdbc.DatabaseCluster)
 	 */
 	@Override
-	protected InvocationHandler createInvocationHandler(DatabaseCluster<XADataSource, XADataSourceDatabase> cluster)
+	public InvocationHandler createInvocationHandler(DatabaseCluster<XADataSource, XADataSourceDatabase> cluster)
 	{
 		return new XADataSourceInvocationHandler(cluster);
 	}

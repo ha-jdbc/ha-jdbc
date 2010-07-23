@@ -17,24 +17,102 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.io.Serializable;
 import java.sql.SQLException;
+import java.util.Hashtable;
+
+import javax.naming.Context;
+import javax.naming.Name;
+import javax.naming.RefAddr;
+import javax.naming.Reference;
+import javax.naming.spi.ObjectFactory;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
+import net.sf.hajdbc.ExceptionType;
+import net.sf.hajdbc.util.Objects;
+import net.sf.hajdbc.util.reflect.ProxyFactory;
 
 /**
  * @author Paul Ferraro
- * @param <D> the data source class
+ *
+ * @param <Z>
+ * @param <D>
  */
-public interface CommonDataSourceFactory<Z extends javax.sql.CommonDataSource, D extends Database<Z>> extends Serializable
+public abstract class CommonDataSourceFactory<Z extends javax.sql.CommonDataSource, D extends Database<Z>> implements ObjectFactory, CommonDataSourceInvocationHandlerFactory<Z, D>
 {
+	private static final long serialVersionUID = 4537163442336124817L;
+	
+	private final Class<Z> targetClass;
+	
 	/**
-	 * Creates a data source proxy to the specified cluster, using the configuration file at the specified location.
-	 * @param id a database cluster identifier
-	 * @param config the location of the configuration file for this cluster
-	 * @return a proxied data source
-	 * @throws SQLException if the data source proxy could not be created
+	 * @param targetClass
 	 */
-	Z createProxy(String id, DatabaseClusterConfigurationFactory<Z, D> factory) throws SQLException;
+	protected CommonDataSourceFactory(Class<Z> targetClass)
+	{
+		this.targetClass = targetClass;
+	}
+
+	/**
+	 * @see javax.naming.spi.ObjectFactory#getObjectInstance(java.lang.Object, javax.naming.Name, javax.naming.Context, java.util.Hashtable)
+	 */
+	@Override
+	public Object getObjectInstance(Object object, Name name, Context context, Hashtable<?,?> environment) throws Exception
+	{
+		if ((object == null) || !(object instanceof Reference)) return null;
+		
+		Reference reference = (Reference) object;
+		
+		String className = reference.getClassName();
+		
+		if ((className == null) || !className.equals(this.targetClass.getName())) return null;
+		
+		RefAddr idAddr = reference.get(CommonDataSourceReference.CLUSTER);
+		
+		if (idAddr == null) return null;
+		
+		Object idAddrContent = idAddr.getContent();
+		
+		if ((idAddrContent == null) || !(idAddrContent instanceof String)) return null;
+		
+		String id = (String) idAddrContent;
+		
+		RefAddr configAddr = reference.get(CommonDataSourceReference.CONFIG);
+		
+		if (configAddr == null) return null;
+		
+		Object configAddrContent = configAddr.getContent();
+		
+		if ((configAddrContent == null) || !(configAddrContent instanceof byte[])) return null;
+		
+		byte[] config = (byte[]) configAddr.getContent();
+		
+		@SuppressWarnings("unchecked")
+		DatabaseClusterConfigurationFactory<Z, D> factory = Objects.deserialize(DatabaseClusterConfigurationFactory.class, config);
+		
+		DatabaseCluster<Z, D> cluster = new DatabaseClusterImpl<Z, D>(id, factory.createConfiguration(), factory);
+		
+		try
+		{
+			cluster.start();
+		}
+		catch (Exception e)
+		{
+			cluster.stop();
+
+			throw ExceptionType.getExceptionFactory(SQLException.class).createException(e);
+		}
+		
+		return ProxyFactory.createProxy(this.targetClass, this.createInvocationHandler(cluster));
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.sql.CommonDataSourceInvocationHandlerFactory#getTargetClass()
+	 */
+	@Override
+	public Class<Z> getTargetClass()
+	{
+		return this.targetClass;
+	}
 }

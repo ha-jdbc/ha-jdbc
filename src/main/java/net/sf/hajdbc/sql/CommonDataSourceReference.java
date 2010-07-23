@@ -17,9 +17,16 @@
  */
 package net.sf.hajdbc.sql;
 
+import javax.naming.BinaryRefAddr;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
 import javax.naming.spi.ObjectFactory;
+
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseClusterConfiguration;
+import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
+import net.sf.hajdbc.util.Objects;
+import net.sf.hajdbc.xml.XMLDatabaseClusterConfigurationFactory;
 
 /**
  * @author Paul Ferraro
@@ -39,7 +46,12 @@ public abstract class CommonDataSourceReference<Z> extends Reference
 	 * @param cluster a cluster identifier
 	 * @param config the uri of the configuration file
 	 */
-	protected CommonDataSourceReference(Class<Z> targetClass, Class<? extends ObjectFactory> factoryClass, String cluster, String config)
+	protected <D extends Database<Z>> CommonDataSourceReference(Class<Z> targetClass, Class<? extends ObjectFactory> factoryClass, String cluster, Class<? extends DatabaseClusterConfiguration<Z, D>> configurationClass, String config)
+	{
+		this(targetClass, factoryClass, cluster, new XMLDatabaseClusterConfigurationFactory<Z, D>(configurationClass, cluster, config));
+	}
+	
+	protected <D extends Database<Z>> CommonDataSourceReference(Class<Z> targetClass, Class<? extends ObjectFactory> factoryClass, String cluster, DatabaseClusterConfigurationFactory<Z, D> factory)
 	{
 		super(targetClass.getName(), factoryClass.getName(), null);
 		
@@ -50,9 +62,6 @@ public abstract class CommonDataSourceReference<Z> extends Reference
 		
 		this.add(new StringRefAddr(CLUSTER, cluster));
 		
-		if (config != null)
-		{
-			this.add(new StringRefAddr(CONFIG, config));
-		}
+		this.add(new BinaryRefAddr(CONFIG, Objects.serialize(factory)));
 	}
 }

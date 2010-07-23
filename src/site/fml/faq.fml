@@ -22,7 +22,7 @@
 			<answer>
 				Use your logging facility.  HA-JDBC generates an ERROR level log message when it automatically deactivates a database.
 				If you use Log4J, configure an SMTP appender for the "net.sf.hajdbc" logger.<br/>
-				If you use java.util.logging, configure an <a href="http://http://smtphandler.sourceforge.net/">SMTPHandler</a> for the "net.sf.hajdbc" package.
+				If you use java.util.logging, configure an <a href="http://smtphandler.sourceforge.net/">SMTPHandler</a> for the "net.sf.hajdbc" package.
 			</answer>
 		</faq>
 		<faq id="connect-params">

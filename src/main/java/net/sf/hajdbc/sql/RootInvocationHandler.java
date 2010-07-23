@@ -35,9 +35,9 @@ public abstract class RootInvocationHandler<Z, D extends Database<Z>, E extends 
 	 * @param databaseCluster
 	 * @param proxyClass
 	 */
-	protected RootInvocationHandler(DatabaseCluster<Z, D> cluster, Class<Z> proxyClass)
+	protected RootInvocationHandler(DatabaseCluster<Z, D> cluster, Class<Z> proxyClass, Class<E> exceptionClass)
 	{
-		super(proxyClass, new TreeMap<D, Z>());
+		super(proxyClass, exceptionClass, new TreeMap<D, Z>());
 		
 		this.cluster = cluster;
 		

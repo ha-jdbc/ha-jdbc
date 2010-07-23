@@ -52,7 +52,7 @@ public abstract class LocatorInvocationHandler<Z, D extends Database<Z>, P, T> e
 	 */
 	protected LocatorInvocationHandler(P parent, SQLProxy<Z, D, P, SQLException> proxy, Invoker<Z, D, P, T, SQLException> invoker, Class<T> locatorClass, Map<D, T> locators, boolean updateCopy, Set<Method> readMethodSet, Set<Method> writeMethodSet)
 	{
-		super(parent, proxy, invoker, locatorClass, locators);
+		super(parent, proxy, invoker, locatorClass, SQLException.class, locators);
 		
 		this.freeMethod = Methods.findMethod(locatorClass, "free");
 		this.updateCopy = updateCopy;

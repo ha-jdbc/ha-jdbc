@@ -195,7 +195,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy, Ser
 			{
 				support.rollback(targetConnection);
 	
-				throw ExceptionType.getExceptionFactory(SQLException.class).createException(e);
+				throw new SQLException(e);
 			}
 			catch (ExecutionException e)
 			{

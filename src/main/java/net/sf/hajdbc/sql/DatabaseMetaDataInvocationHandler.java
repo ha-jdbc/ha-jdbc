@@ -45,7 +45,7 @@ public class DatabaseMetaDataInvocationHandler<Z, D extends Database<Z>> extends
 	 */
 	public DatabaseMetaDataInvocationHandler(Connection parent, SQLProxy<Z, D, Connection, SQLException> proxy, Invoker<Z, D, Connection, DatabaseMetaData, SQLException> invoker, Map<D, DatabaseMetaData> objectMap)
 	{
-		super(parent, proxy, invoker, DatabaseMetaData.class, objectMap);
+		super(parent, proxy, invoker, DatabaseMetaData.class, SQLException.class, objectMap);
 	}
 
 	/**

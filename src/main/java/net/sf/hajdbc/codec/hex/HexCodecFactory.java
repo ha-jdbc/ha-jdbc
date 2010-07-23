@@ -19,7 +19,6 @@ package net.sf.hajdbc.codec.hex;
 
 import java.sql.SQLException;
 
-import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.codec.AbstractCodec;
 
 import org.apache.commons.codec.DecoderException;
@@ -46,7 +45,7 @@ public class HexCodecFactory extends AbstractCodec
 		}
 		catch (DecoderException e)
 		{
-			throw ExceptionType.getExceptionFactory(SQLException.class).createException(e);
+			throw new SQLException(e);
 		}
 	}
 

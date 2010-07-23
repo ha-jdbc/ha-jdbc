@@ -1,4 +1,0 @@
-net.sf.hajdbc.local.sql.SQLStateManagerProvider
-net.sf.hajdbc.local.bdb.BDBStateManagerProvider
-net.sf.hajdbc.local.jdbm.JDBMStateManagerProvider
-net.sf.hajdbc.local.sqljet.SQLJetStateManagerProvider

@@ -22,7 +22,8 @@ import java.sql.SQLException;
 import java.util.Arrays;
 
 import net.sf.hajdbc.Dialect;
-import net.sf.hajdbc.ExceptionFactory;
+import net.sf.hajdbc.ExceptionType;
+import net.sf.hajdbc.durability.Durability.Phase;
 
 /**
  * @author paul
@@ -30,14 +31,13 @@ import net.sf.hajdbc.ExceptionFactory;
  */
 public class SQLExceptionFactory extends AbstractExceptionFactory<SQLException>
 {
-	private static final ExceptionFactory<SQLException> factory = new SQLExceptionFactory();
-
+/*
 	public static ExceptionFactory<SQLException> getInstance()
 	{
-		return factory;
+		return ExceptionType.SQL.getExceptionFactory();
 	}
-	
-	protected SQLExceptionFactory()
+*/	
+	public SQLExceptionFactory()
 	{
 		super(SQLException.class);	
 	}
@@ -137,5 +137,25 @@ public class SQLExceptionFactory extends AbstractExceptionFactory<SQLException>
 		SQLException nextException = exception.getNextException();
 		
 		return dialect.indicatesFailure(exception) || ((nextException != null) && this.indicatesFailure(nextException, dialect));
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.ExceptionFactory#getType()
+	 */
+	@Override
+	public ExceptionType getType()
+	{
+		return ExceptionType.SQL;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.ExceptionFactory#correctHeuristic(java.lang.Exception, net.sf.hajdbc.durability.Durability.Phase)
+	 */
+	@Override
+	public boolean correctHeuristic(SQLException exception, Phase phase)
+	{
+		return false;
 	}
 }

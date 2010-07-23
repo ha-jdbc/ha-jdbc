@@ -26,10 +26,12 @@ import net.sf.hajdbc.codec.Codec;
 import net.sf.hajdbc.durability.Durability;
 import net.sf.hajdbc.lock.LockManager;
 import net.sf.hajdbc.state.StateManager;
+import net.sf.hajdbc.tx.TransactionIdentifierFactory;
 
 /**
  * @author Paul Ferraro
- * @param <D> either java.sql.Driver or javax.sql.DataSource
+ * @param <Z> either java.sql.Driver or javax.sql.DataSource
+ * @param <D> database implementation
  */
 public interface DatabaseCluster<Z, D extends Database<Z>> extends Lifecycle
 {
@@ -174,4 +176,6 @@ public interface DatabaseCluster<Z, D extends Database<Z>> extends Lifecycle
 	ThreadFactory getThreadFactory();
 	
 	Codec getCodec();
+	
+	TransactionIdentifierFactory getTransactionIdentifierFactory();
 }

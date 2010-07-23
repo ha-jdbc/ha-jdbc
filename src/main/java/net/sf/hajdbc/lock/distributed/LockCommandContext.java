@@ -23,8 +23,8 @@ import java.util.concurrent.locks.Lock;
 import net.sf.hajdbc.distributed.Remote;
 
 /**
- * @author paul
- *
+ * Execution context for lock commands.
+ * @author Paul Ferraro
  */
 public interface LockCommandContext
 {

@@ -35,14 +35,14 @@ public class Test
 		db1.setName(UrlDataSource.class.getName());
 		db1.setProperty("url", "jdbc:h2:mem:db1");
 		db1.setUser("sa");
-		db1.setPassword("sa");
+		db1.setPassword("");
 		
 		DataSourceDatabase db2 = new DataSourceDatabase();
 		db2.setId("db2");
 		db2.setName(UrlDataSource.class.getName());
 		db2.setProperty("url", "jdbc:h2:mem:db2");
 		db2.setUser("sa");
-		db2.setPassword("sa");
+		db2.setPassword("");
 		
 		DataSourceDatabaseClusterConfiguration config = new DataSourceDatabaseClusterConfiguration();
 		
@@ -68,17 +68,17 @@ public class Test
 	{
 		String createSQL = "CREATE TABLE test (id INTEGER NOT NULL, name VARCHAR NOT NULL, PRIMARY KEY (id))";
 		
-		Connection c1 = this.ds1.getConnection();
+		Connection c1 = this.ds1.getConnection("sa", "");
 		Statement s1 = c1.createStatement();
 		s1.execute(createSQL);
 		s1.close();
 		
-		Connection c2 = this.ds2.getConnection();
+		Connection c2 = this.ds2.getConnection("sa", "");
 		Statement s2 = c2.createStatement();
 		s2.execute(createSQL);
 		s2.close();
 		
-		Connection c = this.ds.getConnection("sa", "sa");
+		Connection c = this.ds.getConnection("sa", "");
 		PreparedStatement ps = c.prepareStatement("INSERT INTO test (id, name) VALUES (?, ?)");
 		ps.setInt(1, 1);
 		ps.setString(2, "1");

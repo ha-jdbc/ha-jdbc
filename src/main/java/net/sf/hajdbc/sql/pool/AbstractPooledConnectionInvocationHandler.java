@@ -71,7 +71,7 @@ public abstract class AbstractPooledConnectionInvocationHandler<Z, D extends Dat
 	 */
 	protected AbstractPooledConnectionInvocationHandler(Z dataSource, SQLProxy<Z, D, Z, SQLException> proxy, Invoker<Z, D, Z, C, SQLException> invoker, Class<C> proxyClass, Map<D, C> objects)
 	{
-		super(dataSource, proxy, invoker, proxyClass, objects);
+		super(dataSource, proxy, invoker, proxyClass, SQLException.class, objects);
 	}
 
 	/**

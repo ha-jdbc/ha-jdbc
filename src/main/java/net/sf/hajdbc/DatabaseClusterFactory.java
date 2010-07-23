@@ -17,12 +17,13 @@
  */
 package net.sf.hajdbc;
 
+import java.sql.SQLException;
+
 
 /**
- * @author paul
- *
+ * @author Paul Ferraro
  */
-public interface DatabaseClusterFactory<Z, D extends Database<Z>, C extends DatabaseCluster<Z, D>>
+public interface DatabaseClusterFactory<Z, D extends Database<Z>>
 {
-	C createDatabaseCluster(String id, DatabaseClusterConfiguration<Z, D> configuration);
+	DatabaseCluster<Z, D> createDatabaseCluster(String id, DatabaseClusterConfigurationFactory<Z, D> factory) throws SQLException;
 }

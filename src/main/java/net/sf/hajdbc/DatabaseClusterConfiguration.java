@@ -32,8 +32,7 @@ import net.sf.hajdbc.state.StateManagerProvider;
 import org.quartz.CronExpression;
 
 /**
- * @author paul
- *
+ * @author Paul Ferraro
  */
 public interface DatabaseClusterConfiguration<Z, D extends Database<Z>> extends Serializable
 {

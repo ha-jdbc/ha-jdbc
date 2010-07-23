@@ -22,8 +22,7 @@ import net.sf.hajdbc.DatabaseCluster;
 
 
 /**
- * @author paul
- *
+ * @author Paul Ferraro
  */
 public interface DurabilityFactory
 {

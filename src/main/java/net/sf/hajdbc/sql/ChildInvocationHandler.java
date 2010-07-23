@@ -20,7 +20,6 @@ package net.sf.hajdbc.sql;
 import java.util.Map;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.ExceptionFactory;
 
 /**
  * @author Paul Ferraro
@@ -30,18 +29,8 @@ import net.sf.hajdbc.ExceptionFactory;
  */
 public abstract class ChildInvocationHandler<Z, D extends Database<Z>, P, T, E extends Exception> extends AbstractChildInvocationHandler<Z, D, P, E, T, E>
 {
-	protected ChildInvocationHandler(P parent, SQLProxy<Z, D, P, E> proxy, Invoker<Z, D, P, T, E> invoker, Class<T> proxyClass, Map<D, T> objects)
+	protected ChildInvocationHandler(P parent, SQLProxy<Z, D, P, E> proxy, Invoker<Z, D, P, T, E> invoker, Class<T> proxyClass, Class<E> exceptionClass, Map<D, T> objects)
 	{
-		super(parent, proxy, invoker, proxyClass, objects);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.SQLProxy#getExceptionFactory()
-	 */
-	@Override
-	public ExceptionFactory<E> getExceptionFactory()
-	{
-		return this.getParentProxy().getExceptionFactory();
+		super(parent, proxy, invoker, proxyClass, exceptionClass, objects);
 	}
 }

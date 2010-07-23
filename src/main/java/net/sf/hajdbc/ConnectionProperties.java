@@ -18,8 +18,8 @@
 package net.sf.hajdbc;
 
 /**
- * @author paul
- *
+ * Encapsulation of the properties necessary to connect to a database.
+ * @author Paul Ferraro
  */
 public interface ConnectionProperties
 {

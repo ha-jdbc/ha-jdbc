@@ -30,6 +30,8 @@ Features
 	
 Related Software
 
+   Don't like HA-JDBC?  Check out the following alternatives:
+   
 	[{{{http://forge.continuent.org/projects/sequoia} Sequoia}}]
  		Database-independent clustering middleware
  

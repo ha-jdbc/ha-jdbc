@@ -31,8 +31,14 @@ import java.util.TreeSet;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.ExceptionType;
+import net.sf.hajdbc.durability.Durability;
+import net.sf.hajdbc.durability.DurabilityListener;
 import net.sf.hajdbc.durability.InvocationEvent;
+import net.sf.hajdbc.durability.InvocationEventImpl;
 import net.sf.hajdbc.durability.InvokerEvent;
+import net.sf.hajdbc.durability.InvokerEventImpl;
+import net.sf.hajdbc.durability.InvokerResult;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
@@ -41,12 +47,15 @@ import net.sf.hajdbc.pool.PoolFactory;
 import net.sf.hajdbc.pool.sql.ConnectionFactory;
 import net.sf.hajdbc.pool.sql.ConnectionPoolProvider;
 import net.sf.hajdbc.state.DatabaseEvent;
+import net.sf.hajdbc.state.DurabilityListenerAdapter;
+import net.sf.hajdbc.state.SerializedDurabilityListener;
 import net.sf.hajdbc.state.StateManager;
+import net.sf.hajdbc.util.Objects;
 
 /**
  * @author Paul Ferraro
  */
-public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, ConnectionFactory
+public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, ConnectionFactory, SerializedDurabilityListener
 {
 	private static final String STATE_TABLE = "cluster_state";
 	private static final String DATABASE_COLUMN = "database_id";
@@ -55,29 +64,31 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	private static final String INVOKER_TABLE = "cluster_invoker";
 	private static final String TRANSACTION_COLUMN = "tx_id";
 	private static final String PHASE_COLUMN = "phase_id";
-	private static final String SUCCESS_COLUMN = "success";
+	private static final String EXCEPTION_COLUMN = "exception_id";
 	private static final String RESULT_COLUMN = "result";
 	
 	static final String SELECT_STATE_SQL = MessageFormat.format("SELECT {1} FROM {0}", STATE_TABLE, DATABASE_COLUMN);
 	static final String INSERT_STATE_SQL = MessageFormat.format("INSERT INTO {0} ({1}) VALUES (?)", STATE_TABLE, DATABASE_COLUMN);
 	static final String DELETE_STATE_SQL = MessageFormat.format("DELETE FROM {0} WHERE {1} = ?", STATE_TABLE, DATABASE_COLUMN);
+	static final String CLEAR_STATE_SQL = MessageFormat.format("DELETE FROM {0}", STATE_TABLE);
 	static final String TRUNCATE_STATE_SQL = MessageFormat.format("DELETE FROM {0}", STATE_TABLE);
 
-	static final String SELECT_INVOCATION_SQL = MessageFormat.format("SELECT {1}, {2} FROM {0}", INVOCATION_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN);
-	static final String INSERT_INVOCATION_SQL = MessageFormat.format("INSERT INTO {0} ({1}, {2}) VALUES (?, ?)", INVOCATION_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN);
+	static final String SELECT_INVOCATION_SQL = MessageFormat.format("SELECT {1}, {2}, {3} FROM {0}", INVOCATION_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, EXCEPTION_COLUMN);
+	static final String INSERT_INVOCATION_SQL = MessageFormat.format("INSERT INTO {0} ({1}, {2}, {3}) VALUES (?, ?, ?)", INVOCATION_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, EXCEPTION_COLUMN);
 	static final String DELETE_INVOCATION_SQL = MessageFormat.format("DELETE FROM {0} WHERE {1} = ? AND {2} = ?", INVOCATION_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN);
 	
-	static final String SELECT_INVOKER_SQL = MessageFormat.format("SELECT {1}, {2}, {3}, {4}, {5} FROM {0}", INVOKER_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, DATABASE_COLUMN, SUCCESS_COLUMN, RESULT_COLUMN);
+	static final String SELECT_INVOKER_SQL = MessageFormat.format("SELECT {1}, {2}, {3}, {4}, FROM {0}", INVOKER_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, DATABASE_COLUMN, RESULT_COLUMN);
 	static final String INSERT_INVOKER_SQL = MessageFormat.format("INSERT INTO {0} ({1}, {2}, {3}) VALUES (?, ?, ?)", INVOKER_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, DATABASE_COLUMN);
-	static final String UPDATE_INVOKER_SQL = MessageFormat.format("UPDATE {0} SET {4} = ?, {5} = ? WHERE {1} = ? AND {2} = ? AND {3} = ?", INVOKER_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, DATABASE_COLUMN, SUCCESS_COLUMN, RESULT_COLUMN);
+	static final String UPDATE_INVOKER_SQL = MessageFormat.format("UPDATE {0} SET {4} = ? WHERE {1} = ? AND {2} = ? AND {3} = ?", INVOKER_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, DATABASE_COLUMN, RESULT_COLUMN);
 	static final String DELETE_INVOKER_SQL = MessageFormat.format("DELETE FROM {0} WHERE {1} = ? AND {2} = ?", INVOKER_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN);
 
-	private static final String CREATE_INVOKER_SQL = MessageFormat.format("CREATE TABLE IF NOT EXISTS {0} ({1} BINARY NOT NULL, {2} INTEGER NOT NULL, {3} VARCHAR NOT NULL, {4} BOOLEAN, {5} BINARY, PRIMARY KEY ({1}, {2}, {3}))", INVOKER_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, DATABASE_COLUMN, SUCCESS_COLUMN, RESULT_COLUMN);
+	private static final String CREATE_INVOCATION_SQL = MessageFormat.format("CREATE TABLE IF NOT EXISTS {0} ({1} BINARY NOT NULL, {2} INTEGER NOT NULL, {3} INTEGER NOT NULL, PRIMARY KEY ({1}, {2}))", INVOCATION_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, EXCEPTION_COLUMN);
+	private static final String CREATE_INVOKER_SQL = MessageFormat.format("CREATE TABLE IF NOT EXISTS {0} ({1} BINARY NOT NULL, {2} INTEGER NOT NULL, {3} VARCHAR NOT NULL, {4} BINARY, PRIMARY KEY ({1}, {2}, {3}))", INVOKER_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, DATABASE_COLUMN, RESULT_COLUMN);
 	private static final String CREATE_STATE_SQL = MessageFormat.format("CREATE TABLE IF NOT EXISTS {0} ({1} VARCHAR NOT NULL, PRIMARY KEY ({1}))", STATE_TABLE, DATABASE_COLUMN);
-	private static final String CREATE_INVOCATION_SQL = MessageFormat.format("CREATE TABLE IF NOT EXISTS {0} ({1} BINARY NOT NULL, {2} INTEGER NOT NULL, PRIMARY KEY ({1}))", INVOCATION_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN);
 	
 	private static Logger logger = LoggerFactory.getLogger(SQLStateManager.class);
 	
+	private DurabilityListener listener = new DurabilityListenerAdapter(this);
 	private final DatabaseCluster<Z, D> cluster;
 	private final PoolFactory poolFactory;
 	
@@ -109,27 +120,43 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 			
 			try
 			{
-				PreparedStatement statement = connection.prepareStatement(SELECT_STATE_SQL);
-				
-				try
+				if (Boolean.getBoolean(StateManager.CLEAR_LOCAL_STATE))
 				{
-					ResultSet resultSet = statement.executeQuery();
+					PreparedStatement statement = connection.prepareStatement(CLEAR_STATE_SQL);
 					
 					try
 					{
-						while (resultSet.next())
+						statement.executeUpdate();
+					}
+					finally
+					{
+						close(statement);
+					}
+				}
+				else
+				{
+					PreparedStatement statement = connection.prepareStatement(SELECT_STATE_SQL);
+					
+					try
+					{
+						ResultSet resultSet = statement.executeQuery();
+						
+						try
 						{
-							set.add(resultSet.getString(1));
+							while (resultSet.next())
+							{
+								set.add(resultSet.getString(1));
+							}
+						}
+						finally
+						{
+							close(resultSet);
 						}
 					}
 					finally
 					{
-						close(resultSet);
+						close(statement);
 					}
-				}
-				finally
-				{
-					close(statement);
 				}
 			}
 			finally
@@ -187,7 +214,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 		}
 		catch (SQLException e)
 		{
-			// Log ERROR
+			logger.log(Level.ERROR, e, e.getMessage());
 		}
 	}
 
@@ -269,17 +296,30 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.durability.DurabilityListener#beforeInvocation(net.sf.hajdbc.durability.InvocationEvent)
+	 * @see net.sf.hajdbc.state.SerializedDurabilityListener#beforeInvocation(byte[], int)
 	 */
 	@Override
-	public void beforeInvocation(final InvocationEvent event)
+	public void beforeInvocation(final byte[] transactionId, final int phase, final int exceptionType)
 	{
 		Transaction transaction = new Transaction()
 		{
 			@Override
 			public void execute(Connection connection) throws SQLException
 			{
-				SQLStateManager.this.execute(connection, INSERT_INVOCATION_SQL, event);
+				PreparedStatement statement = connection.prepareStatement(INSERT_INVOCATION_SQL);
+				
+				try
+				{
+					statement.setBytes(1, transactionId);
+					statement.setInt(2, phase);
+					statement.setInt(3, exceptionType);
+					
+					statement.executeUpdate();
+				}
+				finally
+				{
+					close(statement);
+				}
 			}
 		};
 		
@@ -291,6 +331,122 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 		{
 			logger.log(Level.ERROR, e, e.getMessage());
 		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.state.SerializedDurabilityListener#afterInvocation(byte[], int)
+	 */
+	@Override
+	public void afterInvocation(final byte[] transactionId, final int phase)
+	{
+		Transaction transaction = new Transaction()
+		{
+			@Override
+			public void execute(Connection connection) throws SQLException
+			{
+				SQLStateManager.this.execute(connection, DELETE_INVOKER_SQL, transactionId, phase);
+				SQLStateManager.this.execute(connection, DELETE_INVOCATION_SQL, transactionId, phase);
+			}
+		};
+		
+		try
+		{
+			this.execute(transaction);
+		}
+		catch (SQLException e)
+		{
+			logger.log(Level.ERROR, e, e.getMessage());
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.state.SerializedDurabilityListener#beforeInvoker(byte[], int, java.lang.String)
+	 */
+	@Override
+	public void beforeInvoker(final byte[] transactionId, final int phase, final String databaseId)
+	{
+		Transaction transaction = new Transaction()
+		{
+			@Override
+			public void execute(Connection connection) throws SQLException
+			{
+				PreparedStatement statement = connection.prepareStatement(INSERT_INVOKER_SQL);
+				
+				try
+				{
+					statement.setBytes(1, transactionId);
+					statement.setInt(2, phase);
+					statement.setString(3, databaseId);
+					
+					statement.executeUpdate();
+				}
+				finally
+				{
+					close(statement);
+				}
+			}
+		};
+		
+		try
+		{
+			this.execute(transaction);
+		}
+		catch (SQLException e)
+		{
+			logger.log(Level.ERROR, e, e.getMessage());
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.state.SerializedDurabilityListener#afterInvoker(byte[], int, java.lang.String, byte[])
+	 */
+	@Override
+	public void afterInvoker(final byte[] transactionId, final int phase, final String databaseId, final byte[] result)
+	{
+		Transaction transaction = new Transaction()
+		{
+			@Override
+			public void execute(Connection connection) throws SQLException
+			{
+				PreparedStatement statement = connection.prepareStatement(UPDATE_INVOKER_SQL);
+				
+				try
+				{
+					statement.setBytes(1, transactionId);
+					statement.setInt(2, phase);
+					statement.setString(3, databaseId);					
+					statement.setBytes(4, result);
+					
+					statement.executeUpdate();
+				}
+				finally
+				{
+					close(statement);
+				}
+			}
+		};
+		
+		try
+		{
+			this.execute(transaction);
+		}
+		catch (SQLException e)
+		{
+			logger.log(Level.ERROR, e, e.getMessage());
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.durability.DurabilityListener#beforeInvocation(net.sf.hajdbc.durability.InvocationEvent)
+	 */
+	@Override
+	public void beforeInvocation(InvocationEvent event)
+	{
+		this.listener.beforeInvocation(event);
 	}
 	
 	/**
@@ -298,36 +454,19 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	 * @see net.sf.hajdbc.durability.DurabilityListener#afterInvocation(net.sf.hajdbc.durability.InvocationEvent)
 	 */
 	@Override
-	public void afterInvocation(final InvocationEvent event)
+	public void afterInvocation(InvocationEvent event)
 	{
-		Transaction transaction = new Transaction()
-		{
-			@Override
-			public void execute(Connection connection) throws SQLException
-			{
-				SQLStateManager.this.execute(connection, DELETE_INVOKER_SQL, event);
-				SQLStateManager.this.execute(connection, DELETE_INVOCATION_SQL, event);
-			}
-		};
-		
-		try
-		{
-			this.execute(transaction);
-		}
-		catch (SQLException e)
-		{
-			logger.log(Level.ERROR, e, e.getMessage());
-		}
+		this.listener.afterInvocation(event);
 	}
 	
-	void execute(Connection connection, String sql, InvocationEvent event) throws SQLException 
+	void execute(Connection connection, String sql, byte[] transactionId, int phase) throws SQLException 
 	{
 		PreparedStatement statement = connection.prepareStatement(sql);
 		
 		try
 		{
-			statement.setBytes(1, event.getTransactionId());
-			statement.setInt(2, event.getPhase().ordinal());
+			statement.setBytes(1, transactionId);
+			statement.setInt(2, phase);
 			
 			statement.executeUpdate();
 		}
@@ -353,17 +492,22 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 			try
 			{
 				PreparedStatement statement = connection.prepareStatement(SELECT_INVOCATION_SQL);
-				
+
 				try
 				{
 					ResultSet resultSet = statement.executeQuery();
 					
-					while (resultSet.next())
+					try
 					{
-						map.put(new InvocationEvent(resultSet.getBytes(1), resultSet.getInt(2)), new HashMap<String, InvokerEvent>());
+						while (resultSet.next())
+						{
+							map.put(new InvocationEventImpl(Objects.deserialize(resultSet.getBytes(1)), Durability.Phase.values()[resultSet.getInt(2)], ExceptionType.values()[resultSet.getInt(3)]), new HashMap<String, InvokerEvent>());
+						}
 					}
-					
-					close(resultSet);
+					finally
+					{
+						close(resultSet);
+					}
 				}
 				finally
 				{
@@ -378,19 +522,26 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 					
 					while (resultSet.next())
 					{
-						byte[] transactionId = resultSet.getBytes(1);
-						int phase = resultSet.getInt(2);
+						Object transactionId = Objects.deserialize(resultSet.getBytes(1));
+						Durability.Phase phase = Durability.Phase.values()[resultSet.getInt(2)];
+						ExceptionType type = ExceptionType.values()[resultSet.getInt(3)];
 						
-						Map<String, InvokerEvent> invokers = map.get(new InvocationEvent(transactionId, phase));
+						Map<String, InvokerEvent> invokers = map.get(new InvocationEventImpl(transactionId, phase, type));
 						
 						if (invokers != null)
 						{
 							String databaseId = resultSet.getString(3);
-							boolean success = resultSet.getBoolean(4);
-							boolean completed = resultSet.wasNull();
-							byte[] result = resultSet.getBytes(5);
 							
-							invokers.put(databaseId, new InvokerEvent(transactionId, phase, databaseId, completed, success ? result : null, success ? null : result));
+							InvokerEvent event = new InvokerEventImpl(transactionId, phase, databaseId);
+							
+							byte[] bytes = resultSet.getBytes(4);
+							
+							if (!resultSet.wasNull())
+							{
+								event.setResult(Objects.deserialize(InvokerResult.class, bytes));
+							}
+
+							invokers.put(databaseId, event);
 						}
 					}
 					
@@ -419,38 +570,9 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	 * @see net.sf.hajdbc.durability.DurabilityListener#beforeInvoker(net.sf.hajdbc.durability.InvokerEvent)
 	 */
 	@Override
-	public void beforeInvoker(final InvokerEvent event)
+	public void beforeInvoker(InvokerEvent event)
 	{
-		Transaction transaction = new Transaction()
-		{
-			@Override
-			public void execute(Connection connection) throws SQLException
-			{
-				PreparedStatement statement = connection.prepareStatement(INSERT_INVOKER_SQL);
-				
-				try
-				{
-					statement.setBytes(1, event.getTransactionId());
-					statement.setInt(2, event.getPhase().ordinal());
-					statement.setString(3, event.getDatabaseId());
-					
-					statement.executeUpdate();
-				}
-				finally
-				{
-					close(statement);
-				}
-			}
-		};
-		
-		try
-		{
-			this.execute(transaction);
-		}
-		catch (SQLException e)
-		{
-			logger.log(Level.ERROR, e, e.getMessage());
-		}
+		this.listener.beforeInvoker(event);
 	}
 
 	/**
@@ -458,44 +580,9 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	 * @see net.sf.hajdbc.durability.DurabilityListener#afterInvoker(net.sf.hajdbc.durability.InvokerEvent)
 	 */
 	@Override
-	public void afterInvoker(final InvokerEvent event)
+	public void afterInvoker(InvokerEvent event)
 	{
-		Transaction transaction = new Transaction()
-		{
-			@Override
-			public void execute(Connection connection) throws SQLException
-			{
-				PreparedStatement statement = connection.prepareStatement(UPDATE_INVOKER_SQL);
-				
-				try
-				{
-					statement.setBytes(1, event.getTransactionId());
-					statement.setInt(2, event.getPhase().ordinal());
-					statement.setString(3, event.getDatabaseId());
-					
-					byte[] exception = event.getException();
-					boolean success = (exception == null);
-					
-					statement.setBoolean(4, success);
-					statement.setBytes(5, success ? event.getResult() : exception);
-					
-					statement.executeUpdate();
-				}
-				finally
-				{
-					close(statement);
-				}
-			}
-		};
-		
-		try
-		{
-			this.execute(transaction);
-		}
-		catch (SQLException e)
-		{
-			logger.log(Level.ERROR, e, e.getMessage());
-		}
+		this.listener.afterInvoker(event);
 	}
 
 	/**

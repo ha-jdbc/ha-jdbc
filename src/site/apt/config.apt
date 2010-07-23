@@ -78,7 +78,7 @@ Configuration
 
 		[id] Uniquely identifies this synchronization strategy. Used when invoking activation methods.
 	
-		[class] Class name of an implementation of the <<<{{{/apidocs/api/net/sf/hajdbc/SynchronizationStrategy.html} net.sf.hajdbc.SynchronizationStrategy}}>>> interface.
+		[class] Class name of an implementation of the <<<{{{./apidocs/api/net/sf/hajdbc/SynchronizationStrategy.html} net.sf.hajdbc.SynchronizationStrategy}}>>> interface.
 	
 ** \<{property}\>
 
@@ -119,7 +119,7 @@ Configuration
 		
 		[dialect] The value of this attribute defines either:
 		
-			* the class name of an implementation of the {{{apidocs/net/sf/hajdbc/Dialect.html} net.sf.hajdbc.Dialect}} interface.
+			* the class name of an implementation of the {{{./apidocs/net/sf/hajdbc/Dialect.html} net.sf.hajdbc.Dialect}} interface.
 			
 			* a pre-defined alias as enumerated {{{dialect} here}}.
 		

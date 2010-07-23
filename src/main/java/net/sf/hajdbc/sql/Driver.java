@@ -22,16 +22,18 @@ import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
 import net.sf.hajdbc.AbstractDriver;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterConfiguration;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
+import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
@@ -49,7 +51,7 @@ public final class Driver extends AbstractDriver
 	
 	private static final Logger logger = LoggerFactory.getLogger(Driver.class);
 	
-	private static final Map<String, DatabaseCluster<java.sql.Driver, DriverDatabase>> clusterMap = new HashMap<String, DatabaseCluster<java.sql.Driver, DriverDatabase>>();
+	private static final ConcurrentMap<String, DatabaseCluster<java.sql.Driver, DriverDatabase>> clusterMap = new ConcurrentHashMap<String, DatabaseCluster<java.sql.Driver, DriverDatabase>>();
 	private static volatile Map<String, DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>> configurationFactoryMap = Collections.emptyMap();
 	
 	static
@@ -155,6 +157,43 @@ public final class Driver extends AbstractDriver
 
 	private DatabaseCluster<java.sql.Driver, DriverDatabase> getDatabaseCluster(String id, Properties properties) throws SQLException
 	{
+		DatabaseCluster<java.sql.Driver, DriverDatabase> cluster = clusterMap.get(id);
+		
+		if (cluster != null) return cluster;
+
+		DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase> factory = configurationFactoryMap.get(id);
+		
+		if (factory == null)
+		{
+			factory = new XMLDatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>(DriverDatabaseClusterConfiguration.class, id, properties.getProperty(CONFIG));
+		}
+		
+		DatabaseClusterConfiguration<java.sql.Driver, DriverDatabase> configuration = factory.createConfiguration();
+		
+		cluster = new DatabaseClusterImpl<java.sql.Driver, DriverDatabase>(id, configuration, factory);
+		
+		DatabaseCluster<java.sql.Driver, DriverDatabase> existing = clusterMap.putIfAbsent(id, cluster);
+		
+		if (existing == null)
+		{
+			try
+			{
+				cluster.start();
+				
+				return cluster;
+			}
+			catch (Exception e)
+			{
+				clusterMap.remove(id);
+				
+				cluster.stop();
+
+				throw ExceptionType.getExceptionFactory(SQLException.class).createException(e);
+			}
+		}
+
+		return existing;
+/*
 		synchronized (clusterMap)
 		{
 			DatabaseCluster<java.sql.Driver, DriverDatabase> cluster = clusterMap.get(id);
@@ -188,5 +227,6 @@ public final class Driver extends AbstractDriver
 			
 			return cluster;
 		}
+*/
 	}
 }

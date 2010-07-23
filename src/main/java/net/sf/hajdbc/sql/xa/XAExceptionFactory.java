@@ -20,23 +20,16 @@ package net.sf.hajdbc.sql.xa;
 import javax.transaction.xa.XAException;
 
 import net.sf.hajdbc.Dialect;
-import net.sf.hajdbc.ExceptionFactory;
+import net.sf.hajdbc.ExceptionType;
+import net.sf.hajdbc.durability.Durability.Phase;
 import net.sf.hajdbc.sql.AbstractExceptionFactory;
 
 /**
- * @author paul
- *
+ * @author Paul Ferraro
  */
 public class XAExceptionFactory extends AbstractExceptionFactory<XAException>
 {
-	private static final ExceptionFactory<XAException> factory = new XAExceptionFactory();
-
-	public static ExceptionFactory<XAException> getInstance()
-	{
-		return factory;
-	}
-	
-	protected XAExceptionFactory()
+	public XAExceptionFactory()
 	{
 		super(XAException.class);
 	}
@@ -89,5 +82,39 @@ public class XAExceptionFactory extends AbstractExceptionFactory<XAException>
 	public boolean indicatesFailure(XAException exception, Dialect dialect)
 	{
 		return dialect.indicatesFailure(exception);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.ExceptionFactory#getType()
+	 */
+	@Override
+	public ExceptionType getType()
+	{
+		return ExceptionType.XA;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.ExceptionFactory#correctHeuristic(java.lang.Exception, net.sf.hajdbc.durability.Durability.Phase)
+	 */
+	@Override
+	public boolean correctHeuristic(XAException exception, Phase phase)
+	{
+		switch (phase)
+		{
+			case COMMIT:
+			{
+				return exception.errorCode == XAException.XA_HEURCOM;
+			}
+			case ROLLBACK:
+			{
+				return exception.errorCode == XAException.XA_HEURRB;
+			}
+			default:
+			{
+				return false;
+			}
+		}
 	}
 }

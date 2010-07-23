@@ -15,25 +15,49 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.hajdbc.xml;
+package net.sf.hajdbc.durability;
 
 import java.io.Serializable;
-
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
 
 /**
  * @author Paul Ferraro
  */
-public interface XMLStreamFactory extends Serializable
+public class InvokerResultImpl implements InvokerResult, Serializable
 {
-	/**
-	 * @return an xml source
-	 */
-	Source createSource();
+	private static final long serialVersionUID = 1497455948088313742L;
+	
+	private final Object value;
+	private final Throwable exception;
+	
+	public InvokerResultImpl(Object value)
+	{
+		this.value = value;
+		this.exception = null;
+	}
+	
+	public InvokerResultImpl(Throwable exception)
+	{
+		this.value = null;
+		this.exception = exception;
+	}
 	
 	/**
-	 * @return an xml result
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.durability.InvokerResult#getValue()
 	 */
-	Result createResult();
+	@Override
+	public Object getValue()
+	{
+		return this.value;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.durability.InvokerResult#getException()
+	 */
+	@Override
+	public Throwable getException()
+	{
+		return this.exception;
+	}
 }

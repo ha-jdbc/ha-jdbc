@@ -18,8 +18,7 @@
 package net.sf.hajdbc;
 
 /**
- * @author paul
- *
+ * @author Paul Ferraro
  */
 public interface DatabaseClusterConfigurationListener<Z, D extends Database<Z>>
 {

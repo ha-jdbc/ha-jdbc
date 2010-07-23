@@ -192,7 +192,7 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 				}
 				catch (InterruptedException e)
 				{
-					throw ExceptionType.getExceptionFactory(SQLException.class).createException(e);
+					throw new SQLException(e);
 				}
 				catch (ExecutionException e)
 				{

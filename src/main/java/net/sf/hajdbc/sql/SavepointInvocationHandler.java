@@ -24,7 +24,6 @@ import java.sql.Savepoint;
 import java.util.Map;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.ExceptionFactory;
 
 /**
  * @author Paul Ferraro
@@ -41,7 +40,7 @@ public class SavepointInvocationHandler<Z, D extends Database<Z>> extends ChildI
 	 */
 	protected SavepointInvocationHandler(Connection connection, SQLProxy<Z, D, Connection, SQLException> proxy, Invoker<Z, D, Connection, Savepoint, SQLException> invoker, Map<D, Savepoint> savepointMap)
 	{
-		super(connection, proxy, invoker, Savepoint.class, savepointMap);
+		super(connection, proxy, invoker, Savepoint.class, SQLException.class, savepointMap);
 	}
 
 	/**
@@ -60,15 +59,5 @@ public class SavepointInvocationHandler<Z, D extends Database<Z>> extends ChildI
 	protected void close(Connection connection, Savepoint savepoint) throws SQLException
 	{
 		connection.releaseSavepoint(savepoint);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.SQLProxy#getExceptionFactory()
-	 */
-	@Override
-	public ExceptionFactory<SQLException> getExceptionFactory()
-	{
-		return SQLExceptionFactory.getInstance();
 	}
 }

@@ -20,6 +20,7 @@ package net.sf.hajdbc.sql.xa;
 import javax.naming.StringRefAddr;
 import javax.sql.XADataSource;
 
+import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.sql.CommonDataSourceReference;
 
 /**
@@ -38,7 +39,7 @@ public class XADataSourceReference extends CommonDataSourceReference<XADataSourc
 	 */
 	public XADataSourceReference(String cluster)
 	{
-		this(cluster, null);
+		this(cluster, (String) null);
 	}
 
 	/**
@@ -53,13 +54,30 @@ public class XADataSourceReference extends CommonDataSourceReference<XADataSourc
 
 	public XADataSourceReference(String cluster, boolean force2PC)
 	{
-		this(cluster, null, force2PC);
+		this(cluster, (String) null, force2PC);
 	}
 	
 	public XADataSourceReference(String cluster, String config, boolean force2PC)
 	{
-		super(XADataSource.class, XADataSourceFactory.class, cluster, config);
+		super(XADataSource.class, XADataSourceFactory.class, cluster, XADataSourceDatabaseClusterConfiguration.class, config);
 
+		this.setForce2PC(force2PC);
+	}
+	
+	public XADataSourceReference(String cluster, DatabaseClusterConfigurationFactory<XADataSource, XADataSourceDatabase> factory)
+	{
+		this(cluster, factory, false);
+	}
+	
+	public XADataSourceReference(String cluster, DatabaseClusterConfigurationFactory<XADataSource, XADataSourceDatabase> factory, boolean force2PC)
+	{
+		super(XADataSource.class, XADataSourceFactory.class, cluster, factory);
+
+		this.setForce2PC(force2PC);
+	}
+	
+	private void setForce2PC(boolean force2PC)
+	{
 		this.add(new StringRefAddr(FORCE_2PC, Boolean.toString(force2PC)));
 	}
 }

@@ -23,8 +23,7 @@ import java.util.regex.Pattern;
 import net.sf.hajdbc.util.Strings;
 
 /**
- * @author paul
- *
+ * @author Paul Ferraro
  */
 public class Version
 {

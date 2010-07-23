@@ -22,7 +22,6 @@ import java.sql.SQLException;
 import java.util.Set;
 
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.util.reflect.Methods;
 
 /**
@@ -41,7 +40,7 @@ public class CommonDataSourceInvocationHandler<Z extends javax.sql.CommonDataSou
 	 */
 	protected CommonDataSourceInvocationHandler(DatabaseCluster<Z, D> databaseCluster, Class<Z> proxyClass)
 	{
-		super(databaseCluster, proxyClass);
+		super(databaseCluster, proxyClass, SQLException.class);
 	}
 
 	@Override
@@ -67,15 +66,5 @@ public class CommonDataSourceInvocationHandler<Z extends javax.sql.CommonDataSou
 	protected boolean isRecordable(Method method)
 	{
 		return setMethodSet.contains(method);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.SQLProxy#getExceptionFactory()
-	 */
-	@Override
-	public ExceptionFactory<SQLException> getExceptionFactory()
-	{
-		return SQLExceptionFactory.getInstance();
 	}
 }

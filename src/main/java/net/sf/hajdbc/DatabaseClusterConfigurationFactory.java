@@ -21,8 +21,7 @@ import java.io.Serializable;
 import java.sql.SQLException;
 
 /**
- * @author paul
- *
+ * @author Paul Ferraro
  */
 public interface DatabaseClusterConfigurationFactory<Z, D extends Database<Z>> extends DatabaseClusterConfigurationListener<Z, D>, Serializable
 {

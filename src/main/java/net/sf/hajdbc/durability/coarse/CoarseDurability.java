@@ -22,10 +22,11 @@ import java.util.SortedMap;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.durability.Durability;
 import net.sf.hajdbc.durability.DurabilityListener;
 import net.sf.hajdbc.durability.InvocationEvent;
+import net.sf.hajdbc.durability.InvocationEventImpl;
 import net.sf.hajdbc.durability.InvokerEvent;
-import net.sf.hajdbc.durability.TransactionIdentifier;
 import net.sf.hajdbc.durability.none.NoDurability;
 import net.sf.hajdbc.sql.InvocationStrategy;
 import net.sf.hajdbc.sql.Invoker;
@@ -33,8 +34,9 @@ import net.sf.hajdbc.sql.SQLProxy;
 import net.sf.hajdbc.state.StateManager;
 
 /**
- * @author paul
- * 
+ * {@link Durability} implementation that tracks invocations only, but not per-database invokers.
+ * This durability level can detect, but not recover from, mid-commit crashes.
+ * @author Paul Ferraro
  */
 public class CoarseDurability<Z, D extends Database<Z>> extends NoDurability<Z, D>
 {
@@ -51,7 +53,7 @@ public class CoarseDurability<Z, D extends Database<Z>> extends NoDurability<Z, 
 	 * @see net.sf.hajdbc.durability.Durability#getInvocationStrategy(net.sf.hajdbc.sql.InvocationStrategy)
 	 */
 	@Override
-	public InvocationStrategy getInvocationStrategy(final InvocationStrategy strategy, final Phase phase, final TransactionIdentifier transactionId)
+	public InvocationStrategy getInvocationStrategy(final InvocationStrategy strategy, final Phase phase, final Object transactionId)
 	{
 		final DurabilityListener listener = this.cluster.getStateManager();
 
@@ -60,7 +62,7 @@ public class CoarseDurability<Z, D extends Database<Z>> extends NoDurability<Z, 
 			@Override
 			public <ZZ, DD extends Database<ZZ>, T, R, EE extends Exception> SortedMap<DD, R> invoke(SQLProxy<ZZ, DD, T, EE> proxy, Invoker<ZZ, DD, T, R, EE> invoker) throws EE
 			{
-				InvocationEvent event = new InvocationEvent(transactionId, phase);
+				InvocationEvent event = new InvocationEventImpl(transactionId, phase, proxy.getExceptionFactory().getType());
 
 				listener.beforeInvocation(event);
 

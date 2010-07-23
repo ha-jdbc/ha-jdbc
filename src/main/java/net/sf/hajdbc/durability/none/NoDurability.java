@@ -24,7 +24,6 @@ import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.durability.Durability;
 import net.sf.hajdbc.durability.InvocationEvent;
 import net.sf.hajdbc.durability.InvokerEvent;
-import net.sf.hajdbc.durability.TransactionIdentifier;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
@@ -32,8 +31,9 @@ import net.sf.hajdbc.sql.InvocationStrategy;
 import net.sf.hajdbc.sql.Invoker;
 
 /**
- * @author paul
- *
+ * {@link Durability} implementation that does not track anything.
+ * This durability level cannot detect, nor recover from mid-commit crashes.
+ * @author Paul Ferraro
  */
 public class NoDurability<Z, D extends Database<Z>> implements Durability<Z, D>
 {
@@ -44,7 +44,7 @@ public class NoDurability<Z, D extends Database<Z>> implements Durability<Z, D>
 	 * @see net.sf.hajdbc.durability.Durability#getInvocationStrategy(net.sf.hajdbc.sql.InvocationStrategy)
 	 */
 	@Override
-	public InvocationStrategy getInvocationStrategy(InvocationStrategy strategy, Phase phase, TransactionIdentifier transactionId)
+	public InvocationStrategy getInvocationStrategy(InvocationStrategy strategy, Phase phase, Object transactionId)
 	{
 		return strategy;
 	}
@@ -54,7 +54,7 @@ public class NoDurability<Z, D extends Database<Z>> implements Durability<Z, D>
 	 * @see net.sf.hajdbc.durability.Durability#getInvoker(net.sf.hajdbc.sql.Invoker)
 	 */
 	@Override
-	public <T, R, E extends Exception> Invoker<Z, D, T, R, E> getInvoker(Invoker<Z, D, T, R, E> invoker, Phase phase, TransactionIdentifier transactionId, ExceptionFactory<E> exceptionFactory)
+	public <T, R, E extends Exception> Invoker<Z, D, T, R, E> getInvoker(Invoker<Z, D, T, R, E> invoker, Phase phase, Object transactionId, ExceptionFactory<E> exceptionFactory)
 	{
 		return invoker;
 	}

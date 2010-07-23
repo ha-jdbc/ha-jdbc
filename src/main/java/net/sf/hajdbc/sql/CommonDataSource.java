@@ -18,12 +18,16 @@
 package net.sf.hajdbc.sql;
 
 import java.sql.SQLException;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.naming.Referenceable;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterConfiguration;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
+import net.sf.hajdbc.ExceptionType;
+import net.sf.hajdbc.util.reflect.ProxyFactory;
 import net.sf.hajdbc.xml.XMLDatabaseClusterConfigurationFactory;
 
 /**
@@ -32,30 +36,56 @@ import net.sf.hajdbc.xml.XMLDatabaseClusterConfigurationFactory;
  */
 public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D extends Database<Z>> implements Referenceable, javax.sql.CommonDataSource
 {
-	private final CommonDataSourceFactory<Z, D> factory;
+	private final CommonDataSourceInvocationHandlerFactory<Z, D> factory;
 	private final Class<? extends DatabaseClusterConfiguration<Z, D>> configurationClass;
+	private final AtomicReference<DatabaseCluster<Z, D>> clusterReference = new AtomicReference<DatabaseCluster<Z, D>>();
 	
 	private volatile String cluster;
 	private volatile String config;
 	private volatile DatabaseClusterConfigurationFactory<Z, D> configurationFactory;	
-	private volatile Z proxy;
 	
-	protected CommonDataSource(CommonDataSourceFactory<Z, D> factory, Class<? extends DatabaseClusterConfiguration<Z, D>> configurationClass)
+	protected CommonDataSource(CommonDataSourceInvocationHandlerFactory<Z, D> factory, Class<? extends DatabaseClusterConfiguration<Z, D>> configurationClass)
 	{
 		this.factory = factory;
 		this.configurationClass = configurationClass;
 	}
 	
-	public synchronized Z getProxy() throws SQLException
+	public Z getProxy() throws SQLException
 	{
-		if (this.proxy == null)
-		{
-			this.proxy = this.factory.createProxy(this.cluster, (this.configurationFactory != null) ? this.configurationFactory : new XMLDatabaseClusterConfigurationFactory<Z, D>(this.configurationClass, this.cluster, this.config));
-		}
-		
-		return this.proxy;
+		return ProxyFactory.createProxy(this.factory.getTargetClass(), this.factory.createInvocationHandler(this.getDatabaseCluster()));
 	}
 
+	private DatabaseCluster<Z, D> getDatabaseCluster() throws SQLException
+	{
+		DatabaseCluster<Z, D> cluster = this.clusterReference.get();
+		
+		if (cluster != null) return cluster;
+		
+		DatabaseClusterConfigurationFactory<Z, D> factory = (this.configurationFactory != null) ? this.configurationFactory : new XMLDatabaseClusterConfigurationFactory<Z, D>(this.configurationClass, this.cluster, this.config);
+		
+		cluster = new DatabaseClusterImpl<Z, D>(this.cluster, factory.createConfiguration(), factory);
+		
+		if (this.clusterReference.compareAndSet(null, cluster))
+		{
+			try
+			{
+				cluster.start();
+				
+				return cluster;
+			}
+			catch (Exception e)
+			{
+				this.clusterReference.set(null);
+				
+				cluster.stop();
+				
+				throw ExceptionType.getExceptionFactory(SQLException.class).createException(e);
+			}
+		}
+		
+		return this.clusterReference.get();
+	}
+	
 	/**
 	 * @return the cluster
 	 */

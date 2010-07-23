@@ -27,7 +27,6 @@ import java.security.KeyStore;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.codec.Codec;
 import net.sf.hajdbc.codec.CodecFactory;
 import net.sf.hajdbc.util.Strings;
@@ -111,11 +110,11 @@ public class CipherCodecFactory implements CodecFactory, Serializable
 		}
 		catch (GeneralSecurityException e)
 		{
-			throw ExceptionType.getExceptionFactory(SQLException.class).createException(e);
+			throw new SQLException(e);
 		}
 		catch (IOException e)
 		{
-			throw ExceptionType.getExceptionFactory(SQLException.class).createException(e);
+			throw new SQLException(e);
 		}
 	}
 	

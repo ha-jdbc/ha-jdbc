@@ -17,65 +17,12 @@
  */
 package net.sf.hajdbc.durability;
 
-import java.util.Arrays;
-import java.util.EventObject;
-
+import net.sf.hajdbc.ExceptionType;
 
 /**
- * @author paul
- *
+ * @author Paul Ferraro
  */
-public class InvocationEvent extends EventObject
+public interface InvocationEvent extends DurabilityEvent
 {
-	private static final long serialVersionUID = -2703279764623112956L;
-	
-	private final Durability.Phase phase;
-	
-	public InvocationEvent(TransactionIdentifier transactionId, Durability.Phase phase)
-	{
-		super(transactionId.getBytes());
-		
-		this.phase = phase;
-	}
-
-	public InvocationEvent(byte[] transactionId, int phase)
-	{
-		super(transactionId);
-		
-		this.phase = Durability.Phase.values()[phase];
-	}
-	
-	public Durability.Phase getPhase()
-	{
-		return this.phase;
-	}
-	
-	public byte[] getTransactionId()
-	{
-		return (byte[]) this.source;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object object)
-	{
-		if ((object == null) || !(object instanceof InvocationEvent)) return false;
-		
-		InvocationEvent event = (InvocationEvent) object;
-		
-		return (this.phase == event.phase) && Arrays.equals(this.getTransactionId(), event.getTransactionId());
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode()
-	{
-		return this.source.hashCode() + this.phase.ordinal();
-	}
+	ExceptionType getExceptionType();
 }

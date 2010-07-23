@@ -37,9 +37,7 @@ import javax.transaction.xa.Xid;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.durability.Durability;
-import net.sf.hajdbc.durability.TransactionIdentifier;
 import net.sf.hajdbc.durability.Durability.Phase;
 import net.sf.hajdbc.lock.LockManager;
 import net.sf.hajdbc.sql.AbstractChildInvocationHandler;
@@ -87,7 +85,7 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 	 */
 	protected XAResourceInvocationHandler(XAConnection connection, SQLProxy<XADataSource, XADataSourceDatabase, XAConnection, SQLException> proxy, Invoker<XADataSource, XADataSourceDatabase, XAConnection, XAResource, SQLException> invoker, Map<XADataSourceDatabase, XAResource> objectMap)
 	{
-		super(connection, proxy, invoker, XAResource.class, objectMap);
+		super(connection, proxy, invoker, XAResource.class, XAException.class, objectMap);
 	}
 
 	/**
@@ -150,7 +148,7 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 			
 			if (phase != null)
 			{
-				final InvocationStrategy durabilityStrategy = cluster.getDurability().getInvocationStrategy(strategy, phase, new XidTransactionIdentifier(xid));
+				final InvocationStrategy durabilityStrategy = cluster.getDurability().getInvocationStrategy(strategy, phase, xid);
 				
 				if (endTransactionMethodSet.contains(method))
 				{
@@ -198,9 +196,7 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 		
 		if (method.equals(prepareMethod) || endTransactionMethodSet.contains(method))
 		{
-			Xid xid = (Xid) parameters[0];
-			
-			return this.getDatabaseCluster().getDurability().getInvoker(invoker, phase, new XidTransactionIdentifier(xid), this.getExceptionFactory());
+			return this.getDatabaseCluster().getDurability().getInvoker(invoker, phase, parameters[0], this.getExceptionFactory());
 		}
 		
 		return invoker;
@@ -222,31 +218,5 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 	protected boolean isRecordable(Method method)
 	{
 		return databaseWriteMethodSet.contains(method);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.SQLProxy#getExceptionFactory()
-	 */
-	@Override
-	public ExceptionFactory<XAException> getExceptionFactory()
-	{
-		return XAExceptionFactory.getInstance();
-	}
-	
-	private static class XidTransactionIdentifier implements TransactionIdentifier
-	{
-		private final Xid xid;
-		
-		XidTransactionIdentifier(Xid xid)
-		{
-			this.xid = xid;
-		}
-		
-		@Override
-		public byte[] getBytes()
-		{
-			return this.xid.getGlobalTransactionId();
-		}
 	}
 }

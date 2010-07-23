@@ -18,7 +18,6 @@
 package net.sf.hajdbc.xml;
 
 import java.io.File;
-import java.io.Serializable;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -31,7 +30,7 @@ import javax.xml.transform.stream.StreamSource;
  * 
  * @author Paul Ferraro
  */
-public class FileXMLStreamFactory implements XMLStreamFactory, Serializable
+public class FileXMLStreamFactory implements XMLStreamFactory
 {
 	private static final long serialVersionUID = -8857228563490452629L;
 	

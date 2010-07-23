@@ -19,8 +19,7 @@ package net.sf.hajdbc.durability;
 
 
 /**
- * @author paul
- *
+ * @author Paul Ferraro
  */
 public interface DurabilityListener
 {

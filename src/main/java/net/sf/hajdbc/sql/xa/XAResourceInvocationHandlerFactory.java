@@ -30,8 +30,7 @@ import net.sf.hajdbc.sql.Invoker;
 import net.sf.hajdbc.sql.SQLProxy;
 
 /**
- * @author paul
- *
+ * @author Paul Ferraro
  */
 public class XAResourceInvocationHandlerFactory implements InvocationHandlerFactory<XADataSource, XADataSourceDatabase, XAConnection, XAResource, SQLException>
 {

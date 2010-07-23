@@ -493,7 +493,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 			{
 				support.rollback(targetConnection);
 				
-				throw ExceptionType.getExceptionFactory(SQLException.class).createException(e);
+				throw new SQLException(e);
 			}
 			catch (SQLException e)
 			{

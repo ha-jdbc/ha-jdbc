@@ -19,6 +19,7 @@ package net.sf.hajdbc.sql.pool;
 
 import javax.sql.ConnectionPoolDataSource;
 
+import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.sql.CommonDataSourceReference;
 
 /**
@@ -32,9 +33,9 @@ public class ConnectionPoolDataSourceReference extends CommonDataSourceReference
 	 * Constructs a reference to a <code>ConnectionPoolDataSource</code> for the specified cluster
 	 * @param cluster a cluster identifier
 	 */
-	protected ConnectionPoolDataSourceReference(String cluster)
+	public ConnectionPoolDataSourceReference(String cluster)
 	{
-		this(cluster, null);
+		this(cluster, (String) null);
 	}
 	
 	/**
@@ -42,8 +43,18 @@ public class ConnectionPoolDataSourceReference extends CommonDataSourceReference
 	 * @param cluster a cluster identifier
 	 * @param config the uri of the configuration file
 	 */
-	protected ConnectionPoolDataSourceReference(String cluster, String config)
+	public ConnectionPoolDataSourceReference(String cluster, String config)
 	{
-		super(ConnectionPoolDataSource.class, ConnectionPoolDataSourceFactory.class, cluster, config);
+		super(ConnectionPoolDataSource.class, ConnectionPoolDataSourceFactory.class, cluster, ConnectionPoolDataSourceDatabaseClusterConfiguration.class, config);
+	}
+	
+	/**
+	 * Constructs a reference to a <code>ConnectionPoolDataSource</code> for the specified cluster
+	 * @param cluster a cluster identifier
+	 * @param config the uri of the configuration file
+	 */
+	public ConnectionPoolDataSourceReference(String cluster, DatabaseClusterConfigurationFactory<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase> factory)
+	{
+		super(ConnectionPoolDataSource.class, ConnectionPoolDataSourceFactory.class, cluster, factory);
 	}
 }

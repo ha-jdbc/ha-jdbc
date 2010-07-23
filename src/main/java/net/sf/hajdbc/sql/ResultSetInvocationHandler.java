@@ -38,7 +38,6 @@ import javax.sql.rowset.serial.SerialBlob;
 import javax.sql.rowset.serial.SerialClob;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.util.reflect.Methods;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
 import net.sf.hajdbc.util.reflect.SimpleInvocationHandler;
@@ -77,7 +76,7 @@ public class ResultSetInvocationHandler<Z, D extends Database<Z>, S extends Stat
 	 */
 	protected ResultSetInvocationHandler(S statement, SQLProxy<Z, D, S, SQLException> proxy, Invoker<Z, D, S, ResultSet, SQLException> invoker, Map<D, ResultSet> resultSetMap, TransactionContext<Z, D> transactionContext, FileSupport<SQLException> fileSupport)
 	{
-		super(statement, proxy, invoker, ResultSet.class, resultSetMap);
+		super(statement, proxy, invoker, ResultSet.class, SQLException.class, resultSetMap);
 		
 		this.transactionContext = transactionContext;
 		this.fileSupport = fileSupport;
@@ -335,15 +334,5 @@ public class ResultSetInvocationHandler<Z, D extends Database<Z>, S extends Stat
 		Class<?>[] types = method.getParameterTypes();
 		
 		return method.getName().startsWith("update") && (types != null) && (types.length > 0) && (types[0].equals(String.class) || types[0].equals(Integer.TYPE));
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.SQLProxy#getExceptionFactory()
-	 */
-	@Override
-	public ExceptionFactory<SQLException> getExceptionFactory()
-	{
-		return SQLExceptionFactory.getInstance();
 	}
 }

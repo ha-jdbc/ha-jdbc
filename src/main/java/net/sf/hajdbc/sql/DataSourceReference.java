@@ -19,6 +19,8 @@ package net.sf.hajdbc.sql;
 
 import javax.sql.DataSource;
 
+import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
+
 /**
  * @author Paul Ferraro
  */
@@ -32,7 +34,7 @@ public class DataSourceReference extends CommonDataSourceReference<DataSource>
 	 */
 	public DataSourceReference(String cluster)
 	{
-		this(cluster, null);
+		this(cluster, (String) null);
 	}
 	
 	/**
@@ -42,6 +44,16 @@ public class DataSourceReference extends CommonDataSourceReference<DataSource>
 	 */
 	public DataSourceReference(String cluster, String config)
 	{
-		super(DataSource.class, DataSourceFactory.class, cluster, config);
+		super(DataSource.class, DataSourceFactory.class, cluster, DataSourceDatabaseClusterConfiguration.class, config);
+	}
+	
+	/**
+	 * Constructs a reference to a DataSource for the specified cluster
+	 * @param cluster a cluster identifier
+	 * @param config the uri of the configuration file
+	 */
+	public DataSourceReference(String cluster, DatabaseClusterConfigurationFactory<DataSource, DataSourceDatabase> factory)
+	{
+		super(DataSource.class, DataSourceFactory.class, cluster, factory);
 	}
 }

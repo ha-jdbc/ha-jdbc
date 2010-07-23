@@ -23,8 +23,8 @@ import java.util.concurrent.locks.Lock;
 import net.sf.hajdbc.distributed.Command;
 
 /**
- * @author paul
- *
+ * Release lock command for execution on group member.
+ * @author Paul Ferraro
  */
 public class MemberReleaseLockCommand implements Command<Void, LockCommandContext>
 {

@@ -35,6 +35,8 @@ import java.util.WeakHashMap;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.ExceptionFactory;
+import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
@@ -58,19 +60,21 @@ public abstract class AbstractInvocationHandler<Z, D extends Database<Z>, T, E e
 	
 	protected Logger logger = LoggerFactory.getLogger(this.getClass());
 	
-	private Class<T> proxyClass;
-	private Map<D, T> objectMap;
-	private Map<SQLProxy<Z, D, ?, ? extends Exception>, Void> childMap = new WeakHashMap<SQLProxy<Z, D, ?, ? extends Exception>, Void>();
-	private Map<Method, Invoker<Z, D, T, ?, E>> invokerMap = new HashMap<Method, Invoker<Z, D, T, ?, E>>();
+	private final Class<T> proxyClass;
+	private final Map<D, T> objectMap;
+	private final Map<SQLProxy<Z, D, ?, ? extends Exception>, Void> childMap = new WeakHashMap<SQLProxy<Z, D, ?, ? extends Exception>, Void>();
+	private final Map<Method, Invoker<Z, D, T, ?, E>> invokerMap = new HashMap<Method, Invoker<Z, D, T, ?, E>>();
+	private final Class<E> exceptionClass;
 	
 	/**
 	 * @param cluster the database cluster
 	 * @param proxyClass the interface being proxied
 	 * @param objectMap a map of database to sql object.
 	 */
-	protected AbstractInvocationHandler(Class<T> proxyClass, Map<D, T> objectMap)
+	protected AbstractInvocationHandler(Class<T> proxyClass, Class<E> exceptionClass, Map<D, T> objectMap)
 	{
 		this.proxyClass = proxyClass;
+		this.exceptionClass = exceptionClass;
 		this.objectMap = objectMap;
 	}
 	
@@ -372,6 +376,16 @@ public abstract class AbstractInvocationHandler<Z, D extends Database<Z>, T, E e
 	protected <A> SQLProxy<Z, D, A, E> getInvocationHandler(A proxy)
 	{
 		return (SQLProxy<Z, D, A, E>) Proxy.getInvocationHandler(proxy);
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.sql.SQLProxy#getExceptionFactory()
+	 */
+	@Override
+	public final ExceptionFactory<E> getExceptionFactory()
+	{
+		return ExceptionType.getExceptionFactory(this.exceptionClass);
 	}
 	
 	protected class SimpleInvoker<R> implements Invoker<Z, D, T, R, E>

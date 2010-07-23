@@ -17,10 +17,11 @@
  */
 package net.sf.hajdbc;
 
+import net.sf.hajdbc.durability.Durability;
+
 
 /**
- * @author paul
- *
+ * @author Paul Ferraro
  */
 public interface ExceptionFactory<E extends Exception>
 {
@@ -31,4 +32,8 @@ public interface ExceptionFactory<E extends Exception>
 	boolean equals(E exception1, E exception2);
 	
 	boolean indicatesFailure(E exception, Dialect dialect);
+	
+	ExceptionType getType();
+	
+	boolean correctHeuristic(E exception, Durability.Phase phase);
 }

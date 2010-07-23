@@ -17,18 +17,17 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.SortedMap;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.durability.Durability;
-import net.sf.hajdbc.durability.TransactionIdentifier;
 import net.sf.hajdbc.lock.LockManager;
+import net.sf.hajdbc.tx.TransactionIdentifierFactory;
 
 /**
  * @author Paul Ferraro
@@ -36,11 +35,10 @@ import net.sf.hajdbc.lock.LockManager;
  */
 public class LocalTransactionContext<Z, D extends Database<Z>> implements TransactionContext<Z, D>
 {
-	private static final AtomicLong transactionCounter = new AtomicLong();
-	
 	final Durability<Z, D> durability;
 	private final Lock lock;
-	volatile TransactionIdentifier transactionId;
+	private final TransactionIdentifierFactory transactionIdFactory;
+	volatile Object transactionId;
 	
 	/**
 	 * @param cluster
@@ -49,6 +47,7 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 	{
 		this.lock = cluster.getLockManager().readLock(LockManager.GLOBAL);
 		this.durability = cluster.getDurability();
+		this.transactionIdFactory = cluster.getTransactionIdentifierFactory();
 	}
 	
 	/**
@@ -117,7 +116,7 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 			@Override
 			public R invoke(D database, T object) throws SQLException
 			{
-				return LocalTransactionContext.this.durability.getInvoker(invoker, Durability.Phase.COMMIT, LocalTransactionContext.this.transactionId, SQLExceptionFactory.getInstance()).invoke(database, object);
+				return LocalTransactionContext.this.durability.getInvoker(invoker, Durability.Phase.COMMIT, LocalTransactionContext.this.transactionId, ExceptionType.getExceptionFactory(SQLException.class)).invoke(database, object);
 			}
 		};
 	}
@@ -158,7 +157,7 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 	{
 		if (this.transactionId == null) return invoker;
 
-		return this.durability.getInvoker(invoker, phase, this.transactionId, SQLExceptionFactory.getInstance());
+		return this.durability.getInvoker(invoker, phase, this.transactionId, ExceptionType.getExceptionFactory(SQLException.class));
 	}
 
 	/**
@@ -177,36 +176,12 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 	void lock()
 	{
 		this.lock.lock();
-		this.transactionId = new LocalTransactionIdentifier(transactionCounter.incrementAndGet());
+		this.transactionId = this.transactionIdFactory.createTransactionIdentifier();
 	}
 	
 	void unlock()
 	{
 		this.lock.unlock();
 		this.transactionId = null;
-	}
-	
-	private static class LocalTransactionIdentifier implements TransactionIdentifier
-	{
-		private static final int LONG_BYTES = Long.SIZE / Byte.SIZE;
-		
-		private final long id;
-		
-		LocalTransactionIdentifier(long id)
-		{
-			this.id = id;
-		}
-		
-		/**
-		 * {@inheritDoc}
-		 * @see net.sf.hajdbc.TransactionIdentifierSerializer#getBytes(java.lang.Object)
-		 */
-		@Override
-		public byte[] getBytes()
-		{
-			ByteBuffer buffer = ByteBuffer.allocate(LONG_BYTES);
-			buffer.putLong(this.id);
-			return buffer.array();
-		}
 	}
 }

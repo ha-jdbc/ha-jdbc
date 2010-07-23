@@ -25,8 +25,7 @@ import net.sf.hajdbc.sql.InvocationStrategy;
 import net.sf.hajdbc.sql.Invoker;
 
 /**
- * @author paul
- *
+ * @author Paul Ferraro
  */
 public interface Durability<Z, D extends Database<Z>>
 {
@@ -35,9 +34,9 @@ public interface Durability<Z, D extends Database<Z>>
 		PREPARE, COMMIT, ROLLBACK, FORGET;
 	}
 	
-	InvocationStrategy getInvocationStrategy(InvocationStrategy strategy, Phase phase, TransactionIdentifier transactionId);
+	InvocationStrategy getInvocationStrategy(InvocationStrategy strategy, Phase phase, Object transactionId);
 	
-	<T, R, E extends Exception> Invoker<Z, D, T, R, E> getInvoker(Invoker<Z, D, T, R, E> invoker, Phase phase, TransactionIdentifier transactionId, ExceptionFactory<E> exceptionFactory);
+	<T, R, E extends Exception> Invoker<Z, D, T, R, E> getInvoker(Invoker<Z, D, T, R, E> invoker, Phase phase, Object transactionId, ExceptionFactory<E> exceptionFactory);
 	
 	void recover(Map<InvocationEvent, Map<String, InvokerEvent>> invokers);
 }

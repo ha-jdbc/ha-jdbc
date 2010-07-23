@@ -17,25 +17,28 @@
  */
 package net.sf.hajdbc.durability.fine;
 
-import java.util.Iterator;
 import java.util.Map;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.balancer.Balancer;
+import net.sf.hajdbc.durability.Durability;
 import net.sf.hajdbc.durability.DurabilityListener;
 import net.sf.hajdbc.durability.InvocationEvent;
 import net.sf.hajdbc.durability.InvokerEvent;
-import net.sf.hajdbc.durability.TransactionIdentifier;
+import net.sf.hajdbc.durability.InvokerEventImpl;
+import net.sf.hajdbc.durability.InvokerResult;
+import net.sf.hajdbc.durability.InvokerResultImpl;
 import net.sf.hajdbc.durability.coarse.CoarseDurability;
 import net.sf.hajdbc.sql.Invoker;
 import net.sf.hajdbc.state.StateManager;
 import net.sf.hajdbc.util.Objects;
 
 /**
- * @author paul
- *
+ * {@link Durability} implementation that tracks invocations as well as per-database invokers.
+ * This durability level can both detect and recover from mid-commit crashes.
+ * @author Paul Ferraro
  */
 public class FineDurability<Z, D extends Database<Z>> extends CoarseDurability<Z, D>
 {
@@ -49,7 +52,7 @@ public class FineDurability<Z, D extends Database<Z>> extends CoarseDurability<Z
 	 * @see net.sf.hajdbc.durability.Durability#getInvoker(net.sf.hajdbc.sql.Invoker)
 	 */
 	@Override
-	public <T, R, E extends Exception> Invoker<Z, D, T, R, E> getInvoker(final Invoker<Z, D, T, R, E> invoker, final Phase phase, final TransactionIdentifier transactionId, final ExceptionFactory<E> exceptionFactory)
+	public <T, R, E extends Exception> Invoker<Z, D, T, R, E> getInvoker(final Invoker<Z, D, T, R, E> invoker, final Phase phase, final Object transactionId, final ExceptionFactory<E> exceptionFactory)
 	{
 		final DurabilityListener listener = this.cluster.getStateManager();
 		
@@ -58,7 +61,7 @@ public class FineDurability<Z, D extends Database<Z>> extends CoarseDurability<Z
 			@Override
 			public R invoke(D database, T object) throws E
 			{
-				InvokerEvent event = new InvokerEvent(transactionId, phase, database);
+				InvokerEvent event = new InvokerEventImpl(transactionId, phase, database.getId());
 				
 				listener.beforeInvoker(event);
 				
@@ -66,17 +69,15 @@ public class FineDurability<Z, D extends Database<Z>> extends CoarseDurability<Z
 				{
 					R result = invoker.invoke(database, object);
 					
-					event.setResult(result);
+					event.setResult(new InvokerResultImpl(result));
 					
 					return result;
 				}
 				catch (Exception e)
 				{
-					E exception = exceptionFactory.createException(e);
-
-					event.setResult(exception);
+					event.setResult(new InvokerResultImpl(e));
 					
-					throw exception;
+					throw exceptionFactory.createException(e);
 				}
 				finally
 				{
@@ -102,7 +103,7 @@ public class FineDurability<Z, D extends Database<Z>> extends CoarseDurability<Z
 			{
 				for (D slave: balancer.slaves())
 				{
-					if (this.deactivateSlave(master, slave, invokers))
+					if (this.deactivateSlave(master, slave, invocation, invokers))
 					{
 						this.cluster.deactivate(slave, stateManager);
 					}
@@ -111,74 +112,33 @@ public class FineDurability<Z, D extends Database<Z>> extends CoarseDurability<Z
 			
 			stateManager.afterInvocation(invocation);
 		}
-		
-		for (Map<String, InvokerEvent> invokers: map.values())
-		{
-			if (!invokers.isEmpty())
-			{
-				Iterator<D> databases = balancer.iterator();
-				
-				if (databases.hasNext())
-				{
-					databases.next();
-					
-					while (databases.hasNext())
-					{
-						
-					}
-				}
-				
-				for (Map.Entry<String, InvokerEvent> invokerEntry: invokers.entrySet())
-				{
-					String databaseId = invokerEntry.getKey();
-					InvokerEvent invoker = invokerEntry.getValue();
-					
-					switch (invoker.getPhase())
-					{
-						case COMMIT:
-						{
-							break;
-						}
-						case ROLLBACK:
-						{
-							break;
-						}
-						case PREPARE:
-						{
-							// Need to check for heuristic decisions
-							break;
-						}
-						case FORGET:
-						{
-							break;
-						}
-					}
-				}
-			}
-		}
 	}
 	
-	private boolean deactivateSlave(D master, D slave, Map<String, InvokerEvent> invokers)
+	private boolean deactivateSlave(D master, D slave, InvocationEvent invocation, Map<String, InvokerEvent> invokers)
 	{
 		InvokerEvent masterEvent = invokers.get(master.getId());
 		
 		if (masterEvent != null)
 		{
-			if (masterEvent.isCompleted())
+			InvokerResult result = masterEvent.getResult();
+			
+			if (result != null)
 			{
-				byte[] masterResult = masterEvent.getResult();
-				byte[] masterException = masterEvent.getException();
+				Object masterValue = result.getValue();
+				Throwable masterException = result.getException();
 				
 				InvokerEvent slaveEvent = invokers.get(slave.getId());
 				
 				if (slaveEvent != null)
 				{
-					if (slaveEvent.isCompleted())
+					InvokerResult slaveResult = slaveEvent.getResult();
+					
+					if (slaveResult != null)
 					{
-						byte[] slaveResult = slaveEvent.getResult();
-						byte[] slaveException = slaveEvent.getException();
+						Object slaveValue = slaveResult.getValue();
+						Throwable slaveException = slaveResult.getException();
 						
-						if ((masterResult != slaveResult) && ((masterResult == null) || (slaveResult == null) || Objects.equals(masterResult, slaveResult)))
+						if ((masterValue != slaveValue) && ((masterValue == null) || (slaveValue == null) || Objects.equals(masterValue, slaveValue)))
 						{
 							return true;
 						}

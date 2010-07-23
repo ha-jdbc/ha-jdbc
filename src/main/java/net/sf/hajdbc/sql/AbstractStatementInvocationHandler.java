@@ -33,7 +33,6 @@ import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.cache.DatabaseProperties;
 import net.sf.hajdbc.cache.TableProperties;
 import net.sf.hajdbc.lock.LockManager;
@@ -79,7 +78,7 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 	 */
 	protected AbstractStatementInvocationHandler(Connection connection, SQLProxy<Z, D, Connection, SQLException> proxy, Invoker<Z, D, Connection, S, SQLException> invoker, Class<S> statementClass, Map<D, S> statementMap, TransactionContext<Z, D> transactionContext, FileSupport<SQLException> fileSupport)
 	{
-		super(connection, proxy, invoker, statementClass, statementMap);
+		super(connection, proxy, invoker, statementClass, SQLException.class, statementMap);
 		
 		this.transactionContext = transactionContext;
 		this.fileSupport = fileSupport;
@@ -355,15 +354,5 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 				invoker.invoke(database, statement);
 			}
 		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.SQLProxy#getExceptionFactory()
-	 */
-	@Override
-	public ExceptionFactory<SQLException> getExceptionFactory()
-	{
-		return this.getParentProxy().getExceptionFactory();
 	}
 }

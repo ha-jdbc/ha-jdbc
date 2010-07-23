@@ -36,9 +36,9 @@ public abstract class AbstractChildInvocationHandler<Z, D extends Database<Z>, P
 	private final SQLProxy<Z, D, P, PE> parentProxy;
 	private final Invoker<Z, D, P, T, PE> parentInvoker;
 	
-	protected AbstractChildInvocationHandler(P parent, SQLProxy<Z, D, P, PE> proxy, Invoker<Z, D, P, T, PE> invoker, Class<T> proxyClass, Map<D, T> objectMap)
+	protected AbstractChildInvocationHandler(P parent, SQLProxy<Z, D, P, PE> proxy, Invoker<Z, D, P, T, PE> invoker, Class<T> proxyClass, Class<E> exceptionClass, Map<D, T> objectMap)
 	{
-		super(proxyClass, objectMap);
+		super(proxyClass, exceptionClass, objectMap);
 		
 		this.parentObject = parent;
 		this.parentProxy = proxy;

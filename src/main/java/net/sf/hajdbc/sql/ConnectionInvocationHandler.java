@@ -83,7 +83,7 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ch
 	 */
 	public ConnectionInvocationHandler(P proxy, SQLProxy<Z, D, P, SQLException> handler, Invoker<Z, D, P, Connection, SQLException> invoker, Map<D, Connection> connectionMap, TransactionContext<Z, D> transactionContext)
 	{
-		super(proxy, handler, invoker, Connection.class, connectionMap);
+		super(proxy, handler, invoker, Connection.class, SQLException.class, connectionMap);
 		
 		this.transactionContext = transactionContext;
 	}

@@ -20,6 +20,10 @@ package net.sf.hajdbc.lock.distributed;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
+/**
+ * Acquire lock command for execution on group coordinator.
+ * @author Paul Ferraro
+ */
 public class CoordinatorAcquireCommand extends CoordinatorLockCommand<Boolean>
 {
 	private static final long serialVersionUID = 1725113200306907771L;

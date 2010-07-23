@@ -22,7 +22,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -43,8 +42,6 @@ import net.sf.hajdbc.cache.DatabaseMetaDataCache;
 import net.sf.hajdbc.codec.Codec;
 import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.durability.Durability;
-import net.sf.hajdbc.durability.InvocationEvent;
-import net.sf.hajdbc.durability.InvokerEvent;
 import net.sf.hajdbc.lock.LockManager;
 import net.sf.hajdbc.lock.distributed.DistributedLockManager;
 import net.sf.hajdbc.lock.semaphore.SemaphoreLockManager;
@@ -57,6 +54,8 @@ import net.sf.hajdbc.management.ManagedOperation;
 import net.sf.hajdbc.state.DatabaseEvent;
 import net.sf.hajdbc.state.StateManager;
 import net.sf.hajdbc.state.distributed.DistributedStateManager;
+import net.sf.hajdbc.tx.SimpleTransactionIdentifierFactory;
+import net.sf.hajdbc.tx.TransactionIdentifierFactory;
 import net.sf.hajdbc.util.concurrent.cron.CronThreadPoolExecutor;
 
 import org.quartz.CronExpression;
@@ -83,8 +82,9 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	private CronThreadPoolExecutor cronExecutor;
 	private LockManager lockManager;
 	private StateManager stateManager;
+	private TransactionIdentifierFactory transactionIdentifierFactory;
 	
-	private volatile boolean active = false;
+	private boolean active = false;
 	
 	private final List<DatabaseClusterConfigurationListener<Z, D>> configurationListeners = new CopyOnWriteArrayList<DatabaseClusterConfigurationListener<Z, D>>();	
 	private final List<DatabaseClusterListener> clusterListeners = new CopyOnWriteArrayList<DatabaseClusterListener>();
@@ -319,6 +319,16 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 
 	/**
 	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.DatabaseCluster#getTransactionIdentifierFactory()
+	 */
+	@Override
+	public TransactionIdentifierFactory getTransactionIdentifierFactory()
+	{
+		return this.transactionIdentifierFactory;
+	}
+
+	/**
+	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseCluster#isActive()
 	 */
 	@Override
@@ -422,11 +432,12 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	 * @see net.sf.hajdbc.Lifecycle#start()
 	 */
 	@Override
-	public void start() throws Exception
+	public synchronized void start() throws Exception
 	{
 		if (this.active) return;
 		
 		this.codec = this.configuration.getCodecFactory().createDecoder(System.getProperties());
+		this.transactionIdentifierFactory = new SimpleTransactionIdentifierFactory();
 		this.lockManager = new SemaphoreLockManager();
 		this.stateManager = this.configuration.getStateManagerProvider().createStateManager(this, System.getProperties());
 		
@@ -476,9 +487,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 			}
 		}
 
-		Map<InvocationEvent, Map<String, InvokerEvent>> invokers = this.stateManager.recover();
-		
-		this.durability.recover(invokers);
+		this.durability.recover(this.stateManager.recover());
 		
 		this.databaseMetaDataCache = this.configuration.getDatabaseMetaDataCacheFactory().createCache(this);
 		
@@ -523,7 +532,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	 * @see net.sf.hajdbc.Lifecycle#stop()
 	 */
 	@Override
-	public void stop()
+	public synchronized void stop()
 	{
 		this.active = false;
 		

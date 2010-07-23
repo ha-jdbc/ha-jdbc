@@ -22,8 +22,8 @@ import java.util.concurrent.locks.Lock;
 import net.sf.hajdbc.distributed.Command;
 
 /**
- * @author paul
- *
+ * A lock command to be executed on the group coordinator.
+ * @author Paul Ferraro
  */
 public abstract class CoordinatorLockCommand<R> implements Command<R, LockCommandContext>
 {

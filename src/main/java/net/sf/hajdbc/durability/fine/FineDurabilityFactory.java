@@ -25,8 +25,8 @@ import net.sf.hajdbc.durability.Durability;
 import net.sf.hajdbc.durability.DurabilityFactory;
 
 /**
- * @author paul
- *
+ * Factory for creating a {@link FineDurability}.
+ * @author Paul Ferraro
  */
 public class FineDurabilityFactory implements DurabilityFactory, Serializable
 {

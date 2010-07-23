@@ -119,10 +119,10 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 		logger.log(Level.INFO, "Using url {0}", url);
 	}
 	
-	public XMLDatabaseClusterConfigurationFactory(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass, XMLStreamFactory streamer)
+	public XMLDatabaseClusterConfigurationFactory(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass, XMLStreamFactory streamFactory)
 	{
 		this.targetClass = targetClass;
-		this.streamFactory = streamer;
+		this.streamFactory = streamFactory;
 	}
 	
 	/**

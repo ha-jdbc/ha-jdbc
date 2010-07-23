@@ -17,7 +17,6 @@
  */
 package net.sf.hajdbc.xml;
 
-import java.io.Serializable;
 import java.net.URL;
 
 import javax.xml.transform.Result;
@@ -28,7 +27,7 @@ import javax.xml.transform.stream.StreamSource;
 /**
  * @author Paul Ferraro
  */
-public class URLXMLStreamFactory implements XMLStreamFactory, Serializable
+public class URLXMLStreamFactory implements XMLStreamFactory
 {
 	private static final long serialVersionUID = -3911432025271185584L;
 	

@@ -20,8 +20,8 @@ package net.sf.hajdbc.lock.distributed;
 import java.util.concurrent.locks.Lock;
 
 /**
- * @author paul
- *
+ * Release lock command for execution on group coordinator.
+ * @author Paul Ferraro
  */
 public class CoordinatorReleaseCommand extends CoordinatorLockCommand<Void>
 {

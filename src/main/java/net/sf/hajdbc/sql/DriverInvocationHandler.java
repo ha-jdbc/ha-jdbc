@@ -21,7 +21,6 @@ import java.sql.Driver;
 import java.sql.SQLException;
 
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.ExceptionFactory;
 
 /**
  * @author Paul Ferraro
@@ -34,16 +33,6 @@ public class DriverInvocationHandler extends RootInvocationHandler<Driver, Drive
 	 */
 	public DriverInvocationHandler(DatabaseCluster<Driver, DriverDatabase> cluster)
 	{
-		super(cluster, Driver.class);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.SQLProxy#getExceptionFactory()
-	 */
-	@Override
-	public ExceptionFactory<SQLException> getExceptionFactory()
-	{
-		return SQLExceptionFactory.getInstance();
+		super(cluster, Driver.class, SQLException.class);
 	}
 }
