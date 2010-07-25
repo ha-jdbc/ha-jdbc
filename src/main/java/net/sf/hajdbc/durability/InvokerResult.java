@@ -25,5 +25,5 @@ public interface InvokerResult
 {
 	Object getValue();
 	
-	Throwable getException();
+	Exception getException();
 }

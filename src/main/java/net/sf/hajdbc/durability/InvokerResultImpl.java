@@ -27,7 +27,7 @@ public class InvokerResultImpl implements InvokerResult, Serializable
 	private static final long serialVersionUID = 1497455948088313742L;
 	
 	private final Object value;
-	private final Throwable exception;
+	private final Exception exception;
 	
 	public InvokerResultImpl(Object value)
 	{
@@ -35,7 +35,7 @@ public class InvokerResultImpl implements InvokerResult, Serializable
 		this.exception = null;
 	}
 	
-	public InvokerResultImpl(Throwable exception)
+	public InvokerResultImpl(Exception exception)
 	{
 		this.value = null;
 		this.exception = exception;
@@ -56,7 +56,7 @@ public class InvokerResultImpl implements InvokerResult, Serializable
 	 * @see net.sf.hajdbc.durability.InvokerResult#getException()
 	 */
 	@Override
-	public Throwable getException()
+	public Exception getException()
 	{
 		return this.exception;
 	}
