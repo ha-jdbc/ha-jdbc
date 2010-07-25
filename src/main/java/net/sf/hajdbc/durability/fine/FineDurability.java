@@ -125,7 +125,7 @@ public class FineDurability<Z, D extends Database<Z>> extends CoarseDurability<Z
 			if (result != null)
 			{
 				Object masterValue = result.getValue();
-				Throwable masterException = result.getException();
+				Exception masterException = result.getException();
 				
 				InvokerEvent slaveEvent = invokers.get(slave.getId());
 				
@@ -136,13 +136,16 @@ public class FineDurability<Z, D extends Database<Z>> extends CoarseDurability<Z
 					if (slaveResult != null)
 					{
 						Object slaveValue = slaveResult.getValue();
-						Throwable slaveException = slaveResult.getException();
+						Exception slaveException = slaveResult.getException();
 						
-						if ((masterValue != slaveValue) && ((masterValue == null) || (slaveValue == null) || Objects.equals(masterValue, slaveValue)))
+						if (masterException != null)
 						{
-							return true;
+							if ((slaveException == null) || !invocation.getExceptionType().getExceptionFactory().equals(masterException, slaveException))
+							{
+								return true;
+							}
 						}
-						else if ((masterException != slaveException) && ((masterException == null) || (slaveException == null)))
+						else if ((slaveException != null) || !Objects.equals(masterValue, slaveValue))
 						{
 							return true;
 						}
