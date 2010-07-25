@@ -26,8 +26,6 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
 
-import net.sf.cglib.proxy.Proxy;
-
 /**
  * Object utility methods.
  * @author Paul Ferraro
@@ -45,10 +43,7 @@ public class Objects
 	{
 		if ((object1 == null) || (object2 == null)) return object1 == object2;
 
-		Class<?> class1 = object1.getClass();
-		Class<?> class2 = object2.getClass();
-		
-		if (class1.isArray() && class2.isArray())
+		if (object1.getClass().isArray() && object2.getClass().isArray())
 		{
 			if ((object1 instanceof boolean[]) && (object2 instanceof boolean[]))
 			{
@@ -85,7 +80,7 @@ public class Objects
 			return Arrays.equals((Object[]) object1, (Object[]) object2);
 		}
 
-		return (class1.equals(class2) && Proxy.isProxyClass(class1) && Proxy.isProxyClass(class2)) || object1.equals(object2);
+		return object1.equals(object2);
 	}
 	
 	/**
