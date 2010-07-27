@@ -18,8 +18,12 @@
 package net.sf.hajdbc.sql;
 
 import java.sql.BatchUpdateException;
+import java.sql.ClientInfoStatus;
+import java.sql.DataTruncation;
+import java.sql.SQLClientInfoException;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Map;
 
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ExceptionType;
@@ -31,12 +35,6 @@ import net.sf.hajdbc.durability.Durability.Phase;
  */
 public class SQLExceptionFactory extends AbstractExceptionFactory<SQLException>
 {
-/*
-	public static ExceptionFactory<SQLException> getInstance()
-	{
-		return ExceptionType.SQL.getExceptionFactory();
-	}
-*/	
 	public SQLExceptionFactory()
 	{
 		super(SQLException.class);	
@@ -94,6 +92,23 @@ public class SQLExceptionFactory extends AbstractExceptionFactory<SQLException>
 			{
 				return false;
 			}
+		}
+		else if ((exception1 instanceof SQLClientInfoException) && (exception2 instanceof SQLClientInfoException))
+		{
+			SQLClientInfoException e1 = (SQLClientInfoException) exception1;
+			SQLClientInfoException e2 = (SQLClientInfoException) exception2;
+			
+			Map<String, ClientInfoStatus> map1 = e1.getFailedProperties();
+			Map<String, ClientInfoStatus> map2 = e2.getFailedProperties();
+			
+			return (map1 != null) && (map2 != null) ? map1.equals(map2) : (map1 != map2);
+		}
+		else if ((exception1 instanceof DataTruncation) && (exception2 instanceof DataTruncation))
+		{
+			DataTruncation e1 = (DataTruncation) exception1;
+			DataTruncation e2 = (DataTruncation) exception2;
+			
+			return (e1.getDataSize() == e2.getDataSize()) && (e1.getIndex() == e2.getIndex()) && (e1.getParameter() == e2.getParameter()) && (e1.getRead() == e2.getRead()) && (e1.getTransferSize() == e2.getTransferSize());
 		}
 		
 		SQLException nextException1 = exception1.getNextException();
