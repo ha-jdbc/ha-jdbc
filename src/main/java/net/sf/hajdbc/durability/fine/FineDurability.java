@@ -92,7 +92,7 @@ public class FineDurability<Z, D extends Database<Z>> extends CoarseDurability<Z
 	{
 		StateManager stateManager = this.cluster.getStateManager();
 		Balancer<Z, D> balancer = this.cluster.getBalancer();
-		D master = balancer.master();
+		D primary = balancer.primary();
 
 		for (Map.Entry<InvocationEvent, Map<String, InvokerEvent>> entry: map.entrySet())
 		{
@@ -101,11 +101,11 @@ public class FineDurability<Z, D extends Database<Z>> extends CoarseDurability<Z
 
 			if (!invokers.isEmpty())
 			{
-				for (D slave: balancer.slaves())
+				for (D backup: balancer.backups())
 				{
-					if (this.deactivateSlave(master, slave, invocation, invokers))
+					if (this.deactivateSlave(primary, backup, invocation, invokers))
 					{
-						this.cluster.deactivate(slave, stateManager);
+						this.cluster.deactivate(backup, stateManager);
 					}
 				}
 			}
@@ -114,38 +114,38 @@ public class FineDurability<Z, D extends Database<Z>> extends CoarseDurability<Z
 		}
 	}
 	
-	private boolean deactivateSlave(D master, D slave, InvocationEvent invocation, Map<String, InvokerEvent> invokers)
+	private boolean deactivateSlave(D primary, D backup, InvocationEvent invocation, Map<String, InvokerEvent> invokers)
 	{
-		InvokerEvent masterEvent = invokers.get(master.getId());
+		InvokerEvent primaryEvent = invokers.get(primary.getId());
 		
-		if (masterEvent != null)
+		if (primaryEvent != null)
 		{
-			InvokerResult result = masterEvent.getResult();
+			InvokerResult result = primaryEvent.getResult();
 			
 			if (result != null)
 			{
-				Object masterValue = result.getValue();
-				Exception masterException = result.getException();
+				Object primaryValue = result.getValue();
+				Exception primaryException = result.getException();
 				
-				InvokerEvent slaveEvent = invokers.get(slave.getId());
+				InvokerEvent backupEvent = invokers.get(backup.getId());
 				
-				if (slaveEvent != null)
+				if (backupEvent != null)
 				{
-					InvokerResult slaveResult = slaveEvent.getResult();
+					InvokerResult backupResult = backupEvent.getResult();
 					
-					if (slaveResult != null)
+					if (backupResult != null)
 					{
-						Object slaveValue = slaveResult.getValue();
-						Exception slaveException = slaveResult.getException();
+						Object backupValue = backupResult.getValue();
+						Exception backupException = backupResult.getException();
 						
-						if (masterException != null)
+						if (primaryException != null)
 						{
-							if ((slaveException == null) || !invocation.getExceptionType().getExceptionFactory().equals(masterException, slaveException))
+							if ((backupException == null) || !invocation.getExceptionType().getExceptionFactory().equals(primaryException, backupException))
 							{
 								return true;
 							}
 						}
-						else if ((slaveException != null) || !Objects.equals(masterValue, slaveValue))
+						else if ((backupException != null) || !Objects.equals(primaryValue, backupValue))
 						{
 							return true;
 						}
@@ -167,7 +167,7 @@ public class FineDurability<Z, D extends Database<Z>> extends CoarseDurability<Z
 		}
 		else
 		{
-			if (invokers.containsKey(slave.getId()))
+			if (invokers.containsKey(backup.getId()))
 			{
 				return true;
 			}

@@ -79,10 +79,10 @@ public abstract class AbstractSetBalancer<Z, D extends Database<Z>> extends Abst
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.balancer.Balancer#master()
+	 * @see net.sf.hajdbc.balancer.Balancer#primary()
 	 */
 	@Override
-	public D master()
+	public D primary()
 	{
 		try
 		{

@@ -93,7 +93,7 @@ public class CoarseDurability<Z, D extends Database<Z>> extends NoDurability<Z, 
 	{
 		StateManager stateManager = this.cluster.getStateManager();
 
-		for (D database: this.cluster.getBalancer().slaves())
+		for (D database: this.cluster.getBalancer().backups())
 		{
 			this.cluster.deactivate(database, stateManager);
 		}

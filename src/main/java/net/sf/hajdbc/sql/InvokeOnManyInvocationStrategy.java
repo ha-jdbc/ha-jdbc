@@ -86,24 +86,24 @@ public abstract class InvokeOnManyInvocationStrategy implements InvocationStrate
 			
 			if (!exceptionMap.isEmpty())
 			{
-				// If master database threw exception
+				// If primary database threw exception
 				if (resultMap.isEmpty() || !exceptionMap.headMap(resultMap.firstKey()).isEmpty())
 				{
-					D masterDatabase = exceptionMap.firstKey();
-					E masterException = exceptionMap.get(masterDatabase);
+					D primaryDatabase = exceptionMap.firstKey();
+					E primaryException = exceptionMap.get(primaryDatabase);
 					
 					// Deactivate databases with non-matching exceptions
-					for (Map.Entry<D, E> entry: exceptionMap.tailMap(masterDatabase).entrySet())
+					for (Map.Entry<D, E> entry: exceptionMap.tailMap(primaryDatabase).entrySet())
 					{
 						E exception = entry.getValue();
 						
-						if (!exceptionFactory.equals(exception, masterException))
+						if (!exceptionFactory.equals(exception, primaryException))
 						{
 							D database = entry.getKey();
 							
 							if (cluster.deactivate(database, stateManager))
 							{
-								logger.log(Level.ERROR, exception, Messages.DATABASE_INCONSISTENT.getMessage(), database, cluster, masterException, exception);
+								logger.log(Level.ERROR, exception, Messages.DATABASE_INCONSISTENT.getMessage(), database, cluster, primaryException, exception);
 							}
 						}
 					}
@@ -115,14 +115,14 @@ public abstract class InvokeOnManyInvocationStrategy implements InvocationStrate
 						
 						if (cluster.deactivate(database, stateManager))
 						{
-							logger.log(Level.ERROR, Messages.DATABASE_INCONSISTENT.getMessage(), database, cluster, masterException, entry.getValue());
+							logger.log(Level.ERROR, Messages.DATABASE_INCONSISTENT.getMessage(), database, cluster, primaryException, entry.getValue());
 						}
 					}
 					
-					throw masterException;
+					throw primaryException;
 				}
 			}
-			// Else master was successful
+			// Else primary was successful
 			// Deactivate databases with exceptions
 			for (Map.Entry<D, E> entry: exceptionMap.entrySet())
 			{

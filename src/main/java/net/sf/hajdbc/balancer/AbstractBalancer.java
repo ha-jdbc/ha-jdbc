@@ -40,10 +40,10 @@ public abstract class AbstractBalancer<Z, D extends Database<Z>> implements Bala
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.balancer.Balancer#slaves()
+	 * @see net.sf.hajdbc.balancer.Balancer#backups()
 	 */
 	@Override
-	public Iterable<D> slaves()
+	public Iterable<D> backups()
 	{
 		Iterator<D> databases = this.getDatabases().iterator();
 		
@@ -53,17 +53,17 @@ public abstract class AbstractBalancer<Z, D extends Database<Z>> implements Bala
 		
 		if (!databases.hasNext()) return Collections.singleton(database);
 		
-		SortedSet<D> slaves = new TreeSet<D>();
+		SortedSet<D> backups = new TreeSet<D>();
 		
-		slaves.add(database);
+		backups.add(database);
 		
 		do
 		{
-			slaves.add(databases.next());
+			backups.add(databases.next());
 		}
 		while (databases.hasNext());
 
-		return slaves;
+		return backups;
 	}
 	
 	/**

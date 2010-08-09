@@ -33,6 +33,6 @@ public class InvokeOnMasterInvocationStrategy extends InvokeOnOneInvocationStrat
 	@Override
 	protected <Z, D extends Database<Z>> D getTarget(Balancer<Z, D> balancer)
 	{
-		return balancer.master();
+		return balancer.primary();
 	}
 }

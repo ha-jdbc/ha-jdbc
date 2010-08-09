@@ -97,10 +97,10 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.balancer.Balancer#master()
+	 * @see net.sf.hajdbc.balancer.Balancer#primary()
 	 */
 	@Override
-	public D master()
+	public D primary()
 	{
 		try
 		{

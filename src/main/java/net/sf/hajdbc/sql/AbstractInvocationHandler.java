@@ -433,25 +433,25 @@ public abstract class AbstractInvocationHandler<Z, D extends Database<Z>, T, E e
 			DatabaseCluster<Z, D> cluster = AbstractInvocationHandler.this.getDatabaseCluster();
 			Iterator<Map.Entry<D, R>> results = resultMap.entrySet().iterator();
 
-			R masterResult = results.next().getValue();
+			R primaryResult = results.next().getValue();
 
 			while (results.hasNext())
 			{
 				Map.Entry<D, R> entry = results.next();
 				R result = entry.getValue();
 				
-				if (!Objects.equals(masterResult, result))
+				if (!Objects.equals(primaryResult, result))
 				{
 					D database = entry.getKey();
 					
 					if (cluster.deactivate(database, cluster.getStateManager()))
 					{
-						AbstractInvocationHandler.this.logger.log(Level.ERROR, Messages.DATABASE_INCONSISTENT.getMessage(), database, cluster, masterResult, result);
+						AbstractInvocationHandler.this.logger.log(Level.ERROR, Messages.DATABASE_INCONSISTENT.getMessage(), database, cluster, primaryResult, result);
 					}
 				}
 			}
 			
-			return masterResult;
+			return primaryResult;
 		}
 	}
 	

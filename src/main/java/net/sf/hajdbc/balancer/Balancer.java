@@ -33,17 +33,17 @@ import net.sf.hajdbc.sql.Invoker;
 public interface Balancer<Z, D extends Database<Z>> extends Set<D>
 {
 	/**
-	 * Returns the master database.
+	 * Returns the primary database.
 	 * The database returned by this method should be consistent across nodes.
-	 * @return the master database
+	 * @return the primary database
 	 */
-	D master();
+	D primary();
 	
 	/**
-	 * The non-master databases.
+	 * The non-primary databases.
 	 * @return an iterable collection of databases.
 	 */
-	Iterable<D> slaves();
+	Iterable<D> backups();
 	
 	/**
 	 * Returns the next database from this balancer
