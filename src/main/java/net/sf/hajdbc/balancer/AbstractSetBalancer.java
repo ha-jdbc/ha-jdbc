@@ -18,7 +18,7 @@
 package net.sf.hajdbc.balancer;
 
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -37,13 +37,36 @@ public abstract class AbstractSetBalancer<Z, D extends Database<Z>> extends Abst
 {
 	private final Lock lock = new ReentrantLock();
 
-	private volatile SortedSet<D> databaseSet = Collections.emptySortedSet();
+	private volatile SortedSet<D> databaseSet;
+
+	protected AbstractSetBalancer(Set<D> databases)
+	{
+		if (databases.isEmpty())
+		{
+			this.databaseSet = Collections.emptySortedSet();
+		}
+		else if (databases.size() == 1)
+		{
+			this.databaseSet = Collections.singletonSortedSet(databases.iterator().next());
+		}
+		else
+		{
+			SortedSet<D> set = new TreeSet<D>();
+			
+			for (D database: databases)
+			{
+				set.add(database);
+			}
+			
+			this.databaseSet = set;
+		}
+	}
 
 	protected Lock getLock()
 	{
 		return this.lock;
 	}
-
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.balancer.Balancer#invoke(net.sf.hajdbc.sql.Invoker, net.sf.hajdbc.Database)
@@ -61,43 +84,22 @@ public abstract class AbstractSetBalancer<Z, D extends Database<Z>> extends Abst
 	@Override
 	public D master()
 	{
-		return this.databaseSet.first();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.balancer.Balancer#slaves()
-	 */
-	@Override
-	public Iterable<D> slaves()
-	{
-		Iterator<D> databases = this.databaseSet.iterator();
-		
-		if (!databases.hasNext() || ((databases.next() != null) && !databases.hasNext())) return java.util.Collections.emptySet();
-		
-		D database = databases.next();
-		
-		if (!databases.hasNext()) return java.util.Collections.singleton(database);
-		
-		SortedSet<D> slaves = new TreeSet<D>();
-		
-		slaves.add(database);
-		
-		do
+		try
 		{
-			slaves.add(databases.next());
+			return this.databaseSet.first();
 		}
-		while (databases.hasNext());
-
-		return slaves;
+		catch (NoSuchElementException e)
+		{
+			return null;
+		}
 	}
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabaseSet()
+	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
 	 */
 	@Override
-	protected Set<D> getDatabaseSet()
+	protected Set<D> getDatabases()
 	{
 		return this.databaseSet;
 	}

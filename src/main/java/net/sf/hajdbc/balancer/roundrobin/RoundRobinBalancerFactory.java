@@ -37,8 +37,8 @@ public class RoundRobinBalancerFactory implements BalancerFactory, Serializable
 	 * @see net.sf.hajdbc.balancer.BalancerFactory#createBalancer(java.util.Set)
 	 */
 	@Override
-	public <Z, D extends Database<Z>> Balancer<Z, D> createBalancer(Set<D> databaseSet)
+	public <Z, D extends Database<Z>> Balancer<Z, D> createBalancer(Set<D> databases)
 	{
-		return new RoundRobinBalancer<Z, D>();
+		return new RoundRobinBalancer<Z, D>(databases);
 	}
 }

@@ -19,6 +19,7 @@ package net.sf.hajdbc.balancer.roundrobin;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Set;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.balancer.AbstractSetBalancer;
@@ -33,6 +34,11 @@ public class RoundRobinBalancer<P, D extends Database<P>> extends AbstractSetBal
 {
 	private Queue<D> databaseQueue = new LinkedList<D>();
 
+	public RoundRobinBalancer(Set<D> databases)
+	{
+		super(databases);
+	}
+	
 	/**
 	 * @see net.sf.hajdbc.balancer.AbstractBalancer#added(net.sf.hajdbc.Database)
 	 */

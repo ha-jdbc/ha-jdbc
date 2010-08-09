@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import net.sf.hajdbc.Database;
 
@@ -34,7 +36,35 @@ import net.sf.hajdbc.Database;
  */
 public abstract class AbstractBalancer<Z, D extends Database<Z>> implements Balancer<Z, D>
 {
-	protected abstract Set<D> getDatabaseSet();
+	protected abstract Set<D> getDatabases();
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.balancer.Balancer#slaves()
+	 */
+	@Override
+	public Iterable<D> slaves()
+	{
+		Iterator<D> databases = this.getDatabases().iterator();
+		
+		if (!databases.hasNext() || ((databases.next() != null) && !databases.hasNext())) return Collections.emptySet();
+		
+		D database = databases.next();
+		
+		if (!databases.hasNext()) return Collections.singleton(database);
+		
+		SortedSet<D> slaves = new TreeSet<D>();
+		
+		slaves.add(database);
+		
+		do
+		{
+			slaves.add(databases.next());
+		}
+		while (databases.hasNext());
+
+		return slaves;
+	}
 	
 	/**
 	 * @see net.sf.hajdbc.balancer.Balancer#all()
@@ -42,7 +72,7 @@ public abstract class AbstractBalancer<Z, D extends Database<Z>> implements Bala
 	@Override
 	public Iterator<D> iterator()
 	{
-		return Collections.unmodifiableSet(this.getDatabaseSet()).iterator();
+		return this.getDatabases().iterator();
 	}
 
 	/**
@@ -52,7 +82,7 @@ public abstract class AbstractBalancer<Z, D extends Database<Z>> implements Bala
 	@Override
 	public boolean contains(Object database)
 	{
-		return this.getDatabaseSet().contains(database);
+		return this.getDatabases().contains(database);
 	}
 
 	/**
@@ -62,7 +92,7 @@ public abstract class AbstractBalancer<Z, D extends Database<Z>> implements Bala
 	@Override
 	public boolean containsAll(Collection<?> databases)
 	{
-		return this.getDatabaseSet().containsAll(databases);
+		return this.getDatabases().containsAll(databases);
 	}
 
 	/**
@@ -72,7 +102,7 @@ public abstract class AbstractBalancer<Z, D extends Database<Z>> implements Bala
 	@Override
 	public boolean isEmpty()
 	{
-		return this.getDatabaseSet().isEmpty();
+		return this.getDatabases().isEmpty();
 	}
 
 	/**
@@ -82,7 +112,7 @@ public abstract class AbstractBalancer<Z, D extends Database<Z>> implements Bala
 	@Override
 	public int size()
 	{
-		return this.getDatabaseSet().size();
+		return this.getDatabases().size();
 	}
 
 	/**
@@ -92,7 +122,7 @@ public abstract class AbstractBalancer<Z, D extends Database<Z>> implements Bala
 	@Override
 	public Object[] toArray()
 	{
-		return this.getDatabaseSet().toArray();
+		return this.getDatabases().toArray();
 	}
 
 	/**
@@ -102,6 +132,6 @@ public abstract class AbstractBalancer<Z, D extends Database<Z>> implements Bala
 	@Override
 	public <T> T[] toArray(T[] array)
 	{
-		return this.getDatabaseSet().toArray(array);
+		return this.getDatabases().toArray(array);
 	}
 }

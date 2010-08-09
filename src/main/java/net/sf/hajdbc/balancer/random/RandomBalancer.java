@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.balancer.AbstractSetBalancer;
@@ -38,6 +39,11 @@ public class RandomBalancer<P, D extends Database<P>> extends AbstractSetBalance
 
 	private Random random = new Random();
 
+	public RandomBalancer(Set<D> databases)
+	{
+		super(databases);
+	}
+	
 	/**
 	 * @see net.sf.hajdbc.balancer.Balancer#next()
 	 */

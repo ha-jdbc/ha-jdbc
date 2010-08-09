@@ -43,6 +43,11 @@ public class SimpleBalancer<Z, D extends Database<Z>> extends AbstractSetBalance
 		}
 	};
 
+	public SimpleBalancer(Set<D> databases)
+	{
+		super(databases);
+	}
+	
 	/**
 	 * @see net.sf.hajdbc.balancer.Balancer#next()
 	 */
@@ -72,7 +77,7 @@ public class SimpleBalancer<Z, D extends Database<Z>> extends AbstractSetBalance
 	
 	private void reset()
 	{
-		Set<D> databaseSet = this.getDatabaseSet();
+		Set<D> databaseSet = this.getDatabases();
 		
 		this.nextDatabase = databaseSet.isEmpty() ? null : Collections.max(databaseSet, this.comparator);
 	}

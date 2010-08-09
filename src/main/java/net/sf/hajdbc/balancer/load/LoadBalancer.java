@@ -20,11 +20,10 @@ package net.sf.hajdbc.balancer.load;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -72,6 +71,29 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 			return Float.compare(weightedLoad1, weightedLoad2);
 		}
 	};
+
+	public LoadBalancer(Set<D> databases)
+	{
+		if (databases.isEmpty())
+		{
+			this.databaseMap = Collections.emptySortedMap();
+		}
+		else if (databases.size() == 1)
+		{
+			this.databaseMap = Collections.singletonSortedMap(databases.iterator().next(), new AtomicInteger(1));
+		}
+		else
+		{
+			SortedMap<D, AtomicInteger> map = new TreeMap<D, AtomicInteger>();
+			
+			for (D database: databases)
+			{
+				map.put(database, new AtomicInteger(1));
+			}
+			
+			this.databaseMap = map;
+		}
+	}
 	
 	/**
 	 * {@inheritDoc}
@@ -80,27 +102,22 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 	@Override
 	public D master()
 	{
-		return this.databaseMap.firstKey();
+		try
+		{
+			return this.databaseMap.firstKey();
+		}
+		catch (NoSuchElementException e)
+		{
+			return null;
+		}
 	}
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.balancer.Balancer#slaves()
+	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabases()
 	 */
 	@Override
-	public Iterable<D> slaves()
-	{
-		SortedSet<D> set = new TreeSet<D>(this.databaseMap.keySet());
-		set.remove(set.first());
-		return java.util.Collections.unmodifiableSet(set);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#getDatabaseSet()
-	 */
-	@Override
-	protected Set<D> getDatabaseSet()
+	protected Set<D> getDatabases()
 	{
 		return this.databaseMap.keySet();
 	}
