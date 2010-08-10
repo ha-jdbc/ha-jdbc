@@ -35,13 +35,33 @@ import net.sf.hajdbc.balancer.AbstractSetBalancer;
  */
 public class RandomBalancer<P, D extends Database<P>> extends AbstractSetBalancer<P, D>
 {
-	private volatile List<D> databaseList = Collections.emptyList();
+	private volatile List<D> databaseList;
 
 	private Random random = new Random();
 
 	public RandomBalancer(Set<D> databases)
 	{
 		super(databases);
+		
+		int total = 0;
+		
+		for (D database: databases)
+		{
+			total += database.getWeight();
+		}
+		
+		List<D> list = new ArrayList<D>(total);
+		
+		for (D database: databases)
+		{
+			int weight = database.getWeight();
+			for (int i = 0; i < weight; ++i)
+			{
+				list.add(database);
+			}
+		}
+		
+		this.databaseList = list;
 	}
 	
 	/**

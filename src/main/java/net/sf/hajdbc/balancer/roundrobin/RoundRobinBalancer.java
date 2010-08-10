@@ -37,6 +37,11 @@ public class RoundRobinBalancer<P, D extends Database<P>> extends AbstractSetBal
 	public RoundRobinBalancer(Set<D> databases)
 	{
 		super(databases);
+		
+		for (D database: databases)
+		{
+			this.added(database);
+		}
 	}
 	
 	/**
