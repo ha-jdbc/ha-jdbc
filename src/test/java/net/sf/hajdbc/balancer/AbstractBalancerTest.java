@@ -35,10 +35,10 @@ import org.junit.Test;
  */
 public abstract class AbstractBalancerTest
 {
-	private final BalancerFactory factory;
-	private final MockDatabase[] databases = new MockDatabase[] { new MockDatabase("0"), new MockDatabase("1"), new MockDatabase("2") };
+	final BalancerFactory factory;
+	final MockDatabase[] databases = new MockDatabase[] { new MockDatabase("0", 0), new MockDatabase("1", 1), new MockDatabase("2", 2) };
 	
-	protected AbstractBalancerTest(BalancerFactoryEnum factory)
+	AbstractBalancerTest(BalancerFactoryEnum factory)
 	{
 		this.factory = factory;
 	}
