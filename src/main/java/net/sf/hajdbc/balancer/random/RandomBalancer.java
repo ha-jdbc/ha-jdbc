@@ -72,7 +72,7 @@ public class RandomBalancer<P, D extends Database<P>> extends AbstractSetBalance
 	{
 		List<D> list = this.databaseList;
 		
-		return !list.isEmpty() ? list.get(this.random.nextInt(list.size())) : null;
+		return !list.isEmpty() ? list.get(this.random.nextInt(list.size())) : this.primary();
 	}
 	
 	/**
