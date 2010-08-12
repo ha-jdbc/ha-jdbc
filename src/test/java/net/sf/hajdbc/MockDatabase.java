@@ -67,4 +67,21 @@ public class MockDatabase extends AbstractDatabase<Void>
 	{
 		return null;
 	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.sql.AbstractDatabase#hashCode()
+	 */
+	@Override
+	public int hashCode()
+	{
+		try
+		{
+			return Integer.parseInt(this.getId());
+		}
+		catch (NumberFormatException e)
+		{
+			return super.hashCode();
+		}
+	}
 }
