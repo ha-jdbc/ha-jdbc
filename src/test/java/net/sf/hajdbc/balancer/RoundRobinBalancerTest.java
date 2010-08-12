@@ -17,6 +17,10 @@
  */
 package net.sf.hajdbc.balancer;
 
+import net.sf.hajdbc.MockDatabase;
+
+import org.junit.Assert;
+
 
 /**
  * @author Paul Ferraro
@@ -26,5 +30,16 @@ public class RoundRobinBalancerTest extends AbstractBalancerTest
 	public RoundRobinBalancerTest()
 	{
 		super(BalancerFactoryEnum.ROUND_ROBIN);
+	}
+	
+	@Override
+	public void next(Balancer<Void, MockDatabase> balancer)
+	{
+		int[] expected = new int[] { 1, 2, 2 };
+		
+		for (int i = 0; i < 100; ++i)
+		{
+			Assert.assertSame(this.databases[expected[i % 3]], balancer.next());
+		}
 	}
 }

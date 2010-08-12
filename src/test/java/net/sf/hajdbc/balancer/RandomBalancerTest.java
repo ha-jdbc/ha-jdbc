@@ -17,6 +17,10 @@
  */
 package net.sf.hajdbc.balancer;
 
+import net.sf.hajdbc.MockDatabase;
+
+import org.junit.Assert;
+
 
 /**
  * @author Paul Ferraro
@@ -26,5 +30,21 @@ public class RandomBalancerTest extends AbstractBalancerTest
 	public RandomBalancerTest()
 	{
 		super(BalancerFactoryEnum.RANDOM);
+	}
+	
+	@Override
+	public void next(Balancer<Void, MockDatabase> balancer)
+	{
+		int count = 1000;
+		int[] results = new int[] { 0, 0, 0 };
+		
+		for (int i = 0; i < count; ++i)
+		{
+			results[balancer.next().getWeight()] += 1;
+		}
+
+		Assert.assertEquals(0, results[0]);
+		Assert.assertTrue(Integer.toString(results[1]), results[1] < (count / 2));
+		Assert.assertTrue(Integer.toString(results[2]), results[2] > (count / 2));
 	}
 }
