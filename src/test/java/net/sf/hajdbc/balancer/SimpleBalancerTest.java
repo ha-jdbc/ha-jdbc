@@ -36,7 +36,7 @@ public class SimpleBalancerTest extends AbstractBalancerTest
 	{
 		for (int i = 0; i < 100; ++i)
 		{
-			Assert.assertSame(this.databases[1], balancer.next());
+			Assert.assertSame(this.databases[2], balancer.next());
 		}
 	}
 }
