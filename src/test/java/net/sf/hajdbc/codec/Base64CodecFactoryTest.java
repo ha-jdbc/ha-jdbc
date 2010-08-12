@@ -19,10 +19,9 @@ package net.sf.hajdbc.codec;
 
 import java.sql.SQLException;
 
-import junit.framework.Assert;
-
 import net.sf.hajdbc.codec.base64.Base64CodecFactory;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
