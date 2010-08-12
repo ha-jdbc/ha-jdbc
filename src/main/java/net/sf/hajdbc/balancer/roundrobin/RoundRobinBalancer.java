@@ -84,7 +84,7 @@ public class RoundRobinBalancer<P, D extends Database<P>> extends AbstractSetBal
 		{
 			if (this.databaseQueue.isEmpty())
 			{
-				return null;
+				return this.primary();
 			}
 			
 			if (this.databaseQueue.size() == 1)
