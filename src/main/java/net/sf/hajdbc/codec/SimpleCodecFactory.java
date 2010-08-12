@@ -23,7 +23,7 @@ import java.sql.SQLException;
  * Trivial codec that does nothing
  * @author Paul Ferraro
  */
-public class SimpleCodec extends AbstractCodec
+public class SimpleCodecFactory extends AbstractCodec
 {
 	private static final long serialVersionUID = -472755264720942251L;
 

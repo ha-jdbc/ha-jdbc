@@ -31,10 +31,10 @@ public abstract class AbstractCodec implements Codec, CodecFactory, Serializable
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.codec.CodecFactory#createDecoder(java.util.Map)
+	 * @see net.sf.hajdbc.codec.CodecFactory#createCodec(java.util.Map)
 	 */
 	@Override
-	public Codec createDecoder(Properties properties) throws SQLException
+	public Codec createCodec(Properties properties) throws SQLException
 	{
 		return this;
 	}

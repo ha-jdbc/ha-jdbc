@@ -26,5 +26,5 @@ import java.util.Properties;
  */
 public interface CodecFactory
 {
-	Codec createDecoder(Properties properties) throws SQLException;
+	Codec createCodec(Properties properties) throws SQLException;
 }

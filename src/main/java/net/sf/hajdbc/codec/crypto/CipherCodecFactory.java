@@ -79,10 +79,10 @@ public class CipherCodecFactory implements CodecFactory, Serializable
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.codec.CodecFactory#createDecoder(java.util.Properties)
+	 * @see net.sf.hajdbc.codec.CodecFactory#createCodec(java.util.Properties)
 	 */
 	@Override
-	public Codec createDecoder(Properties properties) throws SQLException
+	public Codec createCodec(Properties properties) throws SQLException
 	{
 		String type = properties.getProperty(KEYSTORE_TYPE, KeyStore.getDefaultType());
 		File file = new File(properties.getProperty(KEYSTORE_FILE, DEFAULT_KEYSTORE_FILE));
@@ -131,7 +131,7 @@ public class CipherCodecFactory implements CodecFactory, Serializable
 		
 		try
 		{
-			Codec codec = new CipherCodecFactory().createDecoder(System.getProperties());
+			Codec codec = new CipherCodecFactory().createCodec(System.getProperties());
 
 			System.out.println(codec.encode(value));
 		}
