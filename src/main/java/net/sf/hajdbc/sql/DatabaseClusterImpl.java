@@ -436,7 +436,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	{
 		if (this.active) return;
 		
-		this.codec = this.configuration.getCodecFactory().createDecoder(System.getProperties());
+		this.codec = this.configuration.getCodecFactory().createCodec(System.getProperties());
 		this.transactionIdentifierFactory = new SimpleTransactionIdentifierFactory();
 		this.lockManager = new SemaphoreLockManager();
 		this.stateManager = this.configuration.getStateManagerProvider().createStateManager(this, System.getProperties());
