@@ -172,7 +172,7 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 		this.export(configuration);
 	}
 	
-	private void export(DatabaseClusterConfiguration<Z, D> configuration)
+	public void export(DatabaseClusterConfiguration<Z, D> configuration)
 	{
 		try
 		{
