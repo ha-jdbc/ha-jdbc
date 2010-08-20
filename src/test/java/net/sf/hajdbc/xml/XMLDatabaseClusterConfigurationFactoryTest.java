@@ -140,7 +140,7 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 	   
 	   EasyMock.replay(streamFactory);
 	   
-		factory.added(null, configuration);
+		factory.export(configuration);
 		
 		EasyMock.verify(streamFactory);
 		
