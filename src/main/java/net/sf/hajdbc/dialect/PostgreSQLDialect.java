@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import net.sf.hajdbc.ConnectionProperties;
+import net.sf.hajdbc.DumpRestoreSupport;
 import net.sf.hajdbc.cache.ColumnProperties;
 import net.sf.hajdbc.util.Strings;
 
@@ -39,7 +40,7 @@ import net.sf.hajdbc.util.Strings;
  * @since   1.1
  */
 @SuppressWarnings("nls")
-public class PostgreSQLDialect extends StandardDialect
+public class PostgreSQLDialect extends StandardDialect implements DumpRestoreSupport
 {
 	private static final File PASSWORD_FILE = new File(String.format("%s%s.pgpass", Strings.USER_HOME, Strings.FILE_SEPARATOR));
 	
@@ -172,6 +173,16 @@ public class PostgreSQLDialect extends StandardDialect
 	protected String selectForUpdatePattern()
 	{
 		return "SELECT\\s+.+\\s+FOR\\s+(SHARE|UPDATE)";
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getDumpRestoreSupport()
+	 */
+	@Override
+	public DumpRestoreSupport getDumpRestoreSupport()
+	{
+		return this;
 	}
 
 	/**

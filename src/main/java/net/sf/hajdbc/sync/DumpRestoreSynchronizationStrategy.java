@@ -27,7 +27,9 @@ import java.util.regex.Matcher;
 import net.sf.hajdbc.ConnectionProperties;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.DumpRestoreSupport;
 import net.sf.hajdbc.ExceptionType;
+import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.util.Strings;
 
@@ -45,6 +47,12 @@ public class DumpRestoreSynchronizationStrategy implements SynchronizationStrate
 	public <Z, D extends Database<Z>> void synchronize(SynchronizationContext<Z, D> context) throws SQLException
 	{
 		Dialect dialect = context.getDialect();
+		DumpRestoreSupport support = dialect.getDumpRestoreSupport();
+		
+		if (support == null)
+		{
+			throw new SQLException(Messages.DUMP_RESTORE_UNSUPPORTED.getMessage(dialect));
+		}
 		
 		try
 		{
@@ -52,9 +60,9 @@ public class DumpRestoreSynchronizationStrategy implements SynchronizationStrate
 			
 			try
 			{
-				this.startProcess(dialect.createDumpProcess(new ConnectionInformation<Z, D>(context, context.getSourceDatabase()), file));
+				this.startProcess(support.createDumpProcess(new ConnectionInformation<Z, D>(context, context.getSourceDatabase()), file));
 				
-				this.startProcess(dialect.createRestoreProcess(new ConnectionInformation<Z, D>(context, context.getTargetDatabase()), file));
+				this.startProcess(support.createRestoreProcess(new ConnectionInformation<Z, D>(context, context.getTargetDatabase()), file));
 			}
 			finally
 			{

@@ -52,6 +52,7 @@ public enum Messages
 	DELETE_COUNT("delete-count"),
 	DRIVER_NOT_FOUND("driver-not-found"),
 	DRIVER_REGISTER_FAILED("driver-register-failed"),
+	DUMP_RESTORE_UNSUPPORTED("dump-restore-unsupported"),
 	GROUP_MEMBER_JOINED("group-member-joined"),
 	GROUP_MEMBER_LEFT("group-member-left"),
 	HA_JDBC_INIT("ha-jdbc-init"),

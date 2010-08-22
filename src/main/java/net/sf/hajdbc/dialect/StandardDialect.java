@@ -17,7 +17,6 @@
  */
 package net.sf.hajdbc.dialect;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -35,8 +34,8 @@ import java.util.regex.Pattern;
 
 import javax.transaction.xa.XAException;
 
-import net.sf.hajdbc.ConnectionProperties;
 import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.DumpRestoreSupport;
 import net.sf.hajdbc.cache.ColumnProperties;
 import net.sf.hajdbc.cache.ForeignKeyConstraint;
 import net.sf.hajdbc.cache.QualifiedName;
@@ -492,21 +491,11 @@ public class StandardDialect implements Dialect
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.Dialect#createDumpProcess(net.sf.hajdbc.ConnectionProperties, java.io.File)
+	 * @see net.sf.hajdbc.Dialect#getDumpRestoreSupport()
 	 */
 	@Override
-	public ProcessBuilder createDumpProcess(ConnectionProperties properties, File file)
+	public DumpRestoreSupport getDumpRestoreSupport()
 	{
-		throw new UnsupportedOperationException();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.Dialect#createRestoreProcess(net.sf.hajdbc.ConnectionProperties, java.io.File)
-	 */
-	@Override
-	public ProcessBuilder createRestoreProcess(ConnectionProperties properties, File file)
-	{
-		throw new UnsupportedOperationException();
+		return null;
 	}
 }

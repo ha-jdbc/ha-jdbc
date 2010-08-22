@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.sf.hajdbc.ConnectionProperties;
+import net.sf.hajdbc.DumpRestoreSupport;
 import net.sf.hajdbc.cache.QualifiedName;
 import net.sf.hajdbc.util.Strings;
 
@@ -33,7 +34,7 @@ import net.sf.hajdbc.util.Strings;
  * @author Paul Ferraro
  */
 @SuppressWarnings("nls")
-public class MySQLDialect extends StandardDialect
+public class MySQLDialect extends StandardDialect implements DumpRestoreSupport
 {
 	private static final File PASSWORD_FILE = new File(String.format("%s%s.my.cnf", Strings.USER_HOME, Strings.FILE_SEPARATOR));
 	
@@ -172,6 +173,16 @@ public class MySQLDialect extends StandardDialect
 	protected String timestampLiteralFormat()
 	{
 		return "''{0}''";
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getDumpRestoreSupport()
+	 */
+	@Override
+	public DumpRestoreSupport getDumpRestoreSupport()
+	{
+		return this;
 	}
 
 	/**
