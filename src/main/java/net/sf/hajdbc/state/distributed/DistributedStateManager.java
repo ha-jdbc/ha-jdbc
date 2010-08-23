@@ -285,7 +285,7 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.distributed.MembershipListener#added(org.jgroups.Address)
+	 * @see net.sf.hajdbc.distributed.MembershipListener#added(net.sf.hajdbc.distributed.Member)
 	 */
 	@Override
 	public void added(Member member)
@@ -295,7 +295,7 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.distributed.MembershipListener#removed(org.jgroups.Address)
+	 * @see net.sf.hajdbc.distributed.MembershipListener#removed(net.sf.hajdbc.distributed.Member)
 	 */
 	@Override
 	public void removed(Member member)

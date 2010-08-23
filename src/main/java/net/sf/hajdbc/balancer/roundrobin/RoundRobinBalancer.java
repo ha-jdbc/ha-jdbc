@@ -34,6 +34,10 @@ public class RoundRobinBalancer<P, D extends Database<P>> extends AbstractSetBal
 {
 	private Queue<D> databaseQueue = new LinkedList<D>();
 
+	/**
+	 * Constructs a new RoundRobinBalancer
+	 * @param databases
+	 */
 	public RoundRobinBalancer(Set<D> databases)
 	{
 		super(databases);
@@ -45,7 +49,8 @@ public class RoundRobinBalancer<P, D extends Database<P>> extends AbstractSetBal
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#added(net.sf.hajdbc.Database)
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.balancer.AbstractSetBalancer#added(net.sf.hajdbc.Database)
 	 */
 	@Override
 	protected void added(D database)
@@ -59,7 +64,8 @@ public class RoundRobinBalancer<P, D extends Database<P>> extends AbstractSetBal
 	}
 
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#removed(net.sf.hajdbc.Database)
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.balancer.AbstractSetBalancer#removed(net.sf.hajdbc.Database)
 	 */
 	@Override
 	protected void removed(D database)
@@ -73,6 +79,7 @@ public class RoundRobinBalancer<P, D extends Database<P>> extends AbstractSetBal
 	}
 	
 	/**
+	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.balancer.Balancer#next()
 	 */
 	@Override
@@ -105,7 +112,8 @@ public class RoundRobinBalancer<P, D extends Database<P>> extends AbstractSetBal
 	}
 
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#cleared()
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.balancer.AbstractSetBalancer#cleared()
 	 */
 	@Override
 	protected void cleared()

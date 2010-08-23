@@ -348,7 +348,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getStateManager()
+	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getStateManagerProvider()
 	 */
 	@Override
 	public StateManagerProvider getStateManagerProvider()

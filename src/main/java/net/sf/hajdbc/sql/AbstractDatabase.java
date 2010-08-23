@@ -123,10 +123,6 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 		this.name = name;
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getUser()
-	 */
 	@ManagedAttribute
 	@Description("User ID for administrative connection authentication")
 	public String getUser()
@@ -134,9 +130,6 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 		return this.user;
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.InactiveDatabaseMBean#setUser(java.lang.String)
-	 */
 	@ManagedAttribute
 	public void setUser(String user)
 	{
@@ -145,10 +138,6 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 		this.user = user;
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getPassword()
-	 */
 	@ManagedAttribute
 	@Description("Password for administrative connection authentication")
 	public String getPassword()
@@ -156,9 +145,6 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 		return this.password;
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.InactiveDatabaseMBean#setPassword(java.lang.String)
-	 */
 	@ManagedAttribute
 	public void setPassword(String password)
 	{
@@ -179,7 +165,8 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	}
 
 	/**
-	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getWeight()
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.Database#getWeight()
 	 */
 	@ManagedAttribute
 	@Description("Weight used in read request balancing")
@@ -189,9 +176,6 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 		return this.weight;
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.InactiveDatabaseMBean#setWeight(int)
-	 */
 	@ManagedAttribute
 	public void setWeight(int weight)
 	{
@@ -245,9 +229,6 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 		return this.id.compareTo(database.getId());
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getProperties()
-	 */
 	@ManagedAttribute
 	@Description("Connection properties")
 	public Map<String, String> getProperties()
@@ -255,9 +236,6 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 		return this.properties;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.InactiveDatabaseMBean#removeProperty(java.lang.String)
-	 */
 	@ManagedOperation
 	@Description("Removes the specified connection property")
 	public void removeProperty(String name)
@@ -269,9 +247,6 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 		this.dirty |= (value != null);
 	}
 
-	/**
-	 * @see net.sf.hajdbc.InactiveDatabaseMBean#setProperty(java.lang.String, java.lang.String)
-	 */
 	@ManagedOperation
 	@Description("Creates/updates the specified connection property")
 	public void setProperty(String name, String value)
@@ -288,9 +263,6 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 		this.checkDirty(old, value);
 	}
 
-	/**
-	 * @see net.sf.hajdbc.InactiveDatabaseMBean#setLocal(boolean)
-	 */
 	@ManagedAttribute
 	public void setLocal(boolean local)
 	{
@@ -300,7 +272,8 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	}
 
 	/**
-	 * @see net.sf.hajdbc.ActiveDatabaseMBean#isLocal()
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.Database#isLocal()
 	 */
 	@ManagedAttribute
 	@Description("Indicates whether this database is local to this JVM")
@@ -311,6 +284,7 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	}
 
 	/**
+	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.Database#clean()
 	 */
 	@Override
@@ -320,6 +294,7 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	}
 
 	/**
+	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.Database#isDirty()
 	 */
 	@Override

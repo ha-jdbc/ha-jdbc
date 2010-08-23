@@ -74,12 +74,12 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ch
 	private TransactionContext<Z, D> transactionContext;
 	
 	/**
+	 * Constructs a new ConnectionInvocationHandler
 	 * @param proxy
 	 * @param handler
 	 * @param invoker
 	 * @param connectionMap
-	 * @param transactionContext 
-	 * @throws Exception
+	 * @param transactionContext
 	 */
 	public ConnectionInvocationHandler(P proxy, SQLProxy<Z, D, P, SQLException> handler, Invoker<Z, D, P, Connection, SQLException> invoker, Map<D, Connection> connectionMap, TransactionContext<Z, D> transactionContext)
 	{

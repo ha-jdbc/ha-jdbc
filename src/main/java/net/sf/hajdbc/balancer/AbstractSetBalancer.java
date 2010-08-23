@@ -105,7 +105,8 @@ public abstract class AbstractSetBalancer<Z, D extends Database<Z>> extends Abst
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.balancer.Balancer#remove(net.sf.hajdbc.Database)
+	 * {@inheritDoc}
+	 * @see java.util.Set#remove(java.lang.Object)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
@@ -150,7 +151,8 @@ public abstract class AbstractSetBalancer<Z, D extends Database<Z>> extends Abst
 	protected abstract void removed(D database);
 	
 	/**
-	 * @see net.sf.hajdbc.balancer.Balancer#add(net.sf.hajdbc.Database)
+	 * {@inheritDoc}
+	 * @see java.util.Set#add(java.lang.Object)
 	 */
 	@Override
 	public boolean add(D database)
@@ -305,7 +307,8 @@ public abstract class AbstractSetBalancer<Z, D extends Database<Z>> extends Abst
 	}
 
 	/**
-	 * @see net.sf.hajdbc.balancer.Balancer#clear()
+	 * {@inheritDoc}
+	 * @see java.util.Set#clear()
 	 */
 	@Override
 	public void clear()

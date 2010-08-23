@@ -67,7 +67,8 @@ public abstract class AbstractBalancer<Z, D extends Database<Z>> implements Bala
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.balancer.Balancer#all()
+	 * {@inheritDoc}
+	 * @see java.util.Set#iterator()
 	 */
 	@Override
 	public Iterator<D> iterator()

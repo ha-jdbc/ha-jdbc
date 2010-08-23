@@ -93,7 +93,7 @@ public class DefaultExecutorServiceProvider implements ExecutorServiceProvider, 
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.ExecutorServiceProvider#getExecutor()
+	 * @see net.sf.hajdbc.ExecutorServiceProvider#getExecutor(java.util.concurrent.ThreadFactory)
 	 */
 	@Override
 	public ExecutorService getExecutor(ThreadFactory threadFactory)

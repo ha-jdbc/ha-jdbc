@@ -67,8 +67,9 @@ public abstract class AbstractInvocationHandler<Z, D extends Database<Z>, T, E e
 	private final Class<E> exceptionClass;
 	
 	/**
-	 * @param cluster the database cluster
+	 * Constructs a new AbstractInvocationHandler
 	 * @param proxyClass the interface being proxied
+	 * @param exceptionClass the class for exceptions thrown by this object
 	 * @param objectMap a map of database to sql object.
 	 */
 	protected AbstractInvocationHandler(Class<T> proxyClass, Class<E> exceptionClass, Map<D, T> objectMap)

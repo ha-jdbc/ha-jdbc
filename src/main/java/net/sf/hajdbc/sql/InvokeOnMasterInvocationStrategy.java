@@ -28,7 +28,7 @@ public class InvokeOnMasterInvocationStrategy extends InvokeOnOneInvocationStrat
 {
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.InvokeOnOneInvocationStrategy.BalancerTargetProvider#getTarget(net.sf.hajdbc.balancer.Balancer)
+	 * @see net.sf.hajdbc.sql.InvokeOnOneInvocationStrategy#getTarget(net.sf.hajdbc.balancer.Balancer)
 	 */
 	@Override
 	protected <Z, D extends Database<Z>> D getTarget(Balancer<Z, D> balancer)

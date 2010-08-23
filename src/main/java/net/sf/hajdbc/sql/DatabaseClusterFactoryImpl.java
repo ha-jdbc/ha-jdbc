@@ -31,7 +31,7 @@ public class DatabaseClusterFactoryImpl<Z, D extends Database<Z>> implements Dat
 {
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DatabaseClusterFactory#createDatabaseCluster(java.lang.String, net.sf.hajdbc.DatabaseClusterConfiguration, net.sf.hajdbc.DatabaseClusterConfigurationListener)
+	 * @see net.sf.hajdbc.DatabaseClusterFactory#createDatabaseCluster(java.lang.String, net.sf.hajdbc.DatabaseClusterConfigurationFactory)
 	 */
 	@Override
 	public DatabaseCluster<Z, D> createDatabaseCluster(String id, DatabaseClusterConfigurationFactory<Z, D> factory) throws SQLException

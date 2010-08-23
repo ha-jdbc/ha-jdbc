@@ -88,7 +88,7 @@ public class Collections
 	 * Like {@link java.util.Collections#singleton(Object)}, but returns a sorted set.
 	 * @param <E>
 	 * @param element
-	 * @return
+	 * @return a sorted set containing the single element.
 	 */
 	public static <E> SortedSet<E> singletonSortedSet(E element)
 	{
@@ -99,8 +99,9 @@ public class Collections
 	 * Like {@link java.util.Collections#singletonMap(Object, Object)}, but returns a sorted map.
 	 * @param <K>
 	 * @param <V>
-	 * @param element
-	 * @return
+	 * @param key
+	 * @param value
+	 * @return a sorted map containing the single key, value pair.
 	 */
 	public static <K, V> SortedMap<K, V> singletonSortedMap(K key, V value)
 	{

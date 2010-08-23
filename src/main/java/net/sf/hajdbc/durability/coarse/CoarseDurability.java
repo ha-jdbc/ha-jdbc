@@ -22,7 +22,6 @@ import java.util.SortedMap;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.durability.Durability;
 import net.sf.hajdbc.durability.DurabilityListener;
 import net.sf.hajdbc.durability.InvocationEvent;
 import net.sf.hajdbc.durability.InvocationEventImpl;
@@ -34,9 +33,14 @@ import net.sf.hajdbc.sql.SQLProxy;
 import net.sf.hajdbc.state.StateManager;
 
 /**
- * {@link Durability} implementation that tracks invocations only, but not per-database invokers.
+ * {@link net.sf.hajdbc.durability.Durability} implementation that tracks invocations only, but not per-database invokers.
  * This durability level can detect, but not recover from, mid-commit crashes.
  * @author Paul Ferraro
+ */
+/**
+ * @author Paul Ferraro
+ * @param <Z>
+ * @param <D>
  */
 public class CoarseDurability<Z, D extends Database<Z>> extends NoDurability<Z, D>
 {
@@ -83,9 +87,7 @@ public class CoarseDurability<Z, D extends Database<Z>> extends NoDurability<Z, 
 
 	/**
 	 * {@inheritDoc}
-	 * 
-	 * @see net.sf.hajdbc.durability.Durability#recover(net.sf.hajdbc.balancer.Balancer,
-	 *      java.util.Map)
+	 * @see net.sf.hajdbc.durability.none.NoDurability#recover(java.util.Map)
 	 */
 	@Override
 	public void recover(Map<InvocationEvent, Map<String, InvokerEvent>> invokers)

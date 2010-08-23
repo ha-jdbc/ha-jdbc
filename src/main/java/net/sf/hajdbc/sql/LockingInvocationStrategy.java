@@ -26,9 +26,6 @@ import net.sf.hajdbc.Database;
 /**
  * An invocation strategy decorator that acquires a list of locks before invocation, and releases them afterward.
  * @author Paul Ferraro
- * @param <D> Type of the root object (e.g. driver, datasource)
- * @param <T> Target object type of the invocation
- * @param <R> Return type of this invocation
  */
 public class LockingInvocationStrategy implements InvocationStrategy
 {
@@ -45,6 +42,10 @@ public class LockingInvocationStrategy implements InvocationStrategy
 		this.lockList = lockList;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.sql.InvocationStrategy#invoke(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker)
+	 */
 	@Override
 	public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(SQLProxy<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker) throws E
 	{

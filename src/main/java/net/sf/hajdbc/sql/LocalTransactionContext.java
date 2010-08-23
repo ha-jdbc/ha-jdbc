@@ -31,7 +31,8 @@ import net.sf.hajdbc.tx.TransactionIdentifierFactory;
 
 /**
  * @author Paul Ferraro
- * @param <D> 
+ * @param <Z>
+ * @param <D>
  */
 public class LocalTransactionContext<Z, D extends Database<Z>> implements TransactionContext<Z, D>
 {
@@ -51,6 +52,7 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 	}
 	
 	/**
+	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.sql.TransactionContext#start(net.sf.hajdbc.sql.InvocationStrategy, java.sql.Connection)
 	 */
 	@Override
@@ -122,7 +124,8 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.TransactionContext#end(net.sf.hajdbc.sql.InvocationStrategy)
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.sql.TransactionContext#end(net.sf.hajdbc.sql.InvocationStrategy, net.sf.hajdbc.durability.Durability.Phase)
 	 */
 	@Override
 	public InvocationStrategy end(final InvocationStrategy strategy, final Durability.Phase phase)
@@ -150,7 +153,7 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.TransactionContext#end(net.sf.hajdbc.sql.Invoker)
+	 * @see net.sf.hajdbc.sql.TransactionContext#end(net.sf.hajdbc.sql.Invoker, net.sf.hajdbc.durability.Durability.Phase)
 	 */
 	@Override
 	public <T, R> Invoker<Z, D, T, R, SQLException> end(final Invoker<Z, D, T, R, SQLException> invoker, Durability.Phase phase) throws SQLException

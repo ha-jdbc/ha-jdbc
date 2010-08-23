@@ -30,9 +30,10 @@ import net.sf.hajdbc.util.reflect.Methods;
 
 /**
  * @author Paul Ferraro
- * @param <D> 
- * @param <P> 
- * @param <E> 
+ * @param <Z>
+ * @param <D>
+ * @param <P>
+ * @param <T>
  */
 public abstract class LocatorInvocationHandler<Z, D extends Database<Z>, P, T> extends ChildInvocationHandler<Z, D, P, T, SQLException>
 {
@@ -43,12 +44,15 @@ public abstract class LocatorInvocationHandler<Z, D extends Database<Z>, P, T> e
 	private final boolean updateCopy;
 	
 	/**
+	 * Constructs a new LocatorInvocationHandler
 	 * @param parent
 	 * @param proxy
 	 * @param invoker
-	 * @param proxyClass 
-	 * @param objectMap
-	 * @throws Exception
+	 * @param locatorClass
+	 * @param locators
+	 * @param updateCopy
+	 * @param readMethodSet
+	 * @param writeMethodSet
 	 */
 	protected LocatorInvocationHandler(P parent, SQLProxy<Z, D, P, SQLException> proxy, Invoker<Z, D, P, T, SQLException> invoker, Class<T> locatorClass, Map<D, T> locators, boolean updateCopy, Set<Method> readMethodSet, Set<Method> writeMethodSet)
 	{

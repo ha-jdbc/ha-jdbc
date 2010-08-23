@@ -72,6 +72,10 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 		}
 	};
 
+	/**
+	 * Constructs a new LoadBalancer
+	 * @param databases
+	 */
 	public LoadBalancer(Set<D> databases)
 	{
 		if (databases.isEmpty())
@@ -212,7 +216,8 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 	}
 
 	/**
-	 * @see net.sf.hajdbc.balancer.Balancer#clear()
+	 * {@inheritDoc}
+	 * @see java.util.Set#clear()
 	 */
 	@Override
 	public void clear()
@@ -233,7 +238,8 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 	}
 
 	/**
-	 * @see net.sf.hajdbc.balancer.Balancer#remove(net.sf.hajdbc.Database)
+	 * {@inheritDoc}
+	 * @see java.util.Set#remove(java.lang.Object)
 	 */
 	@Override
 	public boolean remove(Object database)
@@ -269,6 +275,7 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 	}
 
 	/**
+	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.balancer.Balancer#next()
 	 */
 	@Override
@@ -280,7 +287,8 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 	}
 
 	/**
-	 * @see net.sf.hajdbc.balancer.Balancer#add(net.sf.hajdbc.Database)
+	 * {@inheritDoc}
+	 * @see java.util.Set#add(java.lang.Object)
 	 */
 	@Override
 	public boolean add(D database)
@@ -319,7 +327,7 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#invoke(net.sf.hajdbc.sql.Invoker, net.sf.hajdbc.Database, java.lang.Object)
+	 * @see net.sf.hajdbc.balancer.Balancer#invoke(net.sf.hajdbc.sql.Invoker, net.sf.hajdbc.Database, java.lang.Object)
 	 */
 	@Override
 	public <T, R, E extends Exception> R invoke(Invoker<Z, D, T, R, E> invoker, D database, T object) throws E

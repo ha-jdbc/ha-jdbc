@@ -29,7 +29,8 @@ import net.sf.hajdbc.DatabaseCluster;
 public class DriverInvocationHandler extends RootInvocationHandler<Driver, DriverDatabase, SQLException>
 {
 	/**
-	 * @param databaseCluster
+	 * Constructs a new DriverInvocationHandler
+	 * @param cluster a database cluster
 	 */
 	public DriverInvocationHandler(DatabaseCluster<Driver, DriverDatabase> cluster)
 	{

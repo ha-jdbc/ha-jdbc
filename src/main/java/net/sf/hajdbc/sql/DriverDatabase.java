@@ -45,9 +45,8 @@ public class DriverDatabase extends AbstractDatabase<Driver>
 	private static final String PASSWORD = "password"; //$NON-NLS-1$
 
 	/**
-	 * Set the url for this database
-	 * @param url a database url
-	 * @throws IllegalArgumentException if url is not accepted by any driver
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.sql.AbstractDatabase#setName(java.lang.String)
 	 */
 	@ManagedAttribute
 	@Description("JDBC url")
@@ -60,7 +59,8 @@ public class DriverDatabase extends AbstractDatabase<Driver>
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.Database#connect(java.lang.Object, java.lang.String)
 	 */
 	@Override
 	public Connection connect(Driver driver, String password) throws SQLException

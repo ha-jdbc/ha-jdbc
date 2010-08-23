@@ -38,15 +38,12 @@ public class ArrayInvocationHandler<Z, D extends Database<Z>, P> extends Locator
 	private static final Set<Method> writeMethodSet = Collections.emptySet();
 	
 	/**
+	 * Constructs a new ArrayInvocationHandler
 	 * @param parent
 	 * @param proxy
 	 * @param invoker
-	 * @param proxyClass
 	 * @param objectMap
 	 * @param updateCopy
-	 * @param readMethodSet
-	 * @param writeMethodSet
-	 * @throws Exception
 	 */
 	public ArrayInvocationHandler(P parent, SQLProxy<Z, D, P, SQLException> proxy, Invoker<Z, D, P, Array, SQLException> invoker, Map<D, Array> objectMap, boolean updateCopy)
 	{

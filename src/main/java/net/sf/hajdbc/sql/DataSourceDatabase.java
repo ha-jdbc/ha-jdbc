@@ -37,10 +37,8 @@ import net.sf.hajdbc.management.MBean;
 public class DataSourceDatabase extends CommonDataSourceDatabase<DataSource>
 {
 	/**
-	 * @param dataSource A DataSource
-	 * @return a database connection
-	 * @throws SQLException if a database connection could not be made
-	 * @see net.sf.hajdbc.Database#connect(Object)
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.Database#connect(java.lang.Object, java.lang.String)
 	 */
 	@Override
 	public Connection connect(DataSource dataSource, String password) throws SQLException

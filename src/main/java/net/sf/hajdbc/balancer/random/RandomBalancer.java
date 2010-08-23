@@ -39,6 +39,10 @@ public class RandomBalancer<P, D extends Database<P>> extends AbstractSetBalance
 
 	private Random random = new Random();
 
+	/**
+	 * Constructs a new RandomBalancer
+	 * @param databases
+	 */
 	public RandomBalancer(Set<D> databases)
 	{
 		super(databases);
@@ -65,6 +69,7 @@ public class RandomBalancer<P, D extends Database<P>> extends AbstractSetBalance
 	}
 	
 	/**
+	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.balancer.Balancer#next()
 	 */
 	@Override
@@ -76,7 +81,8 @@ public class RandomBalancer<P, D extends Database<P>> extends AbstractSetBalance
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#added(net.sf.hajdbc.Database)
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.balancer.AbstractSetBalancer#added(net.sf.hajdbc.Database)
 	 */
 	@Override
 	protected void added(D database)
@@ -99,7 +105,8 @@ public class RandomBalancer<P, D extends Database<P>> extends AbstractSetBalance
 	}
 
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#removed(net.sf.hajdbc.Database)
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.balancer.AbstractSetBalancer#removed(net.sf.hajdbc.Database)
 	 */
 	@Override
 	protected void removed(D database)
@@ -120,7 +127,8 @@ public class RandomBalancer<P, D extends Database<P>> extends AbstractSetBalance
 	}
 
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#cleared()
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.balancer.AbstractSetBalancer#cleared()
 	 */
 	@Override
 	protected void cleared()

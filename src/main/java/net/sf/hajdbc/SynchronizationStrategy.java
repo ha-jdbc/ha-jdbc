@@ -29,7 +29,8 @@ public interface SynchronizationStrategy
 {
 	/**
 	 * Synchronizes a target database with a source database as defined by the synchronization context.
-	 * @param <D> 
+	 * @param <Z>
+	 * @param <D>
 	 * @param context a synchronization context
 	 * @throws SQLException if synchronization fails
 	 */

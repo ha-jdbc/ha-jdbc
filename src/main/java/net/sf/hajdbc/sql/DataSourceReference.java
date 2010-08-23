@@ -50,7 +50,7 @@ public class DataSourceReference extends CommonDataSourceReference<DataSource>
 	/**
 	 * Constructs a reference to a DataSource for the specified cluster
 	 * @param cluster a cluster identifier
-	 * @param config the uri of the configuration file
+	 * @param factory a factory for creating cluster configuration
 	 */
 	public DataSourceReference(String cluster, DatabaseClusterConfigurationFactory<DataSource, DataSourceDatabase> factory)
 	{

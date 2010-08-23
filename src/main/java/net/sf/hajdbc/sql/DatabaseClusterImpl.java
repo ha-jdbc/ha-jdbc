@@ -277,7 +277,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DatabaseCluster#getNonTransactionalExecutor()
+	 * @see net.sf.hajdbc.DatabaseCluster#getExecutor()
 	 */
 	@Override
 	public ExecutorService getExecutor()

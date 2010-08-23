@@ -127,7 +127,7 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DatabaseClusterConfigurationFactory#createConfiguration(java.lang.String, java.lang.Class)
+	 * @see net.sf.hajdbc.DatabaseClusterConfigurationFactory#createConfiguration()
 	 */
 	@Override
 	public DatabaseClusterConfiguration<Z, D> createConfiguration() throws SQLException

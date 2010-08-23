@@ -46,7 +46,7 @@ import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.util.Strings;
 
 /**
- * Default {@link SynchonrizationSupport} implementation.
+ * Default {@link SynchronizationSupport} implementation.
  * @author Paul Ferraro
  */
 public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements SynchronizationSupport

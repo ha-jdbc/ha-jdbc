@@ -35,8 +35,9 @@ public abstract class AbstractStatementInvocationHandlerFactory<Z, D extends Dat
 	private final Class<S> statementClass;
 
 	/**
-	 * @param connection
-	 * @param transactionContext
+	 * Constructs a new AbstractStatementInvocationHandlerFactory
+	 * @param statementClass the class of the statement
+	 * @param context the transaction context
 	 */
 	protected AbstractStatementInvocationHandlerFactory(Class<S> statementClass, TransactionContext<Z, D> context)
 	{

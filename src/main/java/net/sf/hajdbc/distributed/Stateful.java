@@ -32,7 +32,7 @@ public interface Stateful
 	
 	/**
 	 * Sets the state of this object.
-	 * @param the state
+	 * @param state the state
 	 */
 	void setState(byte[] state);
 }

@@ -73,6 +73,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy, Ser
 	private int fetchSize = 0;
 	
 	/**
+	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.sync.SynchronizationContext)
 	 */
 	@Override

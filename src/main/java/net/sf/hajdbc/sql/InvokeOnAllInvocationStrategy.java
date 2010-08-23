@@ -36,9 +36,6 @@ import net.sf.hajdbc.Messages;
 
 /**
  * @author Paul Ferraro
- * @param <D> 
- * @param <T> 
- * @param <R> 
  */
 public class InvokeOnAllInvocationStrategy extends InvokeOnManyInvocationStrategy
 {

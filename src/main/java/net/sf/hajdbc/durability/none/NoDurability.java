@@ -59,6 +59,10 @@ public class NoDurability<Z, D extends Database<Z>> implements Durability<Z, D>
 		return invoker;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.durability.Durability#recover(java.util.Map)
+	 */
 	@Override
 	public void recover(Map<InvocationEvent, Map<String, InvokerEvent>> invokers)
 	{

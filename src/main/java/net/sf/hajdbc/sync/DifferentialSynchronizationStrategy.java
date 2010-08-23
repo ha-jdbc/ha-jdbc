@@ -83,6 +83,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 	private Pattern versionPattern = null;
 	
 	/**
+	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.sync.SynchronizationContext)
 	 */
 	@Override

@@ -26,14 +26,13 @@ import net.sf.hajdbc.durability.Durability;
 /**
  * Decorates an invocation strategy with transaction boundary logic.
  * @author Paul Ferraro
- * @param <D> DataSource or Driver
+ * @param <Z>
+ * @param <D>
  */
 public interface TransactionContext<Z, D extends Database<Z>>
 {
 	/**
 	 * Decorates the specified invocation strategy with start transaction logic.
-	 * @param <T> Target object type of the invocation
-	 * @param <R> Return type of this invocation
 	 * @param strategy
 	 * @param connection
 	 * @return the decorated invocation strategy
@@ -41,18 +40,35 @@ public interface TransactionContext<Z, D extends Database<Z>>
 	 */
 	InvocationStrategy start(InvocationStrategy strategy, Connection connection) throws SQLException;
 
+	/**
+	 * Decorates the specified invoker with start transaction logic.
+	 * @param <T>
+	 * @param <R>
+	 * @param invoker
+	 * @param connection
+	 * @return the decorated invoker
+	 * @throws SQLException
+	 */
 	<T, R> Invoker<Z, D, T, R, SQLException> start(Invoker<Z, D, T, R, SQLException> invoker, Connection connection) throws SQLException;
 
 	/**
 	 * Decorates the specified invocation strategy with end transaction logic.
-	 * @param <T> Target object type of the invocation
-	 * @param <R> Return type of this invocation
 	 * @param strategy
+	 * @param phase
 	 * @return the decorated invocation strategy
 	 * @throws SQLException
 	 */
 	InvocationStrategy end(InvocationStrategy strategy, Durability.Phase phase) throws SQLException;
 
+	/**
+	 * Decorates the specified invok with end transaction logic.
+	 * @param <T>
+	 * @param <R>
+	 * @param invoker
+	 * @param phase
+	 * @return the decorated invoker
+	 * @throws SQLException
+	 */
 	<T, R> Invoker<Z, D, T, R, SQLException> end(Invoker<Z, D, T, R, SQLException> invoker, Durability.Phase phase) throws SQLException;
 	
 	/**

@@ -43,6 +43,10 @@ public class SimpleBalancer<Z, D extends Database<Z>> extends AbstractSetBalance
 		}
 	};
 
+	/**
+	 * Constructs a new SimpleBalancer
+	 * @param databases
+	 */
 	public SimpleBalancer(Set<D> databases)
 	{
 		super(databases);
@@ -51,6 +55,7 @@ public class SimpleBalancer<Z, D extends Database<Z>> extends AbstractSetBalance
 	}
 	
 	/**
+	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.balancer.Balancer#next()
 	 */
 	@Override
@@ -60,7 +65,8 @@ public class SimpleBalancer<Z, D extends Database<Z>> extends AbstractSetBalance
 	}
 
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#added(net.sf.hajdbc.Database)
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.balancer.AbstractSetBalancer#added(net.sf.hajdbc.Database)
 	 */
 	@Override
 	protected void added(D database)
@@ -69,7 +75,8 @@ public class SimpleBalancer<Z, D extends Database<Z>> extends AbstractSetBalance
 	}
 
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#removed(net.sf.hajdbc.Database)
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.balancer.AbstractSetBalancer#removed(net.sf.hajdbc.Database)
 	 */
 	@Override
 	protected void removed(D database)
@@ -85,7 +92,8 @@ public class SimpleBalancer<Z, D extends Database<Z>> extends AbstractSetBalance
 	}
 
 	/**
-	 * @see net.sf.hajdbc.balancer.AbstractBalancer#cleared()
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.balancer.AbstractSetBalancer#cleared()
 	 */
 	@Override
 	protected void cleared()

@@ -33,9 +33,6 @@ import net.sf.hajdbc.util.Collections;
 
 /**
  * @author Paul Ferraro
- * @param <D> 
- * @param <T> 
- * @param <R> 
  */
 public class InvokeOnAnyInvocationStrategy extends InvokeOnNextInvocationStrategy
 {
