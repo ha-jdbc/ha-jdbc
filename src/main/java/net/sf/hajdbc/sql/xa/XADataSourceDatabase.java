@@ -22,9 +22,6 @@ import java.sql.SQLException;
 
 import javax.sql.XAConnection;
 import javax.sql.XADataSource;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import net.sf.hajdbc.management.Description;
@@ -38,10 +35,8 @@ import net.sf.hajdbc.sql.CommonDataSourceDatabase;
 @MBean
 @Description("Database accessed via a server-side XADataSource")
 @XmlType(name = "database")
-@XmlAccessorType(XmlAccessType.FIELD)
 public class XADataSourceDatabase extends CommonDataSourceDatabase<XADataSource>
 {
-	@XmlTransient
 	private boolean force2PC = false;
 	
 	/**

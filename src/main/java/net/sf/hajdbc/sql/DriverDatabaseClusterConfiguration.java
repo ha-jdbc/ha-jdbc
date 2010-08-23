@@ -19,8 +19,6 @@ package net.sf.hajdbc.sql;
 
 import java.sql.Driver;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
@@ -31,7 +29,6 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlRootElement(name = "ha-jdbc")
 @XmlType(name = "databaseClusterConfiguration")
-@XmlAccessorType(XmlAccessType.FIELD)
 public class DriverDatabaseClusterConfiguration extends AbstractDatabaseClusterConfiguration<Driver, DriverDatabase>
 {
 	private static final long serialVersionUID = -1244943642980298325L;

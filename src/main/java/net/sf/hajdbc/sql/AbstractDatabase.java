@@ -23,11 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import net.sf.hajdbc.Database;
@@ -43,7 +40,6 @@ import net.sf.hajdbc.sql.AbstractDatabaseClusterConfiguration.Property;
  * @since   1.0
  */
 @XmlType(propOrder = { "name", "user", "password", "xmlProperties" })
-@XmlAccessorType(XmlAccessType.FIELD)
 public abstract class AbstractDatabase<Z> implements Database<Z>
 {
 	@XmlAttribute(name = "id", required = true)
@@ -54,15 +50,14 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	private String user;
 	@XmlElement(name = "password")
 	private String password;
-	@XmlTransient
-	private Map<String, String> properties = new HashMap<String, String>();
+
 	@XmlAttribute(name = "weight")
 	private Integer weight = 1;
 	@XmlAttribute(name = "local")
 	private Boolean local = false;
-	@XmlTransient
+
+	private Map<String, String> properties = new HashMap<String, String>();
 	private boolean dirty = false;
-	@XmlTransient
 	private volatile boolean active = false;
 	
 	@SuppressWarnings("unused")

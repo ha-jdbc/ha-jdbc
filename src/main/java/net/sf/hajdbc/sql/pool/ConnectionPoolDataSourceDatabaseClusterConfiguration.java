@@ -18,8 +18,6 @@
 package net.sf.hajdbc.sql.pool;
 
 import javax.sql.ConnectionPoolDataSource;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
@@ -31,7 +29,6 @@ import net.sf.hajdbc.sql.AbstractDatabaseClusterConfiguration;
  */
 @XmlRootElement(name = "ha-jdbc")
 @XmlType(name = "databaseClusterConfiguration")
-@XmlAccessorType(XmlAccessType.FIELD)
 public class ConnectionPoolDataSourceDatabaseClusterConfiguration extends AbstractDatabaseClusterConfiguration<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase>
 {
 	private static final long serialVersionUID = 6137340553506862286L;

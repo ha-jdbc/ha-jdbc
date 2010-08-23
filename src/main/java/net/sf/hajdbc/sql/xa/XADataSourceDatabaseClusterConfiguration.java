@@ -18,8 +18,6 @@
 package net.sf.hajdbc.sql.xa;
 
 import javax.sql.XADataSource;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
@@ -28,7 +26,6 @@ import net.sf.hajdbc.sql.AbstractDatabaseClusterConfiguration;
 
 @XmlRootElement(name = "ha-jdbc")
 @XmlType(name = "databaseClusterConfiguration")
-@XmlAccessorType(XmlAccessType.FIELD)
 public class XADataSourceDatabaseClusterConfiguration extends AbstractDatabaseClusterConfiguration<XADataSource, XADataSourceDatabase>
 {
 	private static final long serialVersionUID = 6548016448539963613L;

@@ -29,13 +29,10 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlIDREF;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
@@ -71,7 +68,6 @@ import org.quartz.CronExpression;
  *
  */
 @XmlType(propOrder = { "dispatcherFactory", "synchronizationStrategyDescriptors" })
-@XmlAccessorType(XmlAccessType.FIELD)
 public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database<Z>> implements DatabaseClusterConfiguration<Z, D>
 {
 	private static final long serialVersionUID = -2808296483725374829L;
@@ -79,7 +75,6 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	@XmlElement(name = "distributable", type = DefaultChannelProvider.class)
 	private CommandDispatcherFactory dispatcherFactory;
 	
-	@XmlTransient
 	Map<String, SynchronizationStrategy> synchronizationStrategies = new HashMap<String, SynchronizationStrategy>();
 	
 	protected abstract NestedConfiguration<Z, D> getNestedConfiguration();
@@ -502,7 +497,6 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	}
 	
 	@XmlType(name = "abstractNestedConfiguration")
-	@XmlAccessorType(XmlAccessType.FIELD)
 	protected static abstract class NestedConfiguration<Z, D extends Database<Z>> implements DatabaseClusterConfiguration<Z, D>
 	{
 		private static final long serialVersionUID = -5674156614205147546L;
@@ -523,22 +517,20 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		@XmlAttribute(name = "durability")
 		private DurabilityFactory durabilityFactory = DurabilityFactoryEnum.FINE;
 
-		@XmlTransient
 		private ExecutorServiceProvider executorProvider = new DefaultExecutorServiceProvider();
-		@XmlTransient
 		private ThreadFactory threadFactory = Executors.defaultThreadFactory();
-		@XmlTransient
 		private CodecFactory codecFactory = new SimpleCodecFactory();
-		@XmlTransient
 		private StateManagerProvider stateManagerProvider = new SQLStateManagerProvider();
 
 		@XmlJavaTypeAdapter(TransactionModeAdapter.class)
 		@XmlAttribute(name = "transaction-mode")
 		private TransactionMode transactionMode = TransactionModeEnum.SERIAL;
 
-		@XmlTransient
+		@XmlJavaTypeAdapter(CronExpressionAdapter.class)
+		@XmlAttribute(name = "auto-activate-schedule")
 		private CronExpression autoActivationExpression;
-		@XmlTransient
+		@XmlJavaTypeAdapter(CronExpressionAdapter.class)
+		@XmlAttribute(name = "failure-detect-schedule")
 		private CronExpression failureDetectionExpression;
 		
 		@XmlAttribute(name = "eval-current-date")
@@ -555,10 +547,8 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		@XmlAttribute(name = "detect-sequences")
 		private Boolean sequenceDetectionEnabled = false;
 
-		@XmlTransient
 		private String defaultSynchronizationStrategy;
 		
-		@XmlTransient
 		private Map<String, D> databases = new HashMap<String, D>();
 		
 		@SuppressWarnings("unused")
@@ -575,42 +565,6 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		private void setDefaultSynchronizationStrategyDescriptor(SynchronizationStrategyDescriptor descriptor)
 		{
 			this.defaultSynchronizationStrategy = descriptor.getId();
-		}
-
-		@SuppressWarnings("unused")
-		@XmlAttribute(name = "auto-activate-schedule")
-		private String getAutoActivationCronExpression() throws Exception
-		{
-			return this.marshalCronExpression(this.autoActivationExpression);
-		}
-		
-		@SuppressWarnings("unused")
-		private void setAutoActivationCronExpression(String expression) throws Exception
-		{
-			this.autoActivationExpression = this.unmarshalCronExpression(expression);
-		}
-
-		@SuppressWarnings("unused")
-		@XmlAttribute(name = "failure-detect-schedule")
-		private String getFailureDetectionCronExpression() throws Exception
-		{
-			return this.marshalCronExpression(this.failureDetectionExpression);
-		}
-		
-		@SuppressWarnings("unused")
-		private void setFailureDetectionCronExpression(String expression) throws Exception
-		{
-			this.failureDetectionExpression = this.unmarshalCronExpression(expression);
-		}
-		
-		private String marshalCronExpression(CronExpression expression)
-		{
-			return (expression != null) ? expression.getCronExpression() : null;
-		}
-
-		private CronExpression unmarshalCronExpression(String expression) throws Exception
-		{
-			return new CronExpression(expression);
 		}
 		
 		@Override
@@ -904,8 +858,22 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			}
 		}
 	}
+
+	static class CronExpressionAdapter extends XmlAdapter<String, CronExpression>
+	{
+		@Override
+		public String marshal(CronExpression expression)
+		{
+			return (expression != null) ? expression.getCronExpression() : null;
+		}
+
+		@Override
+		public CronExpression unmarshal(String value) throws Exception
+		{
+			return (value != null) ? new CronExpression(value) : null;
+		}
+	}
 	
-	@XmlAccessorType(XmlAccessType.FIELD)
 	@XmlType
 	static class SynchronizationStrategyDescriptor
 	{
@@ -950,7 +918,6 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		}
 	}
 	
-	@XmlAccessorType(XmlAccessType.FIELD)
 	@XmlType
 	protected static class Property
 	{

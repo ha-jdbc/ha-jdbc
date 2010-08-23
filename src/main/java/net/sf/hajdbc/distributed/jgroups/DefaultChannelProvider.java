@@ -17,10 +17,7 @@
  */
 package net.sf.hajdbc.distributed.jgroups;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import org.jgroups.Channel;
@@ -38,14 +35,12 @@ import org.jgroups.conf.ProtocolStackConfigurator;
  * @author Paul Ferraro
  */
 @XmlType
-@XmlAccessorType(XmlAccessType.FIELD)
 public class DefaultChannelProvider extends ChannelCommandDispatcherFactory
 {
 	private static final long serialVersionUID = -2396294564096482534L;
 
 	public static final String DEFAULT_STACK = "udp-sync.xml";
 	
-	@XmlTransient
 	private static final String SINGLETON_NAME = "ha-jdbc";
 	
 	@XmlAttribute(name = "stack")

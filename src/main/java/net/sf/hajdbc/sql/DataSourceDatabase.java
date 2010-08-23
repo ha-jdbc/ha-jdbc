@@ -21,8 +21,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import javax.sql.DataSource;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 import net.sf.hajdbc.management.Description;
@@ -36,7 +34,6 @@ import net.sf.hajdbc.management.MBean;
 @MBean
 @Description("Database accessed via a DataSource")
 @XmlType(name = "database")
-@XmlAccessorType(XmlAccessType.FIELD)
 public class DataSourceDatabase extends CommonDataSourceDatabase<DataSource>
 {
 	/**

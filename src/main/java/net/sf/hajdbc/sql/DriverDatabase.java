@@ -24,9 +24,6 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import net.sf.hajdbc.Messages;
@@ -42,12 +39,9 @@ import net.sf.hajdbc.management.ManagedAttribute;
 @MBean
 @Description("Database accessed via DriverManager")
 @XmlType(name = "database")
-@XmlAccessorType(XmlAccessType.FIELD)
 public class DriverDatabase extends AbstractDatabase<Driver>
 {
-	@XmlTransient
 	private static final String USER = "user"; //$NON-NLS-1$
-	@XmlTransient
 	private static final String PASSWORD = "password"; //$NON-NLS-1$
 
 	/**
