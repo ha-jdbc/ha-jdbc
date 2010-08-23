@@ -29,45 +29,33 @@ public interface SynchronizationSupport
 {
 	/**
 	 * Drop all foreign key constraints on the target database
-	 * @param <D> 
-	 * @param context a synchronization context
 	 * @throws SQLException if database error occurs
 	 */
 	void dropForeignKeys() throws SQLException;
 	
 	/**
 	 * Restores all foreign key constraints on the target database
-	 * @param <D> 
-	 * @param context a synchronization context
 	 * @throws SQLException if database error occurs
 	 */
 	void restoreForeignKeys() throws SQLException;
 	
 	/**
 	 * Synchronizes the sequences on the target database with the source database.
-	 * @param <D> 
-	 * @param context a synchronization context
 	 * @throws SQLException if database error occurs
 	 */
 	void synchronizeSequences() throws SQLException;
 	
 	/**
-	 * @param <D>
-	 * @param context
 	 * @throws SQLException
 	 */
 	void synchronizeIdentityColumns() throws SQLException;
 
 	/**
-	 * @param <D>
-	 * @param context
 	 * @throws SQLException
 	 */
 	void dropUniqueConstraints() throws SQLException;
 	
 	/**
-	 * @param <D>
-	 * @param context
 	 * @throws SQLException
 	 */
 	void restoreUniqueConstraints() throws SQLException;
