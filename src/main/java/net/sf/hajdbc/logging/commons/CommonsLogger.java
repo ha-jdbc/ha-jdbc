@@ -24,7 +24,7 @@ import net.sf.hajdbc.logging.AbstractLogger;
 import net.sf.hajdbc.logging.Level;
 
 /**
- * Apache Commons logging {@link Logger}.
+ * Apache Commons logging {@link net.sf.hajdbc.logging.Logger}.
  * @author Paul Ferraro
  */
 public class CommonsLogger extends AbstractLogger
