@@ -25,7 +25,7 @@ import net.sf.hajdbc.durability.Durability;
 import net.sf.hajdbc.durability.DurabilityFactory;
 
 /**
- * Factory for creating a {@link NoDurablity}.
+ * Factory for creating a {@link NoDurability}.
  * @author Paul Ferraro
  */
 public class NoDurabilityFactory implements DurabilityFactory, Serializable
