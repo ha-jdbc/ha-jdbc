@@ -62,12 +62,12 @@ public abstract class AbstractPooledConnectionInvocationHandler<Z, D extends Dat
 	private Map<Object, Invoker<Z, D, C, ?, SQLException>> statementEventListenerInvokerMap = new HashMap<Object, Invoker<Z, D, C, ?, SQLException>>();
 	
 	/**
+	 * Constructs a new AbstractPooledConnectionInvocationHandler
 	 * @param dataSource
 	 * @param proxy
 	 * @param invoker
 	 * @param proxyClass
-	 * @param objectMap
-	 * @throws Exception
+	 * @param objects
 	 */
 	protected AbstractPooledConnectionInvocationHandler(Z dataSource, SQLProxy<Z, D, Z, SQLException> proxy, Invoker<Z, D, Z, C, SQLException> invoker, Class<C> proxyClass, Map<D, C> objects)
 	{
@@ -89,6 +89,10 @@ public abstract class AbstractPooledConnectionInvocationHandler<Z, D extends Dat
 		return super.getInvocationHandlerFactory(object, method, parameters);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 */
 	@Override
 	protected InvocationStrategy getInvocationStrategy(C connection, Method method, Object[] parameters) throws SQLException
 	{
@@ -100,6 +104,10 @@ public abstract class AbstractPooledConnectionInvocationHandler<Z, D extends Dat
 		return super.getInvocationStrategy(connection, method, parameters);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#postInvoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 */
 	@Override
 	protected void postInvoke(C connection, Method method, Object[] parameters)
 	{

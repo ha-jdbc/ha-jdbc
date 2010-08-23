@@ -28,7 +28,7 @@ public class JDKLoggingProvider implements LoggingProvider
 {
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.logging.LoggerFactory#createLogger(java.lang.Class)
+	 * @see net.sf.hajdbc.logging.LoggingProvider#getLogger(java.lang.Class)
 	 */
 	@Override
 	public Logger getLogger(Class<?> targetClass)

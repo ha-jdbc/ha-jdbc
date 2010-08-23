@@ -42,7 +42,7 @@ public class CipherCodec implements Codec
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.codec.Codec#decrypt(java.lang.String, java.lang.Object)
+	 * @see net.sf.hajdbc.codec.Codec#decode(java.lang.String)
 	 */
 	@Override
 	public String decode(String value) throws SQLException

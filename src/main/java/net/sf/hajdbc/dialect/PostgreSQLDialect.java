@@ -18,7 +18,6 @@
 package net.sf.hajdbc.dialect;
 
 import java.io.File;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -46,7 +45,7 @@ public class PostgreSQLDialect extends StandardDialect implements DumpRestoreSup
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.dialect.StandardDialect#vendor()
+	 * @see net.sf.hajdbc.dialect.StandardDialect#vendorPattern()
 	 */
 	@Override
 	protected String vendorPattern()
@@ -187,8 +186,7 @@ public class PostgreSQLDialect extends StandardDialect implements DumpRestoreSup
 
 	/**
 	 * {@inheritDoc}
-	 * @throws IOException 
-	 * @see net.sf.hajdbc.dialect.StandardDialect#startDumpProcess(java.lang.String, java.io.File)
+	 * @see net.sf.hajdbc.DumpRestoreSupport#createDumpProcess(net.sf.hajdbc.ConnectionProperties, java.io.File)
 	 */
 	@Override
 	public ProcessBuilder createDumpProcess(ConnectionProperties properties, File file)
@@ -198,7 +196,7 @@ public class PostgreSQLDialect extends StandardDialect implements DumpRestoreSup
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.dialect.StandardDialect#startRestoreProcess(java.lang.String, java.io.File)
+	 * @see net.sf.hajdbc.DumpRestoreSupport#createRestoreProcess(net.sf.hajdbc.ConnectionProperties, java.io.File)
 	 */
 	@Override
 	public ProcessBuilder createRestoreProcess(ConnectionProperties properties, File file)

@@ -59,7 +59,7 @@ public interface Balancer<Z, D extends Database<Z>> extends Set<D>
 	 * @param invoker
 	 * @param database
 	 * @param object
-	 * @return
+	 * @return the result of the invocation
 	 * @throws E
 	 */
 	<T, R, E extends Exception> R invoke(Invoker<Z, D, T, R, E> invoker, D database, T object) throws E;

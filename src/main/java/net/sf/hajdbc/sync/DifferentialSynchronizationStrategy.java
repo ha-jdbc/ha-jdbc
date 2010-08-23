@@ -559,7 +559,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 	}
 
 	/**
-	 * @return the timestampPattern
+	 * @return the versionPattern
 	 */
 	public String getVersionPattern()
 	{
@@ -567,10 +567,10 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 	}
 
 	/**
-	 * @param versionPattern the timestampPattern to set
+	 * @param versionPattern the versionPattern to set
 	 */
-	public void setVersionPattern(String pattern)
+	public void setVersionPattern(String versionPattern)
 	{
-		this.versionPattern = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+		this.versionPattern = Pattern.compile(versionPattern, Pattern.CASE_INSENSITIVE);
 	}
 }

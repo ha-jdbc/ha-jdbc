@@ -73,7 +73,8 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 	}
 
 	/**
-	 * @see net.sf.hajdbc.util.concurrent.cron.CronExecutorService#schedule(java.lang.Runnable, net.sf.hajdbc.util.concurrent.cron.quartz.CronExpression)
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.util.concurrent.cron.CronExecutorService#schedule(java.lang.Runnable, org.quartz.CronExpression)
 	 */
 	@Override
 	public void schedule(final Runnable task, final CronExpression expression)

@@ -30,18 +30,30 @@ import net.sf.hajdbc.logging.LoggingProvider;
  */
 public class CommonsLoggingProvider implements LoggingProvider
 {
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.logging.LoggingProvider#getLogger(java.lang.Class)
+	 */
 	@Override
 	public Logger getLogger(Class<?> targetClass)
 	{
 		return new CommonsLogger(targetClass);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.logging.LoggingProvider#getName()
+	 */
 	@Override
 	public String getName()
 	{
 		return "Commons";
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.logging.LoggingProvider#isEnabled()
+	 */
 	@Override
 	public boolean isEnabled()
 	{

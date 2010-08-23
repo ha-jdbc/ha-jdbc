@@ -82,7 +82,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.lock.distributed.LockCommandContext#getLocalLock(java.lang.String, net.sf.hajdbc.lock.distributed.LockType)
+	 * @see net.sf.hajdbc.lock.distributed.LockCommandContext#getLock(net.sf.hajdbc.lock.distributed.LockDescriptor)
 	 */
 	@Override
 	public Lock getLock(LockDescriptor lock)
@@ -108,7 +108,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.lock.distributed.LockCommandContext#getDistibutedLock(java.lang.String, net.sf.hajdbc.lock.distributed.LockType, org.jgroups.Address)
+	 * @see net.sf.hajdbc.lock.distributed.LockCommandContext#getDistibutedLock(net.sf.hajdbc.lock.distributed.RemoteLockDescriptor)
 	 */
 	@Override
 	public Lock getDistibutedLock(RemoteLockDescriptor descriptor)
@@ -140,7 +140,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.lock.distributed.LockCommandContext#getRemoteLocks(org.jgroups.Address)
+	 * @see net.sf.hajdbc.lock.distributed.LockCommandContext#getRemoteLocks(net.sf.hajdbc.distributed.Remote)
 	 */
 	@Override
 	public Map<LockDescriptor, Lock> getRemoteLocks(Remote remote)
@@ -255,7 +255,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.distributed.MembershipListener#added(org.jgroups.Address)
+	 * @see net.sf.hajdbc.distributed.MembershipListener#added(net.sf.hajdbc.distributed.Member)
 	 */
 	@Override
 	public void added(Member member)
@@ -265,7 +265,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.distributed.MembershipListener#removed(org.jgroups.Address)
+	 * @see net.sf.hajdbc.distributed.MembershipListener#removed(net.sf.hajdbc.distributed.Member)
 	 */
 	@Override
 	public void removed(Member member)

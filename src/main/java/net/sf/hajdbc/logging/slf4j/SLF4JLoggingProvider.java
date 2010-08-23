@@ -27,7 +27,7 @@ public class SLF4JLoggingProvider implements net.sf.hajdbc.logging.LoggingProvid
 {
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.logging.LoggerFactory#createLogger(java.lang.Class)
+	 * @see net.sf.hajdbc.logging.LoggingProvider#getLogger(java.lang.Class)
 	 */
 	@Override
 	public net.sf.hajdbc.logging.Logger getLogger(Class<?> targetClass)

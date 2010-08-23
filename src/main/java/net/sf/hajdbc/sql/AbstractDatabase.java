@@ -36,8 +36,7 @@ import net.sf.hajdbc.sql.AbstractDatabaseClusterConfiguration.Property;
 
 /**
  * @author  Paul Ferraro
- * @param <D> either java.sql.Driver or javax.sql.DataSource
- * @since   1.0
+ * @param <Z>
  */
 @XmlType(propOrder = { "name", "xmlProperties", "user", "password" })
 public abstract class AbstractDatabase<Z> implements Database<Z>
@@ -88,7 +87,7 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.ActiveDatabaseMBean#getDatabaseId()
+	 * @see net.sf.hajdbc.Database#getId()
 	 */
 	@ManagedAttribute
 	@Description("Uniquely identifies this database in the cluster")

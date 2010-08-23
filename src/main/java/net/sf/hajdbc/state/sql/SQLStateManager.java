@@ -254,7 +254,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DatabaseDeactivationListener#deactivated(net.sf.hajdbc.state.DatabaseEvent)
+	 * @see net.sf.hajdbc.DatabaseClusterListener#deactivated(net.sf.hajdbc.state.DatabaseEvent)
 	 */
 	@Override
 	public void deactivated(final DatabaseEvent event)
@@ -296,7 +296,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.state.SerializedDurabilityListener#beforeInvocation(byte[], int)
+	 * @see net.sf.hajdbc.state.SerializedDurabilityListener#beforeInvocation(byte[], int, int)
 	 */
 	@Override
 	public void beforeInvocation(final byte[] transactionId, final int phase, final int exceptionType)

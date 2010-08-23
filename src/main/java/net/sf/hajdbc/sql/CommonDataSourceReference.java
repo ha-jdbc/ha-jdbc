@@ -40,10 +40,12 @@ public abstract class CommonDataSourceReference<Z> extends Reference
 	protected static final String CONFIG = "config"; //$NON-NLS-1$
 	
 	/**
-	 * Constructs a reference for a DataSource implementation.
+	 * Constructs a new CommonDataSourceReference
+	 * @param <D> the datasource type
 	 * @param targetClass the target class of the DataSource.
 	 * @param factoryClass the ObjectFactory class for creating a DataSource
-	 * @param cluster a cluster identifier
+	 * @param cluster a database cluster
+	 * @param configurationClass
 	 * @param config the uri of the configuration file
 	 */
 	protected <D extends Database<Z>> CommonDataSourceReference(Class<Z> targetClass, Class<? extends ObjectFactory> factoryClass, String cluster, Class<? extends DatabaseClusterConfiguration<Z, D>> configurationClass, String config)
@@ -51,6 +53,14 @@ public abstract class CommonDataSourceReference<Z> extends Reference
 		this(targetClass, factoryClass, cluster, new XMLDatabaseClusterConfigurationFactory<Z, D>(configurationClass, cluster, config));
 	}
 	
+	/**
+	 * Constructs a new CommonDataSourceReference
+	 * @param <D> the datasource type
+	 * @param targetClass the target class of the DataSource.
+	 * @param factoryClass the ObjectFactory class for creating a DataSource
+	 * @param cluster a database cluster
+	 * @param factory a database cluster configuration factory
+	 */
 	protected <D extends Database<Z>> CommonDataSourceReference(Class<Z> targetClass, Class<? extends ObjectFactory> factoryClass, String cluster, DatabaseClusterConfigurationFactory<Z, D> factory)
 	{
 		super(targetClass.getName(), factoryClass.getName(), null);

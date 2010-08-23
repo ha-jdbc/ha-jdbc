@@ -31,8 +31,9 @@ import net.sf.hajdbc.Database;
  * Uses A copy-on-write algorithm for {@link #add(Database)}, {@link #remove(Database)}, and {@link #clear()}.
  * Calls to {@link #all()} are non-blocking.
  * 
- * @author  Paul Ferraro
- * @param <D> either java.sql.Driver or javax.sql.DataSource
+ * @author Paul Ferraro
+ * @param <Z>
+ * @param <D>
  */
 public abstract class AbstractBalancer<Z, D extends Database<Z>> implements Balancer<Z, D>
 {

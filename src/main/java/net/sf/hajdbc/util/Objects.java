@@ -111,7 +111,6 @@ public class Objects
 	
 	/**
 	 * Deserializes the specified bytes into the object of the specified type.
-	 * @param <T> the target class
 	 * @param bytes a serialized object
 	 * @return a deserialized object
 	 */

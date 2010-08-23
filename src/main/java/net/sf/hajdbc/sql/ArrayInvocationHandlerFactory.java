@@ -33,7 +33,7 @@ public class ArrayInvocationHandlerFactory<Z, D extends Database<Z>, P> extends 
 {
 	/**
 	 * Constructs a new ArrayInvocationHandlerFactory
-	 * @param targetClass
+	 * @param connection
 	 */
 	public ArrayInvocationHandlerFactory(Connection connection)
 	{

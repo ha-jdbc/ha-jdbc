@@ -39,7 +39,7 @@ public class CoordinatorAcquireCommand extends CoordinatorLockCommand<Boolean>
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.lock.distributed.CoordinatorLockCommand#execute(net.sf.hajdbc.distributable.jgroups.LockCommandContext, java.util.concurrent.locks.Lock)
+	 * @see net.sf.hajdbc.lock.distributed.CoordinatorLockCommand#execute(java.util.concurrent.locks.Lock)
 	 */
 	@Override
 	protected Boolean execute(Lock lock)
@@ -56,12 +56,20 @@ public class CoordinatorAcquireCommand extends CoordinatorLockCommand<Boolean>
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.distributed.Command#marshalResult(java.lang.Object)
+	 */
 	@Override
 	public Object marshalResult(Boolean result)
 	{
 		return result;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.distributed.Command#unmarshalResult(java.lang.Object)
+	 */
 	@Override
 	public Boolean unmarshalResult(Object object)
 	{

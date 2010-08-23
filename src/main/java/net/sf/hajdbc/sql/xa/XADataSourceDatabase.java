@@ -39,8 +39,14 @@ public class XADataSourceDatabase extends CommonDataSourceDatabase<XADataSource>
 {
 	private boolean force2PC = false;
 	
+	public XADataSourceDatabase()
+	{
+		super(XADataSource.class);
+	}
+	
 	/**
-	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.Database#connect(java.lang.Object, java.lang.String)
 	 */
 	@Override
 	public Connection connect(XADataSource dataSource, String password) throws SQLException
@@ -48,16 +54,6 @@ public class XADataSourceDatabase extends CommonDataSourceDatabase<XADataSource>
 		XAConnection connection = this.requiresAuthentication() ? dataSource.getXAConnection(this.getUser(), password) : dataSource.getXAConnection();
 		
 		return connection.getConnection();
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.CommonDataSourceDatabase#getTargetClass()
-	 */
-	@Override
-	protected Class<XADataSource> getTargetClass()
-	{
-		return XADataSource.class;
 	}
 
 	public boolean isForce2PC()

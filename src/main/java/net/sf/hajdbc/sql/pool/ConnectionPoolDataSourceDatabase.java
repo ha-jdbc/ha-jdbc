@@ -37,6 +37,11 @@ import net.sf.hajdbc.sql.CommonDataSourceDatabase;
 @XmlType(name = "database")
 public class ConnectionPoolDataSourceDatabase extends CommonDataSourceDatabase<ConnectionPoolDataSource>
 {
+	public ConnectionPoolDataSourceDatabase()
+	{
+		super(ConnectionPoolDataSource.class);
+	}
+	
 	/**
 	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
 	 */
@@ -46,11 +51,5 @@ public class ConnectionPoolDataSourceDatabase extends CommonDataSourceDatabase<C
 		PooledConnection connection = this.requiresAuthentication() ? dataSource.getPooledConnection(this.getUser(), password) : dataSource.getPooledConnection();
 		
 		return connection.getConnection();
-	}
-
-	@Override
-	protected Class<ConnectionPoolDataSource> getTargetClass()
-	{
-		return ConnectionPoolDataSource.class;
 	}
 }

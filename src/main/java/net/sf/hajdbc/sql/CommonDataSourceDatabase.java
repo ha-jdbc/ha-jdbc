@@ -41,7 +41,12 @@ import net.sf.hajdbc.management.ManagedAttribute;
  */
 public abstract class CommonDataSourceDatabase<Z extends javax.sql.CommonDataSource> extends AbstractDatabase<Z>
 {
-	protected abstract Class<Z> getTargetClass();
+	private final Class<Z> targetClass;
+	
+	protected CommonDataSourceDatabase(Class<Z> targetClass)
+	{
+		this.targetClass = targetClass;
+	}
 	
 	/**
 	 * {@inheritDoc}
@@ -65,7 +70,7 @@ public abstract class CommonDataSourceDatabase<Z extends javax.sql.CommonDataSou
 		{
 			Class<?> dataSourceClass = Class.forName(this.getName());
 			
-			return this.createDataSource(dataSourceClass.asSubclass(this.getTargetClass()));
+			return this.createDataSource(dataSourceClass.asSubclass(this.targetClass));
 		}
 		catch (ClassNotFoundException e)
 		{
@@ -88,7 +93,7 @@ public abstract class CommonDataSourceDatabase<Z extends javax.sql.CommonDataSou
 		{
 			Context context = new InitialContext(properties);
 	
-			return this.getTargetClass().cast(context.lookup(name));
+			return this.targetClass.cast(context.lookup(name));
 		}
 		catch (NamingException e)
 		{

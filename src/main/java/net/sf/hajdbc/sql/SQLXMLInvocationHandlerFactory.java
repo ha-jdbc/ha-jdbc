@@ -28,9 +28,8 @@ import net.sf.hajdbc.Database;
 public class SQLXMLInvocationHandlerFactory<Z, D extends Database<Z>, P> extends LocatorInvocationHandlerFactory<Z, D, P, SQLXML>
 {
 	/**
-	 * @param cluster 
-	 * @param parent the object that created sql xml objects
-	 * @throws SQLException 
+	 * Constructs a new SQLXMLInvocationHandlerFactory
+	 * @param connection
 	 */
 	public SQLXMLInvocationHandlerFactory(Connection connection)
 	{
@@ -39,7 +38,7 @@ public class SQLXMLInvocationHandlerFactory<Z, D extends Database<Z>, P> extends
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.LocatorInvocationStrategy#createInvocationHandler(java.lang.Object, net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker, java.util.Map, boolean)
+	 * @see net.sf.hajdbc.sql.LocatorInvocationHandlerFactory#createInvocationHandler(java.lang.Object, net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker, java.util.Map, boolean)
 	 */
 	@Override
 	protected InvocationHandler createInvocationHandler(P parent, SQLProxy<Z, D, P, SQLException> proxy, Invoker<Z, D, P, java.sql.SQLXML, SQLException> invoker, Map<D, java.sql.SQLXML> objectMap, boolean updateCopy) throws SQLException

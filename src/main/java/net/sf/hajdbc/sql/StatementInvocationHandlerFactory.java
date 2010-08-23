@@ -32,8 +32,8 @@ import net.sf.hajdbc.Database;
 public class StatementInvocationHandlerFactory<Z, D extends Database<Z>> extends AbstractStatementInvocationHandlerFactory<Z, D, Statement>
 {
 	/**
-	 * @param connection
-	 * @param transactionContext
+	 * Constructs a new StatementInvocationHandlerFactory
+	 * @param context
 	 */
 	public StatementInvocationHandlerFactory(TransactionContext<Z, D> context)
 	{

@@ -30,7 +30,6 @@ public interface CronExecutorService extends ExecutorService
 {
 	/**
 	 * Schedules the specified task to execute according to the specified cron expression.
-	 * @see net.sf.hajdbc.util.concurrent.cron.quartz.CronExpression
 	 * @param task the Runnable task to schedule
 	 * @param expression a cron expression
 	 */

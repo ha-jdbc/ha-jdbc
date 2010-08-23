@@ -31,7 +31,7 @@ public interface BalancerFactory
 	 * Create a balancer.
 	 * @param <Z> database connection source
 	 * @param <D> database descriptor
-	 * @param database set of initial databases
+	 * @param databases set of initial databases
 	 * @return a new balancer.
 	 */
 	<Z, D extends Database<Z>> Balancer<Z, D> createBalancer(Set<D> databases);

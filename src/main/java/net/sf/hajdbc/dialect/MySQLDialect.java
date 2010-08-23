@@ -187,7 +187,7 @@ public class MySQLDialect extends StandardDialect implements DumpRestoreSupport
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.dialect.StandardDialect#createDumpProcess(net.sf.hajdbc.ConnectionProperties, java.io.File)
+	 * @see net.sf.hajdbc.DumpRestoreSupport#createDumpProcess(net.sf.hajdbc.ConnectionProperties, java.io.File)
 	 */
 	@Override
 	public ProcessBuilder createDumpProcess(ConnectionProperties properties, File file)
@@ -197,7 +197,7 @@ public class MySQLDialect extends StandardDialect implements DumpRestoreSupport
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.dialect.StandardDialect#createRestoreProcess(net.sf.hajdbc.ConnectionProperties, java.io.File)
+	 * @see net.sf.hajdbc.DumpRestoreSupport#createRestoreProcess(net.sf.hajdbc.ConnectionProperties, java.io.File)
 	 */
 	@Override
 	public ProcessBuilder createRestoreProcess(ConnectionProperties properties, File file)

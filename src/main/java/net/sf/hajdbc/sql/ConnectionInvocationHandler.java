@@ -90,7 +90,7 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ch
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvocationHandlerFactory(java.lang.reflect.Method, java.lang.Object[])
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvocationHandlerFactory(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
 	protected InvocationHandlerFactory<Z, D, Connection, ?, SQLException> getInvocationHandlerFactory(Connection connection, Method method, Object[] parameters)

@@ -31,9 +31,10 @@ public abstract class RootInvocationHandler<Z, D extends Database<Z>, E extends 
 	private final DatabaseCluster<Z, D> cluster;
 	
 	/**
-	 * Constructs a new AbstractRootInvocationHandler.
-	 * @param databaseCluster
+	 * Constructs a new RootInvocationHandler
+	 * @param cluster
 	 * @param proxyClass
+	 * @param exceptionClass
 	 */
 	protected RootInvocationHandler(DatabaseCluster<Z, D> cluster, Class<Z> proxyClass, Class<E> exceptionClass)
 	{

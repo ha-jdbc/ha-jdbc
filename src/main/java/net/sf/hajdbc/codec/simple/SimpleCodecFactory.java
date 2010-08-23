@@ -31,7 +31,7 @@ public class SimpleCodecFactory extends AbstractCodec
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.codec.Codec#decrypt(java.lang.String)
+	 * @see net.sf.hajdbc.codec.Codec#decode(java.lang.String)
 	 */
 	@Override
 	public String decode(String value) throws SQLException

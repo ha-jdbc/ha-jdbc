@@ -36,6 +36,11 @@ import net.sf.hajdbc.management.MBean;
 @XmlType(name = "database")
 public class DataSourceDatabase extends CommonDataSourceDatabase<DataSource>
 {
+	public DataSourceDatabase()
+	{
+		super(DataSource.class);
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.Database#connect(java.lang.Object, java.lang.String)
@@ -44,11 +49,5 @@ public class DataSourceDatabase extends CommonDataSourceDatabase<DataSource>
 	public Connection connect(DataSource dataSource, String password) throws SQLException
 	{
 		return this.requiresAuthentication() ? dataSource.getConnection(this.getUser(), password) : dataSource.getConnection();
-	}
-
-	@Override
-	protected Class<DataSource> getTargetClass()
-	{
-		return DataSource.class;
 	}
 }

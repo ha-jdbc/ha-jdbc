@@ -22,9 +22,6 @@ import net.sf.hajdbc.balancer.Balancer;
 
 /**
  * @author Paul Ferraro
- * @param <D> 
- * @param <T> 
- * @param <R> 
  */
 public class InvokeOnNextInvocationStrategy extends InvokeOnOneInvocationStrategy
 {
