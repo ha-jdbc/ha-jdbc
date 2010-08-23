@@ -24,10 +24,11 @@ package net.sf.hajdbc.pool;
 public interface PoolFactory
 {
 	/**
-	 * @param <T>
+	 * Creates a pool using the specified provider.
+	 * @param <T> 
 	 * @param <E>
-	 * @param provider
-	 * @return
+	 * @param provider a pool provider
+	 * @return a new pool
 	 */
 	<T, E extends Exception> Pool<T, E> createPool(PoolProvider<T, E> provider);
 }

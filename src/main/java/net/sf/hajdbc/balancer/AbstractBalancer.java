@@ -28,8 +28,8 @@ import net.sf.hajdbc.Database;
 
 /**
  * Thread-safe abstract balancer implementation that implements most of the Balancer interface, except {@link Balancer#next()}.
- * Uses A copy-on-write algorithm for {@link #add(Database)}, {@link #remove(Database)}, and {@link #clear()}.
- * Calls to {@link #all()} are non-blocking.
+ * Uses A copy-on-write algorithm for {@link #add(Object)}, {@link #remove(Object)}, and {@link #clear()}.
+ * Calls to {@link #iterator()} are non-blocking.
  * 
  * @author Paul Ferraro
  * @param <Z>

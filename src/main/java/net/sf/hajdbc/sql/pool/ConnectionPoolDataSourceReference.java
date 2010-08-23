@@ -50,8 +50,8 @@ public class ConnectionPoolDataSourceReference extends CommonDataSourceReference
 	
 	/**
 	 * Constructs a reference to a <code>ConnectionPoolDataSource</code> for the specified cluster
-	 * @param cluster a cluster identifier
-	 * @param config the uri of the configuration file
+	 * @param cluster
+	 * @param factory
 	 */
 	public ConnectionPoolDataSourceReference(String cluster, DatabaseClusterConfigurationFactory<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase> factory)
 	{

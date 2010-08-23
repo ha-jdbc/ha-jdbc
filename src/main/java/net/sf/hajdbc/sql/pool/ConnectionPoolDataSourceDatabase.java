@@ -43,7 +43,8 @@ public class ConnectionPoolDataSourceDatabase extends CommonDataSourceDatabase<C
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Database#connect(java.lang.Object)
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.Database#connect(java.lang.Object, java.lang.String)
 	 */
 	@Override
 	public Connection connect(ConnectionPoolDataSource dataSource, String password) throws SQLException

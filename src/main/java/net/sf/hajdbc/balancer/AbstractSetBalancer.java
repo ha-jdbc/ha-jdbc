@@ -69,7 +69,7 @@ public abstract class AbstractSetBalancer<Z, D extends Database<Z>> extends Abst
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.balancer.Balancer#invoke(net.sf.hajdbc.sql.Invoker, net.sf.hajdbc.Database)
+	 * @see net.sf.hajdbc.balancer.Balancer#invoke(net.sf.hajdbc.sql.Invoker, net.sf.hajdbc.Database, java.lang.Object)
 	 */
 	@Override
 	public <T, R, E extends Exception> R invoke(Invoker<Z, D, T, R, E> invoker, D database, T object) throws E

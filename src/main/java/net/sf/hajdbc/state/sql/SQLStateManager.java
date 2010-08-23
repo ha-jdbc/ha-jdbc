@@ -478,7 +478,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.state.StateManager#recover(net.sf.hajdbc.DatabaseCluster)
+	 * @see net.sf.hajdbc.state.StateManager#recover()
 	 */
 	@Override
 	public Map<InvocationEvent, Map<String, InvokerEvent>> recover()
