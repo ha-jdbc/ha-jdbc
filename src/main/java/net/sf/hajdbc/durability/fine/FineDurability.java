@@ -49,7 +49,7 @@ public class FineDurability<Z, D extends Database<Z>> extends CoarseDurability<Z
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.durability.Durability#getInvoker(net.sf.hajdbc.sql.Invoker)
+	 * @see net.sf.hajdbc.durability.none.NoDurability#getInvoker(net.sf.hajdbc.sql.Invoker, net.sf.hajdbc.durability.Durability.Phase, java.lang.Object, net.sf.hajdbc.ExceptionFactory)
 	 */
 	@Override
 	public <T, R, E extends Exception> Invoker<Z, D, T, R, E> getInvoker(final Invoker<Z, D, T, R, E> invoker, final Phase phase, final Object transactionId, final ExceptionFactory<E> exceptionFactory)

@@ -41,7 +41,7 @@ public class NoDurability<Z, D extends Database<Z>> implements Durability<Z, D>
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.durability.Durability#getInvocationStrategy(net.sf.hajdbc.sql.InvocationStrategy)
+	 * @see net.sf.hajdbc.durability.Durability#getInvocationStrategy(net.sf.hajdbc.sql.InvocationStrategy, net.sf.hajdbc.durability.Durability.Phase, java.lang.Object)
 	 */
 	@Override
 	public InvocationStrategy getInvocationStrategy(InvocationStrategy strategy, Phase phase, Object transactionId)
@@ -51,7 +51,7 @@ public class NoDurability<Z, D extends Database<Z>> implements Durability<Z, D>
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.durability.Durability#getInvoker(net.sf.hajdbc.sql.Invoker)
+	 * @see net.sf.hajdbc.durability.Durability#getInvoker(net.sf.hajdbc.sql.Invoker, net.sf.hajdbc.durability.Durability.Phase, java.lang.Object, net.sf.hajdbc.ExceptionFactory)
 	 */
 	@Override
 	public <T, R, E extends Exception> Invoker<Z, D, T, R, E> getInvoker(Invoker<Z, D, T, R, E> invoker, Phase phase, Object transactionId, ExceptionFactory<E> exceptionFactory)

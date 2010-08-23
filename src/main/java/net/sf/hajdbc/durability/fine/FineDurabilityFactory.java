@@ -34,7 +34,7 @@ public class FineDurabilityFactory implements DurabilityFactory, Serializable
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.durability.DurabilityFactory#createDurability(net.sf.hajdbc.durability.DurabilityListener)
+	 * @see net.sf.hajdbc.durability.DurabilityFactory#createDurability(net.sf.hajdbc.DatabaseCluster)
 	 */
 	@Override
 	public <Z, D extends Database<Z>> Durability<Z, D> createDurability(DatabaseCluster<Z, D> cluster)

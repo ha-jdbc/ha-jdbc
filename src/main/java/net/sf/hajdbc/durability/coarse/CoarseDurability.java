@@ -49,8 +49,7 @@ public class CoarseDurability<Z, D extends Database<Z>> extends NoDurability<Z, 
 
 	/**
 	 * {@inheritDoc}
-	 * 
-	 * @see net.sf.hajdbc.durability.Durability#getInvocationStrategy(net.sf.hajdbc.sql.InvocationStrategy)
+	 * @see net.sf.hajdbc.durability.none.NoDurability#getInvocationStrategy(net.sf.hajdbc.sql.InvocationStrategy, net.sf.hajdbc.durability.Durability.Phase, java.lang.Object)
 	 */
 	@Override
 	public InvocationStrategy getInvocationStrategy(final InvocationStrategy strategy, final Phase phase, final Object transactionId)

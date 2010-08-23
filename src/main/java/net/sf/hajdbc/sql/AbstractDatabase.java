@@ -39,7 +39,7 @@ import net.sf.hajdbc.sql.AbstractDatabaseClusterConfiguration.Property;
  * @param <D> either java.sql.Driver or javax.sql.DataSource
  * @since   1.0
  */
-@XmlType(propOrder = { "name", "user", "password", "xmlProperties" })
+@XmlType(propOrder = { "name", "xmlProperties", "user", "password" })
 public abstract class AbstractDatabase<Z> implements Database<Z>
 {
 	@XmlAttribute(name = "id", required = true)

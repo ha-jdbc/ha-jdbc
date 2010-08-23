@@ -28,7 +28,10 @@ public class InvokerEventImpl extends DurabilityEventImpl implements InvokerEven
 	private InvokerResult result;
 	
 	/**
-	 * @param source
+	 * Constructs a new InvokerEventImpl
+	 * @param transactionId a transaction identifier
+	 * @param phase the durability phase
+	 * @param databaseId a database identifier
 	 */
 	public InvokerEventImpl(Object transactionId, Durability.Phase phase, String databaseId)
 	{
@@ -37,18 +40,30 @@ public class InvokerEventImpl extends DurabilityEventImpl implements InvokerEven
 		this.databaseId = databaseId;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.durability.InvokerEvent#getDatabaseId()
+	 */
 	@Override
 	public String getDatabaseId()
 	{
 		return this.databaseId;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.durability.InvokerEvent#setResult(net.sf.hajdbc.durability.InvokerResult)
+	 */
 	@Override
 	public void setResult(InvokerResult result)
 	{
 		this.result = result;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.durability.InvokerEvent#getResult()
+	 */
 	@Override
 	public InvokerResult getResult()
 	{
@@ -57,7 +72,7 @@ public class InvokerEventImpl extends DurabilityEventImpl implements InvokerEven
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.durability.InvocationEvent#equals(java.lang.Object)
+	 * @see net.sf.hajdbc.durability.DurabilityEventImpl#equals(java.lang.Object)
 	 */
 	@Override
 	public boolean equals(Object object)
@@ -71,7 +86,7 @@ public class InvokerEventImpl extends DurabilityEventImpl implements InvokerEven
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.durability.InvocationEvent#hashCode()
+	 * @see net.sf.hajdbc.durability.DurabilityEventImpl#hashCode()
 	 */
 	@Override
 	public int hashCode()

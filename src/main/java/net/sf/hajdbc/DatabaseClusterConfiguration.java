@@ -39,9 +39,8 @@ public interface DatabaseClusterConfiguration<Z, D extends Database<Z>> extends 
 	CommandDispatcherFactory getDispatcherFactory();
 	
 	/**
-	 * Returns the database identified by the specified id
-	 * @param id a database identifier
-	 * @return a database descriptor
+	 * Returns the databases of this cluster indexed by identifier
+	 * @return a map of databases
 	 * @throws IllegalArgumentException if no database exists with the specified identifier
 	 */
 	Map<String, D> getDatabaseMap();
