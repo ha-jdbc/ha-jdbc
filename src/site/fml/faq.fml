@@ -4,15 +4,11 @@
 		<title>Dependency FAQs</title>
 		<faq id="jgroups">
 			<question>JGroups FAQ</question>
-			<answer><a href="http://www.jgroups.org/javagroupsnew/docs/faq.html">http://www.jgroups.org/javagroupsnew/docs/faq.html</a></answer>
-		</faq>
-		<faq id="slf4j">
-			<question>SLF4J FAQ</question>
-			<answer><a href="http://slf4j.org/faq.html">http://slf4j.org/faq.html</a></answer>
+			<answer><a href="http://community.jboss.org/wiki/JGroupsFAQ">http://www.jgroups.org/javagroupsnew/docs/faq.html</a></answer>
 		</faq>
 		<faq id="quartz">
 			<question>Quartz FAQ</question>
-			<answer><a href="http://www.opensymphony.com/quartz/wikidocs/FAQ.html">http://www.opensymphony.com/quartz/wikidocs/FAQ.html</a></answer>
+			<answer><a href="http://www.quartz-scheduler.org/docs/faq.html">http://www.opensymphony.com/quartz/wikidocs/FAQ.html</a></answer>
 		</faq>
 	</part>
 	<part id="config">
