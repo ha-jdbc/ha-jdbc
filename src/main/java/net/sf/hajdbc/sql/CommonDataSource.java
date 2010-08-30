@@ -18,7 +18,7 @@
 package net.sf.hajdbc.sql;
 
 import java.sql.SQLException;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.TimeUnit;
 
 import javax.naming.Referenceable;
 
@@ -27,6 +27,8 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterConfiguration;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.ExceptionType;
+import net.sf.hajdbc.util.concurrent.ReferenceRegistryStoreFactory;
+import net.sf.hajdbc.util.concurrent.Registry;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
 import net.sf.hajdbc.xml.XMLDatabaseClusterConfigurationFactory;
 
@@ -34,12 +36,15 @@ import net.sf.hajdbc.xml.XMLDatabaseClusterConfigurationFactory;
  * @author Paul Ferraro
  * @param <Z> data source class
  */
-public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D extends Database<Z>> implements Referenceable, javax.sql.CommonDataSource
+public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D extends Database<Z>> implements Referenceable, javax.sql.CommonDataSource, Registry.Factory<Void, DatabaseCluster<Z, D>, Void, SQLException>
 {
 	private final CommonDataSourceInvocationHandlerFactory<Z, D> factory;
 	private final Class<? extends DatabaseClusterConfiguration<Z, D>> configurationClass;
-	private final AtomicReference<DatabaseCluster<Z, D>> clusterReference = new AtomicReference<DatabaseCluster<Z, D>>();
 	
+	private final Registry<Void, DatabaseCluster<Z, D>, Void, SQLException> registry = new Registry<Void, DatabaseCluster<Z, D>, Void, SQLException>(this, new ReferenceRegistryStoreFactory(), ExceptionType.getExceptionFactory(SQLException.class));
+	
+	private volatile long timeout = 10;
+	private volatile TimeUnit timeoutUnit = TimeUnit.SECONDS;
 	private volatile String cluster;
 	private volatile String config;
 	private volatile DatabaseClusterConfigurationFactory<Z, D> configurationFactory;	
@@ -50,40 +55,21 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 		this.configurationClass = configurationClass;
 	}
 	
-	public Z getProxy() throws SQLException
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.util.concurrent.Registry.Factory#create(java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	public DatabaseCluster<Z, D> create(Void key, Void context) throws SQLException
 	{
-		return ProxyFactory.createProxy(this.factory.getTargetClass(), this.factory.createInvocationHandler(this.getDatabaseCluster()));
-	}
-
-	private DatabaseCluster<Z, D> getDatabaseCluster() throws SQLException
-	{
-		DatabaseCluster<Z, D> cluster = this.clusterReference.get();
-		
-		if (cluster != null) return cluster;
-		
 		DatabaseClusterConfigurationFactory<Z, D> factory = (this.configurationFactory != null) ? this.configurationFactory : new XMLDatabaseClusterConfigurationFactory<Z, D>(this.configurationClass, this.cluster, this.config);
 		
-		cluster = new DatabaseClusterImpl<Z, D>(this.cluster, factory.createConfiguration(), factory);
-		
-		if (this.clusterReference.compareAndSet(null, cluster))
-		{
-			try
-			{
-				cluster.start();
-				
-				return cluster;
-			}
-			catch (Exception e)
-			{
-				this.clusterReference.set(null);
-				
-				cluster.stop();
-				
-				throw ExceptionType.getExceptionFactory(SQLException.class).createException(e);
-			}
-		}
-		
-		return this.clusterReference.get();
+		return new DatabaseClusterImpl<Z, D>(this.cluster, factory.createConfiguration(), factory);
+	}
+
+	public Z getProxy() throws SQLException
+	{
+		return ProxyFactory.createProxy(this.factory.getTargetClass(), this.factory.createInvocationHandler(this.registry.get(null, null)));
 	}
 	
 	/**
@@ -126,5 +112,39 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 	public void setConfigurationFactory(DatabaseClusterConfigurationFactory<Z, D> factory)
 	{
 		this.configurationFactory = factory;
+	}
+
+	/**
+	 * @return the timeout
+	 */
+	@Override
+	public long getTimeout()
+	{
+		return this.timeout;
+	}
+
+	/**
+	 * @param timeout the timeout to set
+	 */
+	public void setTimeout(long timeout)
+	{
+		this.timeout = timeout;
+	}
+
+	/**
+	 * @return the timeoutUnit
+	 */
+	@Override
+	public TimeUnit getTimeoutUnit()
+	{
+		return this.timeoutUnit;
+	}
+
+	/**
+	 * @param timeoutUnit the timeoutUnit to set
+	 */
+	public void setTimeoutUnit(TimeUnit timeoutUnit)
+	{
+		this.timeoutUnit = timeoutUnit;
 	}
 }

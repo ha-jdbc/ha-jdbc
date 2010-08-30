@@ -25,8 +25,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import net.sf.hajdbc.AbstractDriver;
@@ -38,21 +37,26 @@ import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.util.concurrent.MapRegistryStoreFactory;
+import net.sf.hajdbc.util.concurrent.Registry;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
 import net.sf.hajdbc.xml.XMLDatabaseClusterConfigurationFactory;
 
 /**
  * @author  Paul Ferraro
  */
-public final class Driver extends AbstractDriver
+public final class Driver extends AbstractDriver implements Registry.Factory<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException>
 {
 	private static final Pattern URL_PATTERN = Pattern.compile("jdbc:ha-jdbc:(.+)"); //$NON-NLS-1$
 	private static final String CONFIG = "config"; //$NON-NLS-1$
 	
 	private static final Logger logger = LoggerFactory.getLogger(Driver.class);
 	
-	private static final ConcurrentMap<String, DatabaseCluster<java.sql.Driver, DriverDatabase>> clusterMap = new ConcurrentHashMap<String, DatabaseCluster<java.sql.Driver, DriverDatabase>>();
 	private static volatile Map<String, DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>> configurationFactoryMap = Collections.emptyMap();
+	private static volatile long timeout = 10;
+	private static volatile TimeUnit timeoutUnit = TimeUnit.SECONDS;
+	
+	private static final Registry<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException> registry = new Registry<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException>(new Driver(), new MapRegistryStoreFactory<String>(), ExceptionType.getExceptionFactory(SQLException.class));
 	
 	static
 	{
@@ -73,6 +77,12 @@ public final class Driver extends AbstractDriver
 	public static void setConfigurationFactories(Map<String, DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>> factories)
 	{
 		configurationFactoryMap = (factories != null) ? factories : Collections.<String, DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>>emptyMap();
+	}
+	
+	public static void setTimeout(long value, TimeUnit unit)
+	{
+		timeout = value;
+		timeoutUnit = unit;
 	}
 	
 	/**
@@ -97,7 +107,7 @@ public final class Driver extends AbstractDriver
 		// JDBC spec compliance
 		if (id == null) return null;
 		
-		DatabaseCluster<java.sql.Driver, DriverDatabase> cluster = this.getDatabaseCluster(id, properties);
+		DatabaseCluster<java.sql.Driver, DriverDatabase> cluster = registry.get(id, properties);
 		
 		DriverInvocationHandler handler = new DriverInvocationHandler(cluster);
 		
@@ -135,7 +145,7 @@ public final class Driver extends AbstractDriver
 		// JDBC spec compliance
 		if (id == null) return null;
 		
-		DatabaseCluster<java.sql.Driver, DriverDatabase> cluster = this.getDatabaseCluster(id, properties);
+		DatabaseCluster<java.sql.Driver, DriverDatabase> cluster = registry.get(id, properties);
 		
 		DriverInvocationHandler handler = new DriverInvocationHandler(cluster);
 		
@@ -155,12 +165,13 @@ public final class Driver extends AbstractDriver
 		return resultFactory.createResult(results);
 	}
 
-	private DatabaseCluster<java.sql.Driver, DriverDatabase> getDatabaseCluster(String id, Properties properties) throws SQLException
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.util.concurrent.Registry.Factory#create(java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	public DatabaseCluster<java.sql.Driver, DriverDatabase> create(String id, Properties properties) throws SQLException
 	{
-		DatabaseCluster<java.sql.Driver, DriverDatabase> cluster = clusterMap.get(id);
-		
-		if (cluster != null) return cluster;
-
 		DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase> factory = configurationFactoryMap.get(id);
 		
 		if (factory == null)
@@ -170,63 +181,26 @@ public final class Driver extends AbstractDriver
 		
 		DatabaseClusterConfiguration<java.sql.Driver, DriverDatabase> configuration = factory.createConfiguration();
 		
-		cluster = new DatabaseClusterImpl<java.sql.Driver, DriverDatabase>(id, configuration, factory);
-		
-		DatabaseCluster<java.sql.Driver, DriverDatabase> existing = clusterMap.putIfAbsent(id, cluster);
-		
-		if (existing == null)
-		{
-			try
-			{
-				cluster.start();
-				
-				return cluster;
-			}
-			catch (Exception e)
-			{
-				clusterMap.remove(id);
-				
-				cluster.stop();
+		return new DatabaseClusterImpl<java.sql.Driver, DriverDatabase>(id, configuration, factory);
+	}
 
-				throw ExceptionType.getExceptionFactory(SQLException.class).createException(e);
-			}
-		}
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.util.concurrent.Registry.Factory#getTimeout()
+	 */
+	@Override
+	public long getTimeout()
+	{
+		return timeout;
+	}
 
-		return existing;
-/*
-		synchronized (clusterMap)
-		{
-			DatabaseCluster<java.sql.Driver, DriverDatabase> cluster = clusterMap.get(id);
-			
-			if (cluster == null)
-			{
-				DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase> factory = configurationFactoryMap.get(id);
-				
-				if (factory == null)
-				{
-					factory = new XMLDatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>(DriverDatabaseClusterConfiguration.class, id, properties.getProperty(CONFIG));
-				}
-				
-				DatabaseClusterConfiguration<java.sql.Driver, DriverDatabase> configuration = factory.createConfiguration();
-				
-				cluster = new DatabaseClusterImpl<java.sql.Driver, DriverDatabase>(id, configuration, factory);
-				
-				try
-				{
-					cluster.start();
-					
-					clusterMap.put(id, cluster);
-				}
-				catch (Exception e)
-				{
-					cluster.stop();
-
-					throw SQLExceptionFactory.getInstance().createException(e);
-				}
-			}
-			
-			return cluster;
-		}
-*/
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.util.concurrent.Registry.Factory#getTimeoutUnit()
+	 */
+	@Override
+	public TimeUnit getTimeoutUnit()
+	{
+		return timeoutUnit;
 	}
 }
