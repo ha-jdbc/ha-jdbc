@@ -109,23 +109,23 @@ public class Registry<K, V extends Lifecycle, C, E extends Exception>
 		private final V value;
 		private volatile CountDownLatch latch;
 		
-		public RegistryEntry(V value, CountDownLatch latch)
+		RegistryEntry(V value, CountDownLatch latch)
 		{
 			this.value = value;
 			this.latch = latch;
 		}
 		
-		public V getValue()
+		V getValue()
 		{
 			return this.value;
 		}
 		
-		public CountDownLatch getLatch()
+		CountDownLatch getLatch()
 		{
 			return this.latch;
 		}
 		
-		public void removeLatch()
+		void removeLatch()
 		{
 			this.latch = null;
 		}
