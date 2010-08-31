@@ -106,7 +106,7 @@ public class DumpRestoreSynchronizationStrategy implements SynchronizationStrate
 		}
 	}
 	
-	private class ConnectionInformation<Z, D extends Database<Z>> implements ConnectionProperties
+	private static class ConnectionInformation<Z, D extends Database<Z>> implements ConnectionProperties
 	{
 		private final String host;
 		private final String port;
