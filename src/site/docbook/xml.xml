@@ -72,7 +72,7 @@
 	<section id="xml.distributable">
 		<title>distributable</title>
 		<para>
-			Indicates that database clusters defined in this file will be accessed by multiple JVMs.
+			Indicates that the database cluster defined in this file will be accessed by multiple JVMs.
 			HA-JDBC leverages <ulink url="http://jgroups.org">JGroups</ulink> to handle communication between database clusters across servers.
 		</para>
 		<programlisting>
