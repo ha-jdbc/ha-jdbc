@@ -58,7 +58,7 @@
 				This improves the general performance of change detection from O(N*M) -> O(N), where N is number of rows, and M is number of columns.
 			</action>
 			<action dev="pferraro" type="update">
-				Changed failure detection handling to always prefer response from designated master database (instead of always preferring successful responses).
+				Changed failure detection handling to always prefer response from the designated primary database (instead of always preferring successful responses).
 				Apply the same logic to resolve jdbc method result conflicts.
 			</action>
 			<action dev="pferraro" type="update">
@@ -82,6 +82,9 @@
 			<action dev="pferraro" type="update">
 				Reverse invocation order of commit/rollback using serial transaction mode.
 				The first database to acquire a row lock should be the last to commit.
+			</action>
+			<action dev="pferraro" type="update">
+				Replace deprecated JGroups channel multiplexer with shared transport.
 			</action>
 		</release>
 		<release version="2.0.15" date="2009-02-17">
