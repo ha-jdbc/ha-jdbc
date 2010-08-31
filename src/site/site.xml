@@ -31,11 +31,9 @@
 		<menu name="About">
 			<item name="Overview" href="index.html"/>
 			<item name="Documentation" href="doc.html"/>
-			<item name="Performance" href="performance.html"/>
+			<item name="Confiuration" href="xml.html"/>
 			<item name="FAQ" href="faq.html"/>
 			<item name="Download" href="http://sourceforge.net/project/showfiles.php?group_id=111957"/>
-			<item name="DTD" href="dtd.html"/>
-			<item name="XSD" href="xsd.html"/>
 			<item name="Project Page" href="http://sourceforge.net/projects/ha-jdbc"/>
 		</menu>
 		<menu ref="reports"/>

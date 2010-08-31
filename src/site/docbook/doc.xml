@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	HA-JDBC: High-Availability JDBC
+	Copyright 2010 Paul Ferraro
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<!DOCTYPE article PUBLIC "-//OASIS//DTD Simplified DocBook XML V1.2CR1//EN" "http://www.docbook.org/xml/simple/1.2CR1/sdocbook.dtd">
+<article>
+	<title>Documentation</title>
+	<section>
+		<title>Introduction</title>
+		<para>
+			HA-JDBC is a JDBC proxy that enables a Java application to transparently access a cluster of identical databases through the JDBC API.
+		</para>
+		<mediaobject>
+			<imageobject>
+				<imagedata fileref="images/ha-jdbc.png"/>
+			</imageobject>
+			<caption>Database cluster access via HA-JDBC</caption>
+		</mediaobject>
+		<para>HA-JDBC has the following advantages over normal JDBC:</para>
+		<variablelist>
+			<varlistentry>
+				<term>High-Availability</term>
+				<listitem><para>The database cluster is available to service requests so long as at least one database node is active.</para></listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>Fault Tolerance</term>
+				<listitem><para>Because HA-JDBC operates via the JDBC API, it is transaction-aware and can survive a database node failure without failing or corrupting current transactions.</para></listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>Scalability</term>
+				<listitem><para>By balancing read requests across databases, HA-JDBC can meet increasing load by scaling horizontally (i.e. adding database nodes).</para></listitem>
+			</varlistentry>
+		</variablelist>
+	</section>
+	<section>
+		<title>Requirements</title>
+		<itemizedlist>
+			<listitem><para>Java 1.6+</para></listitem>
+			<listitem><para>Type IV JDBC driver for underlying databases</para></listitem>
+			<listitem><para>Configuration XML file per database cluster</para></listitem>
+		</itemizedlist>
+	</section>
+	<section>
+		<title>Limitations</title>
+		<itemizedlist>
+			<listitem>
+				<para>
+					HA-JDBC does not safely support stored procedures that update sequences or insert rows containing identity columns.
+				</para>
+			</listitem>
+		</itemizedlist>
+	</section>
+</article>
