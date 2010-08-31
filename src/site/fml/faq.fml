@@ -47,9 +47,8 @@
 				</p>
 				<p>e.g.</p>
 				<source><![CDATA[
-<cluster id="..." balancer="..." default-sync="...">
+<cluster ...>
   <database id="...">
-    <driver>org.postgresql.Driver</driver>
     <url>jdbc:postgresql:database</url>
     <property name="ssl">true</property>
     <user>postgres</user>
@@ -64,9 +63,8 @@
 				</p>
 				<p>e.g.</p>
 				<source><![CDATA[
-<cluster id="..." balancer="..." default-sync="...">
+<cluster ...>
   <database id="...">
-    <driver>org.postgresql.Driver</driver>
     <url>jdbc:postgresql:database?ssl=true</url>
     <user>postgres</user>
     <password>XXXX</password>
@@ -84,7 +82,7 @@
 				</p>
 				<p>e.g.</p>
 				<source><![CDATA[
-<cluster id="..." balancer="..." default-sync="...">
+<cluster ...>
   <datasource id="...">
     <name>jdbc/database</name>
     <property name="java.naming.factory.initial">org.jnp.interfaces.NamingContextFactory</property>
@@ -144,14 +142,6 @@
 				</p>
 			</answer>
 		</faq>
-		<faq id="tomcat-5.0">
-			<question>Can I use HA-JDBC with Tomcat 5.0?</question>
-			<answer>
-				Yes, but first you will need to upgrade the JMX implementation used by Tomcat (found in $CATALINA_HOME/bin/jmx.jar).
-				Tomcat 5.0 ships with MX4J 1.1.1 which only implements JMX 1.1.
-				Because HA-JDBC requires JMX 1.2, you will need to upgrade this file to MX4J 2.0 or greater.
-			</answer>
-		</faq>
 		<faq id="local-state-manager">
 			<question>HA-JDBC remembers which databases were inactive even after I restart my JVM.  Where is this state recorded and how do I clear it?</question>
 			<answer>
@@ -184,28 +174,6 @@
 					Since the same password will be passed through to each database, the user used by your application must exist and have the same password on each database in your cluster.
 					The usernames/passwords used by HA-JDBC (as specified in the configuration file), however, do not need to be the same on each database.
 				</p>
-			</answer>
-		</faq>
-		<faq id="driver-manager-synchronized">
-			<question>Using version 1.4 or 1.5 of Sun's Java implementation, HA-JDBC mysteriously deadlocks the first time DriverManager.getConnection() is called.  Why?</question>
-			<answer>
-				<p>
-					In Java 1.5 and earlier, all of the methods on <code>java.sql.DriverManager</code> are synchronized.
-					Your initial call to <code>DriverManager.getConnection(...)</code> triggers the startup of HA-JDBC.
-					As HA-JDBC initializes, it will eventually call <code>DriverManager.getDriver(...)</code> for each database url in your cluster.
-					The calls to <code>DriverManager.getDriver(...)</code> occur in a different thread from your application thread, hence the deadlock.
-				</p>
-				<p>There are at least 2 known workarounds for this problem:</p>
-				<ol>
-					<li>
-						Upgrade to Java 1.6.
-						After forever insisting that the blanket synchronization of <code>java.sql.DriverManager</code> was <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4263113">not a defect</a>, Sun <em>silently</em> fixed this in Java 1.6.
-					</li>
-					<li>
-						Rather than use <code>DriverManager.getConnection(...)</code> to obtain connections, use <code>DriverManager.getDriver(...).connect(...)</code> instead.
-						This will circumvent the deadlock since DriverManager.getDriver(...) will not trigger HA-JDBC startup and Driver.connect(...) is not synchronized.
-					</li>
-				</ol>
 			</answer>
 		</faq>
 	</part>
