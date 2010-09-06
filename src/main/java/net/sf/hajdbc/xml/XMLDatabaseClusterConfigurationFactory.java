@@ -36,6 +36,7 @@ import net.sf.hajdbc.DatabaseClusterConfiguration;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.Version;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
@@ -115,8 +116,6 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 	public XMLDatabaseClusterConfigurationFactory(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass, URL url)
 	{
 		this(targetClass, url.getProtocol().equals("file") ? new FileXMLStreamFactory(new File(url.getPath())) : new URLXMLStreamFactory(url));
-		
-		logger.log(Level.INFO, "Using url {0}", url);
 	}
 	
 	public XMLDatabaseClusterConfigurationFactory(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass, XMLStreamFactory streamFactory)
@@ -132,6 +131,8 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 	@Override
 	public DatabaseClusterConfiguration<Z, D> createConfiguration() throws SQLException
 	{
+		logger.log(Level.INFO, Messages.HA_JDBC_INIT.getMessage(), Version.getVersion(), this.streamFactory);
+		
 		try
 		{
 			SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
