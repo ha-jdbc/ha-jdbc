@@ -1,10 +1,10 @@
 package net.sf.hajdbc.state.simple;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import net.sf.hajdbc.durability.InvocationEvent;
 import net.sf.hajdbc.durability.InvokerEvent;
@@ -14,11 +14,12 @@ import net.sf.hajdbc.state.StateManager;
 public class SimpleStateManager implements StateManager
 {
 	private final Map<InvocationEvent, Map<String, InvokerEvent>> invocations = new ConcurrentHashMap<InvocationEvent, Map<String, InvokerEvent>>();
+	private volatile Set<String> activeDatabases = new CopyOnWriteArraySet<String>();
 	
 	@Override
 	public Set<String> getActiveDatabases()
 	{
-		return Collections.emptySet();
+		return this.activeDatabases;
 	}
 
 	@Override
@@ -30,16 +31,19 @@ public class SimpleStateManager implements StateManager
 	@Override
 	public void setActiveDatabases(Set<String> databases)
 	{
+		this.activeDatabases = new CopyOnWriteArraySet<String>(databases);
 	}
 
 	@Override
 	public void activated(DatabaseEvent event)
 	{
+		this.activeDatabases.add(event.getDatabaseId());
 	}
 
 	@Override
 	public void deactivated(DatabaseEvent event)
 	{
+		this.activeDatabases.remove(event.getDatabaseId());
 	}
 
 	@Override
