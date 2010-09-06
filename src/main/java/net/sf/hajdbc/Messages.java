@@ -43,6 +43,7 @@ public enum Messages
 	DATABASE_ACTIVATED("database-activated"),
 	DATABASE_ALREADY_EXISTS("database-already-exists"),
 	DATABASE_DEACTIVATED("database-deactivated"),
+	DATABASE_IGNORED("database-ignored"),
 	DATABASE_INCONSISTENT("database-inconsistent"),
 	DATABASE_NOT_ACTIVE("database-not-active"),
 	DATABASE_NOT_ALIVE("database-not-alive"),
