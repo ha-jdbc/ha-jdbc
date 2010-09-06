@@ -14,7 +14,7 @@ import net.sf.hajdbc.state.StateManager;
 public class SimpleStateManager implements StateManager
 {
 	private final Map<InvocationEvent, Map<String, InvokerEvent>> invocations = new ConcurrentHashMap<InvocationEvent, Map<String, InvokerEvent>>();
-	private volatile Set<String> activeDatabases = new CopyOnWriteArraySet<String>();
+	private final Set<String> activeDatabases = new CopyOnWriteArraySet<String>();
 	
 	@Override
 	public Set<String> getActiveDatabases()
@@ -31,7 +31,8 @@ public class SimpleStateManager implements StateManager
 	@Override
 	public void setActiveDatabases(Set<String> databases)
 	{
-		this.activeDatabases = new CopyOnWriteArraySet<String>(databases);
+		this.activeDatabases.retainAll(databases);
+		this.activeDatabases.addAll(databases);
 	}
 
 	@Override
