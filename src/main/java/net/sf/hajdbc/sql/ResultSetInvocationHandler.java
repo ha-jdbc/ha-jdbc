@@ -183,7 +183,7 @@ public class ResultSetInvocationHandler<Z, D extends Database<Z>, S extends Stat
 							
 							parameterList.set(1, ResultSetInvocationHandler.this.fileSupport.getInputStream(file));
 							
-							return Methods.invoke(method, ResultSetInvocationHandler.this.getExceptionFactory(), resultSet, parameterList.toArray());
+							return Methods.<R, SQLException>invoke(method, ResultSetInvocationHandler.this.getExceptionFactory(), resultSet, parameterList.toArray());
 						}				
 					};
 				}
@@ -201,7 +201,7 @@ public class ResultSetInvocationHandler<Z, D extends Database<Z>, S extends Stat
 							
 							parameterList.set(1, ResultSetInvocationHandler.this.fileSupport.getReader(file));
 							
-							return Methods.invoke(method, ResultSetInvocationHandler.this.getExceptionFactory(), resultSet, parameterList.toArray());
+							return Methods.<R, SQLException>invoke(method, ResultSetInvocationHandler.this.getExceptionFactory(), resultSet, parameterList.toArray());
 						}				
 					};
 				}
@@ -223,7 +223,7 @@ public class ResultSetInvocationHandler<Z, D extends Database<Z>, S extends Stat
 								
 								parameterList.set(1, proxy.getObject(database));
 								
-								return Methods.invoke(method, ResultSetInvocationHandler.this.getExceptionFactory(), resultSet, parameterList.toArray());
+								return Methods.<R, SQLException>invoke(method, ResultSetInvocationHandler.this.getExceptionFactory(), resultSet, parameterList.toArray());
 							}				
 						};
 					}
@@ -249,7 +249,7 @@ public class ResultSetInvocationHandler<Z, D extends Database<Z>, S extends Stat
 								
 								parameterList.set(1, proxy.getObject(database));
 								
-								return Methods.invoke(method, ResultSetInvocationHandler.this.getExceptionFactory(), resultSet, parameterList.toArray());
+								return Methods.<R, SQLException>invoke(method, ResultSetInvocationHandler.this.getExceptionFactory(), resultSet, parameterList.toArray());
 							}				
 						};
 					}

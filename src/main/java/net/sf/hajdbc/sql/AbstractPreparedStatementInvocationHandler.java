@@ -160,7 +160,7 @@ public abstract class AbstractPreparedStatementInvocationHandler<Z, D extends Da
 							
 							parameterList.set(1, AbstractPreparedStatementInvocationHandler.this.fileSupport.getInputStream(file));
 							
-							return Methods.invoke(method, AbstractPreparedStatementInvocationHandler.this.getExceptionFactory(), statement, parameterList.toArray());
+							return Methods.<R, SQLException>invoke(method, AbstractPreparedStatementInvocationHandler.this.getExceptionFactory(), statement, parameterList.toArray());
 						}				
 					};
 				}
@@ -178,7 +178,7 @@ public abstract class AbstractPreparedStatementInvocationHandler<Z, D extends Da
 							
 							parameterList.set(1, AbstractPreparedStatementInvocationHandler.this.fileSupport.getReader(file));
 							
-							return Methods.invoke(method, AbstractPreparedStatementInvocationHandler.this.getExceptionFactory(), statement, parameterList.toArray());
+							return Methods.<R, SQLException>invoke(method, AbstractPreparedStatementInvocationHandler.this.getExceptionFactory(), statement, parameterList.toArray());
 						}				
 					};
 				}
@@ -200,7 +200,7 @@ public abstract class AbstractPreparedStatementInvocationHandler<Z, D extends Da
 								
 								parameterList.set(1, proxy.getObject(database));
 								
-								return Methods.invoke(method, AbstractPreparedStatementInvocationHandler.this.getExceptionFactory(), statement, parameterList.toArray());
+								return Methods.<R, SQLException>invoke(method, AbstractPreparedStatementInvocationHandler.this.getExceptionFactory(), statement, parameterList.toArray());
 							}				
 						};
 					}
@@ -226,7 +226,7 @@ public abstract class AbstractPreparedStatementInvocationHandler<Z, D extends Da
 								
 								parameterList.set(1, proxy.getObject(database));
 								
-								return Methods.invoke(method, AbstractPreparedStatementInvocationHandler.this.getExceptionFactory(), statement, parameterList.toArray());
+								return Methods.<R, SQLException>invoke(method, AbstractPreparedStatementInvocationHandler.this.getExceptionFactory(), statement, parameterList.toArray());
 							}				
 						};
 					}

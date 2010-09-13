@@ -410,7 +410,7 @@ public abstract class AbstractInvocationHandler<Z, D extends Database<Z>, T, E e
 		@Override
 		public R invoke(D database, T object) throws E
 		{
-			return Methods.invoke(this.method, AbstractInvocationHandler.this.getExceptionFactory(), object, this.parameters);
+			return Methods.<R, E>invoke(this.method, AbstractInvocationHandler.this.getExceptionFactory(), object, this.parameters);
 		}
 
 		/**
