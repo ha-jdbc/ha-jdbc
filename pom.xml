@@ -115,7 +115,7 @@
 		<dependency>
 			<groupId>commons-pool</groupId>
 			<artifactId>commons-pool</artifactId>
-			<version>1.5.4</version>
+			<version>1.5.5</version>
 			<optional>true</optional>
 		</dependency>
 		<!-- Optional codec factory dependencies -->
