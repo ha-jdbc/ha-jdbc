@@ -20,6 +20,7 @@ package net.sf.hajdbc.util.concurrent;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 
 import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.Lifecycle;
@@ -30,8 +31,8 @@ import net.sf.hajdbc.Lifecycle;
 public class Registry<K, V extends Lifecycle, C, E extends Exception>
 {
 	private final RegistryStore<K, RegistryEntry> store;
-	private final Factory<K, V, C, E> factory;
-	private final ExceptionFactory<E> exceptionFactory;
+	final Factory<K, V, C, E> factory;
+	final ExceptionFactory<E> exceptionFactory;
 
 	public Registry(Factory<K, V, C, E> factory, RegistryStoreFactory<K> storeFactory, ExceptionFactory<E> exceptionFactory)
 	{
@@ -46,28 +47,25 @@ public class Registry<K, V extends Lifecycle, C, E extends Exception>
 		
 		if (entry != null)
 		{
-			return this.getValue(entry);
+			return entry.getValue();
 		}
 
 		V value = this.factory.create(key, context);
-		CountDownLatch latch = new CountDownLatch(1);
 		
-		entry = new RegistryEntry(value, latch);
+		entry = new RegistryEntry(value);
 
 		RegistryEntry existing = this.store.setIfAbsent(key, entry);
 		
 		if (existing != null)
 		{
-			return this.getValue(existing);
+			return existing.getValue();
 		}
 		
 		try
 		{
 			value.start();
 			
-			latch.countDown();
-			
-			entry.removeLatch();
+			entry.started();
 			
 			return value;
 		}
@@ -80,54 +78,48 @@ public class Registry<K, V extends Lifecycle, C, E extends Exception>
 			throw this.exceptionFactory.createException(e);
 		}
 	}
-
-	private V getValue(RegistryEntry entry) throws E
-	{
-		CountDownLatch latch = entry.getLatch();
-		
-		if (latch != null)
-		{
-			try
-			{
-				if (!latch.await(this.factory.getTimeout(), this.factory.getTimeoutUnit()))
-				{
-					throw this.exceptionFactory.createException(new TimeoutException());
-				}
-			}
-			catch (InterruptedException e)
-			{
-				Thread.currentThread().interrupt();
-				throw this.exceptionFactory.createException(e);
-			}
-		}
-		
-		return entry.getValue();
-	}
 	
 	private class RegistryEntry
 	{
 		private final V value;
-		private volatile CountDownLatch latch;
+		private final AtomicReference<CountDownLatch> latchRef = new AtomicReference<CountDownLatch>(new CountDownLatch(1));
 		
-		RegistryEntry(V value, CountDownLatch latch)
+		RegistryEntry(V value)
 		{
 			this.value = value;
-			this.latch = latch;
 		}
 		
-		V getValue()
+		V getValue() throws E
 		{
+			CountDownLatch latch = this.latchRef.get();
+			
+			if (latch != null)
+			{
+				try
+				{
+					if (!latch.await(Registry.this.factory.getTimeout(), Registry.this.factory.getTimeoutUnit()))
+					{
+						throw Registry.this.exceptionFactory.createException(new TimeoutException());
+					}
+				}
+				catch (InterruptedException e)
+				{
+					Thread.currentThread().interrupt();
+					throw Registry.this.exceptionFactory.createException(e);
+				}
+			}
+			
 			return this.value;
 		}
-		
-		CountDownLatch getLatch()
+
+		void started()
 		{
-			return this.latch;
-		}
-		
-		void removeLatch()
-		{
-			this.latch = null;
+			CountDownLatch latch = this.latchRef.getAndSet(null);
+			
+			if (latch != null)
+			{
+				latch.countDown();
+			}
 		}
 	}
 	
