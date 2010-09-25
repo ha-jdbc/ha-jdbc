@@ -15,16 +15,20 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.hajdbc.state;
+package net.sf.hajdbc.state.bdb;
 
-import java.util.Properties;
+import org.apache.commons.pool.impl.GenericObjectPool;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.state.StateManager;
+import net.sf.hajdbc.state.StateManagerFactory;
 
-public interface StateManagerProvider
+public class BDBStateManagerFactory extends GenericObjectPool.Config implements StateManagerFactory
 {
-	<Z, D extends Database<Z>> StateManager createStateManager(DatabaseCluster<Z, D> cluster, Properties properties);
-	
-	boolean isEnabled();
+	@Override
+	public <Z, D extends Database<Z>> StateManager createStateManager(DatabaseCluster<Z, D> cluster)
+	{
+		return null;
+	}
 }

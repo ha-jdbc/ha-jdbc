@@ -18,7 +18,7 @@
 package net.sf.hajdbc.state.sql;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
+import java.sql.Driver;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -91,17 +91,16 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	private DurabilityListener listener = new DurabilityListenerAdapter(this);
 	private final DatabaseCluster<Z, D> cluster;
 	private final PoolFactory poolFactory;
+	private final Database<Driver> database;
 	
+	private String password;
+	private Driver driver;
 	private Pool<Connection, SQLException> pool;
-	private String urlPattern = "jdbc:h2:{0}";
-	private String user = "sa";
-	private String password = "sa";
-
-	private String url;
 	
-	public SQLStateManager(DatabaseCluster<Z, D> cluster, PoolFactory poolFactory)
+	public SQLStateManager(DatabaseCluster<Z, D> cluster, Database<Driver> database, PoolFactory poolFactory)
 	{
 		this.cluster = cluster;
+		this.database = database;
 		this.poolFactory = poolFactory;
 	}
 
@@ -592,8 +591,8 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	@Override
 	public void start() throws Exception
 	{
-		this.url = MessageFormat.format(this.urlPattern, this.cluster.getId());
-		
+		this.driver = this.database.createConnectionSource();
+		this.password = this.database.decodePassword(this.cluster.getCodec());
 		this.pool = this.poolFactory.createPool(new ConnectionPoolProvider(this));
 		
 		Connection connection = this.pool.take();
@@ -660,7 +659,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	@Override
 	public Connection getConnection() throws SQLException
 	{
-		Connection connection = DriverManager.getConnection(this.url, this.user, this.password);
+		Connection connection = this.database.connect(this.driver, this.password);
 		
 		connection.setAutoCommit(false);
 		
