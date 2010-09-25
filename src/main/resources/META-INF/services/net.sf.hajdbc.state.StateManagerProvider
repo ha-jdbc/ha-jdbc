@@ -1,4 +1,0 @@
-net.sf.hajdbc.state.sql.SQLStateManagerProvider
-net.sf.hajdbc.state.bdb.BDBStateManagerProvider
-net.sf.hajdbc.state.sqljet.SQLJetStateManagerProvider
-net.sf.hajdbc.state.simple.SimpleStateManagerProvider
