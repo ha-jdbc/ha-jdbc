@@ -21,9 +21,11 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -58,8 +60,8 @@ import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.distributed.jgroups.DefaultChannelProvider;
 import net.sf.hajdbc.durability.DurabilityFactory;
 import net.sf.hajdbc.durability.DurabilityFactoryEnum;
-import net.sf.hajdbc.state.StateManagerProvider;
-import net.sf.hajdbc.state.sql.SQLStateManagerProvider;
+import net.sf.hajdbc.state.StateManagerFactory;
+import net.sf.hajdbc.state.sql.SQLStateManagerFactory;
 
 import org.quartz.CronExpression;
 
@@ -67,7 +69,7 @@ import org.quartz.CronExpression;
  * @author paul
  *
  */
-@XmlType(propOrder = { "dispatcherFactory", "synchronizationStrategyDescriptors" })
+@XmlType(propOrder = { "dispatcherFactory", "synchronizationStrategyDescriptors", "stateManagerFactoryDescriptor" })
 public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database<Z>> implements DatabaseClusterConfiguration<Z, D>
 {
 	private static final long serialVersionUID = -2808296483725374829L;
@@ -75,8 +77,9 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	@XmlElement(name = "distributable", type = DefaultChannelProvider.class)
 	private CommandDispatcherFactory dispatcherFactory;
 	
-	Map<String, SynchronizationStrategy> synchronizationStrategies = new HashMap<String, SynchronizationStrategy>();
+	private Map<String, SynchronizationStrategy> synchronizationStrategies = new HashMap<String, SynchronizationStrategy>();
 	
+	private StateManagerFactory stateManagerFactory = new SQLStateManagerFactory();
 	protected abstract NestedConfiguration<Z, D> getNestedConfiguration();
 	
 	@SuppressWarnings("unused")
@@ -84,29 +87,13 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	private SynchronizationStrategyDescriptor[] getSynchronizationStrategyDescriptors() throws Exception
 	{
 		List<SynchronizationStrategyDescriptor> results = new ArrayList<SynchronizationStrategyDescriptor>(this.synchronizationStrategies.size());
-		
+		SynchronizationStrategyDescriptorAdapter adapter = new SynchronizationStrategyDescriptorAdapter();
+
 		for (Map.Entry<String, SynchronizationStrategy> entry: this.synchronizationStrategies.entrySet())
 		{
-			SynchronizationStrategyDescriptor result = new SynchronizationStrategyDescriptor();
-			
-			SynchronizationStrategy strategy = entry.getValue();				
-			Class<? extends SynchronizationStrategy> targetClass = strategy.getClass();
+			SynchronizationStrategyDescriptor result = adapter.marshal(entry.getValue());
 			
 			result.setId(entry.getKey());
-			result.setTargetClass(targetClass);
-			
-			for (PropertyDescriptor descriptor: this.findDescriptors(targetClass).values())
-			{
-				Property property = new Property();					
-				PropertyEditor editor = PropertyEditorManager.findEditor(descriptor.getPropertyType());
-				
-				if (editor == null) continue;
-				
-				editor.setValue(descriptor.getReadMethod().invoke(strategy));
-				
-				property.setName(descriptor.getName());
-				property.setValue(editor.getAsText());
-			}
 			
 			results.add(result);
 		}
@@ -117,48 +104,27 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	@SuppressWarnings("unused")
 	private void setSynchronizationStrategyDescriptors(SynchronizationStrategyDescriptor[] entries) throws Exception
 	{
+		SynchronizationStrategyDescriptorAdapter adapter = new SynchronizationStrategyDescriptorAdapter();
+		
 		for (SynchronizationStrategyDescriptor entry: entries)
 		{
-			Class<? extends SynchronizationStrategy> targetClass = entry.getTargetClass();
-			SynchronizationStrategy strategy = targetClass.newInstance();
-			
-			if (entry.getProperties() != null)
-			{
-				Map<String, PropertyDescriptor> descriptors = this.findDescriptors(targetClass);
-				
-				for (Property property: entry.getProperties())
-				{
-					String name = property.getName();
-					PropertyDescriptor descriptor = descriptors.get(name);
-					
-					if (descriptor == null)
-					{
-						// not found
-					}
-					
-					PropertyEditor editor = PropertyEditorManager.findEditor(descriptor.getPropertyType());
-					String textValue = property.getValue();
-					
-					try
-					{
-						if (editor == null)
-						{
-							throw new Exception();
-						}
-
-						editor.setAsText(textValue);
-					}
-					catch (Exception e)
-					{
-						throw new IllegalArgumentException(Messages.INVALID_PROPERTY_VALUE.getMessage(textValue, name, targetClass.getName()));
-					}
-					
-					descriptor.getWriteMethod().invoke(strategy, editor.getValue());
-				}
-			}
+			SynchronizationStrategy strategy = adapter.unmarshal(entry);
 			
 			this.synchronizationStrategies.put(entry.getId(), strategy);
 		}
+	}
+	
+	@SuppressWarnings("unused")
+	@XmlElement(name = "state")
+	private StateManagerFactoryDescriptor getStateManagerFactoryDescriptor() throws Exception
+	{
+		return new StateManagerFactoryDescriptorAdapter().marshal(this.stateManagerFactory);
+	}
+	
+	@SuppressWarnings("unused")
+	private void setStateManagerFactoryDescriptor(StateManagerFactoryDescriptor descriptor) throws Exception
+	{
+		this.stateManagerFactory = new StateManagerFactoryDescriptorAdapter().unmarshal(descriptor);
 	}
 	
 	/**
@@ -348,17 +314,17 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getStateManagerProvider()
+	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getStateManagerFactory()
 	 */
 	@Override
-	public StateManagerProvider getStateManagerProvider()
+	public StateManagerFactory getStateManagerFactory()
 	{
-		return this.getNestedConfiguration().getStateManagerProvider();
+		return this.stateManagerFactory;
 	}
 
-	public void setStateManagerProvider(StateManagerProvider provider)
+	public void setStateManagerFactory(StateManagerFactory factory)
 	{
-		this.getNestedConfiguration().setStateManagerProvider(provider);
+		this.stateManagerFactory = factory;
 	}
 	
 	/**
@@ -481,16 +447,21 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		this.getNestedConfiguration().setSequenceDetectionEnabled(enabled);
 	}
 	
-	private Map<String, PropertyDescriptor> findDescriptors(Class<?> targetClass) throws Exception
+	static Map<String, Map.Entry<PropertyDescriptor, PropertyEditor>> findDescriptors(Class<?> targetClass) throws Exception
 	{
-		Map<String, PropertyDescriptor> map = new HashMap<String, PropertyDescriptor>();
+		Map<String, Map.Entry<PropertyDescriptor, PropertyEditor>> map = new HashMap<String, Map.Entry<PropertyDescriptor, PropertyEditor>>();
 		
 		for (PropertyDescriptor descriptor: Introspector.getBeanInfo(targetClass).getPropertyDescriptors())
 		{
-			// Prevent Object.getClass() from being read as a property
-			if (descriptor.getName().equals("class")) continue;
-			
-			map.put(descriptor.getName(), descriptor);
+			if ((descriptor.getReadMethod() != null) && (descriptor.getWriteMethod() != null))
+			{
+				PropertyEditor editor = PropertyEditorManager.findEditor(descriptor.getPropertyType());
+				
+				if (editor != null)
+				{
+					map.put(descriptor.getName(), new AbstractMap.SimpleImmutableEntry<PropertyDescriptor, PropertyEditor>(descriptor, editor));
+				}
+			}
 		}
 		
 		return map;
@@ -520,7 +491,6 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		private ExecutorServiceProvider executorProvider = new DefaultExecutorServiceProvider();
 		private ThreadFactory threadFactory = Executors.defaultThreadFactory();
 		private CodecFactory codecFactory = new SimpleCodecFactory();
-		private StateManagerProvider stateManagerProvider = new SQLStateManagerProvider();
 
 		@XmlJavaTypeAdapter(TransactionModeAdapter.class)
 		@XmlAttribute(name = "transaction-mode")
@@ -690,14 +660,9 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		}
 		
 		@Override
-		public StateManagerProvider getStateManagerProvider()
+		public StateManagerFactory getStateManagerFactory()
 		{
-			return this.stateManagerProvider;
-		}
-
-		public void setStateManagerProvider(StateManagerProvider provider)
-		{
-			this.stateManagerProvider = provider;
+			throw new IllegalStateException();
 		}
 		
 		@Override
@@ -875,18 +840,12 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	}
 	
 	@XmlType
-	static class SynchronizationStrategyDescriptor
+	static class SynchronizationStrategyDescriptor extends Descriptor<SynchronizationStrategy>
 	{
 		@XmlID
 		@XmlAttribute(name = "id", required = true)
 		private String id;
 		
-		@XmlAttribute(name = "class", required = true)
-		private Class<? extends SynchronizationStrategy> targetClass;
-		
-		@XmlElement(name = "property")
-		private List<Property> properties;
-
 		public String getId()
 		{
 			return this.id;
@@ -896,13 +855,43 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		{
 			this.id = id;
 		}
+	}
+	
+	static class SynchronizationStrategyDescriptorAdapter extends DescriptorAdapter<SynchronizationStrategy, SynchronizationStrategyDescriptor>
+	{
+		SynchronizationStrategyDescriptorAdapter()
+		{
+			super(SynchronizationStrategyDescriptor.class);
+		}
+	}
+	
+	@XmlType
+	static class StateManagerFactoryDescriptor extends Descriptor<StateManagerFactory>
+	{
+	}
+
+	static class StateManagerFactoryDescriptorAdapter extends DescriptorAdapter<StateManagerFactory, StateManagerFactoryDescriptor>
+	{
+		StateManagerFactoryDescriptorAdapter()
+		{
+			super(StateManagerFactoryDescriptor.class);
+		}
+	}
+	
+	static abstract class Descriptor<T>
+	{
+		@XmlAttribute(name = "class", required = true)
+		private Class<T> targetClass;
 		
-		public Class<? extends SynchronizationStrategy> getTargetClass()
+		@XmlElement(name = "property")
+		private List<Property> properties;
+		
+		public Class<T> getTargetClass()
 		{
 			return this.targetClass;
 		}
 		
-		public void setTargetClass(Class<? extends SynchronizationStrategy> targetClass)
+		public void setTargetClass(Class<T> targetClass)
 		{
 			this.targetClass = targetClass;
 		}
@@ -915,6 +904,79 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		public void setProperties(List<Property> properties)
 		{
 			this.properties = properties;
+		}
+	}
+
+	static class DescriptorAdapter<T, D extends Descriptor<T>> extends XmlAdapter<D, T>
+	{
+		private final Class<D> descriptorClass;
+		
+		DescriptorAdapter(Class<D> descriptorClass)
+		{
+			this.descriptorClass = descriptorClass;
+		}
+		
+		@Override
+		public D marshal(T object) throws Exception
+		{
+			D result = this.descriptorClass.newInstance();
+			@SuppressWarnings("unchecked")
+			Class<T> targetClass = (Class<T>) object.getClass();
+			List<Property> properties = new LinkedList<Property>();
+			
+			result.setTargetClass(targetClass);
+			result.setProperties(properties);
+			
+			for (Map.Entry<PropertyDescriptor, PropertyEditor> entry: findDescriptors(targetClass).values())
+			{
+				PropertyDescriptor descriptor = entry.getKey();
+				PropertyEditor editor = entry.getValue();
+				
+				editor.setValue(descriptor.getReadMethod().invoke(object));
+				
+				Property property = new Property();					
+				property.setName(descriptor.getName());
+				property.setValue(editor.getAsText());
+				
+				properties.add(property);
+			}
+			
+			return result;
+		}
+
+		@Override
+		public T unmarshal(D target) throws Exception
+		{
+			Class<T> targetClass = target.getTargetClass();
+			T result = targetClass.newInstance();
+			List<Property> properties = target.getProperties();
+			
+			if (properties != null)
+			{
+				Map<String, Map.Entry<PropertyDescriptor, PropertyEditor>> descriptors = findDescriptors(targetClass);
+				
+				for (Property property: properties)
+				{
+					String name = property.getName();
+					Map.Entry<PropertyDescriptor, PropertyEditor> entry = descriptors.get(name);
+					PropertyDescriptor descriptor = entry.getKey();
+					PropertyEditor editor = entry.getValue();
+
+					String textValue = property.getValue();
+					
+					try
+					{
+						editor.setAsText(textValue);
+					}
+					catch (Exception e)
+					{
+						throw new IllegalArgumentException(Messages.INVALID_PROPERTY_VALUE.getMessage(textValue, name, targetClass.getName()));
+					}
+					
+					descriptor.getWriteMethod().invoke(target, editor.getValue());
+				}
+			}
+			return result;
 		}
 	}
 	

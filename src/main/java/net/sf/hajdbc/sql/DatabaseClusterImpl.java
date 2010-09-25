@@ -439,7 +439,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		this.codec = this.configuration.getCodecFactory().createCodec(System.getProperties());
 		this.transactionIdentifierFactory = new SimpleTransactionIdentifierFactory();
 		this.lockManager = new SemaphoreLockManager();
-		this.stateManager = this.configuration.getStateManagerProvider().createStateManager(this, System.getProperties());
+		this.stateManager = this.configuration.getStateManagerFactory().createStateManager(this);
 		
 		CommandDispatcherFactory dispatcherFactory = this.configuration.getDispatcherFactory();
 		
