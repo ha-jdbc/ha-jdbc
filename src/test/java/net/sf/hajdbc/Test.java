@@ -16,7 +16,7 @@ import net.sf.hajdbc.sql.DataSource;
 import net.sf.hajdbc.sql.DataSourceDatabase;
 import net.sf.hajdbc.sql.DataSourceDatabaseClusterConfiguration;
 import net.sf.hajdbc.sql.SQLProxy;
-import net.sf.hajdbc.state.simple.SimpleStateManagerProvider;
+import net.sf.hajdbc.state.simple.SimpleStateManagerFactory;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -49,7 +49,7 @@ public class Test
 		config.setDatabases(Arrays.asList(db1, db2));
 		config.setDialectFactory(DialectFactoryEnum.H2);
 		config.setDatabaseMetaDataCacheFactory(DatabaseMetaDataCacheFactoryEnum.NONE);
-		config.setStateManagerProvider(new SimpleStateManagerProvider());
+		config.setStateManagerFactory(new SimpleStateManagerFactory());
 		
 		DataSource ds = new DataSource();
 		ds.setCluster("cluster");
