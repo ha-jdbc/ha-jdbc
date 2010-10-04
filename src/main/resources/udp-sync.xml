@@ -5,7 +5,7 @@
   author: Bela Ban
   version: $Id: udp.xml,v 1.32 2009/06/17 16:35:43 belaban Exp $
 -->
-<config xmlns="urn:org:jgroups" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:org:jgroups file:schema/JGroups-2.8.xsd"> 
+<config xmlns="urn:org:jgroups" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"> 
 	<UDP
 		mcast_addr="${jgroups.udp.mcast_addr:229.10.10.10}"
 		mcast_port="${jgroups.udp.mcast_port:45599}"
@@ -19,7 +19,8 @@
 		max_bundle_size="64000"
 		max_bundle_timeout="30"
 		ip_ttl="${jgroups.udp.ip_ttl:2}"
-		enable_bundling="true"
+		enable_bundling="false"
+		singleton_name="ha-jdbc"
 		
 		thread_pool.enabled="true"
 		thread_pool.min_threads="1"

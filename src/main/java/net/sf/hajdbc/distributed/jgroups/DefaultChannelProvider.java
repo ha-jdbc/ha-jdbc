@@ -21,12 +21,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
 import org.jgroups.Channel;
-import org.jgroups.Global;
 import org.jgroups.JChannel;
-import org.jgroups.conf.ConfiguratorFactory;
-import org.jgroups.conf.ProtocolData;
-import org.jgroups.conf.ProtocolParameter;
-import org.jgroups.conf.ProtocolStackConfigurator;
 
 /**
  * Channel provider that creates a new channel from a JGroups configuration file.
@@ -41,8 +36,6 @@ public class DefaultChannelProvider extends ChannelCommandDispatcherFactory
 
 	public static final String DEFAULT_STACK = "udp-sync.xml";
 	
-	private static final String SINGLETON_NAME = "ha-jdbc";
-	
 	@XmlAttribute(name = "stack")
 	private String stack = DEFAULT_STACK;
 	
@@ -50,19 +43,9 @@ public class DefaultChannelProvider extends ChannelCommandDispatcherFactory
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.distributed.jgroups.ChannelProvider#getChannel()
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public Channel getChannel() throws Exception
 	{
-		ProtocolStackConfigurator configurator = ConfiguratorFactory.getStackConfigurator(this.stack);
-		
-		// Use shared transport for all ha-jdbc channels
-		ProtocolData transport = configurator.getProtocolStack()[0];
-
-		ProtocolParameter parameter = new ProtocolParameter(Global.SINGLETON_NAME, SINGLETON_NAME);
-		
-		transport.getParameters().put(parameter.getName(), parameter);
-		
-		return new JChannel(configurator);
+		return new JChannel(this.stack);
 	}
 }
