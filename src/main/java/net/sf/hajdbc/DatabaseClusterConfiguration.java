@@ -27,6 +27,7 @@ import net.sf.hajdbc.codec.CodecFactory;
 import net.sf.hajdbc.dialect.DialectFactory;
 import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.durability.DurabilityFactory;
+import net.sf.hajdbc.management.MBeanRegistrar;
 import net.sf.hajdbc.state.StateManagerFactory;
 
 import org.quartz.CronExpression;
@@ -122,4 +123,6 @@ public interface DatabaseClusterConfiguration<Z, D extends Database<Z>> extends 
 	ThreadFactory getThreadFactory();
 	
 	CodecFactory getCodecFactory();
+	
+	MBeanRegistrar<Z, D> getMBeanRegistrar();
 }

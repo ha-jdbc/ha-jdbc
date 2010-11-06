@@ -60,6 +60,8 @@ import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.distributed.jgroups.DefaultChannelProvider;
 import net.sf.hajdbc.durability.DurabilityFactory;
 import net.sf.hajdbc.durability.DurabilityFactoryEnum;
+import net.sf.hajdbc.management.DefaultMBeanRegistrar;
+import net.sf.hajdbc.management.MBeanRegistrar;
 import net.sf.hajdbc.state.StateManagerFactory;
 import net.sf.hajdbc.state.sql.SQLStateManagerFactory;
 
@@ -467,6 +469,21 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		return map;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getMBeanRegistrar()
+	 */
+	@Override
+	public MBeanRegistrar<Z, D> getMBeanRegistrar()
+	{
+		return this.getNestedConfiguration().getMBeanRegistrar();
+	}
+
+	public void setMBeanRegistrar(MBeanRegistrar<Z, D> registrar)
+	{
+		this.getNestedConfiguration().setMBeanRegistrar(registrar);
+	}
+	
 	@XmlType(name = "abstractNestedConfiguration")
 	protected static abstract class NestedConfiguration<Z, D extends Database<Z>> implements DatabaseClusterConfiguration<Z, D>
 	{
@@ -491,7 +508,8 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		private ExecutorServiceProvider executorProvider = new DefaultExecutorServiceProvider();
 		private ThreadFactory threadFactory = Executors.defaultThreadFactory();
 		private CodecFactory codecFactory = new SimpleCodecFactory();
-
+		private MBeanRegistrar<Z, D> registrar = new DefaultMBeanRegistrar<Z, D>();
+		
 		@XmlJavaTypeAdapter(TransactionModeAdapter.class)
 		@XmlAttribute(name = "transaction-mode")
 		private TransactionMode transactionMode = TransactionModeEnum.SERIAL;
@@ -646,6 +664,17 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		public void setCodecFactory(CodecFactory factory)
 		{
 			this.codecFactory = factory;
+		}
+		
+		@Override
+		public MBeanRegistrar<Z, D> getMBeanRegistrar()
+		{
+			return this.registrar;
+		}
+		
+		public void setMBeanRegistrar(MBeanRegistrar<Z, D> registrar)
+		{
+			this.registrar = registrar;
 		}
 		
 		@Override
