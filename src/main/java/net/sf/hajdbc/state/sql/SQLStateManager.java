@@ -88,7 +88,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	
 	private static Logger logger = LoggerFactory.getLogger(SQLStateManager.class);
 	
-	private DurabilityListener listener = new DurabilityListenerAdapter(this);
+	private final DurabilityListener listener = new DurabilityListenerAdapter(this);
 	private final DatabaseCluster<Z, D> cluster;
 	private final PoolFactory poolFactory;
 	private final Database<Driver> database;
