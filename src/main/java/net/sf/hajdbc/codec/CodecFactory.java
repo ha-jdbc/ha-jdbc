@@ -18,7 +18,6 @@
 package net.sf.hajdbc.codec;
 
 import java.sql.SQLException;
-import java.util.Properties;
 
 /**
  * @author Paul Ferraro
@@ -26,5 +25,5 @@ import java.util.Properties;
  */
 public interface CodecFactory
 {
-	Codec createCodec(Properties properties) throws SQLException;
+	Codec createCodec(String clusterId) throws SQLException;
 }

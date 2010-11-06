@@ -25,7 +25,7 @@ import java.io.Serializable;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.sql.SQLException;
-import java.util.Properties;
+import java.text.MessageFormat;
 
 import net.sf.hajdbc.codec.Codec;
 import net.sf.hajdbc.codec.CodecFactory;
@@ -71,25 +71,52 @@ public class CipherCodecFactory implements CodecFactory, Serializable
 	public static final String DEFAULT_KEYSTORE_FILE = String.format("%s/.keystore", System.getProperty("user.home"));
 	public static final String DEFAULT_KEY_ALIAS = "ha-jdbc";
 	
-	private static final String KEYSTORE_FILE = "ha-jdbc.keystore.file";
-	private static final String KEYSTORE_TYPE = "ha-jdbc.keystore.type";
-	private static final String KEYSTORE_PASSWORD = "ha-jdbc.keystore.password";
-	private static final String KEY_ALIAS = "ha-jdbc.key.alias";
-	private static final String KEY_PASSWORD = "ha-jdbc.key.password";
+	private enum Property
+	{
+		KEYSTORE_FILE("keystore.file", DEFAULT_KEYSTORE_FILE),
+		KEYSTORE_TYPE("keystore.type", KeyStore.getDefaultType()),
+		KEYSTORE_PASSWORD("keystore.password", null),
+		KEY_ALIAS("key.alias", DEFAULT_KEY_ALIAS),
+		KEY_PASSWORD("key.password", null);
+		
+		final String nameFormat;
+		final String name;
+		final String defaultValue;
+		
+		private Property(String name, String defaultValue)
+		{
+			this.nameFormat = "ha-jdbc.{0}." + name;
+			this.name = "ha-jdbc." + name;
+			this.defaultValue = defaultValue;
+		}
+	}
+	
+	private String getProperty(String id, Property property)
+	{
+		String value = System.getProperty(MessageFormat.format(property.nameFormat, id));
+		
+		if (value != null) return value;
+		
+		String pattern = System.getProperty(property.name, property.defaultValue);
+		
+		if (pattern == null) return null;
+		
+		return MessageFormat.format(pattern, id);
+	}
 	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.codec.CodecFactory#createCodec(java.util.Properties)
 	 */
 	@Override
-	public Codec createCodec(Properties properties) throws SQLException
+	public Codec createCodec(String clusterId) throws SQLException
 	{
-		String type = properties.getProperty(KEYSTORE_TYPE, KeyStore.getDefaultType());
-		File file = new File(properties.getProperty(KEYSTORE_FILE, DEFAULT_KEYSTORE_FILE));
-		String password = properties.getProperty(KEYSTORE_PASSWORD);
+		String type = this.getProperty(clusterId, Property.KEYSTORE_TYPE);
+		File file = new File(this.getProperty(clusterId, Property.KEYSTORE_FILE));
+		String password = this.getProperty(clusterId, Property.KEYSTORE_PASSWORD);
 
-		String keyAlias = properties.getProperty(KEY_ALIAS, DEFAULT_KEY_ALIAS);
-		String keyPassword = properties.getProperty(KEY_PASSWORD);
+		String keyAlias = this.getProperty(clusterId, Property.KEY_ALIAS);
+		String keyPassword = this.getProperty(clusterId, Property.KEY_PASSWORD);
 		
 		try
 		{
@@ -120,18 +147,19 @@ public class CipherCodecFactory implements CodecFactory, Serializable
 	
 	public static void main(String... args)
 	{
-		if (args.length != 1)
+		if (args.length != 2)
 		{
-			System.err.println(String.format("Usage:%s\tjava %s <password-to-encrypt>", Strings.NEW_LINE, CipherCodecFactory.class.getName()));
+			System.err.println(String.format("Usage:%s\tjava %s <cluster-id> <password-to-encrypt>", Strings.NEW_LINE, CipherCodecFactory.class.getName()));
 			System.exit(1);
 			return;
 		}
 		
-		String value = args[0];
+		String clusterId = args[0];
+		String value = args[1];
 		
 		try
 		{
-			Codec codec = new CipherCodecFactory().createCodec(System.getProperties());
+			Codec codec = new CipherCodecFactory().createCodec(clusterId);
 
 			System.out.println(codec.encode(value));
 		}

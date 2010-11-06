@@ -19,7 +19,6 @@ package net.sf.hajdbc.codec;
 
 import java.io.Serializable;
 import java.sql.SQLException;
-import java.util.Properties;
 
 /**
  * Abstract codec implementation that is its own factory
@@ -34,7 +33,7 @@ public abstract class AbstractCodec implements Codec, CodecFactory, Serializable
 	 * @see net.sf.hajdbc.codec.CodecFactory#createCodec(java.util.Properties)
 	 */
 	@Override
-	public Codec createCodec(Properties properties) throws SQLException
+	public Codec createCodec(String clusterId) throws SQLException
 	{
 		return this;
 	}

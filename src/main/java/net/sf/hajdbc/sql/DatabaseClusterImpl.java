@@ -50,6 +50,7 @@ import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.management.Description;
 import net.sf.hajdbc.management.MBean;
+import net.sf.hajdbc.management.MBeanRegistrar;
 import net.sf.hajdbc.management.ManagedOperation;
 import net.sf.hajdbc.state.DatabaseEvent;
 import net.sf.hajdbc.state.StateManager;
@@ -436,7 +437,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	{
 		if (this.active) return;
 		
-		this.codec = this.configuration.getCodecFactory().createCodec(System.getProperties());
+		this.codec = this.configuration.getCodecFactory().createCodec(this.id);
 		this.transactionIdentifierFactory = new SimpleTransactionIdentifierFactory();
 		this.lockManager = new SemaphoreLockManager();
 		this.stateManager = this.configuration.getStateManagerFactory().createStateManager(this);
@@ -519,6 +520,18 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 			}
 		}
 		
+		MBeanRegistrar<Z, D> registrar = this.configuration.getMBeanRegistrar();
+
+		if (registrar != null)
+		{
+			registrar.register(this);
+			
+			for (D database: this.configuration.getDatabaseMap().values())
+			{
+				registrar.register(this, database);
+			}
+		}
+		
 		this.active = true;
 	}
 
@@ -535,6 +548,18 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	public synchronized void stop()
 	{
 		this.active = false;
+		
+		MBeanRegistrar<Z, D> registrar = this.configuration.getMBeanRegistrar();
+
+		if (registrar != null)
+		{
+			registrar.unregister(this);
+			
+			for (D database: this.configuration.getDatabaseMap().values())
+			{
+				registrar.unregister(this, database);
+			}
+		}
 		
 		if (this.executor != null)
 		{
