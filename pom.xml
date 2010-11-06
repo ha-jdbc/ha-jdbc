@@ -35,11 +35,6 @@
 			<name>Provides jgroups</name>
 			<url>http://repository.jboss.org/nexus/content/groups/public</url>
 		</repository>
-		<!--repository>
-			<id>repo.terracotta.org</id>
-			<name>Provides quartz</name>
-			<url>http://www.terracotta.org/download/reflector/maven2</url>
-		</repository-->
 		<repository>
 			<id>download.oracle.com</id>
 			<name>Provides berkeleydb-je</name>
@@ -48,15 +43,15 @@
 	</repositories>
 	<pluginRepositories>
 		<pluginRepository>
-			<id>doodleproject-repo</id>
+			<id>repository.jboss.org</id>
+			<name>Provides most plugins</name>
+			<url>http://repository.jboss.org/nexus/content/groups/public</url>
+		</pluginRepository>
+		<pluginRepository>
+			<id>doodleproject.sourceforge.net</id>
 			<name>Provides batik-maven-plugin</name>
 			<url>http://doodleproject.sourceforge.net/maven2/release</url>
 		</pluginRepository>
-		<!--pluginRepository>
-			<id>repository.codehaus.org</id>
-			<name>Provides versions-maven-plugin</name>
-			<url>http://repository.codehaus.org</url>
-		</pluginRepository-->
 	</pluginRepositories>
 	
 	<dependencies>
@@ -83,7 +78,7 @@
 		<dependency>
 			<groupId>org.jgroups</groupId>
 			<artifactId>jgroups</artifactId>
-			<version>2.10.0.GA</version>
+			<version>2.11.0.GA</version>
 			<optional>true</optional>
 		</dependency>
 		<!-- Optional logging dependencies -->
@@ -129,8 +124,7 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.8.1</version>
-			<!--version>4.8.2</version-->
+			<version>4.8.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -142,7 +136,7 @@
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<version>1.2.142</version>
+			<version>1.2.145</version>
 			<scope>test</scope>
 		</dependency>
 		<!--dependency>
@@ -185,15 +179,6 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.1</version>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -244,7 +229,66 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
-				<version>3.0-beta-1</version>
+				<version>3.0-beta-3</version>
+				<configuration>
+					<reportPlugins>
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-project-info-reports-plugin</artifactId>
+							<version>2.2</version>
+							<reportSets>
+								<reportSet>
+									<reports>
+										<report>dependencies</report>
+										<report>dependency-management</report>
+										<report>issue-tracking</report>
+										<report>license</report>
+										<report>mailing-list</report>
+										<report>project-team</report>
+										<report>scm</report>
+										<report>summary</report>
+									</reports>
+								</reportSet>
+							</reportSets>
+						</plugin>
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-changes-plugin</artifactId>
+							<version>2.3</version>
+							<configuration>
+								<xmlPath>${project.basedir}/src/site/changes.xml</xmlPath>
+								<issueLinkTemplatePerSystem>
+									<default>%URL%?func=detail&amp;group_id=111957&amp;atid=660861&amp;aid=%ISSUE%</default>
+								</issueLinkTemplatePerSystem>
+							</configuration>
+							<reportSets>
+								<reportSet>
+									<reports>
+										<report>changes-report</report>
+									</reports>
+								</reportSet>
+							</reportSets>
+						</plugin>
+						<!--plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-javadoc-plugin</artifactId>
+							<version>2.7</version>
+							<configuration>
+								<linksource>true</linksource>
+							</configuration>
+						</plugin-->
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-jxr-plugin</artifactId>
+							<version>2.2</version>
+						</plugin>
+						<plugin>
+							<groupId>org.codehaus.mojo</groupId>
+							<artifactId>findbugs-maven-plugin</artifactId>
+							<version>2.3.1</version>
+						</plugin>
+					</reportPlugins>
+				</configuration>
 				<dependencies>
 					<dependency>
 						<groupId>org.apache.maven.doxia</groupId>
@@ -260,66 +304,6 @@
 			</plugin>
 		</plugins>
 	</build>
-	
-	<reporting>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>2.2</version>
-				<reportSets>
-					<reportSet>
-						<reports>
-							<report>dependencies</report>
-							<report>dependency-management</report>
-							<report>issue-tracking</report>
-							<report>license</report>
-							<report>mailing-list</report>
-							<report>project-team</report>
-							<report>scm</report>
-							<report>summary</report>
-						</reports>
-					</reportSet>
-				</reportSets>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-changes-plugin</artifactId>
-				<version>2.3</version>
-				<configuration>
-					<xmlPath>${basedir}/src/site/changes.xml</xmlPath>
-					<issueLinkTemplatePerSystem>
-						<default>%URL%?func=detail&amp;group_id=111957&amp;atid=660861&amp;aid=%ISSUE%</default>
-					</issueLinkTemplatePerSystem>
-				</configuration>
-				<reportSets>
-					<reportSet>
-						<reports>
-							<report>changes-report</report>
-						</reports>
-					</reportSet>
-				</reportSets>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.7</version>
-				<configuration>
-					<linksource>true</linksource>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jxr-plugin</artifactId>
-				<version>2.2</version>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>findbugs-maven-plugin</artifactId>
-				<version>2.3.1</version>
-			</plugin>
-		</plugins>
-	</reporting>
 	
 	<scm>
 		<connection>scm:svn:https://ha-jdbc.svn.sourceforge.net/svnroot/ha-jdbc/trunk</connection>
