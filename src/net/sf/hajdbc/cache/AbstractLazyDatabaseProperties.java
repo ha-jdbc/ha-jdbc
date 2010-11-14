@@ -47,6 +47,7 @@ public abstract class AbstractLazyDatabaseProperties extends AbstractDatabasePro
 		super(metaData, factory, dialect);
 	}
 	
+	@Override
 	protected Map<String, TableProperties> getTableMap() throws SQLException
 	{
 		synchronized (this.tableMapRef)
@@ -71,6 +72,7 @@ public abstract class AbstractLazyDatabaseProperties extends AbstractDatabasePro
 		}
 	}
 	
+	@Override
 	protected Map<String, SequenceProperties> getSequenceMap() throws SQLException
 	{
 		synchronized (this.sequenceMapRef)
@@ -93,6 +95,7 @@ public abstract class AbstractLazyDatabaseProperties extends AbstractDatabasePro
 		}
 	}
 	
+	@Override
 	protected List<String> getDefaultSchemaList() throws SQLException
 	{
 		synchronized (this.defaultSchemaListRef)

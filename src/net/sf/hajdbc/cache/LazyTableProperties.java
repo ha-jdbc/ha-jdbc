@@ -55,6 +55,7 @@ public class LazyTableProperties extends AbstractTableProperties
 		this.table = table;
 	}
 
+	@Override
 	protected Map<String, ColumnProperties> getColumnMap() throws SQLException
 	{
 		synchronized (this.columnMapRef)
