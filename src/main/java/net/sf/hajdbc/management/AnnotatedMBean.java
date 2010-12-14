@@ -56,7 +56,7 @@ public class AnnotatedMBean implements DynamicMBean
 		
 		if (mbean == null)
 		{
-			throw new IllegalArgumentException(String.format("%s is not an @MBean", bean.getClass()));
+			throw new IllegalArgumentException(String.format("%s is not an @MBean", beanClass));
 		}
 		
 		this.bean = bean;
