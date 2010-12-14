@@ -25,6 +25,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -35,6 +36,7 @@ import java.util.regex.Pattern;
 
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.util.Strings;
 
 /**
@@ -410,7 +412,11 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 	@Override
 	public Collection<SequenceProperties> getSequences(DatabaseMetaData metaData) throws SQLException
 	{
-		Map<QualifiedName, Integer> sequences = this.dialect.getSequences(metaData);
+		SequenceSupport support = this.dialect.getSequenceSupport();
+		
+		if (support == null) return Collections.emptyList();
+		
+		Map<QualifiedName, Integer> sequences = support.getSequences(metaData);
 		
 		List<SequenceProperties> sequenceList = new ArrayList<SequenceProperties>(sequences.size());
 		

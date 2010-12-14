@@ -17,12 +17,9 @@
  */
 package net.sf.hajdbc.dialect;
 
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.Map;
+import net.sf.hajdbc.IdentityColumnSupport;
+import net.sf.hajdbc.SequenceSupport;
 
-import net.sf.hajdbc.cache.QualifiedName;
 
 /**
  * Dialect for <a href="http://db.apache.org/derby">Apache Derby</a>.
@@ -33,6 +30,27 @@ import net.sf.hajdbc.cache.QualifiedName;
 @SuppressWarnings("nls")
 public class DerbyDialect extends StandardDialect
 {
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getIdentityColumnSupport()
+	 */
+	@Override
+	public IdentityColumnSupport getIdentityColumnSupport()
+	{
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequenceSupport()
+	 */
+	@Override
+	public SequenceSupport getSequenceSupport()
+	{
+		// Sequence support was added to 10.6.1.0
+		return this.meetsRequirement(10, 6) ? this : null;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.dialect.StandardDialect#vendorPattern()
@@ -50,24 +68,6 @@ public class DerbyDialect extends StandardDialect
 	protected String executeFunctionFormat()
 	{
 		return "VALUES {0}";
-	}
-
-	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#parseSequence(java.lang.String)
-	 */
-	@Override
-	public String parseSequence(String sql)
-	{
-		return null;
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.DatabaseMetaData)
-	 */
-	@Override
-	public Map<QualifiedName, Integer> getSequences(DatabaseMetaData metaData) throws SQLException
-	{
-		return Collections.emptyMap();
 	}
 
 	/**

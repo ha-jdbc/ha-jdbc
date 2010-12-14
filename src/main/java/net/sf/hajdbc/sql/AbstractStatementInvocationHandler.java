@@ -33,6 +33,8 @@ import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.IdentityColumnSupport;
+import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.cache.DatabaseProperties;
 import net.sf.hajdbc.cache.TableProperties;
 import net.sf.hajdbc.lock.LockManager;
@@ -231,25 +233,35 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 		{
 			if (cluster.isSequenceDetectionEnabled())
 			{
-				String sequence = cluster.getDialect().parseSequence(sql);
+				SequenceSupport support = cluster.getDialect().getSequenceSupport();
 				
-				if (sequence != null)
+				if (support != null)
 				{
-					identifierSet.add(sequence);
+					String sequence = support.parseSequence(sql);
+					
+					if (sequence != null)
+					{
+						identifierSet.add(sequence);
+					}
 				}
 			}
 			
 			if (cluster.isIdentityColumnDetectionEnabled())
 			{
-				String table = cluster.getDialect().parseInsertTable(sql);
+				IdentityColumnSupport support = cluster.getDialect().getIdentityColumnSupport();
 				
-				if (table != null)
+				if (support != null)
 				{
-					TableProperties tableProperties = this.getDatabaseProperties().findTable(table);
+					String table = support.parseInsertTable(sql);
 					
-					if (!tableProperties.getIdentityColumns().isEmpty())
+					if (table != null)
 					{
-						identifierSet.add(tableProperties.getName());
+						TableProperties tableProperties = this.getDatabaseProperties().findTable(table);
+						
+						if (!tableProperties.getIdentityColumns().isEmpty())
+						{
+							identifierSet.add(tableProperties.getName());
+						}
 					}
 				}
 			}

@@ -17,6 +17,8 @@
  */
 package net.sf.hajdbc.dialect;
 
+import net.sf.hajdbc.SequenceSupport;
+
 /**
  * Dialect for <a href="http://mckoi.com">Mckoi</a>.
  * 
@@ -36,12 +38,13 @@ public class MckoiDialect extends StandardDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#parseInsertTable(java.lang.String)
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequenceSupport()
 	 */
 	@Override
-	public String parseInsertTable(String sql)
+	public SequenceSupport getSequenceSupport()
 	{
-		return null;
+		return this;
 	}
 
 	/**

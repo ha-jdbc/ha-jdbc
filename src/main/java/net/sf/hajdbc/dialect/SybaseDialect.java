@@ -17,12 +17,7 @@
  */
 package net.sf.hajdbc.dialect;
 
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.Map;
-
-import net.sf.hajdbc.cache.QualifiedName;
+import net.sf.hajdbc.IdentityColumnSupport;
 
 /**
  * Dialect for Sybase (commercial).
@@ -31,6 +26,16 @@ import net.sf.hajdbc.cache.QualifiedName;
 @SuppressWarnings("nls")
 public class SybaseDialect extends StandardDialect
 {
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getIdentityColumnSupport()
+	 */
+	@Override
+	public IdentityColumnSupport getIdentityColumnSupport()
+	{
+		return this;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.dialect.StandardDialect#vendorPattern()
@@ -67,25 +72,6 @@ public class SybaseDialect extends StandardDialect
 	protected String createForeignKeyConstraintFormat()
 	{
 		return "ALTER TABLE {1} ADD CONSTRAINT {0} FOREIGN KEY ({2}) REFERENCES {3} ({4}) ON DELETE {5,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT} ON UPDATE {6,choice,0#CASCADE|1#RESTRICT|2#SET NULL|3#NO ACTION|4#SET DEFAULT}";
-	}
-
-	/**
-	 * Sybase does not support sequences.
-	 * @see net.sf.hajdbc.dialect.StandardDialect#parseSequence(java.lang.String)
-	 */
-	@Override
-	public String parseSequence(String sql)
-	{
-		return null;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.DatabaseMetaData)
-	 */
-	@Override
-	public Map<QualifiedName, Integer> getSequences(DatabaseMetaData metaData) throws SQLException
-	{
-		return Collections.emptyMap();
 	}
 
 	/**

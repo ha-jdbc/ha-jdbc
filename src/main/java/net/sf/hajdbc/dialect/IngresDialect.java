@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.cache.QualifiedName;
 
 /**
@@ -48,12 +49,13 @@ public class IngresDialect extends StandardDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#parseInsertTable(java.lang.String)
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequenceSupport()
 	 */
 	@Override
-	public String parseInsertTable(String sql)
+	public SequenceSupport getSequenceSupport()
 	{
-		return null;
+		return this;
 	}
 
 	/**

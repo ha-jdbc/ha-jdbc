@@ -35,7 +35,9 @@ import java.util.concurrent.Future;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ExceptionType;
+import net.sf.hajdbc.IdentityColumnSupport;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.cache.ForeignKeyConstraint;
 import net.sf.hajdbc.cache.SequenceProperties;
 import net.sf.hajdbc.cache.TableProperties;
@@ -125,95 +127,98 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 	@Override
 	public void synchronizeSequences() throws SQLException
 	{
-		Collection<SequenceProperties> sequences = this.context.getSourceDatabaseProperties().getSequences();
-
-		if (!sequences.isEmpty())
+		SequenceSupport support = this.context.getDialect().getSequenceSupport();
+		
+		if (support != null)
 		{
-			D sourceDatabase = this.context.getSourceDatabase();
-			
-			Set<D> databases = this.context.getActiveDatabaseSet();
+			Collection<SequenceProperties> sequences = this.context.getSourceDatabaseProperties().getSequences();
 
-			ExecutorService executor = this.context.getExecutor();
-			
-			Dialect dialect = this.context.getDialect();
-			
-			Map<SequenceProperties, Long> sequenceMap = new HashMap<SequenceProperties, Long>();
-			Map<D, Future<Long>> futureMap = new HashMap<D, Future<Long>>();
-
-			for (SequenceProperties sequence: sequences)
+			if (!sequences.isEmpty())
 			{
-				final String sql = dialect.getNextSequenceValueSQL(sequence);
+				D sourceDatabase = this.context.getSourceDatabase();
 				
-				this.logger.log(Level.DEBUG, sql);
+				Set<D> databases = this.context.getActiveDatabaseSet();
 
-				for (final D database: databases)
-				{
-					final SynchronizationContext<Z, D> context = this.context;
-					
-					Callable<Long> task = new Callable<Long>()
-					{
-						@Override
-						public Long call() throws SQLException
-						{
-							Statement statement = context.getConnection(database).createStatement();
-							ResultSet resultSet = statement.executeQuery(sql);
-							
-							resultSet.next();
-							
-							long value = resultSet.getLong(1);
-							
-							statement.close();
-							
-							return value;
-						}
-					};
-					
-					futureMap.put(database, executor.submit(task));				
-				}
+				ExecutorService executor = this.context.getExecutor();
+				
+				Map<SequenceProperties, Long> sequenceMap = new HashMap<SequenceProperties, Long>();
+				Map<D, Future<Long>> futureMap = new HashMap<D, Future<Long>>();
 
-				try
+				for (SequenceProperties sequence: sequences)
 				{
-					Long sourceValue = futureMap.get(sourceDatabase).get();
+					final String sql = support.getNextSequenceValueSQL(sequence);
 					
-					sequenceMap.put(sequence, sourceValue);
-					
-					for (D database: databases)
+					this.logger.log(Level.DEBUG, sql);
+
+					for (final D database: databases)
 					{
-						if (!database.equals(sourceDatabase))
+						final SynchronizationContext<Z, D> context = this.context;
+						
+						Callable<Long> task = new Callable<Long>()
 						{
-							Long value = futureMap.get(database).get();
-							
-							if (!value.equals(sourceValue))
+							@Override
+							public Long call() throws SQLException
 							{
-								throw new SQLException(Messages.SEQUENCE_OUT_OF_SYNC.getMessage(sequence, database, value, sourceDatabase, sourceValue));
+								Statement statement = context.getConnection(database).createStatement();
+								ResultSet resultSet = statement.executeQuery(sql);
+								
+								resultSet.next();
+								
+								long value = resultSet.getLong(1);
+								
+								statement.close();
+								
+								return value;
+							}
+						};
+						
+						futureMap.put(database, executor.submit(task));				
+					}
+
+					try
+					{
+						Long sourceValue = futureMap.get(sourceDatabase).get();
+						
+						sequenceMap.put(sequence, sourceValue);
+						
+						for (D database: databases)
+						{
+							if (!database.equals(sourceDatabase))
+							{
+								Long value = futureMap.get(database).get();
+								
+								if (!value.equals(sourceValue))
+								{
+									throw new SQLException(Messages.SEQUENCE_OUT_OF_SYNC.getMessage(sequence, database, value, sourceDatabase, sourceValue));
+								}
 							}
 						}
 					}
+					catch (InterruptedException e)
+					{
+						throw new SQLException(e);
+					}
+					catch (ExecutionException e)
+					{
+						throw ExceptionType.getExceptionFactory(SQLException.class).createException(e.getCause());
+					}
 				}
-				catch (InterruptedException e)
-				{
-					throw new SQLException(e);
-				}
-				catch (ExecutionException e)
-				{
-					throw ExceptionType.getExceptionFactory(SQLException.class).createException(e.getCause());
-				}
-			}
-			
-			Connection targetConnection = this.context.getConnection(this.context.getTargetDatabase());
-			Statement targetStatement = targetConnection.createStatement();
+				
+				Connection targetConnection = this.context.getConnection(this.context.getTargetDatabase());
+				Statement targetStatement = targetConnection.createStatement();
 
-			for (SequenceProperties sequence: sequences)
-			{
-				String sql = dialect.getAlterSequenceSQL(sequence, sequenceMap.get(sequence) + 1);
+				for (SequenceProperties sequence: sequences)
+				{
+					String sql = support.getAlterSequenceSQL(sequence, sequenceMap.get(sequence) + 1);
+					
+					this.logger.log(Level.DEBUG, sql);
+					
+					targetStatement.addBatch(sql);
+				}
 				
-				this.logger.log(Level.DEBUG, sql);
-				
-				targetStatement.addBatch(sql);
+				targetStatement.executeBatch();		
+				targetStatement.close();
 			}
-			
-			targetStatement.executeBatch();		
-			targetStatement.close();
 		}
 	}
 	
@@ -224,58 +229,61 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 	@Override
 	public void synchronizeIdentityColumns() throws SQLException
 	{
-		Statement sourceStatement = this.context.getConnection(this.context.getSourceDatabase()).createStatement();
-		Statement targetStatement = this.context.getConnection(this.context.getTargetDatabase()).createStatement();
+		IdentityColumnSupport support = this.context.getDialect().getIdentityColumnSupport();
 		
-		Dialect dialect = this.context.getDialect();
-		
-		for (TableProperties table: this.context.getSourceDatabaseProperties().getTables())
+		if (support != null)
 		{
-			Collection<String> columns = table.getIdentityColumns();
+			Statement sourceStatement = this.context.getConnection(this.context.getSourceDatabase()).createStatement();
+			Statement targetStatement = this.context.getConnection(this.context.getTargetDatabase()).createStatement();
 			
-			if (!columns.isEmpty())
+			for (TableProperties table: this.context.getSourceDatabaseProperties().getTables())
 			{
-				String selectSQL = MessageFormat.format("SELECT max({0}) FROM {1}", Strings.join(columns, "), max("), table.getName()); //$NON-NLS-1$ //$NON-NLS-2$
+				Collection<String> columns = table.getIdentityColumns();
 				
-				this.logger.log(Level.DEBUG, selectSQL);
-				
-				Map<String, Long> map = new HashMap<String, Long>();
-				
-				ResultSet resultSet = sourceStatement.executeQuery(selectSQL);
-				
-				if (resultSet.next())
+				if (!columns.isEmpty())
 				{
-					int i = 0;
+					String selectSQL = MessageFormat.format("SELECT max({0}) FROM {1}", Strings.join(columns, "), max("), table.getName()); //$NON-NLS-1$ //$NON-NLS-2$
 					
-					for (String column: columns)
+					this.logger.log(Level.DEBUG, selectSQL);
+					
+					Map<String, Long> map = new HashMap<String, Long>();
+					
+					ResultSet resultSet = sourceStatement.executeQuery(selectSQL);
+					
+					if (resultSet.next())
 					{
-						map.put(column, resultSet.getLong(++i));
-					}
-				}
-				
-				resultSet.close();
-				
-				if (!map.isEmpty())
-				{
-					for (Map.Entry<String, Long> mapEntry: map.entrySet())
-					{
-						String alterSQL = dialect.getAlterIdentityColumnSQL(table, table.getColumnProperties(mapEntry.getKey()), mapEntry.getValue() + 1);
+						int i = 0;
 						
-						if (alterSQL != null)
+						for (String column: columns)
 						{
-							this.logger.log(Level.DEBUG, alterSQL);
-							
-							targetStatement.addBatch(alterSQL);
+							map.put(column, resultSet.getLong(++i));
 						}
 					}
 					
-					targetStatement.executeBatch();
+					resultSet.close();
+					
+					if (!map.isEmpty())
+					{
+						for (Map.Entry<String, Long> mapEntry: map.entrySet())
+						{
+							String alterSQL = support.getAlterIdentityColumnSQL(table, table.getColumnProperties(mapEntry.getKey()), mapEntry.getValue() + 1);
+							
+							if (alterSQL != null)
+							{
+								this.logger.log(Level.DEBUG, alterSQL);
+								
+								targetStatement.addBatch(alterSQL);
+							}
+						}
+						
+						targetStatement.executeBatch();
+					}
 				}
 			}
+			
+			sourceStatement.close();
+			targetStatement.close();
 		}
-		
-		sourceStatement.close();
-		targetStatement.close();
 	}
 
 	/**

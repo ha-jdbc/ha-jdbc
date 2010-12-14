@@ -19,8 +19,10 @@ package net.sf.hajdbc.dialect;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLNonTransientConnectionException;
 import java.sql.Statement;
 import java.text.MessageFormat;
 import java.util.Collections;
@@ -28,6 +30,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,6 +39,8 @@ import javax.transaction.xa.XAException;
 
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.DumpRestoreSupport;
+import net.sf.hajdbc.IdentityColumnSupport;
+import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.cache.ColumnProperties;
 import net.sf.hajdbc.cache.ForeignKeyConstraint;
 import net.sf.hajdbc.cache.QualifiedName;
@@ -49,7 +54,7 @@ import net.sf.hajdbc.util.Strings;
  * @since   1.1
  */
 @SuppressWarnings("nls")
-public class StandardDialect implements Dialect
+public class StandardDialect implements Dialect, SequenceSupport, IdentityColumnSupport
 {
 	private final Pattern selectForUpdatePattern = this.compile(this.selectForUpdatePattern());
 	private final Pattern insertIntoTablePattern = this.compile(this.insertIntoTablePattern());
@@ -231,15 +236,6 @@ public class StandardDialect implements Dialect
 	{
 		return this.selectForUpdatePattern.matcher(sql).find();
 	}
-	
-	/**
-	 * @see net.sf.hajdbc.Dialect#parseInsertTable(java.lang.String)
-	 */
-	@Override
-	public String parseInsertTable(String sql)
-	{
-		return this.parse(this.insertIntoTablePattern, sql);
-	}
 
 	/**
 	 * @see net.sf.hajdbc.Dialect#getDefaultSchemas(java.sql.DatabaseMetaData)
@@ -283,6 +279,16 @@ public class StandardDialect implements Dialect
 		statement.close();
 		
 		return resultList;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.Dialect#getSequenceSupport()
+	 */
+	@Override
+	public SequenceSupport getSequenceSupport()
+	{
+		return null;
 	}
 
 	/**
@@ -354,6 +360,22 @@ public class StandardDialect implements Dialect
 	protected String alterSequenceFormat()
 	{
 		return "ALTER SEQUENCE {0} RESTART WITH {1}";
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.Dialect#getIdentityColumnSupport()
+	 */
+	@Override
+	public IdentityColumnSupport getIdentityColumnSupport()
+	{
+		return null;
+	}
+	
+	@Override
+	public String parseInsertTable(String sql)
+	{
+		return this.parse(this.insertIntoTablePattern, sql);
 	}
 
 	@Override
@@ -455,8 +477,14 @@ public class StandardDialect implements Dialect
 	public boolean indicatesFailure(SQLException e)
 	{
 		String state = e.getSQLState();
-
-		return (state != null) && this.failureSQLStates().contains(state);
+		Set<String> failureSQLStates = this.failureSQLStates();
+		
+		if ((state != null) && !failureSQLStates.isEmpty())
+		{
+			return failureSQLStates.contains(state);
+		}
+		
+		return (e instanceof SQLNonTransientConnectionException);
 	}
 
 	protected Set<String> failureSQLStates()
@@ -497,5 +525,26 @@ public class StandardDialect implements Dialect
 	public DumpRestoreSupport getDumpRestoreSupport()
 	{
 		return null;
+	}
+	
+	protected boolean meetsRequirement(int minMajor, int minMinor)
+	{
+		for (Driver driver: ServiceLoader.load(Driver.class))
+		{
+			try
+			{
+				if (driver.acceptsURL(String.format("jdbc:%s:test", this.vendorPattern())))
+				{
+					int major = driver.getMajorVersion();
+					int minor = driver.getMinorVersion();
+					return (major > minMajor) || ((major == minMajor) && (minor >= minMinor));
+				}
+			}
+			catch (SQLException e)
+			{
+				// Ignore
+			}
+		}
+		return false;
 	}
 }

@@ -22,11 +22,9 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import net.sf.hajdbc.ConnectionProperties;
 import net.sf.hajdbc.DumpRestoreSupport;
-import net.sf.hajdbc.cache.QualifiedName;
 import net.sf.hajdbc.util.Strings;
 
 /**
@@ -55,24 +53,6 @@ public class MySQLDialect extends StandardDialect implements DumpRestoreSupport
 	public List<String> getDefaultSchemas(DatabaseMetaData metaData) throws SQLException
 	{
 		return Collections.singletonList(this.executeFunction(metaData.getConnection(), "DATABASE()"));
-	}
-
-	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#parseSequence(java.lang.String)
-	 */
-	@Override
-	public String parseSequence(String sql)
-	{
-		return null;
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.DatabaseMetaData)
-	 */
-	@Override
-	public Map<QualifiedName, Integer> getSequences(DatabaseMetaData metaData) throws SQLException
-	{
-		return Collections.emptyMap();
 	}
 
 	/**

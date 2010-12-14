@@ -30,6 +30,8 @@ import java.util.regex.Pattern;
 
 import net.sf.hajdbc.ConnectionProperties;
 import net.sf.hajdbc.DumpRestoreSupport;
+import net.sf.hajdbc.IdentityColumnSupport;
+import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.cache.ColumnProperties;
 import net.sf.hajdbc.util.Strings;
 
@@ -108,6 +110,26 @@ public class PostgreSQLDialect extends StandardDialect implements DumpRestoreSup
 		}
 		
 		return super.getIdentifierPattern(metaData);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequenceSupport()
+	 */
+	@Override
+	public SequenceSupport getSequenceSupport()
+	{
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getIdentityColumnSupport()
+	 */
+	@Override
+	public IdentityColumnSupport getIdentityColumnSupport()
+	{
+		return this;
 	}
 
 	/**

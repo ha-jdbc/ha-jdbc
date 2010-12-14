@@ -24,6 +24,7 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.cache.QualifiedName;
 
 /**
@@ -63,6 +64,16 @@ public class FirebirdDialect extends StandardDialect
 	}
 
 	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequenceSupport()
+	 */
+	@Override
+	public SequenceSupport getSequenceSupport()
+	{
+		return this;
+	}
+
+	/**
 	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.DatabaseMetaData)
 	 */
 	@Override
@@ -82,15 +93,6 @@ public class FirebirdDialect extends StandardDialect
 		statement.close();
 		
 		return sequences;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#parseInsertTable(java.lang.String)
-	 */
-	@Override
-	public String parseInsertTable(String sql)
-	{
-		return null;
 	}
 
 	/**

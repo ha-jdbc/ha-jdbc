@@ -24,6 +24,7 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.cache.QualifiedName;
 
 /**
@@ -50,6 +51,16 @@ public class H2Dialect extends StandardDialect
 	protected String executeFunctionFormat()
 	{
 		return "CALL {0}";
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequenceSupport()
+	 */
+	@Override
+	public SequenceSupport getSequenceSupport()
+	{
+		return this;
 	}
 
 	/**
