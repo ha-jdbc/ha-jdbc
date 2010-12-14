@@ -17,11 +17,15 @@
  */
 package net.sf.hajdbc.management;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * Placeholder for JSR 255 (JMX 2.0) annotations.
  * 
  * @author Paul Ferraro
  */
+@Retention(RetentionPolicy.RUNTIME)
 public @interface ManagedAttribute
 {
 
