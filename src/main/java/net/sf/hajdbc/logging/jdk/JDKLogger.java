@@ -17,7 +17,6 @@
  */
 package net.sf.hajdbc.logging.jdk;
 
-import java.util.IdentityHashMap;
 import java.util.Map;
 
 import net.sf.hajdbc.logging.AbstractLogger;
@@ -29,7 +28,7 @@ import net.sf.hajdbc.logging.Level;
  */
 public class JDKLogger extends AbstractLogger
 {
-	private static final Map<Level, java.util.logging.Level> levels = new IdentityHashMap<Level, java.util.logging.Level>();
+	private static final Map<Level, java.util.logging.Level> levels = new java.util.EnumMap<Level, java.util.logging.Level>(Level.class);
 	static
 	{
 		levels.put(Level.ERROR, java.util.logging.Level.SEVERE);
@@ -39,7 +38,7 @@ public class JDKLogger extends AbstractLogger
 		levels.put(Level.TRACE, java.util.logging.Level.FINEST);
 	}
 	
-	private java.util.logging.Logger logger;
+	private final java.util.logging.Logger logger;
 	
 	public JDKLogger(Class<?> targetClass)
 	{
