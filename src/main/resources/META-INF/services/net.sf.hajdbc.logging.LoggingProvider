@@ -1,3 +1,4 @@
+net.sf.hajdbc.logging.jboss.JBossLoggingProvider
 net.sf.hajdbc.logging.slf4j.SLF4JLoggingProvider
 net.sf.hajdbc.logging.commons.CommonsLoggingProvider
 net.sf.hajdbc.logging.jdk.JDKLoggingProvider
