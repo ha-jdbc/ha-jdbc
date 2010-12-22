@@ -53,6 +53,16 @@ public class DB2DialectTest extends StandardDialectTest
 		Assert.assertSame(this.dialect, this.dialect.getSequenceSupport());
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialectTest#getIdentityColumnSupport()
+	 */
+	@Override
+	public void getIdentityColumnSupport()
+	{
+		Assert.assertSame(this.dialect, this.dialect.getIdentityColumnSupport());
+	}
+
 	@Override
 	public void getSequences() throws SQLException
 	{

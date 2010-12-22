@@ -42,6 +42,16 @@ public class DerbyDialectTest extends StandardDialectTest
 
 	/**
 	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialectTest#getIdentityColumnSupport()
+	 */
+	@Override
+	public void getIdentityColumnSupport()
+	{
+		Assert.assertSame(this.dialect, this.dialect.getIdentityColumnSupport());
+	}
+
+	/**
+	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.dialect.StandardDialectTest#getCreateForeignKeyConstraintSQL()
 	 */
 	@Override
