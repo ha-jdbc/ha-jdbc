@@ -17,7 +17,12 @@
  */
 package net.sf.hajdbc.state.sql;
 
+import java.sql.Driver;
+import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ServiceLoader;
 
 import org.apache.commons.pool.impl.GenericObjectPool;
 
@@ -33,10 +38,39 @@ import net.sf.hajdbc.state.StateManagerFactory;
  */
 public class SQLStateManagerFactory extends GenericObjectPool.Config implements StateManagerFactory
 {
+	private static final List<String> EMBEDDED_VENDORS = Arrays.asList("h2", "hsqldb", "derby");
+	
 	private String urlPattern = "jdbc:{1}:{0}";
-	private String vendor = "h2";
+	private String vendor = this.defaultVendor();
 	private String user;
 	private String password;
+	
+	private String defaultVendor()
+	{
+		ServiceLoader<Driver> drivers = ServiceLoader.load(Driver.class);
+		
+		for (String vendor: EMBEDDED_VENDORS)
+		{
+			String url = MessageFormat.format(this.urlPattern, "test", vendor);
+			
+			for (Driver driver: drivers)
+			{
+				try
+				{
+					if (driver.acceptsURL(url))
+					{
+						return vendor;
+					}
+				}
+				catch (SQLException e)
+				{
+					// Ignore
+				}
+			}
+		}
+		
+		return null;
+	}
 	
 	/**
 	 * {@inheritDoc}
