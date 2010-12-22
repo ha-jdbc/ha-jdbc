@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="7.30cm" height="1.75cm" viewBox="0 0 730 175">
-  <text x="10" y="130" font-family="Gentium Book Basic" font-size="180" fill="black">HA-JDBC</text>
+<svg height="80" width="310">
+  <text x="10" y="60" font-family="Gentium Book Basic" font-size="80" fill="black">HA-JDBC</text>
 </svg>
