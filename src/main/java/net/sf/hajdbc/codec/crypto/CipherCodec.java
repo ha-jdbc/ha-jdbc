@@ -40,6 +40,11 @@ public class CipherCodec implements Codec
 		this.key = key;
 	}
 	
+	public Key getKey()
+	{
+		return this.key;
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.codec.Codec#decode(java.lang.String)

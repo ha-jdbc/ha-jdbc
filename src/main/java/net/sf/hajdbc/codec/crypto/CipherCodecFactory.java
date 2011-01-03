@@ -47,7 +47,7 @@ import net.sf.hajdbc.util.Strings;
  * 	</tr>
  * 	<tr>
  * 		<td>ha-jdbc.keystore.type</td>
- * 		<td>jks</td>
+ * 		<td>jceks</td>
  * 	</tr>
  * 	<tr>
  * 		<td>ha-jdbc.keystore.password</td>
@@ -71,10 +71,10 @@ public class CipherCodecFactory implements CodecFactory, Serializable
 	public static final String DEFAULT_KEYSTORE_FILE = String.format("%s/.keystore", System.getProperty("user.home"));
 	public static final String DEFAULT_KEY_ALIAS = "ha-jdbc";
 	
-	private enum Property
+	enum Property
 	{
 		KEYSTORE_FILE("keystore.file", DEFAULT_KEYSTORE_FILE),
-		KEYSTORE_TYPE("keystore.type", KeyStore.getDefaultType()),
+		KEYSTORE_TYPE("keystore.type", "jceks"),
 		KEYSTORE_PASSWORD("keystore.password", null),
 		KEY_ALIAS("key.alias", DEFAULT_KEY_ALIAS),
 		KEY_PASSWORD("key.password", null);
