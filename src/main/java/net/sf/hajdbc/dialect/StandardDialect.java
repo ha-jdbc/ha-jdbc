@@ -529,15 +529,27 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	
 	protected boolean meetsRequirement(int minMajor, int minMinor)
 	{
+		Driver driver = this.getDriver();
+
+		if (driver != null)
+		{
+			int major = driver.getMajorVersion();
+			int minor = driver.getMinorVersion();
+			return (major > minMajor) || ((major == minMajor) && (minor >= minMinor));
+		}
+		
+		return false;
+	}
+	
+	protected Driver getDriver()
+	{
 		for (Driver driver: ServiceLoader.load(Driver.class))
 		{
 			try
 			{
 				if (driver.acceptsURL(String.format("jdbc:%s:test", this.vendorPattern())))
 				{
-					int major = driver.getMajorVersion();
-					int minor = driver.getMinorVersion();
-					return (major > minMajor) || ((major == minMajor) && (minor >= minMinor));
+					return driver;
 				}
 			}
 			catch (SQLException e)
@@ -545,6 +557,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 				// Ignore
 			}
 		}
-		return false;
+		
+		return null;
 	}
 }
