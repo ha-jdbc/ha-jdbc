@@ -26,8 +26,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Executor service that executes tasks in the caller thread.
@@ -102,6 +104,36 @@ public class SynchronousExecutor extends AbstractExecutorService
 	public void execute(Runnable task)
 	{
 		task.run();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see java.util.concurrent.AbstractExecutorService#submit(java.lang.Runnable)
+	 */
+	@Override
+	public Future<?> submit(Runnable task)
+	{
+		return this.submit(Executors.callable(task));
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see java.util.concurrent.AbstractExecutorService#submit(java.lang.Runnable, java.lang.Object)
+	 */
+	@Override
+	public <T> Future<T> submit(Runnable task, T result)
+	{
+		return this.submit(Executors.callable(task, result));
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see java.util.concurrent.AbstractExecutorService#submit(java.util.concurrent.Callable)
+	 */
+	@Override
+	public <T> Future<T> submit(Callable<T> task)
+	{
+		return new SynchronousFuture<T>(task);
 	}
 
 	/**
@@ -280,6 +312,33 @@ public class SynchronousExecutor extends AbstractExecutorService
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * @see java.util.concurrent.AbstractExecutorService#invokeAny(java.util.Collection)
+	 */
+	@Override
+	public <T> T invokeAny(Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException
+	{
+		return this.getAny(this.invokeAll(tasks));
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see java.util.concurrent.AbstractExecutorService#invokeAny(java.util.Collection, long, java.util.concurrent.TimeUnit)
+	 */
+	@Override
+	public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException
+	{
+		return this.getAny(this.invokeAll(tasks, timeout, unit));
+	}
+
+	private <T> T getAny(List<Future<T>> futures) throws InterruptedException, ExecutionException
+	{
+		if (futures.isEmpty()) throw new IllegalArgumentException();
+		
+		return futures.get(this.reverse ? (futures.size() - 1) : 0).get();
+	}
+	
 	/**
 	 * Light-weight future implementation for synchronously executed tasks.
 	 * @param <T>
