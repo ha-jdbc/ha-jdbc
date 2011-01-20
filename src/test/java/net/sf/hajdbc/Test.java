@@ -33,21 +33,24 @@ public class Test
 		DataSourceDatabase db1 = new DataSourceDatabase();
 		db1.setId("db1");
 		db1.setName(UrlDataSource.class.getName());
-		db1.setProperty("url", "jdbc:h2:mem:db1");
+		db1.setProperty("url", "jdbc:hsqldb:mem:db1");
+//		db1.setProperty("url", "jdbc:h2:mem:db1");
 		db1.setUser("sa");
 		db1.setPassword("");
 		
 		DataSourceDatabase db2 = new DataSourceDatabase();
 		db2.setId("db2");
 		db2.setName(UrlDataSource.class.getName());
-		db2.setProperty("url", "jdbc:h2:mem:db2");
+		db2.setProperty("url", "jdbc:hsqldb:mem:db2");
+//		db2.setProperty("url", "jdbc:h2:mem:db2");
 		db2.setUser("sa");
 		db2.setPassword("");
 		
 		DataSourceDatabaseClusterConfiguration config = new DataSourceDatabaseClusterConfiguration();
 		
 		config.setDatabases(Arrays.asList(db1, db2));
-		config.setDialectFactory(DialectFactoryEnum.H2);
+		config.setDialectFactory(DialectFactoryEnum.HSQLDB);
+//		config.setDialectFactory(DialectFactoryEnum.H2);
 		config.setDatabaseMetaDataCacheFactory(DatabaseMetaDataCacheFactoryEnum.NONE);
 		config.setStateManagerFactory(new SimpleStateManagerFactory());
 		
@@ -66,7 +69,7 @@ public class Test
 	@org.junit.Test
 	public void test() throws SQLException
 	{
-		String createSQL = "CREATE TABLE test (id INTEGER NOT NULL, name VARCHAR NOT NULL, PRIMARY KEY (id))";
+		String createSQL = "CREATE TABLE test (id INTEGER NOT NULL, name VARCHAR(10) NOT NULL, PRIMARY KEY (id))";
 		
 		Connection c1 = this.ds1.getConnection("sa", "");
 		Statement s1 = c1.createStatement();
