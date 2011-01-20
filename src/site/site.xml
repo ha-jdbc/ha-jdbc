@@ -16,7 +16,7 @@
 	You should have received a copy of the GNU Lesser General Public License
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
-<project xmlns="http://maven.apache.org/DECORATION/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd">
+<project xmlns="http://maven.apache.org/DECORATION/1.0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.1 http://maven.apache.org/xsd/decoration-1.0.1.xsd">
 	<bannerLeft>
 		<name>HA-JDBC</name>
 		<src>images/logo.png</src>
@@ -31,8 +31,9 @@
 		<menu name="About">
 			<item name="Overview" href="index.html"/>
 			<item name="Documentation" href="doc.html"/>
-			<item name="Confiuration" href="xml.html"/>
+			<item name="Configuration" href="xml.html"/>
 			<item name="FAQ" href="faq.html"/>
+			<item name="Building" href="build.html"/>
 			<item name="Download" href="http://sourceforge.net/project/showfiles.php?group_id=111957"/>
 			<item name="Project Page" href="http://sourceforge.net/projects/ha-jdbc"/>
 		</menu>
@@ -41,6 +42,6 @@
 	<skin>
 		<groupId>com.googlecode.fluido-skin</groupId>
 		<artifactId>fluido-skin</artifactId>
-		<version>1.3</version>
+		<!--version>1.3</version-->
 	</skin>
 </project>

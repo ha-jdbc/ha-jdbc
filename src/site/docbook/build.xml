@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	HA-JDBC: High-Availability JDBC
+	Copyright 2010 Paul Ferraro
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+
+	You should have received a copy of the GNU Lesser General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<!DOCTYPE article PUBLIC "-//OASIS//DTD Simplified DocBook XML V1.2CR1//EN" "http://www.docbook.org/xml/simple/1.2CR1/sdocbook.dtd">
+<article>
+	<title>Building from source</title>
+	<para>
+		To build from source, first obtain the source code from either:
+	</para>
+	<itemizedlist>
+		<listitem><para><ulink url="http://sourceforge.net/project/showfiles.php?group_id=111957">Source distribution download</ulink></para></listitem>
+		<listitem><para><ulink url="source-repository.html">Version control</ulink></para></listitem>
+	</itemizedlist>
+	<section>
+		<title>Requirements</title>
+		<itemizedlist>
+			<listitem><para><ulink url="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK 1.6+</ulink></para></listitem>
+			<listitem><para><ulink url="http://maven.apache.org/download.html">Maven 3.0+</ulink></para></listitem>
+		</itemizedlist>
+	</section>
+	<section>
+		<title>Building the JAR</title>
+		<programlisting>mvn package</programlisting>
+		<para>
+			 The generated jar file resides in the <filename>target</filename> directory.
+		</para>
+	</section>
+	<section>
+		<title>Building the project site/documentation</title>
+		<programlisting>mvn site</programlisting>
+		<para>
+			The generated documentation resides in the <filename>target/site</filename> directory.
+		</para>
+	</section>
+</article>
