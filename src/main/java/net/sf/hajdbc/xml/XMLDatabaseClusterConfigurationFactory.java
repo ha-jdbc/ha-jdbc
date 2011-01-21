@@ -28,6 +28,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.transform.sax.SAXSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
@@ -41,7 +42,10 @@ import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
 
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  * {@link DatabaseClusterConfigurationFactory} that parses an xml configuration file.
@@ -141,7 +145,10 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 			Unmarshaller unmarshaller = JAXBContext.newInstance(this.targetClass).createUnmarshaller();
 			unmarshaller.setSchema(schema);
 			
-			return this.targetClass.cast(unmarshaller.unmarshal(this.streamFactory.createSource()));
+	      XMLReader reader = new PropertyReplacementFilter(XMLReaderFactory.createXMLReader());
+	      InputSource source = SAXSource.sourceToInputSource(this.streamFactory.createSource());
+	      
+			return this.targetClass.cast(unmarshaller.unmarshal(new SAXSource(reader, source)));
 		}
 		catch (JAXBException e)
 		{
