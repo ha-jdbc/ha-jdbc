@@ -115,8 +115,8 @@ public class PropertyReplacementFilterTest
       this.control.reset();
 
       
-      String string = "${existing:Free} the ${non-existing:Kraken}! ${dummy} ${/} ${:} ${}";
-      String expected = String.format("Release the Kraken! ${dummy} %s %s ${}", Strings.FILE_SEPARATOR, Strings.PATH_SEPARATOR);
+      String string = "${dummy,existing:Free} the ${non-existing:Kraken}! ${dummy} ${/} ${:} ${} ${dummy:}";
+      String expected = String.format("Release the Kraken! ${dummy} %s %s ${} ", Strings.FILE_SEPARATOR, Strings.PATH_SEPARATOR);
       
       this.contentHandler.characters(EasyMock.aryEq(expected.toCharArray()), EasyMock.eq(0), EasyMock.eq(expected.length()));
       
@@ -168,8 +168,8 @@ public class PropertyReplacementFilterTest
       this.control.reset();
       
       
-      String string = "${existing:Free} the ${non-existing:Kraken}! ${dummy} ${/} ${:} ${}";
-      String expected = String.format("Release the Kraken! ${dummy} %s %s ${}", Strings.FILE_SEPARATOR, Strings.PATH_SEPARATOR);
+      String string = "${dummy,existing:Free} the ${non-existing:Kraken}! ${dummy} ${/} ${:} ${} ${dummy:}";
+      String expected = String.format("Release the Kraken! ${dummy} %s %s ${} ", Strings.FILE_SEPARATOR, Strings.PATH_SEPARATOR);
       
       EasyMock.expect(attributes.getLength()).andReturn(1);
       EasyMock.expect(attributes.getURI(0)).andReturn(attributeURI);
