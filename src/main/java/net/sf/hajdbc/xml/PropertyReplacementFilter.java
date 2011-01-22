@@ -110,7 +110,7 @@ public class PropertyReplacementFilter extends XMLFilterImpl
    			
    			String value = this.getProperty(key.split(","), defaultValue);
 
-     			builder.append((value != null) ? value : group);
+     			builder.append((value != null) ? value : matcher.group());
    		}
    		
    		tail = matcher.end();

@@ -19,6 +19,8 @@ package net.sf.hajdbc.xml;
 
 import java.io.IOException;
 
+import net.sf.hajdbc.util.Strings;
+
 import org.easymock.Capture;
 import org.easymock.EasyMock;
 import org.easymock.IMocksControl;
@@ -111,10 +113,10 @@ public class PropertyReplacementFilterTest
 
       this.control.verify();
       this.control.reset();
+
       
-      
-      String string = "${existing} the ${non-existing:Kraken}!";
-      String expected = "Release the Kraken!";
+      String string = "${existing:Free} the ${non-existing:Kraken}! ${dummy} ${/} ${:} ${}";
+      String expected = String.format("Release the Kraken! ${dummy} %s %s ${}", Strings.FILE_SEPARATOR, Strings.PATH_SEPARATOR);
       
       this.contentHandler.characters(EasyMock.aryEq(expected.toCharArray()), EasyMock.eq(0), EasyMock.eq(expected.length()));
       
@@ -166,8 +168,8 @@ public class PropertyReplacementFilterTest
       this.control.reset();
       
       
-      String string = "${existing:Free} the ${non-existing:Kraken}!";
-      String expected = "Release the Kraken!";
+      String string = "${existing:Free} the ${non-existing:Kraken}! ${dummy} ${/} ${:} ${}";
+      String expected = String.format("Release the Kraken! ${dummy} %s %s ${}", Strings.FILE_SEPARATOR, Strings.PATH_SEPARATOR);
       
       EasyMock.expect(attributes.getLength()).andReturn(1);
       EasyMock.expect(attributes.getURI(0)).andReturn(attributeURI);
