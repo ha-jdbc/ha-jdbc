@@ -22,11 +22,11 @@ package net.sf.hajdbc.state;
  */
 public interface SerializedDurabilityListener
 {
-	void beforeInvocation(byte[] transactionId, int phase, int exceptionType);
+	void beforeInvocation(byte[] transactionId, byte phase, byte exceptionType);
 	
-	void afterInvocation(byte[] transactionId, int phase);
+	void afterInvocation(byte[] transactionId, byte phase);
 	
-	void beforeInvoker(byte[] transactionId, int phase, String databaseId);
+	void beforeInvoker(byte[] transactionId, byte phase, String databaseId);
 	
-	void afterInvoker(byte[] transactionId, int phase, String databaseId, byte[] result);
+	void afterInvoker(byte[] transactionId, byte phase, String databaseId, byte[] result);
 }

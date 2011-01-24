@@ -82,8 +82,8 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	static final String UPDATE_INVOKER_SQL = MessageFormat.format("UPDATE {0} SET {4} = ? WHERE {1} = ? AND {2} = ? AND {3} = ?", INVOKER_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, DATABASE_COLUMN, RESULT_COLUMN);
 	static final String DELETE_INVOKER_SQL = MessageFormat.format("DELETE FROM {0} WHERE {1} = ? AND {2} = ?", INVOKER_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN);
 
-	private static final String CREATE_INVOCATION_SQL = MessageFormat.format("CREATE TABLE IF NOT EXISTS {0} ({1} BINARY NOT NULL, {2} INTEGER NOT NULL, {3} INTEGER NOT NULL, PRIMARY KEY ({1}, {2}))", INVOCATION_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, EXCEPTION_COLUMN);
-	private static final String CREATE_INVOKER_SQL = MessageFormat.format("CREATE TABLE IF NOT EXISTS {0} ({1} BINARY NOT NULL, {2} INTEGER NOT NULL, {3} VARCHAR NOT NULL, {4} BINARY, PRIMARY KEY ({1}, {2}, {3}))", INVOKER_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, DATABASE_COLUMN, RESULT_COLUMN);
+	private static final String CREATE_INVOCATION_SQL = MessageFormat.format("CREATE TABLE IF NOT EXISTS {0} ({1} BINARY NOT NULL, {2} BYTE NOT NULL, {3} BYTE NOT NULL, PRIMARY KEY ({1}, {2}))", INVOCATION_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, EXCEPTION_COLUMN);
+	private static final String CREATE_INVOKER_SQL = MessageFormat.format("CREATE TABLE IF NOT EXISTS {0} ({1} BINARY NOT NULL, {2} BYTE NOT NULL, {3} VARCHAR NOT NULL, {4} BINARY, PRIMARY KEY ({1}, {2}, {3}))", INVOKER_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, DATABASE_COLUMN, RESULT_COLUMN);
 	private static final String CREATE_STATE_SQL = MessageFormat.format("CREATE TABLE IF NOT EXISTS {0} ({1} VARCHAR NOT NULL, PRIMARY KEY ({1}))", STATE_TABLE, DATABASE_COLUMN);
 	
 	private static Logger logger = LoggerFactory.getLogger(SQLStateManager.class);
@@ -298,7 +298,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	 * @see net.sf.hajdbc.state.SerializedDurabilityListener#beforeInvocation(byte[], int, int)
 	 */
 	@Override
-	public void beforeInvocation(final byte[] transactionId, final int phase, final int exceptionType)
+	public void beforeInvocation(final byte[] transactionId, final byte phase, final byte exceptionType)
 	{
 		Transaction transaction = new Transaction()
 		{
@@ -310,8 +310,8 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 				try
 				{
 					statement.setBytes(1, transactionId);
-					statement.setInt(2, phase);
-					statement.setInt(3, exceptionType);
+					statement.setByte(2, phase);
+					statement.setByte(3, exceptionType);
 					
 					statement.executeUpdate();
 				}
@@ -337,7 +337,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	 * @see net.sf.hajdbc.state.SerializedDurabilityListener#afterInvocation(byte[], int)
 	 */
 	@Override
-	public void afterInvocation(final byte[] transactionId, final int phase)
+	public void afterInvocation(final byte[] transactionId, final byte phase)
 	{
 		Transaction transaction = new Transaction()
 		{
@@ -364,7 +364,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	 * @see net.sf.hajdbc.state.SerializedDurabilityListener#beforeInvoker(byte[], int, java.lang.String)
 	 */
 	@Override
-	public void beforeInvoker(final byte[] transactionId, final int phase, final String databaseId)
+	public void beforeInvoker(final byte[] transactionId, final byte phase, final String databaseId)
 	{
 		Transaction transaction = new Transaction()
 		{
@@ -376,7 +376,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 				try
 				{
 					statement.setBytes(1, transactionId);
-					statement.setInt(2, phase);
+					statement.setByte(2, phase);
 					statement.setString(3, databaseId);
 					
 					statement.executeUpdate();
@@ -403,7 +403,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	 * @see net.sf.hajdbc.state.SerializedDurabilityListener#afterInvoker(byte[], int, java.lang.String, byte[])
 	 */
 	@Override
-	public void afterInvoker(final byte[] transactionId, final int phase, final String databaseId, final byte[] result)
+	public void afterInvoker(final byte[] transactionId, final byte phase, final String databaseId, final byte[] result)
 	{
 		Transaction transaction = new Transaction()
 		{
@@ -415,7 +415,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 				try
 				{
 					statement.setBytes(1, transactionId);
-					statement.setInt(2, phase);
+					statement.setByte(2, phase);
 					statement.setString(3, databaseId);					
 					statement.setBytes(4, result);
 					
@@ -458,14 +458,14 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 		this.listener.afterInvocation(event);
 	}
 	
-	void execute(Connection connection, String sql, byte[] transactionId, int phase) throws SQLException 
+	void execute(Connection connection, String sql, byte[] transactionId, byte phase) throws SQLException 
 	{
 		PreparedStatement statement = connection.prepareStatement(sql);
 		
 		try
 		{
 			statement.setBytes(1, transactionId);
-			statement.setInt(2, phase);
+			statement.setByte(2, phase);
 			
 			statement.executeUpdate();
 		}
@@ -522,8 +522,8 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 					while (resultSet.next())
 					{
 						Object transactionId = Objects.deserialize(resultSet.getBytes(1));
-						Durability.Phase phase = Durability.Phase.values()[resultSet.getInt(2)];
-						ExceptionType type = ExceptionType.values()[resultSet.getInt(3)];
+						Durability.Phase phase = Durability.Phase.values()[resultSet.getByte(2)];
+						ExceptionType type = ExceptionType.values()[resultSet.getByte(3)];
 						
 						Map<String, InvokerEvent> invokers = map.get(new InvocationEventImpl(transactionId, phase, type));
 						

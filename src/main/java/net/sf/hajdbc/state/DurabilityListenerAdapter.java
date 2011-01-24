@@ -51,7 +51,7 @@ public class DurabilityListenerAdapter implements DurabilityListener
 		byte[] txId = Objects.serialize(transactionId);
 		
 		this.transactionIdentifiers.put(transactionId, txId);
-		this.listener.beforeInvocation(txId, event.getPhase().ordinal(), event.getExceptionType().ordinal());
+		this.listener.beforeInvocation(txId, (byte) event.getPhase().ordinal(), (byte) event.getExceptionType().ordinal());
 	}
 
 	/**
@@ -61,7 +61,7 @@ public class DurabilityListenerAdapter implements DurabilityListener
 	@Override
 	public void afterInvocation(InvocationEvent event)
 	{
-		this.listener.afterInvocation(this.transactionIdentifiers.remove(event.getTransactionId()), event.getPhase().ordinal());
+		this.listener.afterInvocation(this.transactionIdentifiers.remove(event.getTransactionId()), (byte) event.getPhase().ordinal());
 	}
 
 	/**
@@ -71,7 +71,7 @@ public class DurabilityListenerAdapter implements DurabilityListener
 	@Override
 	public void beforeInvoker(InvokerEvent event)
 	{
-		this.listener.beforeInvoker(this.transactionIdentifiers.get(event.getTransactionId()), event.getPhase().ordinal(), event.getDatabaseId());
+		this.listener.beforeInvoker(this.transactionIdentifiers.get(event.getTransactionId()), (byte) event.getPhase().ordinal(), event.getDatabaseId());
 	}
 
 	/**
@@ -81,6 +81,6 @@ public class DurabilityListenerAdapter implements DurabilityListener
 	@Override
 	public void afterInvoker(InvokerEvent event)
 	{
-		this.listener.afterInvoker(this.transactionIdentifiers.get(event.getTransactionId()), event.getPhase().ordinal(), event.getDatabaseId(), Objects.serialize(event.getResult()));
+		this.listener.afterInvoker(this.transactionIdentifiers.get(event.getTransactionId()), (byte) event.getPhase().ordinal(), event.getDatabaseId(), Objects.serialize(event.getResult()));
 	}
 }
