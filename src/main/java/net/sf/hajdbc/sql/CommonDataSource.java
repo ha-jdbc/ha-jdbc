@@ -26,6 +26,7 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterConfiguration;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
+import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.util.concurrent.ReferenceRegistryStoreFactory;
 import net.sf.hajdbc.util.concurrent.Registry;
@@ -38,7 +39,7 @@ import net.sf.hajdbc.xml.XMLDatabaseClusterConfigurationFactory;
  */
 public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D extends Database<Z>> implements Referenceable, javax.sql.CommonDataSource, Registry.Factory<Void, DatabaseCluster<Z, D>, Void, SQLException>
 {
-	private final CommonDataSourceInvocationHandlerFactory<Z, D> factory;
+	private final CommonDataSourceInvocationHandlerFactory<Z, D> handlerFactory;
 	private final Class<? extends DatabaseClusterConfiguration<Z, D>> configurationClass;
 	
 	private final Registry<Void, DatabaseCluster<Z, D>, Void, SQLException> registry = new Registry<Void, DatabaseCluster<Z, D>, Void, SQLException>(this, new ReferenceRegistryStoreFactory(), ExceptionType.getExceptionFactory(SQLException.class));
@@ -47,11 +48,12 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 	private volatile TimeUnit timeoutUnit = TimeUnit.SECONDS;
 	private volatile String cluster;
 	private volatile String config;
+	private volatile DatabaseClusterFactory<Z, D> factory = new DatabaseClusterFactoryImpl<Z, D>();
 	private volatile DatabaseClusterConfigurationFactory<Z, D> configurationFactory;	
 	
-	protected CommonDataSource(CommonDataSourceInvocationHandlerFactory<Z, D> factory, Class<? extends DatabaseClusterConfiguration<Z, D>> configurationClass)
+	protected CommonDataSource(CommonDataSourceInvocationHandlerFactory<Z, D> handlerFactory, Class<? extends DatabaseClusterConfiguration<Z, D>> configurationClass)
 	{
-		this.factory = factory;
+		this.handlerFactory = handlerFactory;
 		this.configurationClass = configurationClass;
 	}
 	
@@ -64,12 +66,12 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 	{
 		DatabaseClusterConfigurationFactory<Z, D> factory = (this.configurationFactory != null) ? this.configurationFactory : new XMLDatabaseClusterConfigurationFactory<Z, D>(this.configurationClass, this.cluster, this.config);
 		
-		return new DatabaseClusterImpl<Z, D>(this.cluster, factory.createConfiguration(), factory);
+		return this.factory.createDatabaseCluster(this.cluster, factory);
 	}
 
 	public Z getProxy() throws SQLException
 	{
-		return ProxyFactory.createProxy(this.factory.getTargetClass(), this.factory.createInvocationHandler(this.registry.get(null, null)));
+		return ProxyFactory.createProxy(this.handlerFactory.getTargetClass(), this.handlerFactory.createInvocationHandler(this.registry.get(null, null)));
 	}
 	
 	/**
@@ -109,11 +111,21 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 		return this.configurationFactory;
 	}
 	
-	public void setConfigurationFactory(DatabaseClusterConfigurationFactory<Z, D> factory)
+	public void setConfigurationFactory(DatabaseClusterConfigurationFactory<Z, D> configurationFactory)
 	{
-		this.configurationFactory = factory;
+		this.configurationFactory = configurationFactory;
 	}
-
+	
+	public DatabaseClusterFactory<Z, D> getFactory()
+	{
+		return this.factory;
+	}
+	
+	public void setFactory(DatabaseClusterFactory<Z, D> clusterFactory)
+	{
+		this.factory = clusterFactory;
+	}
+	
 	/**
 	 * @return the timeout
 	 */
