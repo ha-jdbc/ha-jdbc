@@ -176,7 +176,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 					for (LockDescriptor descriptor: descriptors)
 					{
 						output.writeUTF(descriptor.getId());
-						output.writeInt(descriptor.getType().ordinal());
+						output.writeByte(descriptor.getType().ordinal());
 					}
 				}
 				
@@ -224,7 +224,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 					for (int j = 0; j < locks; ++j)
 					{
 						String id = input.readUTF();
-						LockType type = types[input.readInt()];
+						LockType type = types[input.readByte()];
 						
 						LockDescriptor descriptor = new RemoteLockDescriptorImpl(id, type, member);
 						
@@ -490,7 +490,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 		private static final long serialVersionUID = 1950781245453120790L;
 		
 		private final String id;
-		private final LockType type;		
+		private transient LockType type;		
 		private final Member member;
 		
 		RemoteLockDescriptorImpl(String id, LockType type, Member member)
@@ -518,6 +518,20 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 			return this.member;
 		}
 
+		private void writeObject(ObjectOutputStream out) throws IOException
+		{
+			out.defaultWriteObject();
+			
+			out.writeByte(this.type.ordinal());
+		}
+		
+		private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException
+		{
+			in.defaultReadObject();
+			
+			this.type = LockType.values()[in.readByte()];
+		}
+		
 		/**
 		 * {@inheritDoc}
 		 * @see java.lang.Object#equals(java.lang.Object)
