@@ -39,6 +39,9 @@ public class DefaultChannelProvider extends ChannelCommandDispatcherFactory
 	@XmlAttribute(name = "stack")
 	private String stack = DEFAULT_STACK;
 	
+	@XmlAttribute(name = "timeout")
+	private Long timeout = DEFAULT_TIMEOUT;
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.distributed.jgroups.ChannelProvider#getChannel()
@@ -47,5 +50,15 @@ public class DefaultChannelProvider extends ChannelCommandDispatcherFactory
 	public Channel getChannel() throws Exception
 	{
 		return new JChannel(this.stack);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.distributed.jgroups.ChannelProvider#getTimeout()
+	 */
+	@Override
+	public long getTimeout()
+	{
+		return this.timeout;
 	}
 }

@@ -17,6 +17,8 @@
  */
 package net.sf.hajdbc.distributed.jgroups;
 
+import java.util.concurrent.TimeUnit;
+
 import org.jgroups.Channel;
 
 /**
@@ -27,6 +29,7 @@ import org.jgroups.Channel;
 public class SimpleChannelProvider extends ChannelCommandDispatcherFactory
 {
 	private final Channel channel;
+	private volatile long timeout = DEFAULT_TIMEOUT;
 	
 	public SimpleChannelProvider(Channel channel)
 	{
@@ -41,5 +44,25 @@ public class SimpleChannelProvider extends ChannelCommandDispatcherFactory
 	public Channel getChannel()
 	{
 		return this.channel;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.distributed.jgroups.ChannelProvider#getTimeout()
+	 */
+	@Override
+	public long getTimeout()
+	{
+		return this.timeout;
+	}
+	
+	public void setTimeout(long timeout)
+	{
+		this.timeout = timeout;
+	}
+	
+	public void setTimeout(int timeout, TimeUnit unit)
+	{
+		this.setTimeout(unit.toMillis(timeout));
 	}
 }

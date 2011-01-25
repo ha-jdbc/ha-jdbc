@@ -27,10 +27,14 @@ import org.jgroups.Channel;
  */
 public interface ChannelProvider
 {
+	static final long DEFAULT_TIMEOUT = 60000;
+	
 	/**
 	 * Returns the channel.
 	 * @return a JGroups channel
 	 * @throws Exception if an error occured supplying a channel
 	 */
 	Channel getChannel() throws Exception;
+	
+	long getTimeout();
 }
