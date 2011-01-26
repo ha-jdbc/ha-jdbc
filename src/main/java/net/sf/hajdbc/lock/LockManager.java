@@ -20,18 +20,15 @@ package net.sf.hajdbc.lock;
 import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Lifecycle;
-import net.sf.hajdbc.util.Strings;
 
 /**
- * Manages a set of named read/write locks.  A global lock is represented by an empty name (i.e "").
+ * Manages a set of named read/write locks.  A global lock is represented by a null object.
  * Obtaining a named read or write lock should implicitly obtain a global read lock.
  * Consequently, all named locks are blocked if a global write lock is obtained.
  * @author Paul Ferraro
  */
 public interface LockManager extends Lifecycle
 {
-	public static final String GLOBAL = Strings.EMPTY;
-	
 	/**
 	 * Obtains a named read lock.
 	 * @param object an object to lock
