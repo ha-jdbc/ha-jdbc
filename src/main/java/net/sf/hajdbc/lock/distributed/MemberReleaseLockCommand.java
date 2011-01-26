@@ -83,4 +83,14 @@ public class MemberReleaseLockCommand implements Command<Void, LockCommandContex
 	{
 		return (Void) object;
 	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString()
+	{
+		return String.format("%s(%s)", this.getClass().getSimpleName(), this.descriptor);
+	}
 }

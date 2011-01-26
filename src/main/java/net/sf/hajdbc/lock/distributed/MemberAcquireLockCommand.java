@@ -80,4 +80,14 @@ public class MemberAcquireLockCommand implements Command<Boolean, LockCommandCon
 	{
 		return (Boolean) object;
 	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString()
+	{
+		return String.format("%s(%s)", this.getClass().getSimpleName(), this.descriptor);
+	}
 }
