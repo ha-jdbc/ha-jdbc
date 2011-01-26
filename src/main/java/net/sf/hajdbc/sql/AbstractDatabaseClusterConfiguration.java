@@ -484,6 +484,21 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		this.getNestedConfiguration().setMBeanRegistrar(registrar);
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#isFairLocking()
+	 */
+	@Override
+	public boolean isFairLocking()
+	{
+		return this.getNestedConfiguration().isFairLocking();
+	}
+
+	public void setFairLocking(boolean fair)
+	{
+		this.getNestedConfiguration().setFairLocking(fair);
+	}
+	
 	@XmlType(name = "abstractNestedConfiguration")
 	protected static abstract class NestedConfiguration<Z, D extends Database<Z>> implements DatabaseClusterConfiguration<Z, D>
 	{
@@ -535,6 +550,9 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		@XmlAttribute(name = "detect-sequences")
 		private Boolean sequenceDetectionEnabled = false;
 
+		@XmlAttribute(name = "fair-locking")
+		private Boolean fairLocking = true;
+		
 		private String defaultSynchronizationStrategy;
 		
 		private Map<String, D> databases = new HashMap<String, D>();
@@ -567,7 +585,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			return this.autoActivationExpression;
 		}
 
-		public void setAutoActivationExpression(CronExpression expression)
+		void setAutoActivationExpression(CronExpression expression)
 		{
 			this.autoActivationExpression = expression;
 		}
@@ -578,7 +596,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			return this.balancerFactory;
 		}
 
-		public void setBalancerFactory(BalancerFactory factory)
+		void setBalancerFactory(BalancerFactory factory)
 		{
 			this.balancerFactory = factory;
 		}
@@ -595,7 +613,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			return this.databaseMetaDataCacheFactory;
 		}
 
-		public void setDatabaseMetaDataCacheFactory(DatabaseMetaDataCacheFactory factory)
+		void setDatabaseMetaDataCacheFactory(DatabaseMetaDataCacheFactory factory)
 		{
 			this.databaseMetaDataCacheFactory = factory;
 		}
@@ -606,7 +624,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			return this.defaultSynchronizationStrategy;
 		}
 
-		public void setDefaultSynchronizationStrategy(String strategy)
+		void setDefaultSynchronizationStrategy(String strategy)
 		{
 			this.defaultSynchronizationStrategy = strategy;
 		}
@@ -617,7 +635,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			return this.dialectFactory;
 		}
 
-		public void setDialectFactory(DialectFactory factory)
+		void setDialectFactory(DialectFactory factory)
 		{
 			this.dialectFactory = factory;
 		}
@@ -628,7 +646,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			return this.durabilityFactory;
 		}
 
-		public void setDurabilityFactory(DurabilityFactory factory)
+		void setDurabilityFactory(DurabilityFactory factory)
 		{
 			this.durabilityFactory = factory;
 		}
@@ -639,7 +657,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			return this.executorProvider;
 		}
 
-		public void setExecutorProvider(ExecutorServiceProvider provider)
+		void setExecutorProvider(ExecutorServiceProvider provider)
 		{
 			this.executorProvider = provider;
 		}
@@ -650,7 +668,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			return this.threadFactory;
 		}
 
-		public void setThreadFactory(ThreadFactory factory)
+		void setThreadFactory(ThreadFactory factory)
 		{
 			this.threadFactory = factory;
 		}
@@ -661,7 +679,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			return this.codecFactory;
 		}
 
-		public void setCodecFactory(CodecFactory factory)
+		void setCodecFactory(CodecFactory factory)
 		{
 			this.codecFactory = factory;
 		}
@@ -672,7 +690,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			return this.registrar;
 		}
 		
-		public void setMBeanRegistrar(MBeanRegistrar<Z, D> registrar)
+		void setMBeanRegistrar(MBeanRegistrar<Z, D> registrar)
 		{
 			this.registrar = registrar;
 		}
@@ -683,7 +701,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			return this.failureDetectionExpression;
 		}
 
-		public void setFailureDetectionExpression(CronExpression expression)
+		void setFailureDetectionExpression(CronExpression expression)
 		{
 			this.failureDetectionExpression = expression;
 		}
@@ -706,7 +724,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			return this.transactionMode;
 		}
 
-		public void setTransactionMode(TransactionMode mode)
+		void setTransactionMode(TransactionMode mode)
 		{
 			this.transactionMode = mode;
 		}
@@ -717,7 +735,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			return this.currentDateEvaluationEnabled;
 		}
 		
-		public void setCurrentDateEvaluationEnabled(boolean enabled)
+		void setCurrentDateEvaluationEnabled(boolean enabled)
 		{
 			this.currentDateEvaluationEnabled = enabled;
 		}
@@ -728,7 +746,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			return this.currentTimeEvaluationEnabled;
 		}
 		
-		public void setCurrentTimeEvaluationEnabled(boolean enabled)
+		void setCurrentTimeEvaluationEnabled(boolean enabled)
 		{
 			this.currentTimeEvaluationEnabled = enabled;
 		}
@@ -739,7 +757,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			return this.currentTimestampEvaluationEnabled;
 		}
 		
-		public void setCurrentTimestampEvaluationEnabled(boolean enabled)
+		void setCurrentTimestampEvaluationEnabled(boolean enabled)
 		{
 			this.currentTimestampEvaluationEnabled = enabled;
 		}
@@ -750,7 +768,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			return this.identityColumnDetectionEnabled;
 		}
 		
-		public void setIdentityColumnDetectionEnabled(boolean enabled)
+		void setIdentityColumnDetectionEnabled(boolean enabled)
 		{
 			this.identityColumnDetectionEnabled = enabled;
 		}
@@ -761,7 +779,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			return this.randEvaluationEnabled;
 		}
 
-		public void setRandEvaluationEnabled(boolean enabled)
+		void setRandEvaluationEnabled(boolean enabled)
 		{
 			this.randEvaluationEnabled = enabled;
 		}
@@ -772,9 +790,20 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			return this.sequenceDetectionEnabled;
 		}
 		
-		public void setSequenceDetectionEnabled(boolean enabled)
+		void setSequenceDetectionEnabled(boolean enabled)
 		{
 			this.sequenceDetectionEnabled = enabled;
+		}
+		
+		@Override
+		public boolean isFairLocking()
+		{
+			return this.fairLocking;
+		}
+		
+		void setFairLocking(boolean fair)
+		{
+			this.fairLocking = fair;
 		}
 	}
 

@@ -125,4 +125,6 @@ public interface DatabaseClusterConfiguration<Z, D extends Database<Z>> extends 
 	CodecFactory getCodecFactory();
 	
 	MBeanRegistrar<Z, D> getMBeanRegistrar();
+	
+	boolean isFairLocking();
 }
