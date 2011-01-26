@@ -47,7 +47,7 @@ public abstract class StateCommand<Z, D extends Database<Z>> implements Command<
 	{
 		DatabaseCluster<Z, D> cluster = context.getDatabaseCluster();
 		
-		return this.execute(cluster.getDatabase(this.event.getDatabaseId()), cluster, context.getLocalStateManager());
+		return this.execute(cluster.getDatabase(this.event.getSource()), cluster, context.getLocalStateManager());
 	}
 
 	protected abstract boolean execute(D database, DatabaseCluster<Z, D> cluster, StateManager stateManager);
@@ -70,5 +70,15 @@ public abstract class StateCommand<Z, D extends Database<Z>> implements Command<
 	public Boolean unmarshalResult(Object object)
 	{
 		return (Boolean) object;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString()
+	{
+		return String.format("%s(%s)", this.getClass().getSimpleName(), this.event);
 	}
 }

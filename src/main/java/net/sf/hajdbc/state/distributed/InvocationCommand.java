@@ -39,6 +39,10 @@ public abstract class InvocationCommand<Z, D extends Database<Z>> implements Com
 		this.descriptor = descriptor;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.distributed.Command#execute(java.lang.Object)
+	 */
 	@Override
 	public Void execute(StateCommandContext<Z, D> context)
 	{
@@ -54,15 +58,33 @@ public abstract class InvocationCommand<Z, D extends Database<Z>> implements Com
 
 	protected abstract void execute(Map<InvocationEvent, Map<String, InvokerEvent>> invokers, InvocationEvent event);
 	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.distributed.Command#marshalResult(java.lang.Object)
+	 */
 	@Override
 	public Object marshalResult(Void result)
 	{
 		return null;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.distributed.Command#unmarshalResult(java.lang.Object)
+	 */
 	@Override
 	public Void unmarshalResult(Object object)
 	{
 		return null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString()
+	{
+		return String.format("%s(%s)", this.getClass().getSimpleName(), this.descriptor);
 	}
 }

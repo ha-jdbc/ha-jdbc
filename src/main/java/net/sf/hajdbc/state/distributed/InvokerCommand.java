@@ -79,4 +79,14 @@ public class InvokerCommand<Z, D extends Database<Z>> implements Command<Void, S
 	{
 		return null;
 	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString()
+	{
+		return String.format("%s(%s)", this.getClass().getSimpleName(), this.descriptor);
+	}
 }

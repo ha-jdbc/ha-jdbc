@@ -55,4 +55,14 @@ public class StopCommand<Z, D extends Database<Z>> implements Command<Void, Stat
 	{
 		return null;
 	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString()
+	{
+		return this.getClass().getSimpleName();
+	}
 }
