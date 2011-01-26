@@ -43,16 +43,16 @@ import net.sf.hajdbc.logging.LoggerFactory;
  */
 public class SynchronizationContextImpl<Z, D extends Database<Z>> implements SynchronizationContext<Z, D>
 {
-	private static Logger logger = LoggerFactory.getLogger(SynchronizationContextImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(SynchronizationContextImpl.class);
 	
-	private Set<D> activeDatabaseSet;
-	private D sourceDatabase;
-	private D targetDatabase;
-	private DatabaseCluster<Z, D> cluster;
-	private DatabaseProperties sourceDatabaseProperties;
-	private DatabaseProperties targetDatabaseProperties;
-	private Map<D, Connection> connectionMap = new HashMap<D, Connection>();
-	private ExecutorService executor;
+	private final Set<D> activeDatabaseSet;
+	private final D sourceDatabase;
+	private final D targetDatabase;
+	private final DatabaseCluster<Z, D> cluster;
+	private final DatabaseProperties sourceDatabaseProperties;
+	private final DatabaseProperties targetDatabaseProperties;
+	private final Map<D, Connection> connectionMap = new HashMap<D, Connection>();
+	private final ExecutorService executor;
 	
 	/**
 	 * @param cluster
@@ -88,19 +88,16 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 	@Override
 	public Connection getConnection(D database) throws SQLException
 	{
-		synchronized (this.connectionMap)
+		Connection connection = this.connectionMap.get(database);
+		
+		if (connection == null)
 		{
-			Connection connection = this.connectionMap.get(database);
+			connection = database.connect(database.createConnectionSource(), database.decodePassword(this.cluster.getCodec()));
 			
-			if (connection == null)
-			{
-				connection = database.connect(database.createConnectionSource(), database.decodePassword(this.cluster.getCodec()));
-				
-				this.connectionMap.put(database, connection);
-			}
-			
-			return connection;
+			this.connectionMap.put(database, connection);
 		}
+		
+		return connection;
 	}
 	
 	/**
@@ -192,23 +189,20 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 	@Override
 	public void close()
 	{
-		synchronized (this.connectionMap)
+		for (Connection connection: this.connectionMap.values())
 		{
-			for (Connection connection: this.connectionMap.values())
+			if (connection != null)
 			{
-				if (connection != null)
+				try
 				{
-					try
+					if (!connection.isClosed())
 					{
-						if (!connection.isClosed())
-						{
-							connection.close();
-						}
+						connection.close();
 					}
-					catch (SQLException e)
-					{
-						logger.log(Level.WARN, e, e.toString());
-					}
+				}
+				catch (SQLException e)
+				{
+					logger.log(Level.WARN, e, e.toString());
 				}
 			}
 		}
