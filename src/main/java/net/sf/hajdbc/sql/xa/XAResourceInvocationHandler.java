@@ -39,7 +39,6 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.durability.Durability;
 import net.sf.hajdbc.durability.Durability.Phase;
-import net.sf.hajdbc.lock.LockManager;
 import net.sf.hajdbc.sql.AbstractChildInvocationHandler;
 import net.sf.hajdbc.sql.InvocationStrategyEnum;
 import net.sf.hajdbc.sql.InvocationStrategy;
@@ -117,7 +116,7 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 			
 			if (start)
 			{
-				final Lock lock = cluster.getLockManager().readLock(LockManager.GLOBAL);
+				final Lock lock = cluster.getLockManager().readLock(null);
 				
 				// Lock may already exist if we're resuming a suspended transaction
 				if (lockMap.putIfAbsent(xid, lock) == null)

@@ -26,7 +26,6 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.durability.Durability;
-import net.sf.hajdbc.lock.LockManager;
 import net.sf.hajdbc.tx.TransactionIdentifierFactory;
 
 /**
@@ -46,7 +45,7 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 	 */
 	public LocalTransactionContext(DatabaseCluster<Z, D> cluster)
 	{
-		this.lock = cluster.getLockManager().readLock(LockManager.GLOBAL);
+		this.lock = cluster.getLockManager().readLock(null);
 		this.durability = cluster.getDurability();
 		this.transactionIdFactory = cluster.getTransactionIdentifierFactory();
 	}
