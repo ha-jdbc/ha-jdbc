@@ -28,7 +28,6 @@ import java.util.concurrent.Executors;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Dialect;
-import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.balancer.Balancer;
 import net.sf.hajdbc.cache.DatabaseMetaDataCache;
 import net.sf.hajdbc.cache.DatabaseProperties;
@@ -66,11 +65,6 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 		Balancer<Z, D> balancer = cluster.getBalancer();
 		
 		this.sourceDatabase = balancer.next();
-		
-		if (this.sourceDatabase == null)
-		{
-			throw new SQLException(Messages.NO_ACTIVE_DATABASES.getMessage(cluster));
-		}
 		
 		this.activeDatabaseSet = balancer;
 		this.targetDatabase = database;
