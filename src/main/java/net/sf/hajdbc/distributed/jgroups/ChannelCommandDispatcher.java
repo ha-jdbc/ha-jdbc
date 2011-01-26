@@ -41,6 +41,7 @@ import org.jgroups.SuspectedException;
 import org.jgroups.TimeoutException;
 import org.jgroups.View;
 import org.jgroups.blocks.MessageDispatcher;
+import org.jgroups.blocks.Request;
 import org.jgroups.blocks.RequestHandler;
 import org.jgroups.blocks.RequestOptions;
 import org.jgroups.util.Rsp;
@@ -57,6 +58,7 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	private final String id;
+	private final long timeout;
 	private final MessageDispatcher dispatcher;
 	private final C context;
 	private final AtomicReference<View> viewReference = new AtomicReference<View>();
@@ -80,6 +82,7 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 		this.membershipListener = membershipListener;
 		
 		this.dispatcher = new MessageDispatcher(provider.getChannel(), this, this, this);
+		this.timeout = provider.getTimeout();
 	}
 
 	/**
@@ -127,7 +130,7 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 		Message message = new Message(null, this.getLocalAddress(), command);
 		
 		@SuppressWarnings("rawtypes")
-		Map<Address, Rsp> responses = this.dispatcher.castMessage(null, message, RequestOptions.SYNC);
+		Map<Address, Rsp> responses = this.dispatcher.castMessage(null, message, new RequestOptions(Request.GET_ALL, this.timeout));
 		
 		if (responses == null) return Collections.emptyMap();
 		
@@ -159,7 +162,7 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 
 			try
 			{
-				Object result = this.dispatcher.sendMessage(message, RequestOptions.SYNC);
+				Object result = this.dispatcher.sendMessage(message, new RequestOptions(Request.GET_ALL, this.timeout));
 				
 				return command.unmarshalResult(result);
 			}
@@ -215,7 +218,7 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 		@SuppressWarnings("unchecked")
 		Command<Object, C> command = (Command<Object, C>) message.getObject();
 
-		this.logger.log(Level.DEBUG, Messages.COMMAND_RECEIVED.getMessage(command));
+		this.logger.log(Level.DEBUG, Messages.COMMAND_RECEIVED.getMessage(command, message.getSrc()));
 		
 		return command.marshalResult(command.execute(this.context));
 	}
