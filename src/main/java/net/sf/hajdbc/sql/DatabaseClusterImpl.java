@@ -22,11 +22,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
@@ -36,6 +38,7 @@ import net.sf.hajdbc.DatabaseClusterListener;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationListener;
+import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.TransactionMode;
 import net.sf.hajdbc.balancer.Balancer;
 import net.sf.hajdbc.cache.DatabaseMetaDataCache;
@@ -55,6 +58,8 @@ import net.sf.hajdbc.management.ManagedOperation;
 import net.sf.hajdbc.state.DatabaseEvent;
 import net.sf.hajdbc.state.StateManager;
 import net.sf.hajdbc.state.distributed.DistributedStateManager;
+import net.sf.hajdbc.sync.SynchronizationContext;
+import net.sf.hajdbc.sync.SynchronizationContextImpl;
 import net.sf.hajdbc.tx.SimpleTransactionIdentifierFactory;
 import net.sf.hajdbc.tx.TransactionIdentifierFactory;
 import net.sf.hajdbc.util.concurrent.cron.CronThreadPoolExecutor;
@@ -439,25 +444,24 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		
 		this.codec = this.configuration.getCodecFactory().createCodec(this.id);
 		this.transactionIdentifierFactory = new SimpleTransactionIdentifierFactory();
-		this.lockManager = new SemaphoreLockManager();
+		this.lockManager = new SemaphoreLockManager(this.configuration.isFairLocking());
 		this.stateManager = this.configuration.getStateManagerFactory().createStateManager(this);
 		
 		CommandDispatcherFactory dispatcherFactory = this.configuration.getDispatcherFactory();
 		
 		if (dispatcherFactory != null)
 		{
-			this.lockManager = new DistributedLockManager(this, dispatcherFactory);
+			this.lockManager = new DistributedLockManager(this.id, this.lockManager, dispatcherFactory);
 			this.stateManager = new DistributedStateManager<Z, D>(this, dispatcherFactory);
 		}
 		
 		this.balancer = this.configuration.getBalancerFactory().createBalancer(new TreeSet<D>());
 		this.dialect = this.configuration.getDialectFactory().createDialect();
 		this.durability = this.configuration.getDurabilityFactory().createDurability(this);
+		this.executor = this.configuration.getExecutorProvider().getExecutor(this.configuration.getThreadFactory());
 		
 		this.lockManager.start();
 		this.stateManager.start();
-		
-		this.executor = this.configuration.getExecutorProvider().getExecutor(this.configuration.getThreadFactory());
 		
 		Set<String> databases = this.stateManager.getActiveDatabases();
 		
@@ -561,9 +565,9 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 			}
 		}
 		
-		if (this.executor != null)
+		if (this.cronExecutor != null)
 		{
-			this.executor.shutdownNow();
+			this.cronExecutor.shutdownNow();
 		}
 		
 		if (this.stateManager != null)
@@ -576,14 +580,14 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 			this.lockManager.stop();
 		}
 
+		if (this.executor != null)
+		{
+			this.executor.shutdownNow();
+		}
+
 		if (this.balancer != null)
 		{
 			this.balancer.clear();
-		}
-
-		if (this.cronExecutor != null)
-		{
-			this.cronExecutor.shutdownNow();
 		}
 	}
 
@@ -636,7 +640,62 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 			return false;
 		}
 	}
+/*
+	private boolean activate(D database, SynchronizationStrategy strategy) throws SQLException, InterruptedException
+	{
+		Lock lock = this.lockManager.writeLock(null);
+		
+		lock.lockInterruptibly();
+		
+		try
+		{
+			SynchronizationContext<Z, D> context = new SynchronizationContextImpl<Z, D>(this, database);
+			
+			try
+			{
+				if (context.getActiveDatabaseSet().contains(database))
+				{
+					return false;
+				}
+				
+				context.getC
+				this.test(database);
+				
+				DatabaseEvent event = new DatabaseEvent(database);
+				
+				logger.log(Level.INFO, Messages.DATABASE_SYNC_START.getMessage(this, database));
+				
+				for (SynchronizationListener listener: this.synchronizationListeners)
+				{
+					listener.beforeSynchronization(event);
+				}
+				
+				strategy.synchronize(context);
 
+				logger.log(Level.INFO, Messages.DATABASE_SYNC_END.getMessage(this, database));
+				
+				for (SynchronizationListener listener: this.synchronizationListeners)
+				{
+					listener.afterSynchronization(event);
+				}
+				
+				return this.activate(database, this.stateManager);
+			}
+			finally
+			{
+				context.close();
+			}
+		}
+		catch (NoSuchElementException e)
+		{
+			return this.activate(database, this.stateManager);
+		}
+		finally
+		{
+			lock.unlock();
+		}
+	}
+*/	
 	class FailureDetectionTask implements Runnable
 	{
 		@Override

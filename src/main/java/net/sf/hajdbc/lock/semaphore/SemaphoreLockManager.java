@@ -17,8 +17,8 @@
  */
 package net.sf.hajdbc.lock.semaphore;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -32,8 +32,15 @@ import net.sf.hajdbc.lock.LockManager;
  */
 public class SemaphoreLockManager implements LockManager
 {
-	private Map<String, ReadWriteLock> lockMap = new HashMap<String, ReadWriteLock>();
+	private final ConcurrentMap<String, ReadWriteLock> lockMap = new ConcurrentHashMap<String, ReadWriteLock>();
 
+	private final boolean fair;
+	
+	public SemaphoreLockManager(boolean fair)
+	{
+		this.fair = fair;
+	}
+	
 	/**
 	 * @see net.sf.hajdbc.lock.LockManager#readLock(java.lang.String)
 	 */
@@ -58,13 +65,21 @@ public class SemaphoreLockManager implements LockManager
 	
 	private synchronized ReadWriteLock getReadWriteLock(String object)
 	{
-		ReadWriteLock lock = this.lockMap.get(object);
+		// CHM cannot use a null key
+		String key = (object != null) ? object : "";
+		
+		ReadWriteLock lock = this.lockMap.get(key);
 		
 		if (lock == null)
 		{
-			lock = new SemaphoreReadWriteLock(new Semaphore(Integer.MAX_VALUE, true));
+			lock = new SemaphoreReadWriteLock(new Semaphore(Integer.MAX_VALUE, this.fair));
+
+			ReadWriteLock existing = this.lockMap.putIfAbsent(key, lock);
 			
-			this.lockMap.put(object, lock);
+			if (existing != null)
+			{
+				lock = existing;
+			}
 		}
 		
 		return lock;

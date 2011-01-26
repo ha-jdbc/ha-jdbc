@@ -33,8 +33,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
-import net.sf.hajdbc.Database;
-import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.distributed.CommandDispatcher;
 import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.distributed.Member;
@@ -53,11 +51,11 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 	private final LockManager lockManager;
 	private final ConcurrentMap<Member, Map<LockDescriptor, Lock>> remoteLockDescriptorMap = new ConcurrentHashMap<Member, Map<LockDescriptor, Lock>>();
 	
-	public <Z, D extends Database<Z>> DistributedLockManager(DatabaseCluster<Z, D> cluster, CommandDispatcherFactory dispatcherFactory) throws Exception
+	public DistributedLockManager(String id, LockManager lockManager, CommandDispatcherFactory dispatcherFactory) throws Exception
 	{
-		this.lockManager = cluster.getLockManager();
+		this.lockManager = lockManager;
 		LockCommandContext context = this;
-		this.dispatcher = dispatcherFactory.createCommandDispatcher(cluster.getId(), context, this, this);
+		this.dispatcher = dispatcherFactory.createCommandDispatcher(id, context, this, this);
 	}
 	
 	/**
@@ -541,9 +539,9 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 		{
 			if ((object == null) || !(object instanceof RemoteLockDescriptor)) return false;
 			
-			RemoteLockDescriptor lock = (RemoteLockDescriptor) object;
+			String id = ((RemoteLockDescriptor) object).getId();
 			
-			return this.id.equals(lock.getId());
+			return ((this.id != null) && (id != null)) ?  this.id.equals(id) : (this.id == id);
 		}
 
 		/**
@@ -553,7 +551,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 		@Override
 		public int hashCode()
 		{
-			return this.id.hashCode();
+			return this.id != null ? this.id.hashCode() : 0;
 		}
 
 		/**
@@ -563,7 +561,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 		@Override
 		public String toString()
 		{
-			return this.id;
+			return String.format("%sLock(%s)", this.type.name().toLowerCase(), (this.id != null) ? this.id : "");
 		}
 	}
 }
