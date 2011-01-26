@@ -348,6 +348,16 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 		{
 			return this.event;
 		}
+
+		/**
+		 * {@inheritDoc}
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString()
+		{
+			return this.event.toString();
+		}
 	}
 	
 	private static class RemoteInvokerDescriptorImpl extends RemoteDescriptor implements RemoteInvokerDescriptor
@@ -367,6 +377,16 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 		public InvokerEvent getEvent()
 		{
 			return this.event;
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString()
+		{
+			return this.event.toString();
 		}
 	}
 }
