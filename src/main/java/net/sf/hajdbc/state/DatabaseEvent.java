@@ -38,11 +38,22 @@ public class DatabaseEvent extends EventObject
 	}
 
 	/**
-	 * Returns the identifier of the target database.
-	 * @return a database identifier
+	 * {@inheritDoc}
+	 * @see java.util.EventObject#getSource()
 	 */
-	public String getDatabaseId()
+	@Override
+	public String getSource()
 	{
-		return (String) super.getSource();
+		return (String) this.source;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see java.util.EventObject#toString()
+	 */
+	@Override
+	public String toString()
+	{
+		return this.getSource();
 	}
 }

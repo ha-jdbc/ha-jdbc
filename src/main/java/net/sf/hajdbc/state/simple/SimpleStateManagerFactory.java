@@ -51,13 +51,13 @@ public class SimpleStateManagerFactory implements StateManager, StateManagerFact
 	@Override
 	public void activated(DatabaseEvent event)
 	{
-		this.activeDatabases.add(event.getDatabaseId());
+		this.activeDatabases.add(event.getSource());
 	}
 
 	@Override
 	public void deactivated(DatabaseEvent event)
 	{
-		this.activeDatabases.remove(event.getDatabaseId());
+		this.activeDatabases.remove(event.getSource());
 	}
 
 	@Override

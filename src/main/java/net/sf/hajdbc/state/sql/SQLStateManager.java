@@ -283,7 +283,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 		
 		try
 		{
-			statement.setString(1, event.getDatabaseId());
+			statement.setString(1, event.getSource());
 			
 			statement.executeUpdate();
 		}
