@@ -54,6 +54,7 @@ import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.management.Description;
 import net.sf.hajdbc.management.MBean;
 import net.sf.hajdbc.management.MBeanRegistrar;
+import net.sf.hajdbc.management.ManagedAttribute;
 import net.sf.hajdbc.management.ManagedOperation;
 import net.sf.hajdbc.state.DatabaseEvent;
 import net.sf.hajdbc.state.StateManager;
@@ -62,6 +63,7 @@ import net.sf.hajdbc.sync.SynchronizationContext;
 import net.sf.hajdbc.sync.SynchronizationContextImpl;
 import net.sf.hajdbc.tx.SimpleTransactionIdentifierFactory;
 import net.sf.hajdbc.tx.TransactionIdentifierFactory;
+import net.sf.hajdbc.tx.UUIDTransactionIdentifierFactory;
 import net.sf.hajdbc.util.concurrent.cron.CronThreadPoolExecutor;
 
 import org.quartz.CronExpression;
@@ -238,6 +240,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	 * @param databaseId a database identifier
 	 * @throws IllegalStateException if database is still active, or if mbean unregistration fails.
 	 */
+	@ManagedOperation
 	public void remove(String databaseId)
 	{
 		D database = this.getDatabase(databaseId);
@@ -256,12 +259,34 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 			listener.removed(database, this.configuration);
 		}
 	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.DatabaseCluster#getId()
+	 */
+	@ManagedAttribute
+	@Override
+	public String getId()
+	{
+		return this.id;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.DatabaseCluster#isActive()
+	 */
+	@ManagedAttribute
+	@Override
+	public boolean isActive()
+	{
+		return this.active;
+	}
 	
 	/**
 	 * Returns the set of synchronization strategies available to this cluster.
 	 * @return a set of synchronization strategy identifiers
 	 */
-	@ManagedOperation
+	@ManagedAttribute
 	public Set<String> getSynchronizationStrategies()
 	{
 		return this.configuration.getSynchronizationStrategyMap().keySet();
@@ -271,10 +296,93 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	 * Returns the default synchronization strategy used by this cluster.
 	 * @return a synchronization strategy identifier
 	 */
-	@ManagedOperation
+	@ManagedAttribute
 	public String getDefaultSynchronizationStrategy()
 	{
 		return this.configuration.getDefaultSynchronizationStrategy();
+	}
+
+	/**
+	 * Flushes this cluster's cache of DatabaseMetaData.
+	 */
+	@ManagedOperation
+	@Description("Flushes this cluster's cache of database meta data")
+	public void flushMetaDataCache()
+	{
+		try
+		{
+			this.databaseMetaDataCache.flush();
+		}
+		catch (SQLException e)
+		{
+			throw new IllegalStateException(e.toString(), e);
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.DatabaseCluster#addConfigurationListener(net.sf.hajdbc.DatabaseClusterConfigurationListener)
+	 */
+	@ManagedOperation
+	@Override
+	public void addConfigurationListener(DatabaseClusterConfigurationListener<Z, D> listener)
+	{
+		this.configurationListeners.add(listener);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.DatabaseCluster#addListener(net.sf.hajdbc.DatabaseClusterListener)
+	 */
+	@ManagedOperation
+	@Override
+	public void addListener(DatabaseClusterListener listener)
+	{
+		this.clusterListeners.add(listener);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.DatabaseCluster#addSynchronizationListener(net.sf.hajdbc.SynchronizationListener)
+	 */
+	@ManagedOperation
+	@Override
+	public void addSynchronizationListener(SynchronizationListener listener)
+	{
+		this.synchronizationListeners.add(listener);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.DatabaseCluster#removeConfigurationListener(net.sf.hajdbc.DatabaseClusterConfigurationListener)
+	 */
+	@ManagedOperation
+	@Override
+	public void removeConfigurationListener(DatabaseClusterConfigurationListener<Z, D> listener)
+	{
+		this.configurationListeners.remove(listener);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.DatabaseCluster#removeListener(net.sf.hajdbc.DatabaseClusterListener)
+	 */
+	@ManagedOperation
+	@Override
+	public void removeListener(DatabaseClusterListener listener)
+	{
+		this.clusterListeners.remove(listener);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.DatabaseCluster#removeSynchronizationListener(net.sf.hajdbc.SynchronizationListener)
+	 */
+	@ManagedOperation
+	@Override
+	public void removeSynchronizationListener(SynchronizationListener listener)
+	{
+		this.synchronizationListeners.remove(listener);
 	}
 	
 	/**
@@ -306,36 +414,6 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		}
 		
 		return added;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DatabaseCluster#addConfigurationListener(net.sf.hajdbc.DatabaseClusterConfigurationListener)
-	 */
-	@Override
-	public void addConfigurationListener(DatabaseClusterConfigurationListener<Z, D> listener)
-	{
-		this.configurationListeners.add(listener);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DatabaseCluster#addListener(net.sf.hajdbc.DatabaseClusterListener)
-	 */
-	@Override
-	public void addListener(DatabaseClusterListener listener)
-	{
-		this.clusterListeners.add(listener);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DatabaseCluster#addSynchronizationListener(net.sf.hajdbc.SynchronizationListener)
-	 */
-	@Override
-	public void addSynchronizationListener(SynchronizationListener listener)
-	{
-		this.synchronizationListeners.add(listener);
 	}
 	
 	/**
@@ -422,33 +500,6 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	}
 
 	/**
-	 * Flushes this cluster's cache of DatabaseMetaData.
-	 */
-	@ManagedOperation
-	@Description("Flushes this cluster's cache of database meta data")
-	public void flushMetaDataCache()
-	{
-		try
-		{
-			this.databaseMetaDataCache.flush();
-		}
-		catch (SQLException e)
-		{
-			throw new IllegalStateException(e.toString(), e);
-		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DatabaseCluster#getId()
-	 */
-	@Override
-	public String getId()
-	{
-		return this.id;
-	}
-
-	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseCluster#getLockManager()
 	 */
@@ -508,16 +559,6 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	public TransactionIdentifierFactory getTransactionIdentifierFactory()
 	{
 		return this.transactionIdentifierFactory;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DatabaseCluster#isActive()
-	 */
-	@Override
-	public boolean isActive()
-	{
-		return this.active;
 	}
 
 	/**
@@ -582,36 +623,6 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DatabaseCluster#removeConfigurationListener(net.sf.hajdbc.DatabaseClusterConfigurationListener)
-	 */
-	@Override
-	public void removeConfigurationListener(DatabaseClusterConfigurationListener<Z, D> listener)
-	{
-		this.configurationListeners.remove(listener);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DatabaseCluster#removeListener(net.sf.hajdbc.DatabaseClusterListener)
-	 */
-	@Override
-	public void removeListener(DatabaseClusterListener listener)
-	{
-		this.clusterListeners.remove(listener);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DatabaseCluster#removeSynchronizationListener(net.sf.hajdbc.SynchronizationListener)
-	 */
-	@Override
-	public void removeSynchronizationListener(SynchronizationListener listener)
-	{
-		this.synchronizationListeners.remove(listener);
-	}
-
-	/**
-	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.Lifecycle#start()
 	 */
 	@Override
@@ -620,11 +631,12 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		if (this.active) return;
 		
 		this.codec = this.configuration.getCodecFactory().createCodec(this.id);
-		this.transactionIdentifierFactory = new SimpleTransactionIdentifierFactory();
 		this.lockManager = new SemaphoreLockManager(this.configuration.isFairLocking());
 		this.stateManager = this.configuration.getStateManagerFactory().createStateManager(this);
 		
 		CommandDispatcherFactory dispatcherFactory = this.configuration.getDispatcherFactory();
+		
+		this.transactionIdentifierFactory = (dispatcherFactory != null) ? new UUIDTransactionIdentifierFactory() : new SimpleTransactionIdentifierFactory();
 		
 		if (dispatcherFactory != null)
 		{
