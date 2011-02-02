@@ -45,10 +45,15 @@ public class DefaultMBeanRegistrar<Z, D extends Database<Z>> implements MBeanReg
 	
 	private static final Logger logger = LoggerFactory.getLogger(DefaultMBeanRegistrar.class);
 	
-	private MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+	private final MBeanServer server;
 	private String domain = DatabaseCluster.class.getPackage().getName();
 	
-	public void setMBeanServer(MBeanServer server)
+	public DefaultMBeanRegistrar()
+	{
+		this(ManagementFactory.getPlatformMBeanServer());
+	}
+	
+	public DefaultMBeanRegistrar(MBeanServer server)
 	{
 		this.server = server;
 	}
