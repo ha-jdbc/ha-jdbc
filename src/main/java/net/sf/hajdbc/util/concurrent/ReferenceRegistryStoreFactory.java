@@ -29,12 +29,12 @@ public class ReferenceRegistryStoreFactory implements RegistryStoreFactory<Void>
 	 * @see net.sf.hajdbc.util.concurrent.RegistryStoreFactory#createStore()
 	 */
 	@Override
-	public <V> RegistryStore<Void, V> createStore()
+	public <V> Registry.Store<Void, V> createStore()
 	{
 		return new ReferenceRegistryStore<V>();
 	}
 	
-	static class ReferenceRegistryStore<V> implements RegistryStore<Void, V>
+	static class ReferenceRegistryStore<V> implements Registry.Store<Void, V>
 	{
 		private final AtomicReference<V> reference = new AtomicReference<V>();
 		
@@ -63,9 +63,9 @@ public class ReferenceRegistryStoreFactory implements RegistryStoreFactory<Void>
 		 * @see net.sf.hajdbc.util.concurrent.RegistryStore#clear(java.lang.Object)
 		 */
 		@Override
-		public void clear(Void key)
+		public V clear(Void key)
 		{
-			this.reference.set(null);
+			return this.reference.getAndSet(null);
 		}
 	}
 }

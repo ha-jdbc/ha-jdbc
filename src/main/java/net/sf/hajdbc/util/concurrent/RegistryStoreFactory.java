@@ -22,5 +22,5 @@ package net.sf.hajdbc.util.concurrent;
  */
 public interface RegistryStoreFactory<K>
 {
-	<V> RegistryStore<K, V> createStore();
+	<V> Registry.Store<K, V> createStore();
 }

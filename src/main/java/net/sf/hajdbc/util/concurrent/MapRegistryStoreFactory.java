@@ -30,12 +30,12 @@ public class MapRegistryStoreFactory<K> implements RegistryStoreFactory<K>
 	 * @see net.sf.hajdbc.util.concurrent.RegistryStoreFactory#createStore()
 	 */
 	@Override
-	public <V> RegistryStore<K, V> createStore()
+	public <V> Registry.Store<K, V> createStore()
 	{
 		return new MapRegistryStore<K, V>();
 	}
 	
-	static class MapRegistryStore<K, V> implements RegistryStore<K, V>
+	static class MapRegistryStore<K, V> implements Registry.Store<K, V>
 	{
 		private final ConcurrentMap<K, V> map = new ConcurrentHashMap<K, V>();
 		
@@ -64,9 +64,9 @@ public class MapRegistryStoreFactory<K> implements RegistryStoreFactory<K>
 		 * @see net.sf.hajdbc.util.concurrent.RegistryStore#clear(java.lang.Object)
 		 */
 		@Override
-		public void clear(K key)
+		public V clear(K key)
 		{
-			this.map.remove(key);
+			return this.map.remove(key);
 		}
 	}
 }

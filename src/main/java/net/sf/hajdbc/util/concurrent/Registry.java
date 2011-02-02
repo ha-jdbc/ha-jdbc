@@ -30,7 +30,7 @@ import net.sf.hajdbc.Lifecycle;
  */
 public class Registry<K, V extends Lifecycle, C, E extends Exception>
 {
-	private final RegistryStore<K, RegistryEntry> store;
+	private final Registry.Store<K, RegistryEntry> store;
 	final Factory<K, V, C, E> factory;
 	final ExceptionFactory<E> exceptionFactory;
 
@@ -76,6 +76,16 @@ public class Registry<K, V extends Lifecycle, C, E extends Exception>
 			value.stop();
 			
 			throw this.exceptionFactory.createException(e);
+		}
+	}
+	
+	public void remove(K key) throws E
+	{
+		RegistryEntry entry = this.store.clear(key);
+		
+		if (entry != null)
+		{
+			entry.getValue().stop();
 		}
 	}
 	
@@ -130,5 +140,14 @@ public class Registry<K, V extends Lifecycle, C, E extends Exception>
 		long getTimeout();
 		
 		TimeUnit getTimeoutUnit();
+	}
+	
+	public interface Store<K, V>
+	{
+		V setIfAbsent(K key, V value);
+		
+		V get(K key);
+		
+		V clear(K key);
 	}
 }
