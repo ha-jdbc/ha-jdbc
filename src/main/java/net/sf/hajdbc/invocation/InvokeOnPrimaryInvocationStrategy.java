@@ -24,7 +24,7 @@ import net.sf.hajdbc.balancer.Balancer;
  * @author paul
  *
  */
-public class InvokeOnMasterInvocationStrategy extends InvokeOnOneInvocationStrategy
+public class InvokeOnPrimaryInvocationStrategy extends InvokeOnOneInvocationStrategy
 {
 	/**
 	 * {@inheritDoc}
