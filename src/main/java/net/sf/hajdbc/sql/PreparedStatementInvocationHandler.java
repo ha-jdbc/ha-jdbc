@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.util.reflect.Methods;
 
 /**

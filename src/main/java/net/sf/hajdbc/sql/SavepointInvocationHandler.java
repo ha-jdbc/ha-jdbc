@@ -24,6 +24,9 @@ import java.sql.Savepoint;
 import java.util.Map;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.invocation.InvocationStrategy;
+import net.sf.hajdbc.invocation.InvocationStrategyEnum;
+import net.sf.hajdbc.invocation.Invoker;
 
 /**
  * @author Paul Ferraro

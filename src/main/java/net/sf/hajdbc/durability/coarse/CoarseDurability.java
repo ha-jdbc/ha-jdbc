@@ -27,8 +27,8 @@ import net.sf.hajdbc.durability.InvocationEvent;
 import net.sf.hajdbc.durability.InvocationEventImpl;
 import net.sf.hajdbc.durability.InvokerEvent;
 import net.sf.hajdbc.durability.none.NoDurability;
-import net.sf.hajdbc.sql.InvocationStrategy;
-import net.sf.hajdbc.sql.Invoker;
+import net.sf.hajdbc.invocation.InvocationStrategy;
+import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.sql.SQLProxy;
 import net.sf.hajdbc.state.StateManager;
 
@@ -53,7 +53,7 @@ public class CoarseDurability<Z, D extends Database<Z>> extends NoDurability<Z, 
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.durability.none.NoDurability#getInvocationStrategy(net.sf.hajdbc.sql.InvocationStrategy, net.sf.hajdbc.durability.Durability.Phase, java.lang.Object)
+	 * @see net.sf.hajdbc.durability.none.NoDurability#getInvocationStrategy(net.sf.hajdbc.invocation.InvocationStrategy, net.sf.hajdbc.durability.Durability.Phase, java.lang.Object)
 	 */
 	@Override
 	public InvocationStrategy getInvocationStrategy(final InvocationStrategy strategy, final Phase phase, final Object transactionId)

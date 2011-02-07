@@ -1,8 +1,9 @@
-package net.sf.hajdbc.sql;
+package net.sf.hajdbc.invocation;
 
 import java.util.SortedMap;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.sql.SQLProxy;
 
 public interface InvocationStrategy
 {

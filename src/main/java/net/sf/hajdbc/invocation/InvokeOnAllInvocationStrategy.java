@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.hajdbc.sql;
+package net.sf.hajdbc.invocation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +33,7 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.sql.SQLProxy;
 
 /**
  * @author Paul Ferraro
@@ -41,7 +42,7 @@ public class InvokeOnAllInvocationStrategy extends InvokeOnManyInvocationStrateg
 {
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.InvokeOnManyInvocationStrategy#collectResults(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker)
+	 * @see net.sf.hajdbc.invocation.InvokeOnManyInvocationStrategy#collectResults(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.invocation.Invoker)
 	 */
 	@Override
 	protected <Z, D extends Database<Z>, T, R, E extends Exception> Map.Entry<SortedMap<D, R>, SortedMap<D, E>> collectResults(SQLProxy<Z, D, T, E> proxy, final Invoker<Z, D, T, R, E> invoker)

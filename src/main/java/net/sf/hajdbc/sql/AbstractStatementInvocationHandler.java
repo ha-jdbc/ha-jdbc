@@ -37,6 +37,9 @@ import net.sf.hajdbc.IdentityColumnSupport;
 import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.cache.DatabaseProperties;
 import net.sf.hajdbc.cache.TableProperties;
+import net.sf.hajdbc.invocation.InvocationStrategy;
+import net.sf.hajdbc.invocation.InvocationStrategyEnum;
+import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.lock.LockManager;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.util.reflect.Methods;
@@ -300,7 +303,7 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#record(net.sf.hajdbc.sql.Invoker, java.lang.reflect.Method, java.lang.Object[])
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#record(net.sf.hajdbc.invocation.Invoker, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
 	protected void record(Invoker<Z, D, S, ?, SQLException> invoker, Method method, Object[] parameters)

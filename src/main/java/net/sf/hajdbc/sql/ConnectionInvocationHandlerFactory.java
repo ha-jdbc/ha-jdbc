@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.Map;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.invocation.Invoker;
 
 public class ConnectionInvocationHandlerFactory<Z, D extends Database<Z>, P> implements InvocationHandlerFactory<Z, D, P, Connection, SQLException>
 {

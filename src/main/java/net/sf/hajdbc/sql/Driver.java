@@ -32,6 +32,8 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.ExceptionType;
+import net.sf.hajdbc.invocation.InvocationStrategyEnum;
+import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.util.concurrent.MapRegistryStoreFactory;
 import net.sf.hajdbc.util.concurrent.Registry;
 import net.sf.hajdbc.util.reflect.ProxyFactory;

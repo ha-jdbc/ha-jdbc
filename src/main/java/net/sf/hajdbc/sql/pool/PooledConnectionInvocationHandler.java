@@ -23,7 +23,7 @@ import java.util.Map;
 import javax.sql.ConnectionPoolDataSource;
 import javax.sql.PooledConnection;
 
-import net.sf.hajdbc.sql.Invoker;
+import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.sql.LocalTransactionContext;
 import net.sf.hajdbc.sql.SQLProxy;
 import net.sf.hajdbc.sql.TransactionContext;

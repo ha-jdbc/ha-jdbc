@@ -20,7 +20,7 @@ package net.sf.hajdbc.balancer;
 import java.util.Set;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.sql.Invoker;
+import net.sf.hajdbc.invocation.Invoker;
 
 /**
  * The set of active databases and a strategy for determining the next balancing target.

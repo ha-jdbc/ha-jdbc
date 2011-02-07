@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.hajdbc.sql;
+package net.sf.hajdbc.invocation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +30,7 @@ import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.sql.SQLProxy;
 import net.sf.hajdbc.state.StateManager;
 
 /**
@@ -41,7 +42,7 @@ public abstract class InvokeOnManyInvocationStrategy implements InvocationStrate
 	private static Logger logger = LoggerFactory.getLogger(InvokeOnManyInvocationStrategy.class);
 	
 	/**
-	 * @see net.sf.hajdbc.sql.InvocationStrategy#invoke(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker)
+	 * @see net.sf.hajdbc.invocation.InvocationStrategy#invoke(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.invocation.Invoker)
 	 */
 	@Override
 	public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(SQLProxy<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker) throws E

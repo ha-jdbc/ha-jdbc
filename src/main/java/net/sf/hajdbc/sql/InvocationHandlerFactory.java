@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationHandler;
 import java.util.Map;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.invocation.Invoker;
 
 public interface InvocationHandlerFactory<Z, D extends Database<Z>, P, T, E extends Exception>
 {

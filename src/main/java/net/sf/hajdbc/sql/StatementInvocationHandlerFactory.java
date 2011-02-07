@@ -24,6 +24,7 @@ import java.sql.Statement;
 import java.util.Map;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.invocation.Invoker;
 
 /**
  * @author Paul Ferraro
@@ -42,7 +43,7 @@ public class StatementInvocationHandlerFactory<Z, D extends Database<Z>> extends
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.AbstractStatementInvocationHandlerFactory#createInvocationHandler(java.sql.Connection, net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker, java.util.Map, net.sf.hajdbc.sql.TransactionContext, net.sf.hajdbc.sql.FileSupport)
+	 * @see net.sf.hajdbc.sql.AbstractStatementInvocationHandlerFactory#createInvocationHandler(java.sql.Connection, net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.invocation.Invoker, java.util.Map, net.sf.hajdbc.sql.TransactionContext, net.sf.hajdbc.sql.FileSupport)
 	 */
 	@Override
 	protected InvocationHandler createInvocationHandler(Connection connection, SQLProxy<Z, D, Connection, SQLException> proxy, Invoker<Z, D, Connection, Statement, SQLException> invoker, Map<D, Statement> statements, TransactionContext<Z, D> context, FileSupport<SQLException> fileSupport) throws SQLException

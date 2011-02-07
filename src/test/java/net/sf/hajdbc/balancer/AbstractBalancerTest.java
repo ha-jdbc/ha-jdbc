@@ -32,7 +32,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import net.sf.hajdbc.MockDatabase;
-import net.sf.hajdbc.sql.Invoker;
+import net.sf.hajdbc.invocation.Invoker;
 
 import org.easymock.EasyMock;
 import org.junit.Assert;
@@ -384,7 +384,7 @@ public abstract class AbstractBalancerTest
 	}
 
 	/**
-	 * Test method for {@link net.sf.hajdbc.balancer.load.LoadBalancer#invoke(net.sf.hajdbc.sql.Invoker, net.sf.hajdbc.Database, java.lang.Object)}.
+	 * Test method for {@link net.sf.hajdbc.balancer.load.LoadBalancer#invoke(net.sf.hajdbc.invocation.Invoker, net.sf.hajdbc.Database, java.lang.Object)}.
 	 */
 	@Test
 	public void invoke() throws Exception

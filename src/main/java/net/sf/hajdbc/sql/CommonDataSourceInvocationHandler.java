@@ -22,6 +22,8 @@ import java.sql.SQLException;
 import java.util.Set;
 
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.invocation.InvocationStrategy;
+import net.sf.hajdbc.invocation.InvocationStrategyEnum;
 import net.sf.hajdbc.util.reflect.Methods;
 
 /**

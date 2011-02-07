@@ -26,7 +26,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.sql.Invoker;
+import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.util.Collections;
 
 /**
@@ -69,7 +69,7 @@ public abstract class AbstractSetBalancer<Z, D extends Database<Z>> extends Abst
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.balancer.Balancer#invoke(net.sf.hajdbc.sql.Invoker, net.sf.hajdbc.Database, java.lang.Object)
+	 * @see net.sf.hajdbc.balancer.Balancer#invoke(net.sf.hajdbc.invocation.Invoker, net.sf.hajdbc.Database, java.lang.Object)
 	 */
 	@Override
 	public <T, R, E extends Exception> R invoke(Invoker<Z, D, T, R, E> invoker, D database, T object) throws E

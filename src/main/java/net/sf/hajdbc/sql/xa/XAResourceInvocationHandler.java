@@ -39,10 +39,10 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.durability.Durability;
 import net.sf.hajdbc.durability.Durability.Phase;
+import net.sf.hajdbc.invocation.InvocationStrategy;
+import net.sf.hajdbc.invocation.InvocationStrategyEnum;
+import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.sql.AbstractChildInvocationHandler;
-import net.sf.hajdbc.sql.InvocationStrategyEnum;
-import net.sf.hajdbc.sql.InvocationStrategy;
-import net.sf.hajdbc.sql.Invoker;
 import net.sf.hajdbc.sql.SQLProxy;
 import net.sf.hajdbc.util.reflect.Methods;
 

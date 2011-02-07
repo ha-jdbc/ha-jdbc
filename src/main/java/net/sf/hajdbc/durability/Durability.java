@@ -21,8 +21,8 @@ import java.util.Map;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.ExceptionFactory;
-import net.sf.hajdbc.sql.InvocationStrategy;
-import net.sf.hajdbc.sql.Invoker;
+import net.sf.hajdbc.invocation.InvocationStrategy;
+import net.sf.hajdbc.invocation.Invoker;
 
 /**
  * @author Paul Ferraro

@@ -24,8 +24,8 @@ import java.util.Map;
 import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 
+import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.sql.InvocationHandlerFactory;
-import net.sf.hajdbc.sql.Invoker;
 import net.sf.hajdbc.sql.SQLProxy;
 
 /**
@@ -45,7 +45,7 @@ public class XAConnectionInvocationHandlerFactory implements InvocationHandlerFa
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.InvocationHandlerFactory#createInvocationHandler(java.lang.Object, net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker, java.util.Map)
+	 * @see net.sf.hajdbc.sql.InvocationHandlerFactory#createInvocationHandler(java.lang.Object, net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.invocation.Invoker, java.util.Map)
 	 */
 	@Override
 	public InvocationHandler createInvocationHandler(XADataSource dataSource, SQLProxy<XADataSource, XADataSourceDatabase, XADataSource, SQLException> proxy, Invoker<XADataSource, XADataSourceDatabase, XADataSource, XAConnection, SQLException> invoker, Map<XADataSourceDatabase, XAConnection> connections) throws SQLException

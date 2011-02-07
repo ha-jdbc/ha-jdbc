@@ -24,11 +24,11 @@ import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.durability.Durability;
 import net.sf.hajdbc.durability.InvocationEvent;
 import net.sf.hajdbc.durability.InvokerEvent;
+import net.sf.hajdbc.invocation.InvocationStrategy;
+import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
-import net.sf.hajdbc.sql.InvocationStrategy;
-import net.sf.hajdbc.sql.Invoker;
 
 /**
  * {@link Durability} implementation that does not track anything.
@@ -41,7 +41,7 @@ public class NoDurability<Z, D extends Database<Z>> implements Durability<Z, D>
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.durability.Durability#getInvocationStrategy(net.sf.hajdbc.sql.InvocationStrategy, net.sf.hajdbc.durability.Durability.Phase, java.lang.Object)
+	 * @see net.sf.hajdbc.durability.Durability#getInvocationStrategy(net.sf.hajdbc.invocation.InvocationStrategy, net.sf.hajdbc.durability.Durability.Phase, java.lang.Object)
 	 */
 	@Override
 	public InvocationStrategy getInvocationStrategy(InvocationStrategy strategy, Phase phase, Object transactionId)
@@ -51,7 +51,7 @@ public class NoDurability<Z, D extends Database<Z>> implements Durability<Z, D>
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.durability.Durability#getInvoker(net.sf.hajdbc.sql.Invoker, net.sf.hajdbc.durability.Durability.Phase, java.lang.Object, net.sf.hajdbc.ExceptionFactory)
+	 * @see net.sf.hajdbc.durability.Durability#getInvoker(net.sf.hajdbc.invocation.Invoker, net.sf.hajdbc.durability.Durability.Phase, java.lang.Object, net.sf.hajdbc.ExceptionFactory)
 	 */
 	@Override
 	public <T, R, E extends Exception> Invoker<Z, D, T, R, E> getInvoker(Invoker<Z, D, T, R, E> invoker, Phase phase, Object transactionId, ExceptionFactory<E> exceptionFactory)

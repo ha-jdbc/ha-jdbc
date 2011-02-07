@@ -18,6 +18,7 @@
 package net.sf.hajdbc.sql.pool;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -25,17 +26,19 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.sql.ConnectionEvent;
 import javax.sql.ConnectionEventListener;
 import javax.sql.PooledConnection;
+import javax.sql.StatementEvent;
 import javax.sql.StatementEventListener;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.invocation.InvocationStrategy;
+import net.sf.hajdbc.invocation.InvocationStrategyEnum;
+import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.sql.ChildInvocationHandler;
 import net.sf.hajdbc.sql.ConnectionInvocationHandlerFactory;
 import net.sf.hajdbc.sql.InvocationHandlerFactory;
-import net.sf.hajdbc.sql.InvocationStrategy;
-import net.sf.hajdbc.sql.InvocationStrategyEnum;
-import net.sf.hajdbc.sql.Invoker;
 import net.sf.hajdbc.sql.SQLProxy;
 import net.sf.hajdbc.sql.TransactionContext;
 import net.sf.hajdbc.util.reflect.Methods;
@@ -130,7 +133,7 @@ public abstract class AbstractPooledConnectionInvocationHandler<Z, D extends Dat
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#record(net.sf.hajdbc.sql.Invoker, java.lang.reflect.Method, java.lang.Object[])
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#record(net.sf.hajdbc.invocation.Invoker, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
 	protected void record(Invoker<Z, D, C, ?, SQLException> invoker, Method method, Object[] parameters)
@@ -185,6 +188,106 @@ public abstract class AbstractPooledConnectionInvocationHandler<Z, D extends Dat
 			{
 				invoker.invoke(database, connection);
 			}
+		}
+	}
+	
+	@SuppressWarnings("unused")
+	private static class ConnectionEventListenerFilter<Z, D extends Database<Z>, C extends PooledConnection> implements ConnectionEventListener
+	{
+		private SQLProxy<Z, D, C, SQLException> proxy;
+		private final D database;
+		private final ConnectionEventListener listener;
+		
+		ConnectionEventListenerFilter(SQLProxy<Z, D, C, SQLException> proxy, D database, ConnectionEventListener listener)
+		{
+			this.proxy = proxy;
+			this.database = database;
+			this.listener = listener;
+		}
+		
+		@Override
+		public void connectionClosed(ConnectionEvent event)
+		{
+			ConnectionEvent e = this.getEvent(event);
+			
+			if (e != null)
+			{
+				this.listener.connectionClosed(e);
+			}
+		}
+
+		@Override
+		public void connectionErrorOccurred(ConnectionEvent event)
+		{
+			ConnectionEvent e = this.getEvent(event);
+			
+			if (e != null)
+			{
+				this.listener.connectionErrorOccurred(e);
+			}
+		}
+		
+		private ConnectionEvent getEvent(ConnectionEvent event)
+		{
+			Object source = event.getSource();
+			C connection = this.proxy.getObject(this.database);
+			
+			if (Proxy.isProxyClass(source.getClass()) && Proxy.getInvocationHandler(source).equals(this.proxy))
+			{
+				return new ConnectionEvent(connection, event.getSQLException());
+			}
+			
+			return event.getSource().equals(connection) ? event : null;
+		}
+	}
+	
+	@SuppressWarnings("unused")
+	private static class StatementEventListenerFilter<Z, D extends Database<Z>, C extends PooledConnection> implements StatementEventListener
+	{
+		private SQLProxy<Z, D, C, SQLException> proxy;
+		private final D database;
+		private final StatementEventListener listener;
+		
+		StatementEventListenerFilter(SQLProxy<Z, D, C, SQLException> proxy, D database, StatementEventListener listener)
+		{
+			this.proxy = proxy;
+			this.database = database;
+			this.listener = listener;
+		}
+		
+		@Override
+		public void statementClosed(StatementEvent event)
+		{
+			StatementEvent e = this.getEvent(event);
+			
+			if (e != null)
+			{
+				this.listener.statementClosed(e);
+			}
+		}
+
+		@Override
+		public void statementErrorOccurred(StatementEvent event)
+		{
+			StatementEvent e = this.getEvent(event);
+			
+			if (e != null)
+			{
+				this.listener.statementErrorOccurred(e);
+			}
+		}
+		
+		private StatementEvent getEvent(StatementEvent event)
+		{
+			Object source = event.getSource();
+			C connection = this.proxy.getObject(this.database);
+			
+			if (Proxy.isProxyClass(source.getClass()) && Proxy.getInvocationHandler(source).equals(this.proxy))
+			{
+				return new StatementEvent(connection, event.getStatement(), event.getSQLException());
+			}
+			
+			return source.equals(connection) ? event : null;
 		}
 	}
 }

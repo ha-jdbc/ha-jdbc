@@ -24,6 +24,7 @@ import java.sql.Statement;
 import java.util.Map;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.invocation.Invoker;
 
 /**
  * @author paul
@@ -52,7 +53,7 @@ public class ResultSetInvocationHandlerFactory<Z, D extends Database<Z>, S exten
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.InvocationHandlerFactory#createInvocationHandler(java.lang.Object, net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker, java.util.Map)
+	 * @see net.sf.hajdbc.sql.InvocationHandlerFactory#createInvocationHandler(java.lang.Object, net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.invocation.Invoker, java.util.Map)
 	 */
 	@Override
 	public InvocationHandler createInvocationHandler(S statement, SQLProxy<Z, D, S, SQLException> proxy, Invoker<Z, D, S, ResultSet, SQLException> invoker, Map<D, ResultSet> resultSets) throws SQLException

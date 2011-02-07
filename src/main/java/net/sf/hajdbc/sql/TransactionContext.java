@@ -22,6 +22,8 @@ import java.sql.SQLException;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.durability.Durability;
+import net.sf.hajdbc.invocation.InvocationStrategy;
+import net.sf.hajdbc.invocation.Invoker;
 
 /**
  * Decorates an invocation strategy with transaction boundary logic.

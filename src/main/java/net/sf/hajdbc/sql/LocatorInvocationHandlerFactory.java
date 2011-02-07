@@ -24,6 +24,7 @@ import java.util.Map;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.invocation.Invoker;
 
 /**
  * @author paul
@@ -42,7 +43,7 @@ public abstract class LocatorInvocationHandlerFactory<Z, D extends Database<Z>, 
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.InvocationHandlerFactory#createInvocationHandler(java.lang.Object, net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker, java.util.Map)
+	 * @see net.sf.hajdbc.sql.InvocationHandlerFactory#createInvocationHandler(java.lang.Object, net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.invocation.Invoker, java.util.Map)
 	 */
 	@Override
 	public InvocationHandler createInvocationHandler(P parent, SQLProxy<Z, D, P, SQLException> proxy, Invoker<Z, D, P, T, SQLException> invoker, Map<D, T> locators) throws SQLException

@@ -26,9 +26,9 @@ import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 
 import net.sf.hajdbc.durability.Durability;
+import net.sf.hajdbc.invocation.InvocationStrategy;
+import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.sql.InvocationHandlerFactory;
-import net.sf.hajdbc.sql.InvocationStrategy;
-import net.sf.hajdbc.sql.Invoker;
 import net.sf.hajdbc.sql.SQLProxy;
 import net.sf.hajdbc.sql.TransactionContext;
 import net.sf.hajdbc.sql.pool.AbstractPooledConnectionInvocationHandler;

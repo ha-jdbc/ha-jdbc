@@ -24,6 +24,7 @@ import java.sql.Savepoint;
 import java.util.Map;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.invocation.Invoker;
 
 /**
  * @author paul
@@ -33,7 +34,7 @@ public class SavepointInvocationHandlerFactory<Z, D extends Database<Z>> impleme
 {
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.InvocationHandlerFactory#createInvocationHandler(java.lang.Object, net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker, java.util.Map)
+	 * @see net.sf.hajdbc.sql.InvocationHandlerFactory#createInvocationHandler(java.lang.Object, net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.invocation.Invoker, java.util.Map)
 	 */
 	@Override
 	public InvocationHandler createInvocationHandler(Connection connection, SQLProxy<Z, D, Connection, SQLException> proxy, Invoker<Z, D, Connection, Savepoint, SQLException> invoker, Map<D, Savepoint> savepoints) throws SQLException

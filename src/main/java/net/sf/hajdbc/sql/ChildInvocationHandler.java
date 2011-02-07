@@ -20,6 +20,7 @@ package net.sf.hajdbc.sql;
 import java.util.Map;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.invocation.Invoker;
 
 /**
  * @author Paul Ferraro

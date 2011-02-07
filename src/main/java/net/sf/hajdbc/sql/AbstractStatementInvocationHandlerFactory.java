@@ -24,6 +24,7 @@ import java.sql.Statement;
 import java.util.Map;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.invocation.Invoker;
 
 /**
  * @author paul
@@ -47,7 +48,7 @@ public abstract class AbstractStatementInvocationHandlerFactory<Z, D extends Dat
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.InvocationHandlerFactory#createInvocationHandler(java.lang.Object, net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker, java.util.Map)
+	 * @see net.sf.hajdbc.sql.InvocationHandlerFactory#createInvocationHandler(java.lang.Object, net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.invocation.Invoker, java.util.Map)
 	 */
 	@Override
 	public InvocationHandler createInvocationHandler(Connection connection, SQLProxy<Z, D, Connection, SQLException> proxy, Invoker<Z, D, Connection, S, SQLException> invoker, Map<D, S> statements) throws SQLException

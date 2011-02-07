@@ -38,6 +38,9 @@ import javax.sql.rowset.serial.SerialBlob;
 import javax.sql.rowset.serial.SerialClob;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.invocation.InvocationStrategy;
+import net.sf.hajdbc.invocation.InvocationStrategyEnum;
+import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.util.reflect.Methods;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
 import net.sf.hajdbc.util.reflect.SimpleInvocationHandler;
@@ -287,7 +290,7 @@ public class ResultSetInvocationHandler<Z, D extends Database<Z>, S extends Stat
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#record(net.sf.hajdbc.sql.Invoker, java.lang.reflect.Method, java.lang.Object[])
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#record(net.sf.hajdbc.invocation.Invoker, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
 	protected void record(Invoker<Z, D, ResultSet, ?, SQLException> invoker, Method method, Object[] parameters)

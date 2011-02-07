@@ -22,6 +22,8 @@ import java.util.SortedMap;
 import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.invocation.InvocationStrategy;
+import net.sf.hajdbc.invocation.Invoker;
 
 /**
  * An invocation strategy decorator that acquires a list of locks before invocation, and releases them afterward.
@@ -44,7 +46,7 @@ public class LockingInvocationStrategy implements InvocationStrategy
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.InvocationStrategy#invoke(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker)
+	 * @see net.sf.hajdbc.invocation.InvocationStrategy#invoke(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.invocation.Invoker)
 	 */
 	@Override
 	public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(SQLProxy<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker) throws E

@@ -24,8 +24,8 @@ import java.util.Map;
 import javax.sql.ConnectionPoolDataSource;
 import javax.sql.PooledConnection;
 
+import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.sql.InvocationHandlerFactory;
-import net.sf.hajdbc.sql.Invoker;
 import net.sf.hajdbc.sql.SQLProxy;
 
 /**
@@ -45,7 +45,7 @@ public class PooledConnectionInvocationHandlerFactory implements InvocationHandl
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.InvocationHandlerFactory#createInvocationHandler(java.lang.Object, net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker, java.util.Map)
+	 * @see net.sf.hajdbc.sql.InvocationHandlerFactory#createInvocationHandler(java.lang.Object, net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.invocation.Invoker, java.util.Map)
 	 */
 	@Override
 	public InvocationHandler createInvocationHandler(ConnectionPoolDataSource dataSource, SQLProxy<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase, ConnectionPoolDataSource, SQLException> proxy, Invoker<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase, ConnectionPoolDataSource, PooledConnection, SQLException> invoker, Map<ConnectionPoolDataSourceDatabase, PooledConnection> connections) throws SQLException

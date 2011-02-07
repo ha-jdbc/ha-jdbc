@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.hajdbc.sql;
+package net.sf.hajdbc.invocation;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.balancer.Balancer;
@@ -27,7 +27,7 @@ public class InvokeOnNextInvocationStrategy extends InvokeOnOneInvocationStrateg
 {
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.InvokeOnOneInvocationStrategy#getTarget(net.sf.hajdbc.balancer.Balancer)
+	 * @see net.sf.hajdbc.invocation.InvokeOnOneInvocationStrategy#getTarget(net.sf.hajdbc.balancer.Balancer)
 	 */
 	@Override
 	protected <Z, D extends Database<Z>> D getTarget(Balancer<Z, D> balancer)

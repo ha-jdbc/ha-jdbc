@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import java.util.Map;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.invocation.Invoker;
 
 /**
  * @author paul
@@ -38,7 +39,7 @@ public class NClobInvocationHandlerFactory<Z, D extends Database<Z>, P> extends 
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.LocatorInvocationHandlerFactory#createInvocationHandler(java.lang.Object, net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.sql.Invoker, java.util.Map, boolean)
+	 * @see net.sf.hajdbc.sql.LocatorInvocationHandlerFactory#createInvocationHandler(java.lang.Object, net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.invocation.Invoker, java.util.Map, boolean)
 	 */
 	@Override
 	protected InvocationHandler createInvocationHandler(P parent, SQLProxy<Z, D, P, SQLException> proxy, Invoker<Z, D, P, NClob, SQLException> invoker, Map<D, NClob> locators, boolean updateCopy) throws SQLException

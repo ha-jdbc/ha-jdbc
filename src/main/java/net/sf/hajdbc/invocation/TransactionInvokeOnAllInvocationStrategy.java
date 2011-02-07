@@ -1,4 +1,4 @@
-package net.sf.hajdbc.sql;
+package net.sf.hajdbc.invocation;
 
 import java.util.concurrent.ExecutorService;
 
@@ -16,7 +16,7 @@ public class TransactionInvokeOnAllInvocationStrategy extends InvokeOnAllInvocat
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.InvokeOnAllInvocationStrategy#getExecutor(net.sf.hajdbc.DatabaseCluster)
+	 * @see net.sf.hajdbc.invocation.InvokeOnAllInvocationStrategy#getExecutor(net.sf.hajdbc.DatabaseCluster)
 	 */
 	@Override
 	protected <Z, D extends Database<Z>> ExecutorService getExecutor(DatabaseCluster<Z, D> cluster)

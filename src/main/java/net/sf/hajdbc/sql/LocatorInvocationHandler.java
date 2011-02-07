@@ -25,6 +25,9 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.invocation.InvocationStrategy;
+import net.sf.hajdbc.invocation.InvocationStrategyEnum;
+import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.util.reflect.Methods;
 
@@ -118,7 +121,7 @@ public abstract class LocatorInvocationHandler<Z, D extends Database<Z>, P, T> e
 	protected abstract void free(T locator) throws SQLException;
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#record(net.sf.hajdbc.sql.Invoker, java.lang.reflect.Method, java.lang.Object[])
+	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#record(net.sf.hajdbc.invocation.Invoker, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
 	protected void record(Invoker<Z, D, T, ?, SQLException> invoker, Method method, Object[] parameters)

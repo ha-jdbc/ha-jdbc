@@ -38,6 +38,10 @@ import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.invocation.InvocationStrategy;
+import net.sf.hajdbc.invocation.InvocationStrategyEnum;
+import net.sf.hajdbc.invocation.InvokeOnAllInvocationStrategy;
+import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
@@ -405,7 +409,7 @@ public abstract class AbstractInvocationHandler<Z, D extends Database<Z>, T, E e
 		}
 		
 		/**
-		 * @see net.sf.hajdbc.sql.Invoker#invoke(net.sf.hajdbc.Database, java.lang.Object)
+		 * @see net.sf.hajdbc.invocation.Invoker#invoke(net.sf.hajdbc.Database, java.lang.Object)
 		 */
 		@Override
 		public R invoke(D database, T object) throws E

@@ -21,6 +21,7 @@ import java.sql.SQLException;
 import java.util.Map;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.invocation.Invoker;
 
 /**
  * @author paul
