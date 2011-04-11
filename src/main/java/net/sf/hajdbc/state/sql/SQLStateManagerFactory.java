@@ -87,19 +87,39 @@ public class SQLStateManagerFactory extends GenericObjectPool.Config implements 
 		return new SQLStateManager<Z, D>(cluster, database, new GenericObjectPoolFactory(this));
 	}
 	
+	public String getUrlPattern()
+	{
+		return this.urlPattern;
+	}
+	
 	public void setUrlPattern(String urlPattern)
 	{
 		this.urlPattern = urlPattern;
+	}
+
+	public String getVendor()
+	{
+		return this.vendor;
 	}
 	
 	public void setVendor(String vendor)
 	{
 		this.vendor = vendor;
 	}
+
+	public String getUser()
+	{
+		return this.user;
+	}
 	
 	public void setUser(String user)
 	{
 		this.user = user;
+	}
+
+	public String getPassword()
+	{
+		return this.password;
 	}
 	
 	public void setPassword(String password)

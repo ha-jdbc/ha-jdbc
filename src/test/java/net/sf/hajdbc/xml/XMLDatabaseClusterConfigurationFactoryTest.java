@@ -49,8 +49,8 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 		StringBuilder builder = new StringBuilder();
 		builder.append("<?xml version=\"1.0\"?>");
 		builder.append("<ha-jdbc xmlns=\"").append(SchemaGenerator.NAMESPACE).append("\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">");
-		builder.append("\t<sync id=\"passive\" class=\"net.sf.hajdbc.sync.PassiveSynchronizationStrategy\"></sync>");
-		builder.append("\t<cluster default-sync=\"passive\">");
+		builder.append("\t<sync id=\"diff\" class=\"net.sf.hajdbc.sync.DifferentialSynchronizationStrategy\"><property name=\"fetchSize\">100</property><property name=\"maxBatchSize\">100</property></sync>");
+		builder.append("\t<cluster default-sync=\"diff\">");
 		builder.append("\t\t<database id=\"db1\">");
 		builder.append("\t\t\t<name>jdbc:mock:db1</name>");
 		builder.append("\t\t</database>");
@@ -79,13 +79,13 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 		Assert.assertNotNull(strategies);
 		Assert.assertEquals(1, strategies.size());
 		
-		SynchronizationStrategy strategy = strategies.get("passive");
+		SynchronizationStrategy strategy = strategies.get("diff");
 		
 		Assert.assertNotNull(strategy);
 		
 		Assert.assertSame(BalancerFactoryEnum.ROUND_ROBIN, configuration.getBalancerFactory());
 	   Assert.assertSame(DatabaseMetaDataCacheFactoryEnum.EAGER, configuration.getDatabaseMetaDataCacheFactory());
-	   Assert.assertEquals("passive", configuration.getDefaultSynchronizationStrategy());
+	   Assert.assertEquals("diff", configuration.getDefaultSynchronizationStrategy());
 	   Assert.assertSame(DialectFactoryEnum.STANDARD, configuration.getDialectFactory());
 	   Assert.assertSame(DurabilityFactoryEnum.FINE, configuration.getDurabilityFactory());
 	   Assert.assertSame(TransactionModeEnum.SERIAL, configuration.getTransactionMode());

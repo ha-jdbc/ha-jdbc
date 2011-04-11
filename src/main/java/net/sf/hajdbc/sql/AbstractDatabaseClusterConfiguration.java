@@ -1030,8 +1030,8 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 					{
 						throw new IllegalArgumentException(Messages.INVALID_PROPERTY_VALUE.getMessage(textValue, name, targetClass.getName()));
 					}
-					
-					descriptor.getWriteMethod().invoke(target, editor.getValue());
+					System.out.println(String.format("%s.%s(%s)", result.getClass().getName(), descriptor.getWriteMethod().getName(), editor.getValue()));
+					descriptor.getWriteMethod().invoke(result, editor.getValue());
 				}
 			}
 			return result;
