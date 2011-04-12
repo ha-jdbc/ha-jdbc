@@ -1017,6 +1017,12 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 				{
 					String name = property.getName();
 					Map.Entry<PropertyDescriptor, PropertyEditor> entry = descriptors.get(name);
+					
+					if (entry == null)
+					{
+						throw new IllegalArgumentException(Messages.INVALID_PROPERTY.getMessage(name, targetClass.getName()));
+					}
+					
 					PropertyDescriptor descriptor = entry.getKey();
 					PropertyEditor editor = entry.getValue();
 
