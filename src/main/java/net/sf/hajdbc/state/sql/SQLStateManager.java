@@ -23,8 +23,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -77,14 +80,14 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	static final String INSERT_INVOCATION_SQL = MessageFormat.format("INSERT INTO {0} ({1}, {2}, {3}) VALUES (?, ?, ?)", INVOCATION_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, EXCEPTION_COLUMN);
 	static final String DELETE_INVOCATION_SQL = MessageFormat.format("DELETE FROM {0} WHERE {1} = ? AND {2} = ?", INVOCATION_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN);
 	
-	static final String SELECT_INVOKER_SQL = MessageFormat.format("SELECT {1}, {2}, {3}, {4}, FROM {0}", INVOKER_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, DATABASE_COLUMN, RESULT_COLUMN);
+	static final String SELECT_INVOKER_SQL = MessageFormat.format("SELECT {1}, {2}, {3}, {4} FROM {0}", INVOKER_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, DATABASE_COLUMN, RESULT_COLUMN);
 	static final String INSERT_INVOKER_SQL = MessageFormat.format("INSERT INTO {0} ({1}, {2}, {3}) VALUES (?, ?, ?)", INVOKER_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, DATABASE_COLUMN);
 	static final String UPDATE_INVOKER_SQL = MessageFormat.format("UPDATE {0} SET {4} = ? WHERE {1} = ? AND {2} = ? AND {3} = ?", INVOKER_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, DATABASE_COLUMN, RESULT_COLUMN);
 	static final String DELETE_INVOKER_SQL = MessageFormat.format("DELETE FROM {0} WHERE {1} = ? AND {2} = ?", INVOKER_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN);
 
-	private static final String CREATE_INVOCATION_SQL = MessageFormat.format("CREATE TABLE IF NOT EXISTS {0} ({1} BINARY NOT NULL, {2} BYTE NOT NULL, {3} BYTE NOT NULL, PRIMARY KEY ({1}, {2}))", INVOCATION_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, EXCEPTION_COLUMN);
-	private static final String CREATE_INVOKER_SQL = MessageFormat.format("CREATE TABLE IF NOT EXISTS {0} ({1} BINARY NOT NULL, {2} BYTE NOT NULL, {3} VARCHAR NOT NULL, {4} BINARY, PRIMARY KEY ({1}, {2}, {3}))", INVOKER_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, DATABASE_COLUMN, RESULT_COLUMN);
-	private static final String CREATE_STATE_SQL = MessageFormat.format("CREATE TABLE IF NOT EXISTS {0} ({1} VARCHAR NOT NULL, PRIMARY KEY ({1}))", STATE_TABLE, DATABASE_COLUMN);
+	private static final String CREATE_INVOCATION_SQL = MessageFormat.format("CREATE TABLE IF NOT EXISTS {0} ({1} {2} NOT NULL, {3} {4} NOT NULL, {5} {6} NOT NULL, PRIMARY KEY ({1}, {3}))", INVOCATION_TABLE, TRANSACTION_COLUMN, "{0}", PHASE_COLUMN, "{1}", EXCEPTION_COLUMN, "{2}");
+	private static final String CREATE_INVOKER_SQL = MessageFormat.format("CREATE TABLE IF NOT EXISTS {0} ({1} {2} NOT NULL, {3} {4} NOT NULL, {5} {6} NOT NULL, {7} {8}, PRIMARY KEY ({1}, {3}, {5}))", INVOKER_TABLE, TRANSACTION_COLUMN, "{0}", PHASE_COLUMN, "{1}", DATABASE_COLUMN, "{2}", RESULT_COLUMN, "{3}");
+	private static final String CREATE_STATE_SQL = MessageFormat.format("CREATE TABLE IF NOT EXISTS {0} ({1} {2} NOT NULL, PRIMARY KEY ({1}))", STATE_TABLE, DATABASE_COLUMN, "{0}");
 	
 	private static Logger logger = LoggerFactory.getLogger(SQLStateManager.class);
 	
@@ -224,14 +227,6 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	@Override
 	public void activated(final DatabaseEvent event)
 	{
-		try
-		{
-			throw new Exception();
-		}
-		catch (Exception e)
-		{
-			logger.log(Level.INFO, e, "activated(" + event + ")");
-		}
 		Transaction transaction = new Transaction()
 		{
 			@Override
@@ -603,13 +598,48 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 		
 		try
 		{
+			// TODO Move this logic to DatabaseMetaDataCache
+			Map<Integer, List<String>> types = new HashMap<Integer, List<String>>();
+			ResultSet resultSet = connection.getMetaData().getTypeInfo();
+			
+			try
+			{
+				while (resultSet.next())
+				{
+					String name = resultSet.getString("TYPE_NAME");
+					int type = resultSet.getInt("DATA_TYPE");
+					
+					List<String> list = types.get(type);
+					if (list == null)
+					{
+						list = new LinkedList<String>();
+						types.put(type, list);
+					}
+					list.add(name);
+				}
+			}
+			finally
+			{
+				resultSet.close();
+			}
+
+			String byteType = this.getType(types, Types.TINYINT, Types.SMALLINT, Types.INTEGER);
+			String stringType = this.getType(types, Types.VARCHAR);
+			String binaryType = this.getType(types, Types.BINARY);
+			
 			Statement statement = connection.createStatement();
 			
 			try
 			{
-				statement.addBatch(CREATE_STATE_SQL);
-				statement.addBatch(CREATE_INVOCATION_SQL);
-				statement.addBatch(CREATE_INVOKER_SQL);
+				String sql = MessageFormat.format(CREATE_STATE_SQL, stringType);
+				System.out.println(sql);
+				statement.addBatch(sql);
+				sql = MessageFormat.format(CREATE_INVOCATION_SQL, binaryType, byteType, byteType);
+				System.out.println(sql);
+				statement.addBatch(sql);
+				sql = MessageFormat.format(CREATE_INVOKER_SQL, binaryType, byteType, stringType, binaryType);
+				System.out.println(sql);
+				statement.addBatch(sql);
 				
 				statement.executeBatch();
 			}
@@ -626,6 +656,22 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 		}
 	}
 
+	private String getType(Map<Integer, List<String>> map, int... types)
+	{
+		if (types != null)
+		{
+			for (int type: types)
+			{
+				List<String> names = map.get(type);
+				if (names != null)
+				{
+					return names.get(0);
+				}
+			}
+		}
+		throw new IllegalStateException();
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.Lifecycle#stop()
