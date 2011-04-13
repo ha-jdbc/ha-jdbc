@@ -75,7 +75,10 @@ public class DriverDatabase extends AbstractDatabase<Driver>
 		if (this.requiresAuthentication())
 		{
 			properties.setProperty(USER, this.getUser());
-			properties.setProperty(PASSWORD, password);
+			if (password != null)
+			{
+				properties.setProperty(PASSWORD, password);
+			}
 		}
 		
 		return driver.connect(this.getName(), properties);
