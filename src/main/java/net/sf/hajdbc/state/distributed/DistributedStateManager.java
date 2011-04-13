@@ -61,7 +61,7 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 		this.cluster = cluster;
 		this.stateManager = cluster.getStateManager();
 		StateCommandContext<Z, D> context = this;
-		this.dispatcher = dispatcherFactory.createCommandDispatcher(cluster.getId(), context, this, this);
+		this.dispatcher = dispatcherFactory.createCommandDispatcher(cluster.getId() + ".state", context, this, this);
 	}
 
 	/**

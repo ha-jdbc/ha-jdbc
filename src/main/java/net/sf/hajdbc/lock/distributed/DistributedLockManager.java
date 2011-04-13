@@ -33,6 +33,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.distributed.CommandDispatcher;
 import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.distributed.Member;
@@ -51,11 +53,11 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 	private final LockManager lockManager;
 	private final ConcurrentMap<Member, Map<LockDescriptor, Lock>> remoteLockDescriptorMap = new ConcurrentHashMap<Member, Map<LockDescriptor, Lock>>();
 	
-	public DistributedLockManager(String id, LockManager lockManager, CommandDispatcherFactory dispatcherFactory) throws Exception
+	public <Z, D extends Database<Z>> DistributedLockManager(DatabaseCluster<Z, D> cluster, CommandDispatcherFactory dispatcherFactory) throws Exception
 	{
-		this.lockManager = lockManager;
+		this.lockManager = cluster.getLockManager();
 		LockCommandContext context = this;
-		this.dispatcher = dispatcherFactory.createCommandDispatcher(id, context, this, this);
+		this.dispatcher = dispatcherFactory.createCommandDispatcher(cluster.getId() + ".lock", context, this, this);
 	}
 	
 	/**

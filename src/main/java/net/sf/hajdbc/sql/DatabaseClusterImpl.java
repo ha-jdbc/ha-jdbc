@@ -640,7 +640,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		
 		if (dispatcherFactory != null)
 		{
-			this.lockManager = new DistributedLockManager(this.id, this.lockManager, dispatcherFactory);
+			this.lockManager = new DistributedLockManager(this, dispatcherFactory);
 			this.stateManager = new DistributedStateManager<Z, D>(this, dispatcherFactory);
 		}
 		
