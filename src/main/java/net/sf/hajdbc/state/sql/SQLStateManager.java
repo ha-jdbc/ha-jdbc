@@ -83,9 +83,9 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	static final String UPDATE_INVOKER_SQL = MessageFormat.format("UPDATE {0} SET {4} = ? WHERE {1} = ? AND {2} = ? AND {3} = ?", INVOKER_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, DATABASE_COLUMN, RESULT_COLUMN);
 	static final String DELETE_INVOKER_SQL = MessageFormat.format("DELETE FROM {0} WHERE {1} = ? AND {2} = ?", INVOKER_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN);
 
-	private static final String CREATE_INVOCATION_SQL = MessageFormat.format("CREATE TABLE IF NOT EXISTS {0} ({1} {2} NOT NULL, {3} {4} NOT NULL, {5} {6} NOT NULL, PRIMARY KEY ({1}, {3}))", INVOCATION_TABLE, TRANSACTION_COLUMN, "{0}", PHASE_COLUMN, "{1}", EXCEPTION_COLUMN, "{2}");
-	private static final String CREATE_INVOKER_SQL = MessageFormat.format("CREATE TABLE IF NOT EXISTS {0} ({1} {2} NOT NULL, {3} {4} NOT NULL, {5} {6} NOT NULL, {7} {8}, PRIMARY KEY ({1}, {3}, {5}))", INVOKER_TABLE, TRANSACTION_COLUMN, "{0}", PHASE_COLUMN, "{1}", DATABASE_COLUMN, "{2}", RESULT_COLUMN, "{3}");
-	private static final String CREATE_STATE_SQL = MessageFormat.format("CREATE TABLE IF NOT EXISTS {0} ({1} {2} NOT NULL, PRIMARY KEY ({1}))", STATE_TABLE, DATABASE_COLUMN, "{0}");
+	private static final String CREATE_INVOCATION_SQL = MessageFormat.format("CREATE TABLE {0} ({1} {2} NOT NULL, {3} {4} NOT NULL, {5} {6} NOT NULL, PRIMARY KEY ({1}, {3}))", INVOCATION_TABLE, TRANSACTION_COLUMN, "{0}", PHASE_COLUMN, "{1}", EXCEPTION_COLUMN, "{2}");
+	private static final String CREATE_INVOKER_SQL = MessageFormat.format("CREATE TABLE {0} ({1} {2} NOT NULL, {3} {4} NOT NULL, {5} {6} NOT NULL, {7} {8}, PRIMARY KEY ({1}, {3}, {5}))", INVOKER_TABLE, TRANSACTION_COLUMN, "{0}", PHASE_COLUMN, "{1}", DATABASE_COLUMN, "{2}", RESULT_COLUMN, "{3}");
+	private static final String CREATE_STATE_SQL = MessageFormat.format("CREATE TABLE {0} ({1} {2} NOT NULL, PRIMARY KEY ({1}))", STATE_TABLE, DATABASE_COLUMN, "{0}");
 	
 	private static Logger logger = LoggerFactory.getLogger(SQLStateManager.class);
 	
@@ -624,17 +624,16 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 			
 			try
 			{
-				String sql = MessageFormat.format(CREATE_STATE_SQL, stringType);
-				logger.log(Level.DEBUG, sql);
-				statement.addBatch(sql);
-				sql = MessageFormat.format(CREATE_INVOCATION_SQL, binaryType, byteType, byteType);
-				logger.log(Level.DEBUG, sql);
-				statement.addBatch(sql);
-				sql = MessageFormat.format(CREATE_INVOKER_SQL, binaryType, byteType, stringType, binaryType);
-				logger.log(Level.DEBUG, sql);
-				statement.addBatch(sql);
+				boolean batch = false;
 				
-				statement.executeBatch();
+				batch |= this.addBatch(statement, MessageFormat.format(CREATE_STATE_SQL, stringType), SELECT_STATE_SQL);
+				batch |= this.addBatch(statement, MessageFormat.format(CREATE_INVOCATION_SQL, binaryType, byteType, byteType), SELECT_INVOCATION_SQL);
+				batch |= this.addBatch(statement, MessageFormat.format(CREATE_INVOKER_SQL, binaryType, byteType, stringType, binaryType), SELECT_INVOKER_SQL);
+				
+				if (batch)
+				{
+					statement.executeBatch();
+				}
 			}
 			finally
 			{
@@ -649,6 +648,22 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 		}
 	}
 
+	private boolean addBatch(Statement statement, String createSQL, String selectSQL) throws SQLException
+	{
+		try
+		{
+			// If select fails, we'll assume its because the table does not exist
+			statement.executeQuery(selectSQL);
+			return false;
+		}
+		catch (SQLException e)
+		{
+			logger.log(Level.DEBUG, createSQL);
+			statement.addBatch(createSQL);
+			return true;
+		}
+	}
+	
 	private String findType(Map<Integer, String> map, int... types) throws SQLException
 	{
 		if (types != null)

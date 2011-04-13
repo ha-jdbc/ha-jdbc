@@ -20,8 +20,6 @@ package net.sf.hajdbc.state.sql;
 import java.sql.Driver;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.List;
 import java.util.ServiceLoader;
 
 import org.apache.commons.pool.impl.GenericObjectPool;
@@ -38,20 +36,38 @@ import net.sf.hajdbc.state.StateManagerFactory;
  */
 public class SQLStateManagerFactory extends GenericObjectPool.Config implements StateManagerFactory
 {
-	private static final List<String> EMBEDDED_VENDORS = Arrays.asList("h2", "hsqldb");
+	enum EmbeddedVendor
+	{
+		H2("jdbc:h2:{0}"),
+		HSQLDB("jdbc:hsqldb:{0}"),
+		DERBY("jdbc:derby:{0};create=true")
+		;
+		
+		private final String pattern;
+		
+		EmbeddedVendor(String pattern)
+		{
+			this.pattern = pattern;
+		}
+		
+		public String getUrlPattern()
+		{
+			return this.pattern;
+		}
+	}
 	
-	private String urlPattern = "jdbc:{1}:{0}";
-	private String vendor = this.defaultVendor();
+	private String urlPattern = this.defaultUrlPattern();
 	private String user;
 	private String password;
 	
-	private String defaultVendor()
+	private String defaultUrlPattern()
 	{
 		ServiceLoader<Driver> drivers = ServiceLoader.load(Driver.class);
 		
-		for (String vendor: EMBEDDED_VENDORS)
+		for (EmbeddedVendor vendor: EmbeddedVendor.values())
 		{
-			String url = MessageFormat.format(this.urlPattern, "test", vendor);
+			String pattern = vendor.getUrlPattern();
+			String url = MessageFormat.format(pattern, "test");
 			
 			for (Driver driver: drivers)
 			{
@@ -59,7 +75,7 @@ public class SQLStateManagerFactory extends GenericObjectPool.Config implements 
 				{
 					if (driver.acceptsURL(url))
 					{
-						return vendor;
+						return pattern;
 					}
 				}
 				catch (SQLException e)
@@ -79,8 +95,14 @@ public class SQLStateManagerFactory extends GenericObjectPool.Config implements 
 	@Override
 	public <Z, D extends Database<Z>> StateManager createStateManager(DatabaseCluster<Z, D> cluster)
 	{
+		if (this.urlPattern == null)
+		{
+			// TODO externalize
+			throw new IllegalArgumentException("No urlPattern property defined and no embedded database driver was detected on the classpath.");
+		}
+		
 		DriverDatabase database = new DriverDatabase();
-		database.setName(MessageFormat.format(this.urlPattern, cluster.getId(), this.vendor));
+		database.setName(MessageFormat.format(this.urlPattern, cluster.getId()));
 		database.setUser(this.user);
 		database.setPassword(this.password);
 		
@@ -95,16 +117,6 @@ public class SQLStateManagerFactory extends GenericObjectPool.Config implements 
 	public void setUrlPattern(String urlPattern)
 	{
 		this.urlPattern = urlPattern;
-	}
-
-	public String getVendor()
-	{
-		return this.vendor;
-	}
-	
-	public void setVendor(String vendor)
-	{
-		this.vendor = vendor;
 	}
 
 	public String getUser()
