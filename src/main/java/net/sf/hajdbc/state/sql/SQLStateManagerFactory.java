@@ -38,7 +38,7 @@ import net.sf.hajdbc.state.StateManagerFactory;
  */
 public class SQLStateManagerFactory extends GenericObjectPool.Config implements StateManagerFactory
 {
-	private static final List<String> EMBEDDED_VENDORS = Arrays.asList("h2", "hsqldb", "derby");
+	private static final List<String> EMBEDDED_VENDORS = Arrays.asList("h2", "hsqldb");
 	
 	private String urlPattern = "jdbc:{1}:{0}";
 	private String vendor = this.defaultVendor();
