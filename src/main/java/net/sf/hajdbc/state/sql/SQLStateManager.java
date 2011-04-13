@@ -26,8 +26,6 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.text.MessageFormat;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -598,24 +596,19 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 		
 		try
 		{
-			// TODO Move this logic to DatabaseMetaDataCache
-			Map<Integer, List<String>> types = new HashMap<Integer, List<String>>();
+			Map<Integer, String> types = new HashMap<Integer, String>();
 			ResultSet resultSet = connection.getMetaData().getTypeInfo();
 			
 			try
 			{
 				while (resultSet.next())
 				{
-					String name = resultSet.getString("TYPE_NAME");
 					int type = resultSet.getInt("DATA_TYPE");
 					
-					List<String> list = types.get(type);
-					if (list == null)
+					if (!types.containsKey(type))
 					{
-						list = new LinkedList<String>();
-						types.put(type, list);
+						types.put(type, resultSet.getString("TYPE_NAME"));
 					}
-					list.add(name);
 				}
 			}
 			finally
@@ -623,22 +616,22 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 				resultSet.close();
 			}
 
-			String byteType = this.getType(types, Types.TINYINT, Types.SMALLINT, Types.INTEGER);
-			String stringType = this.getType(types, Types.VARCHAR);
-			String binaryType = this.getType(types, Types.BINARY);
+			String byteType = this.findType(types, Types.TINYINT, Types.SMALLINT, Types.INTEGER);
+			String stringType = this.findType(types, Types.VARCHAR);
+			String binaryType = this.findType(types, Types.BINARY, Types.BLOB);
 			
 			Statement statement = connection.createStatement();
 			
 			try
 			{
 				String sql = MessageFormat.format(CREATE_STATE_SQL, stringType);
-				System.out.println(sql);
+				logger.log(Level.DEBUG, sql);
 				statement.addBatch(sql);
 				sql = MessageFormat.format(CREATE_INVOCATION_SQL, binaryType, byteType, byteType);
-				System.out.println(sql);
+				logger.log(Level.DEBUG, sql);
 				statement.addBatch(sql);
 				sql = MessageFormat.format(CREATE_INVOKER_SQL, binaryType, byteType, stringType, binaryType);
-				System.out.println(sql);
+				logger.log(Level.DEBUG, sql);
 				statement.addBatch(sql);
 				
 				statement.executeBatch();
@@ -656,20 +649,20 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 		}
 	}
 
-	private String getType(Map<Integer, List<String>> map, int... types)
+	private String findType(Map<Integer, String> map, int... types) throws SQLException
 	{
 		if (types != null)
 		{
 			for (int type: types)
 			{
-				List<String> names = map.get(type);
-				if (names != null)
+				String name = map.get(type);
+				if (name != null)
 				{
-					return names.get(0);
+					return name;
 				}
 			}
 		}
-		throw new IllegalStateException();
+		throw new SQLException();
 	}
 	
 	/**
