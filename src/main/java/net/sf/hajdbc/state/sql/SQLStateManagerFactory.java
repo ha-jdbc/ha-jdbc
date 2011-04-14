@@ -43,16 +43,11 @@ public class SQLStateManagerFactory extends GenericObjectPool.Config implements 
 		DERBY("jdbc:derby:{0};create=true")
 		;
 		
-		private final String pattern;
+		final String pattern;
 		
 		EmbeddedVendor(String pattern)
 		{
 			this.pattern = pattern;
-		}
-		
-		public String getUrlPattern()
-		{
-			return this.pattern;
 		}
 	}
 	
@@ -66,8 +61,7 @@ public class SQLStateManagerFactory extends GenericObjectPool.Config implements 
 		
 		for (EmbeddedVendor vendor: EmbeddedVendor.values())
 		{
-			String pattern = vendor.getUrlPattern();
-			String url = MessageFormat.format(pattern, "test");
+			String url = MessageFormat.format(vendor.pattern, "test");
 			
 			for (Driver driver: drivers)
 			{
@@ -75,7 +69,7 @@ public class SQLStateManagerFactory extends GenericObjectPool.Config implements 
 				{
 					if (driver.acceptsURL(url))
 					{
-						return pattern;
+						return vendor.pattern;
 					}
 				}
 				catch (SQLException e)
