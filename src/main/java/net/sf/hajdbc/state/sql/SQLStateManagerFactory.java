@@ -26,6 +26,9 @@ import org.apache.commons.pool.impl.GenericObjectPool;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.logging.Level;
+import net.sf.hajdbc.logging.Logger;
+import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.pool.generic.GenericObjectPoolFactory;
 import net.sf.hajdbc.sql.DriverDatabase;
 import net.sf.hajdbc.state.StateManager;
@@ -36,6 +39,8 @@ import net.sf.hajdbc.state.StateManagerFactory;
  */
 public class SQLStateManagerFactory extends GenericObjectPool.Config implements StateManagerFactory
 {
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	
 	enum EmbeddedVendor
 	{
 		H2("jdbc:h2:{0}"),
@@ -95,10 +100,13 @@ public class SQLStateManagerFactory extends GenericObjectPool.Config implements 
 			throw new IllegalArgumentException("No urlPattern property defined and no embedded database driver was detected on the classpath.");
 		}
 		
+		String url = MessageFormat.format(this.urlPattern, cluster.getId());
 		DriverDatabase database = new DriverDatabase();
-		database.setName(MessageFormat.format(this.urlPattern, cluster.getId()));
+		database.setName(url);
 		database.setUser(this.user);
 		database.setPassword(this.password);
+		
+		this.logger.log(Level.INFO, "State for cluster {0} will be persisted to {1}", cluster, url);
 		
 		return new SQLStateManager<Z, D>(cluster, database, new GenericObjectPoolFactory(this));
 	}

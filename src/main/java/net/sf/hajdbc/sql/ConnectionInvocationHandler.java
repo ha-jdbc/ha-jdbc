@@ -24,7 +24,6 @@ import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,6 +32,7 @@ import net.sf.hajdbc.durability.Durability;
 import net.sf.hajdbc.invocation.InvocationStrategy;
 import net.sf.hajdbc.invocation.InvocationStrategyEnum;
 import net.sf.hajdbc.invocation.Invoker;
+import net.sf.hajdbc.util.StaticRegistry;
 import net.sf.hajdbc.util.reflect.Methods;
 
 /**
@@ -66,13 +66,7 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ch
 	private static final Set<Method> endTransactionMethodSet = new HashSet<Method>(Arrays.asList(commitMethod, rollbackMethod, setAutoCommitMethod));
 	private static final Set<Method> createLocatorMethodSet = new HashSet<Method>(Arrays.asList(createBlobMethod, createClobMethod, createNClobMethod, createSQLXMLMethod));
 	
-	private static final Map<Method, Durability.Phase> phaseMap = new IdentityHashMap<Method, Durability.Phase>();
-	static
-	{
-		phaseMap.put(commitMethod, Durability.Phase.COMMIT);
-		phaseMap.put(rollbackMethod, Durability.Phase.ROLLBACK);
-		phaseMap.put(setAutoCommitMethod, Durability.Phase.COMMIT);
-	}
+	private static final StaticRegistry<Method, Durability.Phase> phaseRegistry = new DurabilityPhaseRegistry(Arrays.asList(commitMethod, setAutoCommitMethod), Arrays.asList(rollbackMethod));
 	
 	private TransactionContext<Z, D> transactionContext;
 	
@@ -175,7 +169,7 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ch
 		
 		if (endTransactionMethodSet.contains(method))
 		{
-			return this.transactionContext.end(InvocationStrategyEnum.END_TRANSACTION_INVOKE_ON_ALL, phaseMap.get(method));
+			return this.transactionContext.end(InvocationStrategyEnum.END_TRANSACTION_INVOKE_ON_ALL, phaseRegistry.get(method));
 		}
 		
 		if (method.equals(rollbackSavepointMethod) || method.equals(releaseSavepointMethod))
@@ -233,7 +227,7 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ch
 		
 		if (endTransactionMethodSet.contains(method))
 		{
-			return this.transactionContext.end(invoker, phaseMap.get(method));
+			return this.transactionContext.end(invoker, phaseRegistry.get(method));
 		}
 		
 		return invoker;

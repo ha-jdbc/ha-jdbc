@@ -21,7 +21,6 @@ import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -38,12 +37,13 @@ import javax.transaction.xa.Xid;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.durability.Durability;
-import net.sf.hajdbc.durability.Durability.Phase;
 import net.sf.hajdbc.invocation.InvocationStrategy;
 import net.sf.hajdbc.invocation.InvocationStrategyEnum;
 import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.sql.AbstractChildInvocationHandler;
+import net.sf.hajdbc.sql.DurabilityPhaseRegistry;
 import net.sf.hajdbc.sql.SQLProxy;
+import net.sf.hajdbc.util.StaticRegistry;
 import net.sf.hajdbc.util.reflect.Methods;
 
 /**
@@ -63,14 +63,7 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 	private static final Method forgetMethod = Methods.getMethod(XAResource.class, "forget", Xid.class);
 	private static final Set<Method> endTransactionMethodSet = new HashSet<Method>(Arrays.asList(commitMethod, rollbackMethod, forgetMethod));
 	
-	private static final Map<Method, Durability.Phase> phaseMap = new IdentityHashMap<Method, Durability.Phase>();
-	static
-	{
-		phaseMap.put(prepareMethod, Phase.PREPARE);
-		phaseMap.put(commitMethod, Phase.COMMIT);
-		phaseMap.put(rollbackMethod, Phase.ROLLBACK);
-		phaseMap.put(forgetMethod, Phase.FORGET);
-	}
+	private static final StaticRegistry<Method, Durability.Phase> phaseRegistry = new DurabilityPhaseRegistry(Arrays.asList(prepareMethod), Arrays.asList(commitMethod), Arrays.asList(rollbackMethod), Arrays.asList(forgetMethod));
 	
 	// Xids are global - so store in static variable
 	private static final ConcurrentMap<Xid, Lock> lockMap = new ConcurrentHashMap<Xid, Lock>();
@@ -143,7 +136,7 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 				}
 			}
 			
-			Durability.Phase phase = phaseMap.get(method);
+			Durability.Phase phase = phaseRegistry.get(method);
 			
 			if (phase != null)
 			{
@@ -191,7 +184,7 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 	{
 		Invoker<XADataSource, XADataSourceDatabase, XAResource, R, XAException> invoker = super.getInvoker(object, method, parameters);
 		
-		Durability.Phase phase = phaseMap.get(method);
+		Durability.Phase phase = phaseRegistry.get(method);
 		
 		if (method.equals(prepareMethod) || endTransactionMethodSet.contains(method))
 		{
