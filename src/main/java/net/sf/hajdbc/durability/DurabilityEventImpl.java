@@ -22,13 +22,13 @@ import java.util.EventObject;
 /**
  * @author Paul Ferraro
  */
-class DurabilityEventImpl extends EventObject implements DurabilityEvent
+public class DurabilityEventImpl extends EventObject implements DurabilityEvent
 {
 	private static final long serialVersionUID = -8747536263068408813L;
 	
 	private final Durability.Phase phase;
 	
-	DurabilityEventImpl(Object transactionId, Durability.Phase phase)
+	protected DurabilityEventImpl(Object transactionId, Durability.Phase phase)
 	{
 		super(transactionId);
 		

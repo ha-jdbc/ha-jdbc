@@ -20,7 +20,7 @@ package net.sf.hajdbc.durability;
 /**
  * @author Paul Ferraro
  */
-interface DurabilityEvent
+public interface DurabilityEvent
 {
 	Object getTransactionId();
 	
