@@ -17,18 +17,30 @@
  */
 package net.sf.hajdbc.state.bdb;
 
-import org.apache.commons.pool.impl.GenericObjectPool;
-
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.state.StateManager;
 import net.sf.hajdbc.state.StateManagerFactory;
 
-public class BDBStateManagerFactory extends GenericObjectPool.Config implements StateManagerFactory
+import com.sleepycat.je.EnvironmentConfig;
+
+public class BDBStateManagerFactory extends EnvironmentConfig implements StateManagerFactory
 {
+	private String location;
+	
 	@Override
 	public <Z, D extends Database<Z>> StateManager createStateManager(DatabaseCluster<Z, D> cluster)
 	{
 		return null;
+	}
+	
+	public String getLocation()
+	{
+		return this.location;
+	}
+	
+	public void setLocation(String location)
+	{
+		this.location = location;
 	}
 }
