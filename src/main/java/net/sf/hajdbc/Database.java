@@ -30,6 +30,8 @@ import net.sf.hajdbc.codec.Codec;
  */
 public interface Database<Z> extends Comparable<Database<Z>>
 {
+	static final int ID_MAX_SIZE = 64;
+	
 	/**
 	 * Returns the unique idenfier for this database
 	 * @return a unique identifier
