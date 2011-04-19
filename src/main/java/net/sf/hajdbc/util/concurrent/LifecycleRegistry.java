@@ -23,13 +23,18 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.Lifecycle;
+import net.sf.hajdbc.logging.Level;
+import net.sf.hajdbc.logging.Logger;
+import net.sf.hajdbc.logging.LoggerFactory;
 
 /**
  * @author Paul Ferraro
  */
 public class LifecycleRegistry<K, V extends Lifecycle, C, E extends Exception> implements Registry<K, V, C, E>
 {
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());	
 	private final LifecycleRegistry.Store<K, RegistryEntry> store;
+	
 	final Factory<K, V, C, E> factory;
 	final ExceptionFactory<E> exceptionFactory;
 
@@ -77,7 +82,14 @@ public class LifecycleRegistry<K, V extends Lifecycle, C, E extends Exception> i
 		{
 			this.store.clear(key);
 			
-			value.stop();
+			try
+			{
+				value.stop();
+			}
+			catch (Exception re)
+			{
+				this.logger.log(Level.INFO, re);
+			}
 			
 			throw this.exceptionFactory.createException(e);
 		}
