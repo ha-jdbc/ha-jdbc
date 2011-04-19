@@ -664,7 +664,10 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	@Override
 	public void stop()
 	{
-		this.pool.close();
+		if (this.pool != null)
+		{
+			this.pool.close();
+		}
 	}
 
 	private void execute(Transaction transaction) throws SQLException
