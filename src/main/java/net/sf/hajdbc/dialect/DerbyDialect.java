@@ -20,18 +20,18 @@ package net.sf.hajdbc.dialect;
 import net.sf.hajdbc.IdentityColumnSupport;
 import net.sf.hajdbc.SequenceSupport;
 
-
 /**
  * Dialect for <a href="http://db.apache.org/derby">Apache Derby</a>.
  * 
- * @author  Paul Ferraro
- * @since   1.1
+ * @author Paul Ferraro
+ * @since 1.1
  */
 @SuppressWarnings("nls")
 public class DerbyDialect extends StandardDialect
 {
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see net.sf.hajdbc.dialect.StandardDialect#getIdentityColumnSupport()
 	 */
 	@Override
@@ -42,6 +42,7 @@ public class DerbyDialect extends StandardDialect
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequenceSupport()
 	 */
 	@Override
@@ -53,6 +54,7 @@ public class DerbyDialect extends StandardDialect
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see net.sf.hajdbc.dialect.StandardDialect#vendorPattern()
 	 */
 	@Override
@@ -72,6 +74,7 @@ public class DerbyDialect extends StandardDialect
 
 	/**
 	 * Deferrability clause is not supported.
+	 * 
 	 * @see net.sf.hajdbc.dialect.StandardDialect#createForeignKeyConstraintFormat()
 	 */
 	@Override
