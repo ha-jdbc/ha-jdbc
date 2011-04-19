@@ -55,6 +55,11 @@ public final class Driver extends AbstractDriver implements Registry.Factory<Str
 	private final Map<String, DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>> configurationFactories = new ConcurrentHashMap<String, DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>>();
 	private final Registry<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException> registry = new LifecycleRegistry<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException>(this, new MapRegistryStoreFactory<String>(), ExceptionType.getExceptionFactory(SQLException.class));
 	
+	public void stop(String id) throws SQLException
+	{
+		this.registry.remove(id);
+	}
+
 	public void setFactory(DatabaseClusterFactory<java.sql.Driver, DriverDatabase> factory)
 	{
 		this.factory = factory;
