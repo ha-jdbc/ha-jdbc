@@ -47,7 +47,7 @@ public class RegistryTest
 	{
 		SimpleObject expected = new SimpleObject(0);
 		
-		Registry<Void, SimpleObject, Void, Exception> registry = new Registry<Void, SimpleObject, Void, Exception>(new Factory(expected, 1), new ReferenceRegistryStoreFactory(), new SimpleExceptionFactory());
+		Registry<Void, SimpleObject, Void, Exception> registry = new LifecycleRegistry<Void, SimpleObject, Void, Exception>(new Factory(expected, 1), new ReferenceRegistryStoreFactory(), new SimpleExceptionFactory());
 		
 		int count = 100;
 		List<Callable<SimpleObject>> tasks = new ArrayList<Callable<SimpleObject>>(count);
@@ -88,7 +88,7 @@ public class RegistryTest
 	{
 		SimpleObject expected = new SimpleObject(4);
 		
-		Registry<Void, SimpleObject, Void, Exception> registry = new Registry<Void, SimpleObject, Void, Exception>(new Factory(expected, 1), new ReferenceRegistryStoreFactory(), new SimpleExceptionFactory());
+		Registry<Void, SimpleObject, Void, Exception> registry = new LifecycleRegistry<Void, SimpleObject, Void, Exception>(new Factory(expected, 1), new ReferenceRegistryStoreFactory(), new SimpleExceptionFactory());
 		
 		int count = 100;
 		List<Callable<SimpleObject>> tasks = new ArrayList<Callable<SimpleObject>>(count);
@@ -150,7 +150,7 @@ public class RegistryTest
 	{
 		SimpleObject expected = new SimpleObject(0);
 		
-		Registry<Void, SimpleObject, Void, Exception> registry = new Registry<Void, SimpleObject, Void, Exception>(new Factory(expected, 1), new ReferenceRegistryStoreFactory(), new SimpleExceptionFactory());
+		Registry<Void, SimpleObject, Void, Exception> registry = new LifecycleRegistry<Void, SimpleObject, Void, Exception>(new Factory(expected, 1), new ReferenceRegistryStoreFactory(), new SimpleExceptionFactory());
 		
 		// Setup start() to fail
 		expected.start();
@@ -237,7 +237,7 @@ public class RegistryTest
 		}
 	}
 	
-	private class Factory implements Registry.Factory<Void, SimpleObject, Void, Exception>
+	private class Factory implements LifecycleRegistry.Factory<Void, SimpleObject, Void, Exception>
 	{
 		private final SimpleObject object;
 		private final int seconds;
