@@ -20,11 +20,16 @@ package net.sf.hajdbc.cache.lazy;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.AbstractMap;
+import java.util.Map;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.cache.DatabaseMetaDataCache;
+import net.sf.hajdbc.cache.DatabaseMetaDataSupport;
 import net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory;
 import net.sf.hajdbc.cache.DatabaseProperties;
 
@@ -42,7 +47,7 @@ public class SharedLazyDatabaseMetaDataCache<Z, D extends Database<Z>> implement
 	private final DatabaseCluster<Z, D> cluster;
 	private final DatabaseMetaDataSupportFactory factory;
 	
-	private volatile Reference<LazyDatabaseProperties> propertiesRef = new SoftReference<LazyDatabaseProperties>(null);
+	private volatile Reference<Map.Entry<DatabaseProperties, LazyDatabaseMetaDataProvider>> entryRef = new SoftReference<Map.Entry<DatabaseProperties, LazyDatabaseMetaDataProvider>>(null);
 	
 	public SharedLazyDatabaseMetaDataCache(DatabaseCluster<Z, D> cluster, DatabaseMetaDataSupportFactory factory)
 	{
@@ -56,7 +61,7 @@ public class SharedLazyDatabaseMetaDataCache<Z, D extends Database<Z>> implement
 	@Override
 	public synchronized void flush()
 	{
-		this.propertiesRef.clear();
+		this.entryRef.clear();
 	}
 
 	/**
@@ -66,19 +71,25 @@ public class SharedLazyDatabaseMetaDataCache<Z, D extends Database<Z>> implement
 	@Override
 	public DatabaseProperties getDatabaseProperties(D database, Connection connection) throws SQLException
 	{
-		LazyDatabaseProperties properties = this.propertiesRef.get();
+		Map.Entry<DatabaseProperties, LazyDatabaseMetaDataProvider> entry = this.entryRef.get();
 		
-		if (properties == null)
+		if (entry == null)
 		{
-			properties = new LazyDatabaseProperties(connection.getMetaData(), this.factory, this.cluster.getDialect());
+			DatabaseMetaData metaData = connection.getMetaData();
+			Dialect dialect = this.cluster.getDialect();
+			DatabaseMetaDataSupport support = this.factory.createSupport(metaData, dialect);
+			LazyDatabaseMetaDataProvider provider = new LazyDatabaseMetaDataProvider(metaData);
+			DatabaseProperties properties = new LazyDatabaseProperties(provider, support, dialect);
+			
+			entry = new AbstractMap.SimpleImmutableEntry<DatabaseProperties, LazyDatabaseMetaDataProvider>(properties, provider);
 		
-			this.propertiesRef = new SoftReference<LazyDatabaseProperties>(properties);
+			this.entryRef = new SoftReference<Map.Entry<DatabaseProperties, LazyDatabaseMetaDataProvider>>(entry);
 		}
 		else
 		{
-			properties.setConnection(connection);
+			entry.getValue().setConnection(connection);
 		}
 		
-		return properties;
+		return entry.getKey();
 	}
 }

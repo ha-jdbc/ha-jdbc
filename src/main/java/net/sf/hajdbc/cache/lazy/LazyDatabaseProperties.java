@@ -17,40 +17,126 @@
  */
 package net.sf.hajdbc.cache.lazy;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicReference;
 
 import net.sf.hajdbc.Dialect;
-import net.sf.hajdbc.cache.AbstractLazyDatabaseProperties;
-import net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory;
+import net.sf.hajdbc.cache.AbstractDatabaseProperties;
+import net.sf.hajdbc.cache.DatabaseMetaDataProvider;
+import net.sf.hajdbc.cache.DatabaseMetaDataSupport;
+import net.sf.hajdbc.cache.QualifiedName;
+import net.sf.hajdbc.cache.SequenceProperties;
+import net.sf.hajdbc.cache.TableProperties;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class LazyDatabaseProperties extends AbstractLazyDatabaseProperties
+public class LazyDatabaseProperties extends AbstractDatabaseProperties
 {
-	private final ThreadLocal<Connection> threadLocal = new ThreadLocal<Connection>();
+	private final DatabaseMetaDataSupport support;
+	private final Dialect dialect;
+	private final DatabaseMetaDataProvider provider;
 	
-	public LazyDatabaseProperties(DatabaseMetaData metaData, DatabaseMetaDataSupportFactory factory, Dialect dialect) throws SQLException
+	private final AtomicReference<Map<String, TableProperties>> tablesRef = new AtomicReference<Map<String, TableProperties>>();
+	private final AtomicReference<Map<String, SequenceProperties>> sequencesRef = new AtomicReference<Map<String, SequenceProperties>>();
+	private final AtomicReference<List<String>> defaultSchemasRef = new AtomicReference<List<String>>();
+	private final AtomicReference<Map<Integer, Map.Entry<String, Integer>>> typesRef = new AtomicReference<Map<Integer, Map.Entry<String, Integer>>>();
+	
+	public LazyDatabaseProperties(DatabaseMetaDataProvider provider, DatabaseMetaDataSupport support, Dialect dialect) throws SQLException
 	{
-		super(metaData, factory, dialect);
+		super(provider.getDatabaseMetaData(), support);
 		
-		this.setConnection(metaData.getConnection());
+		this.provider = provider;
+		this.support = support;
+		this.dialect = dialect;
 	}
 	
-	public void setConnection(Connection connection)
-	{
-		this.threadLocal.set(connection);
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.cache.DatabaseMetaDataProvider#getDatabaseMetaData()
-	 */
 	@Override
-	public DatabaseMetaData getDatabaseMetaData() throws SQLException
+	protected Map<String, TableProperties> tables() throws SQLException
 	{
-		return this.threadLocal.get().getMetaData();
+		Map<String, TableProperties> tables = this.tablesRef.get();
+		
+		if (tables == null)
+		{
+			tables = new HashMap<String, TableProperties>();
+			
+			for (QualifiedName table: this.support.getTables(this.provider.getDatabaseMetaData()))
+			{
+				TableProperties properties = new LazyTableProperties(this.provider, this.support, table);
+				
+				tables.put(properties.getName(), properties);
+			}
+			
+			if (!this.tablesRef.compareAndSet(null, tables))
+			{
+				return this.tablesRef.get();
+			}
+		}
+		
+		return tables;
+	}
+	
+	@Override
+	protected Map<String, SequenceProperties> sequences() throws SQLException
+	{
+		Map<String, SequenceProperties> sequences = this.sequencesRef.get();
+
+		if (sequences == null)
+		{
+			sequences = new HashMap<String, SequenceProperties>();
+			
+			for (SequenceProperties sequence: this.support.getSequences(this.provider.getDatabaseMetaData()))
+			{
+				sequences.put(sequence.getName(), sequence);
+			}
+			
+			if (!this.sequencesRef.compareAndSet(null, sequences))
+			{
+				return this.sequencesRef.get();
+			}
+		}
+
+		return sequences;
+	}
+	
+	@Override
+	protected List<String> defaultSchemas() throws SQLException
+	{
+		List<String> schemas = this.defaultSchemasRef.get();
+		
+		if (schemas == null)
+		{
+			schemas = this.dialect.getDefaultSchemas(this.provider.getDatabaseMetaData());
+			
+			if (!this.defaultSchemasRef.compareAndSet(null, schemas))
+			{
+				return this.defaultSchemasRef.get();
+			}
+		}
+		
+		return schemas;
+	}
+
+	@Override
+	protected Map<Integer, Entry<String, Integer>> types() throws SQLException
+	{
+		Map<Integer, Map.Entry<String, Integer>> types = this.typesRef.get();
+		
+		if (types == null)
+		{
+			types = this.support.getTypes(this.provider.getDatabaseMetaData());
+			
+			if (!this.typesRef.compareAndSet(null, types))
+			{
+				return this.typesRef.get();
+			}
+		}
+		
+		return types;
 	}
 }

@@ -24,10 +24,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.cache.AbstractDatabaseProperties;
-import net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory;
+import net.sf.hajdbc.cache.DatabaseMetaDataSupport;
 import net.sf.hajdbc.cache.QualifiedName;
 import net.sf.hajdbc.cache.SequenceProperties;
 import net.sf.hajdbc.cache.TableProperties;
@@ -38,48 +39,57 @@ import net.sf.hajdbc.cache.TableProperties;
  */
 public class EagerDatabaseProperties extends AbstractDatabaseProperties
 {
-	private Map<String, TableProperties> tableMap = new HashMap<String, TableProperties>();
-	private Map<String, SequenceProperties> sequenceMap = new HashMap<String, SequenceProperties>();
-	private List<String> defaultSchemaList;
-
-	public EagerDatabaseProperties(DatabaseMetaData metaData, DatabaseMetaDataSupportFactory factory, Dialect dialect) throws SQLException
+	private final Map<String, TableProperties> tables = new HashMap<String, TableProperties>();
+	private final Map<String, SequenceProperties> sequences = new HashMap<String, SequenceProperties>();
+	private final List<String> defaultSchemas;
+	private final Map<Integer, Map.Entry<String, Integer>> types;
+	
+	public EagerDatabaseProperties(DatabaseMetaData metaData, DatabaseMetaDataSupport support, Dialect dialect) throws SQLException
 	{
-		super(metaData, factory, dialect);
+		super(metaData, support);
 		
-		Collection<QualifiedName> tables = this.support.getTables(metaData);
+		Collection<QualifiedName> tables = support.getTables(metaData);
 		
 		for (QualifiedName table: tables)
 		{
-			TableProperties properties = new EagerTableProperties(metaData, this.support, table);
+			TableProperties properties = new EagerTableProperties(metaData, support, table);
 			
-			this.tableMap.put(properties.getName(), properties);
+			this.tables.put(properties.getName(), properties);
 		}
 		
-		List<String> defaultSchemaList = this.dialect.getDefaultSchemas(metaData);
+		List<String> defaultSchemaList = dialect.getDefaultSchemas(metaData);
 		
-		this.defaultSchemaList = new ArrayList<String>(defaultSchemaList);
+		this.defaultSchemas = new ArrayList<String>(defaultSchemaList);
 		
-		for (SequenceProperties sequence: this.support.getSequences(metaData))
+		for (SequenceProperties sequence: support.getSequences(metaData))
 		{
-			this.sequenceMap.put(sequence.getName(), sequence);
+			this.sequences.put(sequence.getName(), sequence);
 		}
+		
+		this.types = support.getTypes(metaData);
 	}
 	
 	@Override
-	protected List<String> getDefaultSchemaList() throws SQLException
+	protected List<String> defaultSchemas()
 	{
-		return this.defaultSchemaList;
+		return this.defaultSchemas;
 	}
 
 	@Override
-	protected Map<String, SequenceProperties> getSequenceMap() throws SQLException
+	protected Map<String, SequenceProperties> sequences()
 	{
-		return this.sequenceMap;
+		return this.sequences;
 	}
 
 	@Override
-	protected Map<String, TableProperties> getTableMap() throws SQLException
+	protected Map<String, TableProperties> tables()
 	{
-		return this.tableMap;
+		return this.tables;
+	}
+
+	@Override
+	protected Map<Integer, Entry<String, Integer>> types()
+	{
+		return this.types;
 	}
 }

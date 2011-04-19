@@ -17,6 +17,7 @@
  */
 package net.sf.hajdbc.tx;
 
+import java.nio.ByteBuffer;
 import java.util.UUID;
 
 /**
@@ -24,15 +25,46 @@ import java.util.UUID;
  * This implementation is safe for <distributable/> clusters.
  * @author Paul Ferraro
  */
-public class UUIDTransactionIdentifierFactory implements TransactionIdentifierFactory
+public class UUIDTransactionIdentifierFactory implements TransactionIdentifierFactory<UUID>
 {
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.tx.TransactionIdentifierFactory#createTransactionIdentifier()
 	 */
 	@Override
-	public Object createTransactionIdentifier()
+	public UUID createTransactionIdentifier()
 	{
 		return UUID.randomUUID();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.tx.TransactionIdentifierFactory#serialize(java.lang.Object)
+	 */
+	@Override
+	public byte[] serialize(UUID transactionId)
+	{
+		return ByteBuffer.allocate(this.size()).putLong(transactionId.getMostSignificantBits()).putLong(transactionId.getLeastSignificantBits()).array();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.tx.TransactionIdentifierFactory#deserialize(byte[])
+	 */
+	@Override
+	public UUID deserialize(byte[] bytes)
+	{
+		ByteBuffer buffer = ByteBuffer.wrap(bytes);
+		return new UUID(buffer.getLong(), buffer.getLong());
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.tx.TransactionIdentifierFactory#size()
+	 */
+	@Override
+	public int size()
+	{
+		return Long.SIZE * 2;
 	}
 }

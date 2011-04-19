@@ -115,4 +115,6 @@ public interface DatabaseMetaDataSupport
 	 * @throws SQLException
 	 */
 	Collection<String> getIdentityColumns(Collection<ColumnProperties> columns) throws SQLException;
+	
+	Map<Integer, Map.Entry<String, Integer>> getTypes(DatabaseMetaData metaData) throws SQLException;
 }

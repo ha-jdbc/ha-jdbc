@@ -18,12 +18,15 @@
 package net.sf.hajdbc.cache.eager;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.cache.DatabaseMetaDataCache;
+import net.sf.hajdbc.cache.DatabaseMetaDataSupport;
 import net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory;
 import net.sf.hajdbc.cache.DatabaseProperties;
 
@@ -80,6 +83,9 @@ public class SharedEagerDatabaseMetaDataCache<Z, D extends Database<Z>> implemen
 	
 	private synchronized void setDatabaseProperties(Connection connection) throws SQLException
 	{
-		this.properties = new EagerDatabaseProperties(connection.getMetaData(), this.factory, this.cluster.getDialect());
+		DatabaseMetaData metaData = connection.getMetaData();
+		Dialect dialect = this.cluster.getDialect();
+		DatabaseMetaDataSupport support = this.factory.createSupport(metaData, dialect);
+		this.properties = new EagerDatabaseProperties(metaData, support, dialect);
 	}
 }

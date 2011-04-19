@@ -20,6 +20,7 @@ package net.sf.hajdbc.cache.lazy;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import net.sf.hajdbc.cache.AbstractTableProperties;
 import net.sf.hajdbc.cache.ColumnProperties;
@@ -28,7 +29,6 @@ import net.sf.hajdbc.cache.DatabaseMetaDataSupport;
 import net.sf.hajdbc.cache.ForeignKeyConstraint;
 import net.sf.hajdbc.cache.QualifiedName;
 import net.sf.hajdbc.cache.UniqueConstraint;
-import net.sf.hajdbc.util.ref.VolatileReference;
 
 /**
  * @author Paul Ferraro
@@ -40,11 +40,11 @@ public class LazyTableProperties extends AbstractTableProperties
 	private final QualifiedName table;
 	private final DatabaseMetaDataSupport support;
 	
-	private final VolatileReference<Map<String, ColumnProperties>> columnMapRef = new VolatileReference<Map<String, ColumnProperties>>();
-	private final VolatileReference<UniqueConstraint> primaryKeyRef = new VolatileReference<UniqueConstraint>();
-	private final VolatileReference<Collection<UniqueConstraint>> uniqueConstraintsRef = new VolatileReference<Collection<UniqueConstraint>>();
-	private final VolatileReference<Collection<ForeignKeyConstraint>> foreignKeyConstraintsRef = new VolatileReference<Collection<ForeignKeyConstraint>>();
-	private final VolatileReference<Collection<String>> identityColumnsRef = new VolatileReference<Collection<String>>();
+	private final AtomicReference<Map<String, ColumnProperties>> columnsRef = new AtomicReference<Map<String, ColumnProperties>>();
+	private final AtomicReference<UniqueConstraint> primaryKeyRef = new AtomicReference<UniqueConstraint>();
+	private final AtomicReference<Collection<UniqueConstraint>> uniqueConstraintsRef = new AtomicReference<Collection<UniqueConstraint>>();
+	private final AtomicReference<Collection<ForeignKeyConstraint>> foreignKeyConstraintsRef = new AtomicReference<Collection<ForeignKeyConstraint>>();
+	private final AtomicReference<Collection<String>> identityColumnsRef = new AtomicReference<Collection<String>>();
 	
 	public LazyTableProperties(DatabaseMetaDataProvider metaDataProvider, DatabaseMetaDataSupport support, QualifiedName table)
 	{
@@ -58,19 +58,19 @@ public class LazyTableProperties extends AbstractTableProperties
 	@Override
 	protected Map<String, ColumnProperties> getColumnMap() throws SQLException
 	{
-		synchronized (this.columnMapRef)
+		Map<String, ColumnProperties> columns = this.columnsRef.get();
+		
+		if (columns == null)
 		{
-			Map<String, ColumnProperties> map = this.columnMapRef.get();
+			columns = this.support.getColumns(this.metaDataProvider.getDatabaseMetaData(), this.table);
 			
-			if (map == null)
+			if (!this.columnsRef.compareAndSet(null, columns))
 			{
-				map = this.support.getColumns(this.metaDataProvider.getDatabaseMetaData(), this.table);
-				
-				this.columnMapRef.set(map);
+				return this.columnsRef.get();
 			}
-			
-			return map;
 		}
+		
+		return columns;
 	}
 	
 	/**
@@ -79,19 +79,19 @@ public class LazyTableProperties extends AbstractTableProperties
 	@Override
 	public UniqueConstraint getPrimaryKey() throws SQLException
 	{
-		synchronized (this.primaryKeyRef)
+		UniqueConstraint primaryKey = this.primaryKeyRef.get();
+		
+		if (primaryKey == null)
 		{
-			UniqueConstraint key = this.primaryKeyRef.get();
+			primaryKey = this.support.getPrimaryKey(this.metaDataProvider.getDatabaseMetaData(), this.table);
 			
-			if (key == null)
+			if (!this.primaryKeyRef.compareAndSet(null, primaryKey))
 			{
-				key = this.support.getPrimaryKey(this.metaDataProvider.getDatabaseMetaData(), this.table);
-				
-				this.primaryKeyRef.set(key);
+				return this.primaryKeyRef.get();
 			}
-			
-			return key;
 		}
+		
+		return primaryKey;
 	}
 
 	/**
@@ -100,19 +100,19 @@ public class LazyTableProperties extends AbstractTableProperties
 	@Override
 	public Collection<ForeignKeyConstraint> getForeignKeyConstraints() throws SQLException
 	{
-		synchronized (this.foreignKeyConstraintsRef)
+		Collection<ForeignKeyConstraint> foreignKeyConstraints = this.foreignKeyConstraintsRef.get();
+		
+		if (foreignKeyConstraints == null)
 		{
-			Collection<ForeignKeyConstraint> keys = this.foreignKeyConstraintsRef.get();
+			foreignKeyConstraints = this.support.getForeignKeyConstraints(this.metaDataProvider.getDatabaseMetaData(), this.table);
 			
-			if (keys == null)
+			if (!this.foreignKeyConstraintsRef.compareAndSet(null, foreignKeyConstraints))
 			{
-				keys = this.support.getForeignKeyConstraints(this.metaDataProvider.getDatabaseMetaData(), this.table);
-				
-				this.foreignKeyConstraintsRef.set(keys);
+				return this.foreignKeyConstraintsRef.get();
 			}
-			
-			return keys;
 		}
+		
+		return foreignKeyConstraints;
 	}
 
 	/**
@@ -121,19 +121,19 @@ public class LazyTableProperties extends AbstractTableProperties
 	@Override
 	public Collection<UniqueConstraint> getUniqueConstraints() throws SQLException
 	{
-		synchronized (this.uniqueConstraintsRef)
+		Collection<UniqueConstraint> uniqueConstraints = this.uniqueConstraintsRef.get();
+		
+		if (uniqueConstraints == null)
 		{
-			Collection<UniqueConstraint> keys = this.uniqueConstraintsRef.get();
+			uniqueConstraints = this.support.getUniqueConstraints(this.metaDataProvider.getDatabaseMetaData(), this.table, this.getPrimaryKey());
 			
-			if (keys == null)
+			if (!this.uniqueConstraintsRef.compareAndSet(null, uniqueConstraints))
 			{
-				keys = this.support.getUniqueConstraints(this.metaDataProvider.getDatabaseMetaData(), this.table, this.getPrimaryKey());
-				
-				this.uniqueConstraintsRef.set(keys);
+				return this.uniqueConstraintsRef.get();
 			}
-			
-			return keys;
 		}
+		
+		return uniqueConstraints;
 	}
 
 	/**
@@ -142,18 +142,18 @@ public class LazyTableProperties extends AbstractTableProperties
 	@Override
 	public Collection<String> getIdentityColumns() throws SQLException
 	{
-		synchronized (this.identityColumnsRef)
+		Collection<String> identityColumns = this.identityColumnsRef.get();
+		
+		if (identityColumns == null)
 		{
-			Collection<String> columns = this.identityColumnsRef.get();
+			identityColumns = this.support.getIdentityColumns(this.getColumnMap().values());
 			
-			if (columns == null)
+			if (!this.identityColumnsRef.compareAndSet(null, identityColumns))
 			{
-				columns = this.support.getIdentityColumns(this.getColumnMap().values());
-				
-				this.identityColumnsRef.set(columns);
+				return this.identityColumnsRef.get();
 			}
-			
-			return columns;
 		}
+		
+		return identityColumns;
 	}
 }

@@ -29,12 +29,12 @@ public class ReferenceRegistryStoreFactory implements RegistryStoreFactory<Void>
 	 * @see net.sf.hajdbc.util.concurrent.RegistryStoreFactory#createStore()
 	 */
 	@Override
-	public <V> Registry.Store<Void, V> createStore()
+	public <V> LifecycleRegistry.Store<Void, V> createStore()
 	{
 		return new ReferenceRegistryStore<V>();
 	}
 	
-	static class ReferenceRegistryStore<V> implements Registry.Store<Void, V>
+	static class ReferenceRegistryStore<V> implements LifecycleRegistry.Store<Void, V>
 	{
 		private final AtomicReference<V> reference = new AtomicReference<V>();
 		

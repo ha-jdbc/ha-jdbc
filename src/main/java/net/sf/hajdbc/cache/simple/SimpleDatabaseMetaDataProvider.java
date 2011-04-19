@@ -18,24 +18,19 @@
 package net.sf.hajdbc.cache.simple;
 
 import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
 
-import net.sf.hajdbc.Dialect;
-import net.sf.hajdbc.cache.AbstractLazyDatabaseProperties;
-import net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory;
+import net.sf.hajdbc.cache.DatabaseMetaDataProvider;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class SimpleDatabaseProperties extends AbstractLazyDatabaseProperties
+public class SimpleDatabaseMetaDataProvider implements DatabaseMetaDataProvider
 {
 	private DatabaseMetaData metaData;
 	
-	public SimpleDatabaseProperties(DatabaseMetaData metaData, DatabaseMetaDataSupportFactory factory, Dialect dialect) throws SQLException
+	public SimpleDatabaseMetaDataProvider(DatabaseMetaData metaData)
 	{
-		super(metaData, factory, dialect);
-		
 		this.metaData = metaData;
 	}
 	
@@ -43,7 +38,7 @@ public class SimpleDatabaseProperties extends AbstractLazyDatabaseProperties
 	 * @see net.sf.hajdbc.cache.DatabaseMetaDataProvider#getDatabaseMetaData()
 	 */
 	@Override
-	public DatabaseMetaData getDatabaseMetaData() throws SQLException
+	public DatabaseMetaData getDatabaseMetaData()
 	{
 		return this.metaData;
 	}

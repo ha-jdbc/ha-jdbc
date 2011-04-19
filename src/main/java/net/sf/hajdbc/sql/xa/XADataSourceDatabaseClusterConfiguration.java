@@ -23,6 +23,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 import net.sf.hajdbc.sql.AbstractDatabaseClusterConfiguration;
+import net.sf.hajdbc.tx.TransactionIdentifierFactory;
+import net.sf.hajdbc.tx.UUIDTransactionIdentifierFactory;
 
 @XmlRootElement(name = "ha-jdbc")
 @XmlType(name = "databaseClusterConfiguration")
@@ -37,6 +39,16 @@ public class XADataSourceDatabaseClusterConfiguration extends AbstractDatabaseCl
 	protected AbstractDatabaseClusterConfiguration.NestedConfiguration<XADataSource, XADataSourceDatabase> getNestedConfiguration()
 	{
 		return this.configuration;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.sql.AbstractDatabaseClusterConfiguration#getTransactionIdentifierFactory()
+	 */
+	@Override
+	public TransactionIdentifierFactory<? extends Object> getTransactionIdentifierFactory()
+	{
+		return new UUIDTransactionIdentifierFactory();
 	}
 
 	@XmlType(name = "nestedConfiguration")

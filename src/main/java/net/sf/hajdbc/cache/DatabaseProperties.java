@@ -23,7 +23,6 @@ import java.util.Collection;
 
 /**
  * @author Paul Ferraro
- *
  */
 public interface DatabaseProperties
 {
@@ -38,4 +37,8 @@ public interface DatabaseProperties
 	Collection<SequenceProperties> getSequences() throws SQLException;
 	
 	SequenceProperties findSequence(String sequence) throws SQLException;
+	
+	String findType(int precision, int... types) throws SQLException;
+//	String qualifyForDDL(QName name) throws SQLException;	
+//	String qualifyForDML(QName name) throws SQLException;
 }

@@ -19,13 +19,17 @@ package net.sf.hajdbc.cache.lazy;
 
 import java.lang.ref.Reference;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.AbstractMap;
 import java.util.Map;
 import java.util.TreeMap;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.cache.DatabaseMetaDataCache;
+import net.sf.hajdbc.cache.DatabaseMetaDataSupport;
 import net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory;
 import net.sf.hajdbc.cache.DatabaseProperties;
 import net.sf.hajdbc.util.ref.ReferenceMap;
@@ -37,7 +41,7 @@ import net.sf.hajdbc.util.ref.SoftReferenceFactory;
  */
 public class LazyDatabaseMetaDataCache<Z, D extends Database<Z>> implements DatabaseMetaDataCache<Z, D>
 {
-	private final Map<D, LazyDatabaseProperties> map = new ReferenceMap<D, LazyDatabaseProperties>(new TreeMap<D, Reference<LazyDatabaseProperties>>(), SoftReferenceFactory.getInstance());
+	private final Map<D, Map.Entry<DatabaseProperties, LazyDatabaseMetaDataProvider>> map = new ReferenceMap<D, Map.Entry<DatabaseProperties, LazyDatabaseMetaDataProvider>>(new TreeMap<D, Reference<Map.Entry<DatabaseProperties, LazyDatabaseMetaDataProvider>>>(), SoftReferenceFactory.getInstance());
 	private final DatabaseCluster<Z, D> cluster;
 	private final DatabaseMetaDataSupportFactory factory;
 
@@ -69,20 +73,26 @@ public class LazyDatabaseMetaDataCache<Z, D extends Database<Z>> implements Data
 	{
 		synchronized (this.map)
 		{
-			LazyDatabaseProperties properties = this.map.get(database);
+			Map.Entry<DatabaseProperties, LazyDatabaseMetaDataProvider> entry = this.map.get(database);
 			
-			if (properties == null)
+			if (entry == null)
 			{
-				properties = new LazyDatabaseProperties(connection.getMetaData(), this.factory, this.cluster.getDialect());
+				DatabaseMetaData metaData = connection.getMetaData();
+				Dialect dialect = this.cluster.getDialect();
+				DatabaseMetaDataSupport support = this.factory.createSupport(metaData, dialect);
+				LazyDatabaseMetaDataProvider provider = new LazyDatabaseMetaDataProvider(metaData);
+				DatabaseProperties properties = new LazyDatabaseProperties(provider, support, dialect);
+				
+				entry = new AbstractMap.SimpleImmutableEntry<DatabaseProperties, LazyDatabaseMetaDataProvider>(properties, provider);
 
-				this.map.put(database, properties);
+				this.map.put(database, entry);
 			}
 			else
 			{
-				properties.setConnection(connection);
+				entry.getValue().setConnection(connection);
 			}
 			
-			return properties;
+			return entry.getKey();
 		}
 	}
 }

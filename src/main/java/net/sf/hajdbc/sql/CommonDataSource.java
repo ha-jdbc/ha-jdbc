@@ -29,6 +29,7 @@ import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.util.concurrent.ReferenceRegistryStoreFactory;
+import net.sf.hajdbc.util.concurrent.LifecycleRegistry;
 import net.sf.hajdbc.util.concurrent.Registry;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
 import net.sf.hajdbc.xml.XMLDatabaseClusterConfigurationFactory;
@@ -42,7 +43,7 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 	private final CommonDataSourceInvocationHandlerFactory<Z, D> handlerFactory;
 	private final Class<? extends DatabaseClusterConfiguration<Z, D>> configurationClass;
 	
-	private final Registry<Void, DatabaseCluster<Z, D>, Void, SQLException> registry = new Registry<Void, DatabaseCluster<Z, D>, Void, SQLException>(this, new ReferenceRegistryStoreFactory(), ExceptionType.getExceptionFactory(SQLException.class));
+	private final Registry<Void, DatabaseCluster<Z, D>, Void, SQLException> registry = new LifecycleRegistry<Void, DatabaseCluster<Z, D>, Void, SQLException>(this, new ReferenceRegistryStoreFactory(), ExceptionType.getExceptionFactory(SQLException.class));
 	
 	private volatile long timeout = 10;
 	private volatile TimeUnit timeoutUnit = TimeUnit.SECONDS;
@@ -59,7 +60,7 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.util.concurrent.Registry.Factory#create(java.lang.Object, java.lang.Object)
+	 * @see net.sf.hajdbc.util.concurrent.LifecycleRegistry.Factory#create(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	public DatabaseCluster<Z, D> create(Void key, Void context) throws SQLException

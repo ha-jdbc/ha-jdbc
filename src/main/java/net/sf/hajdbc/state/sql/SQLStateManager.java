@@ -18,6 +18,7 @@
 package net.sf.hajdbc.state.sql;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.Driver;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -32,7 +33,13 @@ import java.util.TreeSet;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ExceptionType;
+import net.sf.hajdbc.cache.DatabaseMetaDataSupportImpl;
+import net.sf.hajdbc.cache.DatabaseProperties;
+import net.sf.hajdbc.cache.lazy.LazyDatabaseProperties;
+import net.sf.hajdbc.cache.simple.SimpleDatabaseMetaDataProvider;
+import net.sf.hajdbc.dialect.SimpleDialectFactory;
 import net.sf.hajdbc.durability.Durability;
 import net.sf.hajdbc.durability.DurabilityListener;
 import net.sf.hajdbc.durability.InvocationEvent;
@@ -89,7 +96,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	
 	private static Logger logger = LoggerFactory.getLogger(SQLStateManager.class);
 	
-	private final DurabilityListener listener = new DurabilityListenerAdapter(this);
+	private final DurabilityListener listener;
 	private final DatabaseCluster<Z, D> cluster;
 	private final PoolFactory poolFactory;
 	private final Database<Driver> database;
@@ -103,6 +110,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 		this.cluster = cluster;
 		this.database = database;
 		this.poolFactory = poolFactory;
+		this.listener = new DurabilityListenerAdapter(this, cluster.getTransactionIdentifierFactory());
 	}
 
 	/**
@@ -407,10 +415,10 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 				
 				try
 				{
-					statement.setBytes(1, transactionId);
-					statement.setByte(2, phase);
-					statement.setString(3, databaseId);					
-					statement.setBytes(4, result);
+					statement.setBytes(1, result);
+					statement.setBytes(2, transactionId);
+					statement.setByte(3, phase);
+					statement.setString(4, databaseId);					
 					
 					statement.executeUpdate();
 				}
@@ -493,7 +501,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 					{
 						while (resultSet.next())
 						{
-							map.put(new InvocationEventImpl(Objects.deserialize(resultSet.getBytes(1)), Durability.Phase.values()[resultSet.getInt(2)], ExceptionType.values()[resultSet.getInt(3)]), new HashMap<String, InvokerEvent>());
+							map.put(new InvocationEventImpl(this.cluster.getTransactionIdentifierFactory().deserialize(resultSet.getBytes(1)), Durability.Phase.values()[resultSet.getInt(2)], ExceptionType.values()[resultSet.getInt(3)]), new HashMap<String, InvokerEvent>());
 						}
 					}
 					finally
@@ -514,7 +522,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 					
 					while (resultSet.next())
 					{
-						Object transactionId = Objects.deserialize(resultSet.getBytes(1));
+						Object transactionId = this.cluster.getTransactionIdentifierFactory().deserialize(resultSet.getBytes(1));
 						Durability.Phase phase = Durability.Phase.values()[resultSet.getByte(2)];
 						ExceptionType type = ExceptionType.values()[resultSet.getByte(3)];
 						
@@ -556,7 +564,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 			throw new IllegalStateException(e);
 		}
 	}
-
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.durability.DurabilityListener#beforeInvoker(net.sf.hajdbc.durability.InvokerEvent)
@@ -593,32 +601,17 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 		boolean autoCommit = connection.getAutoCommit();
 		
 		connection.setAutoCommit(true);
+
+		DatabaseMetaData metaData = connection.getMetaData();
+		Dialect dialect = new SimpleDialectFactory(this.database.getName()).createDialect();
+		DatabaseProperties properties = new LazyDatabaseProperties(new SimpleDatabaseMetaDataProvider(metaData), new DatabaseMetaDataSupportImpl(metaData, dialect), dialect);
 		
 		try
 		{
-			Map<Integer, String> types = new HashMap<Integer, String>();
-			ResultSet resultSet = connection.getMetaData().getTypeInfo();
-			
-			try
-			{
-				while (resultSet.next())
-				{
-					int type = resultSet.getInt("DATA_TYPE");
-					
-					if (!types.containsKey(type))
-					{
-						types.put(type, resultSet.getString("TYPE_NAME"));
-					}
-				}
-			}
-			finally
-			{
-				resultSet.close();
-			}
-
-			String byteType = this.findType(types, Types.TINYINT, Types.SMALLINT, Types.INTEGER);
-			String stringType = this.findType(types, Types.VARCHAR);
-			String binaryType = this.findType(types, Types.BINARY, Types.BLOB);
+			String enumType = properties.findType(0, Types.TINYINT, Types.SMALLINT, Types.INTEGER);
+			String stringType = properties.findType(Database.ID_MAX_SIZE, Types.VARCHAR);
+			String binaryType = properties.findType(this.cluster.getTransactionIdentifierFactory().size(), Types.BINARY);
+			String varBinaryType = properties.findType(0, Types.VARBINARY);
 			
 			Statement statement = connection.createStatement();
 			
@@ -626,9 +619,9 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 			{
 				boolean batch = false;
 				
-				batch |= this.addBatch(statement, MessageFormat.format(CREATE_STATE_SQL, stringType), SELECT_STATE_SQL);
-				batch |= this.addBatch(statement, MessageFormat.format(CREATE_INVOCATION_SQL, binaryType, byteType, byteType), SELECT_INVOCATION_SQL);
-				batch |= this.addBatch(statement, MessageFormat.format(CREATE_INVOKER_SQL, binaryType, byteType, stringType, binaryType), SELECT_INVOKER_SQL);
+				batch |= this.addBatch(statement, properties, STATE_TABLE, CREATE_STATE_SQL, stringType);
+				batch |= this.addBatch(statement, properties, INVOCATION_TABLE, CREATE_INVOCATION_SQL, binaryType, enumType, enumType);
+				batch |= this.addBatch(statement, properties, INVOKER_TABLE, CREATE_INVOKER_SQL, binaryType, enumType, stringType, varBinaryType);
 				
 				if (batch)
 				{
@@ -648,36 +641,20 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 		}
 	}
 
-	private boolean addBatch(Statement statement, String createSQL, String selectSQL) throws SQLException
+	private boolean addBatch(Statement statement, DatabaseProperties properties, String table, String pattern, String... types) throws SQLException
 	{
 		try
 		{
-			// If select fails, we'll assume its because the table does not exist
-			statement.executeQuery(selectSQL);
+			properties.findTable(table);
 			return false;
 		}
 		catch (SQLException e)
 		{
-			logger.log(Level.DEBUG, createSQL);
-			statement.addBatch(createSQL);
+			String sql = MessageFormat.format(pattern, (Object[]) types);
+			logger.log(Level.DEBUG, e, sql);
+			statement.addBatch(sql);
 			return true;
 		}
-	}
-	
-	private String findType(Map<Integer, String> map, int... types) throws SQLException
-	{
-		if (types != null)
-		{
-			for (int type: types)
-			{
-				String name = map.get(type);
-				if (name != null)
-				{
-					return name;
-				}
-			}
-		}
-		throw new SQLException();
 	}
 	
 	/**

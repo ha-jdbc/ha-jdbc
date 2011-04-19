@@ -75,13 +75,13 @@ public class SimpleStateManagerFactory implements StateManager, StateManagerFact
 	@Override
 	public void afterInvoker(InvokerEvent event)
 	{
-		this.invocations.get(event).remove(event.getDatabaseId());
+		this.invocations.get(new InvocationEventAdapter(event)).remove(event.getDatabaseId());
 	}
 
 	@Override
 	public void beforeInvoker(InvokerEvent event)
 	{
-		this.invocations.get(event).put(event.getDatabaseId(), event);
+		this.invocations.get(new InvocationEventAdapter(event)).put(event.getDatabaseId(), event);
 	}
 
 	@Override

@@ -41,7 +41,6 @@ import net.sf.hajdbc.sql.AbstractDatabaseClusterConfiguration.Property;
 @XmlType(propOrder = { "name", "xmlProperties", "user", "password" })
 public abstract class AbstractDatabase<Z> implements Database<Z>
 {
-	@XmlAttribute(name = "id", required = true)
 	private String id;
 	@XmlElement(name = "name", required = true)
 	private String name;
@@ -92,6 +91,7 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	@ManagedAttribute
 	@Description("Uniquely identifies this database in the cluster")
 	@Override
+	@XmlAttribute(name = "id", required = true)
 	public String getId()
 	{
 		return this.id;
@@ -99,6 +99,10 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 
 	public void setId(String id)
 	{
+		if (id.length() > ID_MAX_SIZE)
+		{
+			throw new IllegalArgumentException(String.format("Must be less than %d", ID_MAX_SIZE));
+		}
 		this.id = id;
 	}
 	

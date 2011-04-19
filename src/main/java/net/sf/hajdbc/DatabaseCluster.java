@@ -177,5 +177,5 @@ public interface DatabaseCluster<Z, D extends Database<Z>> extends Lifecycle
 	
 	Codec getCodec();
 	
-	TransactionIdentifierFactory getTransactionIdentifierFactory();
+	TransactionIdentifierFactory<? extends Object> getTransactionIdentifierFactory();
 }

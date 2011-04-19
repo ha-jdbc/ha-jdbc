@@ -18,13 +18,16 @@
 package net.sf.hajdbc.cache.eager;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.TreeMap;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.cache.DatabaseMetaDataCache;
+import net.sf.hajdbc.cache.DatabaseMetaDataSupport;
 import net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory;
 import net.sf.hajdbc.cache.DatabaseProperties;
 import net.sf.hajdbc.logging.Level;
@@ -110,6 +113,9 @@ public class EagerDatabaseMetaDataCache<Z, D extends Database<Z>> implements Dat
 	
 	private DatabaseProperties createDatabaseProperties(Connection connection) throws SQLException
 	{
-		return new EagerDatabaseProperties(connection.getMetaData(), this.factory, this.cluster.getDialect());
+		DatabaseMetaData metaData = connection.getMetaData();
+		Dialect dialect = this.cluster.getDialect();
+		DatabaseMetaDataSupport support = this.factory.createSupport(metaData, dialect);
+		return new EagerDatabaseProperties(metaData, support, dialect);
 	}
 }

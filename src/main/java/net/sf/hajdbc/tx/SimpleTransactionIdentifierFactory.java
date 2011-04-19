@@ -17,6 +17,7 @@
  */
 package net.sf.hajdbc.tx;
 
+import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -24,7 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * This implementation is *not* safe for <distributable/> clusters, since the identifiers are only unique within a single DatabaseCluster instance.
  * @author Paul Ferraro
  */
-public class SimpleTransactionIdentifierFactory implements TransactionIdentifierFactory
+public class SimpleTransactionIdentifierFactory implements TransactionIdentifierFactory<Long>
 {
 	private final AtomicLong counter = new AtomicLong(0);
 	
@@ -33,8 +34,38 @@ public class SimpleTransactionIdentifierFactory implements TransactionIdentifier
 	 * @see net.sf.hajdbc.tx.TransactionIdentifierFactory#createTransactionIdentifier()
 	 */
 	@Override
-	public Object createTransactionIdentifier()
+	public Long createTransactionIdentifier()
 	{
 		return this.counter.incrementAndGet();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.tx.TransactionIdentifierFactory#serialize(java.lang.Object)
+	 */
+	@Override
+	public byte[] serialize(Long transactionId)
+	{
+		return ByteBuffer.allocate(this.size()).putLong(transactionId).array();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.tx.TransactionIdentifierFactory#deserialize(byte[])
+	 */
+	@Override
+	public Long deserialize(byte[] bytes)
+	{
+		return ByteBuffer.wrap(bytes).getLong();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.tx.TransactionIdentifierFactory#size()
+	 */
+	@Override
+	public int size()
+	{
+		return Long.SIZE;
 	}
 }

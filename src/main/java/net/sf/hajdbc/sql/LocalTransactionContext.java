@@ -39,7 +39,7 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 {
 	final Durability<Z, D> durability;
 	private final Lock lock;
-	private final TransactionIdentifierFactory transactionIdFactory;
+	private final TransactionIdentifierFactory<? extends Object> transactionIdFactory;
 	volatile Object transactionId;
 	
 	/**

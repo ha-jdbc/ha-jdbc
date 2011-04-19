@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availablity JDBC
- * Copyright 2004-May 25, 2010 Paul Ferraro
+ * Copyright 2011 Paul Ferraro
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -15,19 +15,32 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.hajdbc.tx;
+package net.sf.hajdbc.state.simple;
+
+import net.sf.hajdbc.ExceptionType;
+import net.sf.hajdbc.durability.DurabilityEvent;
+import net.sf.hajdbc.durability.DurabilityEventImpl;
+import net.sf.hajdbc.durability.InvocationEvent;
 
 /**
- * Factory for generating transaction identifiers.
  * @author Paul Ferraro
  */
-public interface TransactionIdentifierFactory<T>
+public class InvocationEventAdapter extends DurabilityEventImpl implements InvocationEvent
 {
-	T createTransactionIdentifier();
-	
-	byte[] serialize(T transactionId);
-	
-	T deserialize(byte[] bytes);
-	
-	int size();
+	private static final long serialVersionUID = -2771937925436783287L;
+
+	public InvocationEventAdapter(DurabilityEvent event)
+	{
+		super(event.getTransactionId(), event.getPhase());
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.durability.InvocationEvent#getExceptionType()
+	 */
+	@Override
+	public ExceptionType getExceptionType()
+	{
+		return null;
+	}
 }

@@ -19,11 +19,11 @@ package net.sf.hajdbc.cache;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-
-import net.sf.hajdbc.Dialect;
+import java.util.Map.Entry;
 
 /**
  * @author Paul Ferraro
@@ -31,16 +31,13 @@ import net.sf.hajdbc.Dialect;
  */
 public abstract class AbstractDatabaseProperties implements DatabaseProperties
 {
-	protected final Dialect dialect;
-	protected final DatabaseMetaDataSupport support;
-	
+	private final DatabaseMetaDataSupport support;
 	private final boolean supportsSelectForUpdate;
 	private final boolean locatorsUpdateCopy;
 	
-	protected AbstractDatabaseProperties(DatabaseMetaData metaData, DatabaseMetaDataSupportFactory factory, Dialect dialect) throws SQLException
+	public AbstractDatabaseProperties(DatabaseMetaData metaData, DatabaseMetaDataSupport support) throws SQLException
 	{
-		this.dialect = dialect;
-		this.support = factory.createSupport(metaData, dialect);
+		this.support = support;
 		this.supportsSelectForUpdate = metaData.supportsSelectForUpdate();
 		this.locatorsUpdateCopy = metaData.locatorsUpdateCopy();
 	}
@@ -70,8 +67,10 @@ public abstract class AbstractDatabaseProperties implements DatabaseProperties
 	@Override
 	public final Collection<TableProperties> getTables() throws SQLException
 	{
-		return this.getTableMap().values();
+		return this.tables().values();
 	}
+
+	protected abstract Map<String, TableProperties> tables() throws SQLException;
 
 	/**
 	 * @see net.sf.hajdbc.cache.DatabaseProperties#getSequences()
@@ -79,8 +78,10 @@ public abstract class AbstractDatabaseProperties implements DatabaseProperties
 	@Override
 	public final Collection<SequenceProperties> getSequences() throws SQLException
 	{
-		return this.getSequenceMap().values();
+		return this.sequences().values();
 	}
+
+	protected abstract Map<String, SequenceProperties> sequences() throws SQLException;
 	
 	/**
 	 * @see net.sf.hajdbc.cache.DatabaseProperties#findTable(java.lang.String)
@@ -88,7 +89,7 @@ public abstract class AbstractDatabaseProperties implements DatabaseProperties
 	@Override
 	public final TableProperties findTable(String table) throws SQLException
 	{
-		return this.support.find(this.getTableMap(), table, this.getDefaultSchemaList());
+		return this.support.find(this.tables(), table, this.defaultSchemas());
 	}
 
 	/**
@@ -97,12 +98,38 @@ public abstract class AbstractDatabaseProperties implements DatabaseProperties
 	@Override
 	public final SequenceProperties findSequence(String sequence) throws SQLException
 	{
-		return this.support.find(this.getSequenceMap(), sequence, this.getDefaultSchemaList());
+		return this.support.find(this.sequences(), sequence, this.defaultSchemas());
 	}
 
-	protected abstract Map<String, TableProperties> getTableMap() throws SQLException;
+	protected abstract List<String> defaultSchemas() throws SQLException;
 	
-	protected abstract Map<String, SequenceProperties> getSequenceMap() throws SQLException;
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.cache.DatabaseProperties#findType(int, int[])
+	 */
+	@Override
+	public String findType(int precision, int... types) throws SQLException
+	{
+		Map<Integer, Map.Entry<String, Integer>> map = this.types();
+
+		for (int type: types)
+		{
+			Map.Entry<String, Integer> entry = map.get(type);
+			if (entry != null)
+			{
+				String name = entry.getKey();
+				Integer maxPrecision = entry.getValue();
+				if (maxPrecision != null)
+				{
+					String qualifier = "(" + ((precision == 0) ? maxPrecision : precision) + ")";
+					return name.contains("()") ? name.replace("()", qualifier) : name + qualifier;
+				}
+				
+				return name;
+			}
+		}
+		throw new SQLException("No native type found for " + Arrays.asList(types));
+	}
 	
-	protected abstract List<String> getDefaultSchemaList() throws SQLException;
+	protected abstract Map<Integer, Entry<String, Integer>> types() throws SQLException;
 }

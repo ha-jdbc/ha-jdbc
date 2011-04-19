@@ -29,6 +29,7 @@ import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.durability.DurabilityFactory;
 import net.sf.hajdbc.management.MBeanRegistrar;
 import net.sf.hajdbc.state.StateManagerFactory;
+import net.sf.hajdbc.tx.TransactionIdentifierFactory;
 
 import org.quartz.CronExpression;
 
@@ -127,4 +128,6 @@ public interface DatabaseClusterConfiguration<Z, D extends Database<Z>> extends 
 	MBeanRegistrar<Z, D> getMBeanRegistrar();
 	
 	boolean isFairLocking();
+	
+	TransactionIdentifierFactory<? extends Object> getTransactionIdentifierFactory();
 }

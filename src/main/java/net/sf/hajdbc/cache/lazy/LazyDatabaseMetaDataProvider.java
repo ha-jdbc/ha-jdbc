@@ -15,33 +15,38 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.hajdbc.util.ref;
+package net.sf.hajdbc.cache.lazy;
+
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
+
+import net.sf.hajdbc.cache.DatabaseMetaDataProvider;
 
 /**
- * A synchronizable wrapper around a nullable object.
  * @author Paul Ferraro
+ *
  */
-public class VolatileReference<T>
+public class LazyDatabaseMetaDataProvider implements DatabaseMetaDataProvider
 {
-	private volatile T object;
+	private final ThreadLocal<Connection> threadLocal = new ThreadLocal<Connection>();
 	
-	public VolatileReference()
+	public LazyDatabaseMetaDataProvider(DatabaseMetaData metaData) throws SQLException
 	{
-		// Do nothing
+		this.setConnection(metaData.getConnection());
 	}
 	
-	public VolatileReference(T object)
+	public void setConnection(Connection connection)
 	{
-		this.object = object;
+		this.threadLocal.set(connection);
 	}
 	
-	public T get()
+	/**
+	 * @see net.sf.hajdbc.cache.DatabaseMetaDataProvider#getDatabaseMetaData()
+	 */
+	@Override
+	public DatabaseMetaData getDatabaseMetaData() throws SQLException
 	{
-		return this.object;
-	}
-	
-	public void set(T object)
-	{
-		this.object = object;
+		return this.threadLocal.get().getMetaData();
 	}
 }

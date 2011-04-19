@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,6 +32,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -360,8 +362,9 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 		
 		int quoteLength = this.quote.length();
 		
+		boolean quoted = identifier.startsWith(this.quote) && identifier.endsWith(this.quote);
 		// Strip any existing quoting
-		String raw = (identifier.startsWith(this.quote) && identifier.endsWith(this.quote)) ? identifier.substring(quoteLength, identifier.length() - quoteLength) : identifier;
+		String raw = quoted ? identifier.substring(quoteLength, identifier.length() - quoteLength) : identifier;
 		
 		// Quote reserved identifiers
 		boolean requiresQuoting = this.reservedIdentifierSet.contains(raw.toUpperCase());
@@ -370,7 +373,7 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 		requiresQuoting |= !this.identifierPattern.matcher(raw).matches();
 		
 		// Quote mixed-case identifiers if detected and supported by DBMS
-		requiresQuoting |= !this.supportsMixedCaseIdentifiers && this.supportsMixedCaseQuotedIdentifiers && ((this.storesLowerCaseIdentifiers && !this.storesLowerCaseQuotedIdentifiers && UPPER_CASE_PATTERN.matcher(raw).find()) || (this.storesUpperCaseIdentifiers && !this.storesUpperCaseQuotedIdentifiers && LOWER_CASE_PATTERN.matcher(raw).find()));
+		requiresQuoting |= quoted && !this.supportsMixedCaseIdentifiers && this.supportsMixedCaseQuotedIdentifiers && ((this.storesLowerCaseIdentifiers && !this.storesLowerCaseQuotedIdentifiers && UPPER_CASE_PATTERN.matcher(raw).find()) || (this.storesUpperCaseIdentifiers && !this.storesUpperCaseQuotedIdentifiers && LOWER_CASE_PATTERN.matcher(raw).find()));
 		
 		return requiresQuoting ? this.quote + this.normalizeCaseQuoted(raw) + this.quote : this.normalizeCase(raw);
 	}
@@ -446,10 +449,8 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 		{
 			for (String schema: defaultSchemaList)
 			{
-				if (properties == null)
-				{
-					properties = map.get(this.normalize(name, schema));
-				}
+				properties = map.get(this.normalize(name, schema));
+				if (properties != null) break;
 			}
 		}
 		
@@ -481,5 +482,36 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 		}
 		
 		return columnList;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.cache.DatabaseMetaDataSupport#getTypes(java.sql.DatabaseMetaData)
+	 */
+	@Override
+	public Map<Integer, Entry<String, Integer>> getTypes(DatabaseMetaData metaData) throws SQLException
+	{
+		Map<Integer, Map.Entry<String, Integer>> types = new HashMap<Integer, Map.Entry<String, Integer>>();
+		ResultSet resultSet = metaData.getTypeInfo();
+		
+		try
+		{
+			while (resultSet.next())
+			{
+				int type = resultSet.getInt("DATA_TYPE");
+				if (!types.containsKey(type))
+				{
+					String name = resultSet.getString("TYPE_NAME");
+					String params = resultSet.getString("CREATE_PARAMS");
+					types.put(type, new AbstractMap.SimpleImmutableEntry<String, Integer>(name, (params != null) ? resultSet.getInt("PRECISION") : null));
+				}
+			}
+			
+			return types;
+		}
+		finally
+		{
+			resultSet.close();
+		}
 	}
 }

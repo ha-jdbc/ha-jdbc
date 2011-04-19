@@ -33,6 +33,7 @@ import net.sf.hajdbc.pool.generic.GenericObjectPoolFactory;
 import net.sf.hajdbc.sql.DriverDatabase;
 import net.sf.hajdbc.state.StateManager;
 import net.sf.hajdbc.state.StateManagerFactory;
+import net.sf.hajdbc.util.Strings;
 
 /**
  * @author Paul Ferraro
@@ -43,9 +44,9 @@ public class SQLStateManagerFactory extends GenericObjectPool.Config implements 
 	
 	enum EmbeddedVendor
 	{
-		H2("jdbc:h2:{0}"),
-		HSQLDB("jdbc:hsqldb:{0}"),
-		DERBY("jdbc:derby:{0};create=true")
+		H2("jdbc:h2:{1}/{0}"),
+		HSQLDB("jdbc:hsqldb:{1}/{0}"),
+		DERBY("jdbc:derby:{1}/{0};create=true")
 		;
 		
 		final String pattern;
@@ -66,7 +67,7 @@ public class SQLStateManagerFactory extends GenericObjectPool.Config implements 
 		
 		for (EmbeddedVendor vendor: EmbeddedVendor.values())
 		{
-			String url = MessageFormat.format(vendor.pattern, "test");
+			String url = MessageFormat.format(vendor.pattern, "test", Strings.USER_HOME);
 			
 			for (Driver driver: drivers)
 			{
@@ -100,7 +101,7 @@ public class SQLStateManagerFactory extends GenericObjectPool.Config implements 
 			throw new IllegalArgumentException("No urlPattern property defined and no embedded database driver was detected on the classpath.");
 		}
 		
-		String url = MessageFormat.format(this.urlPattern, cluster.getId());
+		String url = MessageFormat.format(this.urlPattern, cluster.getId(), Strings.USER_HOME);
 		DriverDatabase database = new DriverDatabase();
 		database.setName(url);
 		database.setUser(this.user);

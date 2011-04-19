@@ -18,13 +18,17 @@
 package net.sf.hajdbc.cache.simple;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.cache.DatabaseMetaDataCache;
+import net.sf.hajdbc.cache.DatabaseMetaDataSupport;
 import net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory;
 import net.sf.hajdbc.cache.DatabaseProperties;
+import net.sf.hajdbc.cache.lazy.LazyDatabaseProperties;
 
 /**
  * DatabaseMetaDataCache implementation that does not cache data.
@@ -60,6 +64,9 @@ public class SimpleDatabaseMetaDataCache<Z, D extends Database<Z>> implements Da
 	@Override
 	public DatabaseProperties getDatabaseProperties(D database, Connection connection) throws SQLException
 	{
-		return new SimpleDatabaseProperties(connection.getMetaData(), this.factory, this.cluster.getDialect());
+		DatabaseMetaData metaData = connection.getMetaData();
+		Dialect dialect = this.cluster.getDialect();
+		DatabaseMetaDataSupport support = this.factory.createSupport(metaData, dialect);
+		return new LazyDatabaseProperties(new SimpleDatabaseMetaDataProvider(metaData), support, dialect);
 	}
 }

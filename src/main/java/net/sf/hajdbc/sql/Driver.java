@@ -35,6 +35,7 @@ import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.invocation.InvocationStrategyEnum;
 import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.util.concurrent.MapRegistryStoreFactory;
+import net.sf.hajdbc.util.concurrent.LifecycleRegistry;
 import net.sf.hajdbc.util.concurrent.Registry;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
 import net.sf.hajdbc.xml.XMLDatabaseClusterConfigurationFactory;
@@ -52,7 +53,7 @@ public final class Driver extends AbstractDriver implements Registry.Factory<Str
 	private volatile TimeUnit timeoutUnit = TimeUnit.SECONDS;
 	
 	private final Map<String, DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>> configurationFactories = new ConcurrentHashMap<String, DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>>();
-	private final Registry<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException> registry = new Registry<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException>(this, new MapRegistryStoreFactory<String>(), ExceptionType.getExceptionFactory(SQLException.class));
+	private final Registry<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException> registry = new LifecycleRegistry<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException>(this, new MapRegistryStoreFactory<String>(), ExceptionType.getExceptionFactory(SQLException.class));
 	
 	public void setFactory(DatabaseClusterFactory<java.sql.Driver, DriverDatabase> factory)
 	{
@@ -156,7 +157,7 @@ public final class Driver extends AbstractDriver implements Registry.Factory<Str
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.util.concurrent.Registry.Factory#create(java.lang.Object, java.lang.Object)
+	 * @see net.sf.hajdbc.util.concurrent.LifecycleRegistry.Factory#create(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	public DatabaseCluster<java.sql.Driver, DriverDatabase> create(String id, Properties properties) throws SQLException
@@ -173,7 +174,7 @@ public final class Driver extends AbstractDriver implements Registry.Factory<Str
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.util.concurrent.Registry.Factory#getTimeout()
+	 * @see net.sf.hajdbc.util.concurrent.LifecycleRegistry.Factory#getTimeout()
 	 */
 	@Override
 	public long getTimeout()
@@ -183,7 +184,7 @@ public final class Driver extends AbstractDriver implements Registry.Factory<Str
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.util.concurrent.Registry.Factory#getTimeoutUnit()
+	 * @see net.sf.hajdbc.util.concurrent.LifecycleRegistry.Factory#getTimeoutUnit()
 	 */
 	@Override
 	public TimeUnit getTimeoutUnit()

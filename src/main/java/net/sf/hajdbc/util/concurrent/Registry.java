@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availablity JDBC
- * Copyright 2010 Paul Ferraro
+ * Copyright 2011 Paul Ferraro
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -17,121 +17,20 @@
  */
 package net.sf.hajdbc.util.concurrent;
 
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
-
-import net.sf.hajdbc.ExceptionFactory;
-import net.sf.hajdbc.Lifecycle;
 
 /**
  * @author Paul Ferraro
+ * @param <K>
+ * @param <V>
+ * @param <C>
+ * @param <E>
  */
-public class Registry<K, V extends Lifecycle, C, E extends Exception>
+public interface Registry<K, V, C, E extends Exception>
 {
-	private final Registry.Store<K, RegistryEntry> store;
-	final Factory<K, V, C, E> factory;
-	final ExceptionFactory<E> exceptionFactory;
+	V get(K key, C context) throws E;
 
-	public Registry(Factory<K, V, C, E> factory, RegistryStoreFactory<K> storeFactory, ExceptionFactory<E> exceptionFactory)
-	{
-		this.store = storeFactory.createStore();
-		this.factory = factory;
-		this.exceptionFactory = exceptionFactory;
-	}
-	
-	public V get(K key, C context) throws E
-	{
-		RegistryEntry entry = this.store.get(key);
-		
-		if (entry != null)
-		{
-			return entry.getValue();
-		}
-
-		V value = this.factory.create(key, context);
-		
-		entry = new RegistryEntry(value);
-
-		RegistryEntry existing = this.store.setIfAbsent(key, entry);
-		
-		if (existing != null)
-		{
-			return existing.getValue();
-		}
-		
-		try
-		{
-			value.start();
-			
-			entry.started();
-			
-			return value;
-		}
-		catch (Exception e)
-		{
-			this.store.clear(key);
-			
-			value.stop();
-			
-			throw this.exceptionFactory.createException(e);
-		}
-	}
-	
-	public void remove(K key) throws E
-	{
-		RegistryEntry entry = this.store.clear(key);
-		
-		if (entry != null)
-		{
-			entry.getValue().stop();
-		}
-	}
-	
-	private class RegistryEntry
-	{
-		private final V value;
-		private final AtomicReference<CountDownLatch> latchRef = new AtomicReference<CountDownLatch>(new CountDownLatch(1));
-		
-		RegistryEntry(V value)
-		{
-			this.value = value;
-		}
-		
-		V getValue() throws E
-		{
-			CountDownLatch latch = this.latchRef.get();
-			
-			if (latch != null)
-			{
-				try
-				{
-					if (!latch.await(Registry.this.factory.getTimeout(), Registry.this.factory.getTimeoutUnit()))
-					{
-						throw Registry.this.exceptionFactory.createException(new TimeoutException());
-					}
-				}
-				catch (InterruptedException e)
-				{
-					Thread.currentThread().interrupt();
-					throw Registry.this.exceptionFactory.createException(e);
-				}
-			}
-			
-			return this.value;
-		}
-
-		void started()
-		{
-			CountDownLatch latch = this.latchRef.getAndSet(null);
-			
-			if (latch != null)
-			{
-				latch.countDown();
-			}
-		}
-	}
+	void remove(K key) throws E;
 	
 	public interface Factory<K, V, C, E extends Exception>
 	{

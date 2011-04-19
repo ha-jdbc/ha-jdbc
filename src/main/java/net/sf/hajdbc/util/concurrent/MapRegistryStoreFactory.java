@@ -30,12 +30,12 @@ public class MapRegistryStoreFactory<K> implements RegistryStoreFactory<K>
 	 * @see net.sf.hajdbc.util.concurrent.RegistryStoreFactory#createStore()
 	 */
 	@Override
-	public <V> Registry.Store<K, V> createStore()
+	public <V> LifecycleRegistry.Store<K, V> createStore()
 	{
 		return new MapRegistryStore<K, V>();
 	}
 	
-	static class MapRegistryStore<K, V> implements Registry.Store<K, V>
+	static class MapRegistryStore<K, V> implements LifecycleRegistry.Store<K, V>
 	{
 		private final ConcurrentMap<K, V> map = new ConcurrentHashMap<K, V>();
 		

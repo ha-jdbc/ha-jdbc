@@ -64,6 +64,9 @@ import net.sf.hajdbc.management.DefaultMBeanRegistrar;
 import net.sf.hajdbc.management.MBeanRegistrar;
 import net.sf.hajdbc.state.StateManagerFactory;
 import net.sf.hajdbc.state.sql.SQLStateManagerFactory;
+import net.sf.hajdbc.tx.SimpleTransactionIdentifierFactory;
+import net.sf.hajdbc.tx.TransactionIdentifierFactory;
+import net.sf.hajdbc.tx.UUIDTransactionIdentifierFactory;
 
 import org.quartz.CronExpression;
 
@@ -80,7 +83,6 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	private CommandDispatcherFactory dispatcherFactory;
 	
 	private Map<String, SynchronizationStrategy> synchronizationStrategies = new HashMap<String, SynchronizationStrategy>();
-	
 	private StateManagerFactory stateManagerFactory = new SQLStateManagerFactory();
 	protected abstract NestedConfiguration<Z, D> getNestedConfiguration();
 	
@@ -499,6 +501,16 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		this.getNestedConfiguration().setFairLocking(fair);
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getTransactionIdentifierFactory()
+	 */
+	@Override
+	public TransactionIdentifierFactory<? extends Object> getTransactionIdentifierFactory()
+	{
+		return (this.dispatcherFactory != null) ? new UUIDTransactionIdentifierFactory() : new SimpleTransactionIdentifierFactory();
+	}
+
 	@XmlType(name = "abstractNestedConfiguration")
 	protected static abstract class NestedConfiguration<Z, D extends Database<Z>> implements DatabaseClusterConfiguration<Z, D>
 	{
@@ -804,6 +816,12 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		void setFairLocking(boolean fair)
 		{
 			this.fairLocking = fair;
+		}
+
+		@Override
+		public TransactionIdentifierFactory<? extends Object> getTransactionIdentifierFactory()
+		{
+			throw new IllegalStateException();
 		}
 	}
 

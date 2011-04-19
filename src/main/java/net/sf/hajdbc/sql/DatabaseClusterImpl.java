@@ -61,9 +61,7 @@ import net.sf.hajdbc.state.StateManager;
 import net.sf.hajdbc.state.distributed.DistributedStateManager;
 import net.sf.hajdbc.sync.SynchronizationContext;
 import net.sf.hajdbc.sync.SynchronizationContextImpl;
-import net.sf.hajdbc.tx.SimpleTransactionIdentifierFactory;
 import net.sf.hajdbc.tx.TransactionIdentifierFactory;
-import net.sf.hajdbc.tx.UUIDTransactionIdentifierFactory;
 import net.sf.hajdbc.util.concurrent.cron.CronThreadPoolExecutor;
 
 import org.quartz.CronExpression;
@@ -90,7 +88,6 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	private CronThreadPoolExecutor cronExecutor;
 	private LockManager lockManager;
 	private StateManager stateManager;
-	private TransactionIdentifierFactory transactionIdentifierFactory;
 	
 	private boolean active = false;
 	
@@ -556,9 +553,9 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	 * @see net.sf.hajdbc.DatabaseCluster#getTransactionIdentifierFactory()
 	 */
 	@Override
-	public TransactionIdentifierFactory getTransactionIdentifierFactory()
+	public TransactionIdentifierFactory<? extends Object> getTransactionIdentifierFactory()
 	{
-		return this.transactionIdentifierFactory;
+		return this.configuration.getTransactionIdentifierFactory();
 	}
 
 	/**
@@ -635,8 +632,6 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		this.stateManager = this.configuration.getStateManagerFactory().createStateManager(this);
 		
 		CommandDispatcherFactory dispatcherFactory = this.configuration.getDispatcherFactory();
-		
-		this.transactionIdentifierFactory = (dispatcherFactory != null) ? new UUIDTransactionIdentifierFactory() : new SimpleTransactionIdentifierFactory();
 		
 		if (dispatcherFactory != null)
 		{

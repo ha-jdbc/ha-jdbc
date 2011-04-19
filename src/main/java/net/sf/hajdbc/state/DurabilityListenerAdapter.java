@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentMap;
 import net.sf.hajdbc.durability.DurabilityListener;
 import net.sf.hajdbc.durability.InvocationEvent;
 import net.sf.hajdbc.durability.InvokerEvent;
+import net.sf.hajdbc.tx.TransactionIdentifierFactory;
 import net.sf.hajdbc.util.Objects;
 
 /**
@@ -34,10 +35,13 @@ public class DurabilityListenerAdapter implements DurabilityListener
 	// Cache serialized transaction identifiers
 	private final ConcurrentMap<Object, byte[]> transactionIdentifiers = new ConcurrentHashMap<Object, byte[]>();
 	private final SerializedDurabilityListener listener;
+	private final TransactionIdentifierFactory<Object> txIdFactory;
 	
-	public DurabilityListenerAdapter(SerializedDurabilityListener listener)
+	@SuppressWarnings("unchecked")
+	public DurabilityListenerAdapter(SerializedDurabilityListener listener, TransactionIdentifierFactory<? extends Object> txIdFactory)
 	{
 		this.listener = listener;
+		this.txIdFactory = (TransactionIdentifierFactory<Object>) txIdFactory;
 	}
 
 	/**
@@ -48,7 +52,7 @@ public class DurabilityListenerAdapter implements DurabilityListener
 	public void beforeInvocation(InvocationEvent event)
 	{
 		Object transactionId = event.getTransactionId();
-		byte[] txId = Objects.serialize(transactionId);
+		byte[] txId = this.txIdFactory.serialize(transactionId);
 		
 		this.transactionIdentifiers.put(transactionId, txId);
 		this.listener.beforeInvocation(txId, (byte) event.getPhase().ordinal(), (byte) event.getExceptionType().ordinal());
