@@ -26,6 +26,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import junit.framework.Assert;
@@ -161,6 +162,20 @@ public class H2DialectTest extends StandardDialectTest
 		Assert.assertEquals("CALL NEXT VALUE FOR sequence", result);
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialectTest#getDefaultSchemas()
+	 */
+	@Override
+	public void getDefaultSchemas() throws SQLException
+	{
+		DatabaseMetaData metaData = EasyMock.createStrictMock(DatabaseMetaData.class);
+		List<String> result = this.dialect.getDefaultSchemas(metaData);
+		
+		Assert.assertEquals(1, result.size());
+		Assert.assertEquals("PUBLIC", result.get(0));
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.dialect.StandardDialectTest#evaluateCurrentDate()

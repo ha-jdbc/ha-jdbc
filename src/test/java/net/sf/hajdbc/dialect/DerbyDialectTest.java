@@ -25,7 +25,9 @@ import java.sql.SQLException;
 
 import net.sf.hajdbc.cache.ForeignKeyConstraint;
 import net.sf.hajdbc.cache.ForeignKeyConstraintImpl;
+import net.sf.hajdbc.cache.SequenceProperties;
 
+import org.easymock.EasyMock;
 import org.junit.Assert;
 
 /**
@@ -38,6 +40,36 @@ public class DerbyDialectTest extends StandardDialectTest
 	public DerbyDialectTest()
 	{
 		super(DialectFactoryEnum.DERBY);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialectTest#getSequenceSupport()
+	 */
+	@Override
+	public void getSequenceSupport()
+	{
+		Assert.assertSame(this.dialect, this.dialect.getSequenceSupport());
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialectTest#getNextSequenceValueSQL()
+	 */
+	@Override
+	public void getNextSequenceValueSQL() throws SQLException
+	{
+		SequenceProperties sequence = EasyMock.createStrictMock(SequenceProperties.class);
+		
+		EasyMock.expect(sequence.getName()).andReturn("sequence");
+		
+		EasyMock.replay(sequence);
+		
+		String result = this.dialect.getSequenceSupport().getNextSequenceValueSQL(sequence);
+		
+		EasyMock.verify(sequence);
+		
+		Assert.assertEquals("VALUES NEXT VALUE FOR sequence", result);
 	}
 
 	/**
