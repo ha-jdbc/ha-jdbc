@@ -35,7 +35,6 @@ import javax.xml.validation.SchemaFactory;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseClusterConfiguration;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
-import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.Version;
 import net.sf.hajdbc.logging.Level;
@@ -59,7 +58,7 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 	private static final String CONFIG_PROPERTY = "ha-jdbc.configuration"; //$NON-NLS-1$
 	private static final String DEFAULT_RESOURCE = "ha-jdbc-{0}.xml"; //$NON-NLS-1$
 	
-	private static final URL SCHEMA = findClassLoaderResource("ha-jdbc.xsd");
+	private static final URL SCHEMA = findResource("ha-jdbc.xsd");
 
 	private static final Logger logger = LoggerFactory.getLogger(XMLDatabaseClusterConfigurationFactory.class);
 	
@@ -86,30 +85,19 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 		}
 		catch (MalformedURLException e)
 		{
-			return findClassLoaderResource(resource);
+			return findResource(resource, Thread.currentThread().getContextClassLoader(), DatabaseClusterConfigurationFactory.class.getClassLoader(), ClassLoader.getSystemClassLoader());
 		}
 	}
-
-	private static URL findClassLoaderResource(String resource)
+	
+	private static URL findResource(String resource, ClassLoader... loaders)
 	{
-		URL url = Thread.currentThread().getContextClassLoader().getResource(resource);
-		
-		if (url == null)
+		for (ClassLoader loader: loaders)
 		{
-			url = DatabaseClusterFactory.class.getClassLoader().getResource(resource);
+			URL url = loader.getResource(resource);
+			
+			if (url != null) return url;
 		}
-
-		if (url == null)
-		{
-			url = ClassLoader.getSystemResource(resource);
-		}
-		
-		if (url == null)
-		{
-			throw new IllegalArgumentException(Messages.CONFIG_NOT_FOUND.getMessage(resource));
-		}
-		
-		return url;
+		throw new IllegalArgumentException(Messages.CONFIG_NOT_FOUND.getMessage(resource));
 	}
 	
 	public XMLDatabaseClusterConfigurationFactory(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass, String id, String resource)

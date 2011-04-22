@@ -48,7 +48,7 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 	{
 		StringBuilder builder = new StringBuilder();
 		builder.append("<?xml version=\"1.0\"?>");
-		builder.append("<ha-jdbc xmlns=\"").append(SchemaGenerator.NAMESPACE).append("\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">");
+		builder.append("<ha-jdbc xmlns=\"").append(SchemaGenerator.NAMESPACE).append("\">");
 		builder.append("\t<sync id=\"diff\" class=\"net.sf.hajdbc.sync.DifferentialSynchronizationStrategy\"><property name=\"fetchSize\">100</property><property name=\"maxBatchSize\">100</property></sync>");
 		builder.append("\t<state class=\"net.sf.hajdbc.state.sql.SQLStateManagerFactory\"><property name=\"urlPattern\">jdbc:h2:{0}</property></state>");
 		builder.append("\t<cluster default-sync=\"diff\">");
