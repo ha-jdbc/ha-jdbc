@@ -93,9 +93,12 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 	{
 		for (ClassLoader loader: loaders)
 		{
-			URL url = loader.getResource(resource);
-			
-			if (url != null) return url;
+			if (loader != null)
+			{
+				URL url = loader.getResource(resource);
+				
+				if (url != null) return url;
+			}
 		}
 		throw new IllegalArgumentException(Messages.CONFIG_NOT_FOUND.getMessage(resource));
 	}
