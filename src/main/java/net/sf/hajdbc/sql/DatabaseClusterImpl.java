@@ -192,7 +192,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	 * Returns a collection of active databases in this cluster.
 	 * @return a list of database identifiers
 	 */
-	@ManagedOperation
+	@ManagedAttribute
 	public Set<String> getActiveDatabases()
 	{
 		Set<String> databases = new TreeSet<String>();
@@ -209,7 +209,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	 * Returns a collection of inactive databases in this cluster.
 	 * @return a collection of database identifiers
 	 */
-	@ManagedOperation
+	@ManagedAttribute
 	public Set<String> getInactiveDatabases()
 	{
 		Set<String> databases = new TreeSet<String>(this.configuration.getDatabaseMap().keySet());
@@ -226,7 +226,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	 * Return the current HA-JDBC version
 	 * @return the current version
 	 */
-	@ManagedOperation
+	@ManagedAttribute
 	public String getVersion()
 	{
 		return Version.getVersion();
