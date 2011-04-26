@@ -77,7 +77,7 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 	 * @param resource a resource name
 	 * @return a URL for the HA-JDBC configuration resource
 	 */
-	private static URL findResource(String resource)
+	private static URL findResource(String resource, ClassLoader loader)
 	{
 		try
 		{
@@ -85,10 +85,10 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 		}
 		catch (MalformedURLException e)
 		{
-			return findResource(resource, Thread.currentThread().getContextClassLoader(), DatabaseClusterConfigurationFactory.class.getClassLoader(), ClassLoader.getSystemClassLoader());
+			return findResource(resource, loader, XMLDatabaseClusterConfigurationFactory.class.getClassLoader(), ClassLoader.getSystemClassLoader());
 		}
 	}
-	
+
 	private static URL findResource(String resource, ClassLoader... loaders)
 	{
 		for (ClassLoader loader: loaders)
@@ -105,7 +105,12 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 	
 	public XMLDatabaseClusterConfigurationFactory(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass, String id, String resource)
 	{
-		this(targetClass, findResource((resource == null) ? identifyResource(id) : MessageFormat.format(resource, id)));
+		this(targetClass, id, resource, Thread.currentThread().getContextClassLoader());
+	}
+	
+	public XMLDatabaseClusterConfigurationFactory(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass, String id, String resource, ClassLoader loader)
+	{
+		this(targetClass, findResource((resource == null) ? identifyResource(id) : MessageFormat.format(resource, id), loader));
 	}
 	
 	public XMLDatabaseClusterConfigurationFactory(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass, URL url)
