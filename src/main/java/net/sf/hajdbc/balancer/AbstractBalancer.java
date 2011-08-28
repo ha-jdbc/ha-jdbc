@@ -136,4 +136,35 @@ public abstract class AbstractBalancer<Z, D extends Database<Z>> implements Bala
 	{
 		return this.getDatabases().toArray(array);
 	}
+	
+	/**
+	 * {@inheritDoc}
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object object)
+	{
+		if ((object == null) || !(object instanceof Collection)) return false;
+		
+		@SuppressWarnings("unchecked")
+		Collection<D> set = (Collection<D>) object;
+		
+		return this.getDatabases().equals(set);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode()
+	{
+		return this.getDatabases().hashCode();
+	}
+
+	@Override
+	public String toString()
+	{
+		return this.getDatabases().toString();
+	}
 }
