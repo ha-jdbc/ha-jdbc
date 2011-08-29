@@ -27,8 +27,8 @@ import java.util.Arrays;
 import net.sf.hajdbc.cache.ForeignKeyConstraint;
 import net.sf.hajdbc.cache.TableProperties;
 
-import org.easymock.EasyMock;
-import org.junit.Assert;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 /**
  * @author Paul Ferraro
@@ -47,7 +47,7 @@ public class SybaseDialectTest extends StandardDialectTest
 	@Override
 	public void getIdentityColumnSupport()
 	{
-		Assert.assertSame(this.dialect, this.dialect.getIdentityColumnSupport());
+		assertSame(this.dialect, this.dialect.getIdentityColumnSupport());
 	}
 
 	/**
@@ -57,7 +57,7 @@ public class SybaseDialectTest extends StandardDialectTest
 	@Override
 	public void getSimpleSQL() throws SQLException
 	{
-		Assert.assertEquals("SELECT GETDATE()", this.dialect.getSimpleSQL());
+		assertEquals("SELECT GETDATE()", this.dialect.getSimpleSQL());
 	}
 
 	/**
@@ -67,17 +67,13 @@ public class SybaseDialectTest extends StandardDialectTest
 	@Override
 	public void getTruncateTableSQL() throws SQLException
 	{
-		TableProperties table = EasyMock.createStrictMock(TableProperties.class);
+		TableProperties table = mock(TableProperties.class);
 		
-		EasyMock.expect(table.getName()).andReturn("table");
-		
-		EasyMock.replay(table);
+		when(table.getName()).thenReturn("table");
 		
 		String result = this.dialect.getTruncateTableSQL(table);
 		
-		EasyMock.verify(table);
-		
-		Assert.assertEquals("TRUNCATE TABLE table", result);
+		assertEquals("TRUNCATE TABLE table", result);
 	}
 
 	/**
@@ -87,24 +83,20 @@ public class SybaseDialectTest extends StandardDialectTest
 	@Override
 	public void getCreateForeignKeyConstraintSQL() throws SQLException
 	{
-		ForeignKeyConstraint key = EasyMock.createMock(ForeignKeyConstraint.class);
+		ForeignKeyConstraint key = mock(ForeignKeyConstraint.class);
 		
-		EasyMock.expect(key.getName()).andReturn("name");
-		EasyMock.expect(key.getTable()).andReturn("table");
-		EasyMock.expect(key.getColumnList()).andReturn(Arrays.asList("column1", "column2"));
-		EasyMock.expect(key.getForeignTable()).andReturn("foreign_table");
-		EasyMock.expect(key.getForeignColumnList()).andReturn(Arrays.asList("foreign_column1", "foreign_column2"));
-		EasyMock.expect(key.getDeferrability()).andReturn(DatabaseMetaData.importedKeyInitiallyDeferred);
-		EasyMock.expect(key.getDeleteRule()).andReturn(DatabaseMetaData.importedKeyCascade);
-		EasyMock.expect(key.getUpdateRule()).andReturn(DatabaseMetaData.importedKeyRestrict);
-		
-		EasyMock.replay(key);
+		when(key.getName()).thenReturn("name");
+		when(key.getTable()).thenReturn("table");
+		when(key.getColumnList()).thenReturn(Arrays.asList("column1", "column2"));
+		when(key.getForeignTable()).thenReturn("foreign_table");
+		when(key.getForeignColumnList()).thenReturn(Arrays.asList("foreign_column1", "foreign_column2"));
+		when(key.getDeferrability()).thenReturn(DatabaseMetaData.importedKeyInitiallyDeferred);
+		when(key.getDeleteRule()).thenReturn(DatabaseMetaData.importedKeyCascade);
+		when(key.getUpdateRule()).thenReturn(DatabaseMetaData.importedKeyRestrict);
 		
 		String result = this.dialect.getCreateForeignKeyConstraintSQL(key);
 		
-		EasyMock.verify(key);
-		
-		Assert.assertEquals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE ON UPDATE RESTRICT", result);
+		assertEquals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE ON UPDATE RESTRICT", result);
 	}
 
 	/**
@@ -116,14 +108,14 @@ public class SybaseDialectTest extends StandardDialectTest
 	{
 		java.sql.Date date = new java.sql.Date(System.currentTimeMillis());
 		
-		Assert.assertEquals(String.format("SELECT '%s' FROM test", date.toString()), this.dialect.evaluateCurrentDate("SELECT CURRENT DATE FROM test", date));
-		Assert.assertEquals(String.format("SELECT '%s' FROM test", date.toString()), this.dialect.evaluateCurrentDate("SELECT TODAY(*) FROM test", date));
-		Assert.assertEquals(String.format("SELECT '%s' FROM test", date.toString()), this.dialect.evaluateCurrentDate("SELECT TODAY ( * ) FROM test", date));
-		Assert.assertEquals("SELECT CURRENT_DATE FROM test", this.dialect.evaluateCurrentDate("SELECT CURRENT_DATE FROM test", date));
-		Assert.assertEquals("SELECT CURRENT DATES FROM test", this.dialect.evaluateCurrentDate("SELECT CURRENT DATES FROM test", date));
-		Assert.assertEquals("SELECT SCURRENT DATE FROM test", this.dialect.evaluateCurrentDate("SELECT SCURRENT DATE FROM test", date));
-		Assert.assertEquals("SELECT CURRENT_TIME FROM test", this.dialect.evaluateCurrentDate("SELECT CURRENT_TIME FROM test", date));
-		Assert.assertEquals("SELECT CURRENT_TIMESTAMP FROM test", this.dialect.evaluateCurrentDate("SELECT CURRENT_TIMESTAMP FROM test", date));
+		assertEquals(String.format("SELECT '%s' FROM test", date.toString()), this.dialect.evaluateCurrentDate("SELECT CURRENT DATE FROM test", date));
+		assertEquals(String.format("SELECT '%s' FROM test", date.toString()), this.dialect.evaluateCurrentDate("SELECT TODAY(*) FROM test", date));
+		assertEquals(String.format("SELECT '%s' FROM test", date.toString()), this.dialect.evaluateCurrentDate("SELECT TODAY ( * ) FROM test", date));
+		assertEquals("SELECT CURRENT_DATE FROM test", this.dialect.evaluateCurrentDate("SELECT CURRENT_DATE FROM test", date));
+		assertEquals("SELECT CURRENT DATES FROM test", this.dialect.evaluateCurrentDate("SELECT CURRENT DATES FROM test", date));
+		assertEquals("SELECT SCURRENT DATE FROM test", this.dialect.evaluateCurrentDate("SELECT SCURRENT DATE FROM test", date));
+		assertEquals("SELECT CURRENT_TIME FROM test", this.dialect.evaluateCurrentDate("SELECT CURRENT_TIME FROM test", date));
+		assertEquals("SELECT CURRENT_TIMESTAMP FROM test", this.dialect.evaluateCurrentDate("SELECT CURRENT_TIMESTAMP FROM test", date));
 	}
 
 	/**
@@ -135,12 +127,12 @@ public class SybaseDialectTest extends StandardDialectTest
 	{
 		java.sql.Time time = new java.sql.Time(System.currentTimeMillis());
 		
-		Assert.assertEquals(String.format("SELECT '%s' FROM test", time.toString()), this.dialect.evaluateCurrentTime("SELECT CURRENT TIME FROM test", time));
-		Assert.assertEquals("SELECT CURRENT_TIME FROM test", this.dialect.evaluateCurrentTime("SELECT CURRENT_TIME FROM test", time));
-		Assert.assertEquals("SELECT LOCALTIME FROM test", this.dialect.evaluateCurrentTime("SELECT LOCALTIME FROM test", time));
-		Assert.assertEquals("SELECT CURRENT_DATE FROM test", this.dialect.evaluateCurrentTime("SELECT CURRENT_DATE FROM test", time));
-		Assert.assertEquals("SELECT CURRENT_TIMESTAMP FROM test", this.dialect.evaluateCurrentTime("SELECT CURRENT_TIMESTAMP FROM test", time));
-		Assert.assertEquals("SELECT LOCALTIMESTAMP FROM test", this.dialect.evaluateCurrentTime("SELECT LOCALTIMESTAMP FROM test", time));
+		assertEquals(String.format("SELECT '%s' FROM test", time.toString()), this.dialect.evaluateCurrentTime("SELECT CURRENT TIME FROM test", time));
+		assertEquals("SELECT CURRENT_TIME FROM test", this.dialect.evaluateCurrentTime("SELECT CURRENT_TIME FROM test", time));
+		assertEquals("SELECT LOCALTIME FROM test", this.dialect.evaluateCurrentTime("SELECT LOCALTIME FROM test", time));
+		assertEquals("SELECT CURRENT_DATE FROM test", this.dialect.evaluateCurrentTime("SELECT CURRENT_DATE FROM test", time));
+		assertEquals("SELECT CURRENT_TIMESTAMP FROM test", this.dialect.evaluateCurrentTime("SELECT CURRENT_TIMESTAMP FROM test", time));
+		assertEquals("SELECT LOCALTIMESTAMP FROM test", this.dialect.evaluateCurrentTime("SELECT LOCALTIMESTAMP FROM test", time));
 	}
 
 	/**
@@ -152,15 +144,15 @@ public class SybaseDialectTest extends StandardDialectTest
 	{
 		java.sql.Timestamp timestamp = new java.sql.Timestamp(System.currentTimeMillis());
 		
-		Assert.assertEquals(String.format("SELECT '%s' FROM test", timestamp.toString()), this.dialect.evaluateCurrentTimestamp("SELECT CURRENT TIMESTAMP FROM test", timestamp));
-		Assert.assertEquals(String.format("SELECT '%s' FROM test", timestamp.toString()), this.dialect.evaluateCurrentTimestamp("SELECT GETDATE() FROM test", timestamp));
-		Assert.assertEquals(String.format("SELECT '%s' FROM test", timestamp.toString()), this.dialect.evaluateCurrentTimestamp("SELECT GETDATE ( ) FROM test", timestamp));
-		Assert.assertEquals(String.format("SELECT '%s' FROM test", timestamp.toString()), this.dialect.evaluateCurrentTimestamp("SELECT NOW(*) FROM test", timestamp));
-		Assert.assertEquals(String.format("SELECT '%s' FROM test", timestamp.toString()), this.dialect.evaluateCurrentTimestamp("SELECT NOW ( * ) FROM test", timestamp));
-		Assert.assertEquals("SELECT CURRENT_TIMESTAMP FROM test", this.dialect.evaluateCurrentTimestamp("SELECT CURRENT_TIMESTAMP FROM test", timestamp));
-		Assert.assertEquals("SELECT LOCALTIMESTAMP FROM test", this.dialect.evaluateCurrentTimestamp("SELECT LOCALTIMESTAMP FROM test", timestamp));
-		Assert.assertEquals("SELECT CURRENT_DATE FROM test", this.dialect.evaluateCurrentTimestamp("SELECT CURRENT_DATE FROM test", timestamp));
-		Assert.assertEquals("SELECT CURRENT_TIME FROM test", this.dialect.evaluateCurrentTimestamp("SELECT CURRENT_TIME FROM test", timestamp));
-		Assert.assertEquals("SELECT LOCALTIME FROM test", this.dialect.evaluateCurrentTimestamp("SELECT LOCALTIME FROM test", timestamp));
+		assertEquals(String.format("SELECT '%s' FROM test", timestamp.toString()), this.dialect.evaluateCurrentTimestamp("SELECT CURRENT TIMESTAMP FROM test", timestamp));
+		assertEquals(String.format("SELECT '%s' FROM test", timestamp.toString()), this.dialect.evaluateCurrentTimestamp("SELECT GETDATE() FROM test", timestamp));
+		assertEquals(String.format("SELECT '%s' FROM test", timestamp.toString()), this.dialect.evaluateCurrentTimestamp("SELECT GETDATE ( ) FROM test", timestamp));
+		assertEquals(String.format("SELECT '%s' FROM test", timestamp.toString()), this.dialect.evaluateCurrentTimestamp("SELECT NOW(*) FROM test", timestamp));
+		assertEquals(String.format("SELECT '%s' FROM test", timestamp.toString()), this.dialect.evaluateCurrentTimestamp("SELECT NOW ( * ) FROM test", timestamp));
+		assertEquals("SELECT CURRENT_TIMESTAMP FROM test", this.dialect.evaluateCurrentTimestamp("SELECT CURRENT_TIMESTAMP FROM test", timestamp));
+		assertEquals("SELECT LOCALTIMESTAMP FROM test", this.dialect.evaluateCurrentTimestamp("SELECT LOCALTIMESTAMP FROM test", timestamp));
+		assertEquals("SELECT CURRENT_DATE FROM test", this.dialect.evaluateCurrentTimestamp("SELECT CURRENT_DATE FROM test", timestamp));
+		assertEquals("SELECT CURRENT_TIME FROM test", this.dialect.evaluateCurrentTimestamp("SELECT CURRENT_TIME FROM test", timestamp));
+		assertEquals("SELECT LOCALTIME FROM test", this.dialect.evaluateCurrentTimestamp("SELECT LOCALTIME FROM test", timestamp));
 	}
 }

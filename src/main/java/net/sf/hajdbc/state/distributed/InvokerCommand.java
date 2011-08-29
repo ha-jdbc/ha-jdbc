@@ -62,26 +62,6 @@ public class InvokerCommand<Z, D extends Database<Z>> implements Command<Void, S
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.distributed.Command#marshalResult(java.lang.Object)
-	 */
-	@Override
-	public Object marshalResult(Void result)
-	{
-		return null;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.distributed.Command#unmarshalResult(java.lang.Object)
-	 */
-	@Override
-	public Void unmarshalResult(Object object)
-	{
-		return null;
-	}
-
-	/**
-	 * {@inheritDoc}
 	 * @see java.lang.Object#toString()
 	 */
 	@Override

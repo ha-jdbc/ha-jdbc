@@ -66,26 +66,6 @@ public class MemberReleaseLockCommand implements Command<Void, LockCommandContex
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.distributed.Command#marshalResult(java.lang.Object)
-	 */
-	@Override
-	public Object marshalResult(Void result)
-	{
-		return result;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.distributed.Command#unmarshalResult(java.lang.Object)
-	 */
-	@Override
-	public Void unmarshalResult(Object object)
-	{
-		return (Void) object;
-	}
-
-	/**
-	 * {@inheritDoc}
 	 * @see java.lang.Object#toString()
 	 */
 	@Override

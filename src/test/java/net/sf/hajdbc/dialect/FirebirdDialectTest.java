@@ -32,9 +32,8 @@ import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.cache.QualifiedName;
 import net.sf.hajdbc.cache.SequenceProperties;
 
-import org.easymock.EasyMock;
-import org.easymock.IMocksControl;
-import org.junit.Assert;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 /**
  * @author Paul Ferraro
@@ -55,7 +54,7 @@ public class FirebirdDialectTest extends StandardDialectTest
 	@Override
 	public void getSequenceSupport()
 	{
-		Assert.assertSame(this.dialect, this.dialect.getSequenceSupport());
+		assertSame(this.dialect, this.dialect.getSequenceSupport());
 	}
 
 	/**
@@ -65,18 +64,14 @@ public class FirebirdDialectTest extends StandardDialectTest
 	@Override
 	public void getAlterSequenceSQL() throws SQLException
 	{
-		SequenceProperties sequence = EasyMock.createStrictMock(SequenceProperties.class);
+		SequenceProperties sequence = mock(SequenceProperties.class);
 		
-		EasyMock.expect(sequence.getName()).andReturn("sequence");
-		EasyMock.expect(sequence.getIncrement()).andReturn(1);
-		
-		EasyMock.replay(sequence);
+		when(sequence.getName()).thenReturn("sequence");
+		when(sequence.getIncrement()).thenReturn(1);
 		
 		String result = this.dialect.getSequenceSupport().getAlterSequenceSQL(sequence, 1000L);
-		
-		EasyMock.verify(sequence);
 
-		Assert.assertEquals("SET GENERATOR sequence TO 1000", result);
+		assertEquals("SET GENERATOR sequence TO 1000", result);
 	}
 
 	/**
@@ -86,43 +81,35 @@ public class FirebirdDialectTest extends StandardDialectTest
 	@Override
 	public void getSequences() throws SQLException
 	{
-		IMocksControl control = EasyMock.createStrictControl();
-		DatabaseMetaData metaData = control.createMock(DatabaseMetaData.class);
-		Connection connection = control.createMock(Connection.class);
-		Statement statement = control.createMock(Statement.class);
-		ResultSet resultSet = control.createMock(ResultSet.class);
+		DatabaseMetaData metaData = mock(DatabaseMetaData.class);
+		Connection connection = mock(Connection.class);
+		Statement statement = mock(Statement.class);
+		ResultSet resultSet = mock(ResultSet.class);
 		
-		EasyMock.expect(metaData.getConnection()).andReturn(connection);
-		EasyMock.expect(connection.createStatement()).andReturn(statement);
-		EasyMock.expect(statement.executeQuery("SELECT RDB$GENERATOR_NAME FROM RDB$GENERATORS")).andReturn(resultSet);
-		EasyMock.expect(resultSet.next()).andReturn(true);
-		EasyMock.expect(resultSet.getString(1)).andReturn("sequence1");
-		EasyMock.expect(resultSet.next()).andReturn(true);
-		EasyMock.expect(resultSet.getString(1)).andReturn("sequence2");
-		EasyMock.expect(resultSet.next()).andReturn(false);
-		
-		statement.close();
-		
-		control.replay();
-		
+		when(metaData.getConnection()).thenReturn(connection);
+		when(connection.createStatement()).thenReturn(statement);
+		when(statement.executeQuery("SELECT RDB$GENERATOR_NAME FROM RDB$GENERATORS")).thenReturn(resultSet);
+		when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
+		when(resultSet.getString(1)).thenReturn("sequence1").thenReturn("sequence2");
+
 		Map<QualifiedName, Integer> results = this.dialect.getSequenceSupport().getSequences(metaData);
 
-		control.verify();
-		
-		Assert.assertEquals(results.size(), 2);
+		verify(statement).close();
+
+		assertEquals(results.size(), 2);
 		
 		Iterator<Map.Entry<QualifiedName, Integer>> entries = results.entrySet().iterator();
 		Map.Entry<QualifiedName, Integer> entry = entries.next();
 
-		Assert.assertNull(entry.getKey().getSchema());
-		Assert.assertEquals("sequence1", entry.getKey().getName());
-		Assert.assertEquals(1, entry.getValue().intValue());
+		assertNull(entry.getKey().getSchema());
+		assertEquals("sequence1", entry.getKey().getName());
+		assertEquals(1, entry.getValue().intValue());
 		
 		entry = entries.next();
 		
-		Assert.assertNull(entry.getKey().getSchema());
-		Assert.assertEquals("sequence2", entry.getKey().getName());
-		Assert.assertEquals(1, entry.getValue().intValue());
+		assertNull(entry.getKey().getSchema());
+		assertEquals("sequence2", entry.getKey().getName());
+		assertEquals(1, entry.getValue().intValue());
 	}
 	
 	/**
@@ -132,17 +119,13 @@ public class FirebirdDialectTest extends StandardDialectTest
 	@Override
 	public void getNextSequenceValueSQL() throws SQLException
 	{
-		SequenceProperties sequence = EasyMock.createStrictMock(SequenceProperties.class);
+		SequenceProperties sequence = mock(SequenceProperties.class);
 		
-		EasyMock.expect(sequence.getName()).andReturn("sequence");
-		
-		EasyMock.replay(sequence);
+		when(sequence.getName()).thenReturn("sequence");
 		
 		String result = this.dialect.getSequenceSupport().getNextSequenceValueSQL(sequence);
 		
-		EasyMock.verify(sequence);
-		
-		Assert.assertEquals("SELECT GEN_ID(sequence, 1) FROM RDB$DATABASE", result);
+		assertEquals("SELECT GEN_ID(sequence, 1) FROM RDB$DATABASE", result);
 	}
 
 	/**
@@ -152,7 +135,7 @@ public class FirebirdDialectTest extends StandardDialectTest
 	@Override
 	public void getSimpleSQL() throws SQLException
 	{
-		Assert.assertEquals("SELECT CURRENT_TIMESTAMP FROM RDB$DATABASE", this.dialect.getSimpleSQL());
+		assertEquals("SELECT CURRENT_TIMESTAMP FROM RDB$DATABASE", this.dialect.getSimpleSQL());
 	}
 
 	/**
@@ -162,8 +145,8 @@ public class FirebirdDialectTest extends StandardDialectTest
 	@Override
 	public void isSelectForUpdate() throws SQLException
 	{
-		Assert.assertTrue(this.dialect.isSelectForUpdate("SELECT * FROM test WITH LOCK"));
-		Assert.assertFalse(this.dialect.isSelectForUpdate("SELECT * FROM test"));
+		assertTrue(this.dialect.isSelectForUpdate("SELECT * FROM test WITH LOCK"));
+		assertFalse(this.dialect.isSelectForUpdate("SELECT * FROM test"));
 	}
 
 	/**
@@ -174,14 +157,14 @@ public class FirebirdDialectTest extends StandardDialectTest
 	public void parseSequence() throws SQLException
 	{
 		SequenceSupport support = this.dialect.getSequenceSupport();
-		Assert.assertEquals("sequence", support.parseSequence("SELECT GEN_ID(sequence, 1) FROM RDB$DATABASE"));
-		Assert.assertEquals("sequence", support.parseSequence("SELECT GEN_ID(sequence, 1), * FROM table"));
-		Assert.assertEquals("sequence", support.parseSequence("INSERT INTO table VALUES (GEN_ID(sequence, 1), 0)"));
-		Assert.assertEquals("sequence", support.parseSequence("UPDATE table SET id = GEN_ID(sequence, 1)"));
-		Assert.assertNull(support.parseSequence("SELECT NEXT VALUE FOR test"));
-		Assert.assertNull(support.parseSequence("SELECT NEXT VALUE FOR test, * FROM table"));
-		Assert.assertNull(support.parseSequence("INSERT INTO table VALUES (NEXT VALUE FOR test)"));
-		Assert.assertNull(support.parseSequence("UPDATE table SET id = NEXT VALUE FOR test"));
-		Assert.assertNull(support.parseSequence("SELECT * FROM table"));
+		assertEquals("sequence", support.parseSequence("SELECT GEN_ID(sequence, 1) FROM RDB$DATABASE"));
+		assertEquals("sequence", support.parseSequence("SELECT GEN_ID(sequence, 1), * FROM table"));
+		assertEquals("sequence", support.parseSequence("INSERT INTO table VALUES (GEN_ID(sequence, 1), 0)"));
+		assertEquals("sequence", support.parseSequence("UPDATE table SET id = GEN_ID(sequence, 1)"));
+		assertNull(support.parseSequence("SELECT NEXT VALUE FOR test"));
+		assertNull(support.parseSequence("SELECT NEXT VALUE FOR test, * FROM table"));
+		assertNull(support.parseSequence("INSERT INTO table VALUES (NEXT VALUE FOR test)"));
+		assertNull(support.parseSequence("UPDATE table SET id = NEXT VALUE FOR test"));
+		assertNull(support.parseSequence("SELECT * FROM table"));
 	}
 }

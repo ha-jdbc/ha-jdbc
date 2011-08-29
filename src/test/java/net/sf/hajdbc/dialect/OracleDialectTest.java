@@ -35,9 +35,8 @@ import net.sf.hajdbc.cache.QualifiedName;
 import net.sf.hajdbc.cache.SequenceProperties;
 import net.sf.hajdbc.cache.TableProperties;
 
-import org.easymock.EasyMock;
-import org.easymock.IMocksControl;
-import org.junit.Assert;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 /**
  * @author Paul Ferraro
@@ -56,7 +55,7 @@ public class OracleDialectTest extends StandardDialectTest
 	@Override
 	public void getSequenceSupport()
 	{
-		Assert.assertSame(this.dialect, this.dialect.getSequenceSupport());
+		assertSame(this.dialect, this.dialect.getSequenceSupport());
 	}
 
 	/**
@@ -66,18 +65,14 @@ public class OracleDialectTest extends StandardDialectTest
 	@Override
 	public void getAlterSequenceSQL() throws SQLException
 	{
-		SequenceProperties sequence = EasyMock.createStrictMock(SequenceProperties.class);
+		SequenceProperties sequence = mock(SequenceProperties.class);
 		
-		EasyMock.expect(sequence.getName()).andReturn("sequence");
-		EasyMock.expect(sequence.getIncrement()).andReturn(1);
-		
-		EasyMock.replay(sequence);
+		when(sequence.getName()).thenReturn("sequence");
+		when(sequence.getIncrement()).thenReturn(1);
 		
 		String result = this.dialect.getSequenceSupport().getAlterSequenceSQL(sequence, 1000L);
-
-		EasyMock.verify(sequence);
 		
-		Assert.assertEquals("ALTER SEQUENCE sequence INCREMENT BY (1000 - (SELECT sequence.NEXTVAL FROM DUAL)); SELECT sequence.NEXTVAL FROM DUAL; ALTER SEQUENCE sequence INCREMENT BY 1", result);
+		assertEquals("ALTER SEQUENCE sequence INCREMENT BY (1000 - (SELECT sequence.NEXTVAL FROM DUAL)); SELECT sequence.NEXTVAL FROM DUAL; ALTER SEQUENCE sequence INCREMENT BY 1", result);
 	}
 
 	/**
@@ -99,7 +94,7 @@ public class OracleDialectTest extends StandardDialectTest
 		
 		String result = this.dialect.getCreateForeignKeyConstraintSQL(key);
 		
-		Assert.assertEquals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE", result);
+		assertEquals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE", result);
 	}
 
 	/**
@@ -109,51 +104,42 @@ public class OracleDialectTest extends StandardDialectTest
 	@Override
 	public void getSequences() throws SQLException
 	{
-		IMocksControl control = EasyMock.createStrictControl();
-		DatabaseMetaData metaData = control.createMock(DatabaseMetaData.class);
-		Connection connection = control.createMock(Connection.class);
-		Statement statement = control.createMock(Statement.class);
-		ResultSet resultSet = control.createMock(ResultSet.class);
+		DatabaseMetaData metaData = mock(DatabaseMetaData.class);
+		Connection connection = mock(Connection.class);
+		Statement statement = mock(Statement.class);
+		ResultSet resultSet = mock(ResultSet.class);
 		
-		EasyMock.expect(metaData.getConnection()).andReturn(connection);
-		EasyMock.expect(connection.createStatement()).andReturn(statement);
-		EasyMock.expect(statement.executeQuery("SELECT SEQUENCE_NAME, INCREMENT_BY FROM USER_SEQUENCES")).andReturn(resultSet);
-		EasyMock.expect(resultSet.next()).andReturn(true);
-		EasyMock.expect(resultSet.getString(1)).andReturn("sequence1");
-		EasyMock.expect(resultSet.getInt(2)).andReturn(1);
-		EasyMock.expect(resultSet.next()).andReturn(true);
-		EasyMock.expect(resultSet.getString(1)).andReturn("sequence2");
-		EasyMock.expect(resultSet.getInt(2)).andReturn(2);
-		EasyMock.expect(resultSet.next()).andReturn(false);
-		
-		statement.close();
-		
-		control.replay();
+		when(metaData.getConnection()).thenReturn(connection);
+		when(connection.createStatement()).thenReturn(statement);
+		when(statement.executeQuery("SELECT SEQUENCE_NAME, INCREMENT_BY FROM USER_SEQUENCES")).thenReturn(resultSet);
+		when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
+		when(resultSet.getString(1)).thenReturn("sequence1").thenReturn("sequence2");
+		when(resultSet.getInt(2)).thenReturn(1).thenReturn(2);
 		
 		Map<QualifiedName, Integer> result = this.dialect.getSequenceSupport().getSequences(metaData);
 		
-		control.verify();
+		verify(statement).close();
 		
-		Assert.assertEquals(2, result.size());
+		assertEquals(2, result.size());
 		
 		Iterator<Map.Entry<QualifiedName, Integer>> entries = result.entrySet().iterator();
 
-		Assert.assertTrue(entries.hasNext());
+		assertTrue(entries.hasNext());
 		
 		Map.Entry<QualifiedName, Integer> entry = entries.next();
 
-		Assert.assertNull(entry.getKey().getSchema());
-		Assert.assertEquals("sequence1", entry.getKey().getName());
-		Assert.assertEquals(1, entry.getValue().intValue());
-		Assert.assertTrue(entries.hasNext());
+		assertNull(entry.getKey().getSchema());
+		assertEquals("sequence1", entry.getKey().getName());
+		assertEquals(1, entry.getValue().intValue());
+		assertTrue(entries.hasNext());
 		
 		entry = entries.next();
 		
-		Assert.assertNull(entry.getKey().getSchema());
-		Assert.assertEquals("sequence2", entry.getKey().getName());
-		Assert.assertEquals(2, entry.getValue().intValue());
+		assertNull(entry.getKey().getSchema());
+		assertEquals("sequence2", entry.getKey().getName());
+		assertEquals(2, entry.getValue().intValue());
 		
-		Assert.assertFalse(entries.hasNext());
+		assertFalse(entries.hasNext());
 	}
 
 	/**
@@ -163,7 +149,7 @@ public class OracleDialectTest extends StandardDialectTest
 	@Override
 	public void getSimpleSQL() throws SQLException
 	{
-		Assert.assertEquals("SELECT CURRENT_TIMESTAMP FROM DUAL", this.dialect.getSimpleSQL());
+		assertEquals("SELECT CURRENT_TIMESTAMP FROM DUAL", this.dialect.getSimpleSQL());
 	}
 
 	/**
@@ -173,17 +159,13 @@ public class OracleDialectTest extends StandardDialectTest
 	@Override
 	public void getTruncateTableSQL() throws SQLException
 	{
-		TableProperties table = EasyMock.createStrictMock(TableProperties.class);
+		TableProperties table = mock(TableProperties.class);
 		
-		EasyMock.expect(table.getName()).andReturn("table");
-		
-		EasyMock.replay(table);
+		when(table.getName()).thenReturn("table");
 		
 		String result = this.dialect.getTruncateTableSQL(table);
 		
-		EasyMock.verify(table);
-		
-		Assert.assertEquals("TRUNCATE TABLE table", result);
+		assertEquals("TRUNCATE TABLE table", result);
 	}
 
 	/**
@@ -194,16 +176,16 @@ public class OracleDialectTest extends StandardDialectTest
 	public void parseSequence() throws SQLException
 	{
 		SequenceSupport support = this.dialect.getSequenceSupport();
-		Assert.assertEquals("sequence", support.parseSequence("SELECT sequence.nextval"));
-		Assert.assertEquals("sequence", support.parseSequence("SELECT sequence.currval"));
-		Assert.assertEquals("sequence", support.parseSequence("SELECT sequence.nextval, * FROM table"));
-		Assert.assertEquals("sequence", support.parseSequence("SELECT sequence.currval, * FROM table"));
-		Assert.assertEquals("sequence", support.parseSequence("SELECT sequence.nextval"));
-		Assert.assertEquals("sequence", support.parseSequence("INSERT INTO table VALUES (sequence.nextval, 0)"));
-		Assert.assertEquals("sequence", support.parseSequence("INSERT INTO table VALUES (sequence.currval, 0)"));
-		Assert.assertEquals("sequence", support.parseSequence("UPDATE table SET id = sequence.nextval"));
-		Assert.assertEquals("sequence", support.parseSequence("UPDATE table SET id = sequence.nextval"));
-		Assert.assertNull(support.parseSequence("SELECT NEXT VALUE FOR sequence"));
+		assertEquals("sequence", support.parseSequence("SELECT sequence.nextval"));
+		assertEquals("sequence", support.parseSequence("SELECT sequence.currval"));
+		assertEquals("sequence", support.parseSequence("SELECT sequence.nextval, * FROM table"));
+		assertEquals("sequence", support.parseSequence("SELECT sequence.currval, * FROM table"));
+		assertEquals("sequence", support.parseSequence("SELECT sequence.nextval"));
+		assertEquals("sequence", support.parseSequence("INSERT INTO table VALUES (sequence.nextval, 0)"));
+		assertEquals("sequence", support.parseSequence("INSERT INTO table VALUES (sequence.currval, 0)"));
+		assertEquals("sequence", support.parseSequence("UPDATE table SET id = sequence.nextval"));
+		assertEquals("sequence", support.parseSequence("UPDATE table SET id = sequence.nextval"));
+		assertNull(support.parseSequence("SELECT NEXT VALUE FOR sequence"));
 	}
 	
 	/**
@@ -213,16 +195,12 @@ public class OracleDialectTest extends StandardDialectTest
 	@Override
 	public void getNextSequenceValueSQL() throws SQLException
 	{
-		SequenceProperties sequence = EasyMock.createStrictMock(SequenceProperties.class);
+		SequenceProperties sequence = mock(SequenceProperties.class);
 		
-		EasyMock.expect(sequence.getName()).andReturn("sequence");
-		
-		EasyMock.replay(sequence);
+		when(sequence.getName()).thenReturn("sequence");
 		
 		String result = this.dialect.getSequenceSupport().getNextSequenceValueSQL(sequence);
 
-		EasyMock.verify(sequence);
-		
-		assert result.equals("SELECT sequence.NEXTVAL FROM DUAL") : result;
+		assertEquals("SELECT sequence.NEXTVAL FROM DUAL", result);
 	}
 }

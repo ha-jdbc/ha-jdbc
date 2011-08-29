@@ -29,8 +29,6 @@ import net.sf.hajdbc.distributed.Stateful;
  */
 public abstract class ChannelCommandDispatcherFactory implements ChannelProvider, CommandDispatcherFactory
 {
-	private static final long serialVersionUID = 8445137993422521245L;
-
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.distributed.CommandDispatcherFactory#createCommandDispatcher(java.lang.String, java.lang.Object, net.sf.hajdbc.distributed.Stateful, net.sf.hajdbc.distributed.MembershipListener)

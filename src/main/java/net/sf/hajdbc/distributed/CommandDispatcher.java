@@ -56,4 +56,10 @@ public interface CommandDispatcher<C> extends Lifecycle
 	 * @return the local member.
 	 */
 	Member getLocal();
+	
+	/**
+	 * Returns the group coordinator.
+	 * @return the group coordinator.
+	 */
+	Member getCoordinator();
 }

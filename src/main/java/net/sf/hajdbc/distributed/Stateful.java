@@ -17,6 +17,10 @@
  */
 package net.sf.hajdbc.distributed;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
 /**
  * Used by the command dispatcher to handle state transfer between members.
  * 
@@ -28,11 +32,11 @@ public interface Stateful
 	 * Returns the state of this object.
 	 * @return the current state.
 	 */
-	byte[] getState();
+	void readState(ObjectInput input) throws IOException, ClassNotFoundException;
 	
 	/**
 	 * Sets the state of this object.
 	 * @param state the state
 	 */
-	void setState(byte[] state);
+	void writeState(ObjectOutput output) throws IOException;
 }

@@ -18,17 +18,13 @@
 package net.sf.hajdbc.xml;
 
 import java.io.IOException;
+import java.util.Properties;
 
 import net.sf.hajdbc.util.Strings;
 
-import org.easymock.Capture;
-import org.easymock.EasyMock;
-import org.easymock.IMocksControl;
-import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.DTDHandler;
@@ -42,58 +38,34 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
 
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+import static org.mockito.AdditionalMatchers.*;
+
 /**
  * @author Paul Ferraro
  */
 public class PropertyReplacementFilterTest
 {
-   private IMocksControl control;
    private ContentHandler contentHandler;
    private DTDHandler dtdHandler;
    private ErrorHandler errorHandler;
    private EntityResolver resolver;
    private XMLReader parent;
    private XMLFilterImpl filter;
-   
-   private static String oldExistingValue;
-   private static String oldNonExistingValue;
-   
-   @BeforeClass
-   public static void beforeClass()
-   {
-      oldExistingValue = System.setProperty("existing", "Release");
-      oldNonExistingValue = System.clearProperty("non-existing");
-   }
-
-   @AfterClass
-   public static void afterClass()
-   {
-      if (oldExistingValue != null)
-      {
-         System.setProperty("existing", oldExistingValue);
-      }
-      else
-      {
-         System.clearProperty("existing");
-      }
-      
-      if (oldNonExistingValue != null)
-      {
-         System.setProperty("non-existing", oldNonExistingValue);
-      }
-   }
 
    @Before
    public void before()
    {
-      this.control = EasyMock.createControl();
-      this.contentHandler = this.control.createMock(ContentHandler.class);
-      this.dtdHandler = this.control.createMock(DTDHandler.class);
-      this.errorHandler = this.control.createMock(ErrorHandler.class);
-      this.resolver = this.control.createMock(EntityResolver.class);
-      this.parent = this.control.createMock(XMLReader.class);
+      this.contentHandler = mock(ContentHandler.class);
+      this.dtdHandler = mock(DTDHandler.class);
+      this.errorHandler = mock(ErrorHandler.class);
+      this.resolver = mock(EntityResolver.class);
+      this.parent = mock(XMLReader.class);
+      Properties properties = new Properties();
+      properties.setProperty("existing", "Release");
       
-      this.filter = new PropertyReplacementFilter(this.parent);
+      this.filter = new PropertyReplacementFilter(this.parent, properties);
       this.filter.setContentHandler(this.contentHandler);
       this.filter.setDTDHandler(this.dtdHandler);
       this.filter.setEntityResolver(this.resolver);
@@ -105,33 +77,23 @@ public class PropertyReplacementFilterTest
    {
       String plain = "test";
       
-      this.contentHandler.characters(EasyMock.aryEq(plain.toCharArray()), EasyMock.eq(0), EasyMock.eq(plain.length()));
-      
-      this.control.replay();
-      
       this.filter.characters(plain.toCharArray(), 0, plain.length());
-
-      this.control.verify();
-      this.control.reset();
-
+      
+      verify(this.contentHandler).characters(aryEq(plain.toCharArray()), eq(0), eq(plain.length()));
       
       String string = "${dummy,existing:Free} the ${non-existing:Kraken}! ${dummy} ${/} ${:} ${} ${dummy:}";
       String expected = String.format("Release the Kraken! ${dummy} %s %s ${} ", Strings.FILE_SEPARATOR, Strings.PATH_SEPARATOR);
       
-      this.contentHandler.characters(EasyMock.aryEq(expected.toCharArray()), EasyMock.eq(0), EasyMock.eq(expected.length()));
-      
-      this.control.replay();
-      
       this.filter.characters(string.toCharArray(), 0, string.length());
       
-      this.control.verify();
+      verify(this.contentHandler).characters(aryEq(expected.toCharArray()), eq(0), eq(expected.length()));
    }
    
    @Test
    public void startElement() throws SAXException
    {
-      Attributes attributes = this.control.createMock(Attributes.class);
-      Capture<Attributes> capturedAttributes = new Capture<Attributes>();
+      Attributes attributes = mock(Attributes.class);
+      ArgumentCaptor<Attributes> capturedAttributes = ArgumentCaptor.forClass(Attributes.class);
       
       String plain = "test";
       String attributeURI = "uri";
@@ -142,81 +104,71 @@ public class PropertyReplacementFilterTest
       String elementLocalName = "localName";
       String elementQName = "qName";
       
-      EasyMock.expect(attributes.getLength()).andReturn(1);
-      EasyMock.expect(attributes.getURI(0)).andReturn(attributeURI);
-      EasyMock.expect(attributes.getLocalName(0)).andReturn(attributeLocalName);
-      EasyMock.expect(attributes.getQName(0)).andReturn(attributeQName);
-      EasyMock.expect(attributes.getType(0)).andReturn(attributeType);
-      EasyMock.expect(attributes.getValue(0)).andReturn(plain);
+      when(attributes.getLength()).thenReturn(1);
+      when(attributes.getURI(0)).thenReturn(attributeURI);
+      when(attributes.getLocalName(0)).thenReturn(attributeLocalName);
+      when(attributes.getQName(0)).thenReturn(attributeQName);
+      when(attributes.getType(0)).thenReturn(attributeType);
+      when(attributes.getValue(0)).thenReturn(plain);
       
-      this.contentHandler.startElement(EasyMock.eq(elementURI), EasyMock.eq(elementLocalName), EasyMock.eq(elementQName), EasyMock.capture(capturedAttributes));
+      doNothing().when(this.contentHandler).startElement(eq(elementURI), eq(elementLocalName), eq(elementQName), capturedAttributes.capture());
       
-      this.control.replay();
-
       this.filter.startElement(elementURI, elementLocalName, elementQName, attributes);
       
-      this.control.verify();
-      
       Attributes attr = capturedAttributes.getValue();
-      Assert.assertEquals(1, attr.getLength());
-      Assert.assertSame(attributeURI, attr.getURI(0));
-      Assert.assertSame(attributeLocalName, attr.getLocalName(0));
-      Assert.assertSame(attributeQName, attr.getQName(0));
-      Assert.assertSame(attributeType, attr.getType(0));
-      Assert.assertEquals(plain, attr.getValue(0));
-      
-      this.control.reset();
+      assertEquals(1, attr.getLength());
+      assertSame(attributeURI, attr.getURI(0));
+      assertSame(attributeLocalName, attr.getLocalName(0));
+      assertSame(attributeQName, attr.getQName(0));
+      assertSame(attributeType, attr.getType(0));
+      assertEquals(plain, attr.getValue(0));
       
       
       String string = "${dummy,existing:Free} the ${non-existing:Kraken}! ${dummy} ${/} ${:} ${} ${dummy:}";
       String expected = String.format("Release the Kraken! ${dummy} %s %s ${} ", Strings.FILE_SEPARATOR, Strings.PATH_SEPARATOR);
       
-      EasyMock.expect(attributes.getLength()).andReturn(1);
-      EasyMock.expect(attributes.getURI(0)).andReturn(attributeURI);
-      EasyMock.expect(attributes.getLocalName(0)).andReturn(attributeLocalName);
-      EasyMock.expect(attributes.getQName(0)).andReturn(attributeQName);
-      EasyMock.expect(attributes.getType(0)).andReturn(attributeType);
-      EasyMock.expect(attributes.getValue(0)).andReturn(string);
+      when(attributes.getLength()).thenReturn(1);
+      when(attributes.getURI(0)).thenReturn(attributeURI);
+      when(attributes.getLocalName(0)).thenReturn(attributeLocalName);
+      when(attributes.getQName(0)).thenReturn(attributeQName);
+      when(attributes.getType(0)).thenReturn(attributeType);
+      when(attributes.getValue(0)).thenReturn(string);
       
-      this.contentHandler.startElement(EasyMock.eq(elementURI), EasyMock.eq(elementLocalName), EasyMock.eq(elementQName), EasyMock.capture(capturedAttributes));
-      
-      this.control.replay();
+      doNothing().when(this.contentHandler).startElement(eq(elementURI), eq(elementLocalName), eq(elementQName), capturedAttributes.capture());
       
       this.filter.startElement(elementURI, elementLocalName, elementQName, attributes);
       
-      this.control.verify();
-      
       attr = capturedAttributes.getValue();
-      Assert.assertEquals(1, attr.getLength());
-      Assert.assertSame(attributeURI, attr.getURI(0));
-      Assert.assertSame(attributeLocalName, attr.getLocalName(0));
-      Assert.assertSame(attributeQName, attr.getQName(0));
-      Assert.assertSame(attributeType, attr.getType(0));
-      Assert.assertEquals(expected, attr.getValue(0));
+      assertEquals(1, attr.getLength());
+      assertSame(attributeURI, attr.getURI(0));
+      assertSame(attributeLocalName, attr.getLocalName(0));
+      assertSame(attributeQName, attr.getQName(0));
+      assertSame(attributeType, attr.getType(0));
+      assertEquals(expected, attr.getValue(0));
    }
    
    @Test
    public void getContentHandler()
    {
-      Assert.assertSame(this.contentHandler, this.filter.getContentHandler());
+      assertSame(this.contentHandler, this.filter.getContentHandler());
    }
    
    @Test
    public void getDTDHandler()
    {
-      Assert.assertSame(this.dtdHandler, this.filter.getDTDHandler());
+      assertSame(this.dtdHandler, this.filter.getDTDHandler());
    }
    
    @Test
    public void getEntityResolver()
    {
-      Assert.assertSame(this.resolver, this.filter.getEntityResolver());
+      assertSame(this.resolver, this.filter.getEntityResolver());
    }
    
    @Test
    public void getErrorHandler()
    {
-      Assert.assertSame(this.errorHandler, this.filter.getErrorHandler());
+      assertSame(this.errorHandler, this.filter.getErrorHandler());
    }
    
    @Test
@@ -224,9 +176,7 @@ public class PropertyReplacementFilterTest
    {
       String feature = "name";
       
-      EasyMock.expect(this.parent.getFeature(feature)).andReturn(true);
-      
-      this.control.replay();
+      when(this.parent.getFeature(feature)).thenReturn(true);
       
       SAXException exception = null;
       Boolean result = null;
@@ -239,13 +189,9 @@ public class PropertyReplacementFilterTest
          exception = e;
       }
       
-      this.control.verify();
-      
-      Assert.assertNull(exception);
-      Assert.assertNotNull(result);
-      Assert.assertTrue(result);
-      
-      this.control.reset();
+      assertNull(exception);
+      assertNotNull(result);
+      assertTrue(result);
       
       this.getFeature(feature, new SAXNotRecognizedException());
       this.getFeature(feature, new SAXNotSupportedException());
@@ -253,9 +199,9 @@ public class PropertyReplacementFilterTest
    
    private void getFeature(String feature, SAXException expected) throws SAXException
    {
-      EasyMock.expect(this.parent.getFeature(feature)).andThrow(expected);
-      
-      this.control.replay();
+   	reset(this.parent);
+   	
+      when(this.parent.getFeature(feature)).thenThrow(expected);
       
       SAXException exception = null;
       Boolean result = null;
@@ -268,25 +214,17 @@ public class PropertyReplacementFilterTest
          exception = e;
       }
       
-      this.control.verify();
-      
-      Assert.assertNull(result);
-      Assert.assertNotNull(exception);
-      Assert.assertSame(expected, exception);
-      
-      this.control.reset();
+      assertNull(result);
+      assertNotNull(exception);
+      assertSame(expected, exception);
    }
    
    @Test
    public void getParent()
    {
-      this.control.replay();
-      
       XMLReader result = this.filter.getParent();
       
-      this.control.verify();
-      
-      Assert.assertSame(this.parent, result);
+      assertSame(this.parent, result);
    }
    
    @Test
@@ -295,17 +233,11 @@ public class PropertyReplacementFilterTest
       String property = "name";
       Object expected = new Object();
       
-      EasyMock.expect(this.parent.getProperty(property)).andReturn(expected);
-      
-      this.control.replay();
+      when(this.parent.getProperty(property)).thenReturn(expected);
       
       Object result = this.filter.getProperty(property);
       
-      this.control.verify();
-      
-      Assert.assertSame(expected, result);
-      
-      this.control.reset();
+      assertSame(expected, result);
       
       this.getProperty(property, new SAXNotRecognizedException());
       this.getProperty(property, new SAXNotSupportedException());
@@ -313,9 +245,9 @@ public class PropertyReplacementFilterTest
    
    private void getProperty(String property, SAXException expected) throws SAXException
    {
-      EasyMock.expect(this.parent.getProperty(property)).andThrow(expected);
-      
-      this.control.replay();
+   	reset(this.parent);
+   	
+      when(this.parent.getProperty(property)).thenThrow(expected);
       
       SAXException exception = null;
       
@@ -328,58 +260,46 @@ public class PropertyReplacementFilterTest
          exception = e;
       }
       
-      this.control.verify();
-      
-      Assert.assertNotNull(exception);
-      Assert.assertSame(expected, exception);
-      
-      this.control.reset();
+      assertNotNull(exception);
+      assertSame(expected, exception);
    }
    
    @Test
    public void parseInputSource() throws IOException, SAXException
    {
-      InputSource source = EasyMock.createMock(InputSource.class);
+      InputSource source = mock(InputSource.class);
       
-      EasyMock.checkOrder(this.parent, false);
-      this.parent.setContentHandler(this.filter);
-      this.parent.setDTDHandler(this.filter);
-      this.parent.setEntityResolver(this.filter);
-      this.parent.setErrorHandler(this.filter);
-      EasyMock.checkOrder(this.parent, true);
-      
-      this.parent.parse(source);
-      
-      this.control.replay();
+//      checkOrder(this.parent, false);
+//      EasyMock.checkOrder(this.parent, true);
       
       this.filter.parse(source);
       
-      this.control.verify();
+      verify(this.parent).setContentHandler(this.filter);
+      verify(this.parent).setDTDHandler(this.filter);
+      verify(this.parent).setEntityResolver(this.filter);
+      verify(this.parent).setErrorHandler(this.filter);
+      verify(this.parent).parse(source);
    }
    
    @Test
    public void parseSystemId() throws IOException, SAXException
    {
-      Capture<InputSource> capturedSource = new Capture<InputSource>();
+      ArgumentCaptor<InputSource> capturedSource = ArgumentCaptor.forClass(InputSource.class);
       String systemId = "";
       
-      EasyMock.checkOrder(this.parent, false);
-      this.parent.setContentHandler(this.filter);
-      this.parent.setDTDHandler(this.filter);
-      this.parent.setEntityResolver(this.filter);
-      this.parent.setErrorHandler(this.filter);
-      EasyMock.checkOrder(this.parent, true);
-      
-      this.parent.parse(EasyMock.capture(capturedSource));
-      
-      this.control.replay();
+//      EasyMock.checkOrder(this.parent, false);
+//      EasyMock.checkOrder(this.parent, true);
       
       this.filter.parse(systemId);
-      
-      this.control.verify();
+
+      verify(this.parent).setContentHandler(this.filter);
+      verify(this.parent).setDTDHandler(this.filter);
+      verify(this.parent).setEntityResolver(this.filter);
+      verify(this.parent).setErrorHandler(this.filter);
+      verify(this.parent).parse(capturedSource.capture());
       
       InputSource source = capturedSource.getValue();
-      Assert.assertSame(systemId, source.getSystemId());
+      assertSame(systemId, source.getSystemId());
    }
    
    @Test
@@ -388,10 +308,6 @@ public class PropertyReplacementFilterTest
       String feature = "feature";
       boolean enabled = true;
       
-      this.parent.setFeature(feature, enabled);
-      
-      this.control.replay();
-      
       SAXException exception = null;
       try
       {
@@ -402,11 +318,9 @@ public class PropertyReplacementFilterTest
          exception = e;
       }
       
-      this.control.verify();
+      verify(this.parent).setFeature(feature, enabled);
       
-      Assert.assertNull(exception);
-      
-      this.control.reset();
+      assertNull(exception);
       
       this.setFeature(feature, enabled, new SAXNotRecognizedException());
       this.setFeature(feature, enabled, new SAXNotSupportedException());
@@ -414,10 +328,7 @@ public class PropertyReplacementFilterTest
    
    private void setFeature(String feature, boolean enabled, SAXException expected) throws SAXException
    {
-      this.parent.setFeature(feature, enabled);
-      EasyMock.expectLastCall().andThrow(expected);
-      
-      this.control.replay();
+   	doThrow(expected).when(this.parent).setFeature(feature, enabled);
       
       SAXException exception = null;
       try
@@ -429,47 +340,31 @@ public class PropertyReplacementFilterTest
          exception = e;
       }
       
-      this.control.verify();
-      
-      Assert.assertSame(expected, exception);
-      
-      this.control.reset();
+      assertSame(expected, exception);
    }
    
    @Test
    public void endDocument() throws SAXException
    {
-      this.contentHandler.endDocument();
-      
-      this.control.replay();
-      
       this.filter.endDocument();
       
-      this.control.verify();
+      verify(this.contentHandler).endDocument();
    }
    
    @Test
    public void endElement() throws SAXException
    {
-      this.contentHandler.endElement("uri", "localName", "qName");
-      
-      this.control.replay();
-      
       this.filter.endElement("uri", "localName", "qName");
       
-      this.control.verify();
+      verify(this.contentHandler).endElement("uri", "localName", "qName");
    }
    
    @Test
    public void endPrefixMapping() throws SAXException
    {
-      this.contentHandler.endPrefixMapping("prefix");
-      
-      this.control.replay();
-      
       this.filter.endPrefixMapping("prefix");
       
-      this.control.verify();
+      verify(this.contentHandler).endPrefixMapping("prefix");
    }
    
    @Test
@@ -477,13 +372,9 @@ public class PropertyReplacementFilterTest
    {
       SAXParseException error = new SAXParseException("", "publicId", "systemId", 1, 2);
       
-      this.errorHandler.error(error);
-      
-      this.control.replay();
-      
       this.filter.error(error);
       
-      this.control.verify();
+      verify(this.errorHandler).error(error);
    }
    
    @Test
@@ -491,13 +382,9 @@ public class PropertyReplacementFilterTest
    {
       SAXParseException error = new SAXParseException("", "publicId", "systemId", 1, 2);
       
-      this.errorHandler.fatalError(error);
-      
-      this.control.replay();
-      
       this.filter.fatalError(error);
       
-      this.control.verify();
+      verify(this.errorHandler).fatalError(error);      
    }
    
    @Test
@@ -505,101 +392,69 @@ public class PropertyReplacementFilterTest
    {
       String space = " ";
       
-      this.contentHandler.ignorableWhitespace(EasyMock.aryEq(space.toCharArray()), EasyMock.eq(0), EasyMock.eq(space.length()));
-      
-      this.control.replay();
+      doNothing().when(this.contentHandler).ignorableWhitespace(aryEq(space.toCharArray()), eq(0), eq(space.length()));
       
       this.filter.ignorableWhitespace(space.toCharArray(), 0, space.length());
-      
-      this.control.verify();
    }
    
    @Test
    public void notationDecl() throws SAXException
    {
-      this.dtdHandler.notationDecl("name", "publicId", "systemId");
-      
-      this.control.replay();
-      
       this.filter.notationDecl("name", "publicId", "systemId");
       
-      this.control.verify();
+      verify(this.dtdHandler).notationDecl("name", "publicId", "systemId");
    }
    
    @Test
    public void processingInstruction() throws SAXException
    {
-      this.contentHandler.processingInstruction("target", "data");
-      
-      this.control.replay();
-      
       this.filter.processingInstruction("target", "data");
       
-      this.control.verify();
+      verify(this.contentHandler).processingInstruction("target", "data");
    }
    
    @Test
    public void resolveEntity() throws SAXException, IOException
    {
-      InputSource expected = EasyMock.createMock(InputSource.class);
+      InputSource expected = mock(InputSource.class);
       
-      EasyMock.expect(this.resolver.resolveEntity("publicId", "systemId")).andReturn(expected);
-      
-      this.control.replay();
+      when(this.resolver.resolveEntity("publicId", "systemId")).thenReturn(expected);
       
       InputSource result = this.filter.resolveEntity("publicId", "systemId");
       
-      this.control.verify();
-      
-      Assert.assertSame(expected, result);
+      assertSame(expected, result);
    }
    
    @Test
    public void skippedEntity() throws SAXException
    {
-      this.contentHandler.skippedEntity("name");
-      
-      this.control.replay();
-      
       this.filter.skippedEntity("name");
       
-      this.control.verify();
+      verify(this.contentHandler).skippedEntity("name");
    }
    
    @Test
    public void startDocument() throws SAXException
    {
-      this.contentHandler.startDocument();
-      
-      this.control.replay();
-      
       this.filter.startDocument();
       
-      this.control.verify();
+      verify(this.contentHandler).startDocument();
    }
    
    @Test
    public void startPrefixMapping() throws SAXException
    {
-      this.contentHandler.startPrefixMapping("prefix", "uri");
-      
-      this.control.replay();
-      
       this.filter.startPrefixMapping("prefix", "uri");
       
-      this.control.verify();
+      verify(this.contentHandler).startPrefixMapping("prefix", "uri");
    }
    
    @Test
    public void unparsedEntityDecl() throws SAXException
    {
-      this.dtdHandler.unparsedEntityDecl("name", "publicId", "systemId", "notationName");
-      
-      this.control.replay();
-      
       this.filter.unparsedEntityDecl("name", "publicId", "systemId", "notationName");
       
-      this.control.verify();
+      verify(this.dtdHandler).unparsedEntityDecl("name", "publicId", "systemId", "notationName");
    }
    
    @Test
@@ -607,12 +462,8 @@ public class PropertyReplacementFilterTest
    {
       SAXParseException error = new SAXParseException("", "publicId", "systemId", 1, 2);
       
-      this.errorHandler.warning(error);
-      
-      this.control.replay();
-      
       this.filter.warning(error);
       
-      this.control.verify();
+      verify(this.errorHandler).warning(error);
    }
 }

@@ -22,7 +22,7 @@ package net.sf.hajdbc.dialect;
 
 import net.sf.hajdbc.Dialect;
 
-import org.junit.Assert;
+import static org.junit.Assert.*;
 import org.junit.Test;
 
 /**
@@ -52,7 +52,7 @@ public class DialectFactoryEnumTest
 	
 	private void validate(DialectFactory factory, String string, Class<? extends Dialect> dialectClass)
 	{
-		Assert.assertEquals(string, factory.toString());
-		Assert.assertSame(dialectClass, factory.createDialect().getClass());
+		assertEquals(string, factory.toString());
+		assertSame(dialectClass, factory.createDialect().getClass());
 	}
 }

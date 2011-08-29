@@ -34,9 +34,8 @@ import net.sf.hajdbc.cache.ColumnProperties;
 import net.sf.hajdbc.cache.SequenceProperties;
 import net.sf.hajdbc.cache.TableProperties;
 
-import org.easymock.EasyMock;
-import org.easymock.IMocksControl;
-import org.junit.Assert;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 /**
  * @author Paul Ferraro
@@ -56,7 +55,7 @@ public class PostgreSQLDialectTest extends StandardDialectTest
 	@Override
 	public void getSequenceSupport()
 	{
-		Assert.assertSame(this.dialect, this.dialect.getSequenceSupport());
+		assertSame(this.dialect, this.dialect.getSequenceSupport());
 	}
 
 	/**
@@ -66,7 +65,7 @@ public class PostgreSQLDialectTest extends StandardDialectTest
 	@Override
 	public void getIdentityColumnSupport()
 	{
-		Assert.assertSame(this.dialect, this.dialect.getIdentityColumnSupport());
+		assertSame(this.dialect, this.dialect.getIdentityColumnSupport());
 	}
 
 	/**
@@ -76,30 +75,20 @@ public class PostgreSQLDialectTest extends StandardDialectTest
 	@Override
 	public void getColumnType() throws SQLException
 	{
-		ColumnProperties column = EasyMock.createStrictMock(ColumnProperties.class);
+		ColumnProperties column = mock(ColumnProperties.class);
 		
-		EasyMock.expect(column.getNativeType()).andReturn("oid");
-		
-		EasyMock.replay(column);
+		when(column.getNativeType()).thenReturn("oid");
 		
 		int result = this.dialect.getColumnType(column);
 		
-		EasyMock.verify(column);
+		assertEquals(Types.BLOB, result);
 		
-		Assert.assertEquals(Types.BLOB, result);
-		
-		EasyMock.reset(column);
-		
-		EasyMock.expect(column.getNativeType()).andReturn("int");		
-		EasyMock.expect(column.getType()).andReturn(Types.INTEGER);
-		
-		EasyMock.replay(column);
+		when(column.getNativeType()).thenReturn("int");		
+		when(column.getType()).thenReturn(Types.INTEGER);
 		
 		result = this.dialect.getColumnType(column);
 		
-		EasyMock.verify(column);
-		
-		Assert.assertEquals(Types.INTEGER, result);
+		assertEquals(Types.INTEGER, result);
 	}
 
 	/**
@@ -109,17 +98,13 @@ public class PostgreSQLDialectTest extends StandardDialectTest
 	@Override
 	public void getTruncateTableSQL() throws SQLException
 	{
-		TableProperties table = EasyMock.createStrictMock(TableProperties.class);
+		TableProperties table = mock(TableProperties.class);
 		
-		EasyMock.expect(table.getName()).andReturn("table");
-		
-		EasyMock.replay(table);
+		when(table.getName()).thenReturn("table");
 		
 		String result = this.dialect.getTruncateTableSQL(table);
 		
-		EasyMock.verify(table);
-		
-		Assert.assertEquals("TRUNCATE TABLE table", result);
+		assertEquals("TRUNCATE TABLE table", result);
 	}
 
 	/**
@@ -129,17 +114,13 @@ public class PostgreSQLDialectTest extends StandardDialectTest
 	@Override
 	public void getNextSequenceValueSQL() throws SQLException
 	{
-		SequenceProperties sequence = EasyMock.createStrictMock(SequenceProperties.class);
+		SequenceProperties sequence = mock(SequenceProperties.class);
 		
-		EasyMock.expect(sequence.getName()).andReturn("sequence");
-		
-		EasyMock.replay(sequence);
+		when(sequence.getName()).thenReturn("sequence");
 		
 		String result = this.dialect.getSequenceSupport().getNextSequenceValueSQL(sequence);
 		
-		EasyMock.verify(sequence);
-		
-		Assert.assertEquals("SELECT NEXTVAL('sequence')", result);
+		assertEquals("SELECT NEXTVAL('sequence')", result);
 	}
 	
 	/**
@@ -151,11 +132,11 @@ public class PostgreSQLDialectTest extends StandardDialectTest
 	{
 		SequenceSupport support = this.dialect.getSequenceSupport();
 		
-		Assert.assertEquals("sequence", support.parseSequence("SELECT CURRVAL('sequence')"));
-		Assert.assertEquals("sequence", support.parseSequence("SELECT nextval('sequence'), * FROM table"));
-		Assert.assertEquals("sequence", support.parseSequence("INSERT INTO table VALUES (NEXTVAL('sequence'), 0)"));
-		Assert.assertEquals("sequence", support.parseSequence("UPDATE table SET id = NEXTVAL('sequence')"));
-		Assert.assertNull(support.parseSequence("SELECT NEXT VALUE FOR sequence"));
+		assertEquals("sequence", support.parseSequence("SELECT CURRVAL('sequence')"));
+		assertEquals("sequence", support.parseSequence("SELECT nextval('sequence'), * FROM table"));
+		assertEquals("sequence", support.parseSequence("INSERT INTO table VALUES (NEXTVAL('sequence'), 0)"));
+		assertEquals("sequence", support.parseSequence("UPDATE table SET id = NEXTVAL('sequence')"));
+		assertNull(support.parseSequence("SELECT NEXT VALUE FOR sequence"));
 	}
 
 	/**
@@ -165,33 +146,28 @@ public class PostgreSQLDialectTest extends StandardDialectTest
 	@Override
 	public void getDefaultSchemas() throws SQLException
 	{
-		IMocksControl control = EasyMock.createStrictControl();
-		DatabaseMetaData metaData = control.createMock(DatabaseMetaData.class);
-		Connection connection = control.createMock(Connection.class);
-		Statement statement = control.createMock(Statement.class);
-		ResultSet resultSet = control.createMock(ResultSet.class);
+		DatabaseMetaData metaData = mock(DatabaseMetaData.class);
+		Connection connection = mock(Connection.class);
+		Statement statement = mock(Statement.class);
+		ResultSet resultSet = mock(ResultSet.class);
 		
-		EasyMock.expect(metaData.getConnection()).andReturn(connection);
-		EasyMock.expect(connection.createStatement()).andReturn(statement);
+		when(metaData.getConnection()).thenReturn(connection);
+		when(connection.createStatement()).thenReturn(statement);
 		
-		EasyMock.expect(statement.executeQuery("SHOW search_path")).andReturn(resultSet);
-		EasyMock.expect(resultSet.next()).andReturn(false);
-		EasyMock.expect(resultSet.getString(1)).andReturn("$user,public");
+		when(statement.executeQuery("SHOW search_path")).thenReturn(resultSet);
+		when(resultSet.next()).thenReturn(false);
+		when(resultSet.getString(1)).thenReturn("$user,public");
 
 		resultSet.close();
 		statement.close();
 		
-		EasyMock.expect(metaData.getUserName()).andReturn("user");
-		
-		control.replay();
+		when(metaData.getUserName()).thenReturn("user");
 		
 		List<String> result = this.dialect.getDefaultSchemas(metaData);
 
-		control.verify();
-
-		Assert.assertEquals(2, result.size());
-		Assert.assertEquals("user", result.get(0));
-		Assert.assertEquals("public", result.get(1));
+		assertEquals(2, result.size());
+		assertEquals("user", result.get(0));
+		assertEquals("public", result.get(1));
 	}
 	
 	/**
@@ -201,20 +177,15 @@ public class PostgreSQLDialectTest extends StandardDialectTest
 	@Override
 	public void getAlterIdentityColumnSQL() throws SQLException
 	{
-		IMocksControl control = EasyMock.createStrictControl();
-		TableProperties table = control.createMock(TableProperties.class);
-		ColumnProperties column = control.createMock(ColumnProperties.class);
+		TableProperties table = mock(TableProperties.class);
+		ColumnProperties column = mock(ColumnProperties.class);
 		
-		EasyMock.expect(table.getName()).andReturn("table");
-		EasyMock.expect(column.getName()).andReturn("column");
-		
-		control.replay();
+		when(table.getName()).thenReturn("table");
+		when(column.getName()).thenReturn("column");
 		
 		String result = this.dialect.getIdentityColumnSupport().getAlterIdentityColumnSQL(table, column, 1000L);
 
-		control.verify();
-
-		Assert.assertEquals("ALTER SEQUENCE table_column_seq RESTART WITH 1000", result);
+		assertEquals("ALTER SEQUENCE table_column_seq RESTART WITH 1000", result);
 	}
 	
 	/**
@@ -224,31 +195,21 @@ public class PostgreSQLDialectTest extends StandardDialectTest
 	@Override
 	public void getIdentifierPattern() throws SQLException
 	{
-		DatabaseMetaData metaData = EasyMock.createStrictMock(DatabaseMetaData.class);
+		DatabaseMetaData metaData = mock(DatabaseMetaData.class);
 		
-		EasyMock.expect(metaData.getDriverMajorVersion()).andReturn(8);
-		EasyMock.expect(metaData.getDriverMinorVersion()).andReturn(0);
+		when(metaData.getDriverMajorVersion()).thenReturn(8);
+		when(metaData.getDriverMinorVersion()).thenReturn(0);
 		
-		EasyMock.expect(metaData.getExtraNameCharacters()).andReturn("$");
-		
-		EasyMock.replay(metaData);
+		when(metaData.getExtraNameCharacters()).thenReturn("$");
 		
 		String result = this.dialect.getIdentifierPattern(metaData).pattern();
 		
-		EasyMock.verify(metaData);
-		
 		assert result.equals("[a-zA-Z][\\w\\Q$\\E]*") : result;
 		
-		EasyMock.reset(metaData);
-		
-		EasyMock.expect(metaData.getDriverMajorVersion()).andReturn(8);
-		EasyMock.expect(metaData.getDriverMinorVersion()).andReturn(1);
-		
-		EasyMock.replay(metaData);
+		when(metaData.getDriverMajorVersion()).thenReturn(8);
+		when(metaData.getDriverMinorVersion()).thenReturn(1);
 		
 		result = this.dialect.getIdentifierPattern(metaData).pattern();
-		
-		EasyMock.verify(metaData);
 		
 		assert result.equals("[A-Za-z\\0200-\\0377_][A-Za-z\\0200-\\0377_0-9\\$]*") : result;
 	}
@@ -260,9 +221,9 @@ public class PostgreSQLDialectTest extends StandardDialectTest
 	@Override
 	public void evaluateRand()
 	{
-		Assert.assertTrue(Pattern.matches("SELECT ((0\\.\\d+)|([1-9]\\.\\d+E\\-\\d+)) FROM test", this.dialect.evaluateRand("SELECT RANDOM() FROM test")));
-		Assert.assertTrue(Pattern.matches("SELECT ((0\\.\\d+)|([1-9]\\.\\d+E\\-\\d+)) FROM test", this.dialect.evaluateRand("SELECT RANDOM ( ) FROM test")));
-		Assert.assertEquals("SELECT RAND() FROM test", this.dialect.evaluateRand("SELECT RAND() FROM test"));
-		Assert.assertEquals("SELECT OPERANDOM() FROM test", this.dialect.evaluateRand("SELECT OPERANDOM() FROM test"));
+		assertTrue(Pattern.matches("SELECT ((0\\.\\d+)|([1-9]\\.\\d+E\\-\\d+)) FROM test", this.dialect.evaluateRand("SELECT RANDOM() FROM test")));
+		assertTrue(Pattern.matches("SELECT ((0\\.\\d+)|([1-9]\\.\\d+E\\-\\d+)) FROM test", this.dialect.evaluateRand("SELECT RANDOM ( ) FROM test")));
+		assertEquals("SELECT RAND() FROM test", this.dialect.evaluateRand("SELECT RAND() FROM test"));
+		assertEquals("SELECT OPERANDOM() FROM test", this.dialect.evaluateRand("SELECT OPERANDOM() FROM test"));
 	}
 }

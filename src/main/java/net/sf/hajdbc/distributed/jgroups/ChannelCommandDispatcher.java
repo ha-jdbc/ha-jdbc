@@ -17,6 +17,10 @@
  */
 package net.sf.hajdbc.distributed.jgroups;
 
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
@@ -34,16 +38,13 @@ import net.sf.hajdbc.logging.LoggerFactory;
 
 import org.jgroups.Address;
 import org.jgroups.Channel;
-import org.jgroups.ExtendedMembershipListener;
 import org.jgroups.Message;
 import org.jgroups.MessageListener;
-import org.jgroups.SuspectedException;
-import org.jgroups.TimeoutException;
 import org.jgroups.View;
 import org.jgroups.blocks.MessageDispatcher;
-import org.jgroups.blocks.Request;
 import org.jgroups.blocks.RequestHandler;
 import org.jgroups.blocks.RequestOptions;
+import org.jgroups.blocks.ResponseMode;
 import org.jgroups.util.Rsp;
 
 /**
@@ -53,7 +54,7 @@ import org.jgroups.util.Rsp;
  * @see org.jgroups.blocks.MessageDispatcher
  * @param <C> the execution context type
  */
-public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispatcher<C>, ExtendedMembershipListener, MessageListener
+public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispatcher<C>, org.jgroups.MembershipListener, MessageListener
 {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 	
@@ -94,10 +95,10 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 	{
 		Channel channel = this.dispatcher.getChannel();
 		
-		channel.setOpt(Channel.LOCAL, true);
+		channel.setDiscardOwnMessages(true);
 		
 		// Connect and fetch state
-		channel.connect(this.id, null, null, 0);
+		channel.connect(this.id, null, 0);
 	}
 
 	/**
@@ -129,24 +130,27 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 	{
 		Message message = new Message(null, this.getLocalAddress(), command);
 		
-		@SuppressWarnings("rawtypes")
-		Map<Address, Rsp> responses = this.dispatcher.castMessage(null, message, new RequestOptions(Request.GET_ALL, this.timeout));
-		
-		if (responses == null) return Collections.emptyMap();
-		
-		Map<Member, R> results = new TreeMap<Member, R>();
-		
-		for (@SuppressWarnings("rawtypes") Map.Entry<Address, Rsp> entry: responses.entrySet())
+		try
 		{
-			Rsp<?> response = entry.getValue();
-
-			if (response.wasReceived() && !response.wasSuspected())
+			Map<Address, Rsp<R>> responses = this.dispatcher.castMessage(null, message, new RequestOptions(ResponseMode.GET_ALL, this.timeout));
+			
+			if (responses == null) return Collections.emptyMap();
+			
+			Map<Member, R> results = new TreeMap<Member, R>();
+			
+			for (Map.Entry<Address, Rsp<R>> entry: responses.entrySet())
 			{
-				results.put(new AddressMember(entry.getKey()), command.unmarshalResult(response.getValue()));
+				Rsp<R> response = entry.getValue();
+	
+				results.put(new AddressMember(entry.getKey()), response.wasReceived() ? response.getValue() : null);
 			}
+			
+			return results;
 		}
-		
-		return results;
+		catch (Exception e)
+		{
+			return null;
+		}
 	}
 	
 	/**
@@ -162,16 +166,11 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 
 			try
 			{
-				Object result = this.dispatcher.sendMessage(message, new RequestOptions(Request.GET_ALL, this.timeout));
-				
-				return command.unmarshalResult(result);
+				return this.dispatcher.sendMessage(message, new RequestOptions(ResponseMode.GET_ALL, this.timeout));
 			}
-			catch (TimeoutException e)
+			catch (Exception e)
 			{
-			}
-			catch (SuspectedException e)
-			{
-				// log
+				return null;
 			}
 		}
 	}
@@ -201,6 +200,16 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 		return this.dispatcher.getChannel().getAddress();
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.distributed.CommandDispatcher#getCoordinator()
+	 */
+	@Override
+	public Member getCoordinator()
+	{
+		return new AddressMember(this.getCoordinatorAddress());
+	}
+
 	private Address getCoordinatorAddress()
 	{
 		return this.dispatcher.getChannel().getView().getMembers().get(0);
@@ -220,7 +229,7 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 
 		this.logger.log(Level.DEBUG, Messages.COMMAND_RECEIVED.getMessage(command, message.getSrc()));
 		
-		return command.marshalResult(command.execute(this.context));
+		return command.execute(this.context);
 	}
 
 	/**
@@ -257,6 +266,35 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 
 	/**
 	 * {@inheritDoc}
+	 * @see org.jgroups.MessageListener#getState(java.io.OutputStream)
+	 */
+	@Override
+	public void getState(OutputStream output) throws Exception
+	{
+		this.stateful.writeState(new ObjectOutputStream(output));
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see org.jgroups.MessageListener#setState(java.io.InputStream)
+	 */
+	@Override
+	public void setState(InputStream input) throws Exception
+	{
+		this.stateful.readState(new ObjectInputStream(input));
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see org.jgroups.MembershipListener#suspect(org.jgroups.Address)
+	 */
+	@Override
+	public void suspect(Address member)
+	{
+	}
+
+	/**
+	 * {@inheritDoc}
 	 * @see org.jgroups.MembershipListener#block()
 	 */
 	@Override
@@ -266,7 +304,7 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 
 	/**
 	 * {@inheritDoc}
-	 * @see org.jgroups.ExtendedMembershipListener#unblock()
+	 * @see org.jgroups.MembershipListener#unblock()
 	 */
 	@Override
 	public void unblock()
@@ -275,39 +313,10 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 
 	/**
 	 * {@inheritDoc}
-	 * @see org.jgroups.MembershipListener#suspect(org.jgroups.Address)
-	 */
-	@Override
-	public void suspect(Address address)
-	{
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see org.jgroups.MessageListener#getState()
-	 */
-	@Override
-	public byte[] getState()
-	{
-		return this.stateful.getState();
-	}
-
-	/**
-	 * {@inheritDoc}
 	 * @see org.jgroups.MessageListener#receive(org.jgroups.Message)
 	 */
 	@Override
-	public void receive(Message msg)
+	public void receive(Message message)
 	{
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see org.jgroups.MessageListener#setState(byte[])
-	 */
-	@Override
-	public void setState(byte[] state)
-	{
-		this.stateful.setState(state);
 	}
 }

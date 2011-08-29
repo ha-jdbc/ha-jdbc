@@ -32,8 +32,6 @@ import org.jgroups.JChannel;
 @XmlType
 public class DefaultChannelProvider extends ChannelCommandDispatcherFactory
 {
-	private static final long serialVersionUID = -2396294564096482534L;
-
 	public static final String DEFAULT_STACK = "udp-sync.xml";
 	
 	@XmlAttribute(name = "stack")

@@ -19,7 +19,7 @@ package net.sf.hajdbc.balancer;
 
 import net.sf.hajdbc.MockDatabase;
 
-import org.junit.Assert;
+import static org.junit.Assert.*;
 
 
 /**
@@ -39,7 +39,7 @@ public class RoundRobinBalancerTest extends AbstractBalancerTest
 		
 		for (int i = 0; i < 100; ++i)
 		{
-			Assert.assertSame(this.databases[expected[i % 3]], balancer.next());
+			assertSame(this.databases[expected[i % 3]], balancer.next());
 		}
 	}
 }

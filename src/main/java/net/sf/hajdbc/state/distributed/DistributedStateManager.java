@@ -17,13 +17,9 @@
  */
 package net.sf.hajdbc.state.distributed;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +30,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.distributed.CommandDispatcher;
 import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.distributed.Member;
@@ -42,6 +39,9 @@ import net.sf.hajdbc.distributed.Remote;
 import net.sf.hajdbc.distributed.Stateful;
 import net.sf.hajdbc.durability.InvocationEvent;
 import net.sf.hajdbc.durability.InvokerEvent;
+import net.sf.hajdbc.logging.Level;
+import net.sf.hajdbc.logging.Logger;
+import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.state.DatabaseEvent;
 import net.sf.hajdbc.state.StateManager;
 
@@ -51,6 +51,7 @@ import net.sf.hajdbc.state.StateManager;
  */
 public class DistributedStateManager<Z, D extends Database<Z>> implements StateManager, StateCommandContext<Z, D>, MembershipListener, Stateful
 {
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 	private final DatabaseCluster<Z, D> cluster;
 	private final StateManager stateManager;
 	private final CommandDispatcher<StateCommandContext<Z, D>> dispatcher;
@@ -216,61 +217,41 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 
 	/**
 	 * {@inheritDoc}
-	 * @see org.jgroups.MessageListener#getState()
+	 * @see net.sf.hajdbc.distributed.Stateful#readState(java.io.ObjectInput)
 	 */
 	@Override
-	public byte[] getState()
+	public void readState(ObjectInput input) throws IOException, ClassNotFoundException
 	{
-		Set<String> databases = this.stateManager.getActiveDatabases();
-
-		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-		DataOutput output = new DataOutputStream(bytes);
-		
-		try
+		if (input.available() > 0)
 		{
-			output.writeInt(databases.size());
+			Set<String> databases = new TreeSet<String>();
 			
-			for (String database: databases)
+			int size = input.readInt();
+			
+			for (int i = 0; i < size; ++i)
 			{
-				output.writeUTF(database);
+				databases.add(input.readUTF());
 			}
 			
-			return bytes.toByteArray();
-		}
-		catch (IOException e)
-		{
-			throw new IllegalStateException(e);
+			this.logger.log(Level.INFO, Messages.INITIAL_CLUSTER_STATE_REMOTE.getMessage(databases, this.dispatcher.getCoordinator()));
+			
+			this.stateManager.setActiveDatabases(databases);
 		}
 	}
 
 	/**
 	 * {@inheritDoc}
-	 * @see org.jgroups.MessageListener#setState(byte[])
+	 * @see net.sf.hajdbc.distributed.Stateful#writeState(java.io.ObjectOutput)
 	 */
 	@Override
-	public void setState(byte[] bytes)
+	public void writeState(ObjectOutput output) throws IOException
 	{
-		if (bytes != null)
+		Set<D> databases = this.cluster.getBalancer();
+		output.writeInt(databases.size());
+		
+		for (D database: databases)
 		{
-			Set<String> databases = new TreeSet<String>();
-			
-			DataInput input = new DataInputStream(new ByteArrayInputStream(bytes));
-			
-			try
-			{
-				int size = input.readInt();
-				
-				for (int i = 0; i < size; ++i)
-				{
-					databases.add(input.readUTF());
-				}
-				
-				this.stateManager.setActiveDatabases(databases);
-			}
-			catch (IOException e)
-			{
-				throw new IllegalStateException(e);
-			}
+			output.writeUTF(database.getId());
 		}
 	}
 

@@ -36,8 +36,7 @@ import net.sf.hajdbc.cache.ForeignKeyConstraintImpl;
 import net.sf.hajdbc.cache.QualifiedName;
 import net.sf.hajdbc.cache.SequenceProperties;
 
-import org.easymock.EasyMock;
-import org.easymock.IMocksControl;
+import static org.mockito.Mockito.*;
 
 /**
  * @author Paul Ferraro
@@ -89,32 +88,22 @@ public class H2DialectTest extends StandardDialectTest
 	@Override
 	public void getSequences() throws SQLException
 	{
-		IMocksControl control = EasyMock.createStrictControl();
-		DatabaseMetaData metaData = control.createMock(DatabaseMetaData.class);
-		Connection connection = control.createMock(Connection.class);
-		Statement statement = control.createMock(Statement.class);
-		ResultSet resultSet = control.createMock(ResultSet.class);
+		DatabaseMetaData metaData = mock(DatabaseMetaData.class);
+		Connection connection = mock(Connection.class);
+		Statement statement = mock(Statement.class);
+		ResultSet resultSet = mock(ResultSet.class);
 		
-		EasyMock.expect(metaData.getConnection()).andReturn(connection);
-		EasyMock.expect(connection.createStatement()).andReturn(statement);
-		EasyMock.expect(statement.executeQuery("SELECT SEQUENCE_SCHEMA, SEQUENCE_NAME, INCREMENT FROM INFORMATION_SCHEMA.SEQUENCES")).andReturn(resultSet);
-		EasyMock.expect(resultSet.next()).andReturn(true);
-		EasyMock.expect(resultSet.getString(1)).andReturn("schema1");
-		EasyMock.expect(resultSet.getString(2)).andReturn("sequence1");
-		EasyMock.expect(resultSet.getInt(3)).andReturn(1);
-		EasyMock.expect(resultSet.next()).andReturn(true);
-		EasyMock.expect(resultSet.getString(1)).andReturn("schema2");
-		EasyMock.expect(resultSet.getString(2)).andReturn("sequence2");
-		EasyMock.expect(resultSet.getInt(3)).andReturn(2);
-		EasyMock.expect(resultSet.next()).andReturn(false);
-		
-		statement.close();
-	
-		control.replay();
+		when(metaData.getConnection()).thenReturn(connection);
+		when(connection.createStatement()).thenReturn(statement);
+		when(statement.executeQuery("SELECT SEQUENCE_SCHEMA, SEQUENCE_NAME, INCREMENT FROM INFORMATION_SCHEMA.SEQUENCES")).thenReturn(resultSet);
+		when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
+		when(resultSet.getString(1)).thenReturn("schema1").thenReturn("schema2");
+		when(resultSet.getString(2)).thenReturn("sequence1").thenReturn("sequence2");
+		when(resultSet.getInt(3)).thenReturn(1).thenReturn(2);
 		
 		Map<QualifiedName, Integer> results = this.dialect.getSequenceSupport().getSequences(metaData);
-
-		control.verify();
+		
+		verify(statement).close();
 		
 		Assert.assertEquals(results.size(), 2);
 		
@@ -149,15 +138,11 @@ public class H2DialectTest extends StandardDialectTest
 	@Override
 	public void getNextSequenceValueSQL() throws SQLException
 	{
-		SequenceProperties sequence = EasyMock.createStrictMock(SequenceProperties.class);
+		SequenceProperties sequence = mock(SequenceProperties.class);
 		
-		EasyMock.expect(sequence.getName()).andReturn("sequence");
-		
-		EasyMock.replay(sequence);
+		when(sequence.getName()).thenReturn("sequence");
 		
 		String result = this.dialect.getSequenceSupport().getNextSequenceValueSQL(sequence);
-
-		EasyMock.verify(sequence);
 		
 		Assert.assertEquals("CALL NEXT VALUE FOR sequence", result);
 	}
@@ -169,7 +154,7 @@ public class H2DialectTest extends StandardDialectTest
 	@Override
 	public void getDefaultSchemas() throws SQLException
 	{
-		DatabaseMetaData metaData = EasyMock.createStrictMock(DatabaseMetaData.class);
+		DatabaseMetaData metaData = mock(DatabaseMetaData.class);
 		List<String> result = this.dialect.getDefaultSchemas(metaData);
 		
 		Assert.assertEquals(1, result.size());

@@ -19,7 +19,7 @@ package net.sf.hajdbc.balancer;
 
 import net.sf.hajdbc.MockDatabase;
 
-import org.junit.Assert;
+import static org.junit.Assert.*;
 
 
 /**
@@ -43,8 +43,8 @@ public class RandomBalancerTest extends AbstractBalancerTest
 			results[balancer.next().getWeight()] += 1;
 		}
 
-		Assert.assertEquals(0, results[0]);
-		Assert.assertTrue(Integer.toString(results[1]), results[1] < (count / 2));
-		Assert.assertTrue(Integer.toString(results[2]), results[2] > (count / 2));
+		assertEquals(0, results[0]);
+		assertTrue(Integer.toString(results[1]), results[1] < (count / 2));
+		assertTrue(Integer.toString(results[2]), results[2] > (count / 2));
 	}
 }

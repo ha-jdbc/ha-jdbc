@@ -17,8 +17,6 @@
  */
 package net.sf.hajdbc.lock.distributed;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
@@ -153,43 +151,23 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 	 * @see org.jgroups.MessageListener#getState()
 	 */
 	@Override
-	public byte[] getState()
+	public void writeState(ObjectOutput output) throws IOException
 	{
-		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+		output.writeInt(this.remoteLockDescriptorMap.size());
 		
-		try
+		for (Map.Entry<Member, Map<LockDescriptor, Lock>> entry: this.remoteLockDescriptorMap.entrySet())
 		{
-			ObjectOutput output = new ObjectOutputStream(bytes);
-	
-			try
+			output.writeObject(entry.getKey());
+			
+			Set<LockDescriptor> descriptors = entry.getValue().keySet();
+			
+			output.writeInt(descriptors.size());
+			
+			for (LockDescriptor descriptor: descriptors)
 			{
-				output.writeInt(this.remoteLockDescriptorMap.size());
-				
-				for (Map.Entry<Member, Map<LockDescriptor, Lock>> entry: this.remoteLockDescriptorMap.entrySet())
-				{
-					output.writeObject(entry.getKey());
-					
-					Set<LockDescriptor> descriptors = entry.getValue().keySet();
-					
-					output.writeInt(descriptors.size());
-					
-					for (LockDescriptor descriptor: descriptors)
-					{
-						output.writeUTF(descriptor.getId());
-						output.writeByte(descriptor.getType().ordinal());
-					}
-				}
-				
-				return bytes.toByteArray();
+				output.writeUTF(descriptor.getId());
+				output.writeByte(descriptor.getType().ordinal());
 			}
-			finally
-			{
-				output.close();
-			}
-		}
-		catch (IOException e)
-		{
-			throw new IllegalStateException(e);
 		}
 	}
 
@@ -198,58 +176,38 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 	 * @see org.jgroups.MessageListener#setState(byte[])
 	 */
 	@Override
-	public void setState(byte[] state)
+	public void readState(ObjectInput input) throws IOException, ClassNotFoundException
 	{
 		// Is this valid?  or should we unlock/clear?
 		assert this.remoteLockDescriptorMap.isEmpty();
 		
-		try
+		int size = input.readInt();
+		
+		LockType[] types = LockType.values();
+		
+		for (int i = 0; i < size; ++i)
 		{
-			ObjectInput input = new ObjectInputStream(new ByteArrayInputStream(state));
+			Member member = (Member) input.readObject();
 			
-			try
+			Map<LockDescriptor, Lock> map = new HashMap<LockDescriptor, Lock>();
+			
+			int locks = input.readInt();
+			
+			for (int j = 0; j < locks; ++j)
 			{
-				int size = input.readInt();
+				String id = input.readUTF();
+				LockType type = types[input.readByte()];
 				
-				LockType[] types = LockType.values();
+				LockDescriptor descriptor = new RemoteLockDescriptorImpl(id, type, member);
 				
-				for (int i = 0; i < size; ++i)
-				{
-					Member member = (Member) input.readObject();
-					
-					Map<LockDescriptor, Lock> map = new HashMap<LockDescriptor, Lock>();
-					
-					int locks = input.readInt();
-					
-					for (int j = 0; j < locks; ++j)
-					{
-						String id = input.readUTF();
-						LockType type = types[input.readByte()];
-						
-						LockDescriptor descriptor = new RemoteLockDescriptorImpl(id, type, member);
-						
-						Lock lock = this.getLock(descriptor);
-						
-						lock.lock();
-						
-						map.put(descriptor, lock);
-					}
-					
-					this.remoteLockDescriptorMap.put(member, map);
-				}
+				Lock lock = this.getLock(descriptor);
+				
+				lock.lock();
+				
+				map.put(descriptor, lock);
 			}
-			finally
-			{
-				input.close();
-			}
-		}
-		catch (ClassNotFoundException e)
-		{
-			throw new IllegalStateException(e);
-		}
-		catch (IOException e)
-		{
-			throw new IllegalStateException(e);
+			
+			this.remoteLockDescriptorMap.put(member, map);
 		}
 	}
 

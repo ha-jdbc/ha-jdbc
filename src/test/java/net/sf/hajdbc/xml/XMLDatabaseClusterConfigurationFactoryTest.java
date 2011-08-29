@@ -37,9 +37,9 @@ import net.sf.hajdbc.sql.DriverDatabase;
 import net.sf.hajdbc.sql.DriverDatabaseClusterConfiguration;
 import net.sf.hajdbc.sql.TransactionModeEnum;
 
-import org.easymock.EasyMock;
-import org.junit.Assert;
+import static org.junit.Assert.*;
 import org.junit.Test;
+import static org.mockito.Mockito.*;
 
 public class XMLDatabaseClusterConfigurationFactoryTest
 {
@@ -63,87 +63,79 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 		
 		String xml = builder.toString();
 		
-		XMLStreamFactory streamFactory = EasyMock.createStrictMock(XMLStreamFactory.class);
+		XMLStreamFactory streamFactory = mock(XMLStreamFactory.class);
 		
 		XMLDatabaseClusterConfigurationFactory<Driver, DriverDatabase> factory = new XMLDatabaseClusterConfigurationFactory<Driver, DriverDatabase>(DriverDatabaseClusterConfiguration.class, streamFactory);
 		
-		EasyMock.expect(streamFactory.createSource()).andReturn(new StreamSource(new StringReader(xml)));
-		
-		EasyMock.replay(streamFactory);
+		when(streamFactory.createSource()).thenReturn(new StreamSource(new StringReader(xml)));
 		
 		DatabaseClusterConfiguration<Driver, DriverDatabase> configuration = factory.createConfiguration();
 		
-		EasyMock.verify(streamFactory);
-		
-		Assert.assertNull(configuration.getDispatcherFactory());
+		assertNull(configuration.getDispatcherFactory());
 		Map<String, SynchronizationStrategy> strategies = configuration.getSynchronizationStrategyMap();
-		Assert.assertNotNull(strategies);
-		Assert.assertEquals(1, strategies.size());
+		assertNotNull(strategies);
+		assertEquals(1, strategies.size());
 		
 		SynchronizationStrategy strategy = strategies.get("diff");
 		
-		Assert.assertNotNull(strategy);
+		assertNotNull(strategy);
 		
-		Assert.assertSame(BalancerFactoryEnum.ROUND_ROBIN, configuration.getBalancerFactory());
-	   Assert.assertSame(DatabaseMetaDataCacheFactoryEnum.EAGER, configuration.getDatabaseMetaDataCacheFactory());
-	   Assert.assertEquals("diff", configuration.getDefaultSynchronizationStrategy());
-	   Assert.assertSame(DialectFactoryEnum.STANDARD, configuration.getDialectFactory());
-	   Assert.assertSame(DurabilityFactoryEnum.FINE, configuration.getDurabilityFactory());
-	   Assert.assertSame(TransactionModeEnum.SERIAL, configuration.getTransactionMode());
+		assertSame(BalancerFactoryEnum.ROUND_ROBIN, configuration.getBalancerFactory());
+	   assertSame(DatabaseMetaDataCacheFactoryEnum.EAGER, configuration.getDatabaseMetaDataCacheFactory());
+	   assertEquals("diff", configuration.getDefaultSynchronizationStrategy());
+	   assertSame(DialectFactoryEnum.STANDARD, configuration.getDialectFactory());
+	   assertSame(DurabilityFactoryEnum.FINE, configuration.getDurabilityFactory());
+	   assertSame(TransactionModeEnum.SERIAL, configuration.getTransactionMode());
 	   
 	   DefaultExecutorServiceProvider executorProvider = (DefaultExecutorServiceProvider) configuration.getExecutorProvider();
 	   
-	   Assert.assertNotNull(executorProvider);
-	   Assert.assertEquals(60, executorProvider.getMaxIdle());
-	   Assert.assertEquals(100, executorProvider.getMaxThreads());
-	   Assert.assertEquals(0, executorProvider.getMinThreads());
+	   assertNotNull(executorProvider);
+	   assertEquals(60, executorProvider.getMaxIdle());
+	   assertEquals(100, executorProvider.getMaxThreads());
+	   assertEquals(0, executorProvider.getMinThreads());
 	   
-	   Assert.assertNull(configuration.getAutoActivationExpression());
-	   Assert.assertNull(configuration.getFailureDetectionExpression());
+	   assertNull(configuration.getAutoActivationExpression());
+	   assertNull(configuration.getFailureDetectionExpression());
 	   
-	   Assert.assertFalse(configuration.isCurrentDateEvaluationEnabled());
-	   Assert.assertFalse(configuration.isCurrentTimeEvaluationEnabled());
-	   Assert.assertFalse(configuration.isCurrentTimestampEvaluationEnabled());
-	   Assert.assertFalse(configuration.isIdentityColumnDetectionEnabled());
-	   Assert.assertFalse(configuration.isRandEvaluationEnabled());
-	   Assert.assertFalse(configuration.isSequenceDetectionEnabled());
+	   assertFalse(configuration.isCurrentDateEvaluationEnabled());
+	   assertFalse(configuration.isCurrentTimeEvaluationEnabled());
+	   assertFalse(configuration.isCurrentTimestampEvaluationEnabled());
+	   assertFalse(configuration.isIdentityColumnDetectionEnabled());
+	   assertFalse(configuration.isRandEvaluationEnabled());
+	   assertFalse(configuration.isSequenceDetectionEnabled());
 	   
 	   Map<String, DriverDatabase> databases = configuration.getDatabaseMap();
 	   
-	   Assert.assertNotNull(databases);
-	   Assert.assertEquals(2, databases.size());
+	   assertNotNull(databases);
+	   assertEquals(2, databases.size());
 	   
 	   DriverDatabase db1 = databases.get("db1");
 	   
-	   Assert.assertNotNull(db1);
-	   Assert.assertEquals("db1", db1.getId());
-	   Assert.assertEquals("jdbc:mock:db1", db1.getName());
-	   Assert.assertEquals(1, db1.getWeight());
-	   Assert.assertFalse(db1.isLocal());
-	   Assert.assertFalse(db1.isActive());
-	   Assert.assertFalse(db1.isDirty());
+	   assertNotNull(db1);
+	   assertEquals("db1", db1.getId());
+	   assertEquals("jdbc:mock:db1", db1.getName());
+	   assertEquals(1, db1.getWeight());
+	   assertFalse(db1.isLocal());
+	   assertFalse(db1.isActive());
+	   assertFalse(db1.isDirty());
 	   
 	   DriverDatabase db2 = databases.get("db2");
 	   
-	   Assert.assertNotNull(db2);
-	   Assert.assertEquals("db2", db2.getId());
-	   Assert.assertEquals("jdbc:mock:db2", db2.getName());
-	   Assert.assertEquals(1, db2.getWeight());
-	   Assert.assertFalse(db2.isLocal());
-	   Assert.assertFalse(db2.isActive());
-	   Assert.assertFalse(db2.isDirty());
+	   assertNotNull(db2);
+	   assertEquals("db2", db2.getId());
+	   assertEquals("jdbc:mock:db2", db2.getName());
+	   assertEquals(1, db2.getWeight());
+	   assertFalse(db2.isLocal());
+	   assertFalse(db2.isActive());
+	   assertFalse(db2.isDirty());
 	   
-	   EasyMock.reset(streamFactory);
+	   reset(streamFactory);
 	   
 	   StringWriter writer = new StringWriter();
 	   
-	   EasyMock.expect(streamFactory.createResult()).andReturn(new StreamResult(writer));
-	   
-	   EasyMock.replay(streamFactory);
+	   when(streamFactory.createResult()).thenReturn(new StreamResult(writer));
 	   
 		factory.export(configuration);
-		
-		EasyMock.verify(streamFactory);
 		
 		System.out.println(writer.toString());
 	}

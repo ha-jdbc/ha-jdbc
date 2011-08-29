@@ -51,26 +51,6 @@ public abstract class StateCommand<Z, D extends Database<Z>> implements Command<
 	}
 
 	protected abstract boolean execute(D database, DatabaseCluster<Z, D> cluster, StateManager stateManager);
-	
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.distributed.Command#marshalResult(java.lang.Object)
-	 */
-	@Override
-	public Object marshalResult(Boolean result)
-	{
-		return result;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.distributed.Command#unmarshalResult(java.lang.Object)
-	 */
-	@Override
-	public Boolean unmarshalResult(Object object)
-	{
-		return (Boolean) object;
-	}
 
 	/**
 	 * {@inheritDoc}

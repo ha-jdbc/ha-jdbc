@@ -34,18 +34,4 @@ public interface Command<R, C> extends Serializable
 	 * @return the result of this command.
 	 */
 	R execute(C context);
-	
-	/**
-	 * Unmarshals the rpc response to the expected execution result type.
-	 * @param object the rpc response
-	 * @return the execution result
-	 */
-	R unmarshalResult(Object object);
-	
-	/**
-	 * Marshals the execution result to a suitable rpc response.
-	 * @param result the execution result
-	 * @return the rpc response
-	 */
-	Object marshalResult(R result);
 }

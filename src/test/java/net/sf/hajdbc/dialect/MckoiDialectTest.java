@@ -24,7 +24,7 @@ import java.sql.SQLException;
 
 import net.sf.hajdbc.SequenceSupport;
 
-import org.junit.Assert;
+import static org.junit.Assert.*;
 
 /**
  * @author Paul Ferraro
@@ -44,7 +44,7 @@ public class MckoiDialectTest extends StandardDialectTest
 	@Override
 	public void getSequenceSupport()
 	{
-		Assert.assertSame(this.dialect, this.dialect.getSequenceSupport());
+		assertSame(this.dialect, this.dialect.getSequenceSupport());
 	}
 
 	/**
@@ -55,11 +55,11 @@ public class MckoiDialectTest extends StandardDialectTest
 	public void parseSequence() throws SQLException
 	{
 		SequenceSupport support = this.dialect.getSequenceSupport();
-		Assert.assertEquals("sequence", support.parseSequence("SELECT NEXTVAL('sequence'), * FROM table"));
-		Assert.assertEquals("sequence", support.parseSequence("SELECT NEXTVAL ( 'sequence' ), * FROM table"));
-		Assert.assertEquals("sequence", support.parseSequence("SELECT CURRVAL('sequence'), * FROM table"));
-		Assert.assertEquals("sequence", support.parseSequence("SELECT CURRVAL ( 'sequence' ), * FROM table"));
-		Assert.assertNull(support.parseSequence("SELECT NEXT VALUE FOR sequence"));
-		Assert.assertNull(support.parseSequence("SELECT * FROM table"));
+		assertEquals("sequence", support.parseSequence("SELECT NEXTVAL('sequence'), * FROM table"));
+		assertEquals("sequence", support.parseSequence("SELECT NEXTVAL ( 'sequence' ), * FROM table"));
+		assertEquals("sequence", support.parseSequence("SELECT CURRVAL('sequence'), * FROM table"));
+		assertEquals("sequence", support.parseSequence("SELECT CURRVAL ( 'sequence' ), * FROM table"));
+		assertNull(support.parseSequence("SELECT NEXT VALUE FOR sequence"));
+		assertNull(support.parseSequence("SELECT * FROM table"));
 	}
 }
