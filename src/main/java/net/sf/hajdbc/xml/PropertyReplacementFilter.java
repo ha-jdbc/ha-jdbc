@@ -17,6 +17,9 @@
  */
 package net.sf.hajdbc.xml;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,15 +37,36 @@ import org.xml.sax.helpers.XMLFilterImpl;
 public class PropertyReplacementFilter extends XMLFilterImpl
 {
 	private static final Pattern PATTERN = Pattern.compile("\\$\\{([^\\}]+)\\}");
+	private final Properties properties;
 	
    public PropertyReplacementFilter()
    {
       super();
+      this.properties = getSystemProperties();
    }
    
    public PropertyReplacementFilter(XMLReader parent)
    {
+   	this(parent, getSystemProperties());
+   }
+   
+   public PropertyReplacementFilter(XMLReader parent, Properties properties)
+   {
       super(parent);
+      this.properties = properties;
+   }
+   
+   private static Properties getSystemProperties()
+   {
+      PrivilegedAction<Properties> action = new PrivilegedAction<Properties>()
+		{
+			@Override
+			public Properties run()
+			{
+				return System.getProperties();
+			}
+		};
+      return AccessController.doPrivileged(action);
    }
    
    /**
@@ -125,7 +149,7 @@ public class PropertyReplacementFilter extends XMLFilterImpl
    {
 		for (String key: keys)
 		{
-			String value = System.getProperty(key.trim());
+			String value = this.properties.getProperty(key.trim());
 			
 			if (value != null) return value;
 		}

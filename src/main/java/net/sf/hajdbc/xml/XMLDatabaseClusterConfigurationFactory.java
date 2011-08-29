@@ -24,9 +24,9 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 
 import javax.xml.XMLConstants;
+import javax.xml.bind.JAXB;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.validation.Schema;
@@ -91,6 +91,8 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 
 	private static URL findResource(String resource, ClassLoader... loaders)
 	{
+		if (loaders.length == 0) return findResource(resource, Thread.currentThread().getContextClassLoader());
+		
 		for (ClassLoader loader: loaders)
 		{
 			if (loader != null)
@@ -178,16 +180,6 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 	
 	public void export(DatabaseClusterConfiguration<Z, D> configuration)
 	{
-		try
-		{
-			Marshaller marshaller = JAXBContext.newInstance(configuration.getClass()).createMarshaller();
-			
-			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);				
-			marshaller.marshal(configuration, this.streamFactory.createResult());
-		}
-		catch (JAXBException e)
-		{
-			logger.log(Level.WARN, e, Messages.CONFIG_STORE_FAILED.getMessage(), this.streamFactory);
-		}
+		JAXB.marshal(configuration, this.streamFactory.createResult());
 	}
 }
