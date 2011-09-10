@@ -52,7 +52,11 @@ public class Test
 		config.setDialectFactory(DialectFactoryEnum.HSQLDB);
 //		config.setDialectFactory(DialectFactoryEnum.H2);
 		config.setDatabaseMetaDataCacheFactory(DatabaseMetaDataCacheFactoryEnum.NONE);
-		config.setStateManagerFactory(new SimpleStateManagerFactory());
+//		SQLStateManagerFactory state = new SQLStateManagerFactory();
+		SimpleStateManagerFactory state = new SimpleStateManagerFactory();
+//		state.setUrlPattern("jdbc:hsqldb:{1}/{0}");
+//		state.setUrlPattern("jdbc:derby:{1}/{0};create=true");
+		config.setStateManagerFactory(state);
 		
 		DataSource ds = new DataSource();
 		ds.setCluster("cluster");
@@ -82,6 +86,7 @@ public class Test
 		s2.close();
 		
 		Connection c = this.ds.getConnection("sa", "");
+		c.setAutoCommit(false);
 		PreparedStatement ps = c.prepareStatement("INSERT INTO test (id, name) VALUES (?, ?)");
 		ps.setInt(1, 1);
 		ps.setString(2, "1");
@@ -91,6 +96,7 @@ public class Test
 		ps.addBatch();
 		ps.executeBatch();
 		ps.close();
+		c.commit();
 		
 		String selectSQL = "SELECT id, name FROM test";
 		
