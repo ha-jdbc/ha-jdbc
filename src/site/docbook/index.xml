@@ -48,8 +48,8 @@
 		</para>
 		<variablelist>
 			<varlistentry>
-				<term><ulink url="http://forge.continuent.org/projects/sequoia">Sequoia</ulink></term>
-				<listitem><para>Database-independent clustering middleware</para></listitem>
+				<term><ulink url="http://www.continuent.com/community/tungsten-overview">Tungsten</ulink></term>
+				<listitem><para>An open source stack for deploying and operating horizontally scaled database clusters</para></listitem>
 			</varlistentry>
 			<varlistentry>
 				<term><ulink url="http://pgcluster.projects.postgresql.org">PGCluster</ulink></term>
