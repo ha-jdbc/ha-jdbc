@@ -41,8 +41,6 @@ import net.sf.hajdbc.util.reflect.ProxyFactory;
  */
 public abstract class CommonDataSourceFactory<Z extends javax.sql.CommonDataSource, D extends Database<Z>> implements ObjectFactory, CommonDataSourceInvocationHandlerFactory<Z, D>
 {
-	private static final long serialVersionUID = 4537163442336124817L;
-	
 	private final Class<Z> targetClass;
 	
 	/**

@@ -30,8 +30,6 @@ import net.sf.hajdbc.sql.CommonDataSourceFactory;
  */
 public class ConnectionPoolDataSourceFactory extends CommonDataSourceFactory<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase>
 {
-	private static final long serialVersionUID = 4615188477335443494L;
-
 	/**
 	 * Constructs a new factory for creating a <code>ConnectionPoolDataSource</code>.
 	 */

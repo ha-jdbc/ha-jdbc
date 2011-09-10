@@ -28,8 +28,6 @@ import net.sf.hajdbc.DatabaseCluster;
  */
 public class DataSourceFactory extends CommonDataSourceFactory<DataSource, DataSourceDatabase>
 {
-	private static final long serialVersionUID = 6329647625724086236L;
-
 	/**
 	 * Constructs a new factory for creating a <code>DataSource</code>.
 	 */

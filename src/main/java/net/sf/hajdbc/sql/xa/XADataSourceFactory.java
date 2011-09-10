@@ -29,8 +29,6 @@ import net.sf.hajdbc.sql.CommonDataSourceFactory;
  */
 public class XADataSourceFactory extends CommonDataSourceFactory<XADataSource, XADataSourceDatabase>
 {
-	private static final long serialVersionUID = 4012237702282330306L;
-
 	/**
 	 * Constructs a new factory for creating an <code>XADataSource</code>.
 	 */
