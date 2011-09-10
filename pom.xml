@@ -73,7 +73,7 @@
 		<dependency>
 			<groupId>org.jgroups</groupId>
 			<artifactId>jgroups</artifactId>
-			<version>3.0.0.Beta1</version>
+			<version>3.0.0.CR1</version>
 			<optional>true</optional>
 		</dependency>
 		<!-- Optional logging dependencies -->
@@ -183,6 +183,8 @@
 				</configuration>
 				<executions>
 					<execution>
+						<id>enforce-java-version</id>
+						<phase>process-sources</phase>
 						<goals>
 							<goal>enforce</goal>
 						</goals>
@@ -195,6 +197,7 @@
 				<version>1.2</version>
 				<executions>
 					<execution>
+						<id>generate-schema</id>
 						<phase>process-classes</phase>
 						<goals>
 							<goal>java</goal>
