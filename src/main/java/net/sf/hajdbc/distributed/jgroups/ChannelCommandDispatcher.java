@@ -35,6 +35,7 @@ import net.sf.hajdbc.distributed.Stateful;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.util.Objects;
 
 import org.jgroups.Address;
 import org.jgroups.Channel;
@@ -222,10 +223,7 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 	@Override
 	public Object handle(Message message)
 	{
-		if (!(message instanceof Command)) return null;
-		
-		@SuppressWarnings("unchecked")
-		Command<Object, C> command = (Command<Object, C>) message.getObject();
+		Command<Object, C> command = Objects.deserialize(message.getRawBuffer());
 
 		this.logger.log(Level.DEBUG, Messages.COMMAND_RECEIVED.getMessage(command, message.getSrc()));
 		
