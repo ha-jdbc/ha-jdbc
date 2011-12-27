@@ -24,6 +24,8 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Arrays;
 
 /**
@@ -114,7 +116,12 @@ public class Objects
 	 * @param bytes a serialized object
 	 * @return a deserialized object
 	 */
-	public static Object deserialize(byte[] bytes)
+	public static <T> T deserialize(byte[] bytes)
+	{
+		return deserialize(bytes, Objects.class.getClassLoader());
+	}
+	
+	public static <T> T deserialize(byte[] bytes, ClassLoader loader)
 	{
 		if (bytes == null) return null;
 		
@@ -124,15 +131,7 @@ public class Objects
 			
 			try
 			{
-				return input.readObject();
-			}
-			catch (ClassNotFoundException e)
-			{
-				throw new IllegalStateException(e);
-			}
-			catch (IOException e)
-			{
-				throw new IllegalStateException(e);
+				return readObject(input, loader);
 			}
 			finally
 			{
@@ -147,19 +146,63 @@ public class Objects
 	
 	/**
 	 * Deserializes the specified bytes into the object of the specified type.
-	 * @param <T> the target class
 	 * @param bytes a serialized object
 	 * @return a deserialized object
 	 */
-	public static <T> T deserialize(Class<T> targetClass, byte[] bytes)
+	public static <T> T readObject(ObjectInput input)
 	{
-		Object object = deserialize(bytes);
+		return readObject(input, Objects.class.getClassLoader());
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T> T readObject(ObjectInput input, ClassLoader loader)
+	{
+		PrivilegedAction<Void> setAction = new SetThreadContextClassLoaderAction(loader);
+		PrivilegedAction<Void> resetAction = new SetThreadContextClassLoaderAction(Thread.currentThread().getContextClassLoader());
 		
-		return (object != null) ? targetClass.cast(object) : null;
+		AccessController.doPrivileged(setAction);
+		
+		try
+		{
+			return (T) input.readObject();
+		}
+		catch (ClassNotFoundException e)
+		{
+			throw new IllegalStateException(e);
+		}
+		catch (IOException e)
+		{
+			throw new IllegalStateException(e);
+		}
+		finally
+		{
+			AccessController.doPrivileged(resetAction);
+		}
 	}
 	
 	private Objects()
 	{
 		// Hide
-	}	
+	}
+	
+	private static class SetThreadContextClassLoaderAction implements PrivilegedAction<Void>
+	{
+		private final ClassLoader loader;
+		
+		SetThreadContextClassLoaderAction(ClassLoader loader)
+		{
+			this.loader = loader;
+		}
+		
+		/**
+		 * {@inheritDoc}
+		 * @see java.security.PrivilegedAction#run()
+		 */
+		@Override
+		public Void run()
+		{
+			Thread.currentThread().setContextClassLoader(this.loader);
+			return null;
+		}
+	}
 }

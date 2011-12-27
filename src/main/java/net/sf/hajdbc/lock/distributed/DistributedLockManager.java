@@ -40,6 +40,7 @@ import net.sf.hajdbc.distributed.MembershipListener;
 import net.sf.hajdbc.distributed.Remote;
 import net.sf.hajdbc.distributed.Stateful;
 import net.sf.hajdbc.lock.LockManager;
+import net.sf.hajdbc.util.Objects;
 
 /**
  * @author Paul Ferraro
@@ -187,7 +188,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 		
 		for (int i = 0; i < size; ++i)
 		{
-			Member member = (Member) input.readObject();
+			Member member = Objects.readObject(input);
 			
 			Map<LockDescriptor, Lock> map = new HashMap<LockDescriptor, Lock>();
 			
