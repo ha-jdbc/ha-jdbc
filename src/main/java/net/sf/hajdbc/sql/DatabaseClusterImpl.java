@@ -825,7 +825,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		}
 	}
 
-	private boolean activate(D database, SynchronizationStrategy strategy) throws SQLException, InterruptedException
+	boolean activate(D database, SynchronizationStrategy strategy) throws SQLException, InterruptedException
 	{
 		if (!this.isAlive(database)) return false;
 		
@@ -915,20 +915,34 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		@Override
 		public void run()
 		{
-			Set<D> activeDatabases = DatabaseClusterImpl.this.getBalancer();
-			
-			if (!activeDatabases.isEmpty())
+			try
 			{
-				for (D database: DatabaseClusterImpl.this.configuration.getDatabaseMap().values())
+				Set<D> activeDatabases = DatabaseClusterImpl.this.getBalancer();
+				
+				if (!activeDatabases.isEmpty())
 				{
-					if (!activeDatabases.contains(database))
+					for (D database: DatabaseClusterImpl.this.configuration.getDatabaseMap().values())
 					{
-						if (DatabaseClusterImpl.this.activate(database, DatabaseClusterImpl.this.getStateManager()))
+						if (!activeDatabases.contains(database))
 						{
-							logger.log(Level.INFO, Messages.DATABASE_ACTIVATED.getMessage(), database, DatabaseClusterImpl.this);
+							try
+							{
+								if (DatabaseClusterImpl.this.activate(database, DatabaseClusterImpl.this.configuration.getSynchronizationStrategyMap().get(DatabaseClusterImpl.this.configuration.getDefaultSynchronizationStrategy())))
+								{
+									logger.log(Level.INFO, Messages.DATABASE_ACTIVATED.getMessage(), database, DatabaseClusterImpl.this);
+								}
+							}
+							catch (SQLException e)
+							{
+								logger.log(Level.DEBUG, e);
+							}
 						}
 					}
 				}
+			}
+			catch (InterruptedException e)
+			{
+				Thread.currentThread().interrupt();
 			}
 		}
 	}
