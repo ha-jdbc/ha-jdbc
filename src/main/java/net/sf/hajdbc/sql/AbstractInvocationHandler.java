@@ -121,7 +121,6 @@ public abstract class AbstractInvocationHandler<Z, D extends Database<Z>, T, E e
 		return resultFactory.createResult(results);
 	}
 	
-	@SuppressWarnings("unused")
 	protected InvocationHandlerFactory<Z, D, T, ?, E> getInvocationHandlerFactory(T object, Method method, Object[] parameters) throws E
 	{
 		return null;
@@ -137,7 +136,6 @@ public abstract class AbstractInvocationHandler<Z, D extends Database<Z>, T, E e
 	 * @return an invocation strategy
 	 * @throws Exception
 	 */
-	@SuppressWarnings("unused")
 	protected InvocationStrategy getInvocationStrategy(T object, Method method, Object[] parameters) throws E
 	{
 		if (method.equals(equalsMethod) || method.equals(hashCodeMethod) || method.equals(toStringMethod) || wrapperMethods.contains(method))
@@ -156,7 +154,6 @@ public abstract class AbstractInvocationHandler<Z, D extends Database<Z>, T, E e
 	 * @return an invoker
 	 * @throws Exception
 	 */
-	@SuppressWarnings("unused")
 	protected <R> Invoker<Z, D, T, R, E> getInvoker(T object, Method method, Object[] parameters) throws E
 	{
 		if (this.isSQLMethod(method))
