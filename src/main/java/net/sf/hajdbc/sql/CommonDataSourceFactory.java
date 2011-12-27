@@ -85,8 +85,7 @@ public abstract class CommonDataSourceFactory<Z extends javax.sql.CommonDataSour
 		
 		byte[] config = (byte[]) configAddr.getContent();
 		
-		@SuppressWarnings("unchecked")
-		DatabaseClusterConfigurationFactory<Z, D> factory = Objects.deserialize(DatabaseClusterConfigurationFactory.class, config);
+		DatabaseClusterConfigurationFactory<Z, D> factory = Objects.deserialize(config);
 		
 		DatabaseCluster<Z, D> cluster = new DatabaseClusterImpl<Z, D>(id, factory.createConfiguration(), factory);
 		
