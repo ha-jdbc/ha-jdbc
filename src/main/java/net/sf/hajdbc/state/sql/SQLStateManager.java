@@ -78,7 +78,6 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	static final String SELECT_STATE_SQL = MessageFormat.format("SELECT {1} FROM {0}", STATE_TABLE, DATABASE_COLUMN);
 	static final String INSERT_STATE_SQL = MessageFormat.format("INSERT INTO {0} ({1}) VALUES (?)", STATE_TABLE, DATABASE_COLUMN);
 	static final String DELETE_STATE_SQL = MessageFormat.format("DELETE FROM {0} WHERE {1} = ?", STATE_TABLE, DATABASE_COLUMN);
-	static final String CLEAR_STATE_SQL = MessageFormat.format("DELETE FROM {0}", STATE_TABLE);
 	static final String TRUNCATE_STATE_SQL = MessageFormat.format("DELETE FROM {0}", STATE_TABLE);
 
 	static final String SELECT_INVOCATION_SQL = MessageFormat.format("SELECT {1}, {2}, {3} FROM {0}", INVOCATION_TABLE, TRANSACTION_COLUMN, PHASE_COLUMN, EXCEPTION_COLUMN);
@@ -130,16 +129,25 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 			{
 				if (Boolean.getBoolean(StateManager.CLEAR_LOCAL_STATE))
 				{
-					PreparedStatement statement = connection.prepareStatement(CLEAR_STATE_SQL);
+					Transaction transaction = new Transaction()
+					{
+						@Override
+						public void execute(Connection connection) throws SQLException
+						{
+							PreparedStatement statement = connection.prepareStatement(TRUNCATE_STATE_SQL);
+						
+							try
+							{
+								statement.executeUpdate();
+							}
+							finally
+							{
+								close(statement);
+							}
+						}
+					};
 					
-					try
-					{
-						statement.executeUpdate();
-					}
-					finally
-					{
-						close(statement);
-					}
+					this.execute(transaction);
 				}
 				else
 				{
@@ -538,7 +546,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 							
 							if (!resultSet.wasNull())
 							{
-								event.setResult(Objects.deserialize(InvokerResult.class, bytes));
+								event.setResult(Objects.<InvokerResult>deserialize(bytes));
 							}
 
 							invokers.put(databaseId, event);
