@@ -24,6 +24,8 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.invocation.InvocationStrategy;
+import net.sf.hajdbc.invocation.InvocationStrategyEnum;
 import net.sf.hajdbc.util.reflect.Methods;
 
 /**
@@ -41,6 +43,20 @@ public class DataSourceInvocationHandler extends CommonDataSourceInvocationHandl
 	public DataSourceInvocationHandler(DatabaseCluster<DataSource, DataSourceDatabase> databaseCluster)
 	{
 		super(databaseCluster, DataSource.class);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.sql.CommonDataSourceInvocationHandler#getInvocationStrategy(javax.sql.CommonDataSource, java.lang.reflect.Method, java.lang.Object[])
+	 */
+	@Override
+	protected InvocationStrategy getInvocationStrategy(DataSource dataSource, Method method, Object[] parameters) throws SQLException
+	{
+		if (getConnectionMethods.contains(method))
+		{
+			return InvocationStrategyEnum.TRANSACTION_INVOKE_ON_ALL;
+		}
+		return super.getInvocationStrategy(dataSource, method, parameters);
 	}
 
 	/**
