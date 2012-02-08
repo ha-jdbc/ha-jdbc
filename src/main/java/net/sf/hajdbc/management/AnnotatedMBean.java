@@ -208,7 +208,7 @@ public class AnnotatedMBean implements DynamicMBean
 		{
 			for (int i = 0; i < types.length; ++i)
 			{
-				classes[i] = Class.forName(types[i]);
+				classes[i] = this.bean.getClass().getClassLoader().loadClass(types[i]);
 			}
 			
 			return this.bean.getClass().getMethod(method, classes).invoke(this.bean, args);
