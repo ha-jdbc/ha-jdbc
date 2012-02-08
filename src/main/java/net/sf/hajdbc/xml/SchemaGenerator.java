@@ -40,7 +40,7 @@ public class SchemaGenerator
 			String baseDirectoryName = args[1];
 			String fileName = args[2];
 			
-			Class<?> baseClass = Class.forName(baseClassName);
+			Class<?> baseClass = SchemaGenerator.class.getClassLoader().loadClass(baseClassName);
 			File baseDirectory = new File(baseDirectoryName);
 			
 			final File file = new File(baseDirectory, fileName);
