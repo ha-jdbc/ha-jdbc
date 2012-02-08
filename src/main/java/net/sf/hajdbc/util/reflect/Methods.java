@@ -137,7 +137,7 @@ public final class Methods
 	{
 		try
 		{
-			return findMethod(Class.forName(className), name, types);
+			return findMethod(Methods.class.getClassLoader().loadClass(className), name, types);
 		}
 		catch (ClassNotFoundException e)
 		{
