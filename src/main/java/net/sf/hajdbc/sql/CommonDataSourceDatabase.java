@@ -68,7 +68,7 @@ public abstract class CommonDataSourceDatabase<Z extends javax.sql.CommonDataSou
 	{
 		try
 		{
-			Class<?> dataSourceClass = Class.forName(this.getName());
+			Class<?> dataSourceClass = this.getClass().getClassLoader().loadClass(this.getName());
 			
 			return this.createDataSource(dataSourceClass.asSubclass(this.targetClass));
 		}
