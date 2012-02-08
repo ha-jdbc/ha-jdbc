@@ -13,7 +13,8 @@ public enum InvocationStrategyEnum implements InvocationStrategy
 	INVOKE_ON_NEXT(new InvokeOnNextInvocationStrategy()),
 	INVOKE_ON_PRIMARY(new InvokeOnPrimaryInvocationStrategy()),
 	TRANSACTION_INVOKE_ON_ALL(new TransactionInvokeOnAllInvocationStrategy(false)),
-	END_TRANSACTION_INVOKE_ON_ALL(new TransactionInvokeOnAllInvocationStrategy(true));
+	END_TRANSACTION_INVOKE_ON_ALL(new TransactionInvokeOnAllInvocationStrategy(true)),
+	;
 
 	private final InvocationStrategy strategy;
 	
