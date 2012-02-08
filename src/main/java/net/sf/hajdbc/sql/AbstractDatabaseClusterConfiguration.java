@@ -895,7 +895,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			}
 			catch (IllegalArgumentException e)
 			{
-				return new CustomDialectFactory(Class.forName(value).asSubclass(Dialect.class));
+				return new CustomDialectFactory(DialectFactory.class.getClassLoader().loadClass(value).asSubclass(Dialect.class));
 			}
 		}
 	}
