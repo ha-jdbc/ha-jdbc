@@ -34,6 +34,7 @@ import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.Messages;
@@ -563,7 +564,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 	 */
 	public String getVersionPattern()
 	{
-		return this.versionPattern.pattern();
+		return (this.versionPattern != null) ? this.versionPattern.pattern() : null;
 	}
 
 	/**
@@ -571,6 +572,24 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 	 */
 	public void setVersionPattern(String versionPattern)
 	{
-		this.versionPattern = Pattern.compile(versionPattern, Pattern.CASE_INSENSITIVE);
+		this.versionPattern = (versionPattern != null) ? Pattern.compile(versionPattern, Pattern.CASE_INSENSITIVE) : null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.SynchronizationStrategy#init(net.sf.hajdbc.DatabaseCluster)
+	 */
+	@Override
+	public <Z, D extends Database<Z>> void init(DatabaseCluster<Z, D> cluster)
+	{
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.SynchronizationStrategy#destroy(net.sf.hajdbc.DatabaseCluster)
+	 */
+	@Override
+	public <Z, D extends Database<Z>> void destroy(DatabaseCluster<Z, D> cluster)
+	{
 	}
 }

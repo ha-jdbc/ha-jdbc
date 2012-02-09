@@ -27,6 +27,8 @@ import net.sf.hajdbc.sync.SynchronizationContext;
  */
 public interface SynchronizationStrategy
 {
+	<Z, D extends Database<Z>> void init(DatabaseCluster<Z, D> cluster);
+	
 	/**
 	 * Synchronizes a target database with a source database as defined by the synchronization context.
 	 * @param <Z>
@@ -35,4 +37,6 @@ public interface SynchronizationStrategy
 	 * @throws SQLException if synchronization fails
 	 */
 	<Z, D extends Database<Z>> void synchronize(SynchronizationContext<Z, D> context) throws SQLException;
+	
+	<Z, D extends Database<Z>> void destroy(DatabaseCluster<Z, D> cluster);	
 }

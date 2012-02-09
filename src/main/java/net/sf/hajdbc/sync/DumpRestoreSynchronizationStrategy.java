@@ -26,6 +26,7 @@ import java.util.regex.Matcher;
 
 import net.sf.hajdbc.ConnectionProperties;
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.DumpRestoreSupport;
 import net.sf.hajdbc.ExceptionType;
@@ -39,6 +40,24 @@ import net.sf.hajdbc.util.Strings;
  */
 public class DumpRestoreSynchronizationStrategy implements SynchronizationStrategy
 {
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.SynchronizationStrategy#onStart(net.sf.hajdbc.DatabaseCluster)
+	 */
+	@Override
+	public <Z, D extends Database<Z>> void init(DatabaseCluster<Z, D> cluster)
+	{
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.SynchronizationStrategy#onStop(net.sf.hajdbc.DatabaseCluster)
+	 */
+	@Override
+	public <Z, D extends Database<Z>> void destroy(DatabaseCluster<Z, D> cluster)
+	{
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.sync.SynchronizationContext)
@@ -60,9 +79,9 @@ public class DumpRestoreSynchronizationStrategy implements SynchronizationStrate
 			
 			try
 			{
-				this.startProcess(support.createDumpProcess(new ConnectionInformation<Z, D>(context, context.getSourceDatabase()), file));
+				this.startProcess(support.createDumpProcess(new ConnectionPropertiesImpl<Z, D>(context, context.getSourceDatabase()), file));
 				
-				this.startProcess(support.createRestoreProcess(new ConnectionInformation<Z, D>(context, context.getTargetDatabase()), file));
+				this.startProcess(support.createRestoreProcess(new ConnectionPropertiesImpl<Z, D>(context, context.getTargetDatabase()), file));
 			}
 			finally
 			{
@@ -106,7 +125,7 @@ public class DumpRestoreSynchronizationStrategy implements SynchronizationStrate
 		}
 	}
 	
-	private static class ConnectionInformation<Z, D extends Database<Z>> implements ConnectionProperties
+	private static class ConnectionPropertiesImpl<Z, D extends Database<Z>> implements ConnectionProperties
 	{
 		private final String host;
 		private final String port;
@@ -114,7 +133,7 @@ public class DumpRestoreSynchronizationStrategy implements SynchronizationStrate
 		private final String user;
 		private final String password;
 		
-		ConnectionInformation(SynchronizationContext<Z, D> context, D database) throws SQLException
+		ConnectionPropertiesImpl(SynchronizationContext<Z, D> context, D database) throws SQLException
 		{
 			DatabaseMetaData metaData = context.getConnection(database).getMetaData();
 			String url = metaData.getURL();

@@ -31,6 +31,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.Messages;
@@ -255,5 +256,23 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy, Ser
 	public void setMaxBatchSize(int maxBatchSize)
 	{
 		this.maxBatchSize = maxBatchSize;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.SynchronizationStrategy#init(net.sf.hajdbc.DatabaseCluster)
+	 */
+	@Override
+	public <Z, D extends Database<Z>> void init(DatabaseCluster<Z, D> cluster)
+	{
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.SynchronizationStrategy#destroy(net.sf.hajdbc.DatabaseCluster)
+	 */
+	@Override
+	public <Z, D extends Database<Z>> void destroy(DatabaseCluster<Z, D> cluster)
+	{
 	}
 }
