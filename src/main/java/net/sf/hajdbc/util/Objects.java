@@ -157,10 +157,9 @@ public class Objects
 	@SuppressWarnings("unchecked")
 	public static <T> T readObject(ObjectInput input, ClassLoader loader)
 	{
-		PrivilegedAction<Void> setAction = new SetThreadContextClassLoaderAction(loader);
-		PrivilegedAction<Void> resetAction = new SetThreadContextClassLoaderAction(Thread.currentThread().getContextClassLoader());
+		ClassLoader originalLoader = getThreadContextClassLoader();
 		
-		AccessController.doPrivileged(setAction);
+		setThreadContextClassLoader(loader);
 		
 		try
 		{
@@ -176,7 +175,7 @@ public class Objects
 		}
 		finally
 		{
-			AccessController.doPrivileged(resetAction);
+			setThreadContextClassLoader(originalLoader);
 		}
 	}
 	
@@ -185,24 +184,30 @@ public class Objects
 		// Hide
 	}
 	
-	private static class SetThreadContextClassLoaderAction implements PrivilegedAction<Void>
+	private static ClassLoader getThreadContextClassLoader()
 	{
-		private final ClassLoader loader;
-		
-		SetThreadContextClassLoaderAction(ClassLoader loader)
+		PrivilegedAction<ClassLoader> action = new PrivilegedAction<ClassLoader>()
 		{
-			this.loader = loader;
-		}
-		
-		/**
-		 * {@inheritDoc}
-		 * @see java.security.PrivilegedAction#run()
-		 */
-		@Override
-		public Void run()
+			@Override
+			public ClassLoader run()
+			{
+				return Thread.currentThread().getContextClassLoader();
+			}
+		};
+		return AccessController.doPrivileged(action);
+	}
+	
+	private static void setThreadContextClassLoader(final ClassLoader loader)
+	{
+		PrivilegedAction<Void> action = new PrivilegedAction<Void>()
 		{
-			Thread.currentThread().setContextClassLoader(this.loader);
-			return null;
-		}
+			@Override
+			public Void run()
+			{
+				Thread.currentThread().setContextClassLoader(loader);
+				return null;
+			}
+		};
+		AccessController.doPrivileged(action);
 	}
 }
