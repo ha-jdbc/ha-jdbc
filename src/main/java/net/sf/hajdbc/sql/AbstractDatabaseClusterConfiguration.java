@@ -1008,13 +1008,17 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 				PropertyDescriptor descriptor = entry.getKey();
 				PropertyEditor editor = entry.getValue();
 				
-				editor.setValue(descriptor.getReadMethod().invoke(object));
-				
-				Property property = new Property();					
-				property.setName(descriptor.getName());
-				property.setValue(editor.getAsText());
-				
-				properties.add(property);
+				Object value = descriptor.getReadMethod().invoke(object);
+				if (value != null)
+				{
+					editor.setValue(value);
+					
+					Property property = new Property();					
+					property.setName(descriptor.getName());
+					property.setValue(editor.getAsText());
+					
+					properties.add(property);
+				}
 			}
 			
 			return result;
