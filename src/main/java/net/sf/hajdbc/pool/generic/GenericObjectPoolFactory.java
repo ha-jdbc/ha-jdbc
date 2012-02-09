@@ -32,40 +32,38 @@ public class GenericObjectPoolFactory implements PoolFactory
 	@Override
 	public <T, E extends Exception> Pool<T, E> createPool(final PoolProvider<T, E> provider)
 	{
-		final Class<T> providedClass = provider.getProvidedClass();
-		
-		PoolableObjectFactory factory = new PoolableObjectFactory()
+		PoolableObjectFactory<T> factory = new PoolableObjectFactory<T>()
 		{
 			@Override
-			public void destroyObject(Object object)
+			public void destroyObject(T object)
 			{
-				provider.close(providedClass.cast(object));
+				provider.close(object);
 			}
 
 			@Override
-			public Object makeObject() throws Exception
+			public T makeObject() throws Exception
 			{
 				return provider.create();
 			}
 
 			@Override
-			public boolean validateObject(Object object)
+			public boolean validateObject(T object)
 			{
-				return provider.isValid(providedClass.cast(object));
+				return provider.isValid(object);
 			}
 			
 			@Override
-			public void activateObject(Object object)
+			public void activateObject(T object)
 			{
 			}
 
 			@Override
-			public void passivateObject(Object object)
+			public void passivateObject(T object)
 			{
 			}
 		};
 
-		final ObjectPool pool = new GenericObjectPool(factory, this.config);
+		final ObjectPool<T> pool = new GenericObjectPool<T>(factory, this.config);
 		
 		return new Pool<T, E>()
 		{
@@ -100,7 +98,7 @@ public class GenericObjectPoolFactory implements PoolFactory
 			{
 				try
 				{
-					return providedClass.cast(pool.borrowObject());
+					return pool.borrowObject();
 				}
 				catch (NoSuchElementException e)
 				{
