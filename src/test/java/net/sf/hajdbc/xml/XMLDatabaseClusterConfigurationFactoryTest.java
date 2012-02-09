@@ -36,6 +36,9 @@ import net.sf.hajdbc.sql.DefaultExecutorServiceProvider;
 import net.sf.hajdbc.sql.DriverDatabase;
 import net.sf.hajdbc.sql.DriverDatabaseClusterConfiguration;
 import net.sf.hajdbc.sql.TransactionModeEnum;
+import net.sf.hajdbc.state.StateManagerFactory;
+import net.sf.hajdbc.state.sql.SQLStateManagerFactory;
+import net.sf.hajdbc.sync.DifferentialSynchronizationStrategy;
 
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -72,13 +75,25 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 		DatabaseClusterConfiguration<Driver, DriverDatabase> configuration = factory.createConfiguration();
 		
 		assertNull(configuration.getDispatcherFactory());
-		Map<String, SynchronizationStrategy> strategies = configuration.getSynchronizationStrategyMap();
-		assertNotNull(strategies);
-		assertEquals(1, strategies.size());
+		Map<String, SynchronizationStrategy> syncStrategies = configuration.getSynchronizationStrategyMap();
+		assertNotNull(syncStrategies);
+		assertEquals(1, syncStrategies.size());
 		
-		SynchronizationStrategy strategy = strategies.get("diff");
+		SynchronizationStrategy syncStrategy = syncStrategies.get("diff");
 		
-		assertNotNull(strategy);
+		assertNotNull(syncStrategy);
+		assertTrue(syncStrategy instanceof DifferentialSynchronizationStrategy);
+		DifferentialSynchronizationStrategy diffStrategy = (DifferentialSynchronizationStrategy) syncStrategy;
+		assertEquals(100, diffStrategy.getFetchSize());
+		assertEquals(100, diffStrategy.getMaxBatchSize());
+		assertNull(diffStrategy.getVersionPattern());
+		
+		StateManagerFactory stateManagerFactory = configuration.getStateManagerFactory();
+		assertTrue(stateManagerFactory instanceof SQLStateManagerFactory);
+		SQLStateManagerFactory sqlStateManagerFactory = (SQLStateManagerFactory) stateManagerFactory;
+		assertEquals("jdbc:h2:{0}", sqlStateManagerFactory.getUrlPattern());
+		assertNull(sqlStateManagerFactory.getUser());
+		assertNull(sqlStateManagerFactory.getPassword());
 		
 		assertSame(BalancerFactoryEnum.ROUND_ROBIN, configuration.getBalancerFactory());
 	   assertSame(DatabaseMetaDataCacheFactoryEnum.EAGER, configuration.getDatabaseMetaDataCacheFactory());
