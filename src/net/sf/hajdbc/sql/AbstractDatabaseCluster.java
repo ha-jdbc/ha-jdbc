@@ -1285,7 +1285,14 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		{
 			for (String databaseId: AbstractDatabaseCluster.this.getInactiveDatabases())
 			{
-				AbstractDatabaseCluster.this.activate(databaseId);
+				try
+				{
+					AbstractDatabaseCluster.this.activate(databaseId);
+				}
+				catch (Exception e)
+				{
+					logger.info(e.getMessage(), e);
+				}
 			}
 		}
 	}
