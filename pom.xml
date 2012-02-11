@@ -354,10 +354,9 @@
 	</build>
 	
 	<scm>
-		<connection>scm:svn:https://ha-jdbc.svn.sourceforge.net/svnroot/ha-jdbc/trunk</connection>
-		<developerConnection>scm:svn:https://ha-jdbc.svn.sourceforge.net/svnroot/ha-jdbc/trunk</developerConnection>
-		<tag>HEAD</tag>
-		<url>http://ha-jdbc.svn.sourceforge.net/viewvc/ha-jdbc/trunk</url>
+		<connection>scm:git:git://github.com/ha-jdbc/ha-jdbc.git</connection>
+		<developerConnection>scm:git:git@github.com:ha-jdbc/ha-jdbc.git</developerConnection>
+		<url>https://github.com/ha-jdbc/ha-jdbc</url>
 	</scm>
 	
 	<issueManagement>
