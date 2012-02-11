@@ -67,7 +67,7 @@
 		<para>
 			The root element of the configuration file has the following definition:
 		</para>
-		<programlisting>&lt;!ELEMENT ha-jdbc (<link linkend="xml.distributable">distributable</link>?,<link linkend="xml.sync">sync</link>+,<link linkend="xml.cluster">cluster</link>)&gt;</programlisting>
+		<programlisting>&lt;!ELEMENT ha-jdbc (<link linkend="xml.distributable">distributable</link>?,<link linkend="xml.sync">sync</link>+,<link linkend="xml.state-manager">state-manager</link>?,<link linkend="xml.cluster">cluster</link>)&gt;</programlisting>
 	</section>
 	<section id="xml.distributable">
 		<title>distributable</title>
@@ -133,6 +133,29 @@
 					<para>
 						Class name of a <ulink url="apidocs/api/net/sf/hajdbc/SynchronizationStrategy.html">SynchronizationStrategy</ulink>.
 						A list of available synchronization stategies is described in the <link linkend="sync">Synchronization section</link>.
+					</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
+	</section>
+	<section id="xml.state-manager">
+		<title>state-manager</title>
+		<para>
+			Defines a strategy for synchronizing a database prior to activation.
+			If the strategy contains JavaBean properties, you can override their default values.
+		</para>
+		<programlisting>
+&lt;!ELEMENT state-manager (<link linkend="xml.property">property</link>*)&gt;
+&lt;!ATTLIST state-manager
+  class	CDATA #REQUIRED
+&gt;</programlisting>
+		<variablelist>
+			<varlistentry>
+				<term>class</term>
+				<listitem>
+					<para>
+						Class name of a <ulink url="apidocs/api/net/sf/hajdbc/StateManager.html">StateManager</ulink>.
+						A list of available state managers is described in the <link linkend="state">State Management section</link>.
 					</para>
 				</listitem>
 			</varlistentry>
@@ -358,25 +381,25 @@
 			<varlistentry>
 				<term>name</term>
 				<listitem>
-					<para>Defines the JDBC url used to access this database.</para>
+					<para>Defines the JDBC url, DataSource jndi name, or DataSource class name used to access this database.</para>
 				</listitem>
 			</varlistentry>
 			<varlistentry>
 				<term><link linkend="xml.property">property</link></term>
 				<listitem>
-					<para>Defines a property to be passed to the java.sql.Driver.connect() method.</para>
+					<para>Defines a property to be passed to the java.sql.Driver.connect() method, or applied to the DataSource.</para>
 				</listitem>
 			</varlistentry>
 			<varlistentry>
 				<term>user</term>
 				<listitem>
-					<para>Defines the user, if any, that HA-JDBC should use to connect to the database during synchronization and database failure detection.</para>
+					<para>Defines the administrator user, if any, that HA-JDBC should use to connect to the database during synchronization and database failure detection.</para>
 				</listitem>
 			</varlistentry>
 			<varlistentry>
 				<term>password</term>
 				<listitem>
-					<para>Defines the password, if any, that HA-JDBC should use to connect to the database during synchronization and database failure detection.</para>
+					<para>Defines the administrator password, if any, that HA-JDBC should use to connect to the database during synchronization and database failure detection.</para>
 				</listitem>
 			</varlistentry>
 		</variablelist>

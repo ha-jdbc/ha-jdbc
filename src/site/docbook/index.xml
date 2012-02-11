@@ -29,10 +29,10 @@
 		<title>Features</title>
 		<itemizedlist>
 			<listitem><para>Supports any database accessible via JDBC.</para></listitem>
-			<listitem><para>High-availability/Fault Tolerance - An HA-JDBC database cluster can lose a node without failing/corrupting open transactions.</para></listitem>
+			<listitem><para>High fault tolerance - a database cluster can lose a node without failing/corrupting any transactions.</para></listitem>
 			<listitem><para>Live activation/deactivation allows for maintenance/upgrading of a database node without loss of service.</para></listitem>
 			<listitem><para>Improves performance of concurrent read-access by distributing load across individual nodes.</para></listitem>
-			<listitem><para>Supports full JDBC 3.0 and 4.0 feature set.</para></listitem>
+			<listitem><para>Supports full JDBC 4.0 feature set.</para></listitem>
 			<listitem><para>Pluggable strategies for synchronizing a failed database node.</para></listitem>
 			<listitem><para>Exposes JMX management interface to allow administration of databases and clusters.</para></listitem>
 			<listitem><para>Ability to add/subtract database nodes to/from a cluster at runtime.</para></listitem>
@@ -48,12 +48,12 @@
 		</para>
 		<variablelist>
 			<varlistentry>
-				<term><ulink url="http://www.continuent.com/community/tungsten-overview">Tungsten</ulink></term>
-				<listitem><para>An open source stack for deploying and operating horizontally scaled database clusters</para></listitem>
+				<term><ulink url="http://www.pgpool.net/">pgpool-II</ulink></term>
+				<listitem><para>Replication middleware for PostgreSQL</para></listitem>
 			</varlistentry>
 			<varlistentry>
-				<term><ulink url="http://pgcluster.projects.postgresql.org">PGCluster</ulink></term>
-				<listitem><para>Multi-master replication system for PostgreSQL</para></listitem>
+				<term><ulink url="http://code.google.com/p/tungsten-replicator/">Tungsten Replicator</ulink></term>
+				<listitem><para>A high performance data replication engine for MySQL</para></listitem>
 			</varlistentry>
 			<varlistentry>
 				<term><ulink url="http://www.mysql.com/products/cluster">MySQL Cluster</ulink></term>

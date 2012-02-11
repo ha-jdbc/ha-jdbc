@@ -20,6 +20,8 @@ package net.sf.hajdbc.codec.base64;
 import java.sql.SQLException;
 
 import net.sf.hajdbc.codec.AbstractCodec;
+import net.sf.hajdbc.codec.Codec;
+import net.sf.hajdbc.util.Strings;
 
 import org.apache.commons.codec.binary.Base64;
 
@@ -49,5 +51,29 @@ public class Base64CodecFactory extends AbstractCodec
 	public String encode(String value) throws SQLException
 	{
 		return new String(Base64.encodeBase64(value.getBytes()));
+	}
+	
+	public static void main(String... args)
+	{
+		if (args.length != 2)
+		{
+			System.err.println(String.format("Usage:%s\tjava %s <cluster-id> <password-to-encrypt>", Strings.NEW_LINE, Base64CodecFactory.class.getName()));
+			System.exit(1);
+			return;
+		}
+		
+		String clusterId = args[0];
+		String value = args[1];
+		
+		try
+		{
+			Codec codec = new Base64CodecFactory().createCodec(clusterId);
+
+			System.out.println(codec.encode(value));
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace(System.err);
+		}
 	}
 }

@@ -34,14 +34,13 @@
 			<item name="Configuration" href="xml.html"/>
 			<item name="FAQ" href="faq.html"/>
 			<item name="Building" href="build.html"/>
-			<item name="Download" href="http://sourceforge.net/project/showfiles.php?group_id=111957"/>
-			<item name="Project Page" href="http://sourceforge.net/projects/ha-jdbc"/>
+			<item name="Download" href="http://sourceforge.net/projects/ha-jdbc/files/"/>
+			<item name="Forums" href="http://sourceforge.net/projects/ha-jdbc/forums"/>
 		</menu>
 		<menu ref="reports"/>
 	</body>
 	<skin>
 		<groupId>com.googlecode.fluido-skin</groupId>
 		<artifactId>fluido-skin</artifactId>
-		<!--version>1.3</version-->
 	</skin>
 </project>

@@ -52,7 +52,7 @@ import net.sf.hajdbc.balancer.BalancerFactoryEnum;
 import net.sf.hajdbc.cache.DatabaseMetaDataCacheFactory;
 import net.sf.hajdbc.cache.DatabaseMetaDataCacheFactoryEnum;
 import net.sf.hajdbc.codec.CodecFactory;
-import net.sf.hajdbc.codec.simple.SimpleCodecFactory;
+import net.sf.hajdbc.codec.MultiplexingCodecFactory;
 import net.sf.hajdbc.dialect.CustomDialectFactory;
 import net.sf.hajdbc.dialect.DialectFactory;
 import net.sf.hajdbc.dialect.DialectFactoryEnum;
@@ -534,7 +534,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 
 		private ExecutorServiceProvider executorProvider = new DefaultExecutorServiceProvider();
 		private ThreadFactory threadFactory = Executors.defaultThreadFactory();
-		private CodecFactory codecFactory = new SimpleCodecFactory();
+		private CodecFactory codecFactory = new MultiplexingCodecFactory();
 		private MBeanRegistrar<Z, D> registrar = new DefaultMBeanRegistrar<Z, D>();
 		
 		@XmlJavaTypeAdapter(TransactionModeAdapter.class)

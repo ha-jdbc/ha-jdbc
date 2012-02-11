@@ -282,13 +282,13 @@
 								</reportSet>
 							</reportSets>
 						</plugin>
-						<!--plugin>
+						<plugin>
 							<groupId>org.apache.maven.plugins</groupId>
 							<artifactId>maven-javadoc-plugin</artifactId>
 							<configuration>
 								<linksource>true</linksource>
 							</configuration>
-						</plugin-->
+						</plugin>
 						<plugin>
 							<groupId>org.apache.maven.plugins</groupId>
 							<artifactId>maven-jxr-plugin</artifactId>
@@ -361,15 +361,15 @@
 	
 	<issueManagement>
 		<system>SourceForge</system>
-		<url>http://sourceforge.net/tracker/?group_id=111957&amp;atid=660861</url>
+		<url>http://sourceforge.net/tracker/?group_id=111957</url>
 	</issueManagement>
 	
 	<distributionManagement>
-		<downloadUrl>http://sourceforge.net/project/showfiles.php?group_id=111957</downloadUrl>
+		<downloadUrl>http://sourceforge.net/projects/ha-jdbc/files/</downloadUrl>
 		<site>
-			<id>ha-jdbc.site</id>
+			<id>ha-jdbc.sourceforge.net</id>
 			<name>HA-JDBC project page</name>
-			<url>scp://ferraro,ha-jdbc@shell.sourceforge.net/home/groups/h/ha/ha-jdbc/htdocs</url>
+			<url>scp://shell.sourceforge.net/home/project-web/ha-jdbc/htdocs</url>
 		</site>
 	</distributionManagement>
 
