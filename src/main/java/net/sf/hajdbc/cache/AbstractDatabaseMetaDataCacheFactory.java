@@ -21,6 +21,7 @@ import java.io.Serializable;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.DatabaseMetaDataCache;
 
 /**
  * Abstract {@link DatabaseMetaDataCacheFactory} implementation.

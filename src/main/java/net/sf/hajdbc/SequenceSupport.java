@@ -21,8 +21,6 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Map;
 
-import net.sf.hajdbc.cache.QualifiedName;
-import net.sf.hajdbc.cache.SequenceProperties;
 
 /**
  * @author Paul Ferraro

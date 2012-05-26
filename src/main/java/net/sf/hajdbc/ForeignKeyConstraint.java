@@ -15,9 +15,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.hajdbc.cache;
+package net.sf.hajdbc;
 
 import java.util.List;
+
 
 
 
@@ -32,7 +33,7 @@ public interface ForeignKeyConstraint extends UniqueConstraint
 	/**
 	 * @return the foreign table of this foreign key
 	 */
-	String getForeignTable();
+	QualifiedName getForeignTable();
 	
 	/**
 	 * @return the foreign column of this foreign key
@@ -67,7 +68,7 @@ public interface ForeignKeyConstraint extends UniqueConstraint
 	/**
 	 * @param foreignTable The foreignTable to set.
 	 */
-	void setForeignTable(String foreignTable);
+	void setForeignTable(QualifiedName foreignTable);
 
 	/**
 	 * @param updateRule The updateRule to set.

@@ -28,9 +28,9 @@ import java.sql.Statement;
 import java.util.Iterator;
 import java.util.Map;
 
+import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.SequenceSupport;
-import net.sf.hajdbc.cache.QualifiedName;
-import net.sf.hajdbc.cache.SequenceProperties;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -102,8 +102,10 @@ public class DB2DialectTest extends StandardDialectTest
 	public void getNextSequenceValueSQL() throws SQLException
 	{
 		SequenceProperties sequence = mock(SequenceProperties.class);
+		QualifiedName name = mock(QualifiedName.class);
 		
-		when(sequence.getName()).thenReturn("sequence");
+		when(sequence.getName()).thenReturn(name);
+		when(name.getDMLName()).thenReturn("sequence");
 		
 		String result = this.dialect.getSequenceSupport().getNextSequenceValueSQL(sequence);
 		

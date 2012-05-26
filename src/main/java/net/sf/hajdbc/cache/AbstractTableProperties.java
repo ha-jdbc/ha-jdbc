@@ -21,6 +21,10 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map;
 
+import net.sf.hajdbc.ColumnProperties;
+import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.TableProperties;
+
 
 /**
  * @author Paul Ferraro
@@ -28,24 +32,23 @@ import java.util.Map;
  */
 public abstract class AbstractTableProperties implements TableProperties
 {
-	private final String name;
-	
-	protected AbstractTableProperties(DatabaseMetaDataSupport support, QualifiedName table)
-	{
-		this.name = support.qualifyNameForDML(table);
+	private final QualifiedName name;
+
+	protected AbstractTableProperties(QualifiedName name) {
+		this.name = name;
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.cache.TableProperties#getName()
+	 * @see net.sf.hajdbc.TableProperties#getName()
 	 */
 	@Override
-	public final String getName()
+	public final QualifiedName getName()
 	{
 		return this.name;
 	}
 
 	/**
-	 * @see net.sf.hajdbc.cache.TableProperties#getColumns()
+	 * @see net.sf.hajdbc.TableProperties#getColumns()
 	 */
 	@Override
 	public final Collection<String> getColumns() throws SQLException
@@ -54,7 +57,7 @@ public abstract class AbstractTableProperties implements TableProperties
 	}
 
 	/**
-	 * @see net.sf.hajdbc.cache.TableProperties#getColumnProperties(java.lang.String)
+	 * @see net.sf.hajdbc.TableProperties#getColumnProperties(java.lang.String)
 	 */
 	@Override
 	public final ColumnProperties getColumnProperties(String column) throws SQLException
@@ -71,10 +74,8 @@ public abstract class AbstractTableProperties implements TableProperties
 	public final boolean equals(Object object)
 	{
 		if ((object == null) || !(object instanceof TableProperties)) return false;
-			
-		String name = ((TableProperties) object).getName();
 		
-		return (name != null) && name.equals(this.name);
+		return this.name.equals(((TableProperties) object).getName());
 	}
 
 	/**
@@ -92,6 +93,6 @@ public abstract class AbstractTableProperties implements TableProperties
 	@Override
 	public final String toString()
 	{
-		return this.name;
+		return this.name.getDDLName();
 	}
 }

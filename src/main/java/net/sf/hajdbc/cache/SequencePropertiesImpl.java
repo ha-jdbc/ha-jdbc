@@ -17,39 +17,42 @@
  */
 package net.sf.hajdbc.cache;
 
+import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.SequenceProperties;
+
 
 /**
  * @author Paul Ferraro
  */
 public class SequencePropertiesImpl implements SequenceProperties
 {
-	private final String name;
+	private final QualifiedName name;
 	private final int increment;
 	
-	public SequencePropertiesImpl(String name, int increment)
+	public SequencePropertiesImpl(QualifiedName name, int increment)
 	{
 		this.name = name;
 		this.increment = increment;
 	}
 	
-	public SequencePropertiesImpl(String name)
+	public SequencePropertiesImpl(QualifiedName name)
 	{
 		this.name = name;
 		this.increment = 1;
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.cache.SequenceProperties#getName()
+	 * @see net.sf.hajdbc.SequenceProperties#getName()
 	 */
 	@Override
-	public String getName()
+	public QualifiedName getName()
 	{
 		return this.name;
 	}
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.cache.SequenceProperties#getIncrement()
+	 * @see net.sf.hajdbc.SequenceProperties#getIncrement()
 	 */
 	@Override
 	public int getIncrement()
@@ -85,6 +88,6 @@ public class SequencePropertiesImpl implements SequenceProperties
 	@Override
 	public String toString()
 	{
-		return this.name;
+		return this.name.getDDLName();
 	}
 }

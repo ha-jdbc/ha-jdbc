@@ -20,6 +20,10 @@
  */
 package net.sf.hajdbc.dialect;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -29,15 +33,12 @@ import java.util.Iterator;
 import java.util.Map;
 
 import junit.framework.Assert;
-
+import net.sf.hajdbc.ForeignKeyConstraint;
+import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.SequenceSupport;
-import net.sf.hajdbc.cache.ForeignKeyConstraint;
+import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.cache.ForeignKeyConstraintImpl;
-import net.sf.hajdbc.cache.QualifiedName;
-import net.sf.hajdbc.cache.SequenceProperties;
-import net.sf.hajdbc.cache.TableProperties;
-
-import static org.mockito.Mockito.*;
 
 /**
  * @author Paul Ferraro
@@ -68,10 +69,16 @@ public class MaxDBDialectTest extends StandardDialectTest
 	@Override
 	public void getCreateForeignKeyConstraintSQL() throws SQLException
 	{
-		ForeignKeyConstraint key = new ForeignKeyConstraintImpl("name", "table");
+		QualifiedName table = mock(QualifiedName.class);
+		QualifiedName foreignTable = mock(QualifiedName.class);
+		
+		when(table.getDDLName()).thenReturn("table");
+		when(foreignTable.getDDLName()).thenReturn("foreign_table");
+		
+		ForeignKeyConstraint key = new ForeignKeyConstraintImpl("name", table);
 		key.getColumnList().add("column1");
 		key.getColumnList().add("column2");
-		key.setForeignTable("foreign_table");
+		key.setForeignTable(foreignTable);
 		key.getForeignColumnList().add("foreign_column1");
 		key.getForeignColumnList().add("foreign_column2");
 		key.setDeferrability(DatabaseMetaData.importedKeyInitiallyDeferred);
@@ -140,8 +147,10 @@ public class MaxDBDialectTest extends StandardDialectTest
 	public void getTruncateTableSQL() throws SQLException
 	{
 		TableProperties table = mock(TableProperties.class);
+		QualifiedName name = mock(QualifiedName.class);
 		
-		when(table.getName()).thenReturn("table");
+		when(table.getName()).thenReturn(name);
+		when(name.getDMLName()).thenReturn("table");
 		
 		String result = this.dialect.getTruncateTableSQL(table);
 		
@@ -176,8 +185,10 @@ public class MaxDBDialectTest extends StandardDialectTest
 	public void getNextSequenceValueSQL() throws SQLException
 	{
 		SequenceProperties sequence = mock(SequenceProperties.class);
+		QualifiedName name = mock(QualifiedName.class);
 		
-		when(sequence.getName()).thenReturn("sequence");
+		when(sequence.getName()).thenReturn(name);
+		when(name.getDMLName()).thenReturn("sequence");
 		
 		String result = this.dialect.getSequenceSupport().getNextSequenceValueSQL(sequence);
 

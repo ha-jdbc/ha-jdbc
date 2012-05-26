@@ -29,10 +29,11 @@ import java.sql.Types;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import net.sf.hajdbc.ColumnProperties;
+import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.SequenceSupport;
-import net.sf.hajdbc.cache.ColumnProperties;
-import net.sf.hajdbc.cache.SequenceProperties;
-import net.sf.hajdbc.cache.TableProperties;
+import net.sf.hajdbc.TableProperties;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -99,8 +100,10 @@ public class PostgreSQLDialectTest extends StandardDialectTest
 	public void getTruncateTableSQL() throws SQLException
 	{
 		TableProperties table = mock(TableProperties.class);
+		QualifiedName name = mock(QualifiedName.class);
 		
-		when(table.getName()).thenReturn("table");
+		when(table.getName()).thenReturn(name);
+		when(name.getDMLName()).thenReturn("table");
 		
 		String result = this.dialect.getTruncateTableSQL(table);
 		
@@ -115,8 +118,10 @@ public class PostgreSQLDialectTest extends StandardDialectTest
 	public void getNextSequenceValueSQL() throws SQLException
 	{
 		SequenceProperties sequence = mock(SequenceProperties.class);
+		QualifiedName name = mock(QualifiedName.class);
 		
-		when(sequence.getName()).thenReturn("sequence");
+		when(sequence.getName()).thenReturn(name);
+		when(name.getDMLName()).thenReturn("sequence");
 		
 		String result = this.dialect.getSequenceSupport().getNextSequenceValueSQL(sequence);
 		
@@ -179,8 +184,10 @@ public class PostgreSQLDialectTest extends StandardDialectTest
 	{
 		TableProperties table = mock(TableProperties.class);
 		ColumnProperties column = mock(ColumnProperties.class);
+		QualifiedName name = mock(QualifiedName.class);
 		
-		when(table.getName()).thenReturn("table");
+		when(table.getName()).thenReturn(name);
+		when(name.getDDLName()).thenReturn("table");
 		when(column.getName()).thenReturn("column");
 		
 		String result = this.dialect.getIdentityColumnSupport().getAlterIdentityColumnSQL(table, column, 1000L);

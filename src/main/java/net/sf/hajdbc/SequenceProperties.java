@@ -15,13 +15,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.hajdbc.cache;
+package net.sf.hajdbc;
 
-import net.sf.hajdbc.Database;
-import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.DatabaseMetaDataCache;
 
-public interface DatabaseMetaDataCacheFactory
+/**
+ * @author Paul Ferraro
+ */
+public interface SequenceProperties
 {
-	<Z, D extends Database<Z>> DatabaseMetaDataCache<Z, D> createCache(DatabaseCluster<Z, D> cluster);
+	QualifiedName getName();
+	
+	int getIncrement();
 }

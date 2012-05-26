@@ -24,8 +24,9 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.SequenceSupport;
-import net.sf.hajdbc.cache.QualifiedName;
+import net.sf.hajdbc.cache.QualifiedNameImpl;
 import net.sf.hajdbc.util.Resources;
 
 /**
@@ -90,7 +91,7 @@ public class MaxDBDialect extends StandardDialect
 			
 			while (resultSet.next())
 			{
-				sequences.put(new QualifiedName(resultSet.getString(1)), resultSet.getInt(2));
+				sequences.put(new QualifiedNameImpl(resultSet.getString(1)), resultSet.getInt(2));
 			}
 			
 			return sequences;

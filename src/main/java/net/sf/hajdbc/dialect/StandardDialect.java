@@ -37,19 +37,20 @@ import java.util.regex.Pattern;
 
 import javax.transaction.xa.XAException;
 
+import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.DumpRestoreSupport;
+import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.IdentityColumnSupport;
+import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.SequenceSupport;
+import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.TriggerEvent;
 import net.sf.hajdbc.TriggerSupport;
 import net.sf.hajdbc.TriggerTime;
-import net.sf.hajdbc.cache.ColumnProperties;
-import net.sf.hajdbc.cache.ForeignKeyConstraint;
-import net.sf.hajdbc.cache.QualifiedName;
-import net.sf.hajdbc.cache.SequenceProperties;
-import net.sf.hajdbc.cache.TableProperties;
-import net.sf.hajdbc.cache.UniqueConstraint;
+import net.sf.hajdbc.UniqueConstraint;
+import net.sf.hajdbc.cache.QualifiedNameImpl;
 import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.Strings;
 
@@ -158,12 +159,12 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getTruncateTableSQL(net.sf.hajdbc.cache.TableProperties)
+	 * @see net.sf.hajdbc.Dialect#getTruncateTableSQL(net.sf.hajdbc.TableProperties)
 	 */
 	@Override
 	public String getTruncateTableSQL(TableProperties properties)
 	{
-		return MessageFormat.format(this.truncateTableFormat(), properties.getName());
+		return MessageFormat.format(this.truncateTableFormat(), properties.getName().getDMLName());
 	}
 	
 	protected String truncateTableFormat()
@@ -172,12 +173,12 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.cache.ForeignKeyConstraint)
+	 * @see net.sf.hajdbc.Dialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
 	 */
 	@Override
 	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint key)
 	{
-		return MessageFormat.format(this.createForeignKeyConstraintFormat(), key.getName(), key.getTable(), Strings.join(key.getColumnList(), Strings.PADDED_COMMA), key.getForeignTable(), Strings.join(key.getForeignColumnList(), Strings.PADDED_COMMA), key.getDeleteRule(), key.getUpdateRule(), key.getDeferrability());
+		return MessageFormat.format(this.createForeignKeyConstraintFormat(), key.getName(), key.getTable().getDDLName(), Strings.join(key.getColumnList(), Strings.PADDED_COMMA), key.getForeignTable().getDDLName(), Strings.join(key.getForeignColumnList(), Strings.PADDED_COMMA), key.getDeleteRule(), key.getUpdateRule(), key.getDeferrability());
 	}
 	
 	protected String createForeignKeyConstraintFormat()
@@ -186,12 +187,12 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Dialect#getDropForeignKeyConstraintSQL(net.sf.hajdbc.cache.ForeignKeyConstraint)
+	 * @see net.sf.hajdbc.Dialect#getDropForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
 	 */
 	@Override
 	public String getDropForeignKeyConstraintSQL(ForeignKeyConstraint key)
 	{
-		return MessageFormat.format(this.dropForeignKeyConstraintFormat(), key.getName(), key.getTable());
+		return MessageFormat.format(this.dropForeignKeyConstraintFormat(), key.getName(), key.getTable().getDDLName());
 	}
 	
 	protected String dropForeignKeyConstraintFormat()
@@ -205,12 +206,12 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getCreateUniqueConstraintSQL(net.sf.hajdbc.cache.UniqueConstraint)
+	 * @see net.sf.hajdbc.Dialect#getCreateUniqueConstraintSQL(net.sf.hajdbc.UniqueConstraint)
 	 */
 	@Override
 	public String getCreateUniqueConstraintSQL(UniqueConstraint constraint)
 	{
-		return MessageFormat.format(this.createUniqueConstraintFormat(), constraint.getName(), constraint.getTable(), Strings.join(constraint.getColumnList(), Strings.PADDED_COMMA));
+		return MessageFormat.format(this.createUniqueConstraintFormat(), constraint.getName(), constraint.getTable().getDDLName(), Strings.join(constraint.getColumnList(), Strings.PADDED_COMMA));
 	}
 	
 	protected String createUniqueConstraintFormat()
@@ -219,12 +220,12 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getDropUniqueConstraintSQL(net.sf.hajdbc.cache.UniqueConstraint)
+	 * @see net.sf.hajdbc.Dialect#getDropUniqueConstraintSQL(net.sf.hajdbc.UniqueConstraint)
 	 */
 	@Override
 	public String getDropUniqueConstraintSQL(UniqueConstraint constraint)
 	{
-		return MessageFormat.format(this.dropUniqueConstraintFormat(), constraint.getName(), constraint.getTable());
+		return MessageFormat.format(this.dropUniqueConstraintFormat(), constraint.getName(), constraint.getTable().getDDLName());
 	}
 	
 	protected String dropUniqueConstraintFormat()
@@ -311,7 +312,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getColumnType(net.sf.hajdbc.cache.ColumnProperties)
+	 * @see net.sf.hajdbc.Dialect#getColumnType(net.sf.hajdbc.ColumnProperties)
 	 */
 	@Override
 	public int getColumnType(ColumnProperties properties)
@@ -333,7 +334,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 			
 			while (resultSet.next())
 			{
-				sequences.put(new QualifiedName(resultSet.getString("TABLE_SCHEM"), resultSet.getString("TABLE_NAME")), 1);
+				sequences.put(new QualifiedNameImpl(resultSet.getString("TABLE_SCHEM"), resultSet.getString("TABLE_NAME"), metaData.supportsSchemasInTableDefinitions(), metaData.supportsSchemasInDataManipulation()), 1);
 			}
 			
 			return sequences;
@@ -350,12 +351,12 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getNextSequenceValueSQL(net.sf.hajdbc.cache.SequenceProperties)
+	 * @see net.sf.hajdbc.Dialect#getNextSequenceValueSQL(net.sf.hajdbc.SequenceProperties)
 	 */
 	@Override
 	public String getNextSequenceValueSQL(SequenceProperties sequence)
 	{
-		return this.executeFunctionSQL(MessageFormat.format(this.nextSequenceValueFormat(), sequence.getName()));
+		return this.executeFunctionSQL(MessageFormat.format(this.nextSequenceValueFormat(), sequence.getName().getDMLName()));
 	}
 	
 	protected String nextSequenceValueFormat()
@@ -364,12 +365,12 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Dialect#getAlterSequenceSQL(net.sf.hajdbc.cache.SequenceProperties, long)
+	 * @see net.sf.hajdbc.Dialect#getAlterSequenceSQL(net.sf.hajdbc.SequenceProperties, long)
 	 */
 	@Override
 	public String getAlterSequenceSQL(SequenceProperties sequence, long value)
 	{
-		return MessageFormat.format(this.alterSequenceFormat(), sequence.getName(), String.valueOf(value), String.valueOf(sequence.getIncrement()));
+		return MessageFormat.format(this.alterSequenceFormat(), sequence.getName().getDDLName(), String.valueOf(value), String.valueOf(sequence.getIncrement()));
 	}
 	
 	protected String alterSequenceFormat()
@@ -396,7 +397,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	@Override
 	public String getAlterIdentityColumnSQL(TableProperties table, ColumnProperties column, long value) throws SQLException
 	{
-		return MessageFormat.format(this.alterIdentityColumnFormat(), table.getName(), column.getName(), String.valueOf(value));
+		return MessageFormat.format(this.alterIdentityColumnFormat(), table.getName().getDDLName(), column.getName(), String.valueOf(value));
 	}
 
 	protected String alterIdentityColumnFormat()
@@ -554,12 +555,12 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.TriggerSupport#getCreateTriggerSQL(net.sf.hajdbc.cache.QualifiedName, net.sf.hajdbc.cache.TableProperties, net.sf.hajdbc.TriggerSupport.TriggerTime, net.sf.hajdbc.TriggerSupport.TriggerEvent, java.lang.String)
+	 * @see net.sf.hajdbc.TriggerSupport#getCreateTriggerSQL(net.sf.hajdbc.QualifiedName, net.sf.hajdbc.TableProperties, net.sf.hajdbc.TriggerSupport.TriggerTime, net.sf.hajdbc.TriggerSupport.TriggerEvent, java.lang.String)
 	 */
 	@Override
 	public String getCreateTriggerSQL(String name, TableProperties table, TriggerEvent event, String action)
 	{
-		return MessageFormat.format(this.createTriggerFormat(), name, event.getTime().toString(), event.toString(), table.getName(), action);
+		return MessageFormat.format(this.createTriggerFormat(), name, event.getTime().toString(), event.toString(), table.getName().getDDLName(), action);
 	}
 
 	protected String createTriggerFormat()
@@ -569,12 +570,12 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.TriggerSupport#getDropTriggerSQL(net.sf.hajdbc.cache.QualifiedName, net.sf.hajdbc.cache.TableProperties)
+	 * @see net.sf.hajdbc.TriggerSupport#getDropTriggerSQL(net.sf.hajdbc.QualifiedName, net.sf.hajdbc.TableProperties)
 	 */
 	@Override
 	public String getDropTriggerSQL(String name, TableProperties table)
 	{
-		return MessageFormat.format(this.dropTriggerFormat(), name, table.getName());
+		return MessageFormat.format(this.dropTriggerFormat(), name, table.getName().getDDLName());
 	}
 
 	protected String dropTriggerFormat()

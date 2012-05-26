@@ -22,12 +22,12 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map;
 
+import net.sf.hajdbc.ColumnProperties;
+import net.sf.hajdbc.ForeignKeyConstraint;
+import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.UniqueConstraint;
 import net.sf.hajdbc.cache.AbstractTableProperties;
-import net.sf.hajdbc.cache.ColumnProperties;
 import net.sf.hajdbc.cache.DatabaseMetaDataSupport;
-import net.sf.hajdbc.cache.ForeignKeyConstraint;
-import net.sf.hajdbc.cache.QualifiedName;
-import net.sf.hajdbc.cache.UniqueConstraint;
 
 /**
  * @author Paul Ferraro
@@ -43,7 +43,7 @@ public class EagerTableProperties extends AbstractTableProperties
 	
 	public EagerTableProperties(DatabaseMetaData metaData, DatabaseMetaDataSupport support, QualifiedName table) throws SQLException
 	{
-		super(support, table);
+		super(table);
 		
 		this.columnMap = support.getColumns(metaData, table);
 		this.primaryKey = support.getPrimaryKey(metaData, table);
@@ -59,7 +59,7 @@ public class EagerTableProperties extends AbstractTableProperties
 	}
 
 	/**
-	 * @see net.sf.hajdbc.cache.TableProperties#getPrimaryKey()
+	 * @see net.sf.hajdbc.TableProperties#getPrimaryKey()
 	 */
 	@Override
 	public UniqueConstraint getPrimaryKey()
@@ -68,7 +68,7 @@ public class EagerTableProperties extends AbstractTableProperties
 	}
 
 	/**
-	 * @see net.sf.hajdbc.cache.TableProperties#getForeignKeyConstraints()
+	 * @see net.sf.hajdbc.TableProperties#getForeignKeyConstraints()
 	 */
 	@Override
 	public Collection<ForeignKeyConstraint> getForeignKeyConstraints()
@@ -77,7 +77,7 @@ public class EagerTableProperties extends AbstractTableProperties
 	}
 
 	/**
-	 * @see net.sf.hajdbc.cache.TableProperties#getUniqueConstraints()
+	 * @see net.sf.hajdbc.TableProperties#getUniqueConstraints()
 	 */
 	@Override
 	public Collection<UniqueConstraint> getUniqueConstraints()
@@ -86,7 +86,7 @@ public class EagerTableProperties extends AbstractTableProperties
 	}
 
 	/**
-	 * @see net.sf.hajdbc.cache.TableProperties#getIdentityColumns()
+	 * @see net.sf.hajdbc.TableProperties#getIdentityColumns()
 	 */
 	@Override
 	public Collection<String> getIdentityColumns() throws SQLException

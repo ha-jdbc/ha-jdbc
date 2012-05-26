@@ -39,8 +39,8 @@ import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationStrategy;
-import net.sf.hajdbc.cache.TableProperties;
-import net.sf.hajdbc.cache.UniqueConstraint;
+import net.sf.hajdbc.TableProperties;
+import net.sf.hajdbc.UniqueConstraint;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
@@ -116,7 +116,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 			{
 				for (TableProperties table: context.getSourceDatabaseProperties().getTables())
 				{
-					String tableName = table.getName();
+					String tableName = table.getName().getDMLName();
 					
 					UniqueConstraint primaryKey = table.getPrimaryKey();
 					

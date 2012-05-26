@@ -33,10 +33,10 @@ import java.util.TreeSet;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.DatabaseProperties;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.cache.DatabaseMetaDataSupportImpl;
-import net.sf.hajdbc.cache.DatabaseProperties;
 import net.sf.hajdbc.cache.lazy.LazyDatabaseProperties;
 import net.sf.hajdbc.cache.simple.SimpleDatabaseMetaDataProvider;
 import net.sf.hajdbc.dialect.SimpleDialectFactory;

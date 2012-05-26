@@ -31,10 +31,10 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import net.sf.hajdbc.cache.ForeignKeyConstraint;
+import net.sf.hajdbc.ForeignKeyConstraint;
+import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.cache.ForeignKeyConstraintImpl;
-import net.sf.hajdbc.cache.QualifiedName;
-import net.sf.hajdbc.cache.SequenceProperties;
 
 import static org.mockito.Mockito.*;
 
@@ -66,10 +66,16 @@ public class H2DialectTest extends StandardDialectTest
 	@Override
 	public void getCreateForeignKeyConstraintSQL() throws SQLException
 	{
-		ForeignKeyConstraint key = new ForeignKeyConstraintImpl("name", "table");
+		QualifiedName table = mock(QualifiedName.class);
+		QualifiedName foreignTable = mock(QualifiedName.class);
+		
+		when(table.getDDLName()).thenReturn("table");
+		when(foreignTable.getDDLName()).thenReturn("foreign_table");
+		
+		ForeignKeyConstraint key = new ForeignKeyConstraintImpl("name", table);
 		key.getColumnList().add("column1");
 		key.getColumnList().add("column2");
-		key.setForeignTable("foreign_table");
+		key.setForeignTable(foreignTable);
 		key.getForeignColumnList().add("foreign_column1");
 		key.getForeignColumnList().add("foreign_column2");
 		key.setDeferrability(DatabaseMetaData.importedKeyInitiallyDeferred);
@@ -139,8 +145,10 @@ public class H2DialectTest extends StandardDialectTest
 	public void getNextSequenceValueSQL() throws SQLException
 	{
 		SequenceProperties sequence = mock(SequenceProperties.class);
+		QualifiedName name = mock(QualifiedName.class);
 		
-		when(sequence.getName()).thenReturn("sequence");
+		when(sequence.getName()).thenReturn(name);
+		when(name.getDMLName()).thenReturn("sequence");
 		
 		String result = this.dialect.getSequenceSupport().getNextSequenceValueSQL(sequence);
 		

@@ -15,29 +15,19 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.hajdbc.cache;
-
-import java.sql.SQLException;
-import java.util.Collection;
-
+package net.sf.hajdbc;
 
 /**
  * @author Paul Ferraro
  *
  */
-public interface TableProperties
+public interface ColumnProperties
 {
 	String getName();
 	
-	Collection<String> getColumns() throws SQLException;
+	int getType();
 	
-	ColumnProperties getColumnProperties(String column) throws SQLException;
+	String getNativeType();
 	
-	UniqueConstraint getPrimaryKey() throws SQLException;
-	
-	Collection<ForeignKeyConstraint> getForeignKeyConstraints() throws SQLException;
-	
-	Collection<UniqueConstraint> getUniqueConstraints() throws SQLException;
-	
-	Collection<String> getIdentityColumns() throws SQLException;
+	boolean isAutoIncrement();
 }

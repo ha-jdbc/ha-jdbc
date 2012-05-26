@@ -17,6 +17,8 @@
  */
 package net.sf.hajdbc.cache;
 
+import net.sf.hajdbc.ColumnProperties;
+
 
 /**
  * @author Paul Ferraro
@@ -38,7 +40,7 @@ public class ColumnPropertiesImpl implements ColumnProperties
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.cache.ColumnProperties#getName()
+	 * @see net.sf.hajdbc.ColumnProperties#getName()
 	 */
 	@Override
 	public String getName()
@@ -47,7 +49,7 @@ public class ColumnPropertiesImpl implements ColumnProperties
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.cache.ColumnProperties#getType()
+	 * @see net.sf.hajdbc.ColumnProperties#getType()
 	 */
 	@Override
 	public int getType()
@@ -56,7 +58,7 @@ public class ColumnPropertiesImpl implements ColumnProperties
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.cache.ColumnProperties#getNativeType()
+	 * @see net.sf.hajdbc.ColumnProperties#getNativeType()
 	 */
 	@Override
 	public String getNativeType()
@@ -65,7 +67,7 @@ public class ColumnPropertiesImpl implements ColumnProperties
 	}
 
 	/**
-	 * @see net.sf.hajdbc.cache.ColumnProperties#isAutoIncrement()
+	 * @see net.sf.hajdbc.ColumnProperties#isAutoIncrement()
 	 */
 	@Override
 	public boolean isAutoIncrement()

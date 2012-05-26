@@ -27,11 +27,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.SequenceProperties;
+import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.cache.AbstractDatabaseProperties;
 import net.sf.hajdbc.cache.DatabaseMetaDataSupport;
-import net.sf.hajdbc.cache.QualifiedName;
-import net.sf.hajdbc.cache.SequenceProperties;
-import net.sf.hajdbc.cache.TableProperties;
 
 /**
  * @author Paul Ferraro
@@ -39,8 +39,8 @@ import net.sf.hajdbc.cache.TableProperties;
  */
 public class EagerDatabaseProperties extends AbstractDatabaseProperties
 {
-	private final Map<String, TableProperties> tables = new HashMap<String, TableProperties>();
-	private final Map<String, SequenceProperties> sequences = new HashMap<String, SequenceProperties>();
+	private final Map<QualifiedName, TableProperties> tables = new HashMap<QualifiedName, TableProperties>();
+	private final Map<QualifiedName, SequenceProperties> sequences = new HashMap<QualifiedName, SequenceProperties>();
 	private final List<String> defaultSchemas;
 	private final Map<Integer, Map.Entry<String, Integer>> types;
 	
@@ -76,13 +76,13 @@ public class EagerDatabaseProperties extends AbstractDatabaseProperties
 	}
 
 	@Override
-	protected Map<String, SequenceProperties> sequences()
+	protected Map<QualifiedName, SequenceProperties> sequences()
 	{
 		return this.sequences;
 	}
 
 	@Override
-	protected Map<String, TableProperties> tables()
+	protected Map<QualifiedName, TableProperties> tables()
 	{
 		return this.tables;
 	}

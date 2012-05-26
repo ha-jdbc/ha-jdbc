@@ -15,9 +15,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.hajdbc.cache;
+package net.sf.hajdbc;
 
 import java.util.List;
+
 
 /**
  * Represents a unique constraint on a table.
@@ -35,7 +36,7 @@ public interface UniqueConstraint extends Comparable<UniqueConstraint>
 	/**
 	 * @return the table of this constraint
 	 */
-	String getTable();
+	QualifiedName getTable();
 	
 	/**
 	 * @return the list of columns in this unique constraint

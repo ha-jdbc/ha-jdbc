@@ -23,6 +23,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.hajdbc.ColumnProperties;
+import net.sf.hajdbc.ForeignKeyConstraint;
+import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.SequenceProperties;
+import net.sf.hajdbc.UniqueConstraint;
+
 
 /**
  * Processes database meta data into useful structures.
@@ -80,14 +86,18 @@ public interface DatabaseMetaDataSupport
 	 * @param name a schema qualified name
 	 * @return a Collection of unique constraints.
 	 */
-	String qualifyNameForDML(QualifiedName name);
+//	String qualifyNameForDML(QualifiedName name);
 
 	/**
 	 * Returns the schema qualified name of the specified table suitable for use in a data definition language (DDL) statement.
 	 * @param name a schema qualified name
 	 * @return a Collection of unique constraints.
 	 */
-	String qualifyNameForDDL(QualifiedName name);
+//	String qualifyNameForDDL(QualifiedName name);
+	
+//	QName qualify(String name);
+	
+//	QName qualify(String schema, String name);
 	
 	/**
 	 * Returns a collection of sequences using dialect specific logic.
@@ -106,7 +116,7 @@ public interface DatabaseMetaDataSupport
 	 * @return the object with the specified name
 	 * @throws SQLException
 	 */
-	<T> T find(Map<String, T> map, String name, List<String> defaultSchemaList) throws SQLException;
+	<T> T find(Map<QualifiedName, T> map, String name, List<String> defaultSchemaList) throws SQLException;
 	
 	/**
 	 * Identifies any identity columns from the from the specified collection of columns

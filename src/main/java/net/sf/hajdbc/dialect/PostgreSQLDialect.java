@@ -28,12 +28,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.ConnectionProperties;
 import net.sf.hajdbc.DumpRestoreSupport;
 import net.sf.hajdbc.IdentityColumnSupport;
 import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.TriggerSupport;
-import net.sf.hajdbc.cache.ColumnProperties;
 import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.Strings;
 
@@ -95,7 +95,7 @@ public class PostgreSQLDialect extends StandardDialect implements DumpRestoreSup
 	 * PostgreSQL uses the native type OID to identify BLOBs.
 	 * However the JDBC driver incomprehensibly maps OIDs to INTEGERs.
 	 * The PostgreSQL JDBC folks claim this intentional.
-	 * @see net.sf.hajdbc.dialect.StandardDialect#getColumnType(net.sf.hajdbc.cache.ColumnProperties)
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getColumnType(net.sf.hajdbc.ColumnProperties)
 	 */
 	@Override
 	public int getColumnType(ColumnProperties properties)

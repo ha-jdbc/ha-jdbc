@@ -15,30 +15,25 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.hajdbc.cache;
+package net.sf.hajdbc;
 
+import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Collection;
 
 
 /**
+ * Interface for retrieving pre-processed, cached, database meta data.
+ * 
  * @author Paul Ferraro
+ * @since 2.0
  */
-public interface DatabaseProperties
+public interface DatabaseMetaDataCache<Z, D extends Database<Z>>
 {
-	Collection<TableProperties> getTables() throws SQLException;
-
-	boolean supportsSelectForUpdate() throws SQLException;
+	/**
+	 * Flushes this cache.
+	 * @throws SQLException if flush fails
+	 */
+	void flush() throws SQLException;
 	
-	boolean locatorsUpdateCopy() throws SQLException;
-	
-	TableProperties findTable(String table) throws SQLException;
-	
-	Collection<SequenceProperties> getSequences() throws SQLException;
-	
-	SequenceProperties findSequence(String sequence) throws SQLException;
-	
-	String findType(int precision, int... types) throws SQLException;
-//	String qualifyForDDL(QName name) throws SQLException;	
-//	String qualifyForDML(QName name) throws SQLException;
+	DatabaseProperties getDatabaseProperties(D database, Connection connection) throws SQLException;
 }

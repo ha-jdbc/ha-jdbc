@@ -23,8 +23,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.DatabaseProperties;
 import net.sf.hajdbc.Dialect;
-import net.sf.hajdbc.cache.DatabaseProperties;
 import net.sf.hajdbc.codec.Codec;
 
 

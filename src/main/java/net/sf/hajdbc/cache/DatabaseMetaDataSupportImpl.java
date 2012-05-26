@@ -36,9 +36,14 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.SequenceSupport;
+import net.sf.hajdbc.UniqueConstraint;
 import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.Strings;
 
@@ -139,7 +144,7 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 			
 			while (resultSet.next())
 			{
-				list.add(new QualifiedName(resultSet.getString("TABLE_SCHEM"), resultSet.getString("TABLE_NAME")));
+				list.add(new QualifiedNameImpl(resultSet.getString("TABLE_SCHEM"), resultSet.getString("TABLE_NAME"), this.supportsSchemasInDDL, this.supportsSchemasInDML));
 			}
 			
 			return list;
@@ -166,7 +171,7 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 		{
 			Map<String, ColumnProperties> columnMap = new HashMap<String, ColumnProperties>();
 			
-			ResultSetMetaData resultSet = statement.executeQuery(String.format("SELECT * FROM %s WHERE 0=1", this.qualifyNameForDML(table))).getMetaData();
+			ResultSetMetaData resultSet = statement.executeQuery(String.format("SELECT * FROM %s WHERE 0=1", table.getDMLName())).getMetaData();
 			
 			for (int i = 1; i <= resultSet.getColumnCount(); ++i)
 			{
@@ -196,7 +201,7 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 	@Override
 	public UniqueConstraint getPrimaryKey(DatabaseMetaData metaData, QualifiedName table) throws SQLException
 	{
-		ResultSet resultSet = metaData.getPrimaryKeys(this.getCatalog(metaData), this.getSchema(table), table.getName());
+		ResultSet resultSet = metaData.getPrimaryKeys(this.getCatalog(metaData), table.getSchema(), table.getName());
 		
 		try
 		{
@@ -208,7 +213,7 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 	
 				if (constraint == null)
 				{
-					constraint = new UniqueConstraintImpl(name, this.qualifyNameForDDL(table));
+					constraint = new UniqueConstraintImpl(name, table);
 				}
 				
 				String column = this.quote(resultSet.getString("COLUMN_NAME"));
@@ -234,7 +239,7 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 	@Override
 	public Collection<ForeignKeyConstraint> getForeignKeyConstraints(DatabaseMetaData metaData, QualifiedName table) throws SQLException
 	{
-		ResultSet resultSet = metaData.getImportedKeys(this.getCatalog(metaData), this.getSchema(table), table.getName());
+		ResultSet resultSet = metaData.getImportedKeys(this.getCatalog(metaData), table.getSchema(), table.getName());
 		
 		try
 		{
@@ -248,12 +253,9 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 				
 				if (foreignKey == null)
 				{
-					foreignKey = new ForeignKeyConstraintImpl(name, this.qualifyNameForDDL(table));
+					foreignKey = new ForeignKeyConstraintImpl(name, table);
 					
-					String foreignSchema = this.quote(resultSet.getString("PKTABLE_SCHEM"));
-					String foreignTable = this.quote(resultSet.getString("PKTABLE_NAME"));
-					
-					foreignKey.setForeignTable(this.qualifyNameForDDL(new QualifiedName(foreignSchema, foreignTable)));
+					foreignKey.setForeignTable(new QualifiedNameImpl(this.quote(resultSet.getString("PKTABLE_SCHEM")), this.quote(resultSet.getString("PKTABLE_NAME")), this.supportsSchemasInDDL, this.supportsSchemasInDML));
 					foreignKey.setDeleteRule(resultSet.getInt("DELETE_RULE"));
 					foreignKey.setUpdateRule(resultSet.getInt("UPDATE_RULE"));
 					foreignKey.setDeferrability(resultSet.getInt("DEFERRABILITY"));
@@ -287,7 +289,7 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 	@Override
 	public Collection<UniqueConstraint> getUniqueConstraints(DatabaseMetaData metaData, QualifiedName table, UniqueConstraint primaryKey) throws SQLException
 	{
-		ResultSet resultSet = metaData.getIndexInfo(this.getCatalog(metaData), this.getSchema(table), table.getName(), true, false);
+		ResultSet resultSet = metaData.getIndexInfo(this.getCatalog(metaData), table.getSchema(), table.getName(), true, false);
 		
 		try
 		{
@@ -306,7 +308,7 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 					
 					if (key == null)
 					{
-						key = new UniqueConstraintImpl(name, this.qualifyNameForDDL(table));
+						key = new UniqueConstraintImpl(name, table);
 						
 						keyMap.put(name, key);
 					}
@@ -323,55 +325,12 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 			Resources.close(resultSet);
 		}
 	}
-
-	/**
-	 * Returns the schema qualified name of the specified table suitable for use in a data modification language (DML) statement.
-	 * @param name a schema qualified name
-	 * @return a Collection of unique constraints.
-	 */
-	@Override
-	public String qualifyNameForDML(QualifiedName name)
-	{
-		return this.qualifyName(name, this.supportsSchemasInDML);
-	}
-
-	/**
-	 * Returns the schema qualified name of the specified table suitable for use in a data definition language (DDL) statement.
-	 * @param name a schema qualified name
-	 * @return a Collection of unique constraints.
-	 */
-	@Override
-	public String qualifyNameForDDL(QualifiedName name)
-	{
-		return this.qualifyName(name, this.supportsSchemasInDDL);
-	}
-
-	private String qualifyName(QualifiedName name, boolean supportsSchemas)
-	{
-		StringBuilder builder = new StringBuilder();
-		
-		String schema = name.getSchema();
-		
-		if (supportsSchemas && (schema != null))
-		{
-			builder.append(this.quote(schema)).append(Strings.DOT);
-		}
-		
-		return builder.append(this.quote(name.getName())).toString();
-	}
 	
 	private String getCatalog(DatabaseMetaData metaData) throws SQLException
 	{
 		String catalog = metaData.getConnection().getCatalog();
 		
 		return (catalog != null) ? catalog : Strings.EMPTY;
-	}
-	
-	private String getSchema(QualifiedName name)
-	{
-		String schema = name.getSchema();
-		
-		return (schema != null) ? schema : Strings.EMPTY;
 	}
 	
 	private String quote(String identifier)
@@ -414,14 +373,14 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 		return identifier;
 	}
 	
-	private String normalize(String qualifiedName, String defaultSchema)
+	private QualifiedName normalize(String qualifiedName, String defaultSchema)
 	{
 		String parts[] = qualifiedName.split(Pattern.quote(Strings.DOT));
 
 		String name = parts[parts.length - 1];
 		String schema = (parts.length > 1) ? parts[parts.length - 2] : defaultSchema;
 			
-		return this.qualifyNameForDML(new QualifiedName(schema, name));
+		return new QualifiedNameImpl(schema, name, this.supportsSchemasInDDL, this.supportsSchemasInDML);
 	}
 	
 	/**
@@ -443,7 +402,7 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 		
 		for (Map.Entry<QualifiedName, Integer> sequence: sequences.entrySet())
 		{
-			sequenceList.add(new SequencePropertiesImpl(this.qualifyNameForDML(sequence.getKey()), sequence.getValue()));
+			sequenceList.add(new SequencePropertiesImpl(sequence.getKey(), sequence.getValue()));
 		}
 		
 		return sequenceList;
@@ -459,7 +418,7 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 	 * @throws SQLException
 	 */
 	@Override
-	public <T> T find(Map<String, T> map, String name, List<String> defaultSchemaList) throws SQLException
+	public <T> T find(Map<QualifiedName, T> map, String name, List<String> defaultSchemaList) throws SQLException
 	{
 		T properties = map.get(this.normalize(name, null));
 		

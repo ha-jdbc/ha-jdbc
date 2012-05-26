@@ -17,7 +17,6 @@
  */
 package net.sf.hajdbc;
 
-import net.sf.hajdbc.cache.TableProperties;
 
 /**
  * @author Paul Ferraro

@@ -19,8 +19,8 @@ package net.sf.hajdbc.cache.eager;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.cache.AbstractDatabaseMetaDataCacheFactory;
-import net.sf.hajdbc.cache.DatabaseMetaDataCache;
 import net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory;
 
 /**

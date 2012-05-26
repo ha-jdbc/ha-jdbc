@@ -27,11 +27,11 @@ import java.util.TreeMap;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.DatabaseMetaDataCache;
+import net.sf.hajdbc.DatabaseProperties;
 import net.sf.hajdbc.Dialect;
-import net.sf.hajdbc.cache.DatabaseMetaDataCache;
 import net.sf.hajdbc.cache.DatabaseMetaDataSupport;
 import net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory;
-import net.sf.hajdbc.cache.DatabaseProperties;
 import net.sf.hajdbc.util.ref.ReferenceMap;
 import net.sf.hajdbc.util.ref.SoftReferenceFactory;
 
@@ -53,7 +53,7 @@ public class LazyDatabaseMetaDataCache<Z, D extends Database<Z>> implements Data
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.cache.DatabaseMetaDataCache#flush()
+	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush()
 	 */
 	@Override
 	public void flush() throws SQLException
@@ -66,7 +66,7 @@ public class LazyDatabaseMetaDataCache<Z, D extends Database<Z>> implements Data
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.cache.DatabaseMetaDataCache#getDatabaseProperties(net.sf.hajdbc.Database, java.sql.Connection)
+	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getDatabaseProperties(net.sf.hajdbc.Database, java.sql.Connection)
 	 */
 	@Override
 	public DatabaseProperties getDatabaseProperties(D database, Connection connection) throws SQLException

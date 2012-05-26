@@ -19,8 +19,6 @@ package net.sf.hajdbc;
 
 import java.sql.SQLException;
 
-import net.sf.hajdbc.cache.ColumnProperties;
-import net.sf.hajdbc.cache.TableProperties;
 
 /**
  * @author Paul Ferraro

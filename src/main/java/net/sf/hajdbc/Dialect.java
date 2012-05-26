@@ -24,10 +24,6 @@ import java.util.regex.Pattern;
 
 import javax.transaction.xa.XAException;
 
-import net.sf.hajdbc.cache.ColumnProperties;
-import net.sf.hajdbc.cache.ForeignKeyConstraint;
-import net.sf.hajdbc.cache.TableProperties;
-import net.sf.hajdbc.cache.UniqueConstraint;
 
 /**
  * Encapsulates database vendor specific SQL syntax.  

@@ -20,6 +20,9 @@ package net.sf.hajdbc.cache;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.UniqueConstraint;
+
 
 /**
  * @author Paul Ferraro
@@ -28,7 +31,7 @@ import java.util.List;
 public class UniqueConstraintImpl implements UniqueConstraint
 {
 	private String name;
-	private String table;
+	private QualifiedName table;
 	private List<String> columnList = new LinkedList<String>();
 		
 	/**
@@ -36,14 +39,14 @@ public class UniqueConstraintImpl implements UniqueConstraint
 	 * @param name the name of this constraint
 	 * @param table a schema qualified table name
 	 */
-	public UniqueConstraintImpl(String name, String table)
+	public UniqueConstraintImpl(String name, QualifiedName table)
 	{
 		this.name = name;
 		this.table = table;
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.cache.UniqueConstraint#getColumnList()
+	 * @see net.sf.hajdbc.UniqueConstraint#getColumnList()
 	 */
 	@Override
 	public List<String> getColumnList()
@@ -52,7 +55,7 @@ public class UniqueConstraintImpl implements UniqueConstraint
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.cache.UniqueConstraint#getName()
+	 * @see net.sf.hajdbc.UniqueConstraint#getName()
 	 */
 	@Override
 	public String getName()
@@ -61,10 +64,10 @@ public class UniqueConstraintImpl implements UniqueConstraint
 	}
 
 	/**
-	 * @see net.sf.hajdbc.cache.UniqueConstraint#getTable()
+	 * @see net.sf.hajdbc.UniqueConstraint#getTable()
 	 */
 	@Override
-	public String getTable()
+	public QualifiedName getTable()
 	{
 		return this.table;
 	}

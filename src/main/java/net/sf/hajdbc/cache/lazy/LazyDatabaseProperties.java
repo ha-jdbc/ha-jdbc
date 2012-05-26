@@ -25,12 +25,12 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
 
 import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.SequenceProperties;
+import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.cache.AbstractDatabaseProperties;
 import net.sf.hajdbc.cache.DatabaseMetaDataProvider;
 import net.sf.hajdbc.cache.DatabaseMetaDataSupport;
-import net.sf.hajdbc.cache.QualifiedName;
-import net.sf.hajdbc.cache.SequenceProperties;
-import net.sf.hajdbc.cache.TableProperties;
 
 /**
  * @author Paul Ferraro
@@ -42,8 +42,8 @@ public class LazyDatabaseProperties extends AbstractDatabaseProperties
 	private final Dialect dialect;
 	private final DatabaseMetaDataProvider provider;
 	
-	private final AtomicReference<Map<String, TableProperties>> tablesRef = new AtomicReference<Map<String, TableProperties>>();
-	private final AtomicReference<Map<String, SequenceProperties>> sequencesRef = new AtomicReference<Map<String, SequenceProperties>>();
+	private final AtomicReference<Map<QualifiedName, TableProperties>> tablesRef = new AtomicReference<Map<QualifiedName, TableProperties>>();
+	private final AtomicReference<Map<QualifiedName, SequenceProperties>> sequencesRef = new AtomicReference<Map<QualifiedName, SequenceProperties>>();
 	private final AtomicReference<List<String>> defaultSchemasRef = new AtomicReference<List<String>>();
 	private final AtomicReference<Map<Integer, Map.Entry<String, Integer>>> typesRef = new AtomicReference<Map<Integer, Map.Entry<String, Integer>>>();
 	
@@ -57,13 +57,13 @@ public class LazyDatabaseProperties extends AbstractDatabaseProperties
 	}
 	
 	@Override
-	protected Map<String, TableProperties> tables() throws SQLException
+	protected Map<QualifiedName, TableProperties> tables() throws SQLException
 	{
-		Map<String, TableProperties> tables = this.tablesRef.get();
+		Map<QualifiedName, TableProperties> tables = this.tablesRef.get();
 		
 		if (tables == null)
 		{
-			tables = new HashMap<String, TableProperties>();
+			tables = new HashMap<QualifiedName, TableProperties>();
 			
 			for (QualifiedName table: this.support.getTables(this.provider.getDatabaseMetaData()))
 			{
@@ -82,13 +82,13 @@ public class LazyDatabaseProperties extends AbstractDatabaseProperties
 	}
 	
 	@Override
-	protected Map<String, SequenceProperties> sequences() throws SQLException
+	protected Map<QualifiedName, SequenceProperties> sequences() throws SQLException
 	{
-		Map<String, SequenceProperties> sequences = this.sequencesRef.get();
+		Map<QualifiedName, SequenceProperties> sequences = this.sequencesRef.get();
 
 		if (sequences == null)
 		{
-			sequences = new HashMap<String, SequenceProperties>();
+			sequences = new HashMap<QualifiedName, SequenceProperties>();
 			
 			for (SequenceProperties sequence: this.support.getSequences(this.provider.getDatabaseMetaData()))
 			{

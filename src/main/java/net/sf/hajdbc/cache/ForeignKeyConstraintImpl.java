@@ -20,13 +20,16 @@ package net.sf.hajdbc.cache;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.sf.hajdbc.ForeignKeyConstraint;
+import net.sf.hajdbc.QualifiedName;
+
 
 /**
  * @author Paul Ferraro
  */
 public class ForeignKeyConstraintImpl extends UniqueConstraintImpl implements ForeignKeyConstraint
 {
-	private String foreignTable;
+	private QualifiedName foreignTable;
 	private List<String> foreignColumnList = new LinkedList<String>();
 	private int updateRule;
 	private int deleteRule;
@@ -37,22 +40,22 @@ public class ForeignKeyConstraintImpl extends UniqueConstraintImpl implements Fo
 	 * @param name the name of this constraint
 	 * @param table a schema qualified table name
 	 */
-	public ForeignKeyConstraintImpl(String name, String table)
+	public ForeignKeyConstraintImpl(String name, QualifiedName table)
 	{
 		super(name, table);
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.cache.ForeignKeyConstraint#getForeignTable()
+	 * @see net.sf.hajdbc.ForeignKeyConstraint#getForeignTable()
 	 */
 	@Override
-	public String getForeignTable()
+	public QualifiedName getForeignTable()
 	{
 		return this.foreignTable;
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.cache.ForeignKeyConstraint#getForeignColumnList()
+	 * @see net.sf.hajdbc.ForeignKeyConstraint#getForeignColumnList()
 	 */
 	@Override
 	public List<String> getForeignColumnList()
@@ -61,7 +64,7 @@ public class ForeignKeyConstraintImpl extends UniqueConstraintImpl implements Fo
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.cache.ForeignKeyConstraint#getDeleteRule()
+	 * @see net.sf.hajdbc.ForeignKeyConstraint#getDeleteRule()
 	 */
 	@Override
 	public int getDeleteRule()
@@ -70,7 +73,7 @@ public class ForeignKeyConstraintImpl extends UniqueConstraintImpl implements Fo
 	}
 
 	/**
-	 * @see net.sf.hajdbc.cache.ForeignKeyConstraint#getUpdateRule()
+	 * @see net.sf.hajdbc.ForeignKeyConstraint#getUpdateRule()
 	 */
 	@Override
 	public int getUpdateRule()
@@ -79,7 +82,7 @@ public class ForeignKeyConstraintImpl extends UniqueConstraintImpl implements Fo
 	}
 
 	/**
-	 * @see net.sf.hajdbc.cache.ForeignKeyConstraint#getDeferrability()
+	 * @see net.sf.hajdbc.ForeignKeyConstraint#getDeferrability()
 	 */
 	@Override
 	public int getDeferrability()
@@ -88,7 +91,7 @@ public class ForeignKeyConstraintImpl extends UniqueConstraintImpl implements Fo
 	}
 
 	/**
-	 * @see net.sf.hajdbc.cache.ForeignKeyConstraint#setDeferrability(int)
+	 * @see net.sf.hajdbc.ForeignKeyConstraint#setDeferrability(int)
 	 */
 	@Override
 	public void setDeferrability(int deferrability)
@@ -97,7 +100,7 @@ public class ForeignKeyConstraintImpl extends UniqueConstraintImpl implements Fo
 	}
 
 	/**
-	 * @see net.sf.hajdbc.cache.ForeignKeyConstraint#setDeleteRule(int)
+	 * @see net.sf.hajdbc.ForeignKeyConstraint#setDeleteRule(int)
 	 */
 	@Override
 	public void setDeleteRule(int deleteRule)
@@ -106,16 +109,16 @@ public class ForeignKeyConstraintImpl extends UniqueConstraintImpl implements Fo
 	}
 
 	/**
-	 * @see net.sf.hajdbc.cache.ForeignKeyConstraint#setForeignTable(java.lang.String)
+	 * @see net.sf.hajdbc.ForeignKeyConstraint#setForeignTable(java.lang.String)
 	 */
 	@Override
-	public void setForeignTable(String foreignTable)
+	public void setForeignTable(QualifiedName foreignTable)
 	{
 		this.foreignTable = foreignTable;
 	}
 
 	/**
-	 * @see net.sf.hajdbc.cache.ForeignKeyConstraint#setUpdateRule(int)
+	 * @see net.sf.hajdbc.ForeignKeyConstraint#setUpdateRule(int)
 	 */
 	@Override
 	public void setUpdateRule(int updateRule)

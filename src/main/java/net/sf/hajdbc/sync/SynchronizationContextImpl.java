@@ -27,10 +27,10 @@ import java.util.concurrent.Executors;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.DatabaseMetaDataCache;
+import net.sf.hajdbc.DatabaseProperties;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.balancer.Balancer;
-import net.sf.hajdbc.cache.DatabaseMetaDataCache;
-import net.sf.hajdbc.cache.DatabaseProperties;
 import net.sf.hajdbc.codec.Codec;
 import net.sf.hajdbc.util.Resources;
 

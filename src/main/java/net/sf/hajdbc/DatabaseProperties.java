@@ -15,14 +15,28 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.hajdbc.cache;
+package net.sf.hajdbc;
+
+import java.sql.SQLException;
+import java.util.Collection;
+
 
 /**
  * @author Paul Ferraro
  */
-public interface SequenceProperties
+public interface DatabaseProperties
 {
-	String getName();
+	Collection<TableProperties> getTables() throws SQLException;
+
+	boolean supportsSelectForUpdate() throws SQLException;
 	
-	int getIncrement();
+	boolean locatorsUpdateCopy() throws SQLException;
+	
+	TableProperties findTable(String table) throws SQLException;
+	
+	Collection<SequenceProperties> getSequences() throws SQLException;
+	
+	SequenceProperties findSequence(String sequence) throws SQLException;
+	
+	String findType(int precision, int... types) throws SQLException;
 }

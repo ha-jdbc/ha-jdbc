@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.cache.eager.EagerDatabaseMetaDataCacheFactory;
 import net.sf.hajdbc.cache.eager.SharedEagerDatabaseMetaDataCacheFactory;
 import net.sf.hajdbc.cache.lazy.LazyDatabaseMetaDataCacheFactory;

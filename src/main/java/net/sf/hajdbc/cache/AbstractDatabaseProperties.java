@@ -25,6 +25,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import net.sf.hajdbc.DatabaseProperties;
+import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.SequenceProperties;
+import net.sf.hajdbc.TableProperties;
+
 /**
  * @author Paul Ferraro
  *
@@ -43,7 +48,7 @@ public abstract class AbstractDatabaseProperties implements DatabaseProperties
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.cache.DatabaseProperties#supportsSelectForUpdate()
+	 * @see net.sf.hajdbc.DatabaseProperties#supportsSelectForUpdate()
 	 */
 	@Override
 	public final boolean supportsSelectForUpdate() throws SQLException
@@ -53,7 +58,7 @@ public abstract class AbstractDatabaseProperties implements DatabaseProperties
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.cache.DatabaseProperties#locatorsUpdateCopy()
+	 * @see net.sf.hajdbc.DatabaseProperties#locatorsUpdateCopy()
 	 */
 	@Override
 	public boolean locatorsUpdateCopy() throws SQLException
@@ -62,7 +67,7 @@ public abstract class AbstractDatabaseProperties implements DatabaseProperties
 	}
 
 	/**
-	 * @see net.sf.hajdbc.cache.DatabaseProperties#getTables()
+	 * @see net.sf.hajdbc.DatabaseProperties#getTables()
 	 */
 	@Override
 	public final Collection<TableProperties> getTables() throws SQLException
@@ -70,10 +75,10 @@ public abstract class AbstractDatabaseProperties implements DatabaseProperties
 		return this.tables().values();
 	}
 
-	protected abstract Map<String, TableProperties> tables() throws SQLException;
+	protected abstract Map<QualifiedName, TableProperties> tables() throws SQLException;
 
 	/**
-	 * @see net.sf.hajdbc.cache.DatabaseProperties#getSequences()
+	 * @see net.sf.hajdbc.DatabaseProperties#getSequences()
 	 */
 	@Override
 	public final Collection<SequenceProperties> getSequences() throws SQLException
@@ -81,10 +86,10 @@ public abstract class AbstractDatabaseProperties implements DatabaseProperties
 		return this.sequences().values();
 	}
 
-	protected abstract Map<String, SequenceProperties> sequences() throws SQLException;
+	protected abstract Map<QualifiedName, SequenceProperties> sequences() throws SQLException;
 	
 	/**
-	 * @see net.sf.hajdbc.cache.DatabaseProperties#findTable(java.lang.String)
+	 * @see net.sf.hajdbc.DatabaseProperties#findTable(java.lang.String)
 	 */
 	@Override
 	public final TableProperties findTable(String table) throws SQLException
@@ -93,7 +98,7 @@ public abstract class AbstractDatabaseProperties implements DatabaseProperties
 	}
 
 	/**
-	 * @see net.sf.hajdbc.cache.DatabaseProperties#findSequence(java.lang.String)
+	 * @see net.sf.hajdbc.DatabaseProperties#findSequence(java.lang.String)
 	 */
 	@Override
 	public final SequenceProperties findSequence(String sequence) throws SQLException
@@ -105,7 +110,7 @@ public abstract class AbstractDatabaseProperties implements DatabaseProperties
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.cache.DatabaseProperties#findType(int, int[])
+	 * @see net.sf.hajdbc.DatabaseProperties#findType(int, int[])
 	 */
 	@Override
 	public String findType(int precision, int... types) throws SQLException

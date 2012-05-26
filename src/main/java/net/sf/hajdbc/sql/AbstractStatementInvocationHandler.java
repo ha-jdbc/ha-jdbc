@@ -33,10 +33,10 @@ import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.DatabaseProperties;
 import net.sf.hajdbc.IdentityColumnSupport;
 import net.sf.hajdbc.SequenceSupport;
-import net.sf.hajdbc.cache.DatabaseProperties;
-import net.sf.hajdbc.cache.TableProperties;
+import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.invocation.InvocationStrategy;
 import net.sf.hajdbc.invocation.InvocationStrategyEnum;
 import net.sf.hajdbc.invocation.Invoker;
@@ -264,7 +264,7 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 						
 						if (!tableProperties.getIdentityColumns().isEmpty())
 						{
-							identifierSet.add(tableProperties.getName());
+							identifierSet.add(tableProperties.getName().getDMLName());
 						}
 					}
 				}

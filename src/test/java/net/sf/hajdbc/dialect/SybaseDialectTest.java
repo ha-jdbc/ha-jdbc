@@ -24,8 +24,9 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Arrays;
 
-import net.sf.hajdbc.cache.ForeignKeyConstraint;
-import net.sf.hajdbc.cache.TableProperties;
+import net.sf.hajdbc.ForeignKeyConstraint;
+import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.TableProperties;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -68,8 +69,10 @@ public class SybaseDialectTest extends StandardDialectTest
 	public void getTruncateTableSQL() throws SQLException
 	{
 		TableProperties table = mock(TableProperties.class);
+		QualifiedName name = mock(QualifiedName.class);
 		
-		when(table.getName()).thenReturn("table");
+		when(table.getName()).thenReturn(name);
+		when(name.getDMLName()).thenReturn("table");
 		
 		String result = this.dialect.getTruncateTableSQL(table);
 		
@@ -84,11 +87,15 @@ public class SybaseDialectTest extends StandardDialectTest
 	public void getCreateForeignKeyConstraintSQL() throws SQLException
 	{
 		ForeignKeyConstraint key = mock(ForeignKeyConstraint.class);
+		QualifiedName table = mock(QualifiedName.class);
+		QualifiedName foreignTable = mock(QualifiedName.class);
 		
 		when(key.getName()).thenReturn("name");
-		when(key.getTable()).thenReturn("table");
+		when(key.getTable()).thenReturn(table);
+		when(table.getDDLName()).thenReturn("table");
 		when(key.getColumnList()).thenReturn(Arrays.asList("column1", "column2"));
-		when(key.getForeignTable()).thenReturn("foreign_table");
+		when(key.getForeignTable()).thenReturn(foreignTable);
+		when(foreignTable.getDDLName()).thenReturn("foreign_table");
 		when(key.getForeignColumnList()).thenReturn(Arrays.asList("foreign_column1", "foreign_column2"));
 		when(key.getDeferrability()).thenReturn(DatabaseMetaData.importedKeyInitiallyDeferred);
 		when(key.getDeleteRule()).thenReturn(DatabaseMetaData.importedKeyCascade);

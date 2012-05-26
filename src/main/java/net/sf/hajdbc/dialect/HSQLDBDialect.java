@@ -24,8 +24,9 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.SequenceSupport;
-import net.sf.hajdbc.cache.QualifiedName;
+import net.sf.hajdbc.cache.QualifiedNameImpl;
 import net.sf.hajdbc.util.Resources;
 
 /**
@@ -82,7 +83,7 @@ public class HSQLDBDialect extends StandardDialect
 			
 			while (resultSet.next())
 			{
-				sequences.put(new QualifiedName(resultSet.getString(1), resultSet.getString(2)), resultSet.getInt(3));
+				sequences.put(new QualifiedNameImpl(resultSet.getString(1), resultSet.getString(2), metaData), resultSet.getInt(3));
 			}
 			
 			return sequences;
