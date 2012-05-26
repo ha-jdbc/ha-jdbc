@@ -29,6 +29,8 @@ import net.sf.hajdbc.sql.AbstractExceptionFactory;
  */
 public class XAExceptionFactory extends AbstractExceptionFactory<XAException>
 {
+	private static final long serialVersionUID = -8802252233361030433L;
+
 	public XAExceptionFactory()
 	{
 		super(XAException.class);
@@ -42,16 +44,6 @@ public class XAExceptionFactory extends AbstractExceptionFactory<XAException>
 	public XAException createException(String message)
 	{
 		return new XAException(message);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.AbstractExceptionFactory#createException()
-	 */
-	@Override
-	protected XAException createException()
-	{
-		return new XAException();
 	}
 
 	/**

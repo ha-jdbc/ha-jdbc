@@ -25,6 +25,8 @@ import net.sf.hajdbc.ExceptionFactory;
  */
 public abstract class AbstractExceptionFactory<E extends Exception> implements ExceptionFactory<E>
 {
+	private static final long serialVersionUID = 6715631233424287636L;
+
 	private Class<E> targetClass;
 	
 	protected AbstractExceptionFactory(Class<E> targetClass)
@@ -44,12 +46,10 @@ public abstract class AbstractExceptionFactory<E extends Exception> implements E
 			return this.targetClass.cast(e);
 		}
 		
-		E exception = this.createException();
+		E exception = this.createException(e.getMessage());
 		
 		exception.initCause(e);
 		
 		return exception;
 	}
-	
-	protected abstract E createException();
 }

@@ -35,6 +35,8 @@ import net.sf.hajdbc.durability.Durability.Phase;
  */
 public class SQLExceptionFactory extends AbstractExceptionFactory<SQLException>
 {
+	private static final long serialVersionUID = -7352436527312370925L;
+
 	public SQLExceptionFactory()
 	{
 		super(SQLException.class);	
@@ -48,16 +50,6 @@ public class SQLExceptionFactory extends AbstractExceptionFactory<SQLException>
 	public SQLException createException(String message)
 	{
 		return new SQLException(message);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.AbstractExceptionFactory#createException()
-	 */
-	@Override
-	protected SQLException createException()
-	{
-		return new SQLException();
 	}
 
 	/**

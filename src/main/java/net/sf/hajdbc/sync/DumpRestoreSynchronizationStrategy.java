@@ -32,6 +32,7 @@ import net.sf.hajdbc.DumpRestoreSupport;
 import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationStrategy;
+import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.Strings;
 
 /**
@@ -40,6 +41,8 @@ import net.sf.hajdbc.util.Strings;
  */
 public class DumpRestoreSynchronizationStrategy implements SynchronizationStrategy
 {
+	private static final String DUMP_FILE_SUFFIX = ".dump";
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.SynchronizationStrategy#onStart(net.sf.hajdbc.DatabaseCluster)
@@ -75,7 +78,7 @@ public class DumpRestoreSynchronizationStrategy implements SynchronizationStrate
 		
 		try
 		{
-			File file = File.createTempFile("ha-jdbc.", ".dump");
+			File file = Resources.createTempFile(DUMP_FILE_SUFFIX);
 			
 			try
 			{
@@ -85,7 +88,7 @@ public class DumpRestoreSynchronizationStrategy implements SynchronizationStrate
 			}
 			finally
 			{
-				file.delete();
+				Resources.delete(file);
 			}
 		}
 		catch (Exception e)

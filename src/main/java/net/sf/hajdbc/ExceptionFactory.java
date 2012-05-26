@@ -17,13 +17,15 @@
  */
 package net.sf.hajdbc;
 
+import java.io.Serializable;
+
 import net.sf.hajdbc.durability.Durability;
 
 
 /**
  * @author Paul Ferraro
  */
-public interface ExceptionFactory<E extends Exception>
+public interface ExceptionFactory<E extends Exception> extends Serializable
 {
 	E createException(Throwable e);
 	

@@ -45,8 +45,7 @@ import net.sf.hajdbc.util.Resources;
  */
 public class FileSupportImpl<E extends Exception> implements FileSupport<E>
 {
-	private static final String TEMP_FILE_PREFIX = "ha-jdbc-"; //$NON-NLS-1$
-	private static final String TEMP_FILE_SUFFIX = ".lob"; //$NON-NLS-1$
+	private static final String TEMP_FILE_SUFFIX = ".lob";
 	private static final int BUFFER_SIZE = 8192;
 	
 	private final List<File> files = new LinkedList<File>();
@@ -170,7 +169,7 @@ public class FileSupportImpl<E extends Exception> implements FileSupport<E>
 	 */
 	private File createTempFile() throws IOException
 	{
-		File file = File.createTempFile(TEMP_FILE_PREFIX, TEMP_FILE_SUFFIX);
+		File file = Resources.createTempFile(TEMP_FILE_SUFFIX);
 		
 		this.files.add(file);
 		
