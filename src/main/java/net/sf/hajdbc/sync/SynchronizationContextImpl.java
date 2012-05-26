@@ -32,9 +32,7 @@ import net.sf.hajdbc.balancer.Balancer;
 import net.sf.hajdbc.cache.DatabaseMetaDataCache;
 import net.sf.hajdbc.cache.DatabaseProperties;
 import net.sf.hajdbc.codec.Codec;
-import net.sf.hajdbc.logging.Level;
-import net.sf.hajdbc.logging.Logger;
-import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.util.Resources;
 
 /**
  * @author Paul Ferraro
@@ -42,8 +40,6 @@ import net.sf.hajdbc.logging.LoggerFactory;
  */
 public class SynchronizationContextImpl<Z, D extends Database<Z>> implements SynchronizationContext<Z, D>
 {
-	private static final Logger logger = LoggerFactory.getLogger(SynchronizationContextImpl.class);
-	
 	private final Set<D> activeDatabaseSet;
 	private final D sourceDatabase;
 	private final D targetDatabase;
@@ -185,20 +181,7 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 	{
 		for (Connection connection: this.connectionMap.values())
 		{
-			if (connection != null)
-			{
-				try
-				{
-					if (!connection.isClosed())
-					{
-						connection.close();
-					}
-				}
-				catch (SQLException e)
-				{
-					logger.log(Level.WARN, e, e.toString());
-				}
-			}
+			Resources.close(connection);
 		}
 		
 		this.executor.shutdown();
