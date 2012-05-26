@@ -28,6 +28,7 @@ import java.util.Map;
 
 import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.cache.QualifiedName;
+import net.sf.hajdbc.util.Resources;
 
 /**
  * Dialect for <a href="http://www.h2database.com">H2 Database Engine</a>.
@@ -71,20 +72,25 @@ public class H2Dialect extends StandardDialect
 	@Override
 	public Map<QualifiedName, Integer> getSequences(DatabaseMetaData metaData) throws SQLException
 	{
-		Map<QualifiedName, Integer> sequences = new HashMap<QualifiedName, Integer>();
-		
 		Statement statement = metaData.getConnection().createStatement();
 		
-		ResultSet resultSet = statement.executeQuery("SELECT SEQUENCE_SCHEMA, SEQUENCE_NAME, INCREMENT FROM INFORMATION_SCHEMA.SEQUENCES");
-		
-		while (resultSet.next())
+		try
 		{
-			sequences.put(new QualifiedName(resultSet.getString(1), resultSet.getString(2)), resultSet.getInt(3));
+			ResultSet resultSet = statement.executeQuery("SELECT SEQUENCE_SCHEMA, SEQUENCE_NAME, INCREMENT FROM INFORMATION_SCHEMA.SEQUENCES");
+			
+			Map<QualifiedName, Integer> sequences = new HashMap<QualifiedName, Integer>();
+			
+			while (resultSet.next())
+			{
+				sequences.put(new QualifiedName(resultSet.getString(1), resultSet.getString(2)), resultSet.getInt(3));
+			}
+			
+			return sequences;
 		}
-		
-		statement.close();
-		
-		return sequences;
+		finally
+		{
+			Resources.close(statement);
+		}
 	}
 
 	/**

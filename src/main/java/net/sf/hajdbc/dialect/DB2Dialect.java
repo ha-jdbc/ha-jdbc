@@ -86,9 +86,9 @@ public class DB2Dialect extends StandardDialect
 		
 		try
 		{
-			Map<QualifiedName, Integer> sequences = new HashMap<QualifiedName, Integer>();
-			
 			ResultSet resultSet = statement.executeQuery("SELECT SEQSCHEMA, SEQNAME, INCREMENT FROM SYSCAT.SEQUENCES");
+			
+			Map<QualifiedName, Integer> sequences = new HashMap<QualifiedName, Integer>();
 			
 			while (resultSet.next())
 			{

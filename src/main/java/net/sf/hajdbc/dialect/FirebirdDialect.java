@@ -84,9 +84,9 @@ public class FirebirdDialect extends StandardDialect
 		
 		try
 		{
-			Map<QualifiedName, Integer> sequences = new HashMap<QualifiedName, Integer>();
-			
 			ResultSet resultSet = statement.executeQuery("SELECT RDB$GENERATOR_NAME FROM RDB$GENERATORS");
+			
+			Map<QualifiedName, Integer> sequences = new HashMap<QualifiedName, Integer>();
 			
 			while (resultSet.next())
 			{
