@@ -179,4 +179,10 @@ public interface Dialect
 	IdentityColumnSupport getIdentityColumnSupport();
 	
 	DumpRestoreSupport getDumpRestoreSupport();
+	
+	TriggerSupport getTriggerSupport();
+	
+	String getCreateSchemaSQL(String schema);
+	
+	String getDropSchemaSQL(String schema);
 }
