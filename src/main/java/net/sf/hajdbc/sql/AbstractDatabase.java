@@ -58,7 +58,6 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	private boolean dirty = false;
 	private volatile boolean active = false;
 	
-	@SuppressWarnings("unused")
 	@XmlElement(name = "property")
 	private Property[] getXmlProperties()
 	{
