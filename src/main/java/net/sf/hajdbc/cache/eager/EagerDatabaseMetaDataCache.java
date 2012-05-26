@@ -30,9 +30,7 @@ import net.sf.hajdbc.cache.DatabaseMetaDataCache;
 import net.sf.hajdbc.cache.DatabaseMetaDataSupport;
 import net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory;
 import net.sf.hajdbc.cache.DatabaseProperties;
-import net.sf.hajdbc.logging.Level;
-import net.sf.hajdbc.logging.Logger;
-import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.util.Resources;
 
 /**
  * Per-database {@link DatabaseMetaDataCache} implementation that populates itself eagerly.
@@ -40,8 +38,6 @@ import net.sf.hajdbc.logging.LoggerFactory;
  */
 public class EagerDatabaseMetaDataCache<Z, D extends Database<Z>> implements DatabaseMetaDataCache<Z, D>
 {
-	private static final Logger logger = LoggerFactory.getLogger(EagerDatabaseMetaDataCache.class);
-	
 	private final Map<D, DatabaseProperties> map = new TreeMap<D, DatabaseProperties>();
 	private final DatabaseCluster<Z, D> cluster;
 	private final DatabaseMetaDataSupportFactory factory;
@@ -71,14 +67,7 @@ public class EagerDatabaseMetaDataCache<Z, D extends Database<Z>> implements Dat
 			}
 			finally
 			{
-				try
-				{
-					connection.close();
-				}
-				catch (SQLException e)
-				{
-					logger.log(Level.WARN, e, e.getMessage());
-				}
+				Resources.close(connection);
 			}
 		}
 		
