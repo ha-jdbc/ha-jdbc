@@ -54,11 +54,6 @@ public class JBossLogger extends AbstractLogger
 	@Override
 	public void log(Level level, Throwable e, String pattern, Object... args)
 	{
-		org.jboss.logging.Logger.Level realLevel = levels.get(level);
-		
-		if (this.logger.isEnabled(realLevel))
-		{
-			this.logger.log(realLevel, format(pattern, args), e);
-		}
+		this.logger.logf(levels.get(level), e, pattern, args);
 	}
 }
