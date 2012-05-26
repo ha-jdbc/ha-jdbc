@@ -99,11 +99,17 @@ public class Objects
 		try
 		{
 			ObjectOutput output = new ObjectOutputStream(bytes);
-			output.writeObject(object);
-			output.flush();
-			output.close();
-			
-			return bytes.toByteArray();
+			try
+			{
+				output.writeObject(object);
+				output.flush();
+				
+				return bytes.toByteArray();
+			}
+			finally
+			{
+				Resources.close(output);
+			}
 		}
 		catch (IOException e)
 		{
@@ -135,7 +141,7 @@ public class Objects
 			}
 			finally
 			{
-				input.close();
+				Resources.close(input);
 			}
 		}
 		catch (IOException e)
