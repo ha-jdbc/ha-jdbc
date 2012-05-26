@@ -33,11 +33,11 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.sql.SQLException;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 import net.sf.hajdbc.ExceptionFactory;
+import net.sf.hajdbc.util.Resources;
 
 /**
  * @author  Paul Ferraro
@@ -49,7 +49,7 @@ public class FileSupportImpl<E extends Exception> implements FileSupport<E>
 	private static final String TEMP_FILE_SUFFIX = ".lob"; //$NON-NLS-1$
 	private static final int BUFFER_SIZE = 8192;
 	
-	private final List<File> fileList = new LinkedList<File>();
+	private final List<File> files = new LinkedList<File>();
 	private final ExceptionFactory<E> exceptionFactory;
 	
 	public FileSupportImpl(ExceptionFactory<E> exceptionFactory)
@@ -67,23 +67,27 @@ public class FileSupportImpl<E extends Exception> implements FileSupport<E>
 		{
 			File file = this.createTempFile();
 			
-			FileChannel fileChannel = new FileOutputStream(file).getChannel();
-			ReadableByteChannel inputChannel = Channels.newChannel(inputStream);
-			
-			ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
-			
-			while (inputChannel.read(buffer) > 0)
+			FileOutputStream output = new FileOutputStream(file);
+			try
 			{
-				buffer.flip();
+				FileChannel fileChannel = output.getChannel();
+				ReadableByteChannel inputChannel = Channels.newChannel(inputStream);
 				
-				fileChannel.write(buffer);
+				ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
 				
-				buffer.compact();
+				while (inputChannel.read(buffer) > 0)
+				{
+					buffer.flip();
+					fileChannel.write(buffer);
+					buffer.compact();
+				}
+				
+				return file;
 			}
-			
-			fileChannel.close();
-			
-			return file;
+			finally
+			{
+				Resources.close(output);
+			}
 		}
 		catch (IOException e)
 		{
@@ -103,20 +107,23 @@ public class FileSupportImpl<E extends Exception> implements FileSupport<E>
 			
 			Writer writer = new FileWriter(file);
 			
-			CharBuffer buffer = CharBuffer.allocate(BUFFER_SIZE);
-			
-			while (reader.read(buffer) > 0)
+			try
 			{
-				buffer.flip();
+				CharBuffer buffer = CharBuffer.allocate(BUFFER_SIZE);
 				
-				writer.append(buffer);
+				while (reader.read(buffer) > 0)
+				{
+					buffer.flip();
+					writer.append(buffer);
+					buffer.clear();
+				}
 				
-				buffer.clear();
+				return file;
 			}
-
-			writer.close();
-			
-			return file;
+			finally
+			{
+				Resources.close(writer);
+			}
 		}
 		catch (IOException e)
 		{
@@ -165,7 +172,7 @@ public class FileSupportImpl<E extends Exception> implements FileSupport<E>
 	{
 		File file = File.createTempFile(TEMP_FILE_PREFIX, TEMP_FILE_SUFFIX);
 		
-		this.fileList.add(file);
+		this.files.add(file);
 		
 		return file;
 	}
@@ -176,19 +183,14 @@ public class FileSupportImpl<E extends Exception> implements FileSupport<E>
 	@Override
 	public void close()
 	{
-		Iterator<File> files = this.fileList.iterator();
-
-		while (files.hasNext())
+		for (File file: this.files)
 		{
-			File file = files.next();
-
 			if (!file.delete())
 			{
 				file.deleteOnExit();
 			}
-
-			files.remove();
 		}
+		this.files.clear();
 	}
 	
 	/**

@@ -17,6 +17,7 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.InputStream;
 import java.io.Reader;
@@ -30,7 +31,7 @@ import java.sql.SQLException;
  * @version $Revision: 1612 $
  * @since   1.0
  */
-public interface FileSupport<E extends Throwable>
+public interface FileSupport<E extends Throwable> extends Closeable
 {
 	/**
 	 * Create a file from the specified binary input stream.
@@ -63,9 +64,4 @@ public interface FileSupport<E extends Throwable>
 	 * @throws SQLException if IO error occurs
 	 */
 	InputStream getInputStream(File file) throws E;
-	
-	/**
-	 * Deletes any files created by this object.
-	 */
-	void close();
 }
