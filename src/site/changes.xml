@@ -21,7 +21,10 @@
 		<title>HA-JDBC Changes</title>
 	</properties>
 	<body>
-		<release version="2.1.0-beta-1" date="...">
+		<release version="2.1.0-beta-1" date="Soon...">
+			<action dev="pferraro" type="update">
+				Migrate source code repository to github.
+			</action>
 			<action dev="pferraro" type="update">
 				Update Java runtime requirement to 1.6.
 			</action>
