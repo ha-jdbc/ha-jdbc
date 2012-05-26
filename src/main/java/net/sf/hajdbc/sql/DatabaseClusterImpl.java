@@ -62,6 +62,7 @@ import net.sf.hajdbc.state.distributed.DistributedStateManager;
 import net.sf.hajdbc.sync.SynchronizationContext;
 import net.sf.hajdbc.sync.SynchronizationContextImpl;
 import net.sf.hajdbc.tx.TransactionIdentifierFactory;
+import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.concurrent.cron.CronThreadPoolExecutor;
 
 import org.quartz.CronExpression;
@@ -780,12 +781,15 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		try
 		{
 			Connection connection = database.connect(database.createConnectionSource(), database.decodePassword(this.codec));
-
-			boolean alive = this.isAlive(connection);
 			
-			connection.close();
-			
-			return alive;
+			try
+			{
+				return this.isAlive(connection);
+			}
+			finally
+			{
+				Resources.close(connection);
+			}
 		}
 		catch (SQLException e)
 		{
@@ -816,7 +820,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 			}
 			finally
 			{
-				statement.close();
+				Resources.close(statement);
 			}
 		}
 		catch (SQLException e)
