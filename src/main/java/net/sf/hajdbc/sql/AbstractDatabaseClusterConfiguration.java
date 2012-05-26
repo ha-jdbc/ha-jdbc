@@ -86,7 +86,6 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	private StateManagerFactory stateManagerFactory = new SQLStateManagerFactory();
 	protected abstract NestedConfiguration<Z, D> getNestedConfiguration();
 	
-	@SuppressWarnings("unused")
 	@XmlElement(name = "sync")
 	private SynchronizationStrategyDescriptor[] getSynchronizationStrategyDescriptors() throws Exception
 	{
@@ -118,7 +117,6 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		}
 	}
 	
-	@SuppressWarnings("unused")
 	@XmlElement(name = "state")
 	private StateManagerFactoryDescriptor getStateManagerFactoryDescriptor() throws Exception
 	{
@@ -569,7 +567,6 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		
 		private Map<String, D> databases = new HashMap<String, D>();
 		
-		@SuppressWarnings("unused")
 		@XmlIDREF
 		@XmlAttribute(name = "default-sync", required = true)
 		private SynchronizationStrategyDescriptor getDefaultSynchronizationStrategyDescriptor()
