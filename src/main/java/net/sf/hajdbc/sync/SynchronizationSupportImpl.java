@@ -45,6 +45,7 @@ import net.sf.hajdbc.cache.UniqueConstraint;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.Strings;
 
 /**
@@ -75,20 +76,25 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 		
 		Statement statement = connection.createStatement();
 		
-		for (TableProperties table: this.context.getTargetDatabaseProperties().getTables())
+		try
 		{
-			for (ForeignKeyConstraint constraint: table.getForeignKeyConstraints())
+			for (TableProperties table: this.context.getTargetDatabaseProperties().getTables())
 			{
-				String sql = dialect.getDropForeignKeyConstraintSQL(constraint);
-				
-				this.logger.log(Level.DEBUG, sql);
-				
-				statement.addBatch(sql);
+				for (ForeignKeyConstraint constraint: table.getForeignKeyConstraints())
+				{
+					String sql = dialect.getDropForeignKeyConstraintSQL(constraint);
+					
+					this.logger.log(Level.DEBUG, sql);
+					
+					statement.addBatch(sql);
+				}
 			}
+			statement.executeBatch();
 		}
-		
-		statement.executeBatch();
-		statement.close();
+		finally
+		{
+			Resources.close(statement);
+		}
 	}
 	
 	/**
@@ -104,20 +110,26 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 		
 		Statement statement = connection.createStatement();
 		
-		for (TableProperties table: this.context.getSourceDatabaseProperties().getTables())
+		try
 		{
-			for (ForeignKeyConstraint constraint: table.getForeignKeyConstraints())
+			for (TableProperties table: this.context.getSourceDatabaseProperties().getTables())
 			{
-				String sql = dialect.getCreateForeignKeyConstraintSQL(constraint);
-				
-				this.logger.log(Level.DEBUG, sql);
-				
-				statement.addBatch(sql);
+				for (ForeignKeyConstraint constraint: table.getForeignKeyConstraints())
+				{
+					String sql = dialect.getCreateForeignKeyConstraintSQL(constraint);
+					
+					this.logger.log(Level.DEBUG, sql);
+					
+					statement.addBatch(sql);
+				}
 			}
+			
+			statement.executeBatch();
 		}
-		
-		statement.executeBatch();
-		statement.close();
+		finally
+		{
+			Resources.close(statement);
+		}
 	}
 	
 	/**
@@ -160,15 +172,18 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 							public Long call() throws SQLException
 							{
 								Statement statement = context.getConnection(database).createStatement();
-								ResultSet resultSet = statement.executeQuery(sql);
-								
-								resultSet.next();
-								
-								long value = resultSet.getLong(1);
-								
-								statement.close();
-								
-								return value;
+								try
+								{
+									ResultSet resultSet = statement.executeQuery(sql);
+									
+									resultSet.next();
+									
+									return resultSet.getLong(1);
+								}
+								finally
+								{
+									Resources.close(statement);
+								}
 							}
 						};
 						
@@ -207,17 +222,23 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 				Connection targetConnection = this.context.getConnection(this.context.getTargetDatabase());
 				Statement targetStatement = targetConnection.createStatement();
 
-				for (SequenceProperties sequence: sequences)
+				try
 				{
-					String sql = support.getAlterSequenceSQL(sequence, sequenceMap.get(sequence) + 1);
+					for (SequenceProperties sequence: sequences)
+					{
+						String sql = support.getAlterSequenceSQL(sequence, sequenceMap.get(sequence) + 1);
+						
+						this.logger.log(Level.DEBUG, sql);
+						
+						targetStatement.addBatch(sql);
+					}
 					
-					this.logger.log(Level.DEBUG, sql);
-					
-					targetStatement.addBatch(sql);
+					targetStatement.executeBatch();
 				}
-				
-				targetStatement.executeBatch();		
-				targetStatement.close();
+				finally
+				{
+					Resources.close(targetStatement);
+				}
 			}
 		}
 	}
@@ -234,55 +255,70 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 		if (support != null)
 		{
 			Statement sourceStatement = this.context.getConnection(this.context.getSourceDatabase()).createStatement();
-			Statement targetStatement = this.context.getConnection(this.context.getTargetDatabase()).createStatement();
-			
-			for (TableProperties table: this.context.getSourceDatabaseProperties().getTables())
+			try
 			{
-				Collection<String> columns = table.getIdentityColumns();
-				
-				if (!columns.isEmpty())
+				Statement targetStatement = this.context.getConnection(this.context.getTargetDatabase()).createStatement();
+				try
 				{
-					String selectSQL = MessageFormat.format("SELECT max({0}) FROM {1}", Strings.join(columns, "), max("), table.getName()); //$NON-NLS-1$ //$NON-NLS-2$
-					
-					this.logger.log(Level.DEBUG, selectSQL);
-					
-					Map<String, Long> map = new HashMap<String, Long>();
-					
-					ResultSet resultSet = sourceStatement.executeQuery(selectSQL);
-					
-					if (resultSet.next())
+					for (TableProperties table: this.context.getSourceDatabaseProperties().getTables())
 					{
-						int i = 0;
+						Collection<String> columns = table.getIdentityColumns();
 						
-						for (String column: columns)
+						if (!columns.isEmpty())
 						{
-							map.put(column, resultSet.getLong(++i));
-						}
-					}
-					
-					resultSet.close();
-					
-					if (!map.isEmpty())
-					{
-						for (Map.Entry<String, Long> mapEntry: map.entrySet())
-						{
-							String alterSQL = support.getAlterIdentityColumnSQL(table, table.getColumnProperties(mapEntry.getKey()), mapEntry.getValue() + 1);
+							String selectSQL = MessageFormat.format("SELECT max({0}) FROM {1}", Strings.join(columns, "), max("), table.getName()); //$NON-NLS-1$ //$NON-NLS-2$
 							
-							if (alterSQL != null)
+							this.logger.log(Level.DEBUG, selectSQL);
+							
+							Map<String, Long> map = new HashMap<String, Long>();
+							
+							ResultSet resultSet = sourceStatement.executeQuery(selectSQL);
+							
+							try
 							{
-								this.logger.log(Level.DEBUG, alterSQL);
+								if (resultSet.next())
+								{
+									int i = 0;
+									
+									for (String column: columns)
+									{
+										map.put(column, resultSet.getLong(++i));
+									}
+								}
+							}
+							finally
+							{
+								Resources.close(resultSet);
+							}
+							
+							if (!map.isEmpty())
+							{
+								for (Map.Entry<String, Long> mapEntry: map.entrySet())
+								{
+									String alterSQL = support.getAlterIdentityColumnSQL(table, table.getColumnProperties(mapEntry.getKey()), mapEntry.getValue() + 1);
+									
+									if (alterSQL != null)
+									{
+										this.logger.log(Level.DEBUG, alterSQL);
+										
+										targetStatement.addBatch(alterSQL);
+									}
+								}
 								
-								targetStatement.addBatch(alterSQL);
+								targetStatement.executeBatch();
 							}
 						}
-						
-						targetStatement.executeBatch();
 					}
 				}
+				finally
+				{
+					Resources.close(targetStatement);
+				}
 			}
-			
-			sourceStatement.close();
-			targetStatement.close();
+			finally
+			{
+				Resources.close(sourceStatement);
+			}
 		}
 	}
 
@@ -299,20 +335,26 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 		
 		Statement statement = connection.createStatement();
 		
-		for (TableProperties table: this.context.getTargetDatabaseProperties().getTables())
+		try
 		{
-			for (UniqueConstraint constraint: table.getUniqueConstraints())
+			for (TableProperties table: this.context.getTargetDatabaseProperties().getTables())
 			{
-				String sql = dialect.getDropUniqueConstraintSQL(constraint);
-				
-				this.logger.log(Level.DEBUG, sql);
-				
-				statement.addBatch(sql);
+				for (UniqueConstraint constraint: table.getUniqueConstraints())
+				{
+					String sql = dialect.getDropUniqueConstraintSQL(constraint);
+					
+					this.logger.log(Level.DEBUG, sql);
+					
+					statement.addBatch(sql);
+				}
 			}
+			
+			statement.executeBatch();
 		}
-		
-		statement.executeBatch();
-		statement.close();
+		finally
+		{
+			Resources.close(statement);
+		}
 	}
 	
 	/**
@@ -328,21 +370,27 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 		
 		Statement statement = connection.createStatement();
 		
-		for (TableProperties table: this.context.getSourceDatabaseProperties().getTables())
+		try
 		{
-			// Drop unique constraints on the current table
-			for (UniqueConstraint constraint: table.getUniqueConstraints())
+			for (TableProperties table: this.context.getSourceDatabaseProperties().getTables())
 			{
-				String sql = dialect.getCreateUniqueConstraintSQL(constraint);
-				
-				this.logger.log(Level.DEBUG, sql);
-				
-				statement.addBatch(sql);
+				// Drop unique constraints on the current table
+				for (UniqueConstraint constraint: table.getUniqueConstraints())
+				{
+					String sql = dialect.getCreateUniqueConstraintSQL(constraint);
+					
+					this.logger.log(Level.DEBUG, sql);
+					
+					statement.addBatch(sql);
+				}
 			}
+			
+			statement.executeBatch();
 		}
-		
-		statement.executeBatch();
-		statement.close();
+		finally
+		{
+			Resources.close(statement);
+		}
 	}
 
 	/**
