@@ -39,6 +39,7 @@ import java.util.regex.Pattern;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SequenceSupport;
+import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.Strings;
 
 /**
@@ -48,8 +49,6 @@ import net.sf.hajdbc.util.Strings;
 @SuppressWarnings("nls")
 public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 {
-	private static final long serialVersionUID = 7296994314643391105L;
-
 	// As defined in SQL-92 specification: http://www.andrew.cmu.edu/user/shadow/sql/sql1992.txt
 	private static final String[] SQL_92_RESERVED_WORDS = new String[] {
 		"ABSOLUTE", "ACTION", "ADD", "ALL", "ALLOCATE", "ALTER", "AND", "ANY", "ARE", "AS", "ASC", "ASSERTION", "AT", "AUTHORIZATION", "AVG",
@@ -132,18 +131,23 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 	@Override
 	public Collection<QualifiedName> getTables(DatabaseMetaData metaData) throws SQLException
 	{
-		List<QualifiedName> list = new LinkedList<QualifiedName>();
-		
 		ResultSet resultSet = metaData.getTables(this.getCatalog(metaData), null, Strings.ANY, new String[] { "TABLE" });
 		
-		while (resultSet.next())
+		try
 		{
-			list.add(new QualifiedName(resultSet.getString("TABLE_SCHEM"), resultSet.getString("TABLE_NAME")));
+			List<QualifiedName> list = new LinkedList<QualifiedName>();
+			
+			while (resultSet.next())
+			{
+				list.add(new QualifiedName(resultSet.getString("TABLE_SCHEM"), resultSet.getString("TABLE_NAME")));
+			}
+			
+			return list;
 		}
-		
-		resultSet.close();
-		
-		return list;
+		finally
+		{
+			Resources.close(resultSet);
+		}
 	}
 
 	/**
@@ -156,12 +160,12 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 	@Override
 	public Map<String, ColumnProperties> getColumns(DatabaseMetaData metaData, QualifiedName table) throws SQLException
 	{
-		Map<String, ColumnProperties> columnMap = new HashMap<String, ColumnProperties>();
-		
 		Statement statement = metaData.getConnection().createStatement();
 		
 		try
 		{
+			Map<String, ColumnProperties> columnMap = new HashMap<String, ColumnProperties>();
+			
 			ResultSetMetaData resultSet = statement.executeQuery(String.format("SELECT * FROM %s WHERE 0=1", this.qualifyNameForDML(table))).getMetaData();
 			
 			for (int i = 1; i <= resultSet.getColumnCount(); ++i)
@@ -173,13 +177,13 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 				
 				columnMap.put(column, new ColumnPropertiesImpl(column, type, nativeType, null, null, autoIncrement));
 			}
+			
+			return columnMap;
 		}
 		finally
 		{
-			statement.close();
+			Resources.close(statement);
 		}
-		
-		return columnMap;
 	}
 
 	/**
@@ -192,27 +196,32 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 	@Override
 	public UniqueConstraint getPrimaryKey(DatabaseMetaData metaData, QualifiedName table) throws SQLException
 	{
-		UniqueConstraint constraint = null;
-
 		ResultSet resultSet = metaData.getPrimaryKeys(this.getCatalog(metaData), this.getSchema(table), table.getName());
 		
-		while (resultSet.next())
+		try
 		{
-			String name = this.quote(resultSet.getString("PK_NAME"));
+			UniqueConstraint constraint = null;
 
-			if (constraint == null)
+			while (resultSet.next())
 			{
-				constraint = new UniqueConstraintImpl(name, this.qualifyNameForDDL(table));
+				String name = this.quote(resultSet.getString("PK_NAME"));
+	
+				if (constraint == null)
+				{
+					constraint = new UniqueConstraintImpl(name, this.qualifyNameForDDL(table));
+				}
+				
+				String column = this.quote(resultSet.getString("COLUMN_NAME"));
+				
+				constraint.getColumnList().add(column);
 			}
 			
-			String column = this.quote(resultSet.getString("COLUMN_NAME"));
-			
-			constraint.getColumnList().add(column);
+			return constraint;
 		}
-		
-		resultSet.close();
-		
-		return constraint;
+		finally
+		{
+			Resources.close(resultSet);
+		}
 	}
 
 	/**
@@ -225,41 +234,46 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 	@Override
 	public Collection<ForeignKeyConstraint> getForeignKeyConstraints(DatabaseMetaData metaData, QualifiedName table) throws SQLException
 	{
-		Map<String, ForeignKeyConstraint> foreignKeyMap = new HashMap<String, ForeignKeyConstraint>();
-		
 		ResultSet resultSet = metaData.getImportedKeys(this.getCatalog(metaData), this.getSchema(table), table.getName());
 		
-		while (resultSet.next())
+		try
 		{
-			String name = this.quote(resultSet.getString("FK_NAME"));
+			Map<String, ForeignKeyConstraint> foreignKeyMap = new HashMap<String, ForeignKeyConstraint>();
 			
-			ForeignKeyConstraint foreignKey = foreignKeyMap.get(name);
-			
-			if (foreignKey == null)
+			while (resultSet.next())
 			{
-				foreignKey = new ForeignKeyConstraintImpl(name, this.qualifyNameForDDL(table));
+				String name = this.quote(resultSet.getString("FK_NAME"));
 				
-				String foreignSchema = this.quote(resultSet.getString("PKTABLE_SCHEM"));
-				String foreignTable = this.quote(resultSet.getString("PKTABLE_NAME"));
+				ForeignKeyConstraint foreignKey = foreignKeyMap.get(name);
 				
-				foreignKey.setForeignTable(this.qualifyNameForDDL(new QualifiedName(foreignSchema, foreignTable)));
-				foreignKey.setDeleteRule(resultSet.getInt("DELETE_RULE"));
-				foreignKey.setUpdateRule(resultSet.getInt("UPDATE_RULE"));
-				foreignKey.setDeferrability(resultSet.getInt("DEFERRABILITY"));
+				if (foreignKey == null)
+				{
+					foreignKey = new ForeignKeyConstraintImpl(name, this.qualifyNameForDDL(table));
+					
+					String foreignSchema = this.quote(resultSet.getString("PKTABLE_SCHEM"));
+					String foreignTable = this.quote(resultSet.getString("PKTABLE_NAME"));
+					
+					foreignKey.setForeignTable(this.qualifyNameForDDL(new QualifiedName(foreignSchema, foreignTable)));
+					foreignKey.setDeleteRule(resultSet.getInt("DELETE_RULE"));
+					foreignKey.setUpdateRule(resultSet.getInt("UPDATE_RULE"));
+					foreignKey.setDeferrability(resultSet.getInt("DEFERRABILITY"));
+					
+					foreignKeyMap.put(name, foreignKey);
+				}
 				
-				foreignKeyMap.put(name, foreignKey);
+				String column = this.quote(resultSet.getString("FKCOLUMN_NAME"));
+				String foreignColumn = this.quote(resultSet.getString("PKCOLUMN_NAME"));
+	
+				foreignKey.getColumnList().add(column);
+				foreignKey.getForeignColumnList().add(foreignColumn);
 			}
 			
-			String column = this.quote(resultSet.getString("FKCOLUMN_NAME"));
-			String foreignColumn = this.quote(resultSet.getString("PKCOLUMN_NAME"));
-
-			foreignKey.getColumnList().add(column);
-			foreignKey.getForeignColumnList().add(foreignColumn);
+			return foreignKeyMap.values();
 		}
-		
-		resultSet.close();
-		
-		return foreignKeyMap.values();
+		finally
+		{
+			Resources.close(resultSet);
+		}
 	}
 
 	/**
@@ -273,37 +287,41 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 	@Override
 	public Collection<UniqueConstraint> getUniqueConstraints(DatabaseMetaData metaData, QualifiedName table, UniqueConstraint primaryKey) throws SQLException
 	{
-		Map<String, UniqueConstraint> keyMap = new HashMap<String, UniqueConstraint>();
-		
 		ResultSet resultSet = metaData.getIndexInfo(this.getCatalog(metaData), this.getSchema(table), table.getName(), true, false);
 		
-		while (resultSet.next())
+		try
 		{
-			if (resultSet.getShort("TYPE") == DatabaseMetaData.tableIndexHashed)
+			Map<String, UniqueConstraint> keyMap = new HashMap<String, UniqueConstraint>();
+			
+			while (resultSet.next())
 			{
-				String name = this.quote(resultSet.getString("INDEX_NAME"));
-				
-				// Don't include the primary key
-				if ((primaryKey != null) && name.equals(primaryKey.getName())) continue;
-				
-				UniqueConstraint key = keyMap.get(name);
-				
-				if (key == null)
+				if (resultSet.getShort("TYPE") == DatabaseMetaData.tableIndexHashed)
 				{
-					key = new UniqueConstraintImpl(name, this.qualifyNameForDDL(table));
+					String name = this.quote(resultSet.getString("INDEX_NAME"));
 					
-					keyMap.put(name, key);
+					// Don't include the primary key
+					if ((primaryKey != null) && name.equals(primaryKey.getName())) continue;
+					
+					UniqueConstraint key = keyMap.get(name);
+					
+					if (key == null)
+					{
+						key = new UniqueConstraintImpl(name, this.qualifyNameForDDL(table));
+						
+						keyMap.put(name, key);
+					}
+					
+					String column = this.quote(resultSet.getString("COLUMN_NAME"));
+					
+					key.getColumnList().add(column);
 				}
-				
-				String column = this.quote(resultSet.getString("COLUMN_NAME"));
-				
-				key.getColumnList().add(column);
 			}
+			return keyMap.values();
 		}
-		
-		resultSet.close();
-		
-		return keyMap.values();
+		finally
+		{
+			Resources.close(resultSet);
+		}
 	}
 
 	/**
@@ -491,11 +509,12 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 	@Override
 	public Map<Integer, Entry<String, Integer>> getTypes(DatabaseMetaData metaData) throws SQLException
 	{
-		Map<Integer, Map.Entry<String, Integer>> types = new HashMap<Integer, Map.Entry<String, Integer>>();
 		ResultSet resultSet = metaData.getTypeInfo();
 		
 		try
 		{
+			Map<Integer, Map.Entry<String, Integer>> types = new HashMap<Integer, Map.Entry<String, Integer>>();
+			
 			while (resultSet.next())
 			{
 				int type = resultSet.getInt("DATA_TYPE");
@@ -511,7 +530,7 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 		}
 		finally
 		{
-			resultSet.close();
+			Resources.close(resultSet);
 		}
 	}
 }
