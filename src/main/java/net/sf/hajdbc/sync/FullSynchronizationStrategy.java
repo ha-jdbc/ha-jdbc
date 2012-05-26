@@ -40,6 +40,7 @@ import net.sf.hajdbc.cache.TableProperties;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.Strings;
 
 /**
@@ -135,7 +136,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy, Ser
 	
 					logger.log(Level.INFO, Messages.DELETE_COUNT.getMessage(), deletedRows, tableName);
 					
-					deleteStatement.close();
+					Resources.close(deleteStatement);
 					
 					ResultSet resultSet = future.get();
 
@@ -187,8 +188,8 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy, Ser
 	
 					logger.log(Level.INFO, Messages.INSERT_COUNT.getMessage(), statementCount, tableName);
 					
-					insertStatement.close();
-					selectStatement.close();
+					Resources.close(insertStatement);
+					Resources.close(selectStatement);
 					
 					targetConnection.commit();
 				}
