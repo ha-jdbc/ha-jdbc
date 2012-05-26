@@ -56,7 +56,6 @@ public class XADataSourceDatabaseClusterConfiguration extends AbstractDatabaseCl
 	{
 		private static final long serialVersionUID = 8096563929212126538L;
 
-		@SuppressWarnings("unused")
 		@XmlElement(name = "database")
 		private XADataSourceDatabase[] getDatabases()
 		{

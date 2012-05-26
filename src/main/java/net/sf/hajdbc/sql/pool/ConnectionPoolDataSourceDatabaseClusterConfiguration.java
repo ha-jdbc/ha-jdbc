@@ -47,7 +47,6 @@ public class ConnectionPoolDataSourceDatabaseClusterConfiguration extends Abstra
 	{
 		private static final long serialVersionUID = 3139842065941633881L;
 
-		@SuppressWarnings("unused")
 		@XmlElement(name = "database")
 		private ConnectionPoolDataSourceDatabase[] getDatabases()
 		{
