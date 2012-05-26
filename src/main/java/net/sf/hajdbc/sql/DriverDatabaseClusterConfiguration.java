@@ -47,7 +47,6 @@ public class DriverDatabaseClusterConfiguration extends AbstractDatabaseClusterC
 	{
 		private static final long serialVersionUID = 6162775670140013194L;
 
-		@SuppressWarnings("unused")
 		@XmlElement(name = "database")
 		private DriverDatabase[] getDatabases()
 		{

@@ -46,7 +46,6 @@ public class DataSourceDatabaseClusterConfiguration extends AbstractDatabaseClus
 	{
 		private static final long serialVersionUID = -5155160003090960720L;
 
-		@SuppressWarnings("unused")
 		@XmlElement(name = "database")
 		private DataSourceDatabase[] getDatabases()
 		{
