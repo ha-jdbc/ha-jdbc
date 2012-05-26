@@ -26,6 +26,8 @@ import com.sleepycat.je.EnvironmentConfig;
 
 public class BDBStateManagerFactory extends EnvironmentConfig implements StateManagerFactory
 {
+	private static final long serialVersionUID = 7138340006866127561L;
+	
 	private String location;
 	
 	@Override
