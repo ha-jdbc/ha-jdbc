@@ -42,6 +42,7 @@ import net.sf.hajdbc.invocation.InvocationStrategyEnum;
 import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.lock.LockManager;
 import net.sf.hajdbc.logging.Level;
+import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.reflect.Methods;
 
 /**
@@ -209,7 +210,7 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 		}
 		else if (method.equals(closeMethod))
 		{
-			this.fileSupport.close();
+			Resources.close(this.fileSupport);
 			
 			this.getParentProxy().removeChild(this);
 		}
