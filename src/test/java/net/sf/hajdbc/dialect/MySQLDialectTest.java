@@ -143,7 +143,6 @@ public class MySQLDialectTest extends StandardDialectTest
 
 		List<String> result = this.dialect.getDefaultSchemas(metaData);
 
-		verify(resultSet).close();
 		verify(statement).close();
 		
 		assertEquals(1, result.size());
