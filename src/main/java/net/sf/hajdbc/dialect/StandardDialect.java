@@ -41,12 +41,16 @@ import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.DumpRestoreSupport;
 import net.sf.hajdbc.IdentityColumnSupport;
 import net.sf.hajdbc.SequenceSupport;
+import net.sf.hajdbc.TriggerEvent;
+import net.sf.hajdbc.TriggerSupport;
+import net.sf.hajdbc.TriggerTime;
 import net.sf.hajdbc.cache.ColumnProperties;
 import net.sf.hajdbc.cache.ForeignKeyConstraint;
 import net.sf.hajdbc.cache.QualifiedName;
 import net.sf.hajdbc.cache.SequenceProperties;
 import net.sf.hajdbc.cache.TableProperties;
 import net.sf.hajdbc.cache.UniqueConstraint;
+import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.Strings;
 
 /**
@@ -54,7 +58,7 @@ import net.sf.hajdbc.util.Strings;
  * @since   1.1
  */
 @SuppressWarnings("nls")
-public class StandardDialect implements Dialect, SequenceSupport, IdentityColumnSupport
+public class StandardDialect implements Dialect, SequenceSupport, IdentityColumnSupport, TriggerSupport
 {
 	private final Pattern selectForUpdatePattern = this.compile(this.selectForUpdatePattern());
 	private final Pattern insertIntoTablePattern = this.compile(this.insertIntoTablePattern());
@@ -250,35 +254,41 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	{
 		Statement statement = connection.createStatement();
 		
-		ResultSet resultSet = statement.executeQuery(this.executeFunctionSQL(function));
-		
-		resultSet.next();
-		
-		String value = resultSet.getString(1);
-		
-		resultSet.close();
-		statement.close();
-		
-		return value;
+		try
+		{
+			ResultSet resultSet = statement.executeQuery(this.executeFunctionSQL(function));
+			
+			resultSet.next();
+			
+			return resultSet.getString(1);
+		}
+		finally
+		{
+			Resources.close(statement);
+		}
 	}
 
 	protected List<String> executeQuery(Connection connection, String sql) throws SQLException
 	{
-		List<String> resultList = new LinkedList<String>();
-		
 		Statement statement = connection.createStatement();
 		
-		ResultSet resultSet = statement.executeQuery(sql);
-		
-		while (resultSet.next())
+		try
 		{
-			resultList.add(resultSet.getString(1));
+			ResultSet resultSet = statement.executeQuery(sql);
+			
+			List<String> resultList = new LinkedList<String>();
+			
+			while (resultSet.next())
+			{
+				resultList.add(resultSet.getString(1));
+			}
+			
+			return resultList;
 		}
-		
-		resultSet.close();
-		statement.close();
-		
-		return resultList;
+		finally
+		{
+			Resources.close(statement);
+		}
 	}
 
 	/**
@@ -315,18 +325,23 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	@Override
 	public Map<QualifiedName, Integer> getSequences(DatabaseMetaData metaData) throws SQLException
 	{
-		Map<QualifiedName, Integer> sequences = new HashMap<QualifiedName, Integer>();
-		
 		ResultSet resultSet = metaData.getTables(Strings.EMPTY, null, Strings.ANY, new String[] { this.sequenceTableType() });
 		
-		while (resultSet.next())
+		try
 		{
-			sequences.put(new QualifiedName(resultSet.getString("TABLE_SCHEM"), resultSet.getString("TABLE_NAME")), 1);
+			Map<QualifiedName, Integer> sequences = new HashMap<QualifiedName, Integer>();
+			
+			while (resultSet.next())
+			{
+				sequences.put(new QualifiedName(resultSet.getString("TABLE_SCHEM"), resultSet.getString("TABLE_NAME")), 1);
+			}
+			
+			return sequences;
 		}
-		
-		resultSet.close();
-		
-		return sequences;
+		finally
+		{
+			Resources.close(resultSet);
+		}
 	}
 
 	protected String sequenceTableType()
@@ -527,6 +542,86 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 		return null;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.Dialect#getTriggerSupport()
+	 */
+	@Override
+	public TriggerSupport getTriggerSupport()
+	{
+		return null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.TriggerSupport#getCreateTriggerSQL(net.sf.hajdbc.cache.QualifiedName, net.sf.hajdbc.cache.TableProperties, net.sf.hajdbc.TriggerSupport.TriggerTime, net.sf.hajdbc.TriggerSupport.TriggerEvent, java.lang.String)
+	 */
+	@Override
+	public String getCreateTriggerSQL(String name, TableProperties table, TriggerEvent event, String action)
+	{
+		return MessageFormat.format(this.createTriggerFormat(), name, event.getTime().toString(), event.toString(), table.getName(), action);
+	}
+
+	protected String createTriggerFormat()
+	{
+		return "CREATE TRIGGER {0} {1} {2} ON {3} FOR EACH ROW BEGIN {4} END";
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.TriggerSupport#getDropTriggerSQL(net.sf.hajdbc.cache.QualifiedName, net.sf.hajdbc.cache.TableProperties)
+	 */
+	@Override
+	public String getDropTriggerSQL(String name, TableProperties table)
+	{
+		return MessageFormat.format(this.dropTriggerFormat(), name, table.getName());
+	}
+
+	protected String dropTriggerFormat()
+	{
+		return "DROP TRIGGER {1} ON {2}";
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.TriggerSupport#getTriggerRowAlias()
+	 */
+	@Override
+	public String getTriggerRowAlias(TriggerTime time)
+	{
+		return time.getAlias();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.Dialect#getCreateSchemaSQL(java.lang.String)
+	 */
+	@Override
+	public String getCreateSchemaSQL(String schema)
+	{
+		return MessageFormat.format(this.createSchemaFormat(), schema);
+	}
+
+	protected String createSchemaFormat()
+	{
+		return "CREATE SCHEMA {0}";
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.Dialect#getDropSchemaSQL(java.lang.String)
+	 */
+	@Override
+	public String getDropSchemaSQL(String schema)
+	{
+		return MessageFormat.format(this.dropSchemaFormat(), schema);
+	}
+
+	protected String dropSchemaFormat()
+	{
+		return "DROP SCHEMA {0}";
+	}
+
 	protected boolean meetsRequirement(int minMajor, int minMinor)
 	{
 		Driver driver = this.getDriver();

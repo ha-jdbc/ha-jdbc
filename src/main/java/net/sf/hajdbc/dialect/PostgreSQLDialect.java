@@ -32,7 +32,9 @@ import net.sf.hajdbc.ConnectionProperties;
 import net.sf.hajdbc.DumpRestoreSupport;
 import net.sf.hajdbc.IdentityColumnSupport;
 import net.sf.hajdbc.SequenceSupport;
+import net.sf.hajdbc.TriggerSupport;
 import net.sf.hajdbc.cache.ColumnProperties;
+import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.Strings;
 
 /**
@@ -66,23 +68,27 @@ public class PostgreSQLDialect extends StandardDialect implements DumpRestoreSup
 		Connection connection = metaData.getConnection();
 		Statement statement = connection.createStatement();
 		
-		ResultSet resultSet = statement.executeQuery("SHOW search_path");
-		
-		resultSet.next();
-		
-		String[] schemas = resultSet.getString(1).split(Strings.COMMA);
-		
-		resultSet.close();
-		statement.close();
-		
-		List<String> schemaList = new ArrayList<String>(schemas.length);
-		
-		for (String schema: schemas)
+		try
 		{
-			schemaList.add(schema.equals("$user") ? metaData.getUserName() : schema);
+			ResultSet resultSet = statement.executeQuery("SHOW search_path");
+			
+			resultSet.next();
+			
+			String[] schemas = resultSet.getString(1).split(Strings.COMMA);
+			
+			List<String> schemaList = new ArrayList<String>(schemas.length);
+			
+			for (String schema: schemas)
+			{
+				schemaList.add(schema.equals("$user") ? metaData.getUserName() : schema);
+			}
+			
+			return schemaList;
 		}
-		
-		return schemaList;
+		finally
+		{
+			Resources.close(statement);
+		}
 	}
 
 	/**
@@ -234,5 +240,35 @@ public class PostgreSQLDialect extends StandardDialect implements DumpRestoreSup
 		}
 		
 		return builder;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#getTriggerSupport()
+	 */
+	@Override
+	public TriggerSupport getTriggerSupport()
+	{
+		return this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#createForeignKeyConstraintFormat()
+	 */
+	@Override
+	protected String createTriggerFormat()
+	{
+		return "CREATE FUNCTION {0}_action() BEGIN {4} END; CREATE TRIGGER {0} {1} {2} ON {3} FOR EACH ROW EXECUTE PROCEDURE {0}_action()";
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.dialect.StandardDialect#dropTriggerFormat()
+	 */
+	@Override
+	protected String dropTriggerFormat()
+	{
+		return "DROP TRIGGER {0} ON {1}; DROP FUNCTION {0}_action()";
 	}
 }
