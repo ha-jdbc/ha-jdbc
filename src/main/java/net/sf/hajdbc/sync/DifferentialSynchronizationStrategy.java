@@ -45,6 +45,7 @@ import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.util.Objects;
+import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.Strings;
 
 /**
@@ -451,14 +452,14 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 						deleteStatement.executeBatch();
 					}
 					
-					deleteStatement.close();
+					Resources.close(deleteStatement);
 					
 					if ((insertCount % this.maxBatchSize) > 0)
 					{
 						insertStatement.executeBatch();
 					}
 					
-					insertStatement.close();
+					Resources.close(insertStatement);
 					
 					if (updateStatement != null)
 					{
@@ -467,16 +468,16 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 							updateStatement.executeBatch();
 						}
 						
-						updateStatement.close();
+						Resources.close(updateStatement);
 					}
 					
 					if (selectAllStatement != null)
 					{
-						selectAllStatement.close();
+						Resources.close(selectAllStatement);
 					}
 					
-					targetStatement.close();
-					sourceStatement.close();
+					Resources.close(targetStatement);
+					Resources.close(sourceStatement);
 					
 					targetConnection.commit();
 					
