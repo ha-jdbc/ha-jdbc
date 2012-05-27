@@ -17,6 +17,7 @@
  */
 package net.sf.hajdbc;
 
+import java.io.Serializable;
 import java.sql.SQLException;
 
 import net.sf.hajdbc.sync.SynchronizationContext;
@@ -25,7 +26,7 @@ import net.sf.hajdbc.sync.SynchronizationContext;
 /**
  * @author  Paul Ferraro
  */
-public interface SynchronizationStrategy
+public interface SynchronizationStrategy extends Serializable
 {
 	<Z, D extends Database<Z>> void init(DatabaseCluster<Z, D> cluster);
 	

@@ -29,13 +29,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationStrategy;
@@ -74,449 +72,459 @@ import net.sf.hajdbc.util.Strings;
  * </ol>
  * @author  Paul Ferraro
  */
-public class DifferentialSynchronizationStrategy implements SynchronizationStrategy, Serializable
+public class DifferentialSynchronizationStrategy implements SynchronizationStrategy, TableSynchronizationStrategy, Serializable
 {
 	private static final long serialVersionUID = -2785092229503649831L;
 
 	private static Logger logger = LoggerFactory.getLogger(DifferentialSynchronizationStrategy.class);
 
+	private final SynchronizationStrategy strategy = new PerTableSynchronizationStrategy(this);
 	private int fetchSize = 0;
 	private int maxBatchSize = 100;
 	private Pattern versionPattern = null;
 	
+	@Override
+	public <Z, D extends Database<Z>> void synchronize(SynchronizationContext<Z, D> context) throws SQLException
+	{
+		this.strategy.synchronize(context);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.SynchronizationStrategy#init(net.sf.hajdbc.DatabaseCluster)
+	 */
+	@Override
+	public <Z, D extends Database<Z>> void init(DatabaseCluster<Z, D> cluster)
+	{
+		this.strategy.init(cluster);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.SynchronizationStrategy#destroy(net.sf.hajdbc.DatabaseCluster)
+	 */
+	@Override
+	public <Z, D extends Database<Z>> void destroy(DatabaseCluster<Z, D> cluster)
+	{
+		this.strategy.destroy(cluster);
+	}
+
+	@Override
+	public <Z, D extends Database<Z>> void dropConstraints(SynchronizationContext<Z, D> context) throws SQLException
+	{
+		SynchronizationSupport support = context.getSynchronizationSupport();
+		support.dropForeignKeys();
+		support.dropUniqueConstraints();
+	}
+
+	@Override
+	public <Z, D extends Database<Z>> void restoreConstraints(SynchronizationContext<Z, D> context) throws SQLException
+	{
+		SynchronizationSupport support = context.getSynchronizationSupport();
+		support.restoreUniqueConstraints();
+		support.restoreForeignKeys();
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.sync.SynchronizationContext)
 	 */
 	@Override
-	public <Z, D extends Database<Z>> void synchronize(SynchronizationContext<Z, D> context) throws SQLException
+	public <Z, D extends Database<Z>> void synchronize(SynchronizationContext<Z, D> context, TableProperties table) throws SQLException
 	{
-		Connection sourceConnection = context.getConnection(context.getSourceDatabase());
-		Connection targetConnection = context.getConnection(context.getTargetDatabase());
+		String tableName = table.getName().getDMLName();
+		
+		UniqueConstraint primaryKey = table.getPrimaryKey();
+		
+		if (primaryKey == null)
+		{
+			throw new SQLException(Messages.PRIMARY_KEY_REQUIRED.getMessage(this.getClass().getName(), tableName));
+		}
+		
+		List<String> primaryKeyColumns = primaryKey.getColumnList();
+		
+		Collection<String> columns = table.getColumns();
+		
+		List<String> nonPrimaryKeyColumns = new ArrayList<String>(columns.size());
+		List<String> versionColumns = new ArrayList<String>(columns.size());
+		
+		for (String column: columns)
+		{
+			if (!primaryKeyColumns.contains(column))
+			{
+				// Try to find a version column
+				if ((this.versionPattern != null) && this.versionPattern.matcher(column).matches())
+				{
+					versionColumns.add(column);
+				}
+				
+				nonPrimaryKeyColumns.add(column);
+			}
+		}
+		
+		// List of columns for select statement - starting with primary key
+		List<String> allColumns = new ArrayList<String>(columns.size());
+		allColumns.addAll(primaryKeyColumns);
+		allColumns.addAll(nonPrimaryKeyColumns);
 
-		Dialect dialect = context.getDialect();
-		ExecutorService executor = context.getExecutor();
+		List<String> selectColumns = allColumns;
+		if (!versionColumns.isEmpty())
+		{
+			selectColumns = new ArrayList<String>(primaryKeyColumns.size() + versionColumns.size());
+			selectColumns.addAll(primaryKeyColumns);
+			selectColumns.addAll(versionColumns);
+		}
 		
-		boolean sourceAutoCommit = sourceConnection.getAutoCommit();
-		boolean targetAutoCommit = targetConnection.getAutoCommit();
+		// Retrieve table rows in primary key order
+		final String selectSQL = String.format("SELECT %s FROM %s ORDER BY %s", Strings.join(selectColumns, Strings.PADDED_COMMA), tableName, Strings.join(primaryKeyColumns, Strings.PADDED_COMMA)); //$NON-NLS-1$
+		String primaryKeyWhereClause = Strings.join(new StringBuilder(), primaryKeyColumns, " = ? AND ").append(" = ?").toString(); //$NON-NLS-1$
+		String selectAllSQL = !versionColumns.isEmpty() ? String.format("SELECT %s FROM %s WHERE %s", Strings.join(nonPrimaryKeyColumns, Strings.PADDED_COMMA), tableName, primaryKeyWhereClause) : null;
+		String deleteSQL = String.format("DELETE FROM %s WHERE %s", tableName, primaryKeyWhereClause);
+		String insertSQL = String.format("INSERT INTO %s (%s) VALUES (%s)", tableName, Strings.join(allColumns, Strings.PADDED_COMMA), Strings.join(Collections.nCopies(allColumns.size(), Strings.QUESTION), Strings.PADDED_COMMA)); //$NON-NLS-1$
+		String updateSQL = !nonPrimaryKeyColumns.isEmpty() ? String.format("UPDATE %s SET %s = ? WHERE %s", tableName, Strings.join(nonPrimaryKeyColumns, " = ?, "), primaryKeyWhereClause) : null;
 		
-		targetConnection.setAutoCommit(true);
-		
-		SynchronizationSupport support = context.getSynchronizationSupport();
-		
-		support.dropForeignKeys();
-		support.dropUniqueConstraints();
-		
-		sourceConnection.setAutoCommit(false);
-		targetConnection.setAutoCommit(false);
-		
+		Connection targetConnection = context.getConnection(context.getTargetDatabase());
+		final Statement targetStatement = targetConnection.createStatement();
+
 		try
 		{
+			targetStatement.setFetchSize(this.fetchSize);
+			
+			Callable<ResultSet> callable = new Callable<ResultSet>()
+			{
+				@Override
+				public ResultSet call() throws SQLException
+				{
+					logger.log(Level.DEBUG, selectSQL);
+					return targetStatement.executeQuery(selectSQL);
+				}
+			};
+	
+			Future<ResultSet> future = context.getExecutor().submit(callable);
+			
+			Connection sourceConnection = context.getConnection(context.getSourceDatabase());
+			Statement sourceStatement = sourceConnection.createStatement();
+			
 			try
 			{
-				for (TableProperties table: context.getSourceDatabaseProperties().getTables())
-				{
-					String tableName = table.getName().getDMLName();
-					
-					UniqueConstraint primaryKey = table.getPrimaryKey();
-					
-					if (primaryKey == null)
-					{
-						throw new SQLException(Messages.PRIMARY_KEY_REQUIRED.getMessage(this.getClass().getName(), tableName));
-					}
-					
-					List<String> primaryKeyColumns = primaryKey.getColumnList();
-					
-					Collection<String> columns = table.getColumns();
-					
-					List<String> nonPrimaryKeyColumns = new ArrayList<String>(columns.size());
-					List<String> versionColumns = new ArrayList<String>(columns.size());
-					
-					for (String column: columns)
-					{
-						if (!primaryKeyColumns.contains(column))
-						{
-							// Try to find a version column
-							if ((this.versionPattern != null) && this.versionPattern.matcher(column).matches())
-							{
-								versionColumns.add(column);
-							}
-							
-							nonPrimaryKeyColumns.add(column);
-						}
-					}
-					
-					// List of columns for select statement - starting with primary key
-					List<String> allColumns = new ArrayList<String>(columns.size());
-					allColumns.addAll(primaryKeyColumns);
-					allColumns.addAll(nonPrimaryKeyColumns);
-
-					List<String> selectColumns = allColumns;
-					if (!versionColumns.isEmpty())
-					{
-						selectColumns = new ArrayList<String>(primaryKeyColumns.size() + versionColumns.size());
-						selectColumns.addAll(primaryKeyColumns);
-						selectColumns.addAll(versionColumns);
-					}
-					
-					// Retrieve table rows in primary key order
-					final String selectSQL = String.format("SELECT %s FROM %s ORDER BY %s", Strings.join(selectColumns, Strings.PADDED_COMMA), tableName, Strings.join(primaryKeyColumns, Strings.PADDED_COMMA)); //$NON-NLS-1$
-					
-					final Statement targetStatement = targetConnection.createStatement();
-	
-					targetStatement.setFetchSize(this.fetchSize);
-					
-					logger.log(Level.DEBUG, selectSQL);
-					
-					Callable<ResultSet> callable = new Callable<ResultSet>()
-					{
-						@Override
-						public ResultSet call() throws SQLException
-						{
-							return targetStatement.executeQuery(selectSQL);
-						}
-					};
+				sourceStatement.setFetchSize(this.fetchSize);
+				
+				ResultSet sourceResultSet = sourceStatement.executeQuery(selectSQL);
 		
-					Future<ResultSet> future = executor.submit(callable);
-					
-					Statement sourceStatement = sourceConnection.createStatement();
-					sourceStatement.setFetchSize(this.fetchSize);
-					
-					ResultSet sourceResultSet = sourceStatement.executeQuery(selectSQL);
-	
-					ResultSet targetResultSet = future.get();
-					
-					String primaryKeyWhereClause = Strings.join(new StringBuilder(), primaryKeyColumns, " = ? AND ").append(" = ?").toString(); //$NON-NLS-1$
-					
-					// Construct DELETE SQL
-					String deleteSQL = String.format("DELETE FROM %s WHERE %s", tableName, primaryKeyWhereClause);
-					
+				ResultSet targetResultSet = future.get();
+				
+				PreparedStatement selectAllStatement = null;
+				if (!versionColumns.isEmpty())
+				{
+					logger.log(Level.DEBUG, selectAllSQL);
+					selectAllStatement = targetConnection.prepareStatement(selectAllSQL);
+				}
+				
+				try
+				{
 					logger.log(Level.DEBUG, deleteSQL);
-					
 					PreparedStatement deleteStatement = targetConnection.prepareStatement(deleteSQL);
 					
-					PreparedStatement selectAllStatement = null;
-					if (!versionColumns.isEmpty())
+					try
 					{
-						String selectAllSQL = String.format("SELECT %s FROM %s WHERE %s", Strings.join(nonPrimaryKeyColumns, Strings.PADDED_COMMA), tableName, primaryKeyWhereClause);
+						logger.log(Level.DEBUG, insertSQL);
+						PreparedStatement insertStatement = targetConnection.prepareStatement(insertSQL);
 						
-						logger.log(Level.DEBUG, selectAllSQL);
-						
-						selectAllStatement = targetConnection.prepareStatement(selectAllSQL);
-					}
-					
-					// Construct INSERT SQL
-					String insertSQL = String.format("INSERT INTO %s (%s) VALUES (%s)", tableName, Strings.join(allColumns, Strings.PADDED_COMMA), Strings.join(Collections.nCopies(allColumns.size(), Strings.QUESTION), Strings.PADDED_COMMA)); //$NON-NLS-1$
-					
-					logger.log(Level.DEBUG, insertSQL);
-					
-					PreparedStatement insertStatement = targetConnection.prepareStatement(insertSQL);
-					
-					// Construct UPDATE SQL
-					PreparedStatement updateStatement = null;
-					
-					if (!nonPrimaryKeyColumns.isEmpty())
-					{
-						String updateSQL = String.format("UPDATE %s SET %s = ? WHERE %s", tableName, Strings.join(nonPrimaryKeyColumns, " = ?, "), primaryKeyWhereClause);
-						
-						logger.log(Level.DEBUG, updateSQL);
-						
-						updateStatement = targetConnection.prepareStatement(updateSQL);
-					}
-					
-					boolean hasMoreSourceResults = sourceResultSet.next();
-					boolean hasMoreTargetResults = targetResultSet.next();
-					
-					int insertCount = 0;
-					int updateCount = 0;
-					int deleteCount = 0;
-					
-					while (hasMoreSourceResults || hasMoreTargetResults)
-					{
-						int compare = 0;
-						
-						if (!hasMoreSourceResults)
+						try
 						{
-							compare = 1;
-						}
-						else if (!hasMoreTargetResults)
-						{
-							compare = -1;
-						}
-						else
-						{
-							for (int i = 1; i <= primaryKeyColumns.size(); ++i)
+							// Construct UPDATE SQL
+							PreparedStatement updateStatement = null;
+							
+							if (!nonPrimaryKeyColumns.isEmpty())
 							{
-								Object sourceObject = sourceResultSet.getObject(i);
-								Object targetObject = targetResultSet.getObject(i);
+								logger.log(Level.DEBUG, updateSQL);
+								updateStatement = targetConnection.prepareStatement(updateSQL);
+							}
+							
+							try
+							{
+								boolean hasMoreSourceResults = sourceResultSet.next();
+								boolean hasMoreTargetResults = targetResultSet.next();
 								
-								// We assume that the primary keys column types are Comparable
-								compare = this.compare(sourceObject, targetObject);
+								int insertCount = 0;
+								int updateCount = 0;
+								int deleteCount = 0;
 								
-								if (compare != 0)
+								while (hasMoreSourceResults || hasMoreTargetResults)
 								{
-									break;
-								}
-							}
-						}
-						
-						if (compare > 0)
-						{
-							deleteStatement.clearParameters();
-							
-							for (int i = 1; i <= primaryKeyColumns.size(); ++i)
-							{
-								int type = dialect.getColumnType(table.getColumnProperties(allColumns.get(i - 1)));
-								
-								deleteStatement.setObject(i, targetResultSet.getObject(i), type);
-							}
-							
-							deleteStatement.addBatch();
-							
-							deleteCount += 1;
-							
-							if ((deleteCount % this.maxBatchSize) == 0)
-							{
-								deleteStatement.executeBatch();
-								deleteStatement.clearBatch();
-							}
-						}
-						else if (compare < 0)
-						{
-							insertStatement.clearParameters();
-							
-							for (int i = 1; i <= primaryKeyColumns.size(); ++i)
-							{
-								int type = dialect.getColumnType(table.getColumnProperties(allColumns.get(i - 1)));
-								
-								insertStatement.setObject(i, sourceResultSet.getObject(i), type);
-							}
-							
-							if (versionColumns.isEmpty())
-							{
-								for (int i = primaryKeyColumns.size() + 1; i <= allColumns.size(); ++i)
-								{
-									int type = dialect.getColumnType(table.getColumnProperties(allColumns.get(i - 1)));
-	
-									Object object = support.getObject(sourceResultSet, i, type);
+									int compare = 0;
 									
-									if (sourceResultSet.wasNull())
+									if (!hasMoreSourceResults)
 									{
-										insertStatement.setNull(i, type);
+										compare = 1;
+									}
+									else if (!hasMoreTargetResults)
+									{
+										compare = -1;
 									}
 									else
 									{
-										insertStatement.setObject(i, object, type);
-									}
-								}
-							}
-							else
-							{
-								if (selectAllStatement != null)
-								{
-									selectAllStatement.clearParameters();
-									
-									for (int i = 1; i <= primaryKeyColumns.size(); ++i)
-									{
-										int type = dialect.getColumnType(table.getColumnProperties(allColumns.get(i - 1)));
-										
-										selectAllStatement.setObject(i, sourceResultSet.getObject(i), type);
-									}
-									
-									ResultSet selectAllResultSet = selectAllStatement.executeQuery();
-
-									for (int i = primaryKeyColumns.size() + 1; i <= allColumns.size(); ++i)
-									{
-										int type = dialect.getColumnType(table.getColumnProperties(allColumns.get(i - 1)));
-										
-										Object object = support.getObject(selectAllResultSet, i - primaryKeyColumns.size(), type);
-										
-										if (selectAllResultSet.wasNull())
+										for (int i = 1; i <= primaryKeyColumns.size(); ++i)
 										{
-											insertStatement.setNull(i, type);
+											Object sourceObject = sourceResultSet.getObject(i);
+											Object targetObject = targetResultSet.getObject(i);
+											
+											// We assume that the primary keys column types are Comparable
+											compare = this.compare(sourceObject, targetObject);
+											
+											if (compare != 0)
+											{
+												break;
+											}
+										}
+									}
+									
+									if (compare > 0)
+									{
+										deleteStatement.clearParameters();
+										
+										for (int i = 1; i <= primaryKeyColumns.size(); ++i)
+										{
+											int type = context.getDialect().getColumnType(table.getColumnProperties(allColumns.get(i - 1)));
+											
+											deleteStatement.setObject(i, targetResultSet.getObject(i), type);
+										}
+										
+										deleteStatement.addBatch();
+										
+										deleteCount += 1;
+										
+										if ((deleteCount % this.maxBatchSize) == 0)
+										{
+											deleteStatement.executeBatch();
+											deleteStatement.clearBatch();
+										}
+									}
+									else if (compare < 0)
+									{
+										insertStatement.clearParameters();
+										
+										for (int i = 1; i <= primaryKeyColumns.size(); ++i)
+										{
+											int type = context.getDialect().getColumnType(table.getColumnProperties(allColumns.get(i - 1)));
+											
+											insertStatement.setObject(i, sourceResultSet.getObject(i), type);
+										}
+										
+										if (versionColumns.isEmpty())
+										{
+											for (int i = primaryKeyColumns.size() + 1; i <= allColumns.size(); ++i)
+											{
+												int type = context.getDialect().getColumnType(table.getColumnProperties(allColumns.get(i - 1)));
+						
+												Object object = context.getSynchronizationSupport().getObject(sourceResultSet, i, type);
+												
+												if (sourceResultSet.wasNull())
+												{
+													insertStatement.setNull(i, type);
+												}
+												else
+												{
+													insertStatement.setObject(i, object, type);
+												}
+											}
 										}
 										else
 										{
-											insertStatement.setObject(i, object, type);
+											if (selectAllStatement != null)
+											{
+												selectAllStatement.clearParameters();
+												
+												for (int i = 1; i <= primaryKeyColumns.size(); ++i)
+												{
+													int type = context.getDialect().getColumnType(table.getColumnProperties(allColumns.get(i - 1)));
+													
+													selectAllStatement.setObject(i, sourceResultSet.getObject(i), type);
+												}
+												
+												ResultSet selectAllResultSet = selectAllStatement.executeQuery();
+						
+												for (int i = primaryKeyColumns.size() + 1; i <= allColumns.size(); ++i)
+												{
+													int type = context.getDialect().getColumnType(table.getColumnProperties(allColumns.get(i - 1)));
+													
+													Object object = context.getSynchronizationSupport().getObject(selectAllResultSet, i - primaryKeyColumns.size(), type);
+													
+													if (selectAllResultSet.wasNull())
+													{
+														insertStatement.setNull(i, type);
+													}
+													else
+													{
+														insertStatement.setObject(i, object, type);
+													}
+												}
+											}
 										}
-									}
-								}
-							}
-								
-							insertStatement.addBatch();
-							
-							insertCount += 1;
-							
-							if ((insertCount % this.maxBatchSize) == 0)
-							{
-								insertStatement.executeBatch();
-								insertStatement.clearBatch();
-							}
-						}
-						else if (updateStatement != null) // if (compare == 0)
-						{
-							updateStatement.clearParameters();
-							
-							boolean updated = false;
-							
-							for (int i = primaryKeyColumns.size() + 1; i <= selectColumns.size(); ++i)
-							{
-								int type = dialect.getColumnType(table.getColumnProperties(selectColumns.get(i - 1)));
-								
-								Object sourceObject = support.getObject(sourceResultSet, i, type);
-								Object targetObject = support.getObject(targetResultSet, i, type);
-								
-								int index = i - primaryKeyColumns.size();
-								
-								if (sourceResultSet.wasNull())
-								{
-									updateStatement.setNull(index, type);
-									
-									updated |= !targetResultSet.wasNull();
-								}
-								else
-								{
-									updateStatement.setObject(index, sourceObject, type);
-									
-									updated |= targetResultSet.wasNull();
-									updated |= !Objects.equals(sourceObject, targetObject);
-								}
-							}
-							
-							if (updated)
-							{
-								if (selectAllStatement != null)
-								{
-									selectAllStatement.clearParameters();
-									
-									for (int i = 1; i <= primaryKeyColumns.size(); ++i)
-									{
-										int type = dialect.getColumnType(table.getColumnProperties(allColumns.get(i - 1)));
+											
+										insertStatement.addBatch();
 										
-										selectAllStatement.setObject(i, sourceResultSet.getObject(i), type);
-									}
-									
-									ResultSet selectAllResultSet = selectAllStatement.executeQuery();
-
-									for (int i = primaryKeyColumns.size() + 1; i <= allColumns.size(); ++i)
-									{
-										int type = dialect.getColumnType(table.getColumnProperties(allColumns.get(i - 1)));
+										insertCount += 1;
 										
-										int index = i - primaryKeyColumns.size();
-										
-										Object object = support.getObject(selectAllResultSet, index, type);
-										
-										if (selectAllResultSet.wasNull())
+										if ((insertCount % this.maxBatchSize) == 0)
 										{
-											updateStatement.setNull(index, type);
+											insertStatement.executeBatch();
+											insertStatement.clearBatch();
 										}
-										else
+									}
+									else if (updateStatement != null) // if (compare == 0)
+									{
+										updateStatement.clearParameters();
+										
+										boolean updated = false;
+										
+										for (int i = primaryKeyColumns.size() + 1; i <= selectColumns.size(); ++i)
 										{
-											updateStatement.setObject(index, object, type);
+											int type = context.getDialect().getColumnType(table.getColumnProperties(selectColumns.get(i - 1)));
+											
+											Object sourceObject = context.getSynchronizationSupport().getObject(sourceResultSet, i, type);
+											Object targetObject = context.getSynchronizationSupport().getObject(targetResultSet, i, type);
+											
+											int index = i - primaryKeyColumns.size();
+											
+											if (sourceResultSet.wasNull())
+											{
+												updateStatement.setNull(index, type);
+												
+												updated |= !targetResultSet.wasNull();
+											}
+											else
+											{
+												updateStatement.setObject(index, sourceObject, type);
+												
+												updated |= targetResultSet.wasNull();
+												updated |= !Objects.equals(sourceObject, targetObject);
+											}
 										}
+										
+										if (updated)
+										{
+											if (selectAllStatement != null)
+											{
+												selectAllStatement.clearParameters();
+												
+												for (int i = 1; i <= primaryKeyColumns.size(); ++i)
+												{
+													int type = context.getDialect().getColumnType(table.getColumnProperties(allColumns.get(i - 1)));
+													
+													selectAllStatement.setObject(i, sourceResultSet.getObject(i), type);
+												}
+												
+												ResultSet selectAllResultSet = selectAllStatement.executeQuery();
+						
+												for (int i = primaryKeyColumns.size() + 1; i <= allColumns.size(); ++i)
+												{
+													int type = context.getDialect().getColumnType(table.getColumnProperties(allColumns.get(i - 1)));
+													
+													int index = i - primaryKeyColumns.size();
+													
+													Object object = context.getSynchronizationSupport().getObject(selectAllResultSet, index, type);
+													
+													if (selectAllResultSet.wasNull())
+													{
+														updateStatement.setNull(index, type);
+													}
+													else
+													{
+														updateStatement.setObject(index, object, type);
+													}
+												}
+											}
+											
+											for (int i = 1; i <= primaryKeyColumns.size(); ++i)
+											{
+												int type = context.getDialect().getColumnType(table.getColumnProperties(allColumns.get(i - 1)));
+												
+												updateStatement.setObject(i + nonPrimaryKeyColumns.size(), targetResultSet.getObject(i), type);
+											}
+											
+											updateStatement.addBatch();
+											
+											updateCount += 1;
+											
+											if ((updateCount % this.maxBatchSize) == 0)
+											{
+												updateStatement.executeBatch();
+												updateStatement.clearBatch();
+											}
+										}
+									}
+									
+									if (hasMoreSourceResults && (compare <= 0))
+									{
+										hasMoreSourceResults = sourceResultSet.next();
+									}
+									
+									if (hasMoreTargetResults && (compare >= 0))
+									{
+										hasMoreTargetResults = targetResultSet.next();
 									}
 								}
 								
-								for (int i = 1; i <= primaryKeyColumns.size(); ++i)
+								if ((deleteCount % this.maxBatchSize) > 0)
 								{
-									int type = dialect.getColumnType(table.getColumnProperties(allColumns.get(i - 1)));
-									
-									updateStatement.setObject(i + nonPrimaryKeyColumns.size(), targetResultSet.getObject(i), type);
+									deleteStatement.executeBatch();
 								}
 								
-								updateStatement.addBatch();
-								
-								updateCount += 1;
-								
-								if ((updateCount % this.maxBatchSize) == 0)
+								if ((insertCount % this.maxBatchSize) > 0)
 								{
-									updateStatement.executeBatch();
-									updateStatement.clearBatch();
+									insertStatement.executeBatch();
 								}
+								
+								if (updateStatement != null)
+								{
+									if ((updateCount % this.maxBatchSize) > 0)
+									{
+										updateStatement.executeBatch();
+									}
+								}
+								
+								logger.log(Level.INFO, Messages.INSERT_COUNT.getMessage(), insertCount, tableName);
+								logger.log(Level.INFO, Messages.UPDATE_COUNT.getMessage(), updateCount, tableName);
+								logger.log(Level.INFO, Messages.DELETE_COUNT.getMessage(), deleteCount, tableName);
+							}
+							finally
+							{
+								Resources.close(updateStatement);
 							}
 						}
-						
-						if (hasMoreSourceResults && (compare <= 0))
+						finally
 						{
-							hasMoreSourceResults = sourceResultSet.next();
-						}
-						
-						if (hasMoreTargetResults && (compare >= 0))
-						{
-							hasMoreTargetResults = targetResultSet.next();
+							Resources.close(insertStatement);
 						}
 					}
-					
-					if ((deleteCount % this.maxBatchSize) > 0)
+					finally
 					{
-						deleteStatement.executeBatch();
+						Resources.close(deleteStatement);
 					}
-					
-					Resources.close(deleteStatement);
-					
-					if ((insertCount % this.maxBatchSize) > 0)
-					{
-						insertStatement.executeBatch();
-					}
-					
-					Resources.close(insertStatement);
-					
-					if (updateStatement != null)
-					{
-						if ((updateCount % this.maxBatchSize) > 0)
-						{
-							updateStatement.executeBatch();
-						}
-						
-						Resources.close(updateStatement);
-					}
-					
-					if (selectAllStatement != null)
-					{
-						Resources.close(selectAllStatement);
-					}
-					
-					Resources.close(targetStatement);
-					Resources.close(sourceStatement);
-					
-					targetConnection.commit();
-					
-					logger.log(Level.INFO, Messages.INSERT_COUNT.getMessage(), insertCount, tableName);
-					logger.log(Level.INFO, Messages.UPDATE_COUNT.getMessage(), updateCount, tableName);
-					logger.log(Level.INFO, Messages.DELETE_COUNT.getMessage(), deleteCount, tableName);
 				}
-			}
-			catch (ExecutionException e)
-			{
-				support.rollback(targetConnection);
-				
-				throw ExceptionType.getExceptionFactory(SQLException.class).createException(e.getCause());
+				finally
+				{
+					Resources.close(selectAllStatement);
+				}
 			}
 			catch (InterruptedException e)
 			{
-				support.rollback(targetConnection);
-				
+				Thread.currentThread().interrupt();
 				throw new SQLException(e);
 			}
-			catch (SQLException e)
+			catch (ExecutionException e)
 			{
-				support.rollback(targetConnection);
-				
-				throw e;
+				throw ExceptionType.getExceptionFactory(SQLException.class).createException(e.getCause());
 			}
-			
-			targetConnection.setAutoCommit(true);
-			
-			support.restoreUniqueConstraints();
-			support.restoreForeignKeys();
-			
-			support.synchronizeIdentityColumns();
-			support.synchronizeSequences();
+			finally
+			{
+				Resources.close(sourceStatement);
+			}
 		}
 		finally
 		{
-			sourceConnection.setAutoCommit(sourceAutoCommit);
-			targetConnection.setAutoCommit(targetAutoCommit);
+			Resources.close(targetStatement);
 		}
 	}
 	
@@ -574,23 +582,5 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 	public void setVersionPattern(String versionPattern)
 	{
 		this.versionPattern = (versionPattern != null) ? Pattern.compile(versionPattern, Pattern.CASE_INSENSITIVE) : null;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.SynchronizationStrategy#init(net.sf.hajdbc.DatabaseCluster)
-	 */
-	@Override
-	public <Z, D extends Database<Z>> void init(DatabaseCluster<Z, D> cluster)
-	{
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.SynchronizationStrategy#destroy(net.sf.hajdbc.DatabaseCluster)
-	 */
-	@Override
-	public <Z, D extends Database<Z>> void destroy(DatabaseCluster<Z, D> cluster)
-	{
 	}
 }

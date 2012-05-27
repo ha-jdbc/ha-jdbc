@@ -41,6 +41,7 @@ import net.sf.hajdbc.util.Strings;
  */
 public class DumpRestoreSynchronizationStrategy implements SynchronizationStrategy
 {
+	private static final long serialVersionUID = 5743532034969216540L;
 	private static final String DUMP_FILE_SUFFIX = ".dump";
 
 	/**

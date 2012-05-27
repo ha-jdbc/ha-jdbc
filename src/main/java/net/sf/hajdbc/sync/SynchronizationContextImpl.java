@@ -19,6 +19,7 @@ package net.sf.hajdbc.sync;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -32,6 +33,9 @@ import net.sf.hajdbc.DatabaseProperties;
 import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.balancer.Balancer;
 import net.sf.hajdbc.codec.Codec;
+import net.sf.hajdbc.logging.Level;
+import net.sf.hajdbc.logging.Logger;
+import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.util.Resources;
 
 /**
@@ -40,13 +44,15 @@ import net.sf.hajdbc.util.Resources;
  */
 public class SynchronizationContextImpl<Z, D extends Database<Z>> implements SynchronizationContext<Z, D>
 {
+	private static final Logger logger = LoggerFactory.getLogger(SynchronizationContextImpl.class);
+	
 	private final Set<D> activeDatabaseSet;
 	private final D sourceDatabase;
 	private final D targetDatabase;
 	private final DatabaseCluster<Z, D> cluster;
 	private final DatabaseProperties sourceDatabaseProperties;
 	private final DatabaseProperties targetDatabaseProperties;
-	private final Map<D, Connection> connectionMap = new HashMap<D, Connection>();
+	private final Map<D, Map.Entry<Connection, Boolean>> connectionMap = new HashMap<D, Map.Entry<Connection, Boolean>>();
 	private final ExecutorService executor;
 	
 	/**
@@ -78,16 +84,17 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 	@Override
 	public Connection getConnection(D database) throws SQLException
 	{
-		Connection connection = this.connectionMap.get(database);
+		Map.Entry<Connection, Boolean> entry = this.connectionMap.get(database);
 		
-		if (connection == null)
+		if (entry == null)
 		{
-			connection = database.connect(database.createConnectionSource(), database.decodePassword(this.cluster.getCodec()));
+			Connection connection = database.connect(database.createConnectionSource(), database.decodePassword(this.cluster.getCodec()));
+			entry = new AbstractMap.SimpleImmutableEntry<Connection, Boolean>(connection, connection.getAutoCommit());
 			
-			this.connectionMap.put(database, connection);
+			this.connectionMap.put(database, entry);
 		}
 		
-		return connection;
+		return entry.getKey();
 	}
 	
 	/**
@@ -179,8 +186,19 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 	@Override
 	public void close()
 	{
-		for (Connection connection: this.connectionMap.values())
+		for (Map.Entry<Connection, Boolean> entry: this.connectionMap.values())
 		{
+			Connection connection = entry.getKey();
+			
+			try
+			{
+				connection.setAutoCommit(entry.getValue());
+			}
+			catch (SQLException e)
+			{
+				logger.log(Level.WARN, e);
+			}
+
 			Resources.close(connection);
 		}
 		

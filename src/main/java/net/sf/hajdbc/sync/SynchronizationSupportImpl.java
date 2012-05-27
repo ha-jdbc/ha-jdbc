@@ -73,6 +73,7 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 		Dialect dialect = this.context.getDialect();
 		
 		Connection connection = this.context.getConnection(this.context.getTargetDatabase());
+		connection.setAutoCommit(true);
 		
 		Statement statement = connection.createStatement();
 		
@@ -107,6 +108,7 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 		Dialect dialect = this.context.getDialect();
 		
 		Connection connection = this.context.getConnection(this.context.getTargetDatabase());
+		connection.setAutoCommit(true);
 		
 		Statement statement = connection.createStatement();
 		
