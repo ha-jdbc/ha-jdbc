@@ -77,14 +77,14 @@
 		<dependency>
 			<groupId>org.jgroups</groupId>
 			<artifactId>jgroups</artifactId>
-			<version>3.0.10.Final</version>
+			<version>3.1.0.Beta1</version>
 			<optional>true</optional>
 		</dependency>
 		<!-- Optional logging dependencies -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.6.4</version>
+			<version>1.6.6</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -103,13 +103,13 @@
 		<dependency>
 			<groupId>com.sleepycat</groupId>
 			<artifactId>je</artifactId>
-			<version>5.0.34</version>
+			<version>5.0.55</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.tmatesoft.sqljet</groupId>
 			<artifactId>sqljet</artifactId>
-			<version>1.1.2</version>
+			<version>1.1.3</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
