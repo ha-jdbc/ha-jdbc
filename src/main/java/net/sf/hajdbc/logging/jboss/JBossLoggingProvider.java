@@ -34,7 +34,7 @@ public class JBossLoggingProvider implements LoggingProvider
 	{
 		try
 		{
-			org.jboss.logging.Logger.getLogger(this.getClass());
+			this.getClass().getClassLoader().loadClass("org.jboss.logging.Logger");
 			return true;
 		}
 		catch (Throwable e)
