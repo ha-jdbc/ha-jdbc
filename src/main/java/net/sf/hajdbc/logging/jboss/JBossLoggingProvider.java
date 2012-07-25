@@ -32,8 +32,15 @@ public class JBossLoggingProvider implements LoggingProvider
 	@Override
 	public boolean isEnabled()
 	{
-		// If this class could be loaded, so can jboss logging.
-		return true;
+		try
+		{
+			org.jboss.logging.Logger.getLogger(this.getClass());
+			return true;
+		}
+		catch (Throwable e)
+		{
+			return false;
+		}
 	}
 
 	/**
