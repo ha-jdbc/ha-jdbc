@@ -53,7 +53,8 @@ public class XAExceptionFactoryTest
 		
 		XAException result = this.factory.createException(exception);
 		
-		assertNull(result.getMessage());
+		assertNotNull(result.getMessage());
+		assertEquals(exception.getMessage(), result.getMessage());
 		assertSame(exception, result.getCause());
 	}
 	
