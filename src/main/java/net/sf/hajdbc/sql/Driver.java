@@ -18,6 +18,7 @@
 package net.sf.hajdbc.sql;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.util.Map;
@@ -32,10 +33,14 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.ExceptionType;
+import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.invocation.InvocationStrategyEnum;
 import net.sf.hajdbc.invocation.Invoker;
-import net.sf.hajdbc.util.concurrent.MapRegistryStoreFactory;
+import net.sf.hajdbc.logging.Level;
+import net.sf.hajdbc.logging.Logger;
+import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.util.concurrent.LifecycleRegistry;
+import net.sf.hajdbc.util.concurrent.MapRegistryStoreFactory;
 import net.sf.hajdbc.util.concurrent.Registry;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
 import net.sf.hajdbc.xml.XMLDatabaseClusterConfigurationFactory;
@@ -48,7 +53,21 @@ public final class Driver extends AbstractDriver implements Registry.Factory<Str
 	private static final Pattern URL_PATTERN = Pattern.compile("jdbc:ha-jdbc:(?://)?([^/]+)(?:/.+)?"); //$NON-NLS-1$
 	private static final String CONFIG = "config"; //$NON-NLS-1$
 	
-	private volatile DatabaseClusterFactory<java.sql.Driver, DriverDatabase> factory = new DatabaseClusterFactoryImpl<java.sql.Driver, DriverDatabase>();
+        private static final Logger logger = LoggerFactory.getLogger(Driver.class);
+        
+        static
+        {
+                try
+                {
+                        DriverManager.registerDriver(new Driver());
+                }
+                catch (SQLException e)
+                {
+                        logger.log(Level.ERROR, e, Messages.DRIVER_REGISTER_FAILED.getMessage(), Driver.class.getName());
+                }
+        }
+
+        private volatile DatabaseClusterFactory<java.sql.Driver, DriverDatabase> factory = new DatabaseClusterFactoryImpl<java.sql.Driver, DriverDatabase>();
 	private volatile long timeout = 10;
 	private volatile TimeUnit timeoutUnit = TimeUnit.SECONDS;
 	

@@ -105,7 +105,10 @@ public abstract class AbstractInvocationHandler<Z, D extends Database<Z>, T, E e
 
 		Invoker<Z, D, T, R, E> invoker = this.getInvoker(object, method, parameters);
 		
-		this.logger.log(Level.TRACE, "Invoking " + method.getName() + " using " + strategy.getClass().getName());
+		if (this.logger.isLoggable(Level.DEBUG))
+		{
+			this.logger.log(Level.DEBUG, "Invoking " + method.getName() + " using " + strategy.getClass().getName());
+		}
 		
 		SortedMap<D, R> results = strategy.invoke(this, invoker);
 		
