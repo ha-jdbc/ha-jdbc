@@ -56,4 +56,9 @@ public class JBossLogger extends AbstractLogger
 	{
 		this.logger.logf(levels.get(level), e, pattern, args);
 	}
+
+	@Override
+	public boolean isLoggable(Level level) {
+		return this.logger.isEnabled(levels.get(level));
+	}
 }

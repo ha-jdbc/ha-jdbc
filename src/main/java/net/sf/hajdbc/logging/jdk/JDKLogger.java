@@ -69,4 +69,10 @@ public class JDKLogger extends AbstractLogger
 			}
 		}
 	}
+
+	@Override
+	public boolean isLoggable(Level level) {
+		java.util.logging.Level realLevel = levels.get(level);
+		return this.logger.isLoggable(realLevel);
+	}
 }

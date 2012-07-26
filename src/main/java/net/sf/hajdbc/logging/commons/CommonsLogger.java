@@ -137,4 +137,22 @@ public class CommonsLogger extends AbstractLogger
 			}
 		}
 	}
+
+	@Override
+	public boolean isLoggable(Level level) {
+		switch (level) {
+		case ERROR:
+			return this.log.isErrorEnabled();
+		case WARN:
+			return this.log.isWarnEnabled();
+		case INFO:
+			return this.log.isInfoEnabled();
+		case DEBUG:
+			return this.log.isDebugEnabled();
+		case TRACE:
+			return this.log.isTraceEnabled();
+		default:
+			return true;
+		}
+	}
 }

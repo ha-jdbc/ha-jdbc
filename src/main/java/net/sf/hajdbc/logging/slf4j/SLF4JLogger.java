@@ -136,4 +136,22 @@ public class SLF4JLogger extends AbstractLogger
 			}
 		}
 	}
+
+	@Override
+	public boolean isLoggable(Level level) {
+		switch (level) {
+		case ERROR:
+			return this.logger.isErrorEnabled();
+		case WARN:
+			return this.logger.isWarnEnabled();
+		case INFO:
+			return this.logger.isInfoEnabled();
+		case DEBUG:
+			return this.logger.isDebugEnabled();
+		case TRACE:
+			return this.logger.isTraceEnabled();
+		default:
+			return true;
+		}
+	}
 }

@@ -28,4 +28,6 @@ public interface Logger
 	void log(Level level, Throwable e, String pattern, Object... args);
 	
 	void log(Level level, Throwable e);
+	
+	boolean isLoggable(Level level);
 }
