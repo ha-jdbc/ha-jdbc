@@ -20,6 +20,9 @@
  */
 package net.sf.hajdbc.dialect;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -32,7 +35,6 @@ import java.sql.Statement;
 import java.util.Iterator;
 import java.util.Map;
 
-import junit.framework.Assert;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.SequenceProperties;
@@ -59,7 +61,7 @@ public class MaxDBDialectTest extends StandardDialectTest
 	@Override
 	public void getSequenceSupport()
 	{
-		Assert.assertSame(this.dialect, this.dialect.getSequenceSupport());
+		assertSame(this.dialect, this.dialect.getSequenceSupport());
 	}
 
 	/**
@@ -87,7 +89,7 @@ public class MaxDBDialectTest extends StandardDialectTest
 		
 		String result = this.dialect.getCreateForeignKeyConstraintSQL(key);
 		
-		Assert.assertEquals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE", result);
+		assertEquals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE", result);
 	}
 
 	/**
@@ -113,20 +115,20 @@ public class MaxDBDialectTest extends StandardDialectTest
 
 		verify(statement).close();
 		
-		Assert.assertEquals(2, result.size());
+		assertEquals(2, result.size());
 		
 		Iterator<Map.Entry<QualifiedName, Integer>> entries = result.entrySet().iterator();
 		Map.Entry<QualifiedName, Integer> entry = entries.next();
 
-		Assert.assertNull(entry.getKey().getSchema());
-		Assert.assertEquals("sequence1", entry.getKey().getName());
-		Assert.assertEquals(1, entry.getValue().intValue());
+		assertNull(entry.getKey().getSchema());
+		assertEquals("sequence1", entry.getKey().getName());
+		assertEquals(1, entry.getValue().intValue());
 		
 		entry = entries.next();
 
-		Assert.assertNull(entry.getKey().getSchema());
-		Assert.assertEquals("sequence2", entry.getKey().getName());
-		Assert.assertEquals(2, entry.getValue().intValue());
+		assertNull(entry.getKey().getSchema());
+		assertEquals("sequence2", entry.getKey().getName());
+		assertEquals(2, entry.getValue().intValue());
 	}
 
 	/**
@@ -136,7 +138,7 @@ public class MaxDBDialectTest extends StandardDialectTest
 	@Override
 	public void getSimpleSQL() throws SQLException
 	{
-		Assert.assertEquals("SELECT SYSDATE FROM DUAL", this.dialect.getSimpleSQL());
+		assertEquals("SELECT SYSDATE FROM DUAL", this.dialect.getSimpleSQL());
 	}
 
 	/**
@@ -154,7 +156,7 @@ public class MaxDBDialectTest extends StandardDialectTest
 		
 		String result = this.dialect.getTruncateTableSQL(table);
 		
-		Assert.assertEquals("TRUNCATE TABLE table", result);
+		assertEquals("TRUNCATE TABLE table", result);
 	}
 
 	/**
@@ -166,15 +168,15 @@ public class MaxDBDialectTest extends StandardDialectTest
 	{
 		SequenceSupport support = this.dialect.getSequenceSupport();
 		
-		Assert.assertEquals("sequence", support.parseSequence("SELECT sequence.nextval"));
-		Assert.assertEquals("sequence", support.parseSequence("SELECT sequence.currval"));
-		Assert.assertEquals("sequence", support.parseSequence("SELECT sequence.nextval, * FROM table"));
-		Assert.assertEquals("sequence", support.parseSequence("SELECT sequence.currval, * FROM table"));
-		Assert.assertEquals("sequence", support.parseSequence("INSERT INTO table VALUES (sequence.nextval, 0)"));
-		Assert.assertEquals("sequence", support.parseSequence("INSERT INTO table VALUES (sequence.currval, 0)"));
-		Assert.assertEquals("sequence", support.parseSequence("UPDATE table SET id = sequence.nextval"));
-		Assert.assertEquals("sequence", support.parseSequence("UPDATE table SET id = sequence.currval"));
-		Assert.assertNull(support.parseSequence("SELECT NEXT VALUE FOR sequence"));
+		assertEquals("sequence", support.parseSequence("SELECT sequence.nextval"));
+		assertEquals("sequence", support.parseSequence("SELECT sequence.currval"));
+		assertEquals("sequence", support.parseSequence("SELECT sequence.nextval, * FROM table"));
+		assertEquals("sequence", support.parseSequence("SELECT sequence.currval, * FROM table"));
+		assertEquals("sequence", support.parseSequence("INSERT INTO table VALUES (sequence.nextval, 0)"));
+		assertEquals("sequence", support.parseSequence("INSERT INTO table VALUES (sequence.currval, 0)"));
+		assertEquals("sequence", support.parseSequence("UPDATE table SET id = sequence.nextval"));
+		assertEquals("sequence", support.parseSequence("UPDATE table SET id = sequence.currval"));
+		assertNull(support.parseSequence("SELECT NEXT VALUE FOR sequence"));
 	}
 	
 	/**
@@ -192,6 +194,6 @@ public class MaxDBDialectTest extends StandardDialectTest
 		
 		String result = this.dialect.getSequenceSupport().getNextSequenceValueSQL(sequence);
 
-		Assert.assertEquals("SELECT sequence.NEXTVAL FROM DUAL", result);
+		assertEquals("SELECT sequence.NEXTVAL FROM DUAL", result);
 	}
 }
