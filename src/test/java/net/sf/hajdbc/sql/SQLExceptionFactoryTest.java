@@ -51,11 +51,13 @@ public class SQLExceptionFactoryTest
 	@Test
 	public void createExceptionFromException()
 	{
-		Exception exception = new Exception("message");
+		String message = "message";
+		Exception exception = new Exception(message);
 		
 		SQLException result = this.factory.createException(exception);
 		
-		assertNull(result.getMessage());
+		assertNotNull(result.getMessage());
+		assertSame(exception.getMessage(), result.getMessage());
 		assertSame(exception, result.getCause());
 	}
 	
