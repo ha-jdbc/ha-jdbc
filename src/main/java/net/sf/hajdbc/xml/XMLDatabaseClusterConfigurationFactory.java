@@ -143,9 +143,9 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 			Unmarshaller unmarshaller = JAXBContext.newInstance(this.targetClass).createUnmarshaller();
 			unmarshaller.setSchema(schema);
 			
-	      XMLReader reader = new PropertyReplacementFilter(XMLReaderFactory.createXMLReader());
-	      InputSource source = SAXSource.sourceToInputSource(this.streamFactory.createSource());
-	      
+			XMLReader reader = new PropertyReplacementFilter(XMLReaderFactory.createXMLReader());
+			InputSource source = SAXSource.sourceToInputSource(this.streamFactory.createSource());
+
 			return this.targetClass.cast(unmarshaller.unmarshal(new SAXSource(reader, source)));
 		}
 		catch (JAXBException e)
