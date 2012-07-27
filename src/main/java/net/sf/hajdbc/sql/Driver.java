@@ -33,8 +33,12 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.ExceptionType;
+import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.invocation.InvocationStrategyEnum;
 import net.sf.hajdbc.invocation.Invoker;
+import net.sf.hajdbc.logging.Level;
+import net.sf.hajdbc.logging.Logger;
+import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.util.concurrent.MapRegistryStoreFactory;
 import net.sf.hajdbc.util.concurrent.LifecycleRegistry;
 import net.sf.hajdbc.util.concurrent.Registry;
@@ -48,6 +52,7 @@ public final class Driver extends AbstractDriver implements Registry.Factory<Str
 {
 	private static final Pattern URL_PATTERN = Pattern.compile("jdbc:ha-jdbc:(?://)?([^/]+)(?:/.+)?"); //$NON-NLS-1$
 	private static final String CONFIG = "config"; //$NON-NLS-1$
+	private static final Logger logger = LoggerFactory.getLogger(Driver.class);
 
 	static
 	{
@@ -57,7 +62,7 @@ public final class Driver extends AbstractDriver implements Registry.Factory<Str
 		}
 		catch (SQLException e)
 		{
-			throw new IllegalStateException(e);
+			logger.log(Level.ERROR, Messages.DRIVER_REGISTER_FAILED.getMessage(Driver.class.getName()), e);
 		}
 	}
 
