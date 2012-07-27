@@ -380,7 +380,7 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 		String name = parts[parts.length - 1];
 		String schema = (parts.length > 1) ? parts[parts.length - 2] : defaultSchema;
 			
-		return new QualifiedNameImpl(schema, name, this.supportsSchemasInDDL, this.supportsSchemasInDML);
+		return new QualifiedNameImpl(this.quote(schema), this.quote(name), this.supportsSchemasInDDL, this.supportsSchemasInDML);
 	}
 	
 	/**
