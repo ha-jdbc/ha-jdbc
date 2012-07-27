@@ -12,6 +12,7 @@ import java.util.Arrays;
 
 import net.sf.hajdbc.cache.DatabaseMetaDataCacheFactoryEnum;
 import net.sf.hajdbc.dialect.DialectFactoryEnum;
+import net.sf.hajdbc.distributed.jgroups.DefaultChannelProvider;
 import net.sf.hajdbc.sql.DataSource;
 import net.sf.hajdbc.sql.DataSourceDatabase;
 import net.sf.hajdbc.sql.DataSourceDatabaseClusterConfiguration;
@@ -57,7 +58,8 @@ public class Test
 //		state.setUrlPattern("jdbc:hsqldb:{1}/{0}");
 //		state.setUrlPattern("jdbc:derby:{1}/{0};create=true");
 		config.setStateManagerFactory(state);
-		
+		config.setDispatcherFactory(new DefaultChannelProvider());
+
 		DataSource ds = new DataSource();
 		ds.setCluster("cluster");
 		ds.setConfigurationFactory(new SimpleDatabaseClusterConfigurationFactory<javax.sql.DataSource, DataSourceDatabase>(config));
