@@ -18,6 +18,7 @@
 package net.sf.hajdbc.sql;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.util.Map;
@@ -47,7 +48,19 @@ public final class Driver extends AbstractDriver implements Registry.Factory<Str
 {
 	private static final Pattern URL_PATTERN = Pattern.compile("jdbc:ha-jdbc:(?://)?([^/]+)(?:/.+)?"); //$NON-NLS-1$
 	private static final String CONFIG = "config"; //$NON-NLS-1$
-	
+
+	static
+	{
+		try
+		{
+			DriverManager.registerDriver(new Driver());
+		}
+		catch (SQLException e)
+		{
+			throw new IllegalStateException(e);
+		}
+	}
+
 	private volatile DatabaseClusterFactory<java.sql.Driver, DriverDatabase> factory = new DatabaseClusterFactoryImpl<java.sql.Driver, DriverDatabase>();
 	private volatile long timeout = 10;
 	private volatile TimeUnit timeoutUnit = TimeUnit.SECONDS;
