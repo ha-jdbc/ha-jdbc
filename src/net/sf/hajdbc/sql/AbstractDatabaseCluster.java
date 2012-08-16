@@ -207,20 +207,29 @@ public abstract class AbstractDatabaseCluster<D> implements DatabaseCluster<D>, 
 		{
 			try
 			{
-				map.get(futureMapEntry.getValue().get()).add(futureMapEntry.getKey());
+				map.get(this.getFutureValue(futureMapEntry.getValue(), true)).add(futureMapEntry.getKey());
 			}
 			catch (ExecutionException e)
 			{
 				// isAlive does not throw an exception
 				throw new IllegalStateException(e);
 			}
-			catch (InterruptedException e)
-			{
-				Thread.currentThread().interrupt();
-			}
 		}
 
 		return map;
+	}
+	
+	private <T> T getFutureValue(Future<T> future, T defaultValue) throws ExecutionException
+	{
+		try
+		{
+			return future.get();
+		}
+		catch (InterruptedException e)
+		{
+			Thread.currentThread().interrupt();
+			return defaultValue;
+		}
 	}
 	
 	boolean isAlive(Database<D> database)
