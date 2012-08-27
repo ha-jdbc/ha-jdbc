@@ -130,4 +130,6 @@ public interface DatabaseClusterConfiguration<Z, D extends Database<Z>> extends 
 	boolean isFairLocking();
 	
 	TransactionIdentifierFactory<? extends Object> getTransactionIdentifierFactory();
+	
+	boolean isEmptyClusterAllowed();
 }

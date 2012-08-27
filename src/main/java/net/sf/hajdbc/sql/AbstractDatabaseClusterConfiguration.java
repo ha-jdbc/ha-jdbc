@@ -501,6 +501,21 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	
 	/**
 	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#isEmptyClusterAllowed()
+	 */
+	@Override
+	public boolean isEmptyClusterAllowed()
+	{
+		return this.getNestedConfiguration().isEmptyClusterAllowed();
+	}
+
+	public void setEmptyClusterAllowed(boolean emptyClusterAllowed)
+	{
+		this.getNestedConfiguration().setEmptyClusterAllowed(emptyClusterAllowed);
+	}
+	
+	/**
+	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getTransactionIdentifierFactory()
 	 */
 	@Override
@@ -562,6 +577,8 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 
 		@XmlAttribute(name = "fair-locking")
 		private Boolean fairLocking = true;
+		@XmlAttribute(name = "allow-empty-cluster")
+		private Boolean emptyClusterAllowed = false;
 		
 		private String defaultSynchronizationStrategy;
 		
@@ -819,6 +836,20 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		public TransactionIdentifierFactory<? extends Object> getTransactionIdentifierFactory()
 		{
 			throw new IllegalStateException();
+		}
+
+		/* (non-Javadoc)
+		 * @see net.sf.hajdbc.DatabaseClusterConfiguration#isEmptyClusterAllowed()
+		 */
+		@Override
+		public boolean isEmptyClusterAllowed()
+		{
+			return this.emptyClusterAllowed;
+		}
+		
+		void setEmptyClusterAllowed(boolean emptyClusterAllowed)
+		{
+			this.emptyClusterAllowed = emptyClusterAllowed;
 		}
 	}
 
