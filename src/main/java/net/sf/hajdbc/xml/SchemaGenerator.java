@@ -19,7 +19,6 @@ package net.sf.hajdbc.xml;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.SchemaOutputResolver;
@@ -34,7 +33,7 @@ public class SchemaGenerator
 	{
 		try
 		{
-			assert (args.length != 3) : MessageFormat.format("Usage: java {0} <base-class-name> <base-directory> <filename>", SchemaGenerator.class.getName());
+			assert (args.length == 3) : String.format("Usage: java %s <base-class-name> <base-directory> <filename>", SchemaGenerator.class.getName());
 			
 			String baseClassName = args[0];
 			String baseDirectoryName = args[1];
@@ -53,8 +52,8 @@ public class SchemaGenerator
 					return new StreamResult(file);
 				}
 			};
-	
-			System.out.println("Generating schema to " + file.getPath());
+			
+			System.out.println(String.format("Generating schema to %s", file.getPath()));
 			
 			JAXBContext.newInstance(baseClass).generateSchema(resolver);
 		}
