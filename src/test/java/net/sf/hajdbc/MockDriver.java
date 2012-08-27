@@ -23,7 +23,9 @@ package net.sf.hajdbc;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverPropertyInfo;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 /**
  * Mock driver that creates mock connections
@@ -91,5 +93,11 @@ public class MockDriver implements Driver
 	public boolean jdbcCompliant()
 	{
 		return false;
+	}
+
+	@Override
+	public Logger getParentLogger() throws SQLFeatureNotSupportedException
+	{
+		return null;
 	}
 }

@@ -17,8 +17,11 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.io.PrintWriter;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 import javax.naming.Referenceable;
 
@@ -168,5 +171,62 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 	public void setTimeoutUnit(TimeUnit timeoutUnit)
 	{
 		this.timeoutUnit = timeoutUnit;
+	}
+
+	/**
+	 * @throws SQLFeatureNotSupportedException 
+	 * @see javax.sql.CommonDataSource#getParentLogger()
+	 */
+	@Override
+	public Logger getParentLogger() throws SQLFeatureNotSupportedException
+	{
+		try
+		{
+			return this.getProxy().getParentLogger();
+		}
+		catch (SQLFeatureNotSupportedException e)
+		{
+			throw e;
+		}
+		catch (SQLException e)
+		{
+			throw new SQLFeatureNotSupportedException(e.getMessage(), e.getSQLState(), e.getErrorCode(), e.getCause());
+		}
+	}
+
+	/**
+	 * @see javax.sql.CommonDataSource#getLoginTimeout()
+	 */
+	@Override
+	public int getLoginTimeout() throws SQLException
+	{
+		return this.getProxy().getLoginTimeout();
+	}
+
+	/**
+	 * @see javax.sql.CommonDataSource#getLogWriter()
+	 */
+	@Override
+	public PrintWriter getLogWriter() throws SQLException
+	{
+		return this.getProxy().getLogWriter();
+	}
+
+	/**
+	 * @see javax.sql.CommonDataSource#setLoginTimeout(int)
+	 */
+	@Override
+	public void setLoginTimeout(int timeout) throws SQLException
+	{
+		this.getProxy().setLoginTimeout(timeout);
+	}
+
+	/**
+	 * @see javax.sql.CommonDataSource#setLogWriter(java.io.PrintWriter)
+	 */
+	@Override
+	public void setLogWriter(PrintWriter writer) throws SQLException
+	{
+		this.getProxy().setLogWriter(writer);
 	}
 }

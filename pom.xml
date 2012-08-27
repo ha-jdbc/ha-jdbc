@@ -55,6 +55,11 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.jgroups</groupId>
+			<artifactId>jgroups</artifactId>
+			<version>3.1.0.Final</version>
+		</dependency>
+		<dependency>
 			<groupId>org.quartz-scheduler</groupId>
 			<artifactId>quartz</artifactId>
 			<version>2.1.6</version>
@@ -72,13 +77,6 @@
 					<artifactId>c3p0</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-		<!-- Optional command dispatcher dependencies -->
-		<dependency>
-			<groupId>org.jgroups</groupId>
-			<artifactId>jgroups</artifactId>
-			<version>3.1.0.Final</version>
-			<optional>true</optional>
 		</dependency>
 		<!-- Optional logging dependencies -->
 		<dependency>
@@ -174,12 +172,20 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
 				<version>1.0.1</version>
 				<configuration>
 					<rules>
 						<requireJavaVersion>
-							<version>1.6</version>
+							<version>1.7</version>
 						</requireJavaVersion>
 					</rules>
 				</configuration>

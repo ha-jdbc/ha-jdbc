@@ -888,7 +888,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 			
 			int size = databases.size();
 			
-			if (size > 1)
+			if ((size > 1) || DatabaseClusterImpl.this.configuration.isEmptyClusterAllowed())
 			{
 				List<D> deadList = new ArrayList<D>(size);
 				
@@ -900,7 +900,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 					}
 				}
 
-				if (deadList.size() < size)
+				if ((deadList.size() < size) || DatabaseClusterImpl.this.configuration.isEmptyClusterAllowed())
 				{
 					for (D database: deadList)
 					{

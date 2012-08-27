@@ -21,6 +21,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
@@ -81,5 +82,12 @@ public class PoolingDriver extends AbstractDriver
 	protected Pattern getUrlPattern()
 	{
 		return URL_PATTERN;
+	}
+
+//	@Override
+	public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

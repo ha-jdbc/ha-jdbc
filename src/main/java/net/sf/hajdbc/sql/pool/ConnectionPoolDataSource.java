@@ -17,7 +17,6 @@
  */
 package net.sf.hajdbc.sql.pool;
 
-import java.io.PrintWriter;
 import java.sql.SQLException;
 
 import javax.naming.NamingException;
@@ -56,42 +55,6 @@ public class ConnectionPoolDataSource extends CommonDataSource<javax.sql.Connect
 	public PooledConnection getPooledConnection(String user, String password) throws SQLException
 	{
 		return this.getProxy().getPooledConnection(user, password);
-	}
-
-	/**
-	 * @see javax.sql.CommonDataSource#getLoginTimeout()
-	 */
-	@Override
-	public int getLoginTimeout() throws SQLException
-	{
-		return this.getProxy().getLoginTimeout();
-	}
-
-	/**
-	 * @see javax.sql.CommonDataSource#getLogWriter()
-	 */
-	@Override
-	public PrintWriter getLogWriter() throws SQLException
-	{
-		return this.getProxy().getLogWriter();
-	}
-
-	/**
-	 * @see javax.sql.CommonDataSource#setLoginTimeout(int)
-	 */
-	@Override
-	public void setLoginTimeout(int timeout) throws SQLException
-	{
-		this.getProxy().setLoginTimeout(timeout);
-	}
-
-	/**
-	 * @see javax.sql.CommonDataSource#setLogWriter(java.io.PrintWriter)
-	 */
-	@Override
-	public void setLogWriter(PrintWriter writer) throws SQLException
-	{
-		this.getProxy().setLogWriter(writer);
 	}
 
 	/**

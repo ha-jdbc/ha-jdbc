@@ -7,8 +7,10 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 import net.sf.hajdbc.cache.DatabaseMetaDataCacheFactoryEnum;
 import net.sf.hajdbc.dialect.DialectFactoryEnum;
@@ -196,6 +198,12 @@ public class Test
 
 		@Override
 		public <T> T unwrap(Class<T> arg0) throws SQLException
+		{
+			return null;
+		}
+
+		@Override
+		public Logger getParentLogger() throws SQLFeatureNotSupportedException
 		{
 			return null;
 		}

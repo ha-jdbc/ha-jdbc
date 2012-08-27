@@ -21,6 +21,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
@@ -213,5 +214,14 @@ public final class Driver extends AbstractDriver implements Registry.Factory<Str
 	public TimeUnit getTimeoutUnit()
 	{
 		return this.timeoutUnit;
+	}
+
+	/**
+	 * @see java.sql.Driver#getParentLogger()
+	 */
+	@Override
+	public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException
+	{
+		throw new SQLFeatureNotSupportedException();
 	}
 }
