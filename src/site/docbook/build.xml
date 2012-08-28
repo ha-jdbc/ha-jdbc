@@ -27,9 +27,9 @@
 		<listitem><para><ulink url="source-repository.html">Version control</ulink></para></listitem>
 	</itemizedlist>
 	<section>
-		<title>Requirements</title>
+		<title>Build requirements</title>
 		<itemizedlist>
-			<listitem><para><ulink url="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK 1.6+</ulink></para></listitem>
+			<listitem><para><ulink url="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK 1.7+</ulink></para></listitem>
 			<listitem><para><ulink url="http://maven.apache.org/download.html">Maven 3.0+</ulink></para></listitem>
 		</itemizedlist>
 	</section>

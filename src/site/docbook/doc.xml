@@ -50,7 +50,7 @@
 		<title>Requirements</title>
 		<itemizedlist>
 			<listitem><para>Java 1.6+</para></listitem>
-			<listitem><para>Type IV JDBC driver for underlying databases</para></listitem>
+			<listitem><para>Type IV JDBC 4.x driver for underlying databases</para></listitem>
 			<listitem><para>Configuration XML file per database cluster</para></listitem>
 		</itemizedlist>
 	</section>
