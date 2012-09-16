@@ -121,6 +121,7 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 				catch (InterruptedException e)
 				{
 					// Occurs when executing tasks are interrupted during shutdownNow()
+					Thread.currentThread().interrupt();
 				}
 			}
 		};
