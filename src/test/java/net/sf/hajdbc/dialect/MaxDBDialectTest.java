@@ -41,6 +41,7 @@ import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.cache.ForeignKeyConstraintImpl;
+import net.sf.hajdbc.dialect.maxdb.MaxDBDialectFactory;
 
 /**
  * @author Paul Ferraro
@@ -51,7 +52,7 @@ public class MaxDBDialectTest extends StandardDialectTest
 {
 	public MaxDBDialectTest()
 	{
-		super(DialectFactoryEnum.MAXDB);
+		super(new MaxDBDialectFactory());
 	}
 
 	/**

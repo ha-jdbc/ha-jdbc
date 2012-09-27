@@ -22,10 +22,10 @@ import java.util.TreeMap;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.balancer.Balancer;
+import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;

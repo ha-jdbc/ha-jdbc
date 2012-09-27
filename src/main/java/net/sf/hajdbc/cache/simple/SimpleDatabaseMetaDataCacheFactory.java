@@ -19,8 +19,8 @@ package net.sf.hajdbc.cache.simple;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.cache.AbstractDatabaseMetaDataCacheFactory;
+import net.sf.hajdbc.cache.DatabaseMetaDataCache;
 import net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory;
 
 /**
@@ -30,6 +30,12 @@ import net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory;
 public class SimpleDatabaseMetaDataCacheFactory extends AbstractDatabaseMetaDataCacheFactory
 {
 	private static final long serialVersionUID = -2705922983144248705L;
+
+	@Override
+	public String getId()
+	{
+		return "none";
+	}
 
 	/**
 	 * {@inheritDoc}

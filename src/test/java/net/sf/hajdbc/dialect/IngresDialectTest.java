@@ -39,6 +39,7 @@ import java.util.regex.Pattern;
 
 import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.SequenceSupport;
+import net.sf.hajdbc.dialect.ingres.IngresDialectFactory;
 
 /**
  * @author Paul Ferraro
@@ -48,7 +49,7 @@ public class IngresDialectTest extends StandardDialectTest
 {
 	public IngresDialectTest()
 	{
-		super(DialectFactoryEnum.INGRES);
+		super(new IngresDialectFactory());
 	}
 
 	/**

@@ -32,6 +32,12 @@ public class RoundRobinBalancerFactory implements BalancerFactory, Serializable
 {
 	private static final long serialVersionUID = 9003494431296713142L;
 
+	@Override
+	public String getId()
+	{
+		return "round-robin";
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.balancer.BalancerFactory#createBalancer(java.util.Set)

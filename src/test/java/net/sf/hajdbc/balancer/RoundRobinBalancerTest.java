@@ -18,6 +18,7 @@
 package net.sf.hajdbc.balancer;
 
 import net.sf.hajdbc.MockDatabase;
+import net.sf.hajdbc.balancer.roundrobin.RoundRobinBalancerFactory;
 
 import static org.junit.Assert.*;
 
@@ -29,7 +30,7 @@ public class RoundRobinBalancerTest extends AbstractBalancerTest
 {
 	public RoundRobinBalancerTest()
 	{
-		super(BalancerFactoryEnum.ROUND_ROBIN);
+		super(new RoundRobinBalancerFactory());
 	}
 	
 	@Override

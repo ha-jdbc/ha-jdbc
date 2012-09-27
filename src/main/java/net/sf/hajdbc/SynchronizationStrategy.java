@@ -26,7 +26,7 @@ import net.sf.hajdbc.sync.SynchronizationContext;
 /**
  * @author  Paul Ferraro
  */
-public interface SynchronizationStrategy extends Serializable
+public interface SynchronizationStrategy extends Identifiable, Serializable
 {
 	<Z, D extends Database<Z>> void init(DatabaseCluster<Z, D> cluster);
 	

@@ -18,6 +18,7 @@
 package net.sf.hajdbc.logging.slf4j;
 
 import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.NOPLoggerFactory;
 
 /**
  * <a href="http://slf4j.org">SLF4J</a>-based logging service provider.
@@ -54,8 +55,7 @@ public class SLF4JLoggingProvider implements net.sf.hajdbc.logging.LoggingProvid
 	{
 		try
 		{
-			// As of SLF4J 1.6, the LoggerFactory.getILoggerFactory() will return a no-op implementation
-			return LoggerFactory.getILoggerFactory().getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME).isErrorEnabled();
+			return !LoggerFactory.getILoggerFactory().getClass().equals(NOPLoggerFactory.class);
 		}
 		catch (Throwable e)
 		{

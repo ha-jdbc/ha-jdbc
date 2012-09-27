@@ -24,6 +24,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import net.sf.hajdbc.MockDatabase;
+import net.sf.hajdbc.balancer.load.LoadBalancerFactory;
 
 import static org.junit.Assert.*;
 
@@ -35,7 +36,7 @@ public class LoadBalancerTest extends AbstractBalancerTest
 {
 	public LoadBalancerTest()
 	{
-		super(BalancerFactoryEnum.LOAD);
+		super(new LoadBalancerFactory());
 	}
 	
 	@Override

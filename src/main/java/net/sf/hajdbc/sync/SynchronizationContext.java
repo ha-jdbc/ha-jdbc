@@ -24,8 +24,8 @@ import java.util.concurrent.ExecutorService;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseProperties;
-import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.codec.Codec;
+import net.sf.hajdbc.dialect.Dialect;
 
 
 /**

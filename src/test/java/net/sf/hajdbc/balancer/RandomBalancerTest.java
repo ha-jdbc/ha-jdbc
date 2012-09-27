@@ -18,6 +18,7 @@
 package net.sf.hajdbc.balancer;
 
 import net.sf.hajdbc.MockDatabase;
+import net.sf.hajdbc.balancer.random.RandomBalancerFactory;
 
 import static org.junit.Assert.*;
 
@@ -29,7 +30,7 @@ public class RandomBalancerTest extends AbstractBalancerTest
 {
 	public RandomBalancerTest()
 	{
-		super(BalancerFactoryEnum.RANDOM);
+		super(new RandomBalancerFactory());
 	}
 	
 	@Override

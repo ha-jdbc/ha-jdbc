@@ -19,8 +19,8 @@ package net.sf.hajdbc.cache.eager;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.cache.AbstractDatabaseMetaDataCacheFactory;
+import net.sf.hajdbc.cache.DatabaseMetaDataCache;
 import net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory;
 
 /**
@@ -30,6 +30,12 @@ import net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory;
 public class SharedEagerDatabaseMetaDataCacheFactory extends AbstractDatabaseMetaDataCacheFactory
 {
 	private static final long serialVersionUID = -7042032576675428976L;
+
+	@Override
+	public String getId()
+	{
+		return "shared-eager";
+	}
 
 	/**
 	 * {@inheritDoc}

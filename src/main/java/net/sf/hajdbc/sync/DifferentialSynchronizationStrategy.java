@@ -84,6 +84,12 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 	private Pattern versionPattern = null;
 	
 	@Override
+	public String getId()
+	{
+		return "diff";
+	}
+
+	@Override
 	public <Z, D extends Database<Z>> void synchronize(SynchronizationContext<Z, D> context) throws SQLException
 	{
 		this.strategy.synchronize(context);

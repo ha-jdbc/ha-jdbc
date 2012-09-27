@@ -27,11 +27,11 @@ import java.util.regex.Matcher;
 import net.sf.hajdbc.ConnectionProperties;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.DumpRestoreSupport;
 import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationStrategy;
+import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.Strings;
 
@@ -43,6 +43,12 @@ public class DumpRestoreSynchronizationStrategy implements SynchronizationStrate
 {
 	private static final long serialVersionUID = 5743532034969216540L;
 	private static final String DUMP_FILE_SUFFIX = ".dump";
+
+	@Override
+	public String getId()
+	{
+		return "dump-restore";
+	}
 
 	/**
 	 * {@inheritDoc}

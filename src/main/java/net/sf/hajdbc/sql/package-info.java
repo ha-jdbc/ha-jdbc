@@ -15,13 +15,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-@XmlSchema(namespace = SchemaGenerator.NAMESPACE, xmlns = @XmlNs(prefix = "tns", namespaceURI = SchemaGenerator.NAMESPACE), elementFormDefault = XmlNsForm.QUALIFIED)
+@XmlSchema(namespace = SchemaGenerator.NAMESPACE, elementFormDefault = XmlNsForm.QUALIFIED)
 @XmlAccessorType(XmlAccessType.NONE)
 package net.sf.hajdbc.sql;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlNs;
 import javax.xml.bind.annotation.XmlNsForm;
 import javax.xml.bind.annotation.XmlSchema;
 

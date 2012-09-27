@@ -39,6 +39,7 @@ import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.cache.ForeignKeyConstraintImpl;
+import net.sf.hajdbc.dialect.h2.H2DialectFactory;
 
 /**
  * @author Paul Ferraro
@@ -48,7 +49,7 @@ public class H2DialectTest extends StandardDialectTest
 {
 	public H2DialectTest()
 	{
-		super(DialectFactoryEnum.H2);
+		super(new H2DialectFactory());
 	}
 
 	/**

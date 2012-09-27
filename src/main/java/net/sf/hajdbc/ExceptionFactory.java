@@ -19,6 +19,7 @@ package net.sf.hajdbc;
 
 import java.io.Serializable;
 
+import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.durability.Durability;
 
 

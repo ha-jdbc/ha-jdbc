@@ -17,13 +17,16 @@
  */
 package net.sf.hajdbc.state;
 
+import java.io.Serializable;
+
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.Identifiable;
 
 /**
  * @author Paul Ferraro
  */
-public interface StateManagerFactory
+public interface StateManagerFactory extends Identifiable, Serializable
 {
 	<Z, D extends Database<Z>> StateManager createStateManager(DatabaseCluster<Z, D> cluster);
 }

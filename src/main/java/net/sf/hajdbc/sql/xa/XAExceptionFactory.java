@@ -19,8 +19,8 @@ package net.sf.hajdbc.sql.xa;
 
 import javax.transaction.xa.XAException;
 
-import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ExceptionType;
+import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.durability.Durability.Phase;
 import net.sf.hajdbc.sql.AbstractExceptionFactory;
 
@@ -68,7 +68,7 @@ public class XAExceptionFactory extends AbstractExceptionFactory<XAException>
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.ExceptionFactory#indicatesFailure(java.lang.Exception, net.sf.hajdbc.Dialect)
+	 * @see net.sf.hajdbc.ExceptionFactory#indicatesFailure(java.lang.Exception, net.sf.hajdbc.dialect.Dialect)
 	 */
 	@Override
 	public boolean indicatesFailure(XAException exception, Dialect dialect)

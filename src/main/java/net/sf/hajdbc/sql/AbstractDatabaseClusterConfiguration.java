@@ -42,31 +42,26 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseClusterConfiguration;
-import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ExecutorServiceProvider;
+import net.sf.hajdbc.Identifiable;
+import net.sf.hajdbc.IdentifiableMatcher;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.TransactionMode;
 import net.sf.hajdbc.balancer.BalancerFactory;
-import net.sf.hajdbc.balancer.BalancerFactoryEnum;
 import net.sf.hajdbc.cache.DatabaseMetaDataCacheFactory;
-import net.sf.hajdbc.cache.DatabaseMetaDataCacheFactoryEnum;
 import net.sf.hajdbc.codec.CodecFactory;
 import net.sf.hajdbc.codec.MultiplexingCodecFactory;
-import net.sf.hajdbc.dialect.CustomDialectFactory;
 import net.sf.hajdbc.dialect.DialectFactory;
-import net.sf.hajdbc.dialect.DialectFactoryEnum;
 import net.sf.hajdbc.distributed.CommandDispatcherFactory;
-import net.sf.hajdbc.distributed.jgroups.DefaultChannelProvider;
 import net.sf.hajdbc.durability.DurabilityFactory;
-import net.sf.hajdbc.durability.DurabilityFactoryEnum;
 import net.sf.hajdbc.management.DefaultMBeanRegistrar;
 import net.sf.hajdbc.management.MBeanRegistrar;
 import net.sf.hajdbc.state.StateManagerFactory;
-import net.sf.hajdbc.state.sql.SQLStateManagerFactory;
 import net.sf.hajdbc.tx.SimpleTransactionIdentifierFactory;
 import net.sf.hajdbc.tx.TransactionIdentifierFactory;
 import net.sf.hajdbc.tx.UUIDTransactionIdentifierFactory;
+import net.sf.hajdbc.util.ServiceLoaders;
 
 import org.quartz.CronExpression;
 
@@ -74,17 +69,27 @@ import org.quartz.CronExpression;
  * @author paul
  *
  */
-@XmlType(propOrder = { "dispatcherFactory", "synchronizationStrategyDescriptors", "stateManagerFactoryDescriptor" })
+@XmlType(propOrder = { "commandDispatcherFactoryDescriptor", "synchronizationStrategyDescriptors", "stateManagerFactoryDescriptor" })
 public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database<Z>> implements DatabaseClusterConfiguration<Z, D>
 {
 	private static final long serialVersionUID = -2808296483725374829L;
 
-	@XmlElement(name = "distributable", type = DefaultChannelProvider.class)
-	private CommandDispatcherFactory dispatcherFactory;
-	
+	private CommandDispatcherFactory dispatcherFactory;	
 	private Map<String, SynchronizationStrategy> synchronizationStrategies = new HashMap<String, SynchronizationStrategy>();
-	private StateManagerFactory stateManagerFactory = new SQLStateManagerFactory();
+	private StateManagerFactory stateManagerFactory = ServiceLoaders.findRequiredService(StateManagerFactory.class);
 	protected abstract NestedConfiguration<Z, D> getNestedConfiguration();
+
+	@XmlElement(name = "distributable")
+	private CommandDispatcherFactoryDescriptor getCommandDispatcherFactoryDescriptor() throws Exception
+	{
+		return (this.dispatcherFactory != null) ? new CommandDispatcherFactoryDescriptorAdapter().marshal(this.dispatcherFactory) : null;
+	}
+
+	@SuppressWarnings("unused")
+	private void setCommandDispatcherFactoryDescriptor(CommandDispatcherFactoryDescriptor descriptor) throws Exception
+	{
+		this.dispatcherFactory = (descriptor != null) ? new CommandDispatcherFactoryDescriptorAdapter().unmarshal(descriptor) : null;
+	}
 	
 	@XmlElement(name = "sync")
 	private SynchronizationStrategyDescriptor[] getSynchronizationStrategyDescriptors() throws Exception
@@ -531,19 +536,19 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 
 		@XmlJavaTypeAdapter(BalancerFactoryAdapter.class)
 		@XmlAttribute(name = "balancer")
-		private BalancerFactory balancerFactory = BalancerFactoryEnum.ROUND_ROBIN;
+		private BalancerFactory balancerFactory = ServiceLoaders.findService(BalancerFactory.class);
 		
 		@XmlJavaTypeAdapter(DatabaseMetaDataCacheFactoryAdapter.class)
 		@XmlAttribute(name = "meta-data-cache")
-		private DatabaseMetaDataCacheFactory databaseMetaDataCacheFactory = DatabaseMetaDataCacheFactoryEnum.EAGER;
+		private DatabaseMetaDataCacheFactory databaseMetaDataCacheFactory = ServiceLoaders.findService(DatabaseMetaDataCacheFactory.class);
 		
 		@XmlJavaTypeAdapter(DialectFactoryAdapter.class)
 		@XmlAttribute(name = "dialect")
-		private DialectFactory dialectFactory = DialectFactoryEnum.STANDARD;
+		private DialectFactory dialectFactory = ServiceLoaders.findService(DialectFactory.class);
 		
 		@XmlJavaTypeAdapter(DurabilityFactoryAdapter.class)
 		@XmlAttribute(name = "durability")
-		private DurabilityFactory durabilityFactory = DurabilityFactoryEnum.FINE;
+		private DurabilityFactory durabilityFactory = ServiceLoaders.findService(DurabilityFactory.class);
 
 		private ExecutorServiceProvider executorProvider = new DefaultExecutorServiceProvider();
 		private ThreadFactory threadFactory = Executors.defaultThreadFactory();
@@ -853,30 +858,49 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		}
 	}
 
-	static class BalancerFactoryAdapter extends EnumAdapter<BalancerFactory, BalancerFactoryEnum>
+	static class IdentifiableServiceAdapter<T extends Identifiable> extends XmlAdapter<String, T>
 	{
-		@Override
-		protected Class<BalancerFactoryEnum> getTargetClass()
+		private final Class<T> serviceClass;
+		
+		IdentifiableServiceAdapter(Class<T> serviceClass)
 		{
-			return BalancerFactoryEnum.class;
+			this.serviceClass = serviceClass;
+		}
+
+		@Override
+		public T unmarshal(final String value) throws Exception
+		{
+			return ServiceLoaders.findService(new IdentifiableMatcher<T>(value), this.serviceClass);
+		}
+
+		@Override
+		public String marshal(T service) throws Exception
+		{
+			return service.getId();
 		}
 	}
 
-	static class DatabaseMetaDataCacheFactoryAdapter extends EnumAdapter<DatabaseMetaDataCacheFactory, DatabaseMetaDataCacheFactoryEnum>
+	static class BalancerFactoryAdapter extends IdentifiableServiceAdapter<BalancerFactory>
 	{
-		@Override
-		protected Class<DatabaseMetaDataCacheFactoryEnum> getTargetClass()
+		BalancerFactoryAdapter()
 		{
-			return DatabaseMetaDataCacheFactoryEnum.class;
+			super(BalancerFactory.class);
 		}
 	}
 
-	static class DurabilityFactoryAdapter extends EnumAdapter<DurabilityFactory, DurabilityFactoryEnum>
+	static class DatabaseMetaDataCacheFactoryAdapter extends IdentifiableServiceAdapter<DatabaseMetaDataCacheFactory>
 	{
-		@Override
-		protected Class<DurabilityFactoryEnum> getTargetClass()
+		DatabaseMetaDataCacheFactoryAdapter()
 		{
-			return DurabilityFactoryEnum.class;
+			super(DatabaseMetaDataCacheFactory.class);
+		}
+	}
+
+	static class DurabilityFactoryAdapter extends IdentifiableServiceAdapter<DurabilityFactory>
+	{
+		DurabilityFactoryAdapter()
+		{
+			super(DurabilityFactory.class);
 		}
 	}
 
@@ -903,28 +927,14 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			return this.getTargetClass().cast(object);
 		}
 
-		protected abstract Class<E> getTargetClass();		
+		protected abstract Class<E> getTargetClass();
 	}
 
-	static class DialectFactoryAdapter extends XmlAdapter<String, DialectFactory>
+	static class DialectFactoryAdapter extends IdentifiableServiceAdapter<DialectFactory>
 	{
-		@Override
-		public String marshal(DialectFactory factory)
+		DialectFactoryAdapter()
 		{
-			return factory.toString();
-		}
-
-		@Override
-		public DialectFactory unmarshal(String value) throws Exception
-		{
-			try
-			{
-				return DialectFactoryEnum.valueOf(value.toUpperCase());
-			}
-			catch (IllegalArgumentException e)
-			{
-				return new CustomDialectFactory(DialectFactory.class.getClassLoader().loadClass(value).asSubclass(Dialect.class));
-			}
+			super(DialectFactory.class);
 		}
 	}
 
@@ -944,7 +954,32 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	}
 	
 	@XmlType
-	static class SynchronizationStrategyDescriptor extends Descriptor<SynchronizationStrategy>
+	static class CommandDispatcherFactoryDescriptor extends IdentifiableServiceDescriptor
+	{
+		@XmlAttribute(name = "id", required = true)
+		private String id;
+		
+		public String getId()
+		{
+			return this.id;
+		}
+		
+		public void setId(String id)
+		{
+			this.id = id;
+		}
+	}
+
+	static class CommandDispatcherFactoryDescriptorAdapter extends IdentifiableServiceDescriptorAdapter<CommandDispatcherFactory, CommandDispatcherFactoryDescriptor>
+	{
+		CommandDispatcherFactoryDescriptorAdapter()
+		{
+			super(CommandDispatcherFactory.class, CommandDispatcherFactoryDescriptor.class);
+		}
+	}
+	
+	@XmlType
+	static class SynchronizationStrategyDescriptor extends IdentifiableServiceDescriptor
 	{
 		@XmlID
 		@XmlAttribute(name = "id", required = true)
@@ -961,27 +996,138 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		}
 	}
 	
-	static class SynchronizationStrategyDescriptorAdapter extends DescriptorAdapter<SynchronizationStrategy, SynchronizationStrategyDescriptor>
+	static class SynchronizationStrategyDescriptorAdapter extends IdentifiableServiceDescriptorAdapter<SynchronizationStrategy, SynchronizationStrategyDescriptor>
 	{
 		SynchronizationStrategyDescriptorAdapter()
 		{
-			super(SynchronizationStrategyDescriptor.class);
+			super(SynchronizationStrategy.class, SynchronizationStrategyDescriptor.class);
 		}
 	}
 	
 	@XmlType
-	static class StateManagerFactoryDescriptor extends Descriptor<StateManagerFactory>
+	static class StateManagerFactoryDescriptor extends IdentifiableServiceDescriptor
 	{
+		@XmlAttribute(name = "id", required = true)
+		private String id;
+		
+		public String getId()
+		{
+			return this.id;
+		}
+		
+		public void setId(String id)
+		{
+			this.id = id;
+		}
 	}
 
-	static class StateManagerFactoryDescriptorAdapter extends DescriptorAdapter<StateManagerFactory, StateManagerFactoryDescriptor>
+	static class StateManagerFactoryDescriptorAdapter extends IdentifiableServiceDescriptorAdapter<StateManagerFactory, StateManagerFactoryDescriptor>
 	{
 		StateManagerFactoryDescriptorAdapter()
 		{
-			super(StateManagerFactoryDescriptor.class);
+			super(StateManagerFactory.class, StateManagerFactoryDescriptor.class);
 		}
 	}
-	
+
+	static abstract class IdentifiableServiceDescriptor implements Identifiable
+	{
+		@XmlElement(name = "property")
+		private List<Property> properties;
+		
+		public List<Property> getProperties()
+		{
+			return this.properties;
+		}
+
+		public void setProperties(List<Property> properties)
+		{
+			this.properties = properties;
+		}
+		
+		public abstract void setId(String id);
+	}
+
+	static class IdentifiableServiceDescriptorAdapter<T extends Identifiable, D extends IdentifiableServiceDescriptor> extends XmlAdapter<D, T>
+	{
+		private final Class<T> serviceClass;
+		private final Class<D> descriptorClass;
+		
+		IdentifiableServiceDescriptorAdapter(Class<T> serviceClass, Class<D> descriptorClass)
+		{
+			this.serviceClass = serviceClass;
+			this.descriptorClass = descriptorClass;
+		}
+		
+		@Override
+		public D marshal(T object) throws Exception
+		{
+			D result = this.descriptorClass.newInstance();
+			List<Property> properties = new LinkedList<Property>();
+			
+			result.setId(object.getId());
+			result.setProperties(properties);
+			
+			for (Map.Entry<PropertyDescriptor, PropertyEditor> entry: findDescriptors(object.getClass()).values())
+			{
+				PropertyDescriptor descriptor = entry.getKey();
+				PropertyEditor editor = entry.getValue();
+				
+				Object value = descriptor.getReadMethod().invoke(object);
+				if (value != null)
+				{
+					editor.setValue(value);
+					
+					Property property = new Property();
+					property.setName(descriptor.getName());
+					property.setValue(editor.getAsText());
+					
+					properties.add(property);
+				}
+			}
+			
+			return result;
+		}
+
+		@Override
+		public T unmarshal(D target) throws Exception
+		{
+			T result = ServiceLoaders.findRequiredService(new IdentifiableMatcher<T>(target.getId()), this.serviceClass);
+			List<Property> properties = target.getProperties();
+			
+			if (properties != null)
+			{
+				Map<String, Map.Entry<PropertyDescriptor, PropertyEditor>> descriptors = findDescriptors(result.getClass());
+				
+				for (Property property: properties)
+				{
+					String name = property.getName();
+					Map.Entry<PropertyDescriptor, PropertyEditor> entry = descriptors.get(name);
+					
+					if (entry == null)
+					{
+						throw new IllegalArgumentException(Messages.INVALID_PROPERTY.getMessage(name, result.getClass().getName()));
+					}
+					
+					PropertyDescriptor descriptor = entry.getKey();
+					PropertyEditor editor = entry.getValue();
+
+					String textValue = property.getValue();
+					
+					try
+					{
+						editor.setAsText(textValue);
+					}
+					catch (Exception e)
+					{
+						throw new IllegalArgumentException(Messages.INVALID_PROPERTY_VALUE.getMessage(textValue, name, result.getClass().getName()));
+					}
+					descriptor.getWriteMethod().invoke(result, editor.getValue());
+				}
+			}
+			return result;
+		}
+	}
+/*
 	static abstract class Descriptor<T>
 	{
 		@XmlAttribute(name = "class", required = true)
@@ -1041,7 +1187,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 				{
 					editor.setValue(value);
 					
-					Property property = new Property();					
+					Property property = new Property();
 					property.setName(descriptor.getName());
 					property.setValue(editor.getAsText());
 					
@@ -1092,7 +1238,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			return result;
 		}
 	}
-	
+*/
 	@XmlType
 	protected static class Property
 	{

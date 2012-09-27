@@ -31,6 +31,7 @@ import java.util.Map;
 import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.SequenceSupport;
+import net.sf.hajdbc.dialect.db2.DB2DialectFactory;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -43,7 +44,7 @@ public class DB2DialectTest extends StandardDialectTest
 {
 	public DB2DialectTest()
 	{
-		super(DialectFactoryEnum.DB2);
+		super(new DB2DialectFactory());
 	}
 
 	@Override

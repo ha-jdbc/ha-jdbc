@@ -28,10 +28,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.Lifecycle;
+import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.durability.Durability.Phase;
 
 import org.junit.Assert;
@@ -301,7 +301,7 @@ public class RegistryTest
 
 		/**
 		 * {@inheritDoc}
-		 * @see net.sf.hajdbc.ExceptionFactory#indicatesFailure(java.lang.Exception, net.sf.hajdbc.Dialect)
+		 * @see net.sf.hajdbc.ExceptionFactory#indicatesFailure(java.lang.Exception, net.sf.hajdbc.dialect.Dialect)
 		 */
 		@Override
 		public boolean indicatesFailure(Exception exception, Dialect dialect)

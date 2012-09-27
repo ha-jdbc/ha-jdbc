@@ -18,9 +18,10 @@
 package net.sf.hajdbc.state.sql;
 
 import java.sql.Driver;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.ServiceLoader;
+import java.util.Collections;
 
 import org.apache.commons.pool.impl.GenericObjectPool;
 
@@ -40,6 +41,8 @@ import net.sf.hajdbc.util.Strings;
  */
 public class SQLStateManagerFactory extends GenericObjectPool.Config implements StateManagerFactory
 {
+	private static final long serialVersionUID = -544548607415128414L;
+	
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	enum EmbeddedVendor
@@ -63,31 +66,35 @@ public class SQLStateManagerFactory extends GenericObjectPool.Config implements 
 	
 	private String defaultUrlPattern()
 	{
-		ServiceLoader<Driver> drivers = ServiceLoader.load(Driver.class);
-		
 		for (EmbeddedVendor vendor: EmbeddedVendor.values())
 		{
 			String url = MessageFormat.format(vendor.pattern, "test", Strings.USER_HOME);
 			
-			for (Driver driver: drivers)
+			try
 			{
-				try
+				for (Driver driver: Collections.list(DriverManager.getDrivers()))
 				{
 					if (driver.acceptsURL(url))
 					{
 						return vendor.pattern;
 					}
 				}
-				catch (SQLException e)
-				{
-					// Ignore
-				}
+			}
+			catch (SQLException e)
+			{
+				// Skip vendor
 			}
 		}
 		
 		return null;
 	}
 	
+	@Override
+	public String getId()
+	{
+		return "sql";
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.state.StateManagerFactory#createStateManager(net.sf.hajdbc.DatabaseCluster)

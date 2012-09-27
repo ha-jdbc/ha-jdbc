@@ -17,7 +17,6 @@
  */
 package net.sf.hajdbc.logging;
 
-import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
 /**
@@ -27,10 +26,10 @@ import java.util.ServiceLoader;
 public final class LoggerFactory
 {
 	private static final LoggingProvider provider = getProvider();
-	
+
 	private static LoggingProvider getProvider()
 	{
-		for (LoggingProvider provider: ServiceLoader.load(LoggingProvider.class))
+		for (LoggingProvider provider: ServiceLoader.load(LoggingProvider.class, LoggingProvider.class.getClassLoader()))
 		{
 			if (provider.isEnabled())
 			{
@@ -39,8 +38,7 @@ public final class LoggerFactory
 				return provider;
 			}
 		}
-		
-		throw new ServiceConfigurationError(LoggingProvider.class.getName());
+		throw new IllegalStateException(String.format("No %s found", LoggingProvider.class.getName()));
 	}
 	
 	public static Logger getLogger(Class<?> targetClass)

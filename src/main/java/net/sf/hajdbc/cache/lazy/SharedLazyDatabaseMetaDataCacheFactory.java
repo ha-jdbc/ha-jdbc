@@ -19,8 +19,8 @@ package net.sf.hajdbc.cache.lazy;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.cache.AbstractDatabaseMetaDataCacheFactory;
+import net.sf.hajdbc.cache.DatabaseMetaDataCache;
 import net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory;
 
 /**
@@ -30,6 +30,12 @@ import net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory;
 public class SharedLazyDatabaseMetaDataCacheFactory extends AbstractDatabaseMetaDataCacheFactory
 {
 	private static final long serialVersionUID = -5076802170474579133L;
+
+	@Override
+	public String getId()
+	{
+		return "shared-lazy";
+	}
 
 	/**
 	 * {@inheritDoc}

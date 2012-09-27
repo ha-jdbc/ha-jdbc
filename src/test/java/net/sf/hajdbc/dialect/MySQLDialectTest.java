@@ -32,6 +32,7 @@ import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.UniqueConstraint;
 import net.sf.hajdbc.cache.ForeignKeyConstraintImpl;
 import net.sf.hajdbc.cache.UniqueConstraintImpl;
+import net.sf.hajdbc.dialect.mysql.MySQLDialectFactory;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -45,7 +46,7 @@ public class MySQLDialectTest extends StandardDialectTest
 {
 	public MySQLDialectTest()
 	{
-		super(DialectFactoryEnum.MYSQL);
+		super(new MySQLDialectFactory());
 	}
 
 	/**

@@ -17,9 +17,12 @@
  */
 package net.sf.hajdbc.dialect;
 
-import net.sf.hajdbc.Dialect;
+import java.io.Serializable;
 
-public interface DialectFactory
+import net.sf.hajdbc.Identifiable;
+
+
+public interface DialectFactory extends Identifiable, Serializable
 {
 	Dialect createDialect();
 }

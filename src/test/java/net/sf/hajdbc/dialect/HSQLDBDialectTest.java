@@ -32,6 +32,7 @@ import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.cache.ForeignKeyConstraintImpl;
+import net.sf.hajdbc.dialect.hsqldb.HSQLDBDialectFactory;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -45,7 +46,7 @@ public class HSQLDBDialectTest extends StandardDialectTest
 {
 	public HSQLDBDialectTest()
 	{
-		super(DialectFactoryEnum.HSQLDB);
+		super(new HSQLDBDialectFactory());
 	}
 
 	/**

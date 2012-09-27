@@ -25,11 +25,11 @@ import java.util.TreeMap;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.DatabaseMetaDataCache;
 import net.sf.hajdbc.DatabaseProperties;
-import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.cache.DatabaseMetaDataCache;
 import net.sf.hajdbc.cache.DatabaseMetaDataSupport;
 import net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory;
+import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.util.Resources;
 
 /**
@@ -50,7 +50,7 @@ public class EagerDatabaseMetaDataCache<Z, D extends Database<Z>> implements Dat
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#flush()
+	 * @see net.sf.hajdbc.cache.DatabaseMetaDataCache#flush()
 	 */
 	@Override
 	public void flush() throws SQLException
@@ -80,7 +80,7 @@ public class EagerDatabaseMetaDataCache<Z, D extends Database<Z>> implements Dat
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DatabaseMetaDataCache#getDatabaseProperties(net.sf.hajdbc.Database, java.sql.Connection)
+	 * @see net.sf.hajdbc.cache.DatabaseMetaDataCache#getDatabaseProperties(net.sf.hajdbc.Database, java.sql.Connection)
 	 */
 	@Override
 	public DatabaseProperties getDatabaseProperties(D database, Connection connection) throws SQLException

@@ -1,0 +1,13 @@
+net.sf.hajdbc.dialect.StandardDialectFactory
+net.sf.hajdbc.dialect.db2.DB2DialectFactory
+net.sf.hajdbc.dialect.derby.DerbyDialectFactory
+net.sf.hajdbc.dialect.firebird.FirebirdDialectFactory
+net.sf.hajdbc.dialect.h2.H2DialectFactory
+net.sf.hajdbc.dialect.hsqldb.HSQLDBDialectFactory
+net.sf.hajdbc.dialect.ingres.IngresDialectFactory
+net.sf.hajdbc.dialect.maxdb.MaxDBDialectFactory
+net.sf.hajdbc.dialect.mckoi.MckoiDialectFactory
+net.sf.hajdbc.dialect.mysql.MySQLDialectFactory
+net.sf.hajdbc.dialect.oracle.OracleDialectFactory
+net.sf.hajdbc.dialect.postgresql.PostgreSQLDialectFactory
+net.sf.hajdbc.dialect.sybase.SybaseDialectFactory

@@ -32,6 +32,12 @@ public class NoDurabilityFactory implements DurabilityFactory, Serializable
 {
 	private static final long serialVersionUID = 926923658169838006L;
 
+	@Override
+	public String getId()
+	{
+		return "none";
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.durability.DurabilityFactory#createDurability(net.sf.hajdbc.DatabaseCluster)

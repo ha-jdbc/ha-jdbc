@@ -46,7 +46,7 @@ public abstract class AbstractBalancerTest
 	final BalancerFactory factory;
 	final MockDatabase[] databases = new MockDatabase[] { new MockDatabase("0", 0), new MockDatabase("1", 1), new MockDatabase("2", 2) };
 	
-	AbstractBalancerTest(BalancerFactoryEnum factory)
+	AbstractBalancerTest(BalancerFactory factory)
 	{
 		this.factory = factory;
 	}

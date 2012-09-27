@@ -14,6 +14,12 @@ public class PerTableSynchronizationStrategy implements SynchronizationStrategy
 	
 	private final TableSynchronizationStrategy strategy;
 	
+	@Override
+	public String getId()
+	{
+		return "per-table";
+	}
+
 	public PerTableSynchronizationStrategy(TableSynchronizationStrategy strategy)
 	{
 		this.strategy = strategy;

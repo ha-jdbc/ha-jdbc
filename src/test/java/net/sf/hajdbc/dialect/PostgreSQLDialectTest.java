@@ -34,6 +34,7 @@ import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.TableProperties;
+import net.sf.hajdbc.dialect.postgresql.PostgreSQLDialectFactory;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -46,7 +47,7 @@ public class PostgreSQLDialectTest extends StandardDialectTest
 {
 	public PostgreSQLDialectTest()
 	{
-		super(DialectFactoryEnum.POSTGRESQL);
+		super(new PostgreSQLDialectFactory());
 	}
 
 	/**

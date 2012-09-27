@@ -32,6 +32,12 @@ public class LoadBalancerFactory implements BalancerFactory, Serializable
 {
 	private static final long serialVersionUID = -2785311844872496108L;
 
+	@Override
+	public String getId()
+	{
+		return "load";
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.balancer.BalancerFactory#createBalancer(java.util.Set)

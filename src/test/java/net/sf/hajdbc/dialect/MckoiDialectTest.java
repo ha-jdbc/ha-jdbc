@@ -23,6 +23,7 @@ package net.sf.hajdbc.dialect;
 import java.sql.SQLException;
 
 import net.sf.hajdbc.SequenceSupport;
+import net.sf.hajdbc.dialect.mckoi.MckoiDialectFactory;
 
 import static org.junit.Assert.*;
 
@@ -34,7 +35,7 @@ public class MckoiDialectTest extends StandardDialectTest
 {
 	public MckoiDialectTest()
 	{
-		super(DialectFactoryEnum.MCKOI);
+		super(new MckoiDialectFactory());
 	}
 
 	/**

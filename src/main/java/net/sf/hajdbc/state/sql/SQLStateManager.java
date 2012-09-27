@@ -34,12 +34,13 @@ import java.util.TreeSet;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseProperties;
-import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ExceptionType;
+import net.sf.hajdbc.IdentifiableMatcher;
 import net.sf.hajdbc.cache.DatabaseMetaDataSupportImpl;
 import net.sf.hajdbc.cache.lazy.LazyDatabaseProperties;
 import net.sf.hajdbc.cache.simple.SimpleDatabaseMetaDataProvider;
-import net.sf.hajdbc.dialect.SimpleDialectFactory;
+import net.sf.hajdbc.dialect.Dialect;
+import net.sf.hajdbc.dialect.DialectFactory;
 import net.sf.hajdbc.durability.Durability;
 import net.sf.hajdbc.durability.DurabilityListener;
 import net.sf.hajdbc.durability.InvocationEvent;
@@ -59,6 +60,7 @@ import net.sf.hajdbc.state.DurabilityListenerAdapter;
 import net.sf.hajdbc.state.SerializedDurabilityListener;
 import net.sf.hajdbc.state.StateManager;
 import net.sf.hajdbc.util.Objects;
+import net.sf.hajdbc.util.ServiceLoaders;
 
 /**
  * @author Paul Ferraro
@@ -611,7 +613,12 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 		connection.setAutoCommit(true);
 
 		DatabaseMetaData metaData = connection.getMetaData();
-		Dialect dialect = new SimpleDialectFactory(this.database.getName()).createDialect();
+		DialectFactory factory = ServiceLoaders.findService(new IdentifiableMatcher<DialectFactory>(this.database.getName()), DialectFactory.class);
+		if (factory == null)
+		{
+			factory = ServiceLoaders.findService(DialectFactory.class);
+		}
+		Dialect dialect = factory.createDialect();
 		DatabaseProperties properties = new LazyDatabaseProperties(new SimpleDatabaseMetaDataProvider(metaData), new DatabaseMetaDataSupportImpl(metaData, dialect), dialect);
 		
 		try

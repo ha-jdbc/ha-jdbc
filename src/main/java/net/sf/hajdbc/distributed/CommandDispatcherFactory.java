@@ -17,13 +17,17 @@
  */
 package net.sf.hajdbc.distributed;
 
+import java.io.Serializable;
+
+import net.sf.hajdbc.Identifiable;
+
 
 /**
  * Factory for creating instances of {@link CommandDispatcher}.
  * 
  * @author Paul Ferraro
  */
-public interface CommandDispatcherFactory
+public interface CommandDispatcherFactory extends Identifiable, Serializable
 {
 	/**
 	 * Create a new dispatcher for remote command execution.

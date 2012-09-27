@@ -1,0 +1,5 @@
+net.sf.hajdbc.cache.eager.EagerDatabaseMetaDataCacheFactory
+net.sf.hajdbc.cache.eager.SharedEagerDatabaseMetaDataCacheFactory
+net.sf.hajdbc.cache.lazy.LazyDatabaseMetaDataCacheFactory
+net.sf.hajdbc.cache.lazy.SharedLazyDatabaseMetaDataCacheFactory
+net.sf.hajdbc.cache.simple.SimpleDatabaseMetaDataCacheFactory

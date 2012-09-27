@@ -37,13 +37,13 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import net.sf.hajdbc.ColumnProperties;
-import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.UniqueConstraint;
+import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.Strings;
 

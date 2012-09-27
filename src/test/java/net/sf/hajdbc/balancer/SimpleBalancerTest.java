@@ -18,6 +18,7 @@
 package net.sf.hajdbc.balancer;
 
 import net.sf.hajdbc.MockDatabase;
+import net.sf.hajdbc.balancer.simple.SimpleBalancerFactory;
 
 import static org.junit.Assert.*;
 
@@ -28,7 +29,7 @@ public class SimpleBalancerTest extends AbstractBalancerTest
 {
 	public SimpleBalancerTest()
 	{
-		super(BalancerFactoryEnum.SIMPLE);
+		super(new SimpleBalancerFactory());
 	}
 	
 	@Override

@@ -31,6 +31,12 @@ public class BDBStateManagerFactory extends EnvironmentConfig implements StateMa
 	private String location;
 	
 	@Override
+	public String getId()
+	{
+		return "bdb";
+	}
+
+	@Override
 	public <Z, D extends Database<Z>> StateManager createStateManager(DatabaseCluster<Z, D> cluster)
 	{
 		return null;

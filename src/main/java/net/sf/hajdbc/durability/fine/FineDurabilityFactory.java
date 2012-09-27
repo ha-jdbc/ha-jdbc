@@ -32,6 +32,12 @@ public class FineDurabilityFactory implements DurabilityFactory, Serializable
 {
 	private static final long serialVersionUID = 8493031235326848199L;
 
+	@Override
+	public String getId()
+	{
+		return "fine";
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.durability.DurabilityFactory#createDurability(net.sf.hajdbc.DatabaseCluster)

@@ -28,10 +28,10 @@ import javax.xml.transform.stream.StreamSource;
 
 import net.sf.hajdbc.DatabaseClusterConfiguration;
 import net.sf.hajdbc.SynchronizationStrategy;
-import net.sf.hajdbc.balancer.BalancerFactoryEnum;
-import net.sf.hajdbc.cache.DatabaseMetaDataCacheFactoryEnum;
-import net.sf.hajdbc.dialect.DialectFactoryEnum;
-import net.sf.hajdbc.durability.DurabilityFactoryEnum;
+import net.sf.hajdbc.balancer.load.LoadBalancerFactory;
+import net.sf.hajdbc.cache.eager.EagerDatabaseMetaDataCacheFactory;
+import net.sf.hajdbc.dialect.StandardDialectFactory;
+import net.sf.hajdbc.durability.fine.FineDurabilityFactory;
 import net.sf.hajdbc.sql.DefaultExecutorServiceProvider;
 import net.sf.hajdbc.sql.DriverDatabase;
 import net.sf.hajdbc.sql.DriverDatabaseClusterConfiguration;
@@ -52,8 +52,8 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 		StringBuilder builder = new StringBuilder();
 		builder.append("<?xml version=\"1.0\"?>");
 		builder.append("<ha-jdbc xmlns=\"").append(SchemaGenerator.NAMESPACE).append("\">");
-		builder.append("\t<sync id=\"diff\" class=\"net.sf.hajdbc.sync.DifferentialSynchronizationStrategy\"><property name=\"fetchSize\">100</property><property name=\"maxBatchSize\">100</property></sync>");
-		builder.append("\t<state class=\"net.sf.hajdbc.state.sql.SQLStateManagerFactory\"><property name=\"urlPattern\">jdbc:h2:{0}</property></state>");
+		builder.append("\t<sync id=\"diff\"><property name=\"fetchSize\">100</property><property name=\"maxBatchSize\">100</property></sync>");
+		builder.append("\t<state id=\"sql\"><property name=\"urlPattern\">jdbc:h2:{0}</property></state>");
 		builder.append("\t<cluster default-sync=\"diff\">");
 		builder.append("\t\t<database id=\"db1\">");
 		builder.append("\t\t\t<name>jdbc:mock:db1</name>");
@@ -95,61 +95,61 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 		assertNull(sqlStateManagerFactory.getUser());
 		assertNull(sqlStateManagerFactory.getPassword());
 		
-		assertSame(BalancerFactoryEnum.ROUND_ROBIN, configuration.getBalancerFactory());
-	   assertSame(DatabaseMetaDataCacheFactoryEnum.EAGER, configuration.getDatabaseMetaDataCacheFactory());
-	   assertEquals("diff", configuration.getDefaultSynchronizationStrategy());
-	   assertSame(DialectFactoryEnum.STANDARD, configuration.getDialectFactory());
-	   assertSame(DurabilityFactoryEnum.FINE, configuration.getDurabilityFactory());
-	   assertSame(TransactionModeEnum.SERIAL, configuration.getTransactionMode());
-	   
-	   DefaultExecutorServiceProvider executorProvider = (DefaultExecutorServiceProvider) configuration.getExecutorProvider();
-	   
-	   assertNotNull(executorProvider);
-	   assertEquals(60, executorProvider.getMaxIdle());
-	   assertEquals(100, executorProvider.getMaxThreads());
-	   assertEquals(0, executorProvider.getMinThreads());
-	   
-	   assertNull(configuration.getAutoActivationExpression());
-	   assertNull(configuration.getFailureDetectionExpression());
-	   
-	   assertFalse(configuration.isCurrentDateEvaluationEnabled());
-	   assertFalse(configuration.isCurrentTimeEvaluationEnabled());
-	   assertFalse(configuration.isCurrentTimestampEvaluationEnabled());
-	   assertFalse(configuration.isIdentityColumnDetectionEnabled());
-	   assertFalse(configuration.isRandEvaluationEnabled());
-	   assertFalse(configuration.isSequenceDetectionEnabled());
-	   
-	   Map<String, DriverDatabase> databases = configuration.getDatabaseMap();
-	   
-	   assertNotNull(databases);
-	   assertEquals(2, databases.size());
-	   
-	   DriverDatabase db1 = databases.get("db1");
-	   
-	   assertNotNull(db1);
-	   assertEquals("db1", db1.getId());
-	   assertEquals("jdbc:mock:db1", db1.getName());
-	   assertEquals(1, db1.getWeight());
-	   assertFalse(db1.isLocal());
-	   assertFalse(db1.isActive());
-	   assertFalse(db1.isDirty());
-	   
-	   DriverDatabase db2 = databases.get("db2");
-	   
-	   assertNotNull(db2);
-	   assertEquals("db2", db2.getId());
-	   assertEquals("jdbc:mock:db2", db2.getName());
-	   assertEquals(1, db2.getWeight());
-	   assertFalse(db2.isLocal());
-	   assertFalse(db2.isActive());
-	   assertFalse(db2.isDirty());
-	   
-	   reset(streamFactory);
-	   
-	   StringWriter writer = new StringWriter();
-	   
-	   when(streamFactory.createResult()).thenReturn(new StreamResult(writer));
-	   
+		assertEquals(LoadBalancerFactory.class, configuration.getBalancerFactory().getClass());
+		assertEquals(EagerDatabaseMetaDataCacheFactory.class, configuration.getDatabaseMetaDataCacheFactory().getClass());
+		assertEquals("diff", configuration.getDefaultSynchronizationStrategy());
+		assertEquals(StandardDialectFactory.class, configuration.getDialectFactory().getClass());
+		assertEquals(FineDurabilityFactory.class, configuration.getDurabilityFactory().getClass());
+		assertSame(TransactionModeEnum.SERIAL, configuration.getTransactionMode());
+		
+		DefaultExecutorServiceProvider executorProvider = (DefaultExecutorServiceProvider) configuration.getExecutorProvider();
+		
+		assertNotNull(executorProvider);
+		assertEquals(60, executorProvider.getMaxIdle());
+		assertEquals(100, executorProvider.getMaxThreads());
+		assertEquals(0, executorProvider.getMinThreads());
+		
+		assertNull(configuration.getAutoActivationExpression());
+		assertNull(configuration.getFailureDetectionExpression());
+		
+		assertFalse(configuration.isCurrentDateEvaluationEnabled());
+		assertFalse(configuration.isCurrentTimeEvaluationEnabled());
+		assertFalse(configuration.isCurrentTimestampEvaluationEnabled());
+		assertFalse(configuration.isIdentityColumnDetectionEnabled());
+		assertFalse(configuration.isRandEvaluationEnabled());
+		assertFalse(configuration.isSequenceDetectionEnabled());
+		
+		Map<String, DriverDatabase> databases = configuration.getDatabaseMap();
+		
+		assertNotNull(databases);
+		assertEquals(2, databases.size());
+		
+		DriverDatabase db1 = databases.get("db1");
+		
+		assertNotNull(db1);
+		assertEquals("db1", db1.getId());
+		assertEquals("jdbc:mock:db1", db1.getName());
+		assertEquals(1, db1.getWeight());
+		assertFalse(db1.isLocal());
+		assertFalse(db1.isActive());
+		assertFalse(db1.isDirty());
+		
+		DriverDatabase db2 = databases.get("db2");
+		
+		assertNotNull(db2);
+		assertEquals("db2", db2.getId());
+		assertEquals("jdbc:mock:db2", db2.getName());
+		assertEquals(1, db2.getWeight());
+		assertFalse(db2.isLocal());
+		assertFalse(db2.isActive());
+		assertFalse(db2.isDirty());
+		
+		reset(streamFactory);
+		
+		StringWriter writer = new StringWriter();
+		
+		when(streamFactory.createResult()).thenReturn(new StreamResult(writer));
+		
 		factory.export(configuration);
 		
 		System.out.println(writer.toString());

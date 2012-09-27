@@ -32,6 +32,12 @@ public class RandomBalancerFactory implements BalancerFactory, Serializable
 {
 	private static final long serialVersionUID = -910276247314814572L;
 
+	@Override
+	public String getId()
+	{
+		return "random";
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.balancer.BalancerFactory#createBalancer(java.util.Set)

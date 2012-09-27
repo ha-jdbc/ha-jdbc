@@ -1,0 +1,3 @@
+net.sf.hajdbc.durability.fine.FineDurabilityFactory
+net.sf.hajdbc.durability.coarse.CoarseDurabilityFactory
+net.sf.hajdbc.durability.none.NoDurabilityFactory

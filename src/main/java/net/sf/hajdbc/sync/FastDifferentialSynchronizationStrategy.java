@@ -24,10 +24,18 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.SynchronizationStrategy;
 
 /**
+ * Work in progress...
  * @author Paul Ferraro
  */
 public class FastDifferentialSynchronizationStrategy implements SynchronizationStrategy
 {
+	private static final long serialVersionUID = 2556031934309008750L;
+
+	@Override
+	public String getId()
+	{
+		return "delta";
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -57,5 +65,4 @@ public class FastDifferentialSynchronizationStrategy implements SynchronizationS
 	public <Z, D extends Database<Z>> void destroy(DatabaseCluster<Z, D> cluster)
 	{
 	}
-
 }

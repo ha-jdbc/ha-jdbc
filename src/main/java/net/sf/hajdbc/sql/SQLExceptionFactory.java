@@ -25,8 +25,8 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Map;
 
-import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ExceptionType;
+import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.durability.Durability.Phase;
 
 /**
@@ -136,7 +136,7 @@ public class SQLExceptionFactory extends AbstractExceptionFactory<SQLException>
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.ExceptionFactory#indicatesFailure(java.lang.Exception, net.sf.hajdbc.Dialect)
+	 * @see net.sf.hajdbc.ExceptionFactory#indicatesFailure(java.lang.Exception, net.sf.hajdbc.dialect.Dialect)
 	 */
 	@Override
 	public boolean indicatesFailure(SQLException exception, Dialect dialect)

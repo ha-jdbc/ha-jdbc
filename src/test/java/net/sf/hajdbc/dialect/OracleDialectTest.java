@@ -43,6 +43,7 @@ import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.cache.ForeignKeyConstraintImpl;
+import net.sf.hajdbc.dialect.oracle.OracleDialectFactory;
 
 /**
  * @author Paul Ferraro
@@ -51,7 +52,7 @@ public class OracleDialectTest extends StandardDialectTest
 {
 	public OracleDialectTest()
 	{
-		super(DialectFactoryEnum.ORACLE);
+		super(new OracleDialectFactory());
 	}
 
 	/**

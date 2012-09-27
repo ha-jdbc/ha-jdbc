@@ -21,9 +21,9 @@ import java.sql.ClientInfoStatus;
 import java.sql.SQLException;
 import java.util.Collections;
 
-import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.ExceptionType;
+import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.durability.Durability.Phase;
 
 import static org.junit.Assert.*;

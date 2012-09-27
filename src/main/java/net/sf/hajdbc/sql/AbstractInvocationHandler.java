@@ -34,10 +34,10 @@ import java.util.WeakHashMap;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.invocation.InvocationStrategy;
 import net.sf.hajdbc.invocation.InvocationStrategyEnum;
 import net.sf.hajdbc.invocation.InvokeOnAllInvocationStrategy;

@@ -21,7 +21,7 @@ import java.io.Serializable;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
-import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.dialect.Dialect;
 
 /**
  * @author Paul Ferraro

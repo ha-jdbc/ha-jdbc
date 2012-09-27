@@ -17,11 +17,13 @@
  */
 package net.sf.hajdbc.cache;
 
+import java.io.Serializable;
+
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.DatabaseMetaDataCache;
+import net.sf.hajdbc.Identifiable;
 
-public interface DatabaseMetaDataCacheFactory
+public interface DatabaseMetaDataCacheFactory extends Identifiable, Serializable
 {
 	<Z, D extends Database<Z>> DatabaseMetaDataCache<Z, D> createCache(DatabaseCluster<Z, D> cluster);
 }

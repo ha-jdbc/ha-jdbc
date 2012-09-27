@@ -17,14 +17,17 @@
  */
 package net.sf.hajdbc.durability;
 
+import java.io.Serializable;
+
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.Identifiable;
 
 
 /**
  * @author Paul Ferraro
  */
-public interface DurabilityFactory
+public interface DurabilityFactory extends Identifiable, Serializable
 {
 	<Z, D extends Database<Z>> Durability<Z, D> createDurability(DatabaseCluster<Z, D> cluster);
 }

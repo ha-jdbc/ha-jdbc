@@ -12,9 +12,9 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
-import net.sf.hajdbc.cache.DatabaseMetaDataCacheFactoryEnum;
-import net.sf.hajdbc.dialect.DialectFactoryEnum;
-import net.sf.hajdbc.distributed.jgroups.DefaultChannelProvider;
+import net.sf.hajdbc.cache.simple.SimpleDatabaseMetaDataCacheFactory;
+import net.sf.hajdbc.dialect.hsqldb.HSQLDBDialectFactory;
+import net.sf.hajdbc.distributed.jgroups.ChannelCommandDispatcherFactory;
 import net.sf.hajdbc.sql.DataSource;
 import net.sf.hajdbc.sql.DataSourceDatabase;
 import net.sf.hajdbc.sql.DataSourceDatabaseClusterConfiguration;
@@ -52,15 +52,14 @@ public class Test
 		DataSourceDatabaseClusterConfiguration config = new DataSourceDatabaseClusterConfiguration();
 		
 		config.setDatabases(Arrays.asList(db1, db2));
-		config.setDialectFactory(DialectFactoryEnum.HSQLDB);
-//		config.setDialectFactory(DialectFactoryEnum.H2);
-		config.setDatabaseMetaDataCacheFactory(DatabaseMetaDataCacheFactoryEnum.NONE);
+		config.setDialectFactory(new HSQLDBDialectFactory());
+		config.setDatabaseMetaDataCacheFactory(new SimpleDatabaseMetaDataCacheFactory());
 //		SQLStateManagerFactory state = new SQLStateManagerFactory();
 		SimpleStateManagerFactory state = new SimpleStateManagerFactory();
 //		state.setUrlPattern("jdbc:hsqldb:{1}/{0}");
 //		state.setUrlPattern("jdbc:derby:{1}/{0};create=true");
 		config.setStateManagerFactory(state);
-		config.setDispatcherFactory(new DefaultChannelProvider());
+		config.setDispatcherFactory(new ChannelCommandDispatcherFactory());
 
 		DataSource ds = new DataSource();
 		ds.setCluster("cluster");

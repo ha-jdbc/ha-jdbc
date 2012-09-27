@@ -31,6 +31,7 @@ import java.util.Map;
 import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.SequenceSupport;
+import net.sf.hajdbc.dialect.firebird.FirebirdDialectFactory;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -44,7 +45,7 @@ public class FirebirdDialectTest extends StandardDialectTest
 {
 	public FirebirdDialectTest()
 	{
-		super(DialectFactoryEnum.FIREBIRD);
+		super(new FirebirdDialectFactory());
 	}
 	
 	/**

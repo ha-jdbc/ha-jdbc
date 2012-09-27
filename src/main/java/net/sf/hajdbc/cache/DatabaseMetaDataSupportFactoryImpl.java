@@ -20,7 +20,7 @@ package net.sf.hajdbc.cache;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
-import net.sf.hajdbc.Dialect;
+import net.sf.hajdbc.dialect.Dialect;
 
 
 /**
@@ -32,7 +32,7 @@ public class DatabaseMetaDataSupportFactoryImpl implements DatabaseMetaDataSuppo
 	private static final long serialVersionUID = -2989879373607702506L;
 
 	/**
-	 * @see net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory#createSupport(java.sql.DatabaseMetaData, net.sf.hajdbc.Dialect)
+	 * @see net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory#createSupport(java.sql.DatabaseMetaData, net.sf.hajdbc.dialect.Dialect)
 	 */
 	@Override
 	public DatabaseMetaDataSupport createSupport(DatabaseMetaData metaData, Dialect dialect) throws SQLException

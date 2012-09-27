@@ -52,7 +52,6 @@ import javax.sql.rowset.spi.SyncProviderException;
 import javax.transaction.xa.XAException;
 
 import net.sf.hajdbc.ColumnProperties;
-import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.IdentityColumnSupport;
 import net.sf.hajdbc.QualifiedName;
@@ -79,7 +78,7 @@ public class StandardDialectTest
  	
 	public StandardDialectTest()
 	{
-		this(DialectFactoryEnum.STANDARD);
+		this(new StandardDialectFactory());
 	}
 	
 	protected StandardDialectTest(DialectFactory dialectFactory)

@@ -20,6 +20,7 @@ package net.sf.hajdbc.dialect;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.Driver;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLNonTransientConnectionException;
@@ -30,7 +31,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,7 +38,6 @@ import java.util.regex.Pattern;
 import javax.transaction.xa.XAException;
 
 import net.sf.hajdbc.ColumnProperties;
-import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.DumpRestoreSupport;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.IdentityColumnSupport;
@@ -121,7 +120,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getSimpleSQL()
+	 * @see net.sf.hajdbc.dialect.Dialect#getSimpleSQL()
 	 */
 	@Override
 	public String getSimpleSQL()
@@ -159,7 +158,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getTruncateTableSQL(net.sf.hajdbc.TableProperties)
+	 * @see net.sf.hajdbc.dialect.Dialect#getTruncateTableSQL(net.sf.hajdbc.TableProperties)
 	 */
 	@Override
 	public String getTruncateTableSQL(TableProperties properties)
@@ -173,7 +172,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
+	 * @see net.sf.hajdbc.dialect.Dialect#getCreateForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
 	 */
 	@Override
 	public String getCreateForeignKeyConstraintSQL(ForeignKeyConstraint key)
@@ -187,7 +186,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Dialect#getDropForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
+	 * @see net.sf.hajdbc.dialect.Dialect#getDropForeignKeyConstraintSQL(net.sf.hajdbc.ForeignKeyConstraint)
 	 */
 	@Override
 	public String getDropForeignKeyConstraintSQL(ForeignKeyConstraint key)
@@ -206,7 +205,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getCreateUniqueConstraintSQL(net.sf.hajdbc.UniqueConstraint)
+	 * @see net.sf.hajdbc.dialect.Dialect#getCreateUniqueConstraintSQL(net.sf.hajdbc.UniqueConstraint)
 	 */
 	@Override
 	public String getCreateUniqueConstraintSQL(UniqueConstraint constraint)
@@ -220,7 +219,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getDropUniqueConstraintSQL(net.sf.hajdbc.UniqueConstraint)
+	 * @see net.sf.hajdbc.dialect.Dialect#getDropUniqueConstraintSQL(net.sf.hajdbc.UniqueConstraint)
 	 */
 	@Override
 	public String getDropUniqueConstraintSQL(UniqueConstraint constraint)
@@ -234,7 +233,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#isSelectForUpdate(java.lang.String)
+	 * @see net.sf.hajdbc.dialect.Dialect#isSelectForUpdate(java.lang.String)
 	 */
 	@Override
 	public boolean isSelectForUpdate(String sql)
@@ -243,7 +242,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getDefaultSchemas(java.sql.DatabaseMetaData)
+	 * @see net.sf.hajdbc.dialect.Dialect#getDefaultSchemas(java.sql.DatabaseMetaData)
 	 */
 	@Override
 	public List<String> getDefaultSchemas(DatabaseMetaData metaData) throws SQLException
@@ -294,7 +293,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.Dialect#getSequenceSupport()
+	 * @see net.sf.hajdbc.dialect.Dialect#getSequenceSupport()
 	 */
 	@Override
 	public SequenceSupport getSequenceSupport()
@@ -303,7 +302,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#parseSequence(java.lang.String)
+	 * @see net.sf.hajdbc.dialect.Dialect#parseSequence(java.lang.String)
 	 */
 	@Override
 	public String parseSequence(String sql)
@@ -312,7 +311,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getColumnType(net.sf.hajdbc.ColumnProperties)
+	 * @see net.sf.hajdbc.dialect.Dialect#getColumnType(net.sf.hajdbc.ColumnProperties)
 	 */
 	@Override
 	public int getColumnType(ColumnProperties properties)
@@ -321,7 +320,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getSequences(java.sql.DatabaseMetaData)
+	 * @see net.sf.hajdbc.dialect.Dialect#getSequences(java.sql.DatabaseMetaData)
 	 */
 	@Override
 	public Map<QualifiedName, Integer> getSequences(DatabaseMetaData metaData) throws SQLException
@@ -351,7 +350,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#getNextSequenceValueSQL(net.sf.hajdbc.SequenceProperties)
+	 * @see net.sf.hajdbc.dialect.Dialect#getNextSequenceValueSQL(net.sf.hajdbc.SequenceProperties)
 	 */
 	@Override
 	public String getNextSequenceValueSQL(SequenceProperties sequence)
@@ -365,7 +364,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Dialect#getAlterSequenceSQL(net.sf.hajdbc.SequenceProperties, long)
+	 * @see net.sf.hajdbc.dialect.Dialect#getAlterSequenceSQL(net.sf.hajdbc.SequenceProperties, long)
 	 */
 	@Override
 	public String getAlterSequenceSQL(SequenceProperties sequence, long value)
@@ -380,7 +379,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.Dialect#getIdentityColumnSupport()
+	 * @see net.sf.hajdbc.dialect.Dialect#getIdentityColumnSupport()
 	 */
 	@Override
 	public IdentityColumnSupport getIdentityColumnSupport()
@@ -406,7 +405,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.Dialect#getIdentifierPattern(java.sql.DatabaseMetaData)
+	 * @see net.sf.hajdbc.dialect.Dialect#getIdentifierPattern(java.sql.DatabaseMetaData)
 	 */
 	@Override
 	public Pattern getIdentifierPattern(DatabaseMetaData metaData) throws SQLException
@@ -422,7 +421,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#evaluateCurrentDate(java.lang.String, java.sql.Date)
+	 * @see net.sf.hajdbc.dialect.Dialect#evaluateCurrentDate(java.lang.String, java.sql.Date)
 	 */
 	@Override
 	public String evaluateCurrentDate(String sql, java.sql.Date date)
@@ -436,7 +435,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#evaluateCurrentTime(java.lang.String, java.sql.Time)
+	 * @see net.sf.hajdbc.dialect.Dialect#evaluateCurrentTime(java.lang.String, java.sql.Time)
 	 */
 	@Override
 	public String evaluateCurrentTime(String sql, java.sql.Time time)
@@ -450,7 +449,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#evaluateCurrentTimestamp(java.lang.String, java.sql.Timestamp)
+	 * @see net.sf.hajdbc.dialect.Dialect#evaluateCurrentTimestamp(java.lang.String, java.sql.Timestamp)
 	 */
 	@Override
 	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp timestamp)
@@ -469,7 +468,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Dialect#evaluateRand(java.lang.String)
+	 * @see net.sf.hajdbc.dialect.Dialect#evaluateRand(java.lang.String)
 	 */
 	@Override
 	public String evaluateRand(String sql)
@@ -487,7 +486,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.Dialect#indicatesFailure(java.sql.SQLException)
+	 * @see net.sf.hajdbc.dialect.Dialect#indicatesFailure(java.sql.SQLException)
 	 */
 	@Override
 	public boolean indicatesFailure(SQLException e)
@@ -510,7 +509,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.Dialect#indicatesFailure(javax.transaction.xa.XAException)
+	 * @see net.sf.hajdbc.dialect.Dialect#indicatesFailure(javax.transaction.xa.XAException)
 	 */
 	@Override
 	public boolean indicatesFailure(XAException e)
@@ -525,7 +524,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.Dialect#getUrlPattern()
+	 * @see net.sf.hajdbc.dialect.Dialect#getUrlPattern()
 	 */
 	@Override
 	public Pattern getUrlPattern()
@@ -535,7 +534,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.Dialect#getDumpRestoreSupport()
+	 * @see net.sf.hajdbc.dialect.Dialect#getDumpRestoreSupport()
 	 */
 	@Override
 	public DumpRestoreSupport getDumpRestoreSupport()
@@ -545,7 +544,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.Dialect#getTriggerSupport()
+	 * @see net.sf.hajdbc.dialect.Dialect#getTriggerSupport()
 	 */
 	@Override
 	public TriggerSupport getTriggerSupport()
@@ -595,7 +594,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.Dialect#getCreateSchemaSQL(java.lang.String)
+	 * @see net.sf.hajdbc.dialect.Dialect#getCreateSchemaSQL(java.lang.String)
 	 */
 	@Override
 	public String getCreateSchemaSQL(String schema)
@@ -610,7 +609,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.Dialect#getDropSchemaSQL(java.lang.String)
+	 * @see net.sf.hajdbc.dialect.Dialect#getDropSchemaSQL(java.lang.String)
 	 */
 	@Override
 	public String getDropSchemaSQL(String schema)
@@ -625,7 +624,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 
 	protected boolean meetsRequirement(int minMajor, int minMinor)
 	{
-		Driver driver = this.getDriver();
+		Driver driver = this.findDriver();
 
 		if (driver != null)
 		{
@@ -637,23 +636,25 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 		return false;
 	}
 	
-	protected Driver getDriver()
+	private Driver findDriver()
 	{
-		for (Driver driver: ServiceLoader.load(Driver.class))
+		String url = String.format("jdbc:%s:test", this.vendorPattern());
+		
+		List<Driver> drivers = Collections.list(DriverManager.getDrivers());
+		for (Driver driver: drivers)
 		{
 			try
 			{
-				if (driver.acceptsURL(String.format("jdbc:%s:test", this.vendorPattern())))
+				if (driver.acceptsURL(url))
 				{
 					return driver;
 				}
 			}
 			catch (SQLException e)
 			{
-				// Ignore
+				// Skip
 			}
 		}
-		
 		return null;
 	}
 }

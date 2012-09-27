@@ -27,6 +27,7 @@ import java.util.Arrays;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.TableProperties;
+import net.sf.hajdbc.dialect.sybase.SybaseDialectFactory;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -38,7 +39,7 @@ public class SybaseDialectTest extends StandardDialectTest
 {
 	public SybaseDialectTest()
 	{
-		super(DialectFactoryEnum.SYBASE);
+		super(new SybaseDialectFactory());
 	}
 	
 	/**

@@ -24,13 +24,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
 
-import net.sf.hajdbc.Dialect;
 import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.cache.AbstractDatabaseProperties;
 import net.sf.hajdbc.cache.DatabaseMetaDataProvider;
 import net.sf.hajdbc.cache.DatabaseMetaDataSupport;
+import net.sf.hajdbc.dialect.Dialect;
 
 /**
  * @author Paul Ferraro

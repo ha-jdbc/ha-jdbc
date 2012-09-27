@@ -76,15 +76,15 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 	 * @param membershipListener notified of membership changes
 	 * @throws Exception if channel cannot be created
 	 */
-	public ChannelCommandDispatcher(String id, ChannelProvider provider, C context, Stateful stateful, MembershipListener membershipListener) throws Exception
+	public ChannelCommandDispatcher(String id, Channel channel, long timeout, C context, Stateful stateful, MembershipListener membershipListener) throws Exception
 	{
 		this.id = id;
 		this.context = context;
 		this.stateful = stateful;
 		this.membershipListener = membershipListener;
 		
-		this.dispatcher = new MessageDispatcher(provider.getChannel(), this, this, this);
-		this.timeout = provider.getTimeout();
+		this.dispatcher = new MessageDispatcher(channel, this, this, this);
+		this.timeout = timeout;
 	}
 
 	/**

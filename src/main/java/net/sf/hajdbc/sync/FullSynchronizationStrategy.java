@@ -74,6 +74,12 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy, Tab
 	private int fetchSize = 0;
 
 	@Override
+	public String getId()
+	{
+		return "full";
+	}
+
+	@Override
 	public <Z, D extends Database<Z>> void init(DatabaseCluster<Z, D> cluster)
 	{
 		this.strategy.init(cluster);

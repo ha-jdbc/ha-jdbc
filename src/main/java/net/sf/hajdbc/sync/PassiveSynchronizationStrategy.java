@@ -33,6 +33,12 @@ public class PassiveSynchronizationStrategy implements SynchronizationStrategy, 
 {
 	private static final long serialVersionUID = -7847193096593293640L;
 
+	@Override
+	public String getId()
+	{
+		return "passive";
+	}
+
 	/**
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.sync.SynchronizationContext)
 	 */

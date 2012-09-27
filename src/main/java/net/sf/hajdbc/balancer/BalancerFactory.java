@@ -17,15 +17,17 @@
  */
 package net.sf.hajdbc.balancer;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.Identifiable;
 
 /**
  * Factory for creating balancers.
  * @author Paul Ferraro
  */
-public interface BalancerFactory
+public interface BalancerFactory extends Identifiable, Serializable
 {
 	/**
 	 * Create a balancer.

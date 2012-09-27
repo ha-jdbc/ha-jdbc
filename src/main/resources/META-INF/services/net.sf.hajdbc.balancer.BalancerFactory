@@ -1,0 +1,4 @@
+net.sf.hajdbc.balancer.load.LoadBalancerFactory
+net.sf.hajdbc.balancer.random.RandomBalancerFactory
+net.sf.hajdbc.balancer.roundrobin.RoundRobinBalancerFactory
+net.sf.hajdbc.balancer.simple.SimpleBalancerFactory
