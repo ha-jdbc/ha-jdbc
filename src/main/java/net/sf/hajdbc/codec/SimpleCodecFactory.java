@@ -15,11 +15,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.hajdbc.codec.simple;
+package net.sf.hajdbc.codec;
 
 import java.sql.SQLException;
 
-import net.sf.hajdbc.codec.AbstractCodec;
 
 /**
  * Trivial codec that does nothing
@@ -28,6 +27,12 @@ import net.sf.hajdbc.codec.AbstractCodec;
 public class SimpleCodecFactory extends AbstractCodec
 {
 	private static final long serialVersionUID = -472755264720942251L;
+
+	@Override
+	public String getId()
+	{
+		return null;
+	}
 
 	/**
 	 * {@inheritDoc}

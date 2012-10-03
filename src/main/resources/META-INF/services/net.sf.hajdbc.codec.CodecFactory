@@ -1,0 +1,4 @@
+net.sf.hajdbc.codec.SimpleCodecFactory
+net.sf.hajdbc.codec.base64.Base64CodecFactory
+net.sf.hajdbc.codec.crypto.CipherCodecFactory
+net.sf.hajdbc.codec.hex.HexCodecFactory

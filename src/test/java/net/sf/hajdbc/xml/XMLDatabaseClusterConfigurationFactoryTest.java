@@ -32,7 +32,6 @@ import net.sf.hajdbc.balancer.load.LoadBalancerFactory;
 import net.sf.hajdbc.cache.eager.EagerDatabaseMetaDataCacheFactory;
 import net.sf.hajdbc.dialect.StandardDialectFactory;
 import net.sf.hajdbc.durability.fine.FineDurabilityFactory;
-import net.sf.hajdbc.sql.DefaultExecutorServiceProvider;
 import net.sf.hajdbc.sql.DriverDatabase;
 import net.sf.hajdbc.sql.DriverDatabaseClusterConfiguration;
 import net.sf.hajdbc.sql.TransactionModeEnum;
@@ -102,12 +101,7 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 		assertEquals(FineDurabilityFactory.class, configuration.getDurabilityFactory().getClass());
 		assertSame(TransactionModeEnum.SERIAL, configuration.getTransactionMode());
 		
-		DefaultExecutorServiceProvider executorProvider = (DefaultExecutorServiceProvider) configuration.getExecutorProvider();
-		
-		assertNotNull(executorProvider);
-		assertEquals(60, executorProvider.getMaxIdle());
-		assertEquals(100, executorProvider.getMaxThreads());
-		assertEquals(0, executorProvider.getMinThreads());
+		assertNotNull(configuration.getExecutorProvider());
 		
 		assertNull(configuration.getAutoActivationExpression());
 		assertNull(configuration.getFailureDetectionExpression());

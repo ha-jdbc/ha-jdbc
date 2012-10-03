@@ -24,7 +24,7 @@ import java.util.concurrent.ExecutorService;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseProperties;
-import net.sf.hajdbc.codec.Codec;
+import net.sf.hajdbc.codec.Decoder;
 import net.sf.hajdbc.dialect.Dialect;
 
 
@@ -87,7 +87,7 @@ public interface SynchronizationContext<Z, D extends Database<Z>>
 	
 	SynchronizationSupport getSynchronizationSupport();
 	
-	Codec getCodec();
+	Decoder getDecoder();
 	
 	/**
 	 * Closes any open database connections and shuts down the executor service. 

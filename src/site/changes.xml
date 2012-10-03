@@ -29,6 +29,9 @@
 				Update Java runtime requirement to 1.6.
 			</action>
 			<action dev="pferraro" type="update">
+				Update Java compile requirement to 1.7 (for JDBC 4.1 support).
+			</action>
+			<action dev="pferraro" type="update">
 				Migrate build from Ant to Maven.
 			</action>
 			<action dev="pferraro" type="update">
@@ -40,7 +43,7 @@
 				XML parsing will validate against the schema.
 			</action>
 			<action dev="pferraro" type="update">
-				Redesign HA-JDBC startup, adding support for xml-less configuration.
+				Redesign HA-JDBC startup, adding support for programmatic configuration.
 			</action>
 			<action dev="pferraro" type="update">
 				Store references to database clusters within Driver or DataSource object, rather than in the mbean server.
@@ -51,6 +54,9 @@
 			<action dev="pferraro" type="update">
 				Replace java.util.prefs-based state manager with a jdbc-based or in-memory implementation.
 				Add alternative implementations for sqlite (via sqljet) and berkeleydb.
+			</action>
+			<action dev="pferraro" type="add">
+				Add generic pooling mechanism for use by state managers.
 			</action>
 			<action dev="pferraro" type="add">
 				Add ability to obfuscate passwords stored in HA-JDBC configuration file.
@@ -79,82 +85,92 @@
 			</action>
 			<action dev="pferraro" type="add">
 				Create logging facade to support parameterized log messages to avoid string evaluation if message won't be logged.
-				Prefer slf4j provider, fall back to commons-logging, then to jdk logging.
+				Prefer jboss-logging provider, fall back to slf4j, commons-logging, then to jdk logging.
 				This removes any explicit runtime dependency on a particular logging framework.
 			</action>
 			<action dev="pferraro" type="update">
 				Reverse invocation order of commit/rollback using serial transaction mode.
 				The first database to acquire a row lock should be the last to commit.
 			</action>
-			<action dev="pferraro" type="update">
+			<action dev="pferraro" type="update" >
 				Replace deprecated JGroups channel multiplexer with shared transport.
+			</action>
+			<action dev="pferraro" type="update">
+				Configuration file now specifies synchronization strategies, state manager provider, and distributable capabilities provider via identifiers instead of class names.
+				Uses service loader mechanism for extensibility.
+			</action>
+			<action dev="pferraro" type="update">
+				Modify configuration of balancer, dialect, durability, password codecs, and meta-data cache to use service loader mechanism for extensibility.
+			</action>
+			<action dev="pferraro" type="update">
+				Copy CronExpression from Quartz code base instead of pulling in entire artifact.  HA-JDBC no longer has any required dependencies.
 			</action>
 		</release>
 		<release version="2.0.16" date="">
-			<action context="src" dev="PF" type="fix">
+			<action dev="pferraro" type="fix">
 				Fix unintentional configuration export during initial startup for datasource, pool-datasource, and xa-datasource configs.
 			</action>
-			<action context="src" dev="PF" type="fix">
+			<action dev="pferraro" type="fix">
 				In DatabaseMetaDataSupportImpl.quote(...), use case-insensitive comparison when determining if identifier is a keyword.
 			</action>
-			<action context="src" dev="PF" type="fix" fixes-bug="2850077">
+			<action dev="pferraro" type="fix" system="SourceForge" issue="2850077">
 				Using non-zero fetchSize in full and differential sync strategies requires auto-commit off in PostgreSQL.
 			</action>
-			<action context="src" dev="PF" type="fix">
+			<action dev="pferraro" type="fix">
 				Connection.setAutoCommit(...) should use a end-transaction invocation strategy, yet still be recordable.
 			</action>
-			<action context="src" dev="PF" type="update">
+			<action dev="pferraro" type="update">
 				Upgrade JGroups to 2.6.12.
 			</action>
-			<action context="src" dev="PF" type="fix">
+			<action dev="pferraro" type="fix">
 				If first database activation fails during auto-activate, just log failure and continue with next failed database.
 			</action>
 		</release>
 		<release version="2.0.16-rc-1" date="2009-06-21">
-			<action context="src" dev="PF" type="fix" fixes-bug="2684746">
+			<action dev="pferraro" type="fix" system="SourceForge" issue="2684746">
 				Fixed NullPointerException in PreparedStatement.set/ResultSet.update stream/reader/blob/clob methods, if called with null value. 
 			</action>
-			<action context="src" dev="PF" type="fix" fixes-bug="2688439">
+			<action dev="pferraro" type="fix" system="SourceForge" issue="2688439">
 				Only consider hashed unique indexes when finding unique constraints.
 			</action>
-			<action context="src" dev="PF" type="fix">
+			<action dev="pferraro" type="fix">
 				Ensure unique constraint columns are quoted, if necessary.
 			</action>
-			<action context="src" dev="PF" type="fix" fixes-bug="2728324">
+			<action dev="pferraro" type="fix" system="SourceForge" issue="2728324">
 				Fix memory leak caused by batch method recording when using PreparedStatement pooling.
 			</action>
-			<action context="src" dev="PF" type="fix">
+			<action dev="pferraro" type="fix">
 				Optimize recording of ResultSet navigation and update methods.
 			</action>
-			<action context="src" dev="PF" type="fix">
+			<action dev="pferraro" type="fix">
 				Fix recording of CallableStatement.registerOutParameter(...) methods.
 			</action>
-			<action context="src" dev="PF" type="fix" fixes-bug="2688421">
+			<action dev="pferraro" type="fix" system="SourceForge" issue="2688421">
 				Fix differential sync strategy breakage when a table contains only primary key columns.
 			</action>
-			<action context="src" dev="PF" type="fix" fixes-bug="2770743" due-to="Karl Moore">
+			<action dev="pferraro" type="fix" system="SourceForge" issue="2770743" due-to="Karl Moore">
 				Determine column meta data from ResultSetMetaData instead of DatabaseMetaData.getColumns(...).
 				This avoids the need for dialect specific IDENTITY column detection logic.
 			</action>
-			<action context="src" dev="PF" type="fix">
+			<action dev="pferraro" type="fix">
 				Fixed StandardDialect.getIdentifierPattern(DatabaseMetaData) to require that identifiers begin with a letter.
 			</action>
-			<action context="lib" dev="PF" type="update">
+			<action dev="pferraro" type="update">
 				Upgraded JGroups to 2.6.10.
 			</action>
-			<action context="lib" dev="PF" type="update">
+			<action dev="pferraro" type="update">
 				Upgraded JiBX to 1.2.1.
 			</action>
-			<action context="lib" dev="PF" type="update">
+			<action dev="pferraro" type="update">
 				Upgraded Quartz to 1.6.5.
 			</action>
-			<action context="lib" dev="PF" type="update">
+			<action dev="pferraro" type="update">
 				Upgraded SLF4J to 1.5.7.
 			</action>
-			<action context="lib" dev="PF" type="update">
+			<action dev="pferraro" type="update">
 				Upgraded EasyMock to 2.5.1.
 			</action>
-			<action context="lib" dev="PF" type="update">
+			<action dev="pferraro" type="update">
 				Upgraded TestNG to 5.9.
 			</action>
 		</release>

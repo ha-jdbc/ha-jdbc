@@ -86,7 +86,7 @@ public final class Driver extends AbstractDriver implements Registry.Factory<Str
 	
 	/**
 	 * Set custom configuration factories per cluster.
-	 * @param factories a map of configuration factories per cluster identifier.
+	 * @return a map of configuration factories per cluster identifier.
 	 */
 	public Map<String, DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>> getConfigurationFactories()
 	{
@@ -181,7 +181,7 @@ public final class Driver extends AbstractDriver implements Registry.Factory<Str
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.util.concurrent.LifecycleRegistry.Factory#create(java.lang.Object, java.lang.Object)
+	 * @see net.sf.hajdbc.util.concurrent.Registry.Factory#create(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	public DatabaseCluster<java.sql.Driver, DriverDatabase> create(String id, Properties properties) throws SQLException
@@ -198,7 +198,7 @@ public final class Driver extends AbstractDriver implements Registry.Factory<Str
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.util.concurrent.LifecycleRegistry.Factory#getTimeout()
+	 * @see net.sf.hajdbc.util.concurrent.Registry.Factory#getTimeout()
 	 */
 	@Override
 	public long getTimeout()
@@ -208,7 +208,7 @@ public final class Driver extends AbstractDriver implements Registry.Factory<Str
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.util.concurrent.LifecycleRegistry.Factory#getTimeoutUnit()
+	 * @see net.sf.hajdbc.util.concurrent.Registry.Factory#getTimeoutUnit()
 	 */
 	@Override
 	public TimeUnit getTimeoutUnit()

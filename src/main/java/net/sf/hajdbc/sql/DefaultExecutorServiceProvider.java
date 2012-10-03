@@ -19,12 +19,8 @@ package net.sf.hajdbc.sql;
 
 import java.io.Serializable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import javax.xml.bind.annotation.XmlAttribute;
 
 import net.sf.hajdbc.ExecutorServiceProvider;
 
@@ -35,61 +31,6 @@ import net.sf.hajdbc.ExecutorServiceProvider;
 public class DefaultExecutorServiceProvider implements ExecutorServiceProvider, Serializable
 {
 	private static final long serialVersionUID = 5781743869682086889L;
-	
-	@XmlAttribute(name = "min-threads")
-	private int minThreads = 0;
-	@XmlAttribute(name = "max-threads")
-	private int maxThreads = 100;
-	@XmlAttribute(name = "max-idle")
-	private int maxIdle = 60;
-	
-	/**
-	 * @return the minThreads
-	 */
-	public int getMinThreads()
-	{
-		return this.minThreads;
-	}
-
-	/**
-	 * @param minThreads the minThreads to set
-	 */
-	public void setMinThreads(int minThreads)
-	{
-		this.minThreads = minThreads;
-	}
-
-	/**
-	 * @return the maxThreads
-	 */
-	public int getMaxThreads()
-	{
-		return this.maxThreads;
-	}
-
-	/**
-	 * @param maxThreads the maxThreads to set
-	 */
-	public void setMaxThreads(int maxThreads)
-	{
-		this.maxThreads = maxThreads;
-	}
-
-	/**
-	 * @return the maxIdle
-	 */
-	public int getMaxIdle()
-	{
-		return this.maxIdle;
-	}
-
-	/**
-	 * @param maxIdle the maxIdle to set
-	 */
-	public void setMaxIdle(int maxIdle)
-	{
-		this.maxIdle = maxIdle;
-	}
 
 	/**
 	 * {@inheritDoc}
@@ -98,7 +39,7 @@ public class DefaultExecutorServiceProvider implements ExecutorServiceProvider, 
 	@Override
 	public ExecutorService getExecutor(ThreadFactory threadFactory)
 	{
-		return new ThreadPoolExecutor(this.minThreads, this.maxThreads, this.maxIdle, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), threadFactory, new ThreadPoolExecutor.CallerRunsPolicy());
+		return Executors.newCachedThreadPool(threadFactory);
 	}
 
 	/**

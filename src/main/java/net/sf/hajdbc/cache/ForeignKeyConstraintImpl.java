@@ -109,7 +109,8 @@ public class ForeignKeyConstraintImpl extends UniqueConstraintImpl implements Fo
 	}
 
 	/**
-	 * @see net.sf.hajdbc.ForeignKeyConstraint#setForeignTable(java.lang.String)
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.ForeignKeyConstraint#setForeignTable(net.sf.hajdbc.QualifiedName)
 	 */
 	@Override
 	public void setForeignTable(QualifiedName foreignTable)

@@ -302,7 +302,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.Dialect#parseSequence(java.lang.String)
+	 * @see net.sf.hajdbc.SequenceSupport#parseSequence(java.lang.String)
 	 */
 	@Override
 	public String parseSequence(String sql)
@@ -320,7 +320,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.Dialect#getSequences(java.sql.DatabaseMetaData)
+	 * @see net.sf.hajdbc.SequenceSupport#getSequences(java.sql.DatabaseMetaData)
 	 */
 	@Override
 	public Map<QualifiedName, Integer> getSequences(DatabaseMetaData metaData) throws SQLException
@@ -350,7 +350,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.Dialect#getNextSequenceValueSQL(net.sf.hajdbc.SequenceProperties)
+	 * @see net.sf.hajdbc.SequenceSupport#getNextSequenceValueSQL(net.sf.hajdbc.SequenceProperties)
 	 */
 	@Override
 	public String getNextSequenceValueSQL(SequenceProperties sequence)
@@ -364,7 +364,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 	
 	/**
-	 * @see net.sf.hajdbc.dialect.Dialect#getAlterSequenceSQL(net.sf.hajdbc.SequenceProperties, long)
+	 * @see net.sf.hajdbc.SequenceSupport#getAlterSequenceSQL(net.sf.hajdbc.SequenceProperties, long)
 	 */
 	@Override
 	public String getAlterSequenceSQL(SequenceProperties sequence, long value)
@@ -421,6 +421,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
+	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.dialect.Dialect#evaluateCurrentDate(java.lang.String, java.sql.Date)
 	 */
 	@Override
@@ -435,6 +436,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
+	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.dialect.Dialect#evaluateCurrentTime(java.lang.String, java.sql.Time)
 	 */
 	@Override
@@ -449,6 +451,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
+	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.dialect.Dialect#evaluateCurrentTimestamp(java.lang.String, java.sql.Timestamp)
 	 */
 	@Override
@@ -468,6 +471,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
+	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.dialect.Dialect#evaluateRand(java.lang.String)
 	 */
 	@Override
@@ -554,7 +558,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.TriggerSupport#getCreateTriggerSQL(net.sf.hajdbc.QualifiedName, net.sf.hajdbc.TableProperties, net.sf.hajdbc.TriggerSupport.TriggerTime, net.sf.hajdbc.TriggerSupport.TriggerEvent, java.lang.String)
+	 * @see net.sf.hajdbc.TriggerSupport#getCreateTriggerSQL(java.lang.String, net.sf.hajdbc.TableProperties, net.sf.hajdbc.TriggerEvent, java.lang.String)
 	 */
 	@Override
 	public String getCreateTriggerSQL(String name, TableProperties table, TriggerEvent event, String action)
@@ -569,7 +573,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.TriggerSupport#getDropTriggerSQL(net.sf.hajdbc.QualifiedName, net.sf.hajdbc.TableProperties)
+	 * @see net.sf.hajdbc.TriggerSupport#getDropTriggerSQL(String, net.sf.hajdbc.TableProperties)
 	 */
 	@Override
 	public String getDropTriggerSQL(String name, TableProperties table)
@@ -584,7 +588,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.TriggerSupport#getTriggerRowAlias()
+	 * @see net.sf.hajdbc.TriggerSupport#getTriggerRowAlias(net.sf.hajdbc.TriggerTime)
 	 */
 	@Override
 	public String getTriggerRowAlias(TriggerTime time)

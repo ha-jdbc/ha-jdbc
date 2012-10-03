@@ -73,28 +73,35 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 		Dialect dialect = this.context.getDialect();
 		
 		Connection connection = this.context.getConnection(this.context.getTargetDatabase());
-		connection.setAutoCommit(true);
-		
-		Statement statement = connection.createStatement();
-		
+		boolean autoCommit = connection.getAutoCommit();
 		try
 		{
-			for (TableProperties table: this.context.getTargetDatabaseProperties().getTables())
+			connection.setAutoCommit(true);
+			
+			Statement statement = connection.createStatement();
+			try
 			{
-				for (ForeignKeyConstraint constraint: table.getForeignKeyConstraints())
+				for (TableProperties table: this.context.getTargetDatabaseProperties().getTables())
 				{
-					String sql = dialect.getDropForeignKeyConstraintSQL(constraint);
-					
-					this.logger.log(Level.DEBUG, sql);
-					
-					statement.addBatch(sql);
+					for (ForeignKeyConstraint constraint: table.getForeignKeyConstraints())
+					{
+						String sql = dialect.getDropForeignKeyConstraintSQL(constraint);
+						
+						this.logger.log(Level.DEBUG, sql);
+						
+						statement.addBatch(sql);
+					}
 				}
+				statement.executeBatch();
 			}
-			statement.executeBatch();
+			finally
+			{
+				Resources.close(statement);
+			}
 		}
 		finally
 		{
-			Resources.close(statement);
+			connection.setAutoCommit(autoCommit);
 		}
 	}
 	
@@ -108,29 +115,36 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 		Dialect dialect = this.context.getDialect();
 		
 		Connection connection = this.context.getConnection(this.context.getTargetDatabase());
-		connection.setAutoCommit(true);
-		
-		Statement statement = connection.createStatement();
-		
+		boolean autoCommit = connection.getAutoCommit();
 		try
 		{
-			for (TableProperties table: this.context.getSourceDatabaseProperties().getTables())
-			{
-				for (ForeignKeyConstraint constraint: table.getForeignKeyConstraints())
-				{
-					String sql = dialect.getCreateForeignKeyConstraintSQL(constraint);
-					
-					this.logger.log(Level.DEBUG, sql);
-					
-					statement.addBatch(sql);
-				}
-			}
+			connection.setAutoCommit(true);
 			
-			statement.executeBatch();
+			Statement statement = connection.createStatement();
+			try
+			{
+				for (TableProperties table: this.context.getSourceDatabaseProperties().getTables())
+				{
+					for (ForeignKeyConstraint constraint: table.getForeignKeyConstraints())
+					{
+						String sql = dialect.getCreateForeignKeyConstraintSQL(constraint);
+						
+						this.logger.log(Level.DEBUG, sql);
+						
+						statement.addBatch(sql);
+					}
+				}
+				
+				statement.executeBatch();
+			}
+			finally
+			{
+				Resources.close(statement);
+			}
 		}
 		finally
 		{
-			Resources.close(statement);
+			connection.setAutoCommit(autoCommit);
 		}
 	}
 	
@@ -189,7 +203,7 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 							}
 						};
 						
-						futureMap.put(database, executor.submit(task));				
+						futureMap.put(database, executor.submit(task));
 					}
 
 					try
@@ -223,7 +237,6 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 				
 				Connection targetConnection = this.context.getConnection(this.context.getTargetDatabase());
 				Statement targetStatement = targetConnection.createStatement();
-
 				try
 				{
 					for (SequenceProperties sequence: sequences)
@@ -273,9 +286,7 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 							this.logger.log(Level.DEBUG, selectSQL);
 							
 							Map<String, Long> map = new HashMap<String, Long>();
-							
 							ResultSet resultSet = sourceStatement.executeQuery(selectSQL);
-							
 							try
 							{
 								if (resultSet.next())
@@ -334,28 +345,35 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 		Dialect dialect = this.context.getDialect();
 
 		Connection connection = this.context.getConnection(this.context.getTargetDatabase());
-		
-		Statement statement = connection.createStatement();
-		
+		boolean autoCommit = connection.getAutoCommit();
 		try
 		{
-			for (TableProperties table: this.context.getTargetDatabaseProperties().getTables())
+			connection.setAutoCommit(true);
+			Statement statement = connection.createStatement();
+			try
 			{
-				for (UniqueConstraint constraint: table.getUniqueConstraints())
+				for (TableProperties table: this.context.getTargetDatabaseProperties().getTables())
 				{
-					String sql = dialect.getDropUniqueConstraintSQL(constraint);
-					
-					this.logger.log(Level.DEBUG, sql);
-					
-					statement.addBatch(sql);
+					for (UniqueConstraint constraint: table.getUniqueConstraints())
+					{
+						String sql = dialect.getDropUniqueConstraintSQL(constraint);
+						
+						this.logger.log(Level.DEBUG, sql);
+						
+						statement.addBatch(sql);
+					}
 				}
+				
+				statement.executeBatch();
 			}
-			
-			statement.executeBatch();
+			finally
+			{
+				Resources.close(statement);
+			}
 		}
 		finally
 		{
-			Resources.close(statement);
+			connection.setAutoCommit(autoCommit);
 		}
 	}
 	
@@ -369,29 +387,37 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 		Dialect dialect = this.context.getDialect();
 
 		Connection connection = this.context.getConnection(this.context.getTargetDatabase());
-		
-		Statement statement = connection.createStatement();
-		
+		boolean autoCommit = connection.getAutoCommit();
 		try
 		{
-			for (TableProperties table: this.context.getSourceDatabaseProperties().getTables())
-			{
-				// Drop unique constraints on the current table
-				for (UniqueConstraint constraint: table.getUniqueConstraints())
-				{
-					String sql = dialect.getCreateUniqueConstraintSQL(constraint);
-					
-					this.logger.log(Level.DEBUG, sql);
-					
-					statement.addBatch(sql);
-				}
-			}
+			connection.setAutoCommit(true);
 			
-			statement.executeBatch();
+			Statement statement = connection.createStatement();
+			try
+			{
+				for (TableProperties table: this.context.getSourceDatabaseProperties().getTables())
+				{
+					// Drop unique constraints on the current table
+					for (UniqueConstraint constraint: table.getUniqueConstraints())
+					{
+						String sql = dialect.getCreateUniqueConstraintSQL(constraint);
+						
+						this.logger.log(Level.DEBUG, sql);
+						
+						statement.addBatch(sql);
+					}
+				}
+				
+				statement.executeBatch();
+			}
+			finally
+			{
+				Resources.close(statement);
+			}
 		}
 		finally
 		{
-			Resources.close(statement);
+			connection.setAutoCommit(autoCommit);
 		}
 	}
 

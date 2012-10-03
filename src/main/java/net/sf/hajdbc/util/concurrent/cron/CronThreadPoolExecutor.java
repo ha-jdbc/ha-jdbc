@@ -25,8 +25,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import org.quartz.CronExpression;
-
 /**
  * Scheduled thread-pool executor implementation that leverages a Quartz CronExpression to calculate future execution times for scheduled tasks.
  *
@@ -74,7 +72,7 @@ public class CronThreadPoolExecutor extends ScheduledThreadPoolExecutor implemen
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.util.concurrent.cron.CronExecutorService#schedule(java.lang.Runnable, org.quartz.CronExpression)
+	 * @see net.sf.hajdbc.util.concurrent.cron.CronExecutorService#schedule(java.lang.Runnable, net.sf.hajdbc.util.concurrent.cron.CronExpression)
 	 */
 	@Override
 	public void schedule(final Runnable task, final CronExpression expression)

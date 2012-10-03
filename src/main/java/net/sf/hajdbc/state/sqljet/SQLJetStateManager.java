@@ -149,7 +149,7 @@ public class SQLJetStateManager<Z, D extends Database<Z>> implements StateManage
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.state.SerializedDurabilityListener#beforeInvocation(byte[], int, int)
+	 * @see net.sf.hajdbc.state.SerializedDurabilityListener#beforeInvocation(byte[], byte, byte)
 	 */
 	@Override
 	public void beforeInvocation(byte[] transactionId, byte phase, byte exceptionType)
@@ -158,7 +158,7 @@ public class SQLJetStateManager<Z, D extends Database<Z>> implements StateManage
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.state.SerializedDurabilityListener#afterInvocation(byte[], int)
+	 * @see net.sf.hajdbc.state.SerializedDurabilityListener#afterInvocation(byte[], byte)
 	 */
 	@Override
 	public void afterInvocation(byte[] transactionId, byte phase)
@@ -167,7 +167,7 @@ public class SQLJetStateManager<Z, D extends Database<Z>> implements StateManage
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.state.SerializedDurabilityListener#beforeInvoker(byte[], int, java.lang.String)
+	 * @see net.sf.hajdbc.state.SerializedDurabilityListener#beforeInvoker(byte[], byte, java.lang.String)
 	 */
 	@Override
 	public void beforeInvoker(byte[] transactionId, byte phase, String databaseId)
@@ -176,7 +176,7 @@ public class SQLJetStateManager<Z, D extends Database<Z>> implements StateManage
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.state.SerializedDurabilityListener#afterInvoker(byte[], int, java.lang.String, byte[])
+	 * @see net.sf.hajdbc.state.SerializedDurabilityListener#afterInvoker(byte[], byte, java.lang.String, byte[])
 	 */
 	@Override
 	public void afterInvoker(byte[] transactionId, byte phase, String databaseId, byte[] result)

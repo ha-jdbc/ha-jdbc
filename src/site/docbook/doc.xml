@@ -47,12 +47,803 @@
 		</variablelist>
 	</section>
 	<section>
-		<title>Requirements</title>
+		<title>Runtime requirements</title>
 		<itemizedlist>
 			<listitem><para>Java 1.6+</para></listitem>
 			<listitem><para>Type IV JDBC 4.x driver for underlying databases</para></listitem>
-			<listitem><para>Configuration XML file per database cluster</para></listitem>
+			<listitem><para>Configuration XML file per database cluster or bootstrapped programmatic configuration</para></listitem>
 		</itemizedlist>
+	</section>
+	<section>
+		<title>Configuring HA-JDBC</title>
+		<para>
+			HA-JDBC can be configured either:
+		</para>
+		<itemizedlist>
+			<listitem><para>Via an <link linkend="config.xml">XML file</link></para></listitem>
+			<listitem><para><link linkend="config.code">Programmatically</link></para></listitem>
+		</itemizedlist>
+		<section id="config.xml">
+			<title>XML configuration</title>
+			<para>
+			</para>
+			<section>
+				<title>Locating the configuration file</title>
+				<para>
+					The algorithm used to locate the configuration file resource at runtime is as follows:
+				</para>
+				<orderedlist>
+					<listitem>
+						<para>Determine the potentially parameterized resource name from one of the following sources:</para>
+						<orderedlist>
+							<listitem>
+								<para>
+									A <literal>config</literal> property passed to <literal>DriverManager.getConnection(String, Properties)</literal>,
+									or the <literal>config</literal> property of the <literal>DataSource</literal>, <literal>ConnectionPoolDataSource</literal>, or <literal>XADataSource</literal>.
+								</para>
+							</listitem>
+							<listitem>
+								<para>The <literal>ha-jdbc.<replaceable>cluster-id</replaceable>.configuration</literal> system property.</para>
+							</listitem>
+							<listitem>
+								<para>Use default value: <filename>ha-jdbc.<replaceable>cluster-id</replaceable>.xml</filename></para>
+							</listitem>
+						</orderedlist>
+					</listitem>
+					<listitem>
+						<para>Format the parameterized resource name using the identifier of the cluster.</para>
+					</listitem>
+					<listitem>
+						<para>
+							Convert the formatted resource name to a URL.
+							If the resource is not a URL, search for the resource in the classpath using the following class loaders:
+						</para>
+						<orderedlist>
+							<listitem><para>Thread context class loader</para></listitem>
+							<listitem><para>Class loader of the current class</para></listitem>
+							<listitem><para>System class loader</para></listitem>
+						</orderedlist>
+					</listitem>
+				</orderedlist>
+			</section>
+		</section>
+		<section id="config.code">
+			<title>Programmatic configuration</title>
+			<para>As of version 2.1, an HA-JDBC cluster can be defined programmatically.</para>
+			<para>e.g.</para>
+			<programlisting>// Define each database in the cluster
+DriverDatabase db1 = new DriverDatabase();
+db1.setId("db1");
+db1.setName("jdbc:hsqldb:mem:db1");
+db1.setUser("sa");
+db1.setPassword("");
+
+DriverDatabase db2 = new DriverDatabase();
+db2.setId("db2");
+db2.setName("jdbc:hsqldb:mem:db2");
+db2.setUser("sa");
+db2.setPassword("");
+
+// Define the cluster configuration itself
+DriverDatabaseClusterConfiguration config = new DriverDatabaseClusterConfiguration();
+// Specify the database composing this cluster
+config.setDatabases(Arrays.asList(db1, db2));
+// Define the dialect
+config.setDialectFactory(new HSQLDBDialectFactory());
+// Don't cache any meta data
+config.setDatabaseMetaDataCacheFactory(new SimpleDatabaseMetaDataCacheFactory());
+// Use an in-memory state manager
+config.setStateManagerFactory(new SimpleStateManagerFactory());
+// Make the cluster distributable
+config.setDispatcherFactory(new JGroupsCommandDispatcherFactory());
+
+// Register the configuration with the HA-JDBC driver
+for (java.sql.Driver driver: DriverManager.getDrivers()) {
+	if (driver instanceof Driver) {
+		((Driver) driver).getConfigurationFactories().put("mycluster", new SimpleDatabaseClusterConfigurationFactory&lt;Driver, DriverDatabase&gt;(config));
+	}
+}
+
+// Database cluster is now ready to be used!
+Connection connection = DriverManager.getConnection("jdbc:ha-jdbc:mycluster", "sa", "");</programlisting>
+		</section>
+		<section>
+			<title>Dialect</title>
+			<para>
+				The dialect attribute of a cluster determines the SQL syntax to use for a given database operation.
+				HA-JDBC includes dialects for the following databases:
+			</para>
+			<variablelist>
+				<varlistentry>
+					<term>db2</term>
+					<listitem><para>IBM DB2</para></listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>derby</term>
+					<listitem><para>Apache Derby</para></listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>firebird</term>
+					<listitem><para>Firebird, InterBase</para></listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>h2</term>
+					<listitem><para>H2</para></listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>hsqldb</term>
+					<listitem><para>HSQLDB</para></listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>ingres</term>
+					<listitem><para>Ingres</para></listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>mckoi</term>
+					<listitem><para>Mckoi SQL Database, Mckoi Distributed Database</para></listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>mysql</term>
+					<listitem><para>MySQL</para></listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>maxdb</term>
+					<listitem><para>MySQL MaxDB, SAP DB</para></listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>oracle</term>
+					<listitem><para>Oracle Database</para></listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>postgresql</term>
+					<listitem><para>PostgreSQL</para></listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>sybase</term>
+					<listitem><para>Sybase</para></listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>standard</term>
+					<listitem><para>SQL-92 compliant database</para></listitem>
+				</varlistentry>
+			</variablelist>
+			<para>e.g.</para>
+			<programlisting><![CDATA[<ha-jdbc xmlns="urn:sourceforge:ha-jdbc:2.1">
+	<cluster dialect="postgresql">
+		<!-- ... -->
+	</cluster>
+</ha-jdbc>]]></programlisting>
+		</section>
+		<section>
+			<title>Balancer</title>
+			<para>
+				When executing a read request from the cluster, HA-JDBC uses the configured balancer strategy to determine which database should service the request.
+				Each database can define a weight to affect how it is prioritized by the balancer.
+				If no weight is specified for a given database, it is assumed to be 1.
+			</para>
+			<note>
+				<para>In general, a node with a weight of 0 will never service a request unless it is the last node in the cluster.</para>
+			</note>
+			<para>
+				By default, HA-JDBC supports 4 types of balancers:
+			</para>
+			<variablelist>
+				<varlistentry>
+					<term>simple</term>
+					<listitem>
+						<para>
+							Requests are always sent to the node with the highest weight.
+						</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>random</term>
+					<listitem>
+						<para>
+							Requests are sent to a random node.
+							Node weights affect the probability that a given node will be chosen.
+							The probability that a node will be chosen = <replaceable>weight</replaceable> / <replaceable>total-weight</replaceable>.
+						</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>round-robin</term>
+					<listitem>
+						<para>
+							Requests are sent to each node in succession.
+							A node of weight <replaceable>n</replaceable> will receive <replaceable>n</replaceable> requests before the balancer moves on to the next node.
+						</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>load</term>
+					<listitem>
+						<para>
+							Requests are sent to the node with the smallest load.
+							Node weights affect the calculated load of a given node.
+							The load of a node = <replaceable>concurrent-requests</replaceable> / <replaceable>weight</replaceable>.
+						</para>
+					</listitem>
+				</varlistentry>
+			</variablelist>
+			<para>e.g.</para>
+			<programlisting><![CDATA[<ha-jdbc xmlns="urn:sourceforge:ha-jdbc:2.1">
+	<cluster balancer="simple">
+		<!-- Read requests will always prefer db1 -->
+		<database id="db1" weight="2"><!-- ... --></database>
+		<database id="db2" weight="1"><!-- ... --></database>
+	</cluster>
+</ha-jdbc>]]></programlisting>
+		</section>
+		<section>
+			<title>Synchronization strategies</title>
+			<para>
+				Defines a strategy for synchronizing a database before activation.
+				If the strategy contains JavaBean properties, you can override their default values.
+			</para>
+			<variablelist>
+				<!--varlistentry>
+					<term>fast</term>
+					<listitem>
+						<para>
+						</para>
+					</listitem>
+				</varlistentry-->
+				<varlistentry>
+					<term>dump-restore</term>
+					<listitem>
+						<para>
+							Performs a native dump from the source database and restore into the target database.
+							To use this strategy, the dialect of the cluster must implement Dialect.getDumpRestoreSupport()
+						</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>full</term>
+					<listitem>
+						<para>
+							Truncates each table in the target database and inserts data from the source database.
+						</para>
+						<variablelist>
+							<varlistentry>
+								<term>fetchSize</term>
+								<listitem>
+									<para>
+										Controls the maximum number of rows to fetch from the source database at a time.
+										Default is 0, i.e. fetch all rows.
+									</para>
+								</listitem>
+							</varlistentry>
+							<varlistentry>
+								<term>maxBatchSize</term>
+								<listitem>
+									<para>
+										Controls the maximum number of insert/update/delete statements to execute within a batch.
+										Default is 100.
+									</para>
+								</listitem>
+							</varlistentry>
+						</variablelist>
+						<para> </para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>diff</term>
+					<listitem>
+						<para>
+							Performs a full table scan of source table vs destination table, and performs necessary insert/update/delete.
+							Supports the following properties:
+						</para>
+						<variablelist>
+							<varlistentry>
+								<term>versionPattern</term>
+								<listitem>
+									<para>
+										Specifies a regular expression matching the column name of a last update timestamp (i.e. version) column.
+										If specified, a version comparison column can be used to determine whether a given row requires updating, instead of a full column scan.
+									</para>
+								</listitem>
+							</varlistentry>
+							<varlistentry>
+								<term>fetchSize</term>
+								<listitem>
+									<para>
+										Controls the maximum number of rows to fetch from the source database at a time.
+										Default is 0, i.e. fetch all rows.
+									</para>
+								</listitem>
+							</varlistentry>
+							<varlistentry>
+								<term>maxBatchSize</term>
+								<listitem>
+									<para>
+										Controls the maximum number of insert/update/delete statements to execute within a batch.
+										Default is 100.
+									</para>
+								</listitem>
+							</varlistentry>
+						</variablelist>
+						<para> </para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>passive</term>
+					<listitem>
+						<para>
+							Does nothing.
+							Use this strategy for read-only clusters, or if you know for a fact that the target database is already in sync.
+						</para>
+					</listitem>
+				</varlistentry>
+			</variablelist>
+			<para>e.g.</para>
+			<programlisting><![CDATA[<ha-jdbc xmlns="urn:sourceforge:ha-jdbc:2.1">
+	<sync id="full">
+		<property name="fetchSize">1000</property>
+	</sync>
+	<sync id="diff">
+		<property name="fetchSize">1000</property>
+		<property name="versionPattern">version</property>
+	</sync>
+	<cluster default-sync="diff"><!-- ... --></cluster>
+</ha-jdbc>]]></programlisting>
+		</section>
+		<section>
+			<title>Cluster state management</title>
+			<para></para>
+			<variablelist>
+				<varlistentry>
+					<term>simple</term>
+					<listitem>
+						<para>
+							A non-persistent state manager that stores cluster state in memory.
+						</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>sql</term>
+					<listitem>
+						<para>
+							A persistent state manager that uses an embedded database.
+							This provider supports the following properties.
+						</para>
+						<variablelist>
+							<varlistentry>
+								<term>urlPattern</term>
+								<listitem>
+									<para>
+										A MessageFormat pattern indicating the JDBC url of the embedded database.
+										The pattern can accept 2 parameters:
+									</para>
+									<orderedlist>
+										<listitem><para>The cluster ID - typically used as the database name.</para></listitem>
+										<listitem><para>The home directory of the system user - typically used to indicate the location of the embedded database.</para></listitem>
+									</orderedlist>
+									<para>If undefined, HA-JDBC will attempt to use an H2, HSQLDB, or Derby embedded database.</para>
+								</listitem>
+							</varlistentry>
+							<varlistentry>
+								<term>user</term>
+								<listitem>
+									<para>Authentication user name of embedded database.</para>
+								</listitem>
+							</varlistentry>
+							<varlistentry>
+								<term>password</term>
+								<listitem>
+									<para>Authentication password for the above user.</para>
+								</listitem>
+							</varlistentry>
+						</variablelist>
+						<para>
+							You can also override several properites to manipulate connection pooling behavior.
+							The complete list and their default values are available in the <ulink url="http://commons.apache.org/pool/apidocs/org/apache/commons/pool/impl/GenericObjectPool.html">Apache Commons Pool documentation</ulink>.
+						</para>
+					</listitem>
+				</varlistentry>
+				<!--varlistentry>
+					<term>bdb</term>
+					<listitem>
+						<para>
+						</para>
+					</listitem>
+				</varlistentry-->
+				<!--varlistentry>
+					<term>sqlite</term>
+					<listitem>
+						<para>
+						</para>
+					</listitem>
+				</varlistentry-->
+			</variablelist>
+			<para>e.g.</para>
+			<programlisting><![CDATA[<ha-jdbc xmlns="urn:sourceforge:ha-jdbc:2.1">
+	<state id="sql">
+		<property name="urlPattern">jdbc:hsqldb:{1}/{0}</property>
+	</state>
+	<cluster><!-- ... --></cluster>
+</ha-jdbc>]]></programlisting>
+		</section>
+		<section>
+			<title>Durability</title>
+			<para>
+				As of version 2.1, HA-JDBC support a configurable durability level for user transactions.
+				When enabled, HA-JDBC will track transactions, such that, upon restart, following a crash, it can detect and recover from any partial commits.
+				The durability persistence mechanism is determined by the state manager configuration.
+				By default, HA-JDBC includes support for the following durability levels:
+			</para>
+			<variablelist>
+				<varlistentry>
+					<term>none</term>
+					<listitem>
+						<para>
+							No invocations are tracked.
+							This durability level can neither detect nor recover from mid-commit crashes.
+							This level offers the best performance, but offers no protection from crashes.
+							Read-only database clusters should use this level.
+						</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>coarse</term>
+					<listitem>
+						<para>
+							Tracks cluster invocations only, but not per-database invocations.
+							This durability level can detect, but not recover from, mid-commit crashes.
+							Upon recovery, if any cluster invocations still exist in the log, all slave database will be deactivated and must be reactivated manually.
+							This level offers a compromise between performance and resiliency.
+						</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>fine</term>
+					<listitem>
+						<para>
+							Tracks cluster invocations as well as per-database invokers.
+							This durability level can both detect and recover from mid-commit crashes.
+							Upon recovery, if any cluster invocations still exist in the log, all slave database will be deactivated and must be reactivated manually.
+							While this level is the slowest, it ensures the highest level of resilency from crashes.
+						</para>
+					</listitem>
+				</varlistentry>
+			</variablelist>
+			<para>e.g.</para>
+			<programlisting><![CDATA[<ha-jdbc xmlns="urn:sourceforge:ha-jdbc:2.1">
+	<cluster durability="fine">
+		<!-- ... -->
+	</cluster>
+</ha-jdbc>]]></programlisting>
+		</section>
+		<section>
+			<title>Distributed capabilities</title>
+			<para>
+				Indicates that database clusters defined in this file will be accessed by multiple JVMs.
+				By default, HA-JDBC supports the following providers:
+			</para>
+			<variablelist>
+				<varlistentry>
+					<term>jgroups</term>
+					<listitem>
+						<para>
+							Uses a JGroups channel to broadcast cluster membership changes to other peer nodes.
+							The JGroups provider recognizes the following properties:
+						</para>
+						<variablelist>
+							<varlistentry>
+								<term>stack</term>
+								<listitem>
+									<para>Defines one of the following:</para>
+									<itemizedlist>
+										<listitem><para>Name of a system resource containing the JGroups XML configuration.</para></listitem>
+										<listitem><para>URL of the JGroups XML configuration file.</para></listitem>
+										<listitem><para>Path of the JGroups XML configuration on the local file system.</para></listitem>
+										<listitem><para>Legacy protocol stack property string</para></listitem>
+									</itemizedlist>
+									<para>
+										See the <ulink url="http://community.jboss.org/wiki/JGroups">JGroups wiki</ulink> for assistance with customizing the protocol stack.
+									</para>
+								</listitem>
+							</varlistentry>
+							<varlistentry>
+								<term>timeout</term>
+								<listitem>
+									<para>Indicates the number of milliseconds allowed for JGroups operations.</para>
+								</listitem>
+							</varlistentry>
+						</variablelist>
+					</listitem>
+				</varlistentry>
+			</variablelist>
+			<para>e.g.</para>
+			<programlisting><![CDATA[<ha-jdbc xmlns="urn:sourceforge:ha-jdbc:2.1">
+	<distributable id="jgroups">
+		<property name="stack">udp.xml</property>
+	</distributable>
+	<cluster><!-- ... --></cluster>
+</ha-jdbc>]]></programlisting>
+		</section>
+		<section>
+			<title>Database meta-data caching</title>
+			<para>
+				HA-JDBC makes extensive use of database meta data.
+				This information should be cached whenever possible.
+				By default, HA-JDBC includes the following meta-data-cache options:
+			</para>
+			<variablelist>
+				<varlistentry>
+					<term>none</term>
+					<listitem>
+						<para>Meta data is loaded when requested and not cached.</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>lazy</term>
+					<listitem>
+						<para>Meta data is loaded and cached per database as it is requested.</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>shared-lazy</term>
+					<listitem>
+						<para>Meta data is loaded and cached as it is requested.</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>eager</term>
+					<listitem>
+						<para>All necessary meta data is loaded and cached per database during HA-JDBC initialization.</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>shared-eager</term>
+					<listitem>
+						<para>All necessary meta data is loaded and cached during HA-JDBC initialization.</para>
+					</listitem>
+				</varlistentry>
+			</variablelist>
+			<para>e.g.</para>
+			<programlisting><![CDATA[<ha-jdbc xmlns="urn:sourceforge:ha-jdbc:2.1">
+	<cluster meta-data-cache="shared-eager">
+		<!-- ... -->
+	</cluster>
+</ha-jdbc>]]></programlisting>
+		</section>
+		<section>
+			<title>Password obfuscation</title>
+			<para>
+				Since HA-JDBC's configuration file contains references to database passwords, some users may want to obfuscate these.
+				To indicate that a password uses an obfuscation mechanism, use a ":" to indicate the appropriate decoder.
+			</para>
+			<para>e.g.</para>
+			<programlisting><![CDATA[<ha-jdbc xmlns="urn:sourceforge:ha-jdbc:2.1">
+	<cluster ...>
+		<database id="db1">
+			<name>jdbc:h2:mem:db1</name>
+			<user>admin</user>
+			<password>?:wzAkF0hlYUeGhfzRQIxYAQ==</password>
+		</database>
+		<database id="db2"><!-- ... --></database>
+	</cluster>
+</ha-jdbc>]]></programlisting>
+			<para>
+				The following decoding mechanism are currently supported:
+			</para>
+			<variablelist>
+				<varlistentry>
+					<term>16</term>
+					<listitem>
+						<para>
+							Decodes passwords using hexidecimal decoding.
+						</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>64</term>
+					<listitem>
+						<para>
+							Decodes passwords using Base64 decoding.
+						</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>?</term>
+					<listitem>
+						<para>
+							Decodes passwords using a symmetric encryption key from a keystore.
+							The following system properties can be used to customize the properties of the key and/or keystore:
+						</para>
+						<table>
+							<title>KeyStore system properties</title>
+							<tgroup cols="2">
+								<thead>
+									<row>
+										<entry>Property</entry>
+										<entry>Default value</entry>
+									</row>
+								</thead>
+								<tbody>
+									<row>
+										<entry>ha-jdbc.keystore.file</entry>
+										<entry>~/.keystore</entry>
+									</row>
+									<row>
+										<entry>ha-jdbc.keystore.type</entry>
+										<entry>jceks</entry>
+									</row>
+									<row>
+										<entry>ha-jdbc.keystore.password</entry>
+										<entry><emphasis>none</emphasis></entry>
+									</row>
+									<row>
+										<entry>ha-jdbc.key.alias</entry>
+										<entry>ha-jdbc</entry>
+									</row>
+									<row>
+										<entry>ha-jdbc.key.password</entry>
+										<entry><emphasis>required</emphasis></entry>
+									</row>
+								</tbody>
+							</tgroup>
+						</table>
+						<para>
+							Use the following command to generate encrypted passwords for use in your config file:
+ 						</para>
+ 						<programlisting>java -classpath ha-jdbc.jar net.sf.hajdbc.codec.crypto.CipherCodecFactory <emphasis>password</emphasis></programlisting>
+					</listitem>
+				</varlistentry>
+			</variablelist>
+		</section>
+		<section>
+			<title>Miscellaneous configuration</title>
+			<para></para>
+			<variablelist>
+				<varlistentry>
+					<term>transaction-mode</term>
+					<listitem>
+						<para>
+						</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>auto-activate-schedule</term>
+					<listitem>
+						<para>
+						</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>failure-detect-schedule</term>
+					<listitem>
+						<para>
+						</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>detect-identity-columns</term>
+					<listitem>
+						<para>
+						</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>detect-sequences</term>
+					<listitem>
+						<para>
+						</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>eval-current-date</term>
+					<listitem>
+						<para>
+						</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>eval-current-time</term>
+					<listitem>
+						<para>
+						</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>eval-current-timestamp</term>
+					<listitem>
+						<para>
+						</para>
+					</listitem>
+				</varlistentry>
+				<varlistentry>
+					<term>eval-rand</term>
+					<listitem>
+						<para>
+						</para>
+					</listitem>
+				</varlistentry>
+			</variablelist>
+		</section>
+		<section>
+			<title>Customizing HA-JDBC</title>
+			<para>HA-JDBC supports a number of extension points.  Most components support custom implementations, including:</para>
+			<itemizedlist>
+				<listitem><para><literal>net.sf.hajdbc.balancer.BalancerFactory</literal></para></listitem>
+				<listitem><para><literal>net.sf.hajdbc.cache.DatabaseMetaDataCacheFactory</literal></para></listitem>
+				<listitem><para><literal>net.sf.hajdbc.codec.CodecFactory</literal></para></listitem>
+				<listitem><para><literal>net.sf.hajdbc.dialect.DialectFactory</literal></para></listitem>
+				<listitem><para><literal>net.sf.hajdbc.distributed.CommandDispatcherFactory</literal></para></listitem>
+				<listitem><para><literal>net.sf.hajdbc.durability.DurabilityFactory</literal></para></listitem>
+				<listitem><para><literal>net.sf.hajdbc.lock.LockManagerFactory</literal></para></listitem>
+				<listitem><para><literal>net.sf.hajdbc.state.StateManagerFactory</literal></para></listitem>
+				<listitem><para><literal>net.sf.hajdbc.SynchronizationStrategy</literal></para></listitem>
+			</itemizedlist>
+			<para>In general, to configure HA-JDBC with a custom component:</para>
+			<orderedlist>
+				<listitem>
+					<para>Create an implementation of the custom component.  All extension points implement a getId() method which indicates the identifier by which this instance will be referenced in the configuration file.</para>
+				</listitem>
+				<listitem>
+					<para>Create a META-INF/services/<replaceable>interface-name</replaceable> file containing the fully qualified class name of the custom implementation.</para>
+				</listitem>
+				<listitem>
+					<para>Reference your custom component by identifier in your ha-jdbc xml file.</para>
+				</listitem>
+			</orderedlist>
+			<para>e.g.</para>
+			<programlisting>package org.myorg;
+
+public class CustomDialectFactory implements net.sf.hajdbc.dialect.DialectFactory {
+	@Override
+	public String getId() {
+		return "custom";
+	}
+
+	@Override
+	public net.sf.hajdbc.dialect.Dialect createDialect() {
+		return new StandardDialect() {
+			// Override methods to customize behavior
+		};
+	}
+}</programlisting>
+				<para><filename>META-INF/services/net.sf.hajdbc.dialect.DialectFactory</filename></para>
+				<programlisting>org.myorg.CustomDialectFactory</programlisting>
+				<para><filename>ha-jdbc.xml</filename></para>
+				<programlisting><![CDATA[<ha-jdbc xmlns="urn:sourceforge:ha-jdbc:2.1">
+	<cluster dialect="custom" ...>
+		<!-- ... -->
+	</cluster>
+</ha-jdbc>]]></programlisting>
+		</section>
+	</section>
+	<section>
+		<title>Using HA-JDBC</title>
+		<para>
+		</para>
+		<section>
+			<title>Driver-based usage</title>
+			<para>
+			</para>
+		</section>
+		<section>
+			<title>DataSource-based usage</title>
+			<para>
+			</para>
+		</section>
+		<section>
+			<title>Unique identifier generation</title>
+			<para></para>
+		</section>
+		<section>
+			<title>Database deactivation</title>
+			<para></para>
+		</section>
+		<section>
+			<title>Database activation</title>
+			<para></para>
+		</section>
+		<section>
+			<title>Database cluster administration</title>
+			<para></para>
+		</section>
 	</section>
 	<section>
 		<title>Limitations</title>

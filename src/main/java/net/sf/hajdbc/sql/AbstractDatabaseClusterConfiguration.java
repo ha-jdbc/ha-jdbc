@@ -50,11 +50,12 @@ import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.TransactionMode;
 import net.sf.hajdbc.balancer.BalancerFactory;
 import net.sf.hajdbc.cache.DatabaseMetaDataCacheFactory;
-import net.sf.hajdbc.codec.CodecFactory;
-import net.sf.hajdbc.codec.MultiplexingCodecFactory;
+import net.sf.hajdbc.codec.DecoderFactory;
+import net.sf.hajdbc.codec.MultiplexingDecoderFactory;
 import net.sf.hajdbc.dialect.DialectFactory;
 import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.durability.DurabilityFactory;
+import net.sf.hajdbc.lock.LockManagerFactory;
 import net.sf.hajdbc.management.DefaultMBeanRegistrar;
 import net.sf.hajdbc.management.MBeanRegistrar;
 import net.sf.hajdbc.state.StateManagerFactory;
@@ -62,14 +63,12 @@ import net.sf.hajdbc.tx.SimpleTransactionIdentifierFactory;
 import net.sf.hajdbc.tx.TransactionIdentifierFactory;
 import net.sf.hajdbc.tx.UUIDTransactionIdentifierFactory;
 import net.sf.hajdbc.util.ServiceLoaders;
-
-import org.quartz.CronExpression;
+import net.sf.hajdbc.util.concurrent.cron.CronExpression;
 
 /**
- * @author paul
- *
+ * @author Paul Ferraro
  */
-@XmlType(propOrder = { "commandDispatcherFactoryDescriptor", "synchronizationStrategyDescriptors", "stateManagerFactoryDescriptor" })
+@XmlType(propOrder = { "commandDispatcherFactoryDescriptor", "synchronizationStrategyDescriptors", "stateManagerFactoryDescriptor", "lockManagerFactoryDescriptor" })
 public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database<Z>> implements DatabaseClusterConfiguration<Z, D>
 {
 	private static final long serialVersionUID = -2808296483725374829L;
@@ -77,6 +76,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	private CommandDispatcherFactory dispatcherFactory;	
 	private Map<String, SynchronizationStrategy> synchronizationStrategies = new HashMap<String, SynchronizationStrategy>();
 	private StateManagerFactory stateManagerFactory = ServiceLoaders.findRequiredService(StateManagerFactory.class);
+	private LockManagerFactory lockManagerFactory = ServiceLoaders.findRequiredService(LockManagerFactory.class);
 	protected abstract NestedConfiguration<Z, D> getNestedConfiguration();
 
 	@XmlElement(name = "distributable")
@@ -132,6 +132,18 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	private void setStateManagerFactoryDescriptor(StateManagerFactoryDescriptor descriptor) throws Exception
 	{
 		this.stateManagerFactory = new StateManagerFactoryDescriptorAdapter().unmarshal(descriptor);
+	}
+	
+	@XmlElement(name = "lock")
+	private LockManagerFactoryDescriptor getLockManagerFactoryDescriptor() throws Exception
+	{
+		return new LockManagerFactoryDescriptorAdapter().marshal(this.lockManagerFactory);
+	}
+	
+	@SuppressWarnings("unused")
+	private void setLockManagerFactoryDescriptor(LockManagerFactoryDescriptor descriptor) throws Exception
+	{
+		this.lockManagerFactory = new LockManagerFactoryDescriptorAdapter().unmarshal(descriptor);
 	}
 	
 	/**
@@ -291,17 +303,17 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getCodecFactory()
+	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getDecoderFactory()
 	 */
 	@Override
-	public CodecFactory getCodecFactory()
+	public DecoderFactory getDecoderFactory()
 	{
-		return this.getNestedConfiguration().getCodecFactory();
+		return this.getNestedConfiguration().getDecoderFactory();
 	}
 
-	public void setCodecFactory(CodecFactory factory)
+	public void setCodecFactory(DecoderFactory factory)
 	{
-		this.getNestedConfiguration().setCodecFactory(factory);
+		this.getNestedConfiguration().setDecoderFactory(factory);
 	}
 	
 	/**
@@ -332,6 +344,17 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	public void setStateManagerFactory(StateManagerFactory factory)
 	{
 		this.stateManagerFactory = factory;
+	}
+	
+	@Override
+	public LockManagerFactory getLockManagerFactory()
+	{
+		return this.lockManagerFactory;
+	}
+
+	public void setLockManagerFactory(LockManagerFactory factory)
+	{
+		this.lockManagerFactory = factory;
 	}
 	
 	/**
@@ -491,21 +514,6 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#isFairLocking()
-	 */
-	@Override
-	public boolean isFairLocking()
-	{
-		return this.getNestedConfiguration().isFairLocking();
-	}
-
-	public void setFairLocking(boolean fair)
-	{
-		this.getNestedConfiguration().setFairLocking(fair);
-	}
-	
-	/**
-	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#isEmptyClusterAllowed()
 	 */
 	@Override
@@ -552,7 +560,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 
 		private ExecutorServiceProvider executorProvider = new DefaultExecutorServiceProvider();
 		private ThreadFactory threadFactory = Executors.defaultThreadFactory();
-		private CodecFactory codecFactory = new MultiplexingCodecFactory();
+		private DecoderFactory decoderFactory = new MultiplexingDecoderFactory();
 		private MBeanRegistrar<Z, D> registrar = new DefaultMBeanRegistrar<Z, D>();
 		
 		@XmlJavaTypeAdapter(TransactionModeAdapter.class)
@@ -580,8 +588,6 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		@XmlAttribute(name = "detect-sequences")
 		private Boolean sequenceDetectionEnabled = false;
 
-		@XmlAttribute(name = "fair-locking")
-		private Boolean fairLocking = true;
 		@XmlAttribute(name = "allow-empty-cluster")
 		private Boolean emptyClusterAllowed = false;
 		
@@ -705,14 +711,14 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		}
 		
 		@Override
-		public CodecFactory getCodecFactory()
+		public DecoderFactory getDecoderFactory()
 		{
-			return this.codecFactory;
+			return this.decoderFactory;
 		}
 
-		void setCodecFactory(CodecFactory factory)
+		void setDecoderFactory(DecoderFactory factory)
 		{
-			this.codecFactory = factory;
+			this.decoderFactory = factory;
 		}
 		
 		@Override
@@ -743,6 +749,12 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			throw new IllegalStateException();
 		}
 		
+		@Override
+		public LockManagerFactory getLockManagerFactory()
+		{
+			throw new IllegalStateException();
+		}
+
 		@Override
 		public Map<String, SynchronizationStrategy> getSynchronizationStrategyMap()
 		{
@@ -824,17 +836,6 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		void setSequenceDetectionEnabled(boolean enabled)
 		{
 			this.sequenceDetectionEnabled = enabled;
-		}
-		
-		@Override
-		public boolean isFairLocking()
-		{
-			return this.fairLocking;
-		}
-		
-		void setFairLocking(boolean fair)
-		{
-			this.fairLocking = fair;
 		}
 
 		@Override
@@ -956,8 +957,8 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	@XmlType
 	static class CommandDispatcherFactoryDescriptor extends IdentifiableServiceDescriptor
 	{
-		@XmlAttribute(name = "id", required = true)
-		private String id;
+		@XmlAttribute(name = "id", required = false)
+		private String id = "jgroups";
 		
 		public String getId()
 		{
@@ -1026,6 +1027,31 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		StateManagerFactoryDescriptorAdapter()
 		{
 			super(StateManagerFactory.class, StateManagerFactoryDescriptor.class);
+		}
+	}
+	
+	@XmlType
+	static class LockManagerFactoryDescriptor extends IdentifiableServiceDescriptor
+	{
+		@XmlAttribute(name = "id", required = true)
+		private String id;
+		
+		public String getId()
+		{
+			return this.id;
+		}
+		
+		public void setId(String id)
+		{
+			this.id = id;
+		}
+	}
+
+	static class LockManagerFactoryDescriptorAdapter extends IdentifiableServiceDescriptorAdapter<LockManagerFactory, LockManagerFactoryDescriptor>
+	{
+		LockManagerFactoryDescriptorAdapter()
+		{
+			super(LockManagerFactory.class, LockManagerFactoryDescriptor.class);
 		}
 	}
 

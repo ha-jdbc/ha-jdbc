@@ -31,6 +31,7 @@ import net.sf.hajdbc.codec.Codec;
 import net.sf.hajdbc.codec.CodecFactory;
 import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.Strings;
+import net.sf.hajdbc.util.SystemProperties;
 
 /**
  * Used to decrypt configuration file passwords using a symmetric key stored in a keystore.
@@ -69,7 +70,7 @@ public class CipherCodecFactory implements CodecFactory, Serializable
 {
 	private static final long serialVersionUID = -4409167180573651279L;
 	
-	public static final String DEFAULT_KEYSTORE_FILE = String.format("%s/.keystore", System.getProperty("user.home"));
+	public static final String DEFAULT_KEYSTORE_FILE = String.format("%s/.keystore", SystemProperties.getSystemProperty("user.home"));
 	public static final String DEFAULT_KEY_ALIAS = "ha-jdbc";
 	
 	enum Property
@@ -94,20 +95,26 @@ public class CipherCodecFactory implements CodecFactory, Serializable
 	
 	private String getProperty(String id, Property property)
 	{
-		String value = System.getProperty(MessageFormat.format(property.nameFormat, id));
+		String value = SystemProperties.getSystemProperty(MessageFormat.format(property.nameFormat, id));
 		
 		if (value != null) return value;
 		
-		String pattern = System.getProperty(property.name, property.defaultValue);
+		String pattern = SystemProperties.getSystemProperty(property.name, property.defaultValue);
 		
 		if (pattern == null) return null;
 		
 		return MessageFormat.format(pattern, id);
 	}
 	
+	@Override
+	public String getId()
+	{
+		return "?";
+	}
+
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.codec.CodecFactory#createCodec(java.util.Properties)
+	 * @see net.sf.hajdbc.codec.CodecFactory#createCodec(java.lang.String)
 	 */
 	@Override
 	public Codec createCodec(String clusterId) throws SQLException
@@ -124,17 +131,15 @@ public class CipherCodecFactory implements CodecFactory, Serializable
 			KeyStore store = KeyStore.getInstance(type);
 			
 			InputStream input = new FileInputStream(file);
-			
 			try
 			{
 				store.load(input, (password != null) ? password.toCharArray() : null);
-
-				return new CipherCodec(store.getKey(keyAlias, (keyPassword != null) ? keyPassword.toCharArray() : null));
 			}
 			finally
 			{
 				Resources.close(input);
 			}
+			return new CipherCodec(store.getKey(keyAlias, (keyPassword != null) ? keyPassword.toCharArray() : null));
 		}
 		catch (GeneralSecurityException e)
 		{

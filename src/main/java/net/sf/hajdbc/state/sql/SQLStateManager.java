@@ -306,7 +306,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.state.SerializedDurabilityListener#beforeInvocation(byte[], int, int)
+	 * @see net.sf.hajdbc.state.SerializedDurabilityListener#beforeInvocation(byte[], byte, byte)
 	 */
 	@Override
 	public void beforeInvocation(final byte[] transactionId, final byte phase, final byte exceptionType)
@@ -345,7 +345,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.state.SerializedDurabilityListener#afterInvocation(byte[], int)
+	 * @see net.sf.hajdbc.state.SerializedDurabilityListener#afterInvocation(byte[], byte)
 	 */
 	@Override
 	public void afterInvocation(final byte[] transactionId, final byte phase)
@@ -372,7 +372,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.state.SerializedDurabilityListener#beforeInvoker(byte[], int, java.lang.String)
+	 * @see net.sf.hajdbc.state.SerializedDurabilityListener#beforeInvoker(byte[], byte, java.lang.String)
 	 */
 	@Override
 	public void beforeInvoker(final byte[] transactionId, final byte phase, final String databaseId)
@@ -411,7 +411,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.state.SerializedDurabilityListener#afterInvoker(byte[], int, java.lang.String, byte[])
+	 * @see net.sf.hajdbc.state.SerializedDurabilityListener#afterInvoker(byte[], byte, java.lang.String, byte[])
 	 */
 	@Override
 	public void afterInvoker(final byte[] transactionId, final byte phase, final String databaseId, final byte[] result)
@@ -603,7 +603,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	public void start() throws Exception
 	{
 		this.driver = this.database.createConnectionSource();
-		this.password = this.database.decodePassword(this.cluster.getCodec());
+		this.password = this.database.decodePassword(this.cluster.getDecoder());
 		this.pool = this.poolFactory.createPool(new ConnectionPoolProvider(this));
 		
 		Connection connection = this.pool.take();
@@ -708,7 +708,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	@Override
 	public Connection getConnection() throws SQLException
 	{
-		Connection connection = this.database.connect(this.driver, this.password);
+		Connection connection = this.database.connect(this.driver, this.cluster.getDecoder().decode(this.password));
 		
 		connection.setAutoCommit(false);
 		

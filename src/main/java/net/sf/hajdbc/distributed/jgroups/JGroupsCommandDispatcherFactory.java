@@ -17,31 +17,26 @@
  */
 package net.sf.hajdbc.distributed.jgroups;
 
-import javax.xml.bind.annotation.XmlAttribute;
-
-import org.jgroups.JChannel;
-
 import net.sf.hajdbc.distributed.CommandDispatcher;
 import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.distributed.MembershipListener;
 import net.sf.hajdbc.distributed.Stateful;
+
+import org.jgroups.JChannel;
 
 /**
  * Factory for creating a JGroups instrumented command dispatcher.
 
  * @author Paul Ferraro
  */
-public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
+public class JGroupsCommandDispatcherFactory implements CommandDispatcherFactory
 {
 	private static final long serialVersionUID = 5135621114239237376L;
 	
 	public static final long DEFAULT_TIMEOUT = 60000;
 	public static final String DEFAULT_STACK = "udp-sync.xml";
 	
-	@XmlAttribute(name = "stack")
 	private String stack = DEFAULT_STACK;
-	
-	@XmlAttribute(name = "timeout")
 	private long timeout = DEFAULT_TIMEOUT;
 
 	@Override
@@ -53,6 +48,16 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
 	@Override
 	public <C> CommandDispatcher<C> createCommandDispatcher(String id, C context, Stateful stateful, MembershipListener membershipListener) throws Exception
 	{
-		return new ChannelCommandDispatcher<C>(id, new JChannel(this.stack), this.timeout, context, stateful, membershipListener);
+		return new JGroupsCommandDispatcher<C>(id, new JChannel(this.stack), this.timeout, context, stateful, membershipListener);
+	}
+	
+	public void setStack(String stack)
+	{
+		this.stack = stack;
+	}
+	
+	public void setTimeout(long timeout)
+	{
+		this.timeout = timeout;
 	}
 }

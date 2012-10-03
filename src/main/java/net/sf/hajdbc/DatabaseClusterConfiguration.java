@@ -23,15 +23,15 @@ import java.util.concurrent.ThreadFactory;
 
 import net.sf.hajdbc.balancer.BalancerFactory;
 import net.sf.hajdbc.cache.DatabaseMetaDataCacheFactory;
-import net.sf.hajdbc.codec.CodecFactory;
+import net.sf.hajdbc.codec.DecoderFactory;
 import net.sf.hajdbc.dialect.DialectFactory;
 import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.durability.DurabilityFactory;
+import net.sf.hajdbc.lock.LockManagerFactory;
 import net.sf.hajdbc.management.MBeanRegistrar;
 import net.sf.hajdbc.state.StateManagerFactory;
 import net.sf.hajdbc.tx.TransactionIdentifierFactory;
-
-import org.quartz.CronExpression;
+import net.sf.hajdbc.util.concurrent.cron.CronExpression;
 
 /**
  * @author Paul Ferraro
@@ -81,6 +81,8 @@ public interface DatabaseClusterConfiguration<Z, D extends Database<Z>> extends 
 
 	DurabilityFactory getDurabilityFactory();
 
+	LockManagerFactory getLockManagerFactory();
+	
 	/**
 	 * Indicates whether or not sequence detection is enabled for this cluster.
 	 * @return true, if sequence detection is enabled, false otherwise.
@@ -123,11 +125,9 @@ public interface DatabaseClusterConfiguration<Z, D extends Database<Z>> extends 
 	
 	ThreadFactory getThreadFactory();
 	
-	CodecFactory getCodecFactory();
+	DecoderFactory getDecoderFactory();
 	
 	MBeanRegistrar<Z, D> getMBeanRegistrar();
-	
-	boolean isFairLocking();
 	
 	TransactionIdentifierFactory<? extends Object> getTransactionIdentifierFactory();
 	

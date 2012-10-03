@@ -127,10 +127,6 @@ public abstract class AbstractBalancer<Z, D extends Database<Z>> implements Bala
 		return this.getDatabases().toArray();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * @see java.util.Set#toArray(T[])
-	 */
 	@Override
 	public <T> T[] toArray(T[] array)
 	{

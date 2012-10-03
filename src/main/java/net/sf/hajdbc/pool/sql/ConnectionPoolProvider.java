@@ -38,10 +38,6 @@ public class ConnectionPoolProvider extends AbstractPoolProvider<Connection, SQL
 		this.factory = factory;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.pool.PoolProvider#close(java.lang.Object)
-	 */
 	@Override
 	public void close(Connection connection)
 	{

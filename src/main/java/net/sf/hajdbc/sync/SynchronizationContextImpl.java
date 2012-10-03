@@ -31,7 +31,7 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseProperties;
 import net.sf.hajdbc.balancer.Balancer;
 import net.sf.hajdbc.cache.DatabaseMetaDataCache;
-import net.sf.hajdbc.codec.Codec;
+import net.sf.hajdbc.codec.Decoder;
 import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
@@ -88,7 +88,7 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 		
 		if (entry == null)
 		{
-			Connection connection = database.connect(database.createConnectionSource(), database.decodePassword(this.cluster.getCodec()));
+			Connection connection = database.connect(database.createConnectionSource(), database.decodePassword(this.cluster.getDecoder()));
 			entry = new AbstractMap.SimpleImmutableEntry<Connection, Boolean>(connection, connection.getAutoCommit());
 			
 			this.connectionMap.put(database, entry);
@@ -153,12 +153,12 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sync.SynchronizationContext#getCodec()
+	 * @see net.sf.hajdbc.sync.SynchronizationContext#getDecoder()
 	 */
 	@Override
-	public Codec getCodec()
+	public Decoder getDecoder()
 	{
-		return this.cluster.getCodec();
+		return this.cluster.getDecoder();
 	}
 
 	/**
@@ -198,8 +198,10 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 			{
 				logger.log(Level.WARN, e);
 			}
-
-			Resources.close(connection);
+			finally
+			{
+				Resources.close(connection);
+			}
 		}
 		
 		this.executor.shutdown();

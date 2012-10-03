@@ -33,6 +33,12 @@ public class Base64CodecFactory extends AbstractCodec
 {
 	private static final long serialVersionUID = -2286529406290006597L;
 
+	@Override
+	public String getId()
+	{
+		return "64";
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.codec.Codec#decode(java.lang.String)

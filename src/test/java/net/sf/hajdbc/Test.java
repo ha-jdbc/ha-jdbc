@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 
 import net.sf.hajdbc.cache.simple.SimpleDatabaseMetaDataCacheFactory;
 import net.sf.hajdbc.dialect.hsqldb.HSQLDBDialectFactory;
-import net.sf.hajdbc.distributed.jgroups.ChannelCommandDispatcherFactory;
+import net.sf.hajdbc.distributed.jgroups.JGroupsCommandDispatcherFactory;
 import net.sf.hajdbc.sql.DataSource;
 import net.sf.hajdbc.sql.DataSourceDatabase;
 import net.sf.hajdbc.sql.DataSourceDatabaseClusterConfiguration;
@@ -54,12 +54,12 @@ public class Test
 		config.setDatabases(Arrays.asList(db1, db2));
 		config.setDialectFactory(new HSQLDBDialectFactory());
 		config.setDatabaseMetaDataCacheFactory(new SimpleDatabaseMetaDataCacheFactory());
-//		SQLStateManagerFactory state = new SQLStateManagerFactory();
 		SimpleStateManagerFactory state = new SimpleStateManagerFactory();
+//		SQLStateManagerFactory state = new SQLStateManagerFactory();
 //		state.setUrlPattern("jdbc:hsqldb:{1}/{0}");
 //		state.setUrlPattern("jdbc:derby:{1}/{0};create=true");
 		config.setStateManagerFactory(state);
-		config.setDispatcherFactory(new ChannelCommandDispatcherFactory());
+		config.setDispatcherFactory(new JGroupsCommandDispatcherFactory());
 
 		DataSource ds = new DataSource();
 		ds.setCluster("cluster");

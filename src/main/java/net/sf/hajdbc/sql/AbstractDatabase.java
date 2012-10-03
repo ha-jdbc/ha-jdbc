@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.codec.Codec;
+import net.sf.hajdbc.codec.Decoder;
 import net.sf.hajdbc.management.Description;
 import net.sf.hajdbc.management.ManagedAttribute;
 import net.sf.hajdbc.management.ManagedOperation;
@@ -157,13 +157,12 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 
 	/**
 	 * {@inheritDoc}
-	 * @throws SQLException 
-	 * @see net.sf.hajdbc.Database#decodePassword(net.sf.hajdbc.codec.Codec)
+	 * @see net.sf.hajdbc.Database#decodePassword(net.sf.hajdbc.codec.Decoder)
 	 */
 	@Override
-	public String decodePassword(Codec codec) throws SQLException
+	public String decodePassword(Decoder decoder) throws SQLException
 	{
-		return (this.password != null) ? codec.decode(this.password) : null;
+		return (this.password != null) ? decoder.decode(this.password) : null;
 	}
 
 	/**

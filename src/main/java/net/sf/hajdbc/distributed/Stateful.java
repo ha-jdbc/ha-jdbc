@@ -30,13 +30,16 @@ public interface Stateful
 {
 	/**
 	 * Returns the state of this object.
-	 * @return the current state.
+	 * @param input
+	 * @throws IOException
+	 * @throws ClassNotFoundException
 	 */
 	void readState(ObjectInput input) throws IOException, ClassNotFoundException;
 	
 	/**
 	 * Sets the state of this object.
-	 * @param state the state
+	 * @param output
+	 * @throws IOException
 	 */
 	void writeState(ObjectOutput output) throws IOException;
 }

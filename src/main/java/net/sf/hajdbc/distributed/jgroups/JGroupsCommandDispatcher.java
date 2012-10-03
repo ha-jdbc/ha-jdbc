@@ -55,7 +55,7 @@ import org.jgroups.util.Rsp;
  * @see org.jgroups.blocks.MessageDispatcher
  * @param <C> the execution context type
  */
-public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispatcher<C>, org.jgroups.MembershipListener, MessageListener
+public class JGroupsCommandDispatcher<C> implements RequestHandler, CommandDispatcher<C>, org.jgroups.MembershipListener, MessageListener
 {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 	
@@ -70,13 +70,14 @@ public class ChannelCommandDispatcher<C> implements RequestHandler, CommandDispa
 	/**
 	 * Constructs a new ChannelCommandDispatcher.
 	 * @param id the channel name
-	 * @param provider the channel provider
+	 * @param channel a JGroups channel
+	 * @param timeout the command timeout
 	 * @param context the execution context
 	 * @param stateful the state transfer handler
 	 * @param membershipListener notified of membership changes
 	 * @throws Exception if channel cannot be created
 	 */
-	public ChannelCommandDispatcher(String id, Channel channel, long timeout, C context, Stateful stateful, MembershipListener membershipListener) throws Exception
+	public JGroupsCommandDispatcher(String id, Channel channel, long timeout, C context, Stateful stateful, MembershipListener membershipListener) throws Exception
 	{
 		this.id = id;
 		this.context = context;

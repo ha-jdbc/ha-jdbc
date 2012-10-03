@@ -20,7 +20,7 @@ package net.sf.hajdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import net.sf.hajdbc.codec.Codec;
+import net.sf.hajdbc.codec.Decoder;
 
 /**
  * @author  Paul Ferraro
@@ -59,7 +59,7 @@ public interface Database<Z> extends Comparable<Database<Z>>
 	 */
 	boolean isLocal();
 
-	String decodePassword(Codec codec) throws SQLException;
+	String decodePassword(Decoder decoder) throws SQLException;
 	
 	/**
 	 * Connects to the database using the specified connection factory.

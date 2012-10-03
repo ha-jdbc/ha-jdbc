@@ -17,13 +17,16 @@
  */
 package net.sf.hajdbc.codec;
 
+import java.io.Serializable;
 import java.sql.SQLException;
+
+import net.sf.hajdbc.Identifiable;
 
 /**
  * @author Paul Ferraro
  *
  */
-public interface CodecFactory
+public interface CodecFactory extends Identifiable, Serializable
 {
 	Codec createCodec(String clusterId) throws SQLException;
 }

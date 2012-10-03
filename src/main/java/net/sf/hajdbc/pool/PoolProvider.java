@@ -27,8 +27,8 @@ public interface PoolProvider<T, E extends Exception>
 {	
 	T create() throws E;
 	
-	void close(T item);
-	
+	void close(T object);
+
 	boolean isValid(T item);
 	
 	Class<T> getProvidedClass();

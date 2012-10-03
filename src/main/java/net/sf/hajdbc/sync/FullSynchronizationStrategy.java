@@ -142,61 +142,55 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy, Tab
 				Resources.close(deleteStatement);
 			}
 			
+			logger.log(Level.DEBUG, insertSQL);
+			PreparedStatement insertStatement = targetConnection.prepareStatement(insertSQL);
+			
 			try
 			{
+				int statementCount = 0;
+				
 				ResultSet resultSet = future.get();
 				
-				logger.log(Level.DEBUG, insertSQL);
-				PreparedStatement insertStatement = targetConnection.prepareStatement(insertSQL);
-				try
+				while (resultSet.next())
 				{
-					int statementCount = 0;
+					int index = 0;
 					
-					while (resultSet.next())
+					for (String column: table.getColumns())
 					{
-						int index = 0;
+						index += 1;
 						
-						for (String column: table.getColumns())
+						int type = context.getDialect().getColumnType(table.getColumnProperties(column));
+						
+						Object object = context.getSynchronizationSupport().getObject(resultSet, index, type);
+						
+						if (resultSet.wasNull())
 						{
-							index += 1;
-							
-							int type = context.getDialect().getColumnType(table.getColumnProperties(column));
-							
-							Object object = context.getSynchronizationSupport().getObject(resultSet, index, type);
-							
-							if (resultSet.wasNull())
-							{
-								insertStatement.setNull(index, type);
-							}
-							else
-							{
-								insertStatement.setObject(index, object, type);
-							}
+							insertStatement.setNull(index, type);
 						}
-						
-						insertStatement.addBatch();
-						statementCount += 1;
-						
-						if ((statementCount % this.maxBatchSize) == 0)
+						else
 						{
-							insertStatement.executeBatch();
-							insertStatement.clearBatch();
+							insertStatement.setObject(index, object, type);
 						}
-						
-						insertStatement.clearParameters();
 					}
 					
-					if ((statementCount % this.maxBatchSize) > 0)
+					insertStatement.addBatch();
+					statementCount += 1;
+					
+					if ((statementCount % this.maxBatchSize) == 0)
 					{
 						insertStatement.executeBatch();
+						insertStatement.clearBatch();
 					}
-			
-					logger.log(Level.INFO, Messages.INSERT_COUNT.getMessage(), statementCount, table);
+					
+					insertStatement.clearParameters();
 				}
-				finally
+				
+				if ((statementCount % this.maxBatchSize) > 0)
 				{
-					Resources.close(insertStatement);
+					insertStatement.executeBatch();
 				}
+		
+				logger.log(Level.INFO, Messages.INSERT_COUNT.getMessage(), statementCount, table);
 			}
 			catch (ExecutionException e)
 			{
@@ -206,6 +200,10 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy, Tab
 			{
 				Thread.currentThread().interrupt();
 				throw new SQLException(e);
+			}
+			finally
+			{
+				Resources.close(insertStatement);
 			}
 		}
 		finally

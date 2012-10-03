@@ -23,7 +23,7 @@
 		To build from source, first obtain the source code from either:
 	</para>
 	<itemizedlist>
-		<listitem><para><ulink url="http://sourceforge.net/project/showfiles.php?group_id=111957">Source distribution download</ulink></para></listitem>
+		<listitem><para><ulink url="https://github.com/ha-jdbc/ha-jdbc/tags">Source code archive</ulink></para></listitem>
 		<listitem><para><ulink url="source-repository.html">Version control</ulink></para></listitem>
 	</itemizedlist>
 	<section>

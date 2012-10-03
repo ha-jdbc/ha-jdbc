@@ -238,7 +238,6 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 						
 						try
 						{
-							// Construct UPDATE SQL
 							PreparedStatement updateStatement = null;
 							
 							if (!nonPrimaryKeyColumns.isEmpty())
@@ -496,7 +495,10 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 							}
 							finally
 							{
-								Resources.close(updateStatement);
+								if (updateStatement != null)
+								{
+									Resources.close(updateStatement);
+								}
 							}
 						}
 						finally
@@ -511,7 +513,10 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 				}
 				finally
 				{
-					Resources.close(selectAllStatement);
+					if (selectAllStatement != null)
+					{
+						Resources.close(selectAllStatement);
+					}
 				}
 			}
 			catch (InterruptedException e)

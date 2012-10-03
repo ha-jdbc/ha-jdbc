@@ -32,7 +32,7 @@ import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.dialect.Dialect;
-import net.sf.hajdbc.util.Resources;
+import net.sf.hajdbc.util.Files;
 import net.sf.hajdbc.util.Strings;
 
 /**
@@ -52,7 +52,7 @@ public class DumpRestoreSynchronizationStrategy implements SynchronizationStrate
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.SynchronizationStrategy#onStart(net.sf.hajdbc.DatabaseCluster)
+	 * @see net.sf.hajdbc.SynchronizationStrategy#init(net.sf.hajdbc.DatabaseCluster)
 	 */
 	@Override
 	public <Z, D extends Database<Z>> void init(DatabaseCluster<Z, D> cluster)
@@ -61,7 +61,7 @@ public class DumpRestoreSynchronizationStrategy implements SynchronizationStrate
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.SynchronizationStrategy#onStop(net.sf.hajdbc.DatabaseCluster)
+	 * @see net.sf.hajdbc.SynchronizationStrategy#destroy(net.sf.hajdbc.DatabaseCluster)
 	 */
 	@Override
 	public <Z, D extends Database<Z>> void destroy(DatabaseCluster<Z, D> cluster)
@@ -85,7 +85,7 @@ public class DumpRestoreSynchronizationStrategy implements SynchronizationStrate
 		
 		try
 		{
-			File file = Resources.createTempFile(DUMP_FILE_SUFFIX);
+			File file = Files.createTempFile(DUMP_FILE_SUFFIX);
 			
 			try
 			{
@@ -95,7 +95,7 @@ public class DumpRestoreSynchronizationStrategy implements SynchronizationStrate
 			}
 			finally
 			{
-				Resources.delete(file);
+				Files.delete(file);
 			}
 		}
 		catch (Exception e)
@@ -164,7 +164,7 @@ public class DumpRestoreSynchronizationStrategy implements SynchronizationStrate
 			this.port = matcher.group(2);
 			this.database = matcher.group(3);
 			this.user = metaData.getUserName();
-			this.password = database.decodePassword(context.getCodec());
+			this.password = database.decodePassword(context.getDecoder());
 		}
 
 		/**

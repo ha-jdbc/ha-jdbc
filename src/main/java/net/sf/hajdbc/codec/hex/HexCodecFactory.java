@@ -34,6 +34,12 @@ public class HexCodecFactory extends AbstractCodec
 {
 	private static final long serialVersionUID = 5273729775503057299L;
 
+	@Override
+	public String getId()
+	{
+		return "16";
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.codec.Codec#decode(java.lang.String)

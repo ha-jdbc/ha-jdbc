@@ -41,13 +41,12 @@ import net.sf.hajdbc.TransactionMode;
 import net.sf.hajdbc.Version;
 import net.sf.hajdbc.balancer.Balancer;
 import net.sf.hajdbc.cache.DatabaseMetaDataCache;
-import net.sf.hajdbc.codec.Codec;
+import net.sf.hajdbc.codec.Decoder;
 import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.durability.Durability;
 import net.sf.hajdbc.lock.LockManager;
 import net.sf.hajdbc.lock.distributed.DistributedLockManager;
-import net.sf.hajdbc.lock.semaphore.SemaphoreLockManager;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
@@ -63,9 +62,8 @@ import net.sf.hajdbc.sync.SynchronizationContext;
 import net.sf.hajdbc.sync.SynchronizationContextImpl;
 import net.sf.hajdbc.tx.TransactionIdentifierFactory;
 import net.sf.hajdbc.util.Resources;
+import net.sf.hajdbc.util.concurrent.cron.CronExpression;
 import net.sf.hajdbc.util.concurrent.cron.CronThreadPoolExecutor;
-
-import org.quartz.CronExpression;
 
 /**
  * @author paul
@@ -85,7 +83,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	private Durability<Z, D> durability;
 	private DatabaseMetaDataCache<Z, D> databaseMetaDataCache;
 	private ExecutorService executor;
-	private Codec codec;
+	private Decoder decoder;
 	private CronThreadPoolExecutor cronExecutor;
 	private LockManager lockManager;
 	private StateManager stateManager;
@@ -544,9 +542,9 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	}
 
 	@Override
-	public Codec getCodec()
+	public Decoder getDecoder()
 	{
-		return this.codec;
+		return this.decoder;
 	}
 
 	/**
@@ -628,8 +626,8 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	{
 		if (this.active) return;
 		
-		this.codec = this.configuration.getCodecFactory().createCodec(this.id);
-		this.lockManager = new SemaphoreLockManager(this.configuration.isFairLocking());
+		this.decoder = this.configuration.getDecoderFactory().createDecoder(this.id);
+		this.lockManager = this.configuration.getLockManagerFactory().createLockManager();
 		this.stateManager = this.configuration.getStateManagerFactory().createStateManager(this);
 		
 		CommandDispatcherFactory dispatcherFactory = this.configuration.getDispatcherFactory();
@@ -780,8 +778,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	{
 		try
 		{
-			Connection connection = database.connect(database.createConnectionSource(), database.decodePassword(this.codec));
-			
+			Connection connection = database.connect(database.createConnectionSource(), database.decodePassword(this.decoder));
 			try
 			{
 				return this.isAlive(connection);
@@ -811,7 +808,6 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		try
 		{
 			Statement statement = connection.createStatement();
-			
 			try
 			{
 				statement.execute(this.dialect.getSimpleSQL());

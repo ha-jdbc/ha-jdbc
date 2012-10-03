@@ -47,7 +47,7 @@ public class LifecycleRegistry<K, V extends Lifecycle, C, E extends Exception> i
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.util.concurrent.Registry#get(K, C)
+	 * @see net.sf.hajdbc.util.concurrent.Registry#get(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	public V get(K key, C context) throws E
@@ -97,7 +97,7 @@ public class LifecycleRegistry<K, V extends Lifecycle, C, E extends Exception> i
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.util.concurrent.Registry#remove(K)
+	 * @see net.sf.hajdbc.util.concurrent.Registry#remove(java.lang.Object)
 	 */
 	@Override
 	public void remove(K key) throws E

@@ -22,7 +22,7 @@ import java.util.concurrent.ThreadFactory;
 
 import net.sf.hajdbc.balancer.Balancer;
 import net.sf.hajdbc.cache.DatabaseMetaDataCache;
-import net.sf.hajdbc.codec.Codec;
+import net.sf.hajdbc.codec.Decoder;
 import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.durability.Durability;
 import net.sf.hajdbc.lock.LockManager;
@@ -176,7 +176,7 @@ public interface DatabaseCluster<Z, D extends Database<Z>> extends Lifecycle
 	
 	ThreadFactory getThreadFactory();
 	
-	Codec getCodec();
+	Decoder getDecoder();
 	
 	TransactionIdentifierFactory<? extends Object> getTransactionIdentifierFactory();
 }

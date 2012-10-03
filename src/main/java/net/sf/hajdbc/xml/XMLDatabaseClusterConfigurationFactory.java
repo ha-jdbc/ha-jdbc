@@ -40,6 +40,7 @@ import net.sf.hajdbc.Version;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.util.SystemProperties;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -67,9 +68,9 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 	
 	private static String identifyResource(String id)
 	{
-		String resource = System.getProperty(MessageFormat.format(CONFIG_PROPERTY_FORMAT, id));
+		String resource = SystemProperties.getSystemProperty(MessageFormat.format(CONFIG_PROPERTY_FORMAT, id));
 		
-		return (resource != null) ? resource : MessageFormat.format(System.getProperty(CONFIG_PROPERTY, DEFAULT_RESOURCE), id);
+		return (resource != null) ? resource : MessageFormat.format(SystemProperties.getSystemProperty(CONFIG_PROPERTY, DEFAULT_RESOURCE), id);
 	}
 	
 	/**

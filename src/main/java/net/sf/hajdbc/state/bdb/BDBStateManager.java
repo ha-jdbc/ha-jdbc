@@ -19,7 +19,7 @@ package net.sf.hajdbc.state.bdb;
 
 import java.io.File;
 
-import net.sf.hajdbc.pool.AbstractPoolProvider;
+import net.sf.hajdbc.pool.CloseablePoolProvider;
 
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
@@ -28,30 +28,13 @@ import com.sleepycat.je.EnvironmentConfig;
 /**
  * @author paul
  */
-public class BDBStateManager extends AbstractPoolProvider<Environment, DatabaseException>
+public class BDBStateManager extends CloseablePoolProvider<Environment, DatabaseException>
 {
 	private EnvironmentConfig config = new EnvironmentConfig();
 	
 	public BDBStateManager()
 	{
 		super(Environment.class, DatabaseException.class);
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.pool.PoolProvider#close(java.lang.Object)
-	 */
-	@Override
-	public void close(Environment environment)
-	{
-		try
-		{
-			environment.close();
-		}
-		catch (DatabaseException e)
-		{
-			// log warning
-		}
 	}
 
 	/**

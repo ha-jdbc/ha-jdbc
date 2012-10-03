@@ -21,29 +21,34 @@ import java.sql.SQLException;
 
 import javax.transaction.xa.XAException;
 
-import net.sf.hajdbc.sql.SQLExceptionFactory;
-import net.sf.hajdbc.sql.xa.XAExceptionFactory;
+import net.sf.hajdbc.util.Matcher;
+import net.sf.hajdbc.util.ServiceLoaders;
 
 /**
  * @author Paul Ferraro
  */
-public enum ExceptionType
+@SuppressWarnings("rawtypes")
+public enum ExceptionType implements Matcher<ExceptionFactory>
 {
-	SQL(SQLException.class, new SQLExceptionFactory()), XA(XAException.class, new XAExceptionFactory());
+	SQL(SQLException.class), XA(XAException.class);
 	
 	private final Class<? extends Exception> exceptionClass;
-	private final ExceptionFactory<? extends Exception> factory;
 	
-	private <E extends Exception> ExceptionType(Class<E> exceptionClass, ExceptionFactory<E> factory)
+	private <E extends Exception> ExceptionType(final Class<E> exceptionClass)
 	{
 		this.exceptionClass = exceptionClass;
-		this.factory = factory;
 	}
 	
+	@Override
+	public boolean matches(ExceptionFactory factory)
+	{
+		return this == factory.getType();
+	}
+
 	@SuppressWarnings("unchecked")
 	public <E extends Exception> ExceptionFactory<E> getExceptionFactory()
 	{
-		return (ExceptionFactory<E>) this.factory;
+		return ServiceLoaders.findRequiredService(this, ExceptionFactory.class);
 	}
 	
 	public static <E extends Exception> ExceptionFactory<E> getExceptionFactory(Class<E> exceptionClass)

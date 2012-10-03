@@ -61,10 +61,6 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 		this.configurationClass = configurationClass;
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.util.concurrent.Registry#remove(java.lang.Object)
-	 */
 	public void stop() throws SQLException
 	{
 		this.registry.remove(null);
@@ -72,7 +68,7 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.util.concurrent.LifecycleRegistry.Factory#create(java.lang.Object, java.lang.Object)
+	 * @see net.sf.hajdbc.util.concurrent.Registry.Factory#create(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	public DatabaseCluster<Z, D> create(Void key, Void context) throws SQLException

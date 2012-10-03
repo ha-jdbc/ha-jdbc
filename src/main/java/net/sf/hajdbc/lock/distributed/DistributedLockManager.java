@@ -149,7 +149,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 
 	/**
 	 * {@inheritDoc}
-	 * @see org.jgroups.MessageListener#getState()
+	 * @see net.sf.hajdbc.distributed.Stateful#writeState(java.io.ObjectOutput)
 	 */
 	@Override
 	public void writeState(ObjectOutput output) throws IOException
@@ -174,7 +174,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 
 	/**
 	 * {@inheritDoc}
-	 * @see org.jgroups.MessageListener#setState(byte[])
+	 * @see net.sf.hajdbc.distributed.Stateful#readState(java.io.ObjectInput)
 	 */
 	@Override
 	public void readState(ObjectInput input) throws IOException, ClassNotFoundException

@@ -32,7 +32,7 @@
 			<listitem><para>High fault tolerance - a database cluster can lose a node without failing/corrupting any transactions.</para></listitem>
 			<listitem><para>Live activation/deactivation allows for maintenance/upgrading of a database node without loss of service.</para></listitem>
 			<listitem><para>Improves performance of concurrent read-access by distributing load across individual nodes.</para></listitem>
-			<listitem><para>Supports full JDBC 4.1 feature set.</para></listitem>
+			<listitem><para>Works with Java 1.6 and 1.7 and fully supports JDBC 4.1.</para></listitem>
 			<listitem><para>Pluggable strategies for synchronizing a failed database node.</para></listitem>
 			<listitem><para>Exposes JMX management interface to allow administration of databases and clusters.</para></listitem>
 			<listitem><para>Ability to add/subtract database nodes to/from a cluster at runtime.</para></listitem>
@@ -43,8 +43,8 @@
 	<section>
 		<title>Related Software</title>
 		<para>
-			Don't like HA-JDBC?
-			Check out the following alternatives:
+			Not overly fond of HA-JDBC?
+			Check out the following alternative projects:
 		</para>
 		<variablelist>
 			<varlistentry>

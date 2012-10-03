@@ -1,4 +1,5 @@
 net.sf.hajdbc.sync.FullSynchronizationStrategy
 net.sf.hajdbc.sync.DifferentialSynchronizationStrategy
 net.sf.hajdbc.sync.FastDifferentialSynchronizationStrategy
+net.sf.hajdbc.sync.DumpRestoreSynchronizationStrategy
 net.sf.hajdbc.sync.PassiveSynchronizationStrategy

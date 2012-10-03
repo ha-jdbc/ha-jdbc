@@ -118,7 +118,7 @@ public class Objects
 	}
 	
 	/**
-	 * Deserializes the specified bytes into the object of the specified type.
+	 * Deserializes the specified bytes into the object of the specified type using HA-JDBC's classloader.
 	 * @param bytes a serialized object
 	 * @return a deserialized object
 	 */
@@ -127,6 +127,12 @@ public class Objects
 		return deserialize(bytes, Objects.class.getClassLoader());
 	}
 	
+	/**
+	 * Deserializes the specified bytes into the object of the specified type.
+	 * @param bytes a serialized object
+	 * @param loader the classloader used during deserialization
+	 * @return a deserialized object
+	 */
 	public static <T> T deserialize(byte[] bytes, ClassLoader loader)
 	{
 		if (bytes == null) return null;
@@ -134,7 +140,6 @@ public class Objects
 		try
 		{
 			ObjectInput input = new ObjectInputStream(new ByteArrayInputStream(bytes));
-			
 			try
 			{
 				return readObject(input, loader);
@@ -151,8 +156,8 @@ public class Objects
 	}
 	
 	/**
-	 * Deserializes the specified bytes into the object of the specified type.
-	 * @param bytes a serialized object
+	 * Reads an object from the input stream using HA-JDBC's classloader.
+	 * @param input an input stream
 	 * @return a deserialized object
 	 */
 	public static <T> T readObject(ObjectInput input)
@@ -160,6 +165,12 @@ public class Objects
 		return readObject(input, Objects.class.getClassLoader());
 	}
 	
+	/**
+	 * Reads an object from the input stream using the specified classloader.
+	 * @param input an input stream
+	 * @param loader a classloader
+	 * @return a deserialized object
+	 */
 	@SuppressWarnings("unchecked")
 	public static <T> T readObject(ObjectInput input, ClassLoader loader)
 	{

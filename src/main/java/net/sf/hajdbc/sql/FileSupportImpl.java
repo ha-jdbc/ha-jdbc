@@ -37,6 +37,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import net.sf.hajdbc.ExceptionFactory;
+import net.sf.hajdbc.util.Files;
 import net.sf.hajdbc.util.Resources;
 
 /**
@@ -65,7 +66,6 @@ public class FileSupportImpl<E extends Exception> implements FileSupport<E>
 		try
 		{
 			File file = this.createTempFile();
-			
 			FileOutputStream output = new FileOutputStream(file);
 			try
 			{
@@ -103,9 +103,7 @@ public class FileSupportImpl<E extends Exception> implements FileSupport<E>
 		try
 		{
 			File file = this.createTempFile();
-			
 			Writer writer = new FileWriter(file);
-			
 			try
 			{
 				CharBuffer buffer = CharBuffer.allocate(BUFFER_SIZE);
@@ -169,7 +167,7 @@ public class FileSupportImpl<E extends Exception> implements FileSupport<E>
 	 */
 	private File createTempFile() throws IOException
 	{
-		File file = Resources.createTempFile(TEMP_FILE_SUFFIX);
+		File file = Files.createTempFile(TEMP_FILE_SUFFIX);
 		
 		this.files.add(file);
 		
