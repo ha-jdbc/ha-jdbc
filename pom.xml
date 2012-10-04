@@ -32,7 +32,7 @@
 	
 	<name>HA-JDBC</name>
 	<description>High-Availability JDBC</description>
-	<url>http://ha-jdbc.sourceforge.net</url>
+	<url>http://ha-jdbc.github.com</url>
 	<inceptionYear>2004</inceptionYear>
 	
 	<repositories>
@@ -207,6 +207,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>batik-maven-plugin</artifactId>
+				<version>1.0-beta-1</version>
 				<dependencies>
 					<dependency>
 						<groupId>batik</groupId>
@@ -297,10 +298,26 @@
 				<dependencies>
 					<dependency>
 						<groupId>org.apache.maven.doxia</groupId>
-						<artifactId>doxia-module-docbook-simple</artifactId>
+						<artifactId>doxia-module-markdown</artifactId>
 						<version>1.3</version>
 					</dependency>
 				</dependencies>
+			</plugin>
+			<plugin>
+				<groupId>com.github.github</groupId>
+				<artifactId>site-maven-plugin</artifactId>
+				<version>0.7</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>site</goal>
+						</goals>
+						<phase>site-deploy</phase>
+						<configuration>
+							<merge>true</merge>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -331,12 +348,7 @@
 	</issueManagement>
 	
 	<distributionManagement>
-		<downloadUrl>http://sourceforge.net/projects/ha-jdbc/files/</downloadUrl>
-		<site>
-			<id>ha-jdbc.sourceforge.net</id>
-			<name>HA-JDBC project page</name>
-			<url>scp://shell.sourceforge.net/home/project-web/ha-jdbc/htdocs</url>
-		</site>
+		<downloadUrl>https://github.com/ha-jdbc/ha-jdbc/downloads</downloadUrl>
 	</distributionManagement>
 
 	<licenses>
@@ -348,7 +360,7 @@
 	</licenses>
 	<organization>
 		<name>Paul Ferraro</name>
-		<url>http://ferraro.users.sourceforge.net</url>
+		<url>https://github.com/pferraro</url>
 	</organization>	
 	<developers>
 		<developer>

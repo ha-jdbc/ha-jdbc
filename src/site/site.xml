@@ -20,20 +20,15 @@
 	<bannerLeft>
 		<name>HA-JDBC</name>
 		<src>images/logo.png</src>
-		<href>http://ha-jdbc.sourceforge.net</href>
+		<href>http://ha-jdbc.github.com</href>
 	</bannerLeft>
-	<bannerRight>
-		<name>SourceForge.net</name>
-		<src>http://sflogo.sourceforge.net/sflogo.php?group_id=111957&amp;type=10</src>
-		<href>http://sourceforge.net/projects/ha-jdbc</href>
-	</bannerRight>
 	<body>
 		<menu name="About">
 			<item name="Overview" href="index.html"/>
 			<item name="Documentation" href="doc.html"/>
 			<item name="FAQ" href="faq.html"/>
 			<item name="Building" href="build.html"/>
-			<item name="Download" href="http://sourceforge.net/projects/ha-jdbc/files/"/>
+			<item name="Download" href="${project.distributionManagement.downloadUrl}"/>
 			<item name="Forums" href="http://sourceforge.net/projects/ha-jdbc/forums"/>
 		</menu>
 		<menu ref="reports"/>
@@ -45,6 +40,11 @@
 	<custom>
 		<fluidoSkin>
 			<sourceLineNumbersEnabled>true</sourceLineNumbersEnabled>
+			<gitHub>
+				<projectId>ha-jdbc/ha-jdbc</projectId>
+				<ribbonOrientation>right</ribbonOrientation>
+				<ribbonColor>black</ribbonColor>
+			</gitHub>
 		</fluidoSkin>
 	</custom>
 </project>
