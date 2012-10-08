@@ -27,14 +27,18 @@ Scalability
 
 ##	Configuration
 
+HA-JDBC is typically configured via XML file.
+The full schema definitions for past and present versions of HA-JDBC are enumerated [here](schemas.html).
+
+
 ###	XML
 
 The algorithm used to locate the configuration file resource at runtime is as follows:
 
 1.	Determine the potentially parameterized resource name from one of the following sources:
 	1.	A `config` property passed to `DriverManager.getConnection(String, Properties)`, or the `config` property of the `DataSource`, `ConnectionPoolDataSource`, or `XADataSource`.
-	1.	The `ha-jdbc.cluster-id.configuration` system property.
-	1.	Use default value: `ha-jdbc.{0}.xml`
+	1.	The `ha-jdbc.`*cluster-id*`.configuration` system property.
+	1.	Use default value: `ha-jdbc-{0}.xml`
 1.	Format the parameterized resource name using the identifier of the cluster.
 1.	Convert the formatted resource name to a URL. If the resource is not a URL, search for the resource in the classpath using the following class loaders:
 	1.	Thread context class loader
@@ -42,9 +46,67 @@ The algorithm used to locate the configuration file resource at runtime is as fo
 	1.	System class loader
 
 
+###	Defining databases
+
+The general syntax for defining the databases composing an HA-JDBC cluster is as follows:
+
+	<ha-jdbc xmlns="urn:sourceforge:ha-jdbc:2.1">
+		<cluster>
+			<database id="..." weight="#">
+				<name>...</name>
+				<user>...</user>
+				<password>...</password>
+				<property name="...">...</property>
+				<!-- Additional properties -->
+			</database>
+		</cluster>
+	</ha-jdbc>
+
+id
+:	Uniquely identifies this database within the cluster.
+
+weight
+:	Defines the relative weight of this database node.
+	See [Balancer](#balancer) section for details.
+
+name
+:	In general, this describes the location of the database.
+	For Driver-based clusters, this specifies the JDBC url of the database.
+	For DataSource-based cluster, this specifies either:
+	*	The class name of the DataSource implementation (from which a new instance will be created).
+	*	The JNDI name of the pre-bound DataSource.
+
+user
+:	The user name used by HA-JDBC to connect to the database for synchronization and meta-data caching purposes.
+	This user should have administrative privileges.  This differs from the database user used by your application (which likely has CRUD or read-only permissions).
+
+password
+:	The password for the above database user.
+
+property
+:	Defines a set of properties, the semantics of which depend on the cluster access pattern.
+	For Driver-based clusters, these properties are passed to the corresponding call to `Driver.connect(String, Properties)` method.
+	For DataSource-based clusters, if the database name specified a:
+	*	class name, then these properties are interpreted as JavaBean properties used to initialize the DataSource instance.
+		e.g.
+		
+			<database id="db1">
+				<name>org.postgresql.ds.PGSimpleDataSource</name>
+				<property name="serverName">server1</property>
+				<property name="portNumber">5432</property>
+				<property name="databaseName">database</property>
+			</database>
+	*	JNDI name, then these properties are used as JNDI environment properties when constructing the initial context.
+		e.g.
+		
+			<database id="db1">
+				<name>java:comp/env/jdbc/db1</name>
+				<property name="java.naming.provider.url">...</property>
+			</database>
+
 ###	Dialect
 
-The dialect attribute of a cluster determines the SQL syntax to use for a given database operation.
+The dialect attribute of a cluster determines the SQL syntax used by HA-JDBC for direct database operations.
 HA-JDBC includes dialects for the following databases:
 <table>
 	<tr>
@@ -202,6 +264,10 @@ passive
 :	Does nothing.
 	Use this strategy for read-only clusters, or if you know for a fact that the target database is already in sync.
 
+dump-restore
+:	Performs a native dump/restore from the source to the target database.
+	Unlike other sync strategies, this strategy can synchronize both the schema and data.
+
 full
 :	Truncates each table in the target database and inserts data from the source database.
 	<table>
@@ -223,7 +289,7 @@ full
 	</table>
 	
 diff
-:	Performs a full table scan of source table vs destination table, and performs necessary insert/update/delete.
+:	Performs a full table scan of source table vs target table, and performs necessary insert/update/delete.
 	Supports the following properties:
 	<table>
 		<tr>
@@ -282,9 +348,9 @@ sql
 		<tr>
 			<td>**urlPattern**</td>
 			<td>
-				<nobr>jdbc:h2:{1}/{0}</nobr><br/>
-				<nobr>jdbc:hsqldb:{1}/{0}</nobr><br/>
-				<nobr>jdbc:derby:{1}/{0};create=true</nobr>
+				<div class="nobr">jdbc:h2:{1}/{0}</div><br/>
+				<div class="nobr">jdbc:hsqldb:{1}/{0}</div><br/>
+				<div class="nobr">jdbc:derby:{1}/{0};create=true</div>
 			</td>
 			<td>
 				A MessageFormat pattern indicating the JDBC url of the embedded database.
@@ -493,15 +559,15 @@ The following decoding mechanism are currently supported:
 HA-JDBC supports a number of extension points.
 Most components support custom implementations, including:
 
-*	net.sf.hajdbc.balancer.BalancerFactory
-*	net.sf.hajdbc.cache.DatabaseMetaDataCacheFactory
-*	net.sf.hajdbc.codec.CodecFactory
-*	net.sf.hajdbc.dialect.DialectFactory
-*	net.sf.hajdbc.distributed.CommandDispatcherFactory
-*	net.sf.hajdbc.durability.DurabilityFactory
-*	net.sf.hajdbc.lock.LockManagerFactory
-*	net.sf.hajdbc.state.StateManagerFactory
-*	net.sf.hajdbc.SynchronizationStrategy
+*	[net.sf.hajdbc.balancer.BalancerFactory](apidocs/net/sf/hajdbc/balancer/BalancerFactory.html)
+*	[net.sf.hajdbc.cache.DatabaseMetaDataCacheFactory](apidocs/net/sf/hajdbc/cache/DatabaseMetaDataCacheFactory.html)
+*	[net.sf.hajdbc.codec.CodecFactory](apidocs/net/sf/hajdbc/codec/CodecFactory.html)
+*	[net.sf.hajdbc.dialect.DialectFactory](apidocs/net/sf/hajdbc/dialect/DialectFactory.html)
+*	[net.sf.hajdbc.distributed.CommandDispatcherFactory](apidocs/net/sf/hajdbc/distributed/CommandDispatcherFactory.html)
+*	[net.sf.hajdbc.durability.DurabilityFactory](apidocs/net/sf/hajdbc/durability/DurabilityFactory.html)
+*	[net.sf.hajdbc.lock.LockManagerFactory](apidocs/net/sf/hajdbc/lock/LockManagerFactory.html)
+*	[net.sf.hajdbc.state.StateManagerFactory](apidocs/net/sf/hajdbc/state/StateManagerFactory.html)
+*	[net.sf.hajdbc.SynchronizationStrategy](apidocs/net/sf/hajdbc/SynchronizationStrategy.html)
 
 In general, to configure HA-JDBC with a custom component:
 
@@ -577,11 +643,107 @@ e.g.
 	for (java.sql.Driver driver: DriverManager.getDrivers()) {
 		if (driver instanceof Driver) {
 			((Driver) driver).getConfigurationFactories().put("mycluster", new SimpleDatabaseClusterConfigurationFactory<Driver, DriverDatabase>(config));
+			break;
 		}
 	}
 	
 	// Database cluster is now ready to be used!
 	Connection connection = DriverManager.getConnection("jdbc:ha-jdbc:mycluster", "sa", "");
+
+
+## Using HA-JDBC
+
+Application access an HA-JDBC cluster either via the Driver or DataSource.
+
+
+###	Driver-based access
+
+To access a specific cluster via the Driver, HA-JDBC must be configured to access your databases accordingly.
+
+e.g.
+
+`ha-jdbc-mycluster.xml`
+
+	<ha-jdbc xmlns="urn:sourceforge:ha-jdbc:2.1">
+		<cluster>
+			<database id="db1">
+				<name>jdbc:postgresql://server1/database</name>
+				<user>pgadmin</user>
+				<password>password</password>
+			</database>
+			<database id="db2">
+				<name>jdbc:postgresql://server2/database</name>
+				<user>pgadmin</user>
+				<password>password</password>
+			</database>
+		</cluster>
+	</ha-jdbc>
+
+HA-JDBC connection can then be established via:
+
+	java.sql.Connection connection = java.sql.DriverManager.getConnection("jdbc:ha-jdbc:mycluster", "user", "password");
+
+
+###	DataSource-based access
+
+To access a specific cluster via a DataSource, HA-JDBC must be configured to access your databases via DataSources.
+HA-JDBC provides a DataSource, ConnectionPoolDataSource, and XADataSource implementations, depending on which resource you plan to proxy.
+
+e.g.
+
+`ha-jdbc-mycluster.xml`
+
+	<ha-jdbc xmlns="urn:sourceforge:ha-jdbc:2.1">
+		<cluster>
+			<database id="db1">
+				<name>org.postgresql.ds.PGSimpleDataSource</name>
+				<user>pgadmin</user>
+				<password>password</password>
+				<property name="serverName">server1</property>
+				<property name="portNumber">5432</property>
+				<property name="databaseName">database</property>
+			</database>
+			<database id="db2">
+				<name>org.postgresql.ds.PGSimpleDataSource</name>
+				<user>pgadmin</user>
+				<password>password</password>
+				<property name="serverName">server2</property>
+				<property name="portNumber">5432</property>
+				<property name="databaseName">database</property>
+			</database>
+		</cluster>
+	</ha-jdbc>
+
+To deploy the HA-JDBC DataSource in Tomcat:
+
+`context.xml`
+
+	<Context>
+		<!-- ... -->
+		<Resource name="jdbc/mycluster" type="javax.sql.DataSource"
+		          factory="net.sf.hajdbc.sql.DataSourceFactory"
+		          cluster="mycluster" config="file:///path/to/ha-jdbc-mycluster.xml"/>
+		<!-- ... -->
+	</Context>
+
+To make the DataSource referenceable from your application:
+
+`web.xml`
+
+	<web-app>
+		<!-- ... -->
+		<resource-env-ref>
+			<resource-env-ref-name>jdbc/mycluster</resource-env-ref-name>
+			<resource-env-ref-type>javax.sql.DataSource</resource-env-ref-type>
+		</resource-env-ref>
+		<!-- ... -->
+	</web-app>
+
+You can then access the cluster via:
+
+	javax.context.Context context = new javax.context.InitialContext();
+	javax.sql.DataSource ds = (javax.sql.DataSource) context.lookup("java:comp/env/jdbc/mycluster");
+	java.sql.Connection connection = ds.getConnection("user", "password");
 
 [commons-pool]: http://commons.apache.org/pool/apidocs/org/apache/commons/pool/impl/GenericObjectPool.html "Apache Commons Pool"
 [jgroups]: http://community.jboss.org/wiki/JGroups "JGroups"

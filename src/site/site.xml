@@ -26,9 +26,9 @@
 		<menu name="About">
 			<item name="Overview" href="index.html"/>
 			<item name="Documentation" href="doc.html"/>
-			<item name="FAQ" href="faq.html"/>
+			<item name="XML Schema" href="schemas.html"/>
 			<item name="Building" href="build.html"/>
-			<item name="Download" href="${project.distributionManagement.downloadUrl}"/>
+			<item name="Downloads" href="${project.distributionManagement.downloadUrl}"/>
 			<item name="Forums" href="http://sourceforge.net/projects/ha-jdbc/forums"/>
 		</menu>
 		<menu ref="reports"/>

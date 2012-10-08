@@ -34,7 +34,7 @@
 	<description>High-Availability JDBC</description>
 	<url>http://ha-jdbc.github.com</url>
 	<inceptionYear>2004</inceptionYear>
-	
+
 	<repositories>
 		<repository>
 			<id>repository.jboss.org</id>
@@ -57,7 +57,7 @@
 		<dependency>
 			<groupId>org.jgroups</groupId>
 			<artifactId>jgroups</artifactId>
-			<version>3.2.0.Alpha2</version>
+			<version>3.2.0.CR1</version>
 			<optional>true</optional>
 		</dependency>
 		<!-- Optional logging dependencies -->
@@ -182,6 +182,20 @@
 					</execution>
 				</executions>
 			</plugin>
+			<!--plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.4</version>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin-->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
@@ -237,64 +251,74 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
 				<version>3.1</version>
-				<configuration>
-					<reportPlugins>
-						<plugin>
-							<groupId>org.apache.maven.plugins</groupId>
-							<artifactId>maven-project-info-reports-plugin</artifactId>
-							<version>2.5.1</version>
-							<reportSets>
-								<reportSet>
-									<reports>
-										<report>dependencies</report>
-										<report>dependency-management</report>
-										<report>issue-tracking</report>
-										<report>license</report>
-										<report>mailing-list</report>
-										<report>project-team</report>
-										<report>scm</report>
-										<report>summary</report>
-									</reports>
-								</reportSet>
-							</reportSets>
-						</plugin>
-						<plugin>
-							<groupId>org.apache.maven.plugins</groupId>
-							<artifactId>maven-changes-plugin</artifactId>
-							<version>2.8</version>
-							<configuration>
-								<xmlPath>${project.basedir}/src/site/changes.xml</xmlPath>
-							</configuration>
-							<reportSets>
-								<reportSet>
-									<reports>
-										<report>changes-report</report>
-									</reports>
-								</reportSet>
-							</reportSets>
-						</plugin>
-						<plugin>
-							<groupId>org.apache.maven.plugins</groupId>
-							<artifactId>maven-javadoc-plugin</artifactId>
-							<version>2.9</version>
-							<configuration>
-								<linksource>true</linksource>
-							</configuration>
-							<reportSets>
-								<reportSet>
-									<reports>
-										<report>javadoc</report>
-									</reports>
-								</reportSet>
-							</reportSets>
-						</plugin>
-						<plugin>
-							<groupId>org.codehaus.mojo</groupId>
-							<artifactId>findbugs-maven-plugin</artifactId>
-							<version>2.5.2</version>
-						</plugin>
-					</reportPlugins>
-				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>site</goal>
+						</goals>
+						<phase>site</phase>
+						<configuration>
+							<!-- deploy will be handled by com.github.github:site-maven-plugin -->
+							<skipDeploy>true</skipDeploy>
+							<reportPlugins>
+								<plugin>
+									<groupId>org.apache.maven.plugins</groupId>
+									<artifactId>maven-project-info-reports-plugin</artifactId>
+									<version>2.5.1</version>
+									<reportSets>
+										<reportSet>
+											<reports>
+												<report>dependencies</report>
+												<report>dependency-management</report>
+												<report>issue-tracking</report>
+												<report>license</report>
+												<report>mailing-list</report>
+												<report>project-team</report>
+												<report>scm</report>
+												<report>summary</report>
+											</reports>
+										</reportSet>
+									</reportSets>
+								</plugin>
+								<plugin>
+									<groupId>org.apache.maven.plugins</groupId>
+									<artifactId>maven-changes-plugin</artifactId>
+									<version>2.8</version>
+									<configuration>
+										<xmlPath>${project.basedir}/src/site/changes.xml</xmlPath>
+									</configuration>
+									<reportSets>
+										<reportSet>
+											<reports>
+												<report>changes-report</report>
+											</reports>
+										</reportSet>
+									</reportSets>
+								</plugin>
+								<plugin>
+									<groupId>org.apache.maven.plugins</groupId>
+									<artifactId>maven-javadoc-plugin</artifactId>
+									<version>2.9</version>
+									<configuration>
+										<linksource>true</linksource>
+									</configuration>
+									<reportSets>
+										<reportSet>
+											<reports>
+												<report>javadoc</report>
+											</reports>
+										</reportSet>
+									</reportSets>
+								</plugin>
+								<plugin>
+									<groupId>org.codehaus.mojo</groupId>
+									<artifactId>findbugs-maven-plugin</artifactId>
+									<version>2.5.2</version>
+								</plugin>
+							</reportPlugins>
+						</configuration>
+					</execution>
+				</executions>
 				<dependencies>
 					<dependency>
 						<groupId>org.apache.maven.doxia</groupId>
@@ -302,6 +326,24 @@
 						<version>1.3</version>
 					</dependency>
 				</dependencies>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
+				<executions>
+					<execution>
+						<phase>post-site</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<copy file="${project.build.outputDirectory}/ha-jdbc.xsd" tofile="${project.build.directory}/site/xsd/ha-jdbc-${project.version}.xsd" />
+							</target>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>com.github.github</groupId>
@@ -314,7 +356,7 @@
 						</goals>
 						<phase>site-deploy</phase>
 						<configuration>
-							<merge>true</merge>
+							<message>Depolying HA-JDBC ${project.version} site</message>
 						</configuration>
 					</execution>
 				</executions>
@@ -344,11 +386,16 @@
 	
 	<issueManagement>
 		<system>GitHub</system>
-		<url>https://github.com/ha-jdbc/ha-jdbc/issues</url>
+		<url>http://github.com/ha-jdbc/ha-jdbc/issues</url>
 	</issueManagement>
 	
 	<distributionManagement>
-		<downloadUrl>https://github.com/ha-jdbc/ha-jdbc/downloads</downloadUrl>
+		<downloadUrl>http://github.com/ha-jdbc/ha-jdbc/downloads</downloadUrl>
+		<site>
+			<id>github</id>
+			<name>Deployment through GitHub's site deployment plugin</name>
+			<url>site</url>
+		</site>
 	</distributionManagement>
 
 	<licenses>
