@@ -100,7 +100,7 @@ public class DriverTest
 		
 		DriverDatabase database = new DriverDatabase();
 		database.setId("db1");
-		database.setName("jdbc:mock:test");
+		database.setLocation("jdbc:mock:test");
 		
 		Driver driver = new Driver();
 

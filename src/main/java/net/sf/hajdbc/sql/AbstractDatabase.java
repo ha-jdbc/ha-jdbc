@@ -38,12 +38,13 @@ import net.sf.hajdbc.sql.AbstractDatabaseClusterConfiguration.Property;
  * @author  Paul Ferraro
  * @param <Z>
  */
-@XmlType(propOrder = { "name", "xmlProperties", "user", "password" })
+@XmlType(propOrder = { "user", "password", "xmlProperties" })
 public abstract class AbstractDatabase<Z> implements Database<Z>
 {
+	@XmlAttribute(name = "id", required = true)
 	private String id;
-	@XmlElement(name = "name", required = true)
-	private String name;
+	@XmlAttribute(name = "location", required = true)
+	private String location;
 	@XmlElement(name = "user")
 	private String user;
 	@XmlElement(name = "password")
@@ -90,7 +91,6 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	@ManagedAttribute
 	@Description("Uniquely identifies this database in the cluster")
 	@Override
-	@XmlAttribute(name = "id", required = true)
 	public String getId()
 	{
 		return this.id;
@@ -107,22 +107,22 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.Database#getName()
+	 * @see net.sf.hajdbc.Database#getLocation()
 	 */
 	@ManagedAttribute
 	@Description("Identifies the location of this database")
 	@Override
-	public String getName()
+	public String getLocation()
 	{
-		return this.name;
+		return this.location;
 	}
 
 	@ManagedAttribute
-	public void setName(String name)
+	public void setLocation(String name)
 	{
 		this.assertInactive();
-		this.checkDirty(this.name, name);
-		this.name = name;
+		this.checkDirty(this.location, name);
+		this.location = name;
 	}
 	
 	@ManagedAttribute

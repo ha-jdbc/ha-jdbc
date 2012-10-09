@@ -132,7 +132,7 @@ public final class Driver extends AbstractDriver implements Registry.Factory<Str
 			@Override
 			public Connection invoke(DriverDatabase database, java.sql.Driver driver) throws SQLException
 			{
-				return driver.connect(database.getName(), properties);
+				return driver.connect(database.getLocation(), properties);
 			}
 		};
 		
@@ -168,7 +168,7 @@ public final class Driver extends AbstractDriver implements Registry.Factory<Str
 			@Override
 			public DriverPropertyInfo[] invoke(DriverDatabase database, java.sql.Driver driver) throws SQLException
 			{
-				return driver.getPropertyInfo(database.getName(), properties);
+				return driver.getPropertyInfo(database.getLocation(), properties);
 			}			
 		};
 		

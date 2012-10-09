@@ -52,8 +52,7 @@ The general syntax for defining the databases composing an HA-JDBC cluster is as
 
 	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
 		<cluster>
-			<database id="..." weight="#">
-				<name>...</name>
+			<database id="..." location="..." weight="#">
 				<user>...</user>
 				<password>...</password>
 				<property name="...">...</property>
@@ -65,16 +64,17 @@ The general syntax for defining the databases composing an HA-JDBC cluster is as
 id
 :	Uniquely identifies this database within the cluster.
 
-weight
-:	Defines the relative weight of this database node.
-	See [Balancer](#balancer) section for details.
-
-name
+location
 :	In general, this describes the location of the database.
 	For Driver-based clusters, this specifies the JDBC url of the database.
 	For DataSource-based cluster, this specifies either:
 	*	The class name of the DataSource implementation (from which a new instance will be created).
 	*	The JNDI name of the pre-bound DataSource.
+
+weight
+:	Defines the relative weight of this database node.
+	If undefined, weight is assumed to be 1.
+	See [Balancer](#balancer) section for details.
 
 user
 :	The user name used by HA-JDBC to connect to the database for synchronization and meta-data caching purposes.
@@ -90,8 +90,7 @@ property
 	*	class name, then these properties are interpreted as JavaBean properties used to initialize the DataSource instance.
 		e.g.
 		
-			<database id="db1">
-				<name>org.postgresql.ds.PGSimpleDataSource</name>
+			<database id="db1" location="org.postgresql.ds.PGSimpleDataSource">
 				<property name="serverName">server1</property>
 				<property name="portNumber">5432</property>
 				<property name="databaseName">database</property>
@@ -99,8 +98,7 @@ property
 	*	JNDI name, then these properties are used as JNDI environment properties when constructing the initial context.
 		e.g.
 		
-			<database id="db1">
-				<name>java:comp/env/jdbc/db1</name>
+			<database id="db1" location="java:comp/env/jdbc/db1">
 				<property name="java.naming.provider.url">...</property>
 			</database>
 
@@ -249,8 +247,8 @@ e.g.
 	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
 		<cluster balancer="simple">
 			<!-- Read requests will always prefer db1 -->
-			<database id="db1" weight="2"><!-- ... --></database>
-			<database id="db2" weight="1"><!-- ... --></database>
+			<database id="db1" location="..." weight="2"><!-- ... --></database>
+			<database id="db2" location="..." weight="1"><!-- ... --></database>
 		</cluster>
 	</ha-jdbc>
 
@@ -512,8 +510,7 @@ e.g.
 
 	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
 		<cluster ...>
-			<database id="db1">
-				<name>jdbc:h2:mem:db1</name>
+			<database id="db1" location="jdbc:mysql://server:port/db1">
 				<user>admin</user>
 				<password>?:wzAkF0hlYUeGhfzRQIxYAQ==</password>
 			</database>
@@ -675,13 +672,11 @@ e.g.
 
 	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
 		<cluster>
-			<database id="db1">
-				<name>jdbc:postgresql://server1/database</name>
+			<database id="db1" location="jdbc:postgresql://server1:port1/database1">
 				<user>pgadmin</user>
 				<password>password</password>
 			</database>
-			<database id="db2">
-				<name>jdbc:postgresql://server2/database</name>
+			<database id="db2" location="jdbc:postgresql://server2:port2/database2">
 				<user>pgadmin</user>
 				<password>password</password>
 			</database>
@@ -704,16 +699,14 @@ e.g.
 
 	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
 		<cluster>
-			<database id="db1">
-				<name>org.postgresql.ds.PGSimpleDataSource</name>
+			<database id="db1" location="org.postgresql.ds.PGSimpleDataSource">
 				<user>pgadmin</user>
 				<password>password</password>
 				<property name="serverName">server1</property>
 				<property name="portNumber">5432</property>
 				<property name="databaseName">database</property>
 			</database>
-			<database id="db2">
-				<name>org.postgresql.ds.PGSimpleDataSource</name>
+			<database id="db2" location="org.postgresql.ds.PGSimpleDataSource">
 				<user>pgadmin</user>
 				<password>password</password>
 				<property name="serverName">server2</property>

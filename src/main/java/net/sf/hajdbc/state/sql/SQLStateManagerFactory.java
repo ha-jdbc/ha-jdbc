@@ -110,7 +110,7 @@ public class SQLStateManagerFactory extends GenericObjectPool.Config implements 
 		
 		String url = MessageFormat.format(this.urlPattern, cluster.getId(), Strings.USER_HOME);
 		DriverDatabase database = new DriverDatabase();
-		database.setName(url);
+		database.setLocation(url);
 		database.setUser(this.user);
 		database.setPassword(this.password);
 		

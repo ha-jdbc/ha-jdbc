@@ -35,7 +35,7 @@ public class Test
 	{
 		DataSourceDatabase db1 = new DataSourceDatabase();
 		db1.setId("db1");
-		db1.setName(UrlDataSource.class.getName());
+		db1.setLocation(UrlDataSource.class.getName());
 		db1.setProperty("url", "jdbc:hsqldb:mem:db1");
 //		db1.setProperty("url", "jdbc:h2:mem:db1");
 		db1.setUser("sa");
@@ -43,7 +43,7 @@ public class Test
 		
 		DataSourceDatabase db2 = new DataSourceDatabase();
 		db2.setId("db2");
-		db2.setName(UrlDataSource.class.getName());
+		db2.setLocation(UrlDataSource.class.getName());
 		db2.setProperty("url", "jdbc:hsqldb:mem:db2");
 //		db2.setProperty("url", "jdbc:h2:mem:db2");
 		db2.setUser("sa");

@@ -54,12 +54,8 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 		builder.append("\t<sync id=\"diff\"><property name=\"fetchSize\">100</property><property name=\"maxBatchSize\">100</property></sync>");
 		builder.append("\t<state id=\"sql\"><property name=\"urlPattern\">jdbc:h2:{0}</property></state>");
 		builder.append("\t<cluster default-sync=\"diff\">");
-		builder.append("\t\t<database id=\"db1\">");
-		builder.append("\t\t\t<name>jdbc:mock:db1</name>");
-		builder.append("\t\t</database>");
-		builder.append("\t\t<database id=\"db2\">");
-		builder.append("\t\t\t<name>jdbc:mock:db2</name>");
-		builder.append("\t\t</database>");
+		builder.append("\t\t<database id=\"db1\" location=\"jdbc:mock:db1\"/>");
+		builder.append("\t\t<database id=\"db2\" location=\"jdbc:mock:db2\"/>");
 		builder.append("\t</cluster>");
 		builder.append("</ha-jdbc>");
 		
@@ -122,7 +118,7 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 		
 		assertNotNull(db1);
 		assertEquals("db1", db1.getId());
-		assertEquals("jdbc:mock:db1", db1.getName());
+		assertEquals("jdbc:mock:db1", db1.getLocation());
 		assertEquals(1, db1.getWeight());
 		assertFalse(db1.isLocal());
 		assertFalse(db1.isActive());
@@ -132,7 +128,7 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 		
 		assertNotNull(db2);
 		assertEquals("db2", db2.getId());
-		assertEquals("jdbc:mock:db2", db2.getName());
+		assertEquals("jdbc:mock:db2", db2.getLocation());
 		assertEquals(1, db2.getWeight());
 		assertFalse(db2.isLocal());
 		assertFalse(db2.isActive());

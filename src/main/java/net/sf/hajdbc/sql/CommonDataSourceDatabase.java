@@ -50,14 +50,14 @@ public abstract class CommonDataSourceDatabase<Z extends javax.sql.CommonDataSou
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.AbstractDatabase#getName()
+	 * @see net.sf.hajdbc.sql.AbstractDatabase#getLocation()
 	 */
 	@ManagedAttribute
 	@Description("The JNDI name to which this DataSource is bound, or the class name of the DataSource implementation")
 	@Override
-	public void setName(String name)
+	public void setLocation(String name)
 	{
-		super.setName(name);
+		super.setLocation(name);
 	}
 
 	/**
@@ -68,7 +68,7 @@ public abstract class CommonDataSourceDatabase<Z extends javax.sql.CommonDataSou
 	{
 		try
 		{
-			Class<?> dataSourceClass = this.getClass().getClassLoader().loadClass(this.getName());
+			Class<?> dataSourceClass = this.getClass().getClassLoader().loadClass(this.getLocation());
 			
 			return this.createDataSource(dataSourceClass.asSubclass(this.targetClass));
 		}
@@ -87,7 +87,7 @@ public abstract class CommonDataSourceDatabase<Z extends javax.sql.CommonDataSou
 			properties.setProperty(entry.getKey(), entry.getValue());
 		}
 
-		String name = this.getName();
+		String name = this.getLocation();
 		
 		try
 		{

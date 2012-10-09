@@ -42,7 +42,7 @@ public interface Database<Z> extends Comparable<Database<Z>>
 	 * Returns the location of this database
 	 * @return a location
 	 */
-	String getName();
+	String getLocation();
 	
 	/**
 	 * Returns the relative "weight" of this cluster node.

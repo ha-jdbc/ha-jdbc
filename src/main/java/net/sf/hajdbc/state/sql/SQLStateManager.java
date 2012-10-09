@@ -613,7 +613,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 		connection.setAutoCommit(true);
 
 		DatabaseMetaData metaData = connection.getMetaData();
-		DialectFactory factory = ServiceLoaders.findService(new IdentifiableMatcher<DialectFactory>(this.database.getName()), DialectFactory.class);
+		DialectFactory factory = ServiceLoaders.findService(new IdentifiableMatcher<DialectFactory>(this.database.getLocation()), DialectFactory.class);
 		if (factory == null)
 		{
 			factory = ServiceLoaders.findService(DialectFactory.class);

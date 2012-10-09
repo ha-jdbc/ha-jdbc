@@ -46,16 +46,16 @@ public class DriverDatabase extends AbstractDatabase<Driver>
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.AbstractDatabase#setName(java.lang.String)
+	 * @see net.sf.hajdbc.sql.AbstractDatabase#setLocation(java.lang.String)
 	 */
 	@ManagedAttribute
 	@Description("JDBC url")
 	@Override
-	public void setName(String location)
+	public void setLocation(String location)
 	{
 		this.getDriver(location);
 
-		super.setName(location);
+		super.setLocation(location);
 	}
 	
 	/**
@@ -81,7 +81,7 @@ public class DriverDatabase extends AbstractDatabase<Driver>
 			}
 		}
 		
-		return driver.connect(this.getName(), properties);
+		return driver.connect(this.getLocation(), properties);
 	}
 
 	/**
@@ -90,7 +90,7 @@ public class DriverDatabase extends AbstractDatabase<Driver>
 	@Override
 	public Driver createConnectionSource()
 	{
-		return this.getDriver(this.getName());
+		return this.getDriver(this.getLocation());
 	}
 
 	private Driver getDriver(String url)
