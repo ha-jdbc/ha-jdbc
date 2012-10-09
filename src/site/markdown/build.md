@@ -15,6 +15,8 @@ To build from source, first obtain the source code from either:
 	mvn package
 
 The generated jar file resides in the `target` directory.
+As of version 2.1, HA-JDBC has no require dependencies.
+See the [Dependencies](dependencies.html) documentation to download any optional dependencies.
 
 ##	Building the project site/documentation
 

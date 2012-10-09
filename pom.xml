@@ -20,9 +20,9 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>net.java</groupId>
-		<artifactId>jvnet-parent</artifactId>
-		<version>3</version>
+		<groupId>org.jboss</groupId>
+		<artifactId>jboss-parent</artifactId>
+		<version>9</version>
 	</parent>
 
 	<groupId>net.sf.ha-jdbc</groupId>
@@ -35,12 +35,13 @@
 	<url>http://ha-jdbc.github.com</url>
 	<inceptionYear>2004</inceptionYear>
 
+	<!-- Used for github maven plugins -->
+	<properties>
+		<github.site.repositoryName>ha-jdbc.github.com</github.site.repositoryName>
+		<github.site.repositoryOwner>ha-jdbc</github.site.repositoryOwner>
+	</properties>
+
 	<repositories>
-		<repository>
-			<id>repository.jboss.org</id>
-			<name>Provides JGroups</name>
-			<url>http://repository.jboss.org/nexus/content/groups/public</url>
-		</repository>
 		<repository>
 			<id>download.oracle.com</id>
 			<name>Provides berkeleydb-je</name>
@@ -104,8 +105,8 @@
 			<artifactId>commons-codec</artifactId>
 			<version>1.7</version>
 			<optional>true</optional>
-		</dependency>
-		
+		</dependency>		
+		<!-- Test dependencies -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -137,7 +138,7 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
+	
 	<build>
 		<resources>
 			<resource>
@@ -154,17 +155,7 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.5.1</version>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>1.1.1</version>
 				<configuration>
 					<rules>
 						<requireJavaVersion>
@@ -174,7 +165,6 @@
 				</configuration>
 				<executions>
 					<execution>
-						<id>enforce-java-version</id>
 						<phase>process-sources</phase>
 						<goals>
 							<goal>enforce</goal>
@@ -182,28 +172,20 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!--plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-gpg-plugin</artifactId>
-				<version>1.4</version>
-				<executions>
-					<execution>
-						<id>sign-artifacts</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>sign</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin-->
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.2.1</version>
 				<executions>
 					<execution>
-						<id>generate-schema</id>
-						<phase>process-classes</phase>
+						<phase>compile</phase>
 						<goals>
 							<goal>java</goal>
 						</goals>
@@ -221,7 +203,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>batik-maven-plugin</artifactId>
-				<version>1.0-beta-1</version>
+				<!-- Override dependency versions -->
 				<dependencies>
 					<dependency>
 						<groupId>batik</groupId>
@@ -249,76 +231,80 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-site-plugin</artifactId>
-				<version>3.1</version>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<configuration>
+					<target>
+						<copy file="${project.build.outputDirectory}/ha-jdbc.xsd" tofile="${project.build.directory}/site/xsd/ha-jdbc-${project.version}.xsd" />
+					</target>
+				</configuration>
 				<executions>
 					<execution>
-						<goals>
-							<goal>site</goal>
-						</goals>
 						<phase>site</phase>
-						<configuration>
-							<!-- deploy will be handled by com.github.github:site-maven-plugin -->
-							<skipDeploy>true</skipDeploy>
-							<reportPlugins>
-								<plugin>
-									<groupId>org.apache.maven.plugins</groupId>
-									<artifactId>maven-project-info-reports-plugin</artifactId>
-									<version>2.5.1</version>
-									<reportSets>
-										<reportSet>
-											<reports>
-												<report>dependencies</report>
-												<report>dependency-management</report>
-												<report>issue-tracking</report>
-												<report>license</report>
-												<report>mailing-list</report>
-												<report>project-team</report>
-												<report>scm</report>
-												<report>summary</report>
-											</reports>
-										</reportSet>
-									</reportSets>
-								</plugin>
-								<plugin>
-									<groupId>org.apache.maven.plugins</groupId>
-									<artifactId>maven-changes-plugin</artifactId>
-									<version>2.8</version>
-									<configuration>
-										<xmlPath>${project.basedir}/src/site/changes.xml</xmlPath>
-									</configuration>
-									<reportSets>
-										<reportSet>
-											<reports>
-												<report>changes-report</report>
-											</reports>
-										</reportSet>
-									</reportSets>
-								</plugin>
-								<plugin>
-									<groupId>org.apache.maven.plugins</groupId>
-									<artifactId>maven-javadoc-plugin</artifactId>
-									<version>2.9</version>
-									<configuration>
-										<linksource>true</linksource>
-									</configuration>
-									<reportSets>
-										<reportSet>
-											<reports>
-												<report>javadoc</report>
-											</reports>
-										</reportSet>
-									</reportSets>
-								</plugin>
-								<plugin>
-									<groupId>org.codehaus.mojo</groupId>
-									<artifactId>findbugs-maven-plugin</artifactId>
-									<version>2.5.2</version>
-								</plugin>
-							</reportPlugins>
-						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+				<configuration>
+					<!-- deploy will be handled by com.github.github:site-maven-plugin -->
+					<skipDeploy>true</skipDeploy>
+					<reportPlugins>
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-project-info-reports-plugin</artifactId>
+							<reportSets>
+								<reportSet>
+									<reports>
+										<report>dependencies</report>
+										<report>dependency-management</report>
+										<report>issue-tracking</report>
+										<report>license</report>
+										<report>mailing-list</report>
+										<report>project-team</report>
+										<report>scm</report>
+										<report>summary</report>
+									</reports>
+								</reportSet>
+							</reportSets>
+						</plugin>
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-changes-plugin</artifactId>
+							<configuration>
+								<xmlPath>${project.basedir}/src/site/changes.xml</xmlPath>
+							</configuration>
+							<reportSets>
+								<reportSet>
+									<reports>
+										<report>changes-report</report>
+									</reports>
+								</reportSet>
+							</reportSets>
+						</plugin>
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-javadoc-plugin</artifactId>
+							<configuration>
+								<linksource>true</linksource>
+							</configuration>
+							<reportSets>
+								<reportSet>
+									<reports>
+										<report>javadoc</report>
+									</reports>
+								</reportSet>
+							</reportSets>
+						</plugin>
+						<plugin>
+							<groupId>org.codehaus.mojo</groupId>
+							<artifactId>findbugs-maven-plugin</artifactId>
+						</plugin>
+					</reportPlugins>
+				</configuration>
 				<dependencies>
 					<dependency>
 						<groupId>org.apache.maven.doxia</groupId>
@@ -328,51 +314,136 @@
 				</dependencies>
 			</plugin>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.7</version>
+				<groupId>com.github.github</groupId>
+				<artifactId>site-maven-plugin</artifactId>
+				<configuration>
+					<message>Deploying ${project.name} ${project.version} site</message>
+					<branch>refs/heads/master</branch>
+				</configuration>
 				<executions>
 					<execution>
-						<phase>post-site</phase>
+						<phase>site-deploy</phase>
 						<goals>
-							<goal>run</goal>
+							<goal>site</goal>
 						</goals>
-						<configuration>
-							<target>
-								<copy file="${project.build.outputDirectory}/ha-jdbc.xsd" tofile="${project.build.directory}/site/xsd/ha-jdbc-${project.version}.xsd" />
-							</target>
-						</configuration>
 					</execution>
 				</executions>
 			</plugin>
 			<plugin>
 				<groupId>com.github.github</groupId>
-				<artifactId>site-maven-plugin</artifactId>
-				<version>0.7</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>site</goal>
-						</goals>
-						<phase>site-deploy</phase>
-						<configuration>
-							<message>Depolying HA-JDBC ${project.version} site</message>
-						</configuration>
-					</execution>
-				</executions>
+				<artifactId>downloads-maven-plugin</artifactId>
+				<configuration>
+					<description>${project.name} ${project.version}</description>
+					<override>true</override>
+					<includeAttached>true</includeAttached>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>versions-maven-plugin</artifactId>
-				<version>1.3.1</version>
 			</plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>
 				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-enforcer-plugin</artifactId>
+					<version>1.1.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-clean-plugin</artifactId>
+					<version>2.5</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>2.5.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>2.6</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>2.4</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-install-plugin</artifactId>
+					<version>2.4</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>2.12.4</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>2.3.2</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>exec-maven-plugin</artifactId>
+					<version>1.2.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-antrun-plugin</artifactId>
+					<version>1.7</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-site-plugin</artifactId>
+					<version>3.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>batik-maven-plugin</artifactId>
+					<version>1.0-beta-1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-project-info-reports-plugin</artifactId>
+					<version>2.5.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-changes-plugin</artifactId>
+					<version>2.8</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>2.9</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>findbugs-maven-plugin</artifactId>
+					<version>2.5.2</version>
+				</plugin>
+				<plugin>
 					<groupId>org.apache.maven.skins</groupId>
 					<artifactId>maven-fluido-skin</artifactId>
 					<version>1.3.0</version>
+				</plugin>
+				<plugin>
+					<groupId>com.github.github</groupId>
+					<artifactId>downloads-maven-plugin</artifactId>
+					<version>0.6</version>
+				</plugin>
+				<plugin>
+					<groupId>com.github.github</groupId>
+					<artifactId>site-maven-plugin</artifactId>
+					<version>0.7</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>versions-maven-plugin</artifactId>
+					<version>1.3.1</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -391,11 +462,6 @@
 	
 	<distributionManagement>
 		<downloadUrl>http://github.com/ha-jdbc/ha-jdbc/downloads</downloadUrl>
-		<site>
-			<id>github</id>
-			<name>Deployment through GitHub's site deployment plugin</name>
-			<url>site</url>
-		</site>
 	</distributionManagement>
 
 	<licenses>

@@ -22,13 +22,13 @@ Scalability
 
 *	Java 1.6+
 *	Type IV JDBC 4.x driver for underlying databases
+*	Optional dependency JARs can be downloaded from the [Dependencies](dependencies.html) page.
 *	Configuration XML file per database cluster or bootstrapped programmatic configuration
-
 
 ##	Configuration
 
 HA-JDBC is typically configured via XML file.
-The full schema definitions for past and present versions of HA-JDBC are enumerated [here](schemas.html).
+The full schema definitions for past and present versions of HA-JDBC are enumerated on the [XML Schemas](schemas.html) page.
 
 
 ###	XML
@@ -50,7 +50,7 @@ The algorithm used to locate the configuration file resource at runtime is as fo
 
 The general syntax for defining the databases composing an HA-JDBC cluster is as follows:
 
-	<ha-jdbc xmlns="urn:sourceforge:ha-jdbc:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
 		<cluster>
 			<database id="..." weight="#">
 				<name>...</name>
@@ -106,7 +106,7 @@ property
 
 ###	Dialect
 
-The dialect attribute of a cluster determines the SQL syntax used by HA-JDBC for direct database operations.
+The dialect attribute of a cluster is used to adapt HA-JDBC to a specific database vendor.
 HA-JDBC includes dialects for the following databases:
 <table>
 	<tr>
@@ -201,7 +201,7 @@ HA-JDBC includes dialects for the following databases:
 		<td></td>
 	</tr>
 	<tr>
-		<td>**standard**</td>
+		<td>***standard***</td>
 		<td>SQL-92 compliant database</td>
 		<td></td>
 		<td></td>
@@ -211,14 +211,14 @@ HA-JDBC includes dialects for the following databases:
 
 e.g.
 
-	<ha-jdbc xmlns="urn:sourceforge:ha-jdbc:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
 		<cluster dialect="postgresql">
 			<!-- ... -->
 		</cluster>
 	</ha-jdbc>
 
 
-###	Balancer
+###	<a name="balancer">Balancer</a>
 
 When executing a read request from the cluster, HA-JDBC uses the configured balancer strategy to determine which database should service the request.
 Each database can define a weight to affect how it is prioritized by the balancer.
@@ -239,14 +239,14 @@ random
 round-robin
 :	Requests are sent to each node in succession. A node of weight *n* will receive *n* requests before the balancer moves on to the next node.
 
-load
+*load*
 :	Requests are sent to the node with the smallest load.
 	Node weights affect the calculated load of a given node.
 	The load of a node = *concurrent-requests* / *weight*.
 
 e.g.
 
-	<ha-jdbc xmlns="urn:sourceforge:ha-jdbc:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
 		<cluster balancer="simple">
 			<!-- Read requests will always prefer db1 -->
 			<database id="db1" weight="2"><!-- ... --></database>
@@ -258,7 +258,13 @@ e.g.
 ###	Synchronization strategies
 
 Defines a strategy for synchronizing a database before activation.
-If the strategy contains JavaBean properties, you can override their default values.
+A cluster may define multiple synchronization strategies, however, one of them must be designated as the `default-sync`.
+The default synchronization strategy is used when synchronization is triggered by auto-activation.
+The others are only used during manual database activation.
+
+HA-JDBC supports the following strategies by default.
+As of version 2.1, synchronization strategies are defined by identifier alone, not by class name.
+If the strategy exposes any JavaBean properties, these can be overridden via nested `property` elements.
 
 passive
 :	Does nothing.
@@ -266,7 +272,8 @@ passive
 
 dump-restore
 :	Performs a native dump/restore from the source to the target database.
-	Unlike other sync strategies, this strategy can synchronize both the schema and data.
+	To use this strategy, the dialect in use must support it (see [Dialect.getDumpRestoreSupport()](apidocs/net/sf/hajdbc/dialect/Dialect.html)).
+	Unlike the other sync strategies, this strategy can synchronize both the schema and data.
 
 full
 :	Truncates each table in the target database and inserts data from the source database.
@@ -319,7 +326,7 @@ diff
 
 e.g.
 
-	<ha-jdbc xmlns="urn:sourceforge:ha-jdbc:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
 		<sync id="full">
 			<property name="fetchSize">1000</property>
 		</sync>
@@ -333,10 +340,12 @@ e.g.
 
 ###	Cluster state management
 
+The state manager component is responsible for storing the active status of each database in the cluster, as well as any durability information.
+
 simple
 :	A non-persistent state manager that stores cluster state in memory.
 
-sql
+*sql*
 :	A persistent state manager that uses an embedded database.
 	This provider supports the following properties.
 	<table>
@@ -372,12 +381,12 @@ sql
 			<td>Authentication password for the above user.</td>
 		</tr>
 	</table>
-	You can also override several properites to manipulate connection pooling behavior.
-	The complete list and their default values are available in the [Apache Commons Pool documentation][commons-pool].
+	You can also override several properties to manipulate connection pooling behavior.
+	The complete list of pooling properties and their default values are available in the [Apache Commons Pool documentation][commons-pool] documentation.
 
 e.g.
 
-	<ha-jdbc xmlns="urn:sourceforge:ha-jdbc:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
 		<state id="sql">
 			<property name="urlPattern">jdbc:hsqldb:{1}/{0}</property>
 		</state>
@@ -388,7 +397,7 @@ e.g.
 ###	Durability
 
 As of version 2.1, HA-JDBC support a configurable durability level for user transactions.
-When enabled, HA-JDBC will track transactions, such that, upon restart, following a crash, it can detect and recover from any partial commits.
+When enabled, HA-JDBC will track transactions, such that, upon restart, following a crash, it can detect and recover from any partial commits (i.e. where data was not .
 The durability persistence mechanism is determined by the state manager configuration.
 By default, HA-JDBC includes support for the following durability levels:
 
@@ -404,7 +413,7 @@ coarse
 	Upon recovery, if any cluster invocations still exist in the log, all slave database will be deactivated and must be reactivated manually.
 	This level offers a compromise between performance and resiliency.
 
-fine
+*fine*
 :	Tracks cluster invocations as well as per-database invokers.
 	This durability level can both detect and recover from mid-commit crashes.
 	Upon recovery, if any cluster invocations still exist in the log, all slave database will be deactivated and must be reactivated manually.
@@ -412,7 +421,7 @@ fine
 
 e.g.
 
-	<ha-jdbc xmlns="urn:sourceforge:ha-jdbc:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
 		<cluster durability="fine">
 			<!-- ... -->
 		</cluster>
@@ -424,7 +433,7 @@ e.g.
 Indicates that database clusters defined in this file will be accessed by multiple JVMs.
 By default, HA-JDBC supports the following providers:
 
-jgroups
+*jgroups*
 :	Uses a JGroups channel to broadcast cluster membership changes to other peer nodes.
 	The JGroups provider recognizes the following properties:
 	<table>
@@ -456,7 +465,7 @@ jgroups
 
 e.g.
 
-	<ha-jdbc xmlns="urn:sourceforge:ha-jdbc:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
 		<distributable id="jgroups">
 			<property name="stack">udp.xml</property>
 		</distributable>
@@ -479,7 +488,7 @@ lazy
 shared-lazy
 :	Meta data is loaded and cached as it is requested.
 
-eager
+*eager*
 :	All necessary meta data is loaded and cached per database during HA-JDBC initialization.
 
 shared-eager
@@ -487,7 +496,7 @@ shared-eager
 
 e.g.
 
-	<ha-jdbc xmlns="urn:sourceforge:ha-jdbc:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
 		<cluster meta-data-cache="shared-eager">
 			<!-- ... -->
 		</cluster>
@@ -501,7 +510,7 @@ To indicate that a password uses an obfuscation mechanism, use a ":" to indicate
 
 e.g.
 
-	<ha-jdbc xmlns="urn:sourceforge:ha-jdbc:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
 		<cluster ...>
 			<database id="db1">
 				<name>jdbc:h2:mem:db1</name>
@@ -600,7 +609,7 @@ e.g.
 
 `ha-jdbc.xml`
 
-	<ha-jdbc xmlns="urn:sourceforge:ha-jdbc:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
 		<cluster dialect="custom" ...>
 			<!-- ... -->
 		</cluster>
@@ -664,7 +673,7 @@ e.g.
 
 `ha-jdbc-mycluster.xml`
 
-	<ha-jdbc xmlns="urn:sourceforge:ha-jdbc:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
 		<cluster>
 			<database id="db1">
 				<name>jdbc:postgresql://server1/database</name>
@@ -693,7 +702,7 @@ e.g.
 
 `ha-jdbc-mycluster.xml`
 
-	<ha-jdbc xmlns="urn:sourceforge:ha-jdbc:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
 		<cluster>
 			<database id="db1">
 				<name>org.postgresql.ds.PGSimpleDataSource</name>

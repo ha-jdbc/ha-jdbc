@@ -22,17 +22,24 @@
 		<src>images/logo.png</src>
 		<href>http://ha-jdbc.github.com</href>
 	</bannerLeft>
+	<publishDate position="right"/>
 	<body>
 		<menu name="About">
 			<item name="Overview" href="index.html"/>
 			<item name="Documentation" href="doc.html"/>
-			<item name="XML Schema" href="schemas.html"/>
+			<item name="XML Schemas" href="schemas.html"/>
 			<item name="Building" href="build.html"/>
 			<item name="Downloads" href="${project.distributionManagement.downloadUrl}"/>
 			<item name="Forums" href="http://sourceforge.net/projects/ha-jdbc/forums"/>
 		</menu>
 		<menu ref="reports"/>
 	</body>
+	<poweredBy>
+		<logo name="Maven" href="http://maven.apache.org/" img="http://maven.apache.org/images/logos/maven-feather.png"/>
+		<logo name="SourceForge.net" href="http://sourceforge.net" img="http://sourceforge.net/sflogo.php?group_id=111957&amp;type=1"/>
+		<logo name="Open Source Initiative" href="http://opensource.org" img="http://opensource.org/trademarks/opensource/web/opensource-75x65.png"/>
+		<logo name="Friends of the JBoss Community" href="http://community.jboss.org" img="https://community.jboss.org/servlet/JiveServlet/showImage/102-16392-8-11218/jbosscommunity-friend_badge-82x.png"/>
+	</poweredBy>
 	<skin>
 		<groupId>org.apache.maven.skins</groupId>
 		<artifactId>maven-fluido-skin</artifactId>
