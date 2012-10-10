@@ -1,6 +1,6 @@
 /*
- * HA-JDBC: High-Availablity JDBC
- * Copyright 2004-2010 Paul Ferraro
+ * HA-JDBC: High-Availability JDBC
+ * Copyright (C) 2012  Paul Ferraro
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by

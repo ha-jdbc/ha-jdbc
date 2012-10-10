@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 	HA-JDBC: High-Availability JDBC
-	Copyright 2004-2010 Paul Ferraro
+	Copyright (C) 2012  Paul Ferraro
 	
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU Lesser General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
-	
+
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -201,6 +201,16 @@
 				</configuration>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<systemPropertyVariables>
+						<!-- Derby like to put its log file in ${basedir}, so move it to target -->
+						<derby.stream.error.file>${project.build.directory}/derby.log</derby.stream.error.file>
+					</systemPropertyVariables>
+				</configuration>
+			</plugin>
+			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>batik-maven-plugin</artifactId>
 				<!-- Override dependency versions -->
@@ -318,6 +328,7 @@
 				<artifactId>site-maven-plugin</artifactId>
 				<configuration>
 					<message>Deploying ${project.name} ${project.version} site</message>
+					<!-- Organization site uses master branch of ha-jdbc.github.com repository -->
 					<branch>refs/heads/master</branch>
 				</configuration>
 				<executions>
@@ -334,9 +345,15 @@
 				<artifactId>downloads-maven-plugin</artifactId>
 				<configuration>
 					<description>${project.name} ${project.version}</description>
-					<override>true</override>
-					<includeAttached>true</includeAttached>
 				</configuration>
+				<executions>
+					<execution>
+						<phase>deploy</phase>
+						<goals>
+							<goal>upload</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -448,13 +465,13 @@
 			</plugins>
 		</pluginManagement>
 	</build>
-	
+
 	<scm>
 		<connection>scm:git:git://github.com/ha-jdbc/ha-jdbc.git</connection>
 		<developerConnection>scm:git:git@github.com:ha-jdbc/ha-jdbc.git</developerConnection>
 		<url>https://github.com/ha-jdbc/ha-jdbc</url>
 	</scm>
-	
+
 	<issueManagement>
 		<system>GitHub</system>
 		<url>http://github.com/ha-jdbc/ha-jdbc/issues</url>
@@ -473,13 +490,14 @@
 	</licenses>
 	<organization>
 		<name>Paul Ferraro</name>
-		<url>https://github.com/pferraro</url>
+		<url>http://github.com/ha-jdbc</url>
 	</organization>	
 	<developers>
 		<developer>
 			<id>pferraro</id>
 			<name>Paul Ferraro</name>
 			<email>ferraro@users.sourceforge.net</email>
+			<url>http://github.com/pferraro</url>
 		</developer>
 	</developers>
 	
