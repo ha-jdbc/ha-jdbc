@@ -743,7 +743,7 @@ To make the DataSource referenceable from your application:
 
 You can then access the cluster via:
 
-	javax.context.Context context = new javax.context.InitialContext();
+	javax.naming.Context context = new javax.naming.InitialContext();
 	javax.sql.DataSource ds = (javax.sql.DataSource) context.lookup("java:comp/env/jdbc/mycluster");
 	java.sql.Connection connection = ds.getConnection("user", "password");
 

@@ -43,8 +43,9 @@
 
 	<repositories>
 		<repository>
+			<!-- Provides berkeleydb-je -->
 			<id>download.oracle.com</id>
-			<name>Provides berkeleydb-je</name>
+			<name>Orace maven repository</name>
 			<url>http://download.oracle.com/maven</url>
 		</repository>
 	</repositories>
