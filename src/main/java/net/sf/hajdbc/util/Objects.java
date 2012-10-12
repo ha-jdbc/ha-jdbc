@@ -24,7 +24,6 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Arrays;
 
@@ -211,7 +210,8 @@ public class Objects
 				return Thread.currentThread().getContextClassLoader();
 			}
 		};
-		return AccessController.doPrivileged(action);
+		
+		return Security.run(action);
 	}
 	
 	private static void setThreadContextClassLoader(final ClassLoader loader)
@@ -225,6 +225,7 @@ public class Objects
 				return null;
 			}
 		};
-		AccessController.doPrivileged(action);
+		
+		Security.run(action);
 	}
 }

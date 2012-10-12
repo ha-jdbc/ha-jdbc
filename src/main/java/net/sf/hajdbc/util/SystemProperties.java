@@ -17,7 +17,6 @@
  */
 package net.sf.hajdbc.util;
 
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Properties;
 
@@ -38,7 +37,7 @@ public class SystemProperties
 				return System.getProperty(name, defaultValue);
 			}
 		};
-		return AccessController.doPrivileged(action);
+		return Security.run(action);
 	}
 
 	public static Properties getSystemProperties()
@@ -51,7 +50,7 @@ public class SystemProperties
 				return System.getProperties();
 			}
 		};
-		return AccessController.doPrivileged(action);
+		return Security.run(action);
 	}
 	
 	public static void setSystemProperty(final String name, final String value)
@@ -65,7 +64,7 @@ public class SystemProperties
 				return null;
 			}
 		};
-		AccessController.doPrivileged(action);
+		Security.run(action);
 	}
 	
 	private SystemProperties()

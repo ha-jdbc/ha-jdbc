@@ -19,36 +19,23 @@ package net.sf.hajdbc.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
 
 public class Files
 {
 	public static File createTempFile(final String suffix) throws IOException
 	{
-		PrivilegedAction<File> action = new PrivilegedAction<File>()
+		PrivilegedExceptionAction<File> action = new PrivilegedExceptionAction<File>()
 		{
 			@Override
-			public File run()
+			public File run() throws IOException
 			{
-				try
-				{
-					return File.createTempFile("ha-jdbc_", suffix);
-				}
-				catch (IOException e)
-				{
-					throw new PrivilegedIOException(e);
-				}
+				return File.createTempFile("ha-jdbc_", suffix);
 			}
 		};
-		try
-		{
-			return AccessController.doPrivileged(action);
-		}
-		catch (PrivilegedIOException e)
-		{
-			throw e.getException();
-		}
+		
+		return Security.run(action, IOException.class);
 	}
 	
 	public static void delete(final File file)
@@ -65,21 +52,7 @@ public class Files
 				return null;
 			}
 		};
-		AccessController.doPrivileged(action);
-	}
-	private static class PrivilegedIOException extends RuntimeException
-	{
-		private static final long serialVersionUID = 7017527313040459676L;
-		private final IOException e;
-		
-		PrivilegedIOException(IOException e)
-		{
-			this.e = e;
-		}
-		
-		IOException getException()
-		{
-			return this.e;
-		}
+
+		Security.run(action);
 	}
 }

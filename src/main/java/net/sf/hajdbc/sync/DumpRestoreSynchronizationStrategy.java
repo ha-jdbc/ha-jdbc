@@ -20,6 +20,7 @@ package net.sf.hajdbc.sync;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.security.PrivilegedExceptionAction;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.regex.Matcher;
@@ -33,6 +34,7 @@ import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.util.Files;
+import net.sf.hajdbc.util.Security;
 import net.sf.hajdbc.util.Strings;
 
 /**
@@ -104,9 +106,18 @@ public class DumpRestoreSynchronizationStrategy implements SynchronizationStrate
 		}
 	}
 	
-	private void startProcess(ProcessBuilder processBuilder) throws Exception
+	private void startProcess(final ProcessBuilder processBuilder) throws Exception
 	{
-		Process process = processBuilder.start();
+		PrivilegedExceptionAction<Process> action = new PrivilegedExceptionAction<Process>()
+		{
+			@Override
+			public Process run() throws Exception
+			{
+				return processBuilder.start();
+			}
+		};
+		
+		Process process = Security.run(action);
 		
 		try
 		{
