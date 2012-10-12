@@ -21,7 +21,7 @@
 		<title>HA-JDBC Changes</title>
 	</properties>
 	<body>
-		<release version="2.1.0-beta-1" date="Soon...">
+		<release version="2.1.0-beta-1" date="2012-10-11">
 			<action dev="pferraro" type="update">
 				Migrate source code repository to github.
 			</action>
@@ -106,7 +106,7 @@
 				Copy CronExpression from Quartz code base instead of pulling in entire artifact.  HA-JDBC no longer has any required dependencies.
 			</action>
 		</release>
-		<release version="2.0.16" date="">
+		<release version="2.0.16" date="Pending">
 			<action dev="pferraro" type="fix">
 				Fix unintentional configuration export during initial startup for datasource, pool-datasource, and xa-datasource configs.
 			</action>
