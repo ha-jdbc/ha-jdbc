@@ -50,6 +50,7 @@ public class MultiplexingDecoderFactory implements DecoderFactory, Serializable 
 		@Override
 		public String decode(String value) throws SQLException
 		{
+			if (value == null) return null;
 			int index = value.indexOf(DELIMITER);
 			String id = (index >= 0) ? value.substring(0, index) : null;
 			String source = (index >= 0) ? value.substring(index + 1) : value;
