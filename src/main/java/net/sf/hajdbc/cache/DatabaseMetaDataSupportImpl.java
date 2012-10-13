@@ -38,7 +38,6 @@ import java.util.regex.Pattern;
 
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.ForeignKeyConstraint;
-import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.SequenceSupport;
@@ -144,7 +143,7 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 			
 			while (resultSet.next())
 			{
-				list.add(new QualifiedNameImpl(resultSet.getString("TABLE_SCHEM"), resultSet.getString("TABLE_NAME"), this.supportsSchemasInDDL, this.supportsSchemasInDML));
+				list.add(new QualifiedNameImpl(this.quote(resultSet.getString("TABLE_SCHEM")), this.quote(resultSet.getString("TABLE_NAME")), this.supportsSchemasInDDL, this.supportsSchemasInDML));
 			}
 			
 			return list;
@@ -420,20 +419,17 @@ public class DatabaseMetaDataSupportImpl implements DatabaseMetaDataSupport
 	@Override
 	public <T> T find(Map<QualifiedName, T> map, String name, List<String> defaultSchemaList) throws SQLException
 	{
+		// Search w/out schema
 		T properties = map.get(this.normalize(name, null));
 		
 		if (properties == null)
 		{
+			// Search default schemas
 			for (String schema: defaultSchemaList)
 			{
 				properties = map.get(this.normalize(name, schema));
 				if (properties != null) break;
 			}
-		}
-		
-		if (properties == null)
-		{
-			throw new SQLException(Messages.SCHEMA_LOOKUP_FAILED.getMessage(name, defaultSchemaList, this.dialect.getClass().getName() + ".getDefaultSchemas()"));
 		}
 		
 		return properties;

@@ -35,6 +35,7 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseProperties;
 import net.sf.hajdbc.IdentityColumnSupport;
+import net.sf.hajdbc.Messages;
 import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.invocation.InvocationStrategy;
@@ -261,6 +262,11 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 					if (table != null)
 					{
 						TableProperties tableProperties = this.getDatabaseProperties().findTable(table);
+						
+						if (tableProperties == null)
+						{
+							throw new SQLException(Messages.SCHEMA_LOOKUP_FAILED.getMessage(table, cluster, cluster.getDialect().getClass().getName() + ".getDefaultSchemas()"));
+						}
 						
 						if (!tableProperties.getIdentityColumns().isEmpty())
 						{

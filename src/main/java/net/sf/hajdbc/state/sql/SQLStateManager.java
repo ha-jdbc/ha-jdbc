@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -55,11 +56,14 @@ import net.sf.hajdbc.pool.Pool;
 import net.sf.hajdbc.pool.PoolFactory;
 import net.sf.hajdbc.pool.sql.ConnectionFactory;
 import net.sf.hajdbc.pool.sql.ConnectionPoolProvider;
+import net.sf.hajdbc.sql.DriverDatabase;
 import net.sf.hajdbc.state.DatabaseEvent;
 import net.sf.hajdbc.state.DurabilityListenerAdapter;
 import net.sf.hajdbc.state.SerializedDurabilityListener;
 import net.sf.hajdbc.state.StateManager;
+import net.sf.hajdbc.tx.TransactionIdentifierFactory;
 import net.sf.hajdbc.util.Objects;
+import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.ServiceLoaders;
 
 /**
@@ -100,13 +104,13 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	private final DurabilityListener listener;
 	private final DatabaseCluster<Z, D> cluster;
 	private final PoolFactory poolFactory;
-	private final Database<Driver> database;
+	private final DriverDatabase database;
 	
 	private String password;
 	private Driver driver;
 	private Pool<Connection, SQLException> pool;
 	
-	public SQLStateManager(DatabaseCluster<Z, D> cluster, Database<Driver> database, PoolFactory poolFactory)
+	public SQLStateManager(DatabaseCluster<Z, D> cluster, DriverDatabase database, PoolFactory poolFactory)
 	{
 		this.cluster = cluster;
 		this.database = database;
@@ -121,73 +125,42 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	@Override
 	public Set<String> getActiveDatabases()
 	{
-		Set<String> set = new TreeSet<String>();
-		
+		Query<Set<String>> query = new Query<Set<String>>()
+		{
+			@Override
+			public Set<String> execute(Connection connection) throws SQLException
+			{
+				Set<String> set = new TreeSet<String>();
+				
+				PreparedStatement statement = connection.prepareStatement(SELECT_STATE_SQL);
+				
+				try
+				{
+					ResultSet resultSet = statement.executeQuery();
+					
+					while (resultSet.next())
+					{
+						set.add(resultSet.getString(1));
+					}
+					
+					return set;
+				}
+				finally
+				{
+					Resources.close(statement);
+				}
+			}
+		};
+
 		try
 		{
-			Connection connection = this.pool.take();
-			
-			try
-			{
-				if (Boolean.getBoolean(StateManager.CLEAR_LOCAL_STATE))
-				{
-					Transaction transaction = new Transaction()
-					{
-						@Override
-						public void execute(Connection connection) throws SQLException
-						{
-							PreparedStatement statement = connection.prepareStatement(TRUNCATE_STATE_SQL);
-						
-							try
-							{
-								statement.executeUpdate();
-							}
-							finally
-							{
-								close(statement);
-							}
-						}
-					};
-					
-					this.execute(transaction);
-				}
-				else
-				{
-					PreparedStatement statement = connection.prepareStatement(SELECT_STATE_SQL);
-					
-					try
-					{
-						ResultSet resultSet = statement.executeQuery();
-						
-						try
-						{
-							while (resultSet.next())
-							{
-								set.add(resultSet.getString(1));
-							}
-						}
-						finally
-						{
-							close(resultSet);
-						}
-					}
-					finally
-					{
-						close(statement);
-					}
-				}
-			}
-			finally
-			{
-				this.pool.release(connection);
-			}
+			return this.execute(query);
 		}
 		catch (SQLException e)
 		{
 			logger.log(Level.ERROR, e, e.getMessage());
+			return Collections.emptySet();
 		}
-		
-		return set;
 	}
 
 	/**
@@ -221,7 +194,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 				}
 				finally
 				{
-					close(statement);
+					Resources.close(statement);
 				}
 			}
 		};
@@ -300,7 +273,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 		}
 		finally
 		{
-			close(statement);
+			Resources.close(statement);
 		}
 	}
 
@@ -328,7 +301,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 				}
 				finally
 				{
-					close(statement);
+					Resources.close(statement);
 				}
 			}
 		};
@@ -394,7 +367,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 				}
 				finally
 				{
-					close(statement);
+					Resources.close(statement);
 				}
 			}
 		};
@@ -428,13 +401,13 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 					statement.setBytes(1, result);
 					statement.setBytes(2, transactionId);
 					statement.setByte(3, phase);
-					statement.setString(4, databaseId);					
+					statement.setString(4, databaseId);
 					
 					statement.executeUpdate();
 				}
 				finally
 				{
-					close(statement);
+					Resources.close(statement);
 				}
 			}
 		};
@@ -482,7 +455,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 		}
 		finally
 		{
-			close(statement);
+			Resources.close(statement);
 		}
 	}
 
@@ -493,56 +466,51 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	@Override
 	public Map<InvocationEvent, Map<String, InvokerEvent>> recover()
 	{
-		Map<InvocationEvent, Map<String, InvokerEvent>> map = new HashMap<InvocationEvent, Map<String, InvokerEvent>>();
-		
-		try
+		final TransactionIdentifierFactory<?> txIdFactory = this.cluster.getTransactionIdentifierFactory();
+		Query<Map<InvocationEvent, Map<String, InvokerEvent>>> query = new Query<Map<InvocationEvent, Map<String, InvokerEvent>>>()
 		{
-			Connection connection = this.pool.take();
-			
-			try
+			@Override
+			public Map<InvocationEvent, Map<String, InvokerEvent>> execute(Connection connection) throws SQLException
 			{
+				Map<InvocationEvent, Map<String, InvokerEvent>> map = new HashMap<InvocationEvent, Map<String, InvokerEvent>>();
+				
 				PreparedStatement statement = connection.prepareStatement(SELECT_INVOCATION_SQL);
 
 				try
 				{
 					ResultSet resultSet = statement.executeQuery();
-					
-					try
+					while (resultSet.next())
 					{
-						while (resultSet.next())
-						{
-							map.put(new InvocationEventImpl(this.cluster.getTransactionIdentifierFactory().deserialize(resultSet.getBytes(1)), Durability.Phase.values()[resultSet.getInt(2)], ExceptionType.values()[resultSet.getInt(3)]), new HashMap<String, InvokerEvent>());
-						}
-					}
-					finally
-					{
-						close(resultSet);
+						Object txId = txIdFactory.deserialize(resultSet.getBytes(1));
+						Durability.Phase phase = Durability.Phase.values()[resultSet.getInt(2)];
+						ExceptionType type = ExceptionType.values()[resultSet.getInt(3)];
+						map.put(new InvocationEventImpl(txId, phase, type), new HashMap<String, InvokerEvent>());
 					}
 				}
 				finally
 				{
-					close(statement);
+					Resources.close(statement);
 				}
 
 				statement = connection.prepareStatement(SELECT_INVOKER_SQL);
-				
+
 				try
 				{
 					ResultSet resultSet = statement.executeQuery();
 					
 					while (resultSet.next())
 					{
-						Object transactionId = this.cluster.getTransactionIdentifierFactory().deserialize(resultSet.getBytes(1));
+						Object txId = txIdFactory.deserialize(resultSet.getBytes(1));
 						Durability.Phase phase = Durability.Phase.values()[resultSet.getByte(2)];
 						ExceptionType type = ExceptionType.values()[resultSet.getByte(3)];
 						
-						Map<String, InvokerEvent> invokers = map.get(new InvocationEventImpl(transactionId, phase, type));
+						Map<String, InvokerEvent> invokers = map.get(new InvocationEventImpl(txId, phase, type));
 						
 						if (invokers != null)
 						{
 							String databaseId = resultSet.getString(3);
 							
-							InvokerEvent event = new InvokerEventImpl(transactionId, phase, databaseId);
+							InvokerEvent event = new InvokerEventImpl(txId, phase, databaseId);
 							
 							byte[] bytes = resultSet.getBytes(4);
 							
@@ -554,20 +522,19 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 							invokers.put(databaseId, event);
 						}
 					}
-					
-					close(resultSet);
 				}
 				finally
 				{
-					close(statement);
+					Resources.close(statement);
 				}
 				
 				return map;
 			}
-			finally
-			{
-				this.pool.release(connection);
-			}
+		};
+		
+		try
+		{
+			return this.execute(query);
 		}
 		catch (SQLException e)
 		{
@@ -606,23 +573,24 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 		this.password = this.database.decodePassword(this.cluster.getDecoder());
 		this.pool = this.poolFactory.createPool(new ConnectionPoolProvider(this));
 		
-		Connection connection = this.pool.take();
-		
-		boolean autoCommit = connection.getAutoCommit();
-		
-		connection.setAutoCommit(true);
-
-		DatabaseMetaData metaData = connection.getMetaData();
-		DialectFactory factory = ServiceLoaders.findService(new IdentifiableMatcher<DialectFactory>(this.database.getLocation()), DialectFactory.class);
+		DialectFactory factory = ServiceLoaders.findService(new IdentifiableMatcher<DialectFactory>(this.database.parseVendor()), DialectFactory.class);
 		if (factory == null)
 		{
-			factory = ServiceLoaders.findService(DialectFactory.class);
+			// Use default dialect
+			factory = ServiceLoaders.findRequiredService(DialectFactory.class);
 		}
+		
 		Dialect dialect = factory.createDialect();
-		DatabaseProperties properties = new LazyDatabaseProperties(new SimpleDatabaseMetaDataProvider(metaData), new DatabaseMetaDataSupportImpl(metaData, dialect), dialect);
+
+		Connection connection = this.pool.take();
 		
 		try
 		{
+			connection.setAutoCommit(true);
+	
+			DatabaseMetaData metaData = connection.getMetaData();
+			DatabaseProperties properties = new LazyDatabaseProperties(new SimpleDatabaseMetaDataProvider(metaData), new DatabaseMetaDataSupportImpl(metaData, dialect), dialect);
+
 			String enumType = properties.findType(0, Types.TINYINT, Types.SMALLINT, Types.INTEGER);
 			String stringType = properties.findType(Database.ID_MAX_SIZE, Types.VARCHAR);
 			String binaryType = properties.findType(this.cluster.getTransactionIdentifierFactory().size(), Types.BINARY);
@@ -632,23 +600,19 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 			
 			try
 			{
-				boolean batch = false;
-				
-				batch |= this.addBatch(statement, properties, STATE_TABLE, CREATE_STATE_SQL, stringType);
-				batch |= this.addBatch(statement, properties, INVOCATION_TABLE, CREATE_INVOCATION_SQL, binaryType, enumType, enumType);
-				batch |= this.addBatch(statement, properties, INVOKER_TABLE, CREATE_INVOKER_SQL, binaryType, enumType, stringType, varBinaryType);
-				
-				if (batch)
+				this.createTableIfNotExists(statement, properties, STATE_TABLE, CREATE_STATE_SQL, stringType);
+				this.createTableIfNotExists(statement, properties, INVOCATION_TABLE, CREATE_INVOCATION_SQL, binaryType, enumType, enumType);
+				this.createTableIfNotExists(statement, properties, INVOKER_TABLE, CREATE_INVOKER_SQL, binaryType, enumType, stringType, varBinaryType);
+
+				if (Boolean.getBoolean(StateManager.CLEAR_LOCAL_STATE))
 				{
-					statement.executeBatch();
+					statement.executeUpdate(TRUNCATE_STATE_SQL);
 				}
 			}
 			finally
 			{
-				close(statement);
+				Resources.close(statement);
 			}
-			
-			connection.setAutoCommit(autoCommit);
 		}
 		finally
 		{
@@ -656,19 +620,13 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 		}
 	}
 
-	private boolean addBatch(Statement statement, DatabaseProperties properties, String table, String pattern, String... types) throws SQLException
+	private void createTableIfNotExists(Statement statement, DatabaseProperties properties, String table, String pattern, String... types) throws SQLException
 	{
-		try
-		{
-			properties.findTable(table);
-			return false;
-		}
-		catch (SQLException e)
+		if (properties.findTable(table) == null)
 		{
 			String sql = MessageFormat.format(pattern, (Object[]) types);
-			logger.log(Level.DEBUG, e, sql);
-			statement.addBatch(sql);
-			return true;
+			logger.log(Level.DEBUG, sql);
+			statement.executeUpdate(sql);
 		}
 	}
 	
@@ -682,22 +640,6 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 		if (this.pool != null)
 		{
 			this.pool.close();
-		}
-	}
-
-	private void execute(Transaction transaction) throws SQLException
-	{
-		Connection connection = this.pool.take();
-		
-		try
-		{
-			transaction.execute(connection);
-			
-			connection.commit();
-		}
-		finally
-		{
-			this.pool.release(connection);
 		}
 	}
 	
@@ -715,32 +657,55 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 		return connection;
 	}
 
+	private <T> T execute(Query<T> query) throws SQLException
+	{
+		Connection connection = this.pool.take();
+		
+		try
+		{
+			return query.execute(connection);
+		}
+		finally
+		{
+			this.pool.release(connection);
+		}
+	}
+
+	interface Query<T>
+	{
+		T execute(Connection connection) throws SQLException;
+	}
+
+	private void execute(Transaction transaction) throws SQLException
+	{
+		Connection connection = this.pool.take();
+		
+		try
+		{
+			transaction.execute(connection);
+			
+			connection.commit();
+		}
+		catch (SQLException e)
+		{
+			try
+			{
+				connection.rollback();
+			}
+			catch (SQLException ex)
+			{
+				logger.log(Level.WARN, ex);
+			}
+			throw e;
+		}
+		finally
+		{
+			this.pool.release(connection);
+		}
+	}
+
 	interface Transaction
 	{
 		void execute(Connection connection) throws SQLException;
-	}
-	
-	static void close(Statement statement)
-	{
-		try
-		{
-			statement.close();
-		}
-		catch (SQLException e)
-		{
-			logger.log(Level.WARN, e, e.getMessage());
-		}
-	}
-	
-	static void close(ResultSet resultSet)
-	{
-		try
-		{
-			resultSet.close();
-		}
-		catch (SQLException e)
-		{
-			logger.log(Level.WARN, e, e.getMessage());
-		}
 	}
 }

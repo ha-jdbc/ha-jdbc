@@ -93,6 +93,12 @@ public class DriverDatabase extends AbstractDatabase<Driver>
 		return this.getDriver(this.getLocation());
 	}
 
+	public String parseVendor()
+	{
+		String url = this.getLocation();
+		return url.substring(5, url.indexOf(":", 5));
+	}
+
 	private Driver getDriver(String url)
 	{
 		try

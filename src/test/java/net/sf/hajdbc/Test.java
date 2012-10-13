@@ -36,7 +36,7 @@ import net.sf.hajdbc.sql.DataSource;
 import net.sf.hajdbc.sql.DataSourceDatabase;
 import net.sf.hajdbc.sql.DataSourceDatabaseClusterConfiguration;
 import net.sf.hajdbc.sql.SQLProxy;
-import net.sf.hajdbc.state.simple.SimpleStateManagerFactory;
+import net.sf.hajdbc.state.sql.SQLStateManagerFactory;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -71,9 +71,10 @@ public class Test
 		config.setDatabases(Arrays.asList(db1, db2));
 		config.setDialectFactory(new HSQLDBDialectFactory());
 		config.setDatabaseMetaDataCacheFactory(new SimpleDatabaseMetaDataCacheFactory());
-		SimpleStateManagerFactory state = new SimpleStateManagerFactory();
-//		SQLStateManagerFactory state = new SQLStateManagerFactory();
-//		state.setUrlPattern("jdbc:hsqldb:{1}/{0}");
+//		SimpleStateManagerFactory state = new SimpleStateManagerFactory();
+		SQLStateManagerFactory state = new SQLStateManagerFactory();
+		state.setUrlPattern("jdbc:hsqldb:{1}/{0}");
+//		state.setUrlPattern("jdbc:h2:{1}/{0}");
 //		state.setUrlPattern("jdbc:derby:{1}/{0};create=true");
 		config.setStateManagerFactory(state);
 		config.setDispatcherFactory(new JGroupsCommandDispatcherFactory());

@@ -105,6 +105,9 @@
 			<action dev="pferraro" type="update">
 				Copy CronExpression from Quartz code base instead of pulling in entire artifact.  HA-JDBC no longer has any required dependencies.
 			</action>
+			<action dev="pferraro" type="add">
+				Support system property expansion in configuration file, via ${property} notation.
+			</action>
 		</release>
 		<release version="2.0.16" date="Pending">
 			<action dev="pferraro" type="fix">
