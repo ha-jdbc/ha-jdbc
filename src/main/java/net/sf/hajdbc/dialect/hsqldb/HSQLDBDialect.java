@@ -21,7 +21,9 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import net.sf.hajdbc.QualifiedName;
@@ -66,6 +68,12 @@ public class HSQLDBDialect extends StandardDialect
 	public SequenceSupport getSequenceSupport()
 	{
 		return this;
+	}
+
+	@Override
+	public List<String> getDefaultSchemas(DatabaseMetaData metaData) throws SQLException
+	{
+		return Collections.singletonList("PUBLIC");
 	}
 
 	/**

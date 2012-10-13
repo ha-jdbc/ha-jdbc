@@ -23,7 +23,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+
+import org.junit.Test;
+import org.mockito.Mockito;
 
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.QualifiedName;
@@ -54,6 +58,20 @@ public class HSQLDBDialectTest extends StandardDialectTest
 	public void getSequenceSupport()
 	{
 		assertSame(this.dialect, this.dialect.getSequenceSupport());
+	}
+
+	@Override
+	@Test
+	public void getDefaultSchemas() throws SQLException
+	{
+		DatabaseMetaData metaData = mock(DatabaseMetaData.class);
+		
+		List<String> result = this.dialect.getDefaultSchemas(metaData);
+		
+		Mockito.verifyZeroInteractions(metaData);
+		
+		assertEquals(1, result.size());
+		assertSame("PUBLIC", result.get(0));
 	}
 
 	/**
