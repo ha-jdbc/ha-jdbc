@@ -267,6 +267,7 @@ public class RegistryTest
 		}
 	}
 	
+	@SuppressWarnings("serial")
 	class SimpleExceptionFactory implements ExceptionFactory<Exception>
 	{
 		/**

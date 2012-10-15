@@ -502,9 +502,8 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 					{
 						Object txId = txIdFactory.deserialize(resultSet.getBytes(1));
 						Durability.Phase phase = Durability.Phase.values()[resultSet.getByte(2)];
-						ExceptionType type = ExceptionType.values()[resultSet.getByte(3)];
 						
-						Map<String, InvokerEvent> invokers = map.get(new InvocationEventImpl(txId, phase, type));
+						Map<String, InvokerEvent> invokers = map.get(new InvocationEventImpl(txId, phase, null));
 						
 						if (invokers != null)
 						{

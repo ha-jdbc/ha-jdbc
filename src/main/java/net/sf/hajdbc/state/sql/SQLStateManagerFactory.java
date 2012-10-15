@@ -68,7 +68,7 @@ public class SQLStateManagerFactory extends GenericObjectPool.Config implements 
 	{
 		for (EmbeddedVendor vendor: EmbeddedVendor.values())
 		{
-			String url = MessageFormat.format(vendor.pattern, "test", Strings.USER_HOME);
+			String url = MessageFormat.format(vendor.pattern, "test", Strings.HA_JDBC_HOME);
 			
 			try
 			{
@@ -108,7 +108,7 @@ public class SQLStateManagerFactory extends GenericObjectPool.Config implements 
 			throw new IllegalArgumentException("No urlPattern property defined and no embedded database driver was detected on the classpath.");
 		}
 		
-		String url = MessageFormat.format(this.urlPattern, cluster.getId(), Strings.USER_HOME);
+		String url = MessageFormat.format(this.urlPattern, cluster.getId(), Strings.HA_JDBC_HOME);
 		DriverDatabase database = new DriverDatabase();
 		database.setLocation(url);
 		database.setUser(this.user);
