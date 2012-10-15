@@ -17,14 +17,23 @@
  */
 package net.sf.hajdbc.state.sqljet;
 
+import java.io.File;
+import java.text.MessageFormat;
+
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.pool.generic.GenericObjectPoolFactory;
 import net.sf.hajdbc.state.StateManager;
 import net.sf.hajdbc.state.StateManagerFactory;
+import net.sf.hajdbc.util.Strings;
 
-public class SQLJetStateManagerFactory implements StateManagerFactory
+import org.apache.commons.pool.impl.GenericObjectPool;
+
+public class SQLJetStateManagerFactory extends GenericObjectPool.Config implements StateManagerFactory
 {
 	private static final long serialVersionUID = 8990527398117188315L;
+
+	private String locationPattern = "{1}/{0}";
 
 	@Override
 	public String getId()
@@ -35,6 +44,17 @@ public class SQLJetStateManagerFactory implements StateManagerFactory
 	@Override
 	public <Z, D extends Database<Z>> StateManager createStateManager(DatabaseCluster<Z, D> cluster)
 	{
-		return new SQLJetStateManager<Z, D>(cluster);
+		String location = MessageFormat.format(this.locationPattern, cluster.getId(), Strings.HA_JDBC_HOME);
+		return new SQLJetStateManager<Z, D>(cluster, new File(location), new GenericObjectPoolFactory(this));
+	}
+
+	public String getLocationPattern()
+	{
+		return this.locationPattern;
+	}
+
+	public void setLocationPattern(String pattern)
+	{
+		this.locationPattern = pattern;
 	}
 }

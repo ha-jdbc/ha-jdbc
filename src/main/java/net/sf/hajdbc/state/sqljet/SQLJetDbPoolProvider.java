@@ -35,12 +35,15 @@ import org.tmatesoft.sqljet.core.table.SqlJetDb;
 public class SQLJetDbPoolProvider extends AbstractPoolProvider<SqlJetDb, SqlJetException>
 {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
-	
-	public SQLJetDbPoolProvider()
+
+	private final File file;
+
+	public SQLJetDbPoolProvider(File file)
 	{
 		super(SqlJetDb.class, SqlJetException.class);
+		this.file = file;
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.pool.PoolProvider#close(java.lang.Object)
@@ -63,9 +66,24 @@ public class SQLJetDbPoolProvider extends AbstractPoolProvider<SqlJetDb, SqlJetE
 	 * @see net.sf.hajdbc.pool.PoolProvider#create()
 	 */
 	@Override
-	public SqlJetDb create() throws SqlJetException
+	public synchronized SqlJetDb create() throws SqlJetException
 	{
-		return SqlJetDb.open(new File(""), true);
+		try
+		{
+			boolean exists = this.file.exists();
+			SqlJetDb db = SqlJetDb.open(this.file, true);
+			if (!exists)
+			{
+				db.getOptions().setAutovacuum(true);
+				db.getOptions().setIncrementalVacuum(true);
+			}
+			return db;
+		}
+		catch (SqlJetException e)
+		{
+			e.printStackTrace(System.err);
+			throw e;
+		}
 	}
 
 	/**

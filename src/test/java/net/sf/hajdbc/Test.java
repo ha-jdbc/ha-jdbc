@@ -36,14 +36,23 @@ import net.sf.hajdbc.sql.DataSource;
 import net.sf.hajdbc.sql.DataSourceDatabase;
 import net.sf.hajdbc.sql.DataSourceDatabaseClusterConfiguration;
 import net.sf.hajdbc.sql.SQLProxy;
+import net.sf.hajdbc.state.StateManager;
 import net.sf.hajdbc.state.StateManagerFactory;
 import net.sf.hajdbc.state.simple.SimpleStateManagerFactory;
 import net.sf.hajdbc.state.sql.SQLStateManagerFactory;
+import net.sf.hajdbc.state.sqljet.SQLJetStateManagerFactory;
 
 import org.junit.Assert;
+import org.junit.Before;
 
 public class Test
 {
+	@Before
+	public void init()
+	{
+		System.setProperty(StateManager.CLEAR_LOCAL_STATE, Boolean.toString(true));
+	}
+
 	@org.junit.Test
 	public void simple() throws Exception
 	{
@@ -51,10 +60,18 @@ public class Test
 	}
 	
 	@org.junit.Test
+	public void sqlite() throws Exception
+	{
+		SQLJetStateManagerFactory factory = new SQLJetStateManagerFactory();
+		factory.setLocationPattern("target/sqlite/{0}");
+		this.test(new SQLJetStateManagerFactory());
+	}
+	
+	@org.junit.Test
 	public void h2() throws Exception
 	{
 		SQLStateManagerFactory factory = new SQLStateManagerFactory();
-		factory.setUrlPattern("jdbc:h2:{1}/{0}");
+		factory.setUrlPattern("jdbc:h2:target/h2/{0}");
 		this.test(factory);
 	}
 	
@@ -62,16 +79,16 @@ public class Test
 	public void hsqldb() throws Exception
 	{
 		SQLStateManagerFactory factory = new SQLStateManagerFactory();
-		factory.setUrlPattern("jdbc:hsqldb:{1}/{0}");
+		factory.setUrlPattern("jdbc:hsqldb:target/hsqldb/{0}");
 		this.test(factory);
 	}
 	
 	@org.junit.Test
 	public void derby() throws Exception
 	{
-		SQLStateManagerFactory factory = new SQLStateManagerFactory();
-		factory.setUrlPattern("jdbc:derby:{1}/{0};create=true");
-		this.test(factory);
+//		SQLStateManagerFactory factory = new SQLStateManagerFactory();
+//		factory.setUrlPattern("jdbc:derby:target/derby/{0};create=true");
+//		this.test(factory);
 	}
 	
 	private void test(StateManagerFactory factory) throws Exception
@@ -80,7 +97,6 @@ public class Test
 		db1.setId("db1");
 		db1.setLocation(UrlDataSource.class.getName());
 		db1.setProperty("url", "jdbc:hsqldb:mem:db1");
-//		db1.setProperty("url", "jdbc:h2:mem:db1");
 		db1.setUser("sa");
 		db1.setPassword("");
 		
@@ -88,7 +104,6 @@ public class Test
 		db2.setId("db2");
 		db2.setLocation(UrlDataSource.class.getName());
 		db2.setProperty("url", "jdbc:hsqldb:mem:db2");
-//		db2.setProperty("url", "jdbc:h2:mem:db2");
 		db2.setUser("sa");
 		db2.setPassword("");
 		
