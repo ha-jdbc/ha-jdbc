@@ -1,4 +1,4 @@
 net.sf.hajdbc.state.sql.SQLStateManagerFactory
 net.sf.hajdbc.state.bdb.BDBStateManagerFactory
-net.sf.hajdbc.state.sqljet.SQLJetStateManagerFactory
+net.sf.hajdbc.state.sqlite.SQLiteStateManagerFactory
 net.sf.hajdbc.state.simple.SimpleStateManagerFactory

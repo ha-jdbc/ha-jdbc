@@ -52,7 +52,7 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 		builder.append("<?xml version=\"1.0\"?>");
 		builder.append("<ha-jdbc xmlns=\"").append(SchemaGenerator.NAMESPACE).append("\">");
 		builder.append("\t<sync id=\"diff\"><property name=\"fetchSize\">100</property><property name=\"maxBatchSize\">100</property></sync>");
-		builder.append("\t<state id=\"sql\"><property name=\"urlPattern\">jdbc:h2:{0}</property></state>");
+		builder.append("\t<state id=\"sql\"><property name=\"urlPattern\">jdbc:h2:{0}</property><property name=\"minIdle\">1</property></state>");
 		builder.append("\t<cluster default-sync=\"diff\">");
 		builder.append("\t\t<database id=\"db1\" location=\"jdbc:mock:db1\"/>");
 		builder.append("\t\t<database id=\"db2\" location=\"jdbc:mock:db2\"/>");

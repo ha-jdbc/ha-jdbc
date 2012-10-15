@@ -23,13 +23,12 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Collections;
 
-import org.apache.commons.pool.impl.GenericObjectPool;
-
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.pool.generic.GenericObjectPoolConfiguration;
 import net.sf.hajdbc.pool.generic.GenericObjectPoolFactory;
 import net.sf.hajdbc.sql.DriverDatabase;
 import net.sf.hajdbc.state.StateManager;
@@ -39,7 +38,7 @@ import net.sf.hajdbc.util.Strings;
 /**
  * @author Paul Ferraro
  */
-public class SQLStateManagerFactory extends GenericObjectPool.Config implements StateManagerFactory
+public class SQLStateManagerFactory extends GenericObjectPoolConfiguration implements StateManagerFactory
 {
 	private static final long serialVersionUID = -544548607415128414L;
 	

@@ -39,9 +39,9 @@ public class GenericObjectPoolFactory implements PoolFactory
 {
 	static final Logger logger = LoggerFactory.getLogger(GenericObjectPoolFactory.class);
 	
-	private final GenericObjectPool.Config config;
+	private final GenericObjectPoolConfiguration config;
 	
-	public GenericObjectPoolFactory(GenericObjectPool.Config config)
+	public GenericObjectPoolFactory(GenericObjectPoolConfiguration config)
 	{
 		this.config = config;
 	}

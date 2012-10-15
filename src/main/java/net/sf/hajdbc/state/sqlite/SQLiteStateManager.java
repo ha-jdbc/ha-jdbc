@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.hajdbc.state.sqljet;
+package net.sf.hajdbc.state.sqlite;
 
 import java.io.File;
 import java.text.MessageFormat;
@@ -61,13 +61,13 @@ import org.tmatesoft.sqljet.core.table.SqlJetDb;
 /**
  * @author Paul Ferraro
  */
-public class SQLJetStateManager<Z, D extends Database<Z>> implements StateManager, SerializedDurabilityListener
+public class SQLiteStateManager<Z, D extends Database<Z>> implements StateManager, SerializedDurabilityListener
 {
-	// SQLite has terrible concurrency support - and only supports a single transaction per-database
+	// SQLite has minimal concurrency support - and only supports a single writer per-database
 	// So, mitigate this by using separate databases per table.
-	private enum DB { STATE, INVOCATION, INVOKER };
+	private enum DB { STATE, INVOCATION };
 	
-	private static final Logger logger = LoggerFactory.getLogger(SQLJetStateManager.class);
+	private static final Logger logger = LoggerFactory.getLogger(SQLiteStateManager.class);
 	private static final String STATE_TABLE = "cluster_state";
 	private static final String DATABASE_COLUMN = "database_id";
 
@@ -89,10 +89,11 @@ public class SQLJetStateManager<Z, D extends Database<Z>> implements StateManage
 	private final File file;
 	private final PoolFactory poolFactory;
 	
+	// Control concurrency ourselves, instead of relying of sqljet lock polling.
 	private final Map<DB, ReadWriteLock> locks = new EnumMap<DB, ReadWriteLock>(DB.class);
 	private final Map<DB, Pool<SqlJetDb, SqlJetException>> pools = new EnumMap<DB, Pool<SqlJetDb, SqlJetException>>(DB.class);
 
-	public SQLJetStateManager(DatabaseCluster<Z, D> cluster, File file, PoolFactory poolFactory)
+	public SQLiteStateManager(DatabaseCluster<Z, D> cluster, File file, PoolFactory poolFactory)
 	{
 		this.cluster = cluster;
 		this.file = file;
@@ -212,7 +213,7 @@ public class SQLJetStateManager<Z, D extends Database<Z>> implements StateManage
 		for (DB db: DB.values())
 		{
 			this.locks.put(db, new ReentrantReadWriteLock());
-			this.pools.put(db, this.poolFactory.createPool(new SQLJetDbPoolProvider(new File(this.file.toURI().resolve(db.name().toLowerCase())))));
+			this.pools.put(db, this.poolFactory.createPool(new SQLiteDbPoolProvider(new File(this.file.toURI().resolve(db.name().toLowerCase())))));
 		}
 		
 		Transaction stateTransaction = new Transaction()
@@ -241,14 +242,6 @@ public class SQLJetStateManager<Z, D extends Database<Z>> implements StateManage
 				{
 					database.createTable(CREATE_INVOCATION_SQL);
 				}
-			}
-		};
-		Transaction invokerTransaction = new Transaction()
-		{
-			@Override
-			public void execute(SqlJetDb database) throws SqlJetException
-			{
-				ISqlJetSchema schema = database.getSchema();
 				if (schema.getTable(INVOKER_TABLE) == null)
 				{
 					database.createTable(CREATE_INVOKER_SQL);
@@ -259,7 +252,6 @@ public class SQLJetStateManager<Z, D extends Database<Z>> implements StateManage
 		
 		this.execute(stateTransaction, DB.STATE);
 		this.execute(invocationTransaction, DB.INVOCATION);
-		this.execute(invokerTransaction, DB.INVOKER);
 	}
 
 	/**
@@ -358,14 +350,14 @@ public class SQLJetStateManager<Z, D extends Database<Z>> implements StateManage
 	@Override
 	public Map<InvocationEvent, Map<String, InvokerEvent>> recover()
 	{
-		final Map<InvocationEvent, Map<String, InvokerEvent>> map = new HashMap<InvocationEvent, Map<String, InvokerEvent>>();
 		final TransactionIdentifierFactory<?> txIdFactory = this.cluster.getTransactionIdentifierFactory();
 		
-		Query<Void> invocationQuery = new Query<Void>()
+		Query<Map<InvocationEvent, Map<String, InvokerEvent>>> invocationQuery = new Query<Map<InvocationEvent, Map<String, InvokerEvent>>>()
 		{
 			@Override
-			public Void execute(SqlJetDb database) throws SqlJetException
+			public Map<InvocationEvent, Map<String, InvokerEvent>> execute(SqlJetDb database) throws SqlJetException
 			{
+				Map<InvocationEvent, Map<String, InvokerEvent>> map = new HashMap<InvocationEvent, Map<String, InvokerEvent>>();
 				ISqlJetCursor cursor = database.getTable(INVOCATION_TABLE).open();
 				try
 				{
@@ -380,21 +372,12 @@ public class SQLJetStateManager<Z, D extends Database<Z>> implements StateManage
 						}
 						while (cursor.next());
 					}
-					return null;
 				}
 				finally
 				{
 					cursor.close();
 				}
-			}
-		};
-		
-		Query<Void> invokerQuery = new Query<Void>()
-		{
-			@Override
-			public Void execute(SqlJetDb database) throws SqlJetException
-			{
-				ISqlJetCursor cursor = database.getTable(INVOKER_TABLE).open();
+				cursor = database.getTable(INVOKER_TABLE).open();
 				try
 				{
 					if (!cursor.eof())
@@ -421,19 +404,17 @@ public class SQLJetStateManager<Z, D extends Database<Z>> implements StateManage
 						}
 						while (cursor.next());
 					}
-					return null;
 				}
 				finally
 				{
 					cursor.close();
 				}
+				return map;
 			}
 		};
 		try
 		{
-			this.execute(invocationQuery, DB.INVOCATION);
-			this.execute(invokerQuery, DB.INVOKER);
-			return map;
+			return this.execute(invocationQuery, DB.INVOCATION);
 		}
 		catch (SqlJetException e)
 		{
@@ -473,7 +454,7 @@ public class SQLJetStateManager<Z, D extends Database<Z>> implements StateManage
 	@Override
 	public void afterInvocation(final byte[] transactionId, final byte phase)
 	{
-		Transaction invocationTransaction = new Transaction()
+		Transaction transaction = new Transaction()
 		{
 			@Override
 			public void execute(SqlJetDb db) throws SqlJetException
@@ -491,15 +472,8 @@ public class SQLJetStateManager<Z, D extends Database<Z>> implements StateManage
 				{
 					close(cursor);
 				}
-			}
-		};
-		Transaction invokerTransaction = new Transaction()
-		{
-			@Override
-			public void execute(SqlJetDb db) throws SqlJetException
-			{
-				ISqlJetTable table = db.getTable(INVOKER_TABLE);
-				ISqlJetCursor cursor = table.lookup(INVOKER_TABLE_INDEX, transactionId, phase);
+				table = db.getTable(INVOKER_TABLE);
+				cursor = table.lookup(INVOKER_TABLE_INDEX, transactionId, phase);
 				try
 				{
 					if (!cursor.eof())
@@ -519,8 +493,7 @@ public class SQLJetStateManager<Z, D extends Database<Z>> implements StateManage
 		};
 		try
 		{
-			this.execute(invocationTransaction, DB.INVOCATION);
-			this.execute(invokerTransaction, DB.INVOKER);
+			this.execute(transaction, DB.INVOCATION);
 		}
 		catch (SqlJetException e)
 		{
@@ -545,7 +518,7 @@ public class SQLJetStateManager<Z, D extends Database<Z>> implements StateManage
 		};
 		try
 		{
-			this.execute(transaction, DB.INVOKER);
+			this.execute(transaction, DB.INVOCATION);
 		}
 		catch (SqlJetException e)
 		{
@@ -582,7 +555,7 @@ public class SQLJetStateManager<Z, D extends Database<Z>> implements StateManage
 		};
 		try
 		{
-			this.execute(transaction, DB.INVOKER);
+			this.execute(transaction, DB.INVOCATION);
 		}
 		catch (SqlJetException e)
 		{

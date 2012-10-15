@@ -40,7 +40,7 @@ import net.sf.hajdbc.state.StateManager;
 import net.sf.hajdbc.state.StateManagerFactory;
 import net.sf.hajdbc.state.simple.SimpleStateManagerFactory;
 import net.sf.hajdbc.state.sql.SQLStateManagerFactory;
-import net.sf.hajdbc.state.sqljet.SQLJetStateManagerFactory;
+import net.sf.hajdbc.state.sqlite.SQLiteStateManagerFactory;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -62,9 +62,9 @@ public class Test
 	@org.junit.Test
 	public void sqlite() throws Exception
 	{
-		SQLJetStateManagerFactory factory = new SQLJetStateManagerFactory();
+		SQLiteStateManagerFactory factory = new SQLiteStateManagerFactory();
 		factory.setLocationPattern("target/sqlite/{0}");
-		this.test(new SQLJetStateManagerFactory());
+		this.test(new SQLiteStateManagerFactory());
 	}
 	
 	@org.junit.Test

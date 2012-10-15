@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.hajdbc.state.sqljet;
+package net.sf.hajdbc.state.sqlite;
 
 import java.io.File;
 
@@ -32,13 +32,13 @@ import org.tmatesoft.sqljet.core.table.SqlJetDb;
  * 
  * @author paul
  */
-public class SQLJetDbPoolProvider extends AbstractPoolProvider<SqlJetDb, SqlJetException>
+public class SQLiteDbPoolProvider extends AbstractPoolProvider<SqlJetDb, SqlJetException>
 {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	private final File file;
 
-	public SQLJetDbPoolProvider(File file)
+	public SQLiteDbPoolProvider(File file)
 	{
 		super(SqlJetDb.class, SqlJetException.class);
 		this.file = file;
