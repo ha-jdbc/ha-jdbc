@@ -17,15 +17,7 @@
  */
 package net.sf.hajdbc;
 
-/**
- * @author Paul Ferraro
- *
- */
-public interface ColumnProperties extends Named<String, ColumnProperties>
+public interface ColumnPropertiesFactory
 {
-	int getType();
-	
-	String getNativeType();
-	
-	boolean isAutoIncrement();
+	ColumnProperties createColumnProperties(String name, int type, String nativeType, String defaultValue, String remarks, Boolean autoIncrement);
 }

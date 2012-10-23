@@ -29,8 +29,6 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseProperties;
 import net.sf.hajdbc.cache.DatabaseMetaDataCache;
-import net.sf.hajdbc.cache.DatabaseMetaDataSupport;
-import net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory;
 import net.sf.hajdbc.dialect.Dialect;
 
 
@@ -45,14 +43,12 @@ import net.sf.hajdbc.dialect.Dialect;
 public class SharedLazyDatabaseMetaDataCache<Z, D extends Database<Z>> implements DatabaseMetaDataCache<Z, D>
 {
 	private final DatabaseCluster<Z, D> cluster;
-	private final DatabaseMetaDataSupportFactory factory;
 	
 	private volatile Reference<Map.Entry<DatabaseProperties, LazyDatabaseMetaDataProvider>> entryRef = new SoftReference<Map.Entry<DatabaseProperties, LazyDatabaseMetaDataProvider>>(null);
 	
-	public SharedLazyDatabaseMetaDataCache(DatabaseCluster<Z, D> cluster, DatabaseMetaDataSupportFactory factory)
+	public SharedLazyDatabaseMetaDataCache(DatabaseCluster<Z, D> cluster)
 	{
 		this.cluster = cluster;
-		this.factory = factory;
 	}
 	
 	/**
@@ -77,9 +73,8 @@ public class SharedLazyDatabaseMetaDataCache<Z, D extends Database<Z>> implement
 		{
 			DatabaseMetaData metaData = connection.getMetaData();
 			Dialect dialect = this.cluster.getDialect();
-			DatabaseMetaDataSupport support = this.factory.createSupport(metaData, dialect);
 			LazyDatabaseMetaDataProvider provider = new LazyDatabaseMetaDataProvider(metaData);
-			DatabaseProperties properties = new LazyDatabaseProperties(provider, support, dialect);
+			DatabaseProperties properties = new LazyDatabaseProperties(provider, dialect);
 			
 			entry = new AbstractMap.SimpleImmutableEntry<DatabaseProperties, LazyDatabaseMetaDataProvider>(properties, provider);
 		

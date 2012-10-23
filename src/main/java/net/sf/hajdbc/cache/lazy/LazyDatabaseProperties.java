@@ -26,10 +26,11 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.SequenceProperties;
+import net.sf.hajdbc.SequencePropertiesFactory;
+import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.cache.AbstractDatabaseProperties;
 import net.sf.hajdbc.cache.DatabaseMetaDataProvider;
-import net.sf.hajdbc.cache.DatabaseMetaDataSupport;
 import net.sf.hajdbc.dialect.Dialect;
 
 /**
@@ -38,22 +39,23 @@ import net.sf.hajdbc.dialect.Dialect;
  */
 public class LazyDatabaseProperties extends AbstractDatabaseProperties
 {
-	private final DatabaseMetaDataSupport support;
 	private final Dialect dialect;
 	private final DatabaseMetaDataProvider provider;
+	private final SequencePropertiesFactory sequenceFactory;
 	
 	private final AtomicReference<Map<QualifiedName, TableProperties>> tablesRef = new AtomicReference<Map<QualifiedName, TableProperties>>();
 	private final AtomicReference<Map<QualifiedName, SequenceProperties>> sequencesRef = new AtomicReference<Map<QualifiedName, SequenceProperties>>();
 	private final AtomicReference<List<String>> defaultSchemasRef = new AtomicReference<List<String>>();
 	private final AtomicReference<Map<Integer, Map.Entry<String, Integer>>> typesRef = new AtomicReference<Map<Integer, Map.Entry<String, Integer>>>();
 	
-	public LazyDatabaseProperties(DatabaseMetaDataProvider provider, DatabaseMetaDataSupport support, Dialect dialect) throws SQLException
+	public LazyDatabaseProperties(DatabaseMetaDataProvider provider, Dialect dialect) throws SQLException
 	{
-		super(provider.getDatabaseMetaData(), support);
-		
+		super(provider.getDatabaseMetaData(), dialect);
+
 		this.provider = provider;
-		this.support = support;
 		this.dialect = dialect;
+		SequenceSupport support = dialect.getSequenceSupport();
+		this.sequenceFactory = (support != null) ? support.createSequencePropertiesFactory(this.nameFactory) : null;
 	}
 	
 	@Override
@@ -65,9 +67,9 @@ public class LazyDatabaseProperties extends AbstractDatabaseProperties
 		{
 			tables = new HashMap<QualifiedName, TableProperties>();
 			
-			for (QualifiedName table: this.support.getTables(this.provider.getDatabaseMetaData()))
+			for (QualifiedName table: this.dialect.getTables(this.provider.getDatabaseMetaData(), this.nameFactory))
 			{
-				TableProperties properties = new LazyTableProperties(this.provider, this.support, table);
+				TableProperties properties = new LazyTableProperties(table, this.provider, this.dialect, this.nameFactory);
 				
 				tables.put(properties.getName(), properties);
 			}
@@ -90,9 +92,12 @@ public class LazyDatabaseProperties extends AbstractDatabaseProperties
 		{
 			sequences = new HashMap<QualifiedName, SequenceProperties>();
 			
-			for (SequenceProperties sequence: this.support.getSequences(this.provider.getDatabaseMetaData()))
+			if (this.sequenceFactory != null)
 			{
-				sequences.put(sequence.getName(), sequence);
+				for (SequenceProperties sequence: dialect.getSequenceSupport().getSequences(this.provider.getDatabaseMetaData(), this.sequenceFactory))
+				{
+					sequences.put(sequence.getName(), sequence);
+				}
 			}
 			
 			if (!this.sequencesRef.compareAndSet(null, sequences))
@@ -129,7 +134,7 @@ public class LazyDatabaseProperties extends AbstractDatabaseProperties
 		
 		if (types == null)
 		{
-			types = this.support.getTypes(this.provider.getDatabaseMetaData());
+			types = this.dialect.getTypes(this.provider.getDatabaseMetaData());
 			
 			if (!this.typesRef.compareAndSet(null, types))
 			{

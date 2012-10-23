@@ -19,15 +19,14 @@ package net.sf.hajdbc.cache.lazy;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.cache.AbstractDatabaseMetaDataCacheFactory;
 import net.sf.hajdbc.cache.DatabaseMetaDataCache;
-import net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory;
+import net.sf.hajdbc.cache.DatabaseMetaDataCacheFactory;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class SharedLazyDatabaseMetaDataCacheFactory extends AbstractDatabaseMetaDataCacheFactory
+public class SharedLazyDatabaseMetaDataCacheFactory implements DatabaseMetaDataCacheFactory
 {
 	private static final long serialVersionUID = -5076802170474579133L;
 
@@ -37,13 +36,9 @@ public class SharedLazyDatabaseMetaDataCacheFactory extends AbstractDatabaseMeta
 		return "shared-lazy";
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.cache.AbstractDatabaseMetaDataCacheFactory#createCache(net.sf.hajdbc.DatabaseCluster, net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory)
-	 */
 	@Override
-	protected <Z, D extends Database<Z>> DatabaseMetaDataCache<Z, D> createCache(DatabaseCluster<Z, D> cluster, DatabaseMetaDataSupportFactory factory)
+	public <Z, D extends Database<Z>> DatabaseMetaDataCache<Z, D> createCache(DatabaseCluster<Z, D> cluster)
 	{
-		return new SharedLazyDatabaseMetaDataCache<Z, D>(cluster, factory);
+		return new SharedLazyDatabaseMetaDataCache<Z, D>(cluster);
 	}
 }

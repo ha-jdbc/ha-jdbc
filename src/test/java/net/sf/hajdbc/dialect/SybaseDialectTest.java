@@ -84,22 +84,22 @@ public class SybaseDialectTest extends StandardDialectTest
 	@Override
 	public void getCreateForeignKeyConstraintSQL() throws SQLException
 	{
-		ForeignKeyConstraint key = mock(ForeignKeyConstraint.class);
 		QualifiedName table = mock(QualifiedName.class);
 		QualifiedName foreignTable = mock(QualifiedName.class);
+		ForeignKeyConstraint constraint = mock(ForeignKeyConstraint.class);
 		
-		when(key.getName()).thenReturn("name");
-		when(key.getTable()).thenReturn(table);
 		when(table.getDDLName()).thenReturn("table");
-		when(key.getColumnList()).thenReturn(Arrays.asList("column1", "column2"));
-		when(key.getForeignTable()).thenReturn(foreignTable);
 		when(foreignTable.getDDLName()).thenReturn("foreign_table");
-		when(key.getForeignColumnList()).thenReturn(Arrays.asList("foreign_column1", "foreign_column2"));
-		when(key.getDeferrability()).thenReturn(DatabaseMetaData.importedKeyInitiallyDeferred);
-		when(key.getDeleteRule()).thenReturn(DatabaseMetaData.importedKeyCascade);
-		when(key.getUpdateRule()).thenReturn(DatabaseMetaData.importedKeyRestrict);
+		when(constraint.getName()).thenReturn("name");
+		when(constraint.getTable()).thenReturn(table);
+		when(constraint.getColumnList()).thenReturn(Arrays.asList("column1", "column2"));
+		when(constraint.getForeignTable()).thenReturn(foreignTable);
+		when(constraint.getForeignColumnList()).thenReturn(Arrays.asList("foreign_column1", "foreign_column2"));
+		when(constraint.getDeferrability()).thenReturn(DatabaseMetaData.importedKeyInitiallyDeferred);
+		when(constraint.getDeleteRule()).thenReturn(DatabaseMetaData.importedKeyCascade);
+		when(constraint.getUpdateRule()).thenReturn(DatabaseMetaData.importedKeyRestrict);
 		
-		String result = this.dialect.getCreateForeignKeyConstraintSQL(key);
+		String result = this.dialect.getCreateForeignKeyConstraintSQL(constraint);
 		
 		assertEquals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE ON UPDATE RESTRICT", result);
 	}

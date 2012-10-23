@@ -40,7 +40,7 @@ public final class Strings
 	public static final String FILE_SEPARATOR = SystemProperties.getSystemProperty("file.separator");
 	public static final String PATH_SEPARATOR = SystemProperties.getSystemProperty("path.separator");
 	public static final String USER_HOME = SystemProperties.getSystemProperty("user.home");
-	public static final String HA_JDBC_HOME = USER_HOME + "/.ha-jdbc";
+	public static final String HA_JDBC_HOME = USER_HOME + FILE_SEPARATOR + ".ha-jdbc";
 	
 	/**
 	 * Performs the reverse of a split operation, joining the elements of the specified collection using the specified delimiter.

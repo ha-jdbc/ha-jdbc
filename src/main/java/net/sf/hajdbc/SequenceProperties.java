@@ -21,9 +21,7 @@ package net.sf.hajdbc;
 /**
  * @author Paul Ferraro
  */
-public interface SequenceProperties
+public interface SequenceProperties extends Named<QualifiedName, SequenceProperties>
 {
-	QualifiedName getName();
-	
 	int getIncrement();
 }

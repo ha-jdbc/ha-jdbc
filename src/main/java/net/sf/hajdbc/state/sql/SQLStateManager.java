@@ -18,7 +18,6 @@
 package net.sf.hajdbc.state.sql;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.Driver;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -37,7 +36,6 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseProperties;
 import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.IdentifiableMatcher;
-import net.sf.hajdbc.cache.DatabaseMetaDataSupportImpl;
 import net.sf.hajdbc.cache.lazy.LazyDatabaseProperties;
 import net.sf.hajdbc.cache.simple.SimpleDatabaseMetaDataProvider;
 import net.sf.hajdbc.dialect.Dialect;
@@ -587,8 +585,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 		{
 			connection.setAutoCommit(true);
 	
-			DatabaseMetaData metaData = connection.getMetaData();
-			DatabaseProperties properties = new LazyDatabaseProperties(new SimpleDatabaseMetaDataProvider(metaData), new DatabaseMetaDataSupportImpl(metaData, dialect), dialect);
+			DatabaseProperties properties = new LazyDatabaseProperties(new SimpleDatabaseMetaDataProvider(connection.getMetaData()), dialect);
 
 			String enumType = properties.findType(0, Types.TINYINT, Types.SMALLINT, Types.INTEGER);
 			String stringType = properties.findType(Database.ID_MAX_SIZE, Types.VARCHAR);

@@ -19,16 +19,13 @@ package net.sf.hajdbc;
 
 import java.util.List;
 
-
-
-
 /**
  * Represents a foreign key constraint on a table.
  * 
  * @author  Paul Ferraro
  * @since   1.1
  */
-public interface ForeignKeyConstraint extends UniqueConstraint
+public interface ForeignKeyConstraint extends Constraint<ForeignKeyConstraint>
 {
 	/**
 	 * @return the foreign table of this foreign key
@@ -54,24 +51,4 @@ public interface ForeignKeyConstraint extends UniqueConstraint
 	 * @return Returns the deferrability.
 	 */
 	int getDeferrability();
-
-	/**
-	 * @param deferrability The deferrability to set.
-	 */
-	void setDeferrability(int deferrability);
-
-	/**
-	 * @param deleteRule The deleteRule to set.
-	 */
-	void setDeleteRule(int deleteRule);
-
-	/**
-	 * @param foreignTable The foreignTable to set.
-	 */
-	void setForeignTable(QualifiedName foreignTable);
-
-	/**
-	 * @param updateRule The updateRule to set.
-	 */
-	void setUpdateRule(int updateRule);
 }

@@ -22,15 +22,19 @@ import java.sql.DatabaseMetaData;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLNonTransientConnectionException;
 import java.sql.Statement;
 import java.text.MessageFormat;
+import java.util.AbstractMap;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,18 +42,23 @@ import java.util.regex.Pattern;
 import javax.transaction.xa.XAException;
 
 import net.sf.hajdbc.ColumnProperties;
+import net.sf.hajdbc.ColumnPropertiesFactory;
 import net.sf.hajdbc.DumpRestoreSupport;
 import net.sf.hajdbc.ForeignKeyConstraint;
+import net.sf.hajdbc.ForeignKeyConstraintFactory;
+import net.sf.hajdbc.IdentifierNormalizer;
 import net.sf.hajdbc.IdentityColumnSupport;
 import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.QualifiedNameFactory;
 import net.sf.hajdbc.SequenceProperties;
+import net.sf.hajdbc.SequencePropertiesFactory;
 import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.TriggerEvent;
 import net.sf.hajdbc.TriggerSupport;
 import net.sf.hajdbc.TriggerTime;
 import net.sf.hajdbc.UniqueConstraint;
-import net.sf.hajdbc.cache.QualifiedNameImpl;
+import net.sf.hajdbc.UniqueConstraintFactory;
 import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.Strings;
 
@@ -57,7 +66,6 @@ import net.sf.hajdbc.util.Strings;
  * @author  Paul Ferraro
  * @since   1.1
  */
-@SuppressWarnings("nls")
 public class StandardDialect implements Dialect, SequenceSupport, IdentityColumnSupport, TriggerSupport
 {
 	private final Pattern selectForUpdatePattern = this.compile(this.selectForUpdatePattern());
@@ -320,20 +328,20 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.SequenceSupport#getSequences(java.sql.DatabaseMetaData)
+	 * @see net.sf.hajdbc.SequenceSupport#getSequenceValues(java.sql.DatabaseMetaData)
 	 */
 	@Override
-	public Map<QualifiedName, Integer> getSequences(DatabaseMetaData metaData) throws SQLException
+	public Collection<SequenceProperties> getSequences(DatabaseMetaData metaData, SequencePropertiesFactory factory) throws SQLException
 	{
 		ResultSet resultSet = metaData.getTables(Strings.EMPTY, null, Strings.ANY, new String[] { this.sequenceTableType() });
 		
 		try
 		{
-			Map<QualifiedName, Integer> sequences = new HashMap<QualifiedName, Integer>();
+			List<SequenceProperties> sequences = new LinkedList<SequenceProperties>();
 			
 			while (resultSet.next())
 			{
-				sequences.put(new QualifiedNameImpl(resultSet.getString("TABLE_SCHEM"), resultSet.getString("TABLE_NAME"), metaData.supportsSchemasInTableDefinitions(), metaData.supportsSchemasInDataManipulation()), 1);
+				sequences.add(factory.createSequenceProperties(resultSet.getString("TABLE_SCHEM"), resultSet.getString("TABLE_NAME"), 1));
 			}
 			
 			return sequences;
@@ -402,15 +410,6 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	protected String alterIdentityColumnFormat()
 	{
 		return "ALTER TABLE {0} ALTER COLUMN {1} RESTART WITH {2}";
-	}
-	
-	/**
-	 * @see net.sf.hajdbc.dialect.Dialect#getIdentifierPattern(java.sql.DatabaseMetaData)
-	 */
-	@Override
-	public Pattern getIdentifierPattern(DatabaseMetaData metaData) throws SQLException
-	{
-		return Pattern.compile(MessageFormat.format("[a-zA-Z][\\w{0}]*", Pattern.quote(metaData.getExtraNameCharacters())));
 	}
 
 	protected String parse(Pattern pattern, String string)
@@ -660,5 +659,288 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 			}
 		}
 		return null;
+	}
+	
+	/**
+	 * Returns all tables in this database mapped by schema.
+	 * @param metaData a DatabaseMetaData implementation
+	 * @return a Map of schema name to Collection of table names
+	 * @throws SQLException if an error occurs access DatabaseMetaData
+	 */
+	@Override
+	public Collection<QualifiedName> getTables(DatabaseMetaData metaData, QualifiedNameFactory factory) throws SQLException
+	{
+		ResultSet resultSet = metaData.getTables(this.getCatalog(metaData), null, Strings.ANY, new String[] { "TABLE" });
+		
+		try
+		{
+			List<QualifiedName> list = new LinkedList<QualifiedName>();
+			
+			while (resultSet.next())
+			{
+				list.add(factory.createQualifiedName(resultSet.getString("TABLE_SCHEM"), resultSet.getString("TABLE_NAME")));
+			}
+			
+			return list;
+		}
+		finally
+		{
+			Resources.close(resultSet);
+		}
+	}
+
+	/**
+	 * Returns the columns of the specified table.
+	 * @param metaData a DatabaseMetaData implementation
+	 * @param table a schema qualified table name
+	 * @return a Map of column name to column properties
+	 * @throws SQLException if an error occurs access DatabaseMetaData
+	 */
+	@Override
+	public Map<String, ColumnProperties> getColumns(DatabaseMetaData metaData, QualifiedName table, ColumnPropertiesFactory factory) throws SQLException
+	{
+		Statement statement = metaData.getConnection().createStatement();
+		
+		try
+		{
+			Map<String, ColumnProperties> map = new HashMap<String, ColumnProperties>();
+			
+			ResultSetMetaData resultSet = statement.executeQuery(String.format("SELECT * FROM %s WHERE 0=1", table.getDMLName())).getMetaData();
+			
+			for (int i = 1; i <= resultSet.getColumnCount(); ++i)
+			{
+				String column = resultSet.getColumnName(i);
+				int type = resultSet.getColumnType(i);
+				String nativeType = resultSet.getColumnTypeName(i);
+				boolean autoIncrement = resultSet.isAutoIncrement(i);
+				
+				ColumnProperties properties = factory.createColumnProperties(column, type, nativeType, null, null, autoIncrement);
+				map.put(properties.getName(), properties);
+			}
+			
+			return map;
+		}
+		finally
+		{
+			Resources.close(statement);
+		}
+	}
+
+	/**
+	 * Returns the primary key of the specified table.
+	 * @param metaData a DatabaseMetaData implementation
+	 * @param table a schema qualified table name
+	 * @return a unique constraint
+	 * @throws SQLException if an error occurs access DatabaseMetaData
+	 */
+	@Override
+	public UniqueConstraint getPrimaryKey(DatabaseMetaData metaData, QualifiedName table, UniqueConstraintFactory factory) throws SQLException
+	{
+		ResultSet resultSet = metaData.getPrimaryKeys(this.getCatalog(metaData), table.getSchema(), table.getName());
+		
+		try
+		{
+			UniqueConstraint constraint = null;
+
+			while (resultSet.next())
+			{
+				if (constraint == null)
+				{
+					constraint = factory.createUniqueConstraint(resultSet.getString("PK_NAME"), table);
+				}
+				
+				constraint.getColumnList().add(resultSet.getString("COLUMN_NAME"));
+			}
+			
+			return constraint;
+		}
+		finally
+		{
+			Resources.close(resultSet);
+		}
+	}
+
+	/**
+	 * Returns the foreign key constraints on the specified table.
+	 * @param metaData a DatabaseMetaData implementation
+	 * @param table a schema qualified table name
+	 * @return a Collection of foreign key constraints.
+	 * @throws SQLException if an error occurs access DatabaseMetaData
+	 */
+	@Override
+	public Collection<ForeignKeyConstraint> getForeignKeyConstraints(DatabaseMetaData metaData, QualifiedName table, ForeignKeyConstraintFactory factory) throws SQLException
+	{
+		ResultSet resultSet = metaData.getImportedKeys(this.getCatalog(metaData), table.getSchema(), table.getName());
+		
+		try
+		{
+			Map<String, ForeignKeyConstraint> foreignKeyMap = new HashMap<String, ForeignKeyConstraint>();
+			
+			while (resultSet.next())
+			{
+				String name = resultSet.getString("FK_NAME");
+				
+				ForeignKeyConstraint foreignKey = foreignKeyMap.get(name);
+				
+				if (foreignKey == null)
+				{
+					foreignKey = factory.createForeignKeyConstraint(name, table, factory.getQualifiedNameFactory().createQualifiedName(resultSet.getString("PKTABLE_SCHEM"), resultSet.getString("PKTABLE_NAME")), resultSet.getInt("DELETE_RULE"), resultSet.getInt("UPDATE_RULE"), resultSet.getInt("DEFERRABILITY"));
+					
+					foreignKeyMap.put(name, foreignKey);
+				}
+				
+				foreignKey.getColumnList().add(resultSet.getString("FKCOLUMN_NAME"));
+				foreignKey.getForeignColumnList().add(resultSet.getString("PKCOLUMN_NAME"));
+			}
+			
+			return foreignKeyMap.values();
+		}
+		finally
+		{
+			Resources.close(resultSet);
+		}
+	}
+
+	/**
+	 * Returns the unique constraints on the specified table - excluding the primary key of the table.
+	 * @param metaData a schema qualified table name
+	 * @param table a qualified table name
+	 * @param primaryKey the primary key of this table
+	 * @return a Collection of unique constraints.
+	 * @throws SQLException if an error occurs access DatabaseMetaData
+	 */
+	@Override
+	public Collection<UniqueConstraint> getUniqueConstraints(DatabaseMetaData metaData, QualifiedName table, UniqueConstraint primaryKey, UniqueConstraintFactory factory) throws SQLException
+	{
+		ResultSet resultSet = metaData.getIndexInfo(this.getCatalog(metaData), table.getSchema(), table.getName(), true, false);
+		
+		try
+		{
+			Map<String, UniqueConstraint> keyMap = new HashMap<String, UniqueConstraint>();
+			
+			while (resultSet.next())
+			{
+				if (resultSet.getShort("TYPE") == DatabaseMetaData.tableIndexHashed)
+				{
+					String name = resultSet.getString("INDEX_NAME");
+					
+					UniqueConstraint key = keyMap.get(name);
+					
+					if (key == null)
+					{
+						key = factory.createUniqueConstraint(name, table);
+						
+						// Don't include the primary key
+						if (key.equals(primaryKey)) continue;
+						
+						keyMap.put(name, key);
+					}
+					
+					key.getColumnList().add(resultSet.getString("COLUMN_NAME"));
+				}
+			}
+			return keyMap.values();
+		}
+		finally
+		{
+			Resources.close(resultSet);
+		}
+	}
+	
+	private String getCatalog(DatabaseMetaData metaData) throws SQLException
+	{
+		String catalog = metaData.getConnection().getCatalog();
+		
+		return (catalog != null) ? catalog : Strings.EMPTY;
+	}
+	
+	/**
+	 * Identifies any identity columns from the from the specified collection of columns
+	 * @param columns the columns of a table
+	 * @return a collection of column names
+	 * @throws SQLException
+	 */
+	@Override
+	public Collection<String> getIdentityColumns(Collection<ColumnProperties> columns) throws SQLException
+	{
+		List<String> columnList = new LinkedList<String>();
+		
+		for (ColumnProperties column: columns)
+		{
+			if (column.isAutoIncrement())
+			{
+				columnList.add(column.getName());
+			}
+		}
+		
+		return columnList;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.cache.DatabaseMetaDataSupport#getTypes(java.sql.DatabaseMetaData)
+	 */
+	@Override
+	public Map<Integer, Entry<String, Integer>> getTypes(DatabaseMetaData metaData) throws SQLException
+	{
+		ResultSet resultSet = metaData.getTypeInfo();
+		
+		try
+		{
+			Map<Integer, Map.Entry<String, Integer>> types = new HashMap<Integer, Map.Entry<String, Integer>>();
+			
+			while (resultSet.next())
+			{
+				int type = resultSet.getInt("DATA_TYPE");
+				if (!types.containsKey(type))
+				{
+					String name = resultSet.getString("TYPE_NAME");
+					String params = resultSet.getString("CREATE_PARAMS");
+					types.put(type, new AbstractMap.SimpleImmutableEntry<String, Integer>(name, (params != null) ? resultSet.getInt("PRECISION") : null));
+				}
+			}
+			
+			return types;
+		}
+		finally
+		{
+			Resources.close(resultSet);
+		}
+	}
+
+	@Override
+	public IdentifierNormalizer createIdentifierNormalizer(DatabaseMetaData metaData) throws SQLException
+	{
+		return new StandardIdentifierNormalizer(metaData, Pattern.compile(MessageFormat.format("[a-zA-Z][\\w{0}]*", Pattern.quote(metaData.getExtraNameCharacters()))));
+	}
+
+	@Override
+	public QualifiedNameFactory createQualifiedNameFactory(DatabaseMetaData metaData, IdentifierNormalizer normalizer) throws SQLException
+	{
+		return new StandardQualifiedNameFactory(metaData, normalizer);
+	}
+
+	@Override
+	public ColumnPropertiesFactory createColumnPropertiesFactory(IdentifierNormalizer normalizer)
+	{
+		return new StandardColumnPropertiesFactory(normalizer);
+	}
+
+	@Override
+	public SequencePropertiesFactory createSequencePropertiesFactory(QualifiedNameFactory factory)
+	{
+		return new StandardSequencePropertiesFactory(factory);
+	}
+
+	@Override
+	public ForeignKeyConstraintFactory createForeignKeyConstraintFactory(QualifiedNameFactory factory)
+	{
+		return new StandardForeignKeyConstraintFactory(factory);
+	}
+
+	@Override
+	public UniqueConstraintFactory createUniqueConstraintFactory(IdentifierNormalizer normalizer)
+	{
+		return new StandardUniqueConstraintFactory(normalizer);
 	}
 }

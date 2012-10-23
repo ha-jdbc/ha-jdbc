@@ -19,8 +19,7 @@ package net.sf.hajdbc;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.Map;
-
+import java.util.Collection;
 
 /**
  * @author Paul Ferraro
@@ -37,13 +36,12 @@ public interface SequenceSupport
 	String parseSequence(String sql) throws SQLException;
 	
 	/**
-	 * Returns a collection of all sequences in this database.
+	 * Returns a collection of sequences using dialect specific logic.
 	 * @param metaData database meta data
-	 * @return a collection of sequence names
+	 * @return a collection of sequences
 	 * @throws SQLException
-	 * @since 2.0
 	 */
-	Map<QualifiedName, Integer> getSequences(DatabaseMetaData metaData) throws SQLException;
+	Collection<SequenceProperties> getSequences(DatabaseMetaData metaData, SequencePropertiesFactory factory) throws SQLException;
 	
 	/**
 	 * Returns a SQL statement for obtaining the next value the specified sequence
@@ -63,4 +61,6 @@ public interface SequenceSupport
 	 * @since 2.0
 	 */
 	String getAlterSequenceSQL(SequenceProperties sequence, long value) throws SQLException;
+
+	SequencePropertiesFactory createSequencePropertiesFactory(QualifiedNameFactory factory);
 }

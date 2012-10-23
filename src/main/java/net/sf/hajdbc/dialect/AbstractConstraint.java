@@ -15,44 +15,50 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.hajdbc.cache;
+package net.sf.hajdbc.dialect;
 
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Map;
+import java.util.List;
 
 import net.sf.hajdbc.AbstractNamed;
-import net.sf.hajdbc.ColumnProperties;
+import net.sf.hajdbc.Constraint;
 import net.sf.hajdbc.QualifiedName;
-import net.sf.hajdbc.TableProperties;
 
-
-/**
- * @author Paul Ferraro
- */
-public abstract class AbstractTableProperties extends AbstractNamed<QualifiedName, TableProperties> implements TableProperties
+public abstract class AbstractConstraint<C extends Constraint<C>> extends AbstractNamed<String, C> implements Constraint<C>
 {
-	protected AbstractTableProperties(QualifiedName name) {
+	private final QualifiedName table;
+	private final List<String> columns;
+
+	protected AbstractConstraint(String name, QualifiedName table, List<String> columns)
+	{
 		super(name);
+		this.table = table;
+		this.columns = columns;
+	}
+	
+	/**
+	 * @see net.sf.hajdbc.UniqueConstraint#getColumnList()
+	 */
+	@Override
+	public List<String> getColumnList()
+	{
+		return this.columns;
 	}
 
 	/**
-	 * @see net.sf.hajdbc.TableProperties#getColumns()
+	 * @see net.sf.hajdbc.UniqueConstraint#getTable()
 	 */
 	@Override
-	public final Collection<String> getColumns() throws SQLException
+	public QualifiedName getTable()
 	{
-		return this.getColumnMap().keySet();
+		return this.table;
 	}
 
 	/**
-	 * @see net.sf.hajdbc.TableProperties#getColumnProperties(java.lang.String)
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
 	@Override
-	public final ColumnProperties getColumnProperties(String column) throws SQLException
+	public int compareTo(C constraint)
 	{
-		return this.getColumnMap().get(column);
+		return this.getName().compareTo(constraint.getName());
 	}
-
-	protected abstract Map<String, ColumnProperties> getColumnMap() throws SQLException;
 }

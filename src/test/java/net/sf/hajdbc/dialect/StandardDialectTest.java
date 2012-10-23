@@ -17,6 +17,17 @@
  */
 package net.sf.hajdbc.dialect;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.AdditionalMatchers.aryEq;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.sql.BatchUpdateException;
 import java.sql.DataTruncation;
 import java.sql.DatabaseMetaData;
@@ -37,9 +48,10 @@ import java.sql.SQLTransientConnectionException;
 import java.sql.SQLTransientException;
 import java.sql.SQLWarning;
 import java.sql.Types;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.sql.rowset.RowSetWarning;
@@ -53,16 +65,12 @@ import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.IdentityColumnSupport;
 import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.SequenceProperties;
+import net.sf.hajdbc.SequencePropertiesFactory;
 import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.UniqueConstraint;
-import net.sf.hajdbc.cache.ForeignKeyConstraintImpl;
-import net.sf.hajdbc.cache.UniqueConstraintImpl;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-import static org.mockito.AdditionalMatchers.*;
 
 /**
  * @author Paul Ferraro
@@ -132,21 +140,20 @@ public class StandardDialectTest
 	{
 		QualifiedName table = mock(QualifiedName.class);
 		QualifiedName foreignTable = mock(QualifiedName.class);
+		ForeignKeyConstraint constraint = mock(ForeignKeyConstraint.class);
 		
 		when(table.getDDLName()).thenReturn("table");
 		when(foreignTable.getDDLName()).thenReturn("foreign_table");
+		when(constraint.getName()).thenReturn("name");
+		when(constraint.getTable()).thenReturn(table);
+		when(constraint.getColumnList()).thenReturn(Arrays.asList("column1", "column2"));
+		when(constraint.getForeignTable()).thenReturn(foreignTable);
+		when(constraint.getForeignColumnList()).thenReturn(Arrays.asList("foreign_column1", "foreign_column2"));
+		when(constraint.getDeferrability()).thenReturn(DatabaseMetaData.importedKeyInitiallyDeferred);
+		when(constraint.getDeleteRule()).thenReturn(DatabaseMetaData.importedKeyCascade);
+		when(constraint.getUpdateRule()).thenReturn(DatabaseMetaData.importedKeyRestrict);
 		
-		ForeignKeyConstraint key = new ForeignKeyConstraintImpl("name", table);
-		key.getColumnList().add("column1");
-		key.getColumnList().add("column2");
-		key.setForeignTable(foreignTable);
-		key.getForeignColumnList().add("foreign_column1");
-		key.getForeignColumnList().add("foreign_column2");
-		key.setDeferrability(DatabaseMetaData.importedKeyInitiallyDeferred);
-		key.setDeleteRule(DatabaseMetaData.importedKeyCascade);
-		key.setUpdateRule(DatabaseMetaData.importedKeyRestrict);
-		
-		String result = this.dialect.getCreateForeignKeyConstraintSQL(key);
+		String result = this.dialect.getCreateForeignKeyConstraintSQL(constraint);
 		
 		assertEquals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE ON UPDATE RESTRICT DEFERRABLE INITIALLY DEFERRED", result);
 	}
@@ -155,14 +162,14 @@ public class StandardDialectTest
 	public void getCreateUniqueConstraintSQL() throws SQLException
 	{
 		QualifiedName table = mock(QualifiedName.class);
+		UniqueConstraint constraint = mock(UniqueConstraint.class);
 		
 		when(table.getDDLName()).thenReturn("table");
+		when(constraint.getName()).thenReturn("name");
+		when(constraint.getTable()).thenReturn(table);
+		when(constraint.getColumnList()).thenReturn(Arrays.asList("column1", "column2"));
 		
-		UniqueConstraint key = new UniqueConstraintImpl("name", table);
-		key.getColumnList().add("column1");
-		key.getColumnList().add("column2");
-		
-		String result = this.dialect.getCreateUniqueConstraintSQL(key);
+		String result = this.dialect.getCreateUniqueConstraintSQL(constraint);
 		
 		assertEquals("ALTER TABLE table ADD CONSTRAINT name UNIQUE (column1, column2)", result);
 	}
@@ -172,21 +179,20 @@ public class StandardDialectTest
 	{
 		QualifiedName table = mock(QualifiedName.class);
 		QualifiedName foreignTable = mock(QualifiedName.class);
+		ForeignKeyConstraint constraint = mock(ForeignKeyConstraint.class);
 		
 		when(table.getDDLName()).thenReturn("table");
 		when(foreignTable.getDDLName()).thenReturn("foreign_table");
+		when(constraint.getName()).thenReturn("name");
+		when(constraint.getTable()).thenReturn(table);
+		when(constraint.getColumnList()).thenReturn(Arrays.asList("column1", "column2"));
+		when(constraint.getForeignTable()).thenReturn(foreignTable);
+		when(constraint.getForeignColumnList()).thenReturn(Arrays.asList("foreign_column1", "foreign_column2"));
+		when(constraint.getDeferrability()).thenReturn(DatabaseMetaData.importedKeyInitiallyDeferred);
+		when(constraint.getDeleteRule()).thenReturn(DatabaseMetaData.importedKeyCascade);
+		when(constraint.getUpdateRule()).thenReturn(DatabaseMetaData.importedKeyRestrict);
 		
-		ForeignKeyConstraint key = new ForeignKeyConstraintImpl("name", table);
-		key.getColumnList().add("column1");
-		key.getColumnList().add("column2");
-		key.setForeignTable(foreignTable);
-		key.getForeignColumnList().add("foreign_column1");
-		key.getForeignColumnList().add("foreign_column2");
-		key.setDeferrability(DatabaseMetaData.importedKeyInitiallyDeferred);
-		key.setDeleteRule(DatabaseMetaData.importedKeyCascade);
-		key.setUpdateRule(DatabaseMetaData.importedKeyRestrict);
-		
-		String result = this.dialect.getDropForeignKeyConstraintSQL(key);
+		String result = this.dialect.getDropForeignKeyConstraintSQL(constraint);
 		
 		assertEquals("ALTER TABLE table DROP CONSTRAINT name", result);
 	}
@@ -195,14 +201,14 @@ public class StandardDialectTest
 	public void getDropUniqueConstraintSQL() throws SQLException
 	{
 		QualifiedName table = mock(QualifiedName.class);
+		UniqueConstraint constraint = mock(UniqueConstraint.class);
 		
 		when(table.getDDLName()).thenReturn("table");
+		when(constraint.getName()).thenReturn("name");
+		when(constraint.getTable()).thenReturn(table);
+		when(constraint.getColumnList()).thenReturn(Arrays.asList("column1", "column2"));
 		
-		UniqueConstraint key = new UniqueConstraintImpl("name", table);
-		key.getColumnList().add("column1");
-		key.getColumnList().add("column2");
-		
-		String result = this.dialect.getDropUniqueConstraintSQL(key);
+		String result = this.dialect.getDropUniqueConstraintSQL(constraint);
 		
 		assertEquals("ALTER TABLE table DROP CONSTRAINT name", result);
 	}
@@ -233,6 +239,9 @@ public class StandardDialectTest
 		
 		if (support != null)
 		{
+			SequencePropertiesFactory factory = mock(SequencePropertiesFactory.class);
+			SequenceProperties sequence1 = mock(SequenceProperties.class);
+			SequenceProperties sequence2 = mock(SequenceProperties.class);
 			DatabaseMetaData metaData = mock(DatabaseMetaData.class);
 			ResultSet resultSet = mock(ResultSet.class);
 			
@@ -242,25 +251,19 @@ public class StandardDialectTest
 			when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
 			when(resultSet.getString("TABLE_SCHEM")).thenReturn("schema1").thenReturn("schema2");
 			when(resultSet.getString("TABLE_NAME")).thenReturn("sequence1").thenReturn("sequence2");
+			when(factory.createSequenceProperties("schema1", "sequence1", 1)).thenReturn(sequence1);
+			when(factory.createSequenceProperties("schema2", "sequence2", 1)).thenReturn(sequence2);
 			
-			Map<QualifiedName, Integer> results = support.getSequences(metaData);
+			Collection<SequenceProperties> results = support.getSequences(metaData, factory);
 			
 			verify(resultSet).close();
 			
 			assertEquals(2, results.size());
 			
-			Iterator<Map.Entry<QualifiedName, Integer>> iterator = results.entrySet().iterator();
-			Map.Entry<QualifiedName, Integer> sequence = iterator.next();
-	
-			assertEquals("schema1", sequence.getKey().getSchema());
-			assertEquals("sequence1", sequence.getKey().getName());
-			assertEquals(1, sequence.getValue().intValue());
-			
-			sequence = iterator.next();
-	
-			assertEquals("schema2", sequence.getKey().getSchema());
-			assertEquals("sequence2", sequence.getKey().getName());
-			assertEquals(1, sequence.getValue().intValue());
+			Iterator<SequenceProperties> sequences = results.iterator();
+
+			assertSame(sequence1, sequences.next());
+			assertSame(sequence2, sequences.next());
 		}
 	}
 
@@ -341,18 +344,6 @@ public class StandardDialectTest
 			assertNull(support.parseInsertTable("SELECT * FROM table WHERE 0=1"));
 			assertNull(support.parseInsertTable("UPDATE table SET column = 0"));
 		}
-	}
-	
-	@Test
-	public void getIdentifierPattern() throws SQLException
-	{
-		DatabaseMetaData metaData = mock(DatabaseMetaData.class);
-		
-		when(metaData.getExtraNameCharacters()).thenReturn("$");
-		
-		String result = this.dialect.getIdentifierPattern(metaData).pattern();
-		
-		assertEquals("[a-zA-Z][\\w\\Q$\\E]*", result);
 	}
 
 	@Test

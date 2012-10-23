@@ -28,9 +28,9 @@ import java.util.Map.Entry;
 
 import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.SequenceProperties;
+import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.cache.AbstractDatabaseProperties;
-import net.sf.hajdbc.cache.DatabaseMetaDataSupport;
 import net.sf.hajdbc.dialect.Dialect;
 
 /**
@@ -44,15 +44,15 @@ public class EagerDatabaseProperties extends AbstractDatabaseProperties
 	private final List<String> defaultSchemas;
 	private final Map<Integer, Map.Entry<String, Integer>> types;
 	
-	public EagerDatabaseProperties(DatabaseMetaData metaData, DatabaseMetaDataSupport support, Dialect dialect) throws SQLException
+	public EagerDatabaseProperties(DatabaseMetaData metaData, Dialect dialect) throws SQLException
 	{
-		super(metaData, support);
+		super(metaData, dialect);
 		
-		Collection<QualifiedName> tables = support.getTables(metaData);
+		Collection<QualifiedName> tables = dialect.getTables(metaData, this.nameFactory);
 		
 		for (QualifiedName table: tables)
 		{
-			TableProperties properties = new EagerTableProperties(metaData, support, table);
+			TableProperties properties = new EagerTableProperties(table, metaData, dialect, this.nameFactory);
 			
 			this.tables.put(properties.getName(), properties);
 		}
@@ -61,12 +61,16 @@ public class EagerDatabaseProperties extends AbstractDatabaseProperties
 		
 		this.defaultSchemas = new ArrayList<String>(defaultSchemaList);
 		
-		for (SequenceProperties sequence: support.getSequences(metaData))
+		SequenceSupport support = dialect.getSequenceSupport();
+		if (support != null)
 		{
-			this.sequences.put(sequence.getName(), sequence);
+			for (SequenceProperties sequence: support.getSequences(metaData, support.createSequencePropertiesFactory(this.nameFactory)))
+			{
+				this.sequences.put(sequence.getName(), sequence);
+			}
 		}
 		
-		this.types = support.getTypes(metaData);
+		this.types = dialect.getTypes(metaData);
 	}
 	
 	@Override

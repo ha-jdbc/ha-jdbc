@@ -17,29 +17,12 @@
  */
 package net.sf.hajdbc;
 
-import java.util.List;
-
-
 /**
  * Represents a unique constraint on a table.
  * 
  * @author  Paul Ferraro
  * @since   1.1
  */
-public interface UniqueConstraint extends Comparable<UniqueConstraint>
+public interface UniqueConstraint extends Constraint<UniqueConstraint>
 {	
-	/**
-	 * @return the name of this constraint
-	 */
-	String getName();
-
-	/**
-	 * @return the table of this constraint
-	 */
-	QualifiedName getTable();
-	
-	/**
-	 * @return the list of columns in this unique constraint
-	 */
-	List<String> getColumnList();
 }

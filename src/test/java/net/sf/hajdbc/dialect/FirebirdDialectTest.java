@@ -22,11 +22,12 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 
 import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.SequenceProperties;
+import net.sf.hajdbc.SequencePropertiesFactory;
 import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.dialect.firebird.FirebirdDialectFactory;
 
@@ -81,6 +82,9 @@ public class FirebirdDialectTest extends StandardDialectTest
 	@Override
 	public void getSequences() throws SQLException
 	{
+		SequencePropertiesFactory factory = mock(SequencePropertiesFactory.class);
+		SequenceProperties sequence1 = mock(SequenceProperties.class);
+		SequenceProperties sequence2 = mock(SequenceProperties.class);
 		DatabaseMetaData metaData = mock(DatabaseMetaData.class);
 		Connection connection = mock(Connection.class);
 		Statement statement = mock(Statement.class);
@@ -91,25 +95,19 @@ public class FirebirdDialectTest extends StandardDialectTest
 		when(statement.executeQuery("SELECT RDB$GENERATOR_NAME FROM RDB$GENERATORS")).thenReturn(resultSet);
 		when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
 		when(resultSet.getString(1)).thenReturn("sequence1").thenReturn("sequence2");
+		when(factory.createSequenceProperties(null, "sequence1", 1)).thenReturn(sequence1);
+		when(factory.createSequenceProperties(null, "sequence2", 1)).thenReturn(sequence2);
 
-		Map<QualifiedName, Integer> results = this.dialect.getSequenceSupport().getSequences(metaData);
-
+		Collection<SequenceProperties> results = this.dialect.getSequenceSupport().getSequences(metaData, factory);
+		
 		verify(statement).close();
+		
+		assertEquals(2, results.size());
+		
+		Iterator<SequenceProperties> sequences = results.iterator();
 
-		assertEquals(results.size(), 2);
-		
-		Iterator<Map.Entry<QualifiedName, Integer>> entries = results.entrySet().iterator();
-		Map.Entry<QualifiedName, Integer> entry = entries.next();
-
-		assertNull(entry.getKey().getSchema());
-		assertEquals("sequence1", entry.getKey().getName());
-		assertEquals(1, entry.getValue().intValue());
-		
-		entry = entries.next();
-		
-		assertNull(entry.getKey().getSchema());
-		assertEquals("sequence2", entry.getKey().getName());
-		assertEquals(1, entry.getValue().intValue());
+		assertSame(sequence1, sequences.next());
+		assertSame(sequence2, sequences.next());
 	}
 	
 	/**

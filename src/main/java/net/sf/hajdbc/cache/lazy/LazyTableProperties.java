@@ -23,12 +23,17 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import net.sf.hajdbc.ColumnProperties;
+import net.sf.hajdbc.ColumnPropertiesFactory;
 import net.sf.hajdbc.ForeignKeyConstraint;
+import net.sf.hajdbc.ForeignKeyConstraintFactory;
+import net.sf.hajdbc.IdentifierNormalizer;
 import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.QualifiedNameFactory;
 import net.sf.hajdbc.UniqueConstraint;
+import net.sf.hajdbc.UniqueConstraintFactory;
 import net.sf.hajdbc.cache.AbstractTableProperties;
 import net.sf.hajdbc.cache.DatabaseMetaDataProvider;
-import net.sf.hajdbc.cache.DatabaseMetaDataSupport;
+import net.sf.hajdbc.dialect.Dialect;
 
 /**
  * @author Paul Ferraro
@@ -37,22 +42,27 @@ import net.sf.hajdbc.cache.DatabaseMetaDataSupport;
 public class LazyTableProperties extends AbstractTableProperties
 {
 	private final DatabaseMetaDataProvider metaDataProvider;
-	private final QualifiedName table;
-	private final DatabaseMetaDataSupport support;
-	
+	private final Dialect dialect;
+	private final UniqueConstraintFactory uniqueConstraintFactory;
+	private final ForeignKeyConstraintFactory foreignKeyConstraintFactory;
+	private final ColumnPropertiesFactory columnPropertiesFactory;
+
 	private final AtomicReference<Map<String, ColumnProperties>> columnsRef = new AtomicReference<Map<String, ColumnProperties>>();
 	private final AtomicReference<UniqueConstraint> primaryKeyRef = new AtomicReference<UniqueConstraint>();
 	private final AtomicReference<Collection<UniqueConstraint>> uniqueConstraintsRef = new AtomicReference<Collection<UniqueConstraint>>();
 	private final AtomicReference<Collection<ForeignKeyConstraint>> foreignKeyConstraintsRef = new AtomicReference<Collection<ForeignKeyConstraint>>();
 	private final AtomicReference<Collection<String>> identityColumnsRef = new AtomicReference<Collection<String>>();
 	
-	public LazyTableProperties(DatabaseMetaDataProvider metaDataProvider, DatabaseMetaDataSupport support, QualifiedName table)
+	public LazyTableProperties(QualifiedName table, DatabaseMetaDataProvider metaDataProvider, Dialect dialect, QualifiedNameFactory nameFactory)
 	{
 		super(table);
 		
 		this.metaDataProvider = metaDataProvider;
-		this.support = support;
-		this.table = table;
+		this.dialect = dialect;
+		IdentifierNormalizer normalizer = nameFactory.getIdentifierNormalizer();
+		this.uniqueConstraintFactory = dialect.createUniqueConstraintFactory(normalizer);
+		this.foreignKeyConstraintFactory = dialect.createForeignKeyConstraintFactory(nameFactory);
+		this.columnPropertiesFactory = dialect.createColumnPropertiesFactory(normalizer);
 	}
 
 	@Override
@@ -62,7 +72,7 @@ public class LazyTableProperties extends AbstractTableProperties
 		
 		if (columns == null)
 		{
-			columns = this.support.getColumns(this.metaDataProvider.getDatabaseMetaData(), this.table);
+			columns = this.dialect.getColumns(this.metaDataProvider.getDatabaseMetaData(), this.getName(), this.columnPropertiesFactory);
 			
 			if (!this.columnsRef.compareAndSet(null, columns))
 			{
@@ -83,7 +93,7 @@ public class LazyTableProperties extends AbstractTableProperties
 		
 		if (primaryKey == null)
 		{
-			primaryKey = this.support.getPrimaryKey(this.metaDataProvider.getDatabaseMetaData(), this.table);
+			primaryKey = this.dialect.getPrimaryKey(this.metaDataProvider.getDatabaseMetaData(), this.getName(), this.uniqueConstraintFactory);
 			
 			if (!this.primaryKeyRef.compareAndSet(null, primaryKey))
 			{
@@ -104,7 +114,7 @@ public class LazyTableProperties extends AbstractTableProperties
 		
 		if (foreignKeyConstraints == null)
 		{
-			foreignKeyConstraints = this.support.getForeignKeyConstraints(this.metaDataProvider.getDatabaseMetaData(), this.table);
+			foreignKeyConstraints = this.dialect.getForeignKeyConstraints(this.metaDataProvider.getDatabaseMetaData(), this.getName(), this.foreignKeyConstraintFactory);
 			
 			if (!this.foreignKeyConstraintsRef.compareAndSet(null, foreignKeyConstraints))
 			{
@@ -125,7 +135,7 @@ public class LazyTableProperties extends AbstractTableProperties
 		
 		if (uniqueConstraints == null)
 		{
-			uniqueConstraints = this.support.getUniqueConstraints(this.metaDataProvider.getDatabaseMetaData(), this.table, this.getPrimaryKey());
+			uniqueConstraints = this.dialect.getUniqueConstraints(this.metaDataProvider.getDatabaseMetaData(), this.getName(), this.getPrimaryKey(), this.uniqueConstraintFactory);
 			
 			if (!this.uniqueConstraintsRef.compareAndSet(null, uniqueConstraints))
 			{
@@ -146,7 +156,7 @@ public class LazyTableProperties extends AbstractTableProperties
 		
 		if (identityColumns == null)
 		{
-			identityColumns = this.support.getIdentityColumns(this.getColumnMap().values());
+			identityColumns = this.dialect.getIdentityColumns(this.getColumnMap().values());
 			
 			if (!this.identityColumnsRef.compareAndSet(null, identityColumns))
 			{

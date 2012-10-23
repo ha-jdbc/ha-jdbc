@@ -21,14 +21,14 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
-import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.SequenceProperties;
+import net.sf.hajdbc.SequencePropertiesFactory;
 import net.sf.hajdbc.SequenceSupport;
-import net.sf.hajdbc.cache.QualifiedNameImpl;
 import net.sf.hajdbc.dialect.StandardDialect;
 import net.sf.hajdbc.util.Resources;
 
@@ -38,7 +38,6 @@ import net.sf.hajdbc.util.Resources;
  * @author  Paul Ferraro
  * @since   1.1
  */
-@SuppressWarnings("nls")
 public class HSQLDBDialect extends StandardDialect
 {
 	/**
@@ -76,11 +75,8 @@ public class HSQLDBDialect extends StandardDialect
 		return Collections.singletonList("PUBLIC");
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequences(java.sql.DatabaseMetaData)
-	 */
 	@Override
-	public Map<QualifiedName, Integer> getSequences(DatabaseMetaData metaData) throws SQLException
+	public Collection<SequenceProperties> getSequences(DatabaseMetaData metaData, SequencePropertiesFactory factory) throws SQLException
 	{
 		Statement statement = metaData.getConnection().createStatement();
 		
@@ -88,11 +84,11 @@ public class HSQLDBDialect extends StandardDialect
 		{
 			ResultSet resultSet = statement.executeQuery("SELECT SEQUENCE_SCHEMA, SEQUENCE_NAME, INCREMENT FROM INFORMATION_SCHEMA.SYSTEM_SEQUENCES");
 			
-			Map<QualifiedName, Integer> sequences = new HashMap<QualifiedName, Integer>();
+			List<SequenceProperties> sequences = new LinkedList<SequenceProperties>();
 			
 			while (resultSet.next())
 			{
-				sequences.put(new QualifiedNameImpl(resultSet.getString(1), resultSet.getString(2), metaData), resultSet.getInt(3));
+				sequences.add(factory.createSequenceProperties(resultSet.getString(1), resultSet.getString(2), resultSet.getInt(3)));
 			}
 			
 			return sequences;

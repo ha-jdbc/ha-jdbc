@@ -192,32 +192,6 @@ public class PostgreSQLDialectTest extends StandardDialectTest
 
 		assertEquals("ALTER SEQUENCE table_column_seq RESTART WITH 1000", result);
 	}
-	
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.dialect.StandardDialectTest#getIdentifierPattern()
-	 */
-	@Override
-	public void getIdentifierPattern() throws SQLException
-	{
-		DatabaseMetaData metaData = mock(DatabaseMetaData.class);
-		
-		when(metaData.getDriverMajorVersion()).thenReturn(8);
-		when(metaData.getDriverMinorVersion()).thenReturn(0);
-		
-		when(metaData.getExtraNameCharacters()).thenReturn("$");
-		
-		String result = this.dialect.getIdentifierPattern(metaData).pattern();
-		
-		assert result.equals("[a-zA-Z][\\w\\Q$\\E]*") : result;
-		
-		when(metaData.getDriverMajorVersion()).thenReturn(8);
-		when(metaData.getDriverMinorVersion()).thenReturn(1);
-		
-		result = this.dialect.getIdentifierPattern(metaData).pattern();
-		
-		assert result.equals("[A-Za-z\\0200-\\0377_][A-Za-z\\0200-\\0377_0-9\\$]*") : result;
-	}
 
 	/**
 	 * {@inheritDoc}

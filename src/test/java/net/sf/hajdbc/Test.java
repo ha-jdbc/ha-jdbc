@@ -84,11 +84,12 @@ public class Test
 	}
 	
 	@org.junit.Test
+//	@org.junit.Ignore(value = "Figure out why we get OutOfMemoryError on connect")
 	public void derby() throws Exception
 	{
-//		SQLStateManagerFactory factory = new SQLStateManagerFactory();
-//		factory.setUrlPattern("jdbc:derby:target/derby/{0};create=true");
-//		this.test(factory);
+		SQLStateManagerFactory factory = new SQLStateManagerFactory();
+		factory.setUrlPattern("jdbc:derby:target/derby/{0};create=true");
+		this.test(factory);
 	}
 	
 	private void test(StateManagerFactory factory) throws Exception
@@ -121,73 +122,139 @@ public class Test
 		
 		try
 		{
-			@SuppressWarnings("unchecked")		
+			@SuppressWarnings("unchecked")
 			SQLProxy<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource, SQLException> proxy = (SQLProxy<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource, SQLException>) Proxy.getInvocationHandler(ds.getProxy());
 			javax.sql.DataSource ds1 = proxy.getObject(db1);
 			javax.sql.DataSource ds2 = proxy.getObject(db2);
 	
 			String createSQL = "CREATE TABLE test (id INTEGER NOT NULL, name VARCHAR(10) NOT NULL, PRIMARY KEY (id))";
-			
-			Connection c1 = ds1.getConnection("sa", "");
-			Statement s1 = c1.createStatement();
-			s1.execute(createSQL);
-			s1.close();
-			
-			Connection c2 = ds2.getConnection("sa", "");
-			Statement s2 = c2.createStatement();
-			s2.execute(createSQL);
-			s2.close();
-			
-			Connection c = ds.getConnection("sa", "");
-			c.setAutoCommit(false);
-			PreparedStatement ps = c.prepareStatement("INSERT INTO test (id, name) VALUES (?, ?)");
-			ps.setInt(1, 1);
-			ps.setString(2, "1");
-			ps.addBatch();
-			ps.setInt(1, 2);
-			ps.setString(2, "2");
-			ps.addBatch();
-			ps.executeBatch();
-			ps.close();
-			c.commit();
-			
-			String selectSQL = "SELECT id, name FROM test";
-			
-			s1 = c1.createStatement();
-			ResultSet rs1 = s1.executeQuery(selectSQL);
-			Assert.assertTrue(rs1.next());
-			Assert.assertEquals(1, rs1.getInt(1));
-			Assert.assertEquals("1", rs1.getString(2));
-			Assert.assertTrue(rs1.next());
-			Assert.assertEquals(2, rs1.getInt(1));
-			Assert.assertEquals("2", rs1.getString(2));
-			Assert.assertFalse(rs1.next());
-			rs1.close();
-			s1.close();
-			
-			s2 = c2.createStatement();
-			ResultSet rs2 = s2.executeQuery(selectSQL);
-			Assert.assertTrue(rs2.next());
-			Assert.assertEquals(1, rs2.getInt(1));
-			Assert.assertEquals("1", rs2.getString(2));
-			Assert.assertTrue(rs2.next());
-			Assert.assertEquals(2, rs2.getInt(1));
-			Assert.assertEquals("2", rs2.getString(2));
-			Assert.assertFalse(rs2.next());
-			rs2.close();
-			s2.close();
-			
 			String dropSQL = "DROP TABLE test";
 			
-			s1 = c1.createStatement();
-			s1.executeUpdate(dropSQL);
-			s1.close();
-
-			s2 = c2.createStatement();
-			s2.executeUpdate(dropSQL);
-			s2.close();
-			
-			c.close();
+			Connection c1 = ds1.getConnection("sa", "");
+			try
+			{
+				Statement s1 = c1.createStatement();
+				try
+				{
+					s1.execute(createSQL);
+				}
+				finally
+				{
+					s1.close();
+				}
+				try
+				{
+					Connection c2 = ds2.getConnection("sa", "");
+					try
+					{
+						Statement s2 = c2.createStatement();
+						try
+						{
+							s2.execute(createSQL);
+						}
+						finally
+						{
+							s2.close();
+						}
+						
+						try
+						{
+							Connection c = ds.getConnection("sa", "");
+							try
+							{
+								c.setAutoCommit(false);
+								PreparedStatement ps = c.prepareStatement("INSERT INTO test (id, name) VALUES (?, ?)");
+								try
+								{
+									ps.setInt(1, 1);
+									ps.setString(2, "1");
+									ps.addBatch();
+									ps.setInt(1, 2);
+									ps.setString(2, "2");
+									ps.addBatch();
+									ps.executeBatch();
+								}
+								finally
+								{
+									ps.close();
+								}
+								c.commit();
+								
+								String selectSQL = "SELECT id, name FROM test";
+								
+								s1 = c1.createStatement();
+								try
+								{
+									ResultSet rs1 = s1.executeQuery(selectSQL);
+									Assert.assertTrue(rs1.next());
+									Assert.assertEquals(1, rs1.getInt(1));
+									Assert.assertEquals("1", rs1.getString(2));
+									Assert.assertTrue(rs1.next());
+									Assert.assertEquals(2, rs1.getInt(1));
+									Assert.assertEquals("2", rs1.getString(2));
+									Assert.assertFalse(rs1.next());
+								}
+								finally
+								{
+									s1.close();
+								}
+								s2 = c2.createStatement();
+								try
+								{
+									ResultSet rs2 = s2.executeQuery(selectSQL);
+									Assert.assertTrue(rs2.next());
+									Assert.assertEquals(1, rs2.getInt(1));
+									Assert.assertEquals("1", rs2.getString(2));
+									Assert.assertTrue(rs2.next());
+									Assert.assertEquals(2, rs2.getInt(1));
+									Assert.assertEquals("2", rs2.getString(2));
+									Assert.assertFalse(rs2.next());
+								}
+								finally
+								{
+									s2.close();
+								}
+							}
+							finally
+							{
+								c.close();
+							}
+						}
+						finally
+						{
+							s2 = c2.createStatement();
+							try
+							{
+								s2.executeUpdate(dropSQL);
+							}
+							finally
+							{
+								s2.close();
+							}
+						}
+					}
+					finally
+					{
+						c2.close();
+					}
+				}
+				finally
+				{
+					s1 = c1.createStatement();
+					try
+					{
+						s1.executeUpdate(dropSQL);
+					}
+					finally
+					{
+						s1.close();
+					}
+				}
+			}
+			finally
+			{
+				c1.close();
+			}
 		}
 		finally
 		{

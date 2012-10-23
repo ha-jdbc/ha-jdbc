@@ -17,15 +17,10 @@
  */
 package net.sf.hajdbc;
 
-/**
- * @author Paul Ferraro
- *
- */
-public interface ColumnProperties extends Named<String, ColumnProperties>
+
+public interface ForeignKeyConstraintFactory
 {
-	int getType();
+	ForeignKeyConstraint createForeignKeyConstraint(String name, QualifiedName table, QualifiedName foreignTable, int deleteRule, int updateRule, int deferrability);
 	
-	String getNativeType();
-	
-	boolean isAutoIncrement();
+	QualifiedNameFactory getQualifiedNameFactory();
 }

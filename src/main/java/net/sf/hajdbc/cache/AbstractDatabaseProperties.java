@@ -1,17 +1,17 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright 2004-2009 Paul Ferraro
- * 
+ * Copyright (C) 2012  Paul Ferraro
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -21,14 +21,17 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import net.sf.hajdbc.DatabaseProperties;
 import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.QualifiedNameFactory;
 import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.TableProperties;
+import net.sf.hajdbc.dialect.Dialect;
 
 /**
  * @author Paul Ferraro
@@ -36,15 +39,15 @@ import net.sf.hajdbc.TableProperties;
  */
 public abstract class AbstractDatabaseProperties implements DatabaseProperties
 {
-	private final DatabaseMetaDataSupport support;
+	protected final QualifiedNameFactory nameFactory;
 	private final boolean supportsSelectForUpdate;
 	private final boolean locatorsUpdateCopy;
 	
-	public AbstractDatabaseProperties(DatabaseMetaData metaData, DatabaseMetaDataSupport support) throws SQLException
+	public AbstractDatabaseProperties(DatabaseMetaData metaData, Dialect dialect) throws SQLException
 	{
-		this.support = support;
 		this.supportsSelectForUpdate = metaData.supportsSelectForUpdate();
 		this.locatorsUpdateCopy = metaData.locatorsUpdateCopy();
+		this.nameFactory = dialect.createQualifiedNameFactory(metaData, dialect.createIdentifierNormalizer(metaData));
 	}
 	
 	/**
@@ -94,7 +97,7 @@ public abstract class AbstractDatabaseProperties implements DatabaseProperties
 	@Override
 	public final TableProperties findTable(String table) throws SQLException
 	{
-		return this.support.find(this.tables(), table, this.defaultSchemas());
+		return this.find(this.tables(), table, this.defaultSchemas());
 	}
 
 	/**
@@ -103,7 +106,26 @@ public abstract class AbstractDatabaseProperties implements DatabaseProperties
 	@Override
 	public final SequenceProperties findSequence(String sequence) throws SQLException
 	{
-		return this.support.find(this.sequences(), sequence, this.defaultSchemas());
+		return this.find(this.sequences(), sequence, this.defaultSchemas());
+	}
+	
+	private <T> T find(Map<QualifiedName, T> map, String raw, List<String> defaultSchemaList) throws SQLException
+	{
+		System.out.println(String.format("find(%s, %s, %s)", map.keySet(), raw, defaultSchemaList));
+		QualifiedName name = this.nameFactory.parse(raw);
+
+		T properties = map.get(name);
+		
+		if ((properties == null) && (name.getSchema() == null))
+		{
+			Iterator<String> schemas = defaultSchemaList.iterator();
+			while ((properties == null) && schemas.hasNext())
+			{
+				properties = map.get(this.nameFactory.createQualifiedName(schemas.next(), raw));
+			}
+		}
+
+		return properties;
 	}
 
 	protected abstract List<String> defaultSchemas() throws SQLException;

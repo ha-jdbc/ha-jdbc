@@ -17,15 +17,12 @@
  */
 package net.sf.hajdbc;
 
-/**
- * @author Paul Ferraro
- *
- */
-public interface ColumnProperties extends Named<String, ColumnProperties>
+
+public interface QualifiedNameFactory
 {
-	int getType();
-	
-	String getNativeType();
-	
-	boolean isAutoIncrement();
+	QualifiedName createQualifiedName(String schema, String table);
+
+	IdentifierNormalizer getIdentifierNormalizer();
+
+	QualifiedName parse(String raw);
 }

@@ -29,15 +29,16 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.SequenceProperties;
+import net.sf.hajdbc.SequencePropertiesFactory;
 import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.TableProperties;
-import net.sf.hajdbc.cache.ForeignKeyConstraintImpl;
 import net.sf.hajdbc.dialect.maxdb.MaxDBDialectFactory;
 
 /**
@@ -71,21 +72,20 @@ public class MaxDBDialectTest extends StandardDialectTest
 	{
 		QualifiedName table = mock(QualifiedName.class);
 		QualifiedName foreignTable = mock(QualifiedName.class);
+		ForeignKeyConstraint constraint = mock(ForeignKeyConstraint.class);
 		
 		when(table.getDDLName()).thenReturn("table");
 		when(foreignTable.getDDLName()).thenReturn("foreign_table");
+		when(constraint.getName()).thenReturn("name");
+		when(constraint.getTable()).thenReturn(table);
+		when(constraint.getColumnList()).thenReturn(Arrays.asList("column1", "column2"));
+		when(constraint.getForeignTable()).thenReturn(foreignTable);
+		when(constraint.getForeignColumnList()).thenReturn(Arrays.asList("foreign_column1", "foreign_column2"));
+		when(constraint.getDeferrability()).thenReturn(DatabaseMetaData.importedKeyInitiallyDeferred);
+		when(constraint.getDeleteRule()).thenReturn(DatabaseMetaData.importedKeyCascade);
+		when(constraint.getUpdateRule()).thenReturn(DatabaseMetaData.importedKeyRestrict);
 		
-		ForeignKeyConstraint key = new ForeignKeyConstraintImpl("name", table);
-		key.getColumnList().add("column1");
-		key.getColumnList().add("column2");
-		key.setForeignTable(foreignTable);
-		key.getForeignColumnList().add("foreign_column1");
-		key.getForeignColumnList().add("foreign_column2");
-		key.setDeferrability(DatabaseMetaData.importedKeyInitiallyDeferred);
-		key.setDeleteRule(DatabaseMetaData.importedKeyCascade);
-		key.setUpdateRule(DatabaseMetaData.importedKeyRestrict);
-		
-		String result = this.dialect.getCreateForeignKeyConstraintSQL(key);
+		String result = this.dialect.getCreateForeignKeyConstraintSQL(constraint);
 		
 		assertEquals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE", result);
 	}
@@ -97,6 +97,9 @@ public class MaxDBDialectTest extends StandardDialectTest
 	@Override
 	public void getSequences() throws SQLException
 	{
+		SequencePropertiesFactory factory = mock(SequencePropertiesFactory.class);
+		SequenceProperties sequence1 = mock(SequenceProperties.class);
+		SequenceProperties sequence2 = mock(SequenceProperties.class);
 		DatabaseMetaData metaData = mock(DatabaseMetaData.class);
 		Connection connection = mock(Connection.class);
 		Statement statement = mock(Statement.class);
@@ -108,25 +111,19 @@ public class MaxDBDialectTest extends StandardDialectTest
 		when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
 		when(resultSet.getString(1)).thenReturn("sequence1").thenReturn("sequence2");
 		when(resultSet.getInt(2)).thenReturn(1).thenReturn(2);
-		
-		Map<QualifiedName, Integer> result = this.dialect.getSequenceSupport().getSequences(metaData);
+		when(factory.createSequenceProperties(null, "sequence1", 1)).thenReturn(sequence1);
+		when(factory.createSequenceProperties(null, "sequence2", 2)).thenReturn(sequence2);
 
+		Collection<SequenceProperties> results = this.dialect.getSequenceSupport().getSequences(metaData, factory);
+		
 		verify(statement).close();
 		
-		assertEquals(2, result.size());
+		assertEquals(2, results.size());
 		
-		Iterator<Map.Entry<QualifiedName, Integer>> entries = result.entrySet().iterator();
-		Map.Entry<QualifiedName, Integer> entry = entries.next();
+		Iterator<SequenceProperties> sequences = results.iterator();
 
-		assertNull(entry.getKey().getSchema());
-		assertEquals("sequence1", entry.getKey().getName());
-		assertEquals(1, entry.getValue().intValue());
-		
-		entry = entries.next();
-
-		assertNull(entry.getKey().getSchema());
-		assertEquals("sequence2", entry.getKey().getName());
-		assertEquals(2, entry.getValue().intValue());
+		assertSame(sequence1, sequences.next());
+		assertSame(sequence2, sequences.next());
 	}
 
 	/**

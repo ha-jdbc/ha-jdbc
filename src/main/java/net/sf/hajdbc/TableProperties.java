@@ -20,16 +20,11 @@ package net.sf.hajdbc;
 import java.sql.SQLException;
 import java.util.Collection;
 
-
-
 /**
  * @author Paul Ferraro
- *
  */
-public interface TableProperties
+public interface TableProperties extends Named<QualifiedName, TableProperties>
 {
-	QualifiedName getName();
-	
 	Collection<String> getColumns() throws SQLException;
 	
 	ColumnProperties getColumnProperties(String column) throws SQLException;

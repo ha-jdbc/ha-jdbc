@@ -20,11 +20,9 @@ package net.sf.hajdbc;
 /**
  * @author Paul Ferraro
  */
-public interface QualifiedName
+public interface QualifiedName extends Named<String, QualifiedName>
 {
 	String getSchema();
-	
-	String getName();
 	
 	String getDDLName();
 	

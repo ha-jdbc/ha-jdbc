@@ -17,22 +17,23 @@
  */
 package net.sf.hajdbc.dialect;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.List;
 
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.UniqueConstraint;
-import net.sf.hajdbc.cache.ForeignKeyConstraintImpl;
-import net.sf.hajdbc.cache.UniqueConstraintImpl;
 import net.sf.hajdbc.dialect.mysql.MySQLDialectFactory;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Paul Ferraro
@@ -55,21 +56,20 @@ public class MySQLDialectTest extends StandardDialectTest
 	{
 		QualifiedName table = mock(QualifiedName.class);
 		QualifiedName foreignTable = mock(QualifiedName.class);
+		ForeignKeyConstraint constraint = mock(ForeignKeyConstraint.class);
 		
 		when(table.getDDLName()).thenReturn("table");
 		when(foreignTable.getDDLName()).thenReturn("foreign_table");
+		when(constraint.getName()).thenReturn("name");
+		when(constraint.getTable()).thenReturn(table);
+		when(constraint.getColumnList()).thenReturn(Arrays.asList("column1", "column2"));
+		when(constraint.getForeignTable()).thenReturn(foreignTable);
+		when(constraint.getForeignColumnList()).thenReturn(Arrays.asList("foreign_column1", "foreign_column2"));
+		when(constraint.getDeferrability()).thenReturn(DatabaseMetaData.importedKeyInitiallyDeferred);
+		when(constraint.getDeleteRule()).thenReturn(DatabaseMetaData.importedKeyCascade);
+		when(constraint.getUpdateRule()).thenReturn(DatabaseMetaData.importedKeyRestrict);
 		
-		ForeignKeyConstraint key = new ForeignKeyConstraintImpl("name", table);
-		key.getColumnList().add("column1");
-		key.getColumnList().add("column2");
-		key.setForeignTable(foreignTable);
-		key.getForeignColumnList().add("foreign_column1");
-		key.getForeignColumnList().add("foreign_column2");
-		key.setDeferrability(DatabaseMetaData.importedKeyInitiallyDeferred);
-		key.setDeleteRule(DatabaseMetaData.importedKeyCascade);
-		key.setUpdateRule(DatabaseMetaData.importedKeyRestrict);
-		
-		String result = this.dialect.getCreateForeignKeyConstraintSQL(key);
+		String result = this.dialect.getCreateForeignKeyConstraintSQL(constraint);
 		
 		assertEquals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE ON UPDATE RESTRICT", result);
 	}
@@ -83,21 +83,20 @@ public class MySQLDialectTest extends StandardDialectTest
 	{
 		QualifiedName table = mock(QualifiedName.class);
 		QualifiedName foreignTable = mock(QualifiedName.class);
+		ForeignKeyConstraint constraint = mock(ForeignKeyConstraint.class);
 		
 		when(table.getDDLName()).thenReturn("table");
 		when(foreignTable.getDDLName()).thenReturn("foreign_table");
+		when(constraint.getName()).thenReturn("name");
+		when(constraint.getTable()).thenReturn(table);
+		when(constraint.getColumnList()).thenReturn(Arrays.asList("column1", "column2"));
+		when(constraint.getForeignTable()).thenReturn(foreignTable);
+		when(constraint.getForeignColumnList()).thenReturn(Arrays.asList("foreign_column1", "foreign_column2"));
+		when(constraint.getDeferrability()).thenReturn(DatabaseMetaData.importedKeyInitiallyDeferred);
+		when(constraint.getDeleteRule()).thenReturn(DatabaseMetaData.importedKeyCascade);
+		when(constraint.getUpdateRule()).thenReturn(DatabaseMetaData.importedKeyRestrict);
 		
-		ForeignKeyConstraint key = new ForeignKeyConstraintImpl("name", table);
-		key.getColumnList().add("column1");
-		key.getColumnList().add("column2");
-		key.setForeignTable(foreignTable);
-		key.getForeignColumnList().add("foreign_column1");
-		key.getForeignColumnList().add("foreign_column2");
-		key.setDeferrability(DatabaseMetaData.importedKeyInitiallyDeferred);
-		key.setDeleteRule(DatabaseMetaData.importedKeyCascade);
-		key.setUpdateRule(DatabaseMetaData.importedKeyRestrict);
-		
-		String result = this.dialect.getDropForeignKeyConstraintSQL(key);
+		String result = this.dialect.getDropForeignKeyConstraintSQL(constraint);
 		
 		assertEquals("ALTER TABLE table DROP FOREIGN KEY name", result);
 	}
@@ -110,14 +109,14 @@ public class MySQLDialectTest extends StandardDialectTest
 	public void getCreateUniqueConstraintSQL() throws SQLException
 	{
 		QualifiedName table = mock(QualifiedName.class);
+		UniqueConstraint constraint = mock(UniqueConstraint.class);
 		
 		when(table.getDDLName()).thenReturn("table");
+		when(constraint.getName()).thenReturn("name");
+		when(constraint.getTable()).thenReturn(table);
+		when(constraint.getColumnList()).thenReturn(Arrays.asList("column1", "column2"));
 		
-		UniqueConstraint key = new UniqueConstraintImpl("name", table);
-		key.getColumnList().add("column1");
-		key.getColumnList().add("column2");
-		
-		String result = this.dialect.getCreateUniqueConstraintSQL(key);
+		String result = this.dialect.getCreateUniqueConstraintSQL(constraint);
 		
 		assertEquals("ALTER TABLE table ADD UNIQUE name (column1, column2)", result);
 	}
@@ -130,14 +129,14 @@ public class MySQLDialectTest extends StandardDialectTest
 	public void getDropUniqueConstraintSQL() throws SQLException
 	{
 		QualifiedName table = mock(QualifiedName.class);
+		UniqueConstraint constraint = mock(UniqueConstraint.class);
 		
 		when(table.getDDLName()).thenReturn("table");
+		when(constraint.getName()).thenReturn("name");
+		when(constraint.getTable()).thenReturn(table);
+		when(constraint.getColumnList()).thenReturn(Arrays.asList("column1", "column2"));
 		
-		UniqueConstraint key = new UniqueConstraintImpl("name", table);
-		key.getColumnList().add("column1");
-		key.getColumnList().add("column2");
-		
-		String result = this.dialect.getDropUniqueConstraintSQL(key);
+		String result = this.dialect.getDropUniqueConstraintSQL(constraint);
 		
 		assertEquals("ALTER TABLE table DROP INDEX name", result);
 	}

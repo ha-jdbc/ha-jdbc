@@ -17,15 +17,17 @@
  */
 package net.sf.hajdbc;
 
-/**
- * @author Paul Ferraro
- *
- */
-public interface ColumnProperties extends Named<String, ColumnProperties>
+import java.util.List;
+
+public interface Constraint<T extends Constraint<T>> extends Named<String, T>
 {
-	int getType();
+	/**
+	 * @return the table of this constraint
+	 */
+	QualifiedName getTable();
 	
-	String getNativeType();
-	
-	boolean isAutoIncrement();
+	/**
+	 * @return the list of columns in this unique constraint
+	 */
+	List<String> getColumnList();
 }

@@ -27,8 +27,6 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseProperties;
 import net.sf.hajdbc.cache.DatabaseMetaDataCache;
-import net.sf.hajdbc.cache.DatabaseMetaDataSupport;
-import net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory;
 import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.util.Resources;
 
@@ -40,12 +38,10 @@ public class EagerDatabaseMetaDataCache<Z, D extends Database<Z>> implements Dat
 {
 	private final Map<D, DatabaseProperties> map = new TreeMap<D, DatabaseProperties>();
 	private final DatabaseCluster<Z, D> cluster;
-	private final DatabaseMetaDataSupportFactory factory;
 	
-	public EagerDatabaseMetaDataCache(DatabaseCluster<Z, D> cluster, DatabaseMetaDataSupportFactory factory)
+	public EagerDatabaseMetaDataCache(DatabaseCluster<Z, D> cluster)
 	{
 		this.cluster = cluster;
-		this.factory = factory;
 	}
 	
 	/**
@@ -104,7 +100,6 @@ public class EagerDatabaseMetaDataCache<Z, D extends Database<Z>> implements Dat
 	{
 		DatabaseMetaData metaData = connection.getMetaData();
 		Dialect dialect = this.cluster.getDialect();
-		DatabaseMetaDataSupport support = this.factory.createSupport(metaData, dialect);
-		return new EagerDatabaseProperties(metaData, support, dialect);
+		return new EagerDatabaseProperties(metaData, dialect);
 	}
 }

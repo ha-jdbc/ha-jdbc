@@ -17,15 +17,7 @@
  */
 package net.sf.hajdbc;
 
-/**
- * @author Paul Ferraro
- *
- */
-public interface ColumnProperties extends Named<String, ColumnProperties>
+public interface UniqueConstraintFactory
 {
-	int getType();
-	
-	String getNativeType();
-	
-	boolean isAutoIncrement();
+	UniqueConstraint createUniqueConstraint(String name, QualifiedName table);
 }

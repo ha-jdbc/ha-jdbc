@@ -22,11 +22,12 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 
 import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.SequenceProperties;
+import net.sf.hajdbc.SequencePropertiesFactory;
 import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.dialect.db2.DB2DialectFactory;
 
@@ -63,6 +64,9 @@ public class DB2DialectTest extends StandardDialectTest
 	@Override
 	public void getSequences() throws SQLException
 	{
+		SequencePropertiesFactory factory = mock(SequencePropertiesFactory.class);
+		SequenceProperties sequence1 = mock(SequenceProperties.class);
+		SequenceProperties sequence2 = mock(SequenceProperties.class);
 		DatabaseMetaData metaData = mock(DatabaseMetaData.class);
 		Connection connection = mock(Connection.class);
 		Statement statement = mock(Statement.class);
@@ -75,25 +79,19 @@ public class DB2DialectTest extends StandardDialectTest
 		when(resultSet.getString(1)).thenReturn("schema1").thenReturn("schema2");
 		when(resultSet.getString(2)).thenReturn("sequence1").thenReturn("sequence2");
 		when(resultSet.getInt(3)).thenReturn(1).thenReturn(2);
+		when(factory.createSequenceProperties("schema1", "sequence1", 1)).thenReturn(sequence1);
+		when(factory.createSequenceProperties("schema2", "sequence2", 2)).thenReturn(sequence2);
 		
-		Map<QualifiedName, Integer> result = this.dialect.getSequenceSupport().getSequences(metaData);
-
+		Collection<SequenceProperties> results = this.dialect.getSequenceSupport().getSequences(metaData, factory);
+		
 		verify(statement).close();
 		
-		assertEquals(2, result.size());
+		assertEquals(2, results.size());
 		
-		Iterator<Map.Entry<QualifiedName, Integer>> entries = result.entrySet().iterator();
-		Map.Entry<QualifiedName, Integer> entry = entries.next();
-		
-		assertEquals("schema1", entry.getKey().getSchema());
-		assertEquals("sequence1", entry.getKey().getName());
-		assertEquals(1, entry.getValue().intValue());
-		
-		entry = entries.next();
-		
-		assertEquals("schema2", entry.getKey().getSchema());
-		assertEquals("sequence2", entry.getKey().getName());
-		assertEquals(2, entry.getValue().intValue());
+		Iterator<SequenceProperties> sequences = results.iterator();
+
+		assertSame(sequence1, sequences.next());
+		assertSame(sequence2, sequences.next());
 	}
 
 	@Override

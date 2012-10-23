@@ -216,7 +216,7 @@ e.g.
 	</ha-jdbc>
 
 
-###	<a name="balancer">Balancer</a>
+###	<a name="balancer"/>Balancer
 
 When executing a read request from the cluster, HA-JDBC uses the configured balancer strategy to determine which database should service the request.
 Each database can define a weight to affect how it is prioritized by the balancer.
@@ -338,14 +338,22 @@ e.g.
 
 ###	Cluster state management
 
-The state manager component is responsible for storing the active status of each database in the cluster, as well as any durability information.
+The state manager component is responsible for storing the active status of each database in the cluster, as well as any durability state.
 
 simple
 :	A non-persistent state manager that stores cluster state in memory.
 
+	e.g.
+
+		<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
+			<state id="simple"/>
+			<cluster><!-- ... --></cluster>
+		</ha-jdbc>
+
 *sql*
 :	A persistent state manager that uses an embedded database.
-	This provider supports the following properties.
+	This provider supports the following properties, in addition to properties to manipulate connection pooling behavior.
+	The complete list of pooling properties and their default values are available in the [Apache Commons Pool documentation][commons-pool] documentation..
 	<table>
 		<tr>
 			<th>Property</th>
@@ -363,8 +371,8 @@ simple
 				A MessageFormat pattern indicating the JDBC url of the embedded database.
 				The pattern can accept 2 parameters:
 				<ol>
-					<li>The cluster identifier - typically used as the database name.</li>
-					<li>The home directory of the system user - typically used to indicate the location of the embedded database.</li>
+					<li>The cluster identifier</li>
+					<li>$HOME/.ha-jdbc</li>
 				</ol>
 			</td>
 		</tr>
@@ -379,17 +387,48 @@ simple
 			<td>Authentication password for the above user.</td>
 		</tr>
 	</table>
-	You can also override several properties to manipulate connection pooling behavior.
-	The complete list of pooling properties and their default values are available in the [Apache Commons Pool documentation][commons-pool] documentation.
+	e.g.
 
-e.g.
+		<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
+			<state id="sqlite">
+				<property name="locationPattern">/tmp/{0}</property>
+			</state>
+			<cluster><!-- ... --></cluster>
+		</ha-jdbc>
 
-	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
-		<state id="sql">
-			<property name="urlPattern">jdbc:hsqldb:{1}/{0}</property>
-		</state>
-		<cluster><!-- ... --></cluster>
-	</ha-jdbc>
+sqlite
+:	A persistent state manager that uses a SQLite database.
+	This provider supports the following properties, in addition to properties to manipulate connection pooling behavior.
+	The complete list of pooling properties and their default values are available in the [Apache Commons Pool documentation][commons-pool] documentation..
+	<table>
+		<tr>
+			<th>Property</th>
+			<th>Default</th>
+			<th>Description</th>
+		</tr>
+		<tr>
+			<td>**locationPattern**</td>
+			<td>
+				{1}/{0}
+			</td>
+			<td>
+				A MessageFormat pattern indicating the base location of the embedded database.
+				The pattern can accept 2 parameters:
+				<ol>
+					<li>The cluster identifier</li>
+					<li>$HOME/.ha-jdbc</li>
+				</ol>
+			</td>
+		</tr>
+	</table>
+	e.g.
+
+		<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
+			<state id="sqlite">
+				<property name="locationPattern">/tmp/{0}</property>
+			</state>
+			<cluster><!-- ... --></cluster>
+		</ha-jdbc>
 
 
 ###	Durability

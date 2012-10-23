@@ -19,11 +19,11 @@ package net.sf.hajdbc.dialect;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.Arrays;
 
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.QualifiedName;
 import net.sf.hajdbc.SequenceProperties;
-import net.sf.hajdbc.cache.ForeignKeyConstraintImpl;
 import net.sf.hajdbc.dialect.derby.DerbyDialectFactory;
 
 import static org.junit.Assert.*;
@@ -88,21 +88,20 @@ public class DerbyDialectTest extends StandardDialectTest
 	{
 		QualifiedName table = mock(QualifiedName.class);
 		QualifiedName foreignTable = mock(QualifiedName.class);
+		ForeignKeyConstraint constraint = mock(ForeignKeyConstraint.class);
 		
 		when(table.getDDLName()).thenReturn("table");
 		when(foreignTable.getDDLName()).thenReturn("foreign_table");
+		when(constraint.getName()).thenReturn("name");
+		when(constraint.getTable()).thenReturn(table);
+		when(constraint.getColumnList()).thenReturn(Arrays.asList("column1", "column2"));
+		when(constraint.getForeignTable()).thenReturn(foreignTable);
+		when(constraint.getForeignColumnList()).thenReturn(Arrays.asList("foreign_column1", "foreign_column2"));
+		when(constraint.getDeferrability()).thenReturn(DatabaseMetaData.importedKeyInitiallyDeferred);
+		when(constraint.getDeleteRule()).thenReturn(DatabaseMetaData.importedKeyCascade);
+		when(constraint.getUpdateRule()).thenReturn(DatabaseMetaData.importedKeyRestrict);
 		
-		ForeignKeyConstraint key = new ForeignKeyConstraintImpl("name", table);
-		key.getColumnList().add("column1");
-		key.getColumnList().add("column2");
-		key.setForeignTable(foreignTable);
-		key.getForeignColumnList().add("foreign_column1");
-		key.getForeignColumnList().add("foreign_column2");
-		key.setDeferrability(DatabaseMetaData.importedKeyInitiallyDeferred);
-		key.setDeleteRule(DatabaseMetaData.importedKeyCascade);
-		key.setUpdateRule(DatabaseMetaData.importedKeyRestrict);
-		
-		String result = this.dialect.getCreateForeignKeyConstraintSQL(key);
+		String result = this.dialect.getCreateForeignKeyConstraintSQL(constraint);
 		
 		assertEquals("ALTER TABLE table ADD CONSTRAINT name FOREIGN KEY (column1, column2) REFERENCES foreign_table (foreign_column1, foreign_column2) ON DELETE CASCADE ON UPDATE RESTRICT", result);
 	}

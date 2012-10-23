@@ -31,10 +31,12 @@ import java.util.regex.Pattern;
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.ConnectionProperties;
 import net.sf.hajdbc.DumpRestoreSupport;
+import net.sf.hajdbc.IdentifierNormalizer;
 import net.sf.hajdbc.IdentityColumnSupport;
 import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.TriggerSupport;
 import net.sf.hajdbc.dialect.StandardDialect;
+import net.sf.hajdbc.dialect.StandardIdentifierNormalizer;
 import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.Strings;
 
@@ -104,19 +106,15 @@ public class PostgreSQLDialect extends StandardDialect implements DumpRestoreSup
 		return properties.getNativeType().equalsIgnoreCase("oid") ? Types.BLOB : properties.getType();
 	}
 
-	/**
-	 * Versions &gt;=8.1 of the PostgreSQL JDBC driver return incorrect values for DatabaseMetaData.getExtraNameCharacters().
-	 * @see net.sf.hajdbc.dialect.StandardDialect#getIdentifierPattern(java.sql.DatabaseMetaData)
-	 */
 	@Override
-	public Pattern getIdentifierPattern(DatabaseMetaData metaData) throws SQLException
+	public IdentifierNormalizer createIdentifierNormalizer(DatabaseMetaData metaData) throws SQLException
 	{
 		if ((metaData.getDriverMajorVersion() >= 8) && (metaData.getDriverMinorVersion() >= 1))
 		{
-			return Pattern.compile("[A-Za-z\\0200-\\0377_][A-Za-z\\0200-\\0377_0-9\\$]*");
+			return new StandardIdentifierNormalizer(metaData, Pattern.compile("[A-Za-z\\0200-\\0377_][A-Za-z\\0200-\\0377_0-9\\$]*"));
 		}
 		
-		return super.getIdentifierPattern(metaData);
+		return super.createIdentifierNormalizer(metaData);
 	}
 
 	/**

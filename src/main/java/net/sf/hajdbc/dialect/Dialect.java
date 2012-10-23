@@ -19,19 +19,27 @@ package net.sf.hajdbc.dialect;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.transaction.xa.XAException;
 
 import net.sf.hajdbc.ColumnProperties;
+import net.sf.hajdbc.ColumnPropertiesFactory;
 import net.sf.hajdbc.DumpRestoreSupport;
 import net.sf.hajdbc.ForeignKeyConstraint;
+import net.sf.hajdbc.ForeignKeyConstraintFactory;
+import net.sf.hajdbc.IdentifierNormalizer;
 import net.sf.hajdbc.IdentityColumnSupport;
+import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.QualifiedNameFactory;
 import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.TriggerSupport;
 import net.sf.hajdbc.UniqueConstraint;
+import net.sf.hajdbc.UniqueConstraintFactory;
 
 
 /**
@@ -116,15 +124,6 @@ public interface Dialect
 	List<String> getDefaultSchemas(DatabaseMetaData metaData) throws SQLException;
 	
 	/**
-	 * Returns a pattern for identifiers that do not require quoting
-	 * @param metaData 
-	 * @return a regular expression pattern
-	 * @throws SQLException 
-	 * @since 2.0.2
-	 */
-	Pattern getIdentifierPattern(DatabaseMetaData metaData) throws SQLException;
-	
-	/**
 	 * Replaces non-deterministic CURRENT_DATE functions with deterministic static values.
 	 * @param sql an SQL statement
 	 * @param date the replacement date
@@ -190,4 +189,75 @@ public interface Dialect
 	String getCreateSchemaSQL(String schema);
 	
 	String getDropSchemaSQL(String schema);
+	
+	/**
+	 * Returns all tables in this database mapped by schema.
+	 * @param metaData a DatabaseMetaData implementation
+	 * @return a Map of schema name to Collection of table names
+	 * @throws SQLException if an error occurs access DatabaseMetaData
+	 */
+	Collection<QualifiedName> getTables(DatabaseMetaData metaData, QualifiedNameFactory factory) throws SQLException;
+
+	/**
+	 * Returns the columns of the specified table.
+	 * @param metaData a DatabaseMetaData implementation
+	 * @param table a schema qualified table name
+	 * @return a Map of column name to column properties
+	 * @throws SQLException if an error occurs access DatabaseMetaData
+	 */
+	Map<String, ColumnProperties> getColumns(DatabaseMetaData metaData, QualifiedName table, ColumnPropertiesFactory factory) throws SQLException;
+
+	/**
+	 * Returns the primary key of the specified table.
+	 * @param metaData a DatabaseMetaData implementation
+	 * @param table a schema qualified table name
+	 * @return a unique constraint
+	 * @throws SQLException if an error occurs access DatabaseMetaData
+	 */
+	UniqueConstraint getPrimaryKey(DatabaseMetaData metaData, QualifiedName table, UniqueConstraintFactory factory) throws SQLException;
+
+	/**
+	 * Returns the foreign key constraints on the specified table.
+	 * @param metaData a DatabaseMetaData implementation
+	 * @param table a schema qualified table name
+	 * @return a Collection of foreign key constraints.
+	 * @throws SQLException if an error occurs access DatabaseMetaData
+	 */
+	Collection<ForeignKeyConstraint> getForeignKeyConstraints(DatabaseMetaData metaData, QualifiedName table, ForeignKeyConstraintFactory factory) throws SQLException;
+
+	/**
+	 * Returns the unique constraints on the specified table - excluding the primary key of the table.
+	 * @param metaData a schema qualified table name
+	 * @param table a qualified table name
+	 * @param primaryKey the primary key of this table
+	 * @return a Collection of unique constraints.
+	 * @throws SQLException if an error occurs access DatabaseMetaData
+	 */
+	Collection<UniqueConstraint> getUniqueConstraints(DatabaseMetaData metaData, QualifiedName table, UniqueConstraint primaryKey, UniqueConstraintFactory factory) throws SQLException;
+	
+	/**
+	 * Identifies any identity columns from the from the specified collection of columns
+	 * @param columns the columns of a table
+	 * @return a collection of column names
+	 * @throws SQLException
+	 */
+	Collection<String> getIdentityColumns(Collection<ColumnProperties> columns) throws SQLException;
+	
+	/**
+	 * Returns a mapping of standard JDBC types to native types
+	 * @param metaData database meta data
+	 * @return a map of JDBC types
+	 * @throws SQLException
+	 */
+	Map<Integer, Map.Entry<String, Integer>> getTypes(DatabaseMetaData metaData) throws SQLException;
+
+	IdentifierNormalizer createIdentifierNormalizer(DatabaseMetaData metaData) throws SQLException;
+	
+	QualifiedNameFactory createQualifiedNameFactory(DatabaseMetaData metaData, IdentifierNormalizer normalizer) throws SQLException;
+	
+	ColumnPropertiesFactory createColumnPropertiesFactory(IdentifierNormalizer normalizer);
+	
+	ForeignKeyConstraintFactory createForeignKeyConstraintFactory(QualifiedNameFactory factory);
+	
+	UniqueConstraintFactory createUniqueConstraintFactory(IdentifierNormalizer normalizer);
 }

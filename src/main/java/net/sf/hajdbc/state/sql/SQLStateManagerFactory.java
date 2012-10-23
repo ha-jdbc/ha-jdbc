@@ -103,8 +103,7 @@ public class SQLStateManagerFactory extends GenericObjectPoolConfiguration imple
 	{
 		if (this.urlPattern == null)
 		{
-			// TODO externalize
-			throw new IllegalArgumentException("No urlPattern property defined and no embedded database driver was detected on the classpath.");
+			throw new IllegalArgumentException("No embedded database driver was detected on the classpath.");
 		}
 		
 		String url = MessageFormat.format(this.urlPattern, cluster.getId(), Strings.HA_JDBC_HOME);
@@ -113,7 +112,7 @@ public class SQLStateManagerFactory extends GenericObjectPoolConfiguration imple
 		database.setUser(this.user);
 		database.setPassword(this.password);
 		
-		this.logger.log(Level.INFO, "State for cluster {0} will be persisted to {1}", cluster, url);
+		this.logger.log(Level.INFO, "State for database cluster {0} will be persisted to {1}", cluster, url);
 		
 		return new SQLStateManager<Z, D>(cluster, database, new GenericObjectPoolFactory(this));
 	}

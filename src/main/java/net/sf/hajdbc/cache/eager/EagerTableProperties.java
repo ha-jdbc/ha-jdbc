@@ -24,10 +24,13 @@ import java.util.Map;
 
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.ForeignKeyConstraint;
+import net.sf.hajdbc.IdentifierNormalizer;
 import net.sf.hajdbc.QualifiedName;
+import net.sf.hajdbc.QualifiedNameFactory;
 import net.sf.hajdbc.UniqueConstraint;
+import net.sf.hajdbc.UniqueConstraintFactory;
 import net.sf.hajdbc.cache.AbstractTableProperties;
-import net.sf.hajdbc.cache.DatabaseMetaDataSupport;
+import net.sf.hajdbc.dialect.Dialect;
 
 /**
  * @author Paul Ferraro
@@ -41,15 +44,17 @@ public class EagerTableProperties extends AbstractTableProperties
 	private Collection<ForeignKeyConstraint> foreignKeyConstraints;
 	private Collection<String> identityColumns;
 	
-	public EagerTableProperties(DatabaseMetaData metaData, DatabaseMetaDataSupport support, QualifiedName table) throws SQLException
+	public EagerTableProperties(QualifiedName table, DatabaseMetaData metaData, Dialect dialect, QualifiedNameFactory factory) throws SQLException
 	{
 		super(table);
 		
-		this.columnMap = support.getColumns(metaData, table);
-		this.primaryKey = support.getPrimaryKey(metaData, table);
-		this.uniqueConstraints = support.getUniqueConstraints(metaData, table, this.primaryKey);
-		this.foreignKeyConstraints = support.getForeignKeyConstraints(metaData, table);
-		this.identityColumns = support.getIdentityColumns(this.columnMap.values());
+		IdentifierNormalizer normalizer = factory.getIdentifierNormalizer();
+		this.columnMap = dialect.getColumns(metaData, table, dialect.createColumnPropertiesFactory(normalizer));
+		UniqueConstraintFactory uniqueConstraintFactory = dialect.createUniqueConstraintFactory(normalizer);
+		this.primaryKey = dialect.getPrimaryKey(metaData, table, uniqueConstraintFactory);
+		this.uniqueConstraints = dialect.getUniqueConstraints(metaData, table, this.primaryKey, uniqueConstraintFactory);
+		this.foreignKeyConstraints = dialect.getForeignKeyConstraints(metaData, table, dialect.createForeignKeyConstraintFactory(factory));
+		this.identityColumns = dialect.getIdentityColumns(this.columnMap.values());
 	}
 
 	@Override

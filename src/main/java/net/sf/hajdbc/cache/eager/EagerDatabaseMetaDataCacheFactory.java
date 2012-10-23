@@ -19,15 +19,14 @@ package net.sf.hajdbc.cache.eager;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
-import net.sf.hajdbc.cache.AbstractDatabaseMetaDataCacheFactory;
 import net.sf.hajdbc.cache.DatabaseMetaDataCache;
-import net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory;
+import net.sf.hajdbc.cache.DatabaseMetaDataCacheFactory;
 
 /**
  * Factory for creating an {@link EagerDatabaseMetaDataCache}.
  * @author Paul Ferraro
  */
-public class EagerDatabaseMetaDataCacheFactory extends AbstractDatabaseMetaDataCacheFactory
+public class EagerDatabaseMetaDataCacheFactory implements DatabaseMetaDataCacheFactory
 {
 	private static final long serialVersionUID = -7767712061192003942L;
 
@@ -37,13 +36,9 @@ public class EagerDatabaseMetaDataCacheFactory extends AbstractDatabaseMetaDataC
 		return "eager";
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.cache.AbstractDatabaseMetaDataCacheFactory#createCache(net.sf.hajdbc.DatabaseCluster, net.sf.hajdbc.cache.DatabaseMetaDataSupportFactory)
-	 */
 	@Override
-	protected <Z, D extends Database<Z>> DatabaseMetaDataCache<Z, D> createCache(DatabaseCluster<Z, D> cluster, DatabaseMetaDataSupportFactory factory)
+	public <Z, D extends Database<Z>> DatabaseMetaDataCache<Z, D> createCache(DatabaseCluster<Z, D> cluster)
 	{
-		return new EagerDatabaseMetaDataCache<Z, D>(cluster, factory);
+		return new EagerDatabaseMetaDataCache<Z, D>(cluster);
 	}
 }

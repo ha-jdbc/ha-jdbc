@@ -21,6 +21,44 @@
 		<title>HA-JDBC Changes</title>
 	</properties>
 	<body>
+		<release version="2.1.0-beta-2" date="...">
+			<action dev="pferraro" type="add" issue="3">
+				Complete SQLite state manager implementation.
+			</action>
+			<action dev="pferraro" type="update">
+				Relocate default location of SQL state manager databases to $HOME/.ha-jdbc
+			</action>
+			<action dev="pferraro" type="fix">
+				Fix xml parsing of pooling configuration for state managers.
+			</action>
+			<action dev="pferraro" type="fix">
+				Fix recovery query logic in SQL state manager.
+			</action>
+			<action dev="pferraro" type="fix">
+				Fix NPE in MulitplexingDecoderFactory if password is null.
+			</action>
+			<action dev="pferraro" type="fix">
+				Fix dialect detection in SQL state manager.
+			</action>
+			<action dev="pferraro" type="fix">
+				Drop deprecated properties from default jgroups configuration.
+			</action>
+			<action dev="pferraro" type="fix">
+				Fix HSQLDB Dialect.getDefaultSchemas() to return "PUBLIC".
+			</action>
+			<action dev="pferraro" type="fix">
+				Database meta data cache should store table/schema names quoted, if necessary.
+			</action>
+			<action dev="pferraro" type="update">
+				Allow override of identifier normalization by refactoring DatabaseMetaDataSupport into Dialect interface.
+			</action>
+			<action dev="pferraro" type="update">
+				Upgrade Mockito to version 1.9.5.
+			</action>
+			<action dev="pferraro" type="update">
+				Upgrade JGroups to version 3.2.0.Final.
+			</action>
+		</release>
 		<release version="2.1.0-beta-1" date="2012-10-11">
 			<action dev="pferraro" type="update">
 				Migrate source code repository to github.
