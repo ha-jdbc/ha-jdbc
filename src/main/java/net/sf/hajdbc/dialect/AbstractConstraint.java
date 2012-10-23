@@ -52,13 +52,4 @@ public abstract class AbstractConstraint<C extends Constraint<C>> extends Abstra
 	{
 		return this.table;
 	}
-
-	/**
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
-	 */
-	@Override
-	public int compareTo(C constraint)
-	{
-		return this.getName().compareTo(constraint.getName());
-	}
 }
