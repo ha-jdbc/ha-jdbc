@@ -328,7 +328,8 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	/**
-	 * @see net.sf.hajdbc.SequenceSupport#getSequenceValues(java.sql.DatabaseMetaData)
+	 * {@inheritDoc}
+	 * @see net.sf.hajdbc.SequenceSupport#getSequences(java.sql.DatabaseMetaData, net.sf.hajdbc.SequencePropertiesFactory)
 	 */
 	@Override
 	public Collection<SequenceProperties> getSequences(DatabaseMetaData metaData, SequencePropertiesFactory factory) throws SQLException
@@ -878,7 +879,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.cache.DatabaseMetaDataSupport#getTypes(java.sql.DatabaseMetaData)
+	 * @see net.sf.hajdbc.dialect.Dialect#getTypes(java.sql.DatabaseMetaData)
 	 */
 	@Override
 	public Map<Integer, Entry<String, Integer>> getTypes(DatabaseMetaData metaData) throws SQLException

@@ -20,7 +20,7 @@ package net.sf.hajdbc.pool.generic;
 import org.apache.commons.pool.impl.GenericObjectPool;
 
 /**
- * Expose getters/setters to {@link GenericObjectPool.Config} properties.
+ * Expose getters/setters to {@link org.apache.commons.pool.impl.GenericObjectPool.Config} properties.
  * @author Paul Ferraro
  */
 public class GenericObjectPoolConfiguration extends GenericObjectPool.Config
