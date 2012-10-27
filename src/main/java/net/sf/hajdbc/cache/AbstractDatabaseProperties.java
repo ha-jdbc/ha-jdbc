@@ -111,7 +111,6 @@ public abstract class AbstractDatabaseProperties implements DatabaseProperties
 	
 	private <T> T find(Map<QualifiedName, T> map, String raw, List<String> defaultSchemaList) throws SQLException
 	{
-		System.out.println(String.format("find(%s, %s, %s)", map.keySet(), raw, defaultSchemaList));
 		QualifiedName name = this.nameFactory.parse(raw);
 
 		T properties = map.get(name);
