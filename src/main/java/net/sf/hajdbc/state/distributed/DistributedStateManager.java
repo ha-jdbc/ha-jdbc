@@ -185,6 +185,12 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 		this.stateManager.stop();
 	}
 
+	@Override
+	public boolean isEnabled()
+	{
+		return this.stateManager.isEnabled() && this.dispatcher.isCoordinator();
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.state.distributed.StateCommandContext#getDatabaseCluster()

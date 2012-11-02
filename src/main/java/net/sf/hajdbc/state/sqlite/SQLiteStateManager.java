@@ -101,6 +101,12 @@ public class SQLiteStateManager<Z, D extends Database<Z>> implements StateManage
 		this.listener = new DurabilityListenerAdapter(this, cluster.getTransactionIdentifierFactory());
 	}
 	
+	@Override
+	public boolean isEnabled()
+	{
+		return true;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseClusterListener#activated(net.sf.hajdbc.state.DatabaseEvent)

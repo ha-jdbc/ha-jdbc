@@ -39,4 +39,6 @@ public interface StateManager extends DatabaseClusterListener, DurabilityListene
 	void setActiveDatabases(Set<String> databases);
 	
 	Map<InvocationEvent, Map<String, InvokerEvent>> recover();
+	
+	boolean isEnabled();
 }

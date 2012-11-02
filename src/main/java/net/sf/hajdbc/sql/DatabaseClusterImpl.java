@@ -19,7 +19,6 @@ package net.sf.hajdbc.sql;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -802,25 +801,6 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		}
 		catch (SQLException e)
 		{
-			// Probably not implemented by driver
-		}
-		
-		try
-		{
-			Statement statement = connection.createStatement();
-			try
-			{
-				statement.execute(this.dialect.getSimpleSQL());
-				
-				return true;
-			}
-			finally
-			{
-				Resources.close(statement);
-			}
-		}
-		catch (SQLException e)
-		{
 			return false;
 		}
 	}
@@ -880,6 +860,8 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		@Override
 		public void run()
 		{
+			if (!DatabaseClusterImpl.this.getStateManager().isEnabled()) return;
+			
 			Set<D> databases = DatabaseClusterImpl.this.getBalancer();
 			
 			int size = databases.size();
@@ -915,6 +897,8 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		@Override
 		public void run()
 		{
+			if (!DatabaseClusterImpl.this.getStateManager().isEnabled()) return;
+			
 			try
 			{
 				Set<D> activeDatabases = DatabaseClusterImpl.this.getBalancer();

@@ -21,6 +21,14 @@
 		<title>HA-JDBC Changes</title>
 	</properties>
 	<body>
+		<release version="2.1.0-beta-3" date="soon">
+			<action dev="pferraro" type="fix" issue="5">
+				Auto-activation & auto-deactivation only needs to be triggered on the group coordinator.
+			</action>
+			<action dev="pferraro" type="update">
+				Drop obsolete Dialect.getSimpleSQL().
+			</action>
+		</release>
 		<release version="2.1.0-beta-2" date="2012-10-27">
 			<action dev="pferraro" type="add" issue="3">
 				Complete SQLite state manager implementation.

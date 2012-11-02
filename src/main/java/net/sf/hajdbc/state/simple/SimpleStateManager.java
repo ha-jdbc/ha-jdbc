@@ -89,6 +89,12 @@ public class SimpleStateManager implements StateManager
 	}
 
 	@Override
+	public boolean isEnabled()
+	{
+		return true;
+	}
+
+	@Override
 	public void start()
 	{
 	}

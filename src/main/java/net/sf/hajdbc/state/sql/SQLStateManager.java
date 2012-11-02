@@ -559,6 +559,12 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 		this.listener.afterInvoker(event);
 	}
 
+	@Override
+	public boolean isEnabled()
+	{
+		return true;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.Lifecycle#start()
