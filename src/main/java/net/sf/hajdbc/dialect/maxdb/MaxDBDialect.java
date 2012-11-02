@@ -58,15 +58,6 @@ public class MaxDBDialect extends StandardDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#currentTimestampFunction()
-	 */
-	@Override
-	protected String currentTimestampFunction()
-	{
-		return "SYSDATE";
-	}
-
-	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.dialect.StandardDialect#getSequenceSupport()
 	 */

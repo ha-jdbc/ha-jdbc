@@ -108,16 +108,6 @@ public class DerbyDialectTest extends StandardDialectTest
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.dialect.StandardDialectTest#getSimpleSQL()
-	 */
-	@Override
-	public void getSimpleSQL() throws SQLException
-	{
-		assertEquals("VALUES CURRENT_TIMESTAMP", this.dialect.getSimpleSQL());
-	}
-
-	/**
-	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.dialect.StandardDialectTest#evaluateCurrentDate()
 	 */
 	@Override

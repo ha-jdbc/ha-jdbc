@@ -48,15 +48,6 @@ public class SybaseDialect extends StandardDialect
 	}
 
 	/**
-	 * @see net.sf.hajdbc.dialect.StandardDialect#currentTimestampFunction()
-	 */
-	@Override
-	protected String currentTimestampFunction()
-	{
-		return "GETDATE()";
-	}
-
-	/**
 	 * @see net.sf.hajdbc.dialect.StandardDialect#truncateTableFormat()
 	 */
 	@Override

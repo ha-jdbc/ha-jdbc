@@ -51,16 +51,6 @@ public class SybaseDialectTest extends StandardDialectTest
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.dialect.StandardDialectTest#getSimpleSQL()
-	 */
-	@Override
-	public void getSimpleSQL() throws SQLException
-	{
-		assertEquals("SELECT GETDATE()", this.dialect.getSimpleSQL());
-	}
-
-	/**
-	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.dialect.StandardDialectTest#getTruncateTableSQL()
 	 */
 	@Override

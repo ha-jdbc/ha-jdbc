@@ -107,12 +107,6 @@ public class DB2DialectTest extends StandardDialectTest
 		
 		assertEquals("VALUES NEXTVAL FOR sequence", result);
 	}
-
-	@Override
-	public void getSimpleSQL() throws SQLException
-	{
-		assertEquals("VALUES CURRENT_TIMESTAMP", this.dialect.getSimpleSQL());
-	}
 	
 	/**
 	 * {@inheritDoc}

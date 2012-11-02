@@ -268,14 +268,6 @@ public class StandardDialectTest
 	}
 
 	@Test
-	public void getSimpleSQL() throws SQLException
-	{
-		String result = this.dialect.getSimpleSQL();
-
-		assertEquals("SELECT CURRENT_TIMESTAMP", result);
-	}
-
-	@Test
 	public void getTruncateTableSQL() throws SQLException
 	{
 		TableProperties table = mock(TableProperties.class);

@@ -141,16 +141,6 @@ public class HSQLDBDialectTest extends StandardDialectTest
 		assertSame(sequence1, sequences.next());
 		assertSame(sequence2, sequences.next());
 	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.dialect.StandardDialectTest#getSimpleSQL()
-	 */
-	@Override
-	public void getSimpleSQL() throws SQLException
-	{
-		assertEquals("CALL CURRENT_TIMESTAMP", this.dialect.getSimpleSQL());
-	}
 	
 	/**
 	 * {@inheritDoc}

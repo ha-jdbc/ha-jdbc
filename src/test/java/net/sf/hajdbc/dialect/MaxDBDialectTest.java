@@ -128,16 +128,6 @@ public class MaxDBDialectTest extends StandardDialectTest
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.dialect.StandardDialectTest#getSimpleSQL()
-	 */
-	@Override
-	public void getSimpleSQL() throws SQLException
-	{
-		assertEquals("SELECT SYSDATE FROM DUAL", this.dialect.getSimpleSQL());
-	}
-
-	/**
-	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.dialect.StandardDialectTest#getTruncateTableSQL()
 	 */
 	@Override

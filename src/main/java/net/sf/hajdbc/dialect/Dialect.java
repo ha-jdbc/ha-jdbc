@@ -51,13 +51,6 @@ import net.sf.hajdbc.UniqueConstraintFactory;
 public interface Dialect
 {
 	/**
-	 * Returns a simple SQL statement used to validate whether a database is alive or not.
-	 * @return a SQL statement
-	 * @throws SQLException 
-	 */
-	String getSimpleSQL() throws SQLException;
-	
-	/**
 	 * Returns a SQL statement used to truncate a table.
 	 * @param properties table meta data
 	 * @return a SQL statement

@@ -127,15 +127,6 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 		return "(?<=\\W)RAND\\s*\\(\\s*\\)";
 	}
 
-	/**
-	 * @see net.sf.hajdbc.dialect.Dialect#getSimpleSQL()
-	 */
-	@Override
-	public String getSimpleSQL()
-	{
-		return this.executeFunctionSQL(this.currentTimestampFunction());
-	}
-
 	protected String executeFunctionFormat()
 	{
 		StringBuilder builder = new StringBuilder("SELECT {0}");
@@ -154,12 +145,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	{
 		return MessageFormat.format(this.executeFunctionFormat(), function);
 	}
-	
-	protected String currentTimestampFunction()
-	{
-		return "CURRENT_TIMESTAMP";
-	}
-	
+
 	protected String dummyTable()
 	{
 		return null;

@@ -130,16 +130,6 @@ public class FirebirdDialectTest extends StandardDialectTest
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.dialect.StandardDialectTest#getSimpleSQL()
-	 */
-	@Override
-	public void getSimpleSQL() throws SQLException
-	{
-		assertEquals("SELECT CURRENT_TIMESTAMP FROM RDB$DATABASE", this.dialect.getSimpleSQL());
-	}
-
-	/**
-	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.dialect.StandardDialectTest#isSelectForUpdate()
 	 */
 	@Override
