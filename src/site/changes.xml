@@ -22,6 +22,12 @@
 	</properties>
 	<body>
 		<release version="2.1.0-beta-3" date="soon">
+			<action dev="pferraro" type="fix">
+				XML parser should fail if dialect/durability/balancer/meta-data-cache was not found.
+			</action>
+			<action dev="pferraro" type="fix">
+				Fix formatting of JBoss Logging messages.
+			</action>
 			<action dev="pferraro" type="fix" issue="5">
 				Auto-activation & auto-deactivation only needs to be triggered on the group coordinator.
 			</action>

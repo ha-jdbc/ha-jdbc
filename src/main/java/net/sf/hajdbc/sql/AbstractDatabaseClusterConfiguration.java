@@ -871,7 +871,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		@Override
 		public T unmarshal(final String value) throws Exception
 		{
-			return ServiceLoaders.findService(new IdentifiableMatcher<T>(value), this.serviceClass);
+			return ServiceLoaders.findRequiredService(new IdentifiableMatcher<T>(value), this.serviceClass);
 		}
 
 		@Override
