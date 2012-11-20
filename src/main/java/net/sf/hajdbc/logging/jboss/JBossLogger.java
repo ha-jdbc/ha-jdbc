@@ -54,6 +54,6 @@ public class JBossLogger extends AbstractLogger
 	@Override
 	public void log(Level level, Throwable e, String pattern, Object... args)
 	{
-		this.logger.logf(levels.get(level), e, pattern, args);
+		this.logger.logv(levels.get(level), e, pattern, args);
 	}
 }
