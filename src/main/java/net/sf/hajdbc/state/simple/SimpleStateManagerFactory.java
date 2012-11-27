@@ -29,7 +29,7 @@ public class SimpleStateManagerFactory implements StateManagerFactory
 	@Override
 	public String getId()
 	{
-		return "memory";
+		return "simple";
 	}
 
 	/**
