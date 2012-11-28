@@ -170,6 +170,8 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 				output.writeByte(descriptor.getType().ordinal());
 			}
 		}
+		
+		output.flush();
 	}
 
 	/**
