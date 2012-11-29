@@ -780,7 +780,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 			Connection connection = database.connect(database.createConnectionSource(), database.decodePassword(this.decoder));
 			try
 			{
-				return this.isAlive(connection);
+				return connection.isValid(0);
 			}
 			finally
 			{
@@ -789,18 +789,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		}
 		catch (SQLException e)
 		{
-			return false;
-		}
-	}
-	
-	private boolean isAlive(Connection connection)
-	{
-		try
-		{
-			return connection.isValid(0);
-		}
-		catch (SQLException e)
-		{
+			logger.log(Level.DEBUG, e);
 			return false;
 		}
 	}
