@@ -131,7 +131,7 @@ public class JGroupsCommandDispatcher<C> implements RequestHandler, CommandDispa
 	@Override
 	public <R> Map<Member, R> executeAll(Command<R, C> command)
 	{
-		Message message = new Message(null, this.getLocalAddress(), command);
+		Message message = new Message(null, this.getLocalAddress(), Objects.serialize(command));
 		
 		try
 		{
@@ -165,7 +165,7 @@ public class JGroupsCommandDispatcher<C> implements RequestHandler, CommandDispa
 	{
 		while (true)
 		{
-			Message message = new Message(this.getCoordinatorAddress(), this.getLocalAddress(), command);
+			Message message = new Message(this.getCoordinatorAddress(), this.getLocalAddress(), Objects.serialize(command));
 
 			try
 			{
