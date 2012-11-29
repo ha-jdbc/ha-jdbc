@@ -117,8 +117,13 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 	}
 	
 	public XMLDatabaseClusterConfigurationFactory(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass, URL url)
-	{
-		this(targetClass, url.getProtocol().equals("file") ? new FileXMLStreamFactory(new File(url.getPath())) : new URLXMLStreamFactory(url));
+	{		
+		try {
+			this(targetClass, url.getProtocol().equals("file") ? new FileXMLStreamFactory(new File(url.toURI())) : new URLXMLStreamFactory(url));
+		} catch (URISyntaxException e) {
+			// This is guaranteed to success cause it comes from findresource
+			e.printStackTrace();
+		}
 	}
 	
 	public XMLDatabaseClusterConfigurationFactory(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass, XMLStreamFactory streamFactory)
