@@ -17,38 +17,46 @@
  */
 package net.sf.hajdbc.state.bdb;
 
+import java.io.File;
+import java.text.MessageFormat;
+
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.pool.generic.GenericObjectPoolConfiguration;
+import net.sf.hajdbc.pool.generic.GenericObjectPoolFactory;
 import net.sf.hajdbc.state.StateManager;
 import net.sf.hajdbc.state.StateManagerFactory;
+import net.sf.hajdbc.util.Strings;
 
 import com.sleepycat.je.EnvironmentConfig;
 
-public class BDBStateManagerFactory extends EnvironmentConfig implements StateManagerFactory
+public class BerkeleyDBStateManagerFactory extends GenericObjectPoolConfiguration implements StateManagerFactory
 {
 	private static final long serialVersionUID = 7138340006866127561L;
 	
-	private String location;
+	private String locationPattern = "{1}/{0}";
 	
 	@Override
 	public String getId()
 	{
-		return "bdb";
+		return "berkeleydb";
 	}
 
 	@Override
 	public <Z, D extends Database<Z>> StateManager createStateManager(DatabaseCluster<Z, D> cluster)
 	{
-		return null;
+		String location = MessageFormat.format(this.locationPattern, cluster.getId(), Strings.HA_JDBC_HOME);
+		EnvironmentConfig config = new EnvironmentConfig().setAllowCreate(true).setTransactional(true);
+		return new BerkeleyDBStateManager(cluster, new File(location), config, new GenericObjectPoolFactory(this));
 	}
 	
-	public String getLocation()
+	public String getLocationPattern()
 	{
-		return this.location;
+		return this.locationPattern;
 	}
-	
-	public void setLocation(String location)
+
+	public void setLocationPattern(String pattern)
 	{
-		this.location = location;
+		this.locationPattern = pattern;
 	}
 }

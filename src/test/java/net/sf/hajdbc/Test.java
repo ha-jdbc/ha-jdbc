@@ -38,6 +38,7 @@ import net.sf.hajdbc.sql.DataSourceDatabaseClusterConfiguration;
 import net.sf.hajdbc.sql.SQLProxy;
 import net.sf.hajdbc.state.StateManager;
 import net.sf.hajdbc.state.StateManagerFactory;
+import net.sf.hajdbc.state.bdb.BerkeleyDBStateManagerFactory;
 import net.sf.hajdbc.state.simple.SimpleStateManagerFactory;
 import net.sf.hajdbc.state.sql.SQLStateManagerFactory;
 import net.sf.hajdbc.state.sqlite.SQLiteStateManagerFactory;
@@ -64,7 +65,7 @@ public class Test
 	{
 		SQLiteStateManagerFactory factory = new SQLiteStateManagerFactory();
 		factory.setLocationPattern("target/sqlite/{0}");
-		this.test(new SQLiteStateManagerFactory());
+		this.test(factory);
 	}
 	
 	@org.junit.Test
@@ -80,6 +81,14 @@ public class Test
 	{
 		SQLStateManagerFactory factory = new SQLStateManagerFactory();
 		factory.setUrlPattern("jdbc:hsqldb:target/hsqldb/{0}");
+		this.test(factory);
+	}
+	
+	@org.junit.Test
+	public void berkeleydb() throws Exception
+	{
+		BerkeleyDBStateManagerFactory factory = new BerkeleyDBStateManagerFactory();
+		factory.setLocationPattern("target/bdb/{0}");
 		this.test(factory);
 	}
 	
