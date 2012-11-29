@@ -19,6 +19,7 @@ package net.sf.hajdbc.distributed.jgroups;
 
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.Collections;
@@ -270,7 +271,9 @@ public class JGroupsCommandDispatcher<C> implements RequestHandler, CommandDispa
 	@Override
 	public void getState(OutputStream output) throws Exception
 	{
-		this.stateful.writeState(new ObjectOutputStream(output));
+		ObjectOutput out = new ObjectOutputStream(output);
+		this.stateful.writeState(out);
+		out.flush();
 	}
 
 	/**
