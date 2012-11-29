@@ -17,21 +17,20 @@
  */
 package net.sf.hajdbc.durability;
 
-import java.util.EventObject;
 
 /**
  * @author Paul Ferraro
  */
-public class DurabilityEventImpl extends EventObject implements DurabilityEvent
+public class DurabilityEventImpl implements java.io.Serializable, DurabilityEvent
 {
 	private static final long serialVersionUID = -8747536263068408813L;
 	
 	private final Durability.Phase phase;
+	private final Object transactionId;
 	
 	protected DurabilityEventImpl(Object transactionId, Durability.Phase phase)
 	{
-		super(transactionId);
-		
+		this.transactionId = transactionId;
 		this.phase = phase;
 	}
 	
@@ -42,7 +41,7 @@ public class DurabilityEventImpl extends EventObject implements DurabilityEvent
 	@Override
 	public Object getTransactionId()
 	{
-		return this.source;
+		return this.transactionId;
 	}
 	
 	/**
@@ -66,7 +65,7 @@ public class DurabilityEventImpl extends EventObject implements DurabilityEvent
 		
 		InvocationEvent event = (InvocationEvent) object;
 		
-		return (this.phase == event.getPhase()) && this.source.equals(event.getTransactionId());
+		return (this.phase == event.getPhase()) && this.transactionId.equals(event.getTransactionId());
 	}
 
 	/**
@@ -76,6 +75,6 @@ public class DurabilityEventImpl extends EventObject implements DurabilityEvent
 	@Override
 	public int hashCode()
 	{
-		return this.source.hashCode();
+		return this.transactionId.hashCode();
 	}
 }
