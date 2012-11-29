@@ -180,7 +180,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 	public void readState(ObjectInput input) throws IOException, ClassNotFoundException
 	{
 		// Is this valid?  or should we unlock/clear?
-		assert this.remoteLockDescriptorMap.isEmpty();
+		//assert this.remoteLockDescriptorMap.isEmpty();
 		
 		int size = input.readInt();
 		
