@@ -45,7 +45,7 @@
 				Rename SimpleStateManagerFactory from "memory" to "simple".
 			</action>
 			<action dev="pferraro" type="update">
-				Upgrade JGroups to 3.2.3.Final.
+				Upgrade JGroups to 3.2.4.Final.
 			</action>
 			<action dev="pferraro" type="fix">
 				XML parser should fail if dialect/durability/balancer/meta-data-cache was not found.
