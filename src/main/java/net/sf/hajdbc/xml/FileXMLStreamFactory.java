@@ -18,6 +18,8 @@
 package net.sf.hajdbc.xml;
 
 import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -39,6 +41,18 @@ public class FileXMLStreamFactory implements XMLStreamFactory
 	public FileXMLStreamFactory(File file)
 	{
 		this.file = file;
+	}
+	
+	public FileXMLStreamFactory(URL url)
+	{
+		try
+		{
+			this.file = new File(url.toURI());
+		}
+		catch (URISyntaxException e)
+		{
+			throw new IllegalArgumentException(e);
+		}
 	}
 	
 	/**

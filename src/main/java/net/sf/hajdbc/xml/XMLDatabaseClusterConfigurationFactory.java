@@ -17,7 +17,6 @@
  */
 package net.sf.hajdbc.xml;
 
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.SQLException;
@@ -105,7 +104,7 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 		}
 		throw new IllegalArgumentException(Messages.CONFIG_NOT_FOUND.getMessage(resource));
 	}
-	
+
 	public XMLDatabaseClusterConfigurationFactory(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass, String id, String resource)
 	{
 		this(targetClass, id, resource, Thread.currentThread().getContextClassLoader());
@@ -118,12 +117,7 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 	
 	public XMLDatabaseClusterConfigurationFactory(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass, URL url)
 	{		
-		try {
-			this(targetClass, url.getProtocol().equals("file") ? new FileXMLStreamFactory(new File(url.toURI())) : new URLXMLStreamFactory(url));
-		} catch (URISyntaxException e) {
-			// This is guaranteed to success cause it comes from findresource
-			e.printStackTrace();
-		}
+		this(targetClass, url.getProtocol().equals("file") ? new FileXMLStreamFactory(url) : new URLXMLStreamFactory(url));
 	}
 	
 	public XMLDatabaseClusterConfigurationFactory(Class<? extends DatabaseClusterConfiguration<Z, D>> targetClass, XMLStreamFactory streamFactory)
