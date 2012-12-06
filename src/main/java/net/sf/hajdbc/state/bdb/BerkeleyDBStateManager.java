@@ -34,6 +34,7 @@ import net.sf.hajdbc.durability.InvocationEvent;
 import net.sf.hajdbc.durability.InvocationEventImpl;
 import net.sf.hajdbc.durability.InvokerEvent;
 import net.sf.hajdbc.durability.InvokerEventImpl;
+import net.sf.hajdbc.durability.InvokerResult;
 import net.sf.hajdbc.pool.CloseablePoolProvider;
 import net.sf.hajdbc.pool.Pool;
 import net.sf.hajdbc.pool.PoolFactory;
@@ -299,7 +300,13 @@ public class BerkeleyDBStateManager extends CloseablePoolProvider<Environment, D
 					Map<String, InvokerEvent> invokers = result.get(new InvocationEventImpl(txIdFactory.deserialize(key.getTransactionId()), Durability.Phase.values()[key.getPhase()], null));
 					if (invokers != null)
 					{
-						invokers.put(key.getDatabaseId(), new InvokerEventImpl(txIdFactory.deserialize(key.getTransactionId()), Durability.Phase.values()[key.getPhase()], key.getDatabaseId()));
+						InvokerEvent invoker = new InvokerEventImpl(txIdFactory.deserialize(key.getTransactionId()), Durability.Phase.values()[key.getPhase()], key.getDatabaseId());
+						byte[] value = entry.getValue();
+						if (value.length > 0)
+						{
+							invoker.setResult(Objects.<InvokerResult>deserialize(value));
+						}
+						invokers.put(key.getDatabaseId(), invoker);
 					}
 				}
 				return null;
