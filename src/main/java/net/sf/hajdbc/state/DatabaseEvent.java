@@ -17,15 +17,14 @@
  */
 package net.sf.hajdbc.state;
 
-import java.util.EventObject;
-
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.util.Event;
 
 /**
  * Identifies the target database of an event.
  * @author Paul Ferraro
  */
-public class DatabaseEvent extends EventObject
+public class DatabaseEvent extends Event<String>
 {
 	private static final long serialVersionUID = -6709361835865578668L;
 
@@ -35,25 +34,5 @@ public class DatabaseEvent extends EventObject
 	public DatabaseEvent(Database<?> database)
 	{
 		super(database.getId());
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see java.util.EventObject#getSource()
-	 */
-	@Override
-	public String getSource()
-	{
-		return (String) this.source;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see java.util.EventObject#toString()
-	 */
-	@Override
-	public String toString()
-	{
-		return this.getSource();
 	}
 }
