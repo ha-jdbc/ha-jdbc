@@ -23,6 +23,31 @@
 	<body>
 		<release version="2.1.0-beta-3" date="soon">
 			<action dev="pferraro" type="fix">
+				Ensure event source field is not lost during serialization.
+			</action>
+			<action due-to="eskorzeny" type="fix">
+				Fix configuration file location on windows when file path contains spaces.
+			</action>
+			<action dev="pferraro" type="update">
+				Add debug logging if Connection.isValid(...) throws an exception.
+				Otherwise, it is difficult to debug connectivity issues when connection pooling is used.
+			</action>
+			<action dev="pferraro" type="add" issue="2">
+				Complete BerkeleyDB state manager implementation.
+			</action>
+			<action due-to="eskorzeny" type="fix">
+				Always flush the output stream during state transfer.
+			</action>
+			<action due-to="eskorzeny" type="fix">
+				Fix class name of JGroupsCommandDispatcherFactory within META-INF/services/net.sf.hajdbc.distributed.CommandDispatcherFactory.
+			</action>
+			<action due-to="eskorzeny" type="update">
+				Rename SimpleStateManagerFactory from "memory" to "simple".
+			</action>
+			<action dev="pferraro" type="update">
+				Upgrade JGroups to 3.2.3.Final.
+			</action>
+			<action dev="pferraro" type="fix">
 				XML parser should fail if dialect/durability/balancer/meta-data-cache was not found.
 			</action>
 			<action dev="pferraro" type="fix">
