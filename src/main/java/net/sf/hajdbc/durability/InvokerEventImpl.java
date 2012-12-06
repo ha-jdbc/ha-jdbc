@@ -83,14 +83,4 @@ public class InvokerEventImpl extends DurabilityEventImpl implements InvokerEven
 		
 		return super.equals(object) && this.databaseId.equals(event.getDatabaseId());
 	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.durability.DurabilityEventImpl#hashCode()
-	 */
-	@Override
-	public int hashCode()
-	{
-		return super.hashCode();
-	}
 }
