@@ -35,4 +35,14 @@ public class DatabaseEventTest
 		DatabaseEvent event2 = Objects.deserialize(Objects.serialize(event1));
 		assertEquals(event1, event2);
 	}
+
+	@Test
+	public void equals() {
+		DatabaseEvent event1 = new DatabaseEvent(new MockDatabase("1"));
+		DatabaseEvent event2 = new DatabaseEvent(new MockDatabase("1"));
+		assertEquals(event1, event2);
+		
+		event2 = new DatabaseEvent(new MockDatabase("2"));
+		assertNotEquals(event1, event2);
+	}
 }

@@ -18,7 +18,10 @@
 package net.sf.hajdbc.durability;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+
+import java.util.UUID;
 
 import net.sf.hajdbc.util.Objects;
 
@@ -33,7 +36,7 @@ public class InvokerEventTest
 	@Test
 	public void serializationNoResult()
 	{
-		InvokerEvent event1 = new InvokerEventImpl(10, Durability.Phase.COMMIT, "1");
+		InvokerEvent event1 = new InvokerEventImpl(UUID.randomUUID(), Durability.Phase.COMMIT, "1");
 		InvokerEvent event2 = Objects.deserialize(Objects.serialize(event1));
 		assertEquals(event1, event2);
 		assertEquals(event1.getTransactionId(), event2.getTransactionId());
@@ -44,7 +47,7 @@ public class InvokerEventTest
 	@Test
 	public void serializationWithResult()
 	{
-		InvokerEvent event1 = new InvokerEventImpl(10, Durability.Phase.COMMIT, "1");
+		InvokerEvent event1 = new InvokerEventImpl(UUID.randomUUID(), Durability.Phase.COMMIT, "1");
 		event1.setResult(new InvokerResultImpl(100));
 		InvokerEvent event2 = Objects.deserialize(Objects.serialize(event1));
 		assertEquals(event1, event2);
@@ -57,7 +60,7 @@ public class InvokerEventTest
 	@Test
 	public void serializationWithException()
 	{
-		InvokerEvent event1 = new InvokerEventImpl(10, Durability.Phase.COMMIT, "1");
+		InvokerEvent event1 = new InvokerEventImpl(UUID.randomUUID(), Durability.Phase.COMMIT, "1");
 		event1.setResult(new InvokerResultImpl(new Exception()));
 		InvokerEvent event2 = Objects.deserialize(Objects.serialize(event1));
 		assertEquals(event1, event2);
@@ -65,5 +68,28 @@ public class InvokerEventTest
 		assertEquals(event1.getPhase(), event2.getPhase());
 		assertEquals(event1.getDatabaseId(), event2.getDatabaseId());
 		assertNotNull(event2.getResult().getException());
+	}
+
+	@Test
+	public void equals() {
+		UUID txId = UUID.randomUUID();
+		InvokerEvent event1 = new InvokerEventImpl(txId, Durability.Phase.COMMIT, "1");
+		InvokerEvent event2 = new InvokerEventImpl(txId, Durability.Phase.COMMIT, "1");
+		assertEquals(event1, event2);
+		
+		event1.setResult(new InvokerResultImpl(0));
+		assertEquals(event1, event2);
+		
+		event2.setResult(new InvokerResultImpl(new Exception()));
+		assertEquals(event1, event2);
+		
+		event2 = new InvokerEventImpl(txId, Durability.Phase.COMMIT, "2");
+		assertNotEquals(event1, event2);
+		
+		event2 = new InvokerEventImpl(txId, Durability.Phase.ROLLBACK, "1");
+		assertNotEquals(event1, event2);
+		
+		event2 = new InvokerEventImpl(UUID.randomUUID(), Durability.Phase.COMMIT, "1");
+		assertNotEquals(event1, event2);
 	}
 }

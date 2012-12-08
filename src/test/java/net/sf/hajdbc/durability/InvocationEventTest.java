@@ -18,6 +18,10 @@
 package net.sf.hajdbc.durability;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+
+import java.util.UUID;
+
 import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.util.Objects;
 
@@ -34,5 +38,22 @@ public class InvocationEventTest
 		assertEquals(event1.getTransactionId(), event2.getTransactionId());
 		assertEquals(event1.getPhase(), event2.getPhase());
 		assertEquals(event1.getExceptionType(), event2.getExceptionType());
+	}
+
+	@Test
+	public void equals() {
+		UUID txId = UUID.randomUUID();
+		InvocationEvent event1 = new InvocationEventImpl(txId, Durability.Phase.COMMIT, ExceptionType.SQL);
+		InvocationEvent event2 = new InvocationEventImpl(txId, Durability.Phase.COMMIT, ExceptionType.SQL);
+		assertEquals(event1, event2);
+		
+		event2 = new InvocationEventImpl(txId, Durability.Phase.COMMIT, ExceptionType.XA);
+		assertEquals(event1, event2);
+		
+		event2 = new InvocationEventImpl(txId, Durability.Phase.ROLLBACK, ExceptionType.SQL);
+		assertNotEquals(event1, event2);
+		
+		event2 = new InvocationEventImpl(UUID.randomUUID(), Durability.Phase.COMMIT, ExceptionType.SQL);
+		assertNotEquals(event1, event2);
 	}
 }
