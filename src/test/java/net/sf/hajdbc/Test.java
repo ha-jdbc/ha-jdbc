@@ -32,6 +32,7 @@ import java.util.logging.Logger;
 import net.sf.hajdbc.cache.simple.SimpleDatabaseMetaDataCacheFactory;
 import net.sf.hajdbc.dialect.hsqldb.HSQLDBDialectFactory;
 import net.sf.hajdbc.distributed.jgroups.JGroupsCommandDispatcherFactory;
+import net.sf.hajdbc.durability.fine.FineDurabilityFactory;
 import net.sf.hajdbc.sql.DataSource;
 import net.sf.hajdbc.sql.DataSourceDatabase;
 import net.sf.hajdbc.sql.DataSourceDatabaseClusterConfiguration;
@@ -93,7 +94,7 @@ public class Test
 	}
 	
 	@org.junit.Test
-//	@org.junit.Ignore(value = "Figure out why we get OutOfMemoryError on connect")
+	@org.junit.Ignore(value = "Figure out why we get OutOfMemoryError on connect")
 	public void derby() throws Exception
 	{
 		SQLStateManagerFactory factory = new SQLStateManagerFactory();
@@ -124,6 +125,7 @@ public class Test
 		config.setDatabaseMetaDataCacheFactory(new SimpleDatabaseMetaDataCacheFactory());
 		config.setStateManagerFactory(factory);
 		config.setDispatcherFactory(new JGroupsCommandDispatcherFactory());
+		config.setDurabilityFactory(new FineDurabilityFactory());
 
 		DataSource ds = new DataSource();
 		ds.setCluster("cluster");

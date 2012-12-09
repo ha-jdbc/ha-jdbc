@@ -17,6 +17,16 @@
  */
 package net.sf.hajdbc.xml;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.when;
+
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.sql.Driver;
@@ -31,7 +41,7 @@ import net.sf.hajdbc.SynchronizationStrategy;
 import net.sf.hajdbc.balancer.load.LoadBalancerFactory;
 import net.sf.hajdbc.cache.eager.EagerDatabaseMetaDataCacheFactory;
 import net.sf.hajdbc.dialect.StandardDialectFactory;
-import net.sf.hajdbc.durability.fine.FineDurabilityFactory;
+import net.sf.hajdbc.durability.coarse.CoarseDurabilityFactory;
 import net.sf.hajdbc.sql.DriverDatabase;
 import net.sf.hajdbc.sql.DriverDatabaseClusterConfiguration;
 import net.sf.hajdbc.sql.TransactionModeEnum;
@@ -39,9 +49,7 @@ import net.sf.hajdbc.state.StateManagerFactory;
 import net.sf.hajdbc.state.sql.SQLStateManagerFactory;
 import net.sf.hajdbc.sync.DifferentialSynchronizationStrategy;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
-import static org.mockito.Mockito.*;
 
 public class XMLDatabaseClusterConfigurationFactoryTest
 {
@@ -94,7 +102,7 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 		assertEquals(EagerDatabaseMetaDataCacheFactory.class, configuration.getDatabaseMetaDataCacheFactory().getClass());
 		assertEquals("diff", configuration.getDefaultSynchronizationStrategy());
 		assertEquals(StandardDialectFactory.class, configuration.getDialectFactory().getClass());
-		assertEquals(FineDurabilityFactory.class, configuration.getDurabilityFactory().getClass());
+		assertEquals(CoarseDurabilityFactory.class, configuration.getDurabilityFactory().getClass());
 		assertSame(TransactionModeEnum.SERIAL, configuration.getTransactionMode());
 		
 		assertNotNull(configuration.getExecutorProvider());
