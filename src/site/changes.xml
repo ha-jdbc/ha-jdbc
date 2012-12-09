@@ -22,6 +22,12 @@
 	</properties>
 	<body>
 		<release version="2.1.0-beta-3" date="soon">
+			<action dev="oferraro" type="update">
+				Switch default durability from "fine" to "coarse".
+			</action>
+			<action dev="pferraro" type="fix">
+				Restore ability to add new databases to the cluster at runtime via JMX.
+			</action>
 			<action dev="pferraro" type="fix">
 				Ensure event source field is not lost during serialization.
 			</action>
@@ -54,7 +60,7 @@
 				Fix formatting of JBoss Logging messages.
 			</action>
 			<action dev="pferraro" type="fix" issue="5">
-				Auto-activation & auto-deactivation only needs to be triggered on the group coordinator.
+				Auto-activation and auto-deactivation only need to be triggered on the group coordinator.
 			</action>
 			<action dev="pferraro" type="update">
 				Drop obsolete Dialect.getSimpleSQL().

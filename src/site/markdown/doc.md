@@ -31,13 +31,13 @@ HA-JDBC is typically configured via XML file.
 The full schema definitions for past and present versions of HA-JDBC are enumerated on the [XML Schemas](schemas.html) page.
 
 
-###	XML
+###	<a name="xml"/>XML
 
 The algorithm used to locate the configuration file resource at runtime is as follows:
 
 1.	Determine the potentially parameterized resource name from one of the following sources:
 	1.	A `config` property passed to `DriverManager.getConnection(String, Properties)`, or the `config` property of the `DataSource`, `ConnectionPoolDataSource`, or `XADataSource`.
-	1.	The `ha-jdbc.`*cluster-id*`.configuration` system property.
+	1.	The ha-jdbc.*cluster-id*.configuration system property.
 	1.	Use default value: `ha-jdbc-{0}.xml`
 1.	Format the parameterized resource name using the identifier of the cluster.
 1.	Convert the formatted resource name to a URL. If the resource is not a URL, search for the resource in the classpath using the following class loaders:
@@ -46,7 +46,7 @@ The algorithm used to locate the configuration file resource at runtime is as fo
 	1.	System class loader
 
 
-###	Defining databases
+###	<a name="database"/>Defining databases
 
 The general syntax for defining the databases composing an HA-JDBC cluster is as follows:
 
@@ -102,7 +102,7 @@ property
 				<property name="java.naming.provider.url">...</property>
 			</database>
 
-###	Dialect
+###	<a name="dialect"/>Dialect
 
 The dialect attribute of a cluster is used to adapt HA-JDBC to a specific database vendor.
 HA-JDBC includes dialects for the following databases:
@@ -253,7 +253,7 @@ e.g.
 	</ha-jdbc>
 
 
-###	Synchronization strategies
+###	<a name="sync"/>Synchronization strategies
 
 Defines a strategy for synchronizing a database before activation.
 A cluster may define multiple synchronization strategies, however, one of them must be designated as the `default-sync`.
@@ -336,9 +336,14 @@ e.g.
 	</ha-jdbc>
 
 
-###	Cluster state management
+###	<a name="state"/>Cluster state management
 
 The state manager component is responsible for storing the active status of each database in the cluster, as well as any durability state.
+During startup, HA-JDBC fetches its initial cluster state is fetched either from another server, if HA-JDBC is configured to be **distributable**, or if the configured state manager is persistent.
+If no state is found, all accessible databases are presumed to be active.
+To ignore (i.e. clear) the locally persisted cluster state at startup, start HA-JDBC using the *ha-jdbc.state.clear=true* system property.
+
+HA-JDBC includes the following state manager implementations:
 
 simple
 :	A non-persistent state manager that stores cluster state in memory.
@@ -372,7 +377,7 @@ simple
 				The pattern can accept 2 parameters:
 				<ol>
 					<li>The cluster identifier</li>
-					<li>$HOME/.ha-jdbc</li>
+					<li>`$HOME/.ha-jdbc`</li>
 				</ol>
 			</td>
 		</tr>
@@ -416,7 +421,7 @@ berkeleydb
 				The pattern can accept 2 parameters:
 				<ol>
 					<li>The cluster identifier</li>
-					<li>$HOME/.ha-jdbc</li>
+					<li>`$HOME/.ha-jdbc`</li>
 				</ol>
 			</td>
 		</tr>
@@ -450,7 +455,7 @@ sqlite
 				The pattern can accept 2 parameters:
 				<ol>
 					<li>The cluster identifier</li>
-					<li>$HOME/.ha-jdbc</li>
+					<li>`$HOME/.ha-jdbc`</li>
 				</ol>
 			</td>
 		</tr>
@@ -465,7 +470,7 @@ sqlite
 		</ha-jdbc>
 
 
-###	Durability
+###	<a name="durability"/>Durability
 
 As of version 2.1, HA-JDBC support a configurable durability level for user transactions.
 When enabled, HA-JDBC will track transactions, such that, upon restart, following a crash, it can detect and recover from any partial commits (i.e. where data was not .
@@ -478,17 +483,17 @@ none
 	This level offers the best performance, but offers no protection from crashes.
 	Read-only database clusters should use this level.
 
-coarse
-:	Tracks cluster invocations only, but not per-database invocations.
+*coarse*
+:	Tracks cluster invocations only, but not per-database invokers.
 	This durability level can detect, but not recover from, mid-commit crashes.
 	Upon recovery, if any cluster invocations still exist in the log, all slave database will be deactivated and must be reactivated manually.
 	This level offers a compromise between performance and resiliency.
 
-*fine*
+fine
 :	Tracks cluster invocations as well as per-database invokers.
 	This durability level can both detect and recover from mid-commit crashes.
-	Upon recovery, if any cluster invocations still exist in the log, all slave database will be deactivated and must be reactivated manually.
-	While this level is the slowest, it ensures the highest level of resilency from crashes.
+	Upon recovery, if any cluster invocations still exist in the log, only those slave database on which a given transaction did not complete will be deactivated.
+	While this level is the slowest, it ensures the highest level of resiliency from crashes.
 
 e.g.
 
@@ -499,7 +504,7 @@ e.g.
 	</ha-jdbc>
 
 
-###	Distributed capabilities
+###	<a name="distributed"/>Distributed capabilities
 
 Indicates that database clusters defined in this file will be accessed by multiple JVMs.
 By default, HA-JDBC supports the following providers:
@@ -515,7 +520,7 @@ By default, HA-JDBC supports the following providers:
 		</tr>
 		<tr>
 			<td>**stack**</td>
-			<td>udp-sync.xml</td>
+			<td>`udp-sync.xml`</td>
 			<td>
 				Defines one of the following:
 				<ul>
@@ -544,7 +549,7 @@ e.g.
 	</ha-jdbc>
 
 
-###	Database meta-data caching
+###	<a name="meta-data"/>Database meta-data caching
 
 HA-JDBC makes extensive use of database meta data.
 For performance purposes, this information should be cached whenever possible.
@@ -574,7 +579,7 @@ e.g.
 	</ha-jdbc>
 
 
-###	Password Obfuscation
+###	<a name="password"/>Password Obfuscation
 
 Since HA-JDBC's configuration file contains references to database passwords, some users may want to obfuscate these.
 To indicate that a password uses an obfuscation mechanism, use a ":" to indicate the appropriate decoder.
@@ -609,7 +614,7 @@ The following decoding mechanism are currently supported:
 		</tr>
 		<tr>
 			<td>ha-jdbc.keystore.file</td>
-			<td>$HOME/.keystore</td>
+			<td>`$HOME/.keystore`</td>
 		</tr>
 		<tr>
 			<td>ha-jdbc.keystore.type</td>
@@ -631,6 +636,29 @@ The following decoding mechanism are currently supported:
 	Use the following command to generate encrypted passwords for use in your config file:
 
 		java -classpath ha-jdbc.jar net.sf.hajdbc.codec.crypto.CipherCodecFactory [password]
+
+
+###	<a name="unique-ids"/>Unique Identifiers
+
+Most applications that write information to a database require some kind of primary key generation mechanism.
+Databases typically provide 2 mechanisms for doing this, both of which are supported by HA-JDBC (if the configured <a href="#dialect">dialect</a> supports it): database sequences and identity (i.e. auto-incrementing) columns.
+
+It is important to note the performance implications when using sequences and/or identity columns in conjunction with HA-JDBC.
+Both algorithms introduce per statement regular expression matching and mutex costs in HA-JDBC, the latter being particularly costly for distributed environments.
+Because of their performance impact, support for both sequences and identity columns can be disabled via the **detect-sequences** and **detect-identity-columns** cluster attributes, respectively.
+
+e.g.
+
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
+		<cluster detect-sequences="false" detect-identity-columns="false">
+			<!-- ... -->
+		</cluster>
+	</ha-jdbc>
+
+Fortunately, the performance penalty for sequences can be mitigated via what Hibernate calls a Sequence-HiLo algorithm.
+
+For best performance, HA-JDBC recommends using a table-based high-low or UUID algorithm so that statement parsing and locking costs can be avoided.
+Object-relation mapping (ORM) frameworks (e.g. Hibernate, OpenJPA, etc.) typically include implementations of these mechanisms.
 
 
 ###	Customizing HA-JDBC
@@ -819,6 +847,170 @@ You can then access the cluster via:
 	javax.naming.Context context = new javax.naming.InitialContext();
 	javax.sql.DataSource ds = (javax.sql.DataSource) context.lookup("java:comp/env/jdbc/mycluster");
 	java.sql.Connection connection = ds.getConnection("user", "password");
+
+
+###	Handling JDBC statements
+
+####	Database Reads
+
+Database reads (e.g. SELECT statements) are handled using the following algorithm:
+
+1.	Obtain the next database from the <a href="#balancer">balancer</a>.
+1.	Execute the statement against this database.
+1.	If the statement execution succeeded, return the result to the caller.
+1.	If the statement execution failed, we analyze the caught exception.
+	1.	If the exception is <a href="#failure">determined to be a failure</a>:
+		1.	Deactivate the database.
+		1.	Repeat using the next available database.
+	1.	If the exception is determined *not* to be a failure, the exception is thrown back to the caller.
+
+Alternatively, database writes can be configured to execute against both the master and backup databases concurrently.
+While this will result in better performance, it will cause deadlocking if multiple application threads attempt to update the same database row.
+If your use case is compatible with this limitation, you can enable parallel writes via the **transaction-mode** attribute.
+
+e.g.
+
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
+		<cluster transaction-mode="parallel">
+			<!-- ... -->
+		</cluster>
+	</ha-jdbc>
+
+
+####	Database Writes
+
+By default, database writes (e.g. INSERT/UPDATE/DELETE statements) are handled using the following algorithm:
+
+1.	Execute the statement against the master database.
+1.	If the statement execution failed *and* the exception is <a href="#failure">determined to be a failure</a>:
+	1.	Deactivate the master database
+	1.	Repeat using a new master.
+1.	Otherwise, if the statement execute succeeded *or* the exception was *not* determined to be a failure.
+	1.	Execute the statement against the backup databases in parallel.
+	1.	Compare the result from the master database against the results from the backup databases.
+	1.	If the result from a backup database does not match the result from the master database, deactivate that backup database.
+
+###	<a name="failure"/>Handling Failures
+
+To determine whether a given exception is due to a database failure, we consult the configured dialect.
+The default implementation returns the following:
+
+Dialect.indicatesFailure(SQLException)
+:	The exception is determined to be a failure if the exception is an instance of `java.sql.SQLNonTransientConnectionException`.
+
+Dialect.indicatesFailure(XAException)
+:	The exception is determined to be a failure if the error code of the exception is `XAException.XAER_RMFAIL`.
+
+If HA-JDBC determines that a given database has failed, the database is deactivated.
+The process of deactivating a database is as follows:
+
+1.	Log An ERROR message.
+1.	Remove the database from the set of active databases.
+1.	Persist the new cluster state via the <a href="state">Cluster State Manager</a>.
+1.	If the database cluster is **distributable**, broadcast the database deactivation to other servers.
+
+Databases can also be deactivated manually via <a href="#jmx">JMX</a>.
+
+You can optionally configure HA-JDBC to proactively detect database failures via the **failure-detect-schedule** attribute.
+The value of this attribute defines a cron expression, which specifies the schedule a database cluster will detect failed databases and deactivate them.
+
+e.g.
+
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
+		<!-- Failure detection will run every minute -->
+		<cluster failure-detect-schedule="0 * * ? * *">
+			<!-- ... -->
+		</cluster>
+	</ha-jdbc>
+
+
+###	Restoring Failed Database Nodes
+
+The process of (re)activating a database is as follows:
+
+1.	Test that the target database is indeed alive.
+1.	Acquire a lock that blocks all clients from writing to the database cluster.
+1.	Synchronize the target database with the master database using a given synchronization strategy.
+1.	Add the target database to the set of active databases.
+1.	Persist the new cluster state via the <a href="#state">Cluster State Manager</a>.
+1.	If the database cluster is **distributable**, broadcast the database activation to other servers.
+1.	Release the lock acquired in step 2.
+
+In general, database synchronization is an intensive and intrusive task.
+To maintain database consistency, each database node in the cluster is read locked (i.e. writes are blocked) until synchronization completes.
+Since synchronization may take anywhere from seconds to hours (depending on the size of your database and synchronization strategy employed), if your database cluster is used in a high write volume environment, it is recommended that activation only be performed during off-peak hours.
+
+Alternatively, HA-JDBC can attempt to activate any inactive databases automatically via the **auto-activate-schedule** attribute.
+If specified, HA-JDBC will automatically attempt to activate database nodes that are inactive, but alive, according to the specified cron schedule.
+
+e.g.
+
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
+		<!-- Auto-activation will run every day at 2:00 AM -->
+		<cluster auto-activate-schedule="0 0 2 ? * *">
+			<!-- ... -->
+		</cluster>
+	</ha-jdbc>
+
+
+###	<a name="jmx"/>HA-JDBC Administration
+
+####	Database Cluster Management
+
+By default, database clusters are registered with the platform mbean server using the following object name:
+
+net.sf.hajdbc:type=DatabaseCluster,cluster=*cluster-id*
+
+#####	Management Attributes
+
+id
+:	Indicates the unique identifier of this database cluster.
+
+active
+:	Indicates whether or not this database cluster is active.
+
+version
+:	Indicate the version of HA-JDBC in use.
+
+activeDatabases
+:	Enumerates the currently active databases in this database cluster.
+
+inactiveDatabases
+:	Enumerates the currently inactive databases in this database cluster.
+
+defaultSynchronizationStrategy
+:	Indicates the default synchronization strategy for this database cluster.
+
+synchronizationStrategies
+:	Enumerates the synchronization strategies available to this database cluster.
+
+
+#####	Management Operations
+
+isAlive(String databaseId)
+:	Indicates whether the specified database is responsive and able to be activated.
+
+activate(String databaseId)
+:	Activates the specified database using the default synchronization strategy.
+
+activate(String databaseId, String syncId)
+:	Activates the specified database using the specified synchronization strategy.
+
+deactivate(String databaseId)
+:	Deactivates the specified database.
+
+add(String databaseId)
+:	Adds a new database to the cluster using the specified identifier.
+	The database will remain inactive until fully specified and activated.
+	To complete the database description use the net.sf.hajdbc:type=Database,cluster=*cluster-id*,database=*database-id* mbean.
+
+remove(String databaseId)
+:	Removes the specified database from the cluster.  Only inactive databases may be removed from the cluster.
+
+flushMetaDataCache()
+:	Flushed the internal cache of database meta data.
+
+
 
 [commons-pool]: http://commons.apache.org/pool/apidocs/org/apache/commons/pool/impl/GenericObjectPool.html "Apache Commons Pool"
 [jgroups]: http://community.jboss.org/wiki/JGroups "JGroups"
