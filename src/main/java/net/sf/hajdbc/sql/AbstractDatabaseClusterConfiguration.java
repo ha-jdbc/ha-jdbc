@@ -28,6 +28,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
@@ -42,6 +44,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseClusterConfiguration;
+import net.sf.hajdbc.DatabaseFactory;
 import net.sf.hajdbc.ExecutorServiceProvider;
 import net.sf.hajdbc.Identifiable;
 import net.sf.hajdbc.IdentifiableMatcher;
@@ -77,7 +80,14 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	private Map<String, SynchronizationStrategy> synchronizationStrategies = new HashMap<String, SynchronizationStrategy>();
 	private StateManagerFactory stateManagerFactory = ServiceLoaders.findRequiredService(StateManagerFactory.class);
 	private LockManagerFactory lockManagerFactory = ServiceLoaders.findRequiredService(LockManagerFactory.class);
+
 	protected abstract NestedConfiguration<Z, D> getNestedConfiguration();
+
+	@Override
+	public DatabaseFactory<Z, D> getDatabaseFactory()
+	{
+		return this.getNestedConfiguration().getDatabaseFactory();
+	}
 
 	@XmlElement(name = "distributable")
 	private CommandDispatcherFactoryDescriptor getCommandDispatcherFactoryDescriptor() throws Exception
@@ -196,7 +206,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#getDatabaseMap()
 	 */
 	@Override
-	public Map<String, D> getDatabaseMap()
+	public ConcurrentMap<String, D> getDatabaseMap()
 	{
 		return this.getNestedConfiguration().getDatabaseMap();
 	}
@@ -538,7 +548,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	}
 
 	@XmlType(name = "abstractNestedConfiguration")
-	protected static abstract class NestedConfiguration<Z, D extends Database<Z>> implements DatabaseClusterConfiguration<Z, D>
+	protected static abstract class NestedConfiguration<Z, D extends Database<Z>> implements DatabaseClusterConfiguration<Z, D>, DatabaseFactory<Z, D>
 	{
 		private static final long serialVersionUID = -5674156614205147546L;
 
@@ -593,8 +603,14 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		
 		private String defaultSynchronizationStrategy;
 		
-		private Map<String, D> databases = new HashMap<String, D>();
+		private ConcurrentMap<String, D> databases = new ConcurrentHashMap<String, D>();
 		
+		@Override
+		public DatabaseFactory<Z, D> getDatabaseFactory()
+		{
+			return this;
+		}
+
 		@XmlIDREF
 		@XmlAttribute(name = "default-sync", required = true)
 		private SynchronizationStrategyDescriptor getDefaultSynchronizationStrategyDescriptor()
@@ -611,7 +627,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		}
 		
 		@Override
-		public Map<String, D> getDatabaseMap()
+		public ConcurrentMap<String, D> getDatabaseMap()
 		{
 			return this.databases;
 		}

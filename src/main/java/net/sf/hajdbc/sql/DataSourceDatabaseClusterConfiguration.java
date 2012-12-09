@@ -60,5 +60,13 @@ public class DataSourceDatabaseClusterConfiguration extends AbstractDatabaseClus
 				this.getDatabaseMap().put(database.getId(), database);
 			}
 		}
+
+		@Override
+		public DataSourceDatabase createDatabase(String id)
+		{
+			DataSourceDatabase database = new DataSourceDatabase();
+			database.setId(id);
+			return database;
+		}
 	}
 }

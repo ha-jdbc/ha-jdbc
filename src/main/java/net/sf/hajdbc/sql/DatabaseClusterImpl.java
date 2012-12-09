@@ -28,6 +28,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.locks.Lock;
 
+import javax.management.JMException;
+
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseClusterConfiguration;
@@ -229,11 +231,35 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	{
 		return Version.getVersion();
 	}
+
+	/**
+	 * Removes the specified database from the cluster.
+	 * @param databaseId a database identifier
+	 * @throws JMException 
+	 * @throws IllegalArgumentException if database already exists.
+	 */
+	@ManagedOperation
+	public void add(String databaseId) throws JMException
+	{
+		D database = this.configuration.getDatabaseFactory().createDatabase(databaseId);
+		
+		if (this.configuration.getDatabaseMap().putIfAbsent(databaseId, database) != null)
+		{
+			throw new IllegalArgumentException(Messages.DATABASE_ALREADY_EXISTS.getMessage(databaseId, this));
+		}
+		
+		this.configuration.getMBeanRegistrar().register(this, database);
+		
+		for (DatabaseClusterConfigurationListener<Z, D> listener: this.configurationListeners)
+		{
+			listener.added(database, this.configuration);
+		}
+	}
 	
 	/**
 	 * Removes the specified database from the cluster.
 	 * @param databaseId a database identifier
-	 * @throws IllegalStateException if database is still active, or if mbean unregistration fails.
+	 * @throws IllegalStateException if database is still active.
 	 */
 	@ManagedOperation
 	public void remove(String databaseId)

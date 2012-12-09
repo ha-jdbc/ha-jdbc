@@ -19,6 +19,7 @@ package net.sf.hajdbc;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ThreadFactory;
 
 import net.sf.hajdbc.balancer.BalancerFactory;
@@ -45,7 +46,7 @@ public interface DatabaseClusterConfiguration<Z, D extends Database<Z>> extends 
 	 * @return a map of databases
 	 * @throws IllegalArgumentException if no database exists with the specified identifier
 	 */
-	Map<String, D> getDatabaseMap();
+	ConcurrentMap<String, D> getDatabaseMap();
 	
 	Map<String, SynchronizationStrategy> getSynchronizationStrategyMap();
 	
@@ -132,4 +133,6 @@ public interface DatabaseClusterConfiguration<Z, D extends Database<Z>> extends 
 	TransactionIdentifierFactory<? extends Object> getTransactionIdentifierFactory();
 	
 	boolean isEmptyClusterAllowed();
+
+	DatabaseFactory<Z, D> getDatabaseFactory();
 }

@@ -70,5 +70,13 @@ public class XADataSourceDatabaseClusterConfiguration extends AbstractDatabaseCl
 				this.getDatabaseMap().put(database.getId(), database);
 			}
 		}
+
+		@Override
+		public XADataSourceDatabase createDatabase(String id)
+		{
+			XADataSourceDatabase database = new XADataSourceDatabase();
+			database.setId(id);
+			return database;
+		}
 	}
 }

@@ -61,5 +61,13 @@ public class ConnectionPoolDataSourceDatabaseClusterConfiguration extends Abstra
 				this.getDatabaseMap().put(database.getId(), database);
 			}
 		}
+
+		@Override
+		public ConnectionPoolDataSourceDatabase createDatabase(String id)
+		{
+			ConnectionPoolDataSourceDatabase database = new ConnectionPoolDataSourceDatabase();
+			database.setId(id);
+			return database;
+		}
 	}
 }

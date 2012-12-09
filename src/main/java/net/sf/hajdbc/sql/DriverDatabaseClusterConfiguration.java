@@ -61,5 +61,13 @@ public class DriverDatabaseClusterConfiguration extends AbstractDatabaseClusterC
 				this.getDatabaseMap().put(database.getId(), database);
 			}
 		}
+
+		@Override
+		public DriverDatabase createDatabase(String id)
+		{
+			DriverDatabase database = new DriverDatabase();
+			database.setId(id);
+			return database;
+		}
 	}
 }
