@@ -20,16 +20,21 @@ package net.sf.hajdbc.util.concurrent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.AbstractExecutorService;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
+
+import net.sf.hajdbc.util.Reversed;
 
 /**
  * Executor service that executes tasks in the caller thread.
@@ -133,7 +138,7 @@ public class SynchronousExecutor extends AbstractExecutorService
 	@Override
 	public <T> Future<T> submit(Callable<T> task)
 	{
-		return new SynchronousFuture<T>(task);
+		return new EagerFuture<T>(task);
 	}
 
 	/**
@@ -144,81 +149,7 @@ public class SynchronousExecutor extends AbstractExecutorService
 	@Override
 	public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks) throws InterruptedException
 	{
-		if (tasks.isEmpty()) return Collections.emptyList();
-
-		List<Callable<T>> taskList = new ArrayList<Callable<T>>(tasks);
-		
-		if (this.reverse)
-		{
-			Collections.reverse(taskList);
-		}
-		
-		boolean synchronous = !this.reverse;
-		int remaining = tasks.size();
-		List<Future<T>> futureList = new ArrayList<Future<T>>(remaining);
-		
-		for (Callable<T> task: tasks)
-		{
-			remaining -= 1;
-
-			if (synchronous || (this.reverse && (remaining == 0)))
-			{
-				SynchronousFuture<T> future = new SynchronousFuture<T>(task);
-				
-				futureList.add(future);
-
-				// Execute remaining tasks in parallel, if there are multiple
-				if (future.isSuccessful() && (remaining > 2))
-				{
-					synchronous = false;
-				}
-			}
-			else
-			{
-				futureList.add(this.executor.submit(task));
-			}
-		}
-		
-		if (this.reverse)
-		{
-			Collections.reverse(futureList);
-		}
-
-		try
-		{
-			// Wait until all tasks have finished
-			for (Future<T> future: futureList)
-			{
-				if (!future.isDone())
-				{
-					try
-					{
-						future.get();
-					}
-					catch (ExecutionException e)
-					{
-						// Ignore
-					}
-					catch (CancellationException e)
-					{
-						// Ignore
-					}
-				}
-			}
-			
-			return futureList;
-		}
-		finally
-		{
-			// If interrupted, cancel any unfinished tasks
-			for (Future<T> future: futureList)
-			{
-				if (!future.isDone())
-				{
-					future.cancel(true);
-				}
-			}
-		}
+		return this.invokeAll(tasks, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
 	}
 
 	/**
@@ -230,56 +161,74 @@ public class SynchronousExecutor extends AbstractExecutorService
 	{
 		if (tasks.isEmpty()) return Collections.emptyList();
 
-		List<Callable<T>> taskList = new ArrayList<Callable<T>>(tasks);
-		
-		if (this.reverse)
-		{
-			Collections.reverse(taskList);
-		}
-		
+		long end = (timeout == Long.MAX_VALUE) ? 0 : System.currentTimeMillis() + unit.toMillis(timeout);
 		boolean synchronous = !this.reverse;
 		int remaining = tasks.size();
-		List<Future<T>> futureList = new ArrayList<Future<T>>(remaining);
+		LinkedList<Future<T>> futures = new LinkedList<Future<T>>();
 		
-		for (Callable<T> task: tasks)
+		for (Callable<T> task: this.reverse ? new Reversed<Callable<T>>(new ArrayList<Callable<T>>(tasks)) : tasks)
 		{
 			remaining -= 1;
-			
-			if (synchronous || (this.reverse && (remaining == 0)))
-			{
-				SynchronousFuture<T> future = new SynchronousFuture<T>(task);
-				
-				futureList.add(future);
 
+			if (synchronous)
+			{
+				Future<T> future = this.reverse ? new LazyFuture<T>(task) : new EagerFuture<T>(task);
+				
+				if (this.reverse)
+				{
+					futures.addFirst(future);
+				}
+				else
+				{
+					futures.addLast(future);
+				}
+				
 				// Execute remaining tasks in parallel, if there are multiple
-				if (future.isSuccessful() && (remaining > 1))
+				if (remaining > 1)
 				{
 					synchronous = false;
 				}
 			}
 			else
 			{
-				futureList.add(this.executor.submit(task));
+				Future<T> future = this.executor.submit(task);
+				if (this.reverse)
+				{
+					futures.addFirst(future);
+				}
+				else
+				{
+					futures.addLast(future);
+				}
+				
+				if (this.reverse && (remaining == 1))
+				{
+					synchronous = true;
+				}
 			}
 		}
-		
-		if (this.reverse)
-		{
-			Collections.reverse(futureList);
-		}
-
-		boolean interrupted = true;
 		
 		try
 		{
 			// Wait until all tasks have finished
-			for (Future<T> future: futureList)
+			for (Future<T> future: this.reverse ? new Reversed<Future<T>>(futures) : futures)
 			{
 				if (!future.isDone())
 				{
 					try
 					{
-						future.get();
+						if (end == 0)
+						{
+							future.get();
+						}
+						else
+						{
+							long now = System.currentTimeMillis();
+							if (now < end)
+							{
+								future.get(end - now, TimeUnit.MILLISECONDS);
+							}
+						}
 					}
 					catch (ExecutionException e)
 					{
@@ -291,27 +240,26 @@ public class SynchronousExecutor extends AbstractExecutorService
 					}
 				}
 			}
-
-			interrupted = false;
-			
-			return futureList;
+		}
+		catch (TimeoutException e)
+		{
+			// Ignore
 		}
 		finally
 		{
-			if (interrupted)
+			// If interrupted, cancel any unfinished tasks
+			for (Future<T> future: this.reverse ? new Reversed<Future<T>>(futures) : futures)
 			{
-				// If interrupted, cancel any incomplete tasks
-				for (Future<T> future: futureList)
+				if (!future.isDone())
 				{
-					if (!future.isDone())
-					{
-						future.cancel(true);
-					}
+					future.cancel(true);
 				}
 			}
 		}
+		
+		return futures;
 	}
-
+	
 	/**
 	 * {@inheritDoc}
 	 * @see java.util.concurrent.AbstractExecutorService#invokeAny(java.util.Collection)
@@ -340,15 +288,118 @@ public class SynchronousExecutor extends AbstractExecutorService
 	}
 	
 	/**
-	 * Light-weight future implementation for synchronously executed tasks.
+	 * Future that doesn't execute its task until get(...).
+	 */
+	private static class LazyFuture<T> implements Future<T>
+	{
+		private enum State
+		{
+			NEW, CANCELLED, DONE;
+		}
+		private final Callable<T> task;
+		private volatile T result;
+		private volatile ExecutionException exception;
+		private final AtomicReference<State> state = new AtomicReference<State>(State.NEW);
+		private final CountDownLatch latch = new CountDownLatch(1);
+		
+		LazyFuture(Callable<T> task)
+		{
+			this.task = task;
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * @see java.util.concurrent.Future#cancel(boolean)
+		 */
+		@Override
+		public boolean cancel(boolean interrupt)
+		{
+			return this.state.compareAndSet(State.NEW, State.CANCELLED);
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * @see java.util.concurrent.Future#get()
+		 */
+		@Override
+		public T get() throws ExecutionException, InterruptedException
+		{
+			return this.get(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * @see java.util.concurrent.Future#get(long, java.util.concurrent.TimeUnit)
+		 */
+		@Override
+		public T get(long time, TimeUnit unit) throws ExecutionException, InterruptedException
+		{
+			if (this.state.compareAndSet(State.NEW, State.DONE))
+			{
+				try
+				{
+					this.result = this.task.call();
+				}
+				catch (Throwable e)
+				{
+					this.exception = new ExecutionException(e);
+				}
+				this.latch.countDown();
+			}
+			
+			if (this.state.get() == State.CANCELLED)
+			{
+				throw new CancellationException();
+			}
+			
+			if (time == Long.MAX_VALUE)
+			{
+				this.latch.await();
+			}
+			else
+			{
+				this.latch.await(time, unit);
+			}
+			
+			if (this.exception != null)
+			{
+				throw exception;
+			}
+			
+			return this.result;
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * @see java.util.concurrent.Future#isCancelled()
+		 */
+		@Override
+		public boolean isCancelled()
+		{
+			return this.state.get() == State.CANCELLED;
+		}
+
+		/**
+		 * {@inheritDoc}
+		 * @see java.util.concurrent.Future#isDone()
+		 */
+		@Override
+		public boolean isDone()
+		{
+			return this.state.get() == State.DONE;
+		}
+	}
+
+	/**
+	 * Light-weight future implementation that executes its task on construction.
 	 * @param <T>
 	 */
-	static class SynchronousFuture<T> implements Future<T>
+	private static class EagerFuture<T> implements Future<T>
 	{
 		private T result;
 		private ExecutionException exception;
 		
-		SynchronousFuture(Callable<T> task)
+		EagerFuture(Callable<T> task)
 		{
 			try
 			{
@@ -360,20 +411,12 @@ public class SynchronousExecutor extends AbstractExecutorService
 			}
 		}
 		
-		/**
-		 * {@inheritDoc}
-		 * @see java.util.concurrent.Future#cancel(boolean)
-		 */
 		@Override
 		public boolean cancel(boolean mayInterruptIfRunning)
 		{
 			return false;
 		}
 
-		/**
-		 * {@inheritDoc}
-		 * @see java.util.concurrent.Future#get()
-		 */
 		@Override
 		public T get() throws ExecutionException
 		{
@@ -382,39 +425,22 @@ public class SynchronousExecutor extends AbstractExecutorService
 			return this.result;
 		}
 
-		/**
-		 * {@inheritDoc}
-		 * @see java.util.concurrent.Future#get(long, java.util.concurrent.TimeUnit)
-		 */
 		@Override
 		public T get(long time, TimeUnit unit) throws ExecutionException
 		{
 			return this.get();
 		}
 
-		/**
-		 * {@inheritDoc}
-		 * @see java.util.concurrent.Future#isCancelled()
-		 */
 		@Override
 		public boolean isCancelled()
 		{
 			return false;
 		}
 
-		/**
-		 * {@inheritDoc}
-		 * @see java.util.concurrent.Future#isDone()
-		 */
 		@Override
 		public boolean isDone()
 		{
 			return true;
-		}
-		
-		boolean isSuccessful()
-		{
-			return this.exception == null;
 		}
 	}
 }
