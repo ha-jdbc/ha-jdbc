@@ -345,21 +345,6 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<groupId>com.github.github</groupId>
-				<artifactId>downloads-maven-plugin</artifactId>
-				<configuration>
-					<description>${project.name} ${project.version}</description>
-				</configuration>
-				<executions>
-					<execution>
-						<phase>deploy</phase>
-						<goals>
-							<goal>upload</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>versions-maven-plugin</artifactId>
 			</plugin>
@@ -458,11 +443,6 @@
 				</plugin>
 				<plugin>
 					<groupId>com.github.github</groupId>
-					<artifactId>downloads-maven-plugin</artifactId>
-					<version>0.6</version>
-				</plugin>
-				<plugin>
-					<groupId>com.github.github</groupId>
 					<artifactId>site-maven-plugin</artifactId>
 					<version>0.7</version>
 				</plugin>
@@ -488,7 +468,7 @@
 	</issueManagement>
 	
 	<distributionManagement>
-		<downloadUrl>http://github.com/ha-jdbc/ha-jdbc/downloads</downloadUrl>
+		<downloadUrl>http://repository.jboss.org/nexus/content/groups/public/net/sf/ha-jdbc/ha-jdbc/</downloadUrl>
 	</distributionManagement>
 
 	<licenses>
