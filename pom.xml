@@ -55,7 +55,7 @@
 		<dependency>
 			<groupId>org.jgroups</groupId>
 			<artifactId>jgroups</artifactId>
-			<version>3.2.4.Final</version>
+			<version>3.2.5.Final</version>
 			<optional>true</optional>
 		</dependency>
 		<!-- Optional logging dependencies -->
