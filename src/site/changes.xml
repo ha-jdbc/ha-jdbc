@@ -21,6 +21,14 @@
 		<title>HA-JDBC Changes</title>
 	</properties>
 	<body>
+		<release version="2.1.0-beta-4" date="TBD">
+			<action dev="pferraro" type="update">
+				Upgrade JGroups to 3.2.5.Final.
+			</action>
+			<action dev="pferraro" type="fix">
+				Optimize SynchronousExecutor.invokeAll(...) and make sure reverse mode doesn't execute first task until all other tasks are complete.
+			</action>
+		</release>
 		<release version="2.1.0-beta-3" date="2012-12-09">
 			<action dev="pferraro" type="update">
 				Switch default durability from "fine" to "coarse".
