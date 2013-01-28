@@ -19,6 +19,7 @@ package net.sf.hajdbc.invocation;
 
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.TreeMap;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
@@ -30,7 +31,6 @@ import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
 import net.sf.hajdbc.sql.SQLProxy;
 import net.sf.hajdbc.state.StateManager;
-import net.sf.hajdbc.util.Collections;
 
 /**
  * @author Paul Ferraro
@@ -59,7 +59,9 @@ public class InvokeOnAnyInvocationStrategy extends InvokeOnNextInvocationStrateg
 			{
 				R result = invoker.invoke(database, entry.getValue());
 				
-				return Collections.singletonSortedMap(database, result);
+				SortedMap<D, R> resultMap = new TreeMap<D, R>();
+				resultMap.put(database, result);
+				return resultMap;
 			}
 			catch (Exception e)
 			{

@@ -46,8 +46,6 @@ public abstract class InvokeOnOneInvocationStrategy implements InvocationStrateg
 	@Override
 	public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(SQLProxy<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker) throws E
 	{
-		SortedMap<D, R> resultMap = new TreeMap<D, R>();
-		
 		DatabaseCluster<Z, D> cluster = proxy.getDatabaseCluster();
 		Balancer<Z, D> balancer = cluster.getBalancer();
 		Dialect dialect = cluster.getDialect();
@@ -69,8 +67,8 @@ public abstract class InvokeOnOneInvocationStrategy implements InvocationStrateg
 			{
 				R result = balancer.invoke(invoker, database, object);
 				
+				SortedMap<D, R> resultMap = new TreeMap<D, R>();
 				resultMap.put(database, result);
-				
 				return resultMap;
 			}
 			catch (Exception e)
