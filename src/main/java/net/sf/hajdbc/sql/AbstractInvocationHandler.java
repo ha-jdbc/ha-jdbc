@@ -117,7 +117,7 @@ public abstract class AbstractInvocationHandler<Z, D extends Database<Z>, T, E e
 		InvocationHandlerFactory<Z, D, T, R, E> handlerFactory = (InvocationHandlerFactory<Z, D, T, R, E>) this.getInvocationHandlerFactory(object, method, parameters);
 		InvocationResultFactory<Z, D, R, E> resultFactory = (handlerFactory != null) ? new ProxyInvocationResultFactory<R>(handlerFactory, object, invoker) : new SimpleInvocationResultFactory<R>();
 		
-		return this.createResult(results, resultFactory);
+		return this.createResult(resultFactory, results);
 	}
 	
 	protected InvocationHandlerFactory<Z, D, T, ?, E> getInvocationHandlerFactory(T object, Method method, Object[] parameters) throws E
@@ -371,7 +371,7 @@ public abstract class AbstractInvocationHandler<Z, D extends Database<Z>, T, E e
 		}
 	}
 
-	private <R> R createResult(SortedMap<D, R> resultMap, InvocationResultFactory<Z, D, R, E> factory) throws E
+	private <R> R createResult(InvocationResultFactory<Z, D, R, E> factory, SortedMap<D, R> resultMap) throws E
 	{
 		DatabaseCluster<Z, D> cluster = this.getDatabaseCluster();
 		
@@ -400,7 +400,7 @@ public abstract class AbstractInvocationHandler<Z, D extends Database<Z>, T, E e
 			}
 		}
 		
-		return factory.createResult(resultMap);
+		return (primaryResult != null) ? factory.createResult(resultMap) : null;
 	}
 
 	protected abstract void close(D database, T object);
