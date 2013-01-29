@@ -23,5 +23,7 @@ import net.sf.hajdbc.Database;
 
 public interface InvocationResultFactory<Z, D extends Database<Z>, R, E extends Exception>
 {
+	boolean differs(R primaryResult, R backupResult);
+
 	R createResult(SortedMap<D, R> results) throws E;
 }

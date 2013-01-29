@@ -115,10 +115,9 @@ public abstract class AbstractInvocationHandler<Z, D extends Database<Z>, T, E e
 		
 		@SuppressWarnings("unchecked")
 		InvocationHandlerFactory<Z, D, T, R, E> handlerFactory = (InvocationHandlerFactory<Z, D, T, R, E>) this.getInvocationHandlerFactory(object, method, parameters);
-		
 		InvocationResultFactory<Z, D, R, E> resultFactory = (handlerFactory != null) ? new ProxyInvocationResultFactory<R>(handlerFactory, object, invoker) : new SimpleInvocationResultFactory<R>();
 		
-		return resultFactory.createResult(results);
+		return this.createResult(results, resultFactory);
 	}
 	
 	protected InvocationHandlerFactory<Z, D, T, ?, E> getInvocationHandlerFactory(T object, Method method, Object[] parameters) throws E
@@ -372,6 +371,38 @@ public abstract class AbstractInvocationHandler<Z, D extends Database<Z>, T, E e
 		}
 	}
 
+	private <R> R createResult(SortedMap<D, R> resultMap, InvocationResultFactory<Z, D, R, E> factory) throws E
+	{
+		DatabaseCluster<Z, D> cluster = this.getDatabaseCluster();
+		
+		if (resultMap.isEmpty())
+		{
+			throw this.getExceptionFactory().createException(Messages.NO_ACTIVE_DATABASES.getMessage(cluster));
+		}
+		
+		Iterator<Map.Entry<D, R>> results = resultMap.entrySet().iterator();
+		R primaryResult = results.next().getValue();
+		
+		while (results.hasNext())
+		{
+			Map.Entry<D, R> entry = results.next();
+			R result = entry.getValue();
+			
+			if (factory.differs(primaryResult, result))
+			{
+				results.remove();
+				D database = entry.getKey();
+				
+				if (cluster.deactivate(database, cluster.getStateManager()))
+				{
+					this.logger.log(Level.ERROR, Messages.DATABASE_INCONSISTENT.getMessage(), database, cluster, primaryResult, result);
+				}
+			}
+		}
+		
+		return factory.createResult(resultMap);
+	}
+
 	protected abstract void close(D database, T object);
 	
 	@SuppressWarnings("unchecked")
@@ -428,32 +459,15 @@ public abstract class AbstractInvocationHandler<Z, D extends Database<Z>, T, E e
 	class SimpleInvocationResultFactory<R> implements InvocationResultFactory<Z, D, R, E>
 	{
 		@Override
-		public R createResult(SortedMap<D, R> resultMap)
+		public boolean differs(R primaryResult, R backupResult)
 		{
-			assert !resultMap.isEmpty();
-			
-			DatabaseCluster<Z, D> cluster = AbstractInvocationHandler.this.getDatabaseCluster();
-			Iterator<Map.Entry<D, R>> results = resultMap.entrySet().iterator();
-
-			R primaryResult = results.next().getValue();
-
-			while (results.hasNext())
-			{
-				Map.Entry<D, R> entry = results.next();
-				R result = entry.getValue();
-				
-				if (!Objects.equals(primaryResult, result))
-				{
-					D database = entry.getKey();
-					
-					if (cluster.deactivate(database, cluster.getStateManager()))
-					{
-						AbstractInvocationHandler.this.logger.log(Level.ERROR, Messages.DATABASE_INCONSISTENT.getMessage(), database, cluster, primaryResult, result);
-					}
-				}
-			}
-			
-			return primaryResult;
+			return !Objects.equals(primaryResult, backupResult);
+		}
+		
+		@Override
+		public R createResult(SortedMap<D, R> results)
+		{
+			return results.values().iterator().next();
 		}
 	}
 	
@@ -470,6 +484,12 @@ public abstract class AbstractInvocationHandler<Z, D extends Database<Z>, T, E e
 			this.invoker = invoker;
 		}
 		
+		@Override
+		public boolean differs(R primaryResult, R backupResult)
+		{
+			return ((primaryResult != null) && (backupResult == null)) || ((primaryResult == null) && (backupResult != null));
+		}
+
 		@Override
 		public R createResult(SortedMap<D, R> results) throws E
 		{
