@@ -17,8 +17,10 @@
  */
 package net.sf.hajdbc.dialect;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Arrays;
 
 import net.sf.hajdbc.ForeignKeyConstraint;
@@ -149,5 +151,19 @@ public class SybaseDialectTest extends StandardDialectTest
 		assertEquals("SELECT CURRENT_DATE FROM test", this.dialect.evaluateCurrentTimestamp("SELECT CURRENT_DATE FROM test", timestamp));
 		assertEquals("SELECT CURRENT_TIME FROM test", this.dialect.evaluateCurrentTimestamp("SELECT CURRENT_TIME FROM test", timestamp));
 		assertEquals("SELECT LOCALTIME FROM test", this.dialect.evaluateCurrentTimestamp("SELECT LOCALTIME FROM test", timestamp));
+	}
+	
+	@Override
+	public void isValid() throws SQLException
+	{
+		Connection connection = mock(Connection.class);
+		Statement statement = mock(Statement.class);
+		
+		when(connection.createStatement()).thenReturn(statement);
+		when(statement.executeQuery("SELECT GETDATE()")).thenReturn(null);
+		
+		boolean result = this.dialect.isValid(connection);
+		
+		assertTrue(result);
 	}
 }

@@ -17,8 +17,13 @@
  */
 package net.sf.hajdbc.dialect.sybase;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 import net.sf.hajdbc.IdentityColumnSupport;
 import net.sf.hajdbc.dialect.StandardDialect;
+import net.sf.hajdbc.util.Resources;
 
 /**
  * Dialect for Sybase (commercial).
@@ -127,5 +132,23 @@ public class SybaseDialect extends StandardDialect
 	protected String randomPattern()
 	{
 		return "(?<=\\W)RAND\\s*\\(\\s*\\d*\\s*\\)";
-	}	
+	}
+
+	/**
+	 * jTDS does not implement Connection.isValid(...)
+	 */
+	@Override
+	public boolean isValid(Connection connection) throws SQLException
+	{
+		Statement statement = connection.createStatement();
+		try
+		{
+			statement.executeQuery("SELECT GETDATE()");
+			return true;
+		}
+		finally
+		{
+			Resources.close(statement);
+		}
+	}
 }

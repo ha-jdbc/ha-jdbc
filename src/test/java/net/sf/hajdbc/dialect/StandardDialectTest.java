@@ -29,6 +29,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.sql.BatchUpdateException;
+import java.sql.Connection;
 import java.sql.DataTruncation;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -473,5 +474,17 @@ public class StandardDialectTest
 		assertFalse(this.dialect.indicatesFailure(new XAException(XAException.XAER_OUTSIDE)));
 		assertFalse(this.dialect.indicatesFailure(new XAException(XAException.XAER_PROTO)));
 		assertFalse(this.dialect.indicatesFailure(new XAException(XAException.XAER_RMERR)));
+	}
+	
+	@Test
+	public void isValid() throws SQLException
+	{
+		Connection connection = mock(Connection.class);
+		
+		when(connection.isValid(0)).thenReturn(true);
+		
+		boolean result = this.dialect.isValid(connection);
+		
+		assertTrue(result);
 	}
 }
