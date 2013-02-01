@@ -17,6 +17,7 @@
  */
 package net.sf.hajdbc.dialect;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -253,4 +254,6 @@ public interface Dialect
 	ForeignKeyConstraintFactory createForeignKeyConstraintFactory(QualifiedNameFactory factory);
 	
 	UniqueConstraintFactory createUniqueConstraintFactory(IdentifierNormalizer normalizer);
+	
+	boolean isValid(Connection connection) throws SQLException;
 }

@@ -930,4 +930,10 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	{
 		return new StandardUniqueConstraintFactory(normalizer);
 	}
+
+	@Override
+	public boolean isValid(Connection connection) throws SQLException
+	{
+		return connection.isValid(0);
+	}
 }
