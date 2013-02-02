@@ -80,8 +80,6 @@ public class LifecycleRegistry<K, V extends Lifecycle, C, E extends Exception> i
 		}
 		catch (Exception e)
 		{
-			this.store.clear(key);
-			
 			try
 			{
 				value.stop();
@@ -90,6 +88,8 @@ public class LifecycleRegistry<K, V extends Lifecycle, C, E extends Exception> i
 			{
 				this.logger.log(Level.INFO, re);
 			}
+			
+			this.store.clear(key);
 			
 			throw this.exceptionFactory.createException(e);
 		}
