@@ -761,6 +761,18 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	{
 		this.active = false;
 		
+		if (this.balancer != null)
+		{
+			// Proactively deactivate any local databases
+			for (D database: this.balancer)
+			{
+				if (database.isLocal())
+				{
+					this.deactivate(database, this.stateManager);
+				}
+			}
+		}
+		
 		MBeanRegistrar<Z, D> registrar = this.configuration.getMBeanRegistrar();
 
 		if (registrar != null)
