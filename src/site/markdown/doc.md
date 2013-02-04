@@ -723,13 +723,13 @@ e.g.
 	// Define each database in the cluster
 	DriverDatabase db1 = new DriverDatabase();
 	db1.setId("db1");
-	db1.setName("jdbc:hsqldb:mem:db1");
+	db1.setLocation("jdbc:hsqldb:mem:db1");
 	db1.setUser("sa");
 	db1.setPassword("");
 	
 	DriverDatabase db2 = new DriverDatabase();
 	db2.setId("db2");
-	db2.setName("jdbc:hsqldb:mem:db2");
+	db2.setLocation("jdbc:hsqldb:mem:db2");
 	db2.setUser("sa");
 	db2.setPassword("");
 	
@@ -747,9 +747,10 @@ e.g.
 	config.setDispatcherFactory(new JGroupsCommandDispatcherFactory());
 	
 	// Register the configuration with the HA-JDBC driver
-	for (java.sql.Driver driver: DriverManager.getDrivers()) {
-		if (driver instanceof Driver) {
-			((Driver) driver).getConfigurationFactories().put("mycluster", new SimpleDatabaseClusterConfigurationFactory<Driver, DriverDatabase>(config));
+	for (java.sql.Driver driver: Collections.list(DriverManager.getDrivers())) {
+		if (driver instanceof net.sf.hajdbc.sql.Driver) {
+			net.sf.hajdbc.sql.Driver ourDriver = (net.sf.hajdbc.sql.Driver) driver;
+			ourDriver.getConfigurationFactories().put("mycluster", new SimpleDatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>(config));
 			break;
 		}
 	}
