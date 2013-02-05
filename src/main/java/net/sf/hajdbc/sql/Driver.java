@@ -40,6 +40,7 @@ import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.util.TimePeriod;
 import net.sf.hajdbc.util.concurrent.MapRegistryStoreFactory;
 import net.sf.hajdbc.util.concurrent.LifecycleRegistry;
 import net.sf.hajdbc.util.concurrent.Registry;
@@ -49,11 +50,39 @@ import net.sf.hajdbc.xml.XMLDatabaseClusterConfigurationFactory;
 /**
  * @author  Paul Ferraro
  */
-public final class Driver extends AbstractDriver implements Registry.Factory<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException>
+public final class Driver extends AbstractDriver
 {
-	private static final Pattern URL_PATTERN = Pattern.compile("jdbc:ha-jdbc:(?://)?([^/]+)(?:/.+)?"); //$NON-NLS-1$
-	private static final String CONFIG = "config"; //$NON-NLS-1$
+	private static final Pattern URL_PATTERN = Pattern.compile("jdbc:ha-jdbc:(?://)?([^/]+)(?:/.+)?");
+	private static final String CONFIG = "config";
 	private static final Logger logger = LoggerFactory.getLogger(Driver.class);
+
+	private static volatile TimePeriod timeout = new TimePeriod(10, TimeUnit.SECONDS);
+	private static volatile DatabaseClusterFactory<java.sql.Driver, DriverDatabase> factory = new DatabaseClusterFactoryImpl<java.sql.Driver, DriverDatabase>();
+	
+	private static final Map<String, DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>> configurationFactories = new ConcurrentHashMap<String, DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>>();
+	private static final Registry.Factory<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException> registryFactory = new Registry.Factory<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException>()
+	{
+		@Override
+		public DatabaseCluster<java.sql.Driver, DriverDatabase> create(String id, Properties properties) throws SQLException
+		{
+			DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase> configurationFactory = configurationFactories.get(id);
+			
+			if (configurationFactory == null)
+			{
+				String config = (properties != null) ? properties.getProperty(CONFIG) : null;
+				configurationFactory = new XMLDatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>(DriverDatabaseClusterConfiguration.class, id, config);
+			}
+			
+			return factory.createDatabaseCluster(id, configurationFactory);
+		}
+
+		@Override
+		public TimePeriod getTimeout()
+		{
+			return timeout;
+		}
+	};
+	private static final Registry<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException> registry = new LifecycleRegistry<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException>(registryFactory, new MapRegistryStoreFactory<String>(), ExceptionType.getExceptionFactory(SQLException.class));
 
 	static
 	{
@@ -66,37 +95,25 @@ public final class Driver extends AbstractDriver implements Registry.Factory<Str
 			logger.log(Level.ERROR, Messages.DRIVER_REGISTER_FAILED.getMessage(Driver.class.getName()), e);
 		}
 	}
-
-	private volatile DatabaseClusterFactory<java.sql.Driver, DriverDatabase> factory = new DatabaseClusterFactoryImpl<java.sql.Driver, DriverDatabase>();
-	private volatile long timeout = 10;
-	private volatile TimeUnit timeoutUnit = TimeUnit.SECONDS;
 	
-	private final Map<String, DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>> configurationFactories = new ConcurrentHashMap<String, DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>>();
-	private final Registry<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException> registry = new LifecycleRegistry<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException>(this, new MapRegistryStoreFactory<String>(), ExceptionType.getExceptionFactory(SQLException.class));
-	
-	public void stop(String id) throws SQLException
+	public static void stop(String id) throws SQLException
 	{
-		this.registry.remove(id);
+		registry.remove(id);
 	}
 
-	public void setFactory(DatabaseClusterFactory<java.sql.Driver, DriverDatabase> factory)
+	public static void setFactory(DatabaseClusterFactory<java.sql.Driver, DriverDatabase> databaseClusterFactory)
 	{
-		this.factory = factory;
+		factory = databaseClusterFactory;
+	}
+
+	public static void setConfigurationFactory(String id, DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase> configurationFactory)
+	{
+		configurationFactories.put(id,  configurationFactory);
 	}
 	
-	/**
-	 * Set custom configuration factories per cluster.
-	 * @return a map of configuration factories per cluster identifier.
-	 */
-	public Map<String, DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>> getConfigurationFactories()
+	public static void setTimeout(long value, TimeUnit unit)
 	{
-		return this.configurationFactories;
-	}
-	
-	public void setTimeout(long value, TimeUnit unit)
-	{
-		this.timeout = value;
-		this.timeoutUnit = unit;
+		timeout = new TimePeriod(value, unit);
 	}
 	
 	/**
@@ -121,7 +138,7 @@ public final class Driver extends AbstractDriver implements Registry.Factory<Str
 		// JDBC spec compliance
 		if (id == null) return null;
 		
-		DatabaseCluster<java.sql.Driver, DriverDatabase> cluster = this.registry.get(id, properties);
+		DatabaseCluster<java.sql.Driver, DriverDatabase> cluster = registry.get(id, properties);
 		
 		DriverInvocationHandler handler = new DriverInvocationHandler(cluster);
 		
@@ -159,7 +176,7 @@ public final class Driver extends AbstractDriver implements Registry.Factory<Str
 		// JDBC spec compliance
 		if (id == null) return null;
 		
-		DatabaseCluster<java.sql.Driver, DriverDatabase> cluster = this.registry.get(id, properties);
+		DatabaseCluster<java.sql.Driver, DriverDatabase> cluster = registry.get(id, properties);
 		
 		DriverInvocationHandler handler = new DriverInvocationHandler(cluster);
 		
@@ -177,43 +194,6 @@ public final class Driver extends AbstractDriver implements Registry.Factory<Str
 		InvocationResultFactory<java.sql.Driver, DriverDatabase, DriverPropertyInfo[], SQLException> resultFactory = handler.new SimpleInvocationResultFactory<DriverPropertyInfo[]>();
 		
 		return resultFactory.createResult(results);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.util.concurrent.Registry.Factory#create(java.lang.Object, java.lang.Object)
-	 */
-	@Override
-	public DatabaseCluster<java.sql.Driver, DriverDatabase> create(String id, Properties properties) throws SQLException
-	{
-		DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase> factory = this.configurationFactories.get(id);
-		
-		if (factory == null)
-		{
-			factory = new XMLDatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>(DriverDatabaseClusterConfiguration.class, id, properties.getProperty(CONFIG));
-		}
-		
-		return this.factory.createDatabaseCluster(id, factory);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.util.concurrent.Registry.Factory#getTimeout()
-	 */
-	@Override
-	public long getTimeout()
-	{
-		return this.timeout;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.util.concurrent.Registry.Factory#getTimeoutUnit()
-	 */
-	@Override
-	public TimeUnit getTimeoutUnit()
-	{
-		return this.timeoutUnit;
 	}
 
 	/**

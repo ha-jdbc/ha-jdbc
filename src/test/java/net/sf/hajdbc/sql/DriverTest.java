@@ -17,6 +17,7 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -53,17 +54,12 @@ public class DriverTest
 	
 	private java.sql.Driver mockDriver = new MockDriver(this.connection);
 
-	private Driver driver;
-	
 	@Before
 	public void before() throws SQLException
 	{
 		DriverManager.setLogWriter(new java.io.PrintWriter(System.out));
 		DriverManager.registerDriver(this.mockDriver);
-		
-		this.driver = (Driver) DriverManager.getDriver("jdbc:ha-jdbc:cluster");
-		this.driver.setFactory(this.factory);
-		this.driver.getConfigurationFactories().put("cluster", this.configurationFactory);
+		Driver.setFactory(this.factory);
 	}
 	
 	@After
@@ -75,12 +71,14 @@ public class DriverTest
 	@Test
 	public void acceptsURL() throws SQLException
 	{
-		Assert.assertTrue(this.driver.acceptsURL("jdbc:ha-jdbc:cluster"));
-		Assert.assertTrue(this.driver.acceptsURL("jdbc:ha-jdbc://cluster"));
-		Assert.assertTrue(this.driver.acceptsURL("jdbc:ha-jdbc://cluster/database"));
-		Assert.assertFalse(this.driver.acceptsURL("jdbc:postgresql:database"));
-		Assert.assertFalse(this.driver.acceptsURL("jdbc:postgresql://server"));
-		Assert.assertFalse(this.driver.acceptsURL("jdbc:postgresql://server/database"));
+		Driver driver = new Driver();
+		
+		Assert.assertTrue(driver.acceptsURL("jdbc:ha-jdbc:cluster"));
+		Assert.assertTrue(driver.acceptsURL("jdbc:ha-jdbc://cluster"));
+		Assert.assertTrue(driver.acceptsURL("jdbc:ha-jdbc://cluster/database"));
+		Assert.assertFalse(driver.acceptsURL("jdbc:postgresql:database"));
+		Assert.assertFalse(driver.acceptsURL("jdbc:postgresql://server"));
+		Assert.assertFalse(driver.acceptsURL("jdbc:postgresql://server/database"));
 	}
 	
 	@Test
@@ -103,12 +101,9 @@ public class DriverTest
 		database.setLocation("jdbc:mock:test");
 		
 		Driver driver = new Driver();
-
-		driver.setFactory(this.factory);
-		driver.getConfigurationFactories().put(id, this.configurationFactory);
+		Driver.setConfigurationFactory(id, this.configurationFactory);
 
 		when(this.factory.createDatabaseCluster(eq(id), same(this.configurationFactory))).thenReturn(cluster);
-		cluster.start();
 		
 		when(cluster.isActive()).thenReturn(true);
 		when(cluster.getBalancer()).thenReturn(balancer);
@@ -125,8 +120,18 @@ public class DriverTest
 		when(cluster.getDurability()).thenReturn(mock(Durability.class));
 		when(cluster.getTransactionIdentifierFactory()).thenReturn(mock(TransactionIdentifierFactory.class));
 		
-		Connection result = driver.connect(url, null);
-		
-//		Assert.assertSame(this.connection, result);
+		try
+		{
+			Connection result = driver.connect(url, null);
+			
+			Assert.assertTrue(result.getClass().getName(), Proxy.isProxyClass(result.getClass()));
+			@SuppressWarnings("rawtypes")
+			ConnectionInvocationHandler<java.sql.Driver, DriverDatabase, java.sql.Driver> handler = (ConnectionInvocationHandler) Proxy.getInvocationHandler(result);
+			Assert.assertSame(this.connection, handler.getObject(database));
+		}
+		finally
+		{
+			Driver.stop(id);
+		}
 	}
 }

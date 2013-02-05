@@ -747,13 +747,7 @@ e.g.
 	config.setDispatcherFactory(new JGroupsCommandDispatcherFactory());
 	
 	// Register the configuration with the HA-JDBC driver
-	for (java.sql.Driver driver: Collections.list(DriverManager.getDrivers())) {
-		if (driver instanceof net.sf.hajdbc.sql.Driver) {
-			net.sf.hajdbc.sql.Driver ourDriver = (net.sf.hajdbc.sql.Driver) driver;
-			ourDriver.getConfigurationFactories().put("mycluster", new SimpleDatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>(config));
-			break;
-		}
-	}
+	net.sf.hajdbc.sql.Driver.setConfigurationFactory("mycluster", new SimpleDatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>(config));
 	
 	// Database cluster is now ready to be used!
 	Connection connection = DriverManager.getConnection("jdbc:ha-jdbc:mycluster", "sa", "");

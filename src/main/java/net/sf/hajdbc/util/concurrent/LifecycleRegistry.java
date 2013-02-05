@@ -26,6 +26,7 @@ import net.sf.hajdbc.Lifecycle;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
+import net.sf.hajdbc.util.TimePeriod;
 
 /**
  * @author Paul Ferraro
@@ -126,9 +127,10 @@ public class LifecycleRegistry<K, V extends Lifecycle, C, E extends Exception> i
 			
 			if (latch != null)
 			{
+				TimePeriod timeout = LifecycleRegistry.this.factory.getTimeout();
 				try
 				{
-					if (!latch.await(LifecycleRegistry.this.factory.getTimeout(), LifecycleRegistry.this.factory.getTimeoutUnit()))
+					if (!latch.await(timeout.getValue(), timeout.getUnit()))
 					{
 						throw LifecycleRegistry.this.exceptionFactory.createException(new TimeoutException());
 					}

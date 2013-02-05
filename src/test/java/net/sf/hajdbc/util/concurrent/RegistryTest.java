@@ -33,6 +33,7 @@ import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.Lifecycle;
 import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.durability.Durability.Phase;
+import net.sf.hajdbc.util.TimePeriod;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -240,12 +241,12 @@ public class RegistryTest
 	private class Factory implements LifecycleRegistry.Factory<Void, SimpleObject, Void, Exception>
 	{
 		private final SimpleObject object;
-		private final int seconds;
+		private final TimePeriod timeout;
 		
 		Factory(SimpleObject object, int seconds)
 		{
 			this.object = object;
-			this.seconds = seconds;
+			this.timeout = new TimePeriod(seconds, TimeUnit.SECONDS);
 		}
 		
 		@Override
@@ -255,15 +256,9 @@ public class RegistryTest
 		}
 
 		@Override
-		public long getTimeout()
+		public TimePeriod getTimeout()
 		{
-			return this.seconds;
-		}
-
-		@Override
-		public TimeUnit getTimeoutUnit()
-		{
-			return TimeUnit.SECONDS;
+			return this.timeout;
 		}
 	}
 	

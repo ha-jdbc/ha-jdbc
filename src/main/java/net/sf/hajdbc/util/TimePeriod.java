@@ -1,6 +1,6 @@
 /*
  * HA-JDBC: High-Availability JDBC
- * Copyright (C) 2012  Paul Ferraro
+ * Copyright (C) 2013  Paul Ferraro
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -15,36 +15,32 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.hajdbc.util.concurrent;
+package net.sf.hajdbc.util;
 
-import net.sf.hajdbc.util.TimePeriod;
+import java.util.concurrent.TimeUnit;
 
 /**
+ * Simple struct to represent a time period.
  * @author Paul Ferraro
- * @param <K>
- * @param <V>
- * @param <C>
- * @param <E>
  */
-public interface Registry<K, V, C, E extends Exception>
+public final class TimePeriod
 {
-	V get(K key, C context) throws E;
+	private final long value;
+	private final TimeUnit unit;
 
-	void remove(K key) throws E;
-	
-	public interface Factory<K, V, C, E extends Exception>
+	public TimePeriod(long value, TimeUnit unit)
 	{
-		V create(K key, C context) throws E;
-		
-		TimePeriod getTimeout();
+		this.value = value;
+		this.unit = unit;
 	}
-	
-	public interface Store<K, V>
+
+	public long getValue()
 	{
-		V setIfAbsent(K key, V value);
-		
-		V get(K key);
-		
-		V clear(K key);
+		return this.value;
+	}
+
+	public TimeUnit getUnit()
+	{
+		return this.unit;
 	}
 }

@@ -31,6 +31,7 @@ import net.sf.hajdbc.DatabaseClusterConfiguration;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.ExceptionType;
+import net.sf.hajdbc.util.TimePeriod;
 import net.sf.hajdbc.util.concurrent.ReferenceRegistryStoreFactory;
 import net.sf.hajdbc.util.concurrent.LifecycleRegistry;
 import net.sf.hajdbc.util.concurrent.Registry;
@@ -48,8 +49,7 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 	
 	private final Registry<Void, DatabaseCluster<Z, D>, Void, SQLException> registry = new LifecycleRegistry<Void, DatabaseCluster<Z, D>, Void, SQLException>(this, new ReferenceRegistryStoreFactory(), ExceptionType.getExceptionFactory(SQLException.class));
 	
-	private volatile long timeout = 10;
-	private volatile TimeUnit timeoutUnit = TimeUnit.SECONDS;
+	private volatile TimePeriod timeout = new TimePeriod(10, TimeUnit.SECONDS);
 	private volatile String cluster;
 	private volatile String config;
 	private volatile DatabaseClusterFactory<Z, D> factory = new DatabaseClusterFactoryImpl<Z, D>();
@@ -139,7 +139,7 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 	 * @return the timeout
 	 */
 	@Override
-	public long getTimeout()
+	public TimePeriod getTimeout()
 	{
 		return this.timeout;
 	}
@@ -147,26 +147,9 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 	/**
 	 * @param timeout the timeout to set
 	 */
-	public void setTimeout(long timeout)
+	public void setTimeout(long value, TimeUnit unit)
 	{
-		this.timeout = timeout;
-	}
-
-	/**
-	 * @return the timeoutUnit
-	 */
-	@Override
-	public TimeUnit getTimeoutUnit()
-	{
-		return this.timeoutUnit;
-	}
-
-	/**
-	 * @param timeoutUnit the timeoutUnit to set
-	 */
-	public void setTimeoutUnit(TimeUnit timeoutUnit)
-	{
-		this.timeoutUnit = timeoutUnit;
+		this.timeout = new TimePeriod(value, unit);
 	}
 
 	/**
