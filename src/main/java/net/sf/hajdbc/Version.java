@@ -27,36 +27,43 @@ import net.sf.hajdbc.util.Strings;
  */
 public class Version
 {
-	private static final String VERSION = "version"; //$NON-NLS-1$
+	public static final Version CURRENT = new Version(ResourceBundle.getBundle(Version.class.getName()).getString("version"));
 	
-	private static final ResourceBundle resource = ResourceBundle.getBundle(Version.class.getName());
+	private final String version;
+	private final int major;
+	private final int minor;
+	private final int revision;
 	
-	/**
-	 * Returns the current HA-JDBC version.
-	 * @return a version label
-	 */
-	public static String getVersion()
+	Version(String version)
 	{
-		return resource.getString(VERSION);
+		this.version = version;
+		this.major = parse(0);
+		this.minor = parse(1);
+		this.revision = parse(2);
 	}
 	
-	private static int getVersionPart(int index)
+	private int parse(int index)
 	{
-		return Integer.parseInt(getVersion().split(Pattern.quote(Strings.DASH), 1)[0].split(Pattern.quote(Strings.DOT), index + 1)[index]);
+		return Integer.parseInt(this.version.split(Pattern.quote(Strings.DASH))[0].split(Pattern.quote(Strings.DOT))[index]);
 	}
 	
-	public static int getMajorVersion()
+	public int getMajor()
 	{
-		return getVersionPart(0);
+		return this.major;
 	}
 	
-	public static int getMinorVersion()
+	public int getMinor()
 	{
-		return getVersionPart(1);
+		return this.minor;
 	}
 	
-	public static int getRevisionVersion()
+	public int getRevision()
 	{
-		return getVersionPart(2);
+		return this.revision;
+	}
+	
+	public String toString()
+	{
+		return this.version;
 	}
 }

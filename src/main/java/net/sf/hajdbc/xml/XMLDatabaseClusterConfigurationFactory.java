@@ -133,7 +133,7 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 	@Override
 	public DatabaseClusterConfiguration<Z, D> createConfiguration() throws SQLException
 	{
-		logger.log(Level.INFO, Messages.HA_JDBC_INIT.getMessage(), Version.getVersion(), this.streamFactory);
+		logger.log(Level.INFO, Messages.HA_JDBC_INIT.getMessage(), Version.CURRENT, this.streamFactory);
 		
 		try
 		{

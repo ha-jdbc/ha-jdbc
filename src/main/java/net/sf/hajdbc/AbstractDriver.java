@@ -67,7 +67,7 @@ public abstract class AbstractDriver implements Driver
 	@Override
 	public int getMajorVersion()
 	{
-		return Version.getMajorVersion();
+		return Version.CURRENT.getMajor();
 	}
 	
 	/**
@@ -76,6 +76,6 @@ public abstract class AbstractDriver implements Driver
 	@Override
 	public int getMinorVersion()
 	{
-		return Version.getMinorVersion();
+		return Version.CURRENT.getMinor();
 	}
 }

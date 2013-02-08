@@ -229,7 +229,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	@ManagedAttribute
 	public String getVersion()
 	{
-		return Version.getVersion();
+		return Version.CURRENT.toString();
 	}
 
 	/**
