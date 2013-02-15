@@ -21,6 +21,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -46,6 +47,8 @@ import net.sf.hajdbc.codec.Decoder;
 import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.durability.Durability;
+import net.sf.hajdbc.durability.InvocationEvent;
+import net.sf.hajdbc.durability.InvokerEvent;
 import net.sf.hajdbc.lock.LockManager;
 import net.sf.hajdbc.lock.distributed.DistributedLockManager;
 import net.sf.hajdbc.logging.Level;
@@ -700,7 +703,11 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 			}
 		}
 
-		this.durability.recover(this.stateManager.recover());
+		Map<InvocationEvent, Map<String, InvokerEvent>> invokers = this.stateManager.recover();
+		if (!invokers.isEmpty())
+		{
+			this.durability.recover(invokers);
+		}
 		
 		this.databaseMetaDataCache = this.configuration.getDatabaseMetaDataCacheFactory().createCache(this);
 		
