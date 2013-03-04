@@ -23,6 +23,7 @@ import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.sql.PooledConnection;
 
+import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.sql.CommonDataSource;
 
 /**
@@ -63,6 +64,7 @@ public class ConnectionPoolDataSource extends CommonDataSource<javax.sql.Connect
 	@Override
 	public Reference getReference() throws NamingException
 	{
-		return new ConnectionPoolDataSourceReference(this.getCluster(), this.getConfig());
+		DatabaseClusterConfigurationFactory<javax.sql.ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase> factory = this.getConfigurationFactory();
+		return (factory != null) ? new ConnectionPoolDataSourceReference(this.getCluster(), factory) : new ConnectionPoolDataSourceReference(this.getCluster(), this.getConfig());
 	}
 }

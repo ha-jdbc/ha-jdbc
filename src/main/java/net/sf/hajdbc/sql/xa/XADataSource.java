@@ -24,6 +24,7 @@ import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.sql.XAConnection;
 
+import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.sql.CommonDataSource;
 
 /**
@@ -99,6 +100,7 @@ public class XADataSource extends CommonDataSource<javax.sql.XADataSource, XADat
 	@Override
 	public Reference getReference() throws NamingException
 	{
-		return new XADataSourceReference(this.getCluster(), this.getConfig());
+		DatabaseClusterConfigurationFactory<javax.sql.XADataSource, XADataSourceDatabase> factory = this.getConfigurationFactory();
+		return (factory != null) ? new XADataSourceReference(this.getCluster(), factory) : new XADataSourceReference(this.getCluster(), this.getConfig());
 	}
 }

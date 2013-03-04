@@ -35,7 +35,7 @@ public class ConnectionPoolDataSourceFactory extends CommonDataSourceFactory<Con
 	 */
 	public ConnectionPoolDataSourceFactory()
 	{
-		super(ConnectionPoolDataSource.class);
+		super(ConnectionPoolDataSource.class, ConnectionPoolDataSourceDatabaseClusterConfiguration.class);
 	}
 
 	/**

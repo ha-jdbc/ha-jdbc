@@ -44,7 +44,7 @@ public class DataSourceReference extends CommonDataSourceReference<DataSource>
 	 */
 	public DataSourceReference(String cluster, String config)
 	{
-		super(DataSource.class, DataSourceFactory.class, cluster, DataSourceDatabaseClusterConfiguration.class, config);
+		super(DataSource.class, DataSourceFactory.class, cluster, config);
 	}
 	
 	/**

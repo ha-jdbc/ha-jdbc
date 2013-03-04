@@ -34,7 +34,7 @@ public class XADataSourceFactory extends CommonDataSourceFactory<XADataSource, X
 	 */
 	public XADataSourceFactory()
 	{
-		super(XADataSource.class);
+		super(XADataSource.class, XADataSourceDatabaseClusterConfiguration.class);
 	}
 
 	/**

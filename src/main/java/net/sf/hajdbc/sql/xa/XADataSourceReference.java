@@ -59,7 +59,7 @@ public class XADataSourceReference extends CommonDataSourceReference<XADataSourc
 	
 	public XADataSourceReference(String cluster, String config, boolean force2PC)
 	{
-		super(XADataSource.class, XADataSourceFactory.class, cluster, XADataSourceDatabaseClusterConfiguration.class, config);
+		super(XADataSource.class, XADataSourceFactory.class, cluster, config);
 
 		this.setForce2PC(force2PC);
 	}

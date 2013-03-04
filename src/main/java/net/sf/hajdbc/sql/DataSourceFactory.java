@@ -33,7 +33,7 @@ public class DataSourceFactory extends CommonDataSourceFactory<DataSource, DataS
 	 */
 	public DataSourceFactory()
 	{
-		super(javax.sql.DataSource.class);
+		super(javax.sql.DataSource.class, DataSourceDatabaseClusterConfiguration.class);
 	}
 
 	/**
@@ -44,5 +44,5 @@ public class DataSourceFactory extends CommonDataSourceFactory<DataSource, DataS
 	public InvocationHandler createInvocationHandler(DatabaseCluster<DataSource, DataSourceDatabase> cluster)
 	{
 		return new DataSourceInvocationHandler(cluster);
-	}	
+	}
 }

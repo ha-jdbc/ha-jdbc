@@ -28,10 +28,12 @@ import javax.naming.spi.ObjectFactory;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.DatabaseClusterConfiguration;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.util.Objects;
 import net.sf.hajdbc.util.reflect.ProxyFactory;
+import net.sf.hajdbc.xml.XMLDatabaseClusterConfigurationFactory;
 
 /**
  * @author Paul Ferraro
@@ -42,13 +44,15 @@ import net.sf.hajdbc.util.reflect.ProxyFactory;
 public abstract class CommonDataSourceFactory<Z extends javax.sql.CommonDataSource, D extends Database<Z>> implements ObjectFactory, CommonDataSourceInvocationHandlerFactory<Z, D>
 {
 	private final Class<Z> targetClass;
+	private final Class<? extends DatabaseClusterConfiguration<Z, D>> configurationClass;
 	
 	/**
 	 * @param targetClass
 	 */
-	protected CommonDataSourceFactory(Class<Z> targetClass)
+	protected CommonDataSourceFactory(Class<Z> targetClass, Class<? extends DatabaseClusterConfiguration<Z, D>> configurationClass)
 	{
 		this.targetClass = targetClass;
+		this.configurationClass = configurationClass;
 	}
 
 	/**
@@ -65,15 +69,15 @@ public abstract class CommonDataSourceFactory<Z extends javax.sql.CommonDataSour
 		
 		if ((className == null) || !className.equals(this.targetClass.getName())) return null;
 		
-		RefAddr idAddr = reference.get(CommonDataSourceReference.CLUSTER);
+		RefAddr clusterAddr = reference.get(CommonDataSourceReference.CLUSTER);
 		
-		if (idAddr == null) return null;
+		if (clusterAddr == null) return null;
 		
-		Object idAddrContent = idAddr.getContent();
+		Object clusterAddrContent = clusterAddr.getContent();
 		
-		if ((idAddrContent == null) || !(idAddrContent instanceof String)) return null;
+		if ((clusterAddrContent == null) || !(clusterAddrContent instanceof String)) return null;
 		
-		String id = (String) idAddrContent;
+		String clusterId = (String) clusterAddrContent;
 		
 		RefAddr configAddr = reference.get(CommonDataSourceReference.CONFIG);
 		
@@ -81,13 +85,26 @@ public abstract class CommonDataSourceFactory<Z extends javax.sql.CommonDataSour
 		
 		Object configAddrContent = configAddr.getContent();
 		
-		if ((configAddrContent == null) || !(configAddrContent instanceof byte[])) return null;
+		if (configAddrContent == null) return null;
 		
-		byte[] config = (byte[]) configAddr.getContent();
+		DatabaseClusterConfigurationFactory<Z, D> factory = null;
 		
-		DatabaseClusterConfigurationFactory<Z, D> factory = Objects.deserialize(config);
+		if (configAddrContent instanceof String)
+		{
+			String config = (String) configAddrContent;
+			
+			factory = new XMLDatabaseClusterConfigurationFactory<Z, D>(this.configurationClass, clusterId, config);
+		}
+		else if (configAddrContent instanceof byte[])
+		{
+			byte[] config = (byte[]) configAddrContent;
+			
+			factory = Objects.deserialize(config);
+		}
 		
-		DatabaseCluster<Z, D> cluster = new DatabaseClusterImpl<Z, D>(id, factory.createConfiguration(), factory);
+		if (factory == null) return null;
+		
+		DatabaseCluster<Z, D> cluster = new DatabaseClusterImpl<Z, D>(clusterId, factory.createConfiguration(), factory);
 		
 		try
 		{

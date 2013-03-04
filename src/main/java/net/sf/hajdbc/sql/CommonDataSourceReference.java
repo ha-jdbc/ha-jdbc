@@ -23,10 +23,8 @@ import javax.naming.StringRefAddr;
 import javax.naming.spi.ObjectFactory;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.DatabaseClusterConfiguration;
 import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.util.Objects;
-import net.sf.hajdbc.xml.XMLDatabaseClusterConfigurationFactory;
 
 /**
  * @author Paul Ferraro
@@ -48,9 +46,11 @@ public abstract class CommonDataSourceReference<Z> extends Reference
 	 * @param configurationClass
 	 * @param config the uri of the configuration file
 	 */
-	protected <D extends Database<Z>> CommonDataSourceReference(Class<Z> targetClass, Class<? extends ObjectFactory> factoryClass, String cluster, Class<? extends DatabaseClusterConfiguration<Z, D>> configurationClass, String config)
+	protected <D extends Database<Z>> CommonDataSourceReference(Class<Z> targetClass, Class<? extends ObjectFactory> factoryClass, String cluster, String config)
 	{
-		this(targetClass, factoryClass, cluster, new XMLDatabaseClusterConfigurationFactory<Z, D>(configurationClass, cluster, config));
+		this(targetClass, factoryClass, cluster);
+		
+		this.add(new StringRefAddr(CONFIG, config));
 	}
 	
 	/**
@@ -63,6 +63,13 @@ public abstract class CommonDataSourceReference<Z> extends Reference
 	 */
 	protected <D extends Database<Z>> CommonDataSourceReference(Class<Z> targetClass, Class<? extends ObjectFactory> factoryClass, String cluster, DatabaseClusterConfigurationFactory<Z, D> factory)
 	{
+		this(targetClass, factoryClass, cluster);
+		
+		this.add(new BinaryRefAddr(CONFIG, Objects.serialize(factory)));
+	}
+
+	private <D extends Database<Z>> CommonDataSourceReference(Class<Z> targetClass, Class<? extends ObjectFactory> factoryClass, String cluster)
+	{
 		super(targetClass.getName(), factoryClass.getName(), null);
 		
 		if (cluster == null)
@@ -71,7 +78,5 @@ public abstract class CommonDataSourceReference<Z> extends Reference
 		}
 		
 		this.add(new StringRefAddr(CLUSTER, cluster));
-		
-		this.add(new BinaryRefAddr(CONFIG, Objects.serialize(factory)));
 	}
 }

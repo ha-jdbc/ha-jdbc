@@ -23,6 +23,8 @@ import java.sql.SQLException;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 
+import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
+
 /**
  * @author Paul Ferraro
  */
@@ -78,6 +80,7 @@ public class DataSource extends CommonDataSource<javax.sql.DataSource, DataSourc
 	@Override
 	public Reference getReference() throws NamingException
 	{
-		return new DataSourceReference(this.getCluster(), this.getConfig());
+		DatabaseClusterConfigurationFactory<javax.sql.DataSource, DataSourceDatabase> factory = this.getConfigurationFactory();
+		return (factory != null) ? new DataSourceReference(this.getCluster(), factory) : new DataSourceReference(this.getCluster(), this.getConfig());
 	}
 }

@@ -45,7 +45,7 @@ public class ConnectionPoolDataSourceReference extends CommonDataSourceReference
 	 */
 	public ConnectionPoolDataSourceReference(String cluster, String config)
 	{
-		super(ConnectionPoolDataSource.class, ConnectionPoolDataSourceFactory.class, cluster, ConnectionPoolDataSourceDatabaseClusterConfiguration.class, config);
+		super(ConnectionPoolDataSource.class, ConnectionPoolDataSourceFactory.class, cluster, config);
 	}
 	
 	/**
