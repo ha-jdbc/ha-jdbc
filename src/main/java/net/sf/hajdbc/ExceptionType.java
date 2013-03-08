@@ -17,6 +17,7 @@
  */
 package net.sf.hajdbc;
 
+import java.io.IOException;
 import java.sql.SQLException;
 
 import javax.transaction.xa.XAException;
@@ -30,8 +31,10 @@ import net.sf.hajdbc.util.ServiceLoaders;
 @SuppressWarnings("rawtypes")
 public enum ExceptionType implements Matcher<ExceptionFactory>
 {
-	SQL(SQLException.class), XA(XAException.class);
-	
+	SQL(SQLException.class),
+	XA(XAException.class),
+	IO(IOException.class)
+	;
 	private final Class<? extends Exception> exceptionClass;
 	
 	private <E extends Exception> ExceptionType(final Class<E> exceptionClass)

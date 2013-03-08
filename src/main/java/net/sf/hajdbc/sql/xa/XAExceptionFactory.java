@@ -19,10 +19,10 @@ package net.sf.hajdbc.sql.xa;
 
 import javax.transaction.xa.XAException;
 
+import net.sf.hajdbc.AbstractExceptionFactory;
 import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.durability.Durability.Phase;
-import net.sf.hajdbc.sql.AbstractExceptionFactory;
 
 /**
  * @author Paul Ferraro
@@ -59,11 +59,7 @@ public class XAExceptionFactory extends AbstractExceptionFactory<XAException>
 			return exception1.errorCode == exception2.errorCode;
 		}
 
-		// Fallback to match by message
-		String message1 = exception1.getMessage();
-		String message2 = exception2.getMessage();
-
-		return (message1 == message2) || ((message1 != null) && (message2 != null) && message1.equals(message2));
+		return super.equals(exception1, exception2);
 	}
 
 	/**

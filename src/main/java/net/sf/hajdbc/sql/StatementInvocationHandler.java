@@ -17,31 +17,18 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Map;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.invocation.Invoker;
 
 /**
  * @author Paul Ferraro
  * @param <D> 
  */
-public class StatementInvocationHandler<Z, D extends Database<Z>> extends AbstractStatementInvocationHandler<Z, D, Statement>
-{
-	/**
-	 * @param connection the connection that created this statement
-	 * @param proxy the invocation handler of the connection that created this statement
-	 * @param invoker the invoker used to create this statement
-	 * @param statementMap a map of database to underlying statement
-	 * @param transactionContext 
-	 * @param fileSupport support for streams
-	 * @throws Exception
-	 */
-	public StatementInvocationHandler(Connection connection, SQLProxy<Z, D, Connection, SQLException> proxy, Invoker<Z, D, Connection, Statement, SQLException> invoker, Map<D, Statement> statementMap, TransactionContext<Z, D> transactionContext, FileSupport<SQLException> fileSupport)
+public class StatementInvocationHandler<Z, D extends Database<Z>> extends AbstractStatementInvocationHandler<Z, D, Statement, AbstractStatementProxyFactory<Z, D, Statement>>
+{	
+	public StatementInvocationHandler(AbstractStatementProxyFactory<Z, D, Statement> proxyFactory)
 	{
-		super(connection, proxy, invoker, Statement.class, statementMap, transactionContext, fileSupport);
+		super(Statement.class, proxyFactory);
 	}
 }

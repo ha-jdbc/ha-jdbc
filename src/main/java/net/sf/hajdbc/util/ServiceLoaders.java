@@ -17,8 +17,10 @@
  */
 package net.sf.hajdbc.util;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
 import net.sf.hajdbc.logging.Level;
@@ -31,9 +33,18 @@ public class ServiceLoaders
 	
 	public static <T> T findService(Class<T> serviceClass)
 	{
-		for (T service: ServiceLoader.load(serviceClass, serviceClass.getClassLoader()))
+		Iterator<T> services = ServiceLoader.load(serviceClass, serviceClass.getClassLoader()).iterator();
+		
+		while (services.hasNext())
 		{
-			return service;
+			try
+			{
+				return services.next();
+			}
+			catch (ServiceConfigurationError e)
+			{
+				logger.log(Level.DEBUG, e.getLocalizedMessage());
+			}
 		}
 		return null;
 	}
@@ -51,12 +62,21 @@ public class ServiceLoaders
 	public static <T> T findService(Matcher<T> matcher, Class<T> serviceClass)
 	{
 		List<T> matches = new LinkedList<T>();
-
-		for (T service: ServiceLoader.load(serviceClass, serviceClass.getClassLoader()))
+		Iterator<T> services = ServiceLoader.load(serviceClass, serviceClass.getClassLoader()).iterator();
+		
+		while (services.hasNext())
 		{
-			if (matcher.matches(service))
+			try
 			{
-				matches.add(service);
+				T service = services.next();
+				if (matcher.matches(service))
+				{
+					matches.add(service);
+				}
+			}
+			catch (ServiceConfigurationError e)
+			{
+				logger.log(Level.DEBUG, e.getLocalizedMessage());
 			}
 		}
 		

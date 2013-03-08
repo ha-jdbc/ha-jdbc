@@ -21,7 +21,6 @@ import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,12 +36,12 @@ import javax.transaction.xa.Xid;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.durability.Durability;
+import net.sf.hajdbc.invocation.InvocationStrategies;
 import net.sf.hajdbc.invocation.InvocationStrategy;
-import net.sf.hajdbc.invocation.InvocationStrategyEnum;
 import net.sf.hajdbc.invocation.Invoker;
-import net.sf.hajdbc.sql.AbstractChildInvocationHandler;
+import net.sf.hajdbc.sql.ChildInvocationHandler;
 import net.sf.hajdbc.sql.DurabilityPhaseRegistry;
-import net.sf.hajdbc.sql.SQLProxy;
+import net.sf.hajdbc.sql.ProxyFactory;
 import net.sf.hajdbc.util.StaticRegistry;
 import net.sf.hajdbc.util.reflect.Methods;
 
@@ -51,7 +50,7 @@ import net.sf.hajdbc.util.reflect.Methods;
  *
  */
 @SuppressWarnings("nls")
-public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<XADataSource, XADataSourceDatabase, XAConnection, SQLException, XAResource, XAException>
+public class XAResourceInvocationHandler extends ChildInvocationHandler<XADataSource, XADataSourceDatabase, XAConnection, SQLException, XAResource, XAException, XAResourceProxyFactory>
 {
 	private static final Set<Method> driverReadMethodSet = Methods.findMethods(XAResource.class, "getTransactionTimeout", "isSameRM");
 	private static final Set<Method> databaseWriteMethodSet = Methods.findMethods(XAResource.class, "setTransactionTimeout");
@@ -67,33 +66,26 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 	
 	// Xids are global - so store in static variable
 	private static final ConcurrentMap<Xid, Lock> lockMap = new ConcurrentHashMap<Xid, Lock>();
-	
-	/**
-	 * @param connection
-	 * @param proxy
-	 * @param invoker
-	 * @param objectMap
-	 * @throws Exception
-	 */
-	protected XAResourceInvocationHandler(XAConnection connection, SQLProxy<XADataSource, XADataSourceDatabase, XAConnection, SQLException> proxy, Invoker<XADataSource, XADataSourceDatabase, XAConnection, XAResource, SQLException> invoker, Map<XADataSourceDatabase, XAResource> objectMap)
+
+	public XAResourceInvocationHandler(XAResourceProxyFactory proxyFactory)
 	{
-		super(connection, proxy, invoker, XAResource.class, XAException.class, objectMap);
+		super(XAResource.class, proxyFactory, null);
 	}
 
 	/**
 	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected InvocationStrategy getInvocationStrategy(XAResource resource, Method method, Object[] parameters) throws XAException
+	protected InvocationStrategy getInvocationStrategy(XAResource resource, Method method, Object... parameters) throws XAException
 	{
 		if (driverReadMethodSet.contains(method))
 		{
-			return InvocationStrategyEnum.INVOKE_ON_ANY;
+			return InvocationStrategies.INVOKE_ON_ANY;
 		}
 		
 		if (databaseWriteMethodSet.contains(method))
 		{
-			return InvocationStrategyEnum.INVOKE_ON_ALL;
+			return InvocationStrategies.INVOKE_ON_ALL;
 		}
 		
 		boolean start = method.equals(startMethod);
@@ -101,11 +93,11 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 		
 		if (start || end || method.equals(prepareMethod) || intraTransactionMethodSet.contains(method))
 		{
-			final InvocationStrategy strategy = end ? InvocationStrategyEnum.END_TRANSACTION_INVOKE_ON_ALL : InvocationStrategyEnum.TRANSACTION_INVOKE_ON_ALL;
+			final InvocationStrategy strategy = end ? InvocationStrategies.END_TRANSACTION_INVOKE_ON_ALL : InvocationStrategies.TRANSACTION_INVOKE_ON_ALL;
 			
 			Xid xid = (Xid) parameters[0];
 			
-			DatabaseCluster<XADataSource, XADataSourceDatabase> cluster = this.getDatabaseCluster();
+			DatabaseCluster<XADataSource, XADataSourceDatabase> cluster = this.getProxyFactory().getDatabaseCluster();
 			
 			if (start)
 			{
@@ -117,7 +109,7 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 					return new InvocationStrategy()
 					{
 						@Override
-						public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(SQLProxy<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker) throws E
+						public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(ProxyFactory<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker) throws E
 						{
 							lock.lock();
 							
@@ -149,7 +141,7 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 					return new InvocationStrategy()
 					{
 						@Override
-						public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(SQLProxy<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker) throws E
+						public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(ProxyFactory<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker) throws E
 						{
 							try
 							{
@@ -180,7 +172,7 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvoker(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected <R> Invoker<XADataSource, XADataSourceDatabase, XAResource, R, XAException> getInvoker(XAResource object, Method method, Object[] parameters) throws XAException
+	protected <R> Invoker<XADataSource, XADataSourceDatabase, XAResource, R, XAException> getInvoker(XAResource object, Method method, Object... parameters) throws XAException
 	{
 		Invoker<XADataSource, XADataSourceDatabase, XAResource, R, XAException> invoker = super.getInvoker(object, method, parameters);
 		
@@ -188,27 +180,18 @@ public class XAResourceInvocationHandler extends AbstractChildInvocationHandler<
 		
 		if (method.equals(prepareMethod) || endTransactionMethodSet.contains(method))
 		{
-			return this.getDatabaseCluster().getDurability().getInvoker(invoker, phase, parameters[0], this.getExceptionFactory());
+			return this.getProxyFactory().getDatabaseCluster().getDurability().getInvoker(invoker, phase, parameters[0], this.getProxyFactory().getExceptionFactory());
 		}
 		
 		return invoker;
 	}
 
-	/**
-	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#close(java.lang.Object, java.lang.Object)
-	 */
 	@Override
-	protected void close(XAConnection connection, XAResource resource)
+	protected <R> void postInvoke(Invoker<XADataSource, XADataSourceDatabase, XAResource, R, XAException> invoker, XAResource proxy, Method method, Object... parameters)
 	{
-		// Do nothing
-	}
-
-	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#isRecordable(java.lang.reflect.Method)
-	 */
-	@Override
-	protected boolean isRecordable(Method method)
-	{
-		return databaseWriteMethodSet.contains(method);
+		if (databaseWriteMethodSet.contains(method))
+		{
+			this.getProxyFactory().record(invoker);
+		}
 	}
 }

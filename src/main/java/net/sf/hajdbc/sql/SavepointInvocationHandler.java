@@ -21,18 +21,16 @@ import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
-import java.util.Map;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.invocation.InvocationStrategies;
 import net.sf.hajdbc.invocation.InvocationStrategy;
-import net.sf.hajdbc.invocation.InvocationStrategyEnum;
-import net.sf.hajdbc.invocation.Invoker;
 
 /**
  * @author Paul Ferraro
  * @param <D> 
  */
-public class SavepointInvocationHandler<Z, D extends Database<Z>> extends ChildInvocationHandler<Z, D, Connection, Savepoint, SQLException>
+public class SavepointInvocationHandler<Z, D extends Database<Z>> extends ChildInvocationHandler<Z, D, Connection, SQLException, Savepoint, SQLException, SavepointProxyFactory<Z, D>>
 {
 	/**
 	 * @param connection the connection that created this savepoint
@@ -41,26 +39,17 @@ public class SavepointInvocationHandler<Z, D extends Database<Z>> extends ChildI
 	 * @param savepointMap a map of database to underlying savepoint
 	 * @throws Exception
 	 */
-	protected SavepointInvocationHandler(Connection connection, SQLProxy<Z, D, Connection, SQLException> proxy, Invoker<Z, D, Connection, Savepoint, SQLException> invoker, Map<D, Savepoint> savepointMap)
+	public SavepointInvocationHandler(SavepointProxyFactory<Z, D> map)
 	{
-		super(connection, proxy, invoker, Savepoint.class, SQLException.class, savepointMap);
+		super(Savepoint.class, map, null);
 	}
 
 	/**
 	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected InvocationStrategy getInvocationStrategy(Savepoint savepoint, Method method, Object[] parameters)
+	protected InvocationStrategy getInvocationStrategy(Savepoint savepoint, Method method, Object... parameters)
 	{
-		return InvocationStrategyEnum.INVOKE_ON_ANY;
-	}
-
-	/**
-	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#close(java.lang.Object, java.lang.Object)
-	 */
-	@Override
-	protected void close(Connection connection, Savepoint savepoint) throws SQLException
-	{
-		connection.releaseSavepoint(savepoint);
+		return InvocationStrategies.INVOKE_ON_ANY;
 	}
 }

@@ -47,7 +47,19 @@
 				Use a new TreeMap to store results, not an immutable singleton map.
 			</action>
 			<action dev="pferraro" type="fix">
+				Fixed parsing bug in Driver.getMajorVersion()/getMinorVersion() that prevented deployment on JBoss AS7.
+			</action>
+			<action dev="pferraro" type="fix">
 				Allow DataSource Reference to define config using URI (not just serialized form).
+			</action>
+			<action dev="pferraro" type="fix">
+				Add support for Blob.setBinaryStream(long), Clob.setAsciiStream(long) and Clob.setCharacterStream(long) via OutputStream and Writer, respectively.
+			</action>
+			<action dev="pferraro" type="add">
+				Add "input-sink" configuration property to control whether InputStream and Reader-based update methods will use a file or in-memory sink.
+			</action>
+			<action dev="pferraro" type="fix">
+				When loading service providers, skip providers with missing dependencies.  This way optional dependencies are truly optional.
 			</action>
 		</release>
 		<release version="2.1.0-beta-3" date="2012-12-09">

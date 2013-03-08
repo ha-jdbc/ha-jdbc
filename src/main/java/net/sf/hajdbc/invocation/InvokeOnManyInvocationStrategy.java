@@ -30,32 +30,43 @@ import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
-import net.sf.hajdbc.sql.SQLProxy;
+import net.sf.hajdbc.sql.ProxyFactory;
 import net.sf.hajdbc.state.StateManager;
 
 /**
  * @author paul
  *
  */
-public abstract class InvokeOnManyInvocationStrategy implements InvocationStrategy
+public class InvokeOnManyInvocationStrategy implements InvocationStrategy
 {
 	private static Logger logger = LoggerFactory.getLogger(InvokeOnManyInvocationStrategy.class);
 	
+	public static interface ResultsCollector
+	{
+		<Z, D extends Database<Z>, T, R, E extends Exception> Map.Entry<SortedMap<D, R>, SortedMap<D, E>> collectResults(ProxyFactory<Z, D, T, E> map, Invoker<Z, D, T, R, E> invoker);
+	}
+
+	private final ResultsCollector collector;
+	
+	public InvokeOnManyInvocationStrategy(ResultsCollector collector)
+	{
+		this.collector = collector;
+	}
+
 	/**
 	 * @see net.sf.hajdbc.invocation.InvocationStrategy#invoke(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.invocation.Invoker)
 	 */
 	@Override
-	public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(SQLProxy<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker) throws E
+	public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(ProxyFactory<Z, D, T, E> map, Invoker<Z, D, T, R, E> invoker) throws E
 	{
-		Map.Entry<SortedMap<D, R>, SortedMap<D, E>> results = this.collectResults(proxy, invoker);
-		
+		Map.Entry<SortedMap<D, R>, SortedMap<D, E>> results = this.collector.collectResults(map, invoker);
+		ExceptionFactory<E> exceptionFactory = map.getExceptionFactory();
 		SortedMap<D, R> resultMap = results.getKey();
 		SortedMap<D, E> exceptionMap = results.getValue();
 		
 		if (!exceptionMap.isEmpty())
 		{
-			ExceptionFactory<E> exceptionFactory = proxy.getExceptionFactory();
-			DatabaseCluster<Z, D> cluster = proxy.getDatabaseCluster();
+			DatabaseCluster<Z, D> cluster = map.getDatabaseCluster();
 			Dialect dialect = cluster.getDialect();
 			
 			List<D> failedDatabases = new ArrayList<D>(exceptionMap.size());
@@ -139,6 +150,4 @@ public abstract class InvokeOnManyInvocationStrategy implements InvocationStrate
 		
 		return resultMap;
 	}
-	
-	protected abstract <Z, D extends Database<Z>, T, R, E extends Exception> Map.Entry<SortedMap<D, R>, SortedMap<D, E>> collectResults(SQLProxy<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker);
 }

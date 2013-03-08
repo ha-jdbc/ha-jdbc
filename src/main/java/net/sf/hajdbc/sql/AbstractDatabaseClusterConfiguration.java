@@ -58,6 +58,7 @@ import net.sf.hajdbc.codec.MultiplexingDecoderFactory;
 import net.sf.hajdbc.dialect.DialectFactory;
 import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.durability.DurabilityFactory;
+import net.sf.hajdbc.io.InputSinkProvider;
 import net.sf.hajdbc.lock.LockManagerFactory;
 import net.sf.hajdbc.management.DefaultMBeanRegistrar;
 import net.sf.hajdbc.management.MBeanRegistrar;
@@ -397,6 +398,17 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		this.getNestedConfiguration().setTransactionMode(mode);
 	}
 	
+	@Override
+	public InputSinkProvider getInputSinkProvider()
+	{
+		return this.getNestedConfiguration().getInputSinkProvider();
+	}
+
+	public void setInputSinkFactoryProvider(InputSinkProvider provider)
+	{
+		this.getNestedConfiguration().setSinkSourceProvider(provider);
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseClusterConfiguration#isCurrentDateEvaluationEnabled()
@@ -568,6 +580,10 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		@XmlAttribute(name = "durability")
 		private DurabilityFactory durabilityFactory = ServiceLoaders.findService(DurabilityFactory.class);
 
+		@XmlJavaTypeAdapter(SinkSourceProviderAdapter.class)
+		@XmlAttribute(name = "input-sink")
+		private InputSinkProvider sinkSourceProvider = ServiceLoaders.findService(InputSinkProvider.class);
+		
 		private ExecutorServiceProvider executorProvider = new DefaultExecutorServiceProvider();
 		private ThreadFactory threadFactory = Executors.defaultThreadFactory();
 		private DecoderFactory decoderFactory = new MultiplexingDecoderFactory();
@@ -789,6 +805,17 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		}
 		
 		@Override
+		public InputSinkProvider getInputSinkProvider()
+		{
+			return this.sinkSourceProvider;
+		}
+
+		void setSinkSourceProvider(InputSinkProvider provider)
+		{
+			this.sinkSourceProvider = provider;
+		}
+		
+		@Override
 		public boolean isCurrentDateEvaluationEnabled()
 		{
 			return this.currentDateEvaluationEnabled;
@@ -955,6 +982,14 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		}
 	}
 
+	static class SinkSourceProviderAdapter extends IdentifiableServiceAdapter<InputSinkProvider>
+	{
+		SinkSourceProviderAdapter()
+		{
+			super(InputSinkProvider.class);
+		}
+	}
+	
 	static class CronExpressionAdapter extends XmlAdapter<String, CronExpression>
 	{
 		@Override
@@ -1169,118 +1204,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 			return result;
 		}
 	}
-/*
-	static abstract class Descriptor<T>
-	{
-		@XmlAttribute(name = "class", required = true)
-		private Class<T> targetClass;
-		
-		@XmlElement(name = "property")
-		private List<Property> properties;
-		
-		public Class<T> getTargetClass()
-		{
-			return this.targetClass;
-		}
-		
-		public void setTargetClass(Class<T> targetClass)
-		{
-			this.targetClass = targetClass;
-		}
-		
-		public List<Property> getProperties()
-		{
-			return this.properties;
-		}
 
-		public void setProperties(List<Property> properties)
-		{
-			this.properties = properties;
-		}
-	}
-
-	static class DescriptorAdapter<T, D extends Descriptor<T>> extends XmlAdapter<D, T>
-	{
-		private final Class<D> descriptorClass;
-		
-		DescriptorAdapter(Class<D> descriptorClass)
-		{
-			this.descriptorClass = descriptorClass;
-		}
-		
-		@Override
-		public D marshal(T object) throws Exception
-		{
-			D result = this.descriptorClass.newInstance();
-			@SuppressWarnings("unchecked")
-			Class<T> targetClass = (Class<T>) object.getClass();
-			List<Property> properties = new LinkedList<Property>();
-			
-			result.setTargetClass(targetClass);
-			result.setProperties(properties);
-			
-			for (Map.Entry<PropertyDescriptor, PropertyEditor> entry: findDescriptors(targetClass).values())
-			{
-				PropertyDescriptor descriptor = entry.getKey();
-				PropertyEditor editor = entry.getValue();
-				
-				Object value = descriptor.getReadMethod().invoke(object);
-				if (value != null)
-				{
-					editor.setValue(value);
-					
-					Property property = new Property();
-					property.setName(descriptor.getName());
-					property.setValue(editor.getAsText());
-					
-					properties.add(property);
-				}
-			}
-			
-			return result;
-		}
-
-		@Override
-		public T unmarshal(D target) throws Exception
-		{
-			Class<T> targetClass = target.getTargetClass();
-			T result = targetClass.newInstance();
-			List<Property> properties = target.getProperties();
-			
-			if (properties != null)
-			{
-				Map<String, Map.Entry<PropertyDescriptor, PropertyEditor>> descriptors = findDescriptors(targetClass);
-				
-				for (Property property: properties)
-				{
-					String name = property.getName();
-					Map.Entry<PropertyDescriptor, PropertyEditor> entry = descriptors.get(name);
-					
-					if (entry == null)
-					{
-						throw new IllegalArgumentException(Messages.INVALID_PROPERTY.getMessage(name, targetClass.getName()));
-					}
-					
-					PropertyDescriptor descriptor = entry.getKey();
-					PropertyEditor editor = entry.getValue();
-
-					String textValue = property.getValue();
-					
-					try
-					{
-						editor.setAsText(textValue);
-					}
-					catch (Exception e)
-					{
-						throw new IllegalArgumentException(Messages.INVALID_PROPERTY_VALUE.getMessage(textValue, name, targetClass.getName()));
-					}
-					descriptor.getWriteMethod().invoke(result, editor.getValue());
-				}
-			}
-			return result;
-		}
-	}
-*/
 	@XmlType
 	protected static class Property
 	{

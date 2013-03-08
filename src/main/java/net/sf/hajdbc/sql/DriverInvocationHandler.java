@@ -18,22 +18,19 @@
 package net.sf.hajdbc.sql;
 
 import java.sql.Driver;
-import java.sql.SQLException;
-
-import net.sf.hajdbc.DatabaseCluster;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class DriverInvocationHandler extends RootInvocationHandler<Driver, DriverDatabase, SQLException>
+public class DriverInvocationHandler extends ConnectionSourceInvocationHandler<Driver, DriverDatabase, DriverProxyFactory>
 {
 	/**
 	 * Constructs a new DriverInvocationHandler
 	 * @param cluster a database cluster
 	 */
-	public DriverInvocationHandler(DatabaseCluster<Driver, DriverDatabase> cluster)
+	public DriverInvocationHandler(DriverProxyFactory factory)
 	{
-		super(cluster, Driver.class, SQLException.class);
+		super(Driver.class, factory);
 	}
 }

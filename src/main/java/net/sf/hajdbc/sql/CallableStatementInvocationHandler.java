@@ -19,16 +19,13 @@ package net.sf.hajdbc.sql;
 
 import java.lang.reflect.Method;
 import java.sql.CallableStatement;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.Set;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.invocation.InvocationStrategies;
 import net.sf.hajdbc.invocation.InvocationStrategy;
-import net.sf.hajdbc.invocation.InvocationStrategyEnum;
-import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.util.reflect.Methods;
 
 /**
@@ -36,43 +33,34 @@ import net.sf.hajdbc.util.reflect.Methods;
  * @param <D> 
  */
 @SuppressWarnings("nls")
-public class CallableStatementInvocationHandler<Z, D extends Database<Z>> extends AbstractPreparedStatementInvocationHandler<Z, D, CallableStatement>
+public class CallableStatementInvocationHandler<Z, D extends Database<Z>> extends AbstractPreparedStatementInvocationHandler<Z, D, CallableStatement, CallableStatementProxyFactory<Z, D>>
 {
-	private static final Set<Method> registerOutParameterMethodSet = Methods.findMethods(CallableStatement.class, "registerOutParameter");
-	private static final Set<Method> setMethodSet = Methods.findMethods(CallableStatement.class, "set\\w+");
-	private static final Set<Method> driverReadMethodSet = Methods.findMethods(CallableStatement.class, "get\\w+", "wasNull");
+	private static final Set<Method> registerOutParameterMethods = Methods.findMethods(CallableStatement.class, "registerOutParameter");
+	private static final Set<Method> setMethods = Methods.findMethods(CallableStatement.class, "set\\w+");
+	private static final Set<Method> driverReadMethods = Methods.findMethods(CallableStatement.class, "get\\w+", "wasNull");
 	{
-		driverReadMethodSet.removeAll(Methods.findMethods(PreparedStatement.class, "get\\w+"));
+		driverReadMethods.removeAll(Methods.findMethods(PreparedStatement.class, "get\\w+"));
 	}
 	
-	/**
-	 * @param connection
-	 * @param proxy
-	 * @param invoker
-	 * @param statementMap
-	 * @param transactionContext 
-	 * @param fileSupport 
-	 * @throws Exception
-	 */
-	public CallableStatementInvocationHandler(Connection connection, SQLProxy<Z, D, Connection, SQLException> proxy, Invoker<Z, D, Connection, CallableStatement, SQLException> invoker, Map<D, CallableStatement> statementMap, TransactionContext<Z, D> transactionContext, FileSupport<SQLException> fileSupport)
+	public CallableStatementInvocationHandler(CallableStatementProxyFactory<Z, D> proxyFactory)
 	{
-		super(connection, proxy, invoker, CallableStatement.class, statementMap, transactionContext, fileSupport, setMethodSet);
+		super(CallableStatement.class, proxyFactory, setMethods);
 	}
 
 	/**
 	 * @see net.sf.hajdbc.sql.AbstractStatementInvocationHandler#getInvocationStrategy(java.sql.Statement, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected InvocationStrategy getInvocationStrategy(CallableStatement statement, Method method, Object[] parameters) throws SQLException
+	protected InvocationStrategy getInvocationStrategy(CallableStatement statement, Method method, Object... parameters) throws SQLException
 	{
-		if (registerOutParameterMethodSet.contains(method))
+		if (registerOutParameterMethods.contains(method))
 		{
-			return InvocationStrategyEnum.INVOKE_ON_EXISTING;
+			return InvocationStrategies.INVOKE_ON_EXISTING;
 		}
 		
-		if (driverReadMethodSet.contains(method))
+		if (driverReadMethods.contains(method))
 		{
-			return InvocationStrategyEnum.INVOKE_ON_ANY;
+			return InvocationStrategies.INVOKE_ON_ANY;
 		}
 		
 		return super.getInvocationStrategy(statement, method, parameters);
@@ -84,7 +72,7 @@ public class CallableStatementInvocationHandler<Z, D extends Database<Z>> extend
 	@Override
 	protected boolean isBatchMethod(Method method)
 	{
-		return registerOutParameterMethodSet.contains(method) || super.isBatchMethod(method);
+		return registerOutParameterMethods.contains(method) || super.isBatchMethod(method);
 	}
 
 	/**

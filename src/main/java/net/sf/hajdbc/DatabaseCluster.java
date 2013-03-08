@@ -25,6 +25,7 @@ import net.sf.hajdbc.cache.DatabaseMetaDataCache;
 import net.sf.hajdbc.codec.Decoder;
 import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.durability.Durability;
+import net.sf.hajdbc.io.InputSinkStrategy;
 import net.sf.hajdbc.lock.LockManager;
 import net.sf.hajdbc.state.StateManager;
 import net.sf.hajdbc.tx.TransactionIdentifierFactory;
@@ -179,4 +180,6 @@ public interface DatabaseCluster<Z, D extends Database<Z>> extends Lifecycle
 	Decoder getDecoder();
 	
 	TransactionIdentifierFactory<? extends Object> getTransactionIdentifierFactory();
+
+	InputSinkStrategy<? extends Object> getInputSinkStrategy();
 }

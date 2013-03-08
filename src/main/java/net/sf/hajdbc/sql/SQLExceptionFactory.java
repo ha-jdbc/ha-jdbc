@@ -25,13 +25,12 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Map;
 
+import net.sf.hajdbc.AbstractExceptionFactory;
 import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.dialect.Dialect;
-import net.sf.hajdbc.durability.Durability.Phase;
 
 /**
- * @author paul
- *
+ * @author Paul Ferraro
  */
 public class SQLExceptionFactory extends AbstractExceptionFactory<SQLException>
 {
@@ -154,15 +153,5 @@ public class SQLExceptionFactory extends AbstractExceptionFactory<SQLException>
 	public ExceptionType getType()
 	{
 		return ExceptionType.SQL;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.ExceptionFactory#correctHeuristic(java.lang.Exception, net.sf.hajdbc.durability.Durability.Phase)
-	 */
-	@Override
-	public boolean correctHeuristic(SQLException exception, Phase phase)
-	{
-		return false;
 	}
 }

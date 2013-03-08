@@ -21,7 +21,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
 import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
@@ -35,7 +34,7 @@ import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
 import net.sf.hajdbc.DatabaseClusterFactory;
 import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.Messages;
-import net.sf.hajdbc.invocation.InvocationStrategyEnum;
+import net.sf.hajdbc.invocation.InvocationStrategies;
 import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
@@ -44,7 +43,6 @@ import net.sf.hajdbc.util.TimePeriod;
 import net.sf.hajdbc.util.concurrent.MapRegistryStoreFactory;
 import net.sf.hajdbc.util.concurrent.LifecycleRegistry;
 import net.sf.hajdbc.util.concurrent.Registry;
-import net.sf.hajdbc.util.reflect.ProxyFactory;
 import net.sf.hajdbc.xml.XMLDatabaseClusterConfigurationFactory;
 
 /**
@@ -139,12 +137,11 @@ public final class Driver extends AbstractDriver
 		if (id == null) return null;
 		
 		DatabaseCluster<java.sql.Driver, DriverDatabase> cluster = registry.get(id, properties);
-		
-		DriverInvocationHandler handler = new DriverInvocationHandler(cluster);
-		
-		java.sql.Driver driver = ProxyFactory.createProxy(java.sql.Driver.class, handler);
-		
-		Invoker<java.sql.Driver, DriverDatabase, java.sql.Driver, Connection, SQLException> invoker = new Invoker<java.sql.Driver, DriverDatabase, java.sql.Driver, Connection, SQLException>()
+		DriverProxyFactory driverFactory = new DriverProxyFactory(cluster);
+		java.sql.Driver driver = driverFactory.createProxy();
+		TransactionContext<java.sql.Driver, DriverDatabase> context = new LocalTransactionContext<java.sql.Driver, DriverDatabase>(cluster);
+
+		DriverInvoker<Connection> invoker = new DriverInvoker<Connection>()
 		{
 			@Override
 			public Connection invoke(DriverDatabase database, java.sql.Driver driver) throws SQLException
@@ -153,15 +150,8 @@ public final class Driver extends AbstractDriver
 			}
 		};
 		
-		SortedMap<DriverDatabase, Connection> results = InvocationStrategyEnum.INVOKE_ON_ALL.invoke(handler, invoker);
-		
-		TransactionContext<java.sql.Driver, DriverDatabase> context = new LocalTransactionContext<java.sql.Driver, DriverDatabase>(cluster);
-		
-		InvocationHandlerFactory<java.sql.Driver, DriverDatabase, java.sql.Driver, Connection, SQLException> handlerFactory = new ConnectionInvocationHandlerFactory<java.sql.Driver, DriverDatabase, java.sql.Driver>(context);
-		
-		InvocationResultFactory<java.sql.Driver, DriverDatabase, Connection, SQLException> resultFactory = handler.new ProxyInvocationResultFactory<Connection>(handlerFactory, driver, invoker);
-		
-		return resultFactory.createResult(results);
+		ConnectionProxyFactoryFactory<java.sql.Driver, DriverDatabase, java.sql.Driver> factory = new ConnectionProxyFactoryFactory<java.sql.Driver, DriverDatabase, java.sql.Driver>(context);
+		return factory.createProxyFactory(driver, driverFactory, invoker, InvocationStrategies.INVOKE_ON_ALL.invoke(driverFactory, invoker)).createProxy();
 	}
 	
 	/**
@@ -177,31 +167,31 @@ public final class Driver extends AbstractDriver
 		if (id == null) return null;
 		
 		DatabaseCluster<java.sql.Driver, DriverDatabase> cluster = registry.get(id, properties);
+		DriverProxyFactory map = new DriverProxyFactory(cluster);
 		
-		DriverInvocationHandler handler = new DriverInvocationHandler(cluster);
-		
-		Invoker<java.sql.Driver, DriverDatabase, java.sql.Driver, DriverPropertyInfo[], SQLException> invoker = new Invoker<java.sql.Driver, DriverDatabase, java.sql.Driver, DriverPropertyInfo[], SQLException>()
+		DriverInvoker<DriverPropertyInfo[]> invoker = new DriverInvoker<DriverPropertyInfo[]>()
 		{
 			@Override
 			public DriverPropertyInfo[] invoke(DriverDatabase database, java.sql.Driver driver) throws SQLException
 			{
 				return driver.getPropertyInfo(database.getLocation(), properties);
-			}			
+			}
 		};
 		
-		SortedMap<DriverDatabase, DriverPropertyInfo[]> results = InvocationStrategyEnum.INVOKE_ON_NEXT.invoke(handler, invoker);
-
-		InvocationResultFactory<java.sql.Driver, DriverDatabase, DriverPropertyInfo[], SQLException> resultFactory = handler.new SimpleInvocationResultFactory<DriverPropertyInfo[]>();
-		
-		return resultFactory.createResult(results);
+		SortedMap<DriverDatabase, DriverPropertyInfo[]> results = InvocationStrategies.INVOKE_ON_ANY.invoke(map, invoker);
+		return results.get(results.firstKey());
 	}
 
 	/**
 	 * @see java.sql.Driver#getParentLogger()
 	 */
 	@Override
-	public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException
+	public java.util.logging.Logger getParentLogger()
 	{
-		throw new SQLFeatureNotSupportedException();
+		return java.util.logging.Logger.getGlobal();
+	}
+
+	private interface DriverInvoker<R> extends Invoker<java.sql.Driver, DriverDatabase, java.sql.Driver, R, SQLException>
+	{
 	}
 }

@@ -20,22 +20,25 @@ package net.sf.hajdbc.sql;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import javax.naming.NamingException;
-import javax.naming.Reference;
-
-import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
+import net.sf.hajdbc.DatabaseCluster;
 
 /**
  * @author Paul Ferraro
  */
-public class DataSource extends CommonDataSource<javax.sql.DataSource, DataSourceDatabase> implements javax.sql.DataSource
+public class DataSource extends CommonDataSource<javax.sql.DataSource, DataSourceDatabase, DataSourceProxyFactory> implements javax.sql.DataSource
 {
 	/**
 	 * Constructs a new DataSource
 	 */
 	public DataSource()
 	{
-		super(new DataSourceFactory(), DataSourceDatabaseClusterConfiguration.class);
+		super(DataSourceDatabaseClusterConfiguration.class);
+	}
+
+	@Override
+	public DataSourceProxyFactory createProxyFactory(DatabaseCluster<javax.sql.DataSource, DataSourceDatabase> cluster)
+	{
+		return new DataSourceProxyFactory(cluster);
 	}
 
 	/**
@@ -72,15 +75,5 @@ public class DataSource extends CommonDataSource<javax.sql.DataSource, DataSourc
 	public <T> T unwrap(Class<T> targetClass) throws SQLException
 	{
 		return this.getProxy().unwrap(targetClass);
-	}
-
-	/**
-	 * @see javax.naming.Referenceable#getReference()
-	 */
-	@Override
-	public Reference getReference() throws NamingException
-	{
-		DatabaseClusterConfigurationFactory<javax.sql.DataSource, DataSourceDatabase> factory = this.getConfigurationFactory();
-		return (factory != null) ? new DataSourceReference(this.getCluster(), factory) : new DataSourceReference(this.getCluster(), this.getConfig());
 	}
 }

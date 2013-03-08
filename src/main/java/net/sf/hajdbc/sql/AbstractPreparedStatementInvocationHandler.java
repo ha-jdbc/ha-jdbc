@@ -17,43 +17,25 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.io.File;
-import java.io.InputStream;
-import java.io.Reader;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
-
-import javax.sql.rowset.serial.SerialBlob;
-import javax.sql.rowset.serial.SerialClob;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.invocation.InvocationStrategies;
 import net.sf.hajdbc.invocation.InvocationStrategy;
-import net.sf.hajdbc.invocation.InvocationStrategyEnum;
 import net.sf.hajdbc.invocation.Invoker;
+import net.sf.hajdbc.invocation.LockingInvocationStrategy;
 import net.sf.hajdbc.util.reflect.Methods;
-import net.sf.hajdbc.util.reflect.ProxyFactory;
-import net.sf.hajdbc.util.reflect.SimpleInvocationHandler;
 
 /**
  * @author Paul Ferraro
  * @param <D> 
  * @param <S> 
  */
-@SuppressWarnings("nls")
-public abstract class AbstractPreparedStatementInvocationHandler<Z, D extends Database<Z>, S extends PreparedStatement> extends AbstractStatementInvocationHandler<Z, D, S>
+public abstract class AbstractPreparedStatementInvocationHandler<Z, D extends Database<Z>, S extends PreparedStatement, F extends AbstractPreparedStatementProxyFactory<Z, D, S>> extends AbstractStatementInvocationHandler<Z, D, S, F>
 {
 	private static final Set<Method> databaseReadMethodSet = Methods.findMethods(PreparedStatement.class, "getMetaData", "getParameterMetaData");
 	private static final Method executeMethod = Methods.getMethod(PreparedStatement.class, "execute");
@@ -62,202 +44,85 @@ public abstract class AbstractPreparedStatementInvocationHandler<Z, D extends Da
 	private static final Method clearParametersMethod = Methods.getMethod(PreparedStatement.class, "clearParameters");
 	private static final Method addBatchMethod = Methods.getMethod(PreparedStatement.class, "addBatch");
 	
-	protected List<Lock> lockList = Collections.emptyList();
-	protected boolean selectForUpdate = false;
-	private final Set<Method> setMethodSet;
+	private final Set<Method> setMethods;
 	
-	/**
-	 * @param connection
-	 * @param proxy
-	 * @param invoker
-	 * @param statementClass 
-	 * @param statementMap
-	 * @param transactionContext 
-	 * @param fileSupport 
-	 * @throws Exception
-	 */
-	protected AbstractPreparedStatementInvocationHandler(Connection connection, SQLProxy<Z, D, Connection, SQLException> proxy, Invoker<Z, D, Connection, S, SQLException> invoker, Class<S> statementClass, Map<D, S> statementMap, TransactionContext<Z, D> transactionContext, FileSupport<SQLException> fileSupport, Set<Method> setMethodSet)
+	public AbstractPreparedStatementInvocationHandler(Class<S> statementClass, F proxyFactory, Set<Method> setMethods)
 	{
-		super(connection, proxy, invoker, statementClass, statementMap, transactionContext, fileSupport);
-		
-		this.setMethodSet = setMethodSet;
+		super(statementClass, proxyFactory);
+		this.setMethods = setMethods;
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.AbstractStatementInvocationHandler#getInvocationHandlerFactory(java.sql.Statement, java.lang.reflect.Method, java.lang.Object[])
-	 */
 	@Override
-	protected InvocationHandlerFactory<Z, D, S, ?, SQLException> getInvocationHandlerFactory(S object, Method method, Object[] parameters) throws SQLException
+	protected ProxyFactoryFactory<Z, D, S, SQLException, ?, ? extends Exception> getProxyFactoryFactory(S object, Method method, Object... parameters) throws SQLException
 	{
 		if (method.equals(executeQueryMethod))
 		{
-			return new ResultSetInvocationHandlerFactory<Z, D, S>(this.transactionContext, this.fileSupport);
+			return new ResultSetProxyFactoryFactory<Z, D, S>(this.getProxyFactory().getTransactionContext(), this.getProxyFactory().getInputSinkRegistry());
 		}
 		
-		return super.getInvocationHandlerFactory(object, method, parameters);
+		return super.getProxyFactoryFactory(object, method, parameters);
 	}
 
 	/**
 	 * @see net.sf.hajdbc.sql.AbstractStatementInvocationHandler#getInvocationStrategy(java.sql.Statement, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected InvocationStrategy getInvocationStrategy(S statement, Method method, Object[] parameters) throws SQLException
+	protected InvocationStrategy getInvocationStrategy(S statement, Method method, Object... parameters) throws SQLException
 	{
 		if (databaseReadMethodSet.contains(method))
 		{
-			return InvocationStrategyEnum.INVOKE_ON_NEXT;
+			return InvocationStrategies.INVOKE_ON_NEXT;
 		}
 		
-		if (this.setMethodSet.contains(method) || method.equals(clearParametersMethod) || method.equals(addBatchMethod))
+		if (this.setMethods.contains(method) || method.equals(clearParametersMethod) || method.equals(addBatchMethod))
 		{
-			return InvocationStrategyEnum.INVOKE_ON_EXISTING;
+			return InvocationStrategies.INVOKE_ON_EXISTING;
 		}
 		
 		if (method.equals(executeMethod) || method.equals(executeUpdateMethod))
 		{
-			return this.transactionContext.start(new LockingInvocationStrategy(InvocationStrategyEnum.TRANSACTION_INVOKE_ON_ALL, this.lockList), this.getParent());
+			return this.getProxyFactory().getTransactionContext().start(new LockingInvocationStrategy(InvocationStrategies.TRANSACTION_INVOKE_ON_ALL, this.getProxyFactory().getLocks()), this.getProxyFactory().getParentProxy());
 		}
 		
 		if (method.equals(executeQueryMethod))
 		{
 			int concurrency = statement.getResultSetConcurrency();
 			
-			if (this.lockList.isEmpty() && (concurrency == ResultSet.CONCUR_READ_ONLY) && !this.selectForUpdate)
+			if (this.getProxyFactory().getLocks().isEmpty() && (concurrency == ResultSet.CONCUR_READ_ONLY) && !this.getProxyFactory().isSelectForUpdate())
 			{
-				return InvocationStrategyEnum.INVOKE_ON_NEXT;
+				return InvocationStrategies.INVOKE_ON_NEXT;
 			}
 			
-			InvocationStrategy strategy = new LockingInvocationStrategy(InvocationStrategyEnum.TRANSACTION_INVOKE_ON_ALL, this.lockList);
+			InvocationStrategy strategy = new LockingInvocationStrategy(InvocationStrategies.TRANSACTION_INVOKE_ON_ALL, this.getProxyFactory().getLocks());
 			
-			return this.selectForUpdate ? this.transactionContext.start(strategy, this.getParent()) : strategy;
+			return this.getProxyFactory().isSelectForUpdate() ? this.getProxyFactory().getTransactionContext().start(strategy, this.getProxyFactory().getParentProxy()) : strategy;
 		}
 		
 		return super.getInvocationStrategy(statement, method, parameters);
 	}
 
-	/**
-	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvoker(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
-	 */
 	@Override
-	protected <R> Invoker<Z, D, S, R, SQLException> getInvoker(S statement, final Method method, final Object[] parameters) throws SQLException
+	protected <R> Invoker<Z, D, S, R, SQLException> getInvoker(S statement, final Method method, final Object... parameters) throws SQLException
 	{
-		if (this.isParameterSetMethod(method) && (parameters.length > 1))
+		if (this.isSetParameterMethod(method) && (parameters.length > 1))
 		{
-			Object typeParameter = parameters[1];
-			
-			if (typeParameter != null)
-			{
-				Class<?> type = method.getParameterTypes()[1];
-				
-				if (type.equals(InputStream.class))
-				{
-					final File file = this.fileSupport.createFile((InputStream) typeParameter);
-					
-					return new Invoker<Z, D, S, R, SQLException>()
-					{
-						@Override
-						public R invoke(D database, S statement) throws SQLException
-						{
-							List<Object> parameterList = new ArrayList<Object>(Arrays.asList(parameters));
-							
-							parameterList.set(1, AbstractPreparedStatementInvocationHandler.this.fileSupport.getInputStream(file));
-							
-							return Methods.<R, SQLException>invoke(method, AbstractPreparedStatementInvocationHandler.this.getExceptionFactory(), statement, parameterList.toArray());
-						}				
-					};
-				}
-				
-				if (type.equals(Reader.class))
-				{
-					final File file = this.fileSupport.createFile((Reader) typeParameter);
-					
-					return new Invoker<Z, D, S, R, SQLException>()
-					{
-						@Override
-						public R invoke(D database, S statement) throws SQLException
-						{
-							List<Object> parameterList = new ArrayList<Object>(Arrays.asList(parameters));
-							
-							parameterList.set(1, AbstractPreparedStatementInvocationHandler.this.fileSupport.getReader(file));
-							
-							return Methods.<R, SQLException>invoke(method, AbstractPreparedStatementInvocationHandler.this.getExceptionFactory(), statement, parameterList.toArray());
-						}				
-					};
-				}
-				
-				if (type.equals(Blob.class))
-				{
-					Blob blob = (Blob) typeParameter;
-					
-					if (Proxy.isProxyClass(blob.getClass()) && (Proxy.getInvocationHandler(blob) instanceof SQLProxy<?, ?, ?, ?>))
-					{
-						final SQLProxy<Z, D, Blob, SQLException> proxy = this.getInvocationHandler(blob);
-						
-						return new Invoker<Z, D, S, R, SQLException>()
-						{
-							@Override
-							public R invoke(D database, S statement) throws SQLException
-							{
-								List<Object> parameterList = new ArrayList<Object>(Arrays.asList(parameters));
-								
-								parameterList.set(1, proxy.getObject(database));
-								
-								return Methods.<R, SQLException>invoke(method, AbstractPreparedStatementInvocationHandler.this.getExceptionFactory(), statement, parameterList.toArray());
-							}				
-						};
-					}
-
-					parameters[1] = new SerialBlob(blob);
-				}
-				
-				// Handle both clob and nclob
-				if (Clob.class.isAssignableFrom(type))
-				{
-					Clob clob = (Clob) typeParameter;
-					
-					if (Proxy.isProxyClass(clob.getClass()) && (Proxy.getInvocationHandler(clob) instanceof SQLProxy<?, ?, ?, ?>))
-					{
-						final SQLProxy<Z, D, Clob, SQLException> proxy = this.getInvocationHandler(clob);
-						
-						return new Invoker<Z, D, S, R, SQLException>()
-						{
-							@Override
-							public R invoke(D database, S statement) throws SQLException
-							{
-								List<Object> parameterList = new ArrayList<Object>(Arrays.asList(parameters));
-								
-								parameterList.set(1, proxy.getObject(database));
-								
-								return Methods.<R, SQLException>invoke(method, AbstractPreparedStatementInvocationHandler.this.getExceptionFactory(), statement, parameterList.toArray());
-							}				
-						};
-					}
-
-					Clob serialClob = new SerialClob(clob);
-					
-					parameters[1] = type.equals(Clob.class) ? serialClob : ProxyFactory.createProxy(type, new SimpleInvocationHandler(serialClob));
-				}
-			}
+			return this.getInvoker(method.getParameterTypes()[1], 1, statement, method, parameters);
 		}
 		
 		return super.getInvoker(statement, method, parameters);
 	}
 	
-	/**
-	 * @see net.sf.hajdbc.sql.AbstractStatementInvocationHandler#isBatchMethod(java.lang.reflect.Method)
-	 */
 	@Override
 	protected boolean isBatchMethod(Method method)
 	{
-		return method.equals(addBatchMethod) || method.equals(clearParametersMethod) || this.isParameterSetMethod(method) || super.isBatchMethod(method);
+		return method.equals(addBatchMethod) || method.equals(clearParametersMethod) || this.isSetParameterMethod(method) || super.isBatchMethod(method);
 	}
 
-	private boolean isParameterSetMethod(Method method)
+	private boolean isSetParameterMethod(Method method)
 	{
 		Class<?>[] types = method.getParameterTypes();
 		
-		return this.setMethodSet.contains(method) && (types.length > 0) && this.isIndexType(types[0]);
+		return this.setMethods.contains(method) && (types.length > 0) && this.isIndexType(types[0]);
 	}
 	
 	protected boolean isIndexType(Class<?> type)

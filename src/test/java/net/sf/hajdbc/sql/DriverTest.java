@@ -66,6 +66,7 @@ public class DriverTest
 	public void after() throws SQLException
 	{
 		DriverManager.deregisterDriver(this.mockDriver);
+		DriverManager.setLogWriter(null);
 	}
 	
 	@Test
@@ -125,9 +126,8 @@ public class DriverTest
 			Connection result = driver.connect(url, null);
 			
 			Assert.assertTrue(result.getClass().getName(), Proxy.isProxyClass(result.getClass()));
-			@SuppressWarnings("rawtypes")
-			ConnectionInvocationHandler<java.sql.Driver, DriverDatabase, java.sql.Driver> handler = (ConnectionInvocationHandler) Proxy.getInvocationHandler(result);
-			Assert.assertSame(this.connection, handler.getObject(database));
+			ConnectionInvocationHandler<java.sql.Driver, DriverDatabase, java.sql.Driver> handler = (ConnectionInvocationHandler<java.sql.Driver, DriverDatabase, java.sql.Driver>) Proxy.getInvocationHandler(result);
+			Assert.assertSame(this.connection, handler.getProxyFactory().get(database));
 		}
 		finally
 		{

@@ -17,41 +17,17 @@
  */
 package net.sf.hajdbc.sql.pool;
 
-import java.sql.SQLException;
-import java.util.Map;
-
 import javax.sql.ConnectionPoolDataSource;
 import javax.sql.PooledConnection;
-
-import net.sf.hajdbc.invocation.Invoker;
-import net.sf.hajdbc.sql.LocalTransactionContext;
-import net.sf.hajdbc.sql.SQLProxy;
-import net.sf.hajdbc.sql.TransactionContext;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class PooledConnectionInvocationHandler extends AbstractPooledConnectionInvocationHandler<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase, PooledConnection>
+public class PooledConnectionInvocationHandler extends AbstractPooledConnectionInvocationHandler<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase, PooledConnection, PooledConnectionProxyFactory>
 {
-	/**
-	 * @param dataSource
-	 * @param proxy
-	 * @param invoker
-	 * @param objectMap
-	 * @throws Exception
-	 */
-	protected PooledConnectionInvocationHandler(ConnectionPoolDataSource dataSource, SQLProxy<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase, ConnectionPoolDataSource, SQLException> proxy, Invoker<ConnectionPoolDataSource,ConnectionPoolDataSourceDatabase, ConnectionPoolDataSource, PooledConnection, SQLException> invoker, Map<ConnectionPoolDataSourceDatabase, PooledConnection> objectMap)
+	public PooledConnectionInvocationHandler(PooledConnectionProxyFactory proxyFactory)
 	{
-		super(dataSource, proxy, invoker, PooledConnection.class, objectMap);
-	}
-
-	/**
-	 * @see net.sf.hajdbc.sql.pool.AbstractPooledConnectionInvocationHandler#createTransactionContext()
-	 */
-	@Override
-	protected TransactionContext<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase> createTransactionContext()
-	{
-		return new LocalTransactionContext<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase>(this.getDatabaseCluster());
+		super(PooledConnection.class, proxyFactory);
 	}
 }

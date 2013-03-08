@@ -21,9 +21,10 @@ import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.Set;
 
-import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.Database;
+import net.sf.hajdbc.invocation.InvocationStrategies;
 import net.sf.hajdbc.invocation.InvocationStrategy;
-import net.sf.hajdbc.invocation.InvocationStrategyEnum;
+import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.util.reflect.Methods;
 
 /**
@@ -31,42 +32,38 @@ import net.sf.hajdbc.util.reflect.Methods;
  * @param <D> 
  */
 @SuppressWarnings("nls")
-public class CommonDataSourceInvocationHandler<Z extends javax.sql.CommonDataSource, D extends CommonDataSourceDatabase<Z>> extends RootInvocationHandler<Z, D, SQLException>
+public class CommonDataSourceInvocationHandler<Z extends javax.sql.CommonDataSource, D extends Database<Z>, F extends RootProxyFactory<Z, D>> extends ConnectionSourceInvocationHandler<Z, D, F>
 {
 	private static final Set<Method> getMethodSet = Methods.findMethods(CommonDataSource.class, "get\\w+");
 	private static final Set<Method> setMethodSet = Methods.findMethods(CommonDataSource.class, "set\\w+");
 	
-	/**
-	 * @param databaseCluster
-	 * @param proxyClass
-	 */
-	protected CommonDataSourceInvocationHandler(DatabaseCluster<Z, D> databaseCluster, Class<Z> proxyClass)
+	protected CommonDataSourceInvocationHandler(Class<Z> targetClass, F factory)
 	{
-		super(databaseCluster, proxyClass, SQLException.class);
+		super(targetClass, factory);
 	}
 
 	@Override
-	protected InvocationStrategy getInvocationStrategy(Z dataSource, Method method, Object[] parameters) throws SQLException
+	protected InvocationStrategy getInvocationStrategy(Z dataSource, Method method, Object... parameters) throws SQLException
 	{
 		if (getMethodSet.contains(method))
 		{
-			return InvocationStrategyEnum.INVOKE_ON_ANY;
+			return InvocationStrategies.INVOKE_ON_ANY;
 		}
 
 		if (setMethodSet.contains(method))
 		{
-			return InvocationStrategyEnum.INVOKE_ON_EXISTING;
+			return InvocationStrategies.INVOKE_ON_EXISTING;
 		}
 		
 		return super.getInvocationStrategy(dataSource, method, parameters);
 	}
 
-	/**
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#isRecordable(java.lang.reflect.Method)
-	 */
 	@Override
-	protected boolean isRecordable(Method method)
+	protected <R> void postInvoke(Invoker<Z, D, Z, R, SQLException> invoker, Z proxy, Method method, Object... parameters)
 	{
-		return setMethodSet.contains(method);
+		if (setMethodSet.contains(method))
+		{
+			this.getProxyFactory().record(invoker);
+		}
 	}
 }

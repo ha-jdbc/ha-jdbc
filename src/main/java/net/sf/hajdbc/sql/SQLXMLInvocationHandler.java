@@ -18,32 +18,19 @@
 package net.sf.hajdbc.sql;
 
 import java.lang.reflect.Method;
-import java.sql.SQLException;
 import java.sql.SQLXML;
-import java.util.Map;
 import java.util.Set;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.util.reflect.Methods;
 
-public class SQLXMLInvocationHandler<Z, D extends Database<Z>, P> extends LocatorInvocationHandler<Z, D, P, SQLXML>
+public class SQLXMLInvocationHandler<Z, D extends Database<Z>, P> extends LocatorInvocationHandler<Z, D, P, SQLXML, SQLXMLProxyFactory<Z, D, P>>
 {
-	private static final Set<Method> READ_METHOD_SET = Methods.findMethods(java.sql.SQLXML.class, "getBinaryStream", "getCharacterStream", "getSource", "getString");
-	private static final Set<Method> WRITE_METHOD_SET = Methods.findMethods(java.sql.SQLXML.class, "setBinaryStream", "setCharacterStream", "setResult", "setString");
+	private static final Set<Method> READ_METHODS = Methods.findMethods(java.sql.SQLXML.class, "getBinaryStream", "getCharacterStream", "getSource", "getString");
+	private static final Set<Method> WRITE_METHODS = Methods.findMethods(java.sql.SQLXML.class, "setBinaryStream", "setCharacterStream", "setResult", "setString");
 
-	protected SQLXMLInvocationHandler(P object, SQLProxy<Z, D, P, SQLException> proxy, Invoker<Z, D, P, java.sql.SQLXML, SQLException> invoker, Map<D, java.sql.SQLXML> objectMap, boolean updateCopy)
+	public SQLXMLInvocationHandler(SQLXMLProxyFactory<Z, D, P> proxyFactory)
 	{
-		super(object, proxy, invoker, java.sql.SQLXML.class, objectMap, updateCopy, READ_METHOD_SET, WRITE_METHOD_SET);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.LocatorInvocationHandler#free(java.lang.Object)
-	 */
-	@Override
-	protected void free(java.sql.SQLXML xml) throws SQLException
-	{
-		xml.free();
+		super(SQLXML.class, proxyFactory, READ_METHODS, WRITE_METHODS);
 	}
 }

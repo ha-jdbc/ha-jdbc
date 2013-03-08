@@ -17,30 +17,45 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.lang.reflect.Method;
+import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.SQLException;
-import java.util.Map;
+import java.util.Set;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.invocation.Invoker;
+import net.sf.hajdbc.sql.io.OutputStreamProxyFactoryFactory;
+import net.sf.hajdbc.sql.io.WriterProxyFactoryFactory;
+import net.sf.hajdbc.util.reflect.Methods;
 
 /**
- * @author Paul Ferraro
- * @param <D> 
- * @param <P> 
+ * @author paul
+ *
  */
-@SuppressWarnings("nls")
-public class ClobInvocationHandler<Z, D extends Database<Z>, P> extends AbstractClobInvocationHandler<Z, D, P, Clob>
+public class ClobInvocationHandler<Z, D extends Database<Z>, P, C extends Clob> extends LocatorInvocationHandler<Z, D, P, C, ClobProxyFactory<Z, D, P, C>>
 {
-	/**
-	 * @param object
-	 * @param proxy
-	 * @param invoker
-	 * @param objectMap
-	 * @throws Exception
-	 */
-	public ClobInvocationHandler(P object, SQLProxy<Z, D, P, SQLException> proxy, Invoker<Z, D, P, Clob, SQLException> invoker, Map<D, Clob> objectMap, boolean updateCopy)
+	private static final Method SET_ASCII_STREAM_METHOD = Methods.getMethod(Blob.class, "setAsciiStream", Long.TYPE);
+	private static final Method SET_CHARACTER_STREAM_METHOD = Methods.getMethod(Blob.class, "setCharacterStream", Long.TYPE);
+	private static final Set<Method> READ_METHODS = Methods.findMethods(Clob.class, "getAsciiStream", "getCharacterStream", "getSubString", "length", "position");
+	private static final Set<Method> WRITE_METHODS = Methods.findMethods(Clob.class, "setAsciiStream", "setCharacterStream", "setString", "truncate");
+	
+	public ClobInvocationHandler(Class<C> proxyClass, ClobProxyFactory<Z, D, P, C> proxyFactory)
 	{
-		super(object, proxy, invoker, Clob.class, objectMap, updateCopy);
+		super(proxyClass, proxyFactory, READ_METHODS, WRITE_METHODS);
+	}
+
+	@Override
+	protected ProxyFactoryFactory<Z, D, C, SQLException, ?, ? extends Exception> getProxyFactoryFactory(C object, Method method, Object... parameters) throws SQLException
+	{
+		if (method.equals(SET_ASCII_STREAM_METHOD))
+		{
+			return new OutputStreamProxyFactoryFactory<Z, D, C>();
+		}
+		if (method.equals(SET_CHARACTER_STREAM_METHOD))
+		{
+			return new WriterProxyFactoryFactory<Z, D, C>();
+		}
+		
+		return super.getProxyFactoryFactory(object, method, parameters);
 	}
 }

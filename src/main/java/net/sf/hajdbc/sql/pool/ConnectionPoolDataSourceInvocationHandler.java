@@ -23,11 +23,10 @@ import java.util.Set;
 
 import javax.sql.ConnectionPoolDataSource;
 
-import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.invocation.InvocationStrategies;
 import net.sf.hajdbc.invocation.InvocationStrategy;
-import net.sf.hajdbc.invocation.InvocationStrategyEnum;
 import net.sf.hajdbc.sql.CommonDataSourceInvocationHandler;
-import net.sf.hajdbc.sql.InvocationHandlerFactory;
+import net.sf.hajdbc.sql.ProxyFactoryFactory;
 import net.sf.hajdbc.util.reflect.Methods;
 
 /**
@@ -35,16 +34,13 @@ import net.sf.hajdbc.util.reflect.Methods;
  *
  */
 @SuppressWarnings("nls")
-public class ConnectionPoolDataSourceInvocationHandler extends CommonDataSourceInvocationHandler<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase>
+public class ConnectionPoolDataSourceInvocationHandler extends CommonDataSourceInvocationHandler<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase, ConnectionPoolDataSourceProxyFactory>
 {
 	private static final Set<Method> getPooledConnectionMethodSet = Methods.findMethods(ConnectionPoolDataSource.class, "getPooledConnection");
 	
-	/**
-	 * @param databaseCluster
-	 */
-	public ConnectionPoolDataSourceInvocationHandler(DatabaseCluster<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase> databaseCluster)
+	public ConnectionPoolDataSourceInvocationHandler(ConnectionPoolDataSourceProxyFactory factory)
 	{
-		super(databaseCluster, ConnectionPoolDataSource.class);
+		super(ConnectionPoolDataSource.class, factory);
 	}
 
 	/**
@@ -52,27 +48,23 @@ public class ConnectionPoolDataSourceInvocationHandler extends CommonDataSourceI
 	 * @see net.sf.hajdbc.sql.CommonDataSourceInvocationHandler#getInvocationStrategy(javax.sql.CommonDataSource, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected InvocationStrategy getInvocationStrategy(ConnectionPoolDataSource dataSource, Method method, Object[] parameters) throws SQLException
+	protected InvocationStrategy getInvocationStrategy(ConnectionPoolDataSource dataSource, Method method, Object... parameters) throws SQLException
 	{
 		if (getPooledConnectionMethodSet.contains(method))
 		{
-			return InvocationStrategyEnum.TRANSACTION_INVOKE_ON_ALL;
+			return InvocationStrategies.TRANSACTION_INVOKE_ON_ALL;
 		}
 		return super.getInvocationStrategy(dataSource, method, parameters);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvocationHandlerFactory(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
-	 */
 	@Override
-	protected InvocationHandlerFactory<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase, ConnectionPoolDataSource, ?, SQLException> getInvocationHandlerFactory(ConnectionPoolDataSource object, Method method, Object[] parameters) throws SQLException
+	protected ProxyFactoryFactory<ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase, ConnectionPoolDataSource, SQLException, ?, ? extends Exception> getProxyFactoryFactory(ConnectionPoolDataSource object, Method method, Object... parameters) throws SQLException
 	{
 		if (getPooledConnectionMethodSet.contains(method))
 		{
-			return new PooledConnectionInvocationHandlerFactory();
+			return new PooledConnectionProxyFactoryFactory();
 		}
 		
-		return super.getInvocationHandlerFactory(object, method, parameters);
+		return super.getProxyFactoryFactory(object, method, parameters);
 	}
 }

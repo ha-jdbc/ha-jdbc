@@ -17,10 +17,9 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.util.Map;
+import java.lang.reflect.Method;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.invocation.Invoker;
 
 /**
  * @author Paul Ferraro
@@ -28,10 +27,20 @@ import net.sf.hajdbc.invocation.Invoker;
  * @param <P> 
  * @param <T> 
  */
-public abstract class ChildInvocationHandler<Z, D extends Database<Z>, P, T, E extends Exception> extends AbstractChildInvocationHandler<Z, D, P, E, T, E>
+public abstract class ChildInvocationHandler<Z, D extends Database<Z>, P, PE extends Exception, T, E extends Exception, F extends ChildProxyFactory<Z, D, P, PE, T, E>> extends AbstractInvocationHandler<Z, D, T, E, F>
 {
-	protected ChildInvocationHandler(P parent, SQLProxy<Z, D, P, E> proxy, Invoker<Z, D, P, T, E> invoker, Class<T> proxyClass, Class<E> exceptionClass, Map<D, T> objects)
+	private final Method parentMethod;
+	
+	protected ChildInvocationHandler(Class<T> proxyClass, F proxyFactory, Method parentMethod)
 	{
-		super(parent, proxy, invoker, proxyClass, exceptionClass, objects);
+		super(proxyClass, proxyFactory);
+		
+		this.parentMethod = parentMethod;
+	}
+
+	@Override
+	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
+	{
+		return ((this.parentMethod != null) && this.parentMethod.equals(method)) ? this.getProxyFactory().getParentProxy() : super.invoke(proxy, method, args);
 	}
 }

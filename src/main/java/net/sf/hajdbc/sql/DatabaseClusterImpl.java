@@ -49,6 +49,7 @@ import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.durability.Durability;
 import net.sf.hajdbc.durability.InvocationEvent;
 import net.sf.hajdbc.durability.InvokerEvent;
+import net.sf.hajdbc.io.InputSinkStrategy;
 import net.sf.hajdbc.lock.LockManager;
 import net.sf.hajdbc.lock.distributed.DistributedLockManager;
 import net.sf.hajdbc.logging.Level;
@@ -91,6 +92,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	private CronThreadPoolExecutor cronExecutor;
 	private LockManager lockManager;
 	private StateManager stateManager;
+	private InputSinkStrategy<? extends Object> sinkSourceFactory;
 	
 	private boolean active = false;
 	
@@ -575,6 +577,12 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		return this.decoder;
 	}
 
+	@Override
+	public InputSinkStrategy<? extends Object> getInputSinkStrategy()
+	{
+		return this.sinkSourceFactory;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseCluster#getTransactionIdentifierFactory()
@@ -670,6 +678,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		this.dialect = this.configuration.getDialectFactory().createDialect();
 		this.durability = this.configuration.getDurabilityFactory().createDurability(this);
 		this.executor = this.configuration.getExecutorProvider().getExecutor(this.configuration.getThreadFactory());
+		this.sinkSourceFactory = this.configuration.getInputSinkProvider().createInputSinkStrategy();
 		
 		this.lockManager.start();
 		this.stateManager.start();

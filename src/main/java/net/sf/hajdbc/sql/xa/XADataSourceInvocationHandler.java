@@ -23,28 +23,23 @@ import java.util.Set;
 
 import javax.sql.XADataSource;
 
-import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.invocation.InvocationStrategies;
 import net.sf.hajdbc.invocation.InvocationStrategy;
-import net.sf.hajdbc.invocation.InvocationStrategyEnum;
 import net.sf.hajdbc.sql.CommonDataSourceInvocationHandler;
-import net.sf.hajdbc.sql.InvocationHandlerFactory;
+import net.sf.hajdbc.sql.ProxyFactoryFactory;
 import net.sf.hajdbc.util.reflect.Methods;
 
 /**
  * @author Paul Ferraro
  *
  */
-@SuppressWarnings("nls")
-public class XADataSourceInvocationHandler extends CommonDataSourceInvocationHandler<XADataSource, XADataSourceDatabase>
+public class XADataSourceInvocationHandler extends CommonDataSourceInvocationHandler<XADataSource, XADataSourceDatabase, XADataSourceProxyFactory>
 {
 	private static final Set<Method> getXAConnectionMethodSet = Methods.findMethods(XADataSource.class, "getXAConnection");
 	
-	/**
-	 * @param databaseCluster
-	 */
-	public XADataSourceInvocationHandler(DatabaseCluster<XADataSource, XADataSourceDatabase> databaseCluster)
+	public XADataSourceInvocationHandler(XADataSourceProxyFactory factory)
 	{
-		super(databaseCluster, XADataSource.class);
+		super(XADataSource.class, factory);
 	}
 
 	/**
@@ -52,27 +47,23 @@ public class XADataSourceInvocationHandler extends CommonDataSourceInvocationHan
 	 * @see net.sf.hajdbc.sql.CommonDataSourceInvocationHandler#getInvocationStrategy(javax.sql.CommonDataSource, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected InvocationStrategy getInvocationStrategy(XADataSource dataSource, Method method, Object[] parameters) throws SQLException
+	protected InvocationStrategy getInvocationStrategy(XADataSource dataSource, Method method, Object... parameters) throws SQLException
 	{
 		if (getXAConnectionMethodSet.contains(method))
 		{
-			return InvocationStrategyEnum.TRANSACTION_INVOKE_ON_ALL;
+			return InvocationStrategies.TRANSACTION_INVOKE_ON_ALL;
 		}
 		return super.getInvocationStrategy(dataSource, method, parameters);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvocationHandlerFactory(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
-	 */
 	@Override
-	protected InvocationHandlerFactory<XADataSource, XADataSourceDatabase, XADataSource, ?, SQLException> getInvocationHandlerFactory(XADataSource object, Method method, Object[] parameters) throws SQLException
+	protected ProxyFactoryFactory<XADataSource, XADataSourceDatabase, XADataSource, SQLException, ?, ? extends Exception> getProxyFactoryFactory(XADataSource object, Method method, Object... parameters) throws SQLException
 	{
 		if (getXAConnectionMethodSet.contains(method))
 		{
-			return new XAConnectionInvocationHandlerFactory();
+			return new XAConnectionProxyFactoryFactory();
 		}
 		
-		return super.getInvocationHandlerFactory(object, method, parameters);
+		return super.getProxyFactoryFactory(object, method, parameters);
 	}
 }

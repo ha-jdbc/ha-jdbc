@@ -29,39 +29,51 @@ import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
-import net.sf.hajdbc.sql.SQLProxy;
+import net.sf.hajdbc.sql.ProxyFactory;
 import net.sf.hajdbc.state.StateManager;
 
 /**
  * @author paul
  *
  */
-public abstract class InvokeOnOneInvocationStrategy implements InvocationStrategy
+public class InvokeOnOneInvocationStrategy implements InvocationStrategy
 {
 	private static Logger logger = LoggerFactory.getLogger(InvokeOnOneInvocationStrategy.class);
+	
+	public static interface DatabaseSelector
+	{
+		<Z, D extends Database<Z>> D selectDatabase(Balancer<Z, D> balancer);
+	}
+
+	private final DatabaseSelector selector;
+	
+	public InvokeOnOneInvocationStrategy(DatabaseSelector selector)
+	{
+		this.selector = selector;
+	}
 	
 	/**
 	 * @see net.sf.hajdbc.invocation.InvocationStrategy#invoke(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.invocation.Invoker)
 	 */
 	@Override
-	public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(SQLProxy<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker) throws E
+	public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(ProxyFactory<Z, D, T, E> map, Invoker<Z, D, T, R, E> invoker) throws E
 	{
-		DatabaseCluster<Z, D> cluster = proxy.getDatabaseCluster();
+		DatabaseCluster<Z, D> cluster = map.getRoot().getDatabaseCluster();
+		ExceptionFactory<E> exceptionFactory = map.getExceptionFactory();
 		Balancer<Z, D> balancer = cluster.getBalancer();
 		Dialect dialect = cluster.getDialect();
 		StateManager stateManager = cluster.getStateManager();
-		ExceptionFactory<E> exceptionFactory = proxy.getExceptionFactory();
 		
 		while (true)
 		{
-			D database = this.getTarget(balancer);
+			D database = this.selector.selectDatabase(balancer);
 			
 			if (database == null)
 			{
 				throw exceptionFactory.createException(Messages.NO_ACTIVE_DATABASES.getMessage(cluster));
 			}
 			
-			T object = proxy.getObject(database);
+			T object = map.get(database);
 			
 			try
 			{
@@ -89,6 +101,4 @@ public abstract class InvokeOnOneInvocationStrategy implements InvocationStrateg
 			}
 		}
 	}
-	
-	protected abstract <Z, D extends Database<Z>> D getTarget(Balancer<Z, D> balancer);
 }

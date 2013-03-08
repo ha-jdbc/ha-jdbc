@@ -21,64 +21,36 @@ import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.Set;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.invocation.InvocationStrategies;
 import net.sf.hajdbc.invocation.InvocationStrategy;
-import net.sf.hajdbc.invocation.InvocationStrategyEnum;
-import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.util.reflect.Methods;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class DatabaseMetaDataInvocationHandler<Z, D extends Database<Z>> extends ChildInvocationHandler<Z, D, Connection, DatabaseMetaData, SQLException>
+public class DatabaseMetaDataInvocationHandler<Z, D extends Database<Z>> extends ChildInvocationHandler<Z, D, Connection, SQLException, DatabaseMetaData, SQLException, DatabaseMetaDataProxyFactory<Z, D>>
 {
 	private static final Set<Method> databaseReadMethodSet = Methods.findMethods(DatabaseMetaData.class, "getAttributes", "getBestRowIdentifier", "getCatalogs", "getColumnPrivileges", "getColumns", "getCrossReference", "getExportedKeys", "getFunctionColumns", "getFunctions", "getImportedKeys", "getIndexInfo", "getPrimaryKeys", "getProcedureColumns", "getProcedures", "getPseudoColumns", "getSchemas", "getSuperTables", "getSuperTypes", "getTablePrivileges", "getTables", "getUDTs", "getVersionColumns");
 	private static final Method getConnectionMethod = Methods.getMethod(DatabaseMetaData.class, "getConnection");
 	
-	/**
-	 * @param parent
-	 * @param proxy
-	 * @param invoker
-	 * @param objectMap
-	 * @throws Exception
-	 */
-	public DatabaseMetaDataInvocationHandler(Connection parent, SQLProxy<Z, D, Connection, SQLException> proxy, Invoker<Z, D, Connection, DatabaseMetaData, SQLException> invoker, Map<D, DatabaseMetaData> objectMap)
+	
+	public DatabaseMetaDataInvocationHandler(DatabaseMetaDataProxyFactory<Z, D> proxyFactory)
 	{
-		super(parent, proxy, invoker, DatabaseMetaData.class, SQLException.class, objectMap);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getParentMethod()
-	 */
-	@Override
-	protected Method getParentMethod()
-	{
-		return getConnectionMethod;
+		super(DatabaseMetaData.class, proxyFactory, getConnectionMethod);
 	}
 
 	@Override
-	protected InvocationStrategy getInvocationStrategy(DatabaseMetaData metaData, Method method, Object[] parameters) throws SQLException
+	protected InvocationStrategy getInvocationStrategy(DatabaseMetaData metaData, Method method, Object... parameters) throws SQLException
 	{
 		if (databaseReadMethodSet.contains(method))
 		{
-			return InvocationStrategyEnum.INVOKE_ON_NEXT;
+			return InvocationStrategies.INVOKE_ON_NEXT;
 		}
 		
-		return InvocationStrategyEnum.INVOKE_ON_ANY;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#close(java.lang.Object, java.lang.Object)
-	 */
-	@Override
-	protected void close(Connection parent, DatabaseMetaData object) throws SQLException
-	{
-		// Nothing to close
+		return InvocationStrategies.INVOKE_ON_ANY;
 	}
 }

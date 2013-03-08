@@ -23,26 +23,21 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
-import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.invocation.InvocationStrategies;
 import net.sf.hajdbc.invocation.InvocationStrategy;
-import net.sf.hajdbc.invocation.InvocationStrategyEnum;
 import net.sf.hajdbc.util.reflect.Methods;
 
 /**
  * @author Paul Ferraro
  *
  */
-@SuppressWarnings("nls")
-public class DataSourceInvocationHandler extends CommonDataSourceInvocationHandler<DataSource, DataSourceDatabase>
+public class DataSourceInvocationHandler extends CommonDataSourceInvocationHandler<DataSource, DataSourceDatabase, DataSourceProxyFactory>
 {
 	private static final Set<Method> getConnectionMethods = Methods.findMethods(DataSource.class, "getConnection");
 	
-	/**
-	 * @param databaseCluster
-	 */
-	public DataSourceInvocationHandler(DatabaseCluster<DataSource, DataSourceDatabase> databaseCluster)
+	public DataSourceInvocationHandler(DataSourceProxyFactory factory)
 	{
-		super(databaseCluster, DataSource.class);
+		super(DataSource.class, factory);
 	}
 
 	/**
@@ -50,30 +45,25 @@ public class DataSourceInvocationHandler extends CommonDataSourceInvocationHandl
 	 * @see net.sf.hajdbc.sql.CommonDataSourceInvocationHandler#getInvocationStrategy(javax.sql.CommonDataSource, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected InvocationStrategy getInvocationStrategy(DataSource dataSource, Method method, Object[] parameters) throws SQLException
+	protected InvocationStrategy getInvocationStrategy(DataSource dataSource, Method method, Object... parameters) throws SQLException
 	{
 		if (getConnectionMethods.contains(method))
 		{
-			return InvocationStrategyEnum.TRANSACTION_INVOKE_ON_ALL;
+			return InvocationStrategies.TRANSACTION_INVOKE_ON_ALL;
 		}
 		return super.getInvocationStrategy(dataSource, method, parameters);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * @throws SQLException 
-	 * @see net.sf.hajdbc.sql.AbstractInvocationHandler#getInvocationHandlerFactory(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
-	 */
 	@Override
-	protected InvocationHandlerFactory<DataSource, DataSourceDatabase, DataSource, ?, SQLException> getInvocationHandlerFactory(DataSource object, Method method, Object[] parameters) throws SQLException
+	protected ProxyFactoryFactory<DataSource, DataSourceDatabase, DataSource, SQLException, ?, ? extends Exception> getProxyFactoryFactory(DataSource object, Method method, Object... parameters) throws SQLException
 	{
 		if (getConnectionMethods.contains(method))
 		{
-			TransactionContext<DataSource, DataSourceDatabase> context = new LocalTransactionContext<DataSource, DataSourceDatabase>(this.getDatabaseCluster());
+			TransactionContext<DataSource, DataSourceDatabase> context = new LocalTransactionContext<DataSource, DataSourceDatabase>(this.getProxyFactory().getDatabaseCluster());
 			
-			return new ConnectionInvocationHandlerFactory<DataSource, DataSourceDatabase, DataSource>(context);
+			return new ConnectionProxyFactoryFactory<DataSource, DataSourceDatabase, DataSource>(context);
 		}
 		
-		return null;
+		return super.getProxyFactoryFactory(object, method, parameters);
 	}
 }

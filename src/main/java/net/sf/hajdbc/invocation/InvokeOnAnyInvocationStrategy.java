@@ -29,29 +29,35 @@ import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
-import net.sf.hajdbc.sql.SQLProxy;
+import net.sf.hajdbc.sql.ProxyFactory;
 import net.sf.hajdbc.state.StateManager;
 
 /**
  * @author Paul Ferraro
  */
-public class InvokeOnAnyInvocationStrategy extends InvokeOnNextInvocationStrategy
+public class InvokeOnAnyInvocationStrategy implements InvocationStrategy
 {
-	private static Logger logger = LoggerFactory.getLogger(InvokeOnExistingInvocationStrategy.class);
+	private static Logger logger = LoggerFactory.getLogger(ExistingResultsCollector.class);
+
+	private final InvocationStrategy strategy;
+	
+	public InvokeOnAnyInvocationStrategy(InvocationStrategy strategy)
+	{
+		this.strategy = strategy;
+	}
 
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.invocation.InvocationStrategy#invoke(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.invocation.Invoker)
 	 */
 	@Override
-	public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(SQLProxy<Z, D, T, E> proxy, Invoker<Z, D, T, R, E> invoker) throws E
+	public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(ProxyFactory<Z, D, T, E> map, Invoker<Z, D, T, R, E> invoker) throws E
 	{
-		DatabaseCluster<Z, D> cluster = proxy.getDatabaseCluster();
+		DatabaseCluster<Z, D> cluster = map.getDatabaseCluster();
 		Dialect dialect = cluster.getDialect();
 		StateManager stateManager = cluster.getStateManager();
-		ExceptionFactory<E> exceptionFactory = proxy.getExceptionFactory();
 
-		for (Map.Entry<D, T> entry: proxy.entries())
+		for (Map.Entry<D, T> entry: map.entries())
 		{
 			D database = entry.getKey();
 			
@@ -65,6 +71,7 @@ public class InvokeOnAnyInvocationStrategy extends InvokeOnNextInvocationStrateg
 			}
 			catch (Exception e)
 			{
+				ExceptionFactory<E> exceptionFactory = map.getExceptionFactory();
 				E exception = exceptionFactory.createException(e);
 				
 				if (exceptionFactory.indicatesFailure(exception, dialect) && (cluster.getBalancer().size() > 1))
@@ -81,6 +88,7 @@ public class InvokeOnAnyInvocationStrategy extends InvokeOnNextInvocationStrateg
 			}
 		}
 		
-		return super.invoke(proxy, invoker);
+		// If no existing databases could handle the request, delegate to another invocation strategy
+		return this.strategy.invoke(map, invoker);
 	}
 }

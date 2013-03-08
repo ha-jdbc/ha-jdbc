@@ -1,0 +1,2 @@
+net.sf.hajdbc.io.file.FileInputSinkProvider
+net.sf.hajdbc.io.simple.SimpleInputSinkProvider

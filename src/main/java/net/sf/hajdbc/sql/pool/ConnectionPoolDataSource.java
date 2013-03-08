@@ -19,25 +19,29 @@ package net.sf.hajdbc.sql.pool;
 
 import java.sql.SQLException;
 
-import javax.naming.NamingException;
-import javax.naming.Reference;
 import javax.sql.PooledConnection;
 
-import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.sql.CommonDataSource;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class ConnectionPoolDataSource extends CommonDataSource<javax.sql.ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase> implements javax.sql.ConnectionPoolDataSource
+public class ConnectionPoolDataSource extends CommonDataSource<javax.sql.ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase, ConnectionPoolDataSourceProxyFactory> implements javax.sql.ConnectionPoolDataSource
 {
 	/**
 	 * Constructs a new ConnectionPoolDataSource
 	 */
 	public ConnectionPoolDataSource()
 	{
-		super(new ConnectionPoolDataSourceFactory(), ConnectionPoolDataSourceDatabaseClusterConfiguration.class);
+		super(ConnectionPoolDataSourceDatabaseClusterConfiguration.class);
+	}
+
+	@Override
+	public ConnectionPoolDataSourceProxyFactory createProxyFactory(DatabaseCluster<javax.sql.ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase> cluster)
+	{
+		return new ConnectionPoolDataSourceProxyFactory(cluster);
 	}
 
 	/**
@@ -56,15 +60,5 @@ public class ConnectionPoolDataSource extends CommonDataSource<javax.sql.Connect
 	public PooledConnection getPooledConnection(String user, String password) throws SQLException
 	{
 		return this.getProxy().getPooledConnection(user, password);
-	}
-
-	/**
-	 * @see javax.naming.Referenceable#getReference()
-	 */
-	@Override
-	public Reference getReference() throws NamingException
-	{
-		DatabaseClusterConfigurationFactory<javax.sql.ConnectionPoolDataSource, ConnectionPoolDataSourceDatabase> factory = this.getConfigurationFactory();
-		return (factory != null) ? new ConnectionPoolDataSourceReference(this.getCluster(), factory) : new ConnectionPoolDataSourceReference(this.getCluster(), this.getConfig());
 	}
 }

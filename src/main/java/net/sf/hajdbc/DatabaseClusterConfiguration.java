@@ -28,6 +28,7 @@ import net.sf.hajdbc.codec.DecoderFactory;
 import net.sf.hajdbc.dialect.DialectFactory;
 import net.sf.hajdbc.distributed.CommandDispatcherFactory;
 import net.sf.hajdbc.durability.DurabilityFactory;
+import net.sf.hajdbc.io.InputSinkProvider;
 import net.sf.hajdbc.lock.LockManagerFactory;
 import net.sf.hajdbc.management.MBeanRegistrar;
 import net.sf.hajdbc.state.StateManagerFactory;
@@ -135,4 +136,6 @@ public interface DatabaseClusterConfiguration<Z, D extends Database<Z>> extends 
 	boolean isEmptyClusterAllowed();
 
 	DatabaseFactory<Z, D> getDatabaseFactory();
+
+	InputSinkProvider getInputSinkProvider();
 }

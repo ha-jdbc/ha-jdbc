@@ -86,6 +86,7 @@ public class XAExceptionFactoryTest
 		assertFalse(this.factory.equals(new XAException(XAException.XA_HEURCOM), new XAException(XAException.XA_HEURHAZ)));
 		
 		assertTrue(this.factory.equals(new XAException("reason"), new XAException("reason")));
+		assertFalse(this.factory.equals(new XAException("reason"), new XAException()));
 		assertFalse(this.factory.equals(new XAException("reason1"), new XAException("reason2")));
 	}
 	

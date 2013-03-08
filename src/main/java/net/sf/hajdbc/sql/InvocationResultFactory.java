@@ -21,9 +21,9 @@ import java.util.SortedMap;
 
 import net.sf.hajdbc.Database;
 
-public interface InvocationResultFactory<Z, D extends Database<Z>, R, E extends Exception>
+public interface InvocationResultFactory<Z, D extends Database<Z>, R>
 {
 	boolean differs(R primaryResult, R backupResult);
 
-	R createResult(SortedMap<D, R> results) throws E;
+	R createResult(SortedMap<D, R> results);
 }

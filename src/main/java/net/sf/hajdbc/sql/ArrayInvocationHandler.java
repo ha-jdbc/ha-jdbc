@@ -21,36 +21,26 @@ import java.lang.reflect.Method;
 import java.sql.Array;
 import java.sql.SQLException;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 
 import net.sf.hajdbc.Database;
+import net.sf.hajdbc.invocation.InvocationStrategies;
 import net.sf.hajdbc.invocation.InvocationStrategy;
-import net.sf.hajdbc.invocation.InvocationStrategyEnum;
-import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.util.reflect.Methods;
 
 /**
  * @author paul
  *
  */
-public class ArrayInvocationHandler<Z, D extends Database<Z>, P> extends LocatorInvocationHandler<Z, D, P, Array>
+public class ArrayInvocationHandler<Z, D extends Database<Z>, P> extends LocatorInvocationHandler<Z, D, P, Array, ArrayProxyFactory<Z, D, P>>
 {
-	private static final Set<Method> driverReadMethodSet = Methods.findMethods(Array.class, "getBaseType", "getBaseTypeName");
-	private static final Set<Method> readMethodSet = Methods.findMethods(Array.class, "getArray", "getResultSet");
-	private static final Set<Method> writeMethodSet = Collections.emptySet();
+	private static final Set<Method> DRIVER_READ_METHODS = Methods.findMethods(Array.class, "getBaseType", "getBaseTypeName");
+	private static final Set<Method> READ_METHODS = Methods.findMethods(Array.class, "getArray", "getResultSet");
+	private static final Set<Method> WRITE_METHODS = Collections.emptySet();
 	
-	/**
-	 * Constructs a new ArrayInvocationHandler
-	 * @param parent
-	 * @param proxy
-	 * @param invoker
-	 * @param objectMap
-	 * @param updateCopy
-	 */
-	public ArrayInvocationHandler(P parent, SQLProxy<Z, D, P, SQLException> proxy, Invoker<Z, D, P, Array, SQLException> invoker, Map<D, Array> objectMap, boolean updateCopy)
+	protected ArrayInvocationHandler(ArrayProxyFactory<Z, D, P> proxyFactory)
 	{
-		super(parent, proxy, invoker, Array.class, objectMap, updateCopy, readMethodSet, writeMethodSet);
+		super(Array.class, proxyFactory, READ_METHODS, WRITE_METHODS);
 	}
 
 	/**
@@ -58,23 +48,13 @@ public class ArrayInvocationHandler<Z, D extends Database<Z>, P> extends Locator
 	 * @see net.sf.hajdbc.sql.LocatorInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
 	 */
 	@Override
-	protected InvocationStrategy getInvocationStrategy(Array array, Method method, Object[] parameters) throws SQLException
+	protected InvocationStrategy getInvocationStrategy(Array array, Method method, Object... parameters) throws SQLException
 	{
-		if (driverReadMethodSet.contains(method))
+		if (DRIVER_READ_METHODS.contains(method))
 		{
-			return InvocationStrategyEnum.INVOKE_ON_ANY;
+			return InvocationStrategies.INVOKE_ON_ANY;
 		}
 		
 		return super.getInvocationStrategy(array, method, parameters);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.LocatorInvocationHandler#free(java.lang.Object)
-	 */
-	@Override
-	protected void free(Array array) throws SQLException
-	{
-		array.free();
 	}
 }

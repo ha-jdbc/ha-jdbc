@@ -20,11 +20,10 @@ package net.sf.hajdbc.sql;
 import java.lang.reflect.Method;
 import java.sql.Blob;
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.Set;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.invocation.Invoker;
+import net.sf.hajdbc.sql.io.OutputStreamProxyFactoryFactory;
 import net.sf.hajdbc.util.reflect.Methods;
 
 /**
@@ -33,30 +32,25 @@ import net.sf.hajdbc.util.reflect.Methods;
  * @param <P> 
  */
 @SuppressWarnings("nls")
-public class BlobInvocationHandler<Z, D extends Database<Z>, P> extends LocatorInvocationHandler<Z, D, P, Blob>
+public class BlobInvocationHandler<Z, D extends Database<Z>, P> extends LocatorInvocationHandler<Z, D, P, Blob, BlobProxyFactory<Z, D, P>>
 {
-	private static final Set<Method> READ_METHOD_SET = Methods.findMethods(Blob.class, "getBinaryStream", "getBytes", "length", "position");
-	private static final Set<Method> WRITE_METHOD_SET = Methods.findMethods(Blob.class, "setBinaryStream", "setBytes", "truncate");
+	private static final Method SET_BINARY_STREAM_METHOD = Methods.getMethod(Blob.class, "setBinaryStream", Long.TYPE);
+	private static final Set<Method> READ_METHODS = Methods.findMethods(Blob.class, "getBinaryStream", "getBytes", "length", "position");
+	private static final Set<Method> WRITE_METHODS = Methods.findMethods(Blob.class, "setBinaryStream", "setBytes", "truncate");
 
-	/**
-	 * @param object
-	 * @param proxy
-	 * @param invoker
-	 * @param objectMap
-	 * @throws Exception
-	 */
-	protected BlobInvocationHandler(P object, SQLProxy<Z, D, P, SQLException> proxy, Invoker<Z, D, P, Blob, SQLException> invoker, Map<D, Blob> objectMap, boolean updateCopy)
+	public BlobInvocationHandler(BlobProxyFactory<Z, D, P> proxyFactory)
 	{
-		super(object, proxy, invoker, Blob.class, objectMap, updateCopy, READ_METHOD_SET, WRITE_METHOD_SET);
+		super(Blob.class, proxyFactory, READ_METHODS, WRITE_METHODS);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.LocatorInvocationHandler#free(java.lang.Object)
-	 */
 	@Override
-	protected void free(Blob blob) throws SQLException
+	protected ProxyFactoryFactory<Z, D, Blob, SQLException, ?, ? extends Exception> getProxyFactoryFactory(Blob object, Method method, Object... parameters) throws SQLException
 	{
-		blob.free();
+		if (method.equals(SET_BINARY_STREAM_METHOD))
+		{
+			return new OutputStreamProxyFactoryFactory<Z, D, Blob>();
+		}
+		
+		return super.getProxyFactoryFactory(object, method, parameters);
 	}
 }

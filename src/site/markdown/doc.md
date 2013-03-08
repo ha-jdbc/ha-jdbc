@@ -358,7 +358,7 @@ simple
 *sql*
 :	A persistent state manager that uses an embedded database.
 	This provider supports the following properties, in addition to properties to manipulate connection pooling behavior.
-	The complete list of pooling properties and their default values are available in the [Apache Commons Pool documentation][commons-pool] documentation..
+	The complete list of pooling properties and their default values are available in the [Apache Commons Pool documentation][commons-pool] documentation.
 	<table>
 		<tr>
 			<th>Property</th>
@@ -395,8 +395,8 @@ simple
 	e.g.
 
 		<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
-			<state id="sqlite">
-				<property name="locationPattern">/tmp/{0}</property>
+			<state id="sql">
+				<property name="urlPattern">jdbc:h2:/temp/ha-jdbc/{0}</property>
 			</state>
 			<cluster><!-- ... --></cluster>
 		</ha-jdbc>
@@ -438,7 +438,7 @@ berkeleydb
 sqlite
 :	A persistent state manager that uses a SQLite database.
 	This provider supports the following properties, in addition to properties to manipulate connection pooling behavior.
-	The complete list of pooling properties and their default values are available in the [Apache Commons Pool documentation][commons-pool] documentation..
+	The complete list of pooling properties and their default values are available in the [Apache Commons Pool documentation][commons-pool] documentation.
 	<table>
 		<tr>
 			<th>Property</th>
@@ -779,7 +779,7 @@ e.g.
 		</cluster>
 	</ha-jdbc>
 
-HA-JDBC connection can then be established via:
+HA-JDBC connection can then be established via the appropriate JDBC URL:
 
 	java.sql.Connection connection = java.sql.DriverManager.getConnection("jdbc:ha-jdbc:mycluster", "user", "password");
 
@@ -812,15 +812,17 @@ e.g.
 		</cluster>
 	</ha-jdbc>
 
-To deploy the HA-JDBC DataSource in Tomcat:
+To deploy the HA-JDBC DataSource in Tomcat, for example:
 
 `context.xml`
 
 	<Context>
 		<!-- ... -->
-		<Resource name="jdbc/mycluster" type="javax.sql.DataSource"
-		          factory="net.sf.hajdbc.sql.DataSourceFactory"
-		          cluster="mycluster" config="file:///path/to/ha-jdbc-mycluster.xml"/>
+		<Resource name="jdbc/mycluster" type="net.sf.hajdbc.sql.DataSource"
+		          factory="org.apache.naming.factory.BeanFactory"
+		          closeMethod="stop"
+		          cluster="mycluster"
+		          config="file:///path/to/ha-jdbc-mycluster.xml"/>
 		<!-- ... -->
 	</Context>
 
@@ -896,6 +898,8 @@ Dialect.indicatesFailure(SQLException)
 Dialect.indicatesFailure(XAException)
 :	The exception is determined to be a failure if the error code of the exception is `XAException.XAER_RMFAIL`.
 
+Any dialect can override this behavior, perhaps by inspecting vendor codes, SQL states, etc.
+
 If HA-JDBC determines that a given database has failed, the database is deactivated.
 The process of deactivating a database is as follows:
 
@@ -928,7 +932,7 @@ The process of (re)activating a database is as follows:
 1.	Synchronize the target database with the master database using a given synchronization strategy.
 1.	Add the target database to the set of active databases.
 1.	Persist the new cluster state via the <a href="#state">Cluster State Manager</a>.
-1.	If the database cluster is **distributable**, broadcast the database activation to other servers.
+	*	If the database cluster is **distributable**, broadcast the database activation to other servers.
 1.	Release the lock acquired in step 2.
 
 In general, database synchronization is an intensive and intrusive task.

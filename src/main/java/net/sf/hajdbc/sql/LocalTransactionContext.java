@@ -66,7 +66,7 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 			return new InvocationStrategy()
 			{
 				@Override
-				public <ZZ, DD extends Database<ZZ>, T, R, E extends Exception> SortedMap<DD, R> invoke(SQLProxy<ZZ, DD, T, E> proxy, Invoker<ZZ, DD, T, R, E> invoker) throws E
+				public <ZZ, DD extends Database<ZZ>, T, R, E extends Exception> SortedMap<DD, R> invoke(ProxyFactory<ZZ, DD, T, E> proxy, Invoker<ZZ, DD, T, R, E> invoker) throws E
 				{
 					LocalTransactionContext.this.lock();
 					
@@ -87,7 +87,7 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 		return new InvocationStrategy()
 		{
 			@Override
-			public <ZZ, DD extends Database<ZZ>, T, R, E extends Exception> SortedMap<DD, R> invoke(SQLProxy<ZZ, DD, T, E> proxy, Invoker<ZZ, DD, T, R, E> invoker) throws E
+			public <ZZ, DD extends Database<ZZ>, T, R, E extends Exception> SortedMap<DD, R> invoke(ProxyFactory<ZZ, DD, T, E> proxy, Invoker<ZZ, DD, T, R, E> invoker) throws E
 			{
 				LocalTransactionContext.this.lock();
 				
@@ -136,7 +136,7 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 		return new InvocationStrategy()
 		{
 			@Override
-			public <ZZ, DD extends Database<ZZ>, T, R, E extends Exception> SortedMap<DD, R> invoke(SQLProxy<ZZ, DD, T, E> proxy, Invoker<ZZ, DD, T, R, E> invoker) throws E
+			public <ZZ, DD extends Database<ZZ>, T, R, E extends Exception> SortedMap<DD, R> invoke(ProxyFactory<ZZ, DD, T, E> proxy, Invoker<ZZ, DD, T, R, E> invoker) throws E
 			{
 				InvocationStrategy durabilityStrategy = LocalTransactionContext.this.durability.getInvocationStrategy(strategy, phase, LocalTransactionContext.this.transactionId);
 				

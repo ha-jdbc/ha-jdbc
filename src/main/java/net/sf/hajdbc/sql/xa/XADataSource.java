@@ -20,24 +20,28 @@ package net.sf.hajdbc.sql.xa;
 import java.io.PrintWriter;
 import java.sql.SQLException;
 
-import javax.naming.NamingException;
-import javax.naming.Reference;
 import javax.sql.XAConnection;
 
-import net.sf.hajdbc.DatabaseClusterConfigurationFactory;
+import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.sql.CommonDataSource;
 
 /**
  * @author Paul Ferraro
  */
-public class XADataSource extends CommonDataSource<javax.sql.XADataSource, XADataSourceDatabase> implements javax.sql.XADataSource
+public class XADataSource extends CommonDataSource<javax.sql.XADataSource, XADataSourceDatabase, XADataSourceProxyFactory> implements javax.sql.XADataSource
 {
 	/**
 	 * Constructs a new XADataSource
 	 */
 	public XADataSource()
 	{
-		super(new XADataSourceFactory(), XADataSourceDatabaseClusterConfiguration.class);
+		super(XADataSourceDatabaseClusterConfiguration.class);
+	}
+
+	@Override
+	public XADataSourceProxyFactory createProxyFactory(DatabaseCluster<javax.sql.XADataSource, XADataSourceDatabase> cluster)
+	{
+		return new XADataSourceProxyFactory(cluster);
 	}
 
 	/**
@@ -92,15 +96,5 @@ public class XADataSource extends CommonDataSource<javax.sql.XADataSource, XADat
 	public void setLogWriter(PrintWriter writer) throws SQLException
 	{
 		this.getProxy().setLogWriter(writer);
-	}
-
-	/**
-	 * @see javax.naming.Referenceable#getReference()
-	 */
-	@Override
-	public Reference getReference() throws NamingException
-	{
-		DatabaseClusterConfigurationFactory<javax.sql.XADataSource, XADataSourceDatabase> factory = this.getConfigurationFactory();
-		return (factory != null) ? new XADataSourceReference(this.getCluster(), factory) : new XADataSourceReference(this.getCluster(), this.getConfig());
 	}
 }

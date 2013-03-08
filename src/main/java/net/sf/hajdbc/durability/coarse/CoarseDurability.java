@@ -29,7 +29,7 @@ import net.sf.hajdbc.durability.InvokerEvent;
 import net.sf.hajdbc.durability.none.NoDurability;
 import net.sf.hajdbc.invocation.InvocationStrategy;
 import net.sf.hajdbc.invocation.Invoker;
-import net.sf.hajdbc.sql.SQLProxy;
+import net.sf.hajdbc.sql.ProxyFactory;
 import net.sf.hajdbc.state.StateManager;
 
 /**
@@ -63,7 +63,7 @@ public class CoarseDurability<Z, D extends Database<Z>> extends NoDurability<Z, 
 		return new InvocationStrategy()
 		{
 			@Override
-			public <ZZ, DD extends Database<ZZ>, T, R, EE extends Exception> SortedMap<DD, R> invoke(SQLProxy<ZZ, DD, T, EE> proxy, Invoker<ZZ, DD, T, R, EE> invoker) throws EE
+			public <ZZ, DD extends Database<ZZ>, T, R, EE extends Exception> SortedMap<DD, R> invoke(ProxyFactory<ZZ, DD, T, EE> proxy, Invoker<ZZ, DD, T, R, EE> invoker) throws EE
 			{
 				InvocationEvent event = new InvocationEventImpl(transactionId, phase, proxy.getExceptionFactory().getType());
 

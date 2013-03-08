@@ -39,11 +39,11 @@ public class GenericObjectPoolFactory implements PoolFactory
 {
 	static final Logger logger = LoggerFactory.getLogger(GenericObjectPoolFactory.class);
 	
-	private final GenericObjectPoolConfiguration config;
+	private final GenericObjectPool.Config config;
 	
 	public GenericObjectPoolFactory(GenericObjectPoolConfiguration config)
 	{
-		this.config = config;
+		this.config = config.toConfig();
 	}
 	
 	@Override
