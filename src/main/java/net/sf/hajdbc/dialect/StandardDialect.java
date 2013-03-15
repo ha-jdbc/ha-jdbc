@@ -25,9 +25,11 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLNonTransientConnectionException;
+import java.sql.SQLTransientConnectionException;
 import java.sql.Statement;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -482,19 +484,36 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	public boolean indicatesFailure(SQLException e)
 	{
 		String state = e.getSQLState();
-		Set<String> failureSQLStates = this.failureSQLStates();
-		
-		if ((state != null) && !failureSQLStates.isEmpty())
+		if (state != null)
 		{
-			return failureSQLStates.contains(state);
+			if (this.isFailureSQLState(state))
+			{
+				return true;
+			}
 		}
 		
-		return (e instanceof SQLNonTransientConnectionException);
+		if (this.isFailureErrorCode(e.getErrorCode()))
+		{
+			return true;
+		}
+		
+		return (e instanceof SQLNonTransientConnectionException) || (e instanceof SQLTransientConnectionException);
 	}
 
-	protected Set<String> failureSQLStates()
+	protected boolean isFailureSQLState(String sqlState)
 	{
-		return Collections.emptySet();
+		return sqlState.startsWith("08");
+	}
+
+	protected boolean isFailureErrorCode(int code)
+	{
+		return false;
+	}
+	
+	@SuppressWarnings("unchecked")
+	protected Iterable<Class<? extends SQLException>> failureSQLExceptions()
+	{
+		return Arrays.asList(SQLNonTransientConnectionException.class, SQLTransientConnectionException.class);
 	}
 	
 	/**

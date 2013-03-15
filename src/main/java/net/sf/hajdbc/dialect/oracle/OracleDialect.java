@@ -137,4 +137,10 @@ public class OracleDialect extends StandardDialect
 	{
 		return "ALTER SEQUENCE {0} INCREMENT BY ({1} - (SELECT {0}.NEXTVAL FROM DUAL)); SELECT {0}.NEXTVAL FROM DUAL; ALTER SEQUENCE {0} INCREMENT BY {2}";
 	}
+
+	@Override
+	protected boolean isFailureSQLState(String sqlState)
+	{
+		return super.isFailureSQLState(sqlState) || sqlState.startsWith("66") || sqlState.startsWith("69");
+	}
 }
