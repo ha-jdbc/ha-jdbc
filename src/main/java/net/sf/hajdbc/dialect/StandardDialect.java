@@ -29,7 +29,6 @@ import java.sql.SQLTransientConnectionException;
 import java.sql.Statement;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -483,37 +482,39 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	@Override
 	public boolean indicatesFailure(SQLException e)
 	{
-		String state = e.getSQLState();
-		if (state != null)
-		{
-			if (this.isFailureSQLState(state))
-			{
-				return true;
-			}
-		}
-		
-		if (this.isFailureErrorCode(e.getErrorCode()))
+		if ((e instanceof SQLNonTransientConnectionException) || (e instanceof SQLTransientConnectionException))
 		{
 			return true;
 		}
 		
-		return (e instanceof SQLNonTransientConnectionException) || (e instanceof SQLTransientConnectionException);
+		String sqlState = e.getSQLState();
+		if ((sqlState != null) && this.indicatesFailure(sqlState))
+		{
+			return true;
+		}
+		
+		return this.indicatesFailure(e.getErrorCode());
 	}
 
-	protected boolean isFailureSQLState(String sqlState)
+	/**
+	 * Indicates whether the specified SQLState indicates a database failure that should result in a database deactivation.
+	 * @param sqlState a SQL:2003 or X/Open SQLState
+	 * @return true if the SQLState indicate a failure, false otherwise
+	 */
+	protected boolean indicatesFailure(String sqlState)
 	{
+		// 08 class SQLStates indicate connection failures
 		return sqlState.startsWith("08");
 	}
 
-	protected boolean isFailureErrorCode(int code)
+	/**
+	 * Indicates whether the specified vendor-specific error code indicates a database failure that should result in a database deactivation.
+	 * @param code a vendor-specific error code
+	 * @return true if the error code indicate a failure, false otherwise
+	 */
+	protected boolean indicatesFailure(int code)
 	{
 		return false;
-	}
-	
-	@SuppressWarnings("unchecked")
-	protected Iterable<Class<? extends SQLException>> failureSQLExceptions()
-	{
-		return Arrays.asList(SQLNonTransientConnectionException.class, SQLTransientConnectionException.class);
 	}
 	
 	/**

@@ -139,8 +139,10 @@ public class OracleDialect extends StandardDialect
 	}
 
 	@Override
-	protected boolean isFailureSQLState(String sqlState)
+	protected boolean indicatesFailure(String sqlState)
 	{
-		return super.isFailureSQLState(sqlState) || sqlState.startsWith("66") || sqlState.startsWith("69");
+		// 66 class SQLStates indicate SQL*Net driver errors
+		// 69 class SQLStates indicate SQL*Connect errors
+		return super.indicatesFailure(sqlState) || sqlState.startsWith("66") || sqlState.startsWith("69");
 	}
 }
