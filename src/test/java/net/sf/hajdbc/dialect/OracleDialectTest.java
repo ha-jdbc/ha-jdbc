@@ -18,8 +18,10 @@
 package net.sf.hajdbc.dialect;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -197,5 +199,19 @@ public class OracleDialectTest extends StandardDialectTest
 		String result = this.dialect.getSequenceSupport().getNextSequenceValueSQL(sequence);
 
 		assertEquals("SELECT sequence.NEXTVAL FROM DUAL", result);
+	}
+
+	@Override
+	protected void indicatesFailure(String sqlState)
+	{
+		SQLException exception = new SQLException("reason", String.valueOf(sqlState));
+		if (sqlState.startsWith("08") || sqlState.startsWith("66") || sqlState.startsWith("69"))
+		{
+			assertTrue(sqlState, this.dialect.indicatesFailure(exception));
+		}
+		else
+		{
+			assertFalse(sqlState, this.dialect.indicatesFailure(exception));
+		}
 	}
 }

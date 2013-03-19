@@ -422,6 +422,24 @@ public class StandardDialectTest
 	public void indicatesFailureSQLException()
 	{
 		assertTrue(this.dialect.indicatesFailure(new SQLNonTransientConnectionException()));
+		assertTrue(this.dialect.indicatesFailure(new SQLTransientConnectionException()));
+		int i = 0;
+		char[] alphabet = new char[36];
+		for (char c = '0'; c <= '9'; ++c)
+		{
+			alphabet[i++] = c;
+		}
+		for (char c = 'A'; c <= 'Z'; ++c)
+		{
+			alphabet[i++] = c;
+		}
+		for (int a = 0; a < alphabet.length; ++a)
+		{
+			for (int b = 0; b < alphabet.length; ++b)
+			{
+				this.indicatesFailure(String.format("%s%s000", alphabet[a], alphabet[b]));
+			}
+		}
 		assertFalse(this.dialect.indicatesFailure(new SQLException()));
 		assertFalse(this.dialect.indicatesFailure(new BatchUpdateException()));
 		assertFalse(this.dialect.indicatesFailure(new RowSetWarning()));
@@ -437,12 +455,24 @@ public class StandardDialectTest
 		assertFalse(this.dialect.indicatesFailure(new SQLTransientException()));
 		assertFalse(this.dialect.indicatesFailure(new SQLTimeoutException()));
 		assertFalse(this.dialect.indicatesFailure(new SQLTransactionRollbackException()));
-		assertFalse(this.dialect.indicatesFailure(new SQLTransientConnectionException()));
 		assertFalse(this.dialect.indicatesFailure(new SQLWarning()));
 		assertFalse(this.dialect.indicatesFailure(new DataTruncation(1, false, false, 1, 1)));
 		assertFalse(this.dialect.indicatesFailure(new SQLDataException()));
 		assertFalse(this.dialect.indicatesFailure(new SyncFactoryException()));
 		assertFalse(this.dialect.indicatesFailure(new SyncProviderException()));
+	}
+	
+	protected void indicatesFailure(String sqlState)
+	{
+		SQLException exception = new SQLException("reason", String.valueOf(sqlState));
+		if (sqlState.startsWith("08"))
+		{
+			assertTrue(sqlState, this.dialect.indicatesFailure(exception));
+		}
+		else
+		{
+			assertFalse(sqlState, this.dialect.indicatesFailure(exception));
+		}
 	}
 	
 	@Test
