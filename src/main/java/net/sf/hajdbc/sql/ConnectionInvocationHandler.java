@@ -92,7 +92,7 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ch
 		if (prepareStatementMethodSet.contains(method))
 		{
 			String sql = (String) parameters[0];
-			return new PreparedStatementProxyFactoryFactory<Z, D>(this.getProxyFactory().getTransactionContext(), this.getProxyFactory().extractLocks(sql), this.getProxyFactory().isLockingSelect(sql));
+			return new PreparedStatementProxyFactoryFactory<Z, D>(this.getProxyFactory().getTransactionContext(), this.getProxyFactory().extractLocks(sql), this.getProxyFactory().isSelectForUpdate(sql));
 		}
 		if (prepareCallMethodSet.contains(method))
 		{

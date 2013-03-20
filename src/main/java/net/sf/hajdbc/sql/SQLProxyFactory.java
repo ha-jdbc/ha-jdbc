@@ -34,7 +34,7 @@ public interface SQLProxyFactory<Z, D extends Database<Z>, P, T> extends Transac
 	
 	List<Lock> extractLocks(String sql) throws SQLException;
 	
-	boolean isLockingSelect(String sql) throws SQLException;
+	boolean isSelectForUpdate(String sql) throws SQLException;
 	
 	Connection getConnection(D database) throws SQLException;
 

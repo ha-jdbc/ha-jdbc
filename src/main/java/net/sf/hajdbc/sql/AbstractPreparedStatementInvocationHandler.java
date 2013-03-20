@@ -18,10 +18,13 @@
 package net.sf.hajdbc.sql;
 
 import java.lang.reflect.Method;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.invocation.InvocationStrategies;
@@ -86,16 +89,24 @@ public abstract class AbstractPreparedStatementInvocationHandler<Z, D extends Da
 		
 		if (method.equals(executeQueryMethod))
 		{
+			List<Lock> locks = this.getProxyFactory().getLocks();
 			int concurrency = statement.getResultSetConcurrency();
+			boolean selectForUpdate = this.getProxyFactory().isSelectForUpdate();
 			
-			if (this.getProxyFactory().getLocks().isEmpty() && (concurrency == ResultSet.CONCUR_READ_ONLY) && !this.getProxyFactory().isSelectForUpdate())
+			if (locks.isEmpty() && (concurrency == ResultSet.CONCUR_READ_ONLY) && !selectForUpdate)
 			{
-				return InvocationStrategies.INVOKE_ON_NEXT;
+				boolean repeatableReadSelect = (statement.getConnection().getTransactionIsolation() >= Connection.TRANSACTION_REPEATABLE_READ);
+				
+				return repeatableReadSelect ? InvocationStrategies.INVOKE_ON_PRIMARY : InvocationStrategies.INVOKE_ON_NEXT;
 			}
 			
-			InvocationStrategy strategy = new LockingInvocationStrategy(InvocationStrategies.TRANSACTION_INVOKE_ON_ALL, this.getProxyFactory().getLocks());
+			InvocationStrategy strategy = InvocationStrategies.TRANSACTION_INVOKE_ON_ALL;
+			if (!locks.isEmpty())
+			{
+				strategy = new LockingInvocationStrategy(strategy, locks);
+			}
 			
-			return this.getProxyFactory().isSelectForUpdate() ? this.getProxyFactory().getTransactionContext().start(strategy, this.getProxyFactory().getParentProxy()) : strategy;
+			return selectForUpdate ? this.getProxyFactory().getTransactionContext().start(strategy, this.getProxyFactory().getParentProxy()) : strategy;
 		}
 		
 		return super.getInvocationStrategy(statement, method, parameters);

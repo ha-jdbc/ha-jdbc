@@ -17,7 +17,6 @@
  */
 package net.sf.hajdbc.sql;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -160,10 +159,9 @@ public abstract class AbstractSQLProxyFactory<Z, D extends Database<Z>, P, T> ex
 	}
 	
 	@Override
-	public boolean isLockingSelect(String sql) throws SQLException
+	public boolean isSelectForUpdate(String sql) throws SQLException
 	{
-		D database = this.getDatabaseCluster().getBalancer().primary();
-		return (this.getConnection(database).getTransactionIsolation() >= Connection.TRANSACTION_REPEATABLE_READ) || (this.getDatabaseProperties().supportsSelectForUpdate()) ? this.getDatabaseCluster().getDialect().isSelectForUpdate(sql) : false;
+		return this.getDatabaseProperties().supportsSelectForUpdate() ? this.getDatabaseCluster().getDialect().isSelectForUpdate(sql) : false;
 	}
 
 	@Override

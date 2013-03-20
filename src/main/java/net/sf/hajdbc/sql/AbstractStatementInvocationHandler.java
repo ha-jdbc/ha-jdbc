@@ -87,28 +87,33 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 		
 		if (executeMethodSet.contains(method))
 		{
-			List<Lock> lockList = this.getProxyFactory().extractLocks((String) parameters[0]);
+			List<Lock> locks = this.getProxyFactory().extractLocks((String) parameters[0]);
 			
-			return this.getProxyFactory().getTransactionContext().start(new LockingInvocationStrategy(InvocationStrategies.TRANSACTION_INVOKE_ON_ALL, lockList), this.getProxyFactory().getParentProxy());
+			return this.getProxyFactory().getTransactionContext().start(new LockingInvocationStrategy(InvocationStrategies.TRANSACTION_INVOKE_ON_ALL, locks), this.getProxyFactory().getParentProxy());
 		}
 		
 		if (method.equals(executeQueryMethod))
 		{
 			String sql = (String) parameters[0];
 			
-			List<Lock> lockList = this.getProxyFactory().extractLocks(sql);
-			
+			List<Lock> locks = this.getProxyFactory().extractLocks(sql);
 			int concurrency = statement.getResultSetConcurrency();
-			boolean lockingSelect = this.getProxyFactory().isLockingSelect(sql) || (statement.getConnection().getTransactionIsolation() >= Connection.TRANSACTION_REPEATABLE_READ);
+			boolean selectForUpdate = this.getProxyFactory().isSelectForUpdate(sql);
 			
-			if (lockList.isEmpty() && (concurrency == ResultSet.CONCUR_READ_ONLY) && !lockingSelect)
+			if (locks.isEmpty() && (concurrency == ResultSet.CONCUR_READ_ONLY) && !selectForUpdate)
 			{
-				return InvocationStrategies.INVOKE_ON_NEXT;
+				boolean repeatableReadSelect = (statement.getConnection().getTransactionIsolation() >= Connection.TRANSACTION_REPEATABLE_READ);
+				
+				return repeatableReadSelect ? InvocationStrategies.INVOKE_ON_PRIMARY : InvocationStrategies.INVOKE_ON_NEXT;
 			}
 			
-			InvocationStrategy strategy = new LockingInvocationStrategy(InvocationStrategies.TRANSACTION_INVOKE_ON_ALL, lockList);
+			InvocationStrategy strategy = InvocationStrategies.TRANSACTION_INVOKE_ON_ALL;
+			if (!locks.isEmpty())
+			{
+				strategy = new LockingInvocationStrategy(strategy, locks);
+			}
 			
-			return lockingSelect ? this.getProxyFactory().getTransactionContext().start(strategy, this.getProxyFactory().getParentProxy()) : strategy;
+			return selectForUpdate ? this.getProxyFactory().getTransactionContext().start(strategy, this.getProxyFactory().getParentProxy()) : strategy;
 		}
 		
 		if (method.equals(executeBatchMethod))
