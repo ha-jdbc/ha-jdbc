@@ -15,6 +15,8 @@ public class CommonDataSourceFactory<Z extends javax.sql.CommonDataSource, D ext
 {
 	public static final String CLUSTER = "cluster";
 	public static final String CONFIG = "config";
+	public static final String USER = "user";
+	public static final String PASSWORD = "password";
 	
 	@Override
 	public Object getObjectInstance(Object object, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception
@@ -40,7 +42,7 @@ public class CommonDataSourceFactory<Z extends javax.sql.CommonDataSource, D ext
 
 		Object clusterAddrContent = clusterAddr.getContent();
 		
-		if ((clusterAddrContent == null) || !(clusterAddrContent instanceof String)) return null;
+		if (!(clusterAddrContent instanceof String)) return null;
 
 		result.setCluster((String) clusterAddrContent);
 		
@@ -61,6 +63,26 @@ public class CommonDataSourceFactory<Z extends javax.sql.CommonDataSource, D ext
 			byte[] config = (byte[]) configAddrContent;
 			
 			result.setConfigurationFactory(Objects.<DatabaseClusterConfigurationFactory<Z, D>>deserialize(config));
+		}
+		
+		RefAddr userAddr = reference.get(USER);
+		if (userAddr != null)
+		{
+			Object userAddrContent = userAddr.getContent();
+			if (userAddrContent instanceof String)
+			{
+				result.setUser((String) userAddrContent);
+			}
+		}
+		
+		RefAddr passwordAddr = reference.get(USER);
+		if (passwordAddr != null)
+		{
+			Object passwordAddrContent = passwordAddr.getContent();
+			if (passwordAddrContent instanceof String)
+			{
+				result.setPassword((String) passwordAddrContent);
+			}
 		}
 
 		return result;

@@ -50,7 +50,8 @@ public class XADataSource extends CommonDataSource<javax.sql.XADataSource, XADat
 	@Override
 	public XAConnection getXAConnection() throws SQLException
 	{
-		return this.getProxy().getXAConnection();
+		String user = this.getUser();
+		return (user != null) ? this.getProxy().getXAConnection(user, this.getPassword()) : this.getProxy().getXAConnection();
 	}
 
 	/**

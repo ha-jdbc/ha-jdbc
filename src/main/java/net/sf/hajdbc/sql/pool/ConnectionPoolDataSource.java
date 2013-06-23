@@ -50,7 +50,8 @@ public class ConnectionPoolDataSource extends CommonDataSource<javax.sql.Connect
 	@Override
 	public PooledConnection getPooledConnection() throws SQLException
 	{
-		return this.getProxy().getPooledConnection();
+		String user = this.getUser();
+		return (user != null) ? this.getProxy().getPooledConnection(user, this.getPassword()) : this.getProxy().getPooledConnection();
 	}
 
 	/**

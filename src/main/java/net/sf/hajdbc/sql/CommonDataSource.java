@@ -55,6 +55,8 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 	private volatile TimePeriod timeout = new TimePeriod(10, TimeUnit.SECONDS);
 	private volatile String cluster;
 	private volatile String config;
+	private volatile String user;
+	private volatile String password;
 	private volatile DatabaseClusterFactory<Z, D> factory = new DatabaseClusterFactoryImpl<Z, D>();
 	private volatile DatabaseClusterConfigurationFactory<Z, D> configurationFactory;	
 	
@@ -115,6 +117,26 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 	public void setConfig(String config)
 	{
 		this.config = config;
+	}
+	
+	public String getUser()
+	{
+		return this.user;
+	}
+	
+	public void setUser(String user)
+	{
+		this.user = user;
+	}
+	
+	public String getPassword()
+	{
+		return this.password;
+	}
+	
+	public void setPassword(String password)
+	{
+		this.password = password;
 	}
 	
 	public DatabaseClusterConfigurationFactory<Z, D> getConfigurationFactory()
@@ -215,7 +237,7 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 	public Reference getReference() throws NamingException
 	{
 		Reference reference = new Reference(this.getClass().getName(), CommonDataSourceFactory.class.getName(), null);
-		reference.add(new StringRefAddr(CommonDataSourceFactory.CLUSTER, cluster));
+		reference.add(new StringRefAddr(CommonDataSourceFactory.CLUSTER, this.cluster));
 		DatabaseClusterConfigurationFactory<Z, D> factory = this.getConfigurationFactory();
 		if (factory != null)
 		{
@@ -223,7 +245,15 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 		}
 		else
 		{
-			reference.add(new StringRefAddr(CommonDataSourceFactory.CONFIG, config));
+			reference.add(new StringRefAddr(CommonDataSourceFactory.CONFIG, this.config));
+		}
+		if (this.user != null)
+		{
+			reference.add(new StringRefAddr(CommonDataSourceFactory.USER, this.user));
+		}
+		if (this.password != null)
+		{
+			reference.add(new StringRefAddr(CommonDataSourceFactory.PASSWORD, this.password));
 		}
 		return reference;
 	}

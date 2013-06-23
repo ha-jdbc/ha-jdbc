@@ -47,7 +47,8 @@ public class DataSource extends CommonDataSource<javax.sql.DataSource, DataSourc
 	@Override
 	public Connection getConnection() throws SQLException
 	{
-		return this.getProxy().getConnection();
+		String user = this.getUser();
+		return (user != null) ? this.getProxy().getConnection(user, this.getPassword()) : this.getProxy().getConnection();
 	}
 
 	/**
