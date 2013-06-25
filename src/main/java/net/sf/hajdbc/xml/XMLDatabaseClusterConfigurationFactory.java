@@ -17,11 +17,8 @@
  */
 package net.sf.hajdbc.xml;
 
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 
@@ -75,17 +72,6 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 		return (resource != null) ? resource : MessageFormat.format(SystemProperties.getSystemProperty(CONFIG_PROPERTY, DEFAULT_RESOURCE), id);
 	}
 	
-	private static String encode(String url)
-	{
-		try
-		{
-			return URLEncoder.encode(url, StandardCharsets.UTF_8.name());
-		}
-		catch (UnsupportedEncodingException e)
-		{
-			return url;
-		}
-	}
 	/**
 	 * Algorithm for searching class loaders for HA-JDBC url.
 	 * @param resource a resource name
@@ -95,7 +81,7 @@ public class XMLDatabaseClusterConfigurationFactory<Z, D extends Database<Z>> im
 	{
 		try
 		{
-			return new URL(encode(resource));
+			return new URL(resource);
 		}
 		catch (MalformedURLException e)
 		{
