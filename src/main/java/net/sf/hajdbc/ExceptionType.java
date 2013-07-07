@@ -36,6 +36,7 @@ public enum ExceptionType implements Matcher<ExceptionFactory>
 	IO(IOException.class)
 	;
 	private final Class<? extends Exception> exceptionClass;
+	private volatile ExceptionFactory exceptionFactory;  
 	
 	private <E extends Exception> ExceptionType(final Class<E> exceptionClass)
 	{
@@ -54,13 +55,18 @@ public enum ExceptionType implements Matcher<ExceptionFactory>
 		return ServiceLoaders.findRequiredService(this, ExceptionFactory.class);
 	}
 	
+	@SuppressWarnings( "unchecked" )
 	public static <E extends Exception> ExceptionFactory<E> getExceptionFactory(Class<E> exceptionClass)
 	{
 		for (ExceptionType type: ExceptionType.values())
 		{
 			if (type.exceptionClass.equals(exceptionClass))
 			{
-				return type.getExceptionFactory();
+				if ( type.exceptionFactory == null ) {
+					return type.exceptionFactory = type.getExceptionFactory();
+				} else {
+					return type.exceptionFactory;
+				}
 			}
 		}
 		
