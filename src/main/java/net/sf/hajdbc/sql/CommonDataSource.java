@@ -50,7 +50,7 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 {
 	private final Class<? extends DatabaseClusterConfiguration<Z, D>> configurationClass;
 	
-	private final Registry<Void, DatabaseCluster<Z, D>, Void, SQLException> registry = new LifecycleRegistry<Void, DatabaseCluster<Z, D>, Void, SQLException>(this, new ReferenceRegistryStoreFactory(), ExceptionType.getExceptionFactory(SQLException.class));
+	private final Registry<Void, DatabaseCluster<Z, D>, Void, SQLException> registry = new LifecycleRegistry<Void, DatabaseCluster<Z, D>, Void, SQLException>(this, new ReferenceRegistryStoreFactory(), ExceptionType.SQL.<SQLException>getExceptionFactory());
 	
 	private volatile TimePeriod timeout = new TimePeriod(10, TimeUnit.SECONDS);
 	private volatile String cluster;

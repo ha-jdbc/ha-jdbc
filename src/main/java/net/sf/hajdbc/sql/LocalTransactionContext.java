@@ -119,7 +119,7 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 			@Override
 			public R invoke(D database, T object) throws SQLException
 			{
-				return LocalTransactionContext.this.durability.getInvoker(invoker, Durability.Phase.COMMIT, LocalTransactionContext.this.transactionId, ExceptionType.getExceptionFactory(SQLException.class)).invoke(database, object);
+				return LocalTransactionContext.this.durability.getInvoker(invoker, Durability.Phase.COMMIT, LocalTransactionContext.this.transactionId, ExceptionType.SQL.<SQLException>getExceptionFactory()).invoke(database, object);
 			}
 		};
 	}
@@ -161,7 +161,7 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 	{
 		if (this.transactionId == null) return invoker;
 
-		return this.durability.getInvoker(invoker, phase, this.transactionId, ExceptionType.getExceptionFactory(SQLException.class));
+		return this.durability.getInvoker(invoker, phase, this.transactionId, ExceptionType.SQL.<SQLException>getExceptionFactory());
 	}
 
 	/**

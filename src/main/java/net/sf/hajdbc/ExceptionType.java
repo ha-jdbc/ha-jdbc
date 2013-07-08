@@ -17,13 +17,10 @@
  */
 package net.sf.hajdbc;
 
-import java.io.IOException;
-import java.sql.SQLException;
-
-import javax.transaction.xa.XAException;
-
+import net.sf.hajdbc.sql.SQLExceptionFactory;
+import net.sf.hajdbc.sql.io.IOExceptionFactory;
+import net.sf.hajdbc.sql.xa.XAExceptionFactory;
 import net.sf.hajdbc.util.Matcher;
-import net.sf.hajdbc.util.ServiceLoaders;
 
 /**
  * @author Paul Ferraro
@@ -31,15 +28,15 @@ import net.sf.hajdbc.util.ServiceLoaders;
 @SuppressWarnings("rawtypes")
 public enum ExceptionType implements Matcher<ExceptionFactory>
 {
-	SQL(SQLException.class),
-	XA(XAException.class),
-	IO(IOException.class)
+	SQL(new SQLExceptionFactory()),
+	XA(new XAExceptionFactory()),
+	IO(new IOExceptionFactory())
 	;
-	private final Class<? extends Exception> exceptionClass;
+	private final ExceptionFactory<? extends Exception> factory;
 	
-	private <E extends Exception> ExceptionType(final Class<E> exceptionClass)
+	private ExceptionType(ExceptionFactory<? extends Exception> factory)
 	{
-		this.exceptionClass = exceptionClass;
+		this.factory = factory;
 	}
 	
 	@Override
@@ -51,16 +48,16 @@ public enum ExceptionType implements Matcher<ExceptionFactory>
 	@SuppressWarnings("unchecked")
 	public <E extends Exception> ExceptionFactory<E> getExceptionFactory()
 	{
-		return ServiceLoaders.findRequiredService(this, ExceptionFactory.class);
+		return (ExceptionFactory<E>) this.factory;
 	}
 	
-	public static <E extends Exception> ExceptionFactory<E> getExceptionFactory(Class<E> exceptionClass)
+	public static ExceptionType valueOf(Class<?> exceptionClass)
 	{
 		for (ExceptionType type: ExceptionType.values())
 		{
-			if (type.exceptionClass.equals(exceptionClass))
+			if (type.factory.getTargetClass().equals(exceptionClass))
 			{
-				return type.getExceptionFactory();
+				return type;
 			}
 		}
 		

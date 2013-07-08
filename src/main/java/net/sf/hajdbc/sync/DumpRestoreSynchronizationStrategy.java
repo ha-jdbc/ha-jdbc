@@ -102,7 +102,7 @@ public class DumpRestoreSynchronizationStrategy implements SynchronizationStrate
 		}
 		catch (Exception e)
 		{
-			throw ExceptionType.getExceptionFactory(SQLException.class).createException(e);
+			throw ExceptionType.SQL.<SQLException>getExceptionFactory().createException(e);
 		}
 	}
 	

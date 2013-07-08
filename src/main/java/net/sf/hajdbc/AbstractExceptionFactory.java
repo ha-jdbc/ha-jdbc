@@ -35,6 +35,18 @@ public abstract class AbstractExceptionFactory<E extends Exception> implements E
 		this.targetClass = targetClass;
 	}
 
+	@Override
+	public Class<E> getTargetClass()
+	{
+		return this.targetClass;
+	}
+
+	@Override
+	public ExceptionType getType()
+	{
+		return ExceptionType.valueOf(this.targetClass);
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.ExceptionFactory#createException(java.lang.Throwable)

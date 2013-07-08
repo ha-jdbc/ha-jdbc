@@ -23,9 +23,10 @@ import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.ExceptionType;
 import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.durability.Durability.Phase;
-
 import static org.junit.Assert.*;
+
 import org.junit.Test;
+
 import static org.mockito.Mockito.*;
 
 /**
@@ -34,6 +35,12 @@ import static org.mockito.Mockito.*;
 public class XAExceptionFactoryTest
 {
 	private final ExceptionFactory<XAException> factory = new XAExceptionFactory();
+	
+	@Test
+	public void getTargetClass()
+	{
+		assertSame(XAException.class, this.factory.getTargetClass());
+	}
 	
 	@Test
 	public void createExceptionFromMessage()

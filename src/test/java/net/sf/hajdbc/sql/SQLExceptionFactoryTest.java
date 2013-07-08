@@ -38,6 +38,12 @@ public class SQLExceptionFactoryTest
 	private final ExceptionFactory<SQLException> factory = new SQLExceptionFactory();
 	
 	@Test
+	public void getTargetClass()
+	{
+		assertSame(SQLException.class, this.factory.getTargetClass());
+	}
+	
+	@Test
 	public void createExceptionFromMessage()
 	{
 		String message = "message";

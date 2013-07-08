@@ -54,7 +54,7 @@ public abstract class AbstractProxyFactory<Z, D extends Database<Z>, TE extends 
 	protected AbstractProxyFactory(Map<D, T> map, Class<E> exceptionClass)
 	{
 		this.map = map;
-		this.exceptionFactory = ExceptionType.getExceptionFactory(exceptionClass);
+		this.exceptionFactory = ExceptionType.valueOf(exceptionClass).getExceptionFactory();
 	}
 
 	/**

@@ -1,3 +1,0 @@
-net.sf.hajdbc.sql.SQLExceptionFactory
-net.sf.hajdbc.sql.io.IOExceptionFactory
-net.sf.hajdbc.sql.xa.XAExceptionFactory

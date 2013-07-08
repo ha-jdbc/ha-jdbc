@@ -526,7 +526,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 			}
 			catch (ExecutionException e)
 			{
-				throw ExceptionType.getExceptionFactory(SQLException.class).createException(e.getCause());
+				throw ExceptionType.SQL.<SQLException>getExceptionFactory().createException(e.getCause());
 			}
 			finally
 			{

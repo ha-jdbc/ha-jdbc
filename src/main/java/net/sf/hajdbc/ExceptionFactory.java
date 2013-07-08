@@ -28,6 +28,8 @@ import net.sf.hajdbc.durability.Durability;
  */
 public interface ExceptionFactory<E extends Exception> extends Serializable
 {
+	Class<E> getTargetClass();
+	
 	E createException(Throwable e);
 	
 	E createException(String message);

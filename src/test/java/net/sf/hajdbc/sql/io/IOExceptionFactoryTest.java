@@ -22,6 +22,12 @@ public class IOExceptionFactoryTest
 	private final ExceptionFactory<IOException> factory = new IOExceptionFactory();
 	
 	@Test
+	public void getTargetClass()
+	{
+		assertSame(IOException.class, this.factory.getTargetClass());
+	}
+	
+	@Test
 	public void createExceptionFromMessage()
 	{
 		String message = "message";

@@ -80,7 +80,7 @@ public final class Driver extends AbstractDriver
 			return timeout;
 		}
 	};
-	private static final Registry<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException> registry = new LifecycleRegistry<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException>(registryFactory, new MapRegistryStoreFactory<String>(), ExceptionType.getExceptionFactory(SQLException.class));
+	private static final Registry<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException> registry = new LifecycleRegistry<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException>(registryFactory, new MapRegistryStoreFactory<String>(), ExceptionType.SQL.<SQLException>getExceptionFactory());
 
 	static
 	{

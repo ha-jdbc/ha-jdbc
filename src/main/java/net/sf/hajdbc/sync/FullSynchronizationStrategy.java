@@ -194,7 +194,7 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy, Tab
 			}
 			catch (ExecutionException e)
 			{
-				throw ExceptionType.getExceptionFactory(SQLException.class).createException(e.getCause());
+				throw ExceptionType.SQL.<SQLException>getExceptionFactory().createException(e.getCause());
 			}
 			catch (InterruptedException e)
 			{

@@ -324,5 +324,11 @@ public class RegistryTest
 		{
 			return false;
 		}
+
+		@Override
+		public Class<Exception> getTargetClass()
+		{
+			return Exception.class;
+		}
 	}
 }
