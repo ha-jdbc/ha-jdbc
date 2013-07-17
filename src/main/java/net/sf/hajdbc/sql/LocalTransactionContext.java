@@ -97,9 +97,11 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 				}
 				catch (Throwable e)
 				{
-					LocalTransactionContext.this.unlock();
-					
 					throw proxy.getExceptionFactory().createException(e);
+				} 
+				finally 
+				{
+					LocalTransactionContext.this.unlock();
 				}
 			}
 		};
