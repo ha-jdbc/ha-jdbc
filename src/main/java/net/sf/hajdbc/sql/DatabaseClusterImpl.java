@@ -20,6 +20,7 @@ package net.sf.hajdbc.sql;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -315,7 +316,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	@ManagedAttribute
 	public Set<String> getSynchronizationStrategies()
 	{
-		return this.configuration.getSynchronizationStrategyMap().keySet();
+		return new HashSet<String>(this.configuration.getSynchronizationStrategyMap().keySet());
 	}
 	
 	/**
