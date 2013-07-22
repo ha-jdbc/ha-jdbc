@@ -315,7 +315,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	@ManagedAttribute
 	public Set<String> getSynchronizationStrategies()
 	{
-		return this.configuration.getSynchronizationStrategyMap().keySet();
+		return new TreeSet<String>(this.configuration.getSynchronizationStrategyMap().keySet());
 	}
 	
 	/**
