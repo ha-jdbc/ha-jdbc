@@ -42,7 +42,7 @@ public class StandardQualifiedNameFactory implements QualifiedNameFactory
 	@Override
 	public QualifiedName createQualifiedName(String schema, String name)
 	{
-		return new StandardQualifiedName(this.normalizer.normalize(schema), this.normalizer.normalize(name), this.supportsSchemasInDDL, this.supportsSchemasInDML);
+		return new StandardQualifiedName(schema, this.normalizer.normalize(schema), this.normalizer.normalize(name), this.supportsSchemasInDDL, this.supportsSchemasInDML);
 	}
 
 	@Override
@@ -66,12 +66,12 @@ public class StandardQualifiedNameFactory implements QualifiedNameFactory
 		private final String ddlName;
 		private final String dmlName;
 		
-		StandardQualifiedName(String schema, String name, boolean supportsSchemasInDDL, boolean supportsSchemasInDML)
+		StandardQualifiedName(String schema, String normalizedSchema, String name, boolean supportsSchemasInDDL, boolean supportsSchemasInDML)
 		{
 			super(name);
 			this.schema = schema;
-			this.ddlName = this.qualify(supportsSchemasInDDL);
-			this.dmlName = (supportsSchemasInDDL == supportsSchemasInDML) ? this.ddlName : this.qualify(supportsSchemasInDML);
+			this.ddlName = this.qualify(normalizedSchema, supportsSchemasInDDL);
+			this.dmlName = (supportsSchemasInDDL == supportsSchemasInDML) ? this.ddlName : this.qualify(normalizedSchema,supportsSchemasInDML);
 		}
 
 		@Override
@@ -92,9 +92,9 @@ public class StandardQualifiedNameFactory implements QualifiedNameFactory
 			return this.dmlName;
 		}
 
-		private String qualify(boolean supportsSchemas)
+		private String qualify(String normalizedSchema, boolean supportsSchemas)
 		{
-			return (supportsSchemas && (this.schema != null)) ? new StringBuilder(this.schema).append(Strings.DOT).append(this.getName()).toString() : this.getName();
+			return (supportsSchemas && (normalizedSchema != null)) ? new StringBuilder(normalizedSchema).append(Strings.DOT).append(this.getName()).toString() : this.getName();
 		}
 	}
 }
