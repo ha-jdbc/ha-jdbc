@@ -177,7 +177,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 	 * @see net.sf.hajdbc.distributed.Stateful#readState(java.io.ObjectInput)
 	 */
 	@Override
-	public void readState(ObjectInput input) throws IOException, ClassNotFoundException
+	public void readState(ObjectInput input) throws IOException
 	{
 		// Is this valid?  or should we unlock/clear?
 		//assert this.remoteLockDescriptorMap.isEmpty();

@@ -30,7 +30,7 @@ public class GenericObjectPoolConfiguration
 
 	public GenericObjectPool.Config toConfig()
 	{
-		return config;
+		return this.config;
 	}
 	public int getMaxIdle()
 	{

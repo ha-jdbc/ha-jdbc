@@ -33,7 +33,6 @@ public class CommonDataSourceFactory<Z extends javax.sql.CommonDataSource, D ext
 		
 		if (!targetClass.isAssignableFrom(CommonDataSource.class)) return null;
 		
-		@SuppressWarnings("unchecked")
 		CommonDataSource<Z, D, F> result = targetClass.asSubclass(CommonDataSource.class).newInstance();
 		
 		RefAddr clusterAddr = reference.get(CLUSTER);

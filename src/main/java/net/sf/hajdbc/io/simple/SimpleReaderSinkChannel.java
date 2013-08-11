@@ -48,7 +48,7 @@ public class SimpleReaderSinkChannel implements InputSinkChannel<Reader, byte[]>
 	}
 
 	@Override
-	public Reader read(byte[] sink) throws IOException
+	public Reader read(byte[] sink)
 	{
 		return new InputStreamReader(new ByteArrayInputStream(sink));
 	}

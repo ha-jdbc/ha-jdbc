@@ -44,7 +44,7 @@ public class DatabaseMetaDataInvocationHandler<Z, D extends Database<Z>> extends
 	}
 
 	@Override
-	protected InvocationStrategy getInvocationStrategy(DatabaseMetaData metaData, Method method, Object... parameters) throws SQLException
+	protected InvocationStrategy getInvocationStrategy(DatabaseMetaData metaData, Method method, Object... parameters)
 	{
 		if (databaseReadMethodSet.contains(method))
 		{

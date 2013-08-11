@@ -912,13 +912,13 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		}
 
 		@Override
-		public T unmarshal(final String value) throws Exception
+		public T unmarshal(final String value)
 		{
 			return ServiceLoaders.findRequiredService(new IdentifiableMatcher<T>(value), this.serviceClass);
 		}
 
 		@Override
-		public String marshal(T service) throws Exception
+		public String marshal(T service)
 		{
 			return service.getId();
 		}
@@ -960,13 +960,13 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	static abstract class EnumAdapter<I, E extends I> extends XmlAdapter<E, I>
 	{
 		@Override
-		public I unmarshal(E enumerated) throws Exception
+		public I unmarshal(E enumerated)
 		{
 			return enumerated;
 		}
 		
 		@Override
-		public E marshal(I object) throws Exception
+		public E marshal(I object)
 		{
 			return this.getTargetClass().cast(object);
 		}
@@ -1011,11 +1011,13 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		@XmlAttribute(name = "id", required = false)
 		private String id = "jgroups";
 		
+		@Override
 		public String getId()
 		{
 			return this.id;
 		}
 		
+		@Override
 		public void setId(String id)
 		{
 			this.id = id;
@@ -1037,11 +1039,13 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		@XmlAttribute(name = "id", required = true)
 		private String id;
 		
+		@Override
 		public String getId()
 		{
 			return this.id;
 		}
 		
+		@Override
 		public void setId(String id)
 		{
 			this.id = id;
@@ -1062,11 +1066,13 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		@XmlAttribute(name = "id", required = true)
 		private String id;
 		
+		@Override
 		public String getId()
 		{
 			return this.id;
 		}
 		
+		@Override
 		public void setId(String id)
 		{
 			this.id = id;
@@ -1087,11 +1093,13 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		@XmlAttribute(name = "id", required = true)
 		private String id;
 		
+		@Override
 		public String getId()
 		{
 			return this.id;
 		}
 		
+		@Override
 		public void setId(String id)
 		{
 			this.id = id;

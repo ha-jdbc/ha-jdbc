@@ -44,7 +44,7 @@ public class SimpleInputStreamSinkChannel implements InputSinkChannel<InputStrea
 	}
 
 	@Override
-	public InputStream read(byte[] sink) throws IOException
+	public InputStream read(byte[] sink)
 	{
 		return new ByteArrayInputStream(sink);
 	}

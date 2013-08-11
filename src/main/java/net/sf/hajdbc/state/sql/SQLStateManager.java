@@ -602,9 +602,9 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 			
 			try
 			{
-				this.createTableIfNotExists(statement, properties, STATE_TABLE, CREATE_STATE_SQL, stringType);
-				this.createTableIfNotExists(statement, properties, INVOCATION_TABLE, CREATE_INVOCATION_SQL, binaryType, enumType, enumType);
-				this.createTableIfNotExists(statement, properties, INVOKER_TABLE, CREATE_INVOKER_SQL, binaryType, enumType, stringType, varBinaryType);
+				createTableIfNotExists(statement, properties, STATE_TABLE, CREATE_STATE_SQL, stringType);
+				createTableIfNotExists(statement, properties, INVOCATION_TABLE, CREATE_INVOCATION_SQL, binaryType, enumType, enumType);
+				createTableIfNotExists(statement, properties, INVOKER_TABLE, CREATE_INVOKER_SQL, binaryType, enumType, stringType, varBinaryType);
 
 				if (Boolean.getBoolean(StateManager.CLEAR_LOCAL_STATE))
 				{
@@ -622,7 +622,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 		}
 	}
 
-	private void createTableIfNotExists(Statement statement, DatabaseProperties properties, String table, String pattern, String... types) throws SQLException
+	private static void createTableIfNotExists(Statement statement, DatabaseProperties properties, String table, String pattern, String... types) throws SQLException
 	{
 		if (properties.findTable(table) == null)
 		{

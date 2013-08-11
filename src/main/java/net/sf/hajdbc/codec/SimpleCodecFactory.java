@@ -17,8 +17,6 @@
  */
 package net.sf.hajdbc.codec;
 
-import java.sql.SQLException;
-
 
 /**
  * Trivial codec that does nothing
@@ -39,7 +37,7 @@ public class SimpleCodecFactory extends AbstractCodec
 	 * @see net.sf.hajdbc.codec.Codec#decode(java.lang.String)
 	 */
 	@Override
-	public String decode(String value) throws SQLException
+	public String decode(String value)
 	{
 		return value;
 	}
@@ -49,7 +47,7 @@ public class SimpleCodecFactory extends AbstractCodec
 	 * @see net.sf.hajdbc.codec.Codec#encode(java.lang.String)
 	 */
 	@Override
-	public String encode(String value) throws SQLException
+	public String encode(String value)
 	{
 		return value;
 	}

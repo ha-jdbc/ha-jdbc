@@ -275,7 +275,7 @@ public class SynchronousExecutor extends AbstractExecutorService
 	 * @see java.util.concurrent.AbstractExecutorService#invokeAny(java.util.Collection, long, java.util.concurrent.TimeUnit)
 	 */
 	@Override
-	public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException
+	public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException
 	{
 		return this.getAny(this.invokeAll(tasks, timeout, unit));
 	}
@@ -363,7 +363,7 @@ public class SynchronousExecutor extends AbstractExecutorService
 			
 			if (this.exception != null)
 			{
-				throw exception;
+				throw this.exception;
 			}
 			
 			return this.result;

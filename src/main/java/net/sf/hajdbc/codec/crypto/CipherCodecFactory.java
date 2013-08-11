@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.sql.SQLException;
@@ -66,7 +65,7 @@ import net.sf.hajdbc.util.SystemProperties;
  * </table>
  * @author Paul Ferraro
  */
-public class CipherCodecFactory implements CodecFactory, Serializable
+public class CipherCodecFactory implements CodecFactory
 {
 	private static final long serialVersionUID = -4409167180573651279L;
 	
@@ -93,7 +92,7 @@ public class CipherCodecFactory implements CodecFactory, Serializable
 		}
 	}
 	
-	private String getProperty(String id, Property property)
+	private static String getProperty(String id, Property property)
 	{
 		String value = SystemProperties.getSystemProperty(MessageFormat.format(property.nameFormat, id));
 		
@@ -119,12 +118,12 @@ public class CipherCodecFactory implements CodecFactory, Serializable
 	@Override
 	public Codec createCodec(String clusterId) throws SQLException
 	{
-		String type = this.getProperty(clusterId, Property.KEYSTORE_TYPE);
-		File file = new File(this.getProperty(clusterId, Property.KEYSTORE_FILE));
-		String password = this.getProperty(clusterId, Property.KEYSTORE_PASSWORD);
+		String type = getProperty(clusterId, Property.KEYSTORE_TYPE);
+		File file = new File(getProperty(clusterId, Property.KEYSTORE_FILE));
+		String password = getProperty(clusterId, Property.KEYSTORE_PASSWORD);
 
-		String keyAlias = this.getProperty(clusterId, Property.KEY_ALIAS);
-		String keyPassword = this.getProperty(clusterId, Property.KEY_PASSWORD);
+		String keyAlias = getProperty(clusterId, Property.KEY_ALIAS);
+		String keyPassword = getProperty(clusterId, Property.KEY_PASSWORD);
 		
 		try
 		{

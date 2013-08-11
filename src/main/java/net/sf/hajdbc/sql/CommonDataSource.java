@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import javax.naming.BinaryRefAddr;
-import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.Referenceable;
 import javax.naming.StringRefAddr;
@@ -234,7 +233,7 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 	}
 
 	@Override
-	public Reference getReference() throws NamingException
+	public Reference getReference()
 	{
 		Reference reference = new Reference(this.getClass().getName(), CommonDataSourceFactory.class.getName(), null);
 		reference.add(new StringRefAddr(CommonDataSourceFactory.CLUSTER, this.cluster));

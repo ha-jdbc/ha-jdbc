@@ -17,7 +17,6 @@
  */
 package net.sf.hajdbc.sync;
 
-import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -63,11 +62,11 @@ import net.sf.hajdbc.util.Strings;
  * </ol>
  * @author  Paul Ferraro
  */
-public class FullSynchronizationStrategy implements SynchronizationStrategy, TableSynchronizationStrategy, Serializable
+public class FullSynchronizationStrategy implements SynchronizationStrategy, TableSynchronizationStrategy
 {
 	private static final long serialVersionUID = 9190347092842178162L;
 
-	private static Logger logger = LoggerFactory.getLogger(FullSynchronizationStrategy.class);
+	static Logger logger = LoggerFactory.getLogger(FullSynchronizationStrategy.class);
 
 	private SynchronizationStrategy strategy = new PerTableSynchronizationStrategy(this);
 	private int maxBatchSize = 100;

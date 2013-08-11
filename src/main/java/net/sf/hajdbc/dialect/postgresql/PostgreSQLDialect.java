@@ -218,7 +218,7 @@ public class PostgreSQLDialect extends StandardDialect implements DumpRestoreSup
 	@Override
 	public ProcessBuilder createDumpProcess(ConnectionProperties properties, File file)
 	{
-		return this.setPassword(new ProcessBuilder("pg_dump", "-h", properties.getHost(), "-p", properties.getPort(), "-U", properties.getUser(), "-f", file.getPath(), "-F", "tar", properties.getDatabase()), properties);
+		return setPassword(new ProcessBuilder("pg_dump", "-h", properties.getHost(), "-p", properties.getPort(), "-U", properties.getUser(), "-f", file.getPath(), "-F", "tar", properties.getDatabase()), properties);
 	}
 
 	/**
@@ -228,10 +228,10 @@ public class PostgreSQLDialect extends StandardDialect implements DumpRestoreSup
 	@Override
 	public ProcessBuilder createRestoreProcess(ConnectionProperties properties, File file)
 	{
-		return this.setPassword(new ProcessBuilder("pg_restore", "-h", properties.getHost(), "-p", properties.getPort(), "-U", properties.getUser(), "-d", properties.getDatabase(), file.getPath()), properties);
+		return setPassword(new ProcessBuilder("pg_restore", "-h", properties.getHost(), "-p", properties.getPort(), "-U", properties.getUser(), "-d", properties.getDatabase(), file.getPath()), properties);
 	}
 	
-	private ProcessBuilder setPassword(ProcessBuilder builder, ConnectionProperties properties)
+	private static ProcessBuilder setPassword(ProcessBuilder builder, ConnectionProperties properties)
 	{
 		if (!PASSWORD_FILE.exists())
 		{

@@ -17,8 +17,6 @@
  */
 package net.sf.hajdbc;
 
-import java.sql.SQLException;
-
 /**
  * @author Paul Ferraro
  */
@@ -38,7 +36,7 @@ public class SimpleDatabaseClusterConfigurationFactory<Z, D extends Database<Z>>
 	 * @see net.sf.hajdbc.DatabaseClusterConfigurationFactory#createConfiguration()
 	 */
 	@Override
-	public DatabaseClusterConfiguration<Z, D> createConfiguration() throws SQLException
+	public DatabaseClusterConfiguration<Z, D> createConfiguration()
 	{
 		return this.configuration;
 	}

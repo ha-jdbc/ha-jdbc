@@ -226,7 +226,7 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 	 * @see net.sf.hajdbc.distributed.Stateful#readState(java.io.ObjectInput)
 	 */
 	@Override
-	public void readState(ObjectInput input) throws IOException, ClassNotFoundException
+	public void readState(ObjectInput input) throws IOException
 	{
 		if (input.available() > 0)
 		{

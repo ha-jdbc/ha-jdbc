@@ -54,7 +54,7 @@ public abstract class AbstractDatabaseProperties implements DatabaseProperties
 	 * @see net.sf.hajdbc.DatabaseProperties#supportsSelectForUpdate()
 	 */
 	@Override
-	public final boolean supportsSelectForUpdate() throws SQLException
+	public final boolean supportsSelectForUpdate()
 	{
 		return this.supportsSelectForUpdate;
 	}
@@ -64,7 +64,7 @@ public abstract class AbstractDatabaseProperties implements DatabaseProperties
 	 * @see net.sf.hajdbc.DatabaseProperties#locatorsUpdateCopy()
 	 */
 	@Override
-	public boolean locatorsUpdateCopy() throws SQLException
+	public boolean locatorsUpdateCopy()
 	{
 		return this.locatorsUpdateCopy;
 	}
@@ -109,7 +109,7 @@ public abstract class AbstractDatabaseProperties implements DatabaseProperties
 		return this.find(this.sequences(), sequence, this.defaultSchemas());
 	}
 	
-	private <T> T find(Map<QualifiedName, T> map, String raw, List<String> defaultSchemaList) throws SQLException
+	private <T> T find(Map<QualifiedName, T> map, String raw, List<String> defaultSchemaList)
 	{
 		QualifiedName name = this.nameFactory.parse(raw);
 

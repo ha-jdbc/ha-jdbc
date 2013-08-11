@@ -59,11 +59,11 @@ public class SQLStateManagerFactory extends GenericObjectPoolConfiguration imple
 		}
 	}
 	
-	private String urlPattern = this.defaultUrlPattern();
+	private String urlPattern = defaultUrlPattern();
 	private String user;
 	private String password;
 	
-	private String defaultUrlPattern()
+	private static String defaultUrlPattern()
 	{
 		for (EmbeddedVendor vendor: EmbeddedVendor.values())
 		{
