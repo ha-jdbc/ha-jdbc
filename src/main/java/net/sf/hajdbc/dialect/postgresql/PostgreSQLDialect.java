@@ -25,18 +25,19 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.ConnectionProperties;
 import net.sf.hajdbc.DumpRestoreSupport;
-import net.sf.hajdbc.IdentifierNormalizer;
 import net.sf.hajdbc.IdentityColumnSupport;
 import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.TriggerSupport;
 import net.sf.hajdbc.dialect.StandardDialect;
-import net.sf.hajdbc.dialect.StandardIdentifierNormalizer;
 import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.Strings;
 
@@ -48,6 +49,30 @@ import net.sf.hajdbc.util.Strings;
 @SuppressWarnings("nls")
 public class PostgreSQLDialect extends StandardDialect implements DumpRestoreSupport
 {
+	// Taken from: http://www.postgresql.org/docs/9.2/static/sql-keywords-appendix.html
+	public static final String[] RESERVED_KEY_WORDS = new String[] {
+		"ALL", "ANALYSE", "ANALYZE", "AND", "ANY", "ARRAY", "AS", "ASC", "ASYMMETRIC", "AUTHORIZATION",
+		"BINARY", "BOTH",
+		"CASE", "CAST", "CHECK", "COLLATE", "COLLATION", "COLUMN", "CONCURRENTLY", "CONSTRAINT", "CREATE", "CROSS", "CURRENT_CATALOG", "CURRENT_DATE", "CURRENT_ROLE", "CURRENT_SCHEMA", "CURRENT_TIME", "CURRENT_TIMESTAMP", "CURRENT_USER",
+		"DEFAULT", "DEFERRABLE", "DESC", "DISTINCT", "DO",
+		"ELSE", "END", "EXCEPT",
+		"FALSE", "FETCH", "FOR", "FOREIGN", "FREEZE", "FROM", "FULL",
+		"GRANT", "GROUP",
+		"HAVING",
+		"ILIKE", "IN", "INITIALLY", "INNER", "INTERSECT", "INTO", "IS", "ISNULL",
+		"JOIN",
+		"LEADING", "LEFT", "LIKE", "LIMIT", "LOCALTIME", "LOCALTIMESTAMP",
+		"NATURAL", "NOT", "NOTNULL", "NULL",
+		"OFFSET", "ON", "ONLY", "OR", "ORDER", "OUTER", "OVER", "OVERLAPS",
+		"PLACING", "PRIMARY",
+		"REFERENCES", "RETURNING", "RIGHT",
+		"SELECT", "SESSION_USER", "SIMILAR", "SOME", "SYMMETRIC",
+		"TABLE", "THEN", "TO", "TRAILING", "TRUE",
+		"UNION", "UNIQUE", "USER", "USING",
+		"VARIADIC", "VERBOSE",
+		"WHEN", "WHERE", "WINDOW", "WITH",
+	};
+
 	private static final File PASSWORD_FILE = new File(String.format("%s%s.pgpass", Strings.USER_HOME, Strings.FILE_SEPARATOR));
 	
 	/**
@@ -107,14 +132,19 @@ public class PostgreSQLDialect extends StandardDialect implements DumpRestoreSup
 	}
 
 	@Override
-	public IdentifierNormalizer createIdentifierNormalizer(DatabaseMetaData metaData) throws SQLException
+	protected Pattern identifierPattern(DatabaseMetaData metaData) throws SQLException
 	{
 		if ((metaData.getDriverMajorVersion() >= 8) && (metaData.getDriverMinorVersion() >= 1))
 		{
-			return new StandardIdentifierNormalizer(metaData, Pattern.compile("[A-Za-z\\0200-\\0377_][A-Za-z\\0200-\\0377_0-9\\$]*"));
+			return Pattern.compile("[A-Za-z\\0200-\\0377_][A-Za-z\\0200-\\0377_0-9\\$]*");
 		}
-		
-		return super.createIdentifierNormalizer(metaData);
+		return super.identifierPattern(metaData);
+	}
+
+	@Override
+	protected Set<String> reservedIdentifiers(DatabaseMetaData metaData)
+	{
+		return new HashSet<String>(Arrays.asList(RESERVED_KEY_WORDS));
 	}
 
 	/**
