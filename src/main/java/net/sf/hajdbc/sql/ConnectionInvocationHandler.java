@@ -219,7 +219,6 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ch
 		}
 		else if (method.equals(releaseSavepointMethod))
 		{
-			@SuppressWarnings("unchecked")
 			SavepointInvocationHandler<Z, D> handler = (SavepointInvocationHandler<Z, D>) Proxy.getInvocationHandler(parameters[0]);
 			this.getProxyFactory().removeChild(handler.getProxyFactory());
 		}

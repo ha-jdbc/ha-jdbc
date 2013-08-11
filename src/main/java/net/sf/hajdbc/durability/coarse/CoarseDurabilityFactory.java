@@ -17,8 +17,6 @@
  */
 package net.sf.hajdbc.durability.coarse;
 
-import java.io.Serializable;
-
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.durability.Durability;
@@ -28,7 +26,7 @@ import net.sf.hajdbc.durability.DurabilityFactory;
  * Factory for creating a {@link CoarseDurability}.
  * @author Paul Ferraro
  */
-public class CoarseDurabilityFactory implements DurabilityFactory, Serializable
+public class CoarseDurabilityFactory implements DurabilityFactory
 {
 	private static final long serialVersionUID = -24045976334856435L;
 

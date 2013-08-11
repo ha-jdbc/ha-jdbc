@@ -17,7 +17,6 @@
  */
 package net.sf.hajdbc.balancer.roundrobin;
 
-import java.io.Serializable;
 import java.util.Set;
 
 import net.sf.hajdbc.Database;
@@ -28,7 +27,7 @@ import net.sf.hajdbc.balancer.BalancerFactory;
  * Factory for creating a {@link RoundRobinBalancer}.
  * @author Paul Ferraro
  */
-public class RoundRobinBalancerFactory implements BalancerFactory, Serializable
+public class RoundRobinBalancerFactory implements BalancerFactory
 {
 	private static final long serialVersionUID = 9003494431296713142L;
 

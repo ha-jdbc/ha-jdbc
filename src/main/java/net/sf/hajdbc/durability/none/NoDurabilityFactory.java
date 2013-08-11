@@ -17,8 +17,6 @@
  */
 package net.sf.hajdbc.durability.none;
 
-import java.io.Serializable;
-
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.durability.Durability;
@@ -28,7 +26,7 @@ import net.sf.hajdbc.durability.DurabilityFactory;
  * Factory for creating a {@link NoDurability}.
  * @author Paul Ferraro
  */
-public class NoDurabilityFactory implements DurabilityFactory, Serializable
+public class NoDurabilityFactory implements DurabilityFactory
 {
 	private static final long serialVersionUID = 926923658169838006L;
 

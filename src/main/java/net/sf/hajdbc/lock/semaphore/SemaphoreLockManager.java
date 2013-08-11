@@ -169,7 +169,7 @@ public class SemaphoreLockManager implements LockManager
 	 * @see net.sf.hajdbc.Lifecycle#start()
 	 */
 	@Override
-	public void start() throws Exception
+	public void start()
 	{
 		// Do nothing
 	}

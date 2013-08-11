@@ -196,6 +196,7 @@ import java.util.TreeSet;
  * @author Contributions from Mads Henderson
  * @author Refactoring from CronTrigger to CronExpression by Aaron Craven
  */
+@SuppressWarnings({ "cast", "unqualified-field-access", "unused" })
 public class CronExpression implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 12423409423L;
@@ -353,7 +354,7 @@ public class CronExpression implements Serializable, Cloneable {
      * Returns the time zone for which this <code>CronExpression</code> 
      * will be resolved.
      */
-    public TimeZone getTimeZone() {
+	public TimeZone getTimeZone() {
         if (timeZone == null) {
             timeZone = TimeZone.getDefault();
         }

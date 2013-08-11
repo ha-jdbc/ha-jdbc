@@ -52,7 +52,7 @@ public class LazyDatabaseMetaDataCache<Z, D extends Database<Z>> implements Data
 	 * @see net.sf.hajdbc.cache.DatabaseMetaDataCache#flush()
 	 */
 	@Override
-	public void flush() throws SQLException
+	public void flush()
 	{
 		synchronized (this.map)
 		{

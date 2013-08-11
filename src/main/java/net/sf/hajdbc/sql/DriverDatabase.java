@@ -53,7 +53,7 @@ public class DriverDatabase extends AbstractDatabase<Driver>
 	@Override
 	public void setLocation(String location)
 	{
-		this.getDriver(location);
+		getDriver(location);
 
 		super.setLocation(location);
 	}
@@ -90,7 +90,7 @@ public class DriverDatabase extends AbstractDatabase<Driver>
 	@Override
 	public Driver createConnectionSource()
 	{
-		return this.getDriver(this.getLocation());
+		return getDriver(this.getLocation());
 	}
 
 	public String parseVendor()
@@ -99,7 +99,7 @@ public class DriverDatabase extends AbstractDatabase<Driver>
 		return url.substring(5, url.indexOf(":", 5));
 	}
 
-	private Driver getDriver(String url)
+	private static Driver getDriver(String url)
 	{
 		try
 		{

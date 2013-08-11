@@ -143,7 +143,7 @@ public class H2Dialect extends StandardDialect
 	 * @see net.sf.hajdbc.dialect.StandardDialect#getDefaultSchemas(java.sql.DatabaseMetaData)
 	 */
 	@Override
-	public List<String> getDefaultSchemas(DatabaseMetaData metaData) throws SQLException
+	public List<String> getDefaultSchemas(DatabaseMetaData metaData)
 	{
 		return Collections.singletonList("PUBLIC");
 	}

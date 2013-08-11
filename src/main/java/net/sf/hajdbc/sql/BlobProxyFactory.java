@@ -46,7 +46,7 @@ public class BlobProxyFactory<Z, D extends Database<Z>, P> extends LocatorProxyF
 		}
 		catch (SQLException e)
 		{
-			logger.log(Level.INFO, e);
+			this.logger.log(Level.INFO, e);
 		}
 	}
 

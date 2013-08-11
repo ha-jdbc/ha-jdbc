@@ -94,7 +94,7 @@ public class EagerTableProperties extends AbstractTableProperties
 	 * @see net.sf.hajdbc.TableProperties#getIdentityColumns()
 	 */
 	@Override
-	public Collection<String> getIdentityColumns() throws SQLException
+	public Collection<String> getIdentityColumns()
 	{
 		return this.identityColumns;
 	}

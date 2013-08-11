@@ -148,6 +148,9 @@ public abstract class AbstractProxyFactory<Z, D extends Database<Z>, TE extends 
 		}
 	}
 	
+	/**
+	 * @throws E  
+	 */
 	@Override
 	public void replay(D database, T object) throws E
 	{

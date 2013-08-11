@@ -170,7 +170,6 @@ public class Objects
 	 * @param loader a classloader
 	 * @return a deserialized object
 	 */
-	@SuppressWarnings("unchecked")
 	public static <T> T readObject(ObjectInput input, ClassLoader loader)
 	{
 		ClassLoader originalLoader = getThreadContextClassLoader();

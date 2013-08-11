@@ -44,7 +44,7 @@ public class Base64CodecFactory extends AbstractCodec
 	 * @see net.sf.hajdbc.codec.Codec#decode(java.lang.String)
 	 */
 	@Override
-	public String decode(String value) throws SQLException
+	public String decode(String value)
 	{
 		return new String(Base64.decodeBase64(value.getBytes()));
 	}
@@ -54,7 +54,7 @@ public class Base64CodecFactory extends AbstractCodec
 	 * @see net.sf.hajdbc.codec.Codec#encode(java.lang.String)
 	 */
 	@Override
-	public String encode(String value) throws SQLException
+	public String encode(String value)
 	{
 		return new String(Base64.encodeBase64(value.getBytes()));
 	}

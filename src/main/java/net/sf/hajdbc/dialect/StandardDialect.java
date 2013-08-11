@@ -69,13 +69,13 @@ import net.sf.hajdbc.util.Strings;
  */
 public class StandardDialect implements Dialect, SequenceSupport, IdentityColumnSupport, TriggerSupport
 {
-	private final Pattern selectForUpdatePattern = this.compile(this.selectForUpdatePattern());
-	private final Pattern insertIntoTablePattern = this.compile(this.insertIntoTablePattern());
-	private final Pattern sequencePattern = this.compile(this.sequencePattern());
-	private final Pattern currentTimestampPattern = this.compile(this.currentTimestampPattern());
-	private final Pattern currentDatePattern = this.compile(this.currentDatePattern());
-	private final Pattern currentTimePattern = this.compile(this.currentTimePattern());
-	private final Pattern randomPattern = this.compile(this.randomPattern());
+	private final Pattern selectForUpdatePattern = compile(this.selectForUpdatePattern());
+	private final Pattern insertIntoTablePattern = compile(this.insertIntoTablePattern());
+	private final Pattern sequencePattern = compile(this.sequencePattern());
+	private final Pattern currentTimestampPattern = compile(this.currentTimestampPattern());
+	private final Pattern currentDatePattern = compile(this.currentDatePattern());
+	private final Pattern currentTimePattern = compile(this.currentTimePattern());
+	private final Pattern randomPattern = compile(this.randomPattern());
 	private final Pattern urlPattern = Pattern.compile(String.format("jdbc:%s:%s", this.vendorPattern(), this.locatorPattern()));
 	
 	protected String vendorPattern()
@@ -88,7 +88,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 		return "//(^\\:+):(\\d+)/(^\\?+)(?:\\?.*)?";
 	}
 	
-	private Pattern compile(String pattern)
+	private static Pattern compile(String pattern)
 	{
 		return Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
 	}
@@ -390,7 +390,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	}
 
 	@Override
-	public String getAlterIdentityColumnSQL(TableProperties table, ColumnProperties column, long value) throws SQLException
+	public String getAlterIdentityColumnSQL(TableProperties table, ColumnProperties column, long value)
 	{
 		return MessageFormat.format(this.alterIdentityColumnFormat(), table.getName().getDDLName(), column.getName(), String.valueOf(value));
 	}
@@ -414,7 +414,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	@Override
 	public String evaluateCurrentDate(String sql, java.sql.Date date)
 	{
-		return this.evaluateTemporal(sql, this.currentDatePattern, date, this.dateLiteralFormat());
+		return evaluateTemporal(sql, this.currentDatePattern, date, this.dateLiteralFormat());
 	}
 	
 	protected String dateLiteralFormat()
@@ -429,7 +429,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	@Override
 	public String evaluateCurrentTime(String sql, java.sql.Time time)
 	{
-		return this.evaluateTemporal(sql, this.currentTimePattern, time, this.timeLiteralFormat());
+		return evaluateTemporal(sql, this.currentTimePattern, time, this.timeLiteralFormat());
 	}
 	
 	protected String timeLiteralFormat()
@@ -444,7 +444,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	@Override
 	public String evaluateCurrentTimestamp(String sql, java.sql.Timestamp timestamp)
 	{
-		return this.evaluateTemporal(sql, this.currentTimestampPattern, timestamp, this.timestampLiteralFormat());
+		return evaluateTemporal(sql, this.currentTimestampPattern, timestamp, this.timestampLiteralFormat());
 	}
 	
 	protected String timestampLiteralFormat()
@@ -452,7 +452,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 		return "TIMESTAMP ''{0}''";
 	}
 
-	private String evaluateTemporal(String sql, Pattern pattern, java.util.Date date, String format)
+	private static String evaluateTemporal(String sql, Pattern pattern, java.util.Date date, String format)
 	{
 		return pattern.matcher(sql).replaceAll(MessageFormat.format(format, date.toString()));
 	}
@@ -677,7 +677,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	@Override
 	public Collection<QualifiedName> getTables(DatabaseMetaData metaData, QualifiedNameFactory factory) throws SQLException
 	{
-		ResultSet resultSet = metaData.getTables(this.getCatalog(metaData), null, Strings.ANY, new String[] { "TABLE" });
+		ResultSet resultSet = metaData.getTables(getCatalog(metaData), null, Strings.ANY, new String[] { "TABLE" });
 		
 		try
 		{
@@ -743,7 +743,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	@Override
 	public UniqueConstraint getPrimaryKey(DatabaseMetaData metaData, QualifiedName table, UniqueConstraintFactory factory) throws SQLException
 	{
-		ResultSet resultSet = metaData.getPrimaryKeys(this.getCatalog(metaData), table.getSchema(), table.getName());
+		ResultSet resultSet = metaData.getPrimaryKeys(getCatalog(metaData), table.getSchema(), table.getName());
 		
 		try
 		{
@@ -777,7 +777,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	@Override
 	public Collection<ForeignKeyConstraint> getForeignKeyConstraints(DatabaseMetaData metaData, QualifiedName table, ForeignKeyConstraintFactory factory) throws SQLException
 	{
-		ResultSet resultSet = metaData.getImportedKeys(this.getCatalog(metaData), table.getSchema(), table.getName());
+		ResultSet resultSet = metaData.getImportedKeys(getCatalog(metaData), table.getSchema(), table.getName());
 		
 		try
 		{
@@ -819,7 +819,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	@Override
 	public Collection<UniqueConstraint> getUniqueConstraints(DatabaseMetaData metaData, QualifiedName table, UniqueConstraint primaryKey, UniqueConstraintFactory factory) throws SQLException
 	{
-		ResultSet resultSet = metaData.getIndexInfo(this.getCatalog(metaData), table.getSchema(), table.getName(), true, false);
+		ResultSet resultSet = metaData.getIndexInfo(getCatalog(metaData), table.getSchema(), table.getName(), true, false);
 		
 		try
 		{
@@ -854,7 +854,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 		}
 	}
 	
-	private String getCatalog(DatabaseMetaData metaData) throws SQLException
+	private static String getCatalog(DatabaseMetaData metaData) throws SQLException
 	{
 		String catalog = metaData.getConnection().getCatalog();
 		

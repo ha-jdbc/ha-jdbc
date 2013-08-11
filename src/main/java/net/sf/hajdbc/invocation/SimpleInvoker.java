@@ -56,7 +56,7 @@ public class SimpleInvoker<Z, D extends Database<Z>, T, R, E extends Exception> 
 	@Override
 	public int hashCode()
 	{
-		return method.hashCode();
+		return this.method.hashCode();
 	}
 
 	@Override

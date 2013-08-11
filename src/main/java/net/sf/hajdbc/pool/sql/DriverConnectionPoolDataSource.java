@@ -21,7 +21,6 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
 import java.util.logging.Logger;
 
 import javax.sql.ConnectionPoolDataSource;
@@ -39,7 +38,7 @@ public class DriverConnectionPoolDataSource implements ConnectionPoolDataSource
 	 * @see javax.sql.ConnectionPoolDataSource#getPooledConnection()
 	 */
 	@Override
-	public PooledConnection getPooledConnection() throws SQLException
+	public PooledConnection getPooledConnection()
 	{
 		ConnectionFactory factory = new ConnectionFactory()
 		{
@@ -58,7 +57,7 @@ public class DriverConnectionPoolDataSource implements ConnectionPoolDataSource
 	 * @see javax.sql.ConnectionPoolDataSource#getPooledConnection(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public PooledConnection getPooledConnection(final String user, final String password) throws SQLException
+	public PooledConnection getPooledConnection(final String user, final String password)
 	{
 		ConnectionFactory factory = new ConnectionFactory()
 		{
@@ -77,7 +76,7 @@ public class DriverConnectionPoolDataSource implements ConnectionPoolDataSource
 	 * @see javax.sql.CommonDataSource#getLogWriter()
 	 */
 	@Override
-	public PrintWriter getLogWriter() throws SQLException
+	public PrintWriter getLogWriter()
 	{
 		// TODO Auto-generated method stub
 		return null;
@@ -88,7 +87,7 @@ public class DriverConnectionPoolDataSource implements ConnectionPoolDataSource
 	 * @see javax.sql.CommonDataSource#getLoginTimeout()
 	 */
 	@Override
-	public int getLoginTimeout() throws SQLException
+	public int getLoginTimeout()
 	{
 		// TODO Auto-generated method stub
 		return 0;
@@ -99,7 +98,7 @@ public class DriverConnectionPoolDataSource implements ConnectionPoolDataSource
 	 * @see javax.sql.CommonDataSource#setLogWriter(java.io.PrintWriter)
 	 */
 	@Override
-	public void setLogWriter(PrintWriter arg0) throws SQLException
+	public void setLogWriter(PrintWriter arg0)
 	{
 		// TODO Auto-generated method stub
 
@@ -110,17 +109,18 @@ public class DriverConnectionPoolDataSource implements ConnectionPoolDataSource
 	 * @see javax.sql.CommonDataSource#setLoginTimeout(int)
 	 */
 	@Override
-	public void setLoginTimeout(int arg0) throws SQLException
+	public void setLoginTimeout(int arg0)
 	{
 		// TODO Auto-generated method stub
 
 	}
 
-	/* (non-Javadoc)
+	/**
+	 * {@inheritDoc}
 	 * @see javax.sql.CommonDataSource#getParentLogger()
 	 */
-//	@Override
-	public Logger getParentLogger() throws SQLFeatureNotSupportedException
+	@Override
+	public Logger getParentLogger()
 	{
 		// TODO Auto-generated method stub
 		return null;

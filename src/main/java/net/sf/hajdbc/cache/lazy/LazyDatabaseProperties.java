@@ -94,7 +94,7 @@ public class LazyDatabaseProperties extends AbstractDatabaseProperties
 			
 			if (this.sequenceFactory != null)
 			{
-				for (SequenceProperties sequence: dialect.getSequenceSupport().getSequences(this.provider.getDatabaseMetaData(), this.sequenceFactory))
+				for (SequenceProperties sequence: this.dialect.getSequenceSupport().getSequences(this.provider.getDatabaseMetaData(), this.sequenceFactory))
 				{
 					sequences.put(sequence.getName(), sequence);
 				}

@@ -159,7 +159,7 @@ public class LocalTransactionContext<Z, D extends Database<Z>> implements Transa
 	 * @see net.sf.hajdbc.sql.TransactionContext#end(net.sf.hajdbc.invocation.Invoker, net.sf.hajdbc.durability.Durability.Phase)
 	 */
 	@Override
-	public <T, R> Invoker<Z, D, T, R, SQLException> end(final Invoker<Z, D, T, R, SQLException> invoker, Durability.Phase phase) throws SQLException
+	public <T, R> Invoker<Z, D, T, R, SQLException> end(final Invoker<Z, D, T, R, SQLException> invoker, Durability.Phase phase)
 	{
 		if (this.transactionId == null) return invoker;
 

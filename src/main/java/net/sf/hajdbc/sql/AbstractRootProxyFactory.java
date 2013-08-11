@@ -55,7 +55,7 @@ public abstract class AbstractRootProxyFactory<Z, D extends Database<Z>> extends
 	}
 
 	@Override
-	protected Z create(D database) throws SQLException
+	protected Z create(D database)
 	{
 		return database.createConnectionSource();
 	}

@@ -33,7 +33,7 @@ public class MultiplexingDecoderFactory implements DecoderFactory, Serializable 
 	private static final long serialVersionUID = 4413927326976263687L;
 
 	@Override
-	public Decoder createDecoder(String clusterId) throws SQLException
+	public Decoder createDecoder(String clusterId)
 	{
 		return new MultiplexingDecoder(clusterId);
 	}
