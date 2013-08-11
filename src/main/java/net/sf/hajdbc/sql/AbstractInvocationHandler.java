@@ -103,6 +103,9 @@ public class AbstractInvocationHandler<Z, D extends Database<Z>, T, E extends Ex
 		return this.createResult(resultFactory, results);
 	}
 	
+	/**
+	 * @throws E 
+	 */
 	protected ProxyFactoryFactory<Z, D, T, E, ?, ? extends Exception> getProxyFactoryFactory(T object, Method method, Object... parameters) throws E
 	{
 		return null;
@@ -116,7 +119,7 @@ public class AbstractInvocationHandler<Z, D extends Database<Z>, T, E extends Ex
 	 * @param method the method to invoke
 	 * @param parameters the method invocation parameters
 	 * @return an invocation strategy
-	 * @throws Exception
+	 * @throws E
 	 */
 	protected InvocationStrategy getInvocationStrategy(T object, Method method, Object... parameters) throws E
 	{
@@ -141,6 +144,9 @@ public class AbstractInvocationHandler<Z, D extends Database<Z>, T, E extends Ex
 		return this.getInvoker(method, parameters);
 	}
 
+	/**
+	 * @throws E  
+	 */
 	private <R> Invoker<Z, D, T, R, E> getInvoker(Method method, Object... parameters) throws E
 	{
 		return new SimpleInvoker<Z, D, T, R, E>(method, parameters, this.proxyFactory.getExceptionFactory());
@@ -159,7 +165,6 @@ public class AbstractInvocationHandler<Z, D extends Database<Z>, T, E extends Ex
 				// Handle proxy parameter
 				if (Proxy.isProxyClass(parameter.getClass()) && (Proxy.getInvocationHandler(parameter) instanceof InvocationHandler))
 				{
-					@SuppressWarnings("unchecked")
 					final InvocationHandler<Z, D, X, E, ProxyFactory<Z, D, X, E>> handler = (InvocationHandler<Z, D, X, E, ProxyFactory<Z, D, X, E>>) Proxy.getInvocationHandler(parameter);
 					
 					return new Invoker<Z, D, T, R, E>()

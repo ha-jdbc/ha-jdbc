@@ -69,7 +69,7 @@ public class BerkeleyDBStateManager extends CloseablePoolProvider<Environment, D
 	private static final EntryBinding<InvocationKey> INVOCATION_KEY_BINDING = new KeyBinding<InvocationKey>();
 	private static final EntryBinding<InvokerKey> INVOKER_KEY_BINDING = new KeyBinding<InvokerKey>();
 	private static final EntryBinding<byte[]> BLOB_BINDING = new ByteArrayBinding();
-	private static final byte[] NULL = new byte[0];
+	static final byte[] NULL = new byte[0];
 	
 	private final DatabaseCluster<?, ?> cluster;
 	private final File file;
@@ -274,7 +274,7 @@ public class BerkeleyDBStateManager extends CloseablePoolProvider<Environment, D
 	public Map<InvocationEvent, Map<String, InvokerEvent>> recover()
 	{
 		final Map<InvocationEvent, Map<String, InvokerEvent>> result = new HashMap<InvocationEvent, Map<String, InvokerEvent>>();
-		final TransactionIdentifierFactory<?> txIdFactory = cluster.getTransactionIdentifierFactory();
+		final TransactionIdentifierFactory<?> txIdFactory = this.cluster.getTransactionIdentifierFactory();
 		DatabaseQuery<Void> query = new DatabaseQuery<Void>(INVOCATION)
 		{
 			@Override
@@ -522,7 +522,7 @@ public class BerkeleyDBStateManager extends CloseablePoolProvider<Environment, D
 		}
 	}
 	
-	private static class KeyBinding<T> implements EntryBinding<T>
+	static class KeyBinding<T> implements EntryBinding<T>
 	{
 		@Override
 		public T entryToObject(DatabaseEntry entry)

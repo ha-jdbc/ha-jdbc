@@ -17,7 +17,6 @@
  */
 package net.sf.hajdbc.sync;
 
-import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -72,11 +71,11 @@ import net.sf.hajdbc.util.Strings;
  * </ol>
  * @author  Paul Ferraro
  */
-public class DifferentialSynchronizationStrategy implements SynchronizationStrategy, TableSynchronizationStrategy, Serializable
+public class DifferentialSynchronizationStrategy implements SynchronizationStrategy, TableSynchronizationStrategy
 {
 	private static final long serialVersionUID = -2785092229503649831L;
 
-	private static Logger logger = LoggerFactory.getLogger(DifferentialSynchronizationStrategy.class);
+	static Logger logger = LoggerFactory.getLogger(DifferentialSynchronizationStrategy.class);
 
 	private final SynchronizationStrategy strategy = new PerTableSynchronizationStrategy(this);
 	private int fetchSize = 0;
@@ -275,7 +274,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 											Object targetObject = targetResultSet.getObject(i);
 											
 											// We assume that the primary keys column types are Comparable
-											compare = this.compare(sourceObject, targetObject);
+											compare = compare(sourceObject, targetObject);
 											
 											if (compare != 0)
 											{
@@ -539,7 +538,7 @@ public class DifferentialSynchronizationStrategy implements SynchronizationStrat
 		}
 	}
 	
-	private int compare(Object object1, Object object2)
+	private static int compare(Object object1, Object object2)
 	{
 		@SuppressWarnings("unchecked")
 		Comparable<Object> comparable = (Comparable<Object>) object1;

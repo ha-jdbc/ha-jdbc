@@ -115,12 +115,12 @@ public class ResultSetInvocationHandler<Z, D extends Database<Z>, S extends Stat
 			return this.getProxyFactory().getTransactionContext().start(InvocationStrategies.TRANSACTION_INVOKE_ON_ALL, this.getProxyFactory().getParentProxy().getConnection());
 		}
 		
-		if (this.isGetMethod(method))
+		if (isGetMethod(method))
 		{
 			return InvocationStrategies.INVOKE_ON_ANY;
 		}
 		
-		if (this.isUpdateMethod(method))
+		if (isUpdateMethod(method))
 		{
 			return InvocationStrategies.INVOKE_ON_EXISTING;
 		}
@@ -131,7 +131,7 @@ public class ResultSetInvocationHandler<Z, D extends Database<Z>, S extends Stat
 	@Override
 	protected <R> Invoker<Z, D, ResultSet, R, SQLException> getInvoker(ResultSet results, final Method method, final Object... parameters) throws SQLException
 	{
-		if (this.isUpdateMethod(method) && (parameters.length > 1))
+		if (isUpdateMethod(method) && (parameters.length > 1))
 		{
 			return this.getInvoker(method.getParameterTypes()[1], 1, results, method, parameters);
 		}
@@ -147,20 +147,20 @@ public class ResultSetInvocationHandler<Z, D extends Database<Z>, S extends Stat
 			this.getProxyFactory().remove();
 		}
 		
-		if (driverWriteMethodSet.contains(method) || this.isUpdateMethod(method))
+		if (driverWriteMethodSet.contains(method) || isUpdateMethod(method))
 		{
 			this.getProxyFactory().addInvoker(invoker);
 		}
 	}
 	
-	private boolean isGetMethod(Method method)
+	private static boolean isGetMethod(Method method)
 	{
 		Class<?>[] types = method.getParameterTypes();
 		
 		return method.getName().startsWith("get") && (types != null) && (types.length > 0) && (types[0].equals(String.class) || types[0].equals(Integer.TYPE));
 	}
 	
-	private boolean isUpdateMethod(Method method)
+	private static boolean isUpdateMethod(Method method)
 	{
 		Class<?>[] types = method.getParameterTypes();
 		

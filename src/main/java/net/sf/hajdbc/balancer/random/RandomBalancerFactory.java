@@ -17,7 +17,6 @@
  */
 package net.sf.hajdbc.balancer.random;
 
-import java.io.Serializable;
 import java.util.Set;
 
 import net.sf.hajdbc.Database;
@@ -28,7 +27,7 @@ import net.sf.hajdbc.balancer.BalancerFactory;
  * Factory for creating a {@link RandomBalancer}
  * @author Paul Ferraro
  */
-public class RandomBalancerFactory implements BalancerFactory, Serializable
+public class RandomBalancerFactory implements BalancerFactory
 {
 	private static final long serialVersionUID = -910276247314814572L;
 

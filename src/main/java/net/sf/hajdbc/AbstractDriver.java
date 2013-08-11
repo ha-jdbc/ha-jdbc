@@ -18,7 +18,6 @@
 package net.sf.hajdbc;
 
 import java.sql.Driver;
-import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,7 +31,7 @@ public abstract class AbstractDriver implements Driver
 	 * @see java.sql.Driver#acceptsURL(java.lang.String)
 	 */
 	@Override
-	public boolean acceptsURL(String url) throws SQLException
+	public boolean acceptsURL(String url)
 	{
 		return (this.parse(url) != null);
 	}

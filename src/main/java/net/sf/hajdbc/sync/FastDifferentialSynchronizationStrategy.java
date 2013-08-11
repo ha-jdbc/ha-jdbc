@@ -17,8 +17,6 @@
  */
 package net.sf.hajdbc.sync;
 
-import java.sql.SQLException;
-
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.SynchronizationStrategy;
@@ -53,7 +51,7 @@ public class FastDifferentialSynchronizationStrategy implements SynchronizationS
 	 * @see net.sf.hajdbc.SynchronizationStrategy#synchronize(net.sf.hajdbc.sync.SynchronizationContext)
 	 */
 	@Override
-	public <Z, D extends Database<Z>> void synchronize(SynchronizationContext<Z, D> context) throws SQLException
+	public <Z, D extends Database<Z>> void synchronize(SynchronizationContext<Z, D> context)
 	{
 	}
 

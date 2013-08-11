@@ -18,7 +18,6 @@
 package net.sf.hajdbc.pool.sql;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 
 import javax.sql.ConnectionEventListener;
 import javax.sql.PooledConnection;
@@ -32,7 +31,7 @@ public class DriverPooledConnection implements PooledConnection
 //	private final ConnectionFactory factory;
 //	private Connection connection;
 	
-	public DriverPooledConnection(ConnectionFactory factory) throws SQLException
+	public DriverPooledConnection(ConnectionFactory factory)
 	{
 //		this.factory = factory;
 //		this.connection = factory.getConnection();
@@ -65,7 +64,7 @@ public class DriverPooledConnection implements PooledConnection
 	 * @see javax.sql.PooledConnection#close()
 	 */
 	@Override
-	public void close() throws SQLException
+	public void close()
 	{
 		// TODO Auto-generated method stub
 
@@ -76,7 +75,7 @@ public class DriverPooledConnection implements PooledConnection
 	 * @see javax.sql.PooledConnection#getConnection()
 	 */
 	@Override
-	public Connection getConnection() throws SQLException
+	public Connection getConnection()
 	{
 		// TODO Auto-generated method stub
 		return null;

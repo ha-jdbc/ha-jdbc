@@ -48,7 +48,7 @@ public enum SerialLocatorFactories
 	@SuppressWarnings("unchecked")
 	public <T> SerialLocatorFactory<T> getSerialFactory()
 	{
-		return (SerialLocatorFactory<T>) factory;
+		return (SerialLocatorFactory<T>) this.factory;
 	}
 	
 	public static <R> SerialLocatorFactory<R> find(Class<R> targetClass)

@@ -34,7 +34,7 @@ public class Event<T> extends EventObject
 		super(source);
 	}
 
-	@SuppressWarnings("unchecked")
+	@Override
 	public T getSource()
 	{
 		return (T) this.source;

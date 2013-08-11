@@ -17,7 +17,6 @@
  */
 package net.sf.hajdbc.balancer.load;
 
-import java.io.Serializable;
 import java.util.Set;
 
 import net.sf.hajdbc.Database;
@@ -28,7 +27,7 @@ import net.sf.hajdbc.balancer.BalancerFactory;
  * Factory for creating a {@link LoadBalancer}
  * @author Paul Ferraro
  */
-public class LoadBalancerFactory implements BalancerFactory, Serializable
+public class LoadBalancerFactory implements BalancerFactory
 {
 	private static final long serialVersionUID = -2785311844872496108L;
 

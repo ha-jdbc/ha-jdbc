@@ -38,7 +38,7 @@ public class ConnectionProxyFactory<Z, D extends Database<Z>, P> extends Abstrac
 	}
 
 	@Override
-	public Connection getConnection(D database) throws SQLException
+	public Connection getConnection(D database)
 	{
 		return this.get(database);
 	}

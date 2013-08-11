@@ -173,7 +173,7 @@ public class MySQLDialect extends StandardDialect implements DumpRestoreSupport
 	@Override
 	public ProcessBuilder createDumpProcess(ConnectionProperties properties, File file)
 	{
-		return this.setPassword(new ProcessBuilder("mysqldump", "-h", properties.getHost(), "-P", properties.getPort(), "-u", properties.getUser(), properties.getDatabase(), ">", file.getPath()), properties);
+		return setPassword(new ProcessBuilder("mysqldump", "-h", properties.getHost(), "-P", properties.getPort(), "-u", properties.getUser(), properties.getDatabase(), ">", file.getPath()), properties);
 	}
 
 	/**
@@ -183,10 +183,10 @@ public class MySQLDialect extends StandardDialect implements DumpRestoreSupport
 	@Override
 	public ProcessBuilder createRestoreProcess(ConnectionProperties properties, File file)
 	{
-		return this.setPassword(new ProcessBuilder("mysql", "-h", properties.getHost(), "-P", properties.getPort(), "-u", properties.getUser(), properties.getDatabase(), "<", file.getPath()), properties);
+		return setPassword(new ProcessBuilder("mysql", "-h", properties.getHost(), "-P", properties.getPort(), "-u", properties.getUser(), properties.getDatabase(), "<", file.getPath()), properties);
 	}
 	
-	private ProcessBuilder setPassword(ProcessBuilder builder, ConnectionProperties properties)
+	private static ProcessBuilder setPassword(ProcessBuilder builder, ConnectionProperties properties)
 	{
 		if (!PASSWORD_FILE.exists())
 		{
