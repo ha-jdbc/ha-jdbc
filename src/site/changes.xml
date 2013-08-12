@@ -21,9 +21,9 @@
 		<title>HA-JDBC Changes</title>
 	</properties>
 	<body>
-		<release version="2.1.0-beta-4" date="2013-03-23">
+		<release version="2.1.0-beta-4" date="2013-08-11">
 			<action dev="pferraro" type="update">
-				Upgrade JGroups to 3.2.7.Final.
+				Upgrade JGroups to 3.3.x.
 			</action>
 			<action dev="pferraro" type="fix">
 				Optimize SynchronousExecutor.invokeAll(...) and make sure reverse mode doesn't execute first task until all other tasks are complete.
@@ -32,7 +32,7 @@
 				Make DatabaseCluster references within HA-JDBC driver static.  Fixes integration with Tomcat connection pooling.
 			</action>
 			<action dev="pferraro" type="fix">
-				Deactivate all local active database upon DatabaseCluster.stop().
+				Deactivate all local active databases upon DatabaseCluster.stop().
 			</action>
 			<action dev="pferraro" type="fix">
 				If DatabaseCluster fails to start, stop it before clearing its reference from the Registry.
@@ -63,6 +63,16 @@
 			</action>
 			<action dev="pferraro" type="fix">
 				REPEATABLE_READ queries should execute against primary database only.
+			</action>
+			<action due-to="sjones4" type="fix">
+				Avoid classpath scan per exception, due to use of ServiceLoader to resolve exception types.
+			</action>
+			<action due-to="sjones4" type="fix">
+				Fix improper unlock logic in LocalTransactionContext which could preventing database activation.
+			</action>
+			<action dev="pferraro" type="fix">
+				Correct reserved identifier logic to only include SQL:2003 reserved words by default.
+				Add explicit reserved identifier overrides for PostgreSQL and MySQL.
 			</action>
 		</release>
 		<release version="2.1.0-beta-3" date="2012-12-09">
