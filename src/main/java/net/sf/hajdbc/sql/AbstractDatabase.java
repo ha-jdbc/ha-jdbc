@@ -51,7 +51,7 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	private String password;
 
 	@XmlAttribute(name = "weight")
-	private Integer weight = 1;
+	private volatile Integer weight = 1;
 	@XmlAttribute(name = "local")
 	private Boolean local = false;
 
@@ -180,7 +180,6 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	@ManagedAttribute
 	public void setWeight(int weight)
 	{
-		this.assertInactive();
 		if (weight < 0)
 		{
 			throw new IllegalArgumentException();
