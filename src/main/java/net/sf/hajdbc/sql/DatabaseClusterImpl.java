@@ -190,7 +190,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	@ManagedOperation
 	public boolean isAlive(String databaseId)
 	{
-		return this.isAlive(this.getDatabase(databaseId));
+		return this.isAlive(this.getDatabase(databaseId), Level.WARN);
 	}
 	
 	/**
@@ -705,7 +705,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		{
 			for (D database: this.configuration.getDatabaseMap().values())
 			{
-				if (this.isAlive(database))
+				if (this.isAlive(database, Level.WARN))
 				{
 					this.activate(database, this.stateManager);
 				}
@@ -827,7 +827,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		}
 	}
 
-	boolean isAlive(D database)
+	boolean isAlive(D database, Level level)
 	{
 		try
 		{
@@ -843,14 +843,14 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		}
 		catch (SQLException e)
 		{
-			logger.log(Level.DEBUG, e);
+			logger.log(level, e);
 			return false;
 		}
 	}
 
 	boolean activate(D database, SynchronizationStrategy strategy) throws SQLException, InterruptedException
 	{
-		if (!this.isAlive(database)) return false;
+		if (!this.isAlive(database, Level.DEBUG)) return false;
 		
 		Lock lock = this.lockManager.writeLock(null);
 		
@@ -915,7 +915,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 				
 				for (D database: databases)
 				{
-					if (!DatabaseClusterImpl.this.isAlive(database))
+					if (!DatabaseClusterImpl.this.isAlive(database, Level.WARN))
 					{
 						deadList.add(database);
 					}
