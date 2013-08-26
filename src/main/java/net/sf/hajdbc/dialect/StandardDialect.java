@@ -106,16 +106,16 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	private final Pattern currentDatePattern = compile(this.currentDatePattern());
 	private final Pattern currentTimePattern = compile(this.currentTimePattern());
 	private final Pattern randomPattern = compile(this.randomPattern());
-	private final Pattern urlPattern = Pattern.compile(String.format("jdbc:%s:%s", this.vendorPattern(), this.locatorPattern()));
+	private final Pattern urlPattern = Pattern.compile(String.format("jdbc\\:%s\\:%s", this.vendorPattern(), this.locatorPattern()));
 	
 	protected String vendorPattern()
 	{
-		return "(?:^\\:)+";
+		return "[^\\:]+";
 	}
 
 	protected String locatorPattern()
 	{
-		return "//(^\\:+):(\\d+)/(^\\?+)(?:\\?.*)?";
+		return "//([^\\:/]+)(?:\\:(\\d+))?/([^\\?]+)";
 	}
 	
 	private static Pattern compile(String pattern)

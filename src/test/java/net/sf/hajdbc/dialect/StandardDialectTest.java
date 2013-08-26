@@ -53,6 +53,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.sql.rowset.RowSetWarning;
@@ -77,19 +78,20 @@ import org.junit.Test;
  * @author Paul Ferraro
  *
  */
-@SuppressWarnings("nls")
 public class StandardDialectTest
 {
- 	Dialect dialect;
- 	
+	private DialectFactory factory;
+	Dialect dialect;
+	
 	public StandardDialectTest()
 	{
 		this(new StandardDialectFactory());
 	}
 	
-	protected StandardDialectTest(DialectFactory dialectFactory)
+	protected StandardDialectTest(DialectFactory factory)
 	{
-		this.dialect = dialectFactory.createDialect();
+		this.factory = factory;
+		this.dialect = factory.createDialect();
 	}
 
 	@Test
@@ -516,5 +518,17 @@ public class StandardDialectTest
 		boolean result = this.dialect.isValid(connection);
 		
 		assertTrue(result);
+	}
+
+	@Test
+	public void getUrlPattern()
+	{
+		Pattern pattern = this.dialect.getUrlPattern();
+		Matcher matcher = pattern.matcher(String.format("jdbc:%s://myhost:5432/mydb?loginTimeout=0&socketTimeout=0&prepareThreshold=5&unknownLength=2147483647&tcpKeepAlive=false&binaryTransfer=true", this.factory.getId()));
+		assertTrue(matcher.find());
+		assertEquals(3, matcher.groupCount());
+		assertEquals("myhost", matcher.group(1));
+		assertEquals("5432", matcher.group(2));
+		assertEquals("mydb", matcher.group(3));
 	}
 }
