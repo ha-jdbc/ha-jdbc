@@ -45,7 +45,7 @@ public class InputSinkRegistryImpl<S> implements InputSinkRegistry<S>
 	
 	private <I> void addInputChannel(Class<I> inputClass, InputSinkChannel<I, S> channel)
 	{
-		this.channels.put(InputStream.class, channel);
+		this.channels.put(inputClass, channel);
 	}
 	
 	S addInputSink(S sink)
