@@ -8,7 +8,7 @@
 	</tr>
 	<tr>
 		<td>${project.version}</td>
-		<td>urn:ha-jdbc:cluster:2.1</td>
+		<td>urn:ha-jdbc:cluster:3.0</td>
 		<td><a href="xsd/ha-jdbc-${project.version}.xsd">http://ha-jdbc.github.com/xsd/ha-jdbc-${project.version}.xsd</a></td>
 	</tr>
 	<tr>
