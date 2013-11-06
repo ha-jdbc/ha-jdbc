@@ -27,7 +27,7 @@
 
 	<groupId>net.sf.ha-jdbc</groupId>
 	<artifactId>ha-jdbc</artifactId>
-	<version>2.1.0-beta-5-SNAPSHOT</version>
+	<version>3.0.0-rc-1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	
 	<name>HA-JDBC</name>
@@ -108,12 +108,12 @@
 			<version>1.1.6</version>
 			<optional>true</optional>
 		</dependency>
-		<dependency>
+		<!--dependency>
 			<groupId>org.iq80.leveldb</groupId>
 			<artifactId>leveldb-api</artifactId>
 			<version>0.6</version>
 			<optional>true</optional>
-		</dependency>
+		</dependency-->
 		<!-- Optional password codec dependencies -->
 		<dependency>
 			<groupId>commons-codec</groupId>
