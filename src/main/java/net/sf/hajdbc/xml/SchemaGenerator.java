@@ -25,7 +25,7 @@ import javax.xml.transform.stream.StreamResult;
 
 public class SchemaGenerator
 {
-	public static final String NAMESPACE = "urn:ha-jdbc:cluster:2.1";
+	public static final String NAMESPACE = "urn:ha-jdbc:cluster:3.0";
 	
 	public static void main(String... args) throws Throwable
 	{
