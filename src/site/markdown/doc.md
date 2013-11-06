@@ -905,7 +905,7 @@ The process of deactivating a database is as follows:
 
 1.	Log An ERROR message.
 1.	Remove the database from the set of active databases.
-1.	Persist the new cluster state via the <a href="state">Cluster State Manager</a>.
+1.	Persist the new cluster state via the <a href="#state">Cluster State Manager</a>.
 1.	If the database cluster is **distributable**, broadcast the database deactivation to other servers.
 
 Databases can also be deactivated manually via <a href="#jmx">JMX</a>.
