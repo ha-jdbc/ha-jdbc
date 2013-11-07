@@ -27,7 +27,7 @@
 
 	<groupId>net.sf.ha-jdbc</groupId>
 	<artifactId>ha-jdbc</artifactId>
-	<version>3.0.0-rc-1-SNAPSHOT</version>
+	<version>3.0.0-rc-1</version>
 	<packaging>jar</packaging>
 	
 	<name>HA-JDBC</name>
@@ -482,7 +482,7 @@
 		<connection>scm:git:git://github.com/ha-jdbc/ha-jdbc.git</connection>
 		<developerConnection>scm:git:git@github.com:ha-jdbc/ha-jdbc.git</developerConnection>
 		<url>https://github.com/ha-jdbc/ha-jdbc</url>
-		<tag>HEAD</tag>
+		<tag>3.0.0-rc-1</tag>
 	</scm>
 
 	<issueManagement>
