@@ -42,8 +42,8 @@ public class FastDifferentialSynchronizationStrategy implements SynchronizationS
 	@Override
 	public <Z, D extends Database<Z>> void init(DatabaseCluster<Z, D> cluster)
 	{
-//	    "UPDATE changes.table SET new_flag = $1 WHERE id = NEW.id;";
-//	    "INSERT INTO changes.table (id, new_flag) SELECT NEW.id, $1 WHERE NOT EXISTS (SELECT 1 FROM changes.table WHERE id = NEW.id);";
+//		"UPDATE changes.table SET new_flag = $1 WHERE id = NEW.id;";
+//		"INSERT INTO changes.table (id, new_flag) SELECT NEW.id, $1 WHERE NOT EXISTS (SELECT 1 FROM changes.table WHERE id = NEW.id);";
 	}
 
 	/**
