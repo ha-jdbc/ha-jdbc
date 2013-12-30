@@ -68,22 +68,14 @@ public class SQLiteDbPoolProvider extends AbstractPoolProvider<SqlJetDb, SqlJetE
 	@Override
 	public synchronized SqlJetDb create() throws SqlJetException
 	{
-		try
+		boolean exists = this.file.exists();
+		SqlJetDb db = SqlJetDb.open(this.file, true);
+		if (!exists)
 		{
-			boolean exists = this.file.exists();
-			SqlJetDb db = SqlJetDb.open(this.file, true);
-			if (!exists)
-			{
-				db.getOptions().setAutovacuum(true);
-				db.getOptions().setIncrementalVacuum(true);
-			}
-			return db;
+			db.getOptions().setAutovacuum(true);
+			db.getOptions().setIncrementalVacuum(true);
 		}
-		catch (SqlJetException e)
-		{
-			e.printStackTrace(System.err);
-			throw e;
-		}
+		return db;
 	}
 
 	/**
