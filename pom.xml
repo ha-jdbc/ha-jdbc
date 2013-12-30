@@ -86,7 +86,7 @@
 		<dependency>
 			<groupId>org.jboss.logging</groupId>
 			<artifactId>jboss-logging</artifactId>
-			<version>3.1.3.GA</version>
+			<version>3.1.4.GA</version>
 			<optional>true</optional>
 		</dependency>
 		<!-- Optional state manager dependencies -->
@@ -118,7 +118,7 @@
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>1.8</version>
+			<version>1.9</version>
 			<optional>true</optional>
 		</dependency>		
 		<!-- Test dependencies -->
