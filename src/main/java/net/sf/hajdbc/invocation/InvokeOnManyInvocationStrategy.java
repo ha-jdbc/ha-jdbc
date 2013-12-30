@@ -54,7 +54,7 @@ public class InvokeOnManyInvocationStrategy implements InvocationStrategy
 	}
 
 	/**
-	 * @see net.sf.hajdbc.invocation.InvocationStrategy#invoke(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.invocation.Invoker)
+	 * {@inheritDoc}
 	 */
 	@Override
 	public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(ProxyFactory<Z, D, T, E> map, Invoker<Z, D, T, R, E> invoker) throws E

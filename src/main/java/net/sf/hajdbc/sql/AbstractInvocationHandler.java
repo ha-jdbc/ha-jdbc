@@ -60,10 +60,10 @@ public class AbstractInvocationHandler<Z, D extends Database<Z>, T, E extends Ex
 	private final Class<T> proxyClass;
 	private final F proxyFactory;
 	
-	protected AbstractInvocationHandler(Class<T> targetClass, F map)
+	protected AbstractInvocationHandler(Class<T> targetClass, F proxyFactory)
 	{
 		this.proxyClass = targetClass;
-		this.proxyFactory = map;
+		this.proxyFactory = proxyFactory;
 	}
 	
 	@Override
@@ -133,7 +133,7 @@ public class AbstractInvocationHandler<Z, D extends Database<Z>, T, E extends Ex
 	
 	/**
 	 * Return the appropriate invoker for the specified method.
-	 * @param object
+	 * @param proxy
 	 * @param method
 	 * @param parameters
 	 * @return an invoker

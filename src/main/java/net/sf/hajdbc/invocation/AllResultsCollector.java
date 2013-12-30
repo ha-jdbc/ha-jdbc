@@ -54,7 +54,6 @@ public class AllResultsCollector implements InvokeOnManyInvocationStrategy.Resul
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.invocation.InvokeOnManyInvocationStrategy#collectResults(net.sf.hajdbc.sql.SQLProxy, net.sf.hajdbc.invocation.Invoker)
 	 */
 	@Override
 	public <Z, D extends Database<Z>, T, R, E extends Exception> Map.Entry<SortedMap<D, R>, SortedMap<D, E>> collectResults(ProxyFactory<Z, D, T, E> map, final Invoker<Z, D, T, R, E> invoker)

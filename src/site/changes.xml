@@ -21,21 +21,29 @@
 		<title>HA-JDBC Changes</title>
 	</properties>
 	<body>
+		<release version="3.0.0" date="2013-12-30">
+			<action dev="pferraro" type="update">
+				Update default jgroups configuration.
+			</action>
+		</release>
 		<release version="3.0.0-rc-1" date="2013-11-06">
 			<action dev="pferraro" type="update">
 				Re-versioned to 3.0.  The scope of changes since 2.0.x justifies a major release bump.
 			</action>
-			<action dev="sjones4" type="update">
+			<action type="update" due-to="sjones4">
 				Add option to drop PostgreSQL database object before restoring.
 			</action>
-			<action dev="sjones4" type="fix">
+			<action type="fix" due-to="sjones4">
 				Fix input channel registration.
 			</action>
 			<action dev="pferraro" type="fix">
 				Fixed UnsupportedOperationException when using dump-restore sync strategy due to incorrect regex parsing of jdbc url.
 			</action>
-			<action dev="sjones4" type="fix">
+			<action type="fix" due-to="sjones4">
 				Allow runtime change to weight for active databases.
+			</action>
+			<action dev="pferraro" type="update">
+				Upgrade JGroups to 3.4.0.Final.
 			</action>
 		</release>
 		<release version="2.1.0-beta-4" date="2013-08-11">

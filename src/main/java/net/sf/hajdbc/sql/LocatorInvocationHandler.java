@@ -50,7 +50,7 @@ public abstract class LocatorInvocationHandler<Z, D extends Database<Z>, P, T, F
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 * {@inheritDoc}
 	 */
 	@Override
 	protected InvocationStrategy getInvocationStrategy(T locator, Method method, Object... parameters) throws SQLException
