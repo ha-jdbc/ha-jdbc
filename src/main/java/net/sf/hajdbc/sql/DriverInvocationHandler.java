@@ -27,7 +27,7 @@ public class DriverInvocationHandler extends ConnectionSourceInvocationHandler<D
 {
 	/**
 	 * Constructs a new DriverInvocationHandler
-	 * @param cluster a database cluster
+	 * @param factory a factory for creating driver proxies
 	 */
 	public DriverInvocationHandler(DriverProxyFactory factory)
 	{

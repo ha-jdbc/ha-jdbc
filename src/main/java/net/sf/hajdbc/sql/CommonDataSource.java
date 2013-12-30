@@ -71,7 +71,6 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.util.concurrent.Registry.Factory#create(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	public DatabaseCluster<Z, D> create(Void key, Void context) throws SQLException
@@ -168,7 +167,8 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 	}
 
 	/**
-	 * @param timeout the timeout to set
+	 * @param value the timeout to set, expressed in the specified units
+	 * @param unit the time unit with which to qualify the specified timeout value
 	 */
 	public void setTimeout(long value, TimeUnit unit)
 	{

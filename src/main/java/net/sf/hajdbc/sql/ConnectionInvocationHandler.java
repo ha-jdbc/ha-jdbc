@@ -71,15 +71,11 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ch
 	
 	/**
 	 * Constructs a new ConnectionInvocationHandler
-	 * @param proxy
-	 * @param handler
-	 * @param invoker
-	 * @param connectionMap
-	 * @param transactionContext
+	 * @param proxyFactory a factory for creating connection proxies
 	 */
-	public ConnectionInvocationHandler(ConnectionProxyFactory<Z, D, P> map)
+	public ConnectionInvocationHandler(ConnectionProxyFactory<Z, D, P> proxyFactory)
 	{
-		super(Connection.class, map, null);
+		super(Connection.class, proxyFactory, null);
 	}
 	
 	@Override
@@ -135,8 +131,7 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ch
 	}
 
 	/**
-	 * @throws SQLException 
-	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 * {@inheritDoc}
 	 */
 	@Override
 	protected InvocationStrategy getInvocationStrategy(Connection connection, Method method, Object... parameters) throws SQLException
@@ -180,7 +175,7 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ch
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvoker(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 * {@inheritDoc}
 	 */
 	@Override
 	protected <R> Invoker<Z, D, Connection, R, SQLException> getInvoker(Connection connection, Method method, Object... parameters) throws SQLException

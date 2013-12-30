@@ -53,13 +53,7 @@ public class ResultSetInvocationHandler<Z, D extends Database<Z>, S extends Stat
 	private static final Method getStatementMethod = Methods.getMethod(ResultSet.class, "getStatement");
 	
 	/**
-	 * @param statement the statement that created this result set
-	 * @param proxy the invocation handler of the statement that created this result set
-	 * @param invoker the invoker that was used to create this result set
-	 * @param resultSetMap a map of database to underlying result set
-	 * @param transactionContext 
-	 * @param fileSupport support for streams
-	 * @throws Exception
+	 * @param factory a factory for creating result set proxies
 	 */
 	public ResultSetInvocationHandler(ResultSetProxyFactory<Z, D, S> factory)
 	{

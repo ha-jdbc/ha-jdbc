@@ -33,19 +33,15 @@ import net.sf.hajdbc.invocation.InvocationStrategy;
 public class SavepointInvocationHandler<Z, D extends Database<Z>> extends ChildInvocationHandler<Z, D, Connection, SQLException, Savepoint, SQLException, SavepointProxyFactory<Z, D>>
 {
 	/**
-	 * @param connection the connection that created this savepoint
-	 * @param proxy the invocation handler of the connection that created this savepoint
-	 * @param invoker the invoker used to create this savepoint
-	 * @param savepointMap a map of database to underlying savepoint
-	 * @throws Exception
+	 * @param factory a factory for creating savepoint proxies.
 	 */
-	public SavepointInvocationHandler(SavepointProxyFactory<Z, D> map)
+	public SavepointInvocationHandler(SavepointProxyFactory<Z, D> factory)
 	{
-		super(Savepoint.class, map, null);
+		super(Savepoint.class, factory, null);
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.AbstractChildInvocationHandler#getInvocationStrategy(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
+	 * {@inheritDoc}
 	 */
 	@Override
 	protected InvocationStrategy getInvocationStrategy(Savepoint savepoint, Method method, Object... parameters)

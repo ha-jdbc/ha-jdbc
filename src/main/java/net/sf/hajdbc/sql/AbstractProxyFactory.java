@@ -48,8 +48,8 @@ public abstract class AbstractProxyFactory<Z, D extends Database<Z>, TE extends 
 	
 	/**
 	 * Constructs a new proxy to a set of objects
+	 * @param map a map of database to sql object.
 	 * @param exceptionClass the class for exceptions thrown by this object
-	 * @param objectMap a map of database to sql object.
 	 */
 	protected AbstractProxyFactory(Map<D, T> map, Class<E> exceptionClass)
 	{
@@ -58,7 +58,7 @@ public abstract class AbstractProxyFactory<Z, D extends Database<Z>, TE extends 
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.SQLProxy#entries()
+	 * {@inheritDoc}
 	 */
 	@Override
 	public Set<Map.Entry<D, T>> entries()
@@ -173,7 +173,7 @@ public abstract class AbstractProxyFactory<Z, D extends Database<Z>, TE extends 
 	}
 
 	/**
-	 * @see net.sf.hajdbc.sql.SQLProxy#retain(java.util.Set)
+	 * {@inheritDoc}
 	 */
 	@Override
 	public final void retain(Set<D> databaseSet)
@@ -213,7 +213,6 @@ public abstract class AbstractProxyFactory<Z, D extends Database<Z>, TE extends 
 	
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.sql.SQLProxy#getExceptionFactory()
 	 */
 	@Override
 	public final ExceptionFactory<E> getExceptionFactory()
