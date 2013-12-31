@@ -27,7 +27,7 @@
 
 	<groupId>net.sf.ha-jdbc</groupId>
 	<artifactId>ha-jdbc</artifactId>
-	<version>3.0.1-SNAPSHOT</version>
+	<version>3.1.0-alpha-1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	
 	<name>HA-JDBC</name>
