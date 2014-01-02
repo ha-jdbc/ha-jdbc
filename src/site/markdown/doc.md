@@ -473,7 +473,7 @@ sqlite
 ###	<a name="durability"/>Durability
 
 As of version 2.1, HA-JDBC support a configurable durability level for user transactions.
-When enabled, HA-JDBC will track transactions, such that, upon restart, following a crash, it can detect and recover from any partial commits (i.e. where data was not .
+When enabled, HA-JDBC will track transactions, such that, upon restart, following a crash, it can detect and recover from any partial commits (i.e. where a given transaction completed on some but not all databases in the cluster).
 The durability persistence mechanism is determined by the state manager configuration.
 By default, HA-JDBC includes support for the following durability levels:
 
