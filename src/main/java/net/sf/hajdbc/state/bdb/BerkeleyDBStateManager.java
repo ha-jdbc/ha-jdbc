@@ -493,9 +493,18 @@ public class BerkeleyDBStateManager extends CloseablePoolProvider<Environment, D
 		try
 		{
 			Transaction transaction = env.beginTransaction(null, null);
-			for (Operation operation: operations)
+			try
 			{
-				operation.execute(env, transaction);
+				for (Operation operation: operations)
+				{
+					operation.execute(env, transaction);
+				}
+				transaction.commit();
+			}
+			catch (RuntimeException e)
+			{
+				transaction.abort();
+				throw e;
 			}
 		}
 		finally
