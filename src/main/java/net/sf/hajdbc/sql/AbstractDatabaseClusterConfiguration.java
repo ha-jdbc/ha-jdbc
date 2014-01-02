@@ -78,7 +78,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	private static final long serialVersionUID = -2808296483725374829L;
 
 	private CommandDispatcherFactory dispatcherFactory;	
-	private Map<String, SynchronizationStrategy> synchronizationStrategies = new HashMap<String, SynchronizationStrategy>();
+	private Map<String, SynchronizationStrategy> synchronizationStrategies = new HashMap<>();
 	private StateManagerFactory stateManagerFactory = ServiceLoaders.findRequiredService(StateManagerFactory.class);
 	private LockManagerFactory lockManagerFactory = ServiceLoaders.findRequiredService(LockManagerFactory.class);
 
@@ -105,7 +105,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	@XmlElement(name = "sync")
 	private SynchronizationStrategyDescriptor[] getSynchronizationStrategyDescriptors() throws Exception
 	{
-		List<SynchronizationStrategyDescriptor> results = new ArrayList<SynchronizationStrategyDescriptor>(this.synchronizationStrategies.size());
+		List<SynchronizationStrategyDescriptor> results = new ArrayList<>(this.synchronizationStrategies.size());
 		SynchronizationStrategyDescriptorAdapter adapter = new SynchronizationStrategyDescriptorAdapter();
 
 		for (Map.Entry<String, SynchronizationStrategy> entry: this.synchronizationStrategies.entrySet())
@@ -501,7 +501,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 	
 	static Map<String, Map.Entry<PropertyDescriptor, PropertyEditor>> findDescriptors(Class<?> targetClass) throws Exception
 	{
-		Map<String, Map.Entry<PropertyDescriptor, PropertyEditor>> map = new HashMap<String, Map.Entry<PropertyDescriptor, PropertyEditor>>();
+		Map<String, Map.Entry<PropertyDescriptor, PropertyEditor>> map = new HashMap<>();
 		
 		for (PropertyDescriptor descriptor: Introspector.getBeanInfo(targetClass).getPropertyDescriptors())
 		{
@@ -511,7 +511,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 				
 				if (editor != null)
 				{
-					map.put(descriptor.getName(), new AbstractMap.SimpleImmutableEntry<PropertyDescriptor, PropertyEditor>(descriptor, editor));
+					map.put(descriptor.getName(), new AbstractMap.SimpleImmutableEntry<>(descriptor, editor));
 				}
 			}
 		}
@@ -587,7 +587,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		private ExecutorServiceProvider executorProvider = new DefaultExecutorServiceProvider();
 		private ThreadFactory threadFactory = Executors.defaultThreadFactory();
 		private DecoderFactory decoderFactory = new MultiplexingDecoderFactory();
-		private MBeanRegistrar<Z, D> registrar = new DefaultMBeanRegistrar<Z, D>();
+		private MBeanRegistrar<Z, D> registrar = new DefaultMBeanRegistrar<>();
 		
 		@XmlJavaTypeAdapter(TransactionModeAdapter.class)
 		@XmlAttribute(name = "transaction-mode")
@@ -619,7 +619,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		
 		private String defaultSynchronizationStrategy;
 		
-		private ConcurrentMap<String, D> databases = new ConcurrentHashMap<String, D>();
+		private ConcurrentMap<String, D> databases = new ConcurrentHashMap<>();
 		
 		@Override
 		public DatabaseFactory<Z, D> getDatabaseFactory()
@@ -1147,7 +1147,7 @@ public abstract class AbstractDatabaseClusterConfiguration<Z, D extends Database
 		public D marshal(T object) throws Exception
 		{
 			D result = this.descriptorClass.newInstance();
-			List<Property> properties = new LinkedList<Property>();
+			List<Property> properties = new LinkedList<>();
 			
 			result.setId(object.getId());
 			result.setProperties(properties);

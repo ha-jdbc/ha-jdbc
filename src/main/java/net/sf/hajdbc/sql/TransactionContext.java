@@ -31,7 +31,7 @@ import net.sf.hajdbc.invocation.Invoker;
  * @param <Z>
  * @param <D>
  */
-public interface TransactionContext<Z, D extends Database<Z>>
+public interface TransactionContext<Z, D extends Database<Z>> extends AutoCloseable
 {
 	/**
 	 * Decorates the specified invocation strategy with start transaction logic.
@@ -76,5 +76,6 @@ public interface TransactionContext<Z, D extends Database<Z>>
 	/**
 	 * Closes this transaction context.
 	 */
+	@Override
 	void close();
 }

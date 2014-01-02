@@ -43,6 +43,6 @@ public class CoarseDurabilityFactory implements DurabilityFactory
 	@Override
 	public <Z, D extends Database<Z>> Durability<Z, D> createDurability(DatabaseCluster<Z, D> cluster)
 	{
-		return new CoarseDurability<Z, D>(cluster);
+		return new CoarseDurability<>(cluster);
 	}
 }

@@ -32,8 +32,8 @@ import java.util.Map;
  */
 public class InputSinkRegistryImpl<S> implements InputSinkRegistry<S>
 {
-	private final List<S> sinks = new LinkedList<S>();
-	private final Map<Class<?>, InputSinkChannel<?, S>> channels = new HashMap<Class<?>, InputSinkChannel<?, S>>();
+	private final List<S> sinks = new LinkedList<>();
+	private final Map<Class<?>, InputSinkChannel<?, S>> channels = new HashMap<>();
 	private final InputSinkStrategy<S> strategy;
 	
 	public InputSinkRegistryImpl(InputSinkStrategy<S> strategy)

@@ -23,7 +23,6 @@ import java.util.Map;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.invocation.Invoker;
-import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.util.reflect.Proxies;
 
 /**
@@ -38,21 +37,14 @@ public class BlobProxyFactory<Z, D extends Database<Z>, P> extends LocatorProxyF
 	}
 
 	@Override
-	public void close(D database, Blob blob)
+	public void close(D database, Blob blob) throws SQLException
 	{
-		try
-		{
-			blob.free();
-		}
-		catch (SQLException e)
-		{
-			this.logger.log(Level.INFO, e);
-		}
+		blob.free();
 	}
 
 	@Override
 	public Blob createProxy()
 	{
-		return Proxies.createProxy(Blob.class, new BlobInvocationHandler<Z, D, P>(this));
+		return Proxies.createProxy(Blob.class, new BlobInvocationHandler<>(this));
 	}
 }

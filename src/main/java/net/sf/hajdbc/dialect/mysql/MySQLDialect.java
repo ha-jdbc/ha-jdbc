@@ -81,7 +81,7 @@ public class MySQLDialect extends StandardDialect implements DumpRestoreSupport
 	@Override
 	protected Set<String> reservedIdentifiers(DatabaseMetaData metaData)
 	{
-		return new HashSet<String>(Arrays.asList(RESERVED_KEY_WORDS));
+		return new HashSet<>(Arrays.asList(RESERVED_KEY_WORDS));
 	}
 
 	/**

@@ -40,6 +40,6 @@ public class BlobProxyFactoryFactory<Z, D extends Database<Z>, P> implements Pro
 	@Override
 	public ProxyFactory<Z, D, Blob, SQLException> createProxyFactory(P parentProxy, ProxyFactory<Z, D, P, SQLException> parent, Invoker<Z, D, P, Blob, SQLException> invoker, Map<D, Blob> blobs)
 	{
-		return new BlobProxyFactory<Z, D, P>(parentProxy, parent, invoker, blobs, this.locatorsUpdateCopy);
+		return new BlobProxyFactory<>(parentProxy, parent, invoker, blobs, this.locatorsUpdateCopy);
 	}
 }

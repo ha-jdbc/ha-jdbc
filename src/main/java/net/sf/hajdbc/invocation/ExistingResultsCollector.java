@@ -35,8 +35,8 @@ public class ExistingResultsCollector implements InvokeOnManyInvocationStrategy.
 	@Override
 	public <Z, D extends Database<Z>, T, R, E extends Exception> Entry<SortedMap<D, R>, SortedMap<D, E>> collectResults(ProxyFactory<Z, D, T, E> map, Invoker<Z, D, T, R, E> invoker)
 	{
-		final SortedMap<D, R> resultMap = new TreeMap<D, R>();
-		final SortedMap<D, E> exceptionMap = new TreeMap<D, E>();
+		final SortedMap<D, R> resultMap = new TreeMap<>();
+		final SortedMap<D, E> exceptionMap = new TreeMap<>();
 
 		for (Map.Entry<D, T> entry: map.entries())
 		{
@@ -52,6 +52,6 @@ public class ExistingResultsCollector implements InvokeOnManyInvocationStrategy.
 			}
 		}
 		
-		return new AbstractMap.SimpleImmutableEntry<SortedMap<D, R>, SortedMap<D, E>>(resultMap, exceptionMap);
+		return new AbstractMap.SimpleImmutableEntry<>(resultMap, exceptionMap);
 	}
 }

@@ -40,6 +40,6 @@ public class RefProxyFactoryFactory<Z, D extends Database<Z>, P> implements Prox
 	@Override
 	public ProxyFactory<Z, D, Ref, SQLException> createProxyFactory(P parentProxy, ProxyFactory<Z, D, P, SQLException> parent, Invoker<Z, D, P, Ref, SQLException> invoker, Map<D, Ref> structs)
 	{
-		return new RefProxyFactory<Z, D, P>(parentProxy, parent, invoker, structs, this.locatorsUpdateCopy);
+		return new RefProxyFactory<>(parentProxy, parent, invoker, structs, this.locatorsUpdateCopy);
 	}
 }

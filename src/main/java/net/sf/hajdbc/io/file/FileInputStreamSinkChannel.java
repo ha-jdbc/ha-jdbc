@@ -30,7 +30,6 @@ import java.nio.channels.ReadableByteChannel;
 
 import net.sf.hajdbc.io.InputSinkChannel;
 import net.sf.hajdbc.util.Files;
-import net.sf.hajdbc.util.Resources;
 
 /**
  * Input stream channel for writing to, and reading from, a file sink.
@@ -42,8 +41,7 @@ public class FileInputStreamSinkChannel implements InputSinkChannel<InputStream,
 	public File write(InputStream input) throws IOException
 	{
 		File file = Files.createTempFile(FileInputSinkStrategy.TEMP_FILE_SUFFIX);
-		FileOutputStream output = new FileOutputStream(file);
-		try
+		try (FileOutputStream output = new FileOutputStream(file))
 		{
 			FileChannel fileChannel = output.getChannel();
 			ReadableByteChannel inputChannel = Channels.newChannel(input);
@@ -58,10 +56,6 @@ public class FileInputStreamSinkChannel implements InputSinkChannel<InputStream,
 			}
 			
 			return file;
-		}
-		finally
-		{
-			Resources.close(output);
 		}
 	}
 

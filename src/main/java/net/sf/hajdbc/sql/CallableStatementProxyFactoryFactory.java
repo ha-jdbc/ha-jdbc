@@ -45,6 +45,6 @@ public class CallableStatementProxyFactoryFactory<Z, D extends Database<Z>> impl
 	@Override
 	public ProxyFactory<Z, D, CallableStatement, SQLException> createProxyFactory(Connection connection, ProxyFactory<Z, D, Connection, SQLException> parent, Invoker<Z, D, Connection, CallableStatement, SQLException> invoker, Map<D, CallableStatement> statements)
 	{
-		return new CallableStatementProxyFactory<Z, D>(connection, parent, invoker, statements, this.context, this.locks);
+		return new CallableStatementProxyFactory<>(connection, parent, invoker, statements, this.context, this.locks);
 	}
 }

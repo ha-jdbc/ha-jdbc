@@ -80,7 +80,7 @@ public class GenericObjectPoolFactory implements PoolFactory
 			}
 		};
 
-		final ObjectPool<T> pool = new GenericObjectPool<T>(factory, this.config);
+		final ObjectPool<T> pool = new GenericObjectPool<>(factory, this.config);
 		
 		return new Pool<T, E>()
 		{

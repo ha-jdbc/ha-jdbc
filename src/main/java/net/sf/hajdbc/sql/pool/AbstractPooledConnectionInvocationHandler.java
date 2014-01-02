@@ -49,7 +49,7 @@ public abstract class AbstractPooledConnectionInvocationHandler<Z, D extends Dat
 	private static final Method removeConnectionEventListenerMethod = Methods.getMethod(PooledConnection.class, "removeConnectionEventListener", ConnectionEventListener.class);
 	private static final Method removeStatementEventListenerMethod = Methods.getMethod(PooledConnection.class, "removeStatementEventListener", StatementEventListener.class);
 	
-	private static final Set<Method> eventListenerMethodSet = new HashSet<Method>(Arrays.asList(addConnectionEventListenerMethod, addStatementEventListenerMethod, removeConnectionEventListenerMethod, removeStatementEventListenerMethod));
+	private static final Set<Method> eventListenerMethodSet = new HashSet<>(Arrays.asList(addConnectionEventListenerMethod, addStatementEventListenerMethod, removeConnectionEventListenerMethod, removeStatementEventListenerMethod));
 	
 	private static final Method getConnectionMethod = Methods.getMethod(PooledConnection.class, "getConnection");
 	private static final Method closeMethod = Methods.getMethod(PooledConnection.class, "close");
@@ -64,7 +64,7 @@ public abstract class AbstractPooledConnectionInvocationHandler<Z, D extends Dat
 	{
 		if (method.equals(getConnectionMethod))
 		{
-			return new ConnectionProxyFactoryFactory<Z, D, C>(this.getProxyFactory().getTransactionContext());
+			return new ConnectionProxyFactoryFactory<>(this.getProxyFactory().getTransactionContext());
 		}
 		
 		return super.getProxyFactoryFactory(object, method, parameters);

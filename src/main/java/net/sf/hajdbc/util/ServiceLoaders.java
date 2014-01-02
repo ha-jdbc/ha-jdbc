@@ -61,7 +61,7 @@ public class ServiceLoaders
 
 	public static <T> T findService(Matcher<T> matcher, Class<T> serviceClass)
 	{
-		List<T> matches = new LinkedList<T>();
+		List<T> matches = new LinkedList<>();
 		Iterator<T> services = ServiceLoader.load(serviceClass, serviceClass.getClassLoader()).iterator();
 		
 		while (services.hasNext())

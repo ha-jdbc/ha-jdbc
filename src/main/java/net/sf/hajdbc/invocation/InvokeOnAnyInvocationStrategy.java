@@ -64,7 +64,7 @@ public class InvokeOnAnyInvocationStrategy implements InvocationStrategy
 			{
 				R result = invoker.invoke(database, entry.getValue());
 				
-				SortedMap<D, R> resultMap = new TreeMap<D, R>();
+				SortedMap<D, R> resultMap = new TreeMap<>();
 				resultMap.put(database, result);
 				return resultMap;
 			}

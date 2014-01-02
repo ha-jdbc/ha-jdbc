@@ -88,7 +88,7 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 		}
 		else
 		{
-			SortedMap<D, AtomicInteger> map = new TreeMap<D, AtomicInteger>();
+			SortedMap<D, AtomicInteger> map = new TreeMap<>();
 			
 			for (D database: databases)
 			{
@@ -137,7 +137,7 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 		
 		try
 		{
-			SortedMap<D, AtomicInteger> addMap = new TreeMap<D, AtomicInteger>(this.databaseMap);
+			SortedMap<D, AtomicInteger> addMap = new TreeMap<>(this.databaseMap);
 			
 			boolean added = false;
 			
@@ -170,7 +170,7 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 		
 		try
 		{
-			SortedMap<D, AtomicInteger> map = new TreeMap<D, AtomicInteger>(this.databaseMap);
+			SortedMap<D, AtomicInteger> map = new TreeMap<>(this.databaseMap);
 			
 			boolean removed = map.keySet().removeAll(databases);
 
@@ -198,7 +198,7 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 		
 		try
 		{
-			SortedMap<D, AtomicInteger> map = new TreeMap<D, AtomicInteger>(this.databaseMap);
+			SortedMap<D, AtomicInteger> map = new TreeMap<>(this.databaseMap);
 			
 			boolean retained = map.keySet().retainAll(databases);
 
@@ -228,7 +228,7 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 		{
 			if (!this.databaseMap.isEmpty())
 			{
-				this.databaseMap = new TreeMap<D, AtomicInteger>();
+				this.databaseMap = new TreeMap<>();
 			}
 		}
 		finally
@@ -258,7 +258,7 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 				}
 				else
 				{
-					SortedMap<D, AtomicInteger> map = new TreeMap<D, AtomicInteger>(this.databaseMap);
+					SortedMap<D, AtomicInteger> map = new TreeMap<>(this.databaseMap);
 
 					map.remove(database);
 					
@@ -309,7 +309,7 @@ public class LoadBalancer<Z, D extends Database<Z>> extends AbstractBalancer<Z, 
 				}
 				else
 				{
-					SortedMap<D, AtomicInteger> map = new TreeMap<D, AtomicInteger>(this.databaseMap);
+					SortedMap<D, AtomicInteger> map = new TreeMap<>(this.databaseMap);
 					
 					map.put(database, load);
 					

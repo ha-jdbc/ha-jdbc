@@ -40,6 +40,6 @@ public class ConnectionProxyFactoryFactory<Z, D extends Database<Z>, P> implemen
 	@Override
 	public ProxyFactory<Z, D, Connection, SQLException> createProxyFactory(P parentProxy, ProxyFactory<Z, D, P, SQLException> parent, Invoker<Z, D, P, Connection, SQLException> invoker, Map<D, Connection> connections)
 	{
-		return new ConnectionProxyFactory<Z, D, P>(parentProxy, parent, invoker, connections, this.context);
+		return new ConnectionProxyFactory<>(parentProxy, parent, invoker, connections, this.context);
 	}
 }

@@ -40,6 +40,6 @@ public class ArrayProxyFactoryFactory<Z, D extends Database<Z>, P> implements Pr
 	@Override
 	public ProxyFactory<Z, D, Array, SQLException> createProxyFactory(P parentProxy, ProxyFactory<Z, D, P, SQLException> parent, Invoker<Z, D, P, Array, SQLException> invoker, Map<D, Array> arrays)
 	{
-		return new ArrayProxyFactory<Z, D, P>(parentProxy, parent, invoker, arrays, this.locatorsUpdateCopy);
+		return new ArrayProxyFactory<>(parentProxy, parent, invoker, arrays, this.locatorsUpdateCopy);
 	}
 }

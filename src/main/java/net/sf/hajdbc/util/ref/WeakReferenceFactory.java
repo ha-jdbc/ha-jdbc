@@ -38,6 +38,6 @@ public class WeakReferenceFactory implements ReferenceFactory
 	@Override
 	public <T> Reference<T> createReference(T object)
 	{
-		return new WeakReference<T>(object);
+		return new WeakReference<>(object);
 	}
 }

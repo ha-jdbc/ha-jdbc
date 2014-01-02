@@ -62,7 +62,6 @@ import net.sf.hajdbc.TriggerSupport;
 import net.sf.hajdbc.TriggerTime;
 import net.sf.hajdbc.UniqueConstraint;
 import net.sf.hajdbc.UniqueConstraintFactory;
-import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.Strings;
 
 /**
@@ -277,42 +276,32 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 
 	protected String executeFunction(Connection connection, String function) throws SQLException
 	{
-		Statement statement = connection.createStatement();
-		
-		try
+		try (Statement statement = connection.createStatement())
 		{
-			ResultSet resultSet = statement.executeQuery(this.executeFunctionSQL(function));
-			
-			resultSet.next();
-			
-			return resultSet.getString(1);
-		}
-		finally
-		{
-			Resources.close(statement);
+			try (ResultSet resultSet = statement.executeQuery(this.executeFunctionSQL(function)))
+			{
+				resultSet.next();
+				
+				return resultSet.getString(1);
+			}
 		}
 	}
 
 	protected List<String> executeQuery(Connection connection, String sql) throws SQLException
 	{
-		Statement statement = connection.createStatement();
-		
-		try
+		try (Statement statement = connection.createStatement())
 		{
-			ResultSet resultSet = statement.executeQuery(sql);
-			
-			List<String> resultList = new LinkedList<String>();
-			
-			while (resultSet.next())
+			try (ResultSet resultSet = statement.executeQuery(sql))
 			{
-				resultList.add(resultSet.getString(1));
+				List<String> resultList = new LinkedList<>();
+				
+				while (resultSet.next())
+				{
+					resultList.add(resultSet.getString(1));
+				}
+				
+				return resultList;
 			}
-			
-			return resultList;
-		}
-		finally
-		{
-			Resources.close(statement);
 		}
 	}
 
@@ -351,11 +340,9 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	@Override
 	public Collection<SequenceProperties> getSequences(DatabaseMetaData metaData, SequencePropertiesFactory factory) throws SQLException
 	{
-		ResultSet resultSet = metaData.getTables(Strings.EMPTY, null, Strings.ANY, new String[] { this.sequenceTableType() });
-		
-		try
+		try (ResultSet resultSet = metaData.getTables(Strings.EMPTY, null, Strings.ANY, new String[] { this.sequenceTableType() }))
 		{
-			List<SequenceProperties> sequences = new LinkedList<SequenceProperties>();
+			List<SequenceProperties> sequences = new LinkedList<>();
 			
 			while (resultSet.next())
 			{
@@ -363,10 +350,6 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 			}
 			
 			return sequences;
-		}
-		finally
-		{
-			Resources.close(resultSet);
 		}
 	}
 
@@ -707,11 +690,9 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	@Override
 	public Collection<QualifiedName> getTables(DatabaseMetaData metaData, QualifiedNameFactory factory) throws SQLException
 	{
-		ResultSet resultSet = metaData.getTables(getCatalog(metaData), null, Strings.ANY, new String[] { "TABLE" });
-		
-		try
+		try (ResultSet resultSet = metaData.getTables(getCatalog(metaData), null, Strings.ANY, new String[] { "TABLE" }))
 		{
-			List<QualifiedName> list = new LinkedList<QualifiedName>();
+			List<QualifiedName> list = new LinkedList<>();
 			
 			while (resultSet.next())
 			{
@@ -719,10 +700,6 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 			}
 			
 			return list;
-		}
-		finally
-		{
-			Resources.close(resultSet);
 		}
 	}
 
@@ -736,11 +713,9 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	@Override
 	public Map<String, ColumnProperties> getColumns(DatabaseMetaData metaData, QualifiedName table, ColumnPropertiesFactory factory) throws SQLException
 	{
-		Statement statement = metaData.getConnection().createStatement();
-		
-		try
+		try (Statement statement = metaData.getConnection().createStatement())
 		{
-			Map<String, ColumnProperties> map = new HashMap<String, ColumnProperties>();
+			Map<String, ColumnProperties> map = new HashMap<>();
 			
 			ResultSetMetaData resultSet = statement.executeQuery(String.format("SELECT * FROM %s WHERE 0=1", table.getDMLName())).getMetaData();
 			
@@ -757,10 +732,6 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 			
 			return map;
 		}
-		finally
-		{
-			Resources.close(statement);
-		}
 	}
 
 	/**
@@ -773,9 +744,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	@Override
 	public UniqueConstraint getPrimaryKey(DatabaseMetaData metaData, QualifiedName table, UniqueConstraintFactory factory) throws SQLException
 	{
-		ResultSet resultSet = metaData.getPrimaryKeys(getCatalog(metaData), table.getSchema(), table.getName());
-		
-		try
+		try (ResultSet resultSet = metaData.getPrimaryKeys(getCatalog(metaData), table.getSchema(), table.getName()))
 		{
 			UniqueConstraint constraint = null;
 
@@ -791,10 +760,6 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 			
 			return constraint;
 		}
-		finally
-		{
-			Resources.close(resultSet);
-		}
 	}
 
 	/**
@@ -807,11 +772,9 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	@Override
 	public Collection<ForeignKeyConstraint> getForeignKeyConstraints(DatabaseMetaData metaData, QualifiedName table, ForeignKeyConstraintFactory factory) throws SQLException
 	{
-		ResultSet resultSet = metaData.getImportedKeys(getCatalog(metaData), table.getSchema(), table.getName());
-		
-		try
+		try (ResultSet resultSet = metaData.getImportedKeys(getCatalog(metaData), table.getSchema(), table.getName()))
 		{
-			Map<String, ForeignKeyConstraint> foreignKeyMap = new HashMap<String, ForeignKeyConstraint>();
+			Map<String, ForeignKeyConstraint> foreignKeyMap = new HashMap<>();
 			
 			while (resultSet.next())
 			{
@@ -832,10 +795,6 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 			
 			return foreignKeyMap.values();
 		}
-		finally
-		{
-			Resources.close(resultSet);
-		}
 	}
 
 	/**
@@ -849,11 +808,9 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	@Override
 	public Collection<UniqueConstraint> getUniqueConstraints(DatabaseMetaData metaData, QualifiedName table, UniqueConstraint primaryKey, UniqueConstraintFactory factory) throws SQLException
 	{
-		ResultSet resultSet = metaData.getIndexInfo(getCatalog(metaData), table.getSchema(), table.getName(), true, false);
-		
-		try
+		try (ResultSet resultSet = metaData.getIndexInfo(getCatalog(metaData), table.getSchema(), table.getName(), true, false))
 		{
-			Map<String, UniqueConstraint> keyMap = new HashMap<String, UniqueConstraint>();
+			Map<String, UniqueConstraint> keyMap = new HashMap<>();
 			
 			while (resultSet.next())
 			{
@@ -878,10 +835,6 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 			}
 			return keyMap.values();
 		}
-		finally
-		{
-			Resources.close(resultSet);
-		}
 	}
 	
 	private static String getCatalog(DatabaseMetaData metaData) throws SQLException
@@ -900,7 +853,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	@Override
 	public Collection<String> getIdentityColumns(Collection<ColumnProperties> columns) throws SQLException
 	{
-		List<String> columnList = new LinkedList<String>();
+		List<String> columnList = new LinkedList<>();
 		
 		for (ColumnProperties column: columns)
 		{
@@ -920,11 +873,9 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	@Override
 	public Map<Integer, Entry<String, Integer>> getTypes(DatabaseMetaData metaData) throws SQLException
 	{
-		ResultSet resultSet = metaData.getTypeInfo();
-		
-		try
+		try (ResultSet resultSet = metaData.getTypeInfo())
 		{
-			Map<Integer, Map.Entry<String, Integer>> types = new HashMap<Integer, Map.Entry<String, Integer>>();
+			Map<Integer, Map.Entry<String, Integer>> types = new HashMap<>();
 			
 			while (resultSet.next())
 			{
@@ -933,15 +884,11 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 				{
 					String name = resultSet.getString("TYPE_NAME");
 					String params = resultSet.getString("CREATE_PARAMS");
-					types.put(type, new AbstractMap.SimpleImmutableEntry<String, Integer>(name, (params != null) ? resultSet.getInt("PRECISION") : null));
+					types.put(type, new AbstractMap.SimpleImmutableEntry<>(name, (params != null) ? resultSet.getInt("PRECISION") : null));
 				}
 			}
 			
 			return types;
-		}
-		finally
-		{
-			Resources.close(resultSet);
 		}
 	}
 
@@ -958,7 +905,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	
 	protected Set<String> reservedIdentifiers(DatabaseMetaData metaData) throws SQLException
 	{
-		Set<String> set = new HashSet<String>(Arrays.asList(SQL_2003_RESERVED_KEY_WORDS));
+		Set<String> set = new HashSet<>(Arrays.asList(SQL_2003_RESERVED_KEY_WORDS));
 		
 		for (String word: metaData.getSQLKeywords().split(Strings.COMMA))
 		{

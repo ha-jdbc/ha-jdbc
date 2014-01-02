@@ -28,7 +28,6 @@ import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.DatabaseProperties;
 import net.sf.hajdbc.cache.DatabaseMetaDataCache;
 import net.sf.hajdbc.dialect.Dialect;
-import net.sf.hajdbc.util.Resources;
 
 /**
  * Per-database {@link DatabaseMetaDataCache} implementation that populates itself eagerly.
@@ -36,7 +35,7 @@ import net.sf.hajdbc.util.Resources;
  */
 public class EagerDatabaseMetaDataCache<Z, D extends Database<Z>> implements DatabaseMetaDataCache<Z, D>
 {
-	private final Map<D, DatabaseProperties> map = new TreeMap<D, DatabaseProperties>();
+	private final Map<D, DatabaseProperties> map = new TreeMap<>();
 	private final DatabaseCluster<Z, D> cluster;
 	
 	public EagerDatabaseMetaDataCache(DatabaseCluster<Z, D> cluster)
@@ -51,19 +50,13 @@ public class EagerDatabaseMetaDataCache<Z, D extends Database<Z>> implements Dat
 	@Override
 	public void flush() throws SQLException
 	{
-		Map<D, DatabaseProperties> map = new TreeMap<D, DatabaseProperties>();
+		Map<D, DatabaseProperties> map = new TreeMap<>();
 		
 		for (D database: this.cluster.getBalancer())
 		{
-			Connection connection = database.connect(database.createConnectionSource(), database.decodePassword(this.cluster.getDecoder()));
-			
-			try
+			try (Connection connection = database.connect(database.createConnectionSource(), database.decodePassword(this.cluster.getDecoder())))
 			{
 				map.put(database, this.createDatabaseProperties(connection));
-			}
-			finally
-			{
-				Resources.close(connection);
 			}
 		}
 		

@@ -49,6 +49,6 @@ public class PreparedStatementProxyFactoryFactory<Z, D extends Database<Z>> impl
 	@Override
 	public ProxyFactory<Z, D, PreparedStatement, SQLException> createProxyFactory(Connection connection, ProxyFactory<Z, D, Connection, SQLException> parent, Invoker<Z, D, Connection, PreparedStatement, SQLException> invoker, Map<D, PreparedStatement> statements)
 	{
-		return new PreparedStatementProxyFactory<Z, D>(connection, parent, invoker, statements, this.context, this.locks, this.selectForUpdate);
+		return new PreparedStatementProxyFactory<>(connection, parent, invoker, statements, this.context, this.locks, this.selectForUpdate);
 	}
 }

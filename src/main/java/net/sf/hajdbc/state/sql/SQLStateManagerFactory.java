@@ -114,7 +114,7 @@ public class SQLStateManagerFactory extends GenericObjectPoolConfiguration imple
 		
 		this.logger.log(Level.INFO, "State for database cluster {0} will be persisted to {1}", cluster, url);
 		
-		return new SQLStateManager<Z, D>(cluster, database, new GenericObjectPoolFactory(this));
+		return new SQLStateManager<>(cluster, database, new GenericObjectPoolFactory(this));
 	}
 	
 	public String getUrlPattern()

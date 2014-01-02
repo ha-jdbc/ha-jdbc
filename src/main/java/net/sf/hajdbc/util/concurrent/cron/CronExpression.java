@@ -14,7 +14,6 @@
  * under the License.
  * 
  */
-// Copied from org.quartz
 package net.sf.hajdbc.util.concurrent.cron;
 
 import java.io.Serializable;

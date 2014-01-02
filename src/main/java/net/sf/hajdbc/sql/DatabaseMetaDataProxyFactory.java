@@ -46,6 +46,6 @@ public class DatabaseMetaDataProxyFactory<Z, D extends Database<Z>> extends Abst
 	@Override
 	public DatabaseMetaData createProxy()
 	{
-		return Proxies.createProxy(DatabaseMetaData.class, new DatabaseMetaDataInvocationHandler<Z, D>(this));
+		return Proxies.createProxy(DatabaseMetaData.class, new DatabaseMetaDataInvocationHandler<>(this));
 	}
 }

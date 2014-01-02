@@ -40,6 +40,6 @@ public class StatementProxyFactory<Z, D extends Database<Z>> extends AbstractSta
 	@Override
 	public Statement createProxy()
 	{
-		return Proxies.createProxy(Statement.class, new StatementInvocationHandler<Z, D>(this));
+		return Proxies.createProxy(Statement.class, new StatementInvocationHandler<>(this));
 	}
 }

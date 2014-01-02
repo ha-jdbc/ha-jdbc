@@ -44,6 +44,6 @@ public class ResultSetProxyFactoryFactory<Z, D extends Database<Z>, S extends St
 	@Override
 	public ProxyFactory<Z, D, ResultSet, SQLException> createProxyFactory(S statementProxy, ProxyFactory<Z, D, S, SQLException> statementFactory, Invoker<Z, D, S, ResultSet, SQLException> invoker, Map<D, ResultSet> results)
 	{
-		return new ResultSetProxyFactory<Z, D, S>(statementProxy, statementFactory, invoker, results, this.context, this.sinkRegistry);
+		return new ResultSetProxyFactory<>(statementProxy, statementFactory, invoker, results, this.context, this.sinkRegistry);
 	}
 }

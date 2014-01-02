@@ -20,14 +20,13 @@ package net.sf.hajdbc.pool.sql;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import net.sf.hajdbc.pool.AbstractPoolProvider;
-import net.sf.hajdbc.util.Resources;
+import net.sf.hajdbc.pool.CloseablePoolProvider;
 
 /**
  * {@link Connection} object pool provider implementation.
  * @author Paul Ferraro
  */
-public class ConnectionPoolProvider extends AbstractPoolProvider<Connection, SQLException>
+public class ConnectionPoolProvider extends CloseablePoolProvider<Connection, SQLException>
 {
 	private final ConnectionFactory factory;
 	
@@ -36,12 +35,6 @@ public class ConnectionPoolProvider extends AbstractPoolProvider<Connection, SQL
 		super(Connection.class, SQLException.class);
 		
 		this.factory = factory;
-	}
-
-	@Override
-	public void close(Connection connection)
-	{
-		Resources.close(connection);
 	}
 
 	/**

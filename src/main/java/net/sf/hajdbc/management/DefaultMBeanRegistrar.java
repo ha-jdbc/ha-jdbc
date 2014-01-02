@@ -129,7 +129,7 @@ public class DefaultMBeanRegistrar<Z, D extends Database<Z>> implements MBeanReg
 
 	private Hashtable<String, String> createAttributes(DatabaseCluster<Z, D> cluster)
 	{
-		Hashtable<String, String> attributes = new Hashtable<String, String>();
+		Hashtable<String, String> attributes = new Hashtable<>();
 		attributes.put(TYPE_ATTRIBUTE, CLUSTER_TYPE);
 		attributes.put(CLUSTER_ATTRIBUTE, cluster.getId());
 		return attributes;
@@ -137,7 +137,7 @@ public class DefaultMBeanRegistrar<Z, D extends Database<Z>> implements MBeanReg
 
 	private Hashtable<String, String> createAttributes(DatabaseCluster<Z, D> cluster, D database)
 	{
-		Hashtable<String, String> attributes = new Hashtable<String, String>();
+		Hashtable<String, String> attributes = new Hashtable<>();
 		attributes.put(TYPE_ATTRIBUTE, DATABASE_TYPE);
 		attributes.put(CLUSTER_ATTRIBUTE, cluster.getId());
 		attributes.put(DATABASE_ATTRIBUTE, database.getId());

@@ -32,19 +32,19 @@ public class CollectionsTest
 	@Test
 	public void emptySortedSet()
 	{
-		this.verify(Collections.<Integer>emptySortedSet(), new TreeSet<Integer>(), 0, 1);
+		verify(Collections.<Integer>emptySortedSet(), new TreeSet<Integer>(), 0, 1);
 	}
 	
 	@Test
 	public void singletonSortedSet()
 	{
-		SortedSet<Integer> set = new TreeSet<Integer>();
+		SortedSet<Integer> set = new TreeSet<>();
 		set.add(1);
 		
-		this.verify(Collections.<Integer>singletonSortedSet(1), set, 0, 1);
+		verify(Collections.<Integer>singletonSortedSet(1), set, 0, 1);
 	}
 	
-	private <T> void verify(SortedSet<T> immutableSet, SortedSet<T> mutableSet, T value1, T value2)
+	private static <T> void verify(SortedSet<T> immutableSet, SortedSet<T> mutableSet, T value1, T value2)
 	{
 		try
 		{
@@ -172,19 +172,19 @@ public class CollectionsTest
 	@Test
 	public void emptySortedMap()
 	{
-		this.verify(Collections.<Integer, String>emptySortedMap(), new TreeMap<Integer, String>(), 0, 1, "");
+		verify(Collections.<Integer, String>emptySortedMap(), new TreeMap<Integer, String>(), 0, 1, "");
 	}
 	
 	@Test
 	public void singletonSortedMap()
 	{
-		SortedMap<Integer, String> map = new TreeMap<Integer, String>();
+		SortedMap<Integer, String> map = new TreeMap<>();
 		map.put(1, "");
 		
-		this.verify(Collections.<Integer, String>singletonSortedMap(1, ""), map, 0, 1, "");
+		verify(Collections.<Integer, String>singletonSortedMap(1, ""), map, 0, 1, "");
 	}
 	
-	private <K, V> void verify(SortedMap<K, V> immutableMap, SortedMap<K, V> mutableMap, K key1, K key2, V value)
+	private static <K, V> void verify(SortedMap<K, V> immutableMap, SortedMap<K, V> mutableMap, K key1, K key2, V value)
 	{
 		try
 		{

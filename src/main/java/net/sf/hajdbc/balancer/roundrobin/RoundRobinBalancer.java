@@ -32,7 +32,7 @@ import net.sf.hajdbc.balancer.AbstractSetBalancer;
  */
 public class RoundRobinBalancer<P, D extends Database<P>> extends AbstractSetBalancer<P, D>
 {
-	private Queue<D> databaseQueue = new LinkedList<D>();
+	private Queue<D> databaseQueue = new LinkedList<>();
 
 	/**
 	 * Constructs a new RoundRobinBalancer

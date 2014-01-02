@@ -36,6 +36,6 @@ public class OutputStreamProxyFactoryFactory<Z, D extends Database<Z>, P> implem
 	@Override
 	public ProxyFactory<Z, D, OutputStream, IOException> createProxyFactory(P parentProxy, ProxyFactory<Z, D, P, SQLException> parent, Invoker<Z, D, P, OutputStream, SQLException> invoker, Map<D, OutputStream> streams)
 	{
-		return new OutputStreamProxyFactory<Z, D, P>(parentProxy, parent, invoker, streams);
+		return new OutputStreamProxyFactory<>(parentProxy, parent, invoker, streams);
 	}
 }

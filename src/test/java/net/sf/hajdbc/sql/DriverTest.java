@@ -46,9 +46,7 @@ import static org.mockito.Mockito.*;
  */
 public class DriverTest
 {
-	@SuppressWarnings("unchecked")
 	private DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase> configurationFactory = mock(DatabaseClusterConfigurationFactory.class);
-	@SuppressWarnings("unchecked")
 	private DatabaseClusterFactory<java.sql.Driver, DriverDatabase> factory = mock(DatabaseClusterFactory.class);
 	private Connection connection = mock(Connection.class);
 	
@@ -70,7 +68,7 @@ public class DriverTest
 	}
 	
 	@Test
-	public void acceptsURL() throws SQLException
+	public void acceptsURL()
 	{
 		Driver driver = new Driver();
 		
@@ -90,7 +88,6 @@ public class DriverTest
 		this.connect("jdbc:ha-jdbc://cluster3/dummy", "cluster3");
 	}
 	
-	@SuppressWarnings("unchecked")
 	private void connect(String url, String id) throws Exception
 	{
 		DatabaseCluster<java.sql.Driver, DriverDatabase> cluster = mock(DatabaseCluster.class);
@@ -121,10 +118,8 @@ public class DriverTest
 		when(cluster.getDurability()).thenReturn(mock(Durability.class));
 		when(cluster.getTransactionIdentifierFactory()).thenReturn(mock(TransactionIdentifierFactory.class));
 		
-		try
+		try (Connection result = driver.connect(url, null))
 		{
-			Connection result = driver.connect(url, null);
-			
 			Assert.assertTrue(result.getClass().getName(), Proxy.isProxyClass(result.getClass()));
 			ConnectionInvocationHandler<java.sql.Driver, DriverDatabase, java.sql.Driver> handler = (ConnectionInvocationHandler<java.sql.Driver, DriverDatabase, java.sql.Driver>) Proxy.getInvocationHandler(result);
 			Assert.assertSame(this.connection, handler.getProxyFactory().get(database));

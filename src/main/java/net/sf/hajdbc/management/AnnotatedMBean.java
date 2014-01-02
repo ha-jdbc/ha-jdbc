@@ -45,8 +45,8 @@ public class AnnotatedMBean implements DynamicMBean
 {
 	private final MBeanInfo info;
 	private final Object bean;
-	private final Map<String, Method> accessorMap = new HashMap<String, Method>();
-	private final Map<String, Method> mutatorMap = new HashMap<String, Method>();
+	private final Map<String, Method> accessorMap = new HashMap<>();
+	private final Map<String, Method> mutatorMap = new HashMap<>();
 	
 	public AnnotatedMBean(Object bean)
 	{
@@ -65,7 +65,7 @@ public class AnnotatedMBean implements DynamicMBean
 		{
 			BeanInfo beanInfo = Introspector.getBeanInfo(beanClass);
 			PropertyDescriptor[] properties = beanInfo.getPropertyDescriptors();
-			List<MBeanAttributeInfo> attributeList = new ArrayList<MBeanAttributeInfo>(properties.length);
+			List<MBeanAttributeInfo> attributeList = new ArrayList<>(properties.length);
 			
 			for (PropertyDescriptor descriptor: properties)
 			{
@@ -100,7 +100,7 @@ public class AnnotatedMBean implements DynamicMBean
 			}
 			
 			MethodDescriptor[] methods = beanInfo.getMethodDescriptors();
-			List<MBeanOperationInfo> operationList = new ArrayList<MBeanOperationInfo>(methods.length);
+			List<MBeanOperationInfo> operationList = new ArrayList<>(methods.length);
 			
 			for (MethodDescriptor descriptor: beanInfo.getMethodDescriptors())
 			{

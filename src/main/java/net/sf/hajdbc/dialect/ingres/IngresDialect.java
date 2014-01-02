@@ -30,7 +30,6 @@ import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.SequencePropertiesFactory;
 import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.dialect.StandardDialect;
-import net.sf.hajdbc.util.Resources;
 
 /**
  * Dialect for <a href="http://opensource.ingres.com/projects/ingres/">Ingres</a>.
@@ -64,24 +63,19 @@ public class IngresDialect extends StandardDialect
 	@Override
 	public Collection<SequenceProperties> getSequences(DatabaseMetaData metaData, SequencePropertiesFactory factory) throws SQLException
 	{
-		Statement statement = metaData.getConnection().createStatement();
-		
-		try
+		try (Statement statement = metaData.getConnection().createStatement())
 		{
-			ResultSet resultSet = statement.executeQuery("SELECT seq_name FROM iisequence");
-			
-			List<SequenceProperties> sequences = new LinkedList<SequenceProperties>();
-			
-			while (resultSet.next())
+			try (ResultSet resultSet = statement.executeQuery("SELECT seq_name FROM iisequence"))
 			{
-				sequences.add(factory.createSequenceProperties(null, resultSet.getString(1), 1));
+				List<SequenceProperties> sequences = new LinkedList<>();
+				
+				while (resultSet.next())
+				{
+					sequences.add(factory.createSequenceProperties(null, resultSet.getString(1), 1));
+				}
+				
+				return sequences;
 			}
-			
-			return sequences;
-		}
-		finally
-		{
-			Resources.close(statement);
 		}
 	}
 

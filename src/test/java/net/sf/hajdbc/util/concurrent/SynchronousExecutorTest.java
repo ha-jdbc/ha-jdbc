@@ -54,9 +54,9 @@ public class SynchronousExecutorTest
 		ExecutorService service = Executors.newCachedThreadPool();
 		try
 		{
-			List<Task> tasks = new ArrayList<Task>(sleeps.size());
-			List<Integer> order = new CopyOnWriteArrayList<Integer>();
-			List<Integer> expected = new ArrayList<Integer>(sleeps.size());
+			List<Task> tasks = new ArrayList<>(sleeps.size());
+			List<Integer> order = new CopyOnWriteArrayList<>();
+			List<Integer> expected = new ArrayList<>(sleeps.size());
 			for (int i = 0; i < sleeps.size(); ++i)
 			{
 				tasks.add(new Task(i, sleeps.get(i), order));
@@ -65,7 +65,7 @@ public class SynchronousExecutorTest
 			
 			List<Future<Integer>> futures = new SynchronousExecutor(service, reverse).invokeAll(tasks);
 			
-			List<Integer> results = new ArrayList<Integer>(tasks.size());
+			List<Integer> results = new ArrayList<>(tasks.size());
 			for (Future<Integer> future: futures)
 			{
 				results.add(future.get());

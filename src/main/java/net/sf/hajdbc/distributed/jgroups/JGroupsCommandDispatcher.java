@@ -64,7 +64,7 @@ public class JGroupsCommandDispatcher<C> implements RequestHandler, CommandDispa
 	private final long timeout;
 	private final MessageDispatcher dispatcher;
 	private final C context;
-	private final AtomicReference<View> viewReference = new AtomicReference<View>();
+	private final AtomicReference<View> viewReference = new AtomicReference<>();
 	private final MembershipListener membershipListener;
 	private final Stateful stateful;
 	
@@ -139,7 +139,7 @@ public class JGroupsCommandDispatcher<C> implements RequestHandler, CommandDispa
 			
 			if (responses == null) return Collections.emptyMap();
 			
-			Map<Member, R> results = new TreeMap<Member, R>();
+			Map<Member, R> results = new TreeMap<>();
 			
 			for (Map.Entry<Address, Rsp<R>> entry: responses.entrySet())
 			{

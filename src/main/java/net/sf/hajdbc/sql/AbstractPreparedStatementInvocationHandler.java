@@ -60,7 +60,7 @@ public abstract class AbstractPreparedStatementInvocationHandler<Z, D extends Da
 	{
 		if (method.equals(executeQueryMethod))
 		{
-			return new ResultSetProxyFactoryFactory<Z, D, S>(this.getProxyFactory().getTransactionContext(), this.getProxyFactory().getInputSinkRegistry());
+			return new ResultSetProxyFactoryFactory<>(this.getProxyFactory().getTransactionContext(), this.getProxyFactory().getInputSinkRegistry());
 		}
 		
 		return super.getProxyFactoryFactory(object, method, parameters);

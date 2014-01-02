@@ -47,11 +47,11 @@ public class LazyTableProperties extends AbstractTableProperties
 	private final ForeignKeyConstraintFactory foreignKeyConstraintFactory;
 	private final ColumnPropertiesFactory columnPropertiesFactory;
 
-	private final AtomicReference<Map<String, ColumnProperties>> columnsRef = new AtomicReference<Map<String, ColumnProperties>>();
-	private final AtomicReference<UniqueConstraint> primaryKeyRef = new AtomicReference<UniqueConstraint>();
-	private final AtomicReference<Collection<UniqueConstraint>> uniqueConstraintsRef = new AtomicReference<Collection<UniqueConstraint>>();
-	private final AtomicReference<Collection<ForeignKeyConstraint>> foreignKeyConstraintsRef = new AtomicReference<Collection<ForeignKeyConstraint>>();
-	private final AtomicReference<Collection<String>> identityColumnsRef = new AtomicReference<Collection<String>>();
+	private final AtomicReference<Map<String, ColumnProperties>> columnsRef = new AtomicReference<>();
+	private final AtomicReference<UniqueConstraint> primaryKeyRef = new AtomicReference<>();
+	private final AtomicReference<Collection<UniqueConstraint>> uniqueConstraintsRef = new AtomicReference<>();
+	private final AtomicReference<Collection<ForeignKeyConstraint>> foreignKeyConstraintsRef = new AtomicReference<>();
+	private final AtomicReference<Collection<String>> identityColumnsRef = new AtomicReference<>();
 	
 	public LazyTableProperties(QualifiedName table, DatabaseMetaDataProvider metaDataProvider, Dialect dialect, QualifiedNameFactory nameFactory)
 	{

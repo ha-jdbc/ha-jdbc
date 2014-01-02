@@ -44,6 +44,6 @@ public class LoadBalancerFactory implements BalancerFactory
 	@Override
 	public <Z, D extends Database<Z>> Balancer<Z, D> createBalancer(Set<D> databases)
 	{
-		return new LoadBalancer<Z, D>(databases);
+		return new LoadBalancer<>(databases);
 	}
 }

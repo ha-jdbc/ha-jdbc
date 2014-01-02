@@ -64,8 +64,8 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ch
 	private static final Method createNClobMethod = Methods.getMethod(Connection.class, "createNClob");
 	private static final Method createSQLXMLMethod = Methods.getMethod(Connection.class, "createSQLXML");
 	
-	private static final Set<Method> endTransactionMethodSet = new HashSet<Method>(Arrays.asList(commitMethod, rollbackMethod, setAutoCommitMethod));
-	private static final Set<Method> createLocatorMethodSet = new HashSet<Method>(Arrays.asList(createBlobMethod, createClobMethod, createNClobMethod, createSQLXMLMethod));
+	private static final Set<Method> endTransactionMethodSet = new HashSet<>(Arrays.asList(commitMethod, rollbackMethod, setAutoCommitMethod));
+	private static final Set<Method> createLocatorMethodSet = new HashSet<>(Arrays.asList(createBlobMethod, createClobMethod, createNClobMethod, createSQLXMLMethod));
 	
 	private static final StaticRegistry<Method, Durability.Phase> phaseRegistry = new DurabilityPhaseRegistry(Arrays.asList(commitMethod, setAutoCommitMethod), Arrays.asList(rollbackMethod));
 	
@@ -83,48 +83,48 @@ public class ConnectionInvocationHandler<Z, D extends Database<Z>, P> extends Ch
 	{
 		if (createStatementMethodSet.contains(method))
 		{
-			return new StatementProxyFactoryFactory<Z, D>(this.getProxyFactory().getTransactionContext());
+			return new StatementProxyFactoryFactory<>(this.getProxyFactory().getTransactionContext());
 		}
 		if (prepareStatementMethodSet.contains(method))
 		{
 			String sql = (String) parameters[0];
-			return new PreparedStatementProxyFactoryFactory<Z, D>(this.getProxyFactory().getTransactionContext(), this.getProxyFactory().extractLocks(sql), this.getProxyFactory().isSelectForUpdate(sql));
+			return new PreparedStatementProxyFactoryFactory<>(this.getProxyFactory().getTransactionContext(), this.getProxyFactory().extractLocks(sql), this.getProxyFactory().isSelectForUpdate(sql));
 		}
 		if (prepareCallMethodSet.contains(method))
 		{
 			String sql = (String) parameters[0];
-			return new CallableStatementProxyFactoryFactory<Z, D>(this.getProxyFactory().getTransactionContext(), this.getProxyFactory().extractLocks(sql));
+			return new CallableStatementProxyFactoryFactory<>(this.getProxyFactory().getTransactionContext(), this.getProxyFactory().extractLocks(sql));
 		}
 		
 		if (setSavepointMethodSet.contains(method))
 		{
-			return new SavepointProxyFactoryFactory<Z, D>();
+			return new SavepointProxyFactoryFactory<>();
 		}
 		
 		if (method.equals(getMetaDataMethod))
 		{
-			return new DatabaseMetaDataProxyFactoryFactory<Z, D>();
+			return new DatabaseMetaDataProxyFactoryFactory<>();
 		}
 		
 		if (method.equals(createArrayMethod))
 		{
-			return new ArrayProxyFactoryFactory<Z, D, Connection>(this.getProxyFactory().locatorsUpdateCopy());
+			return new ArrayProxyFactoryFactory<>(this.getProxyFactory().locatorsUpdateCopy());
 		}
 		if (method.equals(createBlobMethod))
 		{
-			return new BlobProxyFactoryFactory<Z, D, Connection>(this.getProxyFactory().locatorsUpdateCopy());
+			return new BlobProxyFactoryFactory<>(this.getProxyFactory().locatorsUpdateCopy());
 		}
 		if (method.equals(createClobMethod))
 		{
-			return new ClobProxyFactoryFactory<Z, D, Connection, Clob>(Clob.class, this.getProxyFactory().locatorsUpdateCopy());
+			return new ClobProxyFactoryFactory<>(Clob.class, this.getProxyFactory().locatorsUpdateCopy());
 		}
 		if (method.equals(createNClobMethod))
 		{
-			return new ClobProxyFactoryFactory<Z, D, Connection, NClob>(NClob.class, this.getProxyFactory().locatorsUpdateCopy());
+			return new ClobProxyFactoryFactory<>(NClob.class, this.getProxyFactory().locatorsUpdateCopy());
 		}
 		if (method.equals(createSQLXMLMethod))
 		{
-			return new SQLXMLProxyFactoryFactory<Z, D, Connection>(this.getProxyFactory().locatorsUpdateCopy());
+			return new SQLXMLProxyFactoryFactory<>(this.getProxyFactory().locatorsUpdateCopy());
 		}
 		
 		return super.getProxyFactoryFactory(connection, method, parameters);

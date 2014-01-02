@@ -39,6 +39,6 @@ public class SharedEagerDatabaseMetaDataCacheFactory implements DatabaseMetaData
 	@Override
 	public <Z, D extends Database<Z>> DatabaseMetaDataCache<Z, D> createCache(DatabaseCluster<Z, D> cluster)
 	{
-		return new SharedEagerDatabaseMetaDataCache<Z, D>(cluster);
+		return new SharedEagerDatabaseMetaDataCache<>(cluster);
 	}
 }

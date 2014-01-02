@@ -43,10 +43,10 @@ public class LazyDatabaseProperties extends AbstractDatabaseProperties
 	private final DatabaseMetaDataProvider provider;
 	private final SequencePropertiesFactory sequenceFactory;
 	
-	private final AtomicReference<Map<QualifiedName, TableProperties>> tablesRef = new AtomicReference<Map<QualifiedName, TableProperties>>();
-	private final AtomicReference<Map<QualifiedName, SequenceProperties>> sequencesRef = new AtomicReference<Map<QualifiedName, SequenceProperties>>();
-	private final AtomicReference<List<String>> defaultSchemasRef = new AtomicReference<List<String>>();
-	private final AtomicReference<Map<Integer, Map.Entry<String, Integer>>> typesRef = new AtomicReference<Map<Integer, Map.Entry<String, Integer>>>();
+	private final AtomicReference<Map<QualifiedName, TableProperties>> tablesRef = new AtomicReference<>();
+	private final AtomicReference<Map<QualifiedName, SequenceProperties>> sequencesRef = new AtomicReference<>();
+	private final AtomicReference<List<String>> defaultSchemasRef = new AtomicReference<>();
+	private final AtomicReference<Map<Integer, Map.Entry<String, Integer>>> typesRef = new AtomicReference<>();
 	
 	public LazyDatabaseProperties(DatabaseMetaDataProvider provider, Dialect dialect) throws SQLException
 	{
@@ -65,7 +65,7 @@ public class LazyDatabaseProperties extends AbstractDatabaseProperties
 		
 		if (tables == null)
 		{
-			tables = new HashMap<QualifiedName, TableProperties>();
+			tables = new HashMap<>();
 			
 			for (QualifiedName table: this.dialect.getTables(this.provider.getDatabaseMetaData(), this.nameFactory))
 			{
@@ -90,7 +90,7 @@ public class LazyDatabaseProperties extends AbstractDatabaseProperties
 
 		if (sequences == null)
 		{
-			sequences = new HashMap<QualifiedName, SequenceProperties>();
+			sequences = new HashMap<>();
 			
 			if (this.sequenceFactory != null)
 			{

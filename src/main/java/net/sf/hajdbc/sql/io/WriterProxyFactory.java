@@ -24,7 +24,6 @@ import java.util.Map;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.invocation.Invoker;
-import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.sql.ProxyFactory;
 
 /**
@@ -39,21 +38,14 @@ public class WriterProxyFactory<Z, D extends Database<Z>, P> extends OutputProxy
 	}
 	
 	@Override
-	public void close(D database, Writer writer)
+	public void close(D database, Writer writer) throws IOException
 	{
-		try
-		{
-			writer.close();
-		}
-		catch (IOException e)
-		{
-			this.logger.log(Level.INFO, e);
-		}
+		writer.close();
 	}
 
 	@Override
 	public Writer createProxy()
 	{
-		return new WriterProxy<Z, D, P>(this);
+		return new WriterProxy<>(this);
 	}
 }

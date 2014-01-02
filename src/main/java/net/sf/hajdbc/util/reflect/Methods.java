@@ -66,7 +66,7 @@ public final class Methods
 	 */
 	public static Set<Method> findMethods(Class<?> sourceClass, String... patterns)
 	{
-		List<Method> list = new LinkedList<Method>();
+		List<Method> list = new LinkedList<>();
 		
 		Method[] methods = sourceClass.getMethods();
 		
@@ -83,7 +83,7 @@ public final class Methods
 			}
 		}
 		
-		return new HashSet<Method>(list);
+		return new HashSet<>(list);
 	}
 	
 	/**

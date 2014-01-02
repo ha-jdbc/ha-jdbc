@@ -69,7 +69,7 @@ public class InvokeOnManyInvocationStrategy implements InvocationStrategy
 			DatabaseCluster<Z, D> cluster = map.getDatabaseCluster();
 			Dialect dialect = cluster.getDialect();
 			
-			List<D> failedDatabases = new ArrayList<D>(exceptionMap.size());
+			List<D> failedDatabases = new ArrayList<>(exceptionMap.size());
 			
 			// Determine which exceptions are due to failures
 			for (Map.Entry<D, E> entry: exceptionMap.entrySet())

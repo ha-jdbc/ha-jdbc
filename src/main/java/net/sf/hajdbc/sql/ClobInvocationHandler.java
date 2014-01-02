@@ -49,11 +49,11 @@ public class ClobInvocationHandler<Z, D extends Database<Z>, P, C extends Clob> 
 	{
 		if (method.equals(SET_ASCII_STREAM_METHOD))
 		{
-			return new OutputStreamProxyFactoryFactory<Z, D, C>();
+			return new OutputStreamProxyFactoryFactory<>();
 		}
 		if (method.equals(SET_CHARACTER_STREAM_METHOD))
 		{
-			return new WriterProxyFactoryFactory<Z, D, C>();
+			return new WriterProxyFactoryFactory<>();
 		}
 		
 		return super.getProxyFactoryFactory(object, method, parameters);

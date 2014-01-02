@@ -34,10 +34,10 @@ import java.util.SortedSet;
  */
 public class Collections
 {
-	public static final SortedSet<?> EMPTY_SORTED_SET = new EmptySortedSet<Object>();
-	public static final SortedMap<?, ?> EMPTY_SORTED_MAP = new EmptySortedMap<Object, Object>();
-	static final Iterator<?> EMPTY_ITERATOR = new EmptyIterator<Object>();
-	static final Comparator<?> NATURAL_COMPARATOR = new NaturalComparator<Object>();
+	public static final SortedSet<?> EMPTY_SORTED_SET = new EmptySortedSet<>();
+	public static final SortedMap<?, ?> EMPTY_SORTED_MAP = new EmptySortedMap<>();
+	static final Iterator<?> EMPTY_ITERATOR = new EmptyIterator<>();
+	static final Comparator<?> NATURAL_COMPARATOR = new NaturalComparator<>();
 	
 	/**
 	 * Returns an iterator over an empty collection.
@@ -92,7 +92,7 @@ public class Collections
 	 */
 	public static <E> SortedSet<E> singletonSortedSet(E element)
 	{
-		return new SingletonSortedSet<E>(element);
+		return new SingletonSortedSet<>(element);
 	}
 	
 	/**
@@ -105,7 +105,7 @@ public class Collections
 	 */
 	public static <K, V> SortedMap<K, V> singletonSortedMap(K key, V value)
 	{
-		return new SingletonSortedMap<K, V>(key, value);
+		return new SingletonSortedMap<>(key, value);
 	}
 
 	static class NaturalComparator<E> implements Comparator<E>, Serializable
@@ -362,7 +362,7 @@ public class Collections
 		@Override
 		public Iterator<E> iterator()
 		{
-			return new SingletonIterator<E>(this.element);
+			return new SingletonIterator<>(this.element);
 		}
 
 		@Override
@@ -430,7 +430,7 @@ public class Collections
 		
 		SingletonSortedMap(K key, V value)
 		{
-			this.entry = new SimpleImmutableEntry<K, V>(key, value);
+			this.entry = new SimpleImmutableEntry<>(key, value);
 		}
 
 		@Override

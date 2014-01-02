@@ -45,6 +45,6 @@ public class RefProxyFactory<Z, D extends Database<Z>, P> extends LocatorProxyFa
 	@Override
 	public Ref createProxy()
 	{
-		return Proxies.createProxy(Ref.class, new RefInvocationHandler<Z, D, P>(this));
+		return Proxies.createProxy(Ref.class, new RefInvocationHandler<>(this));
 	}
 }

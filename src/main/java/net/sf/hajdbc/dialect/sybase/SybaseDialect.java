@@ -23,7 +23,6 @@ import java.sql.Statement;
 
 import net.sf.hajdbc.IdentityColumnSupport;
 import net.sf.hajdbc.dialect.StandardDialect;
-import net.sf.hajdbc.util.Resources;
 
 /**
  * Dialect for Sybase (commercial).
@@ -140,15 +139,10 @@ public class SybaseDialect extends StandardDialect
 	@Override
 	public boolean isValid(Connection connection) throws SQLException
 	{
-		Statement statement = connection.createStatement();
-		try
+		try (Statement statement = connection.createStatement())
 		{
 			statement.executeQuery("SELECT GETDATE()");
 			return true;
-		}
-		finally
-		{
-			Resources.close(statement);
 		}
 	}
 }

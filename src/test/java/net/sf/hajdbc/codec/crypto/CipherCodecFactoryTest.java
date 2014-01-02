@@ -27,7 +27,6 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
 
 import net.sf.hajdbc.codec.Codec;
-import net.sf.hajdbc.util.Resources;
 
 import org.apache.commons.codec.binary.Base64;
 import org.junit.Assert;
@@ -57,14 +56,9 @@ public class CipherCodecFactoryTest
 		store.load(null, null);
 		store.setKeyEntry(CipherCodecFactory.Property.KEY_ALIAS.defaultValue, this.key, KEY_PASSWORD.toCharArray(), null);
 		
-		FileOutputStream out = new FileOutputStream(file);
-		try
+		try (FileOutputStream out = new FileOutputStream(file))
 		{
 			store.store(out, STORE_PASSWORD.toCharArray());
-		}
-		finally
-		{
-			Resources.close(out);
 		}
 		
 		System.setProperty(CipherCodecFactory.Property.KEYSTORE_FILE.name, file.getPath());

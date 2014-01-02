@@ -42,8 +42,8 @@ public abstract class AbstractProxyFactory<Z, D extends Database<Z>, TE extends 
 	protected Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	private final Map<D, T> map;
-	private final Map<ProxyFactory<Z, D, ?, ? extends Exception>, Object> children = new WeakHashMap<ProxyFactory<Z, D, ?, ? extends Exception>, Object>();
-	private final Set<Invoker<Z, D, T, ?, E>> invokers = new HashSet<Invoker<Z, D, T, ?, E>>();
+	private final Map<ProxyFactory<Z, D, ?, ? extends Exception>, Object> children = new WeakHashMap<>();
+	private final Set<Invoker<Z, D, T, ?, E>> invokers = new HashSet<>();
 	private final ExceptionFactory<E> exceptionFactory;
 	
 	/**
@@ -202,7 +202,14 @@ public abstract class AbstractProxyFactory<Z, D extends Database<Z>, TE extends 
 					
 					if (object != null)
 					{
-						this.close(database, object);
+						try
+						{
+							this.close(database, object);
+						}
+						catch (Exception e)
+						{
+							this.logger.log(Level.WARN, e);
+						}
 					}
 					
 					mapEntries.remove();

@@ -43,6 +43,6 @@ public class NoDurabilityFactory implements DurabilityFactory
 	@Override
 	public <Z, D extends Database<Z>> Durability<Z, D> createDurability(DatabaseCluster<Z, D> cluster)
 	{
-		return new NoDurability<Z, D>();
+		return new NoDurability<>();
 	}
 }

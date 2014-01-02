@@ -54,7 +54,7 @@ public abstract class AbstractBalancerTest
 	@Test
 	public void next()
 	{
-		Balancer<Void, MockDatabase> balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases)));
+		Balancer<Void, MockDatabase> balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases)));
 		this.next(balancer);
 	}
 	
@@ -79,7 +79,7 @@ public abstract class AbstractBalancerTest
 	@Test
 	public void nextSingleWeight()
 	{
-		Balancer<Void, MockDatabase> balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases[0], this.databases[1])));
+		Balancer<Void, MockDatabase> balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases[0], this.databases[1])));
 		
 		assertSame(this.databases[1], balancer.next());
 		
@@ -89,7 +89,7 @@ public abstract class AbstractBalancerTest
 		WaitingInvoker invoker = new WaitingInvoker(latch);
 		
 		ExecutorService executor = Executors.newFixedThreadPool(count);
-		List<Future<Void>> futures = new ArrayList<Future<Void>>(count);
+		List<Future<Void>> futures = new ArrayList<>(count);
 		
 		for (int i = 0; i < count; ++i)
 		{
@@ -136,11 +136,11 @@ public abstract class AbstractBalancerTest
 		
 		assertSame(this.databases[0], balancer.primary());
 
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases[0], this.databases[1])));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases[0], this.databases[1])));
 		
 		assertSame(this.databases[0], balancer.primary());
 
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases)));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases)));
 		
 		assertSame(this.databases[0], balancer.primary());
 	}
@@ -162,7 +162,7 @@ public abstract class AbstractBalancerTest
 		backups = result.iterator();
 		assertFalse(backups.hasNext());
 
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases[0], this.databases[1])));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases[0], this.databases[1])));
 		
 		result = balancer.backups();
 		assertNotNull(result);
@@ -171,7 +171,7 @@ public abstract class AbstractBalancerTest
 		assertSame(this.databases[1], backups.next());
 		assertFalse(backups.hasNext());
 		
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases)));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases)));
 		
 		result = balancer.backups();
 		assertNotNull(result);
@@ -205,14 +205,14 @@ public abstract class AbstractBalancerTest
 		assertTrue(result);
 		assertCollectionEquals(Arrays.asList(this.databases), balancer);
 		
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases[0], this.databases[1])));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases[0], this.databases[1])));
 
 		result = balancer.addAll(databases);
 		
 		assertTrue(result);
 		assertCollectionEquals(Arrays.asList(this.databases), balancer);
 		
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases)));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases)));
 
 		result = balancer.addAll(databases);
 		
@@ -242,14 +242,14 @@ public abstract class AbstractBalancerTest
 		assertFalse(result);
 		assertEquals(Collections.singleton(this.databases[0]), balancer);
 		
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases[0], this.databases[1])));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases[0], this.databases[1])));
 
 		result = balancer.removeAll(databases);
 		
 		assertTrue(result);
 		assertEquals(Collections.singleton(this.databases[0]), balancer);
 		
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases)));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases)));
 
 		result = balancer.removeAll(databases);
 		
@@ -279,14 +279,14 @@ public abstract class AbstractBalancerTest
 		assertTrue(result);
 		assertCollectionEquals(Collections.<MockDatabase>emptySet(), balancer);
 		
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases[0], this.databases[1])));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases[0], this.databases[1])));
 
 		result = balancer.retainAll(databases);
 		
 		assertTrue(result);
 		assertCollectionEquals(Collections.singleton(this.databases[1]), balancer);
 		
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases)));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases)));
 
 		result = balancer.retainAll(databases);
 		
@@ -310,12 +310,12 @@ public abstract class AbstractBalancerTest
 		balancer.clear();
 		assertEquals(Collections.<MockDatabase>emptySet(), balancer);
 
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases[0], this.databases[1])));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases[0], this.databases[1])));
 		
 		balancer.clear();
 		assertEquals(Collections.<MockDatabase>emptySet(), balancer);
 
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases)));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases)));
 		
 		balancer.clear();
 		assertEquals(Collections.<MockDatabase>emptySet(), balancer);
@@ -339,13 +339,13 @@ public abstract class AbstractBalancerTest
 		assertFalse(result);
 		assertCollectionEquals(Collections.singleton(this.databases[0]), balancer);
 
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases[0], this.databases[1])));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases[0], this.databases[1])));
 		
 		result = balancer.remove(this.databases[1]);
 		assertTrue(result);
 		assertCollectionEquals(Collections.singleton(this.databases[0]), balancer);
 
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases)));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases)));
 		
 		result = balancer.remove(this.databases[1]);
 		assertTrue(result);
@@ -370,13 +370,13 @@ public abstract class AbstractBalancerTest
 		assertTrue(result);
 		assertCollectionEquals(Arrays.asList(this.databases[0], this.databases[1]), balancer);
 
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases[0], this.databases[1])));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases[0], this.databases[1])));
 		
 		result = balancer.add(this.databases[1]);
 		assertFalse(result);
 		assertCollectionEquals(Arrays.asList(this.databases[0], this.databases[1]), balancer);
 
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases)));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases)));
 		
 		result = balancer.add(this.databases[1]);
 		assertFalse(result);
@@ -394,7 +394,7 @@ public abstract class AbstractBalancerTest
 		Object expected = new Object();
 		Exception expectedException = new Exception();
 		
-		Balancer<Void, MockDatabase> balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases)));
+		Balancer<Void, MockDatabase> balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases)));
 
 		when(invoker.invoke(this.databases[0], object)).thenReturn(expected);
 		
@@ -417,7 +417,6 @@ public abstract class AbstractBalancerTest
 		when(invoker.invoke(this.databases[0], object)).thenThrow(expectedException);
 		
 		result = null;
-		exception = null;
 		
 		try
 		{
@@ -452,7 +451,7 @@ public abstract class AbstractBalancerTest
 		assertEquals(this.databases[0], result.next());
 		assertFalse(result.hasNext());
 
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases[0], this.databases[1])));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases[0], this.databases[1])));
 		
 		result = balancer.iterator();
 		assertTrue(result.hasNext());
@@ -461,7 +460,7 @@ public abstract class AbstractBalancerTest
 		assertEquals(this.databases[1], result.next());
 		assertFalse(result.hasNext());
 
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases)));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases)));
 		
 		result = balancer.iterator();
 		assertTrue(result.hasNext());
@@ -491,13 +490,13 @@ public abstract class AbstractBalancerTest
 		assertFalse(balancer.contains(this.databases[1]));
 		assertFalse(balancer.contains(this.databases[2]));
 
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases[0], this.databases[1])));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases[0], this.databases[1])));
 		
 		assertTrue(balancer.contains(this.databases[0]));
 		assertTrue(balancer.contains(this.databases[1]));
 		assertFalse(balancer.contains(this.databases[2]));
 
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases)));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases)));
 		
 		assertTrue(balancer.contains(this.databases[0]));
 		assertTrue(balancer.contains(this.databases[1]));
@@ -524,14 +523,14 @@ public abstract class AbstractBalancerTest
 		assertFalse(balancer.containsAll(Arrays.asList(this.databases[0], this.databases[1])));
 		assertFalse(balancer.containsAll(Arrays.asList(this.databases)));
 
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases[0], this.databases[1])));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases[0], this.databases[1])));
 		
 		assertTrue(balancer.containsAll(Collections.emptyList()));
 		assertTrue(balancer.containsAll(Collections.singletonList(this.databases[0])));
 		assertTrue(balancer.containsAll(Arrays.asList(this.databases[0], this.databases[1])));
 		assertFalse(balancer.containsAll(Arrays.asList(this.databases)));
 
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases)));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases)));
 		
 		assertTrue(balancer.containsAll(Collections.emptyList()));
 		assertTrue(balancer.containsAll(Collections.singletonList(this.databases[0])));
@@ -553,11 +552,11 @@ public abstract class AbstractBalancerTest
 
 		assertFalse(balancer.isEmpty());
 
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases[0], this.databases[1])));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases[0], this.databases[1])));
 		
 		assertFalse(balancer.isEmpty());
 
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases)));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases)));
 		
 		assertFalse(balancer.isEmpty());
 	}
@@ -576,11 +575,11 @@ public abstract class AbstractBalancerTest
 
 		assertEquals(1, balancer.size());
 
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases[0], this.databases[1])));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases[0], this.databases[1])));
 		
 		assertEquals(2, balancer.size());
 
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases)));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases)));
 		
 		assertEquals(3, balancer.size());
 	}
@@ -599,11 +598,11 @@ public abstract class AbstractBalancerTest
 
 		assertTrue(Arrays.equals(new Object[] { this.databases[0] }, balancer.toArray()));
 
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases[0], this.databases[1])));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases[0], this.databases[1])));
 		
 		assertTrue(Arrays.equals(new Object[] { this.databases[0], this.databases[1] }, balancer.toArray()));
 
-		balancer = this.factory.createBalancer(new HashSet<MockDatabase>(Arrays.asList(this.databases)));
+		balancer = this.factory.createBalancer(new HashSet<>(Arrays.asList(this.databases)));
 		
 		assertTrue(Arrays.equals(this.databases, balancer.toArray()));
 	}

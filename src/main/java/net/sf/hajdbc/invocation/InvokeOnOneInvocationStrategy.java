@@ -79,7 +79,7 @@ public class InvokeOnOneInvocationStrategy implements InvocationStrategy
 			{
 				R result = balancer.invoke(invoker, database, object);
 				
-				SortedMap<D, R> resultMap = new TreeMap<D, R>();
+				SortedMap<D, R> resultMap = new TreeMap<>();
 				resultMap.put(database, result);
 				return resultMap;
 			}

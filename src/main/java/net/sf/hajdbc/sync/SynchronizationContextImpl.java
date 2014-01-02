@@ -36,7 +36,6 @@ import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
-import net.sf.hajdbc.util.Resources;
 
 /**
  * @author Paul Ferraro
@@ -52,7 +51,7 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 	private final DatabaseCluster<Z, D> cluster;
 	private final DatabaseProperties sourceDatabaseProperties;
 	private final DatabaseProperties targetDatabaseProperties;
-	private final Map<D, Map.Entry<Connection, Boolean>> connectionMap = new HashMap<D, Map.Entry<Connection, Boolean>>();
+	private final Map<D, Map.Entry<Connection, Boolean>> connectionMap = new HashMap<>();
 	private final ExecutorService executor;
 	
 	/**
@@ -89,7 +88,7 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 		if (entry == null)
 		{
 			Connection connection = database.connect(database.createConnectionSource(), database.decodePassword(this.cluster.getDecoder()));
-			entry = new AbstractMap.SimpleImmutableEntry<Connection, Boolean>(connection, connection.getAutoCommit());
+			entry = new AbstractMap.SimpleImmutableEntry<>(connection, connection.getAutoCommit());
 			
 			this.connectionMap.put(database, entry);
 		}
@@ -177,7 +176,7 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 	@Override
 	public SynchronizationSupport getSynchronizationSupport()
 	{
-		return new SynchronizationSupportImpl<Z, D>(this);
+		return new SynchronizationSupportImpl<>(this);
 	}
 
 	/**
@@ -188,19 +187,13 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 	{
 		for (Map.Entry<Connection, Boolean> entry: this.connectionMap.values())
 		{
-			Connection connection = entry.getKey();
-			
-			try
+			try (Connection connection = entry.getKey())
 			{
 				connection.setAutoCommit(entry.getValue());
 			}
 			catch (SQLException e)
 			{
 				logger.log(Level.WARN, e);
-			}
-			finally
-			{
-				Resources.close(connection);
 			}
 		}
 		

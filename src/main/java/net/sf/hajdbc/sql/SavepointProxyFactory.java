@@ -24,7 +24,6 @@ import java.util.Map;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.invocation.Invoker;
-import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.util.reflect.Proxies;
 
 /**
@@ -41,19 +40,12 @@ public class SavepointProxyFactory<Z, D extends Database<Z>> extends AbstractChi
 	@Override
 	public Savepoint createProxy()
 	{
-		return Proxies.createProxy(Savepoint.class, new SavepointInvocationHandler<Z, D>(this));
+		return Proxies.createProxy(Savepoint.class, new SavepointInvocationHandler<>(this));
 	}
 
 	@Override
-	public void close(D database, Savepoint savepoint)
+	public void close(D database, Savepoint savepoint) throws SQLException
 	{
-		try
-		{
-			this.getParent().get(database).releaseSavepoint(savepoint);
-		}
-		catch (SQLException e)
-		{
-			this.logger.log(Level.INFO, e);
-		}
+		this.getParent().get(database).releaseSavepoint(savepoint);
 	}
 }

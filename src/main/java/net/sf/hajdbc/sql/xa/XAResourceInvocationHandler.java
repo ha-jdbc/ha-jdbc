@@ -60,12 +60,12 @@ public class XAResourceInvocationHandler extends ChildInvocationHandler<XADataSo
 	private static final Method commitMethod = Methods.getMethod(XAResource.class, "commit", Xid.class, Boolean.TYPE);
 	private static final Method rollbackMethod = Methods.getMethod(XAResource.class, "rollback", Xid.class);
 	private static final Method forgetMethod = Methods.getMethod(XAResource.class, "forget", Xid.class);
-	private static final Set<Method> endTransactionMethodSet = new HashSet<Method>(Arrays.asList(commitMethod, rollbackMethod, forgetMethod));
+	private static final Set<Method> endTransactionMethodSet = new HashSet<>(Arrays.asList(commitMethod, rollbackMethod, forgetMethod));
 	
 	private static final StaticRegistry<Method, Durability.Phase> phaseRegistry = new DurabilityPhaseRegistry(Arrays.asList(prepareMethod), Arrays.asList(commitMethod), Arrays.asList(rollbackMethod), Arrays.asList(forgetMethod));
 	
 	// Xids are global - so store in static variable
-	private static final ConcurrentMap<Xid, Lock> lockMap = new ConcurrentHashMap<Xid, Lock>();
+	private static final ConcurrentMap<Xid, Lock> lockMap = new ConcurrentHashMap<>();
 
 	public XAResourceInvocationHandler(XAResourceProxyFactory proxyFactory)
 	{

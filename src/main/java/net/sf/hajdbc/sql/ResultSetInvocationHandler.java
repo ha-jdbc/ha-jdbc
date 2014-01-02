@@ -65,27 +65,27 @@ public class ResultSetInvocationHandler<Z, D extends Database<Z>, S extends Stat
 	{
 		if (getArrayMethodSet.contains(method))
 		{
-			return new ArrayProxyFactoryFactory<Z, D, ResultSet>(this.getProxyFactory().locatorsUpdateCopy());
+			return new ArrayProxyFactoryFactory<>(this.getProxyFactory().locatorsUpdateCopy());
 		}
 		if (getBlobMethodSet.contains(method))
 		{
-			return new BlobProxyFactoryFactory<Z, D, ResultSet>(this.getProxyFactory().locatorsUpdateCopy());
+			return new BlobProxyFactoryFactory<>(this.getProxyFactory().locatorsUpdateCopy());
 		}
 		if (getClobMethodSet.contains(method))
 		{
-			return new ClobProxyFactoryFactory<Z, D, ResultSet, Clob>(Clob.class, this.getProxyFactory().locatorsUpdateCopy());
+			return new ClobProxyFactoryFactory<>(Clob.class, this.getProxyFactory().locatorsUpdateCopy());
 		}
 		if (getNClobMethodSet.contains(method))
 		{
-			return new ClobProxyFactoryFactory<Z, D, ResultSet, NClob>(NClob.class, this.getProxyFactory().locatorsUpdateCopy());
+			return new ClobProxyFactoryFactory<>(NClob.class, this.getProxyFactory().locatorsUpdateCopy());
 		}
 		if (getRefMethodSet.contains(method))
 		{
-			return new RefProxyFactoryFactory<Z, D, ResultSet>(this.getProxyFactory().locatorsUpdateCopy());
+			return new RefProxyFactoryFactory<>(this.getProxyFactory().locatorsUpdateCopy());
 		}
 		if (getSQLXMLMethodSet.contains(method))
 		{
-			return new SQLXMLProxyFactoryFactory<Z, D, ResultSet>(this.getProxyFactory().locatorsUpdateCopy());
+			return new SQLXMLProxyFactoryFactory<>(this.getProxyFactory().locatorsUpdateCopy());
 		}
 		
 		return super.getProxyFactoryFactory(object, method, parameters);

@@ -44,7 +44,7 @@ public class SharedLazyDatabaseMetaDataCache<Z, D extends Database<Z>> implement
 {
 	private final DatabaseCluster<Z, D> cluster;
 	
-	private volatile Reference<Map.Entry<DatabaseProperties, LazyDatabaseMetaDataProvider>> entryRef = new SoftReference<Map.Entry<DatabaseProperties, LazyDatabaseMetaDataProvider>>(null);
+	private volatile Reference<Map.Entry<DatabaseProperties, LazyDatabaseMetaDataProvider>> entryRef = new SoftReference<>(null);
 	
 	public SharedLazyDatabaseMetaDataCache(DatabaseCluster<Z, D> cluster)
 	{
@@ -76,9 +76,9 @@ public class SharedLazyDatabaseMetaDataCache<Z, D extends Database<Z>> implement
 			LazyDatabaseMetaDataProvider provider = new LazyDatabaseMetaDataProvider(metaData);
 			DatabaseProperties properties = new LazyDatabaseProperties(provider, dialect);
 			
-			entry = new AbstractMap.SimpleImmutableEntry<DatabaseProperties, LazyDatabaseMetaDataProvider>(properties, provider);
+			entry = new AbstractMap.SimpleImmutableEntry<>(properties, provider);
 		
-			this.entryRef = new SoftReference<Map.Entry<DatabaseProperties, LazyDatabaseMetaDataProvider>>(entry);
+			this.entryRef = new SoftReference<>(entry);
 		}
 		else
 		{

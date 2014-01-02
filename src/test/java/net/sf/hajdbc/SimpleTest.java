@@ -39,12 +39,10 @@ import net.sf.hajdbc.state.bdb.BerkeleyDBStateManagerFactory;
 import net.sf.hajdbc.state.simple.SimpleStateManagerFactory;
 import net.sf.hajdbc.state.sql.SQLStateManagerFactory;
 import net.sf.hajdbc.state.sqlite.SQLiteStateManagerFactory;
-import net.sf.hajdbc.util.Resources;
 
 import org.hsqldb.jdbc.JDBCDataSource;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class SimpleTest
@@ -58,7 +56,7 @@ public class SimpleTest
 	@Test
 	public void simple() throws Exception
 	{
-		this.test(new SimpleStateManagerFactory());
+		test(new SimpleStateManagerFactory());
 	}
 	
 	@Test
@@ -66,7 +64,7 @@ public class SimpleTest
 	{
 		SQLiteStateManagerFactory factory = new SQLiteStateManagerFactory();
 		factory.setLocationPattern("target/sqlite/{0}");
-		this.test(factory);
+		test(factory);
 	}
 	
 	@Test
@@ -74,7 +72,7 @@ public class SimpleTest
 	{
 		SQLStateManagerFactory factory = new SQLStateManagerFactory();
 		factory.setUrlPattern("jdbc:h2:target/h2/{0}");
-		this.test(factory);
+		test(factory);
 	}
 	
 	@Test
@@ -82,7 +80,7 @@ public class SimpleTest
 	{
 		SQLStateManagerFactory factory = new SQLStateManagerFactory();
 		factory.setUrlPattern("jdbc:hsqldb:target/hsqldb/{0}");
-		this.test(factory);
+		test(factory);
 	}
 	
 	@Test
@@ -90,19 +88,18 @@ public class SimpleTest
 	{
 		BerkeleyDBStateManagerFactory factory = new BerkeleyDBStateManagerFactory();
 		factory.setLocationPattern("target/bdb/{0}");
-		this.test(factory);
+		test(factory);
 	}
 	
 	@Test
-	@Ignore(value = "Figure out why Derby throws OutOfMemoryError on connect")
 	public void derby() throws Exception
 	{
 		SQLStateManagerFactory factory = new SQLStateManagerFactory();
 		factory.setUrlPattern("jdbc:derby:target/derby/{0};create=true");
-		this.test(factory);
+		test(factory);
 	}
 	
-	private void test(StateManagerFactory factory) throws Exception
+	private static void test(StateManagerFactory factory) throws Exception
 	{
 		DataSourceDatabase db1 = new DataSourceDatabase();
 		db1.setId("db1");
@@ -133,74 +130,47 @@ public class SimpleTest
 
 		DataSource ds = new DataSource();
 		ds.setCluster("cluster");
-		ds.setConfigurationFactory(new SimpleDatabaseClusterConfigurationFactory<javax.sql.DataSource, DataSourceDatabase>(config));
+		ds.setConfigurationFactory(new SimpleDatabaseClusterConfigurationFactory<>(config));
 		
-		@SuppressWarnings("unchecked")
 		InvocationHandler<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource, SQLException, ProxyFactory<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource, SQLException>> handler = (InvocationHandler<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource, SQLException, ProxyFactory<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource, SQLException>>) Proxy.getInvocationHandler(ds.getProxy());
 		ProxyFactory<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource, SQLException> proxyFactory = handler.getProxyFactory();
 
-		try
+		try (Connection c1 = proxyFactory.get(db1).getConnection())
 		{
-			Connection c1 = proxyFactory.get(db1).getConnection();
-			try
+			createTable(c1);
+			
+			try (Connection c2 = proxyFactory.get(db2).getConnection())
 			{
-				this.createTable(c1);
-				try
+				createTable(c2);
+				
+				try (Connection c = ds.getConnection())
 				{
-					Connection c2 = proxyFactory.get(db2).getConnection();
-					try
+					c.setAutoCommit(false);
+					
+					try (PreparedStatement ps = c.prepareStatement("INSERT INTO test (id, name) VALUES (?, ?)"))
 					{
-						this.createTable(c2);
-						
-						try
-						{
-							Connection c = ds.getConnection();
-							try
-							{
-								c.setAutoCommit(false);
-								PreparedStatement ps = c.prepareStatement("INSERT INTO test (id, name) VALUES (?, ?)");
-								try
-								{
-									ps.setInt(1, 1);
-									ps.setString(2, "1");
-									ps.addBatch();
-									ps.setInt(1, 2);
-									ps.setString(2, "2");
-									ps.addBatch();
-									ps.executeBatch();
-								}
-								finally
-								{
-									Resources.close(ps);
-								}
-								c.commit();
-								
-								this.validate(c1);
-								this.validate(c2);
-							}
-							finally
-							{
-								Resources.close(c);
-							}
-						}
-						finally
-						{
-							this.dropTable(c2);
-						}
+						ps.setInt(1, 1);
+						ps.setString(2, "1");
+						ps.addBatch();
+						ps.setInt(1, 2);
+						ps.setString(2, "2");
+						ps.addBatch();
+						ps.executeBatch();
 					}
-					finally
-					{
-						c2.close();
-					}
+					
+					c.commit();
+					
+					validate(c1);
+					validate(c2);
 				}
 				finally
 				{
-					this.dropTable(c1);
+					dropTable(c2);
 				}
 			}
 			finally
 			{
-				c1.close();
+				dropTable(c1);
 			}
 		}
 		finally
@@ -209,46 +179,38 @@ public class SimpleTest
 		}
 	}
 
-	private void createTable(Connection connection) throws SQLException
+	private static void createTable(Connection connection) throws SQLException
 	{
-		this.execute(connection, "CREATE TABLE test (id INTEGER NOT NULL, name VARCHAR(10) NOT NULL, PRIMARY KEY (id))");
+		execute(connection, "CREATE TABLE test (id INTEGER NOT NULL, name VARCHAR(10) NOT NULL, PRIMARY KEY (id))");
 	}
 
-	private void dropTable(Connection connection) throws SQLException
+	private static void dropTable(Connection connection) throws SQLException
 	{
-		this.execute(connection, "DROP TABLE test");
+		execute(connection, "DROP TABLE test");
 	}
 
-	private void execute(Connection connection, String sql) throws SQLException
+	private static void execute(Connection connection, String sql) throws SQLException
 	{
-		Statement statement = connection.createStatement();
-		try
+		try (Statement statement = connection.createStatement())
 		{
 			statement.execute(sql);
 		}
-		finally
-		{
-			Resources.close(statement);
-		}
 	}
 
-	private void validate(Connection connection) throws SQLException
+	private static void validate(Connection connection) throws SQLException
 	{
-		Statement statement = connection.createStatement();
-		try
+		try (Statement statement = connection.createStatement())
 		{
-			ResultSet results = statement.executeQuery("SELECT id, name FROM test");
-			Assert.assertTrue(results.next());
-			Assert.assertEquals(1, results.getInt(1));
-			Assert.assertEquals("1", results.getString(2));
-			Assert.assertTrue(results.next());
-			Assert.assertEquals(2, results.getInt(1));
-			Assert.assertEquals("2", results.getString(2));
-			Assert.assertFalse(results.next());
-		}
-		finally
-		{
-			Resources.close(statement);
+			try (ResultSet results = statement.executeQuery("SELECT id, name FROM test"))
+			{
+				Assert.assertTrue(results.next());
+				Assert.assertEquals(1, results.getInt(1));
+				Assert.assertEquals("1", results.getString(2));
+				Assert.assertTrue(results.next());
+				Assert.assertEquals(2, results.getInt(1));
+				Assert.assertEquals("2", results.getString(2));
+				Assert.assertFalse(results.next());
+			}
 		}
 	}
 }

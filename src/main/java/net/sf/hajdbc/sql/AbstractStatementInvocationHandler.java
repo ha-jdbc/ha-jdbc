@@ -17,6 +17,7 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -32,7 +33,6 @@ import net.sf.hajdbc.invocation.InvocationStrategy;
 import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.invocation.LockingInvocationStrategy;
 import net.sf.hajdbc.logging.Level;
-import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.reflect.Methods;
 
 /**
@@ -66,7 +66,7 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 	{
 		if (method.equals(executeQueryMethod) || method.equals(getResultSetMethod))
 		{
-			return new ResultSetProxyFactoryFactory<Z, D, S>(this.getProxyFactory().getTransactionContext(), this.getProxyFactory().getInputSinkRegistry());
+			return new ResultSetProxyFactoryFactory<>(this.getProxyFactory().getTransactionContext(), this.getProxyFactory().getInputSinkRegistry());
 		}
 		
 		return super.getProxyFactoryFactory(object, method, parameters);
@@ -168,7 +168,14 @@ public abstract class AbstractStatementInvocationHandler<Z, D extends Database<Z
 		}
 		else if (method.equals(closeMethod))
 		{
-			Resources.close(this.getProxyFactory().getInputSinkRegistry());
+			try
+			{
+				this.getProxyFactory().getInputSinkRegistry().close();
+			}
+			catch (IOException e)
+			{
+				this.logger.log(Level.WARN, e);
+			}
 			this.getProxyFactory().remove();
 		}
 		

@@ -32,12 +32,12 @@ public class MapRegistryStoreFactory<K> implements RegistryStoreFactory<K>
 	@Override
 	public <V> LifecycleRegistry.Store<K, V> createStore()
 	{
-		return new MapRegistryStore<K, V>();
+		return new MapRegistryStore<>();
 	}
 	
 	static class MapRegistryStore<K, V> implements LifecycleRegistry.Store<K, V>
 	{
-		private final ConcurrentMap<K, V> map = new ConcurrentHashMap<K, V>();
+		private final ConcurrentMap<K, V> map = new ConcurrentHashMap<>();
 		
 		/**
 		 * {@inheritDoc}

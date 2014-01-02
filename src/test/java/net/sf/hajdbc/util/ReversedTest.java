@@ -35,9 +35,9 @@ public class ReversedTest
 	public void test()
 	{
 		List<Integer> list = Arrays.asList(1, 2, 3);
-		List<Integer> result = new ArrayList<Integer>(3);
+		List<Integer> result = new ArrayList<>(3);
 		
-		for (Integer i: new Reversed<Integer>(list))
+		for (Integer i: new Reversed<>(list))
 		{
 			result.add(i);
 		}

@@ -55,6 +55,7 @@ public class MultiplexingCodecFactoryTest extends CipherCodecFactoryTest
 	}
 	
 	@Test
+	@Override
 	public void test() throws SQLException
 	{
 		Decoder codec = this.factory.createDecoder(null);
