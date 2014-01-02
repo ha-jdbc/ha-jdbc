@@ -44,7 +44,6 @@ import net.sf.hajdbc.util.Resources;
 import org.hsqldb.jdbc.JDBCDataSource;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class SimpleTest
@@ -94,7 +93,6 @@ public class SimpleTest
 	}
 	
 	@Test
-	@Ignore(value = "Figure out why Derby throws OutOfMemoryError on connect")
 	public void derby() throws Exception
 	{
 		SQLStateManagerFactory factory = new SQLStateManagerFactory();
