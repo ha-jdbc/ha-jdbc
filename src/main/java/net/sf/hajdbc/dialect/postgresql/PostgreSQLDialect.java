@@ -18,7 +18,6 @@
 package net.sf.hajdbc.dialect.postgresql;
 
 import java.io.File;
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -38,7 +37,6 @@ import net.sf.hajdbc.IdentityColumnSupport;
 import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.TriggerSupport;
 import net.sf.hajdbc.dialect.StandardDialect;
-import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.Strings;
 
 /**
@@ -93,29 +91,23 @@ public class PostgreSQLDialect extends StandardDialect implements DumpRestoreSup
 	@Override
 	public List<String> getDefaultSchemas(DatabaseMetaData metaData) throws SQLException
 	{
-		Connection connection = metaData.getConnection();
-		Statement statement = connection.createStatement();
-		
-		try
+		try (Statement statement = metaData.getConnection().createStatement())
 		{
-			ResultSet resultSet = statement.executeQuery("SHOW search_path");
-			
-			resultSet.next();
-			
-			String[] schemas = resultSet.getString(1).split(Strings.COMMA);
-			
-			List<String> schemaList = new ArrayList<String>(schemas.length);
-			
-			for (String schema: schemas)
+			try (ResultSet resultSet = statement.executeQuery("SHOW search_path"))
 			{
-				schemaList.add(schema.equals("$user") ? metaData.getUserName() : schema);
+				resultSet.next();
+				
+				String[] schemas = resultSet.getString(1).split(Strings.COMMA);
+				
+				List<String> schemaList = new ArrayList<>(schemas.length);
+				
+				for (String schema: schemas)
+				{
+					schemaList.add(schema.equals("$user") ? metaData.getUserName() : schema);
+				}
+				
+				return schemaList;
 			}
-			
-			return schemaList;
-		}
-		finally
-		{
-			Resources.close(statement);
 		}
 	}
 
@@ -144,7 +136,7 @@ public class PostgreSQLDialect extends StandardDialect implements DumpRestoreSup
 	@Override
 	protected Set<String> reservedIdentifiers(DatabaseMetaData metaData)
 	{
-		return new HashSet<String>(Arrays.asList(RESERVED_KEY_WORDS));
+		return new HashSet<>(Arrays.asList(RESERVED_KEY_WORDS));
 	}
 
 	/**

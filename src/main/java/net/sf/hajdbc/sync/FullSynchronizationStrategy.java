@@ -37,7 +37,6 @@ import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
-import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.Strings;
 
 /**
@@ -109,8 +108,9 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy, Tab
 		final String insertSQL = String.format("INSERT INTO %s (%s) VALUES (%s)", tableName, commaDelimitedColumns, Strings.join(Collections.nCopies(columns.size(), Strings.QUESTION), Strings.PADDED_COMMA));
 		
 		Connection sourceConnection = context.getConnection(context.getSourceDatabase());
-		final Statement selectStatement = sourceConnection.createStatement();
-		try
+		Connection targetConnection = context.getConnection(context.getTargetDatabase());
+		
+		try (final Statement selectStatement = sourceConnection.createStatement())
 		{
 			selectStatement.setFetchSize(this.fetchSize);
 			
@@ -123,65 +123,58 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy, Tab
 					return selectStatement.executeQuery(selectSQL);
 				}
 			};
-	
+			
 			Future<ResultSet> future = context.getExecutor().submit(callable);
 			
-			Connection targetConnection = context.getConnection(context.getTargetDatabase());
-			Statement deleteStatement = targetConnection.createStatement();
-			
-			try
+			try (Statement deleteStatement = targetConnection.createStatement())
 			{
 				logger.log(Level.DEBUG, deleteSQL);
 				int deletedRows = deleteStatement.executeUpdate(deleteSQL);
 		
 				logger.log(Level.INFO, Messages.DELETE_COUNT.getMessage(), deletedRows, tableName);
 			}
-			finally
-			{
-				Resources.close(deleteStatement);
-			}
 			
 			logger.log(Level.DEBUG, insertSQL);
-			PreparedStatement insertStatement = targetConnection.prepareStatement(insertSQL);
 			
-			try
+			try (PreparedStatement insertStatement = targetConnection.prepareStatement(insertSQL))
 			{
 				int statementCount = 0;
 				
-				ResultSet resultSet = future.get();
-				
-				while (resultSet.next())
+				try (ResultSet resultSet = future.get())
 				{
-					int index = 0;
-					
-					for (String column: table.getColumns())
+					while (resultSet.next())
 					{
-						index += 1;
+						int index = 0;
 						
-						int type = context.getDialect().getColumnType(table.getColumnProperties(column));
-						
-						Object object = context.getSynchronizationSupport().getObject(resultSet, index, type);
-						
-						if (resultSet.wasNull())
+						for (String column: table.getColumns())
 						{
-							insertStatement.setNull(index, type);
+							index += 1;
+							
+							int type = context.getDialect().getColumnType(table.getColumnProperties(column));
+							
+							Object object = context.getSynchronizationSupport().getObject(resultSet, index, type);
+							
+							if (resultSet.wasNull())
+							{
+								insertStatement.setNull(index, type);
+							}
+							else
+							{
+								insertStatement.setObject(index, object, type);
+							}
 						}
-						else
+						
+						insertStatement.addBatch();
+						statementCount += 1;
+						
+						if ((statementCount % this.maxBatchSize) == 0)
 						{
-							insertStatement.setObject(index, object, type);
+							insertStatement.executeBatch();
+							insertStatement.clearBatch();
 						}
+						
+						insertStatement.clearParameters();
 					}
-					
-					insertStatement.addBatch();
-					statementCount += 1;
-					
-					if ((statementCount % this.maxBatchSize) == 0)
-					{
-						insertStatement.executeBatch();
-						insertStatement.clearBatch();
-					}
-					
-					insertStatement.clearParameters();
 				}
 				
 				if ((statementCount % this.maxBatchSize) > 0)
@@ -200,14 +193,6 @@ public class FullSynchronizationStrategy implements SynchronizationStrategy, Tab
 				Thread.currentThread().interrupt();
 				throw new SQLException(e);
 			}
-			finally
-			{
-				Resources.close(insertStatement);
-			}
-		}
-		finally
-		{
-			Resources.close(selectStatement);
 		}
 	}
 	

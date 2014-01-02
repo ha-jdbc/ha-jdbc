@@ -64,7 +64,7 @@ public class InputSinkRegistryInvocationHandler<Z, D extends Database<Z>, P, T, 
 							@Override
 							public R invoke(D database, T object) throws SQLException
 							{
-								List<Object> parameterList = new ArrayList<Object>(Arrays.asList(parameters));
+								List<Object> parameterList = new ArrayList<>(Arrays.asList(parameters));
 								
 								try
 								{

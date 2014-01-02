@@ -55,9 +55,9 @@ public final class Driver extends AbstractDriver
 	private static final Logger logger = LoggerFactory.getLogger(Driver.class);
 
 	static volatile TimePeriod timeout = new TimePeriod(10, TimeUnit.SECONDS);
-	static volatile DatabaseClusterFactory<java.sql.Driver, DriverDatabase> factory = new DatabaseClusterFactoryImpl<java.sql.Driver, DriverDatabase>();
+	static volatile DatabaseClusterFactory<java.sql.Driver, DriverDatabase> factory = new DatabaseClusterFactoryImpl<>();
 	
-	static final Map<String, DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>> configurationFactories = new ConcurrentHashMap<String, DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>>();
+	static final Map<String, DatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>> configurationFactories = new ConcurrentHashMap<>();
 	private static final Registry.Factory<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException> registryFactory = new Registry.Factory<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException>()
 	{
 		@Override
@@ -68,7 +68,7 @@ public final class Driver extends AbstractDriver
 			if (configurationFactory == null)
 			{
 				String config = (properties != null) ? properties.getProperty(CONFIG) : null;
-				configurationFactory = new XMLDatabaseClusterConfigurationFactory<java.sql.Driver, DriverDatabase>(DriverDatabaseClusterConfiguration.class, id, config);
+				configurationFactory = new XMLDatabaseClusterConfigurationFactory<>(DriverDatabaseClusterConfiguration.class, id, config);
 			}
 			
 			return factory.createDatabaseCluster(id, configurationFactory);
@@ -80,7 +80,7 @@ public final class Driver extends AbstractDriver
 			return timeout;
 		}
 	};
-	private static final Registry<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException> registry = new LifecycleRegistry<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException>(registryFactory, new MapRegistryStoreFactory<String>(), ExceptionType.SQL.<SQLException>getExceptionFactory());
+	private static final Registry<String, DatabaseCluster<java.sql.Driver, DriverDatabase>, Properties, SQLException> registry = new LifecycleRegistry<>(registryFactory, new MapRegistryStoreFactory<String>(), ExceptionType.SQL.<SQLException>getExceptionFactory());
 
 	static
 	{
@@ -139,7 +139,7 @@ public final class Driver extends AbstractDriver
 		DatabaseCluster<java.sql.Driver, DriverDatabase> cluster = registry.get(id, properties);
 		DriverProxyFactory driverFactory = new DriverProxyFactory(cluster);
 		java.sql.Driver driver = driverFactory.createProxy();
-		TransactionContext<java.sql.Driver, DriverDatabase> context = new LocalTransactionContext<java.sql.Driver, DriverDatabase>(cluster);
+		TransactionContext<java.sql.Driver, DriverDatabase> context = new LocalTransactionContext<>(cluster);
 
 		DriverInvoker<Connection> invoker = new DriverInvoker<Connection>()
 		{
@@ -150,7 +150,7 @@ public final class Driver extends AbstractDriver
 			}
 		};
 		
-		ConnectionProxyFactoryFactory<java.sql.Driver, DriverDatabase, java.sql.Driver> factory = new ConnectionProxyFactoryFactory<java.sql.Driver, DriverDatabase, java.sql.Driver>(context);
+		ConnectionProxyFactoryFactory<java.sql.Driver, DriverDatabase, java.sql.Driver> factory = new ConnectionProxyFactoryFactory<>(context);
 		return factory.createProxyFactory(driver, driverFactory, invoker, InvocationStrategies.INVOKE_ON_ALL.invoke(driverFactory, invoker)).createProxy();
 	}
 	

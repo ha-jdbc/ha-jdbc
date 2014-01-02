@@ -95,20 +95,12 @@ public class Objects
 		
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 		
-		try
+		try (ObjectOutput output = new ObjectOutputStream(bytes))
 		{
-			ObjectOutput output = new ObjectOutputStream(bytes);
-			try
-			{
-				output.writeObject(object);
-				output.flush();
-				
-				return bytes.toByteArray();
-			}
-			finally
-			{
-				Resources.close(output);
-			}
+			output.writeObject(object);
+			output.flush();
+			
+			return bytes.toByteArray();
 		}
 		catch (IOException e)
 		{
@@ -136,17 +128,9 @@ public class Objects
 	{
 		if (bytes == null) return null;
 		
-		try
+		try (ObjectInput input = new ObjectInputStream(new ByteArrayInputStream(bytes)))
 		{
-			ObjectInput input = new ObjectInputStream(new ByteArrayInputStream(bytes));
-			try
-			{
-				return readObject(input, loader);
-			}
-			finally
-			{
-				Resources.close(input);
-			}
+			return readObject(input, loader);
 		}
 		catch (IOException e)
 		{

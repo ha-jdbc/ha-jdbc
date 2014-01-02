@@ -51,7 +51,7 @@ public abstract class AbstractSetBalancer<Z, D extends Database<Z>> extends Abst
 		}
 		else
 		{
-			SortedSet<D> set = new TreeSet<D>();
+			SortedSet<D> set = new TreeSet<>();
 			
 			for (D database: databases)
 			{
@@ -126,7 +126,7 @@ public abstract class AbstractSetBalancer<Z, D extends Database<Z>> extends Abst
 				}
 				else
 				{
-					SortedSet<D> set = new TreeSet<D>(this.databaseSet);
+					SortedSet<D> set = new TreeSet<>(this.databaseSet);
 					
 					set.remove(database);
 					
@@ -171,7 +171,7 @@ public abstract class AbstractSetBalancer<Z, D extends Database<Z>> extends Abst
 				}
 				else
 				{
-					SortedSet<D> set = new TreeSet<D>(this.databaseSet);
+					SortedSet<D> set = new TreeSet<>(this.databaseSet);
 					
 					set.add(database);
 					
@@ -206,13 +206,13 @@ public abstract class AbstractSetBalancer<Z, D extends Database<Z>> extends Abst
 		
 		try
 		{
-			SortedSet<D> addSet = new TreeSet<D>(this.databaseSet);
+			SortedSet<D> addSet = new TreeSet<>(this.databaseSet);
 
 			boolean added = addSet.addAll(databases);
 			
 			if (added)
 			{
-				Set<D> removeSet = new TreeSet<D>(addSet);
+				Set<D> removeSet = new TreeSet<>(addSet);
 				
 				removeSet.removeAll(this.databaseSet);
 				
@@ -243,13 +243,13 @@ public abstract class AbstractSetBalancer<Z, D extends Database<Z>> extends Abst
 		
 		try
 		{
-			SortedSet<D> removeSet = new TreeSet<D>(this.databaseSet);
+			SortedSet<D> removeSet = new TreeSet<>(this.databaseSet);
 
 			boolean removed = removeSet.removeAll(databases);
 			
 			if (removed)
 			{
-				Set<D> retainSet = new TreeSet<D>(this.databaseSet);
+				Set<D> retainSet = new TreeSet<>(this.databaseSet);
 				
 				retainSet.retainAll(databases);
 				
@@ -280,13 +280,13 @@ public abstract class AbstractSetBalancer<Z, D extends Database<Z>> extends Abst
 		
 		try
 		{
-			SortedSet<D> retainSet = new TreeSet<D>(this.databaseSet);
+			SortedSet<D> retainSet = new TreeSet<>(this.databaseSet);
 
 			boolean retained = retainSet.retainAll(databases);
 			
 			if (retained)
 			{
-				Set<D> removeSet = new TreeSet<D>(this.databaseSet);
+				Set<D> removeSet = new TreeSet<>(this.databaseSet);
 				
 				removeSet.removeAll(databases);
 				

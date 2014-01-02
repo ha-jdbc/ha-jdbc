@@ -41,6 +41,6 @@ public class StatementProxyFactoryFactory<Z, D extends Database<Z>> implements P
 	@Override
 	public ProxyFactory<Z, D, Statement, SQLException> createProxyFactory(Connection connection, ProxyFactory<Z, D, Connection, SQLException> parent, Invoker<Z, D, Connection, Statement, SQLException> invoker, Map<D, Statement> statements)
 	{
-		return new StatementProxyFactory<Z, D>(connection, parent, invoker, statements, this.context);
+		return new StatementProxyFactory<>(connection, parent, invoker, statements, this.context);
 	}
 }

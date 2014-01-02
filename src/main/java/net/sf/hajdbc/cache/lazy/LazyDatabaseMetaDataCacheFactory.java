@@ -39,6 +39,6 @@ public class LazyDatabaseMetaDataCacheFactory implements DatabaseMetaDataCacheFa
 	@Override
 	public <Z, D extends Database<Z>> DatabaseMetaDataCache<Z, D> createCache(DatabaseCluster<Z, D> cluster)
 	{
-		return new LazyDatabaseMetaDataCache<Z, D>(cluster);
+		return new LazyDatabaseMetaDataCache<>(cluster);
 	}
 }

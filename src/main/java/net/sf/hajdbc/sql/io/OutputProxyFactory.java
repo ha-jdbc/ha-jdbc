@@ -38,7 +38,7 @@ import net.sf.hajdbc.sql.ProxyFactory;
  */
 public abstract class OutputProxyFactory<Z, D extends Database<Z>, P, T> extends AbstractChildProxyFactory<Z, D, P, SQLException, T, IOException>
 {
-	private List<Invoker<Z, D, T, ?, IOException>> invokers = new LinkedList<Invoker<Z, D, T, ?, IOException>>();
+	private List<Invoker<Z, D, T, ?, IOException>> invokers = new LinkedList<>();
 	
 	protected OutputProxyFactory(P parentProxy, ProxyFactory<Z, D, P, SQLException> parent, Invoker<Z, D, P, T, SQLException> invoker, Map<D, T> map)
 	{

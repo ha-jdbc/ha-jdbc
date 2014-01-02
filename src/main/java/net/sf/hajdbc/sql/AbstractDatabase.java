@@ -55,14 +55,14 @@ public abstract class AbstractDatabase<Z> implements Database<Z>
 	@XmlAttribute(name = "local")
 	private Boolean local = false;
 
-	private Map<String, String> properties = new HashMap<String, String>();
+	private Map<String, String> properties = new HashMap<>();
 	private boolean dirty = false;
 	private volatile boolean active = false;
 	
 	@XmlElement(name = "property")
 	private Property[] getXmlProperties()
 	{
-		List<Property> properties = new ArrayList<Property>(this.properties.size());
+		List<Property> properties = new ArrayList<>(this.properties.size());
 		
 		for (Map.Entry<String, String> entry: this.properties.entrySet())
 		{

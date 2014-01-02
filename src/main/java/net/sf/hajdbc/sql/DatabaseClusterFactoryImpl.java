@@ -36,6 +36,6 @@ public class DatabaseClusterFactoryImpl<Z, D extends Database<Z>> implements Dat
 	@Override
 	public DatabaseCluster<Z, D> createDatabaseCluster(String id, DatabaseClusterConfigurationFactory<Z, D> factory) throws SQLException
 	{
-		return new DatabaseClusterImpl<Z, D>(id, factory.createConfiguration(), factory);
+		return new DatabaseClusterImpl<>(id, factory.createConfiguration(), factory);
 	}
 }

@@ -55,7 +55,7 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 	private final DatabaseCluster<Z, D> cluster;
 	private final StateManager stateManager;
 	private final CommandDispatcher<StateCommandContext<Z, D>> dispatcher;
-	private final ConcurrentMap<Member, Map<InvocationEvent, Map<String, InvokerEvent>>> remoteInvokerMap = new ConcurrentHashMap<Member, Map<InvocationEvent, Map<String, InvokerEvent>>>();
+	private final ConcurrentMap<Member, Map<InvocationEvent, Map<String, InvokerEvent>>> remoteInvokerMap = new ConcurrentHashMap<>();
 	
 	public DistributedStateManager(DatabaseCluster<Z, D> cluster, CommandDispatcherFactory dispatcherFactory) throws Exception
 	{
@@ -230,7 +230,7 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 	{
 		if (input.available() > 0)
 		{
-			Set<String> databases = new TreeSet<String>();
+			Set<String> databases = new TreeSet<>();
 			
 			int size = input.readInt();
 			

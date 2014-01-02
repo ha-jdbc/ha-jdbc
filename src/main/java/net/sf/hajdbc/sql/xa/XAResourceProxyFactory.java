@@ -44,6 +44,7 @@ public class XAResourceProxyFactory extends AbstractChildProxyFactory<XADataSour
 	@Override
 	public void close(XADataSourceDatabase database, XAResource resource)
 	{
+		// Nothing to close
 	}
 
 	@Override

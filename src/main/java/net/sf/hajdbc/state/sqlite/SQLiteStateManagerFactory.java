@@ -44,7 +44,7 @@ public class SQLiteStateManagerFactory extends GenericObjectPoolConfiguration im
 	public <Z, D extends Database<Z>> StateManager createStateManager(DatabaseCluster<Z, D> cluster)
 	{
 		String location = MessageFormat.format(this.locationPattern, cluster.getId(), Strings.HA_JDBC_HOME);
-		return new SQLiteStateManager<Z, D>(cluster, new File(location), new GenericObjectPoolFactory(this));
+		return new SQLiteStateManager<>(cluster, new File(location), new GenericObjectPoolFactory(this));
 	}
 
 	public String getLocationPattern()

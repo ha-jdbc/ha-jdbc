@@ -54,7 +54,7 @@ public abstract class AbstractBalancer<Z, D extends Database<Z>> implements Bala
 		
 		if (!databases.hasNext()) return Collections.singleton(database);
 		
-		SortedSet<D> backups = new TreeSet<D>();
+		SortedSet<D> backups = new TreeSet<>();
 		
 		backups.add(database);
 		
@@ -140,7 +140,7 @@ public abstract class AbstractBalancer<Z, D extends Database<Z>> implements Bala
 	@Override
 	public boolean equals(Object object)
 	{
-		if ((object == null) || !(object instanceof Collection)) return false;
+		if (!(object instanceof Collection)) return false;
 		
 		@SuppressWarnings("unchecked")
 		Collection<D> set = (Collection<D>) object;

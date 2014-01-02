@@ -160,9 +160,6 @@ public class PostgreSQLDialectTest extends StandardDialectTest
 		when(statement.executeQuery("SHOW search_path")).thenReturn(resultSet);
 		when(resultSet.next()).thenReturn(false);
 		when(resultSet.getString(1)).thenReturn("$user,public");
-
-		resultSet.close();
-		statement.close();
 		
 		when(metaData.getUserName()).thenReturn("user");
 		
@@ -171,6 +168,9 @@ public class PostgreSQLDialectTest extends StandardDialectTest
 		assertEquals(2, result.size());
 		assertEquals("user", result.get(0));
 		assertEquals("public", result.get(1));
+		
+		verify(resultSet).close();
+		verify(statement).close();
 	}
 	
 	/**

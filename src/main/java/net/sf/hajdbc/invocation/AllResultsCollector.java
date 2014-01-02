@@ -71,19 +71,19 @@ public class AllResultsCollector implements InvokeOnManyInvocationStrategy.Resul
 
 		int size = databaseSet.size();
 		
-		List<Invocation<Z, D, T, R, E>> invocationList = new ArrayList<Invocation<Z, D, T, R, E>>(size);
+		List<Invocation<Z, D, T, R, E>> invocationList = new ArrayList<>(size);
 		
 		for (D database: databaseSet)
 		{
-			invocationList.add(new Invocation<Z, D, T, R, E>(invoker, database, map.get(database)));
+			invocationList.add(new Invocation<>(invoker, database, map.get(database)));
 		}
 		
 		try
 		{
 			List<Future<R>> futureList = this.provider.getExecutor(cluster).invokeAll(invocationList);
 			
-			final SortedMap<D, R> resultMap = new TreeMap<D, R>();
-			final SortedMap<D, E> exceptionMap = new TreeMap<D, E>();
+			final SortedMap<D, R> resultMap = new TreeMap<>();
+			final SortedMap<D, E> exceptionMap = new TreeMap<>();
 			
 			for (int i = 0; i < invocationList.size(); ++i)
 			{
@@ -105,7 +105,7 @@ public class AllResultsCollector implements InvokeOnManyInvocationStrategy.Resul
 				}
 			}
 		
-			return new AbstractMap.SimpleImmutableEntry<SortedMap<D, R>, SortedMap<D, E>>(resultMap, exceptionMap);
+			return new AbstractMap.SimpleImmutableEntry<>(resultMap, exceptionMap);
 		}
 		catch (InterruptedException e)
 		{

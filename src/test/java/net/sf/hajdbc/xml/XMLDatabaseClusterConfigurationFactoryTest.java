@@ -55,16 +55,16 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 	@Test
 	public void createDriverBasedConfiguration() throws SQLException
 	{
-		this.createConfiguration(DriverDatabaseClusterConfiguration.class, "jdbc:mock:db1", "jdbc:mock:db2");
+		createConfiguration(DriverDatabaseClusterConfiguration.class, "jdbc:mock:db1", "jdbc:mock:db2");
 	}
 	
 	@Test
 	public void createDataSourceBasedConfiguration() throws SQLException
 	{
-		this.createConfiguration(DriverDatabaseClusterConfiguration.class, "java:comp/env/jdbc/db1", "java:comp/env/jdbc/db2");
+		createConfiguration(DriverDatabaseClusterConfiguration.class, "java:comp/env/jdbc/db1", "java:comp/env/jdbc/db2");
 	}
 	
-	private <Z, D extends Database<Z>, C extends DatabaseClusterConfiguration<Z, D>> void createConfiguration(Class<C> configClass, String location1, String location2) throws SQLException
+	private static <Z, D extends Database<Z>, C extends DatabaseClusterConfiguration<Z, D>> void createConfiguration(Class<C> configClass, String location1, String location2) throws SQLException
 	{
 		StringBuilder builder = new StringBuilder();
 		builder.append("<?xml version=\"1.0\"?>");
@@ -81,7 +81,7 @@ public class XMLDatabaseClusterConfigurationFactoryTest
 		
 		XMLStreamFactory streamFactory = mock(XMLStreamFactory.class);
 		
-		XMLDatabaseClusterConfigurationFactory<Z, D> factory = new XMLDatabaseClusterConfigurationFactory<Z, D>(configClass, streamFactory);
+		XMLDatabaseClusterConfigurationFactory<Z, D> factory = new XMLDatabaseClusterConfigurationFactory<>(configClass, streamFactory);
 		
 		when(streamFactory.createSource()).thenReturn(new StreamSource(new StringReader(xml)));
 		

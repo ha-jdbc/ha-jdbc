@@ -39,6 +39,6 @@ public class SimpleDatabaseMetaDataCacheFactory implements DatabaseMetaDataCache
 	@Override
 	public <Z, D extends Database<Z>> DatabaseMetaDataCache<Z, D> createCache(DatabaseCluster<Z, D> cluster)
 	{
-		return new SimpleDatabaseMetaDataCache<Z, D>(cluster);
+		return new SimpleDatabaseMetaDataCache<>(cluster);
 	}
 }

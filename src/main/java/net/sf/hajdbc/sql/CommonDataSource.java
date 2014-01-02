@@ -49,14 +49,14 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 {
 	private final Class<? extends DatabaseClusterConfiguration<Z, D>> configurationClass;
 	
-	private final Registry<Void, DatabaseCluster<Z, D>, Void, SQLException> registry = new LifecycleRegistry<Void, DatabaseCluster<Z, D>, Void, SQLException>(this, new ReferenceRegistryStoreFactory(), ExceptionType.SQL.<SQLException>getExceptionFactory());
+	private final Registry<Void, DatabaseCluster<Z, D>, Void, SQLException> registry = new LifecycleRegistry<>(this, new ReferenceRegistryStoreFactory(), ExceptionType.SQL.<SQLException>getExceptionFactory());
 	
 	private volatile TimePeriod timeout = new TimePeriod(10, TimeUnit.SECONDS);
 	private volatile String cluster;
 	private volatile String config;
 	private volatile String user;
 	private volatile String password;
-	private volatile DatabaseClusterFactory<Z, D> factory = new DatabaseClusterFactoryImpl<Z, D>();
+	private volatile DatabaseClusterFactory<Z, D> factory = new DatabaseClusterFactoryImpl<>();
 	private volatile DatabaseClusterConfigurationFactory<Z, D> configurationFactory;	
 	
 	protected CommonDataSource(Class<? extends DatabaseClusterConfiguration<Z, D>> configurationClass)
@@ -75,7 +75,7 @@ public abstract class CommonDataSource<Z extends javax.sql.CommonDataSource, D e
 	@Override
 	public DatabaseCluster<Z, D> create(Void key, Void context) throws SQLException
 	{
-		DatabaseClusterConfigurationFactory<Z, D> factory = (this.configurationFactory != null) ? this.configurationFactory : new XMLDatabaseClusterConfigurationFactory<Z, D>(this.configurationClass, this.cluster, this.config);
+		DatabaseClusterConfigurationFactory<Z, D> factory = (this.configurationFactory != null) ? this.configurationFactory : new XMLDatabaseClusterConfigurationFactory<>(this.configurationClass, this.cluster, this.config);
 		
 		return this.factory.createDatabaseCluster(this.cluster, factory);
 	}

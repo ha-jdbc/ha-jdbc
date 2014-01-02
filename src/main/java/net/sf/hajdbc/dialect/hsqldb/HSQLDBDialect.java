@@ -30,7 +30,6 @@ import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.SequencePropertiesFactory;
 import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.dialect.StandardDialect;
-import net.sf.hajdbc.util.Resources;
 
 /**
  * Dialect for <a href="http://www.hsqldb.org">HSQLDB</a>.
@@ -78,24 +77,19 @@ public class HSQLDBDialect extends StandardDialect
 	@Override
 	public Collection<SequenceProperties> getSequences(DatabaseMetaData metaData, SequencePropertiesFactory factory) throws SQLException
 	{
-		Statement statement = metaData.getConnection().createStatement();
-		
-		try
+		try (Statement statement = metaData.getConnection().createStatement())
 		{
-			ResultSet resultSet = statement.executeQuery("SELECT SEQUENCE_SCHEMA, SEQUENCE_NAME, INCREMENT FROM INFORMATION_SCHEMA.SYSTEM_SEQUENCES");
-			
-			List<SequenceProperties> sequences = new LinkedList<SequenceProperties>();
-			
-			while (resultSet.next())
+			try (ResultSet resultSet = statement.executeQuery("SELECT SEQUENCE_SCHEMA, SEQUENCE_NAME, INCREMENT FROM INFORMATION_SCHEMA.SYSTEM_SEQUENCES"))
 			{
-				sequences.add(factory.createSequenceProperties(resultSet.getString(1), resultSet.getString(2), resultSet.getInt(3)));
+				List<SequenceProperties> sequences = new LinkedList<>();
+				
+				while (resultSet.next())
+				{
+					sequences.add(factory.createSequenceProperties(resultSet.getString(1), resultSet.getString(2), resultSet.getInt(3)));
+				}
+				
+				return sequences;
 			}
-			
-			return sequences;
-		}
-		finally
-		{
-			Resources.close(statement);
 		}
 	}
 

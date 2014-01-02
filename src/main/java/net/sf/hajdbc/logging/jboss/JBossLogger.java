@@ -30,7 +30,7 @@ import net.sf.hajdbc.logging.Level;
  */
 public class JBossLogger extends AbstractLogger
 {
-	private static final Map<Level, org.jboss.logging.Logger.Level> levels = new EnumMap<Level, org.jboss.logging.Logger.Level>(Level.class);
+	private static final Map<Level, org.jboss.logging.Logger.Level> levels = new EnumMap<>(Level.class);
 	static
 	{
 		levels.put(Level.ERROR, org.jboss.logging.Logger.Level.ERROR);

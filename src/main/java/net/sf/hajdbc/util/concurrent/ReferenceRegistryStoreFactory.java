@@ -31,12 +31,12 @@ public class ReferenceRegistryStoreFactory implements RegistryStoreFactory<Void>
 	@Override
 	public <V> LifecycleRegistry.Store<Void, V> createStore()
 	{
-		return new ReferenceRegistryStore<V>();
+		return new ReferenceRegistryStore<>();
 	}
 	
 	static class ReferenceRegistryStore<V> implements LifecycleRegistry.Store<Void, V>
 	{
-		private final AtomicReference<V> reference = new AtomicReference<V>();
+		private final AtomicReference<V> reference = new AtomicReference<>();
 		
 		/**
 		 * {@inheritDoc}

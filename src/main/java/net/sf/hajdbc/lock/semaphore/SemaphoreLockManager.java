@@ -32,7 +32,7 @@ import net.sf.hajdbc.lock.LockManager;
  */
 public class SemaphoreLockManager implements LockManager
 {
-	private final ConcurrentMap<String, ReadWriteLock> lockMap = new ConcurrentHashMap<String, ReadWriteLock>();
+	private final ConcurrentMap<String, ReadWriteLock> lockMap = new ConcurrentHashMap<>();
 
 	private final boolean fair;
 	

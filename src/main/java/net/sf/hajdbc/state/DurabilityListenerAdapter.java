@@ -33,7 +33,7 @@ public class DurabilityListenerAdapter implements DurabilityListener
 {
 	// TODO prevent memory leak
 	// Cache serialized transaction identifiers
-	private final ConcurrentMap<Object, byte[]> transactionIdentifiers = new ConcurrentHashMap<Object, byte[]>();
+	private final ConcurrentMap<Object, byte[]> transactionIdentifiers = new ConcurrentHashMap<>();
 	private final SerializedDurabilityListener listener;
 	private final TransactionIdentifierFactory<Object> txIdFactory;
 	

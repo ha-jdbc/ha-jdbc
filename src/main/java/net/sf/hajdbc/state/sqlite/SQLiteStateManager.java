@@ -90,8 +90,8 @@ public class SQLiteStateManager<Z, D extends Database<Z>> implements StateManage
 	private final PoolFactory poolFactory;
 	
 	// Control concurrency ourselves, instead of relying of sqljet lock polling.
-	private final Map<DB, ReadWriteLock> locks = new EnumMap<DB, ReadWriteLock>(DB.class);
-	private final Map<DB, Pool<SqlJetDb, SqlJetException>> pools = new EnumMap<DB, Pool<SqlJetDb, SqlJetException>>(DB.class);
+	private final Map<DB, ReadWriteLock> locks = new EnumMap<>(DB.class);
+	private final Map<DB, Pool<SqlJetDb, SqlJetException>> pools = new EnumMap<>(DB.class);
 
 	public SQLiteStateManager(DatabaseCluster<Z, D> cluster, File file, PoolFactory poolFactory)
 	{
@@ -286,7 +286,7 @@ public class SQLiteStateManager<Z, D extends Database<Z>> implements StateManage
 			@Override
 			public Set<String> execute(SqlJetDb database) throws SqlJetException
 			{
-				Set<String> set = new TreeSet<String>();
+				Set<String> set = new TreeSet<>();
 				ISqlJetTable table = database.getTable(STATE_TABLE);
 				ISqlJetCursor cursor = table.lookup(table.getPrimaryKeyIndexName());
 				try
@@ -363,7 +363,7 @@ public class SQLiteStateManager<Z, D extends Database<Z>> implements StateManage
 			@Override
 			public Map<InvocationEvent, Map<String, InvokerEvent>> execute(SqlJetDb database) throws SqlJetException
 			{
-				Map<InvocationEvent, Map<String, InvokerEvent>> map = new HashMap<InvocationEvent, Map<String, InvokerEvent>>();
+				Map<InvocationEvent, Map<String, InvokerEvent>> map = new HashMap<>();
 				ISqlJetCursor cursor = database.getTable(INVOCATION_TABLE).open();
 				try
 				{

@@ -66,8 +66,8 @@ public class BerkeleyDBStateManager extends CloseablePoolProvider<Environment, D
 	private static final String STATE = "state";
 	private static final String INVOCATION = "invocation";
 	private static final String INVOKER = "invoker";
-	private static final EntryBinding<InvocationKey> INVOCATION_KEY_BINDING = new KeyBinding<InvocationKey>();
-	private static final EntryBinding<InvokerKey> INVOKER_KEY_BINDING = new KeyBinding<InvokerKey>();
+	private static final EntryBinding<InvocationKey> INVOCATION_KEY_BINDING = new KeyBinding<>();
+	private static final EntryBinding<InvokerKey> INVOKER_KEY_BINDING = new KeyBinding<>();
 	private static final EntryBinding<byte[]> BLOB_BINDING = new ByteArrayBinding();
 	static final byte[] NULL = new byte[0];
 	
@@ -97,9 +97,13 @@ public class BerkeleyDBStateManager extends CloseablePoolProvider<Environment, D
 		Environment env = this.pool.take();
 		try
 		{
-			env.openDatabase(null, STATE, new DatabaseConfig().setAllowCreate(true)).close();
-			env.openDatabase(null, INVOCATION, new DatabaseConfig().setAllowCreate(true)).close();
-			env.openDatabase(null, INVOKER, new DatabaseConfig().setAllowCreate(true)).close();
+			for (String databaseName: Arrays.asList(STATE, INVOCATION, INVOKER))
+			{
+				try (Database database = env.openDatabase(null, databaseName, new DatabaseConfig().setAllowCreate(true).setTransactional(false)))
+				{
+					// Do nothing
+				}
+			}
 		}
 		finally
 		{
@@ -110,7 +114,10 @@ public class BerkeleyDBStateManager extends CloseablePoolProvider<Environment, D
 	@Override
 	public void stop()
 	{
-		this.pool.close();
+		if (this.pool != null)
+		{
+			this.pool.close();
+		}
 	}
 
 	@Override
@@ -121,7 +128,7 @@ public class BerkeleyDBStateManager extends CloseablePoolProvider<Environment, D
 			@Override
 			Set<String> execute(Database database)
 			{
-				return new TreeSet<String>(createStateSet(database, true));
+				return new TreeSet<>(createStateSet(database, true));
 			}
 		};
 		return this.execute(query);
@@ -171,7 +178,7 @@ public class BerkeleyDBStateManager extends CloseablePoolProvider<Environment, D
 
 	Set<String> createStateSet(Database database, boolean readOnly)
 	{
-		return new StoredKeySet<String>(database, TupleBinding.getPrimitiveBinding(String.class), !readOnly);
+		return new StoredKeySet<>(database, TupleBinding.getPrimitiveBinding(String.class), !readOnly);
 	}
 	
 	@Override
@@ -273,7 +280,7 @@ public class BerkeleyDBStateManager extends CloseablePoolProvider<Environment, D
 	@Override
 	public Map<InvocationEvent, Map<String, InvokerEvent>> recover()
 	{
-		final Map<InvocationEvent, Map<String, InvokerEvent>> result = new HashMap<InvocationEvent, Map<String, InvokerEvent>>();
+		final Map<InvocationEvent, Map<String, InvokerEvent>> result = new HashMap<>();
 		final TransactionIdentifierFactory<?> txIdFactory = this.cluster.getTransactionIdentifierFactory();
 		DatabaseQuery<Void> query = new DatabaseQuery<Void>(INVOCATION)
 		{
@@ -358,12 +365,12 @@ public class BerkeleyDBStateManager extends CloseablePoolProvider<Environment, D
 	
 	Map<InvocationKey, Byte> createInvocationMap(Database database, boolean readOnly)
 	{
-		return new StoredMap<InvocationKey, Byte>(database, INVOCATION_KEY_BINDING, TupleBinding.getPrimitiveBinding(Byte.class), !readOnly);
+		return new StoredMap<>(database, INVOCATION_KEY_BINDING, TupleBinding.getPrimitiveBinding(Byte.class), !readOnly);
 	}
 	
 	Map<InvokerKey, byte[]> createInvokerMap(Database database, boolean readOnly)
 	{
-		return new StoredMap<InvokerKey, byte[]>(database, INVOKER_KEY_BINDING, BLOB_BINDING, !readOnly);
+		return new StoredMap<>(database, INVOKER_KEY_BINDING, BLOB_BINDING, !readOnly);
 	}
 
 	@Override
@@ -429,14 +436,9 @@ public class BerkeleyDBStateManager extends CloseablePoolProvider<Environment, D
 				@Override
 				public void execute(Environment env, Transaction transaction)
 				{
-					Database database = env.openDatabase(transaction, operation.getDatabaseName(), new DatabaseConfig().setTransactional(true));
-					try
+					try (Database database = env.openDatabase(transaction, operation.getDatabaseName(), new DatabaseConfig().setTransactional(true)))
 					{
 						operation.execute(database);
-					}
-					finally
-					{
-						database.close();
 					}
 				}
 			};
@@ -468,14 +470,9 @@ public class BerkeleyDBStateManager extends CloseablePoolProvider<Environment, D
 			@Override
 			public T execute(Environment env)
 			{
-				Database database = env.openDatabase(null, dbQuery.getDatabaseName(), new DatabaseConfig().setReadOnly(true));
-				try
+				try (Database database = env.openDatabase(null, dbQuery.getDatabaseName(), new DatabaseConfig().setReadOnly(true)))
 				{
 					return dbQuery.execute(database);
-				}
-				finally
-				{
-					database.close();
 				}
 			}
 		};
@@ -493,9 +490,18 @@ public class BerkeleyDBStateManager extends CloseablePoolProvider<Environment, D
 		try
 		{
 			Transaction transaction = env.beginTransaction(null, null);
-			for (Operation operation: operations)
+			try
 			{
-				operation.execute(env, transaction);
+				for (Operation operation: operations)
+				{
+					operation.execute(env, transaction);
+				}
+				transaction.commit();
+			}
+			catch (RuntimeException e)
+			{
+				transaction.abort();
+				throw e;
 			}
 		}
 		finally

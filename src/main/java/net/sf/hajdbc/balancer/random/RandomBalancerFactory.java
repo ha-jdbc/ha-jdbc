@@ -44,6 +44,6 @@ public class RandomBalancerFactory implements BalancerFactory
 	@Override
 	public <Z, D extends Database<Z>> Balancer<Z, D> createBalancer(Set<D> databases)
 	{
-		return new RandomBalancer<Z, D>(databases);
+		return new RandomBalancer<>(databases);
 	}
 }

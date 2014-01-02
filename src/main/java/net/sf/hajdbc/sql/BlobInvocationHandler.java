@@ -48,7 +48,7 @@ public class BlobInvocationHandler<Z, D extends Database<Z>, P> extends LocatorI
 	{
 		if (method.equals(SET_BINARY_STREAM_METHOD))
 		{
-			return new OutputStreamProxyFactoryFactory<Z, D, Blob>();
+			return new OutputStreamProxyFactoryFactory<>();
 		}
 		
 		return super.getProxyFactoryFactory(object, method, parameters);

@@ -66,13 +66,11 @@ import net.sf.hajdbc.state.distributed.DistributedStateManager;
 import net.sf.hajdbc.sync.SynchronizationContext;
 import net.sf.hajdbc.sync.SynchronizationContextImpl;
 import net.sf.hajdbc.tx.TransactionIdentifierFactory;
-import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.concurrent.cron.CronExpression;
 import net.sf.hajdbc.util.concurrent.cron.CronThreadPoolExecutor;
 
 /**
- * @author paul
- *
+ * @author Paul Ferraro
  */
 @MBean
 public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCluster<Z, D>
@@ -96,9 +94,9 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	
 	private boolean active = false;
 	
-	private final List<DatabaseClusterConfigurationListener<Z, D>> configurationListeners = new CopyOnWriteArrayList<DatabaseClusterConfigurationListener<Z, D>>();	
-	private final List<DatabaseClusterListener> clusterListeners = new CopyOnWriteArrayList<DatabaseClusterListener>();
-	private final List<SynchronizationListener> synchronizationListeners = new CopyOnWriteArrayList<SynchronizationListener>();
+	private final List<DatabaseClusterConfigurationListener<Z, D>> configurationListeners = new CopyOnWriteArrayList<>();	
+	private final List<DatabaseClusterListener> clusterListeners = new CopyOnWriteArrayList<>();
+	private final List<SynchronizationListener> synchronizationListeners = new CopyOnWriteArrayList<>();
 	
 	public DatabaseClusterImpl(String id, DatabaseClusterConfiguration<Z, D> configuration, DatabaseClusterConfigurationListener<Z, D> listener)
 	{
@@ -200,7 +198,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	@ManagedAttribute
 	public Set<String> getActiveDatabases()
 	{
-		Set<String> databases = new TreeSet<String>();
+		Set<String> databases = new TreeSet<>();
 		
 		for (D database: this.balancer)
 		{
@@ -217,7 +215,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	@ManagedAttribute
 	public Set<String> getInactiveDatabases()
 	{
-		Set<String> databases = new TreeSet<String>(this.configuration.getDatabaseMap().keySet());
+		Set<String> databases = new TreeSet<>(this.configuration.getDatabaseMap().keySet());
 		
 		for (D database: this.balancer)
 		{
@@ -315,7 +313,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	@ManagedAttribute
 	public Set<String> getSynchronizationStrategies()
 	{
-		return new TreeSet<String>(this.configuration.getSynchronizationStrategyMap().keySet());
+		return new TreeSet<>(this.configuration.getSynchronizationStrategyMap().keySet());
 	}
 	
 	/**
@@ -671,7 +669,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		if (dispatcherFactory != null)
 		{
 			this.lockManager = new DistributedLockManager(this, dispatcherFactory);
-			this.stateManager = new DistributedStateManager<Z, D>(this, dispatcherFactory);
+			this.stateManager = new DistributedStateManager<>(this, dispatcherFactory);
 		}
 		
 		this.balancer = this.configuration.getBalancerFactory().createBalancer(new TreeSet<D>());
@@ -829,17 +827,9 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 
 	boolean isAlive(D database, Level level)
 	{
-		try
+		try (Connection connection = database.connect(database.createConnectionSource(), database.decodePassword(this.decoder)))
 		{
-			Connection connection = database.connect(database.createConnectionSource(), database.decodePassword(this.decoder));
-			try
-			{
-				return this.dialect.isValid(connection);
-			}
-			finally
-			{
-				Resources.close(connection);
-			}
+			return this.dialect.isValid(connection);
 		}
 		catch (SQLException e)
 		{
@@ -862,9 +852,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 			
 			if (!this.balancer.isEmpty())
 			{
-				SynchronizationContext<Z, D> context = new SynchronizationContextImpl<Z, D>(this, database);
-				
-				try
+				try (SynchronizationContext<Z, D> context = new SynchronizationContextImpl<>(this, database))
 				{
 					DatabaseEvent event = new DatabaseEvent(database);
 					
@@ -883,10 +871,6 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 					{
 						listener.afterSynchronization(event);
 					}
-				}
-				finally
-				{
-					context.close();
 				}
 			}
 			
@@ -911,7 +895,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 			
 			if ((size > 1) || DatabaseClusterImpl.this.configuration.isEmptyClusterAllowed())
 			{
-				List<D> deadList = new ArrayList<D>(size);
+				List<D> deadList = new ArrayList<>(size);
 				
 				for (D database: databases)
 				{

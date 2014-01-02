@@ -39,7 +39,7 @@ import net.sf.hajdbc.util.ref.SoftReferenceFactory;
  */
 public class LazyDatabaseMetaDataCache<Z, D extends Database<Z>> implements DatabaseMetaDataCache<Z, D>
 {
-	private final Map<D, Map.Entry<DatabaseProperties, LazyDatabaseMetaDataProvider>> map = new ReferenceMap<D, Map.Entry<DatabaseProperties, LazyDatabaseMetaDataProvider>>(new TreeMap<D, Reference<Map.Entry<DatabaseProperties, LazyDatabaseMetaDataProvider>>>(), SoftReferenceFactory.getInstance());
+	private final Map<D, Map.Entry<DatabaseProperties, LazyDatabaseMetaDataProvider>> map = new ReferenceMap<>(new TreeMap<D, Reference<Map.Entry<DatabaseProperties, LazyDatabaseMetaDataProvider>>>(), SoftReferenceFactory.getInstance());
 	private final DatabaseCluster<Z, D> cluster;
 
 	public LazyDatabaseMetaDataCache(DatabaseCluster<Z, D> cluster)
@@ -78,7 +78,7 @@ public class LazyDatabaseMetaDataCache<Z, D extends Database<Z>> implements Data
 				LazyDatabaseMetaDataProvider provider = new LazyDatabaseMetaDataProvider(metaData);
 				DatabaseProperties properties = new LazyDatabaseProperties(provider, dialect);
 				
-				entry = new AbstractMap.SimpleImmutableEntry<DatabaseProperties, LazyDatabaseMetaDataProvider>(properties, provider);
+				entry = new AbstractMap.SimpleImmutableEntry<>(properties, provider);
 
 				this.map.put(database, entry);
 			}

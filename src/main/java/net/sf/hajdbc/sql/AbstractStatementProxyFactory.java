@@ -30,7 +30,6 @@ import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.io.InputSinkRegistryImpl;
 import net.sf.hajdbc.io.InputSinkStrategy;
 import net.sf.hajdbc.logging.Level;
-import net.sf.hajdbc.util.Resources;
 
 /**
  * 
@@ -38,12 +37,12 @@ import net.sf.hajdbc.util.Resources;
  */
 public abstract class AbstractStatementProxyFactory<Z, D extends Database<Z>, S extends Statement> extends AbstractInputSinkRegistryProxyFactory<Z, D, Connection, S>
 {
-	private final List<Invoker<Z, D, S, ?, SQLException>> batchInvokers = new LinkedList<Invoker<Z, D, S, ?, SQLException>>();
-	private final List<String> batch = new LinkedList<String>();
+	private final List<Invoker<Z, D, S, ?, SQLException>> batchInvokers = new LinkedList<>();
+	private final List<String> batch = new LinkedList<>();
 	
 	protected AbstractStatementProxyFactory(Connection parent, ProxyFactory<Z, D, Connection, SQLException> parentFactory, Invoker<Z, D, Connection, S, SQLException> invoker, Map<D, S> map, TransactionContext<Z, D> context)
 	{
-		super(parent, parentFactory, invoker, map, context, new InputSinkRegistryImpl<Object>((InputSinkStrategy<Object>) parentFactory.getDatabaseCluster().getInputSinkStrategy()));
+		super(parent, parentFactory, invoker, map, context, new InputSinkRegistryImpl<>((InputSinkStrategy<Object>) parentFactory.getDatabaseCluster().getInputSinkStrategy()));
 	}
 
 	@Override
@@ -103,8 +102,8 @@ public abstract class AbstractStatementProxyFactory<Z, D extends Database<Z>, S 
 	}
 
 	@Override
-	public void close(D database, S statement)
+	public void close(D database, S statement) throws SQLException
 	{
-		Resources.close(statement);
+		statement.close();
 	}
 }

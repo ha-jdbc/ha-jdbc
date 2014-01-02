@@ -29,7 +29,7 @@ import net.sf.hajdbc.logging.Level;
  */
 public class JDKLogger extends AbstractLogger
 {
-	private static final Map<Level, java.util.logging.Level> levels = new EnumMap<Level, java.util.logging.Level>(Level.class);
+	private static final Map<Level, java.util.logging.Level> levels = new EnumMap<>(Level.class);
 	static
 	{
 		levels.put(Level.ERROR, java.util.logging.Level.SEVERE);

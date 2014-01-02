@@ -28,7 +28,6 @@ import java.util.Map;
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.invocation.Invoker;
 import net.sf.hajdbc.io.InputSinkRegistry;
-import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.reflect.Proxies;
 
 /**
@@ -37,7 +36,7 @@ import net.sf.hajdbc.util.reflect.Proxies;
  */
 public class ResultSetProxyFactory<Z, D extends Database<Z>, S extends Statement> extends AbstractInputSinkRegistryProxyFactory<Z, D, S, ResultSet>
 {
-	private List<Invoker<Z, D, ResultSet, ?, SQLException>> invokers = new LinkedList<Invoker<Z, D, ResultSet, ?, SQLException>>();
+	private List<Invoker<Z, D, ResultSet, ?, SQLException>> invokers = new LinkedList<>();
 	
 	public ResultSetProxyFactory(S statementProxy, ProxyFactory<Z, D, S, SQLException> statementFactory, Invoker<Z, D, S, ResultSet, SQLException> invoker, Map<D, ResultSet> map, TransactionContext<Z, D> context, InputSinkRegistry<Object> sinkRegistry)
 	{
@@ -72,14 +71,14 @@ public class ResultSetProxyFactory<Z, D extends Database<Z>, S extends Statement
 	}
 
 	@Override
-	public void close(D database, ResultSet results)
+	public void close(D database, ResultSet results) throws SQLException
 	{
-		Resources.close(results);
+		results.close();
 	}
 
 	@Override
 	public ResultSet createProxy()
 	{
-		return Proxies.createProxy(ResultSet.class, new ResultSetInvocationHandler<Z, D, S>(this));
+		return Proxies.createProxy(ResultSet.class, new ResultSetInvocationHandler<>(this));
 	}
 }

@@ -43,6 +43,6 @@ public class FineDurabilityFactory implements DurabilityFactory
 	@Override
 	public <Z, D extends Database<Z>> Durability<Z, D> createDurability(DatabaseCluster<Z, D> cluster)
 	{
-		return new FineDurability<Z, D>(cluster);
+		return new FineDurability<>(cluster);
 	}
 }

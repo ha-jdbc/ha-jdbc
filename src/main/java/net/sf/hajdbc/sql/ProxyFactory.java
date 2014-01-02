@@ -45,7 +45,7 @@ public interface ProxyFactory<Z, D extends Database<Z>, T, E extends Exception>
 
 	void replay(D database, T object) throws E;
 
-	void close(D database, T object);
+	void close(D database, T object) throws E;
 	
 	void retain(Set<D> databaseSet);
 

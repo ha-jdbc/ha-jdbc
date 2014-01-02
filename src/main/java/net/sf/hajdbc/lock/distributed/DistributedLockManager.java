@@ -50,7 +50,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 	final CommandDispatcher<LockCommandContext> dispatcher;
 	
 	private final LockManager lockManager;
-	private final ConcurrentMap<Member, Map<LockDescriptor, Lock>> remoteLockDescriptorMap = new ConcurrentHashMap<Member, Map<LockDescriptor, Lock>>();
+	private final ConcurrentMap<Member, Map<LockDescriptor, Lock>> remoteLockDescriptorMap = new ConcurrentHashMap<>();
 	
 	public <Z, D extends Database<Z>> DistributedLockManager(DatabaseCluster<Z, D> cluster, CommandDispatcherFactory dispatcherFactory) throws Exception
 	{
@@ -190,7 +190,7 @@ public class DistributedLockManager implements LockManager, LockCommandContext, 
 		{
 			Member member = Objects.readObject(input);
 			
-			Map<LockDescriptor, Lock> map = new HashMap<LockDescriptor, Lock>();
+			Map<LockDescriptor, Lock> map = new HashMap<>();
 			
 			int locks = input.readInt();
 			

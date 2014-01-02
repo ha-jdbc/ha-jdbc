@@ -54,7 +54,7 @@ public class RandomBalancer<P, D extends Database<P>> extends AbstractSetBalance
 			total += database.getWeight();
 		}
 		
-		List<D> list = new ArrayList<D>(total);
+		List<D> list = new ArrayList<>(total);
 		
 		for (D database: databases)
 		{
@@ -91,7 +91,7 @@ public class RandomBalancer<P, D extends Database<P>> extends AbstractSetBalance
 		
 		if (weight > 0)
 		{
-			List<D> list = new ArrayList<D>(this.databaseList.size() + weight);
+			List<D> list = new ArrayList<>(this.databaseList.size() + weight);
 			
 			list.addAll(this.databaseList);
 			
@@ -115,7 +115,7 @@ public class RandomBalancer<P, D extends Database<P>> extends AbstractSetBalance
 
 		if (weight > 0)
 		{
-			List<D> list = new ArrayList<D>(this.databaseList.size() - weight);
+			List<D> list = new ArrayList<>(this.databaseList.size() - weight);
 			
 			int index = this.databaseList.indexOf(database);
 			

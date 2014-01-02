@@ -39,6 +39,6 @@ public class SoftReferenceFactory implements ReferenceFactory
 	@Override
 	public <T> Reference<T> createReference(T object)
 	{
-		return new SoftReference<T>(object);
+		return new SoftReference<>(object);
 	}
 }

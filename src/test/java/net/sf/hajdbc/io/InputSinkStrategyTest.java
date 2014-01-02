@@ -31,18 +31,13 @@ public abstract class InputSinkStrategyTest<S>
 		
 		S sink = channel.write(new ByteArrayInputStream(expected));
 		
-		InputStream input = channel.read(sink);
-		try
+		try (InputStream input = channel.read(sink))
 		{
 			byte[] result = new byte[Short.MAX_VALUE];
 			
 			input.read(result);
 			
 			Assert.assertArrayEquals(expected, result);
-		}
-		finally
-		{
-			input.close();
 		}
 	}
 	
@@ -57,22 +52,17 @@ public abstract class InputSinkStrategyTest<S>
 			expected[i] = (char) (this.random.nextInt(max - min) + min);
 		}
 
-		InputSinkChannel<Reader, S> channel = strategy.createReaderChannel();
+		InputSinkChannel<Reader, S> channel = this.strategy.createReaderChannel();
 		
 		S sink = channel.write(new CharArrayReader(expected));
 		
-		Reader reader = channel.read(sink);
-		try
+		try (Reader reader = channel.read(sink))
 		{
 			char[] result = new char[Short.MAX_VALUE];
 			
 			reader.read(result);
 			
 			Assert.assertArrayEquals(expected, result);
-		}
-		finally
-		{
-			reader.close();
 		}
 	}
 }

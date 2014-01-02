@@ -91,9 +91,9 @@ public class DumpRestoreSynchronizationStrategy implements SynchronizationStrate
 			
 			try
 			{
-				startProcess(support.createDumpProcess(new ConnectionPropertiesImpl<Z, D>(context, context.getSourceDatabase()), file));
+				startProcess(support.createDumpProcess(new ConnectionPropertiesImpl<>(context, context.getSourceDatabase()), file));
 				
-				startProcess(support.createRestoreProcess(new ConnectionPropertiesImpl<Z, D>(context, context.getTargetDatabase()), file));
+				startProcess(support.createRestoreProcess(new ConnectionPropertiesImpl<>(context, context.getTargetDatabase()), file));
 			}
 			finally
 			{

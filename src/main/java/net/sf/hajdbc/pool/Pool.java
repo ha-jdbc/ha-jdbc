@@ -23,11 +23,12 @@ package net.sf.hajdbc.pool;
  * @param <T>
  * @param <E>
  */
-public interface Pool<T, E extends Exception>
+public interface Pool<T, E extends Exception> extends AutoCloseable
 {
 	T take() throws E;
 	
 	void release(T item);
 	
+	@Override
 	void close();
 }

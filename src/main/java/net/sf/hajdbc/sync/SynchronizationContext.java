@@ -33,7 +33,7 @@ import net.sf.hajdbc.dialect.Dialect;
  * @param <D> Driver or DataSource
  * @since 2.0
  */
-public interface SynchronizationContext<Z, D extends Database<Z>>
+public interface SynchronizationContext<Z, D extends Database<Z>> extends AutoCloseable
 {
 	/**
 	 * Returns a connection to the specified database.
@@ -92,5 +92,6 @@ public interface SynchronizationContext<Z, D extends Database<Z>>
 	/**
 	 * Closes any open database connections and shuts down the executor service. 
 	 */
+	@Override
 	void close();
 }

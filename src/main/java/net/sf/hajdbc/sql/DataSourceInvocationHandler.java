@@ -59,9 +59,9 @@ public class DataSourceInvocationHandler extends CommonDataSourceInvocationHandl
 	{
 		if (getConnectionMethods.contains(method))
 		{
-			TransactionContext<DataSource, DataSourceDatabase> context = new LocalTransactionContext<DataSource, DataSourceDatabase>(this.getProxyFactory().getDatabaseCluster());
+			TransactionContext<DataSource, DataSourceDatabase> context = new LocalTransactionContext<>(this.getProxyFactory().getDatabaseCluster());
 			
-			return new ConnectionProxyFactoryFactory<DataSource, DataSourceDatabase, DataSource>(context);
+			return new ConnectionProxyFactoryFactory<>(context);
 		}
 		
 		return super.getProxyFactoryFactory(object, method, parameters);

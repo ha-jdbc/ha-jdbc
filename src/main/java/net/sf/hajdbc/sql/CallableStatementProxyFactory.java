@@ -42,6 +42,6 @@ public class CallableStatementProxyFactory<Z, D extends Database<Z>> extends Abs
 	@Override
 	public CallableStatement createProxy()
 	{
-		return Proxies.createProxy(CallableStatement.class, new CallableStatementInvocationHandler<Z, D>(this));
+		return Proxies.createProxy(CallableStatement.class, new CallableStatementInvocationHandler<>(this));
 	}
 }

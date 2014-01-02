@@ -48,10 +48,10 @@ public class RegistryTest
 	{
 		SimpleObject expected = new SimpleObject(0);
 		
-		Registry<Void, SimpleObject, Void, Exception> registry = new LifecycleRegistry<Void, SimpleObject, Void, Exception>(new Factory(expected, 1), new ReferenceRegistryStoreFactory(), new SimpleExceptionFactory());
+		Registry<Void, SimpleObject, Void, Exception> registry = new LifecycleRegistry<>(new Factory(expected, 1), new ReferenceRegistryStoreFactory(), new SimpleExceptionFactory());
 		
 		int count = 100;
-		List<Callable<SimpleObject>> tasks = new ArrayList<Callable<SimpleObject>>(count);
+		List<Callable<SimpleObject>> tasks = new ArrayList<>(count);
 		for (int i = 0; i < count; ++i)
 		{
 			tasks.add(new RegistryTask(registry));
@@ -89,10 +89,10 @@ public class RegistryTest
 	{
 		SimpleObject expected = new SimpleObject(4);
 		
-		Registry<Void, SimpleObject, Void, Exception> registry = new LifecycleRegistry<Void, SimpleObject, Void, Exception>(new Factory(expected, 1), new ReferenceRegistryStoreFactory(), new SimpleExceptionFactory());
+		Registry<Void, SimpleObject, Void, Exception> registry = new LifecycleRegistry<>(new Factory(expected, 1), new ReferenceRegistryStoreFactory(), new SimpleExceptionFactory());
 		
 		int count = 100;
-		List<Callable<SimpleObject>> tasks = new ArrayList<Callable<SimpleObject>>(count);
+		List<Callable<SimpleObject>> tasks = new ArrayList<>(count);
 		for (int i = 0; i < count; ++i)
 		{
 			tasks.add(new RegistryTask(registry));
@@ -151,7 +151,7 @@ public class RegistryTest
 	{
 		SimpleObject expected = new SimpleObject(0);
 		
-		Registry<Void, SimpleObject, Void, Exception> registry = new LifecycleRegistry<Void, SimpleObject, Void, Exception>(new Factory(expected, 1), new ReferenceRegistryStoreFactory(), new SimpleExceptionFactory());
+		Registry<Void, SimpleObject, Void, Exception> registry = new LifecycleRegistry<>(new Factory(expected, 1), new ReferenceRegistryStoreFactory(), new SimpleExceptionFactory());
 		
 		// Setup start() to fail
 		expected.start();

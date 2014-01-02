@@ -42,6 +42,6 @@ public class PreparedStatementProxyFactory<Z, D extends Database<Z>> extends Abs
 	@Override
 	public PreparedStatement createProxy()
 	{
-		return Proxies.createProxy(PreparedStatement.class, new PreparedStatementInvocationHandler<Z, D>(this));
+		return Proxies.createProxy(PreparedStatement.class, new PreparedStatementInvocationHandler<>(this));
 	}
 }

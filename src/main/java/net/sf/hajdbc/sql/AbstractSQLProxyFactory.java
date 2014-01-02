@@ -90,7 +90,7 @@ public abstract class AbstractSQLProxyFactory<Z, D extends Database<Z>, P, T> ex
 	
 	protected List<Lock> extractLocks(Collection<String> statements) throws SQLException
 	{
-		Set<String> identifierSet = new TreeSet<String>();
+		Set<String> identifierSet = new TreeSet<>();
 		DatabaseCluster<Z, D> cluster = this.getDatabaseCluster();
 		
 		for (String sql: statements)
@@ -136,7 +136,7 @@ public abstract class AbstractSQLProxyFactory<Z, D extends Database<Z>, P, T> ex
 			}
 		}
 		
-		List<Lock> lockList = new ArrayList<Lock>(identifierSet.size());
+		List<Lock> lockList = new ArrayList<>(identifierSet.size());
 		
 		if (!identifierSet.isEmpty())
 		{

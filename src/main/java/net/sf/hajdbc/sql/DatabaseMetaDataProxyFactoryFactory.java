@@ -34,6 +34,6 @@ public class DatabaseMetaDataProxyFactoryFactory<Z, D extends Database<Z>> imple
 	@Override
 	public ProxyFactory<Z, D, DatabaseMetaData, SQLException> createProxyFactory(Connection parentProxy, ProxyFactory<Z, D, Connection, SQLException> parent, Invoker<Z, D, Connection, DatabaseMetaData, SQLException> invoker, Map<D, DatabaseMetaData> objects)
 	{
-		return new DatabaseMetaDataProxyFactory<Z, D>(parentProxy, parent, invoker, objects);
+		return new DatabaseMetaDataProxyFactory<>(parentProxy, parent, invoker, objects);
 	}
 }

@@ -42,6 +42,6 @@ public class ClobProxyFactoryFactory<Z, D extends Database<Z>, P, C extends Clob
 	@Override
 	public ProxyFactory<Z, D, C, SQLException> createProxyFactory(P parentProxy, ProxyFactory<Z, D, P, SQLException> parent, Invoker<Z, D, P, C, SQLException> invoker, Map<D, C> clobs)
 	{
-		return new ClobProxyFactory<Z, D, P, C>(this.clobClass, parentProxy, parent, invoker, clobs, this.locatorsUpdateCopy);
+		return new ClobProxyFactory<>(this.clobClass, parentProxy, parent, invoker, clobs, this.locatorsUpdateCopy);
 	}
 }

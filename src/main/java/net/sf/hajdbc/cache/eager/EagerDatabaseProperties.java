@@ -39,8 +39,8 @@ import net.sf.hajdbc.dialect.Dialect;
  */
 public class EagerDatabaseProperties extends AbstractDatabaseProperties
 {
-	private final Map<QualifiedName, TableProperties> tables = new HashMap<QualifiedName, TableProperties>();
-	private final Map<QualifiedName, SequenceProperties> sequences = new HashMap<QualifiedName, SequenceProperties>();
+	private final Map<QualifiedName, TableProperties> tables = new HashMap<>();
+	private final Map<QualifiedName, SequenceProperties> sequences = new HashMap<>();
 	private final List<String> defaultSchemas;
 	private final Map<Integer, Map.Entry<String, Integer>> types;
 	
@@ -59,7 +59,7 @@ public class EagerDatabaseProperties extends AbstractDatabaseProperties
 		
 		List<String> defaultSchemaList = dialect.getDefaultSchemas(metaData);
 		
-		this.defaultSchemas = new ArrayList<String>(defaultSchemaList);
+		this.defaultSchemas = new ArrayList<>(defaultSchemaList);
 		
 		SequenceSupport support = dialect.getSequenceSupport();
 		if (support != null)

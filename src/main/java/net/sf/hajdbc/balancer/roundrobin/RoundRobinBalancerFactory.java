@@ -44,6 +44,6 @@ public class RoundRobinBalancerFactory implements BalancerFactory
 	@Override
 	public <Z, D extends Database<Z>> Balancer<Z, D> createBalancer(Set<D> databases)
 	{
-		return new RoundRobinBalancer<Z, D>(databases);
+		return new RoundRobinBalancer<>(databases);
 	}
 }

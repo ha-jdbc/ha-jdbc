@@ -28,7 +28,6 @@ import java.text.MessageFormat;
 
 import net.sf.hajdbc.codec.Codec;
 import net.sf.hajdbc.codec.CodecFactory;
-import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.Strings;
 import net.sf.hajdbc.util.SystemProperties;
 
@@ -129,15 +128,11 @@ public class CipherCodecFactory implements CodecFactory
 		{
 			KeyStore store = KeyStore.getInstance(type);
 			
-			InputStream input = new FileInputStream(file);
-			try
+			try (InputStream input = new FileInputStream(file))
 			{
 				store.load(input, (password != null) ? password.toCharArray() : null);
 			}
-			finally
-			{
-				Resources.close(input);
-			}
+			
 			return new CipherCodec(store.getKey(keyAlias, (keyPassword != null) ? keyPassword.toCharArray() : null));
 		}
 		catch (GeneralSecurityException e)

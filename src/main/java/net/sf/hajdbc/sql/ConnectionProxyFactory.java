@@ -23,7 +23,6 @@ import java.util.Map;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.invocation.Invoker;
-import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.reflect.Proxies;
 
 /**
@@ -46,12 +45,12 @@ public class ConnectionProxyFactory<Z, D extends Database<Z>, P> extends Abstrac
 	@Override
 	public Connection createProxy()
 	{
-		return Proxies.createProxy(Connection.class, new ConnectionInvocationHandler<Z, D, P>(this));
+		return Proxies.createProxy(Connection.class, new ConnectionInvocationHandler<>(this));
 	}
 
 	@Override
-	public void close(D database, Connection connection)
+	public void close(D database, Connection connection) throws SQLException
 	{
-		Resources.close(connection);
+		connection.close();
 	}
 }

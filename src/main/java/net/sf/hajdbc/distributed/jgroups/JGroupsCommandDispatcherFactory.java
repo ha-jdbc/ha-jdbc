@@ -48,7 +48,7 @@ public class JGroupsCommandDispatcherFactory implements CommandDispatcherFactory
 	@Override
 	public <C> CommandDispatcher<C> createCommandDispatcher(String id, C context, Stateful stateful, MembershipListener membershipListener) throws Exception
 	{
-		return new JGroupsCommandDispatcher<C>(id, new JChannel(this.stack), this.timeout, context, stateful, membershipListener);
+		return new JGroupsCommandDispatcher<>(id, new JChannel(this.stack), this.timeout, context, stateful, membershipListener);
 	}
 	
 	public void setStack(String stack)

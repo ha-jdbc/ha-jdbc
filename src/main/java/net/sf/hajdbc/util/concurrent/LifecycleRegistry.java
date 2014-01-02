@@ -114,7 +114,7 @@ public class LifecycleRegistry<K, V extends Lifecycle, C, E extends Exception> i
 	private class RegistryEntry
 	{
 		private final V value;
-		private final AtomicReference<CountDownLatch> latchRef = new AtomicReference<CountDownLatch>(new CountDownLatch(1));
+		private final AtomicReference<CountDownLatch> latchRef = new AtomicReference<>(new CountDownLatch(1));
 		
 		RegistryEntry(V value)
 		{

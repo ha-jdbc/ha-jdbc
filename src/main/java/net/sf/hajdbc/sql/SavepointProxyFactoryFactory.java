@@ -34,6 +34,6 @@ public class SavepointProxyFactoryFactory<Z, D extends Database<Z>> implements P
 	@Override
 	public ProxyFactory<Z, D, Savepoint, SQLException> createProxyFactory(Connection parentProxy, ProxyFactory<Z, D, Connection, SQLException> parent, Invoker<Z, D, Connection, Savepoint, SQLException> invoker, Map<D, Savepoint> savepoints)
 	{
-		return new SavepointProxyFactory<Z, D>(parentProxy, parent, invoker, savepoints);
+		return new SavepointProxyFactory<>(parentProxy, parent, invoker, savepoints);
 	}
 }

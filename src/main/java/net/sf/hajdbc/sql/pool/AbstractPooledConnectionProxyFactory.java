@@ -30,7 +30,6 @@ import javax.sql.StatementEventListener;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.invocation.Invoker;
-import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.sql.AbstractTransactionalProxyFactory;
 import net.sf.hajdbc.sql.LocalTransactionContext;
 import net.sf.hajdbc.sql.ProxyFactory;
@@ -41,12 +40,12 @@ import net.sf.hajdbc.sql.ProxyFactory;
  */
 public abstract class AbstractPooledConnectionProxyFactory<Z, D extends Database<Z>, C extends PooledConnection> extends AbstractTransactionalProxyFactory<Z, D, Z, C>
 {
-	private Map<ConnectionEventListener, Invoker<Z, D, C, ?, SQLException>> connectionEventListenerInvokers = new HashMap<ConnectionEventListener, Invoker<Z, D, C, ?, SQLException>>();
-	private Map<StatementEventListener, Invoker<Z, D, C, ?, SQLException>> statementEventListenerInvokers = new HashMap<StatementEventListener, Invoker<Z, D, C, ?, SQLException>>();
+	private Map<ConnectionEventListener, Invoker<Z, D, C, ?, SQLException>> connectionEventListenerInvokers = new HashMap<>();
+	private Map<StatementEventListener, Invoker<Z, D, C, ?, SQLException>> statementEventListenerInvokers = new HashMap<>();
 	
 	protected AbstractPooledConnectionProxyFactory(Z parentProxy, ProxyFactory<Z, D, Z, SQLException> parent, Invoker<Z, D, Z, C, SQLException> invoker, Map<D, C> map)
 	{
-		super(parentProxy, parent, invoker, map, new LocalTransactionContext<Z, D>(parent.getDatabaseCluster()));
+		super(parentProxy, parent, invoker, map, new LocalTransactionContext<>(parent.getDatabaseCluster()));
 	}
 
 	public void addConnectionEventListener(ConnectionEventListener listener, Invoker<Z, D, C, ?, SQLException> invoker)
@@ -85,16 +84,9 @@ public abstract class AbstractPooledConnectionProxyFactory<Z, D extends Database
 	}
 
 	@Override
-	public void close(D database, C connection)
+	public void close(D database, C connection) throws SQLException
 	{
-		try
-		{
-			connection.close();
-		}
-		catch (SQLException e)
-		{
-			this.logger.log(Level.INFO, e);
-		}
+		connection.close();
 	}
 
 	@SuppressWarnings("unused")

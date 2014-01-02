@@ -138,7 +138,7 @@ public class SynchronousExecutor extends AbstractExecutorService
 	@Override
 	public <T> Future<T> submit(Callable<T> task)
 	{
-		return new EagerFuture<T>(task);
+		return new EagerFuture<>(task);
 	}
 
 	/**
@@ -164,15 +164,15 @@ public class SynchronousExecutor extends AbstractExecutorService
 		long end = (timeout == Long.MAX_VALUE) ? 0 : System.currentTimeMillis() + unit.toMillis(timeout);
 		boolean synchronous = !this.reverse;
 		int remaining = tasks.size();
-		LinkedList<Future<T>> futures = new LinkedList<Future<T>>();
+		LinkedList<Future<T>> futures = new LinkedList<>();
 		
-		for (Callable<T> task: this.reverse ? new Reversed<Callable<T>>(new ArrayList<Callable<T>>(tasks)) : tasks)
+		for (Callable<T> task: this.reverse ? new Reversed<>(new ArrayList<>(tasks)) : tasks)
 		{
 			remaining -= 1;
 
 			if (synchronous)
 			{
-				Future<T> future = this.reverse ? new LazyFuture<T>(task) : new EagerFuture<T>(task);
+				Future<T> future = this.reverse ? new LazyFuture<>(task) : new EagerFuture<>(task);
 				
 				if (this.reverse)
 				{
@@ -211,7 +211,7 @@ public class SynchronousExecutor extends AbstractExecutorService
 		try
 		{
 			// Wait until all tasks have finished
-			for (Future<T> future: this.reverse ? new Reversed<Future<T>>(futures) : futures)
+			for (Future<T> future: this.reverse ? new Reversed<>(futures) : futures)
 			{
 				if (!future.isDone())
 				{
@@ -248,7 +248,7 @@ public class SynchronousExecutor extends AbstractExecutorService
 		finally
 		{
 			// If interrupted, cancel any unfinished tasks
-			for (Future<T> future: this.reverse ? new Reversed<Future<T>>(futures) : futures)
+			for (Future<T> future: this.reverse ? new Reversed<>(futures) : futures)
 			{
 				if (!future.isDone())
 				{
@@ -299,7 +299,7 @@ public class SynchronousExecutor extends AbstractExecutorService
 		private final Callable<T> task;
 		private volatile T result;
 		private volatile ExecutionException exception;
-		private final AtomicReference<State> state = new AtomicReference<State>(State.NEW);
+		private final AtomicReference<State> state = new AtomicReference<>(State.NEW);
 		private final CountDownLatch latch = new CountDownLatch(1);
 		
 		LazyFuture(Callable<T> task)

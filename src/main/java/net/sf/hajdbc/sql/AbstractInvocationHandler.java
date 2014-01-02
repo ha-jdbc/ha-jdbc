@@ -98,7 +98,7 @@ public class AbstractInvocationHandler<Z, D extends Database<Z>, T, E extends Ex
 		
 		@SuppressWarnings("unchecked")
 		ProxyFactoryFactory<Z, D, T, E, R, ? extends Exception> factory = (ProxyFactoryFactory<Z, D, T, E, R, ? extends Exception>) this.getProxyFactoryFactory(proxy, method, parameters);
-		InvocationResultFactory<Z, D, R> resultFactory = (factory != null) ? new ProxyInvocationResultFactory<Z, D, T, R, E>(factory, proxy, this.getProxyFactory(), invoker) : new SimpleInvocationResultFactory<Z, D, R>();
+		InvocationResultFactory<Z, D, R> resultFactory = (factory != null) ? new ProxyInvocationResultFactory<>(factory, proxy, this.getProxyFactory(), invoker) : new SimpleInvocationResultFactory<Z, D, R>();
 		
 		return this.createResult(resultFactory, results);
 	}
@@ -149,7 +149,7 @@ public class AbstractInvocationHandler<Z, D extends Database<Z>, T, E extends Ex
 	 */
 	private <R> Invoker<Z, D, T, R, E> getInvoker(Method method, Object... parameters) throws E
 	{
-		return new SimpleInvoker<Z, D, T, R, E>(method, parameters, this.proxyFactory.getExceptionFactory());
+		return new SimpleInvoker<>(method, parameters, this.proxyFactory.getExceptionFactory());
 	}
 	
 	protected <R, X> Invoker<Z, D, T, R, E> getInvoker(Class<X> parameterClass, final int parameterIndex, T proxy, final Method method, final Object... parameters) throws E
@@ -172,7 +172,7 @@ public class AbstractInvocationHandler<Z, D extends Database<Z>, T, E extends Ex
 						@Override
 						public R invoke(D database, T object) throws E
 						{
-							List<Object> parameterList = new ArrayList<Object>(Arrays.asList(parameters));
+							List<Object> parameterList = new ArrayList<>(Arrays.asList(parameters));
 							
 							parameterList.set(parameterIndex, handler.getProxyFactory().get(database));
 							

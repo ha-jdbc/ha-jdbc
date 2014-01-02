@@ -36,6 +36,6 @@ public class WriterProxyFactoryFactory<Z, D extends Database<Z>, P> implements P
 	@Override
 	public ProxyFactory<Z, D, Writer, IOException> createProxyFactory(P parentProxy, ProxyFactory<Z, D, P, SQLException> parent, Invoker<Z, D, P, Writer, SQLException> invoker, Map<D, Writer> writers)
 	{
-		return new WriterProxyFactory<Z, D, P>(parentProxy, parent, invoker, writers);
+		return new WriterProxyFactory<>(parentProxy, parent, invoker, writers);
 	}
 }

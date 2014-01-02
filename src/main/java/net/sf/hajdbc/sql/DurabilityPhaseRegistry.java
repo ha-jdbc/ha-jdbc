@@ -43,7 +43,7 @@ public class DurabilityPhaseRegistry implements StaticRegistry<Method, Durabilit
 
 	public DurabilityPhaseRegistry(List<Method> prepareMethods, List<Method> commitMethods, List<Method> rollbackMethods, List<Method> forgetMethods)
 	{
-		Map<Method, Durability.Phase> map = new HashMap<Method, Durability.Phase>();
+		Map<Method, Durability.Phase> map = new HashMap<>();
 		for (Method method: prepareMethods)
 		{
 			map.put(method, Durability.Phase.PREPARE);
@@ -60,7 +60,7 @@ public class DurabilityPhaseRegistry implements StaticRegistry<Method, Durabilit
 		{
 			map.put(method, Durability.Phase.FORGET);
 		}
-		this.registry = new SimpleStaticRegistry<Method, Durability.Phase>(this, map);
+		this.registry = new SimpleStaticRegistry<>(this, map);
 	}
 
 	/**

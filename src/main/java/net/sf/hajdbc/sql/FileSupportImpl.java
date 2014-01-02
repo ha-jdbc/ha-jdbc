@@ -38,7 +38,6 @@ import java.util.List;
 
 import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.util.Files;
-import net.sf.hajdbc.util.Resources;
 
 /**
  * @author  Paul Ferraro
@@ -49,7 +48,7 @@ public class FileSupportImpl<E extends Exception> implements FileSupport<E>
 	private static final String TEMP_FILE_SUFFIX = ".lob";
 	private static final int BUFFER_SIZE = 8192;
 	
-	private final List<File> files = new LinkedList<File>();
+	private final List<File> files = new LinkedList<>();
 	private final ExceptionFactory<E> exceptionFactory;
 	
 	public FileSupportImpl(ExceptionFactory<E> exceptionFactory)
@@ -66,8 +65,8 @@ public class FileSupportImpl<E extends Exception> implements FileSupport<E>
 		try
 		{
 			File file = this.createTempFile();
-			FileOutputStream output = new FileOutputStream(file);
-			try
+			
+			try (FileOutputStream output = new FileOutputStream(file))
 			{
 				FileChannel fileChannel = output.getChannel();
 				ReadableByteChannel inputChannel = Channels.newChannel(inputStream);
@@ -82,10 +81,6 @@ public class FileSupportImpl<E extends Exception> implements FileSupport<E>
 				}
 				
 				return file;
-			}
-			finally
-			{
-				Resources.close(output);
 			}
 		}
 		catch (IOException e)
@@ -103,8 +98,8 @@ public class FileSupportImpl<E extends Exception> implements FileSupport<E>
 		try
 		{
 			File file = this.createTempFile();
-			Writer writer = new FileWriter(file);
-			try
+			
+			try (Writer writer = new FileWriter(file))
 			{
 				CharBuffer buffer = CharBuffer.allocate(BUFFER_SIZE);
 				
@@ -116,10 +111,6 @@ public class FileSupportImpl<E extends Exception> implements FileSupport<E>
 				}
 				
 				return file;
-			}
-			finally
-			{
-				Resources.close(writer);
 			}
 		}
 		catch (IOException e)

@@ -29,7 +29,7 @@ import net.sf.hajdbc.cache.DatabaseMetaDataProvider;
  */
 public class LazyDatabaseMetaDataProvider implements DatabaseMetaDataProvider
 {
-	private final ThreadLocal<Connection> threadLocal = new ThreadLocal<Connection>();
+	private final ThreadLocal<Connection> threadLocal = new ThreadLocal<>();
 	
 	public LazyDatabaseMetaDataProvider(DatabaseMetaData metaData) throws SQLException
 	{

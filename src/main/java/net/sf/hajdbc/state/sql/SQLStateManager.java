@@ -61,7 +61,6 @@ import net.sf.hajdbc.state.SerializedDurabilityListener;
 import net.sf.hajdbc.state.StateManager;
 import net.sf.hajdbc.tx.TransactionIdentifierFactory;
 import net.sf.hajdbc.util.Objects;
-import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.ServiceLoaders;
 
 /**
@@ -128,24 +127,19 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 			@Override
 			public Set<String> execute(Connection connection) throws SQLException
 			{
-				Set<String> set = new TreeSet<String>();
+				Set<String> set = new TreeSet<>();
 				
-				PreparedStatement statement = connection.prepareStatement(SELECT_STATE_SQL);
-				
-				try
+				try (PreparedStatement statement = connection.prepareStatement(SELECT_STATE_SQL))
 				{
-					ResultSet resultSet = statement.executeQuery();
-					
-					while (resultSet.next())
+					try (ResultSet resultSet = statement.executeQuery())
 					{
-						set.add(resultSet.getString(1));
+						while (resultSet.next())
+						{
+							set.add(resultSet.getString(1));
+						}
+						
+						return set;
 					}
-					
-					return set;
-				}
-				finally
-				{
-					Resources.close(statement);
 				}
 			}
 		};
@@ -173,9 +167,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 			@Override
 			public void execute(Connection connection) throws SQLException
 			{
-				PreparedStatement statement = connection.prepareStatement(INSERT_STATE_SQL);
-				
-				try
+				try (PreparedStatement statement = connection.prepareStatement(INSERT_STATE_SQL))
 				{
 					statement.addBatch(TRUNCATE_STATE_SQL);
 					
@@ -189,10 +181,6 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 					}
 					
 					statement.executeBatch();
-				}
-				finally
-				{
-					Resources.close(statement);
 				}
 			}
 		};
@@ -261,17 +249,11 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 
 	void execute(Connection connection, String sql, DatabaseEvent event) throws SQLException
 	{
-		PreparedStatement statement = connection.prepareStatement(sql);
-		
-		try
+		try (PreparedStatement statement = connection.prepareStatement(sql))
 		{
 			statement.setString(1, event.getSource());
 			
 			statement.executeUpdate();
-		}
-		finally
-		{
-			Resources.close(statement);
 		}
 	}
 
@@ -287,19 +269,13 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 			@Override
 			public void execute(Connection connection) throws SQLException
 			{
-				PreparedStatement statement = connection.prepareStatement(INSERT_INVOCATION_SQL);
-				
-				try
+				try (PreparedStatement statement = connection.prepareStatement(INSERT_INVOCATION_SQL))
 				{
 					statement.setBytes(1, transactionId);
 					statement.setByte(2, phase);
 					statement.setByte(3, exceptionType);
 					
 					statement.executeUpdate();
-				}
-				finally
-				{
-					Resources.close(statement);
 				}
 			}
 		};
@@ -353,19 +329,13 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 			@Override
 			public void execute(Connection connection) throws SQLException
 			{
-				PreparedStatement statement = connection.prepareStatement(INSERT_INVOKER_SQL);
-				
-				try
+				try (PreparedStatement statement = connection.prepareStatement(INSERT_INVOKER_SQL))
 				{
 					statement.setBytes(1, transactionId);
 					statement.setByte(2, phase);
 					statement.setString(3, databaseId);
 					
 					statement.executeUpdate();
-				}
-				finally
-				{
-					Resources.close(statement);
 				}
 			}
 		};
@@ -392,9 +362,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 			@Override
 			public void execute(Connection connection) throws SQLException
 			{
-				PreparedStatement statement = connection.prepareStatement(UPDATE_INVOKER_SQL);
-				
-				try
+				try (PreparedStatement statement = connection.prepareStatement(UPDATE_INVOKER_SQL))
 				{
 					statement.setBytes(1, result);
 					statement.setBytes(2, transactionId);
@@ -402,10 +370,6 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 					statement.setString(4, databaseId);
 					
 					statement.executeUpdate();
-				}
-				finally
-				{
-					Resources.close(statement);
 				}
 			}
 		};
@@ -442,18 +406,12 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	
 	void execute(Connection connection, String sql, byte[] transactionId, byte phase) throws SQLException 
 	{
-		PreparedStatement statement = connection.prepareStatement(sql);
-		
-		try
+		try (PreparedStatement statement = connection.prepareStatement(sql))
 		{
 			statement.setBytes(1, transactionId);
 			statement.setByte(2, phase);
 			
 			statement.executeUpdate();
-		}
-		finally
-		{
-			Resources.close(statement);
 		}
 	}
 
@@ -465,64 +423,56 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	public Map<InvocationEvent, Map<String, InvokerEvent>> recover()
 	{
 		final TransactionIdentifierFactory<?> txIdFactory = this.cluster.getTransactionIdentifierFactory();
+		
 		Query<Map<InvocationEvent, Map<String, InvokerEvent>>> query = new Query<Map<InvocationEvent, Map<String, InvokerEvent>>>()
 		{
 			@Override
 			public Map<InvocationEvent, Map<String, InvokerEvent>> execute(Connection connection) throws SQLException
 			{
-				Map<InvocationEvent, Map<String, InvokerEvent>> map = new HashMap<InvocationEvent, Map<String, InvokerEvent>>();
+				Map<InvocationEvent, Map<String, InvokerEvent>> map = new HashMap<>();
 				
-				PreparedStatement statement = connection.prepareStatement(SELECT_INVOCATION_SQL);
-
-				try
+				try (PreparedStatement statement = connection.prepareStatement(SELECT_INVOCATION_SQL))
 				{
-					ResultSet resultSet = statement.executeQuery();
-					while (resultSet.next())
+					try (ResultSet resultSet = statement.executeQuery())
 					{
-						Object txId = txIdFactory.deserialize(resultSet.getBytes(1));
-						Durability.Phase phase = Durability.Phase.values()[resultSet.getInt(2)];
-						ExceptionType type = ExceptionType.values()[resultSet.getInt(3)];
-						map.put(new InvocationEventImpl(txId, phase, type), new HashMap<String, InvokerEvent>());
-					}
-				}
-				finally
-				{
-					Resources.close(statement);
-				}
-
-				statement = connection.prepareStatement(SELECT_INVOKER_SQL);
-
-				try
-				{
-					ResultSet resultSet = statement.executeQuery();
-					
-					while (resultSet.next())
-					{
-						Object txId = txIdFactory.deserialize(resultSet.getBytes(1));
-						Durability.Phase phase = Durability.Phase.values()[resultSet.getByte(2)];
-						
-						Map<String, InvokerEvent> invokers = map.get(new InvocationEventImpl(txId, phase, null));
-						
-						if (invokers != null)
+						while (resultSet.next())
 						{
-							String databaseId = resultSet.getString(3);
-							
-							InvokerEvent event = new InvokerEventImpl(txId, phase, databaseId);
-							
-							byte[] bytes = resultSet.getBytes(4);
-							
-							if (!resultSet.wasNull())
-							{
-								event.setResult(Objects.<InvokerResult>deserialize(bytes));
-							}
-
-							invokers.put(databaseId, event);
+							Object txId = txIdFactory.deserialize(resultSet.getBytes(1));
+							Durability.Phase phase = Durability.Phase.values()[resultSet.getInt(2)];
+							ExceptionType type = ExceptionType.values()[resultSet.getInt(3)];
+							map.put(new InvocationEventImpl(txId, phase, type), new HashMap<String, InvokerEvent>());
 						}
 					}
 				}
-				finally
+				
+				try (PreparedStatement statement = connection.prepareStatement(SELECT_INVOKER_SQL))
 				{
-					Resources.close(statement);
+					try (ResultSet resultSet = statement.executeQuery())
+					{
+						while (resultSet.next())
+						{
+							Object txId = txIdFactory.deserialize(resultSet.getBytes(1));
+							Durability.Phase phase = Durability.Phase.values()[resultSet.getByte(2)];
+							
+							Map<String, InvokerEvent> invokers = map.get(new InvocationEventImpl(txId, phase, null));
+							
+							if (invokers != null)
+							{
+								String databaseId = resultSet.getString(3);
+								
+								InvokerEvent event = new InvokerEventImpl(txId, phase, databaseId);
+								
+								byte[] bytes = resultSet.getBytes(4);
+								
+								if (!resultSet.wasNull())
+								{
+									event.setResult(Objects.<InvokerResult>deserialize(bytes));
+								}
+	
+								invokers.put(databaseId, event);
+							}
+						}
+					}
 				}
 				
 				return map;
@@ -598,9 +548,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 			String binaryType = properties.findType(this.cluster.getTransactionIdentifierFactory().size(), Types.BINARY);
 			String varBinaryType = properties.findType(0, Types.VARBINARY);
 			
-			Statement statement = connection.createStatement();
-			
-			try
+			try (Statement statement = connection.createStatement())
 			{
 				createTableIfNotExists(statement, properties, STATE_TABLE, CREATE_STATE_SQL, stringType);
 				createTableIfNotExists(statement, properties, INVOCATION_TABLE, CREATE_INVOCATION_SQL, binaryType, enumType, enumType);
@@ -610,10 +558,6 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 				{
 					statement.executeUpdate(TRUNCATE_STATE_SQL);
 				}
-			}
-			finally
-			{
-				Resources.close(statement);
 			}
 		}
 		finally

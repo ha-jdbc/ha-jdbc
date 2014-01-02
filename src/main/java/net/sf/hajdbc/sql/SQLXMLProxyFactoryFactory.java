@@ -36,6 +36,6 @@ public class SQLXMLProxyFactoryFactory<Z, D extends Database<Z>, P> implements P
 	@Override
 	public ProxyFactory<Z, D, SQLXML, SQLException> createProxyFactory(P parentProxy, ProxyFactory<Z, D, P, SQLException> parent, Invoker<Z, D, P, SQLXML, SQLException> invoker, Map<D, SQLXML> objects)
 	{
-		return new SQLXMLProxyFactory<Z, D, P>(parentProxy, parent, invoker, objects, this.locatorsUpdateCopy);
+		return new SQLXMLProxyFactory<>(parentProxy, parent, invoker, objects, this.locatorsUpdateCopy);
 	}
 }

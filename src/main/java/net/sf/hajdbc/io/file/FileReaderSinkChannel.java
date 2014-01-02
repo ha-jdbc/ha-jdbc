@@ -28,7 +28,6 @@ import java.nio.CharBuffer;
 
 import net.sf.hajdbc.io.InputSinkChannel;
 import net.sf.hajdbc.util.Files;
-import net.sf.hajdbc.util.Resources;
 
 /**
  * Reader channel for writing to, and reading from, a file sink..
@@ -40,8 +39,7 @@ public class FileReaderSinkChannel implements InputSinkChannel<Reader, File>
 	public File write(Reader reader) throws IOException
 	{
 		File file = Files.createTempFile(FileInputSinkStrategy.TEMP_FILE_SUFFIX);
-		Writer writer = new FileWriter(file);
-		try
+		try (Writer writer = new FileWriter(file))
 		{
 			CharBuffer buffer = CharBuffer.allocate(BUFFER_SIZE);
 			
@@ -53,10 +51,6 @@ public class FileReaderSinkChannel implements InputSinkChannel<Reader, File>
 			}
 			
 			return file;
-		}
-		finally
-		{
-			Resources.close(writer);
 		}
 	}
 

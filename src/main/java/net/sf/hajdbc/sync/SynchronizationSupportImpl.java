@@ -45,7 +45,6 @@ import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
 import net.sf.hajdbc.logging.LoggerFactory;
-import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.Strings;
 
 /**
@@ -78,8 +77,7 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 		{
 			connection.setAutoCommit(true);
 			
-			Statement statement = connection.createStatement();
-			try
+			try (Statement statement = connection.createStatement())
 			{
 				for (TableProperties table: this.context.getTargetDatabaseProperties().getTables())
 				{
@@ -93,10 +91,6 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 					}
 				}
 				statement.executeBatch();
-			}
-			finally
-			{
-				Resources.close(statement);
 			}
 		}
 		finally
@@ -120,8 +114,7 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 		{
 			connection.setAutoCommit(true);
 			
-			Statement statement = connection.createStatement();
-			try
+			try (Statement statement = connection.createStatement())
 			{
 				for (TableProperties table: this.context.getSourceDatabaseProperties().getTables())
 				{
@@ -136,10 +129,6 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 				}
 				
 				statement.executeBatch();
-			}
-			finally
-			{
-				Resources.close(statement);
 			}
 		}
 		finally
@@ -169,8 +158,8 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 
 				ExecutorService executor = this.context.getExecutor();
 				
-				Map<SequenceProperties, Long> sequenceMap = new HashMap<SequenceProperties, Long>();
-				Map<D, Future<Long>> futureMap = new HashMap<D, Future<Long>>();
+				Map<SequenceProperties, Long> sequenceMap = new HashMap<>();
+				Map<D, Future<Long>> futureMap = new HashMap<>();
 
 				for (SequenceProperties sequence: sequences)
 				{
@@ -187,18 +176,14 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 							@Override
 							public Long call() throws SQLException
 							{
-								Statement statement = context.getConnection(database).createStatement();
-								try
+								try (Statement statement = context.getConnection(database).createStatement())
 								{
-									ResultSet resultSet = statement.executeQuery(sql);
-									
-									resultSet.next();
-									
-									return resultSet.getLong(1);
-								}
-								finally
-								{
-									Resources.close(statement);
+									try (ResultSet resultSet = statement.executeQuery(sql))
+									{
+										resultSet.next();
+										
+										return resultSet.getLong(1);
+									}
 								}
 							}
 						};
@@ -236,8 +221,8 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 				}
 				
 				Connection targetConnection = this.context.getConnection(this.context.getTargetDatabase());
-				Statement targetStatement = targetConnection.createStatement();
-				try
+				
+				try (Statement targetStatement = targetConnection.createStatement())
 				{
 					for (SequenceProperties sequence: sequences)
 					{
@@ -249,10 +234,6 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 					}
 					
 					targetStatement.executeBatch();
-				}
-				finally
-				{
-					Resources.close(targetStatement);
 				}
 			}
 		}
@@ -269,11 +250,9 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 		
 		if (support != null)
 		{
-			Statement sourceStatement = this.context.getConnection(this.context.getSourceDatabase()).createStatement();
-			try
+			try (Statement sourceStatement = this.context.getConnection(this.context.getSourceDatabase()).createStatement())
 			{
-				Statement targetStatement = this.context.getConnection(this.context.getTargetDatabase()).createStatement();
-				try
+				try (Statement targetStatement = this.context.getConnection(this.context.getTargetDatabase()).createStatement())
 				{
 					for (TableProperties table: this.context.getSourceDatabaseProperties().getTables())
 					{
@@ -285,9 +264,9 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 							
 							this.logger.log(Level.DEBUG, selectSQL);
 							
-							Map<String, Long> map = new HashMap<String, Long>();
-							ResultSet resultSet = sourceStatement.executeQuery(selectSQL);
-							try
+							Map<String, Long> map = new HashMap<>();
+							
+							try (ResultSet resultSet = sourceStatement.executeQuery(selectSQL))
 							{
 								if (resultSet.next())
 								{
@@ -298,10 +277,6 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 										map.put(column, resultSet.getLong(++i));
 									}
 								}
-							}
-							finally
-							{
-								Resources.close(resultSet);
 							}
 							
 							if (!map.isEmpty())
@@ -323,14 +298,6 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 						}
 					}
 				}
-				finally
-				{
-					Resources.close(targetStatement);
-				}
-			}
-			finally
-			{
-				Resources.close(sourceStatement);
 			}
 		}
 	}
@@ -349,8 +316,8 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 		try
 		{
 			connection.setAutoCommit(true);
-			Statement statement = connection.createStatement();
-			try
+			
+			try (Statement statement = connection.createStatement())
 			{
 				for (TableProperties table: this.context.getTargetDatabaseProperties().getTables())
 				{
@@ -365,10 +332,6 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 				}
 				
 				statement.executeBatch();
-			}
-			finally
-			{
-				Resources.close(statement);
 			}
 		}
 		finally
@@ -392,8 +355,7 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 		{
 			connection.setAutoCommit(true);
 			
-			Statement statement = connection.createStatement();
-			try
+			try (Statement statement = connection.createStatement())
 			{
 				for (TableProperties table: this.context.getSourceDatabaseProperties().getTables())
 				{
@@ -409,10 +371,6 @@ public class SynchronizationSupportImpl<Z, D extends Database<Z>> implements Syn
 				}
 				
 				statement.executeBatch();
-			}
-			finally
-			{
-				Resources.close(statement);
 			}
 		}
 		finally
