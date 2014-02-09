@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema targetNamespace="urn:ha-jdbc:cluster:3.1" xmlns:tns="urn:ha-jdbc:cluster:3.1" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.1">
+
+	<xs:element name="ha-jdbc" type="tns:configuration"/>
+
+	<xs:complexType name="configuration">
+		<xs:sequence><!-- Ideally we would use xs:all, but this is only valid in XSD 1.1 -->
+			<xs:element name="distributable" type="tns:identifiable-descriptor" minOccurs="0"/>
+			<xs:element name="sync" type="tns:identified-descriptor" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="state" type="tns:identifiable-descriptor" minOccurs="0"/>
+			<xs:element name="lock" type="tns:identifiable-descriptor" minOccurs="0"/>
+			<xs:element name="cluster" type="tns:cluster"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="cluster">
+		<xs:sequence>
+			<xs:element name="database" type="tns:database" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+		<xs:attribute name="default-sync" type="xs:string" use="required"/>
+		<xs:attribute name="balancer" type="xs:string"/>
+		<xs:attribute name="meta-data-cache" type="xs:string"/>
+		<xs:attribute name="dialect" type="xs:string"/>
+		<xs:attribute name="durability" type="xs:string"/>
+		<xs:attribute name="input-sink" type="xs:string"/>
+		<xs:attribute name="transaction-mode" type="tns:transaction-mode"/>
+		<xs:attribute name="auto-activate-schedule" type="xs:string"/>
+		<xs:attribute name="failure-detect-schedule" type="xs:string"/>
+		<xs:attribute name="eval-current-date" type="xs:boolean"/>
+		<xs:attribute name="eval-current-time" type="xs:boolean"/>
+		<xs:attribute name="eval-current-timestamp" type="xs:boolean"/>
+		<xs:attribute name="eval-rand" type="xs:boolean"/>
+		<xs:attribute name="detect-identity-columns" type="xs:boolean"/>
+		<xs:attribute name="detect-sequences" type="xs:boolean"/>
+		<xs:attribute name="allow-empty-cluster" type="xs:boolean"/>
+	</xs:complexType>
+
+	<xs:complexType name="database">
+		<xs:sequence><!-- Ideally we would use xs:all, but this is only valid in XSD 1.1 -->
+			<xs:element name="user" type="xs:string" minOccurs="0"/>
+			<xs:element name="password" type="xs:string" minOccurs="0"/>
+			<xs:element name="property" type="tns:property" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+		<xs:attribute name="id" type="xs:string" use="required"/>
+		<xs:attribute name="location" type="xs:string" use="required"/>
+		<xs:attribute name="weight" type="xs:int"/>
+		<xs:attribute name="local" type="xs:boolean"/>
+	</xs:complexType>
+
+	<xs:complexType name="property">
+		<xs:simpleContent>
+			<xs:extension base="xs:string">
+				<xs:attribute name="name" type="xs:string" use="required"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+
+	<xs:complexType name="identified-descriptor">
+		<xs:complexContent>
+			<xs:extension base="tns:descriptor">
+				<xs:attribute name="id" type="xs:string" use="required"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="identifiable-descriptor">
+		<xs:complexContent>
+			<xs:extension base="tns:descriptor">
+				<xs:attribute name="id" type="xs:string"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="descriptor" abstract="true">
+		<xs:sequence>
+			<xs:element name="property" type="tns:property" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:simpleType name="transaction-mode">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="parallel"/>
+			<xs:enumeration value="serial"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>
