@@ -694,6 +694,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 				if (database != null)
 				{
 					this.balancer.add(database);
+					database.setActive(true);
 				}
 				else
 				{
