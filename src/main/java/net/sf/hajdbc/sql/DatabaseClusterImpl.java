@@ -832,7 +832,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 	{
 		try
 		{
-			Connection connection = database.connect(database.createConnectionSource(), database.decodePassword(this.decoder));
+			Connection connection = database.connect(database.getConnectionSource(), database.decodePassword(this.decoder));
 			try
 			{
 				return this.dialect.isValid(connection);

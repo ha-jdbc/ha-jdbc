@@ -25,6 +25,7 @@ import java.beans.PropertyEditorManager;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -42,7 +43,8 @@ import net.sf.hajdbc.management.ManagedAttribute;
 public abstract class CommonDataSourceDatabase<Z extends javax.sql.CommonDataSource> extends AbstractDatabase<Z>
 {
 	private final Class<Z> targetClass;
-	
+	private final AtomicReference<Z> dataSourceRef = new AtomicReference<Z>();
+
 	protected CommonDataSourceDatabase(Class<Z> targetClass)
 	{
 		this.targetClass = targetClass;
@@ -58,24 +60,38 @@ public abstract class CommonDataSourceDatabase<Z extends javax.sql.CommonDataSou
 	public void setLocation(String name)
 	{
 		super.setLocation(name);
+
+		this.dataSourceRef.set(null);
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Database#createConnectionSource()
+	 * @see net.sf.hajdbc.Database#getConnectionSource()
 	 */
 	@Override
-	public Z createConnectionSource()
+	public Z getConnectionSource()
 	{
-		try
+		Z dataSource = this.dataSourceRef.get();
+		
+		if (dataSource == null)
 		{
-			Class<?> dataSourceClass = this.getClass().getClassLoader().loadClass(this.getLocation());
-			
-			return this.createDataSource(dataSourceClass.asSubclass(this.targetClass));
+			try
+			{
+				Class<?> dataSourceClass = this.getClass().getClassLoader().loadClass(this.getLocation());
+				
+				dataSource = this.createDataSource(dataSourceClass.asSubclass(this.targetClass));
+			}
+			catch (ClassNotFoundException e)
+			{
+				dataSource = this.createDataSource();
+			}
+	
+			if (!this.dataSourceRef.compareAndSet(null, dataSource))
+			{
+				dataSource = this.dataSourceRef.get();
+			}
 		}
-		catch (ClassNotFoundException e)
-		{
-			return this.createDataSource();
-		}
+		
+		return dataSource;
 	}
 
 	private Z createDataSource()
@@ -127,19 +143,19 @@ public abstract class CommonDataSourceDatabase<Z extends javax.sql.CommonDataSou
 		}
 		catch (InstantiationException e)
 		{
-			throw new IllegalArgumentException(e.toString(), e);
+			throw new IllegalArgumentException(e.getMessage(), e);
 		}
 		catch (IllegalAccessException e)
 		{
-			throw new IllegalArgumentException(e.toString(), e);
+			throw new IllegalArgumentException(e.getMessage(), e);
 		}
 		catch (IntrospectionException e)
 		{
-			throw new IllegalArgumentException(e.toString(), e);
+			throw new IllegalArgumentException(e.getMessage(), e);
 		}
 		catch (InvocationTargetException e)
 		{
-			throw new IllegalArgumentException(e.getTargetException().toString(), e);
+			throw new IllegalArgumentException(e.getTargetException().getMessage(), e);
 		}
 	}
 }

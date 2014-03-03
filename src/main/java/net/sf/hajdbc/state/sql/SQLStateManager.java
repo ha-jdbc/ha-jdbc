@@ -572,7 +572,7 @@ public class SQLStateManager<Z, D extends Database<Z>> implements StateManager, 
 	@Override
 	public void start() throws Exception
 	{
-		this.driver = this.database.createConnectionSource();
+		this.driver = this.database.getConnectionSource();
 		this.password = this.database.decodePassword(this.cluster.getDecoder());
 		this.pool = this.poolFactory.createPool(new ConnectionPoolProvider(this));
 		

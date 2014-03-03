@@ -85,10 +85,10 @@ public class DriverDatabase extends AbstractDatabase<Driver>
 	}
 
 	/**
-	 * @see net.sf.hajdbc.Database#createConnectionSource()
+	 * @see net.sf.hajdbc.Database#getConnectionSource()
 	 */
 	@Override
-	public Driver createConnectionSource()
+	public Driver getConnectionSource()
 	{
 		return getDriver(this.getLocation());
 	}

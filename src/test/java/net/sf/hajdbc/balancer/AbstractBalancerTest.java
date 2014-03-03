@@ -417,7 +417,6 @@ public abstract class AbstractBalancerTest
 		when(invoker.invoke(this.databases[0], object)).thenThrow(expectedException);
 		
 		result = null;
-		exception = null;
 		
 		try
 		{
