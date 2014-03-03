@@ -64,17 +64,18 @@ public interface Database<Z> extends Comparable<Database<Z>>
 	/**
 	 * Connects to the database using the specified connection factory.
 	 * @param connectionSource a factory object for creating connections
+	 * @param password a decoded password
 	 * @return a database connection
 	 * @throws SQLException if connection fails
 	 */
 	Connection connect(Z connectionSource, String password) throws SQLException;
 	
 	/**
-	 * Factory method for creating a connection factory object for this database.
-	 * @return a connection factory object
-	 * @throws IllegalArgumentException if connection factory could not be created
+	 * Returns a connection source for this database.
+	 * @return a connection source
+	 * @throws IllegalArgumentException if connection source could not be created
 	 */
-	Z createConnectionSource();
+	Z getConnectionSource();
 	
 	boolean isDirty();
 	

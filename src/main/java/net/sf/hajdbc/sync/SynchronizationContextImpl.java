@@ -88,7 +88,7 @@ public class SynchronizationContextImpl<Z, D extends Database<Z>> implements Syn
 		
 		if (entry == null)
 		{
-			Connection connection = database.connect(database.createConnectionSource(), database.decodePassword(this.cluster.getDecoder()));
+			Connection connection = database.connect(database.getConnectionSource(), database.decodePassword(this.cluster.getDecoder()));
 			entry = new AbstractMap.SimpleImmutableEntry<Connection, Boolean>(connection, connection.getAutoCommit());
 			
 			this.connectionMap.put(database, entry);

@@ -57,10 +57,10 @@ public class MockDatabase extends AbstractDatabase<Void>
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.Database#createConnectionSource()
+	 * @see net.sf.hajdbc.Database#getConnectionSource()
 	 */
 	@Override
-	public Void createConnectionSource()
+	public Void getConnectionSource()
 	{
 		return null;
 	}
