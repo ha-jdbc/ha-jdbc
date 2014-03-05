@@ -157,6 +157,12 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 		return "(?<=\\W)RAND\\s*\\(\\s*\\)";
 	}
 
+	@SuppressWarnings("unused")
+	protected String schemaPattern(DatabaseMetaData metaData) throws SQLException
+	{
+		return null;
+	}
+
 	protected String executeFunctionFormat()
 	{
 		StringBuilder builder = new StringBuilder("SELECT {0}");
@@ -690,7 +696,7 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	@Override
 	public Collection<QualifiedName> getTables(DatabaseMetaData metaData, QualifiedNameFactory factory) throws SQLException
 	{
-		try (ResultSet resultSet = metaData.getTables(getCatalog(metaData), null, Strings.ANY, new String[] { "TABLE" }))
+		try (ResultSet resultSet = metaData.getTables(getCatalog(metaData), this.schemaPattern(metaData), Strings.ANY, new String[] { "TABLE" }))
 		{
 			List<QualifiedName> list = new LinkedList<>();
 			
