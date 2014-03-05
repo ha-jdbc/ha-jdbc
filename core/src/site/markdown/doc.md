@@ -50,7 +50,7 @@ The algorithm used to locate the configuration file resource at runtime is as fo
 
 The general syntax for defining the databases composing an HA-JDBC cluster is as follows:
 
-	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:3.0">
 		<cluster>
 			<database id="..." location="..." weight="#">
 				<user>...</user>
@@ -209,7 +209,7 @@ HA-JDBC includes dialects for the following databases:
 
 e.g.
 
-	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:3.0">
 		<cluster dialect="postgresql">
 			<!-- ... -->
 		</cluster>
@@ -244,7 +244,7 @@ round-robin
 
 e.g.
 
-	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:3.0">
 		<cluster balancer="simple">
 			<!-- Read requests will always prefer db1 -->
 			<database id="db1" location="..." weight="2"><!-- ... --></database>
@@ -261,7 +261,7 @@ The default synchronization strategy is used when synchronization is triggered b
 The others are only used during manual database activation.
 
 HA-JDBC supports the following strategies by default.
-As of version 2.1, synchronization strategies are defined by identifier alone, not by class name.
+As of version 3.0, synchronization strategies are defined by identifier alone, not by class name.
 If the strategy exposes any JavaBean properties, these can be overridden via nested `property` elements.
 
 passive
@@ -324,7 +324,7 @@ diff
 
 e.g.
 
-	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:3.0">
 		<sync id="full">
 			<property name="fetchSize">1000</property>
 		</sync>
@@ -350,7 +350,7 @@ simple
 
 	e.g.
 
-		<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
+		<ha-jdbc xmlns="urn:ha-jdbc:cluster:3.0">
 			<state id="simple"/>
 			<cluster><!-- ... --></cluster>
 		</ha-jdbc>
@@ -394,7 +394,7 @@ simple
 	</table>
 	e.g.
 
-		<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
+		<ha-jdbc xmlns="urn:ha-jdbc:cluster:3.0">
 			<state id="sql">
 				<property name="urlPattern">jdbc:h2:/temp/ha-jdbc/{0}</property>
 			</state>
@@ -428,7 +428,7 @@ berkeleydb
 	</table>
 	e.g.
 
-		<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
+		<ha-jdbc xmlns="urn:ha-jdbc:cluster:3.0">
 			<state id="berkeleydb">
 				<property name="locationPattern">/tmp/{0}</property>
 			</state>
@@ -462,17 +462,16 @@ sqlite
 	</table>
 	e.g.
 
-		<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
+		<ha-jdbc xmlns="urn:ha-jdbc:cluster:3.0">
 			<state id="sqlite">
 				<property name="locationPattern">/tmp/{0}</property>
 			</state>
 			<cluster><!-- ... --></cluster>
 		</ha-jdbc>
 
-
 ###	<a name="durability"/>Durability
 
-As of version 2.1, HA-JDBC support a configurable durability level for user transactions.
+As of version 3.0, HA-JDBC support a configurable durability level for user transactions.
 When enabled, HA-JDBC will track transactions, such that, upon restart, following a crash, it can detect and recover from any partial commits (i.e. where a given transaction completed on some but not all databases in the cluster).
 The durability persistence mechanism is determined by the state manager configuration.
 By default, HA-JDBC includes support for the following durability levels:
@@ -497,7 +496,7 @@ fine
 
 e.g.
 
-	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:3.0">
 		<cluster durability="fine">
 			<!-- ... -->
 		</cluster>
@@ -541,7 +540,7 @@ By default, HA-JDBC supports the following providers:
 
 e.g.
 
-	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:3.0">
 		<distributable id="jgroups">
 			<property name="stack">udp.xml</property>
 		</distributable>
@@ -572,7 +571,7 @@ shared-eager
 
 e.g.
 
-	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:3.0">
 		<cluster meta-data-cache="shared-eager">
 			<!-- ... -->
 		</cluster>
@@ -586,7 +585,7 @@ To indicate that a password uses an obfuscation mechanism, use a ":" to indicate
 
 e.g.
 
-	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:3.0">
 		<cluster ...>
 			<database id="db1" location="jdbc:mysql://server:port/db1">
 				<user>admin</user>
@@ -649,7 +648,7 @@ Because of their performance impact, support for both sequences and identity col
 
 e.g.
 
-	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:3.0">
 		<cluster detect-sequences="false" detect-identity-columns="false">
 			<!-- ... -->
 		</cluster>
@@ -707,7 +706,7 @@ e.g.
 
 `ha-jdbc.xml`
 
-	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:3.0">
 		<cluster dialect="custom" ...>
 			<!-- ... -->
 		</cluster>
@@ -716,7 +715,7 @@ e.g.
 
 ###	Programmatic configuration
 
-As of version 2.1, an HA-JDBC cluster can be configured programmatically.
+As of version 3.0, an HA-JDBC cluster can be configured programmatically.
 
 e.g.
 
@@ -766,7 +765,7 @@ e.g.
 
 `ha-jdbc-mycluster.xml`
 
-	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:3.0">
 		<cluster>
 			<database id="db1" location="jdbc:postgresql://server1:port1/database1">
 				<user>pgadmin</user>
@@ -793,7 +792,7 @@ e.g.
 
 `ha-jdbc-mycluster.xml`
 
-	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:3.0">
 		<cluster>
 			<database id="db1" location="org.postgresql.ds.PGSimpleDataSource">
 				<user>pgadmin</user>
@@ -867,7 +866,7 @@ If your use case is compatible with this limitation, you can enable parallel wri
 
 e.g.
 
-	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:3.0">
 		<cluster transaction-mode="parallel">
 			<!-- ... -->
 		</cluster>
@@ -915,7 +914,7 @@ The value of this attribute defines a cron expression, which specifies the sched
 
 e.g.
 
-	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:3.0">
 		<!-- Failure detection will run every minute -->
 		<cluster failure-detect-schedule="0 * * ? * *">
 			<!-- ... -->
@@ -944,7 +943,7 @@ If specified, HA-JDBC will automatically attempt to activate database nodes that
 
 e.g.
 
-	<ha-jdbc xmlns="urn:ha-jdbc:cluster:2.1">
+	<ha-jdbc xmlns="urn:ha-jdbc:cluster:3.0">
 		<!-- Auto-activation will run every day at 2:00 AM -->
 		<cluster auto-activate-schedule="0 0 2 ? * *">
 			<!-- ... -->
