@@ -91,6 +91,12 @@ public class OracleDialect extends StandardDialect
 		}
 	}
 
+	@Override
+	protected String schemaPattern(DatabaseMetaData metaData) throws SQLException
+	{
+		return metaData.getUserName();
+	}
+
 	/**
 	 * @see net.sf.hajdbc.dialect.StandardDialect#truncateTableFormat()
 	 */
