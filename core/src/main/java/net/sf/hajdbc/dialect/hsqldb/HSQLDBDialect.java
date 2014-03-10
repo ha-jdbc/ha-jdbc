@@ -21,10 +21,13 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.SequencePropertiesFactory;
@@ -39,6 +42,8 @@ import net.sf.hajdbc.dialect.StandardDialect;
  */
 public class HSQLDBDialect extends StandardDialect
 {
+	private static final Set<Integer> failureCodes = new HashSet<Integer>(Arrays.asList(402, 407, 452, 460, 468));
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.dialect.StandardDialect#vendorPattern()
@@ -128,5 +133,11 @@ public class HSQLDBDialect extends StandardDialect
 	protected String currentTimestampPattern()
 	{
 		return "(?<=\\W)CURRENT_TIMESTAMP(?=\\W)|(?<=\\W)NOW\\s*\\(\\s*\\)";
+	}
+
+	@Override
+	protected boolean indicatesFailure(int code)
+	{
+		return failureCodes.contains(code);
 	}
 }
