@@ -17,8 +17,7 @@
  */
 package net.sf.hajdbc.dialect;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -32,6 +31,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+
+import org.h2.constant.ErrorCode;
 
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.QualifiedName;
@@ -228,5 +229,17 @@ public class H2DialectTest extends StandardDialectTest
 		assertEquals("SELECT CURRENT_TIME FROM test", this.dialect.evaluateCurrentTimestamp("SELECT CURRENT_TIME FROM test", timestamp));
 		assertEquals("SELECT LOCALTIME FROM test", this.dialect.evaluateCurrentTimestamp("SELECT LOCALTIME FROM test", timestamp));
 		assertEquals("SELECT 1 FROM test", this.dialect.evaluateCurrentTimestamp("SELECT 1 FROM test", timestamp));
+	}
+
+	@Override
+	public void indicatesFailureSQLException()
+	{
+		assertFalse(this.dialect.indicatesFailure(new SQLException("", "", ErrorCode.UNKNOWN_MODE_1)));
+		assertTrue(this.dialect.indicatesFailure(new SQLException("", "", ErrorCode.FILE_CORRUPTED_1)));
+		assertTrue(this.dialect.indicatesFailure(new SQLException("", "", ErrorCode.CONNECTION_BROKEN_1)));
+		assertTrue(this.dialect.indicatesFailure(new SQLException("", "", ErrorCode.DATABASE_NOT_FOUND_1)));
+		assertTrue(this.dialect.indicatesFailure(new SQLException("", "", ErrorCode.NO_DISK_SPACE_AVAILABLE)));
+		assertTrue(this.dialect.indicatesFailure(new SQLException("", "", ErrorCode.OUT_OF_MEMORY)));
+		assertTrue(this.dialect.indicatesFailure(new SQLException("", "", ErrorCode.REMOTE_CONNECTION_NOT_ALLOWED)));
 	}
 }

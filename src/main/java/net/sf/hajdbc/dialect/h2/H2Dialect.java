@@ -21,10 +21,13 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.SequencePropertiesFactory;
@@ -36,9 +39,10 @@ import net.sf.hajdbc.util.Resources;
  * Dialect for <a href="http://www.h2database.com">H2 Database Engine</a>.
  * @author Paul Ferraro
  */
-@SuppressWarnings("nls")
 public class H2Dialect extends StandardDialect
 {
+	private static final Set<Integer> failureCodes = new HashSet<Integer>(Arrays.asList(90013, 90030, 90067, 90100, 90108, 90117));
+	
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.dialect.StandardDialect#vendorPattern()
@@ -146,5 +150,11 @@ public class H2Dialect extends StandardDialect
 	public List<String> getDefaultSchemas(DatabaseMetaData metaData)
 	{
 		return Collections.singletonList("PUBLIC");
+	}
+
+	@Override
+	protected boolean indicatesFailure(int code)
+	{
+		return failureCodes.contains(code);
 	}
 }
