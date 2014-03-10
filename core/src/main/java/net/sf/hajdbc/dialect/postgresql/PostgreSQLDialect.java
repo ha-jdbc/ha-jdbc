@@ -255,7 +255,8 @@ public class PostgreSQLDialect extends StandardDialect implements DumpRestoreSup
 	
 	private static ProcessBuilder setPassword(ProcessBuilder builder, ConnectionProperties properties)
 	{
-		if (!PASSWORD_FILE.exists())
+		String password = properties.getPassword();
+		if ((password != null) && !PASSWORD_FILE.exists())
 		{
 			builder.environment().put("PGPASSWORD", properties.getPassword());
 		}
