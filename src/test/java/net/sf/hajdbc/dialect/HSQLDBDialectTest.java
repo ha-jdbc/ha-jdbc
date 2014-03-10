@@ -18,7 +18,9 @@
 package net.sf.hajdbc.dialect;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -39,6 +41,7 @@ import net.sf.hajdbc.SequenceProperties;
 import net.sf.hajdbc.SequencePropertiesFactory;
 import net.sf.hajdbc.dialect.hsqldb.HSQLDBDialectFactory;
 
+import org.hsqldb.error.ErrorCode;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -226,5 +229,16 @@ public class HSQLDBDialectTest extends StandardDialectTest
 		assertEquals("SELECT CURRENT_TIME FROM test", this.dialect.evaluateCurrentTimestamp("SELECT CURRENT_TIME FROM test", timestamp));
 		assertEquals("SELECT LOCALTIME FROM test", this.dialect.evaluateCurrentTimestamp("SELECT LOCALTIME FROM test", timestamp));
 		assertEquals("SELECT 1 FROM test", this.dialect.evaluateCurrentTimestamp("SELECT 1 FROM test", timestamp));
+	}
+
+	@Override
+	public void indicatesFailureSQLException()
+	{
+		assertFalse(this.dialect.indicatesFailure(new SQLException("", "", ErrorCode.CONSTRAINT)));
+		assertTrue(this.dialect.indicatesFailure(new SQLException("", "", ErrorCode.DATA_FILE_IS_FULL)));
+		assertTrue(this.dialect.indicatesFailure(new SQLException("", "", ErrorCode.FILE_IO_ERROR)));
+		assertTrue(this.dialect.indicatesFailure(new SQLException("", "", ErrorCode.OUT_OF_MEMORY)));
+		assertTrue(this.dialect.indicatesFailure(new SQLException("", "", ErrorCode.SERVER_DATABASE_DISCONNECTED)));
+		assertTrue(this.dialect.indicatesFailure(new SQLException("", "", ErrorCode.SERVER_NO_DATABASE)));
 	}
 }
