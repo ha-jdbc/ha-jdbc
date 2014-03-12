@@ -210,7 +210,7 @@ public class MySQLDialect extends StandardDialect implements DumpRestoreSupport
 	@Override
 	public ProcessBuilder createDumpProcess(ConnectionProperties properties, File file)
 	{
-		return setPassword(new ProcessBuilder("mysqldump", "-h", properties.getHost(), "-P", properties.getPort(), "-u", properties.getUser(), properties.getDatabase(), ">", file.getPath()), properties);
+		return setPassword(new ProcessBuilder("mysqldump", "-h", properties.getHost(), "-P", properties.getPort(), "-u", properties.getUser(), "-r", file.getPath(), properties.getDatabase()), properties);
 	}
 
 	/**
