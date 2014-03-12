@@ -295,6 +295,12 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		return this.id;
 	}
 
+	@Override
+	public String toString()
+	{
+		return this.id;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.DatabaseCluster#isActive()
