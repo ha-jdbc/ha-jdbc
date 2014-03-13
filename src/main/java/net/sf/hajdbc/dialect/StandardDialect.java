@@ -46,6 +46,7 @@ import javax.transaction.xa.XAException;
 
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.ColumnPropertiesFactory;
+import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DumpRestoreSupport;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.ForeignKeyConstraintFactory;
@@ -62,6 +63,7 @@ import net.sf.hajdbc.TriggerSupport;
 import net.sf.hajdbc.TriggerTime;
 import net.sf.hajdbc.UniqueConstraint;
 import net.sf.hajdbc.UniqueConstraintFactory;
+import net.sf.hajdbc.codec.Decoder;
 import net.sf.hajdbc.util.Resources;
 import net.sf.hajdbc.util.Strings;
 
@@ -570,16 +572,6 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 
 	/**
 	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.dialect.Dialect#getUrlPattern()
-	 */
-	@Override
-	public Pattern getUrlPattern()
-	{
-		return this.urlPattern;
-	}
-
-	/**
-	 * {@inheritDoc}
 	 * @see net.sf.hajdbc.dialect.Dialect#getDumpRestoreSupport()
 	 */
 	@Override
@@ -1008,5 +1000,71 @@ public class StandardDialect implements Dialect, SequenceSupport, IdentityColumn
 	public boolean isValid(Connection connection) throws SQLException
 	{
 		return connection.isValid(0);
+	}
+
+	@Override
+	public <Z, D extends Database<Z>> ConnectionProperties getConnectionProperties(D database, Decoder decoder) throws SQLException
+	{
+		final String password = database.decodePassword(decoder);
+		Connection connection = database.connect(database.getConnectionSource(), password);
+		try
+		{
+			DatabaseMetaData metaData = connection.getMetaData();
+			String url = metaData.getURL();
+			
+			if (url == null)
+			{
+				throw new UnsupportedOperationException();
+			}
+				
+			Matcher matcher = this.urlPattern.matcher(url);
+			
+			if (!matcher.find() || (matcher.groupCount() != 3))
+			{
+				throw new UnsupportedOperationException(url);
+			}
+			
+			final String host = matcher.group(1);
+			final String port = matcher.group(2);
+			final String databaseName = matcher.group(3);
+			final String user = metaData.getUserName();
+			
+			return new ConnectionProperties()
+			{
+				@Override
+				public String getHost()
+				{
+					return host;
+				}
+	
+				@Override
+				public String getPort()
+				{
+					return port;
+				}
+	
+				@Override
+				public String getDatabase()
+				{
+					return databaseName;
+				}
+	
+				@Override
+				public String getUser()
+				{
+					return user;
+				}
+	
+				@Override
+				public String getPassword()
+				{
+					return password;
+				}
+			};
+		}
+		finally
+		{
+			connection.close();
+		}
 	}
 }

@@ -57,7 +57,7 @@ public class SimpleTest
 	@Test
 	public void simple() throws Exception
 	{
-		this.test(new SimpleStateManagerFactory());
+		test(new SimpleStateManagerFactory());
 	}
 	
 	@Test
@@ -65,7 +65,7 @@ public class SimpleTest
 	{
 		SQLiteStateManagerFactory factory = new SQLiteStateManagerFactory();
 		factory.setLocationPattern("target/sqlite/{0}");
-		this.test(factory);
+		test(factory);
 	}
 	
 	@Test
@@ -73,7 +73,7 @@ public class SimpleTest
 	{
 		SQLStateManagerFactory factory = new SQLStateManagerFactory();
 		factory.setUrlPattern("jdbc:h2:target/h2/{0}");
-		this.test(factory);
+		test(factory);
 	}
 	
 	@Test
@@ -81,7 +81,7 @@ public class SimpleTest
 	{
 		SQLStateManagerFactory factory = new SQLStateManagerFactory();
 		factory.setUrlPattern("jdbc:hsqldb:target/hsqldb/{0}");
-		this.test(factory);
+		test(factory);
 	}
 	
 	@Test
@@ -89,7 +89,7 @@ public class SimpleTest
 	{
 		BerkeleyDBStateManagerFactory factory = new BerkeleyDBStateManagerFactory();
 		factory.setLocationPattern("target/bdb/{0}");
-		this.test(factory);
+		test(factory);
 	}
 	
 	@Test
@@ -97,10 +97,10 @@ public class SimpleTest
 	{
 		SQLStateManagerFactory factory = new SQLStateManagerFactory();
 		factory.setUrlPattern("jdbc:derby:target/derby/{0};create=true");
-		this.test(factory);
+		test(factory);
 	}
 	
-	private void test(StateManagerFactory factory) throws Exception
+	private static void test(StateManagerFactory factory) throws Exception
 	{
 		DataSourceDatabase db1 = new DataSourceDatabase();
 		db1.setId("db1");
@@ -133,7 +133,6 @@ public class SimpleTest
 		ds.setCluster("cluster");
 		ds.setConfigurationFactory(new SimpleDatabaseClusterConfigurationFactory<javax.sql.DataSource, DataSourceDatabase>(config));
 		
-		@SuppressWarnings("unchecked")
 		InvocationHandler<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource, SQLException, ProxyFactory<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource, SQLException>> handler = (InvocationHandler<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource, SQLException, ProxyFactory<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource, SQLException>>) Proxy.getInvocationHandler(ds.getProxy());
 		ProxyFactory<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource, SQLException> proxyFactory = handler.getProxyFactory();
 
@@ -142,13 +141,14 @@ public class SimpleTest
 			Connection c1 = proxyFactory.get(db1).getConnection();
 			try
 			{
-				this.createTable(c1);
+				createTable(c1);
+				
 				try
 				{
 					Connection c2 = proxyFactory.get(db2).getConnection();
 					try
 					{
-						this.createTable(c2);
+						createTable(c2);
 						
 						try
 						{
@@ -173,8 +173,8 @@ public class SimpleTest
 								}
 								c.commit();
 								
-								this.validate(c1);
-								this.validate(c2);
+								validate(c1);
+								validate(c2);
 							}
 							finally
 							{
@@ -183,7 +183,7 @@ public class SimpleTest
 						}
 						finally
 						{
-							this.dropTable(c2);
+							dropTable(c2);
 						}
 					}
 					finally
@@ -193,7 +193,7 @@ public class SimpleTest
 				}
 				finally
 				{
-					this.dropTable(c1);
+					dropTable(c1);
 				}
 			}
 			finally
@@ -207,17 +207,17 @@ public class SimpleTest
 		}
 	}
 
-	private void createTable(Connection connection) throws SQLException
+	private static void createTable(Connection connection) throws SQLException
 	{
-		this.execute(connection, "CREATE TABLE test (id INTEGER NOT NULL, name VARCHAR(10) NOT NULL, PRIMARY KEY (id))");
+		execute(connection, "CREATE TABLE test (id INTEGER NOT NULL, name VARCHAR(10) NOT NULL, PRIMARY KEY (id))");
 	}
 
-	private void dropTable(Connection connection) throws SQLException
+	private static void dropTable(Connection connection) throws SQLException
 	{
-		this.execute(connection, "DROP TABLE test");
+		execute(connection, "DROP TABLE test");
 	}
 
-	private void execute(Connection connection, String sql) throws SQLException
+	private static void execute(Connection connection, String sql) throws SQLException
 	{
 		Statement statement = connection.createStatement();
 		try
@@ -230,7 +230,7 @@ public class SimpleTest
 		}
 	}
 
-	private void validate(Connection connection) throws SQLException
+	private static void validate(Connection connection) throws SQLException
 	{
 		Statement statement = connection.createStatement();
 		try

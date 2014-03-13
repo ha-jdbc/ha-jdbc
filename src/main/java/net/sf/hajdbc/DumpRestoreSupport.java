@@ -19,12 +19,14 @@ package net.sf.hajdbc;
 
 import java.io.File;
 
+import net.sf.hajdbc.codec.Decoder;
+
 /**
  * @author Paul Ferraro
  */
 public interface DumpRestoreSupport
 {
-	ProcessBuilder createDumpProcess(ConnectionProperties properties, File file);
-	
-	ProcessBuilder createRestoreProcess(ConnectionProperties properties, File file);
+	<Z, D extends Database<Z>> void dump(D database, Decoder decoder, File file) throws Exception;
+
+	<Z, D extends Database<Z>> void restore(D database, Decoder decoder, File file) throws Exception;
 }
