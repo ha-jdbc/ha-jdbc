@@ -23,12 +23,12 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import javax.transaction.xa.XAException;
 
 import net.sf.hajdbc.ColumnProperties;
 import net.sf.hajdbc.ColumnPropertiesFactory;
+import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DumpRestoreSupport;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.ForeignKeyConstraintFactory;
@@ -41,6 +41,7 @@ import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.TriggerSupport;
 import net.sf.hajdbc.UniqueConstraint;
 import net.sf.hajdbc.UniqueConstraintFactory;
+import net.sf.hajdbc.codec.Decoder;
 
 
 /**
@@ -169,8 +170,6 @@ public interface Dialect
 	 * @return true, if the exception indicates catastrophe, false otherwise
 	 */
 	boolean indicatesFailure(XAException e);
-	
-	Pattern getUrlPattern();
 
 	SequenceSupport getSequenceSupport();
 	
@@ -256,4 +255,6 @@ public interface Dialect
 	UniqueConstraintFactory createUniqueConstraintFactory(IdentifierNormalizer normalizer);
 	
 	boolean isValid(Connection connection) throws SQLException;
+	
+	<Z, D extends Database<Z>> ConnectionProperties getConnectionProperties(D database, Decoder decoder) throws SQLException;
 }

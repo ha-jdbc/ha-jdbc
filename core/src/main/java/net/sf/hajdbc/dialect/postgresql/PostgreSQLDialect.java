@@ -31,12 +31,15 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import net.sf.hajdbc.ColumnProperties;
-import net.sf.hajdbc.ConnectionProperties;
+import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DumpRestoreSupport;
 import net.sf.hajdbc.IdentityColumnSupport;
 import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.TriggerSupport;
+import net.sf.hajdbc.codec.Decoder;
+import net.sf.hajdbc.dialect.ConnectionProperties;
 import net.sf.hajdbc.dialect.StandardDialect;
+import net.sf.hajdbc.util.Processes;
 import net.sf.hajdbc.util.Strings;
 
 /**
@@ -233,24 +236,18 @@ public class PostgreSQLDialect extends StandardDialect implements DumpRestoreSup
 		return this;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DumpRestoreSupport#createDumpProcess(net.sf.hajdbc.ConnectionProperties, java.io.File)
-	 */
 	@Override
-	public ProcessBuilder createDumpProcess(ConnectionProperties properties, File file)
+	public <Z, D extends Database<Z>> void dump(D database, Decoder decoder, File file) throws Exception
 	{
-		return setPassword(new ProcessBuilder("pg_dump", "-h", properties.getHost(), "-p", properties.getPort(), "-U", properties.getUser(), "-f", file.getPath(), "-F", "tar", properties.getDatabase()), properties);
+		ConnectionProperties properties = this.getConnectionProperties(database, decoder);
+		Processes.run(setPassword(new ProcessBuilder("pg_dump", "-h", properties.getHost(), "-p", properties.getPort(), "-U", properties.getUser(), "-f", file.getPath(), "-F", "tar", properties.getDatabase()), properties));
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DumpRestoreSupport#createRestoreProcess(net.sf.hajdbc.ConnectionProperties, java.io.File)
-	 */
 	@Override
-	public ProcessBuilder createRestoreProcess(ConnectionProperties properties, File file)
+	public <Z, D extends Database<Z>> void restore(D database, Decoder decoder, File file) throws Exception
 	{
-		return setPassword(new ProcessBuilder("pg_restore", "-h", properties.getHost(), "-p", properties.getPort(), "-U", properties.getUser(), "-d", properties.getDatabase(), "-c", file.getPath()), properties);
+		ConnectionProperties properties = this.getConnectionProperties(database, decoder);
+		Processes.run(setPassword(new ProcessBuilder("pg_restore", "-h", properties.getHost(), "-p", properties.getPort(), "-U", properties.getUser(), "-d", properties.getDatabase(), "-c", file.getPath()), properties));
 	}
 	
 	private static ProcessBuilder setPassword(ProcessBuilder builder, ConnectionProperties properties)

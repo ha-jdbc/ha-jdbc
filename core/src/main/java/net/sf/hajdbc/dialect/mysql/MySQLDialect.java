@@ -26,9 +26,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.sf.hajdbc.ConnectionProperties;
+import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DumpRestoreSupport;
+import net.sf.hajdbc.codec.Decoder;
+import net.sf.hajdbc.dialect.ConnectionProperties;
 import net.sf.hajdbc.dialect.StandardDialect;
+import net.sf.hajdbc.util.Processes;
 import net.sf.hajdbc.util.Strings;
 
 /**
@@ -203,24 +206,18 @@ public class MySQLDialect extends StandardDialect implements DumpRestoreSupport
 		return this;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DumpRestoreSupport#createDumpProcess(net.sf.hajdbc.ConnectionProperties, java.io.File)
-	 */
 	@Override
-	public ProcessBuilder createDumpProcess(ConnectionProperties properties, File file)
+	public <Z, D extends Database<Z>> void dump(D database, Decoder decoder, File file) throws Exception
 	{
-		return setPassword(new ProcessBuilder("mysqldump", "-h", properties.getHost(), "-P", properties.getPort(), "-u", properties.getUser(), "-r", file.getPath(), properties.getDatabase()), properties);
+		ConnectionProperties properties = this.getConnectionProperties(database, decoder);
+		Processes.run(setPassword(new ProcessBuilder("mysqldump", "-h", properties.getHost(), "-P", properties.getPort(), "-u", properties.getUser(), "-r", file.getPath(), properties.getDatabase()), properties));
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * @see net.sf.hajdbc.DumpRestoreSupport#createRestoreProcess(net.sf.hajdbc.ConnectionProperties, java.io.File)
-	 */
 	@Override
-	public ProcessBuilder createRestoreProcess(ConnectionProperties properties, File file)
+	public <Z, D extends Database<Z>> void restore(D database, Decoder decoder, File file) throws Exception
 	{
-		return setPassword(new ProcessBuilder("mysql", "-h", properties.getHost(), "-P", properties.getPort(), "-u", properties.getUser(), properties.getDatabase(), "<", file.getPath()), properties);
+		ConnectionProperties properties = this.getConnectionProperties(database, decoder);
+		Processes.run(setPassword(new ProcessBuilder("mysql", "-h", properties.getHost(), "-P", properties.getPort(), "-u", properties.getUser(), properties.getDatabase(), "<", file.getPath()), properties));
 	}
 	
 	private static ProcessBuilder setPassword(ProcessBuilder builder, ConnectionProperties properties)
