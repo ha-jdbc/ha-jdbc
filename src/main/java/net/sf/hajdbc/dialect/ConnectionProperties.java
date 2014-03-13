@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.sf.hajdbc;
+package net.sf.hajdbc.dialect;
 
 /**
  * Encapsulation of the properties necessary to connect to a database.

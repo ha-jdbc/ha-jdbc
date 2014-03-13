@@ -17,11 +17,7 @@
  */
 package net.sf.hajdbc.dialect;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.AdditionalMatchers.aryEq;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -53,7 +49,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.sql.rowset.RowSetWarning;
@@ -63,6 +58,7 @@ import javax.sql.rowset.spi.SyncProviderException;
 import javax.transaction.xa.XAException;
 
 import net.sf.hajdbc.ColumnProperties;
+import net.sf.hajdbc.Database;
 import net.sf.hajdbc.ForeignKeyConstraint;
 import net.sf.hajdbc.IdentityColumnSupport;
 import net.sf.hajdbc.QualifiedName;
@@ -71,6 +67,7 @@ import net.sf.hajdbc.SequencePropertiesFactory;
 import net.sf.hajdbc.SequenceSupport;
 import net.sf.hajdbc.TableProperties;
 import net.sf.hajdbc.UniqueConstraint;
+import net.sf.hajdbc.codec.Decoder;
 
 import org.junit.Test;
 
@@ -521,14 +518,30 @@ public class StandardDialectTest
 	}
 
 	@Test
-	public void getUrlPattern()
+	public void getConnectionProperties() throws SQLException
 	{
-		Pattern pattern = this.dialect.getUrlPattern();
-		Matcher matcher = pattern.matcher(String.format("jdbc:%s://myhost:5432/mydb?loginTimeout=0&socketTimeout=0&prepareThreshold=5&unknownLength=2147483647&tcpKeepAlive=false&binaryTransfer=true", this.factory.getId()));
-		assertTrue(matcher.find());
-		assertEquals(3, matcher.groupCount());
-		assertEquals("myhost", matcher.group(1));
-		assertEquals("5432", matcher.group(2));
-		assertEquals("mydb", matcher.group(3));
+		Database<Void> database = mock(Database.class);
+		Decoder decoder = mock(Decoder.class);
+		Connection connection = mock(Connection.class);
+		DatabaseMetaData metaData = mock(DatabaseMetaData.class);
+		String host = "myhost";
+		String port = "1234";
+		String databaseName = "mydb";
+		String user = "user";
+		String password = "password";
+		
+		when(database.decodePassword(decoder)).thenReturn(password);
+		when(database.connect(null, password)).thenReturn(connection);
+		when(connection.getMetaData()).thenReturn(metaData);
+		when(metaData.getURL()).thenReturn(String.format("jdbc:%s://%s:%s/%s?loginTimeout=0&socketTimeout=0&prepareThreshold=5&unknownLength=2147483647&tcpKeepAlive=false&binaryTransfer=true", this.factory.getId(), host, port, databaseName));
+		when(metaData.getUserName()).thenReturn(user);
+		
+		ConnectionProperties properties = this.dialect.getConnectionProperties(database, decoder);
+		
+		assertEquals(host, properties.getHost());
+		assertEquals(port, properties.getPort());
+		assertEquals(databaseName, properties.getDatabase());
+		assertSame(user, properties.getUser());
+		assertSame(password, properties.getPassword());
 	}
 }
