@@ -20,5 +20,4 @@ public class TransactionalExecutorProvider implements ExecutorProvider
 	{
 		return cluster.getTransactionMode().getTransactionExecutor(cluster.getExecutor(), this.end);
 	}
-	
 }

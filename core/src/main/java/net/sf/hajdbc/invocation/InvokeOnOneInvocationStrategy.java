@@ -56,10 +56,10 @@ public class InvokeOnOneInvocationStrategy implements InvocationStrategy
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(ProxyFactory<Z, D, T, E> map, Invoker<Z, D, T, R, E> invoker) throws E
+	public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(ProxyFactory<Z, D, T, E> factory, Invoker<Z, D, T, R, E> invoker) throws E
 	{
-		DatabaseCluster<Z, D> cluster = map.getRoot().getDatabaseCluster();
-		ExceptionFactory<E> exceptionFactory = map.getExceptionFactory();
+		DatabaseCluster<Z, D> cluster = factory.getDatabaseCluster();
+		ExceptionFactory<E> exceptionFactory = factory.getExceptionFactory();
 		Balancer<Z, D> balancer = cluster.getBalancer();
 		Dialect dialect = cluster.getDialect();
 		StateManager stateManager = cluster.getStateManager();
@@ -73,7 +73,7 @@ public class InvokeOnOneInvocationStrategy implements InvocationStrategy
 				throw exceptionFactory.createException(Messages.NO_ACTIVE_DATABASES.getMessage(cluster));
 			}
 			
-			T object = map.get(database);
+			T object = factory.get(database);
 			
 			try
 			{
@@ -85,18 +85,22 @@ public class InvokeOnOneInvocationStrategy implements InvocationStrategy
 			}
 			catch (Exception e)
 			{
-				E exception = exceptionFactory.createException(e);
-				
-				if (exceptionFactory.indicatesFailure(exception, dialect))
+				// If this database was concurrently deactivated, just ignore the failure
+				if (balancer.contains(database))
 				{
-					if (cluster.deactivate(database, stateManager))
+					E exception = exceptionFactory.createException(e);
+					
+					if (exceptionFactory.indicatesFailure(exception, dialect))
 					{
-						logger.log(Level.ERROR, exception, Messages.DATABASE_DEACTIVATED.getMessage(), database, cluster);
+						if (cluster.deactivate(database, stateManager))
+						{
+							logger.log(Level.ERROR, exception, Messages.DATABASE_DEACTIVATED.getMessage(), database, cluster);
+						}
 					}
-				}
-				else
-				{
-					throw exception;
+					else
+					{
+						throw exception;
+					}
 				}
 			}
 		}

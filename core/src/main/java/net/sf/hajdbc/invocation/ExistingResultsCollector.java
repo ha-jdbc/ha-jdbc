@@ -33,12 +33,12 @@ import net.sf.hajdbc.sql.ProxyFactory;
 public class ExistingResultsCollector implements InvokeOnManyInvocationStrategy.ResultsCollector
 {
 	@Override
-	public <Z, D extends Database<Z>, T, R, E extends Exception> Entry<SortedMap<D, R>, SortedMap<D, E>> collectResults(ProxyFactory<Z, D, T, E> map, Invoker<Z, D, T, R, E> invoker)
+	public <Z, D extends Database<Z>, T, R, E extends Exception> Entry<SortedMap<D, R>, SortedMap<D, E>> collectResults(ProxyFactory<Z, D, T, E> factory, Invoker<Z, D, T, R, E> invoker)
 	{
-		final SortedMap<D, R> resultMap = new TreeMap<>();
-		final SortedMap<D, E> exceptionMap = new TreeMap<>();
+		SortedMap<D, R> resultMap = new TreeMap<>();
+		SortedMap<D, E> exceptionMap = new TreeMap<>();
 
-		for (Map.Entry<D, T> entry: map.entries())
+		for (Map.Entry<D, T> entry: factory.entries())
 		{
 			D database = entry.getKey();
 			
@@ -48,7 +48,11 @@ public class ExistingResultsCollector implements InvokeOnManyInvocationStrategy.
 			}
 			catch (Exception e)
 			{
-				exceptionMap.put(database, map.getExceptionFactory().createException(e));
+				// If this database was concurrently deactivated, just ignore the failure
+				if (factory.getDatabaseCluster().getBalancer().contains(database))
+				{
+					exceptionMap.put(database, factory.getExceptionFactory().createException(e));
+				}
 			}
 		}
 		

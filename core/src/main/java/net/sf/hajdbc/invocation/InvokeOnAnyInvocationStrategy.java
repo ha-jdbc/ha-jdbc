@@ -25,6 +25,7 @@ import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.ExceptionFactory;
 import net.sf.hajdbc.Messages;
+import net.sf.hajdbc.balancer.Balancer;
 import net.sf.hajdbc.dialect.Dialect;
 import net.sf.hajdbc.logging.Level;
 import net.sf.hajdbc.logging.Logger;
@@ -50,44 +51,53 @@ public class InvokeOnAnyInvocationStrategy implements InvocationStrategy
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(ProxyFactory<Z, D, T, E> map, Invoker<Z, D, T, R, E> invoker) throws E
+	public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(ProxyFactory<Z, D, T, E> factory, Invoker<Z, D, T, R, E> invoker) throws E
 	{
-		DatabaseCluster<Z, D> cluster = map.getDatabaseCluster();
+		DatabaseCluster<Z, D> cluster = factory.getDatabaseCluster();
+		Balancer<Z, D> balancer = cluster.getBalancer();
 		Dialect dialect = cluster.getDialect();
 		StateManager stateManager = cluster.getStateManager();
 
-		for (Map.Entry<D, T> entry: map.entries())
+		for (Map.Entry<D, T> entry: factory.entries())
 		{
 			D database = entry.getKey();
 			
-			try
+			// If this database is no longer active, just skip it.
+			if (balancer.contains(database))
 			{
-				R result = invoker.invoke(database, entry.getValue());
-				
-				SortedMap<D, R> resultMap = new TreeMap<>();
-				resultMap.put(database, result);
-				return resultMap;
-			}
-			catch (Exception e)
-			{
-				ExceptionFactory<E> exceptionFactory = map.getExceptionFactory();
-				E exception = exceptionFactory.createException(e);
-				
-				if (exceptionFactory.indicatesFailure(exception, dialect) && (cluster.getBalancer().size() > 1))
+				try
 				{
-					if (cluster.deactivate(database, stateManager))
-					{
-						logger.log(Level.ERROR, exception, Messages.DATABASE_DEACTIVATED.getMessage(), database, cluster);
-					}
+					R result = invoker.invoke(database, entry.getValue());
+					
+					SortedMap<D, R> resultMap = new TreeMap<>();
+					resultMap.put(database, result);
+					return resultMap;
 				}
-				else
+				catch (Exception e)
 				{
-					throw exception;
+					// If this database was concurrently deactivated, just ignore the failure
+					if (cluster.getBalancer().contains(database))
+					{
+						ExceptionFactory<E> exceptionFactory = factory.getExceptionFactory();
+						E exception = exceptionFactory.createException(e);
+						
+						if (exceptionFactory.indicatesFailure(exception, dialect) && (cluster.getBalancer().size() > 1))
+						{
+							if (cluster.deactivate(database, stateManager))
+							{
+								logger.log(Level.ERROR, exception, Messages.DATABASE_DEACTIVATED.getMessage(), database, cluster);
+							}
+						}
+						else
+						{
+							throw exception;
+						}
+					}
 				}
 			}
 		}
 		
 		// If no existing databases could handle the request, delegate to another invocation strategy
-		return this.strategy.invoke(map, invoker);
+		return this.strategy.invoke(factory, invoker);
 	}
 }
