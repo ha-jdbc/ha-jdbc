@@ -92,6 +92,8 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 	@Override
 	public void activated(DatabaseEvent event)
 	{
+		this.stateManager.activated(event);
+
 		this.dispatcher.executeAll(new ActivationCommand<Z, D>(event));
 	}
 
@@ -102,6 +104,8 @@ public class DistributedStateManager<Z, D extends Database<Z>> implements StateM
 	@Override
 	public void deactivated(DatabaseEvent event)
 	{
+		this.stateManager.deactivated(event);
+
 		this.dispatcher.executeAll(new DeactivationCommand<Z, D>(event));
 	}
 
