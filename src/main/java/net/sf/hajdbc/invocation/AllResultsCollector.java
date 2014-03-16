@@ -56,13 +56,13 @@ public class AllResultsCollector implements InvokeOnManyInvocationStrategy.Resul
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <Z, D extends Database<Z>, T, R, E extends Exception> Map.Entry<SortedMap<D, R>, SortedMap<D, E>> collectResults(ProxyFactory<Z, D, T, E> map, final Invoker<Z, D, T, R, E> invoker)
+	public <Z, D extends Database<Z>, T, R, E extends Exception> Map.Entry<SortedMap<D, R>, SortedMap<D, E>> collectResults(ProxyFactory<Z, D, T, E> factory, final Invoker<Z, D, T, R, E> invoker)
 	{
-		DatabaseCluster<Z, D> cluster = map.getDatabaseCluster();
-		ExceptionFactory<E> exceptionFactory = map.getExceptionFactory();
+		DatabaseCluster<Z, D> cluster = factory.getDatabaseCluster();
+		ExceptionFactory<E> exceptionFactory = factory.getExceptionFactory();
 		Set<D> databaseSet = cluster.getBalancer();
 		
-		map.getRoot().retain(databaseSet);
+		factory.getRoot().retain(databaseSet);
 		
 		if (databaseSet.isEmpty())
 		{
@@ -75,7 +75,7 @@ public class AllResultsCollector implements InvokeOnManyInvocationStrategy.Resul
 		
 		for (D database: databaseSet)
 		{
-			invocationList.add(new Invocation<Z, D, T, R, E>(invoker, database, map.get(database)));
+			invocationList.add(new Invocation<Z, D, T, R, E>(invoker, database, factory.get(database)));
 		}
 		
 		try
@@ -95,7 +95,11 @@ public class AllResultsCollector implements InvokeOnManyInvocationStrategy.Resul
 				}
 				catch (ExecutionException e)
 				{
-					exceptionMap.put(database, exceptionFactory.createException(e.getCause()));
+					// If this database was concurrently deactivated, just ignore the failure
+					if (databaseSet.contains(database))
+					{
+						exceptionMap.put(database, exceptionFactory.createException(e.getCause()));
+					}
 				}
 				catch (InterruptedException e)
 				{

@@ -41,7 +41,7 @@ import net.sf.hajdbc.util.Resources;
  */
 public class H2Dialect extends StandardDialect
 {
-	private static final Set<Integer> failureCodes = new HashSet<Integer>(Arrays.asList(90013, 90030, 90067, 90100, 90108, 90117));
+	private static final Set<Integer> failureCodes = new HashSet<Integer>(Arrays.asList(90013, 90030, 90046, 90067, 90100, 90108, 90117, 90121));
 	
 	/**
 	 * {@inheritDoc}

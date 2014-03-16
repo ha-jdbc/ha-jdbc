@@ -241,5 +241,7 @@ public class H2DialectTest extends StandardDialectTest
 		assertTrue(this.dialect.indicatesFailure(new SQLException("", "", ErrorCode.NO_DISK_SPACE_AVAILABLE)));
 		assertTrue(this.dialect.indicatesFailure(new SQLException("", "", ErrorCode.OUT_OF_MEMORY)));
 		assertTrue(this.dialect.indicatesFailure(new SQLException("", "", ErrorCode.REMOTE_CONNECTION_NOT_ALLOWED)));
+		assertTrue(this.dialect.indicatesFailure(new SQLException("", "", ErrorCode.DATABASE_CALLED_AT_SHUTDOWN)));
+		assertTrue(this.dialect.indicatesFailure(new SQLException("", "", ErrorCode.URL_FORMAT_ERROR_2)));
 	}
 }

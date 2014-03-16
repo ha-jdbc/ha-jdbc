@@ -57,16 +57,16 @@ public class InvokeOnManyInvocationStrategy implements InvocationStrategy
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(ProxyFactory<Z, D, T, E> map, Invoker<Z, D, T, R, E> invoker) throws E
+	public <Z, D extends Database<Z>, T, R, E extends Exception> SortedMap<D, R> invoke(ProxyFactory<Z, D, T, E> factory, Invoker<Z, D, T, R, E> invoker) throws E
 	{
-		Map.Entry<SortedMap<D, R>, SortedMap<D, E>> results = this.collector.collectResults(map, invoker);
-		ExceptionFactory<E> exceptionFactory = map.getExceptionFactory();
+		Map.Entry<SortedMap<D, R>, SortedMap<D, E>> results = this.collector.collectResults(factory, invoker);
+		ExceptionFactory<E> exceptionFactory = factory.getExceptionFactory();
 		SortedMap<D, R> resultMap = results.getKey();
 		SortedMap<D, E> exceptionMap = results.getValue();
 		
 		if (!exceptionMap.isEmpty())
 		{
-			DatabaseCluster<Z, D> cluster = map.getDatabaseCluster();
+			DatabaseCluster<Z, D> cluster = factory.getDatabaseCluster();
 			Dialect dialect = cluster.getDialect();
 			
 			List<D> failedDatabases = new ArrayList<D>(exceptionMap.size());
