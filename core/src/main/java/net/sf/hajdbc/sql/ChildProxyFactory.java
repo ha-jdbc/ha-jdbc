@@ -30,4 +30,8 @@ public interface ChildProxyFactory<Z, D extends Database<Z>, P, PE extends Excep
 	P getParentProxy();
 
 	void remove();
+	
+	void close(D database);
+
+	void close(D database, T object) throws E;
 }

@@ -146,7 +146,7 @@ public class DatabaseClusterImpl<Z, D extends Database<Z>> implements DatabaseCl
 		
 		if (strategy == null)
 		{
-			throw new IllegalArgumentException(Messages.INVALID_SYNC_STRATEGY.getMessage(this, strategyId));
+			throw new IllegalArgumentException(Messages.INVALID_SYNC_STRATEGY.getMessage(strategyId));
 		}
 		
 		try

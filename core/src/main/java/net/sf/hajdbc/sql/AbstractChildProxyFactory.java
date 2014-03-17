@@ -20,7 +20,6 @@ package net.sf.hajdbc.sql;
 import java.util.Map;
 
 import net.sf.hajdbc.Database;
-import net.sf.hajdbc.DatabaseCluster;
 import net.sf.hajdbc.invocation.Invoker;
 
 /**
@@ -35,28 +34,17 @@ public abstract class AbstractChildProxyFactory<Z, D extends Database<Z>, P, PE 
 	
 	protected AbstractChildProxyFactory(P parentProxy, ProxyFactory<Z, D, P, PE> parent, Invoker<Z, D, P, T, PE> invoker, Map<D, T> map, Class<E> exceptionClass)
 	{
-		super(map, exceptionClass);
+		super(parent.getDatabaseCluster(), map, exceptionClass);
 		this.parentProxy = parentProxy;
 		this.invoker = invoker;
 		this.parent = parent;
-	}
-	
-	@Override
-	public RootProxyFactory<Z, D> getRoot()
-	{
-		return this.parent.getRoot();
+		this.parent.addChild(this);
 	}
 
 	@Override
 	protected T create(D database) throws PE
 	{
 		return this.invoker.invoke(database, this.parent.get(database));
-	}
-	
-	@Override
-	public DatabaseCluster<Z, D> getDatabaseCluster()
-	{
-		return this.getRoot().getDatabaseCluster();
 	}
 
 	@Override
@@ -74,6 +62,29 @@ public abstract class AbstractChildProxyFactory<Z, D extends Database<Z>, P, PE 
 	@Override
 	public void remove()
 	{
-		this.getParent().removeChild(this);
+		this.parent.removeChild(this);
+	}
+
+	@Override
+	public synchronized void close(D database)
+	{
+		for (ChildProxyFactory<Z, D, T, E, ?, ? extends Exception> child: this.children())
+		{
+			child.close(database);
+		}
+
+		T object = this.remove(database);
+		
+		if (object != null)
+		{
+			try
+			{
+				this.close(database, object);
+			}
+			catch (Exception e)
+			{
+				// Log warning
+			}
+		}
 	}
 }

@@ -50,8 +50,6 @@ public class ProxyInvocationResultFactory<Z, D extends Database<Z>, P, R, E exte
 	@Override
 	public R createResult(SortedMap<D, R> results)
 	{
-		ProxyFactory<Z, D, R, ? extends Exception> factory = this.factory.createProxyFactory(this.parentProxy, this.parent, this.invoker, results);
-		this.parent.addChild(factory);
-		return factory.createProxy();
+		return this.factory.createProxyFactory(this.parentProxy, this.parent, this.invoker, results).createProxy();
 	}
 }

@@ -22,36 +22,25 @@ import java.util.TreeMap;
 
 import net.sf.hajdbc.Database;
 import net.sf.hajdbc.DatabaseCluster;
+import net.sf.hajdbc.DatabaseClusterListener;
+import net.sf.hajdbc.state.DatabaseEvent;
 
 /**
  * 
  * @author Paul Ferraro
  */
-public abstract class AbstractRootProxyFactory<Z, D extends Database<Z>> extends AbstractProxyFactory<Z, D, SQLException, Z, SQLException> implements RootProxyFactory<Z, D>
+public abstract class AbstractRootProxyFactory<Z, D extends Database<Z>> extends AbstractProxyFactory<Z, D, SQLException, Z, SQLException> implements RootProxyFactory<Z, D>, DatabaseClusterListener
 {
-	private final DatabaseCluster<Z, D> cluster;
-	
 	protected AbstractRootProxyFactory(DatabaseCluster<Z, D> cluster)
 	{
-		super(new TreeMap<D, Z>(), SQLException.class);
+		super(cluster, new TreeMap<D, Z>(), SQLException.class);
 		
-		this.cluster = cluster;
 		for (D database: cluster.getBalancer())
 		{
 			this.get(database);
 		}
-	}
-
-	@Override
-	public DatabaseCluster<Z, D> getDatabaseCluster()
-	{
-		return this.cluster;
-	}
-
-	@Override
-	public RootProxyFactory<Z, D> getRoot()
-	{
-		return this;
+		
+		cluster.addListener(this);
 	}
 
 	@Override
@@ -61,8 +50,19 @@ public abstract class AbstractRootProxyFactory<Z, D extends Database<Z>> extends
 	}
 
 	@Override
-	public void close(D database, Z object)
+	public void activated(DatabaseEvent event)
 	{
 		// Do nothing
+	}
+
+	@Override
+	public synchronized void deactivated(DatabaseEvent event)
+	{
+		D database = this.getDatabaseCluster().getDatabase(event.getSource());
+		
+		for (ChildProxyFactory<Z, D, Z, SQLException, ?, ? extends Exception> child: this.children())
+		{
+			child.close(database);
+		}
 	}
 }

@@ -17,8 +17,8 @@
  */
 package net.sf.hajdbc.sql;
 
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -41,8 +41,9 @@ public abstract class AbstractProxyFactory<Z, D extends Database<Z>, TE extends 
 {
 	protected Logger logger = LoggerFactory.getLogger(this.getClass());
 	
+	private final DatabaseCluster<Z, D> cluster;
 	private final Map<D, T> map;
-	private final Map<ProxyFactory<Z, D, ?, ? extends Exception>, Object> children = new WeakHashMap<>();
+	private final Set<ChildProxyFactory<Z, D, T, E, ?, ? extends Exception>> children = Collections.newSetFromMap(new WeakHashMap<ChildProxyFactory<Z, D, T, E, ?, ? extends Exception>, Boolean>());
 	private final Set<Invoker<Z, D, T, ?, E>> invokers = new HashSet<>();
 	private final ExceptionFactory<E> exceptionFactory;
 	
@@ -51,10 +52,22 @@ public abstract class AbstractProxyFactory<Z, D extends Database<Z>, TE extends 
 	 * @param map a map of database to sql object.
 	 * @param exceptionClass the class for exceptions thrown by this object
 	 */
-	protected AbstractProxyFactory(Map<D, T> map, Class<E> exceptionClass)
+	protected AbstractProxyFactory(DatabaseCluster<Z, D> cluster, Map<D, T> map, Class<E> exceptionClass)
 	{
-		this.map = map;
+		this.cluster = cluster;
+		this.map = Collections.synchronizedMap(map);
 		this.exceptionFactory = ExceptionType.valueOf(exceptionClass).getExceptionFactory();
+	}
+
+	@Override
+	public DatabaseCluster<Z, D> getDatabaseCluster()
+	{
+		return this.cluster;
+	}
+
+	protected T remove(D database)
+	{
+		return this.map.remove(database);
 	}
 
 	/**
@@ -63,37 +76,30 @@ public abstract class AbstractProxyFactory<Z, D extends Database<Z>, TE extends 
 	@Override
 	public Set<Map.Entry<D, T>> entries()
 	{
-		synchronized (this.map)
-		{
-			return this.map.entrySet();
-		}
+		return this.map.entrySet();
+	}
+
+	protected synchronized Iterable<ChildProxyFactory<Z, D, T, E, ?, ? extends Exception>> children()
+	{
+		return this.children;
+	}
+	
+	@Override
+	public synchronized void addChild(ChildProxyFactory<Z, D, T, E, ?, ? extends Exception> child)
+	{
+		this.children.add(child);
 	}
 
 	@Override
-	public void addChild(ProxyFactory<Z, D, ?, ? extends Exception> child)
+	public synchronized void removeChild(ChildProxyFactory<Z, D, T, E, ?, ? extends Exception> child)
 	{
-		synchronized (this.children)
-		{
-			this.children.put(child, null);
-		}
+		this.children.remove(child);
 	}
 
 	@Override
-	public void removeChild(ProxyFactory<Z, D, ?, ? extends Exception> child)
+	public synchronized final void removeChildren()
 	{
-		synchronized (this.children)
-		{
-			this.children.remove(child);
-		}
-	}
-
-	@Override
-	public final void removeChildren()
-	{
-		synchronized (this.children)
-		{
-			this.children.clear();
-		}
+		this.children.clear();
 	}
 
 	/**
@@ -122,9 +128,7 @@ public abstract class AbstractProxyFactory<Z, D extends Database<Z>, TE extends 
 				}
 				catch (Throwable e)
 				{
-					DatabaseCluster<Z, D> cluster = this.getRoot().getDatabaseCluster();
-					
-					if (!this.map.isEmpty() && cluster.deactivate(database, cluster.getStateManager()))
+					if (!this.map.isEmpty() && this.cluster.deactivate(database, this.cluster.getStateManager()))
 					{
 						this.logger.log(Level.WARN, e, Messages.SQL_OBJECT_INIT_FAILED.getMessage(), this.getClass().getName(), database);
 					}
@@ -167,52 +171,6 @@ public abstract class AbstractProxyFactory<Z, D extends Database<Z>, TE extends 
 				catch (Throwable e)
 				{
 					this.exceptionFactory.createException(e);
-				}
-			}
-		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public final void retain(Set<D> databaseSet)
-	{
-		synchronized (this.children)
-		{
-			for (ProxyFactory<Z, D, ?, ? extends Exception> child: this.children.keySet())
-			{
-				child.retain(databaseSet);
-			}
-		}
-		
-		synchronized (this.map)
-		{
-			Iterator<Map.Entry<D, T>> mapEntries = this.map.entrySet().iterator();
-			
-			while (mapEntries.hasNext())
-			{
-				Map.Entry<D, T> mapEntry = mapEntries.next();
-				
-				D database = mapEntry.getKey();
-				
-				if (!databaseSet.contains(database))
-				{
-					T object = mapEntry.getValue();
-					
-					if (object != null)
-					{
-						try
-						{
-							this.close(database, object);
-						}
-						catch (Exception e)
-						{
-							this.logger.log(Level.WARN, e);
-						}
-					}
-					
-					mapEntries.remove();
 				}
 			}
 		}
