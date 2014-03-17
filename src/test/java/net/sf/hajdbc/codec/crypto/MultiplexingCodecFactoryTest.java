@@ -54,6 +54,7 @@ public class MultiplexingCodecFactoryTest extends CipherCodecFactoryTest
 		Assert.assertEquals("password", codec.decode("64:cGFzc3dvcmQ="));
 	}
 	
+	@Override
 	@Test
 	public void test() throws SQLException
 	{

@@ -26,40 +26,40 @@ public class VersionTest
 	@Test
 	public void finalRelease()
 	{
-		this.parse(new Version("1.2.3"), 1, 2, 3);
+		parse(new Version("1.2.3"), 1, 2, 3);
 	}
 
 	@Test
 	public void rc()
 	{
-		this.parse(new Version("1.2.3-rc-4"), 1, 2, 3);
+		parse(new Version("1.2.3-rc-4"), 1, 2, 3);
 	}
 	
 	@Test
 	public void beta()
 	{
-		this.parse(new Version("1.2.3-beta-4"), 1, 2, 3);
+		parse(new Version("1.2.3-beta-4"), 1, 2, 3);
 	}
 	
 	@Test
 	public void alpha()
 	{
-		this.parse(new Version("1.2.3-alpha-4"), 1, 2, 3);
+		parse(new Version("1.2.3-alpha-4"), 1, 2, 3);
 	}
 	
 	@Test
 	public void finalSnapshot()
 	{
-		this.parse(new Version("1.2.3-SNAPSHOT"), 1, 2, 3);
+		parse(new Version("1.2.3-SNAPSHOT"), 1, 2, 3);
 	}
 	
 	@Test
 	public void betaSnapshot()
 	{
-		this.parse(new Version("1.2.3-beta-4-SNAPSHOT"), 1, 2, 3);
+		parse(new Version("1.2.3-beta-4-SNAPSHOT"), 1, 2, 3);
 	}
 
-	private void parse(Version version, int major, int minor, int revision)
+	private static void parse(Version version, int major, int minor, int revision)
 	{
 		assertEquals(major, version.getMajor());
 		assertEquals(minor, version.getMinor());
