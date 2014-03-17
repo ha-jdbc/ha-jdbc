@@ -37,21 +37,15 @@ public interface ProxyFactory<Z, D extends Database<Z>, T, E extends Exception>
 
 	DatabaseCluster<Z, D> getDatabaseCluster();
 	
-	RootProxyFactory<Z, D> getRoot();
-	
 	ExceptionFactory<E> getExceptionFactory();
 	
 	void record(Invoker<Z, D, T, ?, E> invoker);
 
 	void replay(D database, T object) throws E;
 
-	void close(D database, T object);
-	
-	void retain(Set<D> databaseSet);
+	void addChild(ChildProxyFactory<Z, D, T, E, ?, ? extends Exception> child);
 
-	void addChild(ProxyFactory<Z, D, ?, ? extends Exception> child);
-
-	void removeChild(ProxyFactory<Z, D, ?, ? extends Exception> child);
+	void removeChild(ChildProxyFactory<Z, D, T, E, ?, ? extends Exception> child);
 	
 	void removeChildren();
 	

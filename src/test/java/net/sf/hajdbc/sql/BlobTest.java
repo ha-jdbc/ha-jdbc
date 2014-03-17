@@ -58,12 +58,11 @@ public class BlobTest
 			try
 			{
 				c.setAutoCommit(true);
-				this.createTable(c);
+				createTable(c);
 				c.setAutoCommit(false);
 				
 				Assert.assertFalse(c.getMetaData().locatorsUpdateCopy());
 				
-				@SuppressWarnings("unchecked")
 				ConnectionInvocationHandler<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource> handler = (ConnectionInvocationHandler<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource>) Proxy.getInvocationHandler(c);
 				ConnectionProxyFactory<javax.sql.DataSource, DataSourceDatabase, javax.sql.DataSource> proxyFactory = handler.getProxyFactory();
 	
@@ -92,8 +91,8 @@ public class BlobTest
 				c.commit();
 				blob.free();
 	
-				this.validate(c1, expected);
-				this.validate(c2, expected);
+				validate(c1, expected);
+				validate(c2, expected);
 				
 				ps = c.prepareStatement("SELECT lob FROM test WHERE id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 				try
@@ -129,13 +128,13 @@ public class BlobTest
 					Resources.close(ps);
 				}
 				
-				this.validate(c1, expected);
-				this.validate(c2, expected);
+				validate(c1, expected);
+				validate(c2, expected);
 			}
 			finally
 			{
 				c.setAutoCommit(true);
-				this.dropTable(c);
+				dropTable(c);
 				c.close();
 			}
 		}
@@ -145,17 +144,17 @@ public class BlobTest
 		}
 	}
 
-	private void createTable(Connection connection) throws SQLException
+	private static void createTable(Connection connection) throws SQLException
 	{
-		this.execute(connection, "CREATE TABLE test (id INTEGER NOT NULL, lob BLOB NOT NULL, PRIMARY KEY (id))");
+		execute(connection, "CREATE TABLE test (id INTEGER NOT NULL, lob BLOB NOT NULL, PRIMARY KEY (id))");
 	}
 
-	private void dropTable(Connection connection) throws SQLException
+	private static void dropTable(Connection connection) throws SQLException
 	{
-		this.execute(connection, "DROP TABLE test");
+		execute(connection, "DROP TABLE test");
 	}
 
-	private void execute(Connection connection, String sql) throws SQLException
+	private static void execute(Connection connection, String sql) throws SQLException
 	{
 		Statement statement = connection.createStatement();
 		try
@@ -168,7 +167,7 @@ public class BlobTest
 		}
 	}
 
-	private void validate(Connection connection, String expected) throws SQLException, IOException
+	private static void validate(Connection connection, String expected) throws SQLException, IOException
 	{
 		Statement statement = connection.createStatement();
 		try

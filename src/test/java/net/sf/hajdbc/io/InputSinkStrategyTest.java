@@ -57,7 +57,7 @@ public abstract class InputSinkStrategyTest<S>
 			expected[i] = (char) (this.random.nextInt(max - min) + min);
 		}
 
-		InputSinkChannel<Reader, S> channel = strategy.createReaderChannel();
+		InputSinkChannel<Reader, S> channel = this.strategy.createReaderChannel();
 		
 		S sink = channel.write(new CharArrayReader(expected));
 		
